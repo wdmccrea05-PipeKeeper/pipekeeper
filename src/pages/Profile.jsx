@@ -191,7 +191,7 @@ export default function ProfilePage() {
     },
     onSuccess: async (savedData) => {
       console.log("[Profile] Save successful, returned data:", savedData);
-      toast.success(t("notifications.saved", "Saved successfully"));
+      toast.success(t("notifications.saved"));
       // Force refetch to ensure UI reflects database state
       await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
       // Wait for refetch to complete
@@ -200,7 +200,7 @@ export default function ProfilePage() {
     },
     onError: (err) => {
       console.error("[Profile] save failed:", err);
-      toast.error(t("profileExtended.couldNotSave","Could not save profile. Please try again."));
+      toast.error(t("profileExtended.couldNotSave"));
     },
   });
 
@@ -332,11 +332,11 @@ export default function ProfilePage() {
                                 if (response.data?.url) {
                                   window.location.href = response.data.url;
                                 } else {
-                                  toast.error(t("profile.manageSubError", "Could not open subscription management. Please try again."));
+                                  toast.error(t("profile.manageSubError"));
                                 }
                               } catch (e) {
                                 console.error("[Profile] portal session error:", e);
-                                toast.error(t("profile.manageSubError", "Could not open subscription management. Please try again."));
+                                toast.error(t("profile.manageSubError"));
                               }
                             } else if (provider === "apple") {
                               window.location.href = "https://apps.apple.com/account/subscriptions";
@@ -410,10 +410,10 @@ export default function ProfilePage() {
                 {planLabel.toUpperCase()}
               </Badge>
               {provider === "stripe" && (
-                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.providerStripe","Provider: Stripe")}</Badge>
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.providerStripe")}</Badge>
               )}
               {provider === "apple" && (
-                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.providerApple","Provider: Apple")}</Badge>
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.providerApple")}</Badge>
               )}
               {subscription?.status && typeof subscription.status === 'string' ? (
                 <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">
@@ -424,11 +424,11 @@ export default function ProfilePage() {
 
             {/* Avatar */}
             <div className="space-y-2">
-              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.profilePicture","Profile picture")}</Label>
+              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.profilePicture")}</Label>
               <div className="flex items-center gap-4">
                 <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-amber-200 to-amber-300 overflow-hidden flex items-center justify-center group">
                   {formData.avatar_url ? (
-                    <img src={formData.avatar_url} alt={t("profileExtended.avatarAlt","Avatar")} className="w-full h-full object-cover" />
+                    <img src={formData.avatar_url} alt={t("profileExtended.avatarAlt")} className="w-full h-full object-cover" />
                   ) : (
                     <User className="w-10 h-10 text-amber-700" />
                   )}
@@ -448,7 +448,7 @@ export default function ProfilePage() {
                     />
                     <Button type="button" variant="outline" disabled={uploadingAvatar} className="text-stone-700 hover:text-stone-900">
                       <Upload className="w-4 h-4 mr-2" />
-                      {uploadingAvatar ? t("profileExtended.uploading","Uploading…") : t("common.upload","Upload")}
+                      {uploadingAvatar ? t("profileExtended.uploading") : t("common.upload")}
                     </Button>
                   </label>
                 </div>
@@ -467,20 +467,20 @@ export default function ProfilePage() {
             {/* Basic */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-stone-700 font-medium break-words">{t("profileExtended.displayName","Display name")}</Label>
+                <Label className="text-stone-700 font-medium break-words">{t("profileExtended.displayName")}</Label>
                 <Input
                   value={formData.display_name}
                   onChange={(e) => setFormData((p) => ({ ...p, display_name: e.target.value }))}
                 />
               </div>
               <div>
-                <Label className="text-stone-700 font-medium break-words">{t("common.email","Email")}</Label>
+                <Label className="text-stone-700 font-medium break-words">{t("common.email")}</Label>
                 <Input value={user?.email || ""} disabled className="bg-stone-50 text-stone-500 cursor-not-allowed" />
               </div>
             </div>
 
             <div>
-              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.bio","Bio")}</Label>
+              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.bio")}</Label>
               <Textarea
                 value={formData.bio}
                 onChange={(e) => setFormData((p) => ({ ...p, bio: e.target.value }))}
@@ -491,9 +491,9 @@ export default function ProfilePage() {
             {/* Location */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-stone-700 font-medium break-words">{t("profileExtended.location","Location")}</Label>
+                <Label className="text-stone-700 font-medium break-words">{t("profileExtended.location")}</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-stone-600">{t("profileExtended.showOnProfile","Show on profile")}</span>
+                  <span className="text-sm text-stone-600">{t("profileExtended.showOnProfile")}</span>
                   <Switch
                     checked={formData.show_location}
                     onCheckedChange={(v) => setFormData((p) => ({ ...p, show_location: !!v }))}
@@ -504,22 +504,22 @@ export default function ProfilePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  placeholder={t("profileExtended.cityPlaceholder","City")}
+                  placeholder={t("profileExtended.cityPlaceholder")}
                   value={formData.city}
                   onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
                 />
                 <Input
-                  placeholder={t("profileExtended.stateProvincePlaceholder","State/Province")}
+                  placeholder={t("profileExtended.stateProvincePlaceholder")}
                   value={formData.state_province}
                   onChange={(e) => setFormData((p) => ({ ...p, state_province: e.target.value }))}
                 />
                 <Input
-                  placeholder={t("profileExtended.countryPlaceholder","Country")}
+                  placeholder={t("profileExtended.countryPlaceholder")}
                   value={formData.country}
                   onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
                 />
                 <Input
-                  placeholder={t("profileExtended.postalCodePlaceholder","Postal code")}
+                  placeholder={t("profileExtended.postalCodePlaceholder")}
                   value={formData.postal_code}
                   onChange={(e) => setFormData((p) => ({ ...p, postal_code: e.target.value }))}
                 />
@@ -528,10 +528,10 @@ export default function ProfilePage() {
 
             {/* Privacy */}
             <div className="space-y-3">
-              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.privacy","Privacy")}</Label>
+              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.privacy")}</Label>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-stone-700">{t("profileExtended.hideValues","Hide values")}</span>
+                <span className="text-sm text-stone-700">{t("profileExtended.hideValues")}</span>
                 <Switch
                   checked={formData.privacy_hide_values}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
@@ -540,7 +540,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-stone-700">{t("profileExtended.hideInventory","Hide inventory")}</span>
+                <span className="text-sm text-stone-700">{t("profileExtended.hideInventory")}</span>
                 <Switch
                   checked={formData.privacy_hide_inventory}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
@@ -549,7 +549,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-stone-700">{t("profileExtended.hideCollectionCounts","Hide collection counts")}</span>
+                <span className="text-sm text-stone-700">{t("profileExtended.hideCollectionCounts")}</span>
                 <Switch
                   checked={formData.privacy_hide_collection_counts}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
@@ -559,8 +559,8 @@ export default function ProfilePage() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-medium text-stone-700">{t("profileExtended.hideHomeValues", "Hide collection values on home page")}</span>
-                  <p className="text-xs text-stone-500 mt-0.5">{t("profileExtended.hideHomeValuesDesc", "Hides pipe and tobacco collection values from your home page dashboard. Calculations still run in the background.")}</p>
+                  <span className="text-sm font-medium text-stone-700">{t("profileExtended.hideHomeValues")}</span>
+                  <p className="text-xs text-stone-500 mt-0.5">{t("profileExtended.hideHomeValuesDesc")}</p>
                 </div>
                 <Switch
                   checked={formData.home_hide_collection_values}
@@ -584,7 +584,7 @@ export default function ProfilePage() {
 
             {/* Preferences */}
              <div className="space-y-3">
-               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.clenchingPreference","Clenching preference")}</Label>
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.clenchingPreference")}</Label>
                <div className="flex flex-wrap gap-2">
                  {["Yes", "No", "Sometimes"].map((pref) => {
                    const active = formData.clenching_preference === pref;
@@ -602,7 +602,7 @@ export default function ProfilePage() {
              </div>
 
              <div className="space-y-3">
-               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.smokeDurationPreference","Smoke duration preference")}</Label>
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.smokeDurationPreference")}</Label>
                <div className="flex flex-wrap gap-2">
                  {["Short (15-30 min)", "Medium (30-60 min)", "Long (60+ min)", "No Preference"].map((pref) => {
                    const active = formData.smoke_duration_preference === pref;
@@ -620,7 +620,7 @@ export default function ProfilePage() {
              </div>
 
              <div className="space-y-3">
-               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.pipeSizePreference","Pipe size preference")}</Label>
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.pipeSizePreference")}</Label>
                <div className="flex flex-wrap gap-2">
                  {["Small", "Medium", "Large", "Extra Large", "No Preference"].map((pref) => {
                    const active = formData.pipe_size_preference === pref;
@@ -638,7 +638,7 @@ export default function ProfilePage() {
              </div>
 
              <div className="space-y-3">
-               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.strengthPreference","Strength preference")}</Label>
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.strengthPreference")}</Label>
                <div className="flex flex-wrap gap-2">
                  {["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full", "No Preference"].map((pref) => {
                    const active = formData.strength_preference === pref;
@@ -656,7 +656,7 @@ export default function ProfilePage() {
              </div>
 
              <div className="space-y-3">
-               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.preferredBlendTypes","Preferred blend types")}</Label>
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.preferredBlendTypes")}</Label>
               <div className="flex flex-wrap gap-2">
                 {BLEND_TYPES.map((bt) => {
                   const active = formData.preferred_blend_types.includes(bt);
@@ -674,7 +674,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-3">
-              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.preferredPipeShapes","Preferred pipe shapes")}</Label>
+              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.preferredPipeShapes")}</Label>
               <div className="flex flex-wrap gap-2">
                 {PIPE_SHAPES.map((sh) => {
                   const active = formData.preferred_shapes.includes(sh);
@@ -692,7 +692,7 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <Label className="text-stone-700 font-medium break-words">{t("common.notes","Notes")}</Label>
+              <Label className="text-stone-700 font-medium break-words">{t("common.notes")}</Label>
               <Textarea
                 value={formData.notes}
                 onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
@@ -703,8 +703,8 @@ export default function ProfilePage() {
             {/* Public profile toggle */}
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium text-stone-800">{t("profileExtended.publicCommunityProfile","Public community profile")}</div>
-                <div className="text-sm text-stone-600">{t("profileExtended.allowOthersToView","Allow others to view your profile in the community.")}</div>
+                <div className="font-medium text-stone-800">{t("profileExtended.publicCommunityProfile")}</div>
+                <div className="text-sm text-stone-600">{t("profileExtended.allowOthersToView")}</div>
               </div>
               <Switch
                 checked={formData.is_public}
@@ -720,7 +720,7 @@ export default function ProfilePage() {
                 disabled={saveMutation.isPending}
                 className="bg-[#A35C5C] hover:bg-[#8C4A4A]"
               >
-                {saveMutation.isPending ? t("profileExtended.saving","Saving…") : t("common.save","Save")}
+                {saveMutation.isPending ? t("profileExtended.saving") : t("common.save")}
               </Button>
 
               {user?.email ? (
@@ -734,7 +734,7 @@ export default function ProfilePage() {
                   }}
                   className="text-stone-700 border-stone-300 hover:bg-stone-50 hover:text-stone-900"
                 >
-                  {t("profileExtended.previewPublicProfile","Preview public profile")}
+                  {t("profileExtended.previewPublicProfile")}
                 </Button>
               ) : null}
             </div>

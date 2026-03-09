@@ -168,7 +168,7 @@ export default function TobaccoPage() {
       exitQuickEdit();
     },
     onError: (error) => {
-      toast.error(t("tobaccoPage.failedToUpdateBlends", "Failed to update blends. Please try again."));
+      toast.error(t("tobaccoPage.failedToUpdateBlends"));
       console.error('Bulk update error:', error);
     }
   });
@@ -405,15 +405,15 @@ export default function TobaccoPage() {
         ) : filteredBlends.length === 0 ? (
           <EmptyState
             icon={Leaf}
-            title={blends.length === 0 ? t("tobaccoPage.buildCellar", "Build Your Cellar") : t("tobaccoPage.noBlendsFound", "No Blends Found")}
+            title={blends.length === 0 ? t("tobaccoPage.buildCellar") : t("tobaccoPage.noBlendsFound")}
             description={
               blends.length === 0 
-                ? t("tobaccoPage.buildCellarDesc", "Start your tobacco cellar by adding your first blend. Track inventory, aging dates, and tasting notes.")
+                ? t("tobaccoPage.buildCellarDesc")
                 : searchQuery 
                   ? t("tobaccoPage.noMatchSearch", `No blends match "${searchQuery}". Try adjusting your search or filters.`)
-                  : t("tobaccoPage.noMatchFilters", "No blends match your current filters. Try adjusting your selections.")
+                  : t("tobaccoPage.noMatchFilters")
             }
-            actionLabel={blends.length === 0 ? t("tobaccoPage.addFirstBlend", "Add Your First Blend") : null}
+            actionLabel={blends.length === 0 ? t("tobaccoPage.addFirstBlend") : null}
             onAction={blends.length === 0 ? () => setShowForm(true) : null}
             secondaryActionLabel={blends.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || typeFilter || strengthFilter ? t("pipesPage.clearFilters") : null}
             onSecondaryAction={blends.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setTypeFilter(''); setStrengthFilter(''); }}

@@ -27,9 +27,9 @@ export function Combobox({
   className
 }) {
   const { t } = useTranslation();
-  const resolvedPlaceholder = placeholder ?? t("ui.selectPlaceholder", "Select...");
-  const resolvedSearchPlaceholder = searchPlaceholder ?? t("ui.searchPlaceholder", "Search...");
-  const resolvedEmptyText = emptyText ?? t("ui.noResultsFound", "No results found.");
+  const resolvedPlaceholder = placeholder ?? t("ui.selectPlaceholder");
+  const resolvedSearchPlaceholder = searchPlaceholder ?? t("ui.searchPlaceholder");
+  const resolvedEmptyText = emptyText ?? t("ui.noResultsFound");
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
 

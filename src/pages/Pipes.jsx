@@ -176,7 +176,7 @@ export default function PipesPage() {
           <div>
             <PkPageTitle>{t("pipesPage.myPipes")}</PkPageTitle>
             <PkText className="mt-1">
-              {pipes.length} {t("pipesPage.pipes", "pipes")} {totalValue > 0 && `• ${formatCurrency(totalValue)} ${t("pipesPage.totalValue", "total value")}`}
+              {pipes.length} {t("pipesPage.pipes")} {totalValue > 0 && `• ${formatCurrency(totalValue)} ${t("pipesPage.totalValue")}`}
             </PkText>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -256,8 +256,8 @@ export default function PipesPage() {
                </SelectContent>
              </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className={PK_THEME.input} aria-label={t("pipesPage.sortBy", "Sort by")}>
-                <SelectValue placeholder={t("pipesPage.sortBy", "Sort by")} />
+              <SelectTrigger className={PK_THEME.input} aria-label={t("pipesPage.sortBy")}>
+                <SelectValue placeholder={t("pipesPage.sortBy")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="date">{t("pipesPage.newestFirst")}</SelectItem>
@@ -266,7 +266,7 @@ export default function PipesPage() {
                 <SelectItem value="name">{t("pipesPage.byName")}</SelectItem>
               </SelectContent>
             </Select>
-            <div className={`flex border rounded-lg w-full sm:w-fit justify-center sm:justify-start ${PK_THEME.card}`} role="group" aria-label={t("pipesPage.viewMode", "View mode")}>
+            <div className={`flex border rounded-lg w-full sm:w-fit justify-center sm:justify-start ${PK_THEME.card}`} role="group" aria-label={t("pipesPage.viewMode")}>
               <Button
                 variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                 size="icon"
@@ -307,15 +307,15 @@ export default function PipesPage() {
         ) : filteredPipes.length === 0 ? (
           <EmptyState
             icon={Package}
-            title={pipes.length === 0 ? t("pipesPage.startCollection", "Start Your Collection") : t("pipesPage.noPipesFound", "No Pipes Found")}
+            title={pipes.length === 0 ? t("pipesPage.startCollection") : t("pipesPage.noPipesFound")}
             description={
               pipes.length === 0 
-                ? t("pipesPage.startCollectionDesc", "Begin your pipe journey by adding your first piece. Track details, photos, and smoking notes all in one place.")
+                ? t("pipesPage.startCollectionDesc")
                 : searchQuery 
                   ? t("pipesPage.noMatchSearch", `No pipes match "${searchQuery}". Try adjusting your search or filters.`)
-                  : t("pipesPage.noMatchFilters", "No pipes match your current filters. Try adjusting your selections.")
+                  : t("pipesPage.noMatchFilters")
             }
-            actionLabel={pipes.length === 0 ? t("pipesPage.addFirstPipe", "Add Your First Pipe") : null}
+            actionLabel={pipes.length === 0 ? t("pipesPage.addFirstPipe") : null}
             onAction={pipes.length === 0 ? () => setShowForm(true) : null}
             secondaryActionLabel={pipes.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || shapeFilter || materialFilter ? t("pipesPage.clearFilters") : null}
             onSecondaryAction={pipes.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setShapeFilter(''); setMaterialFilter(''); }}

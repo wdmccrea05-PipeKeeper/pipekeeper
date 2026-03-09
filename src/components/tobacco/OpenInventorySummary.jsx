@@ -51,15 +51,15 @@ export default function OpenInventorySummary({ blend }) {
             <div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                  {t("units.tinPlural", "Tins")}
+                  {t("units.tinPlural")}
                 </Badge>
                 <span className="text-sm font-medium text-[#1a2c42]">
-                  {tinOpen} {tinOpen === 1 ? t("units.tin", "tin") : t("units.tinPlural", "tins")} {t("common.open", "open")}
+                  {tinOpen} {tinOpen === 1 ? t("units.tin") : t("units.tinPlural")} {t("common.open")}
                 </span>
               </div>
               {tinSize > 0 && (
                 <p className="text-xs text-[#1a2c42]/70 mt-1">
-                  {formatWeight(tinSize)} {t("inventory.perTin", "per tin")}
+                  {formatWeight(tinSize)} {t("inventory.perTin")}
                 </p>
               )}
             </div>
@@ -75,9 +75,9 @@ export default function OpenInventorySummary({ blend }) {
             <div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
-                  {t("units.bulkLabel", "Bulk")}
+                  {t("units.bulkLabel")}
                 </Badge>
-                <span className="text-sm font-medium text-[#1a2c42]">{t("inventory.openQuantity", "Open quantity")}</span>
+                <span className="text-sm font-medium text-[#1a2c42]">{t("inventory.openQuantity")}</span>
               </div>
             </div>
             <div className="text-right">
@@ -92,15 +92,15 @@ export default function OpenInventorySummary({ blend }) {
             <div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                  {t("units.pouchesLabel", "Pouches")}
+                  {t("units.pouchesLabel")}
                 </Badge>
                 <span className="text-sm font-medium text-[#1a2c42]">
-                  {pouchOpen} {pouchOpen === 1 ? t("units.pouch", "pouch") : t("units.pouchesLabel", "pouches")} {t("common.open", "open")}
+                  {pouchOpen} {pouchOpen === 1 ? t("units.pouch") : t("units.pouchesLabel")} {t("common.open")}
                 </span>
               </div>
               {pouchSize > 0 && (
                 <p className="text-xs text-[#1a2c42]/70 mt-1">
-                  {formatWeight(pouchSize)} {t("inventory.perPouch", "per pouch")}
+                  {formatWeight(pouchSize)} {t("inventory.perPouch")}
                 </p>
               )}
             </div>
@@ -116,7 +116,7 @@ export default function OpenInventorySummary({ blend }) {
       <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
         <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
         <p className="text-xs text-blue-700">
-          <strong>{t("common.note", "Note")}:</strong> {t("inventory.autoDeductNote", "Smoking sessions automatically deduct from your open inventory.")}
+          <strong>{t("common.note")}:</strong> {t("inventory.autoDeductNote")}
         </p>
       </div>
     </div>

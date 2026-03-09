@@ -228,7 +228,7 @@ export default function RotationPlanner({ user }) {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-blue-500" />
-                    <h3 className="font-semibold text-sm">{t("tobacconist.inRegularRotation", "In Regular Rotation")} ({inRegularRotation.length})</h3>
+                    <h3 className="font-semibold text-sm">{t("tobacconist.inRegularRotation")} ({inRegularRotation.length})</h3>
                   </div>
                   {inRegularRotation.length > 3 && (
                     <Button

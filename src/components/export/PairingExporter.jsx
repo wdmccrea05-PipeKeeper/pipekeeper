@@ -39,9 +39,9 @@ export default function PairingExporter({ pipes, blends }) {
       pairing.top_blends?.forEach(match => {
         const blend = blends.find(b => b.id === match.blend_id);
         rows.push([
-        pipe?.name || t('pairingExporter.unknownPipe', 'Unknown'),
+        pipe?.name || t('pairingExporter.unknownPipe'),
           pipe?.shape || '',
-          blend?.name || t('pairingExporter.unknownBlend', 'Unknown'),
+          blend?.name || t('pairingExporter.unknownBlend'),
           blend?.blend_type || '',
           match.match_score || '',
           match.reasoning || ''
@@ -89,7 +89,7 @@ export default function PairingExporter({ pipes, blends }) {
         
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
-        doc.text(`${pipe?.name || t('pairingExporter.unknownPipe', 'Unknown Pipe')}`, 20, y);
+        doc.text(`${pipe?.name || t('pairingExporter.unknownPipe')}`, 20, y);
         doc.setFont(undefined, 'normal');
         doc.setFontSize(9);
         y += 6;
@@ -116,7 +116,7 @@ export default function PairingExporter({ pipes, blends }) {
           }
           
           doc.setFont(undefined, 'bold');
-          doc.text(`${matchIdx + 1}. ${blend?.name || t('pairingExporter.unknownBlend', 'Unknown')} (${match.match_score}/100)`, 30, y);
+          doc.text(`${matchIdx + 1}. ${blend?.name || t('pairingExporter.unknownBlend')} (${match.match_score}/100)`, 30, y);
           doc.setFont(undefined, 'normal');
           y += 4;
           

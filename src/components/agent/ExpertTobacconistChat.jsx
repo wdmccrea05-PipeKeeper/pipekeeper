@@ -222,7 +222,7 @@ export default function ExpertTobacconistChat({
           disabled={sending || initializing}
         />
         <Button onClick={sendMessage} disabled={!canSend}>
-          {sending ? t("common.sending", "Sending…") : t("common.send", "Send")}
+          {sending ? t("common.sending") : t("common.send")}
         </Button>
       </div>
 

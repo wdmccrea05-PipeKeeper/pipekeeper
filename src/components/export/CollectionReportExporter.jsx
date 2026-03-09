@@ -29,8 +29,8 @@ export default function CollectionReportExporter({ user }) {
     return (
       <div className="space-y-4">
         <UpgradePrompt 
-          featureName={t("reports.collectionReports","Collection Reports")}
-          description={t("reports.collectionReportsDesc","Export detailed collection reports including pipe inventory, tobacco cellar, insurance valuations, and statistics. Requires Pro tier.")}
+          featureName={t("reports.collectionReports")}
+          description={t("reports.collectionReportsDesc")}
         />
       </div>
     );
@@ -42,10 +42,10 @@ export default function CollectionReportExporter({ user }) {
   const generatePipeCSV = async () => {
     const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
     
-    let csv = t("reports.pipeCollectionReportTitle","Pipe Collection Report") + "\n";
-    csv += t("reports.generated","Generated") + `: ${formatDate(new Date(), 'short')}\n`;
-    csv += t("reports.totalPipes","Total Pipes") + `: ${pipes.length}\n\n`;
-    csv += `${t("common.name","Name")},${t("pipesExtended.maker","Maker")},${t("pipesExtended.country","Country")},${t("pipesExtended.shape","Shape")},${t("pipesExtended.bowlMaterial","Bowl Material")},${t("pipesExtended.stemMaterial","Stem Material")},${t("pipesExtended.length","Length")} (mm),${t("pipesExtended.weight","Weight")} (g),${t("pipesExtended.chamberVolume","Chamber Volume")},${t("pipesExtended.condition","Condition")},${t("reports.purchasePrice","Purchase Price")},${t("reports.estimatedValue","Estimated Value")},${t("reports.yearMade","Year Made")},${t("common.notes","Notes")}\n`;
+    let csv = t("reports.pipeCollectionReportTitle") + "\n";
+    csv += t("reports.generated") + `: ${formatDate(new Date(), 'short')}\n`;
+    csv += t("reports.totalPipes") + `: ${pipes.length}\n\n`;
+    csv += `${t("common.name")},${t("pipesExtended.maker")},${t("pipesExtended.country")},${t("pipesExtended.shape")},${t("pipesExtended.bowlMaterial")},${t("pipesExtended.stemMaterial")},${t("pipesExtended.length")} (mm),${t("pipesExtended.weight")} (g),${t("pipesExtended.chamberVolume")},${t("pipesExtended.condition")},${t("reports.purchasePrice")},${t("reports.estimatedValue")},${t("reports.yearMade")},${t("common.notes")}\n`;
     
     pipes.forEach(p => {
       csv += `"${p.name || ''}","${p.maker || ''}","${p.country_of_origin || ''}","${p.shape || ''}","${p.bowl_material || ''}","${p.stem_material || ''}",${p.length_mm || ''},${p.weight_grams || ''},"${p.chamber_volume || ''}","${p.condition || ''}",${p.purchase_price || ''},${p.estimated_value || ''},"${p.year_made || ''}","${(p.notes || '').replace(/"/g, '""')}"\n`;
@@ -59,21 +59,21 @@ export default function CollectionReportExporter({ user }) {
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
     
     let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #111827;">
-      <h1 style="color: #1a2c42;">${t("reports.pipeCollectionReportTitle","Pipe Collection Report")}</h1>
-      <p style="color: #111827;"><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
-      <p style="color: #111827;"><strong>${t("reports.totalPipes","Total Pipes")}:</strong> ${pipes.length}</p>
-      <p style="color: #111827;"><strong>${t("reports.totalValue","Total Value")}:</strong> ${formatCurrency(totalValue)}</p>
+      <h1 style="color: #1a2c42;">${t("reports.pipeCollectionReportTitle")}</h1>
+      <p style="color: #111827;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
+      <p style="color: #111827;"><strong>${t("reports.totalPipes")}:</strong> ${pipes.length}</p>
+      <p style="color: #111827;"><strong>${t("reports.totalValue")}:</strong> ${formatCurrency(totalValue)}</p>
       <hr style="margin: 20px 0;">`;
     
     pipes.forEach(p => {
       html += `<div style="margin-bottom: 30px; border-bottom: 1px solid #ddd; padding-bottom: 20px;">
-        <h3 style="color: #8b3a3a; margin-bottom: 10px;">${p.name || t("reports.unnamedPipe","Unnamed Pipe")}</h3>
+        <h3 style="color: #8b3a3a; margin-bottom: 10px;">${p.name || t("reports.unnamedPipe")}</h3>
         <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 5px; width: 150px;"><strong>${t("pipesExtended.maker","Maker")}:</strong></td><td>${p.maker || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("pipesExtended.shape","Shape")}:</strong></td><td>${p.shape || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("reports.materials","Materials")}:</strong></td><td>${p.bowl_material || '-'} / ${p.stem_material || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("pipesExtended.condition","Condition")}:</strong></td><td>${p.condition || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("common.value","Value")}:</strong></td><td>${formatCurrency(p.estimated_value || 0)}</td></tr>
+          <tr><td style="padding: 5px; width: 150px;"><strong>${t("pipesExtended.maker")}:</strong></td><td>${p.maker || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>${t("pipesExtended.shape")}:</strong></td><td>${p.shape || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>${t("reports.materials")}:</strong></td><td>${p.bowl_material || '-'} / ${p.stem_material || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>${t("pipesExtended.condition")}:</strong></td><td>${p.condition || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>${t("common.value")}:</strong></td><td>${formatCurrency(p.estimated_value || 0)}</td></tr>
         </table>
       </div>`;
     });
@@ -85,10 +85,10 @@ export default function CollectionReportExporter({ user }) {
   const generateTobaccoCSV = async () => {
     const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
     
-    let csv = t("reports.tobaccoCollectionReportTitle","Tobacco Collection Report") + "\n";
-    csv += t("reports.generated","Generated") + `: ${formatDate(new Date(), 'short')}\n`;
-    csv += t("reports.totalBlends","Total Blends") + `: ${blends.length}\n\n`;
-    csv += `${t("common.name","Name")},${t("tobaccoExtended.manufacturer","Manufacturer")},${t("tobaccoExtended.blendType","Blend Type")},${t("tobaccoExtended.cut","Cut")},${t("tobaccoExtended.strength","Strength")},${t("tobaccoExtended.roomNote","Room Note")},${t("tobaccoExtended.agingPotential","Aging Potential")},${t("common.rating","Rating")},${t("reports.tinQuantity","Tin Quantity (oz)")},${t("reports.bulkQuantity","Bulk Quantity (oz)")},${t("reports.pouchQuantity","Pouch Quantity (oz)")},${t("reports.total","Total")} (oz),${t("reports.cellared","Cellared")} (oz),${t("common.notes","Notes")}\n`;
+    let csv = t("reports.tobaccoCollectionReportTitle") + "\n";
+    csv += t("reports.generated") + `: ${formatDate(new Date(), 'short')}\n`;
+    csv += t("reports.totalBlends") + `: ${blends.length}\n\n`;
+    csv += `${t("common.name")},${t("tobaccoExtended.manufacturer")},${t("tobaccoExtended.blendType")},${t("tobaccoExtended.cut")},${t("tobaccoExtended.strength")},${t("tobaccoExtended.roomNote")},${t("tobaccoExtended.agingPotential")},${t("common.rating")},${t("reports.tinQuantity")},${t("reports.bulkQuantity")},${t("reports.pouchQuantity")},${t("reports.total")} (oz),${t("reports.cellared")} (oz),${t("common.notes")}\n`;
     
     blends.forEach(b => {
       const tinOz = b.tin_total_quantity_oz || 0;
@@ -106,23 +106,23 @@ export default function CollectionReportExporter({ user }) {
     const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
     
     let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #111827;">
-      <h1 style="color: #1a2c42;">${t("reports.tobaccoCollectionReportTitle","Tobacco Collection Report")}</h1>
-      <p style="color: #111827;"><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
-      <p style="color: #111827;"><strong>${t("reports.totalBlends","Total Blends")}:</strong> ${blends.length}</p>
+      <h1 style="color: #1a2c42;">${t("reports.tobaccoCollectionReportTitle")}</h1>
+      <p style="color: #111827;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
+      <p style="color: #111827;"><strong>${t("reports.totalBlends")}:</strong> ${blends.length}</p>
       <hr style="margin: 20px 0;">`;
     
     blends.forEach(b => {
       const totalOz = calculateTotalOzFromBlend(b);
       const cellaredOz = calculateCellaredOzFromBlend(b);
       html += `<div style="margin-bottom: 30px; border-bottom: 1px solid #ddd; padding-bottom: 20px;">
-        <h3 style="color: #3d5a4d; margin-bottom: 10px;">${b.name || t("reports.unnamedBlend","Unnamed Blend")}</h3>
+        <h3 style="color: #3d5a4d; margin-bottom: 10px;">${b.name || t("reports.unnamedBlend")}</h3>
         <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 5px; width: 150px;"><strong>${t("tobaccoExtended.manufacturer","Manufacturer")}:</strong></td><td>${b.manufacturer || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("common.type","Type")}:</strong></td><td>${b.blend_type || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("tobaccoExtended.strength","Strength")}:</strong></td><td>${b.strength || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("reports.totalQuantity","Total Quantity")}:</strong></td><td>${formatWeight(totalOz, 'oz')}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("reports.cellared","Cellared")}:</strong></td><td>${formatWeight(cellaredOz, 'oz')}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("common.rating","Rating")}:</strong></td><td>${b.rating || '-'} / 5</td></tr>
+          <tr><td style="padding: 5px; width: 150px;"><strong>${t("tobaccoExtended.manufacturer")}:</strong></td><td>${b.manufacturer || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>${t("common.type")}:</strong></td><td>${b.blend_type || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>${t("tobaccoExtended.strength")}:</strong></td><td>${b.strength || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>${t("reports.totalQuantity")}:</strong></td><td>${formatWeight(totalOz, 'oz')}</td></tr>
+          <tr><td style="padding: 5px;"><strong>${t("reports.cellared")}:</strong></td><td>${formatWeight(cellaredOz, 'oz')}</td></tr>
+          <tr><td style="padding: 5px;"><strong>${t("common.rating")}:</strong></td><td>${b.rating || '-'} / 5</td></tr>
         </table>
       </div>`;
     });
@@ -135,14 +135,14 @@ export default function CollectionReportExporter({ user }) {
     const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
     
-    let csv = t("reports.insuranceValuationReport","Insurance Valuation Report") + "\n";
-    csv += t("reports.generated","Generated") + `: ${formatDate(new Date(), 'short')}\n`;
-    csv += t("reports.owner","Owner") + `: ${user?.full_name || user?.email}\n`;
-    csv += t("reports.totalCollectionValue","Total Collection Value") + `: ${formatCurrency(totalValue)}\n\n`;
-    csv += `${t("reports.item","Item")},${t("pipesExtended.maker","Maker")},${t("reports.year","Year")},${t("pipesExtended.condition","Condition")},${t("reports.purchaseDate","Purchase Date")},${t("reports.purchasePrice","Purchase Price")},${t("reports.currentValue","Current Value")},${t("common.description","Description")}\n`;
+    let csv = t("reports.insuranceValuationReport") + "\n";
+    csv += t("reports.generated") + `: ${formatDate(new Date(), 'short')}\n`;
+    csv += t("reports.owner") + `: ${user?.full_name || user?.email}\n`;
+    csv += t("reports.totalCollectionValue") + `: ${formatCurrency(totalValue)}\n\n`;
+    csv += `${t("reports.item")},${t("pipesExtended.maker")},${t("reports.year")},${t("pipesExtended.condition")},${t("reports.purchaseDate")},${t("reports.purchasePrice")},${t("reports.currentValue")},${t("common.description")}\n`;
     
     pipes.forEach(p => {
-      csv += `"${p.name || ''}","${p.maker || ''}","${p.year_made || ''}","${p.condition || ''}","${p.created_date ? formatDate(new Date(p.created_date), 'short') : ''}",${p.purchase_price || ''},${p.estimated_value || ''},"${p.shape || ''} ${t("reports.pipe","pipe")}, ${p.bowl_material || ''} ${t("reports.bowl","bowl")}, ${p.stem_material || ''} ${t("reports.stem","stem")}"\n`;
+      csv += `"${p.name || ''}","${p.maker || ''}","${p.year_made || ''}","${p.condition || ''}","${p.created_date ? formatDate(new Date(p.created_date), 'short') : ''}",${p.purchase_price || ''},${p.estimated_value || ''},"${p.shape || ''} ${t("reports.pipe")}, ${p.bowl_material || ''} ${t("reports.bowl")}, ${p.stem_material || ''} ${t("reports.stem")}"\n`;
     });
 
     return { csv, filename: `Insurance-Report-${new Date().toISOString().split('T')[0]}.csv` };
@@ -153,26 +153,26 @@ export default function CollectionReportExporter({ user }) {
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
     
     let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #111827;">
-      <h1 style="color: #1a2c42;">${t("reports.insuranceValuationReport","Insurance Valuation Report")}</h1>
-      <p style="color: #111827;"><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
-      <p style="color: #111827;"><strong>${t("reports.owner","Owner")}:</strong> ${user?.full_name || user?.email}</p>
-      <p style="color: #111827;"><strong>${t("reports.totalCollectionValue","Total Collection Value")}:</strong> ${formatCurrency(totalValue)}</p>
+      <h1 style="color: #1a2c42;">${t("reports.insuranceValuationReport")}</h1>
+      <p style="color: #111827;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
+      <p style="color: #111827;"><strong>${t("reports.owner")}:</strong> ${user?.full_name || user?.email}</p>
+      <p style="color: #111827;"><strong>${t("reports.totalCollectionValue")}:</strong> ${formatCurrency(totalValue)}</p>
       <hr style="margin: 20px 0;">
-      <p style="font-style: italic; color: #444444;">${t("reports.insuranceReportDesc","This report provides an itemized valuation of the pipe collection for insurance purposes.")}</p>
+      <p style="font-style: italic; color: #444444;">${t("reports.insuranceReportDesc")}</p>
       <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
         <thead>
           <tr style="background-color: #f0f0f0;">
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">${t("reports.item","Item")}</th>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">${t("pipesExtended.maker","Maker")}</th>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">${t("pipesExtended.condition","Condition")}</th>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">${t("common.value","Value")}</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">${t("reports.item")}</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">${t("pipesExtended.maker")}</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">${t("pipesExtended.condition")}</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">${t("common.value")}</th>
           </tr>
         </thead>
         <tbody>`;
     
     pipes.forEach(p => {
       html += `<tr>
-        <td style="border: 1px solid #ddd; padding: 8px;">${p.name || t("reports.unnamed","Unnamed")}</td>
+        <td style="border: 1px solid #ddd; padding: 8px;">${p.name || t("reports.unnamed")}</td>
         <td style="border: 1px solid #ddd; padding: 8px;">${p.maker || '-'}</td>
         <td style="border: 1px solid #ddd; padding: 8px;">${p.condition || '-'}</td>
         <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatCurrency(p.estimated_value || 0)}</td>
@@ -193,20 +193,20 @@ export default function CollectionReportExporter({ user }) {
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
     const totalOz = blends.reduce((sum, b) => sum + calculateTotalOzFromBlend(b), 0);
 
-    let csv = t("reports.collectionStatisticsReport","Collection Statistics Report") + "\n";
-    csv += t("reports.generated","Generated") + `: ${formatDate(new Date(), 'short')}\n\n`;
-    csv += t("reports.pipeCollectionSection","PIPE COLLECTION") + "\n";
-    csv += `${t("reports.totalPipes","Total Pipes")},${pipes.length}\n`;
-    csv += `${t("reports.totalValue","Total Value")},${formatCurrency(totalValue)}\n`;
-    csv += `${t("reports.avgValuePerPipe","Average Value per Pipe")},${pipes.length > 0 ? formatCurrency(Math.round(totalValue / pipes.length)) : formatCurrency(0)}\n\n`;
+    let csv = t("reports.collectionStatisticsReport") + "\n";
+    csv += t("reports.generated") + `: ${formatDate(new Date(), 'short')}\n\n`;
+    csv += t("reports.pipeCollectionSection") + "\n";
+    csv += `${t("reports.totalPipes")},${pipes.length}\n`;
+    csv += `${t("reports.totalValue")},${formatCurrency(totalValue)}\n`;
+    csv += `${t("reports.avgValuePerPipe")},${pipes.length > 0 ? formatCurrency(Math.round(totalValue / pipes.length)) : formatCurrency(0)}\n\n`;
     
-    csv += t("reports.tobaccoCollectionSection","TOBACCO COLLECTION") + "\n";
-    csv += `${t("reports.totalBlends","Total Blends")},${blends.length}\n`;
-    csv += `${t("reports.totalQuantity","Total Quantity")},${formatWeight(totalOz, 'oz')}\n\n`;
+    csv += t("reports.tobaccoCollectionSection") + "\n";
+    csv += `${t("reports.totalBlends")},${blends.length}\n`;
+    csv += `${t("reports.totalQuantity")},${formatWeight(totalOz, 'oz')}\n\n`;
     
-    csv += t("reports.usageActivitySection","USAGE ACTIVITY") + "\n";
-    csv += `${t("reports.totalSessions","Total Sessions")},${logs.length}\n`;
-    csv += `${t("reports.breakInSessions","Break-In Sessions")},${logs.filter(l => l.is_break_in).length}\n`;
+    csv += t("reports.usageActivitySection") + "\n";
+    csv += `${t("reports.totalSessions")},${logs.length}\n`;
+    csv += `${t("reports.breakInSessions")},${logs.filter(l => l.is_break_in).length}\n`;
 
     return { csv, filename: `Collection-Stats-${new Date().toISOString().split('T')[0]}.csv` };
   };
@@ -222,27 +222,27 @@ export default function CollectionReportExporter({ user }) {
     const totalOz = blends.reduce((sum, b) => sum + calculateTotalOzFromBlend(b), 0);
     
     let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #111827;">
-      <h1 style="color: #1a2c42;">${t("reports.collectionStatisticsReport","Collection Statistics Report")}</h1>
-      <p style="color: #111827;"><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
+      <h1 style="color: #1a2c42;">${t("reports.collectionStatisticsReport")}</h1>
+      <p style="color: #111827;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
       <hr style="margin: 20px 0;">
       
-      <h2 style="color: #8b3a3a;">${t("reports.pipeCollectionSection","Pipe Collection")}</h2>
+      <h2 style="color: #8b3a3a;">${t("reports.pipeCollectionSection")}</h2>
       <ul>
-        <li style="color: #111827;">${t("reports.totalPipes","Total Pipes")}: ${pipes.length}</li>
-        <li style="color: #111827;">${t("reports.totalValue","Total Value")}: ${formatCurrency(totalValue)}</li>
-        <li style="color: #111827;">${t("reports.avgValue","Average Value")}: ${pipes.length > 0 ? formatCurrency(Math.round(totalValue / pipes.length)) : formatCurrency(0)}</li>
+        <li style="color: #111827;">${t("reports.totalPipes")}: ${pipes.length}</li>
+        <li style="color: #111827;">${t("reports.totalValue")}: ${formatCurrency(totalValue)}</li>
+        <li style="color: #111827;">${t("reports.avgValue")}: ${pipes.length > 0 ? formatCurrency(Math.round(totalValue / pipes.length)) : formatCurrency(0)}</li>
       </ul>
       
-      <h2 style="color: #3d5a4d;">${t("reports.tobaccoCollectionSection","Tobacco Collection")}</h2>
+      <h2 style="color: #3d5a4d;">${t("reports.tobaccoCollectionSection")}</h2>
       <ul>
-        <li style="color: #111827;">${t("reports.totalBlends","Total Blends")}: ${blends.length}</li>
-        <li style="color: #111827;">${t("reports.totalQuantity","Total Quantity")}: ${formatWeight(totalOz, 'oz')}</li>
+        <li style="color: #111827;">${t("reports.totalBlends")}: ${blends.length}</li>
+        <li style="color: #111827;">${t("reports.totalQuantity")}: ${formatWeight(totalOz, 'oz')}</li>
       </ul>
       
-      <h2 style="color: #1a2c42;">${t("reports.usageActivitySection","Usage Activity")}</h2>
+      <h2 style="color: #1a2c42;">${t("reports.usageActivitySection")}</h2>
       <ul>
-        <li style="color: #111827;">${t("reports.totalSessions","Total Sessions")}: ${logs.length}</li>
-        <li style="color: #111827;">${t("reports.breakInSessions","Break-In Sessions")}: ${logs.filter(l => l.is_break_in).length}</li>
+        <li style="color: #111827;">${t("reports.totalSessions")}: ${logs.length}</li>
+        <li style="color: #111827;">${t("reports.breakInSessions")}: ${logs.filter(l => l.is_break_in).length}</li>
       </ul>
     </div>`;
     
@@ -259,7 +259,7 @@ export default function CollectionReportExporter({ user }) {
     a.click();
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
-    toast.success(t("reports.csvDownloaded","CSV downloaded"));
+    toast.success(t("reports.csvDownloaded"));
   };
 
   const previewPDF = (html, title) => {
@@ -273,7 +273,7 @@ export default function CollectionReportExporter({ user }) {
 
     // Guard against popup blockers
     if (!printWindow) {
-      toast.error(t("reports.popupBlocked", "Please allow popups to print/download the PDF."));
+      toast.error(t("reports.popupBlocked"));
       return;
     }
 
@@ -300,7 +300,7 @@ export default function CollectionReportExporter({ user }) {
           downloadCSV(csv, filename);
         } else {
           const html = await generatePipePDF();
-          previewPDF(html, t("reports.pipeCollectionReportTitle","Pipe Collection Report"));
+          previewPDF(html, t("reports.pipeCollectionReportTitle"));
         }
       } else if (type === 'tobacco') {
         if (format === 'csv') {
@@ -308,7 +308,7 @@ export default function CollectionReportExporter({ user }) {
           downloadCSV(csv, filename);
         } else {
           const html = await generateTobaccoPDF();
-          previewPDF(html, t("reports.tobaccoCollectionReportTitle","Tobacco Collection Report"));
+          previewPDF(html, t("reports.tobaccoCollectionReportTitle"));
         }
       } else if (type === 'insurance') {
         if (format === 'csv') {
@@ -316,7 +316,7 @@ export default function CollectionReportExporter({ user }) {
           downloadCSV(csv, filename);
         } else {
           const html = await generateInsurancePDF();
-          previewPDF(html, t("reports.insuranceValuationReport","Insurance Valuation Report"));
+          previewPDF(html, t("reports.insuranceValuationReport"));
         }
       } else if (type === 'stats') {
         if (format === 'csv') {
@@ -324,11 +324,11 @@ export default function CollectionReportExporter({ user }) {
           downloadCSV(csv, filename);
         } else {
           const html = await generateStatsPDF();
-          previewPDF(html, t("reports.collectionStatisticsReport","Collection Statistics Report"));
+          previewPDF(html, t("reports.collectionStatisticsReport"));
         }
       }
     } catch (error) {
-      toast.error(t("reports.exportFailed","Export failed") + ": " + error.message);
+      toast.error(t("reports.exportFailed") + ": " + error.message);
     } finally {
       setIsExporting(false);
     }
