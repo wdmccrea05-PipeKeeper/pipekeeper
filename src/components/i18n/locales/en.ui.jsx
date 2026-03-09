@@ -1690,8 +1690,8 @@ const enUI = {
     forceUpdateFailed: "Force update failed: {error}",
     updateFailedTryForce: "Update failed: {error}. Try enabling \"Force Override\" if needed.",
     forceOverrideWarning: "⚠️ Force Override is enabled - validation errors will be ignored",
-    "24h": "24h",
-    "7d": "7d",
+    timeWindow24h: "24h",
+    timeWindow7d: "7d",
   },
   tobacco: {
     advancedFilters: "Advanced Filters",

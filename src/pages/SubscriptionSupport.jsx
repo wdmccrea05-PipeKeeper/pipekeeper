@@ -175,14 +175,14 @@ export default function SubscriptionSupport() {
                 variant={timeWindow === "24h" ? "default" : "outline"}
                 onClick={() => setTimeWindow("24h")}
               >
-                {t("subscriptionSupport.24h")}
+                {t("subscriptionSupport.timeWindow24h")}
               </Button>
               <Button
                 size="sm"
                 variant={timeWindow === "7d" ? "default" : "outline"}
                 onClick={() => setTimeWindow("7d")}
               >
-                {t("subscriptionSupport.7d")}
+                {t("subscriptionSupport.timeWindow7d")}
               </Button>
             </div>
           </CardTitle>
