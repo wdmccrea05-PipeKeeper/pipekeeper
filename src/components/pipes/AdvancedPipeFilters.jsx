@@ -190,15 +190,15 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__ALL__">{t("pipes.allCountries", "All Countries")}</SelectItem>
-                <SelectItem value="Italy">Italy</SelectItem>
-                <SelectItem value="Denmark">Denmark</SelectItem>
-                <SelectItem value="England">England</SelectItem>
-                <SelectItem value="United States">United States</SelectItem>
-                <SelectItem value="France">France</SelectItem>
-                <SelectItem value="Germany">Germany</SelectItem>
-                <SelectItem value="Ireland">Ireland</SelectItem>
-                <SelectItem value="Japan">Japan</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
+                <SelectItem value="Italy">{t("countries.italy", "Italy")}</SelectItem>
+                <SelectItem value="Denmark">{t("countries.denmark", "Denmark")}</SelectItem>
+                <SelectItem value="England">{t("countries.england", "England")}</SelectItem>
+                <SelectItem value="United States">{t("countries.unitedStates", "United States")}</SelectItem>
+                <SelectItem value="France">{t("countries.france", "France")}</SelectItem>
+                <SelectItem value="Germany">{t("countries.germany", "Germany")}</SelectItem>
+                <SelectItem value="Ireland">{t("countries.ireland", "Ireland")}</SelectItem>
+                <SelectItem value="Japan">{t("countries.japan", "Japan")}</SelectItem>
+                <SelectItem value="Other">{t("common.other", "Other")}</SelectItem>
               </SelectContent>
             </Select>
           </div>

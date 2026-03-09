@@ -162,7 +162,7 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
                     <div className="flex items-center gap-2 text-emerald-400 mb-2">
                       <CheckCircle2 className="w-5 h-5" />
                       <p className="font-semibold">
-                        Processed: {results.processed} | Failed: {results.failed}
+                        {t("tobaccoEstimator.processedFailed", { processed: results.processed, failed: results.failed })}
                       </p>
                     </div>
 
@@ -173,7 +173,7 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
                             <div className="flex-1 min-w-0">
                               <p className="text-[#e8d5b7] truncate">{r.blend_name}</p>
                               <p className="text-xs text-[#e8d5b7]/50">
-                                Confidence: {r.confidence}
+                                {t("tobaccoEstimator.confidence", { confidence: r.confidence })}
                               </p>
                             </div>
                             <p className="text-emerald-400 font-semibold ml-2">
@@ -186,7 +186,7 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
 
                     {results.errors?.length > 0 && (
                       <div className="space-y-1 text-xs text-rose-400">
-                        <p className="font-semibold">Errors:</p>
+                        <p className="font-semibold">{t("tobaccoEstimator.errors", "Errors:")}</p>
                         {results.errors.map((e, idx) => (
                           <p key={idx}>• {e.blend_id}: {e.error}</p>
                         ))}
@@ -196,7 +196,7 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
                 ) : (
                   <div className="flex items-center gap-2 text-rose-400">
                     <XCircle className="w-5 h-5" />
-                    <p className="text-sm">{results.error || "Processing failed"}</p>
+                    <p className="text-sm">{results.error || t("tobaccoEstimator.processingFailed", "Processing failed")}</p>
                   </div>
                 )}
               </div>

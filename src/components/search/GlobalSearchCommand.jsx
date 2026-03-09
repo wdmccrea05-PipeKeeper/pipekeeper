@@ -219,7 +219,7 @@ export default function GlobalSearchCommand({ open, onClose }) {
             </span>
           </div>
           <span className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 bg-stone-100 border border-stone-200 rounded">Esc</kbd>
+            <kbd className="px-1.5 py-0.5 bg-stone-100 border border-stone-200 rounded">{t("search.kbdEsc", "Esc")}</kbd>
             {t("search.kbdClose", "Close")}
           </span>
         </div>
