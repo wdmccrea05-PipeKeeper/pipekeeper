@@ -220,7 +220,7 @@ export default function SubscriptionFull() {
       await refetch();
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
       await queryClient.invalidateQueries({ queryKey: ["subscription"] });
-      setMessage(t("subscriptionFull.subUpdated","✅ Subscription updated"));
+      setMessage(t("subscriptionFull.subUpdated"));
       setTimeout(() => setMessage(""), 3000);
     } catch (e) {
       setMessage(t("subscriptionFull.refreshError"));
@@ -267,12 +267,12 @@ export default function SubscriptionFull() {
     return (
       <div className="w-full max-w-3xl mx-auto p-4 space-y-6 text-center">
         <h1 className="text-2xl font-bold text-[#e8d5b7]">
-          {t("subscriptionFull.alreadySubscribed", "You're already subscribed")}
+          {t("subscriptionFull.alreadySubscribed")}
         </h1>
         <p className="text-[#e8d5b7]/70">
           {alreadyPro
-            ? t("subscriptionFull.currentlyOnPro", "You're currently on the Pro plan.")
-            : t("subscriptionFull.currentlyOnPremium", "You're currently on the Premium plan.")}
+            ? t("subscriptionFull.currentlyOnPro")
+            : t("subscriptionFull.currentlyOnPremium")}
         </p>
         <Button className="w-full max-w-xs mx-auto" onClick={handleManage}>
           {t("subscriptionFull.manageSubscription")}
@@ -293,7 +293,7 @@ export default function SubscriptionFull() {
     <div className="w-full max-w-6xl mx-auto p-4 space-y-8">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">{t("subscriptionFull.continueWithPremium")}</h1>
-        <p className="text-[#e8d5b7]/70">{t("subscriptionFull.fullAccessPrompt","You've had full access — choose how you'd like to continue.")}</p>
+        <p className="text-[#e8d5b7]/70">{t("subscriptionFull.fullAccessPrompt")}</p>
       </div>
 
       {/* Billing Interval Toggle */}
@@ -401,9 +401,9 @@ export default function SubscriptionFull() {
 
       {/* Reassurance Copy */}
       <div className="text-center space-y-2 text-sm text-[#e8d5b7]/60">
-         <p>{t("subscriptionFull.cancelAnytime","• Cancel anytime")}</p>
-         {!isIOSApp && <p>{t("subscriptionFull.managedThroughStripe","• Subscription managed through Stripe")}</p>}
-         <p>{t("subscriptionFull.dataUnaffected","• Your existing data is never affected")}</p>
+         <p>{t("subscriptionFull.cancelAnytime")}</p>
+         {!isIOSApp && <p>{t("subscriptionFull.managedThroughStripe")}</p>}
+         <p>{t("subscriptionFull.dataUnaffected")}</p>
        </div>
 
        {/* Manage Subscription */}

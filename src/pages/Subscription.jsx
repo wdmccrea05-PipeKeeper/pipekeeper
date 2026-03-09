@@ -157,8 +157,8 @@ function AppleSubscription() {
         <Card className="bg-black/30 border-white/10">
           <CardContent className="pt-6 text-emerald-400 text-center">
             {hasPaid
-              ? t("subscription.activeSubscription", "✅ Your subscription is active.")
-              : t("subscription.trialActive", "✅ Your free trial is active.")}
+              ? t("subscription.activeSubscription")
+              : t("subscription.trialActive")}
           </CardContent>
         </Card>
       )}

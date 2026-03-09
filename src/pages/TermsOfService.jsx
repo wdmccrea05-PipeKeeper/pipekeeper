@@ -24,26 +24,26 @@ export default function TermsOfService() {
       <p className="mt-2 text-sm text-[#cdbfae]">{t("termsOfService.lastUpdated")}</p>
 
       <p className="mt-6 leading-relaxed">
-        {t("termsOfService.intro", "These Terms of Service (\"Terms\") govern your access to and use of PipeKeeper (the \"Service\"). By using the Service, you agree to these Terms.")}
+        {t("termsOfService.intro")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section1Title", "1. The Service")}</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section1Title")}</h2>
       <p className="mt-3 leading-relaxed">
         {t("termsOfService.section1Text")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section2Title", "2. Eligibility")}</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section2Title")}</h2>
       <p className="mt-3 leading-relaxed">
         {t("termsOfService.section2Text")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section3Title", "3. Accounts")}</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section3Title")}</h2>
       <p className="mt-3 leading-relaxed">
         {t("termsOfService.section3Text")}
       </p>
 
       <h2 className="mt-10 text-2xl font-semibold text-white">
-        {t("termsOfService.section4Title", "4. Subscriptions, Premium Features, and Trials")}
+        {t("termsOfService.section4Title")}
       </h2>
       <p className="mt-3 leading-relaxed">
         {t("termsOfService.section4Text1")}
@@ -51,7 +51,7 @@ export default function TermsOfService() {
       <p className="mt-3 leading-relaxed">{t("termsOfService.section4Text2")}</p>
       <ul className="mt-3 list-disc space-y-2 pl-6">
         <li>
-          <strong className="text-white">{t("termsOfService.section4IosLabel")}</strong> {t("termsOfService.section4IosText", "Subscriptions are processed through Apple's App Store In-App Purchase system and managed via your Apple ID.")}
+          <strong className="text-white">{t("termsOfService.section4IosLabel")}</strong> {t("termsOfService.section4IosText")}
         </li>
         <li>
           <strong className="text-white">{t("termsOfService.section4WebLabel")}</strong> {t("termsOfService.section4WebText")}
@@ -61,12 +61,12 @@ export default function TermsOfService() {
         {t("termsOfService.section4Text3")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section5Title", "5. Billing and Refunds")}</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section5Title")}</h2>
       <p className="mt-3 leading-relaxed">
-        {t("termsOfService.section5Text", "Billing and refund handling depend on the platform used to purchase a subscription. iOS purchases are subject to Apple's billing and refund policies. Web and Android purchases are subject to the terms disclosed at checkout.")}
+        {t("termsOfService.section5Text")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section6Title", "6. Acceptable Use")}</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section6Title")}</h2>
       <p className="mt-3 leading-relaxed">
         {t("termsOfService.section6Intro")}
       </p>
@@ -79,10 +79,10 @@ export default function TermsOfService() {
       </ul>
 
       <h2 className="mt-10 text-2xl font-semibold text-white">
-        {t("termsOfService.section7Title", "7. User-Generated Content and Community Standards")}
+        {t("termsOfService.section7Title")}
       </h2>
       <p className="mt-3 leading-relaxed">
-        {t("termsOfService.section7Text1", "PipeKeeper allows users to submit and manage content such as notes, comments, images, collection details, and other related data (\"User-Generated Content\").")}
+        {t("termsOfService.section7Text1")}
       </p>
       <p className="mt-3 leading-relaxed">
         {t("termsOfService.section7Text2")}
@@ -97,27 +97,27 @@ export default function TermsOfService() {
         {t("termsOfService.section7Text3")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section8Title", "8. Ownership and Data Rights")}</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section8Title")}</h2>
       <p className="mt-3 leading-relaxed">
         {t("termsOfService.section8Text")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section9Title", "9. Disclaimers")}</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section9Title")}</h2>
       <p className="mt-3 leading-relaxed">
-        {t("termsOfService.section9Text", "The Service is provided \"as is\" and \"as available.\" PipeKeeper may include optional AI-assisted features that provide best-effort organizational suggestions and insights. These features may be imperfect and should not be relied upon as professional, financial, or legal advice.")}
+        {t("termsOfService.section9Text")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section10Title", "10. Limitation of Liability")}</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section10Title")}</h2>
       <p className="mt-3 leading-relaxed">
         {t("termsOfService.section10Text")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section11Title", "11. Changes to These Terms")}</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section11Title")}</h2>
       <p className="mt-3 leading-relaxed">
         {t("termsOfService.section11Text")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section12Title", "12. Contact")}</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("termsOfService.section12Title")}</h2>
       <p className="mt-3 leading-relaxed">
         {t("termsOfService.section12Text")}
       </p>

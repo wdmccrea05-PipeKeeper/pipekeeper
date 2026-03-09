@@ -45,7 +45,7 @@ export default function CellarDriftAlert({ blends, user }) {
       }
       
       await queryClient.invalidateQueries({ queryKey: ["blends"] });
-      toast.success(t("cellarDrift.reconcileSuccess", "Reconciled {count} blend(s) - cellared amounts synced to transaction history", { count: fixed }));
+      toast.success(t("cellarDrift.reconcileSuccess", { count: fixed }));
       setShowReport(false);
     } catch (err) {
       console.error("Reconciliation failed:", err);

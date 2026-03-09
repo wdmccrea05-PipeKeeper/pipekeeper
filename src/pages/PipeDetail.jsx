@@ -710,7 +710,7 @@ export default function PipeDetailPage() {
                 ) : (
                   <UpgradePrompt 
                     featureName={t("pipesExtended.identifyPipe")}
-                    description={t("pipeDetailTabs.identifyPipeDesc", "Use advanced AI to identify your pipe's maker, model, year, and other details from photos of stampings and characteristics.")}
+                    description={t("pipeDetailTabs.identifyPipeDesc")}
                   />
                 )}
               </CardContent>
