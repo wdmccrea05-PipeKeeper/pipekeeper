@@ -118,15 +118,15 @@ export default function SubscriptionMigrationCard() {
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-[#E0D8C8]">
-              {t("admin.subscriptionMigrationTitle", "Subscription Migration (Stripe → Account Linked)")}
+              {t("admin.subscriptionMigrationTitle")}
             </CardTitle>
             <CardDescription className="text-[#E0D8C8]/70 mt-2">
-              {t("admin.subscriptionMigrationDesc", "Links legacy Stripe subscriptions (email-keyed) to PipeKeeper accounts (user_id). Apple IAP is not linked by email.")}
+              {t("admin.subscriptionMigrationDesc")}
             </CardDescription>
           </div>
           {!dryRun && (
             <Badge variant="destructive" className="ml-2">
-              {t("admin.appliesChanges", "APPLIES CHANGES")}
+              {t("admin.appliesChanges")}
             </Badge>
           )}
         </div>
@@ -142,13 +142,13 @@ export default function SubscriptionMigrationCard() {
               disabled={running}
             />
             <Label htmlFor="dryRun" className="text-[#E0D8C8]">
-              {t("admin.dryRunLabel", "Dry Run")} {dryRun ? t("admin.dryRunSafePreview", "(Safe Preview)") : t("admin.dryRunOff", "(OFF - Will Apply!)")}
+              {t("admin.dryRunLabel")} {dryRun ? t("admin.dryRunSafePreview") : t("admin.dryRunOff")}
             </Label>
           </div>
           
           <div className="flex items-center space-x-2">
             <Label htmlFor="batchSize" className="text-[#E0D8C8] whitespace-nowrap">
-              {t("admin.batchSizeColon", "Batch Size:")}
+              {t("admin.batchSizeColon")}
             </Label>
             <Input
               id="batchSize"
@@ -172,7 +172,7 @@ export default function SubscriptionMigrationCard() {
             size="sm"
           >
             <Play className="w-4 h-4 mr-2" />
-            {t("admin.runBatch", "Run Batch")}
+            {t("admin.runBatch")}
           </Button>
           
           <Button
@@ -181,7 +181,7 @@ export default function SubscriptionMigrationCard() {
             size="sm"
           >
             <FastForward className="w-4 h-4 mr-2" />
-            {t("admin.runUntilDone", "Run Until Done")}
+            {t("admin.runUntilDone")}
           </Button>
           
           {running && (
@@ -191,7 +191,7 @@ export default function SubscriptionMigrationCard() {
               size="sm"
             >
               <XCircle className="w-4 h-4 mr-2" />
-              {t("admin.cancel", "Cancel")}
+              {t("admin.cancel")}
             </Button>
           )}
           
@@ -202,7 +202,7 @@ export default function SubscriptionMigrationCard() {
             size="sm"
           >
             <Trash2 className="w-4 h-4 mr-2" />
-            {t("admin.clearLog", "Clear Log")}
+            {t("admin.clearLog")}
           </Button>
         </div>
 
@@ -212,11 +212,11 @@ export default function SubscriptionMigrationCard() {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               <div className="space-y-2">
-                <div className="font-semibold">{t("admin.migrationError", "Migration Error")}</div>
+                <div className="font-semibold">{t("admin.migrationError")}</div>
                 <div className="text-sm break-words">{error}</div>
                 {(error.includes("STRIPE_AUTH_FAILED") || error.includes("Invalid API Key") || error.includes("mk_")) && (
                   <div className="text-sm font-semibold text-yellow-200 mt-2">
-                    {t("admin.stripeKeyWarning", "⚠️ Check STRIPE_SECRET_KEY - must start with sk_ or rk_")}
+                    {t("admin.stripeKeyWarning")}
                   </div>
                 )}
               </div>
@@ -229,36 +229,36 @@ export default function SubscriptionMigrationCard() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-green-500" />
-              <h4 className="text-sm font-semibold text-[#E0D8C8]">{t("admin.latestResult", "Latest Result")}</h4>
+              <h4 className="text-sm font-semibold text-[#E0D8C8]">{t("admin.latestResult")}</h4>
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
               <div className="bg-white/5 rounded p-2">
-                <div className="text-[#E0D8C8]/70">{t("admin.scannedLabel", "Scanned")}</div>
+                <div className="text-[#E0D8C8]/70">{t("admin.scannedLabel")}</div>
                 <div className="text-xl font-bold text-[#E0D8C8]">{lastResult.scanned || 0}</div>
               </div>
               <div className="bg-white/5 rounded p-2">
-                <div className="text-[#E0D8C8]/70">{t("admin.normalizedLabel", "Normalized")}</div>
+                <div className="text-[#E0D8C8]/70">{t("admin.normalizedLabel")}</div>
                 <div className="text-xl font-bold text-[#E0D8C8]">{lastResult.normalizedEmails || 0}</div>
               </div>
               <div className="bg-white/5 rounded p-2">
-                <div className="text-[#E0D8C8]/70">{t("admin.usersCreatedLabel", "Users Created")}</div>
+                <div className="text-[#E0D8C8]/70">{t("admin.usersCreatedLabel")}</div>
                 <div className="text-xl font-bold text-[#E0D8C8]">{lastResult.usersCreated || 0}</div>
               </div>
               <div className="bg-white/5 rounded p-2">
-                <div className="text-[#E0D8C8]/70">{t("admin.subsLinkedLabel", "Subs Linked")}</div>
+                <div className="text-[#E0D8C8]/70">{t("admin.subsLinkedLabel")}</div>
                 <div className="text-xl font-bold text-[#E0D8C8]">{lastResult.subsLinkedToUserId || 0}</div>
               </div>
               <div className="bg-white/5 rounded p-2">
-                <div className="text-[#E0D8C8]/70">{t("admin.usersUpdatedLabel", "Users Updated")}</div>
+                <div className="text-[#E0D8C8]/70">{t("admin.usersUpdatedLabel")}</div>
                 <div className="text-xl font-bold text-[#E0D8C8]">{lastResult.usersUpdated || 0}</div>
               </div>
               <div className="bg-white/5 rounded p-2">
-                <div className="text-[#E0D8C8]/70">{t("admin.skippedAppleLabel", "Skipped Apple")}</div>
+                <div className="text-[#E0D8C8]/70">{t("admin.skippedAppleLabel")}</div>
                 <div className="text-xl font-bold text-[#E0D8C8]">{lastResult.skippedApple || 0}</div>
               </div>
               <div className="bg-white/5 rounded p-2">
-                <div className="text-[#E0D8C8]/70">{t("admin.conflictsLabel", "Conflicts")}</div>
+                <div className="text-[#E0D8C8]/70">{t("admin.conflictsLabel")}</div>
                 <div className="text-xl font-bold text-[#A35C5C]">{lastResult.conflicts || 0}</div>
               </div>
             </div>

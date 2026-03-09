@@ -35,17 +35,17 @@ export default function BackfillStripeCard() {
       if (data.ok) {
         setCursor(data.nextStartingAfter);
         toast.success(
-          t('admin.backfillSuccessMsg', 'Fetched {fetched} customers, processed {processed}', { fetched: data.fetchedCustomers, processed: data.processedCustomers })
+          t('admin.backfillSuccessMsg', { fetched: data.fetchedCustomers, processed: data.processedCustomers })
         );
         
         await queryClient.invalidateQueries({ queryKey: ["user-report"] });
         await queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
         await queryClient.invalidateQueries({ queryKey: ["subscription"] });
       } else {
-        toast.error(t('admin.backfillFailedAtStage', 'Backfill failed at {stage}: {error}', { stage: data.where || t('common.unknown', 'unknown'), error: data.error || 'UNKNOWN' }));
+        toast.error(t('admin.backfillFailedAtStage', { stage: data.where || t('common.unknown'), error: data.error || 'UNKNOWN' }));
       }
     } catch (err) {
-      toast.error(err.message || t('admin.backfillFailedLabel', 'Backfill Failed'));
+      toast.error(err.message || t('admin.backfillFailedLabel'));
       setResult({ 
         ok: false, 
         error: "REQUEST_FAILED", 
@@ -63,22 +63,22 @@ export default function BackfillStripeCard() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Database className="w-5 h-5 text-blue-600" />
-          <CardTitle className="text-blue-900">{t('admin.backfillStripeCustomersTitle', 'Backfill Stripe Customers')}</CardTitle>
+          <CardTitle className="text-blue-900">{t('admin.backfillStripeCustomersTitle')}</CardTitle>
         </div>
         <CardDescription className="text-blue-800">
-          {t('admin.backfillStripeCustomersDesc', 'Sync Stripe customer data to local database with batched pagination')}
+          {t('admin.backfillStripeCustomersDesc')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert className="bg-blue-100 border-blue-300">
           <AlertCircle className="h-4 w-4 text-blue-700" />
           <AlertDescription className="text-blue-900 text-sm">
-            {t('admin.backfillStripeAlertText', 'Fetches customers from Stripe, creates/updates User and Subscription entities. Safe to run multiple times.')}
+            {t('admin.backfillStripeAlertText')}
           </AlertDescription>
         </Alert>
 
         <div className="space-y-2">
-          <Label htmlFor="limit" className="text-blue-900">{t('admin.batchSizeCustomers', 'Batch Size (customers per request)')}</Label>
+          <Label htmlFor="limit" className="text-blue-900">{t('admin.batchSizeCustomers')}</Label>
           <Input
             id="limit"
             type="number"
@@ -97,7 +97,7 @@ export default function BackfillStripeCard() {
             disabled={loading}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            {loading ? t('admin.running', 'Running...') : t('admin.startBackfill', 'Start Backfill')}
+            {loading ? t('admin.running') : t('admin.startBackfill')}
           </Button>
           
           {result?.hasMore && result?.nextStartingAfter && (
@@ -108,7 +108,7 @@ export default function BackfillStripeCard() {
               className="border-blue-400 text-blue-900 hover:bg-blue-100"
             >
               <ChevronRight className="w-4 h-4 mr-1" />
-              {t('admin.runNextBatch', 'Run Next Batch')}
+              {t('admin.runNextBatch')}
             </Button>
           )}
         </div>
@@ -117,62 +117,62 @@ export default function BackfillStripeCard() {
           <div className="space-y-3 pt-4 border-t border-blue-200">
             <div className="flex items-center gap-2 text-green-700">
               <CheckCircle className="w-5 h-5" />
-              <span className="font-semibold">{t('admin.backfillSuccessful', 'Backfill Successful')}</span>
+              <span className="font-semibold">{t('admin.backfillSuccessful')}</span>
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="bg-white/50 rounded p-2">
-                <div className="text-blue-600 text-xs">{t('admin.fetchedCustomersLabel', 'Fetched Customers')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.fetchedCustomersLabel')}</div>
                 <div className="text-blue-900 font-semibold">{result.fetchedCustomers}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-blue-600 text-xs">{t('admin.processedCustomersLabel', 'Processed')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.processedCustomersLabel')}</div>
                 <div className="text-blue-900 font-semibold">{result.processedCustomers}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-blue-600 text-xs">{t('admin.createdSubscriptionsLabel', 'Created Subscriptions')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.createdSubscriptionsLabel')}</div>
                 <div className="text-blue-900 font-semibold">{result.createdSubs}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-blue-600 text-xs">{t('admin.updatedSubscriptionsLabel', 'Updated Subscriptions')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.updatedSubscriptionsLabel')}</div>
                 <div className="text-blue-900 font-semibold">{result.updatedSubs}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-blue-600 text-xs">{t('admin.createdUsersLabel', 'Created Users')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.createdUsersLabel')}</div>
                 <div className="text-blue-900 font-semibold">{result.createdUsers}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-blue-600 text-xs">{t('admin.updatedUsersLabel', 'Updated Users')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.updatedUsersLabel')}</div>
                 <div className="text-blue-900 font-semibold">{result.updatedUsers}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-blue-600 text-xs">{t('admin.errorsLabel', 'Errors')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.errorsLabel')}</div>
                 <div className="text-blue-900 font-semibold">{result.errorsCount || 0}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-blue-600 text-xs">{t('admin.paginationLabel', 'Pagination')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.paginationLabel')}</div>
                 <div className="text-blue-900 font-semibold">
-                  {result.hasMore ? t('admin.paginationMoreAvailable', 'More available') : t('admin.paginationComplete', 'Complete')}
+                  {result.hasMore ? t('admin.paginationMoreAvailable') : t('admin.paginationComplete')}
                 </div>
               </div>
             </div>
 
             {result.nextStartingAfter && (
               <div className="bg-blue-100 rounded p-2 text-xs">
-                <div className="text-blue-600 font-semibold">{t('admin.nextCursorLabel', 'Next Cursor:')}</div>
+                <div className="text-blue-600 font-semibold">{t('admin.nextCursorLabel')}</div>
                 <div className="text-blue-900 font-mono break-all">{result.nextStartingAfter}</div>
               </div>
             )}
 
             {result.sampleErrors && result.sampleErrors.length > 0 && (
               <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
-                <div className="text-yellow-800 font-semibold text-sm mb-2">{t('admin.sampleErrorsLabel', 'Sample Errors:')}</div>
+                <div className="text-yellow-800 font-semibold text-sm mb-2">{t('admin.sampleErrorsLabel')}</div>
                 <div className="space-y-2">
                   {result.sampleErrors.map((err, idx) => (
                     <div key={idx} className="text-xs bg-white/70 rounded p-2 space-y-1">
-                      <div><span className="text-yellow-600 font-semibold">{t('admin.stageLabel', 'Stage:')}</span> {err.where}</div>
-                      {err.email && <div><span className="text-yellow-600 font-semibold">{t('admin.emailLabel', 'Email:')}</span> {err.email}</div>}
-                      <div><span className="text-yellow-600 font-semibold">{t('admin.messageLabel', 'Message:')}</span> {err.message}</div>
+                      <div><span className="text-yellow-600 font-semibold">{t('admin.stageLabel')}</span> {err.where}</div>
+                      {err.email && <div><span className="text-yellow-600 font-semibold">{t('admin.emailLabel')}</span> {err.email}</div>}
+                      <div><span className="text-yellow-600 font-semibold">{t('admin.messageLabel')}</span> {err.message}</div>
                     </div>
                   ))}
                 </div>
@@ -186,24 +186,24 @@ export default function BackfillStripeCard() {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               <div className="space-y-2">
-                <div className="font-semibold">{t('admin.backfillFailedLabel', 'Backfill Failed')}</div>
+                <div className="font-semibold">{t('admin.backfillFailedLabel')}</div>
                 <div className="text-sm">
-                  <span className="font-semibold">{t('admin.errorLabel', 'Error:')}</span> {result.error || "UNKNOWN"}
+                  <span className="font-semibold">{t('admin.errorLabel')}</span> {result.error || "UNKNOWN"}
                 </div>
                 <div className="text-sm">
-                  <span className="font-semibold">{t('admin.stageLabel', 'Stage:')}</span>{" "}
+                  <span className="font-semibold">{t('admin.stageLabel')}</span>{" "}
                   <code className="bg-black/10 px-1.5 py-0.5 rounded font-mono">
                     {result.where || "unknown"}
                   </code>
                 </div>
                 {result.message && (
                   <div className="text-sm break-words">
-                    <span className="font-semibold">{t('admin.messageLabel', 'Message:')}</span> {result.message}
+                    <span className="font-semibold">{t('admin.messageLabel')}</span> {result.message}
                   </div>
                 )}
                 {result.keyPrefix && (
                   <div className="text-sm">
-                    <span className="font-semibold">{t('admin.keyPrefixLabel', 'Key Prefix:')}</span>{" "}
+                    <span className="font-semibold">{t('admin.keyPrefixLabel')}</span>{" "}
                     <code className="bg-black/10 px-1.5 py-0.5 rounded font-mono">
                       {result.keyPrefix}
                     </code>
