@@ -83,7 +83,7 @@ export function Combobox({
                   className="w-full justify-start text-xs"
                   onClick={handleCustomValue}
                 >
-                  {t("ui.useCustomValue", 'Use "{value}"', { value: search.trim() })}
+                  {t("ui.useCustomValue", { value: search.trim() })}
                 </Button>
               </div>
             ) : (

@@ -279,6 +279,7 @@ const enUI = {
     aiSpecializationDesc: "Get personalized recommendations on what tobacco types this pipe would be best suited for based on its characteristics and your collection.",
     breakInShort: "Break",
     valueLookupDesc: "Get instant market value estimates for your pipes based on maker, model, condition, and current market trends.",
+    identifyPipeDesc: "Use advanced AI to identify your pipe's maker, model, year, and other details from photos of stampings and characteristics.",
   },
   common: {
     appName: "PipeKeeper",
@@ -389,6 +390,18 @@ const enUI = {
     thankYouSupporting: "Thank you for supporting PipeKeeper",
     openedAppleSubsInBrowser: "Opened Apple subscriptions in browser.",
     openedAppleSubsMgmtInBrowser: "Opened Apple subscription management in browser.",
+    // Keys used by the Apple Subscription page (Subscription.jsx)
+    title: "Subscriptions",
+    manage: "Manage",
+    free: "Free",
+    continueFree: "Continue Free",
+    premium: "Premium",
+    subscribe: "Subscribe",
+    pro: "Pro",
+    trialEndedTitle: "Your trial has ended",
+    trialEndedBody: "Subscribe to continue using all features.",
+    activeSubscription: "✅ Your subscription is active.",
+    trialActive: "✅ Your free trial is active.",
   },
   insights: {
     reportsTooltip: "Generate exportable summaries of your collection for reference or documentation.",
@@ -751,6 +764,9 @@ const enUI = {
     aiAccuracyDesc: "AI recommendations are based on your collection data and preferences. Results improve as you add more details and log smoking sessions.",
     topicSupport: "Support",
     contactDesc: "Visit the Support page in the app menu or email us directly. Links to all support resources are available in the footer.",
+    accountSecurityDesc: "Your account data is encrypted and secured by Base44's authentication system. We never store password data.",
+    aiHowItWorksDesc: "AI pairings analyze your pipe's characteristics (shape, size, focus) and your tobacco blend's profile (type, strength, components) to generate compatibility scores from 0–10.",
+    aiRegenerateDesc: "Regenerate pairings when you add or remove pipes/blends, update pipe focus tags, or when the AI Updates page shows 'out of date'.",
   },
 
   admin: {
@@ -1260,6 +1276,7 @@ const enUI = {
     difference: "Difference:",
     reconciling: "Reconciling...",
     reconcileAll: "Reconcile All",
+    reconcileSuccess: "Reconciled {count} blend(s) - cellared amounts synced to transaction history",
   },
 
   search: {
@@ -1489,6 +1506,12 @@ const enUI = {
     sending: "Sending...",
     requestUnlock: "Request Unlock",
     needHelp: "Need help? Contact",
+    requestSent: "Request sent! We'll unlock your account ASAP.",
+    reviewPayment: "We'll review your payment proof and unlock your account ASAP.",
+    premiumMonthlyPrice: "$1.99/mo",
+    premiumAnnualPrice: "$19.99/yr",
+    proMonthlyPrice: "$2.99/mo",
+    proAnnualPrice: "$29.99/yr",
   },
   subscriptionSupport: {
     subscriptionTier: "Subscription Tier",
@@ -1584,6 +1607,7 @@ const enUI = {
     quantityPlaceholder: "e.g., 3",
     packagingType: "Packaging Type",
     update: "Update",
+    dontUpdate: "Don't update",
   },
   cellarLog: {
     cellaringLog: "Cellaring Log",
@@ -1612,6 +1636,7 @@ const enUI = {
     net: "Net",
     noTransactionsYet: "No transactions yet",
     ozUnit: "oz",
+    amountPlaceholder: "2.0",
   },
   inventory: {
     perTin: "per tin",
@@ -1715,6 +1740,7 @@ const enUI = {
     selectPlaceholder: "Select...",
     searchPlaceholder: "Search...",
     noResultsFound: "No results found.",
+    useCustomValue: 'Use "{value}"',
   },
   help: {
     gettingStarted: "How do I get started with PipeKeeper?",
@@ -1734,6 +1760,8 @@ const enUI = {
     upTo10Tobacco: "Up to 10 tobacco blends",
     basicCollection: "Basic collection management",
     photoUploads: "Photo uploads",
+    subscriptionTiersQuestion: "What are the subscription tiers and what's included?",
+    freeTrial7Days: "7-day trial of all premium features",
     premiumTier: "Premium Tier",
     unlimitedPipesTobacco: "Unlimited pipes and tobacco blends",
     aiMatching: "AI tobacco matching recommendations",
@@ -1869,6 +1897,14 @@ const enUI = {
     pro: "Pro",
     upgradeToPro: "Upgrade to Pro",
     manualBackupCheckout: "Manual Backup Checkout",
+    alreadySubscribed: "You're already subscribed",
+    currentlyOnPro: "You're currently on the Pro plan.",
+    currentlyOnPremium: "You're currently on the Premium plan.",
+    subUpdated: "✅ Subscription updated",
+    fullAccessPrompt: "You've had full access — choose how you'd like to continue.",
+    cancelAnytime: "• Cancel anytime",
+    managedThroughStripe: "• Subscription managed through Stripe",
+    dataUnaffected: "• Your existing data is never affected",
   },
   subscriptionSuccess: {
     processing: "Processing Your Subscription",
@@ -1878,6 +1914,8 @@ const enUI = {
     activeMessage: "Your subscription is active. Premium/Pro features are now available.",
     pending: "Subscription Pending",
     receivedMessage: "Your subscription was received. Features may take a few minutes to unlock.",
+    confirming: "Thanks! We're confirming your subscription and unlocking your features.",
+    supportNote: "If your features don't unlock within 2 minutes, please contact support.",
   },
   tobaccoPage: {
     failedToUpdateBlends: "Failed to update blends. Please try again.",

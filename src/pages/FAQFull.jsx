@@ -113,12 +113,12 @@ export default function FAQFull() {
          </Q>
 
         {/* Subscription Tiers Comparison */}
-        <Q id="subscription-tiers" q={t("faqFull.subscriptionTiersQuestion","What are the subscription tiers and what's included?")}>
+        <Q id="subscription-tiers" q={t("faqFull.subscriptionTiersQuestion")}>
           <div className="space-y-4">
             <div className="p-4 bg-gray-50 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-2">{t("faqFull.freeTier")}</h4>
               <ul className="list-disc ml-4 space-y-1 text-gray-700">
-                <li>{t("faqFull.freeTrial7Days","7-day trial of all premium features")}</li>
+                <li>{t("faqFull.freeTrial7Days")}</li>
                 <li>{t("faqFull.upTo5Pipes")}</li>
                 <li>{t("faqFull.upTo10Tobacco")}</li>
                 <li>{t("faqFull.basicCollection")}</li>
@@ -165,7 +165,7 @@ export default function FAQFull() {
 
       <Section title={t("helpCenter.topicAccountsAndData")}>
         <Q id="account-security" q={t("help.accountSecurity")}>
-          <p>{t("helpCenter.accountSecurityDesc", "Your account data is encrypted and secured by Base44's authentication system. We never store password data.")}</p>
+          <p>{t("helpCenter.accountSecurityDesc")}</p>
         </Q>
         <Q id="data-privacy" q={t("help.dataPrivacy")}>
           <p>{t("helpCenter.dataPrivacyDesc")}</p>
@@ -187,10 +187,10 @@ export default function FAQFull() {
           <p>{t("helpCenter.aiAccuracyDesc")}</p>
         </Q>
         <Q id="ai-how-it-works" q={t("help.aiHowItWorks")}>
-          <p>{t("helpCenter.aiHowItWorksDesc", "AI pairings analyze your pipe's characteristics (shape, size, focus) and your tobacco blend's profile (type, strength, components) to generate compatibility scores from 0–10.")}</p>
+          <p>{t("helpCenter.aiHowItWorksDesc")}</p>
         </Q>
         <Q id="ai-regenerate" q={t("help.aiRegenerate")}>
-          <p>{t("helpCenter.aiRegenerateDesc", "Regenerate pairings when you add or remove pipes/blends, update pipe focus tags, or when the AI Updates page shows 'out of date'.")}</p>
+          <p>{t("helpCenter.aiRegenerateDesc")}</p>
         </Q>
       </Section>
 

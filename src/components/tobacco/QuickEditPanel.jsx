@@ -89,10 +89,10 @@ export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLo
                 onValueChange={(v) => setUpdateFields(prev => ({ ...prev, packaging_type: v }))}
               >
                 <SelectTrigger className="h-9">
-                  <SelectValue placeholder={t("quickEdit.dontUpdate","Don't update")} />
+                  <SelectValue placeholder={t("quickEdit.dontUpdate")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">{t("quickEdit.dontUpdate","Don't update")}</SelectItem>
+                  <SelectItem value="none">{t("quickEdit.dontUpdate")}</SelectItem>
                   <SelectItem value="tin">{t("tobaccoExtended.tin")}</SelectItem>
                   <SelectItem value="bulk">{t("tobaccoExtended.bulk")}</SelectItem>
                   <SelectItem value="pouch">{t("tobaccoExtended.pouch")}</SelectItem>
@@ -107,10 +107,10 @@ export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLo
                 onValueChange={(v) => setUpdateFields(prev => ({ ...prev, tin_status: v }))}
               >
                 <SelectTrigger className="h-9">
-                  <SelectValue placeholder={t("quickEdit.dontUpdate","Don't update")} />
+                  <SelectValue placeholder={t("quickEdit.dontUpdate")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">{t("quickEdit.dontUpdate","Don't update")}</SelectItem>
+                  <SelectItem value="none">{t("quickEdit.dontUpdate")}</SelectItem>
                   <SelectItem value="Sealed/Cellared">{t("quickEdit.sealedCellared")}</SelectItem>
                   <SelectItem value="Opened">{t("quickEdit.opened")}</SelectItem>
                   <SelectItem value="Empty">{t("quickEdit.empty")}</SelectItem>
@@ -125,10 +125,10 @@ export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLo
                 onValueChange={(v) => setUpdateFields(prev => ({ ...prev, is_favorite: v }))}
               >
                 <SelectTrigger className="h-9">
-                  <SelectValue placeholder={t("quickEdit.dontUpdate","Don't update")} />
+                  <SelectValue placeholder={t("quickEdit.dontUpdate")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">{t("quickEdit.dontUpdate","Don't update")}</SelectItem>
+                  <SelectItem value="none">{t("quickEdit.dontUpdate")}</SelectItem>
                   <SelectItem value="true">{t("common.yes")}</SelectItem>
                   <SelectItem value="false">{t("common.no")}</SelectItem>
                 </SelectContent>

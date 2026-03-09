@@ -59,6 +59,8 @@ const EXCLUDED_PAGE_PREFIXES = [
   'Admin',
   'SubscriptionEventsLog',
   'SubscriptionE2ETest',
+  'SubscriptionSupport',
+  'UserReport',
 ];
 
 // Patterns from auditConfig that also mark files as excluded
@@ -187,10 +189,31 @@ const RULES = [
     // argument is a plain string literal rather than an interpolation object.
     // This pattern indicates that the component is relying on an inline English
     // fallback instead of a locale key, which is the antipattern we want to eliminate.
-    // Captures the fallback string (the second argument) for reporting.
-    // Matches both uppercase- and lowercase-starting fallbacks (e.g. "or drag and drop").
-    pattern: /\bt\(\s*["'][^"']+["']\s*,\s*["']([A-Za-z][^"']{2,})["']\s*\)/g,
+    //
+    // Two variants handle both double-quoted and single-quoted fallback strings.
+    // Each uses (?:[^"\\]|\\.)*  /  (?:[^'\\]|\\.)*  to correctly match through
+    // escaped characters (including escaped quotes and apostrophes inside strings).
+    // This replaces the old [^"'] approach which broke on apostrophes and \"-escapes.
+    //
+    // The trailing [,)] allows matching both 2-arg calls t(key, fallback) and
+    // 3-arg calls t(key, fallback, { options }).
+    //
+    // Captures the first 80 chars of the fallback for reporting; trimming happens
+    // in shouldIgnoreText.  minLength set to 2 so even short fallbacks are flagged.
+    pattern: /\bt\(\s*['"][^'"]+['"]\s*,\s*"((?:[^"\\]|\\.){2,80})"\s*[,)]/g,
     severity: 'warn',
+    minLength: 2,
+    // For fallback-literal rules, general ignore patterns (lowercase-start, digit-start)
+    // do NOT apply — any literal string as a t() second arg is potentially an issue.
+    bypassIgnorePatterns: true,
+  },
+  {
+    name: 't-fallback-literal-single',
+    // Same as t-fallback-literal but for single-quoted fallback strings.
+    pattern: /\bt\(\s*['"][^'"]+['"]\s*,\s*'((?:[^'\\]|\\.){2,80})'\s*[,)]/g,
+    severity: 'warn',
+    minLength: 2,
+    bypassIgnorePatterns: true,
   },
 ];
 
@@ -206,9 +229,10 @@ const IGNORE_PATTERNS = [
   /^[a-z][a-zA-Z0-9.]+$/, // camelCase or dotted identifiers
 ];
 
-function shouldIgnoreText(text, minLength = 4) {
+function shouldIgnoreText(text, minLength = 4, bypassIgnorePatterns = false) {
   const trimmed = text.trim();
   if (trimmed.length < minLength) return true;
+  if (bypassIgnorePatterns) return false;
   if (IGNORE_PATTERNS.some((re) => re.test(trimmed))) return true;
   return false;
 }
@@ -240,8 +264,10 @@ function scanFile(filePath) {
     while ((match = rule.pattern.exec(source)) !== null) {
       const text = match[1].trim();
 
-      if (shouldIgnoreText(text, rule.minLength ?? 4)) continue;
-      if (isAllowlisted(text)) continue;
+      if (shouldIgnoreText(text, rule.minLength ?? 4, rule.bypassIgnorePatterns ?? false)) continue;
+      // For fallback-literal rules, do NOT skip findings based on the proper-noun
+      // allowlist: even a proper noun inline fallback should be replaced with a key.
+      if (!rule.bypassIgnorePatterns && isAllowlisted(text)) continue;
 
       // Determine line number from match offset
       const offset = match.index;

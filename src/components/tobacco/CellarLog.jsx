@@ -223,7 +223,7 @@ export default function CellarLog({ blend }) {
                     step="0.1"
                     value={formData.amount_oz}
                     onChange={(e) => setFormData({ ...formData, amount_oz: e.target.value })}
-                    placeholder={t("cellarLog.amountPlaceholder","2.0")}
+                    placeholder={t("cellarLog.amountPlaceholder")}
                     required
                   />
                 </div>

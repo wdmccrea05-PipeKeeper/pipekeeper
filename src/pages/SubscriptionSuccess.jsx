@@ -120,7 +120,7 @@ export default function SubscriptionSuccess() {
             </div>
             <h1 className="text-2xl font-bold text-[#E0D8C8] text-center mb-4">{t("subscriptionSuccess.processing")}</h1>
             <p className="text-[#E0D8C8]/70 text-center mb-6">
-              {t("subscriptionSuccess.confirming","Thanks! We're confirming your subscription and unlocking your features.")}
+              {t("subscriptionSuccess.confirming")}
             </p>
             <p className="text-sm text-[#E0D8C8]/50 text-center">
               {t("subscriptionSuccess.autoRefresh")}: {secondsRemaining}s {t("subscriptionSuccess.remaining")}...
@@ -151,7 +151,7 @@ export default function SubscriptionSuccess() {
               {t("subscriptionSuccess.receivedMessage")}
             </p>
             <p className="text-sm text-[#E0D8C8]/50 text-center mb-6">
-              {t("subscriptionSuccess.supportNote","If your features don't unlock within 2 minutes, please contact support.")}
+              {t("subscriptionSuccess.supportNote")}
             </p>
             <Button className="w-full" onClick={() => navigate(createPageUrl("Home"))}>
               {t("common.continue")}

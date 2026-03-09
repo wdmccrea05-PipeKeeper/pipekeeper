@@ -208,10 +208,10 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
               onValueChange={(v) => setUpdateFields(prev => ({ ...prev, tin_status: v }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("quickEdit.dontUpdate","Don't update")} />
+                <SelectValue placeholder={t("quickEdit.dontUpdate")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">{t("quickEdit.dontUpdate","Don't update")}</SelectItem>
+                <SelectItem value="none">{t("quickEdit.dontUpdate")}</SelectItem>
                 <SelectItem value="Sealed/Cellared">{t("quickEdit.sealedCellared")}</SelectItem>
                 <SelectItem value="Opened">{t("quickEdit.opened")}</SelectItem>
                 <SelectItem value="Empty">{t("quickEdit.empty")}</SelectItem>
@@ -226,10 +226,10 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
               onValueChange={(v) => setUpdateFields(prev => ({ ...prev, is_favorite: v }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("quickEdit.dontUpdate","Don't update")} />
+                <SelectValue placeholder={t("quickEdit.dontUpdate")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">{t("quickEdit.dontUpdate","Don't update")}</SelectItem>
+                <SelectItem value="none">{t("quickEdit.dontUpdate")}</SelectItem>
                 <SelectItem value="true">{t("bulkEdit.yesMarkFavorite")}</SelectItem>
                 <SelectItem value="false">{t("bulkEdit.noRemoveFavorite")}</SelectItem>
               </SelectContent>

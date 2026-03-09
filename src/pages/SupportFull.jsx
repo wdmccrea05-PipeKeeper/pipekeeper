@@ -88,7 +88,7 @@ ${formData.message}
               <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-green-900 mb-2">{t("supportFull.requestSubmitted")}</h2>
               <p className="text-green-700 mb-6">
-                {t("supportFull.thankYou","Thank you for contacting us. We'll get back to you as soon as possible.")}
+                {t("supportFull.thankYou")}
               </p>
               <Button onClick={() => setSubmitted(false)} variant="outline">
                 {t("supportFull.submitAnother")}
@@ -117,12 +117,12 @@ ${formData.message}
               {t("supportFull.contactSupport")}
             </CardTitle>
             <CardDescription className="text-[#E0D8C8]/80">
-              {t("supportFull.description","Have a question or need help? Send us a message and we'll get back to you soon.")}
+              {t("supportFull.description")}
             </CardDescription>
             <div className="mt-4 p-4 bg-[#A35C5C]/10 border border-[#A35C5C]/30 rounded-lg">
               <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("supportFull.emailVerifIssues")}</h3>
               <p className="text-sm text-[#E0D8C8]/70 mb-3">
-                {t("supportFull.verificationHelp","If you're having trouble with email verification or can't log in, please contact us directly at:")}
+                {t("supportFull.verificationHelp")}
               </p>
               <a
                 href="mailto:admin@pipekeeperapp.com"
@@ -213,7 +213,7 @@ ${formData.message}
 
         <div className="mt-6 text-center">
           <a href={createPageUrl('BulkLogoUpload')} className="text-sm text-amber-400 hover:text-amber-300 underline">
-            {t("supportFull.bulkLogoLink","→ Bulk Logo Upload Tool")}
+            {t("supportFull.bulkLogoLink")}
           </a>
         </div>
       </div>

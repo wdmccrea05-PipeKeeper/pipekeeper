@@ -72,7 +72,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
       });
 
       setSubmitted(true);
-      toast.success(t("subscriptionBackup.requestSent","Request sent! We'll unlock your account ASAP."));
+      toast.success(t("subscriptionBackup.requestSent"));
 
       setTimeout(() => {
         setSubmitted(false);
@@ -113,7 +113,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
               <div>
                 <h3 className="text-lg font-semibold text-[#E0D8C8] mb-2">{t("subscriptionBackup.requestSentTitle")}</h3>
                 <p className="text-sm text-[#E0D8C8]/70">
-                  {t("subscriptionBackup.reviewPayment","We'll review your payment proof and unlock your account ASAP.")}
+                  {t("subscriptionBackup.reviewPayment")}
                 </p>
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                 >
                   <div className="flex flex-col items-center gap-1">
                     <span className="font-semibold">{t("subscriptionBackup.premiumMonthly")}</span>
-                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.premiumMonthlyPrice","$1.99/mo")}</span>
+                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.premiumMonthlyPrice")}</span>
                   </div>
                 </Button>
               </a>
@@ -180,7 +180,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                 >
                   <div className="flex flex-col items-center gap-1">
                     <span className="font-semibold">{t("subscriptionBackup.premiumAnnual")}</span>
-                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.premiumAnnualPrice","$19.99/yr")}</span>
+                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.premiumAnnualPrice")}</span>
                   </div>
                 </Button>
               </a>
@@ -197,7 +197,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                 >
                   <div className="flex flex-col items-center gap-1">
                     <span className="font-semibold">{t("subscriptionBackup.proMonthly")}</span>
-                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.proMonthlyPrice","$2.99/mo")}</span>
+                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.proMonthlyPrice")}</span>
                   </div>
                 </Button>
               </a>
@@ -214,7 +214,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                 >
                   <div className="flex flex-col items-center gap-1">
                     <span className="font-semibold">{t("subscriptionBackup.proAnnual")}</span>
-                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.proAnnualPrice","$29.99/yr")}</span>
+                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.proAnnualPrice")}</span>
                   </div>
                 </Button>
               </a>
