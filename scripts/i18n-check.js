@@ -56,11 +56,8 @@ const EXCLUDED_DIRS = [
 
 // Pages whose basenames start with any of these prefixes are excluded
 const EXCLUDED_PAGE_PREFIXES = [
-  'Admin',
-  'SubscriptionEventsLog',
   'SubscriptionE2ETest',
   'SubscriptionSupport',
-  'UserReport',
 ];
 
 // Patterns from auditConfig that also mark files as excluded

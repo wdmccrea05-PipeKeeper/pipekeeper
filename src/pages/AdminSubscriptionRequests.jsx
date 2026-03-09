@@ -102,7 +102,7 @@ export default function AdminSubscriptionRequests() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscription-requests"] });
-      toast.success(t("admin.requestGranted", "Access granted and request updated"));
+      toast.success(t("admin.requestGranted"));
     },
     onError: (err) => {
       toast.error(`Error: ${err.message}`);
@@ -121,7 +121,7 @@ export default function AdminSubscriptionRequests() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscription-requests"] });
-      toast.success(t("admin.requestRejected", "Request rejected"));
+      toast.success(t("admin.requestRejected"));
       setRejectingId(null);
       setRejectNotes("");
     },
@@ -139,7 +139,7 @@ export default function AdminSubscriptionRequests() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscription-requests"] });
-      toast.success(t("admin.requestResolved", "Request marked as resolved"));
+      toast.success(t("admin.requestResolved"));
     },
     onError: (err) => {
       toast.error(`Error: ${err.message}`);
@@ -168,7 +168,7 @@ export default function AdminSubscriptionRequests() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">{t("admin.subSupportQueue")}</h1>
           <p className="text-[#E0D8C8]/60">
-            {filteredRequests.length} {t("admin.pendingRequestsSuffix", "pending request(s)")}
+            {filteredRequests.length} {t("admin.pendingRequestsSuffix")}
           </p>
         </div>
 
@@ -202,11 +202,11 @@ export default function AdminSubscriptionRequests() {
             <Table>
               <TableHeader className="bg-[#243548]">
                 <TableRow className="border-[#A35C5C]/20">
-                  <TableHead className="text-[#E0D8C8]">{t("admin.emailLabel", "Email")}</TableHead>
-                  <TableHead className="text-[#E0D8C8]">{t("admin.tierTerm", "Tier / Term")}</TableHead>
-                  <TableHead className="text-[#E0D8C8]">{t("admin.paymentRef", "Payment Ref")}</TableHead>
-                  <TableHead className="text-[#E0D8C8]">{t("admin.status", "Status")}</TableHead>
-                  <TableHead className="text-[#E0D8C8] text-right">{t("admin.actions", "Actions")}</TableHead>
+                  <TableHead className="text-[#E0D8C8]">{t("admin.emailLabel")}</TableHead>
+                  <TableHead className="text-[#E0D8C8]">{t("admin.tierTerm")}</TableHead>
+                  <TableHead className="text-[#E0D8C8]">{t("admin.paymentRef")}</TableHead>
+                  <TableHead className="text-[#E0D8C8]">{t("admin.status")}</TableHead>
+                  <TableHead className="text-[#E0D8C8] text-right">{t("admin.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -235,7 +235,7 @@ export default function AdminSubscriptionRequests() {
                           }
                           className="text-[#A35C5C] hover:bg-[#A35C5C]/20"
                         >
-                          {expandedId === req.id ? t("admin.hide", "Hide") : t("admin.show", "Show")}
+                          {expandedId === req.id ? t("admin.hide") : t("admin.show")}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -249,7 +249,7 @@ export default function AdminSubscriptionRequests() {
                             {req.user_message && (
                               <div>
                                 <p className="text-xs text-[#E0D8C8]/50 uppercase tracking-wide mb-1">
-                                  {t("admin.userMessage", "User Message")}
+                                  {t("admin.userMessage")}
                                 </p>
                                 <p className="text-[#E0D8C8] bg-[#1A2B3A] p-2 rounded text-sm">
                                   {req.user_message}
@@ -261,7 +261,7 @@ export default function AdminSubscriptionRequests() {
                             {req.admin_notes && (
                               <div>
                                 <p className="text-xs text-[#E0D8C8]/50 uppercase tracking-wide mb-1">
-                                  {t("admin.adminNotesLabel", "Admin Notes")}
+                                  {t("admin.adminNotesLabel")}
                                 </p>
                                 <p className="text-[#E0D8C8] bg-[#1A2B3A] p-2 rounded text-sm">
                                   {req.admin_notes}
@@ -302,10 +302,10 @@ export default function AdminSubscriptionRequests() {
                                   {grantMutation.isPending ? (
                                     <>
                                       <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                                      {t("admin.granting", "Granting...")}
+                                      {t("admin.granting")}
                                     </>
                                   ) : (
-                                    t("admin.grantTier", "Grant {tier}", { tier: req.requested_tier.toUpperCase() })
+                                    t("admin.grantTier", { tier: req.requested_tier.toUpperCase() })
                                   )}
                                 </Button>
 
@@ -315,7 +315,7 @@ export default function AdminSubscriptionRequests() {
                                   onClick={() => setRejectingId(req.id)}
                                   className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 flex-1"
                                 >
-                                  {t("admin.reject", "Reject")}
+                                  {t("admin.reject")}
                                 </Button>
                               </div>
                             ) : (
@@ -329,7 +329,7 @@ export default function AdminSubscriptionRequests() {
                                   disabled={resolveMutation.isPending}
                                   className="text-[#A35C5C] hover:bg-[#A35C5C]/20 flex-1"
                                 >
-                                  {resolveMutation.isPending ? t("admin.resolving", "Resolving...") : t("admin.markResolved", "Mark Resolved")}
+                                  {resolveMutation.isPending ? t("admin.resolving") : t("admin.markResolved")}
                                 </Button>
                               </div>
                             )}
@@ -344,7 +344,7 @@ export default function AdminSubscriptionRequests() {
                         <TableCell colSpan="5" className="p-4">
                           <div className="space-y-3">
                             <Textarea
-                              placeholder={t("admin.rejectionReasonPlaceholder", "Optional rejection reason...")}
+                              placeholder={t("admin.rejectionReasonPlaceholder")}
                               value={rejectNotes}
                               onChange={(e) => setRejectNotes(e.target.value)}
                               className="bg-[#243548] border-red-500/30 text-[#E0D8C8] min-h-20"
@@ -361,7 +361,7 @@ export default function AdminSubscriptionRequests() {
                                 disabled={rejectMutation.isPending}
                                 className="bg-red-700 hover:bg-red-800 flex-1"
                               >
-                                {t("admin.confirmRejection", "Confirm Rejection")}
+                                {t("admin.confirmRejection")}
                               </Button>
                               <Button
                                 size="sm"
@@ -372,7 +372,7 @@ export default function AdminSubscriptionRequests() {
                                 }}
                                 className="text-[#E0D8C8] flex-1"
                               >
-                                {t("admin.cancel", "Cancel")}
+                                {t("admin.cancel")}
                               </Button>
                             </div>
                           </div>

@@ -188,7 +188,7 @@ export default function UserReport() {
                 setIsSyncing(true);
                 const res = await base44.functions.invoke('backfillStripeCustomers', {});
                 if (res?.data?.ok) {
-                  toast.success(t("userReport.backfillComplete","Backfill complete: {{created}} created, {{updated}} updated",{created: res.data.createdUsers ?? res.data.created ?? 0, updated: res.data.updatedUsers ?? res.data.updated ?? 0}));
+                  toast.success(t("userReport.backfillComplete", { created: res.data.createdUsers ?? res.data.created ?? 0, updated: res.data.updatedUsers ?? res.data.updated ?? 0 }));
                 } else {
                   toast.error(res?.data?.error || t("userReport.backfillFailed"));
                 }
@@ -642,7 +642,7 @@ export default function UserReport() {
                 <CardTitle className="text-stone-800 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Crown className="w-5 h-5 text-amber-600" />
-                    {t("userReport.paidUsersCount","Paid Users ({{count}})",{count: filteredData.paid.length})}
+                    {t("userReport.paidUsersCount", { count: filteredData.paid.length })}
                   </div>
                   {showPaidTable ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </CardTitle>
@@ -730,7 +730,7 @@ export default function UserReport() {
                 <CardTitle className="text-stone-800 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <UserX className="w-5 h-5 text-stone-600" />
-                    {t("userReport.freeUsersCount","Free Users ({{count}})",{count: filteredData.free.length})}
+                    {t("userReport.freeUsersCount", { count: filteredData.free.length })}
                   </div>
                   {showFreeTable ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </CardTitle>

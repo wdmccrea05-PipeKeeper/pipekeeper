@@ -905,6 +905,11 @@ const enUI = {
     inactive: "Inactive",
     updatedUser: "Updated User",
     nameLabel: "Name",
+    updatedAt: "Updated at",
+    subscriptionLevel: "Subscription Level",
+    subscriptionStatus: "Subscription Status",
+    subscriptionTier: "Subscription Tier",
+    none: "None",
     accessGrantedSuccess: "Access granted successfully!",
     failedToGrantAccess: "Failed to grant access",
     accessRevokedSuccess: "Access revoked successfully!",
@@ -2043,6 +2048,7 @@ const enUI = {
     title: "User Subscription Report",
     lastUpdated: "Last updated",
     backfillFailed: "Backfill failed",
+    backfillComplete: "Backfill complete: {created} created, {updated} updated",
     syncing: "Syncing…",
     backfillFromStripe: "Backfill from Stripe",
     reportRefreshed: "Report refreshed",
@@ -2098,6 +2104,8 @@ const enUI = {
     noUsersMatchSearch: "No users match your search",
     noPaidUsersFound: "No paid users found",
     noFreeUsersFound: "No free users found",
+    paidUsersCount: "Paid Users ({count})",
+    freeUsersCount: "Free Users ({count})",
   },
 
   shapes: {

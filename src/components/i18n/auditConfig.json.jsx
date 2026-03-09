@@ -1,7 +1,9 @@
 {
   "properNounAllowlist": [
     "PipeKeeper",
-    "WhiskeyKeeper"
+    "WhiskeyKeeper",
+    "Stripe",
+    "Cloudflare"
   ],
   "excludePatterns": []
 }
