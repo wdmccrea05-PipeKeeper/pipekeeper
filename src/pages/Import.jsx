@@ -10,6 +10,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ArrowLeft, Download, Upload, FileSpreadsheet, CheckCircle, AlertCircle } from "lucide-react";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const PIPE_TEMPLATE_HEADERS = [
   'name', 'maker', 'country_of_origin', 'shape', 'length_mm', 'weight_grams',
@@ -27,6 +28,7 @@ const TOBACCO_TEMPLATE_HEADERS = [
 ];
 
 export default function ImportPage() {
+  const { t } = useTranslation();
   const [uploadingPipes, setUploadingPipes] = useState(false);
   const [uploadingTobacco, setUploadingTobacco] = useState(false);
   const [pipeResults, setPipeResults] = useState(null);
