@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, AlertTriangle, RefreshCw, Loader2, User } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 
 /**
@@ -13,6 +14,7 @@ export default function AllUsersPermissionTest() {
   const [testing, setTesting] = useState(false);
   const [results, setResults] = useState([]);
   const [summary, setSummary] = useState({ pass: 0, fail: 0, warning: 0 });
+  const { t } = useTranslation();
 
   const runTest = async () => {
     setTesting(true);
@@ -47,7 +49,7 @@ export default function AllUsersPermissionTest() {
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2 text-slate-900">
             <User className="w-5 h-5" />
-            All Paid Users Test
+            {t('admin.allPaidUsersTestTitle', 'All Paid Users Test')}
             {testing && <Loader2 className="w-4 h-4 animate-spin" />}
           </CardTitle>
           <div className="flex gap-2">
@@ -62,7 +64,7 @@ export default function AllUsersPermissionTest() {
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-sm text-slate-700">
-            Tests all active subscriptions to verify canonical resolver grants correct access
+            {t('admin.testAllSubscriptionsDesc', 'Tests all active subscriptions to verify canonical resolver grants correct access')}
           </p>
           <Button 
             onClick={runTest} 
@@ -73,12 +75,12 @@ export default function AllUsersPermissionTest() {
             {testing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Testing...
+                {t('admin.testing', 'Testing...')}
               </>
             ) : (
               <>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Run Test
+                {t('admin.runTest', 'Run Test')}
               </>
             )}
           </Button>
@@ -151,12 +153,12 @@ export default function AllUsersPermissionTest() {
 
         {results.length > 0 && (
           <div className="bg-slate-800 text-white rounded-lg p-4 text-xs">
-            <p className="font-semibold mb-2">Overall Results:</p>
-            <p>✅ {summary.pass} users with correct permissions</p>
-            {summary.warning > 0 && <p>⚠️ {summary.warning} warnings (minor issues)</p>}
-            {summary.fail > 0 && <p>❌ {summary.fail} users FAILED (critical issue)</p>}
+            <p className="font-semibold mb-2">{t('admin.overallResults', 'Overall Results:')}</p>
+            <p>{t('admin.usersWithCorrectPermissions', '✅ {n} users with correct permissions', { n: summary.pass })}</p>
+            {summary.warning > 0 && <p>{t('admin.warningsFoundAdmin', '⚠️ {n} warnings (minor issues)', { n: summary.warning })}</p>}
+            {summary.fail > 0 && <p>{t('admin.usersFailedAdmin', '❌ {n} users FAILED (critical issue)', { n: summary.fail })}</p>}
             {summary.fail === 0 && summary.warning === 0 && (
-              <p className="text-green-400 mt-2 font-semibold">🎉 All paid users have correct access!</p>
+              <p className="text-green-400 mt-2 font-semibold">{t('admin.allPaidUsersCorrectAccess', '🎉 All paid users have correct access!')}</p>
             )}
           </div>
         )}
