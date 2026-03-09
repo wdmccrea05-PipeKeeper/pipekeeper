@@ -622,7 +622,16 @@ const ptBRUI = {
     modifySubscription: "Precisa modificar sua assinatura?",
     emailSupport: "Contatar suporte",
     unlockNote: "Se você acabou de assinar, seus recursos serão desbloqueados automaticamente em 1–2 minutos. Se não, contate o suporte.",
+    bannerFallback: "O gerenciamento de assinaturas está temporariamente limitado devido a um problema de plataforma. Novas assinaturas funcionam normalmente. Entre em contato com o suporte para alterações.",
   },
+  foundingMember: {
+    title: "Obrigado por ser um apoiador antecipado",
+    para1: "Obrigado por assinar o PipeKeeper Premium e por apoiar o app desde o início.",
+    para2: "Como membro fundador, você continuará desfrutando de acesso completo ao Premium, incluindo todos os recursos disponíveis hoje. Nada ao que você atualmente tem acesso será removido ou restringido.",
+    para3: "Seu apoio realmente ajuda a moldar o futuro do PipeKeeper.",
+    gotIt: "Entendido — obrigado!",
+  },
+
 };
 
 export default ptBRUI;

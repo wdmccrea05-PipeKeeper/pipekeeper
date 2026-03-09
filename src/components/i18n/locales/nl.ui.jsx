@@ -622,7 +622,16 @@ const nlUI = {
     modifySubscription: "Wilt u uw abonnement wijzigen?",
     emailSupport: "Contact ondersteuning",
     unlockNote: "Als u zich zojuist heeft geabonneerd, worden uw functies automatisch binnen 1–2 minuten ontgrendeld. Zo niet, neem contact op met de ondersteuning.",
+    bannerFallback: "Abonnementbeheer is tijdelijk beperkt vanwege een platformprobleem. Nieuwe abonnementen werken normaal. Neem contact op met de ondersteuning voor wijzigingen.",
   },
+  foundingMember: {
+    title: "Dank u voor uw vroege steun",
+    para1: "Bedankt voor het abonneren op PipeKeeper Premium en voor het vroeg ondersteunen van de app.",
+    para2: "Als oprichtingslid blijft u volledig toegang genieten tot Premium, inclusief alle functies die vandaag beschikbaar zijn. Niets waartoe u momenteel toegang heeft, wordt verwijderd of beperkt.",
+    para3: "Uw steun helpt echt de toekomst van PipeKeeper vorm te geven.",
+    gotIt: "Begrepen — bedankt!",
+  },
+
 };
 
 export default nlUI;

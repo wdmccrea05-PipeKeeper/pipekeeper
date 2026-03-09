@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { AlertCircle, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 interface SubscriptionStatusBannerProps {
   onDismiss?: () => void;
 }
 
 export default function SubscriptionStatusBanner({ onDismiss }: SubscriptionStatusBannerProps) {
+  const { t } = useTranslation();
   const [bannerText, setBannerText] = useState("");
   const [isVisible, setIsVisible] = useState(false);
 
@@ -47,8 +49,7 @@ export default function SubscriptionStatusBanner({ onDismiss }: SubscriptionStat
           })
           .catch(() => ({
             data: {
-              value:
-                "Subscription management is temporarily limited due to a platform issue. New subscriptions work normally. Contact support for changes.",
+              value: t("subscriptionBackupModal.bannerFallback"),
             },
           }));
 

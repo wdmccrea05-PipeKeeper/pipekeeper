@@ -646,7 +646,16 @@ const esUI = {
     modifySubscription: "¿Necesitas modificar tu suscripción?",
     emailSupport: "Contactar soporte",
     unlockNote: "Si acabas de suscribirte, tus funciones se desbloquearán automáticamente en 1–2 minutos. Si no, contacta soporte.",
+    bannerFallback: "La gestión de suscripciones está temporalmente limitada debido a un problema de plataforma. Las nuevas suscripciones funcionan normalmente. Contacta soporte para cambios.",
   },
+  foundingMember: {
+    title: "Gracias por ser un apoyador temprano",
+    para1: "Gracias por suscribirte a PipeKeeper Premium y por apoyar la app desde el principio.",
+    para2: "Como miembro fundador, seguirás disfrutando de acceso completo a Premium, incluyendo todas las funciones disponibles hoy. Nada a lo que tienes acceso actualmente será eliminado o restringido.",
+    para3: "Tu apoyo realmente ayuda a dar forma al futuro de PipeKeeper.",
+    gotIt: "Entendido — ¡gracias!",
+  },
+
 };
 
 export default esUI;

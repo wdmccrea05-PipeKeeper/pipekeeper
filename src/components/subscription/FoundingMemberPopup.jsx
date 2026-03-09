@@ -2,8 +2,10 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Heart } from "lucide-react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function FoundingMemberPopup({ isOpen, onClose }) {
+  const { t } = useTranslation();
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
@@ -14,23 +16,23 @@ export default function FoundingMemberPopup({ isOpen, onClose }) {
             </div>
           </div>
           <DialogTitle className="text-center text-xl">
-            Thank You for Being an Early Supporter
+            {t("foundingMember.title")}
           </DialogTitle>
           <DialogDescription className="text-center space-y-3 pt-4">
             <p>
-              Thanks for subscribing to PipeKeeper Premium and for supporting the app early on.
+              {t("foundingMember.para1")}
             </p>
             <p>
-              As a founding member, you'll continue to enjoy full Premium access, including all features available today. Nothing you currently have access to will be removed or restricted.
+              {t("foundingMember.para2")}
             </p>
             <p>
-              Your support truly helps shape the future of PipeKeeper.
+              {t("foundingMember.para3")}
             </p>
           </DialogDescription>
         </DialogHeader>
         <div className="flex justify-center pt-4">
           <Button onClick={onClose} className="px-8">
-            Got it — thanks!
+            {t("foundingMember.gotIt")}
           </Button>
         </div>
       </DialogContent>

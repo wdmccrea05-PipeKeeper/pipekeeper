@@ -646,7 +646,16 @@ const deUI = {
     modifySubscription: "Möchten Sie Ihr Abonnement ändern?",
     emailSupport: "Support kontaktieren",
     unlockNote: "Wenn Sie gerade abonniert haben, sollten Ihre Funktionen automatisch innerhalb von 1–2 Minuten freigeschaltet werden. Andernfalls wenden Sie sich an den Support.",
+    bannerFallback: "Das Abonnementverwaltung ist aufgrund eines Plattformproblems vorübergehend eingeschränkt. Neue Abonnements funktionieren normal. Wenden Sie sich für Änderungen an den Support.",
   },
+  foundingMember: {
+    title: "Danke, dass Sie ein früher Unterstützer sind",
+    para1: "Vielen Dank, dass Sie PipeKeeper Premium abonniert und die App von Anfang an unterstützt haben.",
+    para2: "Als Gründungsmitglied werden Sie weiterhin vollen Premium-Zugang genießen, einschließlich aller heute verfügbaren Funktionen. Nichts, worauf Sie derzeit Zugriff haben, wird entfernt oder eingeschränkt.",
+    para3: "Ihre Unterstützung hilft wirklich, die Zukunft von PipeKeeper zu gestalten.",
+    gotIt: "Verstanden — danke!",
+  },
+
 };
 
 export default deUI;
