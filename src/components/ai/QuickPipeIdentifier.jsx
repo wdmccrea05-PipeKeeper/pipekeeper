@@ -450,8 +450,8 @@ Return JSON:
   return (
     <FeatureGate 
       feature="AI_IDENTIFY"
-      featureName="Quick Pipe Identifier"
-      description="Identify and add pipes to your collection instantly using AI photo analysis. Available in Pro tier or for grandfathered Premium users."
+      featureName={t("quickPipeIdentifier.title")}
+      description={t("quickPipeIdentifier.featureGateDesc")}
     >
     <Card className="bg-[#223447] border-[#E0D8C8]/15">
       <CardContent className="p-6">
@@ -660,25 +660,25 @@ Return JSON:
               <div className="bg-[#1E2F43] rounded-lg p-4 border border-[#E0D8C8]/15 space-y-3">
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp className="w-4 h-4 text-[#A35C5C]" />
-                  <span className="font-semibold text-[#E0D8C8] text-sm">Collection Impact</span>
+                  <span className="font-semibold text-[#E0D8C8] text-sm">{t("aiIdentifier.collectionImpact")}</span>
                 </div>
 
                 <div className="space-y-2 text-xs">
                   <div>
-                    <span className="text-[#E0D8C8]/70 font-medium">Fills Gap:</span>
+                    <span className="text-[#E0D8C8]/70 font-medium">{t("aiIdentifier.fillsGapLabel")}</span>
                     <p className="text-[#E0D8C8] mt-1">{impactAnalysis.fills_gap}</p>
                   </div>
 
                   {impactAnalysis.redundancy && (
                     <div>
-                      <span className="text-[#E0D8C8]/70 font-medium">Redundancy Check:</span>
+                      <span className="text-[#E0D8C8]/70 font-medium">{t("aiIdentifier.redundancyLabel")}</span>
                       <p className="text-[#E0D8C8] mt-1">{impactAnalysis.redundancy}</p>
                     </div>
                   )}
 
                   {impactAnalysis.recommended_for?.length > 0 && (
                     <div>
-                      <span className="text-[#E0D8C8]/70 font-medium">Best For:</span>
+                      <span className="text-[#E0D8C8]/70 font-medium">{t("aiIdentifier.bestForLabel")}</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {impactAnalysis.recommended_for.map((blend, idx) => (
                           <span key={idx} className="px-2 py-0.5 bg-[#A35C5C]/20 text-[#E0D8C8] border border-[#A35C5C]/30 rounded text-xs font-medium">
@@ -690,7 +690,7 @@ Return JSON:
                   )}
 
                   <div>
-                    <span className="text-[#E0D8C8]/70 font-medium">Overall:</span>
+                    <span className="text-[#E0D8C8]/70 font-medium">{t("aiIdentifier.overallLabel")}</span>
                     <p className="text-[#E0D8C8] mt-1 font-semibold">{impactAnalysis.recommendation}</p>
                   </div>
                 </div>

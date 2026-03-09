@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { ExternalLink, AlertCircle } from "lucide-react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 interface SubscriptionBackupModeModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export default function SubscriptionBackupModeModal({
   onClose,
   userEmail,
 }: SubscriptionBackupModeModalProps) {
+  const { t } = useTranslation();
   const [links, setLinks] = useState<Record<string, string>>({});
   const [supportEmail, setSupportEmail] = useState("admin@pipekeeperapp.com");
   const [loading, setLoading] = useState(false);
@@ -74,44 +76,46 @@ export default function SubscriptionBackupModeModal({
     }
   };
 
+  const planButtons = [
+    { key: "STRIPE_CHECKOUT_PREMIUM_MONTHLY_URL", label: t("subscriptionBackupModal.premiumMonthly") },
+    { key: "STRIPE_CHECKOUT_PREMIUM_ANNUAL_URL", label: t("subscriptionBackupModal.premiumAnnual") },
+    { key: "STRIPE_CHECKOUT_PRO_MONTHLY_URL", label: t("subscriptionBackupModal.proMonthly") },
+    { key: "STRIPE_CHECKOUT_PRO_ANNUAL_URL", label: t("subscriptionBackupModal.proAnnual") },
+  ];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertCircle className="w-5 h-5 text-amber-500" />
-            Subscription Management
+            {t("subscriptionBackupModal.title")}
           </DialogTitle>
           <DialogDescription>
-            Automated subscription management is temporarily unavailable due to a platform issue.
+            {t("subscriptionBackupModal.description")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-900">
-            <p className="font-medium mb-1">Temporarily Limited</p>
-            <p>You can subscribe securely using the links below, or contact support for changes.</p>
+            <p className="font-medium mb-1">{t("subscriptionBackupModal.temporarilyLimited")}</p>
+            <p>{t("subscriptionBackupModal.secureLinksDesc")}</p>
           </div>
 
           {loading ? (
-            <div className="text-center py-4 text-muted-foreground">Loading options...</div>
+            <div className="text-center py-4 text-muted-foreground">{t("subscriptionBackupModal.loadingOptions")}</div>
           ) : (
             <div className="space-y-2">
-              <p className="text-sm font-medium">Subscribe now:</p>
+              <p className="text-sm font-medium">{t("subscriptionBackupModal.subscribeNow")}</p>
               <div className="grid grid-cols-2 gap-2">
-                {[
-                  { key: "STRIPE_CHECKOUT_PREMIUM_MONTHLY_URL", label: "Premium Monthly" },
-                  { key: "STRIPE_CHECKOUT_PREMIUM_ANNUAL_URL", label: "Premium Annual" },
-                  { key: "STRIPE_CHECKOUT_PRO_MONTHLY_URL", label: "Pro Monthly" },
-                  { key: "STRIPE_CHECKOUT_PRO_ANNUAL_URL", label: "Pro Annual" },
-                ].map(({ key, label }) => (
+                {planButtons.map(({ key, label }) => (
                   <Button
                     key={key}
                     variant={links[key] ? "default" : "outline"}
                     disabled={!links[key]}
                     onClick={() => openCheckoutLink(links[key])}
                     className="text-xs h-9"
-                    title={!links[key] ? "Link not configured" : undefined}
+                    title={!links[key] ? t("subscriptionBackupModal.linkNotConfigured") : undefined}
                   >
                     {label}
                     {links[key] && <ExternalLink className="w-3 h-3 ml-1" />}
@@ -122,23 +126,22 @@ export default function SubscriptionBackupModeModal({
           )}
 
           <div className="border-t pt-4">
-            <p className="text-sm font-medium mb-2">Need to modify your subscription?</p>
+            <p className="text-sm font-medium mb-2">{t("subscriptionBackupModal.modifySubscription")}</p>
             <Button variant="outline" className="w-full" onClick={handleEmailSupport}>
-              Email Support
+              {t("subscriptionBackupModal.emailSupport")}
             </Button>
           </div>
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-900">
             <p>
-              <strong>Note:</strong> If you just subscribed, your features should unlock automatically within 1–2 minutes.
-              If not, contact support.
+              <strong>{t("common.note")}:</strong> {t("subscriptionBackupModal.unlockNote")}
             </p>
           </div>
         </div>
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
-            Close
+            {t("common.close")}
           </Button>
         </div>
       </DialogContent>
