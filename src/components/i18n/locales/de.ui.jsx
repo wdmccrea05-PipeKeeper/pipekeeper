@@ -253,6 +253,11 @@ const deUI = {
     findSpecsDesc: "Suchen Sie verifizierte Pfeifenspezifikationen in Herstellerkatalogen.",
     findSpecs: "Spezifikationen suchen",
     analyzeGeometryFromPhotos: "Geometrie aus Fotos analysieren",
+    analyzePipeGeometry: "Pfeifengeometrie analysieren",
+    analyzePipeGeometryTooltip: "KI nutzen, um Form, Kopfstil und Schaftmerkmale anhand von Fotos zu identifizieren",
+    classifyGeometryFromPhotos: "Geometrie aus Fotos klassifizieren",
+    breakInSchedulesTooltip: "Schrittweise Tabakempfehlungen zum korrekten Einrauchen neuer Pfeifen",
+    breakInSchedulesDesc: "Personalisierte Einrauchempfehlungen pro Pfeife",
     breakInSchedules: "Einrauch-Zeitpläne",
     regeneratePairingsNote: "Denken Sie daran, Paarungen zu regenerieren, um Bewertungen zu aktualisieren.",
     cellaredBlends: "Gelagerte Mischungen",
@@ -571,6 +576,19 @@ const deUI = {
     topicSearch: "Suche",
     topicPhotos: "Fotos",
     topicTerms: "Glossar & Begriffe",
+  },
+
+  help: {
+    gettingStarted: "Wie fange ich mit PipeKeeper an?",
+    fieldDefinitions: "Was bedeuten die verschiedenen Felder?",
+    tobaccoValuation: "Wie wird der Tabakwert berechnet?",
+    aiFeatures: "Welche KI-Funktionen sind verfügbar?",
+    accountSecurity: "Wie ist mein Konto gesichert?",
+    dataPrivacy: "Welche Daten sammelt PipeKeeper?",
+    aiAccuracy: "Wie genau sind die KI-Empfehlungen?",
+    aiHowItWorks: "Wie funktionieren KI-Pairings?",
+    aiRegenerate: "Wann sollte ich KI-Pairings neu generieren?",
+    contactSupport: "Wie kontaktiere ich den Support?",
   },
 
   aiIdentifier: {

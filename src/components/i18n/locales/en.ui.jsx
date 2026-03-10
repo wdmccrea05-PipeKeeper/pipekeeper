@@ -2624,7 +2624,8 @@ const enUI = {
     "Ribbon": "Ribbon", "Flake": "Flake", "Broken Flake": "Broken Flake",
     "Ready Rubbed": "Ready Rubbed", "Plug": "Plug", "Coin": "Coin",
     "Cube Cut": "Cube Cut", "Crumble Cake": "Crumble Cake",
-    "Shag": "Shag", "Rope": "Rope", "Twist": "Twist", "Other": "Other",
+    "Shag": "Shag", "Rope": "Rope", "Twist": "Twist",
+    "Mixture": "Mixture", "Krumble Cake": "Crumble Cake", "Krumble cake": "Crumble Cake", "Other": "Other",
   },
 
   roomNotes: {

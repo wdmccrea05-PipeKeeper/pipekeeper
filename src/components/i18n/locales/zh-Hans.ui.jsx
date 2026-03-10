@@ -253,6 +253,11 @@ const zhHansUI = {
     findSpecsDesc: "在制造商目录中搜索已验证的烟斗规格。",
     findSpecs: "查找规格",
     analyzeGeometryFromPhotos: "从照片分析几何形状",
+    analyzePipeGeometry: "分析烟斗几何形状",
+    analyzePipeGeometryTooltip: "使用AI从照片识别形状、碗型和烟嘴特征",
+    classifyGeometryFromPhotos: "从照片分类几何形状",
+    breakInSchedulesTooltip: "渐进式烟草建议，正确磨合新烟斗",
+    breakInSchedulesDesc: "按烟斗生成的个性化磨合建议",
     breakInSchedules: "磨合计划",
     regeneratePairingsNote: "请记住重新生成配对以更新分数。",
     cellaredBlends: "储藏烟草",
@@ -602,6 +607,19 @@ const zhHansUI = {
     topicSearch: "搜索",
     topicPhotos: "照片",
     topicTerms: "词汇表和术语",
+  },
+
+  help: {
+    gettingStarted: "如何开始使用PipeKeeper？",
+    fieldDefinitions: "不同字段的含义是什么？",
+    tobaccoValuation: "烟草价值是如何计算的？",
+    aiFeatures: "有哪些AI功能可用？",
+    accountSecurity: "我的账户如何受到保护？",
+    dataPrivacy: "PipeKeeper收集哪些数据？",
+    aiAccuracy: "AI推荐的准确性如何？",
+    aiHowItWorks: "AI配对如何工作？",
+    aiRegenerate: "我应该什么时候重新生成AI配对？",
+    contactSupport: "如何联系支持？",
   },
 
   aiIdentifier: {

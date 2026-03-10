@@ -1385,7 +1385,7 @@ export default {
     "Ribbon": "Wstążka", "Flake": "Płatek", "Broken Flake": "Łamany płatek",
     "Ready Rubbed": "Ready Rubbed", "Plug": "Wałek", "Coin": "Moneta",
     "Cube Cut": "Kostka", "Crumble Cake": "Crumble Cake", "Shag": "Shag",
-    "Rope": "Sznur", "Twist": "Skręt", "Other": "Inne",
+    "Rope": "Sznur", "Twist": "Skręt", "Mixture": "Mieszanka", "Krumble Cake": "Crumble Cake", "Krumble cake": "Crumble Cake", "Other": "Inne",
   },
 
   strengths: {

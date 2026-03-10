@@ -1056,7 +1056,8 @@ const translations = {
     "Ribbon": "Cinta", "Flake": "Flake", "Broken Flake": "Broken Flake",
     "Ready Rubbed": "Ready Rubbed", "Plug": "Plug", "Coin": "Coin",
     "Cube Cut": "Cube Cut", "Crumble Cake": "Crumble Cake", "Shag": "Shag",
-    "Rope": "Rope", "Twist": "Twist", "Other": "Otro",
+    "Rope": "Rope", "Twist": "Twist", "Mixture": "Mezcla",
+    "Krumble Cake": "Crumble Cake", "Krumble cake": "Crumble Cake", "Other": "Otro",
   },
 
   strengths: {

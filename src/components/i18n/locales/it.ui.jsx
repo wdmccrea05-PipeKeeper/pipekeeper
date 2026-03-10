@@ -253,6 +253,11 @@ const itUI = {
     findSpecsDesc: "Cerca specifiche pipe verificate nei cataloghi dei produttori.",
     findSpecs: "Trova specifiche",
     analyzeGeometryFromPhotos: "Analizza geometria dalle foto",
+    analyzePipeGeometry: "Analizza geometria della pipa",
+    analyzePipeGeometryTooltip: "Usa l'IA per identificare forma, stile della camera e caratteristiche del gambo dalle foto",
+    classifyGeometryFromPhotos: "Classifica geometria dalle foto",
+    breakInSchedulesTooltip: "Raccomandazioni progressive di tabacco per rodare correttamente le nuove pipe",
+    breakInSchedulesDesc: "Raccomandazioni di rodaggio personalizzate generate per pipa",
     breakInSchedules: "Programmi di rodaggio",
     regeneratePairingsNote: "Ricorda di rigenerare i pairing per aggiornare i punteggi.",
     cellaredBlends: "Miscele in cantina",
@@ -607,6 +612,19 @@ const itUI = {
     topicSearch: "Ricerca",
     topicPhotos: "Foto",
     topicTerms: "Glossario e termini",
+  },
+
+  help: {
+    gettingStarted: "Come inizio con PipeKeeper?",
+    fieldDefinitions: "Cosa significano i diversi campi?",
+    tobaccoValuation: "Come viene calcolato il valore del tabacco?",
+    aiFeatures: "Quali funzionalità AI sono disponibili?",
+    accountSecurity: "Come è protetto il mio account?",
+    dataPrivacy: "Quali dati raccoglie PipeKeeper?",
+    aiAccuracy: "Quanto sono accurate le raccomandazioni AI?",
+    aiHowItWorks: "Come funzionano gli abbinamenti AI?",
+    aiRegenerate: "Quando dovrei rigenerare gli abbinamenti AI?",
+    contactSupport: "Come contatto il supporto?",
   },
 
   aiIdentifier: {

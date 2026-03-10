@@ -1372,7 +1372,7 @@ export default {
     "Ribbon": "丝带切", "Flake": "薄片", "Broken Flake": "碎薄片",
     "Ready Rubbed": "揉制", "Plug": "塞型", "Coin": "硬币切",
     "Cube Cut": "方块切", "Crumble Cake": "碎蛋糕", "Shag": "细丝",
-    "Rope": "绳型", "Twist": "扭型", "Other": "其他",
+    "Rope": "绳型", "Twist": "扭型", "Mixture": "混合型", "Krumble Cake": "碎蛋糕", "Krumble cake": "碎蛋糕", "Other": "其他",
   },
 
   strengths: {

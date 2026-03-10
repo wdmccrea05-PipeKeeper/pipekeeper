@@ -1390,7 +1390,8 @@ export default {
     "Ribbon": "リボン", "Flake": "フレーク", "Broken Flake": "ブロークンフレーク",
     "Ready Rubbed": "レディラブド", "Plug": "プラグ", "Coin": "コイン",
     "Cube Cut": "キューブカット", "Crumble Cake": "クランブルケーキ", "Shag": "シャグ",
-    "Rope": "ロープ", "Twist": "ツイスト", "Other": "その他",
+    "Rope": "ロープ", "Twist": "ツイスト", "Mixture": "ミクスチャー",
+    "Krumble Cake": "クランブルケーキ", "Krumble cake": "クランブルケーキ", "Other": "その他",
   },
 
   strengths: {
