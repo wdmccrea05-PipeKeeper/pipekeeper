@@ -92,5 +92,67 @@ const frEnums = {
     priorityChange: "Changement priorité #{num}",
     expectedImprovementGeneral: "Amélioration attendue",
   },
+
+  quickSearch: {
+    quickSearchAddPipe: "Recherche rapide & ajouter une pipe",
+    quickSearchAddTobacco: "Recherche rapide & ajouter du tabac",
+    searchPipeDesc: "Recherchez dans notre base de données pour ajouter rapidement une pipe à votre collection",
+    searchTobaccoDesc: "Recherchez dans notre base de données pour ajouter rapidement du tabac à votre cave",
+    pipePlaceholder: "Rechercher par fabricant, modèle (ex. 'Peterson System 314')",
+    tobaccoPlaceholder: "Rechercher par nom de mélange ou fabricant (ex. 'Orlik Golden Sliced')",
+    foundResults: "{count} résultat(s) trouvé(s)",
+    noResults: "Aucun résultat trouvé. Essayez une autre recherche.",
+    adding: "Ajout en cours…", addToCollection: "Ajouter à la collection", addToCellar: "Ajouter à la cave",
+    enterPipeName: "Entrez un nom de pipe pour rechercher",
+    pipeExamples: "ex. Peterson System 314, Dunhill Shell",
+    enterTobaccoName: "Entrez un nom de mélange de tabac pour rechercher",
+    tobaccoExamples: "ex. Orlik Golden Sliced, Dunhill Early Morning Pipe",
+    flavors: "Arômes", components: "Composants", tinSize: "Taille de la boîte",
+    avgRating: "Note moy.", madeIn: "Fabriqué en {country}", era: "Époque",
+    bowl: "Fourneau", deep: "profond", typicalValue: "Valeur typique",
+    searchButton: "Rechercher",
+  },
+
+  cellarLog: {
+    cellaredTobacco: "Tabac en cave",
+    cellaringLog: "Journal de cave",
+    addEntry: "Ajouter une entrée", addCellarTransaction: "Ajouter une transaction de cave",
+    transactionType: "Type de transaction", addedToCellarOption: "Ajouté à la cave", removedFromCellarOption: "Retiré de la cave",
+    date: "Date", amountOz: "Quantité (oz)", containerType: "Type de conteneur",
+    containerTin: "Boîte", containerJar: "Bocal", containerPouch: "Sachet", containerBulk: "Vrac",
+    destination: "Destination", movedToOpenCollection: "Déplacé vers la collection ouverte", exchanged: "Échangé", discarded: "Jeté",
+    notesOptional: "Notes (optionnel)", notesPlaceholder: "Détails supplémentaires...",
+    saving: "Enregistrement...", saveEntry: "Enregistrer l'entrée",
+    added: "Ajouté", removed: "Retiré", net: "Net",
+    noTransactionsYet: "Aucune transaction pour le moment", ozUnit: "oz", amountPlaceholder: "2.0",
+    overRemoved: "excédent supprimé", deleteConfirmTitle: "Supprimer l'entrée",
+    noOpenedTobacco: "Aucun tabac ouvert", updateInventory: "Mettre à jour l'inventaire",
+    upgradeDesc: "Suivez les transactions détaillées de cave y compris les dates d'ajout/retrait, les quantités en onces, les types de conteneurs et les notes.",
+  },
+
+  enum: {
+    pipeType: {
+      pipe: "Pipe",
+      blend: "Mélange",
+    },
+    days: {
+      monday: "Lundi", tuesday: "Mardi", wednesday: "Mercredi",
+      thursday: "Jeudi", friday: "Vendredi", saturday: "Samedi", sunday: "Dimanche",
+    },
+    sessionTime: {
+      morning: "Matin", afternoon: "Après-midi", evening: "Soir", night: "Nuit",
+    },
+    strength: {
+      mild: "Léger", mildMedium: "Léger-Moyen", medium: "Moyen",
+      mediumStrong: "Moyen-Fort", mediumFull: "Moyen-Plein",
+      strong: "Fort", full: "Plein",
+    },
+    cut: {
+      ribbon: "Ruban", flake: "Galette", brokenFlake: "Galette brisée",
+      readyRubbed: "Prêt à fumer", plug: "Plug", coin: "Pièce",
+      cubeCut: "Coupe en cubes", crumbleCake: "Gâteau émietté",
+      shag: "Shag", rope: "Corde", twist: "Twist", other: "Autre",
+    },
+  },
 };
 export default frEnums;

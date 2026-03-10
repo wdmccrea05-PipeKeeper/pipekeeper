@@ -647,7 +647,12 @@ export default {
     termsOfService: "服务条款",
     faq: "常见问题",
   },
-  cellarLog: { overRemoved: "已移除多余", deleteConfirmTitle: "删除条目" },
+  cellarLog: {
+    cellaredTobacco: "窖藏烟草",
+    addCellarTransaction: "添加窖藏交易",
+    overRemoved: "已移除多余",
+    deleteConfirmTitle: "删除条目",
+  },
   pipeDetailTabs: {
     specialization: "专业化",
     focus: "专注方向",

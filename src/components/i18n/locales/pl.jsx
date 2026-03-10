@@ -647,7 +647,12 @@ export default {
     termsOfService: "Warunki korzystania z usługi",
     faq: "FAQ",
   },
-  cellarLog: { overRemoved: "nadwyżka usunięta", deleteConfirmTitle: "Usuń wpis" },
+  cellarLog: {
+    cellaredTobacco: "Zmagazynowany tytoń",
+    addCellarTransaction: "Dodaj transakcję piwnicy",
+    overRemoved: "nadwyżka usunięta",
+    deleteConfirmTitle: "Usuń wpis",
+  },
   pipeDetailTabs: {
     specialization: "Specjalizacja",
     focus: "Skupienie",

@@ -530,7 +530,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
                 </div>
                 <div className="bg-white/5 rounded-lg p-4">
                   <p className="text-sm text-[#E0D8C8]/60 mb-1">{t("trends.mostCommonDay")}</p>
-                  <p className="text-xl font-semibold text-[#E0D8C8]">{frequencyStats.mostCommonDay}</p>
+                  <p className="text-xl font-semibold text-[#E0D8C8]">{frequencyStats.mostCommonDay ? t(`enum.days.${frequencyStats.mostCommonDay.toLowerCase()}`, frequencyStats.mostCommonDay) : t('trends.nA')}</p>
                 </div>
                 <div className="bg-white/5 rounded-lg p-4">
                   <p className="text-sm text-[#E0D8C8]/60 mb-1">{t("trends.mostCommonTime")}</p>

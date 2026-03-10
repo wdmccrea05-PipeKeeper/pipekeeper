@@ -100,5 +100,67 @@ const deEnums = {
     priorityChange: "Priorität #{num} Änderung",
     expectedImprovementGeneral: "Erwartete Verbesserung",
   },
+
+  quickSearch: {
+    quickSearchAddPipe: "Schnellsuche & Pfeife hinzufügen",
+    quickSearchAddTobacco: "Schnellsuche & Tabak hinzufügen",
+    searchPipeDesc: "Durchsuchen Sie unsere Datenbank, um schnell eine Pfeife zu Ihrer Sammlung hinzuzufügen",
+    searchTobaccoDesc: "Durchsuchen Sie unsere Datenbank, um schnell Tabak zu Ihrem Keller hinzuzufügen",
+    pipePlaceholder: "Nach Hersteller, Modell suchen (z.B. 'Peterson System 314')",
+    tobaccoPlaceholder: "Nach Mischungsname oder Hersteller suchen (z.B. 'Orlik Golden Sliced')",
+    foundResults: "{count} Ergebnis(se) gefunden",
+    noResults: "Keine Ergebnisse gefunden. Versuchen Sie eine andere Suche.",
+    adding: "Wird hinzugefügt…", addToCollection: "Zur Sammlung hinzufügen", addToCellar: "Zum Keller hinzufügen",
+    enterPipeName: "Pfeifennamen eingeben und suchen",
+    pipeExamples: "z.B. Peterson System 314, Dunhill Shell",
+    enterTobaccoName: "Tabak-Mischungsnamen eingeben und suchen",
+    tobaccoExamples: "z.B. Orlik Golden Sliced, Dunhill Early Morning Pipe",
+    flavors: "Aromen", components: "Komponenten", tinSize: "Dosengröße",
+    avgRating: "Ø Bewertung", madeIn: "Hergestellt in {country}", era: "Ära",
+    bowl: "Kopf", deep: "tief", typicalValue: "Typischer Wert",
+    searchButton: "Suchen",
+  },
+
+  cellarLog: {
+    cellaredTobacco: "Gelagerter Tabak",
+    cellaringLog: "Lagerungsprotokoll",
+    addEntry: "Eintrag hinzufügen", addCellarTransaction: "Lagertransaktion hinzufügen",
+    transactionType: "Transaktionstyp", addedToCellarOption: "Zum Keller hinzugefügt", removedFromCellarOption: "Aus dem Keller entfernt",
+    date: "Datum", amountOz: "Menge (oz)", containerType: "Behältertyp",
+    containerTin: "Dose", containerJar: "Glas", containerPouch: "Beutel", containerBulk: "Bulk",
+    destination: "Ziel", movedToOpenCollection: "In offene Sammlung verschoben", exchanged: "Getauscht", discarded: "Entsorgt",
+    notesOptional: "Notizen (optional)", notesPlaceholder: "Weitere Details...",
+    saving: "Wird gespeichert...", saveEntry: "Eintrag speichern",
+    added: "Hinzugefügt", removed: "Entfernt", net: "Netto",
+    noTransactionsYet: "Noch keine Transaktionen", ozUnit: "oz", amountPlaceholder: "2.0",
+    overRemoved: "Überschuss entfernt", deleteConfirmTitle: "Eintrag löschen",
+    noOpenedTobacco: "Kein geöffneter Tabak", updateInventory: "Inventar aktualisieren",
+    upgradeDesc: "Detaillierte Lagertransaktionen verfolgen einschließlich Ein-/Auslagerungsdaten, Mengen in Unzen, Behältertypen und Notizen.",
+  },
+
+  enum: {
+    pipeType: {
+      pipe: "Pfeife",
+      blend: "Mischung",
+    },
+    days: {
+      monday: "Montag", tuesday: "Dienstag", wednesday: "Mittwoch",
+      thursday: "Donnerstag", friday: "Freitag", saturday: "Samstag", sunday: "Sonntag",
+    },
+    sessionTime: {
+      morning: "Morgen", afternoon: "Nachmittag", evening: "Abend", night: "Nacht",
+    },
+    strength: {
+      mild: "Mild", mildMedium: "Mild-Mittel", medium: "Mittel",
+      mediumStrong: "Mittel-Stark", mediumFull: "Mittel-Voll",
+      strong: "Stark", full: "Voll",
+    },
+    cut: {
+      ribbon: "Ribbon", flake: "Flake", brokenFlake: "Broken Flake",
+      readyRubbed: "Ready Rubbed", plug: "Plug", coin: "Coin",
+      cubeCut: "Cube Cut", crumbleCake: "Crumble Cake",
+      shag: "Shag", rope: "Rope", twist: "Twist", other: "Andere",
+    },
+  },
 };
 export default deEnums;

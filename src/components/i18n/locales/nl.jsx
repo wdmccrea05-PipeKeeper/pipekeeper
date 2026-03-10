@@ -737,11 +737,11 @@ const translations = {
     actionAddBlend: "Nieuw mengsel toevoegen",
   },
   cellarLog: {
+    cellaredTobacco: "Gecellerd tabak",
+    addCellarTransaction: "Kelder transactie toevoegen",
     overRemoved: "overschot verwijderd",
     deleteConfirmTitle: "Invoer verwijderen",
   },
-  pipeDetailTabs: {
-    specialization: "Specialisatie",
     focus: "Focus",
     condition: "Conditie",
     status: "Status",

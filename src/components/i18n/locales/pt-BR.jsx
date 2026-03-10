@@ -737,11 +737,11 @@ const translations = {
     actionAddBlend: "Adicionar nova mistura",
   },
   cellarLog: {
+    cellaredTobacco: "Tabaco na adega",
+    addCellarTransaction: "Adicionar transação de adega",
     overRemoved: "excesso removido",
     deleteConfirmTitle: "Excluir entrada",
   },
-  pipeDetailTabs: {
-    specialization: "Especialização",
     focus: "Foco",
     condition: "Condição",
     status: "Status",
