@@ -2007,6 +2007,7 @@ const enUI = {
     onlyShowCellared: "Only show cellared tobacco",
     totalQuantity: "Total Quantity (oz)",
     rating: "Rating",
+    open: "open",
   },
   bulkEdit: {
     featureName: "Bulk Tobacco Edit",
