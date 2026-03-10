@@ -863,6 +863,34 @@ const zhHansUI = {
     exploreCommunity: "探索社区",
   },
 
+  faqFull: {
+    freeTier: "免费套餐",
+    upTo5Pipes: "最多5支烟斗",
+    upTo10Tobacco: "最多10种烟草混合",
+    basicCollection: "基本收藏管理",
+    photoUploads: "照片上传",
+    subscriptionTiersQuestion: "订阅套餐有哪些，各自包含什么？",
+    freeTrial7Days: "所有高级功能7天免费试用",
+    premiumTier: "高级套餐",
+    unlimitedPipesTobacco: "无限烟斗和烟草混合",
+    aiMatching: "AI烟草匹配推荐",
+    pairingMatrix: "搭配矩阵与优化",
+    smokingLog: "吸烟日志和轮换计划",
+    collectionInsights: "收藏洞察与统计",
+    exportReports: "导出报告（PDF、CSV、Excel）",
+    publicProfile: "公开主页和社区功能",
+    breakInSchedules: "开锅计划",
+    proTier: "专业套餐",
+    everythingInPremium: "高级套餐所有内容，另加：",
+    aiPipeIdentification: "从照片AI识别烟斗",
+    marketValueLookup: "烟斗和烟草市场价值查询",
+    geometryAnalysis: "从照片分析几何特征",
+    tobaccoAgingProjections: "烟草陈化预测和窖藏趋势",
+    advancedValuation: "高级估值追踪",
+    prioritySupport: "优先支持",
+    fullFeatureDescription: "有关完整功能描述，请访问",
+  },
+
 };
 
 export default zhHansUI;

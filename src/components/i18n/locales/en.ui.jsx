@@ -2798,6 +2798,29 @@ const enUI = {
     failed: "{count} failed",
   },
 
+  footer: {
+    copyright: "© 2026 PipeKeeper. All rights reserved.",
+    aboutUs: "About Us",
+    contact: "Contact",
+    email: "Email",
+    phone: "Phone",
+    address: "Address",
+    website: "Website",
+    followUs: "Follow Us",
+    social: "Social Media",
+    facebook: "Facebook",
+    twitter: "Twitter",
+    instagram: "Instagram",
+    linkedin: "LinkedIn",
+    terms: "Terms of Service",
+    privacy: "Privacy Policy",
+    cookies: "Cookie Policy",
+    allRightsReserved: "All rights reserved",
+    feedback: "Submit Feedback",
+    reportBug: "Report a Bug",
+    suggestion: "Send a Suggestion",
+  },
+
 };
 
 export default enUI;

@@ -860,6 +860,34 @@ const jaUI = {
     exploreCommunity: "コミュニティを探索",
   },
 
+  faqFull: {
+    freeTier: "無料プラン",
+    upTo5Pipes: "パイプ最大5本",
+    upTo10Tobacco: "タバコのブレンド最大10種",
+    basicCollection: "基本的なコレクション管理",
+    photoUploads: "写真のアップロード",
+    subscriptionTiersQuestion: "サブスクリプションのプランと含まれる機能は何ですか？",
+    freeTrial7Days: "全プレミアム機能の7日間無料トライアル",
+    premiumTier: "プレミアムプラン",
+    unlimitedPipesTobacco: "パイプとタバコのブレンドが無制限",
+    aiMatching: "AIタバコマッチングレコメンデーション",
+    pairingMatrix: "ペアリングマトリックスと最適化",
+    smokingLog: "喫煙ログとローテーションプランナー",
+    collectionInsights: "コレクションの洞察と統計",
+    exportReports: "レポートエクスポート（PDF、CSV、Excel）",
+    publicProfile: "公開プロフィールとコミュニティ機能",
+    breakInSchedules: "慣らし喫煙スケジュール",
+    proTier: "プロプラン",
+    everythingInPremium: "プレミアムのすべて、さらに：",
+    aiPipeIdentification: "写真からのAIパイプ識別",
+    marketValueLookup: "パイプとタバコの市場価値検索",
+    geometryAnalysis: "写真からのジオメトリ分析",
+    tobaccoAgingProjections: "タバコの熟成予測とセラートレンド",
+    advancedValuation: "高度な評価追跡",
+    prioritySupport: "優先サポート",
+    fullFeatureDescription: "完全な機能説明については、こちらをご覧ください",
+  },
+
 };
 
 export default jaUI;

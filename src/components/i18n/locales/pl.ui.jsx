@@ -863,6 +863,34 @@ const plUI = {
     exploreCommunity: "Eksploruj społeczność",
   },
 
+  faqFull: {
+    freeTier: "Darmowy poziom",
+    upTo5Pipes: "Do 5 fajek",
+    upTo10Tobacco: "Do 10 mieszanek tytoniowych",
+    basicCollection: "Podstawowe zarządzanie kolekcją",
+    photoUploads: "Przesyłanie zdjęć",
+    subscriptionTiersQuestion: "Jakie są poziomy subskrypcji i co obejmują?",
+    freeTrial7Days: "7-dniowy okres próbny wszystkich funkcji premium",
+    premiumTier: "Poziom Premium",
+    unlimitedPipesTobacco: "Nieograniczone fajki i mieszanki tytoniowe",
+    aiMatching: "Rekomendacje dopasowania tytoniu przez AI",
+    pairingMatrix: "Macierz parowania i optymalizacja",
+    smokingLog: "Dziennik palenia i planer rotacji",
+    collectionInsights: "Statystyki i wgląd w kolekcję",
+    exportReports: "Eksport raportów (PDF, CSV, Excel)",
+    publicProfile: "Publiczny profil i funkcje społeczności",
+    breakInSchedules: "Harmonogramy docierania",
+    proTier: "Poziom Pro",
+    everythingInPremium: "Wszystko z Premium, plus:",
+    aiPipeIdentification: "Identyfikacja fajki przez AI ze zdjęć",
+    marketValueLookup: "Wyszukiwanie wartości rynkowej fajek i tytoniu",
+    geometryAnalysis: "Analiza geometrii ze zdjęć",
+    tobaccoAgingProjections: "Prognozy dojrzewania tytoniu i trendy piwniczania",
+    advancedValuation: "Zaawansowane śledzenie wyceny",
+    prioritySupport: "Priorytetowe wsparcie",
+    fullFeatureDescription: "Pełny opis funkcji znajdziesz na stronie",
+  },
+
 };
 
 export default plUI;

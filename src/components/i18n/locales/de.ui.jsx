@@ -754,6 +754,34 @@ const deUI = {
     exploreCommunity: "Community erkunden",
   },
 
+  faqFull: {
+    freeTier: "Kostenloses Abonnement",
+    upTo5Pipes: "Bis zu 5 Pfeifen",
+    upTo10Tobacco: "Bis zu 10 Tabakgemische",
+    basicCollection: "Grundlegende Sammlungsverwaltung",
+    photoUploads: "Foto-Uploads",
+    subscriptionTiersQuestion: "Welche Abonnementpläne gibt es und was ist enthalten?",
+    freeTrial7Days: "7-Tage-Testversion aller Premium-Funktionen",
+    premiumTier: "Premium-Abonnement",
+    unlimitedPipesTobacco: "Unbegrenzte Pfeifen und Tabakgemische",
+    aiMatching: "KI-Tabak-Empfehlungen",
+    pairingMatrix: "Paarungsmatrix und Optimierung",
+    smokingLog: "Rauchprotokoll und Rotationsplaner",
+    collectionInsights: "Sammlungseinblicke und Statistiken",
+    exportReports: "Berichte exportieren (PDF, CSV, Excel)",
+    publicProfile: "Öffentliches Profil und Community-Funktionen",
+    breakInSchedules: "Einrauchpläne",
+    proTier: "Pro-Abonnement",
+    everythingInPremium: "Alles in Premium, plus:",
+    aiPipeIdentification: "KI-Pfeifenidentifikation aus Fotos",
+    marketValueLookup: "Marktwertsuche für Pfeifen und Tabak",
+    geometryAnalysis: "Geometrieanalyse aus Fotos",
+    tobaccoAgingProjections: "Tabakaltersprojektionen und Kellertrends",
+    advancedValuation: "Erweitertes Bewertungs-Tracking",
+    prioritySupport: "Prioritätssupport",
+    fullFeatureDescription: "Für eine vollständige Funktionsbeschreibung besuche",
+  },
+
 };
 
 export default deUI;

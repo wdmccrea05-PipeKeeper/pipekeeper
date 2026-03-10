@@ -868,6 +868,34 @@ const nlUI = {
     exploreCommunity: "Community verkennen",
   },
 
+  faqFull: {
+    freeTier: "Gratis abonnement",
+    upTo5Pipes: "Tot 5 pijpen",
+    upTo10Tobacco: "Tot 10 tabaksmengsels",
+    basicCollection: "Basis collectiebeheer",
+    photoUploads: "Foto-uploads",
+    subscriptionTiersQuestion: "Wat zijn de abonnementsniveaus en wat is inbegrepen?",
+    freeTrial7Days: "7-daagse proefperiode voor alle premium-functies",
+    premiumTier: "Premium abonnement",
+    unlimitedPipesTobacco: "Onbeperkte pijpen en tabaksmengsels",
+    aiMatching: "AI tabaksaanbevelingen",
+    pairingMatrix: "Koppelingsmatrix en optimalisatie",
+    smokingLog: "Rooklogboek en rotatieplanner",
+    collectionInsights: "Collectie-inzichten en statistieken",
+    exportReports: "Rapporten exporteren (PDF, CSV, Excel)",
+    publicProfile: "Openbaar profiel en community-functies",
+    breakInSchedules: "Inrooskeurschema's",
+    proTier: "Pro abonnement",
+    everythingInPremium: "Alles in Premium, plus:",
+    aiPipeIdentification: "AI pijpidentificatie via foto's",
+    marketValueLookup: "Marktwaarde opzoeken voor pijpen en tabak",
+    geometryAnalysis: "Geometrie-analyse via foto's",
+    tobaccoAgingProjections: "Tabaksverouderingsprognoses en keldertrends",
+    advancedValuation: "Geavanceerd waarderingsbeheer",
+    prioritySupport: "Prioriteitsondersteuning",
+    fullFeatureDescription: "Voor een volledige functiebeschrijving bezoek",
+  },
+
 };
 
 export default nlUI;

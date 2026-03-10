@@ -868,6 +868,34 @@ const ptBRUI = {
     exploreCommunity: "Explorar a comunidade",
   },
 
+  faqFull: {
+    freeTier: "Nível gratuito",
+    upTo5Pipes: "Até 5 cachimbos",
+    upTo10Tobacco: "Até 10 misturas de tabaco",
+    basicCollection: "Gerenciamento básico de coleção",
+    photoUploads: "Uploads de fotos",
+    subscriptionTiersQuestion: "Quais são os níveis de assinatura e o que incluem?",
+    freeTrial7Days: "Teste de 7 dias de todos os recursos premium",
+    premiumTier: "Nível Premium",
+    unlimitedPipesTobacco: "Cachimbos e misturas de tabaco ilimitados",
+    aiMatching: "Recomendações de combinação de tabaco por IA",
+    pairingMatrix: "Matriz de combinação e otimização",
+    smokingLog: "Registro de fumada e planejador de rotação",
+    collectionInsights: "Estatísticas e insights da coleção",
+    exportReports: "Exportar relatórios (PDF, CSV, Excel)",
+    publicProfile: "Perfil público e recursos comunitários",
+    breakInSchedules: "Agendas de rodagem",
+    proTier: "Nível Pro",
+    everythingInPremium: "Tudo no Premium, mais:",
+    aiPipeIdentification: "Identificação de cachimbo por IA a partir de fotos",
+    marketValueLookup: "Pesquisa de valor de mercado para cachimbos e tabaco",
+    geometryAnalysis: "Análise de geometria a partir de fotos",
+    tobaccoAgingProjections: "Projeções de envelhecimento do tabaco",
+    advancedValuation: "Rastreamento de avaliação avançado",
+    prioritySupport: "Suporte prioritário",
+    fullFeatureDescription: "Para uma descrição completa dos recursos, visite",
+  },
+
 };
 
 export default ptBRUI;
