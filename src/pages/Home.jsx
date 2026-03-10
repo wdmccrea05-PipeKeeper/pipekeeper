@@ -9,7 +9,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCellaredOzFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
-import { RefreshCw, Leaf, Heart, Sparkles, ArrowRight, Crown } from "lucide-react";
+import { Leaf, Heart, Sparkles, ArrowRight, Crown } from "lucide-react";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 
 const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
@@ -64,13 +64,13 @@ export default function Home() {
   const favoriteBlends = blends.filter(b => b?.is_favorite);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       {/* 1. HERO */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold font-serif text-[#E0D8C8]">
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-bold font-serif text-[#E0D8C8]">
             {t("home.title")}
           </h1>
-        <p className="text-lg text-[#E0D8C8]/80 max-w-3xl mx-auto">
+        <p className="text-base text-[#E0D8C8]/70 max-w-2xl mx-auto">
            {t("home.subtitle")}
          </p>
       </div>
@@ -87,113 +87,97 @@ export default function Home() {
         </div>
       )}
 
-      {/* 3. PRIMARY METRICS BAR */}
+      {/* 3. PORTFOLIO SUMMARY — 2×2 on mobile, 4-col on desktop */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <PKCard className="p-4 flex flex-col gap-1">
-          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium">{t("home.totalValue")}</div>
-          <div className="text-2xl font-bold text-[#E0D8C8]">{hideHomeValues ? "••••" : formatCurrency(Math.round(totalCollectionValue))}</div>
+        <PKCard className="p-4 flex flex-col justify-between min-h-[80px]">
+          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug">{t("home.totalValue")}</div>
+          <div className="text-2xl font-bold text-[#E0D8C8] mt-2">{hideHomeValues ? "••••" : formatCurrency(Math.round(totalCollectionValue))}</div>
         </PKCard>
-        <PKCard className="p-4 flex flex-col gap-1">
-          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium">{t("home.pipesInCollection")}</div>
-          <div className="text-2xl font-bold text-[#E0D8C8]">{pipes.length}</div>
+        <PKCard className="p-4 flex flex-col justify-between min-h-[80px]">
+          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug">{t("home.pipesInCollection")}</div>
+          <div className="text-2xl font-bold text-[#E0D8C8] mt-2">{pipes.length}</div>
         </PKCard>
-        <PKCard className="p-4 flex flex-col gap-1">
-          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium">{t("home.tobaccoBlends")}</div>
-          <div className="text-2xl font-bold text-[#E0D8C8]">{blends.length}</div>
+        <PKCard className="p-4 flex flex-col justify-between min-h-[80px]">
+          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug">{t("home.tobaccoBlends")}</div>
+          <div className="text-2xl font-bold text-[#E0D8C8] mt-2">{blends.length}</div>
         </PKCard>
-        <PKCard className="p-4 flex flex-col gap-1">
-          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium">{t("home.cellared")}</div>
-          <div className="text-2xl font-bold text-[#E0D8C8]">{formatWeight(totalCellaredOz, 'oz')}</div>
+        <PKCard className="p-4 flex flex-col justify-between min-h-[80px]">
+          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug">{t("home.cellared")}</div>
+          <div className="text-2xl font-bold text-[#E0D8C8] mt-2">{formatWeight(totalCellaredOz, 'oz')}</div>
         </PKCard>
       </div>
 
-      {/* 4. PIPE COLLECTION & TOBACCO CELLAR CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Pipe Collection Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm min-h-[320px] flex flex-col">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/847ca6ee3_Image1.jpeg')` }}
-          />
-          <div className="absolute inset-0 bg-[#6b2d2d]/90" />
-          <div className="relative flex flex-col flex-1 p-6 text-[#F5F1E7]">
-            <div className="flex items-start justify-between mb-1">
-              <div>
-                <h2 className="text-2xl font-bold">{t("home.pipeCollectionTitle")}</h2>
-                <p className="text-sm opacity-60 mt-0.5">{t("home.pipeCollectionSubtitle")}</p>
+      {/* 4. MODULE OVERVIEW CARDS — stacked on mobile, horizontal rows on desktop */}
+      <div className="flex flex-col gap-4">
+        {/* Pipe Collection Module Card */}
+        <PKCard className="p-4 sm:p-5 border-l-4 border-[#C87941]">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Module title */}
+            <div className="flex items-center gap-3 sm:w-48 sm:shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-[#C87941]/20 flex items-center justify-center shrink-0">
+                <img src={PIPE_ICON} alt="" className="w-5 h-5 object-contain" style={{ filter: "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.9)" }} />
               </div>
-              <div className="flex gap-1">
-                <a href={createPageUrl("Pipes")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.refresh")}>
-                  <RefreshCw className="w-4 h-4" />
-                </a>
-                <a href={createPageUrl("Pipes")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.view")}>
-                   <img src={PIPE_ICON} alt={t("nav.pipes")} className="w-4 h-4 object-contain" style={{ filter: "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.9)" }} />
-                 </a>
-              </div>
+              <h2 className="text-base font-semibold text-[#E0D8C8]">{t("home.pipeCollectionTitle")}</h2>
             </div>
-            <div className="flex flex-col gap-3 mt-5 flex-1">
-              <a href={createPageUrl("Pipes")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
-                <div className="text-3xl font-bold">{pipes.length}</div>
-                <div className="text-sm opacity-60 mt-0.5">{t("home.pipesInCollection")}</div>
-              </a>
-              <a href={createPageUrl("Pipes")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
-                <div className="text-3xl font-bold">{hideHomeValues ? "••••" : formatCurrency(totalPipeValue)}</div>
-                <div className="text-sm opacity-60 mt-0.5">{t("home.collectionValue")}</div>
-              </a>
-            </div>
-            <div className="mt-5 pt-4 border-t border-white/20 flex items-center justify-between">
-              <a href={createPageUrl("Pipes")} className="text-[#F5F1E7] font-medium hover:underline text-sm">
-                {t("home.viewCollection")}
-              </a>
-              <span className="opacity-60">→</span>
-            </div>
-          </div>
-        </div>
 
-        {/* Tobacco Cellar Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm min-h-[320px] flex flex-col">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/2f3158c10_7084B1F4-A823-4AA9-8340-8DCA2DEB5B79-1024x768.jpg')` }}
-          />
-          <div className="absolute inset-0 bg-[#1c3d2e]/90" />
-          <div className="relative flex flex-col flex-1 p-6 text-[#F5F1E7]">
-            <div className="flex items-start justify-between mb-1">
+            {/* Metrics */}
+            <div className="flex flex-row flex-wrap gap-x-6 gap-y-2 flex-1">
               <div>
-                <h2 className="text-2xl font-bold">{t("home.tobaccoCellarTitle")}</h2>
-                <p className="text-sm opacity-60 mt-0.5">{t("home.tobaccoCellarSubtitle")}</p>
+                <div className="text-xl font-bold text-[#E0D8C8]">{hideHomeValues ? "••••" : formatCurrency(Math.round(totalPipeValue))}</div>
+                <div className="text-xs text-[#E0D8C8]/60 mt-0.5">{t("home.collectionValue")}</div>
               </div>
-              <div className="flex gap-1">
-                <a href={createPageUrl("Tobacco")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.refresh")}>
-                  <RefreshCw className="w-4 h-4" />
-                </a>
-                <a href={createPageUrl("Tobacco")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.view")}>
-                  <Leaf className="w-4 h-4" />
-                </a>
+              <div>
+                <div className="text-xl font-bold text-[#E0D8C8]">{pipes.length}</div>
+                <div className="text-xs text-[#E0D8C8]/60 mt-0.5">{t("home.pipesInCollection")}</div>
               </div>
             </div>
-            <div className="flex flex-col gap-3 mt-5 flex-1">
-              <a href={createPageUrl("Tobacco")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
-                <div className="text-3xl font-bold">{blends.length}</div>
-                <div className="text-sm opacity-60 mt-0.5">{t("home.tobaccoBlends")}</div>
-              </a>
-              <a href={createPageUrl("Tobacco")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
-                <div className="text-3xl font-bold">{formatWeight(totalCellaredOz, 'oz')}</div>
-                <div className="text-sm opacity-60 mt-0.5">{t("home.cellared")}</div>
-              </a>
-              <a href={createPageUrl("Tobacco")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
-                <div className="text-3xl font-bold">{hideHomeValues ? "••••" : `≈ ${formatCurrency(Math.round(totalTobaccoValue))}`}</div>
-                <div className="text-sm opacity-60 mt-0.5">{t("home.collectionValue")}</div>
-              </a>
-            </div>
-            <div className="mt-5 pt-4 border-t border-white/20 flex items-center justify-between">
-              <a href={createPageUrl("Tobacco")} className="text-[#F5F1E7] font-medium hover:underline text-sm">
-                {t("home.viewCellar")}
-              </a>
-              <span className="opacity-60">→</span>
-            </div>
+
+            {/* CTA */}
+            <a
+              href={createPageUrl("Pipes")}
+              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#C87941]/20 hover:bg-[#C87941]/30 text-[#E0D8C8] font-medium text-sm transition-colors min-h-[44px] sm:shrink-0 whitespace-nowrap"
+            >
+              {t("home.viewCollection")} <ArrowRight className="w-4 h-4" />
+            </a>
           </div>
-        </div>
+        </PKCard>
+
+        {/* Tobacco Cellar Module Card */}
+        <PKCard className="p-4 sm:p-5 border-l-4 border-[#4A7C59]">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Module title */}
+            <div className="flex items-center gap-3 sm:w-48 sm:shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-[#4A7C59]/20 flex items-center justify-center shrink-0">
+                <Leaf className="w-5 h-5 text-[#6aab80]" />
+              </div>
+              <h2 className="text-base font-semibold text-[#E0D8C8]">{t("home.tobaccoCellarTitle")}</h2>
+            </div>
+
+            {/* Metrics */}
+            <div className="flex flex-row flex-wrap gap-x-6 gap-y-2 flex-1">
+              <div>
+                <div className="text-xl font-bold text-[#E0D8C8]">{hideHomeValues ? "••••" : formatCurrency(Math.round(totalTobaccoValue))}</div>
+                <div className="text-xs text-[#E0D8C8]/60 mt-0.5">{t("home.collectionValue")}</div>
+              </div>
+              <div>
+                <div className="text-xl font-bold text-[#E0D8C8]">{blends.length}</div>
+                <div className="text-xs text-[#E0D8C8]/60 mt-0.5">{t("home.tobaccoBlends")}</div>
+              </div>
+              <div>
+                <div className="text-xl font-bold text-[#E0D8C8]">{formatWeight(totalCellaredOz, 'oz')}</div>
+                <div className="text-xs text-[#E0D8C8]/60 mt-0.5">{t("home.cellared")}</div>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <a
+              href={createPageUrl("Tobacco")}
+              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#4A7C59]/20 hover:bg-[#4A7C59]/30 text-[#E0D8C8] font-medium text-sm transition-colors min-h-[44px] sm:shrink-0 whitespace-nowrap"
+            >
+              {t("home.viewCellar")} <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
+        </PKCard>
       </div>
 
       {/* 4. FAVORITES SECTION */}
