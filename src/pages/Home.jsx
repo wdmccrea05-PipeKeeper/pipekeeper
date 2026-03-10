@@ -8,6 +8,7 @@ import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCellaredOzFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
+import CollectionIntelligencePanel from "@/components/home/CollectionIntelligencePanel";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 import { Leaf, Heart, Sparkles, ArrowRight, Crown } from "lucide-react";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
@@ -204,13 +205,16 @@ export default function Home() {
         </PKCard>
       )}
 
-      {/* 5. COLLECTION INSIGHTS PANEL */}
+      {/* 5. COLLECTION INTELLIGENCE */}
+      <CollectionIntelligencePanel pipes={pipes} blends={blends} user={user} />
+
+      {/* 6. COLLECTION INSIGHTS PANEL */}
       <CollectionInsightsPanel pipes={pipes} blends={blends} user={user} />
 
-      {/* 6. EXPERT TOBACCONIST */}
+      {/* 7. EXPERT TOBACCONIST */}
       <ExpertTobacconist pipes={pipes} blends={blends} isPaidUser={hasPaid} user={user} userProfile={userProfile} />
 
-      {/* 7. RECENT PIPES & RECENT TOBACCO */}
+      {/* 8. RECENT PIPES & RECENT TOBACCO */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Recent Pipes */}
         <PKCard className="p-6">
