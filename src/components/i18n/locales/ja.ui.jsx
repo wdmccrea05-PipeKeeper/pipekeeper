@@ -812,6 +812,25 @@ const jaUI = {
     },
   },
 
+  profile: {
+    avatarUploadedSuccessfully: "アバターを正常にアップロードしました",
+    failedToUploadImage: "画像のアップロードに失敗しました",
+  },
+
+  profilePreferences: {
+    noPreference: "こだわりなし",
+    yes: "はい",
+    no: "いいえ",
+    sometimes: "時々",
+    durationShort: "短め（15〜30分）",
+    durationMedium: "普通（30〜60分）",
+    durationLong: "長め（60分以上）",
+    sizeSmall: "小型",
+    sizeMedium: "中型",
+    sizeLarge: "大型",
+    sizeExtraLarge: "特大",
+  },
+
 };
 
 export default jaUI;

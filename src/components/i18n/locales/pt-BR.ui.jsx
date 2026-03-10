@@ -834,6 +834,11 @@ const ptBRUI = {
     },
   },
 
+  profile: {
+    avatarUploadedSuccessfully: "Avatar enviado com sucesso",
+    failedToUploadImage: "Falha ao enviar imagem",
+  },
+
 };
 
 export default ptBRUI;

@@ -829,6 +829,11 @@ const zhHansUI = {
     },
   },
 
+  profile: {
+    avatarUploadedSuccessfully: "头像上传成功",
+    failedToUploadImage: "图片上传失败",
+  },
+
 };
 
 export default zhHansUI;

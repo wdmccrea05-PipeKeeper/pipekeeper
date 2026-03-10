@@ -964,6 +964,25 @@ const esUI = {
     },
   },
 
+  profile: {
+    avatarUploadedSuccessfully: "Avatar subido con éxito",
+    failedToUploadImage: "Error al subir la imagen",
+  },
+
+  profilePreferences: {
+    noPreference: "Sin preferencia",
+    yes: "Sí",
+    no: "No",
+    sometimes: "A veces",
+    durationShort: "Corta (15–30 min)",
+    durationMedium: "Media (30–60 min)",
+    durationLong: "Larga (60+ min)",
+    sizeSmall: "Pequeña",
+    sizeMedium: "Mediana",
+    sizeLarge: "Grande",
+    sizeExtraLarge: "Extra grande",
+  },
+
 };
 
 export default esUI;

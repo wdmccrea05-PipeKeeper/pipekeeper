@@ -829,6 +829,11 @@ const plUI = {
     },
   },
 
+  profile: {
+    avatarUploadedSuccessfully: "Awatar przesłany pomyślnie",
+    failedToUploadImage: "Nie udało się przesłać obrazu",
+  },
+
 };
 
 export default plUI;
