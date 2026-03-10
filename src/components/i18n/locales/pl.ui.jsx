@@ -253,6 +253,11 @@ const plUI = {
     findSpecsDesc: "Przeszukaj katalogi producentów w poszukiwaniu zweryfikowanych specyfikacji fajek.",
     findSpecs: "Znajdź specyfikacje",
     analyzeGeometryFromPhotos: "Analizuj geometrię ze zdjęć",
+    analyzePipeGeometry: "Analizuj geometrię fajki",
+    analyzePipeGeometryTooltip: "Użyj AI do identyfikacji kształtu, stylu komory i cech cybuszka na podstawie zdjęć",
+    classifyGeometryFromPhotos: "Klasyfikuj geometrię ze zdjęć",
+    breakInSchedulesTooltip: "Progresywne rekomendacje tytoniu do prawidłowego docierania nowych fajek",
+    breakInSchedulesDesc: "Spersonalizowane rekomendacje docierania generowane dla każdej fajki",
     breakInSchedules: "Harmonogramy docierania",
     regeneratePairingsNote: "Pamiętaj o regeneracji parowania, aby zaktualizować wyniki.",
     cellaredBlends: "Zmagazynowane mieszanki",
@@ -602,6 +607,19 @@ const plUI = {
     topicSearch: "Wyszukiwanie",
     topicPhotos: "Zdjęcia",
     topicTerms: "Słownik i terminy",
+  },
+
+  help: {
+    gettingStarted: "Jak zacząć korzystać z PipeKeeper?",
+    fieldDefinitions: "Co oznaczają poszczególne pola?",
+    tobaccoValuation: "Jak obliczana jest wartość tytoniu?",
+    aiFeatures: "Jakie funkcje AI są dostępne?",
+    accountSecurity: "Jak zabezpieczone jest moje konto?",
+    dataPrivacy: "Jakie dane zbiera PipeKeeper?",
+    aiAccuracy: "Jak dokładne są rekomendacje AI?",
+    aiHowItWorks: "Jak działają dopasowania AI?",
+    aiRegenerate: "Kiedy powinienem regenerować dopasowania AI?",
+    contactSupport: "Jak skontaktować się z pomocą techniczną?",
   },
 
   aiIdentifier: {

@@ -1781,7 +1781,7 @@ const translations = {
     "Shag": "Shag",
     "Rope": "Rope",
     "Twist": "Twist",
-    "Other": "Other",
+    "Mixture": "Mélange", "Krumble Cake": "Crumble Cake", "Krumble cake": "Crumble Cake", "Other": "Other",
   },
 
   strengths: {

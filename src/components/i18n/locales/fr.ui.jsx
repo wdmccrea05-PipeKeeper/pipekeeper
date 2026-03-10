@@ -253,6 +253,11 @@ const frUI = {
     findSpecsDesc: "Recherchez des spécifications de pipe vérifiées dans les catalogues des fabricants.",
     findSpecs: "Rechercher des spécifications",
     analyzeGeometryFromPhotos: "Analyser la géométrie depuis les photos",
+    analyzePipeGeometry: "Analyser la géométrie de la pipe",
+    analyzePipeGeometryTooltip: "Utiliser l'IA pour identifier la forme, le style du foyer et les caractéristiques du tuyau depuis des photos",
+    classifyGeometryFromPhotos: "Classer la géométrie depuis les photos",
+    breakInSchedulesTooltip: "Recommandations progressives de tabac pour roder correctement les nouvelles pipes",
+    breakInSchedulesDesc: "Recommandations de rodage personnalisées générées par pipe",
     breakInSchedules: "Calendriers de rodage",
     regeneratePairingsNote: "N'oubliez pas de régénérer les associations pour mettre à jour les scores.",
     cellaredBlends: "Mélanges en cave",
@@ -571,6 +576,19 @@ const frUI = {
     topicSearch: "Recherche",
     topicPhotos: "Photos",
     topicTerms: "Glossaire et termes",
+  },
+
+  help: {
+    gettingStarted: "Comment commencer avec PipeKeeper ?",
+    fieldDefinitions: "Que signifient les différents champs ?",
+    tobaccoValuation: "Comment est calculée la valeur du tabac ?",
+    aiFeatures: "Quelles fonctionnalités IA sont disponibles ?",
+    accountSecurity: "Comment mon compte est-il sécurisé ?",
+    dataPrivacy: "Quelles données PipeKeeper collecte-t-il ?",
+    aiAccuracy: "Quelle est la précision des recommandations IA ?",
+    aiHowItWorks: "Comment fonctionnent les associations IA ?",
+    aiRegenerate: "Quand dois-je régénérer les associations IA ?",
+    contactSupport: "Comment contacter le support ?",
   },
 
   aiIdentifier: {

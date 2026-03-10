@@ -253,6 +253,11 @@ const jaUI = {
     findSpecsDesc: "メーカーのカタログで検証済みのパイプ仕様を検索します。",
     findSpecs: "仕様を検索",
     analyzeGeometryFromPhotos: "写真からジオメトリを分析",
+    analyzePipeGeometry: "パイプジオメトリを分析",
+    analyzePipeGeometryTooltip: "写真からシェイプ、ボウルスタイル、シャンクの特徴をAIで識別します",
+    classifyGeometryFromPhotos: "写真からジオメトリを分類",
+    breakInSchedulesTooltip: "新しいパイプを適切に慣らすための段階的なタバコの推奨",
+    breakInSchedulesDesc: "パイプごとにパーソナライズされた慣らし推奨",
     breakInSchedules: "慣らしスケジュール",
     regeneratePairingsNote: "スコアを更新するためにペアリングを再生成することを忘れないでください。",
     cellaredBlends: "セラーブレンド",
@@ -585,6 +590,19 @@ const jaUI = {
     topicSearch: "検索",
     topicPhotos: "写真",
     topicTerms: "用語集と用語",
+  },
+
+  help: {
+    gettingStarted: "PipeKeeperを始めるには？",
+    fieldDefinitions: "各フィールドは何を意味しますか？",
+    tobaccoValuation: "タバコの価値はどのように計算されますか？",
+    aiFeatures: "利用可能なAI機能は何ですか？",
+    accountSecurity: "アカウントはどのように保護されていますか？",
+    dataPrivacy: "PipeKeeperはどのようなデータを収集しますか？",
+    aiAccuracy: "AIの推薦の精度はどのくらいですか？",
+    aiHowItWorks: "AIペアリングはどのように機能しますか？",
+    aiRegenerate: "AIペアリングをいつ再生成すべきですか？",
+    contactSupport: "サポートに連絡するには？",
   },
 
   aiIdentifier: {

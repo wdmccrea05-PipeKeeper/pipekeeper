@@ -253,6 +253,11 @@ const ptBRUI = {
     findSpecsDesc: "Pesquise catálogos de fabricantes para especificações verificadas de cachimbo.",
     findSpecs: "Encontrar especificações",
     analyzeGeometryFromPhotos: "Analisar geometria a partir de fotos",
+    analyzePipeGeometry: "Analisar geometria do cachimbo",
+    analyzePipeGeometryTooltip: "Usar IA para identificar forma, estilo do fornilho e características do corpo a partir de fotos",
+    classifyGeometryFromPhotos: "Classificar geometria a partir de fotos",
+    breakInSchedulesTooltip: "Recomendações progressivas de tabaco para rodar corretamente os novos cachimbos",
+    breakInSchedulesDesc: "Recomendações de rodagem personalizadas geradas por cachimbo",
     breakInSchedules: "Cronogramas de rodagem",
     regeneratePairingsNote: "Lembre-se de regenerar pares para atualizar pontuações.",
     cellaredBlends: "Misturas armazenadas",
@@ -607,6 +612,19 @@ const ptBRUI = {
     topicSearch: "Pesquisa",
     topicPhotos: "Fotos",
     topicTerms: "Glossário e Termos",
+  },
+
+  help: {
+    gettingStarted: "Como começo com o PipeKeeper?",
+    fieldDefinitions: "O que significam os diferentes campos?",
+    tobaccoValuation: "Como é calculado o valor do tabaco?",
+    aiFeatures: "Quais recursos de IA estão disponíveis?",
+    accountSecurity: "Como minha conta está protegida?",
+    dataPrivacy: "Quais dados o PipeKeeper coleta?",
+    aiAccuracy: "Quão precisas são as recomendações de IA?",
+    aiHowItWorks: "Como funcionam os emparelhamentos de IA?",
+    aiRegenerate: "Quando devo regenerar os emparelhamentos de IA?",
+    contactSupport: "Como entro em contato com o suporte?",
   },
 
   aiIdentifier: {

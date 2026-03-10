@@ -253,6 +253,11 @@ const nlUI = {
     findSpecsDesc: "Zoek geverifieerde pijpspecificaties in fabrikantcatalogi.",
     findSpecs: "Specificaties zoeken",
     analyzeGeometryFromPhotos: "Geometrie analyseren uit foto's",
+    analyzePipeGeometry: "Pijpgeometrie analyseren",
+    analyzePipeGeometryTooltip: "AI gebruiken om vorm, kopstijl en schachtkenmerken te identificeren aan de hand van foto's",
+    classifyGeometryFromPhotos: "Geometrie classificeren uit foto's",
+    breakInSchedulesTooltip: "Progressieve tabaksaanbevelingen om nieuwe pijpen correct in te rijden",
+    breakInSchedulesDesc: "Gepersonaliseerde inrijdaanbevelingen per pijp",
     breakInSchedules: "Inrij-schema's",
     regeneratePairingsNote: "Vergeet niet koppelingen te regenereren om scores bij te werken.",
     cellaredBlends: "Gecellerde mengsels",
@@ -607,6 +612,19 @@ const nlUI = {
     topicSearch: "Zoeken",
     topicPhotos: "Foto's",
     topicTerms: "Woordenlijst & Termen",
+  },
+
+  help: {
+    gettingStarted: "Hoe begin ik met PipeKeeper?",
+    fieldDefinitions: "Wat betekenen de verschillende velden?",
+    tobaccoValuation: "Hoe wordt de tabakswaarde berekend?",
+    aiFeatures: "Welke AI-functies zijn beschikbaar?",
+    accountSecurity: "Hoe is mijn account beveiligd?",
+    dataPrivacy: "Welke gegevens verzamelt PipeKeeper?",
+    aiAccuracy: "Hoe nauwkeurig zijn de AI-aanbevelingen?",
+    aiHowItWorks: "Hoe werken AI-koppelingen?",
+    aiRegenerate: "Wanneer moet ik AI-koppelingen opnieuw genereren?",
+    contactSupport: "Hoe neem ik contact op met ondersteuning?",
   },
 
   aiIdentifier: {
