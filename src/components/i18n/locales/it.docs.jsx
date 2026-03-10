@@ -3,17 +3,92 @@ const docs = {
   howTo: {
     pageTitle: "Come fare", pageSubtitle: "Risposte rapide con percorsi di navigazione chiari",
     managingPipes: "Gestione pipe", addPipeQ: "Come aggiungo una pipa alla mia collezione?",
+    addPipeBasicSteps: [
+      "Tocca la scheda Pipe nel menu di navigazione",
+      "Tocca il pulsante + Aggiungi pipa in alto a destra",
+      "Compila i dettagli della pipa (nome, produttore, forma, ecc.)",
+      "Aggiungi opzionalmente foto tramite l'area di caricamento foto",
+      "Tocca Salva per aggiungere la pipa alla tua collezione"
+    ],
     updatePipeQ: "Come aggiorno i dettagli di una pipa?",
+    updatePipeSteps: [
+      "Vai alla pagina Pipe",
+      "Tocca la pipa che vuoi modificare",
+      "Nella pagina dei dettagli, tocca l'icona Modifica (matita)",
+      "Apporta le tue modifiche",
+      "Tocca Salva"
+    ],
     markFavoriteQ: "Come contrassegno una pipa come preferita?",
+    markFavoriteSteps: [
+      "Vai alla pagina Pipe o alla pagina dei dettagli della pipa",
+      "Tocca l'icona cuore sulla scheda o nella pagina dei dettagli",
+      "Il cuore diventerà rosso per indicare che è un preferito"
+    ],
     managingTobacco: "Gestione tabacco", addTobaccoQ: "Come aggiungo una miscela di tabacco?",
+    addTobaccoSteps: [
+      "Tocca la scheda Tabacco nel menu di navigazione",
+      "Tocca il pulsante + Aggiungi miscela",
+      "Cerca la miscela per nome per compilare automaticamente i dettagli, o inseriscili manualmente",
+      "Imposta il tuo inventario (latte, oz sfusi, stato)",
+      "Tocca Salva"
+    ],
     updateTobaccoQ: "Come aggiorno una miscela di tabacco?",
+    updateTobaccoSteps: [
+      "Vai alla pagina Tabacco",
+      "Tocca la miscela che vuoi modificare",
+      "Nella pagina dei dettagli, tocca l'icona Modifica",
+      "Apporta le tue modifiche e tocca Salva"
+    ],
     loggingSessions: "Registrazione sessioni", logSessionQ: "Come registro una sessione di fumo?",
+    logSessionSteps: [
+      "Vai alla pagina Home",
+      "Scorri fino al pannello Approfondimenti collezione",
+      "Tocca la scheda Registro",
+      "Seleziona la pipa e la miscela di tabacco che hai utilizzato",
+      "Compila i dettagli della sessione (durata, valutazione, note)",
+      "Tocca Salva sessione"
+    ],
     viewLogsQ: "Come visualizzo la cronologia di fumo?",
+    viewLogsSteps: [
+      "Vai alla pagina Home",
+      "Scorri fino al pannello Approfondimenti collezione",
+      "Tocca la scheda Registro per vedere la cronologia delle sessioni"
+    ],
     measurements: "Misure pipa", measurePipeQ: "Come aggiungo misure a una pipa?",
+    measurePipeSteps: [
+      "Apri la pagina dei dettagli della pipa",
+      "Tocca l'icona Modifica",
+      "Scorri fino alla sezione misurazioni",
+      "Inserisci le dimensioni manualmente o usa lo strumento Geometria AI per compilare automaticamente dalle foto",
+      "Tocca Salva"
+    ],
     aiFeatures: "Funzionalità AI", generatePairingsQ: "Come genero raccomandazioni di abbinamento pipa-tabacco?",
+    generatePairingsSteps: [
+      "Vai alla pagina Home",
+      "Trova il pannello Aggiornamenti AI",
+      "Tocca Rigenera accanto a Matrice abbinamenti",
+      "Una volta generati, visualizza gli abbinamenti in Approfondimenti > Griglia abbinamenti"
+    ],
     identifyPipeQ: "Come uso l'AI per identificare una pipa?",
+    identifyPipeSteps: [
+      "Vai alla pagina AI Tabaccaio (o scheda Tabaccaio esperto)",
+      "Tocca la scheda Identificazione",
+      "Carica una foto della tua pipa",
+      "Tocca Analizza per ottenere i risultati di identificazione AI"
+    ],
     subscriptions: "Abbonamenti", upgradeQ: "Come aggiorno il mio abbonamento?",
+    upgradeSteps: [
+      "Vai alla pagina Profilo",
+      "Tocca Gestisci abbonamento o Aggiorna",
+      "Seleziona il piano desiderato",
+      "Completa il processo di pagamento"
+    ],
     cancelQ: "Come annullo il mio abbonamento?",
+    cancelSteps: [
+      "Vai alla pagina Profilo",
+      "Tocca Gestisci abbonamento",
+      "Segui i passaggi di cancellazione nel tuo portale abbonamenti"
+    ],
   },
   troubleshooting: {
     title: "Risoluzione problemi", subtitle: "Problemi comuni e soluzioni",

@@ -3,18 +3,94 @@ const docs = {
   howTo: {
     pageTitle: "Cómo hacer", pageSubtitle: "Respuestas rápidas con rutas de navegación claras",
     managingPipes: "Gestionar pipas", addPipeQ: "¿Cómo agrego una pipa a mi colección?",
+    addPipeBasicSteps: [
+      "Toca la pestaña Pipas en el menú de navegación",
+      "Toca el botón + Agregar Pipa en la esquina superior derecha",
+      "Completa los detalles de la pipa (nombre, fabricante, forma, etc.)",
+      "Opcionalmente añade fotos usando el área de carga de fotos",
+      "Toca Guardar para agregar la pipa a tu colección"
+    ],
     updatePipeQ: "¿Cómo actualizo los detalles de una pipa?",
+    updatePipeSteps: [
+      "Navega a la página de Pipas",
+      "Toca la pipa que deseas editar",
+      "En la página de detalles, toca el ícono de Editar (lápiz)",
+      "Haz tus cambios",
+      "Toca Guardar"
+    ],
     markFavoriteQ: "¿Cómo marco una pipa como favorita?",
+    markFavoriteSteps: [
+      "Navega a la página de Pipas o a la página de detalles de la pipa",
+      "Toca el ícono de corazón en la tarjeta o página de detalles",
+      "El corazón se volverá rojo para indicar que es un favorito"
+    ],
     managingTobacco: "Gestionar tabaco", addTobaccoQ: "¿Cómo agrego una mezcla de tabaco?",
+    addTobaccoSteps: [
+      "Toca la pestaña Tabaco en el menú de navegación",
+      "Toca el botón + Agregar Mezcla",
+      "Busca la mezcla por nombre para completar detalles automáticamente, o ingrésalos manualmente",
+      "Establece tu inventario (latas, onzas a granel, estado)",
+      "Toca Guardar"
+    ],
     updateTobaccoQ: "¿Cómo actualizo una mezcla de tabaco?",
+    updateTobaccoSteps: [
+      "Navega a la página de Tabaco",
+      "Toca la mezcla que deseas editar",
+      "En la página de detalles, toca el ícono de Editar",
+      "Haz tus cambios y toca Guardar"
+    ],
     loggingSessions: "Registrar sesiones", logSessionQ: "¿Cómo registro una sesión de fumada?",
+    logSessionSteps: [
+      "Ve a la página de Inicio",
+      "Desplázate hasta el panel de Perspectivas de Colección",
+      "Toca la pestaña Registro",
+      "Selecciona la pipa y la mezcla de tabaco que usaste",
+      "Completa los detalles de la sesión (duración, valoración, notas)",
+      "Toca Guardar Sesión"
+    ],
     viewLogsQ: "¿Cómo veo mi historial de fumadas?",
+    viewLogsSteps: [
+      "Ve a la página de Inicio",
+      "Desplázate hasta el panel de Perspectivas de Colección",
+      "Toca la pestaña Registro para ver tu historial de sesiones"
+    ],
     measurements: "Medidas de pipas", measurePipeQ: "¿Cómo agrego medidas a una pipa?",
+    measurePipeSteps: [
+      "Abre la página de detalles de la pipa",
+      "Toca el ícono de Editar",
+      "Desplázate hasta la sección de medidas",
+      "Ingresa las dimensiones manualmente, o usa la herramienta de Geometría AI para completar automáticamente desde fotos",
+      "Toca Guardar"
+    ],
     aiFeatures: "Funciones de IA",
     generatePairingsQ: "¿Cómo genero recomendaciones de maridaje pipa-tabaco?",
+    generatePairingsSteps: [
+      "Ve a la página de Inicio",
+      "Encuentra el panel de Actualizaciones AI",
+      "Toca Regenerar junto a Matriz de Maridaje",
+      "Una vez generados, ve los maridajes en Perspectivas de Colección > Cuadrícula de Maridaje"
+    ],
     identifyPipeQ: "¿Cómo uso la IA para identificar una pipa?",
+    identifyPipeSteps: [
+      "Ve a la página del Tabaquero AI (o pestaña Tabaquero Experto)",
+      "Toca la pestaña de Identificación",
+      "Sube una foto de tu pipa",
+      "Toca Analizar para obtener resultados de identificación AI"
+    ],
     subscriptions: "Suscripciones",
-    upgradeQ: "¿Cómo actualizo mi suscripción?", cancelQ: "¿Cómo cancelo mi suscripción?",
+    upgradeQ: "¿Cómo actualizo mi suscripción?",
+    upgradeSteps: [
+      "Ve a la página de Perfil",
+      "Toca Gestionar Suscripción o Actualizar",
+      "Selecciona tu plan deseado",
+      "Completa el proceso de pago"
+    ],
+    cancelQ: "¿Cómo cancelo mi suscripción?",
+    cancelSteps: [
+      "Ve a la página de Perfil",
+      "Toca Gestionar Suscripción",
+      "Sigue los pasos de cancelación en tu portal de suscripción"
+    ],
   },
   troubleshooting: {
     title: "Solución de problemas", subtitle: "Problemas comunes y soluciones",

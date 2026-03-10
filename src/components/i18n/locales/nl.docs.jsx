@@ -3,17 +3,92 @@ const docs = {
   howTo: {
     pageTitle: "Hoe te doen", pageSubtitle: "Snelle antwoorden met duidelijke navigatiepaden",
     managingPipes: "Pijpen beheren", addPipeQ: "Hoe voeg ik een pijp toe aan mijn collectie?",
+    addPipeBasicSteps: [
+      "Tik op het tabblad Pijpen in het navigatiemenu",
+      "Tik op de knop + Pijp toevoegen rechtsboven",
+      "Vul de pijpdetails in (naam, maker, vorm, enz.)",
+      "Voeg optioneel foto's toe via het foto-uploadgebied",
+      "Tik op Opslaan om de pijp aan uw collectie toe te voegen"
+    ],
     updatePipeQ: "Hoe update ik de details van een pijp?",
+    updatePipeSteps: [
+      "Navigeer naar de pagina Pijpen",
+      "Tik op de pijp die u wilt bewerken",
+      "Tik op de detailpagina op het pictogram Bewerken (potlood)",
+      "Breng uw wijzigingen aan",
+      "Tik op Opslaan"
+    ],
     markFavoriteQ: "Hoe markeer ik een pijp als favoriet?",
+    markFavoriteSteps: [
+      "Navigeer naar de pagina Pijpen of de detailpagina van de pijp",
+      "Tik op het hartpictogram op de kaart of detailpagina",
+      "Het hart wordt rood om aan te geven dat het een favoriet is"
+    ],
     managingTobacco: "Tabak beheren", addTobaccoQ: "Hoe voeg ik een tabaksmengsel toe?",
+    addTobaccoSteps: [
+      "Tik op het tabblad Tabak in het navigatiemenu",
+      "Tik op de knop + Mengsel toevoegen",
+      "Zoek het mengsel op naam om details automatisch in te vullen, of voer ze handmatig in",
+      "Stel uw inventaris in (blikjes, bulk oz, status)",
+      "Tik op Opslaan"
+    ],
     updateTobaccoQ: "Hoe update ik een tabaksmengsel?",
+    updateTobaccoSteps: [
+      "Navigeer naar de pagina Tabak",
+      "Tik op het mengsel dat u wilt bewerken",
+      "Tik op de detailpagina op het pictogram Bewerken",
+      "Breng uw wijzigingen aan en tik op Opslaan"
+    ],
     loggingSessions: "Sessies registreren", logSessionQ: "Hoe registreer ik een rooksessie?",
+    logSessionSteps: [
+      "Ga naar de startpagina",
+      "Scroll naar het venster Collectie-inzichten",
+      "Tik op het tabblad Logboek",
+      "Selecteer de pijp en het tabaksmengsel dat u hebt gebruikt",
+      "Vul de sessiedetails in (duur, beoordeling, notities)",
+      "Tik op Sessie opslaan"
+    ],
     viewLogsQ: "Hoe bekijk ik mijn rookgeschiedenis?",
+    viewLogsSteps: [
+      "Ga naar de startpagina",
+      "Scroll naar het venster Collectie-inzichten",
+      "Tik op het tabblad Logboek om uw sessiegeschiedenis te bekijken"
+    ],
     measurements: "Pijpmetingen", measurePipeQ: "Hoe voeg ik metingen toe aan een pijp?",
+    measurePipeSteps: [
+      "Open de detailpagina van de pijp",
+      "Tik op het pictogram Bewerken",
+      "Scroll naar de sectie metingen",
+      "Voer de afmetingen handmatig in of gebruik het AI-geometrieprogramma om automatisch in te vullen vanuit foto's",
+      "Tik op Opslaan"
+    ],
     aiFeatures: "AI-functies", generatePairingsQ: "Hoe genereer ik pijp-tabak koppelingsaanbevelingen?",
+    generatePairingsSteps: [
+      "Ga naar de startpagina",
+      "Vind het venster AI-updates",
+      "Tik op Opnieuw genereren naast Koppelingsmatrix",
+      "Na het genereren bekijkt u koppelingen in Collectie-inzichten > Koppelingsraster"
+    ],
     identifyPipeQ: "Hoe gebruik ik AI om een pijp te identificeren?",
+    identifyPipeSteps: [
+      "Ga naar de pagina AI Tabakshandelaar (of tabblad Expert Tabakshandelaar)",
+      "Tik op het tabblad Identificatie",
+      "Upload een foto van uw pijp",
+      "Tik op Analyseren om AI-identificatieresultaten te krijgen"
+    ],
     subscriptions: "Abonnementen", upgradeQ: "Hoe upgrade ik mijn abonnement?",
+    upgradeSteps: [
+      "Ga naar de pagina Profiel",
+      "Tik op Abonnement beheren of Upgraden",
+      "Selecteer uw gewenste plan",
+      "Voltooi het afrekenproces"
+    ],
     cancelQ: "Hoe zeg ik mijn abonnement op?",
+    cancelSteps: [
+      "Ga naar de pagina Profiel",
+      "Tik op Abonnement beheren",
+      "Volg de annuleringsstappen in uw abonnementsportaal"
+    ],
   },
   troubleshooting: {
     title: "Probleemoplossing", subtitle: "Veelvoorkomende problemen en oplossingen",

@@ -3,17 +3,92 @@ const docs = {
   howTo: {
     pageTitle: "Como fazer", pageSubtitle: "Respostas rápidas com caminhos de navegação claros",
     managingPipes: "Gerenciar cachimbos", addPipeQ: "Como adiciono um cachimbo à minha coleção?",
+    addPipeBasicSteps: [
+      "Toque na aba Cachimbos no menu de navegação",
+      "Toque no botão + Adicionar Cachimbo no canto superior direito",
+      "Preencha os detalhes do cachimbo (nome, fabricante, forma, etc.)",
+      "Opcionalmente adicione fotos usando a área de upload de fotos",
+      "Toque em Salvar para adicionar o cachimbo à sua coleção"
+    ],
     updatePipeQ: "Como atualizo os detalhes de um cachimbo?",
+    updatePipeSteps: [
+      "Navegue até a página de Cachimbos",
+      "Toque no cachimbo que deseja editar",
+      "Na página de detalhes, toque no ícone Editar (lápis)",
+      "Faça suas alterações",
+      "Toque em Salvar"
+    ],
     markFavoriteQ: "Como marco um cachimbo como favorito?",
+    markFavoriteSteps: [
+      "Navegue até a página de Cachimbos ou a página de detalhes do cachimbo",
+      "Toque no ícone de coração no cartão ou página de detalhes",
+      "O coração ficará vermelho para indicar que é um favorito"
+    ],
     managingTobacco: "Gerenciar tabaco", addTobaccoQ: "Como adiciono uma mistura de tabaco?",
+    addTobaccoSteps: [
+      "Toque na aba Tabaco no menu de navegação",
+      "Toque no botão + Adicionar Mistura",
+      "Procure a mistura pelo nome para preencher detalhes automaticamente, ou insira manualmente",
+      "Defina seu inventário (latas, oz a granel, status)",
+      "Toque em Salvar"
+    ],
     updateTobaccoQ: "Como atualizo uma mistura de tabaco?",
+    updateTobaccoSteps: [
+      "Navegue até a página de Tabaco",
+      "Toque na mistura que deseja editar",
+      "Na página de detalhes, toque no ícone Editar",
+      "Faça suas alterações e toque em Salvar"
+    ],
     loggingSessions: "Registrar sessões", logSessionQ: "Como registro uma sessão de fumo?",
+    logSessionSteps: [
+      "Vá para a página Inicial",
+      "Role até o painel de Insights da Coleção",
+      "Toque na aba Registro",
+      "Selecione o cachimbo e a mistura de tabaco usados",
+      "Preencha os detalhes da sessão (duração, avaliação, notas)",
+      "Toque em Salvar Sessão"
+    ],
     viewLogsQ: "Como vejo meu histórico de fumo?",
+    viewLogsSteps: [
+      "Vá para a página Inicial",
+      "Role até o painel de Insights da Coleção",
+      "Toque na aba Registro para ver seu histórico de sessões"
+    ],
     measurements: "Medidas de cachimbo", measurePipeQ: "Como adiciono medidas a um cachimbo?",
+    measurePipeSteps: [
+      "Abra a página de detalhes do cachimbo",
+      "Toque no ícone Editar",
+      "Role até a seção de medidas",
+      "Insira as dimensões manualmente ou use a ferramenta de Geometria IA para preencher automaticamente a partir de fotos",
+      "Toque em Salvar"
+    ],
     aiFeatures: "Recursos de IA", generatePairingsQ: "Como gero recomendações de combinação cachimbo-tabaco?",
+    generatePairingsSteps: [
+      "Vá para a página Inicial",
+      "Encontre o painel de Atualizações IA",
+      "Toque em Regenerar ao lado de Matriz de Combinações",
+      "Após a geração, veja as combinações em Insights da Coleção > Grade de Combinações"
+    ],
     identifyPipeQ: "Como uso a IA para identificar um cachimbo?",
+    identifyPipeSteps: [
+      "Vá para a página do Tabacaleiro IA (ou aba Tabacaleiro Especialista)",
+      "Toque na aba Identificação",
+      "Carregue uma foto do seu cachimbo",
+      "Toque em Analisar para obter resultados de identificação IA"
+    ],
     subscriptions: "Assinaturas", upgradeQ: "Como faço upgrade da minha assinatura?",
+    upgradeSteps: [
+      "Vá para a página de Perfil",
+      "Toque em Gerenciar Assinatura ou Atualizar",
+      "Selecione o plano desejado",
+      "Conclua o processo de pagamento"
+    ],
     cancelQ: "Como cancelo minha assinatura?",
+    cancelSteps: [
+      "Vá para a página de Perfil",
+      "Toque em Gerenciar Assinatura",
+      "Siga os passos de cancelamento no seu portal de assinatura"
+    ],
   },
   troubleshooting: {
     title: "Solução de problemas", subtitle: "Problemas comuns e soluções",

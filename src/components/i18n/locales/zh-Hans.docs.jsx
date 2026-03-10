@@ -3,17 +3,92 @@ const docs = {
   howTo: {
     pageTitle: "使用指南", pageSubtitle: "带有清晰导航路径的快速回答",
     managingPipes: "管理烟斗", addPipeQ: "如何将烟斗添加到我的收藏？",
+    addPipeBasicSteps: [
+      "点击导航菜单中的烟斗标签",
+      "点击右上角的“+ 添加烟斗”按钮",
+      "填写烟斗详情（名称、制造商、形状等）",
+      "可选择通过照片上传区域添加照片",
+      "点击保存将烟斗添加到您的收藏"
+    ],
     updatePipeQ: "如何更新烟斗的详细信息？",
+    updatePipeSteps: [
+      "导航到烟斗页面",
+      "点击您想编辑的烟斗",
+      "在详情页面点击编辑（铅笔）图标",
+      "进行您的更改",
+      "点击保存"
+    ],
     markFavoriteQ: "如何将烟斗标记为收藏？",
+    markFavoriteSteps: [
+      "导航到烟斗页面或烟斗详情页面",
+      "点击卡片或详情页面上的心形图标",
+      "心形将变为红色表示已设为收藏"
+    ],
     managingTobacco: "管理烟草", addTobaccoQ: "如何添加烟草混合物？",
+    addTobaccoSteps: [
+      "点击导航菜单中的烟草标签",
+      "点击“+ 添加混合”按钮",
+      "按名称搜索混合以自动填写详情，或手动输入",
+      "设置您的库存（罐装、散装盎司、状态）",
+      "点击保存"
+    ],
     updateTobaccoQ: "如何更新烟草混合物？",
+    updateTobaccoSteps: [
+      "导航到烟草页面",
+      "点击您想编辑的混合",
+      "在详情页面点击编辑图标",
+      "进行您的更改并点击保存"
+    ],
     loggingSessions: "记录会话", logSessionQ: "如何记录吸烟会话？",
+    logSessionSteps: [
+      "前往主页",
+      "滚动到收藏洞察面板",
+      "点击日志标签",
+      "选择您使用的烟斗和烟草混合",
+      "填写会话详情（时长、评分、备注）",
+      "点击保存会话"
+    ],
     viewLogsQ: "如何查看我的吸烟历史？",
+    viewLogsSteps: [
+      "前往主页",
+      "滚动到收藏洞察面板",
+      "点击日志标签查看您的会话历史"
+    ],
     measurements: "烟斗测量", measurePipeQ: "如何为烟斗添加测量值？",
+    measurePipeSteps: [
+      "打开烟斗详情页面",
+      "点击编辑图标",
+      "滚动到测量部分",
+      "手动输入尺寸，或使用AI几何工具从照片自动填写",
+      "点击保存"
+    ],
     aiFeatures: "AI 功能", generatePairingsQ: "如何生成烟斗-烟草搭配推荐？",
+    generatePairingsSteps: [
+      "前往主页",
+      "找到AI更新面板",
+      "点击配对矩阵旁边的重新生成",
+      "生成后，在收藏洞察 > 配对网格中查看配对"
+    ],
     identifyPipeQ: "如何使用 AI 识别烟斗？",
+    identifyPipeSteps: [
+      "前往AI烟草专家页面（或专家烟草专家标签）",
+      "点击识别标签",
+      "上传您的烟斗照片",
+      "点击分析以获取AI识别结果"
+    ],
     subscriptions: "订阅", upgradeQ: "如何升级我的订阅？",
+    upgradeSteps: [
+      "前往个人资料页面",
+      "点击管理订阅或升级",
+      "选择您想要的计划",
+      "完成结账流程"
+    ],
     cancelQ: "如何取消我的订阅？",
+    cancelSteps: [
+      "前往个人资料页面",
+      "点击管理订阅",
+      "按照订阅门户中的取消步骤操作"
+    ],
   },
   troubleshooting: {
     title: "故障排除", subtitle: "常见问题和解决方案",

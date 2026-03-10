@@ -3,16 +3,94 @@ const docs = {
   howTo: {
     pageTitle: "Comment faire", pageSubtitle: "Réponses rapides avec des chemins de navigation clairs",
     managingPipes: "Gestion des pipes", addPipeQ: "Comment ajouter une pipe à ma collection ?",
+    addPipeBasicSteps: [
+      "Appuyez sur l'onglet Pipes dans le menu de navigation",
+      "Appuyez sur le bouton + Ajouter une pipe en haut à droite",
+      "Remplissez les détails de la pipe (nom, fabricant, forme, etc.)",
+      "Ajoutez optionnellement des photos via la zone de téléchargement",
+      "Appuyez sur Enregistrer pour ajouter la pipe à votre collection"
+    ],
     updatePipeQ: "Comment mettre à jour les détails d'une pipe ?",
+    updatePipeSteps: [
+      "Accédez à la page Pipes",
+      "Appuyez sur la pipe que vous souhaitez modifier",
+      "Sur la page de détails, appuyez sur l'icône Modifier (crayon)",
+      "Effectuez vos modifications",
+      "Appuyez sur Enregistrer"
+    ],
     markFavoriteQ: "Comment marquer une pipe comme favorite ?",
+    markFavoriteSteps: [
+      "Accédez à la page Pipes ou à la page de détails de la pipe",
+      "Appuyez sur l'icône cœur sur la carte ou la page de détails",
+      "Le cœur deviendra rouge pour indiquer qu'il s'agit d'un favori"
+    ],
     managingTobacco: "Gestion du tabac", addTobaccoQ: "Comment ajouter un mélange de tabac ?",
+    addTobaccoSteps: [
+      "Appuyez sur l'onglet Tabac dans le menu de navigation",
+      "Appuyez sur le bouton + Ajouter un mélange",
+      "Recherchez le mélange par nom pour remplir automatiquement les détails, ou saisissez-les manuellement",
+      "Définissez votre inventaire (boîtes, oz en vrac, statut)",
+      "Appuyez sur Enregistrer"
+    ],
     updateTobaccoQ: "Comment mettre à jour un mélange de tabac ?",
+    updateTobaccoSteps: [
+      "Accédez à la page Tabac",
+      "Appuyez sur le mélange que vous souhaitez modifier",
+      "Sur la page de détails, appuyez sur l'icône Modifier",
+      "Effectuez vos modifications et appuyez sur Enregistrer"
+    ],
     loggingSessions: "Enregistrement des séances", logSessionQ: "Comment enregistrer une séance de fumage ?",
+    logSessionSteps: [
+      "Accédez à la page d'Accueil",
+      "Faites défiler jusqu'au panneau Aperçus de collection",
+      "Appuyez sur l'onglet Journal",
+      "Sélectionnez la pipe et le mélange de tabac utilisés",
+      "Remplissez les détails de la session (durée, note, notes)",
+      "Appuyez sur Enregistrer la session"
+    ],
     viewLogsQ: "Comment voir mon historique de fumage ?",
+    viewLogsSteps: [
+      "Accédez à la page d'Accueil",
+      "Faites défiler jusqu'au panneau Aperçus de collection",
+      "Appuyez sur l'onglet Journal pour voir votre historique de sessions"
+    ],
     measurements: "Mesures de pipe", measurePipeQ: "Comment ajouter des mesures à une pipe ?",
+    measurePipeSteps: [
+      "Ouvrez la page de détails de la pipe",
+      "Appuyez sur l'icône Modifier",
+      "Faites défiler jusqu'à la section des mesures",
+      "Saisissez les dimensions manuellement ou utilisez l'outil Géométrie IA pour remplir depuis les photos",
+      "Appuyez sur Enregistrer"
+    ],
     aiFeatures: "Fonctionnalités IA",
     generatePairingsQ: "Comment générer des recommandations d'association pipe-tabac ?",
+    generatePairingsSteps: [
+      "Accédez à la page d'Accueil",
+      "Trouvez le panneau Mises à jour IA",
+      "Appuyez sur Régénérer à côté de Matrice d'associations",
+      "Une fois générés, consultez les associations dans Aperçus de collection > Grille d'associations"
+    ],
     identifyPipeQ: "Comment utiliser l'IA pour identifier une pipe ?",
+    identifyPipeSteps: [
+      "Accédez à la page Tobacconist IA (ou onglet Expert Tobacconist)",
+      "Appuyez sur l'onglet Identification",
+      "Téléchargez une photo de votre pipe",
+      "Appuyez sur Analyser pour obtenir les résultats d'identification IA"
+    ],
+    subscriptions: "Abonnements",
+    upgradeQ: "Comment mettre à niveau mon abonnement ?",
+    upgradeSteps: [
+      "Accédez à la page Profil",
+      "Appuyez sur Gérer l'abonnement ou Mettre à niveau",
+      "Sélectionnez votre plan souhaité",
+      "Finalisez le processus de paiement"
+    ],
+    cancelQ: "Comment annuler mon abonnement ?",
+    cancelSteps: [
+      "Accédez à la page Profil",
+      "Appuyez sur Gérer l'abonnement",
+      "Suivez les étapes d'annulation dans votre portail d'abonnement"
+    ],
     collectionInsightsQ: "Comment voir les aperçus de ma collection ?",
     subscriptionQ: "Comment gérer mon abonnement ?",
     importExportQ: "Comment exporter ma collection ?",
