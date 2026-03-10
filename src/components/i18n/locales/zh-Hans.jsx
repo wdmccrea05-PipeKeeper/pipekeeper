@@ -1322,9 +1322,9 @@ export default {
 
   shapes: {
     Billiard: "圆形", Dublin: "都柏林", Apple: "苹果形", Pot: "矮罐形",
-    Bulldog: "斗牛犬形", Rhodesian: "罗德西亚形", Brandy: "白兰地形",
+    Bulldog: "斗牛犬形", Rhodesian: "罗德西亚形", Bent: "弯曲形", Brandy: "白兰地形",
     Calabash: "葫芦形", Canadian: "加拿大形", Cavalier: "骑士形",
-    Churchwarden: "教堂执事形", Freehand: "自由形",
+    Chimney: "烟囱形", Churchwarden: "教堂执事形", Freehand: "自由形",
     Horn: "角形", Liverpool: "利物浦形", Lovat: "洛瓦特形", Lumberman: "伐木工形",
     Nautilus: "鹦鹉螺形", Pear: "梨形", Poker: "扑克形", Prince: "王子形",
     Viking: "维京形", Volcano: "火山形", Acorn: "橡果形",
@@ -1336,7 +1336,9 @@ export default {
     "Vest Pocket": "马甲口袋形", MacArthur: "麦克阿瑟形",
     "Reverse Calabash": "反向葫芦形", Author: "作者形", Tomahawk: "战斧形",
     Bullmoose: "牛驼鹿形", Bullcap: "牛帽形",
-    "Oom Paul (Hungarian)": "乌姆保罗（匈牙利）", Tyrolean: "蒂罗尔形",
+    Hungarian: "匈牙利形", "Oom Paul": "乌姆保罗",
+    "Oom Paul (Hungarian)": "乌姆保罗（匈牙利）", Panel: "面板形",
+    Sitter: "坐式形", Woodstock: "伍德斯托克形", Zulu: "祖鲁形", Tyrolean: "蒂罗尔形",
   },
 
   materials: {

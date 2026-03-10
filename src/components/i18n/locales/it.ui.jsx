@@ -868,6 +868,34 @@ const itUI = {
     exploreCommunity: "Esplora la community",
   },
 
+  faqFull: {
+    freeTier: "Livello gratuito",
+    upTo5Pipes: "Fino a 5 pipe",
+    upTo10Tobacco: "Fino a 10 miscele di tabacco",
+    basicCollection: "Gestione di base della collezione",
+    photoUploads: "Caricamenti di foto",
+    subscriptionTiersQuestion: "Quali sono i livelli di abbonamento e cosa includono?",
+    freeTrial7Days: "Prova di 7 giorni di tutte le funzionalità premium",
+    premiumTier: "Livello Premium",
+    unlimitedPipesTobacco: "Pipe e miscele di tabacco illimitate",
+    aiMatching: "Raccomandazioni di abbinamento tabacco tramite IA",
+    pairingMatrix: "Matrice di abbinamento e ottimizzazione",
+    smokingLog: "Registro delle fumata e pianificatore di rotazione",
+    collectionInsights: "Statistiche e informazioni sulla collezione",
+    exportReports: "Esporta report (PDF, CSV, Excel)",
+    publicProfile: "Profilo pubblico e funzionalità comunitarie",
+    breakInSchedules: "Calendari di rodaggio",
+    proTier: "Livello Pro",
+    everythingInPremium: "Tutto in Premium, più:",
+    aiPipeIdentification: "Identificazione pipa tramite IA da foto",
+    marketValueLookup: "Ricerca valore di mercato per pipe e tabacco",
+    geometryAnalysis: "Analisi geometrica da foto",
+    tobaccoAgingProjections: "Proiezioni di invecchiamento del tabacco",
+    advancedValuation: "Tracciamento valutazione avanzato",
+    prioritySupport: "Supporto prioritario",
+    fullFeatureDescription: "Per una descrizione completa delle funzionalità, visita",
+  },
+
 };
 
 export default itUI;

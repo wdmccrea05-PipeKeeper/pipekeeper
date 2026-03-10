@@ -1443,8 +1443,8 @@ const translations = {
 
   shapes: {
     Billiard: "Billiard", Dublin: "Dublin", Apple: "Apple", Pot: "Pot", Bulldog: "Bulldog",
-    Rhodesian: "Rhodesian", Brandy: "Brandy", Calabash: "Calabash", Canadian: "Canadian",
-    Cavalier: "Cavalier", Churchwarden: "Churchwarden", Freehand: "Freehand",
+    Rhodesian: "Rhodesian", Bent: "Curvado", Brandy: "Brandy", Calabash: "Calabash", Canadian: "Canadian",
+    Cavalier: "Cavalier", Chimney: "Chimney", Churchwarden: "Churchwarden", Freehand: "Freehand",
     Horn: "Horn", Liverpool: "Liverpool", Lovat: "Lovat", Lumberman: "Lumberman",
     Nautilus: "Nautilus", Pear: "Pear", Poker: "Poker", Prince: "Prince",
     Viking: "Viking", Volcano: "Volcano", Acorn: "Acorn", Blowfish: "Blowfish",
@@ -1455,7 +1455,9 @@ const translations = {
     Duke: "Duke", Don: "Don", Tankard: "Tankard", Nosewarmer: "Nosewarmer",
     "Vest Pocket": "Vest Pocket", MacArthur: "MacArthur", "Reverse Calabash": "Reverse Calabash",
     Author: "Author", Tomahawk: "Tomahawk", Bullmoose: "Bullmoose", Bullcap: "Bullcap",
-    "Oom Paul (Hungarian)": "Oom Paul (Húngaro)", Tyrolean: "Tyrolean",
+    Hungarian: "Húngaro", "Oom Paul": "Oom Paul",
+    "Oom Paul (Hungarian)": "Oom Paul (Húngaro)", Panel: "Panel",
+    Sitter: "Sitter", Woodstock: "Woodstock", Zulu: "Zulu", Tyrolean: "Tyrolean",
   },
 
   materials: {
