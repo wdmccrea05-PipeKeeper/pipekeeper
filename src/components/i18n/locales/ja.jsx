@@ -701,6 +701,20 @@ export default {
     statusLabel: { active: "有効", trialing: "試用", past_due: "支払い遅延", canceled: "キャンセル済み", incomplete: "不完全", unpaid: "未払い" },
     providerStripe: "Stripe", providerApple: "Apple",
     preferredBlendTypes: "好みのブレンドタイプ", preferredPipeShapes: "好みのパイプ形状",
+    profilePicture: "プロフィール写真", avatarAlt: "アバター", uploading: "アップロード中…",
+    displayName: "表示名", bio: "自己紹介", location: "場所",
+    showOnProfile: "プロフィールに表示",
+    cityPlaceholder: "市区町村", stateProvincePlaceholder: "都道府県",
+    countryPlaceholder: "国", postalCodePlaceholder: "郵便番号",
+    privacy: "プライバシー", hideValues: "価値を非表示",
+    hideInventory: "在庫を非表示", hideCollectionCounts: "コレクション数を非表示",
+    clenchingPreference: "クレンチングの好み",
+    smokeDurationPreference: "喫煙時間の好み",
+    pipeSizePreference: "パイプサイズの好み",
+    strengthPreference: "強度の好み",
+    publicCommunityProfile: "公開コミュニティプロフィール",
+    allowOthersToView: "他のユーザーがコミュニティであなたのプロフィールを閲覧できるようにします。",
+    saving: "保存中…", previewPublicProfile: "公開プロフィールをプレビュー",
   },
 
   ageGate: {
@@ -995,6 +1009,8 @@ export default {
     somethingWentWrong: "問題が発生しました", unknownError: "不明なエラーが発生しました",
     couldntLoadResponse: "応答を読み込めませんでした。もう一度お試しください。",
     analyzeImpact: "影響を分析",
+    regenerate: "再生成", expectedImprovement: "{blendTypes}の予想改善",
+    priorityChange: "優先変更 #{num}", expectedImprovementGeneral: "予想改善",
   },
 
   publicProfile: {
@@ -1074,6 +1090,13 @@ export default {
     optimalRange: "最適範囲：30–70%", stemOxidation: "ステムの酸化",
     good: "良好", thin: "薄い", thick: "厚い",
     heavyOxidation: "重度の酸化", moderateOxidation: "中程度の酸化",
+    conditionMint: "ミント", conditionExcellent: "エクセレント",
+    conditionVeryGood: "非常に良い", conditionGood: "良い",
+    conditionFair: "まずまず", conditionPoor: "要注意",
+    conditionEstateUnrestored: "エステート - 未修復",
+    oxidation: "酸化", generalWear: "一般的な消耗", wear: "消耗",
+    minimalWear: "軽微な消耗", lightWear: "軽度の消耗",
+    moderateWear: "中程度の消耗", heavyWear: "重度の消耗",
   },
 
   maintenanceLog: {
@@ -1086,6 +1109,10 @@ export default {
     reaming: "リーミング", polishing: "ポリッシング", stemWork: "ステム作業", other: "その他",
     by: "実施者", type: "種類", date: "日付", description: "説明", cost: "費用",
     performedBy: "実施者", save: "エントリを保存",
+    descriptionPlaceholder: "実施したメンテナンスを説明してください…",
+    performedByPlaceholder: "例：自分、プロ",
+    costOptional: "費用（任意）",
+    saveEntry: "エントリを保存",
   },
 
   tobaccoExtended: {
@@ -1349,9 +1376,14 @@ export default {
     "Virginia": "バージニア", "Virginia/Perique": "バージニア/ペリーク",
     "English": "イングリッシュ", "English Aromatic": "イングリッシュアロマティック",
     "Balkan": "バルカン", "Aromatic": "アロマティック", "Burley": "バーレー",
-    "Virginia/Burley": "バージニア/バーレー", "Latakia Blend": "ラタキアブレンド",
+    "Burley-based": "バーレーベース", "Virginia/Burley": "バージニア/バーレー",
+    "Virginia/Oriental": "バージニア/オリエンタル", "Latakia Blend": "ラタキアブレンド",
     "Oriental/Turkish": "オリエンタル/トルコ", "Navy Flake": "ネービーフレーク",
-    "Dark Fired": "ダークファイアード", "Cavendish": "キャベンディッシュ", "Other": "その他",
+    "Dark Fired": "ダークファイアード", "Dark Fired Kentucky": "ダークファイアードケンタッキー",
+    "Cavendish": "キャベンディッシュ", "Codger Blend": "コジャーブレンド",
+    "Full English/Oriental": "フルイングリッシュ/オリエンタル", "Kentucky": "ケンタッキー",
+    "Lakeland": "レイクランド", "American": "アメリカン", "Perique": "ペリーク",
+    "Shag": "シャグ", "Other": "その他",
   },
 
   cuts: {
@@ -1363,7 +1395,8 @@ export default {
 
   strengths: {
     "Mild": "マイルド", "Mild-Medium": "マイルド～ミディアム", "Medium": "ミディアム",
-    "Medium-Full": "ミディアム～フル", "Full": "フル",
+    "Medium-Strong": "ミディアム～ストロング", "Medium-Full": "ミディアム～フル",
+    "Strong": "ストロング", "Full": "フル",
   },
 
   conditions: {
@@ -1414,12 +1447,12 @@ export default {
     "Natural": "ナチュラル", "Other": "その他",
   },
 
-  productionStatus: {
-    "Current Production": "現在生産中", "Discontinued": "廃盤",
-    "Limited Edition": "限定版", "Vintage": "ヴィンテージ",
+  productionStatuses: {
+    "Current Production": "現行品", "Discontinued": "廃番",
+    "Limited Edition": "限定版", "Vintage": "ビンテージ",
   },
 
-  agingPotential: {
+  agingPotentials: {
     "Poor": "低い", "Fair": "普通", "Good": "良い", "Excellent": "優秀",
   },
 
@@ -1467,5 +1500,18 @@ export default {
     cannotDeleteOtherMessage: "自分のメッセージのみ削除できます",
     failedToSend: "メッセージの送信に失敗しました。もう一度お試しください。",
     chatDescription: "チャット会話", inboxDescription: "メッセージ受信トレイ",
+  },
+
+  tobaccoLibrarySync: {
+    title: "タバコロゴライブラリ同期",
+    description: "コレクションをロゴライブラリと同期して不足しているロゴを追加します。",
+    syncStatus: "同期ステータス", totalBlends: "ブレンド総数",
+    missingLogos: "ロゴが不足しているブレンド",
+    willBeUpdated: "件のブレンドが更新されます",
+    syncing: "同期中…", syncButton: "{count}件のブレンドを同期",
+    allHaveLogos: "すべてのブレンドにロゴがあります",
+    noSyncNeeded: "同期の必要はありません",
+    complete: "同期完了", updated: "{count}件のブレンドを更新しました",
+    failed: "{count}件が失敗しました",
   },
 };

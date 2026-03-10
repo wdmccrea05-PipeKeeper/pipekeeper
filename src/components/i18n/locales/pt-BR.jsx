@@ -1240,6 +1240,20 @@ const translations = {
     optimalRange: "Intervalo ideal: 30–70%", stemOxidation: "Oxidação do piteiro",
     good: "Bom", thin: "Fino", thick: "Grosso",
     heavyOxidation: "Oxidação intensa", moderateOxidation: "Oxidação moderada",
+    conditionMint: "Mint",
+    conditionExcellent: "Excelente",
+    conditionVeryGood: "Muito bom",
+    conditionGood: "Bom",
+    conditionFair: "Regular",
+    conditionPoor: "Ruim",
+    conditionEstateUnrestored: "Legado - Não restaurado",
+    oxidation: "oxidação",
+    generalWear: "Desgaste geral",
+    wear: "desgaste",
+    minimalWear: "Desgaste mínimo",
+    lightWear: "Desgaste leve",
+    moderateWear: "Desgaste moderado",
+    heavyWear: "Desgaste intenso",
   },
 
   maintenanceLog: {
@@ -1252,6 +1266,10 @@ const translations = {
     reaming: "Alargamento", polishing: "Polimento", stemWork: "Trabalho no piteiro", other: "Outro",
     by: "Por", type: "Tipo", date: "Data", description: "Descrição", cost: "Custo",
     performedBy: "Realizado por", save: "Salvar entrada",
+    descriptionPlaceholder: "Descreva a manutenção realizada…",
+    performedByPlaceholder: "Ex.: Próprio, Profissional",
+    costOptional: "Custo (opcional)",
+    saveEntry: "Salvar entrada",
   },
 
   tobaccoExtended: {
@@ -1535,7 +1553,7 @@ const translations = {
 
   strengths: {
     "Mild": "Suave", "Mild-Medium": "Suave-Médio", "Medium": "Médio",
-    "Medium-Full": "Médio-Forte", "Full": "Forte",
+    "Medium-Strong": "Médio-Forte", "Medium-Full": "Médio-Cheio", "Strong": "Forte", "Full": "Muito Forte",
   },
 
   conditions: {
@@ -1585,12 +1603,12 @@ const translations = {
     "Natural": "Natural", "Other": "Outro",
   },
 
-  productionStatus: {
+  productionStatuses: {
     "Current Production": "Produção atual", "Discontinued": "Descontinuado",
     "Limited Edition": "Edição limitada", "Vintage": "Vintage",
   },
 
-  agingPotential: {
+  agingPotentials: {
     "Poor": "Ruim", "Fair": "Regular", "Good": "Bom", "Excellent": "Excelente",
   },
 
@@ -1663,6 +1681,19 @@ const translations = {
     cannotDeleteOtherMessage: "Você só pode excluir suas próprias mensagens",
     failedToSend: "Falha ao enviar mensagem. Tente novamente.",
     chatDescription: "Conversa de chat", inboxDescription: "Caixa de entrada de mensagens",
+  },
+
+  tobaccoLibrarySync: {
+    title: "Sincronização de logos de tabaco",
+    description: "Sincronize sua coleção com a biblioteca de logos para adicionar logos ausentes.",
+    syncStatus: "Status de sincronização", totalBlends: "Total de misturas",
+    missingLogos: "Logos ausentes",
+    willBeUpdated: "misturas serão atualizadas",
+    syncing: "Sincronizando…", syncButton: "Sincronizar {count} mistura(s)",
+    allHaveLogos: "Todas as misturas têm logos",
+    noSyncNeeded: "Nenhuma sincronização necessária",
+    complete: "Sincronização concluída", updated: "{count} mistura(s) atualizada(s)",
+    failed: "{count} falhou",
   },
 };
 

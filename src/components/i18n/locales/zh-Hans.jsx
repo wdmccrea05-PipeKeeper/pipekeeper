@@ -1073,6 +1073,20 @@ export default {
     optimalRange: "最优范围：30–70%", stemOxidation: "烟嘴氧化",
     good: "良好", thin: "薄", thick: "厚",
     heavyOxidation: "严重氧化", moderateOxidation: "中度氧化",
+    conditionMint: "全新",
+    conditionExcellent: "优秀",
+    conditionVeryGood: "非常好",
+    conditionGood: "好",
+    conditionFair: "一般",
+    conditionPoor: "较差",
+    conditionEstateUnrestored: "旧物 - 未修复",
+    oxidation: "氧化",
+    generalWear: "一般磨损",
+    wear: "磨损",
+    minimalWear: "轻微磨损",
+    lightWear: "少量磨损",
+    moderateWear: "中等磨损",
+    heavyWear: "严重磨损",
   },
 
   maintenanceLog: {
@@ -1085,6 +1099,10 @@ export default {
     reaming: "扩孔", polishing: "抛光", stemWork: "烟嘴工作", other: "其他",
     by: "由", type: "类型", date: "日期", description: "描述", cost: "费用",
     performedBy: "执行者", save: "保存条目",
+    descriptionPlaceholder: "描述执行的维护…",
+    performedByPlaceholder: "例：自己、专业人员",
+    costOptional: "费用（可选）",
+    saveEntry: "保存条目",
   },
 
   tobaccoExtended: {
@@ -1359,7 +1377,7 @@ export default {
 
   strengths: {
     "Mild": "轻柔", "Mild-Medium": "轻柔至中等", "Medium": "中等",
-    "Medium-Full": "中等至浓", "Full": "浓烈",
+    "Medium-Strong": "中等偏浓", "Medium-Full": "中等至浓", "Strong": "浓", "Full": "浓烈",
   },
 
   conditions: {
@@ -1410,12 +1428,12 @@ export default {
     "Natural": "天然", "Other": "其他",
   },
 
-  productionStatus: {
+  productionStatuses: {
     "Current Production": "现行生产", "Discontinued": "停产",
     "Limited Edition": "限量版", "Vintage": "复古",
   },
 
-  agingPotential: {
+  agingPotentials: {
     "Poor": "差", "Fair": "一般", "Good": "良好", "Excellent": "优秀",
   },
 
@@ -1463,5 +1481,18 @@ export default {
     cannotDeleteOtherMessage: "您只能删除自己的消息",
     failedToSend: "发送消息失败。请重试。",
     chatDescription: "聊天对话", inboxDescription: "消息收件箱",
+  },
+
+  tobaccoLibrarySync: {
+    title: "烟草标志库同步",
+    description: "将您的收藏与标志库同步以添加缺少的标志。",
+    syncStatus: "同步状态", totalBlends: "混合总数",
+    missingLogos: "缺少标志",
+    willBeUpdated: "个混合将被更新",
+    syncing: "同步中…", syncButton: "同步 {count} 个混合",
+    allHaveLogos: "所有混合都有标志",
+    noSyncNeeded: "无需同步",
+    complete: "同步完成", updated: "已更新 {count} 个混合",
+    failed: "{count} 个失败",
   },
 };

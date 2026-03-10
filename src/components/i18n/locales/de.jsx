@@ -1785,11 +1785,9 @@ const translations = {
   },
 
   strengths: {
-    "Mild": "Mild",
-    "Mild-Medium": "Mild-Medium",
-    "Medium": "Medium",
-    "Medium-Full": "Medium-Full",
-    "Full": "Full",
+    "Mild": "Mild", "Mild-Medium": "Leicht-Mittel", "Medium": "Mittel",
+    "Medium-Strong": "Mittel-Stark", "Medium-Full": "Mittel-Voll",
+    "Strong": "Stark", "Full": "Voll",
   },
 
   conditions: {
@@ -1879,14 +1877,14 @@ const translations = {
     "Other": "Andere",
   },
 
-  productionStatus: {
+  productionStatuses: {
     "Current Production": "Aktuelle Produktion",
     "Discontinued": "Eingestellt",
     "Limited Edition": "Limited Edition",
     "Vintage": "Vintage",
   },
 
-  agingPotential: {
+  agingPotentials: {
     "Poor": "Gering",
     "Fair": "Mäßig",
     "Good": "Gut",
@@ -2082,6 +2080,20 @@ const translations = {
     thick: "Dick",
     heavyOxidation: "Starke Oxidation",
     moderateOxidation: "Mäßige Oxidation",
+    conditionMint: "Mint",
+    conditionExcellent: "Ausgezeichnet",
+    conditionVeryGood: "Sehr gut",
+    conditionGood: "Gut",
+    conditionFair: "Akzeptabel",
+    conditionPoor: "Schlecht",
+    conditionEstateUnrestored: "Estate - Nicht restauriert",
+    oxidation: "Oxidation",
+    generalWear: "Allgemeiner Verschleiß",
+    wear: "Verschleiß",
+    minimalWear: "Minimaler Verschleiß",
+    lightWear: "Leichter Verschleiß",
+    moderateWear: "Mäßiger Verschleiß",
+    heavyWear: "Starker Verschleiß",
   },
 
   maintenanceLog: {
@@ -2107,6 +2119,23 @@ const translations = {
     cost: "Kosten",
     performedBy: "Durchgeführt von",
     save: "Eintrag speichern",
+    descriptionPlaceholder: "Beschreiben Sie die durchgeführte Wartung…",
+    performedByPlaceholder: "z.B. Selbst, Fachmann",
+    costOptional: "Kosten (optional)",
+    saveEntry: "Eintrag speichern",
+  },
+
+  tobaccoLibrarySync: {
+    title: "Tabak-Logo-Bibliothek synchronisieren",
+    description: "Synchronisieren Sie Ihre Sammlung mit der Logo-Bibliothek, um fehlende Logos hinzuzufügen.",
+    syncStatus: "Synchronisierungsstatus", totalBlends: "Gesamte Mischungen",
+    missingLogos: "Fehlende Logos",
+    willBeUpdated: "Mischungen werden aktualisiert",
+    syncing: "Synchronisierung…", syncButton: "{count} Mischung(en) synchronisieren",
+    allHaveLogos: "Alle Mischungen haben Logos",
+    noSyncNeeded: "Keine Synchronisierung erforderlich",
+    complete: "Synchronisierung abgeschlossen", updated: "{count} Mischung(en) aktualisiert",
+    failed: "{count} fehlgeschlagen",
   },
 };
 
