@@ -2821,6 +2821,37 @@ const enUI = {
     suggestion: "Send a Suggestion",
   },
 
+  pipeGeometry: {
+    selectPipeTitle: "Select Pipe to Analyze",
+    choosePipe: "Choose a pipe...",
+    photosCount: "Photos: {count}",
+    dimensions: "Dimensions",
+    noDimensions: "None",
+    length: "Length",
+    bowlHeight: "Bowl Height",
+    chamberDiameter: "Chamber Diameter",
+    weight: "Weight",
+    analyzeBtn: "Analyze Pipe Geometry",
+    analyzing: "Analyzing...",
+    analysisResults: "Analysis Results",
+    analyzedPhotos: "Analyzed {count} photo(s)",
+    andDimensions: " and dimensions",
+    applyAllHigh: "Apply All High Confidence",
+    current: "Current:",
+    suggested: "Suggested:",
+    applied: "Applied",
+    apply: "Apply",
+    noSuggestionsData: "All geometry fields appear correctly set or insufficient data to suggest changes.",
+    noSuggestionsWarning: "Cannot suggest changes due to missing data.",
+    updateSuccess: "{field} updated",
+    updateFailed: "Failed to update {field}",
+    noHighConfidence: "No high-confidence suggestions to apply",
+    applySuccess: "Applied {count} updates",
+    applyFailed: "Failed to apply updates",
+    analyzeError: "Failed to analyze pipe geometry",
+    needsPhotoOrDims: "This pipe needs photos or dimensions to analyze geometry",
+  },
+
 };
 
 export default enUI;
