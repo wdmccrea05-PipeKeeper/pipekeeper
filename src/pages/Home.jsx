@@ -58,6 +58,7 @@ export default function Home() {
   const totalPipeValue = pipes.reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0);
   const totalCellaredOz = calculateCellaredOzFromLogs(cellarLogs);
   const totalTobaccoValue = calculateTobaccoCollectionValue(blends, cellarLogs);
+  const totalCollectionValue = totalPipeValue + totalTobaccoValue;
   const hideHomeValues = !!userProfile?.home_hide_collection_values;
   const favoritePipes = pipes.filter(p => p?.is_favorite);
   const favoriteBlends = blends.filter(b => b?.is_favorite);
@@ -86,7 +87,27 @@ export default function Home() {
         </div>
       )}
 
-      {/* 3. PIPE COLLECTION & TOBACCO CELLAR CARDS */}
+      {/* 3. PRIMARY METRICS BAR */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <PKCard className="p-4 flex flex-col gap-1">
+          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium">{t("home.totalValue")}</div>
+          <div className="text-2xl font-bold text-[#E0D8C8]">{hideHomeValues ? "••••" : formatCurrency(Math.round(totalCollectionValue))}</div>
+        </PKCard>
+        <PKCard className="p-4 flex flex-col gap-1">
+          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium">{t("home.pipesInCollection")}</div>
+          <div className="text-2xl font-bold text-[#E0D8C8]">{pipes.length}</div>
+        </PKCard>
+        <PKCard className="p-4 flex flex-col gap-1">
+          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium">{t("home.tobaccoBlends")}</div>
+          <div className="text-2xl font-bold text-[#E0D8C8]">{blends.length}</div>
+        </PKCard>
+        <PKCard className="p-4 flex flex-col gap-1">
+          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium">{t("home.cellared")}</div>
+          <div className="text-2xl font-bold text-[#E0D8C8]">{formatWeight(totalCellaredOz, 'oz')}</div>
+        </PKCard>
+      </div>
+
+      {/* 4. PIPE COLLECTION & TOBACCO CELLAR CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Pipe Collection Card */}
         <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm min-h-[320px] flex flex-col">
