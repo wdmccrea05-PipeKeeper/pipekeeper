@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { PKCard } from "@/components/ui/pk-surface";
@@ -10,6 +10,7 @@ import { calculateCellaredOzFromLogs, calculateTobaccoCollectionValue } from "@/
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 import CollectionIntelligencePanel from "@/components/home/CollectionIntelligencePanel";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
+import QuickActions from "@/components/home/QuickActions";
 import { Leaf, Heart, Sparkles, ArrowRight, Crown } from "lucide-react";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 
@@ -55,6 +56,22 @@ export default function Home() {
     enabled: !!user?.email,
     staleTime: 30000,
   });
+
+  const insightsSectionRef = useRef(null);
+  const curatorSectionRef = useRef(null);
+  const [insightsTab, setInsightsTab] = useState("log");
+  const [expertTab, setExpertTab] = useState("identifier");
+
+  const scrollTo = (ref) => {
+    // Short delay lets React flush state updates before scrolling
+    const SCROLL_DELAY_MS = 50;
+    setTimeout(() => ref.current?.scrollIntoView({ behavior: "smooth", block: "start" }), SCROLL_DELAY_MS);
+  };
+
+  const handleLogSession = () => { setInsightsTab("log"); scrollTo(insightsSectionRef); };
+  const handleIdentify    = () => { setExpertTab("identifier"); scrollTo(curatorSectionRef); };
+  const handleOptimize    = () => { setExpertTab("optimizer"); scrollTo(curatorSectionRef); };
+  const handleAskCurator  = () => { setExpertTab("whatif"); scrollTo(curatorSectionRef); };
 
   const totalPipeValue = pipes.reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0);
   const totalCellaredOz = calculateCellaredOzFromLogs(cellarLogs);
@@ -107,6 +124,14 @@ export default function Home() {
           <div className="text-2xl font-bold text-[#E0D8C8] mt-2">{formatWeight(totalCellaredOz, 'oz')}</div>
         </PKCard>
       </div>
+
+      {/* 4. QUICK ACTIONS */}
+      <QuickActions
+        onLogSession={handleLogSession}
+        onIdentify={handleIdentify}
+        onOptimize={handleOptimize}
+        onAskCurator={handleAskCurator}
+      />
 
       {/* 4. MODULE OVERVIEW CARDS — stacked on mobile, horizontal rows on desktop */}
       <div className="flex flex-col gap-4">
@@ -209,10 +234,27 @@ export default function Home() {
       <CollectionIntelligencePanel pipes={pipes} blends={blends} user={user} />
 
       {/* 6. COLLECTION INSIGHTS PANEL */}
-      <CollectionInsightsPanel pipes={pipes} blends={blends} user={user} />
+      <div ref={insightsSectionRef}>
+        <CollectionInsightsPanel
+          pipes={pipes}
+          blends={blends}
+          user={user}
+          activeTab={insightsTab}
+          onTabChange={setInsightsTab}
+        />
+      </div>
 
-      {/* 7. EXPERT TOBACCONIST */}
-      <ExpertTobacconist pipes={pipes} blends={blends} isPaidUser={hasPaid} user={user} userProfile={userProfile} />
+      {/* 7. COLLECTION CURATOR */}
+      <div ref={curatorSectionRef}>
+        <ExpertTobacconist
+          pipes={pipes}
+          blends={blends}
+          isPaidUser={hasPaid}
+          user={user}
+          userProfile={userProfile}
+          activeTab={expertTab}
+        />
+      </div>
 
       {/* 8. RECENT PIPES & RECENT TOBACCO */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
