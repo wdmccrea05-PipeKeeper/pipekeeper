@@ -44,7 +44,7 @@ export default function PermissionDebugPanel() {
         className="bg-purple-600 text-white hover:bg-purple-700 border-purple-500"
       >
         {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-        Debug
+        {t('debug.debugButton', 'Debug')}
       </Button>
 
       {isOpen && (

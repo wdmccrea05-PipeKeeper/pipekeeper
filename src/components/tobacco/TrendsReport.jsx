@@ -649,7 +649,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
                 <div className="space-y-3">
                   {tasteProfile.categories.map(([category, count]) => (
                     <div key={category} className="flex items-center justify-between">
-                      <span className="text-[#E0D8C8]">{category}</span>
+                      <span className="text-[#E0D8C8]">{t(`blendTypes.${category}`, category)}</span>
                       <Badge>{count} {t("trends.sessions")}</Badge>
                       </div>
                       ))}
@@ -667,7 +667,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
                       <div className="space-y-3">
                       {tasteProfile.cuts.map(([cut, count]) => (
                       <div key={cut} className="flex items-center justify-between">
-                        <span className="text-[#E0D8C8]">{cut}</span>
+                        <span className="text-[#E0D8C8]">{t(`cuts.${cut}`, cut)}</span>
                         <Badge>{count} {t("trends.sessions")}</Badge>
                       </div>
                       ))}
@@ -685,7 +685,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
                       <div className="space-y-3">
                       {tasteProfile.strengths.map(([strength, count]) => (
                       <div key={strength} className="flex items-center justify-between">
-                        <span className="text-[#E0D8C8]">{strength}</span>
+                        <span className="text-[#E0D8C8]">{t(`strengths.${strength}`, strength)}</span>
                         <Badge>{count} {t("trends.sessions")}</Badge>
                     </div>
                   ))}
