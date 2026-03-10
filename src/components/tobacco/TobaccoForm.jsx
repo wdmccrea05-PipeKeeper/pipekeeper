@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Upload, X, Loader2, Camera, Plus, Search, Check, Edit, Library } from "lucide-react";
+import { Upload, X, Loader2, Camera, Plus, Search, Check, Edit, Library, Bot } from "lucide-react";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLogoLibrary";
@@ -66,7 +67,8 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
     notes: '',
     photo: '',
     logo: '',
-    is_favorite: false
+    is_favorite: false,
+    ai_excluded: false
   });
   const [uploading, setUploading] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -1078,6 +1080,26 @@ Return complete and accurate information based on the blend name or description 
               onCheckedChange={(v) => handleChange('is_favorite', v)}
             />
             <Label className="break-words">{t("formsExtended.markAsFavorite")}</Label>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Collector Settings */}
+      <Card className="border-stone-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-[#E0D8C8] flex items-center gap-2">
+            <Bot className="w-5 h-5 flex-shrink-0" />
+            {t("formsExtended.collectorSettings")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Switch
+              checked={!formData.ai_excluded}
+              onCheckedChange={(v) => handleChange('ai_excluded', !v)}
+            />
+            <Label className="break-words">{t("formsExtended.includeInAI")}</Label>
+            <InfoTooltip text={t("formsExtended.includeInAITooltip")} />
           </div>
         </CardContent>
       </Card>

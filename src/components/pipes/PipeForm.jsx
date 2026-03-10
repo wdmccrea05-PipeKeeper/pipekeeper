@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, X, Loader2, Camera, Search, Edit, ArrowLeftRight } from "lucide-react";
+import { Upload, X, Loader2, Camera, Search, Edit, ArrowLeftRight, Bot } from "lucide-react";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import PipeSearch from "@/components/ai/PipeSearch";
@@ -75,7 +76,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     photos: [],
     stamping_photos: [],
     is_favorite: false,
-    interchangeable_bowls: []
+    interchangeable_bowls: [],
+    ai_excluded: false
   });
   const [hasInterchangeableBowls, setHasInterchangeableBowls] = useState(
     pipe?.interchangeable_bowls?.length > 0 || false
@@ -908,6 +910,26 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               />
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* ===== SECTION: Collector Settings ===== */}
+      <Card className="border-[#E0D8C8]/15">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-[#E0D8C8] flex items-center gap-2">
+            <Bot className="w-5 h-5 flex-shrink-0" />
+            {t("formsExtended.collectorSettings")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Switch
+              checked={!formData.ai_excluded}
+              onCheckedChange={(v) => handleChange('ai_excluded', !v)}
+            />
+            <Label className="break-words">{t("formsExtended.includeInAI")}</Label>
+            <InfoTooltip text={t("formsExtended.includeInAITooltip")} />
+          </div>
         </CardContent>
       </Card>
 

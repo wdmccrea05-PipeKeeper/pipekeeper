@@ -1867,6 +1867,11 @@ const enUI = {
     interchangeableBowls: "Interchangeable Bowls",
     interchangeableBowlsDesc: "Does this pipe have swappable bowls?",
     chamberVolume: "Chamber",
+    valueNotes: "Value & Notes",
+    markAsFavorite: "Mark as Favorite",
+    collectorSettings: "Collector Settings",
+    includeInAI: "Include in AI recommendations",
+    includeInAITooltip: "When disabled, this item is excluded from AI pairing, rotation, and optimization suggestions. It still counts toward your collection value and reports.",
   },
   maintenanceLog: {
     descriptionPlaceholder: "Describe the maintenance performed…",
@@ -2255,6 +2260,7 @@ const enUI = {
     recentTobacco: "Recent Tobacco",
     bulkImport: "Bulk Import",
     importDesc: "Import pipes & tobacco from CSV",
+    totalValue: "Total Collection Value",
   },
   pipesPage: {
     myPipes: "My Pipes",
