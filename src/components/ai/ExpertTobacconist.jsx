@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Sparkles, TrendingUp, Lightbulb, RefreshCw } from "lucide-react";
+import { Camera, TrendingUp, Lightbulb, RefreshCw } from "lucide-react";
 import QuickPipeIdentifier from "@/components/ai/QuickPipeIdentifier";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import AIUpdatesPanel from "@/components/ai/AIUpdatesPanel";
-import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
@@ -15,20 +13,25 @@ import { Badge } from "@/components/ui/badge";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { getActiveOptimizeScopes, getActiveIdentifyTypes } from "@/platform/collectionCuratorAI.js";
+import { getAiEligibilityStats } from "@/platform/aiEligibility.js";
 
 const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
 
-export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, userProfile, activeTab: externalActiveTab }) {
+const activeScopes = getActiveOptimizeScopes();
+const DEFAULT_OPTIMIZE_SCOPE = activeScopes[0]?.id ?? "pipe_tobacco_pairings";
+
+export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, userProfile }) {
   const { t } = useTranslation();
   const entitlements = useEntitlements();
   const canOptimize = entitlements.canUse("COLLECTION_OPTIMIZATION");
-  const [activeTab, setActiveTab] = useState(externalActiveTab || "identifier");
-
-  useEffect(() => {
-    if (externalActiveTab !== undefined) setActiveTab(externalActiveTab);
-  }, [externalActiveTab]);
-
+  const [optimizeScope, setOptimizeScope] = useState(DEFAULT_OPTIMIZE_SCOPE);
   if (isAppleBuild) return null;
+
+  const activeIdentifyTypes = getActiveIdentifyTypes();
+  const pipeStats = getAiEligibilityStats(pipes || []);
+  const blendStats = getAiEligibilityStats(blends || []);
+  const totalExcluded = pipeStats.excluded + blendStats.excluded;
 
   return (
     <Card>
@@ -43,11 +46,16 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <CardTitle className="text-base sm:text-xl text-[#E0D8C8] leading-tight">{t("tobacconist.title")}</CardTitle>
+              <CardTitle className="text-base sm:text-xl text-[#E0D8C8] leading-tight">{t("collectionCurator.systemTitle")}</CardTitle>
               <Badge variant="outline" className="text-xs border-[#E0D8C8]/30 text-[#E0D8C8]/80 shrink-0">{t("tobacconist.optional")}</Badge>
-              <InfoTooltip text={t("tobacconist.tooltipText")} />
+              <InfoTooltip text={t("collectionCurator.tooltipText")} />
             </div>
-            <p className="text-sm text-[#E0D8C8]/70">{t("tobacconist.subtitle")}</p>
+            <p className="text-sm text-[#E0D8C8]/70">{t("collectionCurator.subtitle")}</p>
+            {totalExcluded > 0 && (
+              <p className="text-xs text-[#E0D8C8]/50 mt-1">
+                {t("collectionCurator.excludedNote", { count: totalExcluded })}
+              </p>
+            )}
           </div>
         </div>
       </CardHeader>
@@ -75,10 +83,17 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           <TabsContent value="identifier" className="mt-6">
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-base font-semibold text-[#E0D8C8]">{t("tobacconist.identificationTitle")}</h3>
-                <InfoTooltip text={t("tobacconist.identificationTooltip")} />
+                <h3 className="text-base font-semibold text-[#E0D8C8]">{t("collectionCurator.identificationTitle")}</h3>
+                <InfoTooltip text={t("collectionCurator.identificationTooltip")} />
               </div>
-              <p className="text-sm text-[#E0D8C8]/60">{t("tobacconist.identificationSubtitle")}</p>
+              <p className="text-sm text-[#E0D8C8]/60">{t("collectionCurator.identificationSubtitle")}</p>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {activeIdentifyTypes.map((type) => (
+                  <Badge key={type.id} variant="secondary" className="text-xs">
+                    {type.label}
+                  </Badge>
+                ))}
+              </div>
             </div>
             {pipes.length === 0 && blends.length === 0 ? (
               <div className="text-center py-8">
@@ -101,10 +116,26 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           <TabsContent value="optimizer" className="mt-6">
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-base font-semibold text-[#E0D8C8]">{t("tobacconist.optimizationTitle")}</h3>
-                <InfoTooltip text={t("tobacconist.optimizationTooltip")} />
+                <h3 className="text-base font-semibold text-[#E0D8C8]">{t("collectionCurator.optimizationTitle")}</h3>
+                <InfoTooltip text={t("collectionCurator.optimizationTooltip")} />
               </div>
-              <p className="text-sm text-[#E0D8C8]/60">{t("tobacconist.optimizationSubtitle")}</p>
+              <p className="text-sm text-[#E0D8C8]/60">{t("collectionCurator.optimizationSubtitle")}</p>
+              {/* Module-aware scope selector */}
+              <div className="flex flex-wrap gap-2 mt-3">
+                {activeScopes.map((scope) => (
+                  <button
+                    key={scope.id}
+                    onClick={() => setOptimizeScope(scope.id)}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-colors min-h-[32px] ${
+                      optimizeScope === scope.id
+                        ? "bg-[#8b3a3a] border-[#8b3a3a] text-white"
+                        : "border-[#E0D8C8]/30 text-[#E0D8C8]/70 hover:border-[#E0D8C8]/50"
+                    }`}
+                  >
+                    {scope.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <FeatureGate 
               feature="COLLECTION_OPTIMIZATION"
@@ -128,10 +159,10 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           <TabsContent value="whatif" className="mt-6">
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-base font-semibold text-[#E0D8C8]">{t("tobacconist.whatIfTitle")}</h3>
-                <InfoTooltip text={t("tobacconist.whatIfTooltip")} />
+                <h3 className="text-base font-semibold text-[#E0D8C8]">{t("collectionCurator.whatIfTitle")}</h3>
+                <InfoTooltip text={t("collectionCurator.whatIfTooltip")} />
               </div>
-              <p className="text-sm text-[#E0D8C8]/60">{t("tobacconist.whatIfSubtitle")}</p>
+              <p className="text-sm text-[#E0D8C8]/60">{t("collectionCurator.whatIfSubtitle")}</p>
             </div>
             {canOptimize ? (
               pipes.length === 0 ? (
@@ -160,10 +191,10 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           <TabsContent value="updates" className="mt-6">
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-base font-semibold text-[#E0D8C8]">{t("tobacconist.updatesTitle")}</h3>
-                <InfoTooltip text={t("tobacconist.updatesTooltip")} />
+                <h3 className="text-base font-semibold text-[#E0D8C8]">{t("collectionCurator.updatesTitle")}</h3>
+                <InfoTooltip text={t("collectionCurator.updatesTooltip")} />
               </div>
-              <p className="text-sm text-[#E0D8C8]/60">{t("tobacconist.updatesSubtitle")}</p>
+              <p className="text-sm text-[#E0D8C8]/60">{t("collectionCurator.updatesSubtitle")}</p>
             </div>
             <AIUpdatesPanel pipes={pipes} blends={blends} profile={userProfile} />
           </TabsContent>

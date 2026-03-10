@@ -12,5 +12,6 @@ export * from "./valuation.js";
 export * from "./reporting.js";
 export * from "./dashboard.js";
 export * from "./entitlements.js";
+export * from "./collectionCuratorAI.js";
 export { getAdapter, normalizeItemForPlatform, getItemUsageProfile, isItemAiEligibleViaAdapter } from "./moduleAdapters/index.js";
 export { pipeAdapter, tobaccoAdapter } from "./moduleAdapters/pipeAdapter.js";
