@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Camera, Sparkles, TrendingUp, Lightbulb, RefreshCw } from "lucide-react";
@@ -18,10 +18,16 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
 
-export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, userProfile }) {
+export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, userProfile, activeTab: externalActiveTab }) {
   const { t } = useTranslation();
   const entitlements = useEntitlements();
   const canOptimize = entitlements.canUse("COLLECTION_OPTIMIZATION");
+  const [activeTab, setActiveTab] = useState(externalActiveTab || "identifier");
+
+  useEffect(() => {
+    if (externalActiveTab !== undefined) setActiveTab(externalActiveTab);
+  }, [externalActiveTab]);
+
   if (isAppleBuild) return null;
 
   return (
@@ -46,7 +52,7 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
         </div>
       </CardHeader>
       <CardContent className="pt-6 space-y-6">
-        <Tabs defaultValue="identifier">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="identifier" aria-label={t("tobacconist.identify")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
               <Camera className="w-5 h-5 flex-shrink-0" />

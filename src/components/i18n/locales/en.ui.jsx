@@ -129,7 +129,7 @@ const enUI = {
     whatIfFeatureName: "What-If Analysis",
     whatIfFeatureDesc: "Ask collection strategy questions and run what-if scenarios with AI assistance. Available with Pro or legacy Premium access.",
     tobacconist: "Expert Tobacconist",
-    title: "Pipe Tobacconist",
+    title: "Collection Curator",
     tabChat: "Chat",
     tabActions: "Actions",
     sending: "Sending…",
@@ -3007,6 +3007,14 @@ const enUI = {
     applyFailed: "Failed to apply updates",
     analyzeError: "Failed to analyze pipe geometry",
     needsPhotoOrDims: "This pipe needs photos or dimensions to analyze geometry",
+  },
+
+  quickActions: {
+    sectionTitle: "Quick Actions",
+    logSession: "Log Session",
+    identify: "Identify",
+    optimize: "Optimize",
+    askCurator: "Ask Curator",
   },
 
 };
