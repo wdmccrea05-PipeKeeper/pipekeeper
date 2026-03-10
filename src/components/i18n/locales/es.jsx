@@ -928,6 +928,20 @@ const translations = {
     preferredPipeShapes: "Formas de pipa preferidas",
     hideHomeValues: "Ocultar valores de la colección en la página de inicio",
     hideHomeValuesDesc: "Oculta los valores de las colecciones de pipas y tabaco en tu panel de inicio. Los cálculos siguen ejecutándose en segundo plano.",
+    profilePicture: "Foto de perfil", avatarAlt: "Avatar", uploading: "Subiendo…",
+    displayName: "Nombre para mostrar", bio: "Biografía", location: "Ubicación",
+    showOnProfile: "Mostrar en perfil",
+    cityPlaceholder: "Ciudad", stateProvincePlaceholder: "Estado/Provincia",
+    countryPlaceholder: "País", postalCodePlaceholder: "Código postal",
+    privacy: "Privacidad", hideValues: "Ocultar valores",
+    hideInventory: "Ocultar inventario", hideCollectionCounts: "Ocultar conteos de colección",
+    clenchingPreference: "Preferencia de sujeción",
+    smokeDurationPreference: "Preferencia de duración",
+    pipeSizePreference: "Preferencia de tamaño",
+    strengthPreference: "Preferencia de intensidad",
+    publicCommunityProfile: "Perfil público de la comunidad",
+    allowOthersToView: "Permite que otros vean tu perfil en la comunidad.",
+    saving: "Guardando…", previewPublicProfile: "Vista previa del perfil público",
   },
 
   optimizer: {
@@ -940,7 +954,10 @@ const translations = {
     specialized: "Especializada", changesImproveCollectionCoverage: "Estos cambios mejorarían la cobertura de tu colección",
     somethingWentWrong: "Algo salió mal", unknownError: "Ocurrió un error desconocido",
     couldntLoadResponse: "No se pudo cargar una respuesta. Por favor intenta de nuevo.",
-    analyzeImpact: "Analizar impacto",
+    analyzeImpact: "Analizar impacto", regenerate: "Regenerar",
+    expectedImprovement: "Mejora esperada para {blendTypes}",
+    priorityChange: "Cambio prioritario #{num}",
+    expectedImprovementGeneral: "Mejora esperada",
   },
 
   publicProfile: {
@@ -1044,7 +1061,8 @@ const translations = {
 
   strengths: {
     "Mild": "Suave", "Mild-Medium": "Suave-Medio", "Medium": "Medio",
-    "Medium-Full": "Medio-Fuerte", "Full": "Fuerte",
+    "Medium-Strong": "Medio-Fuerte", "Medium-Full": "Medio-Completo", "Full": "Fuerte",
+    "Strong": "Fuerte",
   },
 
   conditions: {
@@ -1095,12 +1113,12 @@ const translations = {
     "Natural": "Natural", "Other": "Otro",
   },
 
-  productionStatus: {
+  productionStatuses: {
     "Current Production": "Producción actual", "Discontinued": "Descontinuado",
     "Limited Edition": "Edición limitada", "Vintage": "Vintage",
   },
 
-  agingPotential: {
+  agingPotentials: {
     "Poor": "Bajo", "Fair": "Regular", "Good": "Bueno", "Excellent": "Excelente",
   },
 
@@ -1222,6 +1240,13 @@ const translations = {
     optimalRange: "Rango óptimo: 30–70%", stemOxidation: "Oxidación de la boquilla",
     good: "Bueno", thin: "Delgado", thick: "Grueso",
     heavyOxidation: "Oxidación intensa", moderateOxidation: "Oxidación moderada",
+    conditionMint: "Mint", conditionExcellent: "Excelente",
+    conditionVeryGood: "Muy bueno", conditionGood: "Bueno",
+    conditionFair: "Regular", conditionPoor: "Malo",
+    conditionEstateUnrestored: "Colección - Sin restaurar",
+    oxidation: "oxidación", generalWear: "Desgaste general", wear: "desgaste",
+    minimalWear: "Desgaste mínimo", lightWear: "Desgaste leve",
+    moderateWear: "Desgaste moderado", heavyWear: "Desgaste intenso",
   },
 
   maintenanceLog: {
@@ -1236,6 +1261,10 @@ const translations = {
     reaming: "Escariado", polishing: "Pulido", stemWork: "Trabajo en la boquilla", other: "Otro",
     by: "Por", type: "Tipo", date: "Fecha", description: "Descripción", cost: "Costo",
     performedBy: "Realizado por", save: "Guardar entrada",
+    descriptionPlaceholder: "Describe el mantenimiento realizado…",
+    performedByPlaceholder: "Ej.: Yo mismo, Profesional",
+    costOptional: "Costo (Opcional)",
+    saveEntry: "Guardar entrada",
   },
 
   focusOptions: {
@@ -1418,6 +1447,19 @@ const translations = {
     entitlements: "Cálculos del sistema de derechos", limitCheck: "Compatibilidad de verificación de límites",
     premiumAccess: "Acceso a funciones premium", proAccess: "Acceso a funciones pro",
     providerDetection: "Detección de proveedor", planLabel: "Generación de etiqueta de plan",
+  },
+
+  tobaccoLibrarySync: {
+    title: "Sincronización de logos de tabaco",
+    description: "Sincroniza tu colección con la biblioteca de logos para agregar logos faltantes.",
+    syncStatus: "Estado de sincronización", totalBlends: "Total de mezclas",
+    missingLogos: "Logos faltantes",
+    willBeUpdated: "mezclas se actualizarán",
+    syncing: "Sincronizando…", syncButton: "Sincronizar {count} mezcla(s)",
+    allHaveLogos: "Todas las mezclas tienen logos",
+    noSyncNeeded: "No se necesita sincronización",
+    complete: "Sincronización completa", updated: "{count} mezcla(s) actualizada(s)",
+    failed: "{count} fallida(s)",
   },
 };
 

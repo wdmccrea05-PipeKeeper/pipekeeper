@@ -1242,6 +1242,20 @@ const translations = {
     optimalRange: "Intervallo ottimale: 30–70%", stemOxidation: "Ossidazione bocchino",
     good: "Buono", thin: "Sottile", thick: "Spesso",
     heavyOxidation: "Forte ossidazione", moderateOxidation: "Ossidazione moderata",
+    conditionMint: "Mint",
+    conditionExcellent: "Eccellente",
+    conditionVeryGood: "Molto buono",
+    conditionGood: "Buono",
+    conditionFair: "Discreto",
+    conditionPoor: "Scarso",
+    conditionEstateUnrestored: "Estate - Non restaurato",
+    oxidation: "ossidazione",
+    generalWear: "Usura generale",
+    wear: "usura",
+    minimalWear: "Usura minima",
+    lightWear: "Usura leggera",
+    moderateWear: "Usura moderata",
+    heavyWear: "Usura intensa",
   },
 
   maintenanceLog: {
@@ -1254,6 +1268,10 @@ const translations = {
     reaming: "Alesatura", polishing: "Lucidatura", stemWork: "Lavoro sul bocchino", other: "Altro",
     by: "Da", type: "Tipo", date: "Data", description: "Descrizione", cost: "Costo",
     performedBy: "Eseguito da", save: "Salva voce",
+    descriptionPlaceholder: "Descrivi la manutenzione eseguita…",
+    performedByPlaceholder: "Es. Me stesso, Professionista",
+    costOptional: "Costo (opzionale)",
+    saveEntry: "Salva voce",
   },
 
   tobaccoExtended: {
@@ -1535,7 +1553,7 @@ const translations = {
 
   strengths: {
     "Mild": "Leggero", "Mild-Medium": "Leggero-Medio", "Medium": "Medio",
-    "Medium-Full": "Medio-Pieno", "Full": "Pieno",
+    "Medium-Strong": "Medio-Forte", "Medium-Full": "Medio-Pieno", "Strong": "Forte", "Full": "Pieno",
   },
 
   conditions: {
@@ -1585,12 +1603,12 @@ const translations = {
     "Natural": "Naturale", "Other": "Altro",
   },
 
-  productionStatus: {
+  productionStatuses: {
     "Current Production": "Produzione corrente", "Discontinued": "Discontinuato",
     "Limited Edition": "Edizione limitata", "Vintage": "Vintage",
   },
 
-  agingPotential: {
+  agingPotentials: {
     "Poor": "Scarso", "Fair": "Discreto", "Good": "Buono", "Excellent": "Eccellente",
   },
 
@@ -1663,6 +1681,19 @@ const translations = {
     cannotDeleteOtherMessage: "Puoi eliminare solo i tuoi messaggi",
     failedToSend: "Invio del messaggio non riuscito. Riprova.",
     chatDescription: "Conversazione chat", inboxDescription: "Posta in arrivo messaggi",
+  },
+
+  tobaccoLibrarySync: {
+    title: "Sincronizzazione logo tabacco",
+    description: "Sincronizza la tua collezione con la libreria loghi per aggiungere loghi mancanti.",
+    syncStatus: "Stato sincronizzazione", totalBlends: "Miscele totali",
+    missingLogos: "Loghi mancanti",
+    willBeUpdated: "miscele verranno aggiornate",
+    syncing: "Sincronizzazione…", syncButton: "Sincronizza {count} miscela/e",
+    allHaveLogos: "Tutte le miscele hanno loghi",
+    noSyncNeeded: "Nessuna sincronizzazione necessaria",
+    complete: "Sincronizzazione completata", updated: "{count} miscela/e aggiornata/e",
+    failed: "{count} fallita/e",
   },
 };
 

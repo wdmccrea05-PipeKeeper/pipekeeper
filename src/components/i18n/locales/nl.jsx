@@ -1240,6 +1240,20 @@ const translations = {
     optimalRange: "Optimaal bereik: 30–70%", stemOxidation: "Mondstuk-oxidatie",
     good: "Goed", thin: "Dun", thick: "Dik",
     heavyOxidation: "Zware oxidatie", moderateOxidation: "Matige oxidatie",
+    conditionMint: "Mint",
+    conditionExcellent: "Uitstekend",
+    conditionVeryGood: "Zeer goed",
+    conditionGood: "Goed",
+    conditionFair: "Redelijk",
+    conditionPoor: "Slecht",
+    conditionEstateUnrestored: "Erfenis - Niet gerestaureerd",
+    oxidation: "oxidatie",
+    generalWear: "Algemene slijtage",
+    wear: "slijtage",
+    minimalWear: "Minimale slijtage",
+    lightWear: "Lichte slijtage",
+    moderateWear: "Matige slijtage",
+    heavyWear: "Zware slijtage",
   },
 
   maintenanceLog: {
@@ -1252,6 +1266,10 @@ const translations = {
     reaming: "Ruimen", polishing: "Polijsten", stemWork: "Mondstukwerk", other: "Anders",
     by: "Door", type: "Type", date: "Datum", description: "Beschrijving", cost: "Kosten",
     performedBy: "Uitgevoerd door", save: "Invoer opslaan",
+    descriptionPlaceholder: "Beschrijf het uitgevoerde onderhoud…",
+    performedByPlaceholder: "Bijv. Zelf, Professional",
+    costOptional: "Kosten (optioneel)",
+    saveEntry: "Invoer opslaan",
   },
 
   tobaccoExtended: {
@@ -1533,7 +1551,7 @@ const translations = {
 
   strengths: {
     "Mild": "Licht", "Mild-Medium": "Licht-Middel", "Medium": "Middel",
-    "Medium-Full": "Middel-Vol", "Full": "Vol",
+    "Medium-Strong": "Middel-Sterk", "Medium-Full": "Middel-Vol", "Strong": "Sterk", "Full": "Vol",
   },
 
   conditions: {
@@ -1583,12 +1601,12 @@ const translations = {
     "Natural": "Naturel", "Other": "Ander",
   },
 
-  productionStatus: {
+  productionStatuses: {
     "Current Production": "Huidige productie", "Discontinued": "Gestopt",
     "Limited Edition": "Beperkte editie", "Vintage": "Vintage",
   },
 
-  agingPotential: {
+  agingPotentials: {
     "Poor": "Slecht", "Fair": "Redelijk", "Good": "Goed", "Excellent": "Uitstekend",
   },
 
@@ -1661,6 +1679,19 @@ const translations = {
     cannotDeleteOtherMessage: "U kunt alleen uw eigen berichten verwijderen",
     failedToSend: "Verzenden van bericht mislukt. Probeer het opnieuw.",
     chatDescription: "Chatgesprek", inboxDescription: "Berichteninbox",
+  },
+
+  tobaccoLibrarySync: {
+    title: "Tabakslogo-bibliotheek synchroniseren",
+    description: "Synchroniseer uw collectie met de logo-bibliotheek om ontbrekende logo's toe te voegen.",
+    syncStatus: "Synchronisatiestatus", totalBlends: "Totaal mengsels",
+    missingLogos: "Ontbrekende logo's",
+    willBeUpdated: "mengsels worden bijgewerkt",
+    syncing: "Synchroniseren…", syncButton: "{count} mengsel(s) synchroniseren",
+    allHaveLogos: "Alle mengsels hebben logo's",
+    noSyncNeeded: "Geen synchronisatie nodig",
+    complete: "Synchronisatie voltooid", updated: "{count} mengsel(s) bijgewerkt",
+    failed: "{count} mislukt",
   },
 };
 

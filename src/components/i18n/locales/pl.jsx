@@ -1084,6 +1084,20 @@ export default {
     optimalRange: "Optymalny zakres: 30–70%", stemOxidation: "Utlenianie cybuch",
     good: "Dobry", thin: "Cienki", thick: "Gruby",
     heavyOxidation: "Silne utlenianie", moderateOxidation: "Umiarkowane utlenianie",
+    conditionMint: "Jak nowa",
+    conditionExcellent: "Doskonały",
+    conditionVeryGood: "Bardzo dobry",
+    conditionGood: "Dobry",
+    conditionFair: "Dostateczny",
+    conditionPoor: "Zły",
+    conditionEstateUnrestored: "Używana - Nierestaurowana",
+    oxidation: "utlenienie",
+    generalWear: "Ogólne zużycie",
+    wear: "zużycie",
+    minimalWear: "Minimalne zużycie",
+    lightWear: "Lekkie zużycie",
+    moderateWear: "Umiarkowane zużycie",
+    heavyWear: "Duże zużycie",
   },
 
   maintenanceLog: {
@@ -1096,6 +1110,10 @@ export default {
     reaming: "Rozwiercanie", polishing: "Polerowanie", stemWork: "Praca nad cybuchem",
     other: "Inne", by: "Przez", type: "Typ", date: "Data", description: "Opis", cost: "Koszt",
     performedBy: "Wykonane przez", save: "Zapisz wpis",
+    descriptionPlaceholder: "Opisz wykonaną konserwację…",
+    performedByPlaceholder: "Np. Samodzielnie, Profesjonalista",
+    costOptional: "Koszt (opcjonalny)",
+    saveEntry: "Zapisz wpis",
   },
 
   tobaccoExtended: {
@@ -1372,7 +1390,7 @@ export default {
 
   strengths: {
     "Mild": "Łagodny", "Mild-Medium": "Łagodny-Średni", "Medium": "Średni",
-    "Medium-Full": "Średni-Mocny", "Full": "Mocny",
+    "Medium-Strong": "Średni-Mocny", "Medium-Full": "Średni-Pełny", "Strong": "Mocny", "Full": "Pełny",
   },
 
   conditions: {
@@ -1424,12 +1442,12 @@ export default {
     "Natural": "Naturalny", "Other": "Inne",
   },
 
-  productionStatus: {
+  productionStatuses: {
     "Current Production": "Aktualna produkcja", "Discontinued": "Wycofany",
     "Limited Edition": "Edycja limitowana", "Vintage": "Vintage",
   },
 
-  agingPotential: {
+  agingPotentials: {
     "Poor": "Niski", "Fair": "Przeciętny", "Good": "Dobry", "Excellent": "Doskonały",
   },
 
@@ -1478,5 +1496,18 @@ export default {
     cannotDeleteOtherMessage: "Możesz usuwać tylko swoje wiadomości",
     failedToSend: "Wysyłanie wiadomości nie powiodło się. Spróbuj ponownie.",
     chatDescription: "Rozmowa czat", inboxDescription: "Skrzynka wiadomości",
+  },
+
+  tobaccoLibrarySync: {
+    title: "Synchronizacja logo tytoniu",
+    description: "Zsynchronizuj kolekcję z biblioteką logo, aby dodać brakujące logo.",
+    syncStatus: "Status synchronizacji", totalBlends: "Łącznie mieszanek",
+    missingLogos: "Brakujące logo",
+    willBeUpdated: "mieszanek zostanie zaktualizowanych",
+    syncing: "Synchronizowanie…", syncButton: "Synchronizuj {count} mieszankę/i",
+    allHaveLogos: "Wszystkie mieszanki mają logo",
+    noSyncNeeded: "Synchronizacja nie jest potrzebna",
+    complete: "Synchronizacja zakończona", updated: "Zaktualizowano {count} mieszankę/i",
+    failed: "{count} nie powiodło się",
   },
 };
