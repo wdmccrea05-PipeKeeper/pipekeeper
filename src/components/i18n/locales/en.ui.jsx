@@ -2943,6 +2943,25 @@ const enUI = {
     needsPhotoOrDims: "This pipe needs photos or dimensions to analyze geometry",
   },
 
+  collectionCurator: {
+    systemTitle: "Collection Curator AI",
+    subtitle: "Module-aware AI assistant · Pipes & Tobacco",
+    tooltipText: "The Collection Curator AI reasons across your entire collection, respects collector-only exclusions, and supports future modules like whiskey, cigars, and coffee.",
+    excludedNote: "{count} collector-only item(s) excluded from AI recommendations",
+    identificationTitle: "AI Item Identification",
+    identificationTooltip: "Upload photos to identify pipes and tobacco tins. Future modules will support whiskey bottles, cigar bands, and coffee labels.",
+    identificationSubtitle: "Upload photos to auto-identify collection items",
+    optimizationTitle: "Collection Optimization",
+    optimizationTooltip: "AI-powered optimization across your active collection modules. Choose a scope to focus the analysis.",
+    optimizationSubtitle: "Select a scope and optimize your collection strategy",
+    whatIfTitle: "What-If Analysis",
+    whatIfTooltip: "Explore hypothetical changes to your collection. Ask questions like: What if I add another Latakia blend? What if I retire this pipe from rotation?",
+    whatIfSubtitle: "Explore hypothetical collection changes",
+    updatesTitle: "AI Updates",
+    updatesTooltip: "Regenerate AI-powered pairings, optimization analysis, and collection insights. All updates respect collector-only exclusions.",
+    updatesSubtitle: "Keep your AI insights current",
+  },
+
 };
 
 export default enUI;

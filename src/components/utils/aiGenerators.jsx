@@ -1,5 +1,6 @@
 import { base44 } from "@/api/base44Client";
 import { buildPairingsForPipes, isAromaticBlend, getAromaticIntensity } from "@/components/utils/pairingScoreCanonical";
+import { filterAiEligibleItems } from "@/platform/aiEligibility.js";
 
 // === Hard Rules Enforcement ===
 
@@ -83,6 +84,10 @@ function deriveFocusCategory(focus) {
 }
 
 export async function generatePairingsAI({ pipes, blends, profile }) {
+  // Enforce AI exclusion: collector-only or ai_excluded items must not appear in recommendations
+  const eligiblePipes = filterAiEligibleItems(pipes || []);
+  const eligibleBlends = filterAiEligibleItems(blends || []);
+
   // Normalize focus tags for consistent matching
   function normalizeFocus(focusArr) {
     const f = Array.isArray(focusArr) ? focusArr : [];
@@ -104,7 +109,7 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
 
   // Expand pipes to include bowl variants as separate entries
   const pipesData = [];
-  for (const p of pipes || []) {
+  for (const p of eligiblePipes) {
     const pid = String(p.id);
 
     if (Array.isArray(p.interchangeable_bowls) && p.interchangeable_bowls.length > 0) {
@@ -157,7 +162,7 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
     }
   }
 
-  const blendsData = (blends || []).map((b) => {
+  const blendsData = eligibleBlends.map((b) => {
     // Use canonical helpers
     const isAro = isAromaticBlend(b);
     const intensity = isAro ? getAromaticIntensity(b) : null;
@@ -200,8 +205,12 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
     }
 
 export async function generateOptimizationAI({ pipes, blends, profile, whatIfText }) {
+  // Enforce AI exclusion: collector-only or ai_excluded items must not appear in recommendations
+  const eligiblePipes = filterAiEligibleItems(pipes || []);
+  const eligibleBlends = filterAiEligibleItems(blends || []);
+
   const pipesData = [];
-  for (const p of pipes || []) {
+  for (const p of eligiblePipes) {
     const pid = String(p.id);
 
     if (Array.isArray(p.interchangeable_bowls) && p.interchangeable_bowls.length > 0) {
@@ -250,7 +259,7 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
   }
 
   const pipesDataCapped = pipesData.slice(0, 30);
-  const blendsDataCapped = (blends || []).slice(0, 60).map((b) => ({
+  const blendsDataCapped = eligibleBlends.slice(0, 60).map((b) => ({
     id: b.id,
     name: b.name,
     blend_type: b.blend_type,
