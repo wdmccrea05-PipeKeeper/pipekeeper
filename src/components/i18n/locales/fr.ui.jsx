@@ -878,6 +878,12 @@ const frUI = {
     failedToUploadImage: "Échec du téléchargement de l'image",
   },
 
+  community: {
+    notFollowingYet: "Vous ne suivez personne",
+    notFollowingYetDesc: "Découvrez et suivez des amateurs de pipes dans la communauté pour voir leurs collections",
+    exploreCommunity: "Explorer la communauté",
+  },
+
 };
 
 export default frUI;

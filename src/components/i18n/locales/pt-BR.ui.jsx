@@ -862,6 +862,12 @@ const ptBRUI = {
     failedToUploadImage: "Falha ao enviar imagem",
   },
 
+  community: {
+    notFollowingYet: "Não seguindo ninguém",
+    notFollowingYetDesc: "Descubra e siga entusiastas de cachimbo na comunidade para ver suas coleções",
+    exploreCommunity: "Explorar a comunidade",
+  },
+
 };
 
 export default ptBRUI;

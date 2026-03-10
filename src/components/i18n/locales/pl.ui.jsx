@@ -857,6 +857,12 @@ const plUI = {
     failedToUploadImage: "Nie udało się przesłać obrazu",
   },
 
+  community: {
+    notFollowingYet: "Nie obserwujesz nikogo",
+    notFollowingYetDesc: "Odkrywaj i obserwuj miłośników fajek w społeczności, aby zobaczyć ich kolekcje",
+    exploreCommunity: "Eksploruj społeczność",
+  },
+
 };
 
 export default plUI;

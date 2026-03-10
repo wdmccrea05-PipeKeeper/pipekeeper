@@ -1293,6 +1293,8 @@ export default {
     Author: "オーサー", Tomahawk: "トマホーク", Bullmoose: "ブルムース",
     Bullcap: "ブルキャップ", "Oom Paul (Hungarian)": "ウームポール（ハンガリアン）",
     Tyrolean: "チロリアン",
+    Bent: "ベント", Zulu: "ズールー", Panel: "パネル", Sitter: "シッター",
+    Woodstock: "ウッドストック", Hungarian: "ハンガリアン", "Oom Paul": "ウームポール",
   },
 
   materials: {
