@@ -854,6 +854,12 @@ const jaUI = {
     sizeExtraLarge: "特大",
   },
 
+  community: {
+    notFollowingYet: "フォロー中なし",
+    notFollowingYetDesc: "コミュニティでパイプ愛好家を見つけてフォローし、コレクションを確認しましょう",
+    exploreCommunity: "コミュニティを探索",
+  },
+
 };
 
 export default jaUI;

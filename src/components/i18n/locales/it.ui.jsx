@@ -862,6 +862,12 @@ const itUI = {
     failedToUploadImage: "Impossibile caricare l'immagine",
   },
 
+  community: {
+    notFollowingYet: "Non stai seguendo nessuno",
+    notFollowingYetDesc: "Scopri e segui gli appassionati di pipe nella community per vedere le loro collezioni",
+    exploreCommunity: "Esplora la community",
+  },
+
 };
 
 export default itUI;

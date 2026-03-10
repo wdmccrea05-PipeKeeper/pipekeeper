@@ -1006,6 +1006,12 @@ const esUI = {
     sizeExtraLarge: "Extra grande",
   },
 
+  community: {
+    notFollowingYet: "No siguiendo a nadie",
+    notFollowingYetDesc: "Descubre y sigue a entusiastas de pipas en la comunidad para ver sus colecciones",
+    exploreCommunity: "Explorar la comunidad",
+  },
+
 };
 
 export default esUI;

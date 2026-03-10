@@ -857,6 +857,12 @@ const zhHansUI = {
     failedToUploadImage: "图片上传失败",
   },
 
+  community: {
+    notFollowingYet: "未关注任何人",
+    notFollowingYetDesc: "在社区中发现并关注烟斗爱好者，以查看他们的收藏",
+    exploreCommunity: "探索社区",
+  },
+
 };
 
 export default zhHansUI;

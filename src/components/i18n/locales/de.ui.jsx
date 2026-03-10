@@ -748,6 +748,12 @@ const deUI = {
     failedToUploadImage: "Bild konnte nicht hochgeladen werden",
   },
 
+  community: {
+    notFollowingYet: "Niemanden folgen",
+    notFollowingYetDesc: "Entdecke und folge Pfeifenenthusiasten in der Community, um ihre Sammlungen zu sehen",
+    exploreCommunity: "Community erkunden",
+  },
+
 };
 
 export default deUI;

@@ -862,6 +862,12 @@ const nlUI = {
     failedToUploadImage: "Afbeelding uploaden mislukt",
   },
 
+  community: {
+    notFollowingYet: "Je volgt niemand",
+    notFollowingYetDesc: "Ontdek en volg pijpliefhebbers in de community om hun collecties te zien",
+    exploreCommunity: "Community verkennen",
+  },
+
 };
 
 export default nlUI;
