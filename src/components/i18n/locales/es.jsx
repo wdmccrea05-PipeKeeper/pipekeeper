@@ -514,13 +514,20 @@ const translations = {
     quickSearchAddPipe: "Búsqueda rápida y agregar pipa",
     quickSearchAddTobacco: "Búsqueda rápida y agregar tabaco",
     searchPipeDesc: "Busca en nuestra base de datos para agregar rápidamente una pipa a tu colección",
+    searchTobaccoDesc: "Busca en nuestra base de datos para agregar rápidamente tabaco a tu bodega",
     pipePlaceholder: "Buscar por fabricante, modelo (ej. 'Peterson System 314')",
+    tobaccoPlaceholder: "Buscar por nombre de mezcla o fabricante (ej. 'Orlik Golden Sliced')",
     foundResults: "Se encontraron {count} resultado(s)",
     noResults: "No se encontraron resultados. Intenta con una búsqueda diferente.",
     adding: "Agregando…", addToCollection: "Agregar a la colección", addToCellar: "Agregar a la bodega",
+    enterPipeName: "Ingresa un nombre de pipa para buscar",
+    pipeExamples: "ej. Peterson System 314, Dunhill Shell",
     enterTobaccoName: "Ingresa un nombre de mezcla de tabaco para buscar",
     tobaccoExamples: "ej. Orlik Golden Sliced, Dunhill Early Morning Pipe",
     flavors: "Sabores", components: "Componentes", tinSize: "Tamaño de lata",
+    avgRating: "Calificación prom.", madeIn: "Fabricado en {country}", era: "Época",
+    bowl: "Hornillo", deep: "profundo", typicalValue: "Valor típico",
+    searchButton: "Buscar",
   },
 
   quickEdit: {
@@ -541,8 +548,20 @@ const translations = {
   },
 
   cellarLog: {
-    cellaredTobacco: "Tabaco en bodega", overRemoved: "exceso eliminado",
-    deleteConfirmTitle: "Eliminar entrada",
+    cellaredTobacco: "Tabaco en bodega",
+    cellaringLog: "Registro de bodega",
+    addEntry: "Agregar entrada", addCellarTransaction: "Agregar transacción de bodega",
+    transactionType: "Tipo de transacción", addedToCellarOption: "Agregado a la bodega", removedFromCellarOption: "Retirado de la bodega",
+    date: "Fecha", amountOz: "Cantidad (oz)", containerType: "Tipo de contenedor",
+    containerTin: "Lata", containerJar: "Tarro", containerPouch: "Bolsa", containerBulk: "Granel",
+    destination: "Destino", movedToOpenCollection: "Movido a colección abierta", exchanged: "Intercambiado", discarded: "Descartado",
+    notesOptional: "Notas (opcional)", notesPlaceholder: "Detalles adicionales...",
+    saving: "Guardando...", saveEntry: "Guardar entrada",
+    added: "Agregado", removed: "Retirado", net: "Neto",
+    noTransactionsYet: "Sin transacciones aún", ozUnit: "oz", amountPlaceholder: "2.0",
+    overRemoved: "exceso eliminado", deleteConfirmTitle: "Eliminar entrada",
+    noOpenedTobacco: "Sin tabaco abierto", updateInventory: "Actualizar inventario",
+    upgradeDesc: "Registra transacciones detalladas de bodega incluyendo fechas de adición/retiro, cantidades en onzas, tipos de contenedores y notas.",
   },
 
   inventory: {
