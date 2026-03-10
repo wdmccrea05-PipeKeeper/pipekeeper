@@ -3,17 +3,92 @@ const docs = {
   howTo: {
     pageTitle: "Jak to zrobić", pageSubtitle: "Szybkie odpowiedzi z wyraźnymi ścieżkami nawigacji",
     managingPipes: "Zarządzanie fajkami", addPipeQ: "Jak dodać fajkę do kolekcji?",
+    addPipeBasicSteps: [
+      "Dotknij zakładki Fajki w menu nawigacyjnym",
+      "Dotknij przycisku + Dodaj fajkę w prawym górnym rogu",
+      "Wypełnij szczegóły fajki (nazwa, producent, kształt itp.)",
+      "Opcjonalnie dodaj zdjęcia za pomocą obszaru przesyłania zdjęć",
+      "Dotknij Zapisz, aby dodać fajkę do swojej kolekcji"
+    ],
     updatePipeQ: "Jak zaktualizować szczegóły fajki?",
+    updatePipeSteps: [
+      "Przejdź do strony Fajki",
+      "Dotknij fajki, którą chcesz edytować",
+      "Na stronie szczegółów dotknij ikony Edytuj (ołówek)",
+      "Wprowadź zmiany",
+      "Dotknij Zapisz"
+    ],
     markFavoriteQ: "Jak oznaczyć fajkę jako ulubioną?",
+    markFavoriteSteps: [
+      "Przejdź do strony Fajki lub strony szczegółów fajki",
+      "Dotknij ikony serca na karcie lub stronie szczegółów",
+      "Serce zmieni kolor na czerwony, wskazując, że jest ulubionym"
+    ],
     managingTobacco: "Zarządzanie tytoniem", addTobaccoQ: "Jak dodać mieszankę tytoniu?",
+    addTobaccoSteps: [
+      "Dotknij zakładki Tytoń w menu nawigacyjnym",
+      "Dotknij przycisku + Dodaj mieszankę",
+      "Wyszukaj mieszankę po nazwie, aby automatycznie uzupełnić szczegóły, lub wprowadź je ręcznie",
+      "Ustaw swój inwentarz (puszki, oz luzem, status)",
+      "Dotknij Zapisz"
+    ],
     updateTobaccoQ: "Jak zaktualizować mieszankę tytoniu?",
+    updateTobaccoSteps: [
+      "Przejdź do strony Tytoń",
+      "Dotknij mieszanki, którą chcesz edytować",
+      "Na stronie szczegółów dotknij ikony Edytuj",
+      "Wprowadź zmiany i dotknij Zapisz"
+    ],
     loggingSessions: "Rejestrowanie sesji", logSessionQ: "Jak zarejestrować sesję palenia?",
+    logSessionSteps: [
+      "Przejdź do strony głównej",
+      "Przewiń do panelu Spostrzeżenia kolekcji",
+      "Dotknij zakładki Dziennik",
+      "Wybierz fajkę i mieszankę tytoniu, której użyłeś",
+      "Wypełnij szczegóły sesji (czas trwania, ocena, notatki)",
+      "Dotknij Zapisz sesję"
+    ],
     viewLogsQ: "Jak wyświetlić historię palenia?",
+    viewLogsSteps: [
+      "Przejdź do strony głównej",
+      "Przewiń do panelu Spostrzeżenia kolekcji",
+      "Dotknij zakładki Dziennik, aby zobaczyć historię sesji"
+    ],
     measurements: "Wymiary fajki", measurePipeQ: "Jak dodać wymiary do fajki?",
+    measurePipeSteps: [
+      "Otwórz stronę szczegółów fajki",
+      "Dotknij ikony Edytuj",
+      "Przewiń do sekcji pomiarów",
+      "Wprowadź wymiary ręcznie lub użyj narzędzia Geometria AI, aby automatycznie uzupełnić ze zdjęć",
+      "Dotknij Zapisz"
+    ],
     aiFeatures: "Funkcje AI", generatePairingsQ: "Jak generować rekomendacje parowania fajka-tytoń?",
+    generatePairingsSteps: [
+      "Przejdź do strony głównej",
+      "Znajdź panel Aktualizacje AI",
+      "Dotknij Regeneruj obok Macierz parowania",
+      "Po wygenerowaniu wyświetl parowania w Spostrzeżenia > Siatka parowania"
+    ],
     identifyPipeQ: "Jak używać AI do identyfikacji fajki?",
+    identifyPipeSteps: [
+      "Przejdź do strony AI Sprzedawca tytoniu (lub zakładki Ekspert Sprzedawca tytoniu)",
+      "Dotknij zakładki Identyfikacja",
+      "Prześlij zdjęcie swojej fajki",
+      "Dotknij Analizuj, aby uzyskać wyniki identyfikacji AI"
+    ],
     subscriptions: "Subskrypcje", upgradeQ: "Jak ulepszyć moją subskrypcję?",
+    upgradeSteps: [
+      "Przejdź do strony Profil",
+      "Dotknij Zarządzaj subskrypcją lub Ulepsz",
+      "Wybierz żądany plan",
+      "Ukończ proces płatności"
+    ],
     cancelQ: "Jak anulować moją subskrypcję?",
+    cancelSteps: [
+      "Przejdź do strony Profil",
+      "Dotknij Zarządzaj subskrypcją",
+      "Postępuj zgodnie z krokami anulowania w portalu subskrypcji"
+    ],
   },
   troubleshooting: {
     title: "Rozwiązywanie problemów", subtitle: "Typowe problemy i rozwiązania",

@@ -3,16 +3,94 @@ const docs = {
   howTo: {
     pageTitle: "Anleitungen", pageSubtitle: "Schnelle Antworten mit klaren Navigationspfaden",
     managingPipes: "Pfeifen verwalten", addPipeQ: "Wie füge ich eine Pfeife zu meiner Sammlung hinzu?",
+    addPipeBasicSteps: [
+      "Tippen Sie auf die Registerkarte Pfeifen im Navigationsmenü",
+      "Tippen Sie auf die Schaltfläche + Pfeife hinzufügen oben rechts",
+      "Füllen Sie die Pfeifendetails aus (Name, Hersteller, Form usw.)",
+      "Fügen Sie optional Fotos über den Foto-Upload-Bereich hinzu",
+      "Tippen Sie auf Speichern, um die Pfeife Ihrer Sammlung hinzuzufügen"
+    ],
     updatePipeQ: "Wie aktualisiere ich die Details einer Pfeife?",
+    updatePipeSteps: [
+      "Navigieren Sie zur Seite Pfeifen",
+      "Tippen Sie auf die Pfeife, die Sie bearbeiten möchten",
+      "Tippen Sie auf der Detailseite auf das Bearbeiten-Symbol (Stift)",
+      "Nehmen Sie Ihre Änderungen vor",
+      "Tippen Sie auf Speichern"
+    ],
     markFavoriteQ: "Wie markiere ich eine Pfeife als Favorit?",
+    markFavoriteSteps: [
+      "Navigieren Sie zur Seite Pfeifen oder zur Detailseite der Pfeife",
+      "Tippen Sie auf das Herz-Symbol auf der Karte oder Detailseite",
+      "Das Herz wird rot, um anzuzeigen, dass es ein Favorit ist"
+    ],
     managingTobacco: "Tabak verwalten", addTobaccoQ: "Wie füge ich einen Tabakblend hinzu?",
+    addTobaccoSteps: [
+      "Tippen Sie auf die Registerkarte Tabak im Navigationsmenü",
+      "Tippen Sie auf die Schaltfläche + Mischung hinzufügen",
+      "Suchen Sie die Mischung nach Name für automatisches Ausfüllen, oder geben Sie sie manuell ein",
+      "Legen Sie Ihren Bestand fest (Dosen, Masse oz, Status)",
+      "Tippen Sie auf Speichern"
+    ],
     updateTobaccoQ: "Wie aktualisiere ich einen Tabakblend?",
+    updateTobaccoSteps: [
+      "Navigieren Sie zur Seite Tabak",
+      "Tippen Sie auf die Mischung, die Sie bearbeiten möchten",
+      "Tippen Sie auf der Detailseite auf das Bearbeiten-Symbol",
+      "Nehmen Sie Ihre Änderungen vor und tippen Sie auf Speichern"
+    ],
     loggingSessions: "Sitzungen protokollieren", logSessionQ: "Wie protokolliere ich eine Rauchsitzung?",
+    logSessionSteps: [
+      "Gehen Sie zur Startseite",
+      "Scrollen Sie zum Panel Sammlungseinblicke",
+      "Tippen Sie auf die Registerkarte Protokoll",
+      "Wählen Sie die verwendete Pfeife und Tabaksmischung aus",
+      "Geben Sie die Sitzungsdetails ein (Dauer, Bewertung, Notizen)",
+      "Tippen Sie auf Sitzung speichern"
+    ],
     viewLogsQ: "Wie sehe ich meine Rauchhistorie?",
+    viewLogsSteps: [
+      "Gehen Sie zur Startseite",
+      "Scrollen Sie zum Panel Sammlungseinblicke",
+      "Tippen Sie auf die Registerkarte Protokoll, um Ihren Sitzungsverlauf zu sehen"
+    ],
     measurements: "Pfeifenmaße", measurePipeQ: "Wie füge ich Maße zu einer Pfeife hinzu?",
+    measurePipeSteps: [
+      "Öffnen Sie die Detailseite der Pfeife",
+      "Tippen Sie auf das Bearbeiten-Symbol",
+      "Scrollen Sie zum Abschnitt Maße",
+      "Geben Sie die Abmessungen manuell ein oder verwenden Sie das KI-Geometrie-Tool zum automatischen Ausfüllen aus Fotos",
+      "Tippen Sie auf Speichern"
+    ],
     aiFeatures: "KI-Funktionen",
     generatePairingsQ: "Wie generiere ich Pfeifen-Tabak-Paarungsempfehlungen?",
+    generatePairingsSteps: [
+      "Gehen Sie zur Startseite",
+      "Finden Sie das Panel KI-Updates",
+      "Tippen Sie auf Neu generieren neben Paarungsmatrix",
+      "Nach der Generierung können Sie Paarungen in Sammlungseinblicke > Paarungsraster anzeigen"
+    ],
     identifyPipeQ: "Wie verwende ich KI, um eine Pfeife zu identifizieren?",
+    identifyPipeSteps: [
+      "Gehen Sie zur Seite KI-Tabakhändler (oder Registerkarte Experte Tabakhändler)",
+      "Tippen Sie auf die Registerkarte Identifikation",
+      "Laden Sie ein Foto Ihrer Pfeife hoch",
+      "Tippen Sie auf Analysieren, um KI-Identifikationsergebnisse zu erhalten"
+    ],
+    subscriptions: "Abonnements",
+    upgradeQ: "Wie führe ich ein Upgrade meines Abonnements durch?",
+    upgradeSteps: [
+      "Gehen Sie zur Seite Profil",
+      "Tippen Sie auf Abonnement verwalten oder Upgrade",
+      "Wählen Sie Ihren gewünschten Plan",
+      "Schließen Sie den Zahlungsvorgang ab"
+    ],
+    cancelQ: "Wie kündige ich mein Abonnement?",
+    cancelSteps: [
+      "Gehen Sie zur Seite Profil",
+      "Tippen Sie auf Abonnement verwalten",
+      "Folgen Sie den Kündigungsschritten in Ihrem Abonnementportal"
+    ],
     collectionInsightsQ: "Wie sehe ich meine Sammlungseinblicke?",
     subscriptionQ: "Wie verwalte ich mein Abonnement?",
     importExportQ: "Wie exportiere ich meine Sammlung?",
