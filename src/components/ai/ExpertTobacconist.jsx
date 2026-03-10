@@ -26,6 +26,7 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
   const entitlements = useEntitlements();
   const canOptimize = entitlements.canUse("COLLECTION_OPTIMIZATION");
   const [optimizeScope, setOptimizeScope] = useState(DEFAULT_OPTIMIZE_SCOPE);
+  const [activeTab, setActiveTab] = useState("identifier");
   if (isAppleBuild) return null;
 
   const activeIdentifyTypes = getActiveIdentifyTypes();
