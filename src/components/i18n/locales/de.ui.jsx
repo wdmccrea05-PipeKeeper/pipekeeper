@@ -720,6 +720,11 @@ const deUI = {
     chamberVolume: "Kammer",
   },
 
+  profile: {
+    avatarUploadedSuccessfully: "Avatar erfolgreich hochgeladen",
+    failedToUploadImage: "Bild konnte nicht hochgeladen werden",
+  },
+
 };
 
 export default deUI;

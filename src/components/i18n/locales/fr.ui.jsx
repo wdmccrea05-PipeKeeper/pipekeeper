@@ -850,6 +850,11 @@ const frUI = {
     chamberVolume: "Chambre",
   },
 
+  profile: {
+    avatarUploadedSuccessfully: "Avatar téléchargé avec succès",
+    failedToUploadImage: "Échec du téléchargement de l'image",
+  },
+
 };
 
 export default frUI;

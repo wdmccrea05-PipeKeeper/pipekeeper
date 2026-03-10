@@ -834,6 +834,11 @@ const nlUI = {
     },
   },
 
+  profile: {
+    avatarUploadedSuccessfully: "Avatar succesvol geüpload",
+    failedToUploadImage: "Afbeelding uploaden mislukt",
+  },
+
 };
 
 export default nlUI;

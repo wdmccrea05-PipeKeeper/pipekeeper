@@ -834,6 +834,11 @@ const itUI = {
     },
   },
 
+  profile: {
+    avatarUploadedSuccessfully: "Avatar caricato con successo",
+    failedToUploadImage: "Impossibile caricare l'immagine",
+  },
+
 };
 
 export default itUI;

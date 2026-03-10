@@ -29,7 +29,8 @@ import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProv
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
-// TODO: Move BLEND_TYPES and PIPE_SHAPES to the translation system so labels are translatable.
+// Stored enum values — raw English values are kept for database compatibility.
+// Display labels are resolved through the translation system.
 const BLEND_TYPES = [
   "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic",
   "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish",
@@ -283,6 +284,36 @@ export default function ProfilePage() {
     canceled: t("profileExtended.statusCanceled"),
     incomplete: t("profileExtended.statusIncomplete"),
     unpaid: t("profileExtended.statusUnpaid"),
+  };
+
+  const clenchingLabels = {
+    "Yes": t("profilePreferences.yes"),
+    "No": t("profilePreferences.no"),
+    "Sometimes": t("profilePreferences.sometimes"),
+  };
+
+  const smokeDurationLabels = {
+    "Short (15-30 min)": t("profilePreferences.durationShort"),
+    "Medium (30-60 min)": t("profilePreferences.durationMedium"),
+    "Long (60+ min)": t("profilePreferences.durationLong"),
+    "No Preference": t("profilePreferences.noPreference"),
+  };
+
+  const pipeSizeLabels = {
+    "Small": t("profilePreferences.sizeSmall"),
+    "Medium": t("profilePreferences.sizeMedium"),
+    "Large": t("profilePreferences.sizeLarge"),
+    "Extra Large": t("profilePreferences.sizeExtraLarge"),
+    "No Preference": t("profilePreferences.noPreference"),
+  };
+
+  const strengthLabels = {
+    "Mild": t("strengths.Mild"),
+    "Mild-Medium": t("strengths.Mild-Medium"),
+    "Medium": t("strengths.Medium"),
+    "Medium-Full": t("strengths.Medium-Full"),
+    "Full": t("strengths.Full"),
+    "No Preference": t("profilePreferences.noPreference"),
   };
 
   return (
@@ -594,7 +625,7 @@ export default function ProfilePage() {
                        onClick={() => setFormData((p) => ({ ...p, clenching_preference: pref }))}
                        className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
                      >
-                       {pref}
+                       {clenchingLabels[pref] ?? pref}
                      </Badge>
                    );
                  })}
@@ -612,7 +643,7 @@ export default function ProfilePage() {
                        onClick={() => setFormData((p) => ({ ...p, smoke_duration_preference: pref }))}
                        className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
                      >
-                       {pref}
+                       {smokeDurationLabels[pref] ?? pref}
                      </Badge>
                    );
                  })}
@@ -630,7 +661,7 @@ export default function ProfilePage() {
                        onClick={() => setFormData((p) => ({ ...p, pipe_size_preference: pref }))}
                        className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
                      >
-                       {pref}
+                       {pipeSizeLabels[pref] ?? pref}
                      </Badge>
                    );
                  })}
@@ -648,7 +679,7 @@ export default function ProfilePage() {
                        onClick={() => setFormData((p) => ({ ...p, strength_preference: pref }))}
                        className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
                      >
-                       {pref}
+                       {strengthLabels[pref] ?? pref}
                      </Badge>
                    );
                  })}
@@ -666,7 +697,7 @@ export default function ProfilePage() {
                       onClick={() => toggleBlendType(bt)}
                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
                     >
-                      {bt}
+                      {t(`blendTypes.${bt}`, bt)}
                     </Badge>
                   );
                 })}
@@ -684,7 +715,7 @@ export default function ProfilePage() {
                       onClick={() => toggleShape(sh)}
                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
                     >
-                      {sh}
+                      {t(`shapes.${sh}`, sh)}
                     </Badge>
                   );
                 })}
