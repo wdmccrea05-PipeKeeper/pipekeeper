@@ -2454,7 +2454,7 @@ const enUI = {
   },
 
   stats: {
-    ozOpen: "oz open", ozCellared: "oz cellared", ozBulk: "oz bulk", ozCellared: "oz cellared", ozBulk: "oz bulk",
+    ozOpen: "oz open", ozCellared: "oz cellared", ozBulk: "oz bulk",
     ozTotal: "oz total", ozRemaining: "oz remaining", totalOpen: "Total Open",
     totalCellared: "Total Cellared", tobaccoCollectionStats: "Tobacco Collection Stats",
     quickStats: "Quick Stats", totalBlends: "Total Blends", uniqueBrands: "Unique Brands",

@@ -1061,8 +1061,8 @@ const translations = {
 
   strengths: {
     "Mild": "Suave", "Mild-Medium": "Suave-Medio", "Medium": "Medio",
-    "Medium-Strong": "Medio-Fuerte", "Medium-Full": "Medio-Completo", "Full": "Fuerte",
-    "Strong": "Fuerte",
+    "Medium-Strong": "Medio-Fuerte", "Medium-Full": "Medio-Completo",
+    "Strong": "Fuerte", "Full": "Completo",
   },
 
   conditions: {
