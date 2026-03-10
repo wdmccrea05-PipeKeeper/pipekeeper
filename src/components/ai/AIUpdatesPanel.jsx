@@ -157,7 +157,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
         pipe_name: pipes.find((p) => String(p.id) === String(c.pipe_id))?.name || "Unknown",
         current_focus: c.before_focus || [],
         recommended_focus: c.after_focus || [],
-        score_improvement: `Priority #${i + 1} change`,
+        score_improvement: t("optimizer.priorityChange", { num: i + 1 }),
         reasoning: c.rationale || "",
       }));
 
@@ -167,7 +167,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
         gap_filled: rec,
         chamber_specs: rec,
         budget_range: "Varies",
-        score_improvement: "Expected improvement",
+        score_improvement: t("optimizer.expectedImprovementGeneral"),
       }));
 
       if (activeOpt?.id) {

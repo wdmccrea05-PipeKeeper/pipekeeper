@@ -282,6 +282,18 @@ const enUI = {
     cellaredBlends: "Cellared Blends",
     avgAge: "Avg. Age",
     sinceDateFormat: "Since",
+    noCellaredTobaccoYet: "No Cellared Tobacco Yet",
+    noCellaredTobaccoDesc: "Add tobacco to your cellar to track its aging progress.",
+    noAgingPotential: "No aging potential set",
+    agingExcellentYoung: "Young — continue aging",
+    agingExcellentDeveloping: "Developing well",
+    agingExcellentPeak: "At peak",
+    agingGoodYoung: "Young — continue aging",
+    agingGoodDeveloping: "Developing",
+    agingGoodPeak: "At peak",
+    agingFairYoung: "Young",
+    agingFairReady: "Ready to smoke",
+    agingBestFresh: "Best enjoyed fresh",
   },
   pipeDetailTabs: {
     focusUpdated: "Focus updated - AI recommendations will refresh",
@@ -498,6 +510,14 @@ const enUI = {
     analyzeImpact: "Analyze Impact",
     specialized: "Specialized",
     regenerate: "Regenerate",
+    expectedImprovement: "Expected improvement for {blendTypes}",
+    priorityChange: "Priority #{num} change",
+    expectedImprovementGeneral: "Expected improvement",
+    changesImproveCollectionCoverage: "These changes would improve your collection coverage",
+    noPreviousVersion: "No previous version to restore",
+    unknownPipe: "Unknown Pipe",
+    somethingWentWrong: "Something went wrong",
+    unknownError: "An unknown error occurred",
   },
   matching: {
     bowlVariant: "Bowl Variant",
@@ -1254,6 +1274,7 @@ const enUI = {
     i18nReportDownloaded: "i18n report downloaded",
     i18nReportCleared: "i18n report cleared",
     // PermissionDebugPanel.jsx
+    debugButton: "Debug",
     permissionsDebugPanel: "Permissions Debug Panel",
     userInfo: "User Info",
     subscriptionInfo: "Subscription Info",
@@ -1916,6 +1937,16 @@ const enUI = {
     topShapes: "Top Shapes",
     topBowlStyles: "Top Bowl Styles",
     bendDistribution: "Bend Distribution",
+    last7Days: "Last 7 Days",
+    last30Days: "Last 30 Days",
+    last90Days: "Last 90 Days",
+    yearToDate: "Year to Date",
+    last12Months: "Last 12 Months",
+    allTime: "All Time",
+    youLoggedCount: "You logged {count} sessions",
+    topPipeName: "Top pipe: {name}",
+    leanedHeavily: "You leaned heavily toward {type}",
+    goToShape: "Your go-to shape was {shape}",
   },
   ui: {
     selectPlaceholder: "Select...",
@@ -2256,7 +2287,8 @@ const enUI = {
 
   strengths: {
     "Mild": "Mild", "Mild-Medium": "Mild-Medium", "Medium": "Medium",
-    "Medium-Full": "Medium-Full", "Full": "Full",
+    "Medium-Strong": "Medium-Strong", "Medium-Full": "Medium-Full",
+    "Strong": "Strong", "Full": "Full",
   },
 
   conditions: {
@@ -2341,6 +2373,31 @@ const enUI = {
     "Chocolate": "Chocolate", "Coffee": "Coffee", "Vanilla": "Vanilla",
     "Honey": "Honey", "Leather": "Leather", "Grass": "Grass", "Hay": "Hay",
     "Citrus": "Citrus", "Plum": "Plum", "Fig": "Fig", "Raisin": "Raisin",
+  },
+
+  enum: {
+    pipeType: {
+      pipe: "Pipe",
+      blend: "Blend",
+    },
+    days: {
+      monday: "Monday", tuesday: "Tuesday", wednesday: "Wednesday",
+      thursday: "Thursday", friday: "Friday", saturday: "Saturday", sunday: "Sunday",
+    },
+    sessionTime: {
+      morning: "Morning", afternoon: "Afternoon", evening: "Evening", night: "Night",
+    },
+    strength: {
+      mild: "Mild", mildMedium: "Mild-Medium", medium: "Medium",
+      mediumStrong: "Medium-Strong", mediumFull: "Medium-Full",
+      strong: "Strong", full: "Full",
+    },
+    cut: {
+      ribbon: "Ribbon", flake: "Flake", brokenFlake: "Broken Flake",
+      readyRubbed: "Ready Rubbed", plug: "Plug", coin: "Coin",
+      cubeCut: "Cube Cut", crumbleCake: "Crumble Cake",
+      shag: "Shag", rope: "Rope", twist: "Twist", other: "Other",
+    },
   },
 };
 
