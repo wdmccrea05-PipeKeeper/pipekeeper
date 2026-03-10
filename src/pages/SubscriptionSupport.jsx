@@ -94,14 +94,14 @@ export default function SubscriptionSupport() {
       setBulkResult(data);
       
       if (data.summary.errors > 0) {
-        toast.warning(t("subscriptionSupport.updatedWithErrors","Updated {{updated}} users with {{errors}} errors",{updated: data.summary.updated, errors: data.summary.errors}));
+        toast.warning(t("subscriptionSupport.updatedWithErrors", {updated: data.summary.updated, errors: data.summary.errors}));
       } else {
-        toast.success(t("subscriptionSupport.successfullyUpdated","Successfully updated {{updated}} users",{updated: data.summary.updated}));
+        toast.success(t("subscriptionSupport.successfullyUpdated", {updated: data.summary.updated}));
       }
     } catch (error) {
       console.error("Bulk update failed:", error);
       const errorMsg = error?.response?.data?.error || error.message || t("subscriptionSupport.unknownError");
-      toast.error(t("subscriptionSupport.bulkUpdateFailed","Bulk update failed: {{error}}",{error: errorMsg}));
+      toast.error(t("subscriptionSupport.bulkUpdateFailed", {error: errorMsg}));
       setBulkResult({ 
         ok: false, 
         error: errorMsg,
@@ -128,7 +128,7 @@ export default function SubscriptionSupport() {
       });
       
       if (data.ok) {
-        toast.success(t("subscriptionSupport.userUpdatedSuccess","{{email}} updated from {{before}} to {{after}}",{email: data.email, before: data.before, after: data.after}));
+        toast.success(t("subscriptionSupport.userUpdatedSuccess", {email: data.email, before: data.before, after: data.after}));
         setUserEmail("");
         setForceOverride(false);
       } else {
@@ -139,9 +139,9 @@ export default function SubscriptionSupport() {
       const errorMsg = error?.response?.data?.error || error.message || t("subscriptionSupport.unknownError");
       
       if (forceOverride) {
-        toast.error(t("subscriptionSupport.forceUpdateFailed","Force update failed: {{error}}",{error: errorMsg}));
+        toast.error(t("subscriptionSupport.forceUpdateFailed", {error: errorMsg}));
       } else {
-        toast.error(t("subscriptionSupport.updateFailedTryForce","Update failed: {{error}}. Try enabling \"Force Override\" if needed.",{error: errorMsg}));
+        toast.error(t("subscriptionSupport.updateFailedTryForce", {error: errorMsg}));
       }
     } finally {
       setUserLoading(false);
@@ -175,14 +175,14 @@ export default function SubscriptionSupport() {
                 variant={timeWindow === "24h" ? "default" : "outline"}
                 onClick={() => setTimeWindow("24h")}
               >
-                {t("subscriptionSupport.24h","24h")}
+                {t("subscriptionSupport.timeWindow24h")}
               </Button>
               <Button
                 size="sm"
                 variant={timeWindow === "7d" ? "default" : "outline"}
                 onClick={() => setTimeWindow("7d")}
               >
-                {t("subscriptionSupport.7d","7d")}
+                {t("subscriptionSupport.timeWindow7d")}
               </Button>
             </div>
           </CardTitle>
@@ -414,7 +414,7 @@ export default function SubscriptionSupport() {
               {t("subscriptionSupport.updateEntitlementFor")} <strong>{userEmail}</strong> {t("common.to")} <strong>{userTier}</strong>?
               {forceOverride && (
                 <div className="mt-2 text-yellow-500">
-                  {t("subscriptionSupport.forceOverrideWarning","⚠️ Force Override is enabled - validation errors will be ignored")}
+                  {t("subscriptionSupport.forceOverrideWarning")}
                 </div>
               )}
             </AlertDialogDescription>

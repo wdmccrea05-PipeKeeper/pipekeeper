@@ -50,15 +50,11 @@ const SCAN_ROOTS = [
 // ─── Exclusion rules ─────────────────────────────────────────────────────────
 // Per-problem-statement requirements
 const EXCLUDED_DIRS = [
-  join(ROOT, 'src/components/admin'),
   join(ROOT, 'src/components/debug'),
 ];
 
 // Pages whose basenames start with any of these prefixes are excluded
-const EXCLUDED_PAGE_PREFIXES = [
-  'SubscriptionE2ETest',
-  'SubscriptionSupport',
-];
+const EXCLUDED_PAGE_PREFIXES = [];
 
 // Patterns from auditConfig that also mark files as excluded
 const CONFIG_EXCLUDE_PATTERNS = (auditConfig.excludePatterns || []).map(

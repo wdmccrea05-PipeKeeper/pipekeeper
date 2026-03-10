@@ -37,8 +37,8 @@ export default function RepairProAccessCard() {
       if (response.data.ok) {
         toast.success(
           dryRun 
-            ? t('admin.repairProDryRunDone', 'Dry run complete - no changes made')
-            : t('admin.repairCompletedMsg', 'Repair complete: {n} subscriptions updated', { n: response.data.updatedSubscriptions })
+            ? t('admin.repairProDryRunDone')
+            : t('admin.repairCompletedMsg', { n: response.data.updatedSubscriptions })
         );
         
         // Invalidate queries after successful repair
@@ -48,10 +48,10 @@ export default function RepairProAccessCard() {
           await queryClient.invalidateQueries({ queryKey: ["subscription"] });
         }
       } else {
-        toast.error(response.data.error || t('admin.repairFailedLabel', 'Repair Failed'));
+        toast.error(response.data.error || t('admin.repairFailedLabel'));
       }
     } catch (err) {
-      toast.error(err.message || t('admin.repairFailedLabel', 'Repair Failed'));
+      toast.error(err.message || t('admin.repairFailedLabel'));
       setResult({ ok: false, error: err.message });
     } finally {
       setLoading(false);
@@ -63,22 +63,22 @@ export default function RepairProAccessCard() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Wrench className="w-5 h-5 text-amber-600" />
-          <CardTitle className="text-amber-900">{t('admin.repairProAccessTitle', 'Repair Pro Access')}</CardTitle>
+          <CardTitle className="text-amber-900">{t('admin.repairProAccessTitle')}</CardTitle>
         </div>
         <CardDescription className="text-amber-800">
-          {t('admin.repairProAccessDesc', 'Recomputes subscription tiers from Stripe and updates local records. Safe to run multiple times.')}
+          {t('admin.repairProAccessDesc')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert className="bg-amber-100 border-amber-300">
           <AlertTriangle className="h-4 w-4 text-amber-700" />
           <AlertDescription className="text-amber-900 text-sm">
-            {t('admin.repairProAlertText', 'This fetches live data from Stripe, resolves pro vs premium tier, and updates Subscription.tier + User.subscription_tier.')}
+            {t('admin.repairProAlertText')}
           </AlertDescription>
         </Alert>
 
         <div className="space-y-2">
-          <Label htmlFor="limit" className="text-amber-900">{t('admin.subscriptionLimit', 'Subscription Limit')}</Label>
+          <Label htmlFor="limit" className="text-amber-900">{t('admin.subscriptionLimit')}</Label>
           <Input
             id="limit"
             type="number"
@@ -98,14 +98,14 @@ export default function RepairProAccessCard() {
             variant="outline"
             className="border-amber-400 text-amber-900 hover:bg-amber-100"
           >
-            {loading ? t('admin.running', 'Running...') : t('admin.dryRunBtn', 'Dry Run')}
+            {loading ? t('admin.running') : t('admin.dryRunBtn')}
           </Button>
           <Button
             onClick={() => runRepair(false)}
             disabled={loading}
             className="bg-amber-600 hover:bg-amber-700 text-white"
           >
-            {loading ? t('admin.running', 'Running...') : t('admin.repairNowBtn', 'Repair Now')}
+            {loading ? t('admin.running') : t('admin.repairNowBtn')}
           </Button>
         </div>
 
@@ -113,28 +113,28 @@ export default function RepairProAccessCard() {
           <div className="space-y-3 pt-4 border-t border-amber-200">
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="bg-white/50 rounded p-2">
-                <div className="text-amber-600 text-xs">{t('admin.scannedLabel', 'Scanned')}</div>
+                <div className="text-amber-600 text-xs">{t('admin.scannedLabel')}</div>
                 <div className="text-amber-900 font-semibold">{result.scanned}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-amber-600 text-xs">{t('admin.updatedSubscriptions', 'Updated Subscriptions')}</div>
+                <div className="text-amber-600 text-xs">{t('admin.updatedSubscriptions')}</div>
                 <div className="text-amber-900 font-semibold">{result.updatedSubscriptions}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-amber-600 text-xs">{t('admin.updatedUsers', 'Updated Users')}</div>
+                <div className="text-amber-600 text-xs">{t('admin.updatedUsers')}</div>
                 <div className="text-amber-900 font-semibold">{result.updatedUsers}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-amber-600 text-xs">{t('admin.unknownTierLabel', 'Unknown Tier')}</div>
+                <div className="text-amber-600 text-xs">{t('admin.unknownTierLabel')}</div>
                 <div className="text-amber-900 font-semibold">{result.unknownTier}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-amber-600 text-xs">{t('admin.missingStripeSubLabel', 'Missing Stripe Sub')}</div>
+                <div className="text-amber-600 text-xs">{t('admin.missingStripeSubLabel')}</div>
                 <div className="text-amber-900 font-semibold">{result.missingStripeSubscription}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-amber-600 text-xs">{t('admin.modeLabel', 'Mode')}</div>
-                <div className="text-amber-900 font-semibold">{result.dryRun ? t('admin.dryRunMode', 'Dry Run') : t('admin.liveMode', 'Live')}</div>
+                <div className="text-amber-600 text-xs">{t('admin.modeLabel')}</div>
+                <div className="text-amber-900 font-semibold">{result.dryRun ? t('admin.dryRunMode') : t('admin.liveMode')}</div>
               </div>
             </div>
 
@@ -142,16 +142,16 @@ export default function RepairProAccessCard() {
               <Collapsible open={showUpdated} onOpenChange={setShowUpdated}>
                 <CollapsibleTrigger className="flex items-center justify-between w-full bg-white/70 rounded p-2 hover:bg-white/90 transition-colors">
                   <span className="text-sm font-medium text-amber-900">
-                    {t('admin.updatedSamplesCount', 'Updated Samples ({count})', { count: result.samples.updated.length })}
+                    {t('admin.updatedSamplesCount', { count: result.samples.updated.length })}
                   </span>
                   {showUpdated ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-2 space-y-2">
                   {result.samples.updated.map((sample, idx) => (
                     <div key={idx} className="bg-white/70 rounded p-2 text-xs space-y-1">
-                      <div><span className="text-amber-600">{t('admin.emailSampleLabel', 'Email:')}</span> {sample.user_email}</div>
-                      <div><span className="text-amber-600">{t('admin.stripeSubSampleLabel', 'Stripe Sub:')}</span> {sample.stripe_sub_id}</div>
-                      <div><span className="text-amber-600">{t('admin.changeLabel', 'Change:')}</span> {sample.old_tier || 'null'} → {sample.new_tier}</div>
+                      <div><span className="text-amber-600">{t('admin.emailSampleLabel')}</span> {sample.user_email}</div>
+                      <div><span className="text-amber-600">{t('admin.stripeSubSampleLabel')}</span> {sample.stripe_sub_id}</div>
+                      <div><span className="text-amber-600">{t('admin.changeLabel')}</span> {sample.old_tier || 'null'} → {sample.new_tier}</div>
                     </div>
                   ))}
                 </CollapsibleContent>
@@ -162,16 +162,16 @@ export default function RepairProAccessCard() {
               <Collapsible open={showUnknown} onOpenChange={setShowUnknown}>
                 <CollapsibleTrigger className="flex items-center justify-between w-full bg-white/70 rounded p-2 hover:bg-white/90 transition-colors">
                   <span className="text-sm font-medium text-amber-900">
-                    {t('admin.unknownTierSamplesCount', 'Unknown Tier Samples ({count})', { count: result.samples.unknown.length })}
+                    {t('admin.unknownTierSamplesCount', { count: result.samples.unknown.length })}
                   </span>
                   {showUnknown ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-2 space-y-2">
                   {result.samples.unknown.map((sample, idx) => (
                     <div key={idx} className="bg-white/70 rounded p-2 text-xs space-y-1">
-                      <div><span className="text-amber-600">{t('admin.emailSampleLabel', 'Email:')}</span> {sample.user_email}</div>
-                      <div><span className="text-amber-600">{t('admin.stripeSubSampleLabel', 'Stripe Sub:')}</span> {sample.stripe_sub_id}</div>
-                      <div><span className="text-amber-600">{t('admin.reasonSampleLabel', 'Reason:')}</span> {sample.reason}</div>
+                      <div><span className="text-amber-600">{t('admin.emailSampleLabel')}</span> {sample.user_email}</div>
+                      <div><span className="text-amber-600">{t('admin.stripeSubSampleLabel')}</span> {sample.stripe_sub_id}</div>
+                      <div><span className="text-amber-600">{t('admin.reasonSampleLabel')}</span> {sample.reason}</div>
                     </div>
                   ))}
                 </CollapsibleContent>
@@ -182,15 +182,15 @@ export default function RepairProAccessCard() {
               <Collapsible open={showMissing} onOpenChange={setShowMissing}>
                 <CollapsibleTrigger className="flex items-center justify-between w-full bg-white/70 rounded p-2 hover:bg-white/90 transition-colors">
                   <span className="text-sm font-medium text-amber-900">
-                    {t('admin.missingSamplesCount', 'Missing Samples ({count})', { count: result.samples.missing.length })}
+                    {t('admin.missingSamplesCount', { count: result.samples.missing.length })}
                   </span>
                   {showMissing ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-2 space-y-2">
                   {result.samples.missing.map((sample, idx) => (
                     <div key={idx} className="bg-white/70 rounded p-2 text-xs space-y-1">
-                      <div><span className="text-amber-600">{t('admin.emailSampleLabel', 'Email:')}</span> {sample.user_email}</div>
-                      <div><span className="text-amber-600">{t('admin.reasonSampleLabel', 'Reason:')}</span> {sample.reason}</div>
+                      <div><span className="text-amber-600">{t('admin.emailSampleLabel')}</span> {sample.user_email}</div>
+                      <div><span className="text-amber-600">{t('admin.reasonSampleLabel')}</span> {sample.reason}</div>
                     </div>
                   ))}
                 </CollapsibleContent>
@@ -203,11 +203,11 @@ export default function RepairProAccessCard() {
           <Alert variant="destructive">
             <AlertDescription>
               <div className="space-y-2">
-                <div className="font-semibold">{t('admin.repairFailedLabel', 'Repair Failed')}</div>
+                <div className="font-semibold">{t('admin.repairFailedLabel')}</div>
                 <div className="text-sm break-words">{result.error || result.message}</div>
                 {result.keyPrefix && (
                   <div className="text-sm">
-                    <span className="font-semibold">{t('admin.keyPrefixLabel', 'Key Prefix:')}</span>{" "}
+                    <span className="font-semibold">{t('admin.keyPrefixLabel')}</span>{" "}
                     <code className="bg-black/30 px-2 py-0.5 rounded font-mono">
                       {result.keyPrefix}
                     </code>
@@ -215,7 +215,7 @@ export default function RepairProAccessCard() {
                 )}
                 {(result.error?.includes("STRIPE_AUTH_FAILED") || result.error?.includes("Invalid API Key") || result.error?.includes("mk_") || result.keyPrefix === "mk" || result.keyPrefix === "pk") && (
                   <div className="text-sm font-semibold text-yellow-200 mt-2">
-                    {t('admin.stripeKeyWarning', '⚠️ Check STRIPE_SECRET_KEY - must start with sk_ or rk_')}
+                    {t('admin.stripeKeyWarning')}
                   </div>
                 )}
                 {result.details && (
