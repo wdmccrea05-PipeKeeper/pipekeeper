@@ -224,6 +224,7 @@ const translations = {
   pipeGeometry: {
     selectPipeTitle: "Seleccionar pipa para analizar", choosePipe: "Elige una pipa...",
     photosCount: "Fotos: {count}", dimensions: "Dimensiones", noDimensions: "Ninguna",
+    length: "Longitud", bowlHeight: "Altura del cuenco", chamberDiameter: "Diámetro de la cámara", weight: "Peso",
     analyzeBtn: "Analizar geometría de la pipa", analyzing: "Analizando...",
     analysisResults: "Resultados del análisis", analyzedPhotos: "Analizadas {count} foto(s)",
     andDimensions: " y dimensiones", applyAllHigh: "Aplicar todas de alta confianza",
