@@ -4,7 +4,10 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { formatCurrency } from "@/components/utils/localeFormatters";
-import { calculateCellaredOzFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
+import {
+  calculateCellaredOzFromLogs,
+  calculateTobaccoCollectionValue,
+} from "@/components/utils/tobaccoQuantityHelpers";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import {
@@ -22,13 +25,18 @@ import {
   X,
   Sparkles,
 } from "lucide-react";
-import { differenceInCalendarDays, subDays, isWithinInterval, parseISO } from "date-fns";
+import {
+  differenceInCalendarDays,
+  subDays,
+  isWithinInterval,
+  parseISO,
+} from "date-fns";
 import { getBowlsUsed } from "@/components/utils/schemaCompatibility";
 import { Badge } from "@/components/ui/badge";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 import { PIPE_SILHOUETTE_URL } from "@/components/utils/collectionConstants";
-import { StatusCard, HeroCard, CATEGORY_COLORS } from "@/components/ui/HeroCard";
+import { StatusCard, CATEGORY_COLORS } from "@/components/ui/HeroCard";
 import CollectorStory from "@/components/story/CollectorStory";
 import StoryTrigger from "@/components/story/StoryTrigger";
 import { generateStoryCards } from "@/components/story/generateStoryCards";
@@ -37,7 +45,10 @@ const DEFAULT_INSIGHTS_TAB = "log";
 
 function getTabFromUrl() {
   try {
-    return new URLSearchParams(window.location.search).get("tab") || DEFAULT_INSIGHTS_TAB;
+    return (
+      new URLSearchParams(window.location.search).get("tab") ||
+      DEFAULT_INSIGHTS_TAB
+    );
   } catch {
     return DEFAULT_INSIGHTS_TAB;
   }
@@ -70,7 +81,6 @@ function gatherCollectionImages(pipes, blends) {
 }
 
 // ── Real texture overlays (grain, wood grain, paper) ─────────────────────────
-// uid must be unique per rendered instance to avoid SVG pattern ID collisions.
 function getTextureType(silhouetteType) {
   if (silhouetteType === "pipe") return "woodgrain";
   if (silhouetteType === "leaf") return "paper";
@@ -81,15 +91,48 @@ function ArtifactTexture({ type = "grain", accent = "#4A7C9C", uid = "0" }) {
   const safeId = `atex-${type}-${accent.replace("#", "")}-${uid}`;
 
   if (type === "woodgrain") {
-    // Briar / warm wood grain — wavy horizontal lines
     return (
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <defs>
-          <pattern id={safeId} x="0" y="0" width="200" height="28" patternUnits="userSpaceOnUse">
-            <path d="M0,4 C35,3 65,5 100,4 S165,3 200,4" stroke={accent} strokeWidth="0.55" fill="none" strokeOpacity="0.09" />
-            <path d="M0,10 C45,9 85,11 130,10 S175,9 200,10" stroke={accent} strokeWidth="0.38" fill="none" strokeOpacity="0.06" />
-            <path d="M0,16 C30,15 70,17 110,16 S170,15 200,16" stroke={accent} strokeWidth="0.50" fill="none" strokeOpacity="0.08" />
-            <path d="M0,22 C55,21 95,23 145,22 S185,21 200,22" stroke={accent} strokeWidth="0.32" fill="none" strokeOpacity="0.05" />
+          <pattern
+            id={safeId}
+            x="0"
+            y="0"
+            width="200"
+            height="28"
+            patternUnits="userSpaceOnUse"
+          >
+            <path
+              d="M0,4 C35,3 65,5 100,4 S165,3 200,4"
+              stroke={accent}
+              strokeWidth="0.55"
+              fill="none"
+              strokeOpacity="0.09"
+            />
+            <path
+              d="M0,10 C45,9 85,11 130,10 S175,9 200,10"
+              stroke={accent}
+              strokeWidth="0.38"
+              fill="none"
+              strokeOpacity="0.06"
+            />
+            <path
+              d="M0,16 C30,15 70,17 110,16 S170,15 200,16"
+              stroke={accent}
+              strokeWidth="0.50"
+              fill="none"
+              strokeOpacity="0.08"
+            />
+            <path
+              d="M0,22 C55,21 95,23 145,22 S185,21 200,22"
+              stroke={accent}
+              strokeWidth="0.32"
+              fill="none"
+              strokeOpacity="0.05"
+            />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill={`url(#${safeId})`} />
@@ -98,21 +141,110 @@ function ArtifactTexture({ type = "grain", accent = "#4A7C9C", uid = "0" }) {
   }
 
   if (type === "paper") {
-    // Paper label / printed tin texture — fine crosshatch + scattered grain
     return (
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <defs>
-          <pattern id={safeId} x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
-            <line x1="0" y1="0" x2="0" y2="60" stroke={accent} strokeWidth="0.28" strokeOpacity="0.055" />
-            <line x1="10" y1="0" x2="10" y2="60" stroke={accent} strokeWidth="0.22" strokeOpacity="0.04" />
-            <line x1="20" y1="0" x2="20" y2="60" stroke={accent} strokeWidth="0.28" strokeOpacity="0.05" />
-            <line x1="30" y1="0" x2="30" y2="60" stroke={accent} strokeWidth="0.22" strokeOpacity="0.04" />
-            <line x1="40" y1="0" x2="40" y2="60" stroke={accent} strokeWidth="0.28" strokeOpacity="0.055" />
-            <line x1="50" y1="0" x2="50" y2="60" stroke={accent} strokeWidth="0.22" strokeOpacity="0.04" />
-            <line x1="0" y1="0" x2="60" y2="0" stroke={accent} strokeWidth="0.22" strokeOpacity="0.04" />
-            <line x1="0" y1="15" x2="60" y2="15" stroke={accent} strokeWidth="0.18" strokeOpacity="0.032" />
-            <line x1="0" y1="30" x2="60" y2="30" stroke={accent} strokeWidth="0.22" strokeOpacity="0.04" />
-            <line x1="0" y1="45" x2="60" y2="45" stroke={accent} strokeWidth="0.18" strokeOpacity="0.032" />
+          <pattern
+            id={safeId}
+            x="0"
+            y="0"
+            width="60"
+            height="60"
+            patternUnits="userSpaceOnUse"
+          >
+            <line
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="60"
+              stroke={accent}
+              strokeWidth="0.28"
+              strokeOpacity="0.055"
+            />
+            <line
+              x1="10"
+              y1="0"
+              x2="10"
+              y2="60"
+              stroke={accent}
+              strokeWidth="0.22"
+              strokeOpacity="0.04"
+            />
+            <line
+              x1="20"
+              y1="0"
+              x2="20"
+              y2="60"
+              stroke={accent}
+              strokeWidth="0.28"
+              strokeOpacity="0.05"
+            />
+            <line
+              x1="30"
+              y1="0"
+              x2="30"
+              y2="60"
+              stroke={accent}
+              strokeWidth="0.22"
+              strokeOpacity="0.04"
+            />
+            <line
+              x1="40"
+              y1="0"
+              x2="40"
+              y2="60"
+              stroke={accent}
+              strokeWidth="0.28"
+              strokeOpacity="0.055"
+            />
+            <line
+              x1="50"
+              y1="0"
+              x2="50"
+              y2="60"
+              stroke={accent}
+              strokeWidth="0.22"
+              strokeOpacity="0.04"
+            />
+            <line
+              x1="0"
+              y1="0"
+              x2="60"
+              y2="0"
+              stroke={accent}
+              strokeWidth="0.22"
+              strokeOpacity="0.04"
+            />
+            <line
+              x1="0"
+              y1="15"
+              x2="60"
+              y2="15"
+              stroke={accent}
+              strokeWidth="0.18"
+              strokeOpacity="0.032"
+            />
+            <line
+              x1="0"
+              y1="30"
+              x2="60"
+              y2="30"
+              stroke={accent}
+              strokeWidth="0.22"
+              strokeOpacity="0.04"
+            />
+            <line
+              x1="0"
+              y1="45"
+              x2="60"
+              y2="45"
+              stroke={accent}
+              strokeWidth="0.18"
+              strokeOpacity="0.032"
+            />
             <circle cx="7" cy="19" r="0.42" fill={accent} fillOpacity="0.065" />
             <circle cx="34" cy="7" r="0.32" fill={accent} fillOpacity="0.05" />
             <circle cx="53" cy="43" r="0.42" fill={accent} fillOpacity="0.065" />
@@ -125,34 +257,43 @@ function ArtifactTexture({ type = "grain", accent = "#4A7C9C", uid = "0" }) {
     );
   }
 
-  // Default: "grain" — fine vintage film grain / premium paper noise
   return (
-    <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <defs>
-        <pattern id={safeId} x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
-          <circle cx="8"   cy="13"  r="0.48" fill={accent} fillOpacity="0.075" />
-          <circle cx="23"  cy="5"   r="0.32" fill={accent} fillOpacity="0.055" />
-          <circle cx="42"  cy="19"  r="0.52" fill={accent} fillOpacity="0.07" />
-          <circle cx="58"  cy="8"   r="0.38" fill={accent} fillOpacity="0.075" />
-          <circle cx="74"  cy="25"  r="0.44" fill={accent} fillOpacity="0.06" />
-          <circle cx="92"  cy="11"  r="0.34" fill={accent} fillOpacity="0.07" />
-          <circle cx="105" cy="30"  r="0.52" fill={accent} fillOpacity="0.075" />
-          <circle cx="14"  cy="39"  r="0.38" fill={accent} fillOpacity="0.065" />
-          <circle cx="34"  cy="45"  r="0.48" fill={accent} fillOpacity="0.06" />
-          <circle cx="55"  cy="52"  r="0.34" fill={accent} fillOpacity="0.075" />
-          <circle cx="77"  cy="41"  r="0.52" fill={accent} fillOpacity="0.065" />
-          <circle cx="96"  cy="58"  r="0.38" fill={accent} fillOpacity="0.06" />
-          <circle cx="111" cy="47"  r="0.30" fill={accent} fillOpacity="0.075" />
-          <circle cx="7"   cy="65"  r="0.48" fill={accent} fillOpacity="0.065" />
-          <circle cx="28"  cy="72"  r="0.38" fill={accent} fillOpacity="0.06" />
-          <circle cx="49"  cy="80"  r="0.52" fill={accent} fillOpacity="0.075" />
-          <circle cx="68"  cy="67"  r="0.34" fill={accent} fillOpacity="0.065" />
-          <circle cx="88"  cy="85"  r="0.48" fill={accent} fillOpacity="0.06" />
-          <circle cx="103" cy="74"  r="0.38" fill={accent} fillOpacity="0.075" />
-          <circle cx="17"  cy="95"  r="0.48" fill={accent} fillOpacity="0.065" />
-          <circle cx="39"  cy="103" r="0.34" fill={accent} fillOpacity="0.06" />
-          <circle cx="62"  cy="110" r="0.52" fill={accent} fillOpacity="0.075" />
-          <circle cx="85"  cy="98"  r="0.38" fill={accent} fillOpacity="0.065" />
+        <pattern
+          id={safeId}
+          x="0"
+          y="0"
+          width="120"
+          height="120"
+          patternUnits="userSpaceOnUse"
+        >
+          <circle cx="8" cy="13" r="0.48" fill={accent} fillOpacity="0.075" />
+          <circle cx="23" cy="5" r="0.32" fill={accent} fillOpacity="0.055" />
+          <circle cx="42" cy="19" r="0.52" fill={accent} fillOpacity="0.07" />
+          <circle cx="58" cy="8" r="0.38" fill={accent} fillOpacity="0.075" />
+          <circle cx="74" cy="25" r="0.44" fill={accent} fillOpacity="0.06" />
+          <circle cx="92" cy="11" r="0.34" fill={accent} fillOpacity="0.07" />
+          <circle cx="105" cy="30" r="0.52" fill={accent} fillOpacity="0.075" />
+          <circle cx="14" cy="39" r="0.38" fill={accent} fillOpacity="0.065" />
+          <circle cx="34" cy="45" r="0.48" fill={accent} fillOpacity="0.06" />
+          <circle cx="55" cy="52" r="0.34" fill={accent} fillOpacity="0.075" />
+          <circle cx="77" cy="41" r="0.52" fill={accent} fillOpacity="0.065" />
+          <circle cx="96" cy="58" r="0.38" fill={accent} fillOpacity="0.06" />
+          <circle cx="111" cy="47" r="0.30" fill={accent} fillOpacity="0.075" />
+          <circle cx="7" cy="65" r="0.48" fill={accent} fillOpacity="0.065" />
+          <circle cx="28" cy="72" r="0.38" fill={accent} fillOpacity="0.06" />
+          <circle cx="49" cy="80" r="0.52" fill={accent} fillOpacity="0.075" />
+          <circle cx="68" cy="67" r="0.34" fill={accent} fillOpacity="0.065" />
+          <circle cx="88" cy="85" r="0.48" fill={accent} fillOpacity="0.06" />
+          <circle cx="103" cy="74" r="0.38" fill={accent} fillOpacity="0.075" />
+          <circle cx="17" cy="95" r="0.48" fill={accent} fillOpacity="0.065" />
+          <circle cx="39" cy="103" r="0.34" fill={accent} fillOpacity="0.06" />
+          <circle cx="62" cy="110" r="0.52" fill={accent} fillOpacity="0.075" />
+          <circle cx="85" cy="98" r="0.38" fill={accent} fillOpacity="0.065" />
           <circle cx="108" cy="115" r="0.48" fill={accent} fillOpacity="0.06" />
         </pattern>
       </defs>
@@ -185,13 +326,22 @@ function LeafSilhouette({ className, style }) {
   );
 }
 
-// Use StatusCard from HeroCard component for consistency
-
-// ── Highlight card (story card grid item) ─────────────────────────────────────
-// heroImage — sharp foreground spotlight (item cards only: Most Smoked, Favorite Blend, Most Valuable)
-// artifactImage — blurred ambient background (all cards; random collection image for analytics cards)
-function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onShare, onStory, cardRef, patternIndex = 0, artifactImage, heroImage, silhouetteType }) {
-  // Derive category-appropriate texture: wood grain for pipe, paper for tobacco, grain for general
+// ── Highlight card ────────────────────────────────────────────────────────────
+function HighlightCard({
+  title,
+  value,
+  sub,
+  accent = "#C87941",
+  icon: Icon,
+  onShare,
+  onStory,
+  cardRef,
+  patternIndex = 0,
+  artifactImage,
+  heroImage,
+  silhouetteType,
+}) {
+  const { t } = useTranslation();
   const textureType = getTextureType(silhouetteType);
   const heroRotation = silhouetteType === "pipe" ? "12deg" : "-8deg";
 
@@ -200,14 +350,13 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
       ref={cardRef}
       className="relative rounded-2xl overflow-hidden flex flex-col justify-between min-h-[220px] cursor-default group hover:-translate-y-1 transition-transform duration-300"
       style={{
-        background: `linear-gradient(155deg, rgba(38, 26, 18, 0.96), rgba(32, 22, 15, 0.99))`,
-        border: `1px solid rgba(120, 90, 65, 0.42)`,
-        boxShadow: `0 5px 20px rgba(0,0,0,0.75), inset 0 1px 0 rgba(180,140,100,0.14), inset 0 -3px 4px rgba(0,0,0,0.3)`,
+        background:
+          "linear-gradient(155deg, rgba(38, 26, 18, 0.96), rgba(32, 22, 15, 0.99))",
+        border: "1px solid rgba(120, 90, 65, 0.42)",
+        boxShadow:
+          "0 5px 20px rgba(0,0,0,0.75), inset 0 1px 0 rgba(180,140,100,0.14), inset 0 -3px 4px rgba(0,0,0,0.3)",
       }}
     >
-      {/* Layer 1 (base gradient is the card background above) */}
-
-      {/* Layer 2a: Ambient blurred background from actual item/collection photo */}
       {artifactImage && (
         <div
           className="absolute inset-0 pointer-events-none"
@@ -224,7 +373,6 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         />
       )}
 
-      {/* Layer 2b: Hero Pipe Spotlight — sharp <img> entering from right, slightly angled */}
       {heroImage ? (
         <div
           className="absolute right-0 top-0 bottom-0 pointer-events-none overflow-hidden"
@@ -246,14 +394,13 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
               filter: `drop-shadow(0 0 18px ${accent}70) drop-shadow(0 6px 14px rgba(0,0,0,0.7))`,
             }}
           />
-          {/* Fade left edge of hero image smoothly into the background */}
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to right, rgba(28,18,10,1) 0%, rgba(28,18,10,0.42) 38%, transparent 72%)",
+              background:
+                "linear-gradient(to right, rgba(28,18,10,1) 0%, rgba(28,18,10,0.42) 38%, transparent 72%)",
             }}
           />
-          {/* Ember glow at bottom-right for pipe cards */}
           {silhouetteType === "pipe" && (
             <div
               className="absolute bottom-0 right-0 w-28 h-28 pointer-events-none"
@@ -263,7 +410,6 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
               }}
             />
           )}
-          {/* Tin lid ring glow for blend cards */}
           {silhouetteType === "leaf" && (
             <div
               className="absolute"
@@ -281,10 +427,12 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
           )}
         </div>
       ) : (
-        /* Analytics cards: no hero — show silhouette watermark instead */
         <>
           {silhouetteType === "pipe" && (
-            <div className="absolute bottom-0 right-0 w-40 h-40 pointer-events-none" style={{ opacity: 0.07 }}>
+            <div
+              className="absolute bottom-0 right-0 w-40 h-40 pointer-events-none"
+              style={{ opacity: 0.07 }}
+            >
               <img
                 src={PIPE_SILHOUETTE_URL}
                 alt=""
@@ -303,31 +451,32 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         </>
       )}
 
-      {/* Layer 2c: Directional gradient overlay — dark left (text) → transparent right */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: (artifactImage || heroImage)
-            ? `linear-gradient(to right, rgba(28,18,10,0.92) 0%, rgba(28,18,10,0.72) 45%, rgba(28,18,10,0.28) 75%, transparent 100%)`
-            : `linear-gradient(155deg, rgba(32,22,15,0.72) 0%, rgba(28,18,10,0.52) 45%, rgba(100,70,45,0.15) 100%)`,
+          background: artifactImage || heroImage
+            ? "linear-gradient(to right, rgba(28,18,10,0.92) 0%, rgba(28,18,10,0.72) 45%, rgba(28,18,10,0.28) 75%, transparent 100%)"
+            : "linear-gradient(155deg, rgba(32,22,15,0.72) 0%, rgba(28,18,10,0.52) 45%, rgba(100,70,45,0.15) 100%)",
         }}
       />
 
-      {/* Layer 2d: Bottom scrim — darkens text area for legibility over photos */}
       {(artifactImage || heroImage) && (
         <div
           className="absolute bottom-0 left-0 right-0 pointer-events-none"
           style={{
             height: "58%",
-            background: "linear-gradient(to top, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.30) 50%, transparent 100%)",
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.30) 50%, transparent 100%)",
           }}
         />
       )}
 
-      {/* Layer 3: Real texture overlay — category-specific */}
-      <ArtifactTexture type={textureType} accent={accent} uid={String(patternIndex)} />
+      <ArtifactTexture
+        type={textureType}
+        accent={accent}
+        uid={String(patternIndex)}
+      />
 
-      {/* Layer 4: Ambient corner glow */}
       <div
         className="absolute bottom-0 right-0 w-40 h-40 rounded-full pointer-events-none"
         style={{
@@ -343,7 +492,6 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         }}
       />
 
-      {/* Top accent bar — thicker and glowing */}
       <div
         className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl"
         style={{
@@ -352,18 +500,18 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         }}
       />
 
-      {/* Main content */}
       <div className="relative p-6 pb-4 flex flex-col gap-5 flex-1">
-        {/* Top row: icon + share */}
         <div className="flex items-start justify-between gap-2">
           <div
             className="rounded-2xl flex items-center justify-center shrink-0"
             style={{
               width: "3.5rem",
               height: "3.5rem",
-              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.5) 0%, rgba(80, 55, 35, 0.6) 100%)`,
-              border: `1px solid rgba(120, 90, 65, 0.45)`,
-              boxShadow: `0 3px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.22)`,
+              background:
+                "linear-gradient(135deg, rgba(100, 70, 45, 0.5) 0%, rgba(80, 55, 35, 0.6) 100%)",
+              border: "1px solid rgba(120, 90, 65, 0.45)",
+              boxShadow:
+                "0 3px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.22)",
             }}
           >
             <Icon
@@ -373,7 +521,6 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
           </div>
 
           <div className="flex items-center gap-1.5">
-            {/* Story card trigger */}
             {onStory && (
               <button
                 onClick={onStory}
@@ -383,13 +530,12 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
                   border: `1px solid ${accent}50`,
                   color: accent,
                 }}
-                title="View story card"
+                title={t("insights.viewStoryCard")}
               >
                 <Sparkles className="w-3 h-3" />
-                Story
+                {t("insights.story")}
               </button>
             )}
-            {/* Share button */}
             {onShare && (
               <button
                 onClick={onShare}
@@ -398,7 +544,7 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
                   background: `${accent}25`,
                   border: `1px solid ${accent}45`,
                 }}
-                title="Share"
+                title={t("common.share")}
               >
                 <Share2 className="w-3.5 h-3.5" style={{ color: accent }} />
               </button>
@@ -406,11 +552,10 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
           </div>
         </div>
 
-        {/* Story text hierarchy */}
         <div className="space-y-2">
           <div
             className="text-[10px] uppercase tracking-[0.16em] font-bold"
-            style={{ color: `rgba(180,140,75,0.9)` }}
+            style={{ color: "rgba(180,140,75,0.9)" }}
           >
             {title}
           </div>
@@ -418,7 +563,8 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
             className="text-[2.25rem] font-extrabold leading-tight tracking-tight"
             style={{
               color: "#F5F1E7",
-              textShadow: `0 2px 10px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)`,
+              textShadow:
+                "0 2px 10px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)",
               WebkitTextStroke: "0.4px rgba(255,255,255,0.12)",
               fontFamily: "'Georgia', serif",
             }}
@@ -428,9 +574,9 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
           {sub && (
             <div
               className="text-sm leading-snug pt-1 font-semibold"
-              style={{ 
-                color: `rgba(180,140,75,0.85)`,
-                textShadow: "0 1px 2px rgba(0,0,0,0.6)"
+              style={{
+                color: "rgba(180,140,75,0.85)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.6)",
               }}
             >
               {sub}
@@ -439,14 +585,13 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         </div>
       </div>
 
-      {/* Bottom branding + share bar */}
       <div
         className="relative px-5 py-2.5 flex items-center justify-between"
         style={{ borderTop: `1px solid ${accent}20` }}
       >
         <span
           className="text-[9px] uppercase tracking-[0.18em] font-bold select-none whitespace-nowrap"
-          style={{ color: `rgba(180,140,75,0.6)` }}
+          style={{ color: "rgba(180,140,75,0.6)" }}
         >
           PipeKeeper
         </span>
@@ -455,13 +600,13 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
             onClick={onShare}
             className="flex items-center gap-1.5 text-[9px] uppercase tracking-wide font-semibold rounded-md px-2 py-1 transition-all duration-200 opacity-50 hover:opacity-100 active:opacity-100"
             style={{
-              color: `rgba(180,140,75,0.9)`,
-              border: `1px solid rgba(120,90,65,0.3)`,
-              background: `rgba(100,70,45,0.15)`,
+              color: "rgba(180,140,75,0.9)",
+              border: "1px solid rgba(120,90,65,0.3)",
+              background: "rgba(100,70,45,0.15)",
             }}
           >
             <Share2 className="w-2.5 h-2.5" />
-            Share
+            {t("common.share")}
           </button>
         )}
       </div>
@@ -470,25 +615,40 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
 }
 
 // ── Full-screen Story / Share card modal ──────────────────────────────────────
-function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExport, storyRef, artifactImage, heroImage, silhouetteType }) {
+function StoryCardModal({
+  title,
+  value,
+  sub,
+  accent,
+  icon: Icon,
+  onClose,
+  onExport,
+  storyRef,
+  artifactImage,
+  heroImage,
+  silhouetteType,
+}) {
+  const { t } = useTranslation();
   const storyTextureType = getTextureType(silhouetteType);
   const heroRotation = silhouetteType === "pipe" ? "8deg" : "-5deg";
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}
       onClick={onClose}
     >
-      {/* Close button */}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors"
-        style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
+        style={{
+          background: "rgba(255,255,255,0.10)",
+          border: "1px solid rgba(255,255,255,0.15)",
+        }}
       >
         <X className="w-5 h-5" />
       </button>
 
-      {/* Story card — portrait oriented */}
       <div
         ref={storyRef}
         onClick={(e) => e.stopPropagation()}
@@ -497,14 +657,15 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
           width: "min(340px, 90vw)",
           height: "min(560px, 85vh)",
           borderRadius: "16px",
-          background: `linear-gradient(165deg, rgba(32, 22, 15, 0.98), rgba(42, 30, 20, 0.95))`,
-          border: `1px solid rgba(120, 90, 65, 0.4)`,
-          boxShadow: `0 4px 16px rgba(0,0,0,0.7), inset 0 1px 0 rgba(180,140,100,0.1)`,
+          background:
+            "linear-gradient(165deg, rgba(32, 22, 15, 0.98), rgba(42, 30, 20, 0.95))",
+          border: "1px solid rgba(120, 90, 65, 0.4)",
+          boxShadow:
+            "0 4px 16px rgba(0,0,0,0.7), inset 0 1px 0 rgba(180,140,100,0.1)",
           display: "flex",
           flexDirection: "column",
         }}
       >
-        {/* Layer 2a: Ambient blurred background from actual item/collection photo */}
         {artifactImage && (
           <div
             className="absolute inset-0 pointer-events-none"
@@ -519,7 +680,6 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
           />
         )}
 
-        {/* Layer 2b: Hero Pipe Spotlight — sharp <img> centered in card, slightly rotated */}
         {heroImage ? (
           <div
             className="absolute left-0 right-0 pointer-events-none overflow-hidden"
@@ -538,17 +698,17 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
                 maxWidth: "none",
                 width: "auto",
                 objectFit: "contain",
-                filter: `drop-shadow(0 0 20px rgba(180,140,75,0.4)) drop-shadow(0 8px 24px rgba(0,0,0,0.7))`,
+                filter:
+                  "drop-shadow(0 0 20px rgba(180,140,75,0.4)) drop-shadow(0 8px 24px rgba(0,0,0,0.7))",
               }}
             />
-            {/* Fade top + bottom edges of hero into the background */}
             <div
               className="absolute inset-0"
               style={{
-                background: "linear-gradient(to bottom, rgba(28,18,10,1) 0%, rgba(28,18,10,0.2) 18%, transparent 40%, rgba(28,18,10,0.2) 78%, rgba(20,12,8,0.90) 100%)",
+                background:
+                  "linear-gradient(to bottom, rgba(28,18,10,1) 0%, rgba(28,18,10,0.2) 18%, transparent 40%, rgba(28,18,10,0.2) 78%, rgba(20,12,8,0.90) 100%)",
               }}
             />
-            {/* Ember glow below hero for pipe cards */}
             {silhouetteType === "pipe" && (
               <div
                 className="absolute bottom-0 left-1/2 w-40 h-16 pointer-events-none"
@@ -560,7 +720,6 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
             )}
           </div>
         ) : (
-          /* Analytics / fallback: retain the original blurred crop at bottom */
           artifactImage && (
             <div
               className="absolute left-0 right-0 bottom-0 pointer-events-none overflow-hidden"
@@ -575,32 +734,36 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
                   filter: "blur(6px) brightness(0.4) saturate(0.75) sepia(0.2)",
                 }}
               />
-              {/* Fade hero crop's top edge */}
               <div
                 className="absolute inset-0"
                 style={{
-                  background: "linear-gradient(to bottom, rgba(28,18,10,1) 0%, rgba(28,18,10,0.55) 35%, transparent 75%)",
+                  background:
+                    "linear-gradient(to bottom, rgba(28,18,10,1) 0%, rgba(28,18,10,0.55) 35%, transparent 75%)",
                 }}
               />
             </div>
           )
         )}
 
-        {/* Layer 2c: Gradient overlay — dark top/edges, reveals hero in lower middle */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background: artifactImage
-              ? `linear-gradient(165deg, rgba(28,18,10,0.92) 0%, rgba(28,18,10,0.70) 30%, rgba(28,18,10,0.35) 60%, transparent 90%)`
-              : `linear-gradient(165deg, rgba(32,22,15,0.85) 0%, rgba(35,24,16,0.65) 30%, rgba(40,28,18,0.3) 70%, transparent 100%)`,
+              ? "linear-gradient(165deg, rgba(28,18,10,0.92) 0%, rgba(28,18,10,0.70) 30%, rgba(28,18,10,0.35) 60%, transparent 90%)"
+              : "linear-gradient(165deg, rgba(32,22,15,0.85) 0%, rgba(35,24,16,0.65) 30%, rgba(40,28,18,0.3) 70%, transparent 100%)",
           }}
         />
 
-        {/* Silhouette watermark — shown only when no hero image */}
         {!heroImage && silhouetteType === "pipe" && (
           <div
             className="absolute pointer-events-none"
-            style={{ bottom: "70px", right: "-20px", width: "200px", height: "200px", opacity: 0.08 }}
+            style={{
+              bottom: "70px",
+              right: "-20px",
+              width: "200px",
+              height: "200px",
+              opacity: 0.08,
+            }}
           >
             <img
               src={PIPE_SILHOUETTE_URL}
@@ -614,14 +777,18 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
         {!heroImage && silhouetteType === "leaf" && (
           <LeafSilhouette
             className="absolute pointer-events-none"
-            style={{ bottom: "70px", right: "-10px", width: "180px", height: "180px", opacity: 0.08 }}
+            style={{
+              bottom: "70px",
+              right: "-10px",
+              width: "180px",
+              height: "180px",
+              opacity: 0.08,
+            }}
           />
         )}
 
-        {/* Layer 3: Real texture overlay — category-specific */}
         <ArtifactTexture type={storyTextureType} accent={accent} uid="story" />
 
-        {/* Large ambient glow blobs */}
         <div
           className="absolute pointer-events-none"
           style={{
@@ -630,7 +797,8 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
             width: "280px",
             height: "280px",
             borderRadius: "50%",
-            background: `radial-gradient(circle, rgba(180,140,75,0.2) 0%, transparent 65%)`,
+            background:
+              "radial-gradient(circle, rgba(180,140,75,0.2) 0%, transparent 65%)",
           }}
         />
         <div
@@ -641,40 +809,39 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
             width: "200px",
             height: "200px",
             borderRadius: "50%",
-            background: `radial-gradient(circle, rgba(180,140,75,0.15) 0%, transparent 65%)`,
+            background:
+              "radial-gradient(circle, rgba(180,140,75,0.15) 0%, transparent 65%)",
           }}
         />
 
-        {/* Top glow bar */}
         <div
           className="absolute top-0 left-0 right-0 h-[2px]"
           style={{
-            background: `linear-gradient(90deg, transparent 0%, rgba(180,140,75,0.6) 50%, transparent 100%)`,
-            boxShadow: `0 0 6px rgba(180,140,75,0.4)`,
+            background:
+              "linear-gradient(90deg, transparent 0%, rgba(180,140,75,0.6) 50%, transparent 100%)",
+            boxShadow: "0 0 6px rgba(180,140,75,0.4)",
           }}
         />
 
-        {/* Header branding */}
         <div className="relative flex items-center justify-between px-7 pt-7 pb-0">
           <div
             className="text-[10px] uppercase tracking-[0.22em] font-bold whitespace-nowrap"
-            style={{ color: `rgba(180,140,75,0.7)` }}
+            style={{ color: "rgba(180,140,75,0.7)" }}
           >
             PipeKeeper
           </div>
           <div
             className="text-[9px] uppercase tracking-[0.14em] font-semibold px-2 py-0.5 rounded-full"
             style={{
-              background: `rgba(100,70,45,0.2)`,
-              border: `1px solid rgba(120,90,65,0.35)`,
-              color: `rgba(180,140,75,0.9)`,
+              background: "rgba(100,70,45,0.2)",
+              border: "1px solid rgba(120,90,65,0.35)",
+              color: "rgba(180,140,75,0.9)",
             }}
           >
-            Highlight
+            {t("insights.highlight")}
           </div>
         </div>
 
-        {/* Central content — top-aligned when hero fills the center, otherwise vertically centered */}
         <div
           className="relative flex flex-col items-center px-7 text-center gap-5"
           style={{
@@ -684,16 +851,17 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
             paddingBottom: heroImage ? "0" : undefined,
           }}
         >
-          {/* Icon orb — smaller when hero image is present to save vertical space */}
           <div
             className="flex items-center justify-center"
             style={{
               width: heroImage ? "64px" : "90px",
               height: heroImage ? "64px" : "90px",
               borderRadius: "20px",
-              background: `linear-gradient(135deg, rgba(100,70,45,0.5) 0%, rgba(80,55,35,0.6) 100%)`,
-              border: `1.5px solid rgba(120,90,65,0.5)`,
-              boxShadow: `0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.2)`,
+              background:
+                "linear-gradient(135deg, rgba(100,70,45,0.5) 0%, rgba(80,55,35,0.6) 100%)",
+              border: "1.5px solid rgba(120,90,65,0.5)",
+              boxShadow:
+                "0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.2)",
             }}
           >
             <Icon
@@ -701,26 +869,28 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
                 width: heroImage ? "30px" : "44px",
                 height: heroImage ? "30px" : "44px",
                 color: accent,
-                filter: `drop-shadow(0 0 8px rgba(180,140,75,0.7))`,
+                filter: "drop-shadow(0 0 8px rgba(180,140,75,0.7))",
               }}
             />
           </div>
 
-          {/* Category label */}
           <div
             className="text-[11px] uppercase tracking-[0.22em] font-bold whitespace-nowrap"
-            style={{ color: `rgba(180,140,75,0.85)`, fontFamily: "'Georgia', serif" }}
+            style={{
+              color: "rgba(180,140,75,0.85)",
+              fontFamily: "'Georgia', serif",
+            }}
           >
             {title}
           </div>
 
-          {/* Main stat — huge with better wrapping */}
           <div
             className="font-extrabold leading-none tracking-tighter px-4"
             style={{
               fontSize: "clamp(2.8rem, 11vw, 4.2rem)",
               color: "#F5F1E7",
-              textShadow: `0 3px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)`,
+              textShadow:
+                "0 3px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)",
               WebkitTextStroke: "0.4px rgba(255,255,255,0.08)",
               fontFamily: "'Georgia', serif",
               maxWidth: "100%",
@@ -731,12 +901,11 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
             {value ?? "—"}
           </div>
 
-          {/* Sub text */}
           {sub && (
             <div
               className="text-sm font-semibold leading-snug px-4"
-              style={{ 
-                color: `rgba(180,140,75,0.8)`,
+              style={{
+                color: "rgba(180,140,75,0.8)",
                 maxWidth: "90%",
               }}
             >
@@ -745,23 +914,24 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
           )}
         </div>
 
-        {/* Bottom export action */}
         <div
           className="relative flex items-center justify-center gap-3 px-7 pb-7 pt-4"
-          style={{ borderTop: `1px solid rgba(120,90,65,0.25)` }}
+          style={{ borderTop: "1px solid rgba(120,90,65,0.25)" }}
         >
           <button
             onClick={onExport}
             className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-95"
             style={{
-              background: `linear-gradient(135deg, rgba(180,140,75,1) 0%, rgba(160,120,65,1) 100%)`,
+              background:
+                "linear-gradient(135deg, rgba(180,140,75,1) 0%, rgba(160,120,65,1) 100%)",
               color: "rgba(28,18,10,1)",
-              boxShadow: `0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)`,
-              border: `1px solid rgba(140,105,60,0.8)`,
+              boxShadow:
+                "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)",
+              border: "1px solid rgba(140,105,60,0.8)",
             }}
           >
             <Share2 className="w-4 h-4" />
-            Share / Export
+            {t("common.shareExport")}
           </button>
         </div>
       </div>
@@ -771,31 +941,39 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
 
 function computeLongestStreak(logs) {
   if (!logs || logs.length === 0) return 0;
+
   const days = [
     ...new Set(
-      logs.map((l) => {
-        try {
-          return l.date ? l.date.slice(0, 10) : null;
-        } catch {
-          return null;
-        }
-      }).filter(Boolean)
+      logs
+        .map((l) => {
+          try {
+            return l.date ? l.date.slice(0, 10) : null;
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean)
     ),
   ].sort();
+
   if (days.length === 0) return 0;
+
   let maxStreak = 1;
   let currentStreak = 1;
+
   for (let i = 1; i < days.length; i++) {
     const prev = parseISO(days[i - 1]);
     const curr = parseISO(days[i]);
     const diff = differenceInCalendarDays(curr, prev);
+
     if (diff === 1) {
-      currentStreak++;
+      currentStreak += 1;
       maxStreak = Math.max(maxStreak, currentStreak);
     } else if (diff > 1) {
       currentStreak = 1;
     }
   }
+
   return maxStreak;
 }
 
@@ -806,7 +984,6 @@ export default function Insights() {
 
   const highlightRefs = useRef({});
   const storyRef = useRef(null);
-  // activeStory: { title, value, sub, accent, icon } | null
   const [activeStory, setActiveStory] = useState(null);
   const [showFullStory, setShowFullStory] = useState(false);
 
@@ -823,7 +1000,9 @@ export default function Insights() {
   const { data: blends = [] } = useQuery({
     queryKey: ["blends", user?.email],
     queryFn: async () => {
-      const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+      const result = await base44.entities.TobaccoBlend.filter({
+        created_by: user?.email,
+      });
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
@@ -845,20 +1024,26 @@ export default function Insights() {
     staleTime: 60000,
   });
 
-  // ---- computed stats ----
   const totalPipeValue = useMemo(
     () => pipes.reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0),
     [pipes]
   );
+
   const totalTobaccoValue = useMemo(
     () => calculateTobaccoCollectionValue(blends, cellarLogs),
     [blends, cellarLogs]
   );
-  const totalCellaredOz = useMemo(() => calculateCellaredOzFromLogs(cellarLogs), [cellarLogs]);
+
+  const totalCellaredOz = useMemo(
+    () => calculateCellaredOzFromLogs(cellarLogs),
+    [cellarLogs]
+  );
+
   const totalCollectionValue = totalPipeValue + totalTobaccoValue;
 
   const now = new Date();
   const oneWeekAgo = subDays(now, 7);
+
   const sessionsThisWeek = useMemo(
     () =>
       smokingLogs.filter((l) => {
@@ -870,10 +1055,9 @@ export default function Insights() {
           return false;
         }
       }).length,
-    [smokingLogs]
+    [smokingLogs, oneWeekAgo, now]
   );
 
-  // pipe usage counts
   const pipeUsage = useMemo(() => {
     const map = {};
     smokingLogs.forEach((l) => {
@@ -916,30 +1100,34 @@ export default function Insights() {
     return top?.estimated_value ? top : null;
   }, [pipes]);
 
-  const longestStreak = useMemo(() => computeLongestStreak(smokingLogs), [smokingLogs]);
+  const longestStreak = useMemo(
+    () => computeLongestStreak(smokingLogs),
+    [smokingLogs]
+  );
 
   const hasData = pipes.length > 0 || blends.length > 0 || smokingLogs.length > 0;
 
-  // Generate full story cards
   const fullStoryCards = useMemo(() => {
     if (!pipes.length && !blends.length) return [];
-    return generateStoryCards(pipes, blends, smokingLogs, totalCollectionValue, formatCurrency, t);
+    return generateStoryCards(
+      pipes,
+      blends,
+      smokingLogs,
+      totalCollectionValue,
+      formatCurrency,
+      t
+    );
   }, [pipes, blends, smokingLogs, totalCollectionValue, t]);
 
-  // ── Analytics card images: stable random picks from the collection ──────────
-  // Intentionally depends on collection *size* rather than full arrays so that
-  // images are stable within a session and don't flicker on every React Query
-  // refetch. A user would need to add/remove items before the picks change.
   const analyticsImages = useMemo(() => {
     const { pipeImgs, blendImgs, allImgs } = gatherCollectionImages(pipes, blends);
-    // Helper: prefer category-specific images, fall back to full collection
     const safePickPipe = pickRandom(pipeImgs.length > 0 ? pipeImgs : allImgs);
     const safePickBlend = pickRandom(blendImgs.length > 0 ? blendImgs : allImgs);
+
     return {
       streak: pickRandom(pipeImgs),
       sessions: pickRandom(allImgs),
       collectionValue: pickRandom(allImgs),
-      // Snapshot card backgrounds — use real uploaded imagery where available
       snapshotSessions: safePickPipe,
       snapshotPipes: pickRandom(pipeImgs.length > 0 ? pipeImgs : allImgs),
       snapshotBlends: safePickBlend,
@@ -947,9 +1135,8 @@ export default function Insights() {
       snapshotStreak: safePickPipe,
       snapshotAvg: pickRandom(allImgs),
     };
-  }, [pipes.length, blends.length]); // re-pick only when collection size changes
+  }, [pipes.length, blends.length]);
 
-  // ── Share: capture a DOM node and share/download as image ─────────────────
   const captureAndShare = async (node, filename) => {
     const canvas = await html2canvas(node, {
       backgroundColor: "#0e1520",
@@ -957,19 +1144,26 @@ export default function Insights() {
       useCORS: true,
       logging: false,
     });
+
     const dataUrl = canvas.toDataURL("image/png");
+
     if (navigator.share && navigator.canShare) {
       try {
         const blob = await (await fetch(dataUrl)).blob();
         const file = new File([blob], `${filename}.png`, { type: "image/png" });
+
         if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: "My PipeKeeper Highlight" });
+          await navigator.share({
+            files: [file],
+            title: "My PipeKeeper Highlight",
+          });
           return;
         }
       } catch (shareErr) {
         if (shareErr?.name === "AbortError") return;
       }
     }
+
     const link = document.createElement("a");
     link.download = `${filename}.png`;
     link.href = dataUrl;
@@ -979,11 +1173,12 @@ export default function Insights() {
   const handleShareCard = async (key) => {
     const node = highlightRefs.current[key];
     if (!node) return;
+
     try {
       await captureAndShare(node, `pipekeeper-highlight-${key}`);
     } catch (err) {
       if (err?.name !== "AbortError") {
-        toast.error(t("insights.shareError", { defaultValue: "Could not share card" }));
+        toast.error(t("insights.shareError"));
       }
     }
   };
@@ -991,18 +1186,18 @@ export default function Insights() {
   const handleExportStory = async () => {
     const node = storyRef.current;
     if (!node) return;
+
     try {
       await captureAndShare(node, "pipekeeper-story-card");
     } catch (err) {
       if (err?.name !== "AbortError") {
-        toast.error(t("insights.shareError", { defaultValue: "Could not share card" }));
+        toast.error(t("insights.shareError"));
       }
     }
   };
 
   return (
     <div className="space-y-10">
-      {/* ── Story Card Modal ────────────────────────────────── */}
       {activeStory && (
         <StoryCardModal
           {...activeStory}
@@ -1012,20 +1207,18 @@ export default function Insights() {
         />
       )}
 
-      {/* ── Full Collector Story ────────────────────────────── */}
       <CollectorStory
         isOpen={showFullStory}
         onClose={() => setShowFullStory(false)}
         storyCards={fullStoryCards}
       />
 
-      {/* ── HEADER ─────────────────────────────────────────── */}
       <div className="relative">
-        {/* Subtle background glow behind header */}
         <div
           className="absolute inset-0 rounded-2xl pointer-events-none"
           style={{
-            background: "radial-gradient(ellipse at 20% 50%, rgba(180, 140, 75, 0.08) 0%, transparent 60%)",
+            background:
+              "radial-gradient(ellipse at 20% 50%, rgba(180, 140, 75, 0.08) 0%, transparent 60%)",
           }}
         />
         <div className="relative flex items-start justify-between gap-3 py-2">
@@ -1034,48 +1227,64 @@ export default function Insights() {
               <div
                 className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
                 style={{
-                  background: "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
+                  background:
+                    "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
                   border: "1px solid rgba(120, 90, 65, 0.45)",
-                  boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)",
+                  boxShadow:
+                    "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)",
                 }}
               >
-                <BarChart3 className="w-5 h-5" style={{ color: "rgba(180, 140, 75, 1)", filter: "drop-shadow(0 0 4px rgba(180,140,75,0.7))" }} />
+                <BarChart3
+                  className="w-5 h-5"
+                  style={{
+                    color: "rgba(180, 140, 75, 1)",
+                    filter: "drop-shadow(0 0 4px rgba(180,140,75,0.7))",
+                  }}
+                />
               </div>
+
               <h1
                 className="text-4xl font-bold tracking-tight"
                 style={{
                   color: "#F5F1E7",
                   fontFamily: "'Georgia', serif",
-                  textShadow: "0 2px 6px rgba(0,0,0,0.7)"
+                  textShadow: "0 2px 6px rgba(0,0,0,0.7)",
                 }}
               >
                 {t("insights.title")}
               </h1>
+
               {hasPaid && (
-                <Badge 
+                <Badge
                   className="border-0 text-xs"
                   style={{
-                    background: "linear-gradient(135deg, rgba(180, 140, 75, 0.9), rgba(160, 120, 65, 1))",
-                    color: "#1a120a"
+                    background:
+                      "linear-gradient(135deg, rgba(180, 140, 75, 0.9), rgba(160, 120, 65, 1))",
+                    color: "#1a120a",
                   }}
                 >
-                  {t("subscription.proBadge", { defaultValue: "Pro" })}
+                  {t("subscription.proBadge")}
                 </Badge>
               )}
             </div>
-            <p className="text-base pl-14" style={{ color: "rgba(224, 216, 200, 0.75)" }}>{t("insights.subtitle")}</p>
+
+            <p
+              className="text-base pl-14"
+              style={{ color: "rgba(224, 216, 200, 0.75)" }}
+            >
+              {t("insights.subtitle")}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* ── COLLECTION SNAPSHOT CARDS ────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <StatusCard
           icon={Flame}
-          label={t("insights.snapshotSessions", { defaultValue: "Total Sessions" })}
+          label={t("insights.snapshotSessions")}
           value={smokingLogs.length}
           accent={CATEGORY_COLORS.pipe}
-          sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek", { defaultValue: "this week" })}`}
+          sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek")}`}
           bgImage={analyticsImages.snapshotSessions}
         />
         <StatusCard
@@ -1090,7 +1299,7 @@ export default function Insights() {
           label={t("home.tobaccoBlends")}
           value={blends.length}
           accent={CATEGORY_COLORS.tobacco}
-          sub={`${totalCellaredOz.toFixed(1)} oz ${t("home.cellared", { defaultValue: "cellared" })}`}
+          sub={`${totalCellaredOz.toFixed(1)} oz ${t("home.cellared")}`}
           bgImage={analyticsImages.snapshotBlends}
         />
         <StatusCard
@@ -1102,16 +1311,16 @@ export default function Insights() {
         />
         <StatusCard
           icon={Clock}
-          label={t("insights.snapshotStreak", { defaultValue: "Longest Streak" })}
+          label={t("insights.snapshotStreak")}
           value={`${longestStreak}d`}
           accent={CATEGORY_COLORS.streak}
-          sub={t("insights.snapshotConsecutiveDays", { defaultValue: "consecutive days" })}
+          sub={t("insights.snapshotConsecutiveDays")}
           bgImage={analyticsImages.streak}
           useBlurredBg={true}
         />
         <StatusCard
           icon={Calendar}
-          label={t("insights.snapshotAvgWeek", { defaultValue: "Avg / Week" })}
+          label={t("insights.snapshotAvgWeek")}
           value={
             smokingLogs.length > 0
               ? (
@@ -1121,202 +1330,252 @@ export default function Insights() {
                     Math.ceil(
                       differenceInCalendarDays(
                         now,
-                        parseISO(smokingLogs[smokingLogs.length - 1]?.date?.slice(0, 10) || now.toISOString().slice(0, 10))
-                      ) / 7
+                        parseISO(
+                          smokingLogs[
+                            smokingLogs.length - 1
+                          ]?.date?.slice(0, 10) || now.toISOString().slice(0, 10)
+                        ) / 7
+                      )
                     )
                   )
                 ).toFixed(1)
               : "—"
           }
           accent={CATEGORY_COLORS.activity}
-          sub={t("insights.snapshotSessionsPerWeek", { defaultValue: "sessions / week" })}
+          sub={t("insights.snapshotSessionsPerWeek")}
           bgImage={analyticsImages.snapshotAvg}
         />
       </div>
 
-      {/* ── TOP HIGHLIGHTS ────────────────────────────────── */}
       {hasData && (
         <div className="space-y-7">
-          {/* Dramatic section heading */}
           <div className="relative">
-            {/* Background glow strip */}
             <div
               className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 pointer-events-none"
-              style={{ background: "linear-gradient(90deg, transparent 0%, rgba(180, 140, 75, 0.25) 40%, rgba(180, 140, 75, 0.25) 60%, transparent 100%)" }}
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent 0%, rgba(180, 140, 75, 0.25) 40%, rgba(180, 140, 75, 0.25) 60%, transparent 100%)",
+              }}
             />
             <div className="relative flex items-center gap-4 py-3">
               <div
                 className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
                 style={{
-                  background: "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
+                  background:
+                    "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
                   border: "1px solid rgba(120, 90, 65, 0.45)",
-                  boxShadow: "0 3px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)",
+                  boxShadow:
+                    "0 3px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)",
                 }}
               >
                 <Trophy
                   className="w-5 h-5"
-                  style={{ color: "rgba(180, 140, 75, 1)", filter: "drop-shadow(0 0 5px rgba(180,140,75,0.75))" }}
+                  style={{
+                    color: "rgba(180, 140, 75, 1)",
+                    filter: "drop-shadow(0 0 5px rgba(180,140,75,0.75))",
+                  }}
                 />
               </div>
+
               <div className="flex-1">
                 <h2
                   className="text-2xl font-bold tracking-tight"
                   style={{
                     color: "#F5F1E7",
                     fontFamily: "'Georgia', serif",
-                    textShadow: "0 2px 4px rgba(0,0,0,0.6)"
+                    textShadow: "0 2px 4px rgba(0,0,0,0.6)",
                   }}
                 >
-                  {t("insights.topHighlights", { defaultValue: "Top Highlights" })}
+                  {t("insights.topHighlights")}
                 </h2>
-                <p className="text-xs uppercase tracking-[0.12em] font-semibold mt-1" style={{ color: "rgba(180, 140, 75, 0.75)" }}>
-                  {t("insights.topHighlightsSub", { defaultValue: "Your collector story" })}
+                <p
+                  className="text-xs uppercase tracking-[0.12em] font-semibold mt-1"
+                  style={{ color: "rgba(180, 140, 75, 0.75)" }}
+                >
+                  {t("insights.topHighlightsSub")}
                 </p>
               </div>
+
               {fullStoryCards.length > 0 && (
-                <StoryTrigger onClick={() => setShowFullStory(true)} variant="secondary" size="small" />
+                <StoryTrigger
+                  onClick={() => setShowFullStory(true)}
+                  variant="secondary"
+                  size="small"
+                />
               )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mostUsedPipe && (() => {
-              const img = getPipeImage(mostUsedPipe.pipe);
-              return (
-                <HighlightCard
-                  title={t("insights.highlightMostSmoked", { defaultValue: "Most Smoked Pipe" })}
-                  value={mostUsedPipe.pipe.name}
-                  sub={`${mostUsedPipe.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`}
-                  accent="#C87941"
-                  icon={Star}
-                  patternIndex={0}
-                  artifactImage={img}
-                  heroImage={img}
-                  silhouetteType="pipe"
-                  cardRef={(el) => (highlightRefs.current["mostPipe"] = el)}
-                  onShare={() => handleShareCard("mostPipe")}
-                  onStory={() => setActiveStory({
-                    title: t("insights.highlightMostSmoked", { defaultValue: "Most Smoked Pipe" }),
-                    value: mostUsedPipe.pipe.name,
-                    sub: `${mostUsedPipe.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`,
-                    accent: "#C87941",
-                    icon: Star,
-                    artifactImage: img,
-                    heroImage: img,
-                    silhouetteType: "pipe",
-                  })}
-                />
-              );
-            })()}
-            {mostUsedBlend && (() => {
-              const img = getBlendImage(mostUsedBlend.blend);
-              return (
-                <HighlightCard
-                  title={t("insights.highlightFavoriteBlend", { defaultValue: "Favorite Blend" })}
-                  value={mostUsedBlend.blend.name}
-                  sub={`${mostUsedBlend.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`}
-                  accent="#4A9C6A"
-                  icon={Leaf}
-                  patternIndex={1}
-                  artifactImage={img}
-                  heroImage={img}
-                  silhouetteType="leaf"
-                  cardRef={(el) => (highlightRefs.current["mostBlend"] = el)}
-                  onShare={() => handleShareCard("mostBlend")}
-                  onStory={() => setActiveStory({
-                    title: t("insights.highlightFavoriteBlend", { defaultValue: "Favorite Blend" }),
-                    value: mostUsedBlend.blend.name,
-                    sub: `${mostUsedBlend.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`,
-                    accent: "#4A9C6A",
-                    icon: Leaf,
-                    artifactImage: img,
-                    heroImage: img,
-                    silhouetteType: "leaf",
-                  })}
-                />
-              );
-            })()}
+            {mostUsedPipe &&
+              (() => {
+                const img = getPipeImage(mostUsedPipe.pipe);
+                return (
+                  <HighlightCard
+                    title={t("insights.highlightMostSmoked")}
+                    value={mostUsedPipe.pipe.name}
+                    sub={`${mostUsedPipe.count} ${t("insights.highlightBowls")}`}
+                    accent="#C87941"
+                    icon={Star}
+                    patternIndex={0}
+                    artifactImage={img}
+                    heroImage={img}
+                    silhouetteType="pipe"
+                    cardRef={(el) => {
+                      highlightRefs.current.mostPipe = el;
+                    }}
+                    onShare={() => handleShareCard("mostPipe")}
+                    onStory={() =>
+                      setActiveStory({
+                        title: t("insights.highlightMostSmoked"),
+                        value: mostUsedPipe.pipe.name,
+                        sub: `${mostUsedPipe.count} ${t(
+                          "insights.highlightBowls"
+                        )}`,
+                        accent: "#C87941",
+                        icon: Star,
+                        artifactImage: img,
+                        heroImage: img,
+                        silhouetteType: "pipe",
+                      })
+                    }
+                  />
+                );
+              })()}
+
+            {mostUsedBlend &&
+              (() => {
+                const img = getBlendImage(mostUsedBlend.blend);
+                return (
+                  <HighlightCard
+                    title={t("insights.highlightFavoriteBlend")}
+                    value={mostUsedBlend.blend.name}
+                    sub={`${mostUsedBlend.count} ${t("insights.highlightBowls")}`}
+                    accent="#4A9C6A"
+                    icon={Leaf}
+                    patternIndex={1}
+                    artifactImage={img}
+                    heroImage={img}
+                    silhouetteType="leaf"
+                    cardRef={(el) => {
+                      highlightRefs.current.mostBlend = el;
+                    }}
+                    onShare={() => handleShareCard("mostBlend")}
+                    onStory={() =>
+                      setActiveStory({
+                        title: t("insights.highlightFavoriteBlend"),
+                        value: mostUsedBlend.blend.name,
+                        sub: `${mostUsedBlend.count} ${t(
+                          "insights.highlightBowls"
+                        )}`,
+                        accent: "#4A9C6A",
+                        icon: Leaf,
+                        artifactImage: img,
+                        heroImage: img,
+                        silhouetteType: "leaf",
+                      })
+                    }
+                  />
+                );
+              })()}
+
             {longestStreak > 0 && (
               <HighlightCard
-                title={t("insights.highlightLongestStreak", { defaultValue: "Longest Streak" })}
+                title={t("insights.highlightLongestStreak")}
                 value={`${longestStreak} days`}
-                sub={t("insights.highlightConsecutive", { defaultValue: "consecutive smoking days" })}
+                sub={t("insights.highlightConsecutive")}
                 accent="#8B5CF6"
                 icon={Zap}
                 patternIndex={2}
                 artifactImage={analyticsImages.streak}
                 heroImage={analyticsImages.streak}
                 silhouetteType="pipe"
-                cardRef={(el) => (highlightRefs.current["streak"] = el)}
+                cardRef={(el) => {
+                  highlightRefs.current.streak = el;
+                }}
                 onShare={() => handleShareCard("streak")}
-                onStory={() => setActiveStory({
-                  title: t("insights.highlightLongestStreak", { defaultValue: "Longest Streak" }),
-                  value: `${longestStreak} days`,
-                  sub: t("insights.highlightConsecutive", { defaultValue: "consecutive smoking days" }),
-                  accent: "#8B5CF6",
-                  icon: Zap,
-                  artifactImage: analyticsImages.streak,
-                  heroImage: analyticsImages.streak,
-                  silhouetteType: "pipe",
-                })}
+                onStory={() =>
+                  setActiveStory({
+                    title: t("insights.highlightLongestStreak"),
+                    value: `${longestStreak} days`,
+                    sub: t("insights.highlightConsecutive"),
+                    accent: "#8B5CF6",
+                    icon: Zap,
+                    artifactImage: analyticsImages.streak,
+                    heroImage: analyticsImages.streak,
+                    silhouetteType: "pipe",
+                  })
+                }
               />
             )}
-            {mostValuablePipe && (() => {
-              const img = getPipeImage(mostValuablePipe);
-              return (
-                <HighlightCard
-                  title={t("insights.highlightMostValuable", { defaultValue: "Most Valuable Pipe" })}
-                  value={mostValuablePipe.name}
-                  sub={formatCurrency(mostValuablePipe.estimated_value)}
-                  accent="#C0392B"
-                  icon={Award}
-                  patternIndex={3}
-                  artifactImage={img}
-                  heroImage={img}
-                  silhouetteType="pipe"
-                  cardRef={(el) => (highlightRefs.current["valuePipe"] = el)}
-                  onShare={() => handleShareCard("valuePipe")}
-                  onStory={() => setActiveStory({
-                    title: t("insights.highlightMostValuable", { defaultValue: "Most Valuable Pipe" }),
-                    value: mostValuablePipe.name,
-                    sub: formatCurrency(mostValuablePipe.estimated_value),
-                    accent: "#C0392B",
-                    icon: Award,
-                    artifactImage: img,
-                    heroImage: img,
-                    silhouetteType: "pipe",
-                  })}
-                />
-              );
-            })()}
+
+            {mostValuablePipe &&
+              (() => {
+                const img = getPipeImage(mostValuablePipe);
+                return (
+                  <HighlightCard
+                    title={t("insights.highlightMostValuable")}
+                    value={mostValuablePipe.name}
+                    sub={formatCurrency(mostValuablePipe.estimated_value)}
+                    accent="#C0392B"
+                    icon={Award}
+                    patternIndex={3}
+                    artifactImage={img}
+                    heroImage={img}
+                    silhouetteType="pipe"
+                    cardRef={(el) => {
+                      highlightRefs.current.valuePipe = el;
+                    }}
+                    onShare={() => handleShareCard("valuePipe")}
+                    onStory={() =>
+                      setActiveStory({
+                        title: t("insights.highlightMostValuable"),
+                        value: mostValuablePipe.name,
+                        sub: formatCurrency(mostValuablePipe.estimated_value),
+                        accent: "#C0392B",
+                        icon: Award,
+                        artifactImage: img,
+                        heroImage: img,
+                        silhouetteType: "pipe",
+                      })
+                    }
+                  />
+                );
+              })()}
+
             {smokingLogs.length > 0 && (
               <HighlightCard
-                title={t("insights.highlightTotalSessions", { defaultValue: "Total Sessions Logged" })}
+                title={t("insights.highlightTotalSessions")}
                 value={smokingLogs.length}
-                sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek", { defaultValue: "this week" })}`}
+                sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek")}`}
                 accent="#22D3EE"
                 icon={Flame}
                 patternIndex={4}
                 artifactImage={analyticsImages.sessions}
                 heroImage={analyticsImages.sessions}
                 silhouetteType="pipe"
-                cardRef={(el) => (highlightRefs.current["totalSessions"] = el)}
+                cardRef={(el) => {
+                  highlightRefs.current.totalSessions = el;
+                }}
                 onShare={() => handleShareCard("totalSessions")}
-                onStory={() => setActiveStory({
-                  title: t("insights.highlightTotalSessions", { defaultValue: "Total Sessions Logged" }),
-                  value: smokingLogs.length,
-                  sub: `${sessionsThisWeek} ${t("insights.snapshotThisWeek", { defaultValue: "this week" })}`,
-                  accent: "#22D3EE",
-                  icon: Flame,
-                  artifactImage: analyticsImages.sessions,
-                  heroImage: analyticsImages.sessions,
-                  silhouetteType: "pipe",
-                })}
+                onStory={() =>
+                  setActiveStory({
+                    title: t("insights.highlightTotalSessions"),
+                    value: smokingLogs.length,
+                    sub: `${sessionsThisWeek} ${t("insights.snapshotThisWeek")}`,
+                    accent: "#22D3EE",
+                    icon: Flame,
+                    artifactImage: analyticsImages.sessions,
+                    heroImage: analyticsImages.sessions,
+                    silhouetteType: "pipe",
+                  })
+                }
               />
             )}
+
             {blends.length > 0 && (
               <HighlightCard
-                title={t("insights.highlightCellarValue", { defaultValue: "Collection Value" })}
+                title={t("insights.highlightCellarValue")}
                 value={formatCurrency(Math.round(totalCollectionValue))}
                 sub={`${pipes.length} ${t("home.pipesInCollection")} · ${blends.length} ${t("home.tobaccoBlends")}`}
                 accent="#10B981"
@@ -1325,25 +1584,28 @@ export default function Insights() {
                 artifactImage={analyticsImages.collectionValue}
                 heroImage={analyticsImages.collectionValue}
                 silhouetteType="leaf"
-                cardRef={(el) => (highlightRefs.current["collectionValue"] = el)}
+                cardRef={(el) => {
+                  highlightRefs.current.collectionValue = el;
+                }}
                 onShare={() => handleShareCard("collectionValue")}
-                onStory={() => setActiveStory({
-                  title: t("insights.highlightCellarValue", { defaultValue: "Collection Value" }),
-                  value: formatCurrency(Math.round(totalCollectionValue)),
-                  sub: `${pipes.length} ${t("home.pipesInCollection")} · ${blends.length} ${t("home.tobaccoBlends")}`,
-                  accent: "#10B981",
-                  icon: TrendingUp,
-                  artifactImage: analyticsImages.collectionValue,
-                  heroImage: analyticsImages.collectionValue,
-                  silhouetteType: "leaf",
-                })}
+                onStory={() =>
+                  setActiveStory({
+                    title: t("insights.highlightCellarValue"),
+                    value: formatCurrency(Math.round(totalCollectionValue)),
+                    sub: `${pipes.length} ${t("home.pipesInCollection")} · ${blends.length} ${t("home.tobaccoBlends")}`,
+                    accent: "#10B981",
+                    icon: TrendingUp,
+                    artifactImage: analyticsImages.collectionValue,
+                    heroImage: analyticsImages.collectionValue,
+                    silhouetteType: "leaf",
+                  })
+                }
               />
             )}
           </div>
         </div>
       )}
 
-      {/* ── FULL ANALYTICS PANEL ─────────────────────────── */}
       <div className="mt-2">
         <CollectionInsightsPanel
           pipes={pipes}
