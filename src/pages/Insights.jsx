@@ -200,9 +200,9 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
       ref={cardRef}
       className="relative rounded-2xl overflow-hidden flex flex-col justify-between min-h-[200px] cursor-default group"
       style={{
-        background: `linear-gradient(155deg, #1a2535 0%, #0e1520 45%, ${accent}28 100%)`,
-        border: `1px solid ${accent}55`,
-        boxShadow: `0 0 0 1px ${accent}22, 0 12px 40px -8px ${accent}50, 0 4px 12px rgba(0,0,0,0.5)`,
+        background: `linear-gradient(155deg, rgba(32, 22, 15, 0.95), rgba(28, 18, 10, 0.98))`,
+        border: `1px solid rgba(120, 90, 65, 0.4)`,
+        boxShadow: `0 4px 16px rgba(0,0,0,0.7), inset 0 1px 0 rgba(180,140,100,0.1)`,
       }}
     >
       {/* Layer 1 (base gradient is the card background above) */}
@@ -216,8 +216,8 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
             backgroundSize: "cover",
             backgroundPosition: "center",
             filter: heroImage
-              ? "blur(22px) brightness(0.26) saturate(0.6)"
-              : "blur(20px) brightness(0.22) saturate(0.5)",
+              ? "blur(22px) brightness(0.28) saturate(0.65) sepia(0.2)"
+              : "blur(20px) brightness(0.25) saturate(0.55) sepia(0.2)",
             opacity: 0.95,
             transform: "scale(1.12)",
           }}
@@ -243,14 +243,14 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
               maxWidth: "none",
               width: "auto",
               objectFit: "contain",
-              filter: `drop-shadow(0 0 22px ${accent}80) drop-shadow(0 6px 14px rgba(0,0,0,0.65))`,
+              filter: `drop-shadow(0 0 18px ${accent}70) drop-shadow(0 6px 14px rgba(0,0,0,0.7))`,
             }}
           />
           {/* Fade left edge of hero image smoothly into the background */}
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to right, rgba(10,17,28,1) 0%, rgba(10,17,28,0.42) 38%, transparent 72%)",
+              background: "linear-gradient(to right, rgba(28,18,10,1) 0%, rgba(28,18,10,0.42) 38%, transparent 72%)",
             }}
           />
           {/* Ember glow at bottom-right for pipe cards */}
@@ -308,8 +308,8 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         className="absolute inset-0 pointer-events-none"
         style={{
           background: (artifactImage || heroImage)
-            ? `linear-gradient(to right, rgba(14,21,32,0.92) 0%, rgba(14,21,32,0.72) 45%, rgba(14,21,32,0.28) 75%, transparent 100%)`
-            : `linear-gradient(155deg, rgba(14,21,32,0.72) 0%, rgba(14,21,32,0.52) 45%, ${accent}22 100%)`,
+            ? `linear-gradient(to right, rgba(28,18,10,0.92) 0%, rgba(28,18,10,0.72) 45%, rgba(28,18,10,0.28) 75%, transparent 100%)`
+            : `linear-gradient(155deg, rgba(32,22,15,0.72) 0%, rgba(28,18,10,0.52) 45%, rgba(100,70,45,0.15) 100%)`,
         }}
       />
 
@@ -361,9 +361,9 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
             style={{
               width: "3.25rem",
               height: "3.25rem",
-              background: `linear-gradient(135deg, ${accent}50 0%, ${accent}28 100%)`,
-              border: `1px solid ${accent}55`,
-              boxShadow: `0 0 18px ${accent}50, inset 0 1px 0 ${accent}40`,
+              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.45) 0%, rgba(80, 55, 35, 0.35) 100%)`,
+              border: `1px solid rgba(120, 90, 65, 0.4)`,
+              boxShadow: `0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180, 140, 100, 0.2)`,
             }}
           >
             <Icon
@@ -410,7 +410,7 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         <div className="space-y-1.5">
           <div
             className="text-[10px] uppercase tracking-[0.16em] font-bold"
-            style={{ color: `${accent}ee` }}
+            style={{ color: `rgba(180,140,75,0.85)`, fontFamily: "'Georgia', serif" }}
           >
             {title}
           </div>
@@ -418,8 +418,9 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
             className="text-[2.1rem] font-extrabold leading-tight tracking-tight"
             style={{
               color: "#F5F1E7",
-              textShadow: `0 2px 10px rgba(0,0,0,0.80), 0 0 28px ${accent}65, 0 0 52px ${accent}28`,
-              WebkitTextStroke: "0.4px rgba(255,255,255,0.15)",
+              textShadow: `0 2px 8px rgba(0,0,0,0.85)`,
+              WebkitTextStroke: "0.3px rgba(255,255,255,0.1)",
+              fontFamily: "'Georgia', serif",
             }}
           >
             {value ?? "—"}
@@ -427,7 +428,7 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
           {sub && (
             <div
               className="text-xs leading-snug pt-0.5 font-semibold"
-              style={{ color: `${accent}cc` }}
+              style={{ color: `rgba(180,140,75,0.8)` }}
             >
               {sub}
             </div>
@@ -441,8 +442,8 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         style={{ borderTop: `1px solid ${accent}20` }}
       >
         <span
-          className="text-[9px] uppercase tracking-[0.18em] font-bold select-none"
-          style={{ color: `${accent}60` }}
+          className="text-[9px] uppercase tracking-[0.18em] font-bold select-none whitespace-nowrap"
+          style={{ color: `rgba(180,140,75,0.6)` }}
         >
           PipeKeeper
         </span>
@@ -451,9 +452,9 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
             onClick={onShare}
             className="flex items-center gap-1.5 text-[9px] uppercase tracking-wide font-semibold rounded-md px-2 py-1 transition-all duration-200 opacity-50 hover:opacity-100 active:opacity-100"
             style={{
-              color: `${accent}cc`,
-              border: `1px solid ${accent}30`,
-              background: `${accent}12`,
+              color: `rgba(180,140,75,0.9)`,
+              border: `1px solid rgba(120,90,65,0.3)`,
+              background: `rgba(100,70,45,0.15)`,
             }}
           >
             <Share2 className="w-2.5 h-2.5" />

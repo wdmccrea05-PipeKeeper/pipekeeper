@@ -58,8 +58,10 @@ import Curator from './pages/Curator';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
+import Home from './pages/Home';
 import HowTo from './pages/HowTo';
 import Import from './pages/Import';
+import Insights from './pages/Insights';
 import Invite from './pages/Invite';
 import InviteFull from './pages/InviteFull';
 import PipeDetail from './pages/PipeDetail';
@@ -85,8 +87,6 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
-import Home from './pages/Home';
-import Insights from './pages/Insights';
 import __Layout from './Layout.jsx';
 
 
@@ -102,8 +102,10 @@ export const PAGES = {
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
+    "Home": Home,
     "HowTo": HowTo,
     "Import": Import,
+    "Insights": Insights,
     "Invite": Invite,
     "InviteFull": InviteFull,
     "PipeDetail": PipeDetail,
@@ -129,8 +131,6 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
-    "Home": Home,
-    "Insights": Insights,
 }
 
 export const pagesConfig = {
