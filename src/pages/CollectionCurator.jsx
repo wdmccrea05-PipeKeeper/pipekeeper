@@ -26,7 +26,7 @@ const DEFAULT_OPTIMIZE_SCOPE = activeScopes[0]?.id ?? "pipe_tobacco_pairings";
 
 export default function CollectionCurator() {
   const { t } = useTranslation();
-  const { user, hasPaid } = useCurrentUser();
+  const { user } = useCurrentUser();
   const entitlements = useEntitlements();
   const canOptimize = entitlements.canUse("COLLECTION_OPTIMIZATION");
   const [optimizeScope, setOptimizeScope] = useState(DEFAULT_OPTIMIZE_SCOPE);
