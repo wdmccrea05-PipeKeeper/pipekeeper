@@ -374,10 +374,10 @@ export default function Home() {
 
       {/* 7. CURATOR INTELLIGENCE */}
       <div 
-        className="rounded-lg overflow-hidden"
+        className="rounded-lg overflow-hidden mt-1"
         style={{
-          border: "1px solid rgba(180, 140, 75, 0.25)",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.5)"
+          border: "1px solid rgba(180, 140, 75, 0.28)",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.5)"
         }}
       >
         <CollectionIntelligencePanel pipes={pipes} blends={blends} user={user} />
@@ -388,13 +388,13 @@ export default function Home() {
         <div
           className="rounded-lg p-5"
           style={{
-            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
-            border: "1px solid rgba(120, 90, 65, 0.3)",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
+            background: "linear-gradient(145deg, rgba(50, 35, 22, 0.68), rgba(38, 26, 18, 0.82))",
+            border: "1px solid rgba(120, 90, 65, 0.28)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180,140,100,0.09)"
           }}
         >
-          <div className="flex items-center gap-2 mb-4">
-            <Heart className="w-5 h-5 fill-current" style={{ color: "#9B6B5F" }} />
+          <div className="flex items-center gap-2 mb-5">
+            <Heart className="w-4 h-4 fill-current" style={{ color: "#9B6B5F" }} />
             <h2 
               className="text-base font-semibold"
               style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}
@@ -450,14 +450,14 @@ export default function Home() {
       {/* 9. INSIGHTS REFERENCE */}
       {!isAppleBuild && (pipes.length > 0 || blends.length > 0) && (
         <div 
-          className="p-4 flex items-center gap-3 rounded-lg"
+          className="p-5 flex items-center gap-4 rounded-lg"
           style={{
-            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.6), rgba(35, 24, 16, 0.75))",
-            border: "1px solid rgba(120, 90, 65, 0.25)",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.4)"
+            background: "linear-gradient(145deg, rgba(48, 34, 22, 0.65), rgba(36, 25, 17, 0.80))",
+            border: "1px solid rgba(120, 90, 65, 0.28)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180,140,100,0.08)"
           }}
         >
-          <BarChart3 className="w-7 h-7 shrink-0" style={{ color: "rgba(180, 140, 75, 0.7)" }} aria-hidden="true" />
+          <BarChart3 className="w-5 h-5 shrink-0" style={{ color: "rgba(180, 140, 75, 0.8)" }} aria-hidden="true" />
           <div className="flex-1 min-w-0">
             <div className="font-medium text-sm" style={{ color: "#F5F1E7" }}>
               {t("insights.title")}
@@ -488,16 +488,16 @@ export default function Home() {
       )}
 
       {/* 10. RECENT ITEMS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div
-          className="rounded-lg p-4"
+          className="rounded-lg p-5"
           style={{
-            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
-            border: "1px solid rgba(120, 90, 65, 0.3)",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
+            background: "linear-gradient(145deg, rgba(48, 34, 22, 0.72), rgba(36, 25, 17, 0.86))",
+            border: "1px solid rgba(120, 90, 65, 0.28)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180,140,100,0.09), inset 0 -1px 2px rgba(0,0,0,0.2)"
           }}
         >
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>{t("home.recentPipes")}</h2>
             <a
               href={createPageUrl("Pipes")}
