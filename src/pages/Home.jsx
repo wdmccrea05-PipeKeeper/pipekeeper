@@ -366,228 +366,11 @@ export default function Home() {
           bgImage={featuredBlend?.logo || featuredBlend?.photo}
           href={createPageUrl("Tobacco")}
         />
-        
-        {/* OLD MODULE CARDS - REPLACED ABOVE 
-        <PKCard className="p-4 sm:p-5 border-l-4 border-[#C87941] relative overflow-hidden">
-          {/* Ambient artifact: blurred pipe photo if available */}
-          {featuredPipe?.photos?.[0] ? (
-            <>
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  backgroundImage: `url(${featuredPipe.photos[0]})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  filter: "blur(18px) brightness(0.18) saturate(0.55)",
-                  opacity: 0.85,
-                  transform: "scale(1.1)",
-                }}
-              />
-              {/* Hero crop: pipe photo visible on right edge */}
-              <div
-                className="absolute right-0 top-0 bottom-0 pointer-events-none overflow-hidden"
-                style={{ width: "40%" }}
-              >
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage: `url(${featuredPipe.photos[0]})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    filter: "blur(3px) brightness(0.35) saturate(0.75)",
-                  }}
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{ background: "linear-gradient(to right, rgba(20,32,46,1) 0%, rgba(20,32,46,0.5) 40%, transparent 85%)" }}
-                />
-              </div>
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{ background: "linear-gradient(to right, rgba(34,52,71,0.94) 0%, rgba(34,52,71,0.75) 55%, rgba(200,121,65,0.10) 100%)" }}
-              />
-            </>
-          ) : (
-            <div
-              className="absolute right-0 top-0 bottom-0 flex items-center pointer-events-none"
-              style={{ opacity: 0.06 }}
-            >
-              <img
-                src={PIPE_SILHOUETTE_URL}
-                alt=""
-                className="w-32 h-32 object-contain"
-                style={{ filter: "brightness(0) invert(1)" }}
-                loading="lazy"
-              />
-            </div>
-          )}
-          {/* Wood grain texture overlay */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="home-woodgrain-pipes" x="0" y="0" width="200" height="26" patternUnits="userSpaceOnUse">
-                <path d="M0,4 C40,3 80,5 120,4 S175,3 200,4" stroke="#C87941" strokeWidth="0.5" fill="none" strokeOpacity="0.08" />
-                <path d="M0,11 C50,10 90,12 140,11 S180,10 200,11" stroke="#C87941" strokeWidth="0.35" fill="none" strokeOpacity="0.055" />
-                <path d="M0,18 C35,17 75,19 115,18 S170,17 200,18" stroke="#C87941" strokeWidth="0.45" fill="none" strokeOpacity="0.07" />
-                <path d="M0,24 C60,23 100,25 155,24 S188,23 200,24" stroke="#C87941" strokeWidth="0.3" fill="none" strokeOpacity="0.045" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#home-woodgrain-pipes)" />
-          </svg>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 relative">
-            <div className="flex items-center gap-3 sm:w-48 sm:shrink-0">
-              <div className="w-9 h-9 rounded-lg bg-[#C87941]/20 flex items-center justify-center shrink-0">
-                <img
-                  src={PIPE_ICON}
-                  alt=""
-                  className="w-5 h-5 object-contain"
-                  style={{
-                    filter:
-                      "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.9)",
-                  }}
-                />
-              </div>
-              <h2 className="text-base font-semibold text-[#E0D8C8]">
-                {t("home.pipeCollectionTitle")}
-              </h2>
-            </div>
-
-            <div className="flex flex-row flex-wrap gap-x-6 gap-y-2 flex-1">
-              <div>
-                <div className="text-xl font-bold text-[#E0D8C8]">
-                  {hideHomeValues ? "••••" : formatCurrency(Math.round(totalPipeValue))}
-                </div>
-                <div className="text-xs text-[#E0D8C8]/60 mt-0.5">{t("home.collectionValue")}</div>
-              </div>
-              <div>
-                <div className="text-xl font-bold text-[#E0D8C8]">{pipes.length}</div>
-                <div className="text-xs text-[#E0D8C8]/60 mt-0.5">{t("home.pipesInCollection")}</div>
-              </div>
-            </div>
-
-            <a
-              href={createPageUrl("Pipes")}
-              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#C87941]/20 hover:bg-[#C87941]/30 text-[#E0D8C8] font-medium text-sm transition-colors min-h-[44px] sm:shrink-0 whitespace-nowrap"
-            >
-              {t("home.viewCollection")} <ArrowRight className="w-4 h-4" />
-            </a>
-          </div> */}
-
-        {/* OLD TOBACCO CARD - REPLACED ABOVE
-        {/* <PKCard className="p-4 sm:p-5 border-l-4 border-[#4A7C59] relative overflow-hidden">
-          {/* Ambient artifact: blurred blend logo/photo if available */}
-          {featuredBlend?.logo || featuredBlend?.photo ? (
-            <>
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  backgroundImage: `url(${featuredBlend.logo || featuredBlend.photo})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  filter: "blur(18px) brightness(0.18) saturate(0.55)",
-                  opacity: 0.85,
-                  transform: "scale(1.1)",
-                }}
-              />
-              {/* Hero crop: tin label visible on right edge */}
-              <div
-                className="absolute right-0 top-0 bottom-0 pointer-events-none overflow-hidden"
-                style={{ width: "40%" }}
-              >
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage: `url(${featuredBlend.logo || featuredBlend.photo})`,
-                    backgroundSize: "contain",
-                    backgroundPosition: "center",
-                    backgroundRepeat: "no-repeat",
-                    filter: "blur(2px) brightness(0.38) saturate(0.80)",
-                  }}
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{ background: "linear-gradient(to right, rgba(20,32,28,1) 0%, rgba(20,32,28,0.5) 40%, transparent 85%)" }}
-                />
-              </div>
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{ background: "linear-gradient(to right, rgba(34,52,71,0.94) 0%, rgba(34,52,71,0.75) 55%, rgba(74,124,89,0.12) 100%)" }}
-              />
-            </>
-          ) : (
-            <svg
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-32 h-32 pointer-events-none"
-              viewBox="0 0 100 100"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{ opacity: 0.06 }}
-            >
-              <path d="M50 5 C20 5, 5 30, 5 55 C5 75, 20 92, 50 95 C80 92, 95 75, 95 55 C95 30, 80 5, 50 5Z" fill="white" />
-              <line x1="50" y1="95" x2="50" y2="5" stroke="white" strokeWidth="2" />
-              <line x1="50" y1="40" x2="20" y2="25" stroke="white" strokeWidth="1.5" />
-              <line x1="50" y1="55" x2="15" y2="50" stroke="white" strokeWidth="1.5" />
-              <line x1="50" y1="70" x2="20" y2="65" stroke="white" strokeWidth="1.5" />
-              <line x1="50" y1="40" x2="80" y2="25" stroke="white" strokeWidth="1.5" />
-              <line x1="50" y1="55" x2="85" y2="50" stroke="white" strokeWidth="1.5" />
-              <line x1="50" y1="70" x2="80" y2="65" stroke="white" strokeWidth="1.5" />
-            </svg>
-          )}
-          {/* Paper / label texture overlay */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="home-paper-tobacco" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
-                <line x1="0" y1="0" x2="0" y2="50" stroke="#4A7C59" strokeWidth="0.25" strokeOpacity="0.055" />
-                <line x1="10" y1="0" x2="10" y2="50" stroke="#4A7C59" strokeWidth="0.2" strokeOpacity="0.04" />
-                <line x1="20" y1="0" x2="20" y2="50" stroke="#4A7C59" strokeWidth="0.25" strokeOpacity="0.05" />
-                <line x1="30" y1="0" x2="30" y2="50" stroke="#4A7C59" strokeWidth="0.2" strokeOpacity="0.04" />
-                <line x1="40" y1="0" x2="40" y2="50" stroke="#4A7C59" strokeWidth="0.25" strokeOpacity="0.055" />
-                <line x1="0" y1="0" x2="50" y2="0" stroke="#4A7C59" strokeWidth="0.2" strokeOpacity="0.04" />
-                <line x1="0" y1="13" x2="50" y2="13" stroke="#4A7C59" strokeWidth="0.17" strokeOpacity="0.032" />
-                <line x1="0" y1="26" x2="50" y2="26" stroke="#4A7C59" strokeWidth="0.2" strokeOpacity="0.04" />
-                <line x1="0" y1="39" x2="50" y2="39" stroke="#4A7C59" strokeWidth="0.17" strokeOpacity="0.032" />
-                <circle cx="6" cy="18" r="0.35" fill="#4A7C59" fillOpacity="0.055" />
-                <circle cx="31" cy="7" r="0.28" fill="#4A7C59" fillOpacity="0.045" />
-                <circle cx="44" cy="36" r="0.35" fill="#4A7C59" fillOpacity="0.055" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#home-paper-tobacco)" />
-          </svg>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 relative">
-            <div className="flex items-center gap-3 sm:w-48 sm:shrink-0">
-              <div className="w-9 h-9 rounded-lg bg-[#4A7C59]/20 flex items-center justify-center shrink-0">
-                <Leaf className="w-5 h-5 text-[#6aab80]" />
-              </div>
-              <h2 className="text-base font-semibold text-[#E0D8C8]">
-                {t("home.tobaccoCellarTitle")}
-              </h2>
-            </div>
-
-            <div className="flex flex-row flex-wrap gap-x-6 gap-y-2 flex-1">
-              <div>
-                <div className="text-xl font-bold text-[#E0D8C8]">
-                  {hideHomeValues ? "••••" : formatCurrency(Math.round(totalTobaccoValue))}
-                </div>
-                <div className="text-xs text-[#E0D8C8]/60 mt-0.5">{t("home.collectionValue")}</div>
-              </div>
-              <div>
-                <div className="text-xl font-bold text-[#E0D8C8]">{blends.length}</div>
-                <div className="text-xs text-[#E0D8C8]/60 mt-0.5">{t("home.tobaccoBlends")}</div>
-              </div>
-              <div>
-                <div className="text-xl font-bold text-[#E0D8C8]">
-                  {formatWeight(totalCellaredOz, "oz")}
-                </div>
-                <div className="text-xs text-[#E0D8C8]/60 mt-0.5">{t("home.cellared")}</div>
-              </div>
-            </div>
-
-            <a
-              href={createPageUrl("Tobacco")}
-              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#4A7C59]/20 hover:bg-[#4A7C59]/30 text-[#E0D8C8] font-medium text-sm transition-colors min-h-[44px] sm:shrink-0 whitespace-nowrap"
-            >
-              {t("home.viewCellar")} <ArrowRight className="w-4 h-4" />
-            </a>
-          </div> */}
         </div>
       </div>
+
+      {/* 7. CURATOR INTELLIGENCE */}
+
 
       {/* 7. CURATOR INTELLIGENCE */}
       <div 
@@ -808,20 +591,20 @@ export default function Home() {
                 </div>
               </a>
             ))}
-            </div>
-            </div>
-            </div>
+          </div>
+        </div>
+      </div>
 
-            {/* 11. IMPORT TOOL */}
-            <a href={createPageUrl("Import")} className="block">
-            <div 
-            className="p-4 flex items-center gap-4 transition-all cursor-pointer rounded-lg"
-            style={{
+      {/* 11. IMPORT TOOL */}
+      <a href={createPageUrl("Import")} className="block">
+        <div 
+          className="p-4 flex items-center gap-4 transition-all cursor-pointer rounded-lg"
+          style={{
             background: "linear-gradient(135deg, rgba(42, 30, 20, 0.6), rgba(35, 24, 16, 0.75))",
             border: "1px solid rgba(120, 90, 65, 0.25)",
             boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
-            }}
-            >
+          }}
+        >
           <Sparkles className="w-8 h-8 shrink-0" style={{ color: "#D4AF37" }} />
           <div className="flex-1">
             <div className="font-semibold" style={{ color: "#F5F1E7" }}>{t("home.bulkImport")}</div>
