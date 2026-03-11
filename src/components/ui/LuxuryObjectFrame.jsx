@@ -57,7 +57,15 @@ export default function LuxuryObjectFrame({
             }}
           />
 
-          {/* Center spotlight glow */}
+          {/* Pedestal spotlight — warm glow beneath object */}
+          <div
+            className="absolute inset-0 pointer-events-none z-5"
+            style={{
+              background: `radial-gradient(ellipse 50% 35% at 50% 70%, rgba(180,140,75,0.1) 0%, rgba(180,140,75,0.04) 40%, transparent 75%)`,
+            }}
+          />
+
+          {/* Center object highlight */}
           <div
             className="absolute inset-0 pointer-events-none z-20"
             style={{

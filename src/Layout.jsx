@@ -595,10 +595,19 @@ export default function Layout({ children, currentPageName }) {
         <div className="dark min-h-screen flex flex-col" style={{ 
           colorScheme: 'dark'
         }}>
-          <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b overflow-x-hidden shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_-1px_0_rgba(180,140,75,0.1)]" style={{ 
+          <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b overflow-x-hidden shadow-[0_3px_12px_rgba(0,0,0,0.65),inset_0_-1px_0_rgba(180,140,75,0.12)]" style={{ 
             paddingTop: 'var(--safe-area-top)',
-            background: 'linear-gradient(to bottom, rgba(35, 25, 18, 0.95), rgba(30, 20, 15, 0.98))',
-            borderBottomColor: 'rgba(120, 90, 65, 0.3)'
+            background: 'linear-gradient(to bottom, rgba(28, 20, 14, 0.97), rgba(24, 16, 12, 0.99))',
+            borderBottomColor: 'rgba(120, 90, 65, 0.35)',
+            backgroundImage: `
+              repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 4px,
+                rgba(80, 60, 40, 0.025) 4px,
+                rgba(80, 60, 40, 0.025) 5px
+              )
+            `
           }}>
             <div className="w-full">
               <div className="flex items-center justify-between h-16 gap-2 px-3 lg:px-6">
@@ -652,10 +661,19 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </nav>
 
-          <nav className="md:hidden fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_-1px_0_rgba(180,140,75,0.1)]" style={{ 
+          <nav className="md:hidden fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b shadow-[0_3px_12px_rgba(0,0,0,0.65),inset_0_-1px_0_rgba(180,140,75,0.12)]" style={{ 
             paddingTop: 'env(safe-area-inset-top, 0px)',
-            background: 'linear-gradient(to bottom, rgba(35, 25, 18, 0.95), rgba(30, 20, 15, 0.98))',
-            borderBottomColor: 'rgba(120, 90, 65, 0.3)'
+            background: 'linear-gradient(to bottom, rgba(28, 20, 14, 0.97), rgba(24, 16, 12, 0.99))',
+            borderBottomColor: 'rgba(120, 90, 65, 0.35)',
+            backgroundImage: `
+              repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 4px,
+                rgba(80, 60, 40, 0.025) 4px,
+                rgba(80, 60, 40, 0.025) 5px
+              )
+            `
           }}>
             <div className="flex items-center justify-between h-16 px-4">
               <div className="flex items-center gap-2">
@@ -740,9 +758,18 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </main>
 
-          <footer className="border-t mt-auto shadow-[0_-2px_8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(180,140,75,0.08)]" style={{
-            background: 'linear-gradient(to top, rgba(25, 18, 12, 0.98), rgba(30, 20, 15, 0.95))',
-            borderTopColor: 'rgba(120, 90, 65, 0.25)'
+          <footer className="border-t mt-auto shadow-[0_-3px_12px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(180,140,75,0.1)]" style={{
+            background: 'linear-gradient(to top, rgba(20, 14, 10, 0.99), rgba(26, 18, 13, 0.96))',
+            borderTopColor: 'rgba(120, 90, 65, 0.3)',
+            backgroundImage: `
+              repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 4px,
+                rgba(80, 60, 40, 0.02) 4px,
+                rgba(80, 60, 40, 0.02) 5px
+              )
+            `
           }}>
             <div className="max-w-7xl mx-auto px-6 py-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
