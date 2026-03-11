@@ -3,7 +3,7 @@ import { BookOpen, Camera, TrendingUp } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const CURATOR_ICON =
-  "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png";
+  "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
 const ACTIONS = [
   {
