@@ -595,10 +595,10 @@ export default function Layout({ children, currentPageName }) {
         <div className="dark min-h-screen flex flex-col" style={{ 
           colorScheme: 'dark',
           background: `
-            radial-gradient(ellipse at 20% 30%, rgba(60, 40, 25, 0.15) 0%, transparent 50%),
-            radial-gradient(ellipse at 80% 70%, rgba(40, 25, 15, 0.15) 0%, transparent 50%),
-            linear-gradient(to bottom, rgb(var(--pk-bg-primary)), rgb(var(--pk-bg-secondary)))
+            url('https://media.base44.com/images/public/694956e18d119cc497192525/935a66582_image.png') center/cover fixed,
+            linear-gradient(to bottom, rgba(20, 15, 12, 0.85), rgba(25, 18, 12, 0.90))
           `,
+          backgroundBlendMode: 'overlay',
           backgroundAttachment: 'fixed'
         }}>
           <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b overflow-x-hidden shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_-1px_0_rgba(180,140,75,0.1)]" style={{ 
