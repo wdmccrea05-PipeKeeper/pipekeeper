@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "i18n:check": "node scripts/i18n-check.js",
-    "i18n:audit": "node scripts/i18n-check.js"
+    "i18n:audit": "node scripts/i18n-check.js",
+    "release:check": "npm run i18n:check && npm run test"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.0",
