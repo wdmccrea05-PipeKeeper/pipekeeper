@@ -150,14 +150,18 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden"
             style={{
               background: "linear-gradient(135deg, rgba(100, 70, 45, 0.5), rgba(80, 55, 35, 0.6))",
               border: "1px solid rgba(120, 90, 65, 0.45)",
               boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)"
             }}
           >
-            <BookOpen className="w-5 h-5" style={{ color: "rgba(180, 140, 75, 1)" }} />
+            <img 
+              src="https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png" 
+              alt="Collection Curator"
+              className="w-full h-full object-cover"
+            />
           </div>
           <div>
             <h3 
