@@ -73,17 +73,18 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
             </Badge>
           </div>
         )}
-        <div className="p-4 min-w-0">
+        <div className="p-5 min-w-0">
          <h3 
-           className="font-semibold truncate text-base leading-snug mb-1" 
+           className="font-semibold truncate text-lg leading-snug mb-1.5" 
            style={{ 
              color: "#F5F1E7",
-             fontFamily: "'Georgia', serif"
+             fontFamily: "'Georgia', serif",
+             textShadow: "0 1px 2px rgba(0,0,0,0.5)"
            }}
          >
            {pipe.name}
          </h3>
-         <p className="text-sm truncate" style={{ color: "rgba(180, 140, 75, 0.7)" }}>
+         <p className="text-sm truncate" style={{ color: "rgba(180, 140, 75, 0.75)" }}>
            {pipe.maker || t("pipesExtended.unknownMaker")}
          </p>
           <div className="flex flex-wrap gap-1.5 mt-3">
