@@ -11,8 +11,7 @@ const ACTIONS = [
     Icon: BookOpen,
     accent: "#4A7C59",
     iconColor: "text-[#6aab80]",
-    bgColor: "bg-[#4A7C59]/15",
-    hoverColor: "hover:bg-[#4A7C59]/25",
+    hoverColor: "hover:bg-[#4A7C59]/20",
     borderColor: "border-[#4A7C59]/30",
   },
   {
@@ -20,8 +19,7 @@ const ACTIONS = [
     Icon: Camera,
     accent: "#C87941",
     iconColor: "text-[#e09060]",
-    bgColor: "bg-[#C87941]/15",
-    hoverColor: "hover:bg-[#C87941]/25",
+    hoverColor: "hover:bg-[#C87941]/20",
     borderColor: "border-[#C87941]/30",
   },
   {
@@ -29,16 +27,14 @@ const ACTIONS = [
     Icon: TrendingUp,
     accent: "#4A7C9C",
     iconColor: "text-[#6aabc0]",
-    bgColor: "bg-[#4A7C9C]/15",
-    hoverColor: "hover:bg-[#4A7C9C]/25",
+    hoverColor: "hover:bg-[#4A7C9C]/20",
     borderColor: "border-[#4A7C9C]/30",
   },
   {
     key: "collectionCurator",
     accent: "#8b5e3a",
     iconColor: "text-[#d4956a]",
-    bgColor: "bg-[#8b5e3a]/15",
-    hoverColor: "hover:bg-[#8b5e3a]/25",
+    hoverColor: "hover:bg-[#8b5e3a]/20",
     borderColor: "border-[#8b5e3a]/30",
   },
 ];
@@ -54,18 +50,55 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
   };
 
   return (
-    <div className="rounded-2xl border border-[#E0D8C8]/10 bg-[#1a2d3f]/60 p-4">
-      <div className="text-xs text-[#E0D8C8]/50 uppercase tracking-wider font-medium mb-3">
+    <div
+      className="relative rounded-2xl overflow-hidden p-4"
+      style={{
+        background: "linear-gradient(145deg, #141f2d 0%, #0f1920 60%, rgba(74,124,89,0.08) 100%)",
+        border: "1px solid rgba(224,216,200,0.12)",
+        boxShadow: "0 4px 24px rgba(0,0,0,0.30)",
+      }}
+    >
+      {/* Subtle grain texture */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="qa-grain" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+            <circle cx="8" cy="12" r="0.38" fill="#E0D8C8" fillOpacity="0.030" />
+            <circle cx="24" cy="5" r="0.28" fill="#E0D8C8" fillOpacity="0.022" />
+            <circle cx="41" cy="19" r="0.42" fill="#E0D8C8" fillOpacity="0.028" />
+            <circle cx="60" cy="8" r="0.32" fill="#E0D8C8" fillOpacity="0.030" />
+            <circle cx="73" cy="27" r="0.38" fill="#E0D8C8" fillOpacity="0.022" />
+            <circle cx="14" cy="37" r="0.28" fill="#E0D8C8" fillOpacity="0.028" />
+            <circle cx="47" cy="45" r="0.42" fill="#E0D8C8" fillOpacity="0.030" />
+            <circle cx="66" cy="55" r="0.32" fill="#E0D8C8" fillOpacity="0.022" />
+            <circle cx="29" cy="67" r="0.38" fill="#E0D8C8" fillOpacity="0.028" />
+            <circle cx="53" cy="75" r="0.28" fill="#E0D8C8" fillOpacity="0.030" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#qa-grain)" />
+      </svg>
+
+      <div className="text-xs text-[#E0D8C8]/50 uppercase tracking-wider font-medium mb-3 relative">
         {t("quickActions.sectionTitle")}
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {ACTIONS.map(({ key, Icon, iconColor, bgColor, hoverColor, borderColor }) => (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 relative">
+        {ACTIONS.map(({ key, Icon, accent, iconColor, hoverColor, borderColor }) => (
           <button
             key={key}
             onClick={handlers[key]}
-            className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border ${borderColor} ${bgColor} ${hoverColor} transition-colors min-h-[80px] w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30`}
+            className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border ${borderColor} ${hoverColor} transition-all duration-200 min-h-[80px] w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30`}
+            style={{
+              background: `linear-gradient(145deg, ${accent}14 0%, ${accent}08 55%, ${accent}1a 100%)`,
+              boxShadow: `inset 0 1px 0 ${accent}12`,
+            }}
           >
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 overflow-hidden`}>
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden"
+              style={{
+                background: `linear-gradient(135deg, ${accent}38 0%, ${accent}1c 100%)`,
+                border: `1px solid ${accent}45`,
+                boxShadow: `0 0 12px ${accent}30`,
+              }}
+            >
               {key === "collectionCurator" ? (
                 <img
                   src={CURATOR_ICON}

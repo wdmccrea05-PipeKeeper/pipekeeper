@@ -182,25 +182,59 @@ function LeafSilhouette({ className, style }) {
 }
 
 // ── Snapshot metric cards (top row) ───────────────────────────────────────────
-function SnapshotCard({ icon: Icon, label, value, accent = "#4A7C9C", sub }) {
+function SnapshotCard({ icon: Icon, label, value, accent = "#4A7C9C", sub, bgImage }) {
   return (
     <div
       className="relative rounded-2xl overflow-hidden flex flex-col gap-3 p-4 min-h-[100px]"
       style={{
-        background: `linear-gradient(145deg, #1e2f40 0%, #151f2b 60%, ${accent}22 100%)`,
-        border: `1px solid ${accent}44`,
-        boxShadow: `0 0 0 1px ${accent}18, 0 4px 20px -4px ${accent}30`,
+        background: `linear-gradient(145deg, #1a2535 0%, #111a25 62%, ${accent}28 100%)`,
+        border: `1px solid ${accent}50`,
+        boxShadow: `0 0 0 1px ${accent}20, 0 4px 24px -4px ${accent}38`,
       }}
     >
-      {/* Subtle grain texture overlay */}
+      {/* Blurred real collection image layer */}
+      {bgImage && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${bgImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "blur(14px) brightness(0.15) saturate(0.42)",
+            opacity: 0.90,
+            transform: "scale(1.1)",
+          }}
+        />
+      )}
+
+      {/* Gradient overlay — ensures readability over blurred image */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: bgImage
+            ? `linear-gradient(145deg, rgba(26,37,53,0.97) 0%, rgba(17,26,37,0.90) 55%, ${accent}28 100%)`
+            : `linear-gradient(145deg, transparent 0%, transparent 60%, ${accent}10 100%)`,
+        }}
+      />
+
+      {/* Grain texture overlay */}
       <ArtifactTexture type="grain" accent={accent} uid={`snap-${accent.replace("#","")}`} />
 
-      {/* Top-left accent glow blob */}
+      {/* Top-right accent glow blob — more prominent */}
       <div
-        className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none"
+        className="absolute top-0 right-0 w-24 h-24 rounded-full pointer-events-none"
         style={{
-          background: `radial-gradient(circle, ${accent}25 0%, transparent 70%)`,
-          transform: "translate(30%, -30%)",
+          background: `radial-gradient(circle, ${accent}35 0%, transparent 70%)`,
+          transform: "translate(35%, -35%)",
+        }}
+      />
+
+      {/* Bottom-left ambient bloom */}
+      <div
+        className="absolute bottom-0 left-0 w-16 h-16 rounded-full pointer-events-none"
+        style={{
+          background: `radial-gradient(circle, ${accent}20 0%, transparent 70%)`,
+          transform: "translate(-25%, 25%)",
         }}
       />
 
@@ -369,6 +403,17 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         }}
       />
 
+      {/* Layer 2d: Bottom scrim — darkens text area for legibility over photos */}
+      {(artifactImage || heroImage) && (
+        <div
+          className="absolute bottom-0 left-0 right-0 pointer-events-none"
+          style={{
+            height: "58%",
+            background: "linear-gradient(to top, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.30) 50%, transparent 100%)",
+          }}
+        />
+      )}
+
       {/* Layer 3: Real texture overlay — category-specific */}
       <ArtifactTexture type={textureType} accent={accent} uid={String(patternIndex)} />
 
@@ -455,20 +500,24 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         <div className="space-y-1.5">
           <div
             className="text-[10px] uppercase tracking-[0.16em] font-bold"
-            style={{ color: `${accent}dd` }}
+            style={{ color: `${accent}ee` }}
           >
             {title}
           </div>
           <div
-            className="text-3xl font-bold leading-tight tracking-tight"
-            style={{ color: "#F5F1E7", textShadow: `0 0 24px ${accent}50` }}
+            className="text-[2.1rem] font-extrabold leading-tight tracking-tight"
+            style={{
+              color: "#F5F1E7",
+              textShadow: `0 2px 10px rgba(0,0,0,0.80), 0 0 28px ${accent}65, 0 0 52px ${accent}28`,
+              WebkitTextStroke: "0.4px rgba(255,255,255,0.15)",
+            }}
           >
             {value ?? "—"}
           </div>
           {sub && (
             <div
-              className="text-xs leading-snug pt-0.5 font-medium"
-              style={{ color: `${accent}bb` }}
+              className="text-xs leading-snug pt-0.5 font-semibold"
+              style={{ color: `${accent}cc` }}
             >
               {sub}
             </div>
@@ -753,11 +802,12 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
 
           {/* Main stat — huge */}
           <div
-            className="font-bold leading-none tracking-tighter"
+            className="font-extrabold leading-none tracking-tighter"
             style={{
-              fontSize: "clamp(2.5rem, 10vw, 3.5rem)",
+              fontSize: "clamp(3.2rem, 12vw, 4.8rem)",
               color: "#F5F1E7",
-              textShadow: `0 0 40px ${accent}70, 0 2px 8px rgba(0,0,0,0.5)`,
+              textShadow: `0 3px 18px rgba(0,0,0,0.90), 0 0 50px ${accent}80, 0 0 80px ${accent}40`,
+              WebkitTextStroke: "0.5px rgba(255,255,255,0.12)",
             }}
           >
             {value ?? "—"}
@@ -953,11 +1003,21 @@ export default function Insights() {
   // images are stable within a session and don't flicker on every React Query
   // refetch. A user would need to add/remove items before the picks change.
   const analyticsImages = useMemo(() => {
-    const { pipeImgs, allImgs } = gatherCollectionImages(pipes, blends);
+    const { pipeImgs, blendImgs, allImgs } = gatherCollectionImages(pipes, blends);
+    // Helper: prefer category-specific images, fall back to full collection
+    const safePickPipe = pickRandom(pipeImgs.length > 0 ? pipeImgs : allImgs);
+    const safePickBlend = pickRandom(blendImgs.length > 0 ? blendImgs : allImgs);
     return {
       streak: pickRandom(pipeImgs),
       sessions: pickRandom(allImgs),
       collectionValue: pickRandom(allImgs),
+      // Snapshot card backgrounds — use real uploaded imagery where available
+      snapshotSessions: safePickPipe,
+      snapshotPipes: pickRandom(pipeImgs.length > 0 ? pipeImgs : allImgs),
+      snapshotBlends: safePickBlend,
+      snapshotValue: pickRandom(allImgs),
+      snapshotStreak: safePickPipe,
+      snapshotAvg: pickRandom(allImgs),
     };
   }, [pipes.length, blends.length]); // re-pick only when collection size changes
 
@@ -1076,12 +1136,14 @@ export default function Insights() {
           value={smokingLogs.length}
           accent="#C87941"
           sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek", { defaultValue: "this week" })}`}
+          bgImage={analyticsImages.snapshotSessions}
         />
         <SnapshotCard
           icon={isAppleBuild ? Leaf : BarChart3}
           label={t("home.pipesInCollection")}
           value={pipes.length}
           accent="#4A7C9C"
+          bgImage={analyticsImages.snapshotPipes}
         />
         <SnapshotCard
           icon={Leaf}
@@ -1089,12 +1151,14 @@ export default function Insights() {
           value={blends.length}
           accent="#4A7C59"
           sub={`${totalCellaredOz.toFixed(1)} oz ${t("home.cellared", { defaultValue: "cellared" })}`}
+          bgImage={analyticsImages.snapshotBlends}
         />
         <SnapshotCard
           icon={TrendingUp}
           label={t("home.totalValue")}
           value={formatCurrency(Math.round(totalCollectionValue))}
           accent="#C4963A"
+          bgImage={analyticsImages.snapshotValue}
         />
         <SnapshotCard
           icon={Clock}
@@ -1102,6 +1166,7 @@ export default function Insights() {
           value={`${longestStreak}d`}
           accent="#8B5CF6"
           sub={t("insights.snapshotConsecutiveDays", { defaultValue: "consecutive days" })}
+          bgImage={analyticsImages.snapshotStreak}
         />
         <SnapshotCard
           icon={Calendar}
@@ -1124,6 +1189,7 @@ export default function Insights() {
           }
           accent="#22D3EE"
           sub={t("insights.snapshotSessionsPerWeek", { defaultValue: "sessions / week" })}
+          bgImage={analyticsImages.snapshotAvg}
         />
       </div>
 
