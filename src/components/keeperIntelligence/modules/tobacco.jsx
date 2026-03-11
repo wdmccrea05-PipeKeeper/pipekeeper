@@ -1,6 +1,6 @@
 /**
  * Keeper Intelligence: Tobacco Module
- * Analyzes tobacco collection for diversity, aging, and cellar health insights
+ * Advanced cellar, aging, and blend analysis
  */
 
 import { differenceInMonths } from 'date-fns';
@@ -60,21 +60,47 @@ export const TobaccoModule = {
       return sum + tinQty + bulkQty + pouchQty;
     }, 0);
 
+    // Identify missing blend styles
+    const hasVirginia = blendTypes.has("Virginia") || blendTypes.has("Virginia/Burley") || blendTypes.has("Virginia/Perique");
+    const hasEnglish = blendTypes.has("English") || blendTypes.has("English Aromatic") || blendTypes.has("English Balkan");
+    const hasOriental = blendTypes.has("Oriental/Turkish");
+    const hasLatakia = blendTypes.has("Latakia Blend");
+
     return {
       blendCount: blends.length,
       blendTypeCount: blendTypes.size,
       agingBlendCount: agingBlends.length,
       readyForAgingCount: readyForAging.length,
       totalCellarQuantity: totalQuantityOz,
+      blendTypes: Array.from(blendTypes),
+      hasVirginia,
+      hasEnglish,
+      hasOriental,
+      hasLatakia,
       blends
     };
   },
 
   generateInsights(analysis) {
     const insights = [];
-    const { blendCount, blendTypeCount, readyForAgingCount } = analysis;
+    const { blendCount, blendTypeCount, readyForAgingCount, hasVirginia, hasEnglish, hasOriental, hasLatakia } = analysis;
 
-    // Insight 1: Blend Diversity
+    // CELLAR: Aging Opportunity
+    if (readyForAgingCount > 0) {
+      insights.push({
+        title: "keeper.tobacco.agingOpportunityTitle",
+        insight: "keeper.tobacco.agingOpportunityInsight",
+        action: "keeper.tobacco.agingOpportunityAction",
+        cta: "keeper.tobacco.agingOpportunityCTA",
+        ctaLink: "Insights?tab=aging",
+        icon: "Clock",
+        category: "Cellar",
+        priority: "high",
+        vars: { count: readyForAgingCount }
+      });
+    }
+
+    // CELLAR: Blend Diversity
     if (blendCount > 0 && blendTypeCount < 3) {
       insights.push({
         title: "keeper.tobacco.diversityTitle",
@@ -83,34 +109,36 @@ export const TobaccoModule = {
         cta: "keeper.tobacco.diversityCTA",
         ctaLink: "Tobacco",
         icon: "Leaf",
-        priority: "medium",
-        vars: { typeCount: blendTypeCount }
+        category: "Cellar",
+        priority: "medium"
       });
     }
 
-    // Insight 2: Aging Opportunity
-    if (readyForAgingCount > 0) {
+    // DISCOVERY: Blend Style Exploration
+    const missingStyles = [];
+    if (!hasEnglish) missingStyles.push("English");
+    if (!hasOriental && !hasLatakia) missingStyles.push("Balkan");
+    
+    if (blendCount > 2 && missingStyles.length > 0) {
       insights.push({
-        title: "keeper.tobacco.agingTitle",
-        insight: "keeper.tobacco.agingInsight",
-        action: "keeper.tobacco.agingAction",
-        cta: "keeper.tobacco.agingCTA",
-        ctaLink: "Insights?tab=aging",
-        icon: "Clock",
-        priority: "high",
-        vars: { count: readyForAgingCount }
+        title: "keeper.tobacco.styleDiscoveryTitle",
+        insight: "keeper.tobacco.styleDiscoveryInsight",
+        action: "keeper.tobacco.styleDiscoveryAction",
+        icon: "Leaf",
+        category: "Discovery",
+        priority: "low",
+        vars: { styles: missingStyles.join(" or ") }
       });
     }
 
-    // Insight 3: Cellar Monitoring
-    if (blendCount > 5) {
+    // STEWARDSHIP: Cellar Storage
+    if (blendCount >= 5) {
       insights.push({
-        title: "keeper.tobacco.cellarTitle",
-        insight: "keeper.tobacco.cellarInsight",
-        action: "keeper.tobacco.cellarAction",
-        cta: "keeper.tobacco.cellarCTA",
-        ctaLink: "Insights?tab=aging",
-        icon: "TrendingUp",
+        title: "keeper.tobacco.stewardshipStorageTitle",
+        insight: "keeper.tobacco.stewardshipStorageInsight",
+        action: "keeper.tobacco.stewardshipStorageAction",
+        icon: "Leaf",
+        category: "Stewardship",
         priority: "low"
       });
     }

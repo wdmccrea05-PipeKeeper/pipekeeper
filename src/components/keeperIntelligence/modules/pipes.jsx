@@ -1,108 +1,133 @@
 /**
  * Keeper Intelligence: Pipes Module
- * Analyzes pipe collection for rotation, usage, and health insights
+ * Advanced rotation and stewardship analysis
  */
 
 export const PipesModule = {
   analyzeCollection(data) {
     const { pipes = [], logs = [] } = data;
 
-    // Analyze pipe usage
+    // Analyze pipe usage patterns
     const pipeUsage = {};
     const logsByPipe = {};
+    const lastUsedDate = {};
     
     logs.forEach(log => {
       if (log?.pipe_id) {
         pipeUsage[log.pipe_id] = (pipeUsage[log.pipe_id] || 0) + (log.bowls_used || 1);
         if (!logsByPipe[log.pipe_id]) logsByPipe[log.pipe_id] = [];
         logsByPipe[log.pipe_id].push(log);
+        
+        try {
+          const logDate = new Date(log.date).getTime();
+          if (!lastUsedDate[log.pipe_id] || logDate > lastUsedDate[log.pipe_id]) {
+            lastUsedDate[log.pipe_id] = logDate;
+          }
+        } catch {
+          // ignore
+        }
       }
     });
 
-    // Categorize pipes
+    // Categorize pipes by usage
     const underusedPipes = pipes.filter(p => !pipeUsage[p.id] || pipeUsage[p.id] < 3);
+    const regularPipes = pipes.filter(p => {
+      const usage = pipeUsage[p.id] || 0;
+      return usage >= 3 && usage <= 10;
+    });
     const mostUsedPipe = pipes.length > 0
       ? pipes.reduce((max, p) => (pipeUsage[p.id] || 0) > (pipeUsage[max.id] || 0) ? p : max)
       : null;
 
-    // Session frequency
-    const recentLogs = logs.filter(log => {
-      try {
-        const logDate = new Date(log.date);
-        const daysSinceLog = (Date.now() - logDate.getTime()) / (1000 * 60 * 60 * 24);
-        return daysSinceLog <= 30;
-      } catch {
-        return false;
-      }
-    });
+    // Calculate rotation balance
+    const totalUsage = Object.values(pipeUsage).reduce((a, b) => a + b, 0);
+    const avgUsage = totalUsage / (pipes.length || 1);
+    const isBalanced = pipes.length > 0 && regularPipes.length >= pipes.length * 0.6;
+
+    // Analyze pipe shapes
+    const shapeCount = new Set(pipes.map(p => p.shape).filter(Boolean)).size;
 
     return {
       pipeCount: pipes.length,
       totalLogs: logs.length,
-      recentLogCount: recentLogs.length,
       underusedPipes,
+      regularPipes,
       mostUsedPipe,
       pipeUsage,
-      logsByPipe
+      isBalanced,
+      avgUsage,
+      shapeCount,
+      pipes
     };
   },
 
   generateInsights(analysis) {
     const insights = [];
-    const { pipeCount, underusedPipes, mostUsedPipe, recentLogCount } = analysis;
+    const { pipeCount, underusedPipes, regularPipes, mostUsedPipe, isBalanced, shapeCount, pipeUsage } = analysis;
 
-    // Insight 1: Rotation Planning
-    if (pipeCount >= 5 && underusedPipes.length >= 3) {
+    // ROTATION: Balanced Rotation
+    if (pipeCount >= 5 && isBalanced) {
       insights.push({
-        title: "keeper.pipes.rotationTitle",
-        insight: "keeper.pipes.rotationInsight",
-        action: "keeper.pipes.rotationAction",
-        cta: "keeper.pipes.rotationCTA",
-        ctaLink: "Insights?tab=rotation",
+        title: "keeper.pipes.balancedRotationTitle",
+        insight: "keeper.pipes.balancedRotationInsight",
+        action: "keeper.pipes.balancedRotationAction",
         icon: "Target",
-        priority: "medium",
-        vars: { count: pipeCount }
+        category: "Rotation",
+        priority: "low"
       });
     }
 
-    // Insight 2: Overused Pipe
-    if (mostUsedPipe && analysis.pipeUsage[mostUsedPipe.id] > 10) {
+    // ROTATION: Overused Pipe
+    if (mostUsedPipe && pipeUsage[mostUsedPipe.id] > 10) {
       insights.push({
-        title: "keeper.pipes.restTitle",
-        insight: "keeper.pipes.restInsight",
-        action: "keeper.pipes.restAction",
-        cta: "keeper.pipes.restCTA",
+        title: "keeper.pipes.overusedTitle",
+        insight: "keeper.pipes.overusedInsight",
+        action: "keeper.pipes.overusedAction",
+        cta: "keeper.pipes.overusedCTA",
         ctaLink: "PipeDetail?id=" + mostUsedPipe.id,
         icon: "Clock",
+        category: "Rotation",
         priority: "high",
         vars: { pipeName: mostUsedPipe.name }
       });
     }
 
-    // Insight 3: Early Growth
-    if (pipeCount > 0 && pipeCount < 5 && !insights.some(i => i.title.includes("rotation"))) {
+    // ROTATION: Collection Foundation
+    if (pipeCount > 0 && pipeCount < 5 && !insights.some(i => i.category === "Rotation")) {
       insights.push({
-        title: "keeper.pipes.growthTitle",
-        insight: "keeper.pipes.growthInsight",
-        action: "keeper.pipes.growthAction",
-        cta: "keeper.pipes.growthCTA",
-        ctaLink: "Insights?tab=rotation",
+        title: "keeper.pipes.foundationTitle",
+        insight: "keeper.pipes.foundationInsight",
+        action: "keeper.pipes.foundationAction",
+        cta: "keeper.pipes.foundationCTA",
+        ctaLink: "Pipes",
         icon: "TrendingUp",
+        category: "Rotation",
         priority: "low",
         vars: { count: pipeCount }
       });
     }
 
-    // Insight 4: Logging Frequency
-    if (pipeCount >= 3 && recentLogCount < 5) {
+    // DISCOVERY: Pipe Shape Variety
+    if (pipeCount >= 5 && shapeCount <= 2) {
       insights.push({
-        title: "keeper.pipes.loggingTitle",
-        insight: "keeper.pipes.loggingInsight",
-        action: "keeper.pipes.loggingAction",
-        cta: "keeper.pipes.loggingCTA",
-        ctaLink: "Home?modal=logSession",
-        icon: "BookOpen",
-        priority: "low"
+        title: "keeper.pipes.shapeVarietyTitle",
+        insight: "keeper.pipes.shapeVarietyInsight",
+        action: "keeper.pipes.shapeVarietyAction",
+        icon: "Leaf",
+        category: "Discovery",
+        priority: "medium"
+      });
+    }
+
+    // STEWARDSHIP: Proper Resting
+    if (pipeCount >= 3 && mostUsedPipe && pipeUsage[mostUsedPipe.id] > 8) {
+      insights.push({
+        title: "keeper.pipes.restingTitle",
+        insight: "keeper.pipes.restingInsight",
+        action: "keeper.pipes.restingAction",
+        icon: "Clock",
+        category: "Stewardship",
+        priority: "medium"
       });
     }
 
