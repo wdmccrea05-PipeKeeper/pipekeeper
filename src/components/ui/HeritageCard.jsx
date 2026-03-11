@@ -1,0 +1,134 @@
+import React from "react";
+import { cn } from "@/lib/utils";
+
+/**
+ * Heritage Design System - Core Surface Components
+ * Replaces old blue SaaS panels with warm collector aesthetic
+ */
+
+// Base heritage card surface
+export function HeritageCard({ children, className, style, accent, withTexture = true }) {
+  return (
+    <div
+      className={cn("relative rounded-lg overflow-hidden", className)}
+      style={{
+        background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
+        border: "1px solid rgba(120, 90, 65, 0.3)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)",
+        ...style,
+      }}
+    >
+      {withTexture && <WoodGrainTexture accent={accent || "#B48C4B"} />}
+      <div className="relative">{children}</div>
+    </div>
+  );
+}
+
+// Heritage stat/metric card
+export function HeritageStatCard({ icon: Icon, label, value, accent = "#B48C4B", className }) {
+  return (
+    <div
+      className={cn("rounded-lg p-4", className)}
+      style={{
+        background: "linear-gradient(135deg, rgba(50, 35, 22, 0.6), rgba(42, 30, 20, 0.75))",
+        border: "1px solid rgba(120, 90, 65, 0.25)",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.06)",
+      }}
+    >
+      <div className="flex items-start gap-3">
+        <div
+          className="w-10 h-10 flex items-center justify-center rounded-lg shrink-0"
+          style={{
+            background: "linear-gradient(135deg, rgba(100, 70, 45, 0.35), rgba(80, 55, 35, 0.4))",
+            border: "1px solid rgba(120, 90, 65, 0.3)",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(180, 140, 100, 0.1)",
+          }}
+        >
+          {Icon && <Icon className="w-5 h-5" style={{ color: accent }} />}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-2xl font-bold" style={{ color: "#F5F1E7" }}>
+            {value}
+          </div>
+          <div className="text-xs mt-1" style={{ color: "rgba(224, 216, 200, 0.6)" }}>
+            {label}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Heritage section header
+export function HeritageSection({ title, children, className }) {
+  return (
+    <div className={cn("space-y-4", className)}>
+      <h2
+        className="text-sm uppercase tracking-[0.12em] font-semibold"
+        style={{ color: "rgba(180, 140, 75, 0.8)", fontFamily: "'Georgia', serif" }}
+      >
+        {title}
+      </h2>
+      {children}
+    </div>
+  );
+}
+
+// Heritage action button
+export function HeritageButton({ children, onClick, href, variant = "primary", className, icon: Icon }) {
+  const baseStyles = {
+    primary: {
+      background: "linear-gradient(135deg, rgba(100, 70, 45, 0.7), rgba(80, 55, 35, 0.8))",
+      border: "1px solid rgba(120, 90, 65, 0.5)",
+      color: "#F5F1E7",
+      boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.15)",
+    },
+    secondary: {
+      background: "rgba(50, 35, 22, 0.4)",
+      border: "1px solid rgba(120, 90, 65, 0.25)",
+      color: "rgba(224, 216, 200, 0.9)",
+      boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+    },
+    ghost: {
+      background: "transparent",
+      border: "1px solid transparent",
+      color: "rgba(224, 216, 200, 0.7)",
+    },
+  };
+
+  const Component = href ? "a" : "button";
+  const props = href ? { href } : { onClick };
+
+  return (
+    <Component
+      {...props}
+      className={cn(
+        "inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:opacity-90 active:scale-95",
+        className
+      )}
+      style={baseStyles[variant]}
+    >
+      {Icon && <Icon className="w-4 h-4" />}
+      {children}
+    </Component>
+  );
+}
+
+// Wood grain texture overlay
+function WoodGrainTexture({ accent = "#B48C4B", opacity = 0.08 }) {
+  return (
+    <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id={`woodgrain-${accent.replace("#", "")}`} x="0" y="0" width="200" height="26" patternUnits="userSpaceOnUse">
+          <path d="M0,4 C40,3 80,5 120,4 S175,3 200,4" stroke={accent} strokeWidth="0.5" fill="none" strokeOpacity={opacity} />
+          <path d="M0,11 C50,10 90,12 140,11 S180,10 200,11" stroke={accent} strokeWidth="0.35" fill="none" strokeOpacity={opacity * 0.7} />
+          <path d="M0,18 C35,17 75,19 115,18 S170,17 200,18" stroke={accent} strokeWidth="0.45" fill="none" strokeOpacity={opacity * 0.85} />
+          <path d="M0,24 C60,23 100,25 155,24 S188,23 200,24" stroke={accent} strokeWidth="0.3" fill="none" strokeOpacity={opacity * 0.6} />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill={`url(#woodgrain-${accent.replace("#", "")})`} />
+    </svg>
+  );
+}
+
+export { WoodGrainTexture };

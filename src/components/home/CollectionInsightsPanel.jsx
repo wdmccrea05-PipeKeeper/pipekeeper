@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PKCard, PKHeader } from "@/components/ui/pk-surface";
+
 import { BarChart3, Grid3x3, BookOpen, CalendarClock, FileText, Clock, Star } from "lucide-react";
 import PairingGrid from "@/components/home/PairingGrid";
 import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
@@ -108,17 +108,20 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
   });
 
   return (
-    <PKCard>
+    <div className="rounded-lg" style={{
+      background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
+      border: "1px solid rgba(120, 90, 65, 0.3)",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)",
+    }}>
       <div className="p-6">
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-1">
-            <PKHeader 
-              title={isAppleBuild ? t("insights.titleInventory") : t("insights.title")}
-              className="mb-0"
-            />
+            <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
+              {isAppleBuild ? t("insights.titleInventory") : t("insights.title")}
+            </h2>
             <InfoTooltip text={t("insights.tooltipSummary")} />
           </div>
-          <p className="text-sm text-[#E0D8C8]/70">{t("insights.subtitle")}</p>
+          <p className="text-sm" style={{ color: "rgba(224, 216, 200, 0.75)" }}>{t("insights.subtitle")}</p>
         </div>
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className={`grid w-full items-center justify-center ${isAppleBuild ? "grid-cols-1" : "grid-cols-7"} gap-0 h-20`}>
@@ -287,6 +290,6 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
           )}
         </Tabs>
       </div>
-    </PKCard>
+    </div>
   );
 }

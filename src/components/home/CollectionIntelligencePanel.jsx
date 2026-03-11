@@ -48,16 +48,16 @@ function CollapsibleSection({ label, defaultOpen = false, children }) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between mb-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40 rounded"
+        className="w-full flex items-center justify-between mb-3 group focus-visible:outline-none rounded"
         aria-expanded={open}
       >
-        <h3 className="text-xs font-semibold text-[#E0D8C8]/60 uppercase tracking-wider group-hover:text-[#E0D8C8]/80 transition-colors">
+        <h3 className="text-xs font-semibold uppercase tracking-wider transition-colors" style={{ color: "rgba(180, 140, 75, 0.7)", fontFamily: "'Georgia', serif" }}>
           {label}
         </h3>
         {open ? (
-          <ChevronUp className="w-4 h-4 text-[#E0D8C8]/40 group-hover:text-[#E0D8C8]/60 transition-colors shrink-0" aria-hidden="true" />
+          <ChevronUp className="w-4 h-4 transition-colors shrink-0" style={{ color: "rgba(180, 140, 75, 0.5)" }} aria-hidden="true" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-[#E0D8C8]/40 group-hover:text-[#E0D8C8]/60 transition-colors shrink-0" aria-hidden="true" />
+          <ChevronDown className="w-4 h-4 transition-colors shrink-0" style={{ color: "rgba(180, 140, 75, 0.5)" }} aria-hidden="true" />
         )}
       </button>
       {open && <div>{children}</div>}
@@ -111,15 +111,19 @@ function RotationDrillDownModal({ pipes, latestLogByPipe, open, onClose }) {
               <a
                 key={p.id}
                 href={createPageUrl(`PipeDetail?id=${encodeURIComponent(p.id)}`)}
-                className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg transition-colors"
+                style={{
+                  background: "rgba(50, 35, 22, 0.35)",
+                  border: "1px solid rgba(120, 90, 65, 0.2)",
+                }}
               >
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-[#E0D8C8] truncate">{p.name}</div>
+                  <div className="text-sm font-medium truncate" style={{ color: "#F5F1E7" }}>{p.name}</div>
                   {p.maker && (
-                    <div className="text-xs text-[#E0D8C8]/50 truncate">{p.maker}</div>
+                    <div className="text-xs truncate" style={{ color: "rgba(224, 216, 200, 0.6)" }}>{p.maker}</div>
                   )}
                 </div>
-                <div className="text-xs text-[#E0D8C8]/50 shrink-0">{lastUsedLabel}</div>
+                <div className="text-xs shrink-0" style={{ color: "rgba(224, 216, 200, 0.6)" }}>{lastUsedLabel}</div>
               </a>
             );
           })}
@@ -147,7 +151,12 @@ function InsightCard({ insight, onAction }) {
     insight.actionUrl ? (
       <a
         href={insight.actionUrl}
-        className="self-start ml-7 text-xs font-medium text-amber-400 border border-amber-400/30 px-3 py-1.5 rounded-lg hover:bg-amber-400/10 transition-colors"
+        className="self-start ml-7 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+        style={{
+          color: "rgba(180, 140, 75, 1)",
+          border: "1px solid rgba(120, 90, 65, 0.4)",
+          background: "rgba(100, 70, 45, 0.15)",
+        }}
       >
         {insight.actionLabel}
       </a>
@@ -155,7 +164,12 @@ function InsightCard({ insight, onAction }) {
       <button
         type="button"
         onClick={onAction}
-        className="self-start ml-7 text-xs font-medium text-amber-400 border border-amber-400/30 px-3 py-1.5 rounded-lg hover:bg-amber-400/10 transition-colors"
+        className="self-start ml-7 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+        style={{
+          color: "rgba(180, 140, 75, 1)",
+          border: "1px solid rgba(120, 90, 65, 0.4)",
+          background: "rgba(100, 70, 45, 0.15)",
+        }}
       >
         {insight.actionLabel}
       </button>
@@ -163,12 +177,15 @@ function InsightCard({ insight, onAction }) {
   ) : null;
 
   return (
-    <div className="rounded-xl bg-white/5 p-4 flex flex-col gap-3">
+    <div className="rounded-xl p-4 flex flex-col gap-3" style={{
+      background: "rgba(50, 35, 22, 0.35)",
+      border: "1px solid rgba(120, 90, 65, 0.2)",
+    }}>
       <div className="flex items-start gap-3">
-        <Icon className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" aria-hidden="true" />
+        <Icon className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "rgba(180, 140, 75, 0.9)" }} aria-hidden="true" />
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-[#E0D8C8] text-sm leading-snug">{insight.title}</div>
-          <p className="text-sm text-[#E0D8C8]/70 mt-1 leading-relaxed">{insight.description}</p>
+          <div className="font-semibold text-sm leading-snug" style={{ color: "#F5F1E7" }}>{insight.title}</div>
+          <p className="text-sm mt-1 leading-relaxed" style={{ color: "rgba(224, 216, 200, 0.75)" }}>{insight.description}</p>
         </div>
       </div>
       {actionButton}
@@ -181,19 +198,22 @@ function InsightCard({ insight, onAction }) {
 // ─────────────────────────────────────────────────────────────────────────────
 function RecommendationCard({ rec, t }) {
   return (
-    <div className="rounded-xl bg-white/5 p-4 flex flex-col gap-2">
-      <div className="text-xs font-semibold text-amber-400 uppercase tracking-wide">
+    <div className="rounded-xl p-4 flex flex-col gap-2" style={{
+      background: "rgba(50, 35, 22, 0.35)",
+      border: "1px solid rgba(120, 90, 65, 0.2)",
+    }}>
+      <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(180, 140, 75, 1)" }}>
         {t("collectionIntelligence.recommendedPairing")}
       </div>
-      <p className="text-sm text-[#E0D8C8] font-medium leading-snug">
+      <p className="text-sm font-medium leading-snug" style={{ color: "#F5F1E7" }}>
         {rec.pipe_name}{" "}
-        <span className="font-normal text-[#E0D8C8]/70">
+        <span className="font-normal" style={{ color: "rgba(224, 216, 200, 0.75)" }}>
           {t("collectionIntelligence.pairsWith")}
         </span>{" "}
         {rec.tobacco_name}
       </p>
-      <p className="text-xs text-[#E0D8C8]/60 leading-relaxed">
-        <span className="font-semibold text-[#E0D8C8]/80">
+      <p className="text-xs leading-relaxed" style={{ color: "rgba(224, 216, 200, 0.65)" }}>
+        <span className="font-semibold" style={{ color: "rgba(224, 216, 200, 0.85)" }}>
           {t("collectionIntelligence.reason")}:
         </span>{" "}
         {rec.reason}
@@ -216,13 +236,16 @@ function UpdateFeedItem({ update }) {
   }
 
   return (
-    <div className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-white/5">
-      <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0 mt-0.5" aria-hidden="true" />
+    <div className="flex items-start gap-3 px-3 py-2.5 rounded-lg" style={{
+      background: "rgba(50, 35, 22, 0.35)",
+      border: "1px solid rgba(120, 90, 65, 0.2)",
+    }}>
+      <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#46BD5C" }} aria-hidden="true" />
       <div className="flex-1 min-w-0">
-        <div className="text-sm text-[#E0D8C8] font-medium leading-snug">{update.title}</div>
-        <div className="text-xs text-[#E0D8C8]/50 mt-0.5 leading-relaxed">{update.description}</div>
+        <div className="text-sm font-medium leading-snug" style={{ color: "#F5F1E7" }}>{update.title}</div>
+        <div className="text-xs mt-0.5 leading-relaxed" style={{ color: "rgba(224, 216, 200, 0.6)" }}>{update.description}</div>
         {timeLabel && (
-          <div className="text-xs text-[#E0D8C8]/40 mt-0.5">{timeLabel}</div>
+          <div className="text-xs mt-0.5" style={{ color: "rgba(224, 216, 200, 0.5)" }}>{timeLabel}</div>
         )}
       </div>
     </div>
@@ -581,15 +604,22 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
 
   return (
     <>
-      <PKCard className="p-6 space-y-5">
+      <div 
+        className="p-6 space-y-5 rounded-lg"
+        style={{
+          background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
+          border: "1px solid rgba(120, 90, 65, 0.3)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)",
+        }}
+      >
         {/* ── Header ─────────────────────────────────────────────────────────── */}
         <div className="flex items-center gap-3">
-          <Brain className="w-5 h-5 text-amber-400 shrink-0" aria-hidden="true" />
+          <Brain className="w-5 h-5 shrink-0" style={{ color: "rgba(180, 140, 75, 0.9)" }} aria-hidden="true" />
           <div>
-            <h2 className="text-xl font-semibold text-[#E0D8C8]">
+            <h2 className="text-xl font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
               {t("collectionIntelligence.title")}
             </h2>
-            <p className="text-sm text-[#E0D8C8]/60">
+            <p className="text-sm" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
               {t("collectionIntelligence.subtitle")}
             </p>
           </div>
@@ -610,19 +640,24 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
               return (
                 <div
                   key={i}
-                  className="flex justify-between items-center px-3 py-2.5 rounded-lg bg-white/5"
+                  className="flex justify-between items-center px-3 py-2.5 rounded-lg"
+                  style={{
+                    background: "rgba(50, 35, 22, 0.35)",
+                    border: "1px solid rgba(120, 90, 65, 0.2)",
+                  }}
                 >
-                  <span className="text-sm text-[#E0D8C8]/70">{m.label}</span>
+                  <span className="text-sm" style={{ color: "rgba(224, 216, 200, 0.8)" }}>{m.label}</span>
                   <span
-                    className={`text-sm font-semibold ${
-                      isGood
-                        ? "text-green-400"
+                    className={`text-sm font-semibold`}
+                    style={{
+                      color: isGood
+                        ? "#46BD5C"
                         : isMod
-                        ? "text-amber-400"
+                        ? "#F59E0B"
                         : isLow
-                        ? "text-red-400"
-                        : "text-[#E0D8C8]/40"
-                    }`}
+                        ? "#E85D5D"
+                        : "rgba(224, 216, 200, 0.4)"
+                    }}
                   >
                     {m.value}
                   </span>
@@ -703,7 +738,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
             </div>
           </CollapsibleSection>
         )}
-      </PKCard>
+      </div>
 
       {/* ── Rotation drill-down modal ─────────────────────────────────────── */}
       <RotationDrillDownModal
