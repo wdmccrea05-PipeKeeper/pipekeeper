@@ -218,6 +218,8 @@ export default function Home() {
         onIdentify={handleIdentify}
         onOptimize={handleOptimize}
         onAskCurator={handleAskCurator}
+        onViewStory={() => setShowStory(true)}
+        hasStoryData={storyCards.length > 0}
       />
 
       {/* 5. MODULE OVERVIEW CARDS */}

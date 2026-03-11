@@ -39,7 +39,7 @@ const ACTIONS = [
   },
 ];
 
-export default function QuickActions({ onLogSession, onIdentify, onOptimize, onAskCurator }) {
+export default function QuickActions({ onLogSession, onIdentify, onOptimize, onAskCurator, onViewStory, hasStoryData }) {
   const { t } = useTranslation();
 
   const handlers = {
