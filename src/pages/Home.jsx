@@ -470,11 +470,10 @@ export default function Home() {
             >
               {t("home.viewCollection")} <ArrowRight className="w-4 h-4" />
             </a>
-          </div>
-        </PKCard> */}
+          </div> */}
 
         {/* OLD TOBACCO CARD - REPLACED ABOVE
-        <PKCard className="p-4 sm:p-5 border-l-4 border-[#4A7C59] relative overflow-hidden">
+        {/* <PKCard className="p-4 sm:p-5 border-l-4 border-[#4A7C59] relative overflow-hidden">
           {/* Ambient artifact: blurred blend logo/photo if available */}
           {featuredBlend?.logo || featuredBlend?.photo ? (
             <>
@@ -586,8 +585,8 @@ export default function Home() {
             >
               {t("home.viewCellar")} <ArrowRight className="w-4 h-4" />
             </a>
-          </div>
-        </PKCard>
+          </div> */}
+        </div>
       </div>
 
       {/* 7. CURATOR INTELLIGENCE */}
@@ -624,7 +623,14 @@ export default function Home() {
             {favoritePipes.map((item) => (
               <span
                 key={item.id}
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#1e3347] text-[#E0D8C8] text-sm border border-[#E0D8C8]/20"
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm"
+                style={{
+                  background: "linear-gradient(135deg, rgba(60, 42, 28, 0.6), rgba(50, 35, 25, 0.7))",
+                  border: "1px solid rgba(120, 90, 65, 0.25)",
+                  borderRadius: "0.375rem",
+                  color: "#F5F1E7",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
+                }}
               >
                 <img
                   src={PIPE_ICON}
@@ -632,7 +638,7 @@ export default function Home() {
                   className="w-3 h-3 object-contain"
                   style={{
                     filter:
-                      "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.9)",
+                      "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.85)",
                   }}
                 />
                 {item.name}
@@ -755,18 +761,18 @@ export default function Home() {
                 )}
               </a>
             ))}
-            </div>
-            </div>
+          </div>
+        </div>
 
-            <div
-            className="rounded-lg p-4"
-            style={{
+        <div
+          className="rounded-lg p-4"
+          style={{
             background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
             border: "1px solid rgba(120, 90, 65, 0.3)",
             boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
-            }}
-            >
-            <div className="flex items-center justify-between mb-3">
+          }}
+        >
+          <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>{t("home.recentTobacco")}</h2>
             <a
               href={createPageUrl("Tobacco")}
