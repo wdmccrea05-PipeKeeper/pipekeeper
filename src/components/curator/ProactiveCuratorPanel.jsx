@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Sparkles, TrendingUp, Leaf, Clock, Target, X } from "lucide-react";
+import { Sparkles, TrendingUp, Leaf, Clock, Target, X, BookOpen } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { differenceInMonths } from "date-fns";
 
@@ -141,7 +141,7 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
               boxShadow: "0 0 16px rgba(139, 92, 246, 0.2)"
             }}
           >
-            <Sparkles className="w-5 h-5" style={{ color: "#A78BFA" }} />
+            <BookOpen className="w-5 h-5" style={{ color: "#A78BFA" }} />
           </div>
           <div>
             <h3 
