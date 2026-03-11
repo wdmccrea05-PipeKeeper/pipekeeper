@@ -1,11 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 
+// Read optional tab param from URL synchronously (e.g. /Curator?tab=optimizer).
+// This is safe because a navigation to /Curator always triggers a full mount.
+function getTabFromUrl() {
+  try {
+    return new URLSearchParams(window.location.search).get("tab") || "identifier";
+  } catch {
+    return "identifier";
+  }
+}
+
 export default function Curator() {
   const { user, hasPaid } = useCurrentUser();
+  const initialTab = getTabFromUrl();
 
   const { data: pipes = [] } = useQuery({
     queryKey: ["pipes", user?.email],
@@ -27,15 +38,6 @@ export default function Curator() {
     staleTime: 10000,
   });
 
-  // Read optional tab param from URL (e.g. /Curator?tab=optimizer)
-  const [initialTab, setInitialTab] = useState(null);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tab = params.get("tab");
-    if (tab) setInitialTab(tab);
-  }, []);
-
   return (
     <div className="space-y-5">
       <ExpertTobacconist
@@ -43,7 +45,7 @@ export default function Curator() {
         blends={blends}
         isPaidUser={hasPaid}
         user={user}
-        activeTab={initialTab ?? "identifier"}
+        activeTab={initialTab}
       />
     </div>
   );
