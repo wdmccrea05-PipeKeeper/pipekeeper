@@ -164,6 +164,24 @@ export default function Home() {
             className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none"
             style={{ background: "radial-gradient(circle, #C8794128 0%, transparent 70%)", transform: "translate(30%, -30%)" }}
           />
+          {/* Subtle warm grain texture */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="home-grain-val" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+                <circle cx="5" cy="9" r="0.4" fill="#C87941" fillOpacity="0.07" />
+                <circle cx="22" cy="3" r="0.3" fill="#C87941" fillOpacity="0.05" />
+                <circle cx="38" cy="17" r="0.45" fill="#C87941" fillOpacity="0.06" />
+                <circle cx="57" cy="6" r="0.35" fill="#C87941" fillOpacity="0.07" />
+                <circle cx="71" cy="23" r="0.4" fill="#C87941" fillOpacity="0.05" />
+                <circle cx="13" cy="34" r="0.3" fill="#C87941" fillOpacity="0.06" />
+                <circle cx="44" cy="42" r="0.45" fill="#C87941" fillOpacity="0.07" />
+                <circle cx="68" cy="51" r="0.35" fill="#C87941" fillOpacity="0.05" />
+                <circle cx="28" cy="63" r="0.4" fill="#C87941" fillOpacity="0.06" />
+                <circle cx="52" cy="74" r="0.3" fill="#C87941" fillOpacity="0.07" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#home-grain-val)" />
+          </svg>
           <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug relative">
             {t("home.totalValue")}
           </div>
@@ -177,6 +195,17 @@ export default function Home() {
             className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none"
             style={{ background: "radial-gradient(circle, #4A7C9C28 0%, transparent 70%)", transform: "translate(30%, -30%)" }}
           />
+          {/* Subtle wood grain texture — pipes */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="home-wood-pipes" x="0" y="0" width="120" height="18" patternUnits="userSpaceOnUse">
+                <path d="M0,3 C25,2 50,4 75,3 S110,2 120,3" stroke="#4A7C9C" strokeWidth="0.4" fill="none" strokeOpacity="0.07" />
+                <path d="M0,9 C30,8 60,10 90,9 S110,8 120,9" stroke="#4A7C9C" strokeWidth="0.3" fill="none" strokeOpacity="0.05" />
+                <path d="M0,15 C20,14 55,16 85,15 S110,14 120,15" stroke="#4A7C9C" strokeWidth="0.4" fill="none" strokeOpacity="0.06" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#home-wood-pipes)" />
+          </svg>
           <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug relative">
             {t("home.pipesInCollection")}
           </div>
@@ -188,6 +217,23 @@ export default function Home() {
             className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none"
             style={{ background: "radial-gradient(circle, #4A7C5928 0%, transparent 70%)", transform: "translate(30%, -30%)" }}
           />
+          {/* Subtle paper label texture — tobacco */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="home-paper-blends" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="0" x2="0" y2="40" stroke="#4A7C59" strokeWidth="0.25" strokeOpacity="0.05" />
+                <line x1="10" y1="0" x2="10" y2="40" stroke="#4A7C59" strokeWidth="0.2" strokeOpacity="0.04" />
+                <line x1="20" y1="0" x2="20" y2="40" stroke="#4A7C59" strokeWidth="0.25" strokeOpacity="0.05" />
+                <line x1="30" y1="0" x2="30" y2="40" stroke="#4A7C59" strokeWidth="0.2" strokeOpacity="0.04" />
+                <line x1="0" y1="0" x2="40" y2="0" stroke="#4A7C59" strokeWidth="0.2" strokeOpacity="0.04" />
+                <line x1="0" y1="13" x2="40" y2="13" stroke="#4A7C59" strokeWidth="0.17" strokeOpacity="0.032" />
+                <line x1="0" y1="26" x2="40" y2="26" stroke="#4A7C59" strokeWidth="0.2" strokeOpacity="0.04" />
+                <circle cx="6" cy="19" r="0.35" fill="#4A7C59" fillOpacity="0.055" />
+                <circle cx="28" cy="7" r="0.28" fill="#4A7C59" fillOpacity="0.045" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#home-paper-blends)" />
+          </svg>
           <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug relative">
             {t("home.tobaccoBlends")}
           </div>
@@ -199,6 +245,24 @@ export default function Home() {
             className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none"
             style={{ background: "radial-gradient(circle, #22D3EE22 0%, transparent 70%)", transform: "translate(30%, -30%)" }}
           />
+          {/* Subtle grain for cellared oz */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="home-grain-cellar" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+                <circle cx="7" cy="11" r="0.38" fill="#22D3EE" fillOpacity="0.055" />
+                <circle cx="24" cy="4" r="0.28" fill="#22D3EE" fillOpacity="0.04" />
+                <circle cx="41" cy="18" r="0.42" fill="#22D3EE" fillOpacity="0.05" />
+                <circle cx="60" cy="7" r="0.32" fill="#22D3EE" fillOpacity="0.055" />
+                <circle cx="73" cy="25" r="0.38" fill="#22D3EE" fillOpacity="0.04" />
+                <circle cx="16" cy="36" r="0.28" fill="#22D3EE" fillOpacity="0.05" />
+                <circle cx="46" cy="44" r="0.42" fill="#22D3EE" fillOpacity="0.055" />
+                <circle cx="67" cy="53" r="0.32" fill="#22D3EE" fillOpacity="0.04" />
+                <circle cx="30" cy="65" r="0.38" fill="#22D3EE" fillOpacity="0.05" />
+                <circle cx="55" cy="76" r="0.28" fill="#22D3EE" fillOpacity="0.055" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#home-grain-cellar)" />
+          </svg>
           <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug relative">
             {t("home.cellared")}
           </div>
@@ -219,7 +283,7 @@ export default function Home() {
       {/* 5. MODULE OVERVIEW CARDS */}
       <div className="flex flex-col gap-4">
         <PKCard className="p-4 sm:p-5 border-l-4 border-[#C87941] relative overflow-hidden">
-          {/* Artifact background: pipe photo if available, otherwise pipe silhouette */}
+          {/* Ambient artifact: blurred pipe photo if available */}
           {featuredPipe?.photos?.[0] ? (
             <>
               <div
@@ -228,14 +292,33 @@ export default function Home() {
                   backgroundImage: `url(${featuredPipe.photos[0]})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
-                  filter: "blur(20px) brightness(0.15) saturate(0.5)",
-                  opacity: 0.8,
+                  filter: "blur(18px) brightness(0.18) saturate(0.55)",
+                  opacity: 0.85,
                   transform: "scale(1.1)",
                 }}
               />
+              {/* Hero crop: pipe photo visible on right edge */}
+              <div
+                className="absolute right-0 top-0 bottom-0 pointer-events-none overflow-hidden"
+                style={{ width: "40%" }}
+              >
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage: `url(${featuredPipe.photos[0]})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    filter: "blur(3px) brightness(0.35) saturate(0.75)",
+                  }}
+                />
+                <div
+                  className="absolute inset-0"
+                  style={{ background: "linear-gradient(to right, rgba(20,32,46,1) 0%, rgba(20,32,46,0.5) 40%, transparent 85%)" }}
+                />
+              </div>
               <div
                 className="absolute inset-0 pointer-events-none"
-                style={{ background: "linear-gradient(90deg, rgba(34,52,71,0.92) 0%, rgba(34,52,71,0.75) 60%, rgba(200,121,65,0.15) 100%)" }}
+                style={{ background: "linear-gradient(to right, rgba(34,52,71,0.94) 0%, rgba(34,52,71,0.75) 55%, rgba(200,121,65,0.10) 100%)" }}
               />
             </>
           ) : (
@@ -252,6 +335,18 @@ export default function Home() {
               />
             </div>
           )}
+          {/* Wood grain texture overlay */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="home-woodgrain-pipes" x="0" y="0" width="200" height="26" patternUnits="userSpaceOnUse">
+                <path d="M0,4 C40,3 80,5 120,4 S175,3 200,4" stroke="#C87941" strokeWidth="0.5" fill="none" strokeOpacity="0.08" />
+                <path d="M0,11 C50,10 90,12 140,11 S180,10 200,11" stroke="#C87941" strokeWidth="0.35" fill="none" strokeOpacity="0.055" />
+                <path d="M0,18 C35,17 75,19 115,18 S170,17 200,18" stroke="#C87941" strokeWidth="0.45" fill="none" strokeOpacity="0.07" />
+                <path d="M0,24 C60,23 100,25 155,24 S188,23 200,24" stroke="#C87941" strokeWidth="0.3" fill="none" strokeOpacity="0.045" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#home-woodgrain-pipes)" />
+          </svg>
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 relative">
             <div className="flex items-center gap-3 sm:w-48 sm:shrink-0">
               <div className="w-9 h-9 rounded-lg bg-[#C87941]/20 flex items-center justify-center shrink-0">
@@ -293,7 +388,7 @@ export default function Home() {
         </PKCard>
 
         <PKCard className="p-4 sm:p-5 border-l-4 border-[#4A7C59] relative overflow-hidden">
-          {/* Artifact background: blend logo if available, otherwise leaf silhouette */}
+          {/* Ambient artifact: blurred blend logo/photo if available */}
           {featuredBlend?.logo || featuredBlend?.photo ? (
             <>
               <div
@@ -302,14 +397,34 @@ export default function Home() {
                   backgroundImage: `url(${featuredBlend.logo || featuredBlend.photo})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
-                  filter: "blur(20px) brightness(0.15) saturate(0.5)",
-                  opacity: 0.8,
+                  filter: "blur(18px) brightness(0.18) saturate(0.55)",
+                  opacity: 0.85,
                   transform: "scale(1.1)",
                 }}
               />
+              {/* Hero crop: tin label visible on right edge */}
+              <div
+                className="absolute right-0 top-0 bottom-0 pointer-events-none overflow-hidden"
+                style={{ width: "40%" }}
+              >
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage: `url(${featuredBlend.logo || featuredBlend.photo})`,
+                    backgroundSize: "contain",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                    filter: "blur(2px) brightness(0.38) saturate(0.80)",
+                  }}
+                />
+                <div
+                  className="absolute inset-0"
+                  style={{ background: "linear-gradient(to right, rgba(20,32,28,1) 0%, rgba(20,32,28,0.5) 40%, transparent 85%)" }}
+                />
+              </div>
               <div
                 className="absolute inset-0 pointer-events-none"
-                style={{ background: "linear-gradient(90deg, rgba(34,52,71,0.92) 0%, rgba(34,52,71,0.75) 60%, rgba(74,124,89,0.15) 100%)" }}
+                style={{ background: "linear-gradient(to right, rgba(34,52,71,0.94) 0%, rgba(34,52,71,0.75) 55%, rgba(74,124,89,0.12) 100%)" }}
               />
             </>
           ) : (
@@ -329,6 +444,26 @@ export default function Home() {
               <line x1="50" y1="70" x2="80" y2="65" stroke="white" strokeWidth="1.5" />
             </svg>
           )}
+          {/* Paper / label texture overlay */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="home-paper-tobacco" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="0" x2="0" y2="50" stroke="#4A7C59" strokeWidth="0.25" strokeOpacity="0.055" />
+                <line x1="10" y1="0" x2="10" y2="50" stroke="#4A7C59" strokeWidth="0.2" strokeOpacity="0.04" />
+                <line x1="20" y1="0" x2="20" y2="50" stroke="#4A7C59" strokeWidth="0.25" strokeOpacity="0.05" />
+                <line x1="30" y1="0" x2="30" y2="50" stroke="#4A7C59" strokeWidth="0.2" strokeOpacity="0.04" />
+                <line x1="40" y1="0" x2="40" y2="50" stroke="#4A7C59" strokeWidth="0.25" strokeOpacity="0.055" />
+                <line x1="0" y1="0" x2="50" y2="0" stroke="#4A7C59" strokeWidth="0.2" strokeOpacity="0.04" />
+                <line x1="0" y1="13" x2="50" y2="13" stroke="#4A7C59" strokeWidth="0.17" strokeOpacity="0.032" />
+                <line x1="0" y1="26" x2="50" y2="26" stroke="#4A7C59" strokeWidth="0.2" strokeOpacity="0.04" />
+                <line x1="0" y1="39" x2="50" y2="39" stroke="#4A7C59" strokeWidth="0.17" strokeOpacity="0.032" />
+                <circle cx="6" cy="18" r="0.35" fill="#4A7C59" fillOpacity="0.055" />
+                <circle cx="31" cy="7" r="0.28" fill="#4A7C59" fillOpacity="0.045" />
+                <circle cx="44" cy="36" r="0.35" fill="#4A7C59" fillOpacity="0.055" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#home-paper-tobacco)" />
+          </svg>
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 relative">
             <div className="flex items-center gap-3 sm:w-48 sm:shrink-0">
               <div className="w-9 h-9 rounded-lg bg-[#4A7C59]/20 flex items-center justify-center shrink-0">

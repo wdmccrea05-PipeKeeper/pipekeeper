@@ -39,45 +39,96 @@ function getTabFromUrl() {
   }
 }
 
-// ── Inline SVG patterns for card texture ──────────────────────────────────────
-function CardPattern({ type = "dots", accent }) {
-  if (type === "dots") {
+// ── Real texture overlays (grain, wood grain, paper) ─────────────────────────
+// uid must be unique per rendered instance to avoid SVG pattern ID collisions.
+function getTextureType(silhouetteType) {
+  if (silhouetteType === "pipe") return "woodgrain";
+  if (silhouetteType === "leaf") return "paper";
+  return "grain";
+}
+
+function ArtifactTexture({ type = "grain", accent = "#4A7C9C", uid = "0" }) {
+  const safeId = `atex-${type}-${accent.replace("#", "")}-${uid}`;
+
+  if (type === "woodgrain") {
+    // Briar / warm wood grain — wavy horizontal lines
     return (
-      <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <pattern id={`dots-${accent.replace("#","")}`} x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-            <circle cx="2" cy="2" r="1" fill={accent} fillOpacity="0.12" />
+          <pattern id={safeId} x="0" y="0" width="200" height="28" patternUnits="userSpaceOnUse">
+            <path d="M0,4 C35,3 65,5 100,4 S165,3 200,4" stroke={accent} strokeWidth="0.55" fill="none" strokeOpacity="0.09" />
+            <path d="M0,10 C45,9 85,11 130,10 S175,9 200,10" stroke={accent} strokeWidth="0.38" fill="none" strokeOpacity="0.06" />
+            <path d="M0,16 C30,15 70,17 110,16 S170,15 200,16" stroke={accent} strokeWidth="0.50" fill="none" strokeOpacity="0.08" />
+            <path d="M0,22 C55,21 95,23 145,22 S185,21 200,22" stroke={accent} strokeWidth="0.32" fill="none" strokeOpacity="0.05" />
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill={`url(#dots-${accent.replace("#","")})`} />
+        <rect width="100%" height="100%" fill={`url(#${safeId})`} />
       </svg>
     );
   }
-  if (type === "diagonal") {
+
+  if (type === "paper") {
+    // Paper label / printed tin texture — fine crosshatch + scattered grain
     return (
-      <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <pattern id={`diag-${accent.replace("#","")}`} x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <line x1="0" y1="0" x2="0" y2="16" stroke={accent} strokeWidth="0.5" strokeOpacity="0.10" />
+          <pattern id={safeId} x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" x2="0" y2="60" stroke={accent} strokeWidth="0.28" strokeOpacity="0.055" />
+            <line x1="10" y1="0" x2="10" y2="60" stroke={accent} strokeWidth="0.22" strokeOpacity="0.04" />
+            <line x1="20" y1="0" x2="20" y2="60" stroke={accent} strokeWidth="0.28" strokeOpacity="0.05" />
+            <line x1="30" y1="0" x2="30" y2="60" stroke={accent} strokeWidth="0.22" strokeOpacity="0.04" />
+            <line x1="40" y1="0" x2="40" y2="60" stroke={accent} strokeWidth="0.28" strokeOpacity="0.055" />
+            <line x1="50" y1="0" x2="50" y2="60" stroke={accent} strokeWidth="0.22" strokeOpacity="0.04" />
+            <line x1="0" y1="0" x2="60" y2="0" stroke={accent} strokeWidth="0.22" strokeOpacity="0.04" />
+            <line x1="0" y1="15" x2="60" y2="15" stroke={accent} strokeWidth="0.18" strokeOpacity="0.032" />
+            <line x1="0" y1="30" x2="60" y2="30" stroke={accent} strokeWidth="0.22" strokeOpacity="0.04" />
+            <line x1="0" y1="45" x2="60" y2="45" stroke={accent} strokeWidth="0.18" strokeOpacity="0.032" />
+            <circle cx="7" cy="19" r="0.42" fill={accent} fillOpacity="0.065" />
+            <circle cx="34" cy="7" r="0.32" fill={accent} fillOpacity="0.05" />
+            <circle cx="53" cy="43" r="0.42" fill={accent} fillOpacity="0.065" />
+            <circle cx="19" cy="52" r="0.32" fill={accent} fillOpacity="0.05" />
+            <circle cx="45" cy="28" r="0.48" fill={accent} fillOpacity="0.055" />
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill={`url(#diag-${accent.replace("#","")})`} />
+        <rect width="100%" height="100%" fill={`url(#${safeId})`} />
       </svg>
     );
   }
-  if (type === "grid") {
-    return (
-      <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id={`grid-${accent.replace("#","")}`} x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-            <path d="M 24 0 L 0 0 0 24" fill="none" stroke={accent} strokeWidth="0.4" strokeOpacity="0.10" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill={`url(#grid-${accent.replace("#","")})`} />
-      </svg>
-    );
-  }
-  return null;
+
+  // Default: "grain" — fine vintage film grain / premium paper noise
+  return (
+    <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id={safeId} x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+          <circle cx="8"   cy="13"  r="0.48" fill={accent} fillOpacity="0.075" />
+          <circle cx="23"  cy="5"   r="0.32" fill={accent} fillOpacity="0.055" />
+          <circle cx="42"  cy="19"  r="0.52" fill={accent} fillOpacity="0.07" />
+          <circle cx="58"  cy="8"   r="0.38" fill={accent} fillOpacity="0.075" />
+          <circle cx="74"  cy="25"  r="0.44" fill={accent} fillOpacity="0.06" />
+          <circle cx="92"  cy="11"  r="0.34" fill={accent} fillOpacity="0.07" />
+          <circle cx="105" cy="30"  r="0.52" fill={accent} fillOpacity="0.075" />
+          <circle cx="14"  cy="39"  r="0.38" fill={accent} fillOpacity="0.065" />
+          <circle cx="34"  cy="45"  r="0.48" fill={accent} fillOpacity="0.06" />
+          <circle cx="55"  cy="52"  r="0.34" fill={accent} fillOpacity="0.075" />
+          <circle cx="77"  cy="41"  r="0.52" fill={accent} fillOpacity="0.065" />
+          <circle cx="96"  cy="58"  r="0.38" fill={accent} fillOpacity="0.06" />
+          <circle cx="111" cy="47"  r="0.30" fill={accent} fillOpacity="0.075" />
+          <circle cx="7"   cy="65"  r="0.48" fill={accent} fillOpacity="0.065" />
+          <circle cx="28"  cy="72"  r="0.38" fill={accent} fillOpacity="0.06" />
+          <circle cx="49"  cy="80"  r="0.52" fill={accent} fillOpacity="0.075" />
+          <circle cx="68"  cy="67"  r="0.34" fill={accent} fillOpacity="0.065" />
+          <circle cx="88"  cy="85"  r="0.48" fill={accent} fillOpacity="0.06" />
+          <circle cx="103" cy="74"  r="0.38" fill={accent} fillOpacity="0.075" />
+          <circle cx="17"  cy="95"  r="0.48" fill={accent} fillOpacity="0.065" />
+          <circle cx="39"  cy="103" r="0.34" fill={accent} fillOpacity="0.06" />
+          <circle cx="62"  cy="110" r="0.52" fill={accent} fillOpacity="0.075" />
+          <circle cx="85"  cy="98"  r="0.38" fill={accent} fillOpacity="0.065" />
+          <circle cx="108" cy="115" r="0.48" fill={accent} fillOpacity="0.06" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill={`url(#${safeId})`} />
+    </svg>
+  );
 }
 
 // ── Reusable leaf silhouette watermark ────────────────────────────────────────
@@ -115,8 +166,8 @@ function SnapshotCard({ icon: Icon, label, value, accent = "#4A7C9C", sub }) {
         boxShadow: `0 0 0 1px ${accent}18, 0 4px 20px -4px ${accent}30`,
       }}
     >
-      {/* Subtle dot-pattern texture */}
-      <CardPattern type="dots" accent={accent} />
+      {/* Subtle grain texture overlay */}
+      <ArtifactTexture type="grain" accent={accent} uid={`snap-${accent.replace("#","")}`} />
 
       {/* Top-left accent glow blob */}
       <div
@@ -167,10 +218,9 @@ function SnapshotCard({ icon: Icon, label, value, accent = "#4A7C9C", sub }) {
 }
 
 // ── Highlight card (story card grid item) ─────────────────────────────────────
-const PATTERN_TYPES = ["dots", "diagonal", "grid", "dots", "diagonal", "grid"];
-
 function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onShare, onStory, cardRef, patternIndex = 0, artifactImage, silhouetteType }) {
-  const patternType = PATTERN_TYPES[patternIndex % PATTERN_TYPES.length];
+  // Derive category-appropriate texture: wood grain for pipe, paper for tobacco, grain for general
+  const textureType = getTextureType(silhouetteType);
 
   return (
     <div
@@ -182,30 +232,57 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         boxShadow: `0 0 0 1px ${accent}22, 0 12px 40px -8px ${accent}50, 0 4px 12px rgba(0,0,0,0.5)`,
       }}
     >
-      {/* Layer 2: Blurred artifact image background */}
+      {/* Layer 2a: Ambient blurred background from actual item photo */}
       {artifactImage && (
-        <>
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${artifactImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "blur(22px) brightness(0.26) saturate(0.6)",
+            opacity: 0.95,
+            transform: "scale(1.12)",
+          }}
+        />
+      )}
+
+      {/* Layer 2b: Hero crop — actual item photo visible on right side of card */}
+      {artifactImage && (
+        <div
+          className="absolute right-0 top-0 bottom-0 pointer-events-none overflow-hidden"
+          style={{ width: "52%" }}
+        >
           <div
-            className="absolute inset-0 pointer-events-none"
+            className="absolute inset-0"
             style={{
               backgroundImage: `url(${artifactImage})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
-              filter: "blur(28px) brightness(0.22) saturate(0.55)",
-              opacity: 0.9,
-              transform: "scale(1.15)",
+              filter: "blur(4px) brightness(0.40) saturate(0.82)",
             }}
           />
+          {/* Fade hero crop's left edge into the base layer */}
           <div
-            className="absolute inset-0 pointer-events-none"
+            className="absolute inset-0"
             style={{
-              background: `linear-gradient(155deg, rgba(14,21,32,0.72) 0%, rgba(14,21,32,0.52) 45%, ${accent}22 100%)`,
+              background: "linear-gradient(to right, rgba(10,17,28,1) 0%, rgba(10,17,28,0.55) 38%, transparent 78%)",
             }}
           />
-        </>
+        </div>
       )}
 
-      {/* Layer 3: Faint silhouette watermark */}
+      {/* Layer 2c: Directional gradient overlay — dark left (text) → transparent right (photo) */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: artifactImage
+            ? `linear-gradient(to right, rgba(14,21,32,0.92) 0%, rgba(14,21,32,0.72) 45%, rgba(14,21,32,0.28) 75%, transparent 100%)`
+            : `linear-gradient(155deg, rgba(14,21,32,0.72) 0%, rgba(14,21,32,0.52) 45%, ${accent}22 100%)`,
+        }}
+      />
+
+      {/* Silhouette watermark — only shown when no hero photo fills the right side */}
       {silhouetteType === "pipe" && (
         <div className="absolute bottom-0 right-0 w-40 h-40 pointer-events-none" style={{ opacity: 0.07 }}>
           <img
@@ -224,10 +301,10 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         />
       )}
 
-      {/* SVG texture pattern */}
-      <CardPattern type={patternType} accent={accent} />
+      {/* Layer 3: Real texture overlay — category-specific */}
+      <ArtifactTexture type={textureType} accent={accent} uid={String(patternIndex)} />
 
-      {/* Ambient corner glow */}
+      {/* Layer 4: Ambient corner glow */}
       <div
         className="absolute bottom-0 right-0 w-40 h-40 rounded-full pointer-events-none"
         style={{
@@ -363,6 +440,7 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
 
 // ── Full-screen Story / Share card modal ──────────────────────────────────────
 function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExport, storyRef, artifactImage, silhouetteType }) {
+  const storyTextureType = getTextureType(silhouetteType);
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -394,30 +472,57 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
           flexDirection: "column",
         }}
       >
-        {/* Layer 2: Blurred artifact background */}
+        {/* Layer 2a: Ambient blurred background from actual item photo */}
         {artifactImage && (
-          <>
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage: `url(${artifactImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              filter: "blur(30px) brightness(0.28) saturate(0.62)",
+              opacity: 0.95,
+              transform: "scale(1.12)",
+            }}
+          />
+        )}
+
+        {/* Layer 2b: Hero crop — item photo enlarged at bottom portion of story card */}
+        {artifactImage && (
+          <div
+            className="absolute left-0 right-0 bottom-0 pointer-events-none overflow-hidden"
+            style={{ height: "55%" }}
+          >
             <div
-              className="absolute inset-0 pointer-events-none"
+              className="absolute inset-0"
               style={{
                 backgroundImage: `url(${artifactImage})`,
                 backgroundSize: "cover",
-                backgroundPosition: "center",
-                filter: "blur(40px) brightness(0.18) saturate(0.45)",
-                opacity: 0.95,
-                transform: "scale(1.15)",
+                backgroundPosition: "center 60%",
+                filter: "blur(6px) brightness(0.38) saturate(0.80)",
               }}
             />
+            {/* Fade hero crop's top edge */}
             <div
-              className="absolute inset-0 pointer-events-none"
+              className="absolute inset-0"
               style={{
-                background: `linear-gradient(175deg, rgba(14,21,32,0.78) 0%, rgba(19,29,42,0.58) 30%, ${accent}28 70%, ${accent}42 100%)`,
+                background: "linear-gradient(to bottom, rgba(10,17,28,1) 0%, rgba(10,17,28,0.55) 35%, transparent 75%)",
               }}
             />
-          </>
+          </div>
         )}
 
-        {/* Layer 3: Faint silhouette watermark */}
+        {/* Layer 2c: Gradient overlay — dark top/edges, reveals hero in lower middle */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: artifactImage
+              ? `linear-gradient(175deg, rgba(14,21,32,0.90) 0%, rgba(14,21,32,0.65) 30%, rgba(14,21,32,0.32) 60%, ${accent}30 85%, ${accent}44 100%)`
+              : `linear-gradient(175deg, rgba(14,21,32,0.78) 0%, rgba(19,29,42,0.58) 30%, ${accent}28 70%, ${accent}42 100%)`,
+          }}
+        />
+
+        {/* Silhouette watermark */}
         {silhouetteType === "pipe" && (
           <div
             className="absolute pointer-events-none"
@@ -439,15 +544,8 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
           />
         )}
 
-        {/* SVG dot texture */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="story-dots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="1.2" fill={accent} fillOpacity="0.10" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#story-dots)" />
-        </svg>
+        {/* Layer 3: Real texture overlay — category-specific */}
+        <ArtifactTexture type={storyTextureType} accent={accent} uid="story" />
 
         {/* Large ambient glow blobs */}
         <div
