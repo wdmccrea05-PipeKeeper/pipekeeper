@@ -120,9 +120,9 @@ export default function Home() {
   const aiUpdateCount = (activePairings ? 1 : 0) + (activeOpt ? 1 : 0);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* 1. HERO */}
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-2 pt-2">
         <h1 className="text-3xl font-bold font-serif text-[#E0D8C8]">
           {t("home.title")}
         </h1>
@@ -182,7 +182,7 @@ export default function Home() {
         </PKCard>
       </div>
 
-      {/* 4. QUICK ACTIONS */}
+      {/* 4. QUICK ACTIONS — primary interactive layer */}
       <QuickActions
         onLogSession={handleLogSession}
         onIdentify={handleIdentify}
@@ -275,10 +275,10 @@ export default function Home() {
 
       {/* 5b. FAVORITES SECTION */}
       {favoritePipes.length + favoriteBlends.length > 0 && (
-        <PKCard className="p-6">
+        <PKCard className="p-5">
           <div className="flex items-center gap-2 mb-4">
             <Heart className="w-5 h-5 text-red-500 fill-red-500" />
-            <h2 className="text-xl font-semibold">{t("home.favorites")}</h2>
+            <h2 className="text-base font-semibold">{t("home.favorites")}</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             {favoritePipes.map((item) => (
@@ -311,18 +311,20 @@ export default function Home() {
         </PKCard>
       )}
 
-      {/* 6. COLLECTION INTELLIGENCE */}
-      <CollectionIntelligencePanel pipes={pipes} blends={blends} user={user} />
+      {/* 6. COLLECTION INTELLIGENCE — premium brain layer */}
+      <div className="rounded-2xl border border-amber-500/20 bg-gradient-to-b from-[#1a2d3f] to-[#152236] overflow-hidden">
+        <CollectionIntelligencePanel pipes={pipes} blends={blends} user={user} />
+      </div>
 
-      {/* 7. COLLECTION INSIGHTS — compact summary card */}
+      {/* 7. COLLECTION INSIGHTS — compact secondary summary card */}
       {!isAppleBuild && (pipes.length > 0 || blends.length > 0) && (
-        <PKCard className="p-4 flex items-center gap-4">
-          <BarChart3 className="w-8 h-8 text-[#6aabc0] shrink-0" aria-hidden="true" />
+        <PKCard className="p-3 flex items-center gap-3 opacity-90">
+          <BarChart3 className="w-7 h-7 text-[#6aabc0]/70 shrink-0" aria-hidden="true" />
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-[#E0D8C8] text-sm">
+            <div className="font-medium text-[#E0D8C8]/80 text-sm">
               {t("insights.title")}
             </div>
-            <div className="text-xs text-[#E0D8C8]/60 mt-0.5 space-y-0.5">
+            <div className="text-xs text-[#E0D8C8]/50 mt-0.5 space-y-0.5">
               {smokingLogs.length > 0 && (
                 <div>{smokingLogs.length} {t("home.insightsSessions")}</div>
               )}
@@ -333,9 +335,9 @@ export default function Home() {
           </div>
           <a
             href={createPageUrl("Curator?tab=log")}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#4A7C9C]/15 hover:bg-[#4A7C9C]/25 border border-[#4A7C9C]/30 text-[#E0D8C8] text-xs font-medium transition-colors shrink-0 whitespace-nowrap min-h-[36px]"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#4A7C9C]/10 hover:bg-[#4A7C9C]/20 border border-[#4A7C9C]/25 text-[#E0D8C8]/70 text-xs font-medium transition-colors shrink-0 whitespace-nowrap min-h-[34px]"
           >
-            {t("home.openInsights")} <ArrowRight className="w-3.5 h-3.5" />
+            {t("home.openInsights")} <ArrowRight className="w-3 h-3" />
           </a>
         </PKCard>
       )}

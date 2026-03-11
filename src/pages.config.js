@@ -54,6 +54,7 @@ import AIUpdates from './pages/AIUpdates';
 import AgeGate from './pages/AgeGate';
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import Community from './pages/Community';
+import Curator from './pages/Curator';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
@@ -95,6 +96,7 @@ export const PAGES = {
     "AgeGate": AgeGate,
     "BulkLogoUpload": BulkLogoUpload,
     "Community": Community,
+    "Curator": Curator,
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
