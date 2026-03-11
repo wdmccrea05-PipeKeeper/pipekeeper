@@ -59,6 +59,7 @@ import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
 import Home from './pages/Home';
+import Insights from './pages/Insights';
 import HowTo from './pages/HowTo';
 import Import from './pages/Import';
 import Invite from './pages/Invite';
@@ -103,6 +104,7 @@ export const PAGES = {
     "Home": Home,
     "HowTo": HowTo,
     "Import": Import,
+    "Insights": Insights,
     "Invite": Invite,
     "InviteFull": InviteFull,
     "PipeDetail": PipeDetail,

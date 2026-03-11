@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, TrendingUp, Lightbulb, RefreshCw } from "lucide-react";
-import QuickPipeIdentifier from "@/components/ai/QuickPipeIdentifier";
+import { TrendingUp, Lightbulb, RefreshCw } from "lucide-react";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import AIUpdatesPanel from "@/components/ai/AIUpdatesPanel";
 import { isAppleBuild } from "@/components/utils/appVariant";
@@ -13,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { getActiveOptimizeScopes, getActiveIdentifyTypes } from "@/platform/collectionCuratorAI.js";
+import { getActiveOptimizeScopes } from "@/platform/collectionCuratorAI.js";
 import { getAiEligibilityStats } from "@/platform/aiEligibility.js";
 
 const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
@@ -26,7 +25,7 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
   const entitlements = useEntitlements();
   const canOptimize = entitlements.canUse("COLLECTION_OPTIMIZATION");
   const [optimizeScope, setOptimizeScope] = useState(DEFAULT_OPTIMIZE_SCOPE);
-  const [activeTab, setActiveTab] = useState(externalActiveTab ?? "identifier");
+  const [activeTab, setActiveTab] = useState(externalActiveTab ?? "optimizer");
 
   useEffect(() => {
     if (externalActiveTab !== undefined) setActiveTab(externalActiveTab);
@@ -39,7 +38,6 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
 
   if (isAppleBuild) return null;
 
-  const activeIdentifyTypes = getActiveIdentifyTypes();
   const pipeStats = getAiEligibilityStats(pipes || []);
   const blendStats = getAiEligibilityStats(blends || []);
   const totalExcluded = pipeStats.excluded + blendStats.excluded;
@@ -72,11 +70,7 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
       </CardHeader>
       <CardContent className="pt-6 space-y-6">
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="identifier" aria-label={t("tobacconist.identify")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
-              <Camera className="w-5 h-5 flex-shrink-0" />
-              <span className="hidden sm:inline truncate">{t("tobacconist.identify")}</span>
-            </TabsTrigger>
+          <TabsList className="grid grid-cols-3 w-full">
             <TabsTrigger value="optimizer" aria-label={t("tobacconist.optimize")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
               <TrendingUp className="w-5 h-5 flex-shrink-0" />
               <span className="hidden sm:inline truncate">{t("tobacconist.optimize")}</span>
@@ -90,39 +84,6 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
               <span className="hidden sm:inline truncate">{t("tobacconist.aiUpdates")}</span>
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="identifier" className="mt-6">
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-base font-semibold text-[#E0D8C8]">{t("collectionCurator.identificationTitle")}</h3>
-                <InfoTooltip text={t("collectionCurator.identificationTooltip")} />
-              </div>
-              <p className="text-sm text-[#E0D8C8]/60">{t("collectionCurator.identificationSubtitle")}</p>
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {activeIdentifyTypes.map((type) => (
-                  <Badge key={type.id} variant="secondary" className="text-xs">
-                    {type.label}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            {pipes.length === 0 && blends.length === 0 ? (
-              <div className="text-center py-8">
-                <Camera className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                <p className="text-[#E0D8C8]/60 mb-4">{t("tobacconist.identificationEmpty")}</p>
-                <div className="flex gap-3 justify-center">
-                  <a href={createPageUrl('Pipes')}>
-                    <Button size="sm">{t("tobacconist.addFirstPipe")}</Button>
-                  </a>
-                  <a href={createPageUrl('Tobacco')}>
-                    <Button size="sm" variant="outline">{t("tobacconist.addFirstBlend")}</Button>
-                  </a>
-                </div>
-              </div>
-            ) : (
-              <QuickPipeIdentifier pipes={pipes} blends={blends} />
-            )}
-          </TabsContent>
 
           <TabsContent value="optimizer" className="mt-6">
             <div className="mb-4">

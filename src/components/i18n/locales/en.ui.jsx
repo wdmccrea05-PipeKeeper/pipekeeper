@@ -573,7 +573,7 @@ const enUI = {
     titleInventory: "Collection Inventory",
     subtitle: "Explore your collection data",
     tooltipSummary: "Overview of your pipe and tobacco collection activity.",
-    log: "Log",
+    log: "Usage",
     pairingGrid: "Pairings",
     rotation: "Rotation",
     stats: "Stats",

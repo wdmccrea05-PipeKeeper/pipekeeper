@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { PKCard } from "@/components/ui/pk-surface";
@@ -9,6 +9,8 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCellaredOzFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
 import CollectionIntelligencePanel from "@/components/home/CollectionIntelligencePanel";
 import QuickActions from "@/components/home/QuickActions";
+import LogSessionModal from "@/components/home/LogSessionModal";
+import IdentifyModal from "@/components/home/IdentifyModal";
 import { Leaf, Heart, Sparkles, ArrowRight, Crown, BarChart3 } from "lucide-react";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { isAppleBuild } from "@/components/utils/appVariant";
@@ -18,6 +20,9 @@ const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/pu
 export default function Home() {
   const { t } = useTranslation();
   const { user, hasPaid, planLabel } = useCurrentUser();
+
+  const [showLogSession, setShowLogSession] = useState(false);
+  const [showIdentify, setShowIdentify] = useState(false);
 
   const { data: pipes = [] } = useQuery({
     queryKey: ["pipes", user?.email],
@@ -93,11 +98,11 @@ export default function Home() {
 
   const handleLogSession = () => {
     if (isAppleBuild) return;
-    window.location.href = createPageUrl("Curator?tab=log");
+    setShowLogSession(true);
   };
 
   const handleIdentify = () => {
-    window.location.href = createPageUrl("Curator?tab=identifier");
+    setShowIdentify(true);
   };
 
   const handleOptimize = () => {
@@ -334,7 +339,7 @@ export default function Home() {
             </div>
           </div>
           <a
-            href={createPageUrl("Curator?tab=log")}
+            href={createPageUrl("Insights")}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#4A7C9C]/10 hover:bg-[#4A7C9C]/20 border border-[#4A7C9C]/25 text-[#E0D8C8]/70 text-xs font-medium transition-colors shrink-0 whitespace-nowrap min-h-[34px]"
           >
             {t("home.openInsights")} <ArrowRight className="w-3 h-3" />
@@ -427,6 +432,21 @@ export default function Home() {
           <ArrowRight className="w-5 h-5 opacity-50 shrink-0" />
         </PKCard>
       </a>
+
+      {/* QUICK MODALS */}
+      <LogSessionModal
+        isOpen={showLogSession}
+        onClose={() => setShowLogSession(false)}
+        pipes={pipes}
+        blends={blends}
+        user={user}
+      />
+      <IdentifyModal
+        isOpen={showIdentify}
+        onClose={() => setShowIdentify(false)}
+        pipes={pipes}
+        blends={blends}
+      />
     </div>
   );
 }
