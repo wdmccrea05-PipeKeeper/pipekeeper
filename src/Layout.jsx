@@ -53,21 +53,39 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false, 
       to={createPageUrl(item.page)}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 flex-shrink-0 whitespace-nowrap",
-        isNav ? "px-1.5 sm:px-2 py-1.5 sm:py-2 text-xs" : "px-2 py-2 text-xs",
-        isActive
-          ? "bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8] shadow-md"
-          : isMobile
-          ? "text-[#1a2c42] hover:bg-[#A35C5C]/10"
-          : "text-[#E0D8C8]/70 hover:bg-[#A35C5C]/30 hover:text-[#E0D8C8]"
+        "flex items-center gap-1 font-medium transition-all duration-200 flex-shrink-0 whitespace-nowrap",
+        isNav ? "px-2 sm:px-3 py-2 text-xs" : "px-3 py-2.5 text-sm",
+        isMobile && "text-[#1a2c42]"
       )}
-      style={{ WebkitTapHighlightColor: "transparent" }}
+      style={{
+        WebkitTapHighlightColor: "transparent",
+        borderRadius: "0.375rem",
+        ...(isActive ? {
+          background: "linear-gradient(135deg, rgba(100, 70, 45, 0.7), rgba(80, 55, 35, 0.8))",
+          border: "1px solid rgba(120, 90, 65, 0.5)",
+          color: "#F5F1E7",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.15)",
+        } : isMobile ? {
+          color: "#1a2c42"
+        } : {
+          color: "rgba(224, 216, 200, 0.7)",
+        })
+      }}
       aria-current={isActive ? "page" : undefined}
       role="link"
       title={item.name}
     >
       {item.isIconComponent ? (
-        <item.icon className="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0" />
+        <item.icon 
+          className="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0" 
+          style={{
+            color: isActive 
+              ? "rgba(180, 140, 75, 1)" 
+              : isMobile 
+              ? "#1a2c42"
+              : "rgba(180, 140, 75, 0.7)"
+          }}
+        />
       ) : (
         <img
           src={item.icon}
@@ -77,15 +95,15 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false, 
             filter: isMobile
               ? "brightness(0)"
               : isActive
-              ? "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(1)"
-              : "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.7)",
+              ? "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.95)"
+              : "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.85) opacity(0.7)",
           }}
         />
       )}
 
       <span className={cn("truncate hidden sm:inline text-xs sm:text-sm", isMobile ? "inline" : "")}>{item.name}</span>
 
-      {item.isPremium && !hasPaidAccess && <Crown className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-amber-500 flex-shrink-0" />}
+      {item.isPremium && !hasPaidAccess && <Crown className="w-2.5 sm:w-3 h-2.5 sm:h-3 flex-shrink-0" style={{ color: "#D4AF37" }} />}
     </Link>
   );
 }
