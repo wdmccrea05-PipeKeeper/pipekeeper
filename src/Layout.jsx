@@ -574,8 +574,20 @@ export default function Layout({ children, currentPageName }) {
         <DocumentTitle title={t("layout.appTitle")} />
         <Toaster position="top-center" />
         <MeasurementProvider>
-        <div className="dark min-h-screen flex flex-col bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320]" style={{ colorScheme: 'dark' }}>
-          <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg overflow-x-hidden" style={{ paddingTop: 'var(--safe-area-top)' }}>
+        <div className="dark min-h-screen flex flex-col" style={{ 
+          colorScheme: 'dark',
+          background: `
+            radial-gradient(ellipse at 20% 30%, rgba(60, 40, 25, 0.15) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 70%, rgba(40, 25, 15, 0.15) 0%, transparent 50%),
+            linear-gradient(to bottom, rgb(var(--pk-bg-primary)), rgb(var(--pk-bg-secondary)))
+          `,
+          backgroundAttachment: 'fixed'
+        }}>
+          <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b overflow-x-hidden shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_-1px_0_rgba(180,140,75,0.1)]" style={{ 
+            paddingTop: 'var(--safe-area-top)',
+            background: 'linear-gradient(to bottom, rgba(35, 25, 18, 0.95), rgba(30, 20, 15, 0.98))',
+            borderBottomColor: 'rgba(120, 90, 65, 0.3)'
+          }}>
             <div className="w-full">
               <div className="flex items-center justify-between h-16 gap-2 px-3 lg:px-6">
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -628,7 +640,11 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </nav>
 
-          <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+          <nav className="md:hidden fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_-1px_0_rgba(180,140,75,0.1)]" style={{ 
+            paddingTop: 'env(safe-area-inset-top, 0px)',
+            background: 'linear-gradient(to bottom, rgba(35, 25, 18, 0.95), rgba(30, 20, 15, 0.98))',
+            borderBottomColor: 'rgba(120, 90, 65, 0.3)'
+          }}>
             <div className="flex items-center justify-between h-16 px-4">
               <div className="flex items-center gap-2">
                 <BackButton currentPageName={currentPageName} />
@@ -712,7 +728,10 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </main>
 
-          <footer className="bg-[#1A2B3A]/95 border-t border-[#A35C5C]/50 mt-auto">
+          <footer className="border-t mt-auto shadow-[0_-2px_8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(180,140,75,0.08)]" style={{
+            background: 'linear-gradient(to top, rgba(25, 18, 12, 0.98), rgba(30, 20, 15, 0.95))',
+            borderTopColor: 'rgba(120, 90, 65, 0.25)'
+          }}>
             <div className="max-w-7xl mx-auto px-6 py-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
