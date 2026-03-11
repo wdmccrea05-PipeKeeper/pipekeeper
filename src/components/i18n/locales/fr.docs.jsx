@@ -72,7 +72,7 @@ const docs = {
     ],
     identifyPipeQ: "Comment utiliser l'IA pour identifier une pipe ?",
     identifyPipeSteps: [
-      "Accédez à la page Tobacconist IA (ou onglet Expert Tobacconist)",
+      "Accédez à la page Curator (Collection Curator)",
       "Appuyez sur l'onglet Identification",
       "Téléchargez une photo de votre pipe",
       "Appuyez sur Analyser pour obtenir les résultats d'identification IA"
