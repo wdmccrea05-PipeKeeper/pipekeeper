@@ -14,6 +14,7 @@ import IdentifyModal from "@/components/home/IdentifyModal";
 import { Leaf, Heart, Sparkles, ArrowRight, Crown, BarChart3 } from "lucide-react";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { isAppleBuild } from "@/components/utils/appVariant";
+import { PIPE_SILHOUETTE_URL } from "@/components/utils/collectionConstants";
 
 const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
@@ -121,6 +122,10 @@ export default function Home() {
   const favoritePipes = pipes.filter((p) => p?.is_favorite);
   const favoriteBlends = blends.filter((b) => b?.is_favorite);
 
+  // Featured artifacts for module card backgrounds
+  const featuredPipe = pipes.find((p) => p?.photos?.length > 0);
+  const featuredBlend = blends.find((b) => b?.logo || b?.photo);
+
   // Summary stats for compact insights card
   const aiUpdateCount = (activePairings ? 1 : 0) + (activeOpt ? 1 : 0);
 
@@ -154,34 +159,50 @@ export default function Home() {
 
       {/* 3. PORTFOLIO SUMMARY */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <PKCard className="p-4 flex flex-col justify-between min-h-[80px]">
-          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug">
+        <PKCard className="p-4 flex flex-col justify-between min-h-[80px] relative overflow-hidden">
+          <div
+            className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, #C8794128 0%, transparent 70%)", transform: "translate(30%, -30%)" }}
+          />
+          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug relative">
             {t("home.totalValue")}
           </div>
-          <div className="text-2xl font-bold text-[#E0D8C8] mt-2">
+          <div className="text-2xl font-bold text-[#E0D8C8] mt-2 relative">
             {hideHomeValues ? "••••" : formatCurrency(Math.round(totalCollectionValue))}
           </div>
         </PKCard>
 
-        <PKCard className="p-4 flex flex-col justify-between min-h-[80px]">
-          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug">
+        <PKCard className="p-4 flex flex-col justify-between min-h-[80px] relative overflow-hidden">
+          <div
+            className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, #4A7C9C28 0%, transparent 70%)", transform: "translate(30%, -30%)" }}
+          />
+          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug relative">
             {t("home.pipesInCollection")}
           </div>
-          <div className="text-2xl font-bold text-[#E0D8C8] mt-2">{pipes.length}</div>
+          <div className="text-2xl font-bold text-[#E0D8C8] mt-2 relative">{pipes.length}</div>
         </PKCard>
 
-        <PKCard className="p-4 flex flex-col justify-between min-h-[80px]">
-          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug">
+        <PKCard className="p-4 flex flex-col justify-between min-h-[80px] relative overflow-hidden">
+          <div
+            className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, #4A7C5928 0%, transparent 70%)", transform: "translate(30%, -30%)" }}
+          />
+          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug relative">
             {t("home.tobaccoBlends")}
           </div>
-          <div className="text-2xl font-bold text-[#E0D8C8] mt-2">{blends.length}</div>
+          <div className="text-2xl font-bold text-[#E0D8C8] mt-2 relative">{blends.length}</div>
         </PKCard>
 
-        <PKCard className="p-4 flex flex-col justify-between min-h-[80px]">
-          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug">
+        <PKCard className="p-4 flex flex-col justify-between min-h-[80px] relative overflow-hidden">
+          <div
+            className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, #22D3EE22 0%, transparent 70%)", transform: "translate(30%, -30%)" }}
+          />
+          <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-medium leading-snug relative">
             {t("home.cellared")}
           </div>
-          <div className="text-2xl font-bold text-[#E0D8C8] mt-2">
+          <div className="text-2xl font-bold text-[#E0D8C8] mt-2 relative">
             {formatWeight(totalCellaredOz, "oz")}
           </div>
         </PKCard>
@@ -197,8 +218,41 @@ export default function Home() {
 
       {/* 5. MODULE OVERVIEW CARDS */}
       <div className="flex flex-col gap-4">
-        <PKCard className="p-4 sm:p-5 border-l-4 border-[#C87941]">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <PKCard className="p-4 sm:p-5 border-l-4 border-[#C87941] relative overflow-hidden">
+          {/* Artifact background: pipe photo if available, otherwise pipe silhouette */}
+          {featuredPipe?.photos?.[0] ? (
+            <>
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  backgroundImage: `url(${featuredPipe.photos[0]})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  filter: "blur(20px) brightness(0.15) saturate(0.5)",
+                  opacity: 0.8,
+                  transform: "scale(1.1)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: "linear-gradient(90deg, rgba(34,52,71,0.92) 0%, rgba(34,52,71,0.75) 60%, rgba(200,121,65,0.15) 100%)" }}
+              />
+            </>
+          ) : (
+            <div
+              className="absolute right-0 top-0 bottom-0 flex items-center pointer-events-none"
+              style={{ opacity: 0.06 }}
+            >
+              <img
+                src={PIPE_SILHOUETTE_URL}
+                alt=""
+                className="w-32 h-32 object-contain"
+                style={{ filter: "brightness(0) invert(1)" }}
+                loading="lazy"
+              />
+            </div>
+          )}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 relative">
             <div className="flex items-center gap-3 sm:w-48 sm:shrink-0">
               <div className="w-9 h-9 rounded-lg bg-[#C87941]/20 flex items-center justify-center shrink-0">
                 <img
@@ -238,8 +292,44 @@ export default function Home() {
           </div>
         </PKCard>
 
-        <PKCard className="p-4 sm:p-5 border-l-4 border-[#4A7C59]">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <PKCard className="p-4 sm:p-5 border-l-4 border-[#4A7C59] relative overflow-hidden">
+          {/* Artifact background: blend logo if available, otherwise leaf silhouette */}
+          {featuredBlend?.logo || featuredBlend?.photo ? (
+            <>
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  backgroundImage: `url(${featuredBlend.logo || featuredBlend.photo})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  filter: "blur(20px) brightness(0.15) saturate(0.5)",
+                  opacity: 0.8,
+                  transform: "scale(1.1)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: "linear-gradient(90deg, rgba(34,52,71,0.92) 0%, rgba(34,52,71,0.75) 60%, rgba(74,124,89,0.15) 100%)" }}
+              />
+            </>
+          ) : (
+            <svg
+              className="absolute right-0 top-1/2 -translate-y-1/2 w-32 h-32 pointer-events-none"
+              viewBox="0 0 100 100"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ opacity: 0.06 }}
+            >
+              <path d="M50 5 C20 5, 5 30, 5 55 C5 75, 20 92, 50 95 C80 92, 95 75, 95 55 C95 30, 80 5, 50 5Z" fill="white" />
+              <line x1="50" y1="95" x2="50" y2="5" stroke="white" strokeWidth="2" />
+              <line x1="50" y1="40" x2="20" y2="25" stroke="white" strokeWidth="1.5" />
+              <line x1="50" y1="55" x2="15" y2="50" stroke="white" strokeWidth="1.5" />
+              <line x1="50" y1="70" x2="20" y2="65" stroke="white" strokeWidth="1.5" />
+              <line x1="50" y1="40" x2="80" y2="25" stroke="white" strokeWidth="1.5" />
+              <line x1="50" y1="55" x2="85" y2="50" stroke="white" strokeWidth="1.5" />
+              <line x1="50" y1="70" x2="80" y2="65" stroke="white" strokeWidth="1.5" />
+            </svg>
+          )}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 relative">
             <div className="flex items-center gap-3 sm:w-48 sm:shrink-0">
               <div className="w-9 h-9 rounded-lg bg-[#4A7C59]/20 flex items-center justify-center shrink-0">
                 <Leaf className="w-5 h-5 text-[#6aab80]" />

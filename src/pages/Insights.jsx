@@ -27,6 +27,7 @@ import { getBowlsUsed } from "@/components/utils/schemaCompatibility";
 import { Badge } from "@/components/ui/badge";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
+import { PIPE_SILHOUETTE_URL } from "@/components/utils/collectionConstants";
 
 const DEFAULT_INSIGHTS_TAB = "log";
 
@@ -77,6 +78,30 @@ function CardPattern({ type = "dots", accent }) {
     );
   }
   return null;
+}
+
+// ── Reusable leaf silhouette watermark ────────────────────────────────────────
+function LeafSilhouette({ className, style }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 100 100"
+      xmlns="http://www.w3.org/2000/svg"
+      style={style}
+    >
+      <path
+        d="M50 5 C20 5, 5 30, 5 55 C5 75, 20 92, 50 95 C80 92, 95 75, 95 55 C95 30, 80 5, 50 5Z"
+        fill="white"
+      />
+      <line x1="50" y1="95" x2="50" y2="5" stroke="white" strokeWidth="2" />
+      <line x1="50" y1="40" x2="20" y2="25" stroke="white" strokeWidth="1.5" />
+      <line x1="50" y1="55" x2="15" y2="50" stroke="white" strokeWidth="1.5" />
+      <line x1="50" y1="70" x2="20" y2="65" stroke="white" strokeWidth="1.5" />
+      <line x1="50" y1="40" x2="80" y2="25" stroke="white" strokeWidth="1.5" />
+      <line x1="50" y1="55" x2="85" y2="50" stroke="white" strokeWidth="1.5" />
+      <line x1="50" y1="70" x2="80" y2="65" stroke="white" strokeWidth="1.5" />
+    </svg>
+  );
 }
 
 // ── Snapshot metric cards (top row) ───────────────────────────────────────────
@@ -144,7 +169,7 @@ function SnapshotCard({ icon: Icon, label, value, accent = "#4A7C9C", sub }) {
 // ── Highlight card (story card grid item) ─────────────────────────────────────
 const PATTERN_TYPES = ["dots", "diagonal", "grid", "dots", "diagonal", "grid"];
 
-function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onShare, onStory, cardRef, patternIndex = 0 }) {
+function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onShare, onStory, cardRef, patternIndex = 0, artifactImage, silhouetteType }) {
   const patternType = PATTERN_TYPES[patternIndex % PATTERN_TYPES.length];
 
   return (
@@ -157,6 +182,48 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         boxShadow: `0 0 0 1px ${accent}22, 0 12px 40px -8px ${accent}50, 0 4px 12px rgba(0,0,0,0.5)`,
       }}
     >
+      {/* Layer 2: Blurred artifact image background */}
+      {artifactImage && (
+        <>
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage: `url(${artifactImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              filter: "blur(28px) brightness(0.22) saturate(0.55)",
+              opacity: 0.9,
+              transform: "scale(1.15)",
+            }}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `linear-gradient(155deg, rgba(14,21,32,0.72) 0%, rgba(14,21,32,0.52) 45%, ${accent}22 100%)`,
+            }}
+          />
+        </>
+      )}
+
+      {/* Layer 3: Faint silhouette watermark */}
+      {silhouetteType === "pipe" && (
+        <div className="absolute bottom-0 right-0 w-40 h-40 pointer-events-none" style={{ opacity: 0.07 }}>
+          <img
+            src={PIPE_SILHOUETTE_URL}
+            alt=""
+            className="w-full h-full object-contain"
+            style={{ filter: "brightness(0) invert(1)" }}
+            loading="lazy"
+          />
+        </div>
+      )}
+      {silhouetteType === "leaf" && (
+        <LeafSilhouette
+          className="absolute bottom-1 right-1 w-36 h-36 pointer-events-none"
+          style={{ opacity: 0.07 }}
+        />
+      )}
+
       {/* SVG texture pattern */}
       <CardPattern type={patternType} accent={accent} />
 
@@ -295,7 +362,7 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
 }
 
 // ── Full-screen Story / Share card modal ──────────────────────────────────────
-function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExport, storyRef }) {
+function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExport, storyRef, artifactImage, silhouetteType }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -327,6 +394,51 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
           flexDirection: "column",
         }}
       >
+        {/* Layer 2: Blurred artifact background */}
+        {artifactImage && (
+          <>
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: `url(${artifactImage})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                filter: "blur(40px) brightness(0.18) saturate(0.45)",
+                opacity: 0.95,
+                transform: "scale(1.15)",
+              }}
+            />
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `linear-gradient(175deg, rgba(14,21,32,0.78) 0%, rgba(19,29,42,0.58) 30%, ${accent}28 70%, ${accent}42 100%)`,
+              }}
+            />
+          </>
+        )}
+
+        {/* Layer 3: Faint silhouette watermark */}
+        {silhouetteType === "pipe" && (
+          <div
+            className="absolute pointer-events-none"
+            style={{ bottom: "70px", right: "-20px", width: "200px", height: "200px", opacity: 0.08 }}
+          >
+            <img
+              src={PIPE_SILHOUETTE_URL}
+              alt=""
+              className="w-full h-full object-contain"
+              style={{ filter: "brightness(0) invert(1)" }}
+              loading="lazy"
+            />
+          </div>
+        )}
+        {silhouetteType === "leaf" && (
+          <LeafSilhouette
+            className="absolute pointer-events-none"
+            style={{ bottom: "70px", right: "-10px", width: "180px", height: "180px", opacity: 0.08 }}
+          />
+        )}
+
         {/* SVG dot texture */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -841,6 +953,8 @@ export default function Insights() {
                 accent="#C87941"
                 icon={Star}
                 patternIndex={0}
+                artifactImage={mostUsedPipe.pipe.photos?.[0]}
+                silhouetteType="pipe"
                 cardRef={(el) => (highlightRefs.current["mostPipe"] = el)}
                 onShare={() => handleShareCard("mostPipe")}
                 onStory={() => setActiveStory({
@@ -849,6 +963,8 @@ export default function Insights() {
                   sub: `${mostUsedPipe.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`,
                   accent: "#C87941",
                   icon: Star,
+                  artifactImage: mostUsedPipe.pipe.photos?.[0],
+                  silhouetteType: "pipe",
                 })}
               />
             )}
@@ -860,6 +976,8 @@ export default function Insights() {
                 accent="#4A9C6A"
                 icon={Leaf}
                 patternIndex={1}
+                artifactImage={mostUsedBlend.blend.logo || mostUsedBlend.blend.photo}
+                silhouetteType="leaf"
                 cardRef={(el) => (highlightRefs.current["mostBlend"] = el)}
                 onShare={() => handleShareCard("mostBlend")}
                 onStory={() => setActiveStory({
@@ -868,6 +986,8 @@ export default function Insights() {
                   sub: `${mostUsedBlend.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`,
                   accent: "#4A9C6A",
                   icon: Leaf,
+                  artifactImage: mostUsedBlend.blend.logo || mostUsedBlend.blend.photo,
+                  silhouetteType: "leaf",
                 })}
               />
             )}
@@ -879,6 +999,7 @@ export default function Insights() {
                 accent="#8B5CF6"
                 icon={Zap}
                 patternIndex={2}
+                silhouetteType="pipe"
                 cardRef={(el) => (highlightRefs.current["streak"] = el)}
                 onShare={() => handleShareCard("streak")}
                 onStory={() => setActiveStory({
@@ -887,6 +1008,7 @@ export default function Insights() {
                   sub: t("insights.highlightConsecutive", { defaultValue: "consecutive smoking days" }),
                   accent: "#8B5CF6",
                   icon: Zap,
+                  silhouetteType: "pipe",
                 })}
               />
             )}
@@ -898,6 +1020,8 @@ export default function Insights() {
                 accent="#C0392B"
                 icon={Award}
                 patternIndex={3}
+                artifactImage={mostValuablePipe.photos?.[0]}
+                silhouetteType="pipe"
                 cardRef={(el) => (highlightRefs.current["valuePipe"] = el)}
                 onShare={() => handleShareCard("valuePipe")}
                 onStory={() => setActiveStory({
@@ -906,6 +1030,8 @@ export default function Insights() {
                   sub: formatCurrency(mostValuablePipe.estimated_value),
                   accent: "#C0392B",
                   icon: Award,
+                  artifactImage: mostValuablePipe.photos?.[0],
+                  silhouetteType: "pipe",
                 })}
               />
             )}
@@ -917,6 +1043,7 @@ export default function Insights() {
                 accent="#22D3EE"
                 icon={Flame}
                 patternIndex={4}
+                silhouetteType="pipe"
                 cardRef={(el) => (highlightRefs.current["totalSessions"] = el)}
                 onShare={() => handleShareCard("totalSessions")}
                 onStory={() => setActiveStory({
@@ -925,6 +1052,7 @@ export default function Insights() {
                   sub: `${sessionsThisWeek} ${t("insights.snapshotThisWeek", { defaultValue: "this week" })}`,
                   accent: "#22D3EE",
                   icon: Flame,
+                  silhouetteType: "pipe",
                 })}
               />
             )}
@@ -936,6 +1064,7 @@ export default function Insights() {
                 accent="#10B981"
                 icon={TrendingUp}
                 patternIndex={5}
+                silhouetteType="leaf"
                 cardRef={(el) => (highlightRefs.current["collectionValue"] = el)}
                 onShare={() => handleShareCard("collectionValue")}
                 onStory={() => setActiveStory({
@@ -944,6 +1073,7 @@ export default function Insights() {
                   sub: `${pipes.length} ${t("home.pipesInCollection")} · ${blends.length} ${t("home.tobaccoBlends")}`,
                   accent: "#10B981",
                   icon: TrendingUp,
+                  silhouetteType: "leaf",
                 })}
               />
             )}
