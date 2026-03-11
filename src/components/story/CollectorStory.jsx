@@ -418,7 +418,7 @@ function StoryCard({
           {/* Category label */}
           <div
             className="text-[11px] uppercase tracking-[0.22em] font-bold"
-            style={{ color: `${accent}cc` }}
+            style={{ color: `rgba(180,140,75,0.9)`, fontFamily: "'Georgia', serif" }}
           >
             {title}
           </div>
