@@ -548,11 +548,11 @@ export default function Home() {
         </div>
 
         <div
-          className="rounded-lg p-4"
+          className="rounded-lg p-5"
           style={{
-            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
-            border: "1px solid rgba(120, 90, 65, 0.3)",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
+            background: "linear-gradient(145deg, rgba(48, 34, 22, 0.72), rgba(36, 25, 17, 0.86))",
+            border: "1px solid rgba(120, 90, 65, 0.28)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180,140,100,0.09), inset 0 -1px 2px rgba(0,0,0,0.2)"
           }}
         >
           <div className="flex items-center justify-between mb-3">
@@ -598,14 +598,14 @@ export default function Home() {
       {/* 11. IMPORT TOOL */}
       <a href={createPageUrl("Import")} className="block">
         <div 
-          className="p-4 flex items-center gap-4 transition-all cursor-pointer rounded-lg"
+          className="p-5 flex items-center gap-4 transition-all cursor-pointer rounded-lg hover:scale-[1.01]"
           style={{
-            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.6), rgba(35, 24, 16, 0.75))",
-            border: "1px solid rgba(120, 90, 65, 0.25)",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
+            background: "linear-gradient(145deg, rgba(52, 37, 24, 0.65), rgba(40, 28, 18, 0.78))",
+            border: "1px solid rgba(120, 90, 65, 0.28)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180,140,100,0.08)"
           }}
         >
-          <Sparkles className="w-8 h-8 shrink-0" style={{ color: "#D4AF37" }} />
+          <Sparkles className="w-6 h-6 shrink-0" style={{ color: "#D4AF37" }} />
           <div className="flex-1">
             <div className="font-semibold" style={{ color: "#F5F1E7" }}>{t("home.bulkImport")}</div>
             <div className="text-sm" style={{ color: "rgba(224, 216, 200, 0.7)" }}>{t("home.importDesc")}</div>
