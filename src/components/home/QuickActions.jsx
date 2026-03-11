@@ -1,5 +1,5 @@
 import React from "react";
-import { BookOpen, Camera, TrendingUp } from "lucide-react";
+import { BookOpen, Camera, TrendingUp, Sparkles } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const CURATOR_ICON =
@@ -11,7 +11,7 @@ function getActions(hasStoryData) {
   if (hasStoryData) {
     actions.push({
       key: "viewStory",
-      Icon: SparkleIcon,
+      Icon: Sparkles,
       accent: "#F59E0B",
       iconColor: "text-[#F59E0B]",
       hoverColor: "hover:bg-[#F59E0B]/20",
