@@ -33,7 +33,7 @@ export const homeTranslations = {
       subscriptionSupport: "Subscription Support",
       userReport: "User Report",
       contentModeration: "Content Moderation",
-      eventsLog": "Events Log"
+      eventsLog: "Events Log"
     },
     search: {
       trigger: "Search...",
@@ -50,7 +50,7 @@ export const homeTranslations = {
       actionAddPipe: "Add New Pipe",
       actionAddBlend: "Add New Blend",
       noPipes: "No pipes found",
-      noTobacco": "No tobacco found",
+      noTobacco: "No tobacco found",
       noResults: "No results found"
     },
     layout: {
