@@ -723,9 +723,21 @@ export default function Home() {
               <a
                 key={p.id}
                 href={createPageUrl(`PipeDetail?id=${encodeURIComponent(p.id)}`)}
-                className="flex items-center gap-3 hover:bg-white/5 rounded-lg p-1.5 -mx-1.5 transition-colors"
+                className="flex items-center gap-3 rounded p-1.5 -mx-1.5 transition-all"
+                style={{
+                  "&:hover": {
+                    background: "rgba(60, 45, 30, 0.2)"
+                  }
+                }}
               >
-                <div className="w-10 h-10 rounded-lg bg-[#1E2F43] overflow-hidden shrink-0 flex items-center justify-center">
+                <div 
+                  className="w-10 h-10 overflow-hidden shrink-0 flex items-center justify-center"
+                  style={{
+                    borderRadius: "0.375rem",
+                    background: "linear-gradient(135deg, rgba(40, 28, 18, 0.8), rgba(35, 24, 16, 0.9))",
+                    border: "1px solid rgba(120, 90, 65, 0.2)"
+                  }}
+                >
                   {p.photos?.[0] ? (
                     <img src={p.photos[0]} alt={p.name} className="w-full h-full object-cover" />
                   ) : (
@@ -733,11 +745,11 @@ export default function Home() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{p.name}</div>
-                  {p.maker && <div className="text-xs opacity-60 truncate">{p.maker}</div>}
+                  <div className="text-sm font-medium truncate" style={{ color: "#F5F1E7" }}>{p.name}</div>
+                  {p.maker && <div className="text-xs truncate" style={{ color: "rgba(224, 216, 200, 0.6)" }}>{p.maker}</div>}
                 </div>
                 {p.estimated_value > 0 && (
-                  <span className="text-green-400 text-xs font-medium shrink-0">
+                  <span className="text-xs font-medium shrink-0" style={{ color: "#5A7C5A" }}>
                     {formatCurrency(p.estimated_value)}
                   </span>
                 )}
@@ -769,9 +781,15 @@ export default function Home() {
               <a
                 key={b.id}
                 href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(b.id)}`)}
-                className="flex items-center gap-3 hover:bg-white/5 rounded-lg p-1.5 -mx-1.5 transition-colors"
+                className="flex items-center gap-3 p-1.5 -mx-1.5 transition-all"
               >
-                <div className="w-10 h-10 rounded-full bg-[#1E2F43] overflow-hidden shrink-0 flex items-center justify-center">
+                <div 
+                  className="w-10 h-10 rounded-full overflow-hidden shrink-0 flex items-center justify-center"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(40, 28, 18, 0.8), rgba(35, 24, 16, 0.9))",
+                    border: "1px solid rgba(120, 90, 65, 0.2)"
+                  }}
+                >
                   {b.logo || b.photo ? (
                     <img src={b.logo || b.photo} alt={b.name} className="w-full h-full object-cover" />
                   ) : (
@@ -779,8 +797,8 @@ export default function Home() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{b.name}</div>
-                  {b.manufacturer && <div className="text-xs opacity-60 truncate">{b.manufacturer}</div>}
+                  <div className="text-sm font-medium truncate" style={{ color: "#F5F1E7" }}>{b.name}</div>
+                  {b.manufacturer && <div className="text-xs truncate" style={{ color: "rgba(224, 216, 200, 0.6)" }}>{b.manufacturer}</div>}
                 </div>
               </a>
             ))}
