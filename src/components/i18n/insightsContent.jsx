@@ -7,43 +7,48 @@ export const insightsTranslations = {
   en: {
     keeper: {
       title: "Collection Curator",
-      subtitle: "AI-powered collection insights",
+      subtitle: "Expert guidance for your collection",
       pipes: {
-        rotationTitle: "Rotation Planning",
-        rotationInsight: "With {count} pipes, you have enough variety to build a proper rotation.",
-        rotationAction: "Rotate three pipes you haven't smoked recently this week.",
-        rotationCTA: "View Underused Pipes",
+        balancedRotationTitle: "Your Rotation is Well Balanced",
+        balancedRotationInsight: "Your pipe collection shows healthy rotation across {count} pipes. This balanced approach preserves pipe longevity and maintains flavor clarity.",
+        balancedRotationAction: "Continue this practice to ensure each pipe receives adequate rest between sessions.",
         
-        restTitle: "Pipe Rest",
-        restInsight: "Your pipe '{pipeName}' is being used significantly more than others.",
-        restAction: "Let this pipe rest for at least 24 hours and rotate alternatives.",
-        restCTA: "View Pipe Details",
+        overusedTitle: "One Pipe Requires Rest",
+        overusedInsight: "Your '{pipeName}' has been smoked significantly more than the others in your collection. Allowing it proper rest improves longevity and smoking experience.",
+        overusedAction: "Let this pipe rest for at least 24 hours and rotate it with others. This prevents buildup and maintains consistent flavor.",
+        overusedCTA: "View Pipe",
         
-        growthTitle: "Building Your Collection",
-        growthInsight: "You have {count} pipes. This is a great foundation for building a collector's rotation.",
-        growthAction: "Consider adding 1-2 more pipes to create meaningful rotation options.",
-        growthCTA: "Explore Pipes",
+        foundationTitle: "Building a Collector's Foundation",
+        foundationInsight: "With {count} pipes, you have a solid foundation to develop a meaningful rotation.",
+        foundationAction: "As your collection grows, aim for 5-7 pipes to create a proper rotation schedule.",
+        foundationCTA: "Browse Pipes",
         
-        loggingTitle: "Capture Your Sessions",
-        loggingInsight: "Start logging your smoking sessions to unlock usage insights and preferences.",
-        loggingAction: "Log your next session to begin building your smoking history.",
-        loggingCTA: "Log a Session"
+        shapeVarietyTitle: "Expand Your Shapes",
+        shapeVarietyInsight: "Most of your collection shares similar shapes. Adding different shapes broadens your smoking experiences.",
+        shapeVarietyAction: "Consider a bent pipe or curved shape to complement your billiards and authors.",
+        
+        restingTitle: "Proper Resting Improves Flavor",
+        restingInsight: "Pipes benefit from adequate rest between sessions. This allows moisture to dissipate and flavors to stabilize.",
+        restingAction: "Maintain a rotation where each pipe rests at least 24-48 hours between uses."
       },
       tobacco: {
-        diversityTitle: "Blend Diversity",
-        diversityInsight: "Your cellar contains only a few blend styles. Consider expanding.",
-        diversityAction: "Add a Virginia or Balkan blend to broaden variety.",
-        diversityCTA: "Browse Blend Types",
+        diversityTitle: "Expand Your Blend Styles",
+        diversityInsight: "Your cellar is concentrated in a narrow range of blend styles. Broader variety enhances your tasting experience.",
+        diversityAction: "A Virginia or Balkan blend would introduce new flavor profiles and deepen your palate.",
+        diversityCTA: "Browse Blends",
         
-        agingTitle: "Aging Opportunity",
-        agingInsight: "{count} of your tins may be reaching ideal aging windows.",
-        agingAction: "Review aged blends before opening newer tins.",
-        agingCTA: "View Aged Blends",
+        agingOpportunityTitle: "Aging Window Approaching",
+        agingOpportunityInsight: "{count} of your cellared blends may be approaching an ideal aging window. Older stocks can offer remarkable complexity.",
+        agingOpportunityAction: "Consider sampling one of these aged tins to experience how time has transformed the flavor.",
+        agingOpportunityCTA: "View Cellar",
         
-        cellarTitle: "Cellar Monitoring",
-        cellarInsight: "Your growing cellar deserves regular maintenance and organization.",
-        cellarAction: "Review your aging schedule and plan rotations.",
-        cellarCTA: "View Cellar Status"
+        styleDiscoveryTitle: "Explore {styles} Blends",
+        styleDiscoveryInsight: "You haven't yet explored {styles} styles. These would complement your current collection and expand your tasting experience.",
+        styleDiscoveryAction: "Adding one of these styles would introduce depth and variety to your rotation.",
+        
+        stewardshipStorageTitle: "Proper Storage Preserves Quality",
+        stewardshipStorageInsight: "With a growing cellar, maintaining consistent conditions is essential for preserving blend quality over time.",
+        stewardshipStorageAction: "Ensure containers remain properly sealed and stored in a cool, stable environment."
       }
     }
   },
