@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PKCard, PKHeader } from "@/components/ui/pk-surface";
 import { BarChart3, Grid3x3, BookOpen, CalendarClock, FileText, Clock, Star } from "lucide-react";
@@ -23,10 +23,19 @@ import { differenceInMonths } from "date-fns";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-export default function CollectionInsightsPanel({ pipes, blends, user }) {
+export default function CollectionInsightsPanel({ pipes, blends, user, activeTab: externalActiveTab, onTabChange }) {
   const { t } = useTranslation();
   const { hasPro } = useCurrentUser();
-  const [activeTab, setActiveTab] = useState(isAppleBuild ? "stats" : "log");
+  const [activeTab, setActiveTab] = useState(isAppleBuild ? "stats" : (externalActiveTab || "log"));
+
+  useEffect(() => {
+    if (externalActiveTab !== undefined) setActiveTab(externalActiveTab);
+  }, [externalActiveTab]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    onTabChange?.(tab);
+  };
 
   // Check for aging alerts — use already-fetched blends prop to avoid extra query
   const { data: agingAlertCount = 0 } = useQuery({
@@ -111,7 +120,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
           </div>
           <p className="text-sm text-[#E0D8C8]/70">{t("insights.subtitle")}</p>
         </div>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className={`grid w-full items-center justify-center ${isAppleBuild ? "grid-cols-1" : "grid-cols-7"} gap-0 h-20`}>
             {isAppleBuild ? (
               <TabsTrigger value="stats" className="flex items-center justify-center gap-2">

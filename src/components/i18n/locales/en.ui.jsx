@@ -129,7 +129,7 @@ const enUI = {
     whatIfFeatureName: "What-If Analysis",
     whatIfFeatureDesc: "Ask collection strategy questions and run what-if scenarios with AI assistance. Available with Pro or legacy Premium access.",
     tobacconist: "Expert Tobacconist",
-    title: "Pipe Tobacconist",
+    title: "Collection Curator",
     tabChat: "Chat",
     tabActions: "Actions",
     sending: "Sending…",
