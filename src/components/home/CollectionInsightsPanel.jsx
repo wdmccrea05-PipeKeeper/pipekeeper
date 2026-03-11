@@ -109,9 +109,9 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
 
   return (
     <div className="rounded-lg" style={{
-      background: "linear-gradient(145deg, rgba(48, 34, 22, 0.75), rgba(38, 26, 18, 0.88))",
-      border: "1px solid rgba(120, 90, 65, 0.32)",
-      boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)",
+      background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+      border: "1px solid rgba(140,105,65,0.35)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)",
     }}>
       <div className="p-7">
         <div className="mb-5">

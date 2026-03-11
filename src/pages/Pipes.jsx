@@ -172,7 +172,9 @@ export default function PipesPage() {
   const totalValue = (pipes || []).reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0);
 
   return (
-    <div className={`min-h-screen ${PK_THEME.pageBg}`}>
+    <div className="min-h-screen" style={{
+      background: 'radial-gradient(circle at 30% 20%, rgba(120,85,55,0.15), transparent 40%), radial-gradient(circle at 80% 70%, rgba(70,50,35,0.2), transparent 50%), #0f0b08'
+    }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div 

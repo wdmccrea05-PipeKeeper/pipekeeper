@@ -1,11 +1,12 @@
 import React, { useMemo } from "react";
-import { Sparkles, TrendingUp, Leaf, Clock, Target, X, BookOpen } from "lucide-react";
+import { Sparkles, TrendingUp, Leaf, Clock, Target, X, BookOpen, ArrowRight, Calendar, BarChart3 } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { differenceInMonths } from "date-fns";
+import { differenceInMonths, differenceInDays } from "date-fns";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 /**
- * ProactiveCuratorPanel — AI-generated collection insights
- * Automatically analyzes collection health and provides recommendations
+ * ProactiveCuratorPanel — Actionable AI collection insights
+ * Analyzes collection health and provides specific recommendations
  */
 export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, curatorEnabled = true }) {
   const { t } = useTranslation();
@@ -15,61 +16,62 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
     
     const generated = [];
 
-    // Collection growth insight
-    if (pipes.length > 0 && pipes.length < 5) {
+    // Analyze pipe usage from logs
+    const pipeUsage = {};
+    logs.forEach(log => {
+      if (log?.pipe_id) {
+        pipeUsage[log.pipe_id] = (pipeUsage[log.pipe_id] || 0) + (log.bowls_used || 1);
+      }
+    });
+
+    const underusedPipes = pipes.filter(p => !pipeUsage[p.id] || pipeUsage[p.id] < 3);
+
+    // 1. Rotation Planning - actionable with specific count
+    if (pipes.length >= 5 && underusedPipes.length >= 3) {
       generated.push({
-        id: "growth-early",
-        icon: TrendingUp,
-        accent: "#4A9C6A",
-        title: t("curator.collectionGrowth", { defaultValue: "Collection Growth" }),
-        message: t("curator.growthEarly", { 
-          defaultValue: "Your pipe collection is expanding nicely. Consider building a rotation schedule to avoid overusing favorites.",
-          count: pipes.length
-        })
-      });
-    } else if (pipes.length >= 5 && pipes.length < 15) {
-      generated.push({
-        id: "growth-moderate",
+        id: "rotation-planning",
         icon: Target,
         accent: "#C87941",
-        title: t("curator.rotationPlanning", { defaultValue: "Rotation Planning" }),
-        message: t("curator.growthModerate", { 
-          defaultValue: "With {{count}} pipes, you have enough variety to build a proper rotation. This helps each pipe rest between sessions.",
-          count: pipes.length
-        })
+        title: t("curator.rotationPlanning"),
+        message: t("curator.growthModerate", { count: pipes.length }),
+        action: t("curator.growthModerateAction"),
+        ctaLabel: t("curator.openRotationView"),
+        ctaLink: "Insights?tab=rotation"
       });
     }
 
-    // Cellar diversity insight
+    // 2. Cellar Diversity - actionable
     if (blends.length > 0) {
       const blendTypes = new Set(blends.map(b => b.blend_type).filter(Boolean));
       if (blendTypes.size < 3) {
         generated.push({
           id: "cellar-diversity",
           icon: Leaf,
-          accent: "#4A7C9C",
-          title: t("curator.cellarDiversity", { defaultValue: "Cellar Diversity" }),
-          message: t("curator.diversityLow", { 
-            defaultValue: "Your cellar could benefit from adding variety. Consider exploring Virginia, Balkan, or English blends to increase diversity."
-          })
+          accent: "#5A7C5A",
+          title: t("curator.cellarDiversity"),
+          message: t("curator.diversityLow"),
+          action: t("curator.diversityAction"),
+          ctaLabel: t("curator.browseBlendTypes"),
+          ctaLink: "Tobacco"
         });
       }
     }
 
-    // Usage consistency insight
-    if (logs.length > 0 && logs.length < 10) {
+    // 3. Logging Opportunity - actionable
+    if (pipes.length >= 3 && logs.length < 10) {
       generated.push({
-        id: "usage-consistency",
-        icon: Sparkles,
+        id: "logging-opportunity",
+        icon: BookOpen,
         accent: "#8B5CF6",
-        title: t("curator.usageInsight", { defaultValue: "Usage Insights" }),
-        message: t("curator.consistencyEncourage", { 
-          defaultValue: "You have logged several sessions recently. Consistent logging will help reveal your true favorites and usage patterns."
-        })
+        title: t("curator.usageInsight"),
+        message: t("curator.consistencyEncourage"),
+        action: t("curator.consistencyAction"),
+        ctaLabel: t("curator.logSession"),
+        ctaLink: "Insights?tab=log"
       });
     }
 
-    // Aging insight
+    // 4. Aging Opportunity - actionable with count
     const agingBlends = blends.filter(b => {
       const hasCellared = (Number(b.tin_tins_cellared) || 0) > 0 || 
                           (Number(b.bulk_cellared) || 0) > 0 || 
@@ -105,14 +107,28 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
 
     if (agingBlends.length > 0) {
       generated.push({
-        id: "aging-ready",
+        id: "aging-opportunity",
         icon: Clock,
         accent: "#F59E0B",
-        title: t("curator.agingInsight", { defaultValue: "Aging Insight" }),
-        message: t("curator.agingReady", { 
-          defaultValue: "{{count}} blend(s) in your cellar have reached optimal aging windows. Consider sampling them to enjoy their matured flavors.",
-          count: agingBlends.length
-        })
+        title: t("curator.agingInsight"),
+        message: t("curator.agingReady", { count: agingBlends.length }),
+        action: t("curator.agingAction"),
+        ctaLabel: t("curator.viewAgedBlends"),
+        ctaLink: "Insights?tab=aging"
+      });
+    }
+
+    // 5. Early collection growth - actionable
+    if (pipes.length > 0 && pipes.length < 5 && !generated.some(g => g.id === "rotation-planning")) {
+      generated.push({
+        id: "growth-early",
+        icon: TrendingUp,
+        accent: "#4A9C6A",
+        title: t("curator.collectionGrowth"),
+        message: t("curator.growthEarly"),
+        action: t("curator.growthEarlyAction"),
+        ctaLabel: t("curator.openRotationView"),
+        ctaLink: "Insights?tab=rotation"
       });
     }
 
@@ -196,19 +212,44 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
                 >
                   <Icon className="w-4 h-4" style={{ color: insight.accent }} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h4 
-                    className="text-sm font-semibold mb-1" 
-                    style={{ color: insight.accent }}
-                  >
-                    {insight.title}
-                  </h4>
-                  <p 
-                    className="text-sm leading-relaxed" 
-                    style={{ color: "rgba(224,216,200,0.85)" }}
-                  >
-                    {insight.message}
-                  </p>
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div>
+                    <h4 
+                      className="text-sm font-semibold mb-0.5" 
+                      style={{ color: insight.accent }}
+                    >
+                      {insight.title}
+                    </h4>
+                    <p 
+                      className="text-sm leading-relaxed" 
+                      style={{ color: "rgba(224,216,200,0.85)" }}
+                    >
+                      {insight.message}
+                    </p>
+                  </div>
+                  {insight.action && (
+                    <p 
+                      className="text-xs font-medium" 
+                      style={{ color: "rgba(180,140,75,0.75)" }}
+                    >
+                      → {insight.action}
+                    </p>
+                  )}
+                  {insight.ctaLink && (
+                    <a
+                      href={createPageUrl(insight.ctaLink)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:scale-105"
+                      style={{
+                        background: `${insight.accent}25`,
+                        border: `1px solid ${insight.accent}40`,
+                        color: insight.accent,
+                        boxShadow: `0 1px 3px rgba(0,0,0,0.3)`
+                      }}
+                    >
+                      {insight.ctaLabel}
+                      <ArrowRight className="w-3 h-3" />
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
