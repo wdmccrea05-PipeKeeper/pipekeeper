@@ -613,8 +613,17 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
         }}
       >
         {/* ── Header ─────────────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-3">
-          <Brain className="w-5 h-5 shrink-0" style={{ color: "rgba(180, 140, 75, 0.9)" }} aria-hidden="true" />
+        <div className="flex items-center gap-3.5">
+          <div
+            className="w-9 h-9 rounded flex items-center justify-center"
+            style={{
+              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))`,
+              border: `1px solid rgba(120, 90, 65, 0.4)`,
+              boxShadow: `0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180, 140, 100, 0.15)`,
+            }}
+          >
+            <Brain className="w-4 h-4" style={{ color: "rgba(180, 140, 75, 1)", filter: "drop-shadow(0 0 3px rgba(180,140,75,0.6))" }} aria-hidden="true" />
+          </div>
           <div>
             <h2 className="text-xl font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
               {t("collectionIntelligence.title")}

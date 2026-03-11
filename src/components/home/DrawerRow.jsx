@@ -27,13 +27,14 @@ export default function DrawerRow({
         className
       )}
       style={{
-        background: `linear-gradient(135deg, rgba(40, 28, 18, 0.9), rgba(35, 24, 16, 0.95))`,
-        border: `1px solid rgba(120, 90, 65, 0.3)`,
+        background: `linear-gradient(145deg, rgba(48, 34, 22, 0.88), rgba(38, 26, 18, 0.94))`,
+        border: `1px solid rgba(120, 90, 65, 0.32)`,
         borderLeft: `3px solid ${accent}`,
         boxShadow: `
-          0 2px 6px rgba(0,0,0,0.5),
-          inset 0 1px 0 rgba(180,140,100,0.08),
-          inset 3px 0 0 rgba(180,140,75,0.15)
+          0 3px 10px rgba(0,0,0,0.6),
+          inset 0 1px 0 rgba(180,140,100,0.12),
+          inset 3px 0 0 rgba(180,140,75,0.2),
+          inset 0 -2px 3px rgba(0,0,0,0.25)
         `,
       }}
     >
@@ -77,13 +78,13 @@ export default function DrawerRow({
         </>
       )}
 
-      {/* Wood grain texture */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+      {/* Horizontal walnut grain texture */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <pattern id={`drawer-grain-${accent}`} x="0" y="0" width="180" height="22" patternUnits="userSpaceOnUse">
-            <path d="M0,3 C35,2.5 70,3.5 105,3 S160,2.5 180,3" stroke={accent} strokeWidth="0.4" fill="none" strokeOpacity="0.06" />
-            <path d="M0,9 C40,8.5 80,9.5 120,9 S165,8.5 180,9" stroke={accent} strokeWidth="0.3" fill="none" strokeOpacity="0.05" />
-            <path d="M0,15 C30,14.5 65,15.5 100,15 S155,14.5 180,15" stroke={accent} strokeWidth="0.35" fill="none" strokeOpacity="0.055" />
+          <pattern id={`drawer-grain-${accent}`} x="0" y="0" width="200" height="24" patternUnits="userSpaceOnUse">
+            <path d="M0,4 C40,3.5 80,4.5 120,4 S180,3.5 200,4" stroke={accent} strokeWidth="0.45" fill="none" strokeOpacity="0.08" />
+            <path d="M0,10 C45,9.5 90,10.5 135,10 S185,9.5 200,10" stroke={accent} strokeWidth="0.35" fill="none" strokeOpacity="0.06" />
+            <path d="M0,16 C35,15.5 75,16.5 115,16 S175,15.5 200,16" stroke={accent} strokeWidth="0.4" fill="none" strokeOpacity="0.07" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill={`url(#drawer-grain-${accent})`} />
@@ -93,24 +94,24 @@ export default function DrawerRow({
         {/* Icon / Label plate */}
         <div className="flex items-center gap-3 min-w-[140px] sm:min-w-[180px] shrink-0">
           <div
-            className="w-9 h-9 rounded flex items-center justify-center overflow-hidden"
+            className="w-10 h-10 rounded flex items-center justify-center overflow-hidden"
             style={{
-              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.4), rgba(80, 55, 35, 0.5))`,
-              border: `1px solid rgba(120, 90, 65, 0.4)`,
-              boxShadow: `0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180, 140, 100, 0.12)`,
+              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.5), rgba(80, 55, 35, 0.6))`,
+              border: `1px solid rgba(120, 90, 65, 0.45)`,
+              boxShadow: `0 3px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.18)`,
             }}
           >
             {iconImage ? (
-              <img src={iconImage} alt="" className="w-full h-full object-cover" style={{ filter: "brightness(0) invert(1)" }} />
+              <img src={iconImage} alt="" className="w-full h-full object-cover" style={{ filter: "brightness(0) invert(1) sepia(0.3) saturate(1.2)" }} />
             ) : Icon ? (
-              <Icon className="w-5 h-5" style={{ color: accent }} />
+              <Icon className="w-4 h-4" style={{ color: accent, filter: `drop-shadow(0 0 2px ${accent}60)` }} />
             ) : null}
           </div>
           <h2 
-            className="text-base font-semibold tracking-tight"
+            className="text-lg font-semibold tracking-tight"
             style={{ 
               color: "#F5F1E7",
-              textShadow: "0 1px 2px rgba(0,0,0,0.5)",
+              textShadow: "0 1px 3px rgba(0,0,0,0.6)",
               fontFamily: "'Georgia', serif"
             }}
           >
@@ -123,18 +124,18 @@ export default function DrawerRow({
           {stats.map((stat, i) => (
             <div key={i} className="flex flex-col">
               <div 
-                className="text-lg font-bold leading-none"
+                className="text-xl font-bold leading-none mb-1"
                 style={{ 
                   color: "#F5F1E7",
-                  textShadow: "0 1px 2px rgba(0,0,0,0.5)",
+                  textShadow: "0 1px 3px rgba(0,0,0,0.6)",
                   fontFamily: "'Georgia', serif"
                 }}
               >
                 {stat.value}
               </div>
               <div 
-                className="text-[10px] mt-1 uppercase tracking-wider"
-                style={{ color: "rgba(180, 140, 75, 0.7)" }}
+                className="text-[10px] uppercase tracking-[0.1em] font-semibold"
+                style={{ color: "rgba(180, 140, 75, 0.75)" }}
               >
                 {stat.label}
               </div>
