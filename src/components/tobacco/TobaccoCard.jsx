@@ -2,12 +2,13 @@ import React from 'react';
 import { HeritageCard } from "@/components/ui/HeritageCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Star } from "lucide-react";
+import { Heart, Star, Leaf } from "lucide-react";
 import { motion } from "framer-motion";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { getAgingRecommendation } from "@/components/utils/agingRecommendation";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatWeight } from "@/components/utils/localeFormatters";
+import LuxuryObjectFrame from "@/components/ui/LuxuryObjectFrame";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-600 text-yellow-100 border-yellow-500/60",
@@ -46,61 +47,68 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
         onClick={onClick}
         withTexture={false}
       >
-        <div className="relative aspect-[4/3] overflow-hidden" style={{
-          background: "linear-gradient(135deg, rgba(42, 30, 20, 0.5), rgba(35, 24, 16, 0.7))"
-        }}>
-          {blend.logo || blend.photo ? (
-            <img 
-              src={blend.logo || blend.photo} 
-              alt={blend.name} 
-              className={`w-full h-full ${blend.logo ? 'object-contain p-3' : 'object-cover'}`}
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-white p-3"><img src="' + getTobaccoLogo(blend.manufacturer) + '" class="w-full h-full object-contain" /></div>';
-              }}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center p-3" style={{
-              background: "linear-gradient(135deg, rgba(42, 30, 20, 0.5), rgba(35, 24, 16, 0.7))"
-            }}>
-              <img 
-                src={getTobaccoLogo(blend.manufacturer)} 
-                alt={blend.manufacturer || 'Tobacco'}
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-400 text-4xl">🍂</div></div>';
-                }}
-              />
+        <LuxuryObjectFrame
+          src={blend.logo || blend.photo}
+          alt={blend.name}
+          aspectRatio="4/3"
+          objectFit="contain"
+          fallback={
+            <div className="text-[#E0D8C8]/20 text-center">
+              <Leaf className="w-12 h-12 mx-auto mb-2" style={{ color: "rgba(90,124,90,0.3)" }} />
+              <p className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(180,140,75,0.4)" }}>
+                {blend.manufacturer || t("tobaccoExtended.unknownMaker")}
+              </p>
             </div>
-          )}
-          <div className="absolute top-3 right-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 bg-[#223447]/90 hover:bg-[#223447] shadow-md"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggleFavorite?.(blend);
-              }}
-            >
-              <Heart className={`w-4 h-4 ${blend.is_favorite ? 'fill-rose-500 text-rose-500' : 'text-stone-400'}`} />
-            </Button>
-          </div>
-          <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-1">
+          }
+        >
+          {/* Absolute positioned overlays */}
+        </LuxuryObjectFrame>
+
+        {/* Floating controls */}
+        <div className="absolute top-3 right-3 z-30">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 rounded-full shadow-lg"
+            style={{
+              background: "rgba(20, 14, 10, 0.85)",
+              border: "1px solid rgba(120, 90, 65, 0.3)",
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleFavorite?.(blend);
+            }}
+          >
+            <Heart className={`w-3.5 h-3.5 ${blend.is_favorite ? 'fill-rose-400 text-rose-400' : 'text-[#E0D8C8]/60'}`} />
+          </Button>
+        </div>
+        
+        <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-1.5 z-30">
             {(blend.tin_total_quantity_oz || 0) > 0 && (
               <div className="flex flex-wrap gap-1">
-                <Badge className="bg-amber-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
+                <Badge 
+                  className="border-0 backdrop-blur-md font-semibold shadow-md text-[10px] px-2 py-0.5"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(180, 140, 75, 0.85), rgba(160, 120, 65, 0.9))",
+                    color: "#1a120a"
+                  }}
+                >
                   {t("tobaccoExtended.tin")}: {formatWeight(Number(blend.tin_total_quantity_oz) || 0)}
                 </Badge>
                 {(Number(blend.tin_tins_open) || 0) > 0 && (
-                  <Badge className="bg-sky-500/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
+                  <Badge 
+                    className="border-0 backdrop-blur-md font-semibold shadow-md text-[10px] px-2 py-0.5"
+                    style={{ background: "rgba(56, 139, 197, 0.85)", color: "#fff" }}
+                  >
                     {formatWeight((Number(blend.tin_tins_open) || 0) * (Number(blend.tin_size_oz) || 0))} {t("tobacco.open")}
                   </Badge>
                 )}
                 {(Number(blend.tin_tins_cellared) || 0) > 0 && (
-                  <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
+                  <Badge 
+                    className="border-0 backdrop-blur-md font-semibold shadow-md text-[10px] px-2 py-0.5"
+                    style={{ background: "linear-gradient(135deg, rgba(46, 125, 92, 0.9), rgba(40, 110, 80, 0.95))", color: "#fff" }}
+                  >
                     {formatWeight((Number(blend.tin_tins_cellared) || 0) * (Number(blend.tin_size_oz) || 0))} {t("tobaccoExtended.cellared")}
                   </Badge>
                 )}
@@ -108,16 +116,25 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
             )}
             {(Number(blend.bulk_total_quantity_oz) || 0) > 0 && (
               <div className="flex flex-wrap gap-1">
-                <Badge className="bg-blue-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
+                <Badge 
+                  className="border-0 backdrop-blur-md font-semibold shadow-md text-[10px] px-2 py-0.5"
+                  style={{ background: "rgba(66, 100, 160, 0.85)", color: "#fff" }}
+                >
                   {t("tobaccoExtended.bulk")}: {formatWeight(Number(blend.bulk_total_quantity_oz) || 0)}
                 </Badge>
                 {(Number(blend.bulk_open) || 0) > 0 && (
-                  <Badge className="bg-sky-500/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
+                  <Badge 
+                    className="border-0 backdrop-blur-md font-semibold shadow-md text-[10px] px-2 py-0.5"
+                    style={{ background: "rgba(56, 139, 197, 0.85)", color: "#fff" }}
+                  >
                     {formatWeight(Number(blend.bulk_open) || 0)} {t("tobacco.open")}
                   </Badge>
                 )}
                 {(Number(blend.bulk_cellared) || 0) > 0 && (
-                  <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
+                  <Badge 
+                    className="border-0 backdrop-blur-md font-semibold shadow-md text-[10px] px-2 py-0.5"
+                    style={{ background: "linear-gradient(135deg, rgba(46, 125, 92, 0.9), rgba(40, 110, 80, 0.95))", color: "#fff" }}
+                  >
                     {formatWeight(Number(blend.bulk_cellared) || 0)} {t("tobaccoExtended.cellared")}
                   </Badge>
                 )}
@@ -125,54 +142,93 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
             )}
             {(Number(blend.pouch_total_quantity_oz) || 0) > 0 && (
               <div className="flex flex-wrap gap-1">
-                <Badge className="bg-purple-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
+                <Badge 
+                  className="border-0 backdrop-blur-md font-semibold shadow-md text-[10px] px-2 py-0.5"
+                  style={{ background: "rgba(126, 84, 160, 0.85)", color: "#fff" }}
+                >
                   {t("tobaccoExtended.pouches")}: {formatWeight(Number(blend.pouch_total_quantity_oz) || 0)}
                 </Badge>
                 {(Number(blend.pouch_pouches_open) || 0) > 0 && (
-                  <Badge className="bg-sky-500/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
+                  <Badge 
+                    className="border-0 backdrop-blur-md font-semibold shadow-md text-[10px] px-2 py-0.5"
+                    style={{ background: "rgba(56, 139, 197, 0.85)", color: "#fff" }}
+                  >
                     {formatWeight((Number(blend.pouch_pouches_open) || 0) * (Number(blend.pouch_size_oz) || 0))} {t("tobacco.open")}
                   </Badge>
                 )}
                 {(Number(blend.pouch_pouches_cellared) || 0) > 0 && (
-                  <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
+                  <Badge 
+                    className="border-0 backdrop-blur-md font-semibold shadow-md text-[10px] px-2 py-0.5"
+                    style={{ background: "linear-gradient(135deg, rgba(46, 125, 92, 0.9), rgba(40, 110, 80, 0.95))", color: "#fff" }}
+                  >
                     {formatWeight((Number(blend.pouch_pouches_cellared) || 0) * (Number(blend.pouch_size_oz) || 0))} {t("tobaccoExtended.cellared")}
                   </Badge>
                 )}
               </div>
             )}
-          </div>
-        </div>
+        </LuxuryObjectFrame>
         <div className="p-4">
          <div className="flex items-start justify-between gap-2">
            <div className="flex-1 min-w-0">
-             <h3 className="font-semibold text-[#E0D8C8] truncate">{blend.name}</h3>
-             <p className="text-sm text-[#E0D8C8]/60 truncate">{blend.manufacturer || t("tobaccoExtended.unknownMaker")}</p>
+             <h3 
+               className="font-semibold truncate leading-snug mb-1" 
+               style={{ 
+                 color: "#F5F1E7",
+                 fontFamily: "'Georgia', serif"
+               }}
+             >
+               {blend.name}
+             </h3>
+             <p className="text-sm truncate" style={{ color: "rgba(180, 140, 75, 0.7)" }}>
+               {blend.manufacturer || t("tobaccoExtended.unknownMaker")}
+             </p>
             </div>
             {blend.rating && (
               <div className="flex items-center gap-0.5 shrink-0">
-                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                <span className="text-sm font-medium text-amber-300">{(Number(blend.rating) || 0).toFixed(1)}/5</span>
+                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                <span className="text-xs font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
+                  {(Number(blend.rating) || 0).toFixed(1)}
+                </span>
               </div>
             )}
           </div>
           <div className="flex flex-wrap gap-1.5 mt-3">
-            {agingRec && (
-              <Badge className={`${agingColorClass} border text-xs font-medium`}>
-                {t(agingRec.messageKey)}
-              </Badge>
-            )}
             {blend.blend_type && (
-              <Badge variant="secondary" className={`${colorClass} text-xs`}>
+              <Badge 
+                variant="secondary" 
+                className="text-[10px] px-2 py-0.5"
+                style={{
+                  background: "rgba(90, 124, 90, 0.18)",
+                  color: "rgba(144, 180, 144, 0.95)",
+                  border: "1px solid rgba(90, 124, 90, 0.3)"
+                }}
+              >
                 {t(`blendTypes.${blend.blend_type}`, blend.blend_type)}
               </Badge>
             )}
             {blend.strength && (
-              <Badge variant="secondary" className="bg-slate-700 text-slate-100 border-slate-600/50 text-xs">
+              <Badge 
+                variant="secondary" 
+                className="text-[10px] px-2 py-0.5"
+                style={{
+                  background: "rgba(100, 80, 60, 0.15)",
+                  color: "rgba(200, 180, 160, 0.9)",
+                  border: "1px solid rgba(120, 100, 80, 0.25)"
+                }}
+              >
                 {t(`strengths.${blend.strength}`, blend.strength)}
               </Badge>
             )}
             {blend.cut && (
-              <Badge variant="secondary" className="bg-amber-700 text-amber-100 border-amber-600/50 text-xs">
+              <Badge 
+                variant="secondary" 
+                className="text-[10px] px-2 py-0.5"
+                style={{
+                  background: "rgba(180, 140, 75, 0.15)",
+                  color: "rgba(180, 140, 75, 0.9)",
+                  border: "1px solid rgba(180, 140, 75, 0.25)"
+                }}
+              >
                 {t(`cuts.${blend.cut}`, blend.cut)}
               </Badge>
             )}

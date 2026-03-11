@@ -63,7 +63,7 @@ export function HeroCard({
         />
       )}
 
-      {/* Layer 2: Hero image spotlight (if provided) */}
+      {/* Layer 2: Hero image spotlight with luxury object framing */}
       {heroImage && (
         <div
           className="absolute right-0 top-0 bottom-0 pointer-events-none overflow-hidden"
@@ -82,14 +82,23 @@ export function HeroCard({
               maxWidth: "none",
               width: "auto",
               objectFit: "contain",
-              filter: `drop-shadow(0 0 22px ${accent}80) drop-shadow(0 6px 14px rgba(0,0,0,0.65))`,
+              filter: `drop-shadow(0 0 26px ${accent}90) drop-shadow(0 8px 20px rgba(0,0,0,0.75))`,
             }}
           />
+          
+          {/* Object spotlight glow */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `radial-gradient(ellipse 45% 50% at 65% 50%, rgba(255,255,255,0.07) 0%, transparent 65%)`,
+            }}
+          />
+          
           {/* Fade left edge smoothly */}
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to right, rgba(28, 18, 10, 0.95) 0%, rgba(28, 18, 10, 0.5) 38%, transparent 72%)",
+              background: "linear-gradient(to right, rgba(28, 18, 10, 0.98) 0%, rgba(28, 18, 10, 0.6) 35%, transparent 70%)",
             }}
           />
         </div>
