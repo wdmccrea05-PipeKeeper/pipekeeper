@@ -198,6 +198,8 @@ export default function ProfilePage() {
       // Wait for refetch to complete
       await queryClient.refetchQueries({ queryKey: ["user-profile", userId, email] });
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+      // Also invalidate the community profile cache
+      await queryClient.invalidateQueries({ queryKey: ['user-profile', user?.id, user?.email] });
     },
     onError: (err) => {
       console.error("[Profile] save failed:", err);

@@ -823,10 +823,10 @@ ${englishUserText}
         impact_score: result.applyable_changes?.length > 0 ? 8 : 6,
         trophy_pairings: (result.next_additions || []).slice(0, 5),
         redundancy_analysis: result.summary || "",
-        recommendation_category: "STRONG ADDITION",
+        recommendation_category: result.recommendation_category || "STRONG ADDITION",
         detailed_reasoning: result.summary || "",
         gaps_filled: result.collection_gaps || [],
-        score_improvements: t("optimizer.changesImproveCollectionCoverage", { additions: (result.next_additions || []).join(", ") }),
+        score_improvements: result.score_improvements || "Changes improve collection coverage",
         applyable_changes: result.applyable_changes || [],
       });
 
