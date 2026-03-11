@@ -15,7 +15,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { getActiveOptimizeScopes } from "@/platform/collectionCuratorAI.js";
 import { getAiEligibilityStats } from "@/platform/aiEligibility.js";
 
-const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
+const TOBACCONIST_ICON = 'https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png';
 
 const activeScopes = getActiveOptimizeScopes();
 const DEFAULT_OPTIMIZE_SCOPE = activeScopes[0]?.id ?? "pipe_tobacco_pairings";
