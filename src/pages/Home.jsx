@@ -11,14 +11,17 @@ import CollectionIntelligencePanel from "@/components/home/CollectionIntelligenc
 import QuickActions from "@/components/home/QuickActions";
 import LogSessionModal from "@/components/home/LogSessionModal";
 import IdentifyModal from "@/components/home/IdentifyModal";
-import { Leaf, Heart, Sparkles, ArrowRight, Crown, BarChart3, Archive, TrendingUp } from "lucide-react";
+import { Leaf, Heart, Sparkles, ArrowRight, Crown, BarChart3, Archive, TrendingUp, Flame } from "lucide-react";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { PIPE_SILHOUETTE_URL } from "@/components/utils/collectionConstants";
-import { StatusCard, CATEGORY_COLORS } from "@/components/ui/HeroCard";
+import { CATEGORY_COLORS } from "@/components/ui/HeroCard";
 import CollectorStory from "@/components/story/CollectorStory";
 import StoryTrigger from "@/components/story/StoryTrigger";
 import { generateStoryCards } from "@/components/story/generateStoryCards";
+import LedgerPanel from "@/components/home/LedgerPanel";
+import DrawerRow from "@/components/home/DrawerRow";
+import CatalogPlate from "@/components/home/CatalogPlate";
 
 const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
@@ -140,79 +143,181 @@ export default function Home() {
     return generateStoryCards(pipes, blends, smokingLogs, totalCollectionValue, formatCurrency, t);
   }, [pipes, blends, smokingLogs, totalCollectionValue, t]);
 
+  // Most smoked pipe
+  const mostSmokedPipe = useMemo(() => {
+    if (!smokingLogs.length || !pipes.length) return null;
+    const pipeCounts = {};
+    smokingLogs.forEach((log) => {
+      pipeCounts[log.pipe_id] = (pipeCounts[log.pipe_id] || 0) + (log.bowls_used || 1);
+    });
+    const topId = Object.entries(pipeCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+    return pipes.find((p) => p.id === topId);
+  }, [pipes, smokingLogs]);
+
+  // Most valuable pipe
+  const mostValuablePipe = useMemo(() => {
+    return pipes.filter((p) => (p.estimated_value || 0) > 0).sort((a, b) => (b.estimated_value || 0) - (a.estimated_value || 0))[0] || null;
+  }, [pipes]);
+
+  // Favorite blend
+  const favoriteBlend = useMemo(() => {
+    return favoriteBlends[0] || null;
+  }, [favoriteBlends]);
+
   return (
-    <div className="space-y-6">
-      {/* 1. HERO */}
-      <div className="text-center space-y-3 pt-2">
-        <h1 className="text-3xl font-bold font-serif text-[#E0D8C8]">
-          {t("home.title")}
-        </h1>
-        <p className="text-base text-[#E0D8C8]/70 max-w-2xl mx-auto">
-          {t("home.subtitle")}
-        </p>
+    <div className="space-y-8">
+      {/* 1. HERO - Collector's Study Header */}
+      <div className="space-y-4">
+        <div className="text-center space-y-2">
+          <h1 
+            className="text-4xl font-bold tracking-tight"
+            style={{ 
+              color: "#F5F1E7",
+              textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+              fontFamily: "'Georgia', serif"
+            }}
+          >
+            {t("home.title")}
+          </h1>
+          <p 
+            className="text-base max-w-2xl mx-auto leading-relaxed"
+            style={{ color: "rgba(224, 216, 200, 0.75)" }}
+          >
+            {t("home.subtitle")}
+          </p>
+        </div>
+        
         {storyCards.length > 0 && (
-          <StoryTrigger onClick={() => setShowStory(true)} variant="primary" />
+          <div className="flex justify-center">
+            <StoryTrigger onClick={() => setShowStory(true)} variant="secondary" />
+          </div>
         )}
       </div>
 
-      {/* 2. SUBSCRIPTION STATUS BANNER */}
+      {/* 2. MEMBERSHIP PLAQUE */}
       {hasPaid && (
-        <div className="border-l-4 border-amber-500 bg-[#223447] rounded-r-xl p-4 flex items-center gap-3">
-          <Crown className="w-5 h-5 text-amber-400 shrink-0" />
-          <div>
-            <div className="font-semibold text-amber-400">{t("subscription.proBadge")}</div>
-            <div className="text-sm text-[#E0D8C8]/70">{t("subscription.thankYouSupporting")}</div>
+        <div 
+          className="rounded-lg p-4 flex items-center gap-3"
+          style={{
+            background: "linear-gradient(135deg, rgba(60, 45, 25, 0.6), rgba(50, 35, 20, 0.8))",
+            border: "1px solid rgba(180, 140, 75, 0.4)",
+            borderLeft: "3px solid #D4AF37",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.1)"
+          }}
+        >
+          <Crown className="w-5 h-5 shrink-0" style={{ color: "#D4AF37" }} />
+          <div className="flex-1">
+            <div className="font-semibold" style={{ color: "#D4AF37" }}>{t("subscription.proBadge")}</div>
+            <div className="text-sm" style={{ color: "rgba(224, 216, 200, 0.7)" }}>{t("subscription.thankYouSupporting")}</div>
           </div>
           {planLabel && (
-            <span className="ml-auto text-xs text-[#E0D8C8]/50 shrink-0 truncate max-w-[60px]">
+            <span className="text-xs shrink-0 truncate max-w-[60px]" style={{ color: "rgba(224, 216, 200, 0.5)" }}>
               {planLabel}
             </span>
           )}
         </div>
       )}
 
-      {/* 3. PORTFOLIO SUMMARY */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatusCard
-          icon={TrendingUp}
-          label={t("home.totalValue")}
-          value={hideHomeValues ? "••••" : formatCurrency(Math.round(totalCollectionValue))}
-          accent={CATEGORY_COLORS.value}
-          bgImage={featuredPipe?.photos?.[0] || featuredBlend?.logo || featuredBlend?.photo}
-        />
-        <StatusCard
-          icon={() => (
-            <img
-              src={PIPE_ICON}
-              alt=""
-              className="w-4 h-4 object-contain"
-              style={{
-                filter: "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.9)",
-              }}
-            />
-          )}
-          label={t("home.pipesInCollection")}
-          value={pipes.length}
-          accent={CATEGORY_COLORS.general}
-          bgImage={featuredPipe?.photos?.[0]}
-        />
-        <StatusCard
-          icon={Leaf}
-          label={t("home.tobaccoBlends")}
-          value={blends.length}
-          accent={CATEGORY_COLORS.tobacco}
-          bgImage={featuredBlend?.logo || featuredBlend?.photo}
-        />
-        <StatusCard
-          icon={Archive}
-          label={t("home.cellared")}
-          value={formatWeight(totalCellaredOz, "oz")}
-          accent={CATEGORY_COLORS.activity}
-          bgImage={featuredBlend?.logo || featuredBlend?.photo || featuredPipe?.photos?.[0]}
-        />
+      {/* 3. COLLECTOR'S LEDGER SUMMARY */}
+      <div 
+        className="rounded-lg p-5"
+        style={{
+          background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
+          border: "1px solid rgba(120, 90, 65, 0.3)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
+        }}
+      >
+        <h2 
+          className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
+          style={{ color: "rgba(180, 140, 75, 0.8)" }}
+        >
+          {t("home.collectionSummary", "Collection Summary")}
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <LedgerPanel
+            icon={TrendingUp}
+            label={t("home.totalValue")}
+            value={hideHomeValues ? "••••" : formatCurrency(Math.round(totalCollectionValue))}
+            accent={CATEGORY_COLORS.value}
+          />
+          <LedgerPanel
+            icon={() => (
+              <img
+                src={PIPE_ICON}
+                alt=""
+                className="w-4 h-4 object-contain"
+                style={{
+                  filter: "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.9)",
+                }}
+              />
+            )}
+            label={t("home.pipesInCollection")}
+            value={pipes.length}
+            accent={CATEGORY_COLORS.pipe}
+          />
+          <LedgerPanel
+            icon={Leaf}
+            label={t("home.tobaccoBlends")}
+            value={blends.length}
+            accent={CATEGORY_COLORS.tobacco}
+          />
+          <LedgerPanel
+            icon={Archive}
+            label={t("home.cellared")}
+            value={formatWeight(totalCellaredOz, "oz")}
+            accent={CATEGORY_COLORS.activity}
+          />
+        </div>
       </div>
 
-      {/* 4. QUICK ACTIONS — primary interactive layer */}
+      {/* 4. COLLECTOR'S HIGHLIGHTS - Editorial catalog cards */}
+      {(mostSmokedPipe || mostValuablePipe || favoriteBlend) && (
+        <div>
+          <h2 
+            className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
+            style={{ color: "rgba(180, 140, 75, 0.8)" }}
+          >
+            {t("home.highlights", "Collection Highlights")}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {mostSmokedPipe && (
+              <CatalogPlate
+                title={t("home.mostSmoked", "Most Smoked")}
+                value={mostSmokedPipe.name}
+                subtitle={mostSmokedPipe.maker}
+                heroImage={mostSmokedPipe.photos?.[0]}
+                bgImage={mostSmokedPipe.photos?.[0]}
+                accent="#C87941"
+                onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(mostSmokedPipe.id)}`)}
+              />
+            )}
+            {mostValuablePipe && (
+              <CatalogPlate
+                title={t("home.mostValuable", "Most Valuable")}
+                value={formatCurrency(mostValuablePipe.estimated_value)}
+                subtitle={mostValuablePipe.name}
+                heroImage={mostValuablePipe.photos?.[0]}
+                bgImage={mostValuablePipe.photos?.[0]}
+                accent="#B4824B"
+                onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(mostValuablePipe.id)}`)}
+              />
+            )}
+            {favoriteBlend && (
+              <CatalogPlate
+                title={t("home.favoriteBlend", "Favorite Blend")}
+                value={favoriteBlend.name}
+                subtitle={favoriteBlend.manufacturer}
+                heroImage={favoriteBlend.logo || favoriteBlend.photo}
+                bgImage={favoriteBlend.logo || favoriteBlend.photo}
+                accent="#5A7C5A"
+                onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(favoriteBlend.id)}`)}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 5. QUICK ACTIONS */}
       <QuickActions
         onLogSession={handleLogSession}
         onIdentify={handleIdentify}
@@ -222,8 +327,47 @@ export default function Home() {
         hasStoryData={storyCards.length > 0}
       />
 
-      {/* 5. MODULE OVERVIEW CARDS */}
-      <div className="flex flex-col gap-4">
+      {/* 6. CABINET DRAWERS - Module navigation */}
+      <div>
+        <h2 
+          className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
+          style={{ color: "rgba(180, 140, 75, 0.8)" }}
+        >
+          {t("home.collection", "Collection")}
+        </h2>
+        <div className="flex flex-col gap-4">
+        <DrawerRow
+          title={t("home.pipeCollectionTitle")}
+          stats={[
+            { 
+              value: hideHomeValues ? "••••" : formatCurrency(Math.round(totalPipeValue)), 
+              label: t("home.collectionValue") 
+            },
+            { value: pipes.length, label: t("home.pipesInCollection") }
+          ]}
+          iconImage={PIPE_ICON}
+          accent="#B48C4B"
+          bgImage={featuredPipe?.photos?.[0]}
+          href={createPageUrl("Pipes")}
+        />
+        
+        <DrawerRow
+          title={t("home.tobaccoCellarTitle")}
+          stats={[
+            { 
+              value: hideHomeValues ? "••••" : formatCurrency(Math.round(totalTobaccoValue)), 
+              label: t("home.collectionValue") 
+            },
+            { value: blends.length, label: t("home.tobaccoBlends") },
+            { value: formatWeight(totalCellaredOz, "oz"), label: t("home.cellared") }
+          ]}
+          icon={Leaf}
+          accent="#5A7C5A"
+          bgImage={featuredBlend?.logo || featuredBlend?.photo}
+          href={createPageUrl("Tobacco")}
+        />
+        
+        {/* OLD MODULE CARDS - REPLACED ABOVE 
         <PKCard className="p-4 sm:p-5 border-l-4 border-[#C87941] relative overflow-hidden">
           {/* Ambient artifact: blurred pipe photo if available */}
           {featuredPipe?.photos?.[0] ? (
@@ -327,8 +471,9 @@ export default function Home() {
               {t("home.viewCollection")} <ArrowRight className="w-4 h-4" />
             </a>
           </div>
-        </PKCard>
+        </PKCard> */}
 
+        {/* OLD TOBACCO CARD - REPLACED ABOVE
         <PKCard className="p-4 sm:p-5 border-l-4 border-[#4A7C59] relative overflow-hidden">
           {/* Ambient artifact: blurred blend logo/photo if available */}
           {featuredBlend?.logo || featuredBlend?.photo ? (
@@ -445,12 +590,35 @@ export default function Home() {
         </PKCard>
       </div>
 
-      {/* 5b. FAVORITES SECTION */}
+      {/* 7. CURATOR INTELLIGENCE */}
+      <div 
+        className="rounded-lg overflow-hidden"
+        style={{
+          border: "1px solid rgba(180, 140, 75, 0.25)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.5)"
+        }}
+      >
+        <CollectionIntelligencePanel pipes={pipes} blends={blends} user={user} />
+      </div>
+
+      {/* 8. FAVORITES SECTION */}
       {favoritePipes.length + favoriteBlends.length > 0 && (
-        <PKCard className="p-5">
+        <div
+          className="rounded-lg p-5"
+          style={{
+            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
+            border: "1px solid rgba(120, 90, 65, 0.3)",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
+          }}
+        >
           <div className="flex items-center gap-2 mb-4">
-            <Heart className="w-5 h-5 text-red-500 fill-red-500" />
-            <h2 className="text-base font-semibold">{t("home.favorites")}</h2>
+            <Heart className="w-5 h-5 fill-current" style={{ color: "#9B6B5F" }} />
+            <h2 
+              className="text-base font-semibold"
+              style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}
+            >
+              {t("home.favorites")}
+            </h2>
           </div>
           <div className="flex flex-wrap gap-2">
             {favoritePipes.map((item) => (
@@ -473,30 +641,39 @@ export default function Home() {
             {favoriteBlends.map((item) => (
               <span
                 key={item.id}
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#1e3347] text-[#E0D8C8] text-sm border border-[#E0D8C8]/20"
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm"
+                style={{
+                  background: "linear-gradient(135deg, rgba(60, 42, 28, 0.6), rgba(50, 35, 25, 0.7))",
+                  border: "1px solid rgba(120, 90, 65, 0.25)",
+                  borderRadius: "0.375rem",
+                  color: "#F5F1E7",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
+                }}
               >
-                <Leaf className="w-3 h-3" />
+                <Leaf className="w-3 h-3" style={{ color: "#5A7C5A" }} />
                 {item.name}
               </span>
             ))}
           </div>
-        </PKCard>
+        </div>
       )}
 
-      {/* 6. COLLECTION INTELLIGENCE — premium brain layer */}
-      <div className="rounded-2xl border border-amber-500/20 bg-gradient-to-b from-[#1a2d3f] to-[#152236] overflow-hidden">
-        <CollectionIntelligencePanel pipes={pipes} blends={blends} user={user} />
-      </div>
-
-      {/* 7. COLLECTION INSIGHTS — compact secondary summary card */}
+      {/* 9. INSIGHTS REFERENCE */}
       {!isAppleBuild && (pipes.length > 0 || blends.length > 0) && (
-        <PKCard className="p-3 flex items-center gap-3 opacity-90">
-          <BarChart3 className="w-7 h-7 text-[#6aabc0]/70 shrink-0" aria-hidden="true" />
+        <div 
+          className="p-4 flex items-center gap-3 rounded-lg"
+          style={{
+            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.6), rgba(35, 24, 16, 0.75))",
+            border: "1px solid rgba(120, 90, 65, 0.25)",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.4)"
+          }}
+        >
+          <BarChart3 className="w-7 h-7 shrink-0" style={{ color: "rgba(180, 140, 75, 0.7)" }} aria-hidden="true" />
           <div className="flex-1 min-w-0">
-            <div className="font-medium text-[#E0D8C8]/80 text-sm">
+            <div className="font-medium text-sm" style={{ color: "#F5F1E7" }}>
               {t("insights.title")}
             </div>
-            <div className="text-xs text-[#E0D8C8]/50 mt-0.5 space-y-0.5">
+            <div className="text-xs mt-0.5 space-y-0.5" style={{ color: "rgba(224, 216, 200, 0.6)" }}>
               {smokingLogs.length > 0 && (
                 <div>{smokingLogs.length} {t("home.insightsSessions")}</div>
               )}
@@ -507,21 +684,36 @@ export default function Home() {
           </div>
           <a
             href={createPageUrl("Insights")}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#4A7C9C]/10 hover:bg-[#4A7C9C]/20 border border-[#4A7C9C]/25 text-[#E0D8C8]/70 text-xs font-medium transition-colors shrink-0 whitespace-nowrap min-h-[34px]"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors shrink-0 whitespace-nowrap"
+            style={{
+              background: "linear-gradient(135deg, rgba(100, 70, 45, 0.3), rgba(80, 55, 35, 0.4))",
+              border: "1px solid rgba(120, 90, 65, 0.3)",
+              borderRadius: "0.375rem",
+              color: "#F5F1E7",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.3)"
+            }}
           >
             {t("home.openInsights")} <ArrowRight className="w-3 h-3" />
           </a>
-        </PKCard>
+        </div>
       )}
 
-      {/* 8. RECENT PIPES & RECENT TOBACCO */}
+      {/* 10. RECENT ITEMS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <PKCard className="p-4">
+        <div
+          className="rounded-lg p-4"
+          style={{
+            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
+            border: "1px solid rgba(120, 90, 65, 0.3)",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
+          }}
+        >
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold text-[#E0D8C8]">{t("home.recentPipes")}</h2>
+            <h2 className="text-base font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>{t("home.recentPipes")}</h2>
             <a
               href={createPageUrl("Pipes")}
-              className="text-xs text-[#E0D8C8]/60 hover:text-[#E0D8C8]"
+              className="text-xs transition-colors"
+              style={{ color: "rgba(180, 140, 75, 0.7)" }}
             >
               {t("home.viewAll")} →
             </a>
@@ -551,15 +743,23 @@ export default function Home() {
                 )}
               </a>
             ))}
-          </div>
-        </PKCard>
+            </div>
+            </div>
 
-        <PKCard className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold text-[#E0D8C8]">{t("home.recentTobacco")}</h2>
+            <div
+            className="rounded-lg p-4"
+            style={{
+            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
+            border: "1px solid rgba(120, 90, 65, 0.3)",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
+            }}
+            >
+            <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>{t("home.recentTobacco")}</h2>
             <a
               href={createPageUrl("Tobacco")}
-              className="text-xs text-[#E0D8C8]/60 hover:text-[#E0D8C8]"
+              className="text-xs transition-colors"
+              style={{ color: "rgba(180, 140, 75, 0.7)" }}
             >
               {t("home.viewAll")} →
             </a>
@@ -584,20 +784,27 @@ export default function Home() {
                 </div>
               </a>
             ))}
-          </div>
-        </PKCard>
-      </div>
+            </div>
+            </div>
+            </div>
 
-      {/* 9. BULK IMPORT FOOTER */}
-      <a href={createPageUrl("Import")} className="block">
-        <PKCard className="p-4 flex items-center gap-4 hover:bg-[#2a3f57] transition-colors cursor-pointer">
-          <Sparkles className="w-8 h-8 text-amber-400 shrink-0" />
+            {/* 11. IMPORT TOOL */}
+            <a href={createPageUrl("Import")} className="block">
+            <div 
+            className="p-4 flex items-center gap-4 transition-all cursor-pointer rounded-lg"
+            style={{
+            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.6), rgba(35, 24, 16, 0.75))",
+            border: "1px solid rgba(120, 90, 65, 0.25)",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
+            }}
+            >
+          <Sparkles className="w-8 h-8 shrink-0" style={{ color: "#D4AF37" }} />
           <div className="flex-1">
-            <div className="font-semibold">{t("home.bulkImport")}</div>
-            <div className="text-sm opacity-70">{t("home.importDesc")}</div>
+            <div className="font-semibold" style={{ color: "#F5F1E7" }}>{t("home.bulkImport")}</div>
+            <div className="text-sm" style={{ color: "rgba(224, 216, 200, 0.7)" }}>{t("home.importDesc")}</div>
           </div>
-          <ArrowRight className="w-5 h-5 opacity-50 shrink-0" />
-        </PKCard>
+          <ArrowRight className="w-5 h-5 shrink-0" style={{ color: "rgba(180, 140, 75, 0.5)" }} />
+        </div>
       </a>
 
       {/* QUICK MODALS */}
