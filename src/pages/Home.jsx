@@ -11,10 +11,11 @@ import CollectionIntelligencePanel from "@/components/home/CollectionIntelligenc
 import QuickActions from "@/components/home/QuickActions";
 import LogSessionModal from "@/components/home/LogSessionModal";
 import IdentifyModal from "@/components/home/IdentifyModal";
-import { Leaf, Heart, Sparkles, ArrowRight, Crown, BarChart3 } from "lucide-react";
+import { Leaf, Heart, Sparkles, ArrowRight, Crown, BarChart3, Archive, TrendingUp } from "lucide-react";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { PIPE_SILHOUETTE_URL } from "@/components/utils/collectionConstants";
+import { StatusCard, CATEGORY_COLORS } from "@/components/ui/HeroCard";
 
 const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
