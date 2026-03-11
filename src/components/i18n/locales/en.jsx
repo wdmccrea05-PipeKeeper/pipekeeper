@@ -7,6 +7,33 @@ const docs = {
   // inviteFull, appleSupport, termsOfService, privacyPolicy → moved to en.docs.js
   // The i18n index merges docs files so all keys remain available.
 
+  helpBubbles: {
+    pipeCollectionTitle: "Pipe Collection",
+    pipeCollectionDesc: "Add and manage the pipes in your collection. Attach photos, track condition and value, and log which blends you enjoy in each pipe.",
+    tobaccoCellarTitle: "Tobacco Cellar",
+    tobaccoCellarDesc: "Track the tobacco blends in your cellar, including open quantities and cellared/aging inventory. Mark tins and note aging dates.",
+    insightsTitle: "Collection Insights",
+    insightsDesc: "View statistics about your collection and smoking habits. Includes pipe usage, favorite blends, smoking streaks, and estimated collection value.",
+    curatorTitle: "Collection Curator",
+    curatorDesc: "The Curator analyzes your collection and offers personalized guidance on rotation, cellar management, discovery, and stewardship.",
+    pairingMatrixTitle: "Pipe-Tobacco Pairings",
+    pairingMatrixDesc: "AI-generated recommendations showing which blends score highest with each pipe based on shape, size, focus tags, and your preferences.",
+    pipeFocusTitle: "Pipe Focus Tags",
+    pipeFocusDesc: "Designate what each pipe is specialized for (e.g., 'Virginia', 'English', 'Aromatics', 'Versatile'). Helps AI generate better pairings.",
+    collectionOptTitle: "Collection Optimization",
+    collectionOptDesc: "AI suggests which blends match each pipe best and identifies gaps in your collection. Mark suggestions to optimize balance.",
+    smokingLogTitle: "Smoking Log",
+    smokingLogDesc: "Record which pipe and blend you smoked, how many bowls, and optional notes. Builds your history and improves insights.",
+    cellarLogTitle: "Cellar Log",
+    cellarLogDesc: "Track when you cellar tobacco and when you remove it. Documents your aging and inventory movements over time.",
+    valuationTitle: "Collection Valuation",
+    valuationDesc: "Estimate the market value of your pipes and tobacco. Premium users can run AI valuation based on current market data.",
+    ageingTitle: "Aging & Cellar",
+    ageingDesc: "Track which tobacco is cellared and when. The system suggests aging windows based on blend type and storage time.",
+    storyTitle: "Collector Story",
+    storyDesc: "Beautiful narrative cards showing your collector journey—most smoked pipe, favorite blend, collection value, milestones, and more.",
+  },
+
   howTo: {
     pageTitle: "How To",
     pageSubtitle: "Quick answers with clear navigation paths",
