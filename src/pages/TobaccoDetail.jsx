@@ -36,6 +36,7 @@ import CommentSection from "@/components/community/CommentSection";
 import ImageModal from "@/components/ui/ImageModal";
 import CellarLog from "@/components/tobacco/CellarLog";
 import TobaccoValuation from "@/components/tobacco/TobaccoValuation";
+import CuratorItemNote from "@/components/curator/CuratorItemNote";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -485,6 +486,9 @@ export default function TobaccoDetailPage() {
             />
           </div>
         </div>
+
+        {/* Curator Note — lightweight intelligence micro-surface */}
+        <CuratorItemNote moduleType="tobacco" item={blend} />
 
         {/* Comments Section */}
         {userProfile?.allow_comments && (

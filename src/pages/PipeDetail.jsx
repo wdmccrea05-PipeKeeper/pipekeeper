@@ -47,6 +47,7 @@ import PipeMeasurementCalculator from "@/components/ai/PipeMeasurementCalculator
 import InterchangeableBowls from "@/components/pipes/InterchangeableBowls";
 import PipeConditionTracker from "@/components/pipes/PipeConditionTracker";
 import MaintenanceLog from "@/components/pipes/MaintenanceLog";
+import CuratorItemNote from "@/components/curator/CuratorItemNote";
 
 export default function PipeDetailPage() {
   const { t } = useTranslation();
@@ -717,6 +718,9 @@ export default function PipeDetailPage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Curator Note — lightweight intelligence micro-surface */}
+        <CuratorItemNote moduleType="pipe" item={pipe} />
 
         {/* Comments Section */}
         {ownerProfile?.allow_comments && (
