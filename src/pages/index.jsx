@@ -134,12 +134,12 @@ export default function Pages() {
   const currentPageName = matchedKey.replace("/", "") || "Home";
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
         <Layout currentPageName={currentPageName}>
           <Comp />
         </Layout>
-      </AuthProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </AuthProvider>
   );
 }
