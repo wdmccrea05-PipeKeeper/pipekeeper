@@ -177,14 +177,15 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
 
   // Closing share card
   cards.push({
-    title: t("story.shareYourStory", { defaultValue: "Share Your Story" }),
-    value: t("story.pipekeeper", { defaultValue: "PipeKeeper" }),
-    sub: t("story.tagline", { defaultValue: "Track. Organize. Enjoy." }),
+    title: "SHARE YOUR STORY",
+    value: "PipeKeeper",
+    sub: "Track. Organize. Enjoy.",
     accent: "#F59E0B",
     icon: Heart,
     bgImage: pipes.find(p => p.photos?.length)?.photos?.[0] || 
              blends.find(b => b.logo || b.photo)?.logo || null,
     silhouetteType: "pipe",
+    isClosingCard: true,
   });
 
   return cards;

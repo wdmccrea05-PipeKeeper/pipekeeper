@@ -425,9 +425,9 @@ function StoryCard({
 
           {/* Main stat — huge typography */}
           <div
-            className="font-extrabold leading-tight tracking-tighter break-words max-w-full px-2"
+            className="font-extrabold leading-tight tracking-tighter break-words max-w-full px-4"
             style={{
-              fontSize: "clamp(2.5rem, 10vw, 3.8rem)",
+              fontSize: card.isClosingCard ? "clamp(3.2rem, 12vw, 4.5rem)" : "clamp(2.5rem, 10vw, 3.8rem)",
               color: "#F5F1E7",
               textShadow: `0 3px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)`,
               WebkitTextStroke: "0.4px rgba(255,255,255,0.08)",
@@ -435,6 +435,7 @@ function StoryCard({
               wordBreak: "normal",
               overflowWrap: "normal",
               hyphens: "none",
+              letterSpacing: card.isClosingCard ? "-0.02em" : "-0.01em",
             }}
           >
             {value ?? "—"}
