@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Camera, TrendingUp, Lightbulb, RefreshCw } from "lucide-react";
@@ -21,12 +21,22 @@ const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/ob
 const activeScopes = getActiveOptimizeScopes();
 const DEFAULT_OPTIMIZE_SCOPE = activeScopes[0]?.id ?? "pipe_tobacco_pairings";
 
-export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, userProfile }) {
+export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, userProfile, activeTab: externalActiveTab, onTabChange }) {
   const { t } = useTranslation();
   const entitlements = useEntitlements();
   const canOptimize = entitlements.canUse("COLLECTION_OPTIMIZATION");
   const [optimizeScope, setOptimizeScope] = useState(DEFAULT_OPTIMIZE_SCOPE);
-  const [activeTab, setActiveTab] = useState("identifier");
+  const [activeTab, setActiveTab] = useState(externalActiveTab ?? "identifier");
+
+  useEffect(() => {
+    if (externalActiveTab !== undefined) setActiveTab(externalActiveTab);
+  }, [externalActiveTab]);
+
+  const handleTabChange = useCallback((tab) => {
+    setActiveTab(tab);
+    onTabChange?.(tab);
+  }, [onTabChange]);
+
   if (isAppleBuild) return null;
 
   const activeIdentifyTypes = getActiveIdentifyTypes();
@@ -61,7 +71,7 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
         </div>
       </CardHeader>
       <CardContent className="pt-6 space-y-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="identifier" aria-label={t("tobacconist.identify")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
               <Camera className="w-5 h-5 flex-shrink-0" />

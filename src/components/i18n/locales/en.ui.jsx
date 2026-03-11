@@ -2413,6 +2413,13 @@ const enUI = {
     importDesc: "Import pipes & tobacco from CSV",
     totalValue: "Total Collection Value",
   },
+  quickActions: {
+    sectionTitle: "Quick Actions",
+    logSession: "Log Session",
+    identify: "Identify",
+    optimize: "Optimize",
+    askCurator: "Ask Curator",
+  },
   pipesPage: {
     myPipes: "My Pipes",
     pipes: "pipes",
