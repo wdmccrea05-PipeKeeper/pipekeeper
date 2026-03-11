@@ -1098,7 +1098,8 @@ export default function Insights() {
           value={`${longestStreak}d`}
           accent={CATEGORY_COLORS.streak}
           sub={t("insights.snapshotConsecutiveDays", { defaultValue: "consecutive days" })}
-          bgImage={analyticsImages.snapshotStreak}
+          bgImage={analyticsImages.streak}
+          useBlurredBg={true}
         />
         <StatusCard
           icon={Calendar}
@@ -1237,6 +1238,7 @@ export default function Insights() {
                 icon={Zap}
                 patternIndex={2}
                 artifactImage={analyticsImages.streak}
+                heroImage={analyticsImages.streak}
                 silhouetteType="pipe"
                 cardRef={(el) => (highlightRefs.current["streak"] = el)}
                 onShare={() => handleShareCard("streak")}
@@ -1247,6 +1249,7 @@ export default function Insights() {
                   accent: "#8B5CF6",
                   icon: Zap,
                   artifactImage: analyticsImages.streak,
+                  heroImage: analyticsImages.streak,
                   silhouetteType: "pipe",
                 })}
               />
@@ -1288,6 +1291,7 @@ export default function Insights() {
                 icon={Flame}
                 patternIndex={4}
                 artifactImage={analyticsImages.sessions}
+                heroImage={analyticsImages.sessions}
                 silhouetteType="pipe"
                 cardRef={(el) => (highlightRefs.current["totalSessions"] = el)}
                 onShare={() => handleShareCard("totalSessions")}
@@ -1298,6 +1302,7 @@ export default function Insights() {
                   accent: "#22D3EE",
                   icon: Flame,
                   artifactImage: analyticsImages.sessions,
+                  heroImage: analyticsImages.sessions,
                   silhouetteType: "pipe",
                 })}
               />
@@ -1311,6 +1316,7 @@ export default function Insights() {
                 icon={TrendingUp}
                 patternIndex={5}
                 artifactImage={analyticsImages.collectionValue}
+                heroImage={analyticsImages.collectionValue}
                 silhouetteType="leaf"
                 cardRef={(el) => (highlightRefs.current["collectionValue"] = el)}
                 onShare={() => handleShareCard("collectionValue")}
@@ -1321,6 +1327,7 @@ export default function Insights() {
                   accent: "#10B981",
                   icon: TrendingUp,
                   artifactImage: analyticsImages.collectionValue,
+                  heroImage: analyticsImages.collectionValue,
                   silhouetteType: "leaf",
                 })}
               />
