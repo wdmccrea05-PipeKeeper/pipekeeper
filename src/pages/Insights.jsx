@@ -29,6 +29,9 @@ import html2canvas from "html2canvas";
 import { toast } from "sonner";
 import { PIPE_SILHOUETTE_URL } from "@/components/utils/collectionConstants";
 import { StatusCard, HeroCard, CATEGORY_COLORS } from "@/components/ui/HeroCard";
+import CollectorStory from "@/components/story/CollectorStory";
+import StoryTrigger from "@/components/story/StoryTrigger";
+import { generateStoryCards } from "@/components/story/generateStoryCards";
 
 const DEFAULT_INSIGHTS_TAB = "log";
 
@@ -794,6 +797,7 @@ export default function Insights() {
   const storyRef = useRef(null);
   // activeStory: { title, value, sub, accent, icon } | null
   const [activeStory, setActiveStory] = useState(null);
+  const [showFullStory, setShowFullStory] = useState(false);
 
   const { data: pipes = [] } = useQuery({
     queryKey: ["pipes", user?.email],
@@ -905,6 +909,12 @@ export default function Insights() {
 
   const hasData = pipes.length > 0 || blends.length > 0 || smokingLogs.length > 0;
 
+  // Generate full story cards
+  const fullStoryCards = useMemo(() => {
+    if (!pipes.length && !blends.length) return [];
+    return generateStoryCards(pipes, blends, smokingLogs, totalCollectionValue, formatCurrency, t);
+  }, [pipes, blends, smokingLogs, totalCollectionValue, t]);
+
   // ── Analytics card images: stable random picks from the collection ──────────
   // Intentionally depends on collection *size* rather than full arrays so that
   // images are stable within a session and don't flicker on every React Query
@@ -990,6 +1000,13 @@ export default function Insights() {
           onExport={handleExportStory}
         />
       )}
+
+      {/* ── Full Collector Story ────────────────────────────── */}
+      <CollectorStory
+        isOpen={showFullStory}
+        onClose={() => setShowFullStory(false)}
+        storyCards={fullStoryCards}
+      />
 
       {/* ── HEADER ─────────────────────────────────────────── */}
       <div className="relative">
@@ -1124,7 +1141,7 @@ export default function Insights() {
                   style={{ color: "#F59E0B", filter: "drop-shadow(0 0 8px #F59E0Bcc)" }}
                 />
               </div>
-              <div>
+              <div className="flex-1">
                 <h2
                   className="text-2xl font-bold tracking-tight"
                   style={{
@@ -1140,10 +1157,9 @@ export default function Insights() {
                   {t("insights.topHighlightsSub", { defaultValue: "Your collector story" })}
                 </p>
               </div>
-              <div className="ml-auto hidden sm:flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-[#E0D8C8]/30 font-semibold">
-                <Sparkles className="w-3 h-3" />
-                Tap a card for story view
-              </div>
+              {fullStoryCards.length > 0 && (
+                <StoryTrigger onClick={() => setShowFullStory(true)} variant="secondary" size="small" />
+              )}
             </div>
           </div>
 

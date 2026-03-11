@@ -16,6 +16,9 @@ import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { PIPE_SILHOUETTE_URL } from "@/components/utils/collectionConstants";
 import { StatusCard, CATEGORY_COLORS } from "@/components/ui/HeroCard";
+import CollectorStory from "@/components/story/CollectorStory";
+import StoryTrigger from "@/components/story/StoryTrigger";
+import { generateStoryCards } from "@/components/story/generateStoryCards";
 
 const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
@@ -25,6 +28,7 @@ export default function Home() {
 
   const [showLogSession, setShowLogSession] = useState(false);
   const [showIdentify, setShowIdentify] = useState(false);
+  const [showStory, setShowStory] = useState(false);
 
   const { data: pipes = [] } = useQuery({
     queryKey: ["pipes", user?.email],
@@ -130,16 +134,25 @@ export default function Home() {
   // Summary stats for compact insights card
   const aiUpdateCount = (activePairings ? 1 : 0) + (activeOpt ? 1 : 0);
 
+  // Generate story cards
+  const storyCards = useMemo(() => {
+    if (!pipes.length && !blends.length) return [];
+    return generateStoryCards(pipes, blends, smokingLogs, totalCollectionValue, formatCurrency, t);
+  }, [pipes, blends, smokingLogs, totalCollectionValue, t]);
+
   return (
     <div className="space-y-6">
       {/* 1. HERO */}
-      <div className="text-center space-y-2 pt-2">
+      <div className="text-center space-y-3 pt-2">
         <h1 className="text-3xl font-bold font-serif text-[#E0D8C8]">
           {t("home.title")}
         </h1>
         <p className="text-base text-[#E0D8C8]/70 max-w-2xl mx-auto">
           {t("home.subtitle")}
         </p>
+        {storyCards.length > 0 && (
+          <StoryTrigger onClick={() => setShowStory(true)} variant="primary" />
+        )}
       </div>
 
       {/* 2. SUBSCRIPTION STATUS BANNER */}
@@ -598,6 +611,11 @@ export default function Home() {
         onClose={() => setShowIdentify(false)}
         pipes={pipes}
         blends={blends}
+      />
+      <CollectorStory
+        isOpen={showStory}
+        onClose={() => setShowStory(false)}
+        storyCards={storyCards}
       />
     </div>
   );
