@@ -135,7 +135,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
               onClick={() => setEditing(!editing)}
               className="shrink-0 text-blue-900 hover:text-blue-950"
             >
-              {editing ? t("pipeDetailTabs.done") : t("common.edit")}
+              {editing ? t("pipeDetailTabs.done", "Done") : t("common.edit", "Edit")}
             </Button>
           </div>
         </div>

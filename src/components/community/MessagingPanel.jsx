@@ -94,7 +94,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
       toast.success(t("messaging.messageSent"));
     },
     onError: () => {
-      toast.error(t("messaging.failedToSend"));
+      toast.error(t("messaging.failedToSend", { defaultValue: "Failed to send message. Please try again." }));
     },
   });
 
@@ -116,7 +116,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
       toast.success(t("messaging.messageDeleted"));
     },
     onError: () => {
-      toast.error(t("messaging.cannotDeleteOtherMessage"));
+      toast.error(t("messaging.cannotDeleteOtherMessage", { defaultValue: "You can only delete your own messages" }));
     },
   });
 
@@ -239,7 +239,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     return (
       <Card className="bg-white/95 border-[#e8d5b7]/30 p-4">
         <p className="text-sm text-stone-500 text-center">
-          {t("messaging.noFriendsWithMessaging")}
+          {t("messaging.noFriendsWithMessaging", "None of your friends have messaging enabled yet. Ask them to enable it in their Profile settings.")}
         </p>
       </Card>
     );
@@ -351,7 +351,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                 </p>
               </div>
             </SheetTitle>
-            <SheetDescription className="sr-only">{t("messaging.chatDescription")}</SheetDescription>
+            <SheetDescription className="sr-only">{t("messaging.chatDescription", "Chat conversation")}</SheetDescription>
           </SheetHeader>
 
           <ScrollArea className="flex-1 px-4 py-4">
@@ -492,7 +492,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
         <SheetContent className="w-full sm:max-w-lg" style={{ paddingTop: 'calc(1rem + var(--safe-area-top))' }}>
           <SheetHeader>
             <SheetTitle>{t("messaging.messageInbox")}</SheetTitle>
-            <SheetDescription className="sr-only">{t("messaging.inboxDescription")}</SheetDescription>
+            <SheetDescription className="sr-only">{t("messaging.inboxDescription", "Message inbox")}</SheetDescription>
           </SheetHeader>
           <ScrollArea className="h-full mt-6">
             <div className="space-y-4">

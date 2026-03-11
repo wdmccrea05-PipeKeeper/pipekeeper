@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
+import { PKCard, PKHeader } from "@/components/ui/pk-surface";
 import { BarChart3, Grid3x3, BookOpen, CalendarClock, FileText, Clock, Star } from "lucide-react";
 import PairingGrid from "@/components/home/PairingGrid";
 import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
@@ -23,19 +23,10 @@ import { differenceInMonths } from "date-fns";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-export default function CollectionInsightsPanel({ pipes, blends, user, activeTab: externalActiveTab, onTabChange }) {
+export default function CollectionInsightsPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
   const { hasPro } = useCurrentUser();
-  const [activeTab, setActiveTab] = useState(isAppleBuild ? "stats" : (externalActiveTab || "log"));
-
-  useEffect(() => {
-    if (externalActiveTab !== undefined) setActiveTab(externalActiveTab);
-  }, [externalActiveTab]);
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    onTabChange?.(tab);
-  };
+  const [activeTab, setActiveTab] = useState(isAppleBuild ? "stats" : "log");
 
   // Check for aging alerts — use already-fetched blends prop to avoid extra query
   const { data: agingAlertCount = 0 } = useQuery({
@@ -108,26 +99,19 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
   });
 
   return (
-    <div className="rounded-lg" style={{
-      background: "linear-gradient(145deg, rgba(48, 34, 22, 0.75), rgba(38, 26, 18, 0.88))",
-      border: "1px solid rgba(120, 90, 65, 0.32)",
-      boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)",
-    }}>
-      <div className="p-7">
-        <div className="mb-5">
-          <div className="flex items-center gap-2 mb-1.5">
-            <h2 className="text-xl font-semibold" style={{ 
-              color: "#F5F1E7", 
-              fontFamily: "'Georgia', serif",
-              textShadow: "0 1px 2px rgba(0,0,0,0.5)"
-            }}>
-              {isAppleBuild ? t("insights.titleInventory") : t("insights.title")}
-            </h2>
+    <PKCard>
+      <div className="p-6">
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-1">
+            <PKHeader 
+              title={isAppleBuild ? t("insights.titleInventory") : t("insights.title")}
+              className="mb-0"
+            />
             <InfoTooltip text={t("insights.tooltipSummary")} />
           </div>
-          <p className="text-sm" style={{ color: "rgba(224, 216, 200, 0.8)" }}>{t("insights.subtitle")}</p>
+          <p className="text-sm text-[#E0D8C8]/70">{t("insights.subtitle")}</p>
         </div>
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full items-center justify-center ${isAppleBuild ? "grid-cols-1" : "grid-cols-7"} gap-0 h-20`}>
             {isAppleBuild ? (
               <TabsTrigger value="stats" className="flex items-center justify-center gap-2">
@@ -138,27 +122,27 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
               <>
                 <TabsTrigger value="log" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <BookOpen className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.log")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.log", "Log")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="reference" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <Grid3x3 className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.pairingGrid")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.pairingGrid", "Pairings")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="rotation" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <CalendarClock className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.rotation")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.rotation", "Rotation")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="stats" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <BarChart3 className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.stats")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.stats", "Stats")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="trends" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <BarChart3 className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.trends")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.trends", "Trends")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="aging" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 relative">
                   <Clock className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.aging")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.aging", "Aging")}</span>
                   {agingAlertCount > 0 && (
                     <div className="absolute -top-1 -right-1 flex items-center justify-center">
                       <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
@@ -167,7 +151,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
                 </TabsTrigger>
                 <TabsTrigger value="reports" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <FileText className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.reports")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.reports", "Reports")}</span>
                 </TabsTrigger>
               </>
             )}
@@ -244,10 +228,10 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
                   <>
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.reports")}</h3>
+                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.reports", {defaultValue: "Reports"})}</h3>
                         <InfoTooltip text={t("insights.reportsTooltip")} />
                       </div>
-                      <p className="text-sm text-[#A4B0C4]">{t("insights.reportsSubtitle")}</p>
+                      <p className="text-sm text-[#A4B0C4]">{t("insights.reportsSubtitle", {defaultValue: "Export your collection and smoking logs"})}</p>
                     </div>
                     <SmokingLogReportExporter user={user} />
                     <AgingReportExporter user={user} />
@@ -281,10 +265,10 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
                   <>
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.agingDashboard")}</h3>
+                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.agingDashboard", {defaultValue: "Aging Dashboard"})}</h3>
                         <InfoTooltip text={t("insights.agingTooltip")} />
                       </div>
-                      <p className="text-sm text-[#A4B0C4]">{t("insights.agingSubtitle")}</p>
+                      <p className="text-sm text-[#A4B0C4]">{t("insights.agingSubtitle", {defaultValue: "Track cellared tobacco aging progress"})}</p>
                     </div>
                     <CellarAgingDashboard user={user} />
                   </>
@@ -294,6 +278,6 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
           )}
         </Tabs>
       </div>
-    </div>
+    </PKCard>
   );
 }

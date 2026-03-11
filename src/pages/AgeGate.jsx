@@ -17,17 +17,20 @@ export default function AgeGate({ onConfirm }) {
           </div>
 
           <CardTitle className="text-xl text-white">
-            {t("ageGate.title")}
+            {t("ageGate.title", { defaultValue: "Adults Only" })}
           </CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-3 text-center">
           <p className="text-white/80">
-            {t("ageGate.intendedForAdults")}
+            {t("ageGate.intendedForAdults", { defaultValue: "PipeKeeper is intended for adult users only." })}
           </p>
 
           <p className="text-white/60 text-sm">
-            {t("ageGate.disclaimer")}
+            {t("ageGate.disclaimer", {
+              defaultValue:
+                "This app is a collection management tool for pipe smoking enthusiasts. It does not sell or facilitate the purchase of tobacco products.",
+            })}
           </p>
         </CardContent>
 
@@ -36,7 +39,7 @@ export default function AgeGate({ onConfirm }) {
             className="w-full bg-[#8b3a3a] hover:bg-[#9b4343] text-white"
             onClick={onConfirm}
           >
-            {t("ageGate.confirmAge")}
+            {t("ageGate.confirmAge", { defaultValue: "I confirm I am of legal age" })}
           </Button>
         </CardFooter>
       </Card>

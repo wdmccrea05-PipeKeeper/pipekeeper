@@ -121,7 +121,7 @@ export default function UserReport() {
       <div className="max-w-7xl mx-auto p-6">
         <Card className="border-rose-200 bg-rose-50">
           <CardContent className="p-6">
-            <p className="text-rose-800">{t("userReport.errorLoadingUser")}: {userError.message}</p>
+            <p className="text-rose-800">{t("userReport.errorLoadingUser","Error loading user")}: {userError.message}</p>
           </CardContent>
         </Card>
       </div>
@@ -133,8 +133,8 @@ export default function UserReport() {
       <div className="max-w-7xl mx-auto p-6">
         <Card className="bg-white/95 border-rose-200">
           <CardContent className="p-6">
-            <p className="text-rose-800 font-semibold">{t("userReport.unauthorized")}</p>
-            <p className="text-rose-700 text-sm mt-2">{t("userReport.adminAccessRequired")}</p>
+            <p className="text-rose-800 font-semibold">{t("userReport.unauthorized","Unauthorized")}</p>
+            <p className="text-rose-700 text-sm mt-2">{t("userReport.adminAccessRequired","Admin access required to view this page.")}</p>
           </CardContent>
         </Card>
       </div>
@@ -156,7 +156,7 @@ export default function UserReport() {
       <div className="max-w-7xl mx-auto p-6">
         <Card className="border-rose-200 bg-rose-50">
           <CardContent className="p-6">
-            <p className="text-rose-800">{t("userReport.errorLoadingReport")}: {error.message}</p>
+            <p className="text-rose-800">{t("userReport.errorLoadingReport","Error loading report")}: {error.message}</p>
           </CardContent>
         </Card>
       </div>
@@ -178,8 +178,8 @@ export default function UserReport() {
     <div className="max-w-7xl mx-auto p-6">
       <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#e8d5b7]">{t("userReport.title")}</h1>
-          <p className="text-xs text-[#e8d5b7]/60 mt-1">{t("userReport.lastUpdated")}: {lastUpdated}</p>
+          <h1 className="text-3xl font-bold text-[#e8d5b7]">{t("userReport.title","User Subscription Report")}</h1>
+          <p className="text-xs text-[#e8d5b7]/60 mt-1">{t("userReport.lastUpdated","Last updated")}: {lastUpdated}</p>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <Button
@@ -188,13 +188,13 @@ export default function UserReport() {
                 setIsSyncing(true);
                 const res = await base44.functions.invoke('backfillStripeCustomers', {});
                 if (res?.data?.ok) {
-                  toast.success(t("userReport.backfillComplete", { created: res.data.createdUsers ?? res.data.created ?? 0, updated: res.data.updatedUsers ?? res.data.updated ?? 0 }));
+                  toast.success(t("userReport.backfillComplete","Backfill complete: {{created}} created, {{updated}} updated",{created: res.data.createdUsers ?? res.data.created ?? 0, updated: res.data.updatedUsers ?? res.data.updated ?? 0}));
                 } else {
-                  toast.error(res?.data?.error || t("userReport.backfillFailed"));
+                  toast.error(res?.data?.error || t("userReport.backfillFailed","Backfill failed"));
                 }
                 await refetch();
               } catch (e) {
-                toast.error(e?.message || t("userReport.backfillFailed"));
+                toast.error(e?.message || t("userReport.backfillFailed","Backfill failed"));
               } finally {
                 setIsSyncing(false);
               }
@@ -204,13 +204,13 @@ export default function UserReport() {
             disabled={isSyncing}
           >
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-            {isSyncing ? t("userReport.syncing") : t("userReport.backfillFromStripe")}
+            {isSyncing ? t("userReport.syncing","Syncing…") : t("userReport.backfillFromStripe","Backfill from Stripe")}
           </Button>
 
           <Button
             onClick={() => {
               refetch();
-              toast.success(t("userReport.reportRefreshed"));
+              toast.success(t("userReport.reportRefreshed","Report refreshed"));
             }}
             variant="outline"
             className="w-full gap-2 sm:w-auto"
@@ -239,7 +239,7 @@ export default function UserReport() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-stone-600 flex items-center gap-2">
               <Users className="w-4 h-4" />
-              {t("userReport.totalUsers")}
+              {t("userReport.totalUsers","Total Users")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -260,7 +260,7 @@ export default function UserReport() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-emerald-600 flex items-center gap-2">
               <Crown className="w-4 h-4" />
-              {t("userReport.paidUsers")}
+              {t("userReport.paidUsers","Paid Users")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -281,7 +281,7 @@ export default function UserReport() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-stone-600 flex items-center gap-2">
               <UserX className="w-4 h-4" />
-              {t("userReport.freeUsers")}
+              {t("userReport.freeUsers","Free Users")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -293,7 +293,7 @@ export default function UserReport() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-blue-600 flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
-              {t("userReport.paidPercentage")}
+              {t("userReport.paidPercentage","Paid %")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -305,7 +305,7 @@ export default function UserReport() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-purple-600 flex items-center gap-2">
               <UserPlus className="w-4 h-4" />
-              {t("userReport.new7Days")}
+              {t("userReport.new7Days","New (7 days)")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -318,16 +318,16 @@ export default function UserReport() {
           <>
             <Card className="bg-white/95 border-gray-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.apple")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.apple","Apple")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-emerald-600">{t("userReport.paid")}:</span>
+                    <span className="text-emerald-600">{t("userReport.paid","Paid")}:</span>
                     <span className="font-bold text-emerald-700">{platformBreakdown.apple?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.free")}:</span>
+                    <span className="text-gray-600">{t("userReport.free","Free")}:</span>
                     <span className="font-bold text-gray-700">{platformBreakdown.apple?.free || 0}</span>
                   </div>
                 </div>
@@ -336,16 +336,16 @@ export default function UserReport() {
 
             <Card className="bg-white/95 border-green-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-green-700">{t("userReport.android")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-green-700">{t("userReport.android","Android")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-emerald-600">{t("userReport.paid")}:</span>
+                    <span className="text-emerald-600">{t("userReport.paid","Paid")}:</span>
                     <span className="font-bold text-emerald-700">{platformBreakdown.android?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.free")}:</span>
+                    <span className="text-gray-600">{t("userReport.free","Free")}:</span>
                     <span className="font-bold text-gray-700">{platformBreakdown.android?.free || 0}</span>
                   </div>
                 </div>
@@ -354,16 +354,16 @@ export default function UserReport() {
 
             <Card className="bg-white/95 border-blue-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-blue-700">{t("userReport.web")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-blue-700">{t("userReport.web","Web")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-emerald-600">{t("userReport.paid")}:</span>
+                    <span className="text-emerald-600">{t("userReport.paid","Paid")}:</span>
                     <span className="font-bold text-emerald-700">{platformBreakdown.web?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.free")}:</span>
+                    <span className="text-gray-600">{t("userReport.free","Free")}:</span>
                     <span className="font-bold text-gray-700">{platformBreakdown.web?.free || 0}</span>
                   </div>
                 </div>
@@ -372,16 +372,16 @@ export default function UserReport() {
 
             <Card className="bg-white/95 border-purple-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-purple-700">{t("userReport.iOS")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-purple-700">{t("userReport.iOS","iOS")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-emerald-600">{t("userReport.paid")}:</span>
+                    <span className="text-emerald-600">{t("userReport.paid","Paid")}:</span>
                     <span className="font-bold text-emerald-700">{platformBreakdown.ios?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.free")}:</span>
+                    <span className="text-gray-600">{t("userReport.free","Free")}:</span>
                     <span className="font-bold text-gray-700">{platformBreakdown.ios?.free || 0}</span>
                   </div>
                 </div>
@@ -390,16 +390,16 @@ export default function UserReport() {
 
             <Card className="bg-white/95 border-amber-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-amber-700">{t("userReport.unknown")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-amber-700">{t("userReport.unknown","Unknown")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-emerald-600">{t("userReport.paid")}:</span>
+                    <span className="text-emerald-600">{t("userReport.paid","Paid")}:</span>
                     <span className="font-bold text-emerald-700">{platformBreakdown.unknown?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.free")}:</span>
+                    <span className="text-gray-600">{t("userReport.free","Free")}:</span>
                     <span className="font-bold text-gray-700">{platformBreakdown.unknown?.free || 0}</span>
                   </div>
                 </div>
@@ -415,33 +415,33 @@ export default function UserReport() {
           <CardHeader className="pb-3">
             <CardTitle className="text-stone-800 flex items-center gap-2">
               <Clock className="w-5 h-5 text-orange-600" />
-              {t("userReport.trialMetrics")}
+              {t("userReport.trialMetrics","Trial Metrics")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div className="p-3 bg-orange-50 rounded-lg border border-orange-100">
-                <p className="text-xs text-orange-600 font-medium truncate">{t("userReport.currentlyOnTrial")}</p>
+                <p className="text-xs text-orange-600 font-medium truncate">{t("userReport.currentlyOnTrial","Currently on Trial")}</p>
                 <p className="text-2xl font-bold text-orange-800">{trialMetrics.currentlyOnTrial || 0}</p>
               </div>
               <div className="p-3 bg-red-50 rounded-lg border border-red-100">
-                <p className="text-xs text-red-600 font-medium truncate">{t("userReport.endingIn3Days")}</p>
+                <p className="text-xs text-red-600 font-medium truncate">{t("userReport.endingIn3Days","Ending in 3 Days")}</p>
                 <p className="text-2xl font-bold text-red-800">{trialMetrics.endingIn3Days || 0}</p>
               </div>
               <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
-                <p className="text-xs text-yellow-600 font-medium truncate">{t("userReport.endingIn7Days")}</p>
+                <p className="text-xs text-yellow-600 font-medium truncate">{t("userReport.endingIn7Days","Ending in 7 Days")}</p>
                 <p className="text-2xl font-bold text-yellow-800">{trialMetrics.endingIn7Days || 0}</p>
               </div>
               <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                <p className="text-xs text-blue-600 font-medium truncate">{t("userReport.avgDaysRemaining")}</p>
+                <p className="text-xs text-blue-600 font-medium truncate">{t("userReport.avgDaysRemaining","Avg Days Remaining")}</p>
                 <p className="text-2xl font-bold text-blue-800">{trialMetrics.avgDaysRemaining || 0}</p>
               </div>
               <div className="p-3 bg-green-50 rounded-lg border border-green-100">
-                <p className="text-xs text-green-600 font-medium truncate">{t("userReport.converted30d")}</p>
+                <p className="text-xs text-green-600 font-medium truncate">{t("userReport.converted30d","Converted (30d)")}</p>
                 <p className="text-2xl font-bold text-green-800">{trialMetrics.convertedLast30d || 0}</p>
               </div>
               <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
-                <p className="text-xs text-rose-600 font-medium truncate">{t("userReport.dropoffs30d")}</p>
+                <p className="text-xs text-rose-600 font-medium truncate">{t("userReport.dropoffs30d","Drop-offs (30d)")}</p>
                 <p className="text-2xl font-bold text-rose-800">{trialMetrics.dropoffLast30d || 0}</p>
               </div>
             </div>
@@ -455,7 +455,7 @@ export default function UserReport() {
           <CardHeader className="pb-3">
             <CardTitle className="text-stone-800 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-blue-600" />
-              {t("userReport.weeklyGrowth")}
+              {t("userReport.weeklyGrowth","Weekly Growth (Last 8 Weeks)")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -466,9 +466,9 @@ export default function UserReport() {
                 <YAxis tick={{ fill: '#5a5a5a', fontSize: 12 }} />
                 <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #ddd' }} />
                 <Legend />
-                <Bar dataKey="newUsers" fill="#3b82f6" name={t("userReport.newUsers")} />
-                <Bar dataKey="newPaidSubscribers" fill="#10b981" name={t("userReport.newPaid")} />
-                <Bar dataKey="newProSubscribers" fill="#f59e0b" name={t("userReport.newPro")} />
+                <Bar dataKey="newUsers" fill="#3b82f6" name={t("userReport.newUsers","New Users")} />
+                <Bar dataKey="newPaidSubscribers" fill="#10b981" name={t("userReport.newPaid","New Paid")} />
+                <Bar dataKey="newProSubscribers" fill="#f59e0b" name={t("userReport.newPro","New Pro")} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -481,25 +481,25 @@ export default function UserReport() {
           <CardHeader className="pb-3">
             <CardTitle className="text-stone-800 flex items-center gap-2">
               <TrendingDown className="w-5 h-5 text-red-600" />
-              {t("userReport.churnDowngrades")}
+              {t("userReport.churnDowngrades","Churn & Downgrades (Last 30 Days)")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-3 bg-red-50 rounded-lg border border-red-100">
-                <p className="text-xs text-red-600 font-medium truncate">{t("userReport.premiumChurnRate")}</p>
+                <p className="text-xs text-red-600 font-medium truncate">{t("userReport.premiumChurnRate","Premium Churn Rate")}</p>
                 <p className="text-2xl font-bold text-red-800">{churnMetrics.premiumChurn30d || 0}%</p>
               </div>
               <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
-                <p className="text-xs text-rose-600 font-medium truncate">{t("userReport.proChurnRate")}</p>
+                <p className="text-xs text-rose-600 font-medium truncate">{t("userReport.proChurnRate","Pro Churn Rate")}</p>
                 <p className="text-2xl font-bold text-rose-800">{churnMetrics.proChurn30d || 0}%</p>
               </div>
               <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
-                <p className="text-xs text-purple-600 font-medium truncate">{t("userReport.proToPremium")}</p>
+                <p className="text-xs text-purple-600 font-medium truncate">{t("userReport.proToPremium","Pro → Premium")}</p>
                 <p className="text-2xl font-bold text-purple-800">{churnMetrics.proToPremiumDowngrade || 0}</p>
               </div>
               <div className="p-3 bg-pink-50 rounded-lg border border-pink-100">
-                <p className="text-xs text-pink-600 font-medium truncate">{t("userReport.premiumToFree")}</p>
+                <p className="text-xs text-pink-600 font-medium truncate">{t("userReport.premiumToFree","Premium → Free")}</p>
                 <p className="text-2xl font-bold text-pink-800">{churnMetrics.premiumToFreeDowngrade || 0}</p>
               </div>
             </div>
@@ -512,8 +512,8 @@ export default function UserReport() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card className="bg-white/95 border-[#e8d5b7]/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-indigo-600">{t("userReport.premiumUsers")}</CardTitle>
-              <p className="text-xs text-stone-500 mt-1">{t("userReport.postFeb1")}</p>
+              <CardTitle className="text-sm font-medium text-indigo-600">{t("userReport.premiumUsers","Premium Users")}</CardTitle>
+              <p className="text-xs text-stone-500 mt-1">{t("userReport.postFeb1","Post Feb 1, 2026")}</p>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-indigo-700">{userCounts.premium || 0}</p>
@@ -521,7 +521,7 @@ export default function UserReport() {
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-amber-600">{t("userReport.proUsers")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-amber-600">{t("userReport.proUsers","Pro Users")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-amber-700">{userCounts.pro || 0}</p>
@@ -529,7 +529,7 @@ export default function UserReport() {
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-rose-600">{t("userReport.onTrial")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-rose-600">{t("userReport.onTrial","On Trial")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-rose-700">{trialMetrics.currentlyOnTrial || 0}</p>
@@ -537,7 +537,7 @@ export default function UserReport() {
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-cyan-600">{t("userReport.activeTrialPremium")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-cyan-600">{t("userReport.activeTrialPremium","Active/Trial Premium")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-cyan-700">{subscriptionBreakdown.activeOrTrialPremium || 0}</p>
@@ -545,7 +545,7 @@ export default function UserReport() {
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-orange-600">{t("userReport.activeTrialPro")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-orange-600">{t("userReport.activeTrialPro","Active/Trial Pro")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-orange-700">{subscriptionBreakdown.activeOrTrialPro || 0}</p>
@@ -553,8 +553,8 @@ export default function UserReport() {
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-fuchsia-600">{t("userReport.legacyPremium")}</CardTitle>
-              <p className="text-xs text-stone-500 mt-1">{t("userReport.subscribedBeforeFeb1")}</p>
+              <CardTitle className="text-sm font-medium text-fuchsia-600">{t("userReport.legacyPremium","Legacy Premium")}</CardTitle>
+              <p className="text-xs text-stone-500 mt-1">{t("userReport.subscribedBeforeFeb1","Subscribed before Feb 1, 2026")}</p>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-fuchsia-700">{userCounts.legacyPremium || 0}</p>
@@ -568,20 +568,20 @@ export default function UserReport() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card className="bg-white/95 border-[#e8d5b7]/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-indigo-600">{t("userReport.avgPipesPerUser")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-indigo-600">{t("userReport.avgPipesPerUser","Avg Pipes per User")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">{t("userReport.free")}</span>
+                  <span className="text-stone-600">{t("userReport.free","Free")}</span>
                   <span className="font-bold text-stone-800">{usageAvgPipes.free || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">{t("userReport.premium")}</span>
+                  <span className="text-stone-600">{t("userReport.premium","Premium")}</span>
                   <span className="font-bold text-stone-800">{usageAvgPipes.premium || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">{t("userReport.pro")}</span>
+                  <span className="text-stone-600">{t("userReport.pro","Pro")}</span>
                   <span className="font-bold text-stone-800">{usageAvgPipes.pro || 0}</span>
                 </div>
               </div>
@@ -589,20 +589,20 @@ export default function UserReport() {
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-amber-600">{t("userReport.avgTobaccosPerUser")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-amber-600">{t("userReport.avgTobaccosPerUser","Avg Tobaccos per User")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">{t("userReport.free")}</span>
+                  <span className="text-stone-600">{t("userReport.free","Free")}</span>
                   <span className="font-bold text-stone-800">{usageAvgTobaccos.free || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">{t("userReport.premium")}</span>
+                  <span className="text-stone-600">{t("userReport.premium","Premium")}</span>
                   <span className="font-bold text-stone-800">{usageAvgTobaccos.premium || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">{t("userReport.pro")}</span>
+                  <span className="text-stone-600">{t("userReport.pro","Pro")}</span>
                   <span className="font-bold text-stone-800">{usageAvgTobaccos.pro || 0}</span>
                 </div>
               </div>
@@ -610,11 +610,11 @@ export default function UserReport() {
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-cyan-600">{t("userReport.communityEngagement")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-cyan-600">{t("userReport.communityEngagement","Community Engagement")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-cyan-700">{usageMetrics.communityEngagement || 0}%</p>
-              <p className="text-xs text-stone-500 mt-1">{t("userReport.usersWithComments")}</p>
+              <p className="text-xs text-stone-500 mt-1">{t("userReport.usersWithComments","Users with comments")}</p>
             </CardContent>
           </Card>
         </div>
@@ -625,7 +625,7 @@ export default function UserReport() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-stone-400" />
           <Input
-            placeholder={t("userReport.searchPlaceholder")}
+            placeholder={t("userReport.searchPlaceholder","Search by name or email...")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-white"
@@ -642,7 +642,7 @@ export default function UserReport() {
                 <CardTitle className="text-stone-800 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Crown className="w-5 h-5 text-amber-600" />
-                    {t("userReport.paidUsersCount", { count: filteredData.paid.length })}
+                    {t("userReport.paidUsersCount","Paid Users ({{count}})",{count: filteredData.paid.length})}
                   </div>
                   {showPaidTable ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </CardTitle>
@@ -658,32 +658,32 @@ export default function UserReport() {
                           className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
                           onClick={() => handleSort('full_name')}
                         >
-                          {t("userReport.name")} {sortColumn === 'full_name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                          {t("userReport.name","Name")} {sortColumn === 'full_name' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
                           className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
                           onClick={() => handleSort('email')}
                         >
-                          {t("userReport.email")} {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
+                          {t("userReport.email","Email")} {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
                           className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
                           onClick={() => handleSort('subscription_status')}
                         >
-                          {t("userReport.status")} {sortColumn === 'subscription_status' && (sortDirection === 'asc' ? '↑' : '↓')}
+                          {t("userReport.status","Status")} {sortColumn === 'subscription_status' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-stone-700">{t("userReport.billing")}</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-stone-700">{t("userReport.billing","Billing")}</th>
                         <th 
                           className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
                           onClick={() => handleSort('subscription_end')}
                         >
-                          {t("userReport.periodEnd")} {sortColumn === 'subscription_end' && (sortDirection === 'asc' ? '↑' : '↓')}
+                          {t("userReport.periodEnd","Period End")} {sortColumn === 'subscription_end' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
                           className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
                           onClick={() => handleSort('created_date')}
                         >
-                          {t("userReport.joined")} {sortColumn === 'created_date' && (sortDirection === 'asc' ? '↑' : '↓')}
+                          {t("userReport.joined","Joined")} {sortColumn === 'created_date' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                       </tr>
                     </thead>
@@ -691,7 +691,7 @@ export default function UserReport() {
                       {filteredData.paid.length === 0 ? (
                         <tr>
                           <td colSpan="6" className="text-center py-8 text-stone-500">
-                            {searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noPaidUsersFound")}
+                            {searchQuery ? t("userReport.noUsersMatchSearch","No users match your search") : t("userReport.noPaidUsersFound","No paid users found")}
                           </td>
                         </tr>
                       ) : (
@@ -730,7 +730,7 @@ export default function UserReport() {
                 <CardTitle className="text-stone-800 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <UserX className="w-5 h-5 text-stone-600" />
-                    {t("userReport.freeUsersCount", { count: filteredData.free.length })}
+                    {t("userReport.freeUsersCount","Free Users ({{count}})",{count: filteredData.free.length})}
                   </div>
                   {showFreeTable ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </CardTitle>
@@ -746,25 +746,25 @@ export default function UserReport() {
                           className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
                           onClick={() => handleSort('full_name')}
                         >
-                          {t("userReport.name")} {sortColumn === 'full_name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                          {t("userReport.name","Name")} {sortColumn === 'full_name' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
                           className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
                           onClick={() => handleSort('email')}
                         >
-                          {t("userReport.email")} {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
+                          {t("userReport.email","Email")} {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
                           className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
                           onClick={() => handleSort('subscription_status')}
                         >
-                          {t("userReport.status")} {sortColumn === 'subscription_status' && (sortDirection === 'asc' ? '↑' : '↓')}
+                          {t("userReport.status","Status")} {sortColumn === 'subscription_status' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
                           className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
                           onClick={() => handleSort('created_date')}
                         >
-                          {t("userReport.joined")} {sortColumn === 'created_date' && (sortDirection === 'asc' ? '↑' : '↓')}
+                          {t("userReport.joined","Joined")} {sortColumn === 'created_date' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                       </tr>
                     </thead>
@@ -772,7 +772,7 @@ export default function UserReport() {
                       {filteredData.free.length === 0 ? (
                         <tr>
                           <td colSpan="4" className="text-center py-8 text-stone-500">
-                            {searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noFreeUsersFound")}
+                            {searchQuery ? t("userReport.noUsersMatchSearch","No users match your search") : t("userReport.noFreeUsersFound","No free users found")}
                           </td>
                         </tr>
                       ) : (

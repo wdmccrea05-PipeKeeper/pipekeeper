@@ -5,17 +5,6 @@
 
 export const homeTranslations = {
   en: {
-    quickActions: {
-      sectionTitle: "Quick Actions",
-      logSession: "Log Session",
-      identify: "Identify",
-      optimize: "Optimize",
-      collectionCurator: "Collection Curator",
-      viewStory: "View Story",
-    },
-    story: {
-      viewStory: "View Story",
-    },
     home: {
       pageTitle: "Welcome to PipeKeeper",
       pageSubtitle: "Track your pipes, tobacco, and smoking moments",
@@ -39,7 +28,7 @@ export const homeTranslations = {
       viewCellar: "View Cellar",
       favorites: "Favorites",
       insightsError: "Unable to load insights. Please try refreshing.",
-      expertTobacconistError: "Unable to load Collection Curator. Please try refreshing.",
+      expertTobacconistError: "Unable to load Expert Tobacconist. Please try refreshing.",
       recentPipes: "Recent Pipes",
       recentTobacco: "Recent Tobacco",
       viewAll: "View all",
@@ -54,17 +43,6 @@ export const homeTranslations = {
     }
   },
   es: {
-    quickActions: {
-      sectionTitle: "Acciones Rápidas",
-      logSession: "Registrar Sesión",
-      identify: "Identificar",
-      optimize: "Optimizar",
-      collectionCurator: "Curador de Colección",
-      viewStory: "Ver Historia",
-    },
-    story: {
-      viewStory: "Ver Historia",
-    },
     home: {
       pageTitle: "Bienvenido a PipeKeeper",
       pageSubtitle: "Rastrea tus pipas, tabaco y momentos de fumar",
@@ -103,17 +81,6 @@ export const homeTranslations = {
     }
   },
   fr: {
-    quickActions: {
-      sectionTitle: "Actions Rapides",
-      logSession: "Enregistrer la Session",
-      identify: "Identifier",
-      optimize: "Optimiser",
-      collectionCurator: "Conservateur de Collection",
-      viewStory: "Voir l'Histoire",
-    },
-    story: {
-      viewStory: "Voir l'Histoire",
-    },
     home: {
       pageTitle: "Bienvenue sur PipeKeeper",
       pageSubtitle: "Suivez vos pipes, tabac et moments de fumage",
@@ -152,17 +119,6 @@ export const homeTranslations = {
     }
   },
   de: {
-    quickActions: {
-      sectionTitle: "Schnellaktionen",
-      logSession: "Sitzung Aufzeichnen",
-      identify: "Identifizieren",
-      optimize: "Optimieren",
-      collectionCurator: "Sammlungskurator",
-      viewStory: "Geschichte Ansehen",
-    },
-    story: {
-      viewStory: "Geschichte Ansehen",
-    },
     home: {
       pageTitle: "Willkommen bei PipeKeeper",
       pageSubtitle: "Verwalte deine Pfeifen, Tabak und Rauchermomente",
@@ -201,17 +157,6 @@ export const homeTranslations = {
     }
   },
   it: {
-    quickActions: {
-      sectionTitle: "Azioni Rapide",
-      logSession: "Registra Sessione",
-      identify: "Identifica",
-      optimize: "Ottimizza",
-      collectionCurator: "Curatore della Collezione",
-      viewStory: "Visualizza Storia",
-    },
-    story: {
-      viewStory: "Visualizza Storia",
-    },
     home: {
       pageTitle: "Benvenuto su PipeKeeper",
       pageSubtitle: "Traccia le tue pipe, il tabacco e i momenti fumanti",
@@ -250,17 +195,6 @@ export const homeTranslations = {
     }
   },
   "pt-BR": {
-    quickActions: {
-      sectionTitle: "Ações Rápidas",
-      logSession: "Registrar Sessão",
-      identify: "Identificar",
-      optimize: "Otimizar",
-      collectionCurator: "Curador de Coleção",
-      viewStory: "Ver História",
-    },
-    story: {
-      viewStory: "Ver História",
-    },
     home: {
       pageTitle: "Bem-vindo ao PipeKeeper",
       pageSubtitle: "Acompanhe seus cachimbos, tabaco e momentos fumantes",
@@ -299,17 +233,6 @@ export const homeTranslations = {
     }
   },
   nl: {
-    quickActions: {
-      sectionTitle: "Snelle Acties",
-      logSession: "Sessie Vastleggen",
-      identify: "Identificeren",
-      optimize: "Optimaliseren",
-      collectionCurator: "Collectie Curator",
-      viewStory: "Verhaal Bekijken",
-    },
-    story: {
-      viewStory: "Verhaal Bekijken",
-    },
     home: {
       pageTitle: "Welkom bij PipeKeeper",
       pageSubtitle: "Volg je pijpen, tabak en rookmomenten",
@@ -348,17 +271,6 @@ export const homeTranslations = {
     }
   },
   pl: {
-    quickActions: {
-      sectionTitle: "Szybkie Akcje",
-      logSession: "Zapisz Sesję",
-      identify: "Zidentyfikuj",
-      optimize: "Optymalizuj",
-      collectionCurator: "Kurator Kolekcji",
-      viewStory: "Zobacz Historię",
-    },
-    story: {
-      viewStory: "Zobacz Historię",
-    },
     home: {
       pageTitle: "Witaj w PipeKeeper",
       pageSubtitle: "Śledź swoje fajki, tytoń i chwile palenia",
@@ -397,17 +309,6 @@ export const homeTranslations = {
     }
   },
   ja: {
-    quickActions: {
-      sectionTitle: "クイックアクション",
-      logSession: "セッションを記録",
-      identify: "識別",
-      optimize: "最適化",
-      collectionCurator: "コレクションキュレーター",
-      viewStory: "ストーリーを見る",
-    },
-    story: {
-      viewStory: "ストーリーを見る",
-    },
     home: {
       pageTitle: "PipeKeeperへようこそ",
       pageSubtitle: "パイプ、タバコ、喫煙時間を追跡します",
@@ -446,17 +347,6 @@ export const homeTranslations = {
     }
   },
   "zh-Hans": {
-    quickActions: {
-      sectionTitle: "快速操作",
-      logSession: "记录会话",
-      identify: "识别",
-      optimize: "优化",
-      collectionCurator: "收藏策展人",
-      viewStory: "查看故事",
-    },
-    story: {
-      viewStory: "查看故事",
-    },
     home: {
       pageTitle: "欢迎使用PipeKeeper",
       pageSubtitle: "追踪你的烟斗、烟草和吸烟时刻",

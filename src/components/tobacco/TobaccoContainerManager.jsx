@@ -38,7 +38,7 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tobacco-containers'] });
       resetForm();
-      toast.success(t("containerManager.containerAdded"));
+      toast.success(t("containerManager.containerAdded","Container added"));
     },
   });
 
@@ -47,7 +47,7 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tobacco-containers'] });
       resetForm();
-      toast.success(t("containerManager.containerUpdated"));
+      toast.success(t("containerManager.containerUpdated","Container updated"));
     },
   });
 
@@ -55,7 +55,7 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
     mutationFn: (id) => base44.entities.TobaccoContainer.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tobacco-containers'] });
-      toast.success(t("containerManager.containerRemoved"));
+      toast.success(t("containerManager.containerRemoved","Container removed"));
     },
   });
 
@@ -112,7 +112,7 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Package className="w-5 h-5 text-amber-600" />
-          <h3 className="font-semibold text-stone-800">{t("containerManager.containerTracking")}</h3>
+          <h3 className="font-semibold text-stone-800">{t("containerManager.containerTracking","Container Tracking")}</h3>
         </div>
         <Button 
           onClick={() => setShowDialog(true)}
@@ -120,7 +120,7 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
           className="bg-amber-700 hover:bg-amber-800"
         >
           <Plus className="w-4 h-4 mr-2" />
-          {t("containerManager.addContainer")}
+          {t("containerManager.addContainer","Add Container")}
         </Button>
       </div>
       
@@ -129,12 +129,12 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
           <div className="text-center py-8 text-stone-500">
             <Package2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-sm">
-              {showOnlyOpen ? t("containerManager.noOpenContainers") : t("containerManager.noContainers")}
+              {showOnlyOpen ? t("containerManager.noOpenContainers","No open containers yet") : t("containerManager.noContainers","No containers tracked yet")}
             </p>
             <p className="text-xs mt-1">
               {showOnlyOpen 
-                ? t("containerManager.addOpenTip")
-                : t("containerManager.trackTip")}
+                ? t("containerManager.addOpenTip","Add containers and mark them as open to track usage")
+                : t("containerManager.trackTip","Track individual tins, jars, and bulk quantities")}
             </p>
           </div>
         ) : (
@@ -142,19 +142,19 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
             {!showOnlyOpen && (
               <div className="grid grid-cols-3 gap-2 mb-4">
                 <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-                  <p className="text-xs text-amber-700 mb-1">{t("containerManager.total")}</p>
-                  <p className="text-lg font-bold text-amber-900">{totalQuantityOz} {t("common.oz")}</p>
-                  <p className="text-xs text-amber-600">{totalQuantity.toFixed(2)}{t("containerManager.g")}</p>
+                  <p className="text-xs text-amber-700 mb-1">{t("containerManager.total","Total")}</p>
+                  <p className="text-lg font-bold text-amber-900">{totalQuantityOz} {t("common.oz","oz")}</p>
+                  <p className="text-xs text-amber-600">{totalQuantity.toFixed(2)}{t("containerManager.g","g")}</p>
                 </div>
                 <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                  <p className="text-xs text-emerald-700 mb-1">{t("containerManager.open")}</p>
-                  <p className="text-lg font-bold text-emerald-900">{openQuantityOz} {t("common.oz")}</p>
-                  <p className="text-xs text-emerald-600">{openQuantityGrams.toFixed(2)}{t("containerManager.g")}</p>
+                  <p className="text-xs text-emerald-700 mb-1">{t("containerManager.open","Open")}</p>
+                  <p className="text-lg font-bold text-emerald-900">{openQuantityOz} {t("common.oz","oz")}</p>
+                  <p className="text-xs text-emerald-600">{openQuantityGrams.toFixed(2)}{t("containerManager.g","g")}</p>
                 </div>
                 <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <p className="text-xs text-blue-700 mb-1">{t("containerManager.cellared")}</p>
-                  <p className="text-lg font-bold text-blue-900">{cellaringQuantityOz} {t("common.oz")}</p>
-                  <p className="text-xs text-blue-600">{cellaringQuantityGrams.toFixed(2)}{t("containerManager.g")}</p>
+                  <p className="text-xs text-blue-700 mb-1">{t("containerManager.cellared","Cellared")}</p>
+                  <p className="text-lg font-bold text-blue-900">{cellaringQuantityOz} {t("common.oz","oz")}</p>
+                  <p className="text-xs text-blue-600">{cellaringQuantityGrams.toFixed(2)}{t("containerManager.g","g")}</p>
                 </div>
               </div>
             )}
@@ -172,21 +172,21 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
                         {container.is_open ? (
                           <>
                             <Package className="w-3 h-3 mr-1" />
-                            {t("containerManager.openBadge")}
+                            {t("containerManager.openBadge","Open")}
                           </>
                         ) : (
                           <>
                             <Archive className="w-3 h-3 mr-1" />
-                            {t("containerManager.cellaredBadge")}
+                            {t("containerManager.cellaredBadge","Cellared")}
                           </>
                         )}
                       </Badge>
                     </div>
                     <p className="text-sm text-stone-600 mt-1">
-                      {container.quantity_grams.toFixed(2)}{t("containerManager.g")} ({(container.quantity_grams / 28.35).toFixed(2)} {t("common.oz")})
+                      {container.quantity_grams.toFixed(2)}{t("containerManager.g","g")} ({(container.quantity_grams / 28.35).toFixed(2)} {t("common.oz","oz")})
                       {container.created_date && (
                         <span className="text-xs text-stone-400 ml-2">
-                          {t("containerManager.added")} {new Date(container.created_date).toLocaleDateString()}
+                          {t("containerManager.added","Added")} {new Date(container.created_date).toLocaleDateString()}
                         </span>
                       )}
                     </p>
@@ -203,7 +203,7 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
                       size="sm"
                       variant="ghost"
                       onClick={() => {
-                        if (window.confirm(t("containerManager.removeConfirm"))) {
+                        if (window.confirm(t("containerManager.removeConfirm","Remove this container?"))) {
                           deleteMutation.mutate(container.id);
                         }
                       }}
@@ -225,17 +225,17 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
       }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingContainer ? t("containerManager.edit") : t("containerManager.add")} {t("containerManager.container")}</DialogTitle>
+            <DialogTitle>{editingContainer ? t("containerManager.edit","Edit") : t("containerManager.add","Add")} {t("containerManager.container","Container")}</DialogTitle>
             <DialogDescription>
-              {t("containerManager.trackIndividual")} {blendName}
+              {t("containerManager.trackIndividual","Track individual containers for")} {blendName}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="containerName">{t("containerManager.containerName")}</Label>
+              <Label htmlFor="containerName">{t("containerManager.containerName","Container Name")}</Label>
               <Input
                 id="containerName"
-                placeholder={t("containerManager.namePlaceholder")}
+                placeholder={t("containerManager.namePlaceholder","e.g., Tin #1, Mason Jar A, Bulk Pouch")}
                 value={containerName}
                 onChange={(e) => setContainerName(e.target.value)}
                 required
@@ -243,24 +243,24 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="quantity">{t("containerManager.quantityGrams")}</Label>
+              <Label htmlFor="quantity">{t("containerManager.quantityGrams","Quantity (grams)")}</Label>
               <Input
                 id="quantity"
                 type="number"
                 step="0.1"
                 min="0"
-                placeholder={t("containerManager.gramsPlaceholder")}
+                placeholder={t("containerManager.gramsPlaceholder","e.g., 50")}
                 value={quantityGrams}
                 onChange={(e) => setQuantityGrams(e.target.value)}
                 required
               />
               <p className="text-xs text-stone-500">
-                {t("containerManager.conversionTip")}
+                {t("containerManager.conversionTip","Tip: 1 oz ≈ 28.35g, 50g ≈ 1.76 oz")}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">{t("containerManager.status")}</Label>
+              <Label htmlFor="status">{t("containerManager.status","Status")}</Label>
               <Select 
                 value={isOpen ? "open" : "cellared"}
                 onValueChange={(value) => setIsOpen(value === "open")}
@@ -269,8 +269,8 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="open">{t("containerManager.openRotation")}</SelectItem>
-                  <SelectItem value="cellared">{t("containerManager.cellaredAging")}</SelectItem>
+                  <SelectItem value="open">{t("containerManager.openRotation","Open (in rotation)")}</SelectItem>
+                  <SelectItem value="cellared">{t("containerManager.cellaredAging","Cellared (aging)")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -284,7 +284,7 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
                 className="bg-amber-700 hover:bg-amber-800"
                 disabled={createMutation.isPending || updateMutation.isPending}
               >
-                {editingContainer ? t("containerManager.update") : t("containerManager.add")} {t("containerManager.container")}
+                {editingContainer ? t("containerManager.update","Update") : t("containerManager.add","Add")} {t("containerManager.container","Container")}
               </Button>
             </div>
           </form>

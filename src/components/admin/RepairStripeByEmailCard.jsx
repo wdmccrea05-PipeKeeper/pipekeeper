@@ -19,7 +19,7 @@ export default function RepairStripeByEmailCard() {
 
   const runRepair = async (dryRun) => {
     if (!email.trim()) {
-      toast.error(t('admin.emailRequired'));
+      toast.error(t('admin.emailRequired', 'Email is required'));
       return;
     }
 
@@ -37,8 +37,8 @@ export default function RepairStripeByEmailCard() {
       if (response.data.ok) {
         toast.success(
           dryRun 
-            ? t('admin.repairStripeByEmailDryRunDone')
-            : t('admin.repairStripeByEmailSuccessMsg', { action: response.data.action })
+            ? t('admin.repairStripeByEmailDryRunDone', 'Dry run complete - no changes made')
+            : t('admin.repairStripeByEmailSuccessMsg', 'Subscription {action} successfully', { action: response.data.action })
         );
         
         if (!dryRun) {
@@ -47,10 +47,10 @@ export default function RepairStripeByEmailCard() {
           await queryClient.invalidateQueries({ queryKey: ["subscription"] });
         }
       } else {
-        toast.error(response.data.error || t('admin.repairStripeByEmailFailedMsg'));
+        toast.error(response.data.error || t('admin.repairStripeByEmailFailedMsg', 'Repair failed'));
       }
     } catch (err) {
-      toast.error(err.message || t('admin.repairStripeByEmailFailedMsg'));
+      toast.error(err.message || t('admin.repairStripeByEmailFailedMsg', 'Repair failed'));
       setResult({ ok: false, error: err.message });
     } finally {
       setLoading(false);
@@ -62,22 +62,22 @@ export default function RepairStripeByEmailCard() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Mail className="w-5 h-5 text-blue-600" />
-          <CardTitle className="text-blue-900">{t('admin.repairStripeByEmailTitle')}</CardTitle>
+          <CardTitle className="text-blue-900">{t('admin.repairStripeByEmailTitle', 'Repair Stripe Subscription by Email')}</CardTitle>
         </div>
         <CardDescription className="text-blue-800">
-          {t('admin.repairStripeByEmailDesc')}
+          {t('admin.repairStripeByEmailDesc', 'Recover and link Stripe subscription for a specific user')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert className="bg-blue-100 border-blue-300">
           <AlertTriangle className="h-4 w-4 text-blue-700" />
           <AlertDescription className="text-blue-900 text-sm">
-            {t('admin.repairStripeAlertText')}
+            {t('admin.repairStripeAlertText', 'Finds Stripe customer by email, retrieves active subscription, and updates local records.')}
           </AlertDescription>
         </Alert>
 
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-blue-900">{t('admin.userEmail')}</Label>
+          <Label htmlFor="email" className="text-blue-900">{t('admin.userEmail', 'User Email')}</Label>
           <Input
             id="email"
             type="email"
@@ -95,14 +95,14 @@ export default function RepairStripeByEmailCard() {
             variant="outline"
             className="border-blue-400 text-blue-900 hover:bg-blue-100"
           >
-            {loading ? t('admin.running') : t('admin.dryRunBtn')}
+            {loading ? t('admin.running', 'Running...') : t('admin.dryRunBtn', 'Dry Run')}
           </Button>
           <Button
             onClick={() => runRepair(false)}
             disabled={loading || !email.trim()}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            {loading ? t('admin.running') : t('admin.repairNowBtn')}
+            {loading ? t('admin.running', 'Running...') : t('admin.repairNowBtn', 'Repair Now')}
           </Button>
         </div>
 
@@ -110,37 +110,37 @@ export default function RepairStripeByEmailCard() {
           <div className="space-y-3 pt-4 border-t border-blue-200">
             <div className="flex items-center gap-2 text-green-700">
               <CheckCircle className="w-5 h-5" />
-              <span className="font-semibold">{t('admin.repairSuccessLabel')}</span>
+              <span className="font-semibold">{t('admin.repairSuccessLabel', 'Success')}</span>
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="bg-white/50 rounded p-2">
-                <div className="text-blue-600 text-xs">{t('admin.emailResultLabel')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.emailResultLabel', 'Email')}</div>
                 <div className="text-blue-900 font-mono text-xs truncate">{result.email}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-blue-600 text-xs">{t('admin.tierResultLabel')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.tierResultLabel', 'Tier')}</div>
                 <div className="text-blue-900 font-semibold">{result.tier}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-blue-600 text-xs">{t('admin.statusResultLabel')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.statusResultLabel', 'Status')}</div>
                 <div className="text-blue-900 font-semibold">{result.status}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-blue-600 text-xs">{t('admin.actionResultLabel')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.actionResultLabel', 'Action')}</div>
                 <div className="text-blue-900 font-semibold">{result.action}</div>
               </div>
               <div className="bg-white/50 rounded p-2 col-span-2">
-                <div className="text-blue-600 text-xs">{t('admin.stripeCustomerIdLabel')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.stripeCustomerIdLabel', 'Stripe Customer ID')}</div>
                 <div className="text-blue-900 font-mono text-xs truncate">{result.stripe_customer_id}</div>
               </div>
               <div className="bg-white/50 rounded p-2 col-span-2">
-                <div className="text-blue-600 text-xs">{t('admin.stripeSubscriptionIdLabel')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.stripeSubscriptionIdLabel', 'Stripe Subscription ID')}</div>
                 <div className="text-blue-900 font-mono text-xs truncate">{result.stripe_subscription_id}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-blue-600 text-xs">{t('admin.appliedLabel')}</div>
-                <div className="text-blue-900 font-semibold">{result.applied ? t('admin.appliedYes') : t('admin.appliedDryRun')}</div>
+                <div className="text-blue-600 text-xs">{t('admin.appliedLabel', 'Applied')}</div>
+                <div className="text-blue-900 font-semibold">{result.applied ? t('admin.appliedYes', 'Yes') : t('admin.appliedDryRun', 'Dry Run')}</div>
               </div>
             </div>
           </div>

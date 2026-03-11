@@ -189,7 +189,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
                 <Label className="text-[#e8d5b7] font-medium flex items-center gap-2">
-                  {t("tobaccoValuation.aiAssistedValuation")}
+                  {t("tobaccoValuation.aiAssistedValuation", {defaultValue: "AI Assisted Valuation"})}
                   {!hasProAccess && <Lock className="w-3 h-3 text-amber-400" />}
                 </Label>
               </div>
@@ -254,7 +254,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                 {/* Evidence Sources */}
                 {normalizedSources.length > 0 && hasProAccess && (
                   <div>
-                    <p className="text-xs text-white mb-2">{t("tobaccoValuation.evidenceSources")}</p>
+                    <p className="text-xs text-white mb-2">{t("tobaccoValuation.evidenceSources", {defaultValue: "Evidence sources"})}</p>
                     <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
                       {normalizedSources.map((source, idx) => (
                         <a

@@ -220,10 +220,6 @@ const translations = {
     photosCount: "Photos : {count}",
     dimensions: "Dimensions",
     noDimensions: "Aucune",
-    length: "Longueur",
-    bowlHeight: "Hauteur du fourneau",
-    chamberDiameter: "Diamètre de la chambre",
-    weight: "Poids",
     analyzeBtn: "Analyser la géométrie de la pipe",
     analyzing: "Analyse...",
     analysisResults: "Résultats de l'analyse",
@@ -1785,13 +1781,15 @@ const translations = {
     "Shag": "Shag",
     "Rope": "Rope",
     "Twist": "Twist",
-    "Mixture": "Mélange", "Krumble Cake": "Crumble Cake", "Krumble cake": "Crumble Cake", "Other": "Other",
+    "Other": "Other",
   },
 
   strengths: {
-    "Mild": "Doux", "Mild-Medium": "Doux-Moyen", "Medium": "Moyen",
-    "Medium-Strong": "Moyen-Fort", "Medium-Full": "Moyen-Complet",
-    "Strong": "Fort", "Full": "Complet",
+    "Mild": "Mild",
+    "Mild-Medium": "Mild-Medium",
+    "Medium": "Medium",
+    "Medium-Full": "Medium-Full",
+    "Full": "Full",
   },
 
   conditions: {
@@ -1881,14 +1879,14 @@ const translations = {
     "Other": "Other",
   },
 
-  productionStatuses: {
+  productionStatus: {
     "Current Production": "Current Production",
     "Discontinued": "Discontinued",
     "Limited Edition": "Limited Edition",
     "Vintage": "Vintage",
   },
 
-  agingPotentials: {
+  agingPotential: {
     "Poor": "Poor",
     "Fair": "Fair",
     "Good": "Good",
@@ -2084,20 +2082,6 @@ const translations = {
     thick: "Épais",
     heavyOxidation: "Oxydation forte",
     moderateOxidation: "Oxydation modérée",
-    conditionMint: "Mint",
-    conditionExcellent: "Excellent",
-    conditionVeryGood: "Très bon",
-    conditionGood: "Bon",
-    conditionFair: "Passable",
-    conditionPoor: "Mauvais",
-    conditionEstateUnrestored: "Estate - Non restauré",
-    oxidation: "oxydation",
-    generalWear: "Usure générale",
-    wear: "usure",
-    minimalWear: "Usure minimale",
-    lightWear: "Usure légère",
-    moderateWear: "Usure modérée",
-    heavyWear: "Usure importante",
   },
 
   maintenanceLog: {
@@ -2123,23 +2107,6 @@ const translations = {
     cost: "Coût",
     performedBy: "Effectué par",
     save: "Enregistrer l'entrée",
-    descriptionPlaceholder: "Décrivez la maintenance effectuée…",
-    performedByPlaceholder: "Ex. : Moi-même, Professionnel",
-    costOptional: "Coût (optionnel)",
-    saveEntry: "Enregistrer la saisie",
-  },
-
-  tobaccoLibrarySync: {
-    title: "Synchronisation des logos de tabac",
-    description: "Synchronisez votre collection avec la bibliothèque de logos pour ajouter les logos manquants.",
-    syncStatus: "Statut de synchronisation", totalBlends: "Total des mélanges",
-    missingLogos: "Logos manquants",
-    willBeUpdated: "mélanges seront mis à jour",
-    syncing: "Synchronisation…", syncButton: "Synchroniser {count} mélange(s)",
-    allHaveLogos: "Tous les mélanges ont des logos",
-    noSyncNeeded: "Aucune synchronisation nécessaire",
-    complete: "Synchronisation terminée", updated: "{count} mélange(s) mis à jour",
-    failed: "{count} échoué(s)",
   },
 };
 

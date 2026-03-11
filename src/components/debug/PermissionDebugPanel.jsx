@@ -32,8 +32,8 @@ export default function PermissionDebugPanel() {
     }
   }, [isOpen, user?.email, hasPaid, isTrial]);
 
-  // Only show in development
-  if (!import.meta.env?.DEV) return null;
+  // Only show in development or for admins
+  if (import.meta.env?.PROD && user?.role !== 'admin') return null;
 
   return (
     <div className="fixed bottom-4 right-4 z-[9999]">
@@ -44,7 +44,7 @@ export default function PermissionDebugPanel() {
         className="bg-purple-600 text-white hover:bg-purple-700 border-purple-500"
       >
         {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-        {t('debug.debugButton', 'Debug')}
+        Debug
       </Button>
 
       {isOpen && (

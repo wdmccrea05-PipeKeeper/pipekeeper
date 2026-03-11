@@ -80,7 +80,7 @@ const docs = {
     ],
     identifyPipeQ: "How do I use AI to identify a pipe?",
     identifyPipeSteps: [
-      "Go to the Curator page (Collection Curator tab)",
+      "Go to the AI Tobacconist page (or Expert Tobacconist tab)",
       "Tap the Identification tab",
       "Upload a photo of your pipe",
       "Tap Analyze to get AI identification results"

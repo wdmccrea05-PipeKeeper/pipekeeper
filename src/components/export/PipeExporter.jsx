@@ -131,7 +131,7 @@ export default function PipeExporter() {
         
         doc.setFontSize(11);
         doc.setFont(undefined, 'bold');
-        doc.text(`${idx + 1}. ${pipe.name || t("reports.unnamed")}`, 20, y);
+        doc.text(`${idx + 1}. ${pipe.name || t("reports.unnamed", "Unnamed")}`, 20, y);
         doc.setFont(undefined, 'normal');
         doc.setFontSize(9);
         y += 6;
@@ -232,7 +232,7 @@ export default function PipeExporter() {
     } catch (error) {
       // Fix: show user-visible error instead of silently failing
       console.error('Insurance PDF export failed:', error);
-      toast.error(t("reports.exportFailed") + ": " + error.message);
+      toast.error(t("reports.exportFailed", "Export failed") + ": " + error.message);
     } finally {
       setLoading(false);
     }

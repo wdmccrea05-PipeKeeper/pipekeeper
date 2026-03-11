@@ -181,7 +181,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder={t("maintenanceLog.descriptionPlaceholder")}
+                placeholder={t("maintenanceLog.descriptionPlaceholder", "Describe the maintenance performed…")}
                 rows={3}
               />
             </div>
@@ -191,12 +191,12 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
               <Input
                 value={formData.performed_by}
                 onChange={(e) => setFormData({ ...formData, performed_by: e.target.value })}
-                placeholder={t("maintenanceLog.performedByPlaceholder")}
+                placeholder={t("maintenanceLog.performedByPlaceholder", "e.g. Self, Professional")}
               />
             </div>
 
             <div>
-              <Label>{t("maintenanceLog.costOptional")}</Label>
+              <Label>{t("maintenanceLog.costOptional", "Cost (Optional)")}</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -210,7 +210,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
               <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
                 {t("forms.cancel")}
               </Button>
-              <Button type="submit">{t("maintenanceLog.saveEntry")}</Button>
+              <Button type="submit">{t("maintenanceLog.saveEntry", "Save Entry")}</Button>
             </div>
           </form>
         </DialogContent>

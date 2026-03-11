@@ -476,7 +476,7 @@ export default function PublicProfilePage() {
                             onClick={() => setExpandedPipeComments(prev => ({ ...prev, [pipe.id]: true }))}
                           >
                             <MessageSquare className="w-3 h-3" />
-                            {t("publicProfile.viewComments")}
+                            {t("publicProfile.viewComments", "View Comments")}
                           </button>
                         )}
                       </div>
@@ -550,7 +550,7 @@ export default function PublicProfilePage() {
                                 )}
                                 {(blend.bulk_total_quantity_oz || 0) > 0 && (
                                   <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-xs">
-                                    {formatWeight(+blend.bulk_total_quantity_oz, 'oz')} {t("units.bulkPlural")}
+                                    {formatWeight(+blend.bulk_total_quantity_oz, 'oz')} {t("units.bulkPlural", "bulk")}
                                   </Badge>
                                 )}
                               </>
@@ -573,7 +573,7 @@ export default function PublicProfilePage() {
                             onClick={() => setExpandedBlendComments(prev => ({ ...prev, [blend.id]: true }))}
                           >
                             <MessageSquare className="w-3 h-3" />
-                            {t("publicProfile.viewComments")}
+                            {t("publicProfile.viewComments", "View Comments")}
                           </button>
                         )}
                       </div>
@@ -636,7 +636,7 @@ export default function PublicProfilePage() {
                           onClick={() => setExpandedLogComments(prev => ({ ...prev, [log.id]: true }))}
                         >
                           <MessageSquare className="w-3 h-3" />
-                          {t("publicProfile.viewComments")}
+                          {t("publicProfile.viewComments", "View Comments")}
                         </button>
                       )}
                     </div>

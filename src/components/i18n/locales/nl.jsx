@@ -220,10 +220,6 @@ const translations = {
     photosCount: "Foto's: {count}",
     dimensions: "Afmetingen",
     noDimensions: "Geen",
-    length: "Lengte",
-    bowlHeight: "Kopshoogte",
-    chamberDiameter: "Kammerdiameter",
-    weight: "Gewicht",
     analyzeBtn: "Pijpgeometrie analyseren",
     analyzing: "Analyseren...",
     analysisResults: "Analyseresultaten",
@@ -741,8 +737,6 @@ const translations = {
     actionAddBlend: "Nieuw mengsel toevoegen",
   },
   cellarLog: {
-    cellaredTobacco: "Gecellerd tabak",
-    addCellarTransaction: "Kelder transactie toevoegen",
     overRemoved: "overschot verwijderd",
     deleteConfirmTitle: "Invoer verwijderen",
   },
@@ -1244,20 +1238,6 @@ const translations = {
     optimalRange: "Optimaal bereik: 30–70%", stemOxidation: "Mondstuk-oxidatie",
     good: "Goed", thin: "Dun", thick: "Dik",
     heavyOxidation: "Zware oxidatie", moderateOxidation: "Matige oxidatie",
-    conditionMint: "Mint",
-    conditionExcellent: "Uitstekend",
-    conditionVeryGood: "Zeer goed",
-    conditionGood: "Goed",
-    conditionFair: "Redelijk",
-    conditionPoor: "Slecht",
-    conditionEstateUnrestored: "Erfenis - Niet gerestaureerd",
-    oxidation: "oxidatie",
-    generalWear: "Algemene slijtage",
-    wear: "slijtage",
-    minimalWear: "Minimale slijtage",
-    lightWear: "Lichte slijtage",
-    moderateWear: "Matige slijtage",
-    heavyWear: "Zware slijtage",
   },
 
   maintenanceLog: {
@@ -1270,10 +1250,6 @@ const translations = {
     reaming: "Ruimen", polishing: "Polijsten", stemWork: "Mondstukwerk", other: "Anders",
     by: "Door", type: "Type", date: "Datum", description: "Beschrijving", cost: "Kosten",
     performedBy: "Uitgevoerd door", save: "Invoer opslaan",
-    descriptionPlaceholder: "Beschrijf het uitgevoerde onderhoud…",
-    performedByPlaceholder: "Bijv. Zelf, Professional",
-    costOptional: "Kosten (optioneel)",
-    saveEntry: "Invoer opslaan",
   },
 
   tobaccoExtended: {
@@ -1320,20 +1296,13 @@ const translations = {
     quickSearchAddPipe: "Snel zoeken en pijp toevoegen",
     quickSearchAddTobacco: "Snel zoeken en tabak toevoegen",
     searchPipeDesc: "Zoek in onze database om snel een pijp toe te voegen aan uw collectie",
-    searchTobaccoDesc: "Zoek in onze database om snel tabak toe te voegen aan uw kelder",
     pipePlaceholder: "Zoek op maker, model (bijv. 'Peterson System 314')",
-    tobaccoPlaceholder: "Zoek op mengselnaam of fabrikant (bijv. 'Orlik Golden Sliced')",
     foundResults: "{count} resultaat/resultaten gevonden",
     noResults: "Geen resultaten gevonden. Probeer een andere zoekopdracht.",
     adding: "Toevoegen…", addToCollection: "Toevoegen aan collectie", addToCellar: "Toevoegen aan kelder",
-    enterPipeName: "Voer een pijpnaam in om te zoeken",
-    pipeExamples: "bijv. Peterson System 314, Dunhill Shell",
     enterTobaccoName: "Voer een tabaksmengselnaam in om te zoeken",
     tobaccoExamples: "bijv. Orlik Golden Sliced, Dunhill Early Morning Pipe",
     flavors: "Smaken", components: "Componenten", tinSize: "Blikgrootte",
-    avgRating: "Gem. beoordeling", madeIn: "Gemaakt in {country}", era: "Tijdperk",
-    bowl: "Kop", deep: "diep", typicalValue: "Typische waarde",
-    searchButton: "Zoeken",
   },
 
   quickEdit: {
@@ -1502,8 +1471,8 @@ const translations = {
 
   shapes: {
     Billiard: "Billiard", Dublin: "Dublin", Apple: "Apple", Pot: "Pot", Bulldog: "Bulldog",
-    Rhodesian: "Rhodesian", Bent: "Gebogen", Brandy: "Brandy", Calabash: "Calabash", Canadian: "Canadian",
-    Cavalier: "Cavalier", Chimney: "Chimney", Churchwarden: "Churchwarden", Freehand: "Freehand",
+    Rhodesian: "Rhodesian", Brandy: "Brandy", Calabash: "Calabash", Canadian: "Canadian",
+    Cavalier: "Cavalier", Churchwarden: "Churchwarden", Freehand: "Freehand",
     Horn: "Horn", Liverpool: "Liverpool", Lovat: "Lovat", Lumberman: "Lumberman",
     Nautilus: "Nautilus", Pear: "Pear", Poker: "Poker", Prince: "Prince",
     Viking: "Viking", Volcano: "Volcano", Acorn: "Acorn", Blowfish: "Blowfish",
@@ -1514,9 +1483,7 @@ const translations = {
     Duke: "Duke", Don: "Don", Tankard: "Tankard", Nosewarmer: "Nosewarmer",
     "Vest Pocket": "Vest Pocket", MacArthur: "MacArthur", "Reverse Calabash": "Reverse Calabash",
     Author: "Author", Tomahawk: "Tomahawk", Bullmoose: "Bullmoose", Bullcap: "Bullcap",
-    Hungarian: "Hongaars", "Oom Paul": "Oom Paul",
-    "Oom Paul (Hungarian)": "Oom Paul (Hongaars)", Panel: "Panel",
-    Sitter: "Sitter", Woodstock: "Woodstock", Zulu: "Zulu", Tyrolean: "Tyrolean",
+    "Oom Paul (Hungarian)": "Oom Paul (Hongaars)", Tyrolean: "Tyrolean",
   },
 
   materials: {
@@ -1552,12 +1519,12 @@ const translations = {
     "Ribbon": "Lint", "Flake": "Flake", "Broken Flake": "Broken Flake",
     "Ready Rubbed": "Ready Rubbed", "Plug": "Plug", "Coin": "Coin",
     "Cube Cut": "Cube Cut", "Crumble Cake": "Crumble Cake", "Shag": "Shag",
-    "Rope": "Rope", "Twist": "Twist", "Mixture": "Mengsel", "Krumble Cake": "Crumble Cake", "Krumble cake": "Crumble Cake", "Other": "Ander",
+    "Rope": "Rope", "Twist": "Twist", "Other": "Ander",
   },
 
   strengths: {
     "Mild": "Licht", "Mild-Medium": "Licht-Middel", "Medium": "Middel",
-    "Medium-Strong": "Middel-Sterk", "Medium-Full": "Middel-Vol", "Strong": "Sterk", "Full": "Vol",
+    "Medium-Full": "Middel-Vol", "Full": "Vol",
   },
 
   conditions: {
@@ -1607,12 +1574,12 @@ const translations = {
     "Natural": "Naturel", "Other": "Ander",
   },
 
-  productionStatuses: {
+  productionStatus: {
     "Current Production": "Huidige productie", "Discontinued": "Gestopt",
     "Limited Edition": "Beperkte editie", "Vintage": "Vintage",
   },
 
-  agingPotentials: {
+  agingPotential: {
     "Poor": "Slecht", "Fair": "Redelijk", "Good": "Goed", "Excellent": "Uitstekend",
   },
 
@@ -1685,19 +1652,6 @@ const translations = {
     cannotDeleteOtherMessage: "U kunt alleen uw eigen berichten verwijderen",
     failedToSend: "Verzenden van bericht mislukt. Probeer het opnieuw.",
     chatDescription: "Chatgesprek", inboxDescription: "Berichteninbox",
-  },
-
-  tobaccoLibrarySync: {
-    title: "Tabakslogo-bibliotheek synchroniseren",
-    description: "Synchroniseer uw collectie met de logo-bibliotheek om ontbrekende logo's toe te voegen.",
-    syncStatus: "Synchronisatiestatus", totalBlends: "Totaal mengsels",
-    missingLogos: "Ontbrekende logo's",
-    willBeUpdated: "mengsels worden bijgewerkt",
-    syncing: "Synchroniseren…", syncButton: "{count} mengsel(s) synchroniseren",
-    allHaveLogos: "Alle mengsels hebben logo's",
-    noSyncNeeded: "Geen synchronisatie nodig",
-    complete: "Synchronisatie voltooid", updated: "{count} mengsel(s) bijgewerkt",
-    failed: "{count} mislukt",
   },
 };
 

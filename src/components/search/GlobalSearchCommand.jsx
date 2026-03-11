@@ -136,7 +136,7 @@ export default function GlobalSearchCommand({ open, onClose }) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("search.hintSubtitle")}
+            placeholder={t("search.hintSubtitle", "Search pipes, tobacco, makers, shapes, and more")}
             className="border-0 focus-visible:ring-0 text-base"
             autoFocus
           />
@@ -146,15 +146,15 @@ export default function GlobalSearchCommand({ open, onClose }) {
           {results.length === 0 && query.trim() && (
             <div className="p-8 text-center text-stone-500">
               <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>{t("common.noResults")} "{query}"</p>
+              <p>{t("common.noResults", "No results found")} "{query}"</p>
             </div>
           )}
 
           {results.length === 0 && !query.trim() && (
             <div className="p-8 text-center text-stone-500">
               <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="mb-2">{t("search.hintTitle")}</p>
-              <p className="text-sm">{t("search.hintSubtitle")}</p>
+              <p className="mb-2">{t("search.hintTitle", "Start typing to search")}</p>
+              <p className="text-sm">{t("search.hintSubtitle", "Search pipes, tobacco, makers, shapes, and more")}</p>
             </div>
           )}
 
@@ -200,7 +200,7 @@ export default function GlobalSearchCommand({ open, onClose }) {
                   )}
                 </div>
                 <span className="text-xs text-stone-400 uppercase tracking-wide">
-                  {t(`search.type_${result.type}`, result.type)}
+                  {result.type}
                 </span>
               </button>
             ))}
@@ -211,16 +211,16 @@ export default function GlobalSearchCommand({ open, onClose }) {
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-stone-100 border border-stone-200 rounded">↑↓</kbd>
-              {t("search.kbdNavigate")}
+              {t("search.kbdNavigate", "Navigate")}
             </span>
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-stone-100 border border-stone-200 rounded">↵</kbd>
-              {t("search.kbdSelect")}
+              {t("search.kbdSelect", "Select")}
             </span>
           </div>
           <span className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 bg-stone-100 border border-stone-200 rounded">{t("search.kbdEsc")}</kbd>
-            {t("search.kbdClose")}
+            <kbd className="px-1.5 py-0.5 bg-stone-100 border border-stone-200 rounded">Esc</kbd>
+            {t("search.kbdClose", "Close")}
           </span>
         </div>
       </DialogContent>

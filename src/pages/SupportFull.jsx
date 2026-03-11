@@ -79,19 +79,19 @@ ${formData.message}
           <a href={createPageUrl('Home')}>
             <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              {t("supportFull.backToHome")}
+              {t("supportFull.backToHome","Back to Home")}
             </Button>
           </a>
 
           <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
             <CardContent className="p-12 text-center">
               <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-green-900 mb-2">{t("supportFull.requestSubmitted")}</h2>
+              <h2 className="text-2xl font-bold text-green-900 mb-2">{t("supportFull.requestSubmitted","Request Submitted!")}</h2>
               <p className="text-green-700 mb-6">
-                {t("supportFull.thankYou")}
+                {t("supportFull.thankYou","Thank you for contacting us. We'll get back to you as soon as possible.")}
               </p>
               <Button onClick={() => setSubmitted(false)} variant="outline">
-                {t("supportFull.submitAnother")}
+                {t("supportFull.submitAnother","Submit Another Request")}
               </Button>
             </CardContent>
           </Card>
@@ -106,7 +106,7 @@ ${formData.message}
         <a href={createPageUrl('Home')}>
           <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            {t("supportFull.backToHome")}
+            {t("supportFull.backToHome","Back to Home")}
           </Button>
         </a>
 
@@ -114,21 +114,21 @@ ${formData.message}
           <CardHeader>
             <CardTitle className="text-3xl text-[#E0D8C8] flex items-center gap-3">
               <Mail className="w-8 h-8 text-[#A35C5C]" />
-              {t("supportFull.contactSupport")}
+              {t("supportFull.contactSupport","Contact Support")}
             </CardTitle>
             <CardDescription className="text-[#E0D8C8]/80">
-              {t("supportFull.description")}
+              {t("supportFull.description","Have a question or need help? Send us a message and we'll get back to you soon.")}
             </CardDescription>
             <div className="mt-4 p-4 bg-[#A35C5C]/10 border border-[#A35C5C]/30 rounded-lg">
-              <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("supportFull.emailVerifIssues")}</h3>
+              <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("supportFull.emailVerifIssues","Email Verification Issues?")}</h3>
               <p className="text-sm text-[#E0D8C8]/70 mb-3">
-                {t("supportFull.verificationHelp")}
+                {t("supportFull.verificationHelp","If you're having trouble with email verification or can't log in, please contact us directly at:")}
               </p>
               <a
                 href="mailto:admin@pipekeeperapp.com"
                 className="block text-center px-4 py-2 bg-[#A35C5C] text-[#E0D8C8] rounded-lg hover:bg-[#8F4E4E] transition-colors font-semibold"
               >
-                {t("supportFull.adminEmail")}
+                {t("supportFull.adminEmail","admin@pipekeeperapp.com")}
               </a>
             </div>
           </CardHeader>
@@ -136,7 +136,7 @@ ${formData.message}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <Label htmlFor="topic" className="text-[#E0D8C8] font-medium">
-                  {t("supportFull.whatCanWeHelp")} *
+                  {t("supportFull.whatCanWeHelp","What can we help you with?")} *
                 </Label>
                 <Select
                   value={formData.topic}
@@ -144,7 +144,7 @@ ${formData.message}
                   required
                 >
                   <SelectTrigger className="mt-2">
-                    <SelectValue placeholder={t("supportFull.selectTopic")} />
+                    <SelectValue placeholder={t("supportFull.selectTopic","Select a topic...")} />
                   </SelectTrigger>
                   <SelectContent>
                     {SUPPORT_TOPICS.map(topic => (
@@ -158,13 +158,13 @@ ${formData.message}
 
               <div>
                 <Label htmlFor="name" className="text-[#E0D8C8] font-medium">
-                  {t("supportFull.yourName")} *
+                  {t("supportFull.yourName","Your Name")} *
                 </Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder={t("supportFull.namePlaceholder")}
+                  placeholder={t("supportFull.namePlaceholder","John Doe")}
                   className="mt-2"
                   required
                 />
@@ -172,14 +172,14 @@ ${formData.message}
 
               <div>
                 <Label htmlFor="email" className="text-[#E0D8C8] font-medium">
-                  {t("supportFull.yourEmail")} *
+                  {t("supportFull.yourEmail","Your Email")} *
                 </Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder={t("supportFull.emailPlaceholder")}
+                  placeholder={t("supportFull.emailPlaceholder","john@example.com")}
                   className="mt-2"
                   required
                 />
@@ -187,13 +187,13 @@ ${formData.message}
 
               <div>
                 <Label htmlFor="message" className="text-[#E0D8C8] font-medium">
-                  {t("supportFull.message")} *
+                  {t("supportFull.message","Message")} *
                 </Label>
                 <Textarea
                   id="message"
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  placeholder={t("supportFull.messagePlaceholder")}
+                  placeholder={t("supportFull.messagePlaceholder","Please describe your question or issue in detail...")}
                   className="mt-2 min-h-[150px]"
                   required
                 />
@@ -205,7 +205,7 @@ ${formData.message}
                 className="w-full bg-[#8b3a3a] hover:bg-[#6d2e2e]"
               >
                 <Mail className="w-4 h-4 mr-2" />
-                {isSubmitting ? t("supportFull.sending") : t("supportFull.sendMessage")}
+                {isSubmitting ? t("supportFull.sending","Sending...") : t("supportFull.sendMessage","Send Message")}
               </Button>
             </form>
           </CardContent>
@@ -213,7 +213,7 @@ ${formData.message}
 
         <div className="mt-6 text-center">
           <a href={createPageUrl('BulkLogoUpload')} className="text-sm text-amber-400 hover:text-amber-300 underline">
-            {t("supportFull.bulkLogoLink")}
+            {t("supportFull.bulkLogoLink","→ Bulk Logo Upload Tool")}
           </a>
         </div>
       </div>

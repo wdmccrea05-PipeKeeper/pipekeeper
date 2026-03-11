@@ -161,11 +161,7 @@ export function useTranslation(languageOverride = null) {
       !Array.isArray(varsOrFallback);
     const vars = isOptions ? varsOrFallback : {};
     const fallbackStr =
-      typeof varsOrFallback === 'string'
-        ? varsOrFallback
-        : isOptions && typeof varsOrFallback.defaultValue === 'string'
-        ? varsOrFallback.defaultValue
-        : undefined;
+      typeof varsOrFallback === 'string' ? varsOrFallback : undefined;
     const returnObjects = isOptions && varsOrFallback.returnObjects === true;
 
     const value = getNestedValue(translationPack, key);
@@ -186,19 +182,9 @@ export function useTranslation(languageOverride = null) {
   return { t, lang };
 }
 
-export function translate(key, varsOrFallback = {}, language = 'en') {
-  const isOptions =
-    typeof varsOrFallback === 'object' &&
-    varsOrFallback !== null &&
-    !Array.isArray(varsOrFallback);
-  const vars = isOptions ? varsOrFallback : {};
-  const fallbackStr =
-    typeof varsOrFallback === 'string'
-      ? varsOrFallback
-      : isOptions && typeof varsOrFallback.defaultValue === 'string'
-      ? varsOrFallback.defaultValue
-      : undefined;
-  const returnObjects = isOptions && varsOrFallback.returnObjects === true;
+export function translate(key, vars = {}, language = 'en') {
+  const isOptions = typeof vars === 'object' && vars !== null && !Array.isArray(vars);
+  const returnObjects = isOptions && vars.returnObjects === true;
   const pack = translations[language] || translations.en || {};
   const value = getNestedValue(pack, key);
   if (value === undefined) {
@@ -208,7 +194,7 @@ export function translate(key, varsOrFallback = {}, language = 'en') {
       if (typeof fallback === 'string') return interpolate(fallback, vars);
       return String(fallback);
     }
-    return fallbackStr !== undefined ? fallbackStr : key;
+    return key;
   }
   if (returnObjects) return value;
   if (typeof value === 'string') {

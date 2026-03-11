@@ -823,10 +823,10 @@ ${englishUserText}
         impact_score: result.applyable_changes?.length > 0 ? 8 : 6,
         trophy_pairings: (result.next_additions || []).slice(0, 5),
         redundancy_analysis: result.summary || "",
-        recommendation_category: result.recommendation_category || "STRONG ADDITION",
+        recommendation_category: "STRONG ADDITION",
         detailed_reasoning: result.summary || "",
         gaps_filled: result.collection_gaps || [],
-        score_improvements: result.score_improvements || "Changes improve collection coverage",
+        score_improvements: t("optimizer.changesImproveCollectionCoverage", { additions: (result.next_additions || []).join(", ") }),
         applyable_changes: result.applyable_changes || [],
       });
 
@@ -933,7 +933,7 @@ ${englishUserText}
     safeSetItem("collectionOptimizerCollapsed", String(newState));
   };
 
-  // ---- Standalone “Ask the Curator” mode (home card) ----
+  // ---- Standalone “Ask the Expert” mode (home card) ----
   if (initialShowWhatIf || showWhatIf) {
     return (
       <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
@@ -1056,14 +1056,14 @@ ${englishUserText}
           {/* Bulk Options (only if there are recommendations ready to apply) */}
           {showAcceptAll && !conversationMessages.length && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm font-medium text-blue-900 mb-3">{t("tobacconist.reviewApplyDesc")}</p>
+              <p className="text-sm font-medium text-blue-900 mb-3">{t("tobacconist.reviewApplyDesc", "Review recommendations one by one or apply all at once")}</p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50"
                   onClick={() => setShowConfirmation(true)}
                 >
-                  {t("tobacconist.reviewApply")}
+                  {t("tobacconist.reviewApply", "Review & Apply Changes")}
                 </Button>
                 <Button
                   onClick={handleAcceptAll}
@@ -1092,7 +1092,7 @@ ${englishUserText}
               {conversationMessages.length > 0 ? t("tobacconist.continueConversation") : t("tobacconist.chatWithTobacconist")}
             </label>
             <Textarea
-              placeholder={t("tobacconist.askExpertPlaceholder")}
+              placeholder={t("tobacconist.askExpertPlaceholder", {defaultValue: "Ask about pairings, recommendations, or your collection..."})}
               value={conversationMessages.length > 0 ? whatIfFollowUp : whatIfQuery}
               onChange={(e) => (conversationMessages.length > 0 ? setWhatIfFollowUp(e.target.value) : setWhatIfQuery(e.target.value))}
               className="min-h-[80px] bg-white text-stone-900 placeholder:text-stone-500"
@@ -1382,12 +1382,12 @@ ${englishUserText}
                         <div className="flex flex-wrap gap-1 mt-1">
                           {spec?.score_delta != null && spec.score_delta > 0 && (
                             <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs">
-                              +{spec.score_delta.toFixed(1)} {t("optimizer.avgScoreImprovement")}
+                              +{spec.score_delta.toFixed(1)} {t("optimizer.avgScoreImprovement", { defaultValue: "avg score improvement" })}
                             </Badge>
                           )}
                           {spec?.fills_gap_for && (
                             <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-xs">
-                              {t("optimizer.fillsGapFor")}: {asText(spec.fills_gap_for)}
+                              {t("optimizer.fillsGapFor", "Fills gap for")}: {asText(spec.fills_gap_for)}
                             </Badge>
                           )}
                         </div>
@@ -1514,11 +1514,11 @@ ${englishUserText}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
                         <Sparkles className="w-4 h-4" />
-                        {t("tobacconist.recommendationSummary")}
+                        {t("tobacconist.recommendationSummary", "AI Recommendations")}
                       </h4>
                       <p className="text-sm text-blue-800">
-                        {optimization.pipe_specializations?.filter(s => s.recommended_blend_types?.length > 0).length} {t("tobacconist.pipesRecommendedForChange")}. 
-                        {t("tobacconist.adoptOrAsk")}
+                        {optimization.pipe_specializations?.filter(s => s.recommended_blend_types?.length > 0).length} {t("tobacconist.pipesRecommendedForChange", "pipes recommended for specialization")}. 
+                        {t("tobacconist.adoptOrAsk", "Review each pipe below to adopt changes or ask clarifying questions.")}
                       </p>
                       {/* Debug: Show which pipes have recommendations - DEV only */}
                     </div>
@@ -1595,7 +1595,7 @@ ${englishUserText}
 
                                 {spec.recommended_blend_types?.length > 0 && (
                                   <div className="mb-3">
-                                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">{t("tobacconist.specializeFor")}</p>
+                                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">{t("tobacconist.specializeFor", "Specialize For")}</p>
                                     <div className="flex flex-wrap gap-1">
                                       {spec.recommended_blend_types.map((type, i) => (
                                         <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200">
@@ -1613,21 +1613,21 @@ ${englishUserText}
 
                                 {spec.score_improvement && (
                                   <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200 mb-2">
-                                    <p className="text-xs font-medium text-emerald-700">📈 {t("tobacconist.scoreImpact")}:</p>
+                                    <p className="text-xs font-medium text-emerald-700">📈 {t("tobacconist.scoreImpact", "Score Impact")}:</p>
                                     <p className="text-xs text-emerald-800 font-semibold">{asText(spec.score_improvement)}</p>
                                   </div>
                                 )}
 
                                 {spec.score_delta != null && (
                                   <div className="bg-blue-50 rounded-lg p-2 border border-blue-100 mb-2">
-                                    <p className="text-xs font-medium text-blue-800">{t("tobacconist.scoreImprovement")}:</p>
+                                    <p className="text-xs font-medium text-blue-800">{t("tobacconist.scoreImprovement", { defaultValue: "Score Improvement" })}:</p>
                                     <p className="text-xs text-blue-900 font-semibold">{spec.score_delta > 0 ? '+' : ''}{spec.score_delta.toFixed(1)}</p>
                                   </div>
                                 )}
 
                                 {spec.fills_gap_for && (
                                   <div className="bg-orange-50 rounded-lg p-2 border border-orange-200 mb-2">
-                                    <p className="text-xs font-medium text-orange-900">{t("tobacconist.fillsGap")}:</p>
+                                    <p className="text-xs font-medium text-orange-900">{t("tobacconist.fillsGap", "Fills gap for")}:</p>
                                     <p className="text-xs text-orange-800">{asText(spec.fills_gap_for)}</p>
                                   </div>
                                 )}
@@ -1639,7 +1639,7 @@ ${englishUserText}
                                      onClick={() => applySpecialization(spec.pipe_id, spec.recommended_blend_types, spec.bowl_variant_id)}
                                    >
                                      <Check className="w-4 h-4 mr-1" />
-                                     {t("tobacconist.adoptThisChange")}
+                                     {t("tobacconist.adoptThisChange", "Adopt")}
                                    </Button>
 
                                    <Button
@@ -1650,7 +1650,7 @@ ${englishUserText}
                                      disabled={loading || whatIfLoading}
                                    >
                                      <HelpCircle className="w-4 h-4 mr-1" />
-                                     {showFeedbackFor === variantKey ? t("common.cancel") : t("tobacconist.askClarification")}
+                                     {showFeedbackFor === variantKey ? t("common.cancel") : t("tobacconist.askClarification", "Ask Clarification")}
                                    </Button>
                                  </div>
 
@@ -1661,10 +1661,10 @@ ${englishUserText}
                                     className="mt-3 p-4 bg-amber-50 border border-amber-200 rounded-lg space-y-3"
                                   >
                                     <div>
-                                      <p className="text-sm font-medium text-amber-900 mb-2">{t("tobacconist.whyUnsure")}</p>
-                                      <p className="text-xs text-amber-800 mb-3">{t("tobacconist.clarificationHelps")}</p>
+                                      <p className="text-sm font-medium text-amber-900 mb-2">{t("tobacconist.whyUnsure", "Why reconsider this recommendation?")}</p>
+                                      <p className="text-xs text-amber-800 mb-3">{t("tobacconist.clarificationHelps", "Help the AI understand your preferences better.")}</p>
                                       <Textarea
-                                        placeholder={t("tobacconist.clarificationPlaceholder")}
+                                        placeholder={t("tobacconist.clarificationPlaceholder", {defaultValue: "E.g., 'This pipe smokes hot with aromatics', 'I prefer it for English blends', 'Too wet for this type'..."})}
                                         value={pipeFeedback[variantKey] || ""}
                                         onChange={(e) => setPipeFeedback({ ...pipeFeedback, [variantKey]: e.target.value })}
                                         className="min-h-[70px] text-sm bg-white text-stone-900 placeholder:text-stone-500"
@@ -1685,7 +1685,7 @@ ${englishUserText}
                                         ) : (
                                           <>
                                             <Sparkles className="w-3 h-3 mr-1" />
-                                            {t("tobacconist.refineRecommendations")}
+                                            {t("tobacconist.refineRecommendations", "Refine Recommendations")}
                                           </>
                                         )}
                                       </Button>
@@ -1727,19 +1727,19 @@ ${englishUserText}
                           <div className="text-2xl font-bold text-emerald-700">
                             {optimization.collection_gaps.coverage_summary.blends_with_good_match}
                           </div>
-                          <div className="text-xs text-emerald-600">{t("optimizer.wellMatchedBlends")}</div>
+                          <div className="text-xs text-emerald-600">{t("optimizer.wellMatchedBlends", "Well-Matched Blends")}</div>
                         </div>
                         <div className="bg-rose-50 rounded-lg p-3 border border-rose-200 text-center">
                           <div className="text-2xl font-bold text-rose-700">
                             {optimization.collection_gaps.coverage_summary.blends_with_no_match}
                           </div>
-                          <div className="text-xs text-rose-600">{t("optimizer.unmatchedBlends")}</div>
+                          <div className="text-xs text-rose-600">{t("optimizer.unmatchedBlends", "Unmatched Blends")}</div>
                         </div>
                         <div className="bg-blue-50 rounded-lg p-3 border border-blue-200 text-center">
                           <div className="text-2xl font-bold text-blue-700">
                             {optimization.collection_gaps.coverage_summary.coverage_percentage}%
                           </div>
-                          <div className="text-xs text-blue-600">{t("optimizer.coverageRate")}</div>
+                          <div className="text-xs text-blue-600">{t("optimizer.coverageRate", "Coverage Rate")}</div>
                         </div>
                       </div>
                     )}
@@ -1766,7 +1766,7 @@ ${englishUserText}
                       <div className="mt-4">
                         <h4 className="text-sm font-semibold text-yellow-800 mb-2 flex items-center gap-1">
                           <AlertTriangle className="w-4 h-4" />
-                          {t("optimizer.redundancies")}
+                          {t("optimizer.redundancies", "Specialization Redundancies")}
                         </h4>
                         <div className="space-y-2">
                           {optimization.collection_gaps.redundancies.map((r, idx) => (
@@ -1784,7 +1784,7 @@ ${englishUserText}
                       <div className="mt-4">
                         <h4 className="text-sm font-semibold text-indigo-800 mb-2 flex items-center gap-1">
                           <ShoppingBag className="w-4 h-4" />
-                          {t("optimizer.purchaseSuggestions")}
+                          {t("optimizer.purchaseSuggestions", "Suggested Acquisitions")}
                         </h4>
                         <div className="space-y-2">
                           {optimization.collection_gaps.purchase_suggestions.map((s, idx) => (
@@ -1802,7 +1802,7 @@ ${englishUserText}
               </div>
             )}
 
-            {/* Discuss / Ask Curator (embedded) */}
+            {/* Discuss / Ask Expert (embedded) */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-stone-800 flex items-center gap-2">
@@ -1815,11 +1815,11 @@ ${englishUserText}
               <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
                 <CardContent className="p-4 space-y-3">
                   <p className="text-sm text-stone-900">
-                    {t("tobacconist.askExpertInstructions")}
+                    {t("tobacconist.askExpertInstructions", {defaultValue: "Ask questions about collection strategy, hypothetical purchases, or pairing advice."})}
                   </p>
 
                   <Textarea
-                    placeholder={t("tobacconist.askPlaceholder")}
+                    placeholder={t("tobacconist.askPlaceholder", {defaultValue: "What if I added a larger billiard? Which tobacco should I try next?"})}
                     value={whatIfQuery}
                     onChange={(e) => setWhatIfQuery(e.target.value)}
                     className="min-h-[70px] bg-white text-stone-900 placeholder:text-stone-500"

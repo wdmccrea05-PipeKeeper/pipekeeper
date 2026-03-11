@@ -2,8 +2,14 @@
   "properNounAllowlist": [
     "PipeKeeper",
     "WhiskeyKeeper",
-    "Stripe",
-    "Cloudflare"
+    "Denmark",
+    "England",
+    "United States",
+    "France",
+    "Germany",
+    "Ireland",
+    "Italy",
+    "Japan"
   ],
   "excludePatterns": []
 }

@@ -225,7 +225,7 @@ export default function BreakInSchedule({ pipe, blends }) {
                   {t("breakInSchedule.regenerating")}
                 </>
               ) : (
-                t("optimizer.regenerate")
+                t("optimizer.regenerate", "Regenerate")
               )}
             </Button>
           </DialogFooter>
@@ -279,7 +279,7 @@ export default function BreakInSchedule({ pipe, blends }) {
               disabled={generating}
               className="bg-[#A35C5C] text-[#FFF7ED] hover:bg-[#8B4A4A]"
              >
-              {t("optimizer.regenerate")}
+              {t("optimizer.regenerate", "Regenerate")}
              </Button>
            </div>
           )}

@@ -29,8 +29,7 @@ import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProv
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
-// Stored enum values — raw English values are kept for database compatibility.
-// Display labels are resolved through the translation system.
+// TODO: Move BLEND_TYPES and PIPE_SHAPES to the translation system so labels are translatable.
 const BLEND_TYPES = [
   "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic",
   "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish",
@@ -192,18 +191,16 @@ export default function ProfilePage() {
     },
     onSuccess: async (savedData) => {
       console.log("[Profile] Save successful, returned data:", savedData);
-      toast.success(t("notifications.saved"));
+      toast.success(t("notifications.saved", "Saved successfully"));
       // Force refetch to ensure UI reflects database state
       await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
       // Wait for refetch to complete
       await queryClient.refetchQueries({ queryKey: ["user-profile", userId, email] });
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
-      // Also invalidate the community profile cache
-      await queryClient.invalidateQueries({ queryKey: ['user-profile', user?.id, user?.email] });
     },
     onError: (err) => {
       console.error("[Profile] save failed:", err);
-      toast.error(t("profileExtended.couldNotSave"));
+      toast.error(t("profileExtended.couldNotSave","Could not save profile. Please try again."));
     },
   });
 
@@ -288,88 +285,35 @@ export default function ProfilePage() {
     unpaid: t("profileExtended.statusUnpaid"),
   };
 
-  const clenchingLabels = {
-    "Yes": t("profilePreferences.yes"),
-    "No": t("profilePreferences.no"),
-    "Sometimes": t("profilePreferences.sometimes"),
-  };
-
-  const smokeDurationLabels = {
-    "Short (15-30 min)": t("profilePreferences.durationShort"),
-    "Medium (30-60 min)": t("profilePreferences.durationMedium"),
-    "Long (60+ min)": t("profilePreferences.durationLong"),
-    "No Preference": t("profilePreferences.noPreference"),
-  };
-
-  const pipeSizeLabels = {
-    "Small": t("profilePreferences.sizeSmall"),
-    "Medium": t("profilePreferences.sizeMedium"),
-    "Large": t("profilePreferences.sizeLarge"),
-    "Extra Large": t("profilePreferences.sizeExtraLarge"),
-    "No Preference": t("profilePreferences.noPreference"),
-  };
-
-  const strengthLabels = {
-    "Mild": t("strengths.Mild"),
-    "Mild-Medium": t("strengths.Mild-Medium"),
-    "Medium": t("strengths.Medium"),
-    "Medium-Full": t("strengths.Medium-Full"),
-    "Full": t("strengths.Full"),
-    "No Preference": t("profilePreferences.noPreference"),
-  };
-
   return (
     <div className={`min-h-screen ${PK_THEME.pageBg}`}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
         {/* Subscription Status / Management */}
-        <div
-          className="rounded-lg p-7"
-          style={{
-            background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
-            border: "1px solid rgba(120, 90, 65, 0.32)",
-            boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)",
-          }}
-        >
-          <div className="relative">
+        <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
+          <CardContent className="p-6">
             <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
               <div className="flex items-center gap-3">
-                <div 
-                  className="w-11 h-11 rounded-full flex items-center justify-center"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(212, 175, 55, 0.9), rgba(180, 140, 75, 1))",
-                    boxShadow: "0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)"
-                  }}
-                >
-                  <Crown className="w-5 h-5" style={{ color: "rgba(28, 18, 10, 0.9)" }} />
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
+                  <Crown className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   {hasPaid ? (
                     <>
-                      <div className="font-semibold" style={{ color: "#F5F1E7" }}>
+                      <div className="font-semibold text-amber-900">
                         {hasPro ? t("profile.proActive") : t("profile.premiumActive")}
                       </div>
-                      <div className="text-sm" style={{ color: "rgba(180, 140, 75, 0.8)" }}>
-                        {t("profile.fullAccess")}
-                      </div>
+                      <div className="text-sm text-amber-700">{t("profile.fullAccess")}</div>
                     </>
                   ) : isTrial ? (
                     <>
-                      <div className="font-semibold" style={{ color: "#F5F1E7" }}>
-                        {t("profile.freeTrialActive")}
-                      </div>
-                      <div className="text-sm" style={{ color: "rgba(180, 140, 75, 0.8)" }}>
-                        {t("profile.sevenDaysFree")}
-                      </div>
+                      <div className="font-semibold text-amber-900">{t("profile.freeTrialActive")}</div>
+                      <div className="text-sm text-amber-700">{t("profile.sevenDaysFree")}</div>
                     </>
                   ) : (
                     <>
-                      <div className="font-semibold" style={{ color: "rgba(224, 216, 200, 0.8)" }}>
-                        {t("profile.freeAccount")}
-                      </div>
-                      <div className="text-sm" style={{ color: "rgba(180, 140, 75, 0.6)" }}>
-                        {t("profile.limitedFeatures")}
-                      </div>
+                      <div className="font-semibold text-stone-800">{t("profile.freeAccount")}</div>
+                      <div className="text-sm text-stone-600">{t("profile.limitedFeatures")}</div>
                     </>
                   )}
                 </div>
@@ -388,11 +332,11 @@ export default function ProfilePage() {
                                 if (response.data?.url) {
                                   window.location.href = response.data.url;
                                 } else {
-                                  toast.error(t("profile.manageSubError"));
+                                  toast.error(t("profile.manageSubError", "Could not open subscription management. Please try again."));
                                 }
                               } catch (e) {
                                 console.error("[Profile] portal session error:", e);
-                                toast.error(t("profile.manageSubError"));
+                                toast.error(t("profile.manageSubError", "Could not open subscription management. Please try again."));
                               }
                             } else if (provider === "apple") {
                               window.location.href = "https://apps.apple.com/account/subscriptions";
@@ -433,101 +377,46 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Profile */}
-        <div
-          className="rounded-lg overflow-hidden"
-          style={{
-            background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
-            border: "1px solid rgba(120, 90, 65, 0.32)",
-            boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)",
-          }}
-        >
-          <div 
-            className="px-6 py-5 border-b flex items-center justify-between"
-            style={{
-              borderBottomColor: "rgba(120, 90, 65, 0.28)",
-              background: "linear-gradient(to bottom, rgba(62, 44, 30, 0.4), transparent)"
-            }}
-          >
-            <div className="flex items-center gap-3 flex-1">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{
-                  background: "linear-gradient(135deg, rgba(100, 70, 45, 0.5), rgba(80, 55, 35, 0.6))",
-                  border: "1px solid rgba(120, 90, 65, 0.4)",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180, 140, 100, 0.15)"
-                }}
-              >
-                <User className="w-4 h-4" style={{ color: "rgba(180, 140, 75, 1)" }} />
+        <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
+                <User className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
-                <h2 className="text-xl font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
-                  {t("profile.smokingProfile")}
-                </h2>
-                <p className="text-sm" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
+                <CardTitle className="text-2xl text-violet-900">{t("profile.smokingProfile")}</CardTitle>
+                <CardDescription className="text-stone-700">
                   {t("profile.personalizeAIRecommendations")}
-                </p>
+                </CardDescription>
+              </div>
+
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleLogout} className="text-stone-700 hover:text-stone-900">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  {t("profile.logout")}
+                </Button>
               </div>
             </div>
+          </CardHeader>
 
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                onClick={handleLogout}
-                style={{
-                  background: "rgba(163, 92, 92, 0.15)",
-                  borderColor: "rgba(163, 92, 92, 0.3)",
-                  color: "#F5F1E7"
-                }}
-              >
-                <LogOut className="w-3.5 h-3.5 mr-2" />
-                {t("profile.logout")}
-              </Button>
-            </div>
-          </div>
-
-          <div className="p-7 space-y-7">
+          <CardContent className="space-y-6">
             {/* Badges */}
             <div className="flex gap-2 flex-wrap">
-              <Badge 
-                className="border-0 text-xs px-3 py-1"
-                style={{
-                  background: hasPro 
-                    ? "linear-gradient(135deg, rgba(126, 84, 160, 0.9), rgba(106, 64, 140, 1))" 
-                    : "linear-gradient(135deg, rgba(180, 140, 75, 0.9), rgba(160, 120, 65, 1))",
-                  color: "#fff",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.3)"
-                }}
-              >
+              <Badge className={hasPro ? "bg-purple-600 text-white border-0" : "bg-[#A35C5C] text-white border-0"}>
                 {planLabel.toUpperCase()}
               </Badge>
               {provider === "stripe" && (
-                <Badge variant="secondary" className="text-xs" style={{
-                  background: "rgba(60, 45, 30, 0.3)",
-                  color: "rgba(224, 216, 200, 0.8)",
-                  border: "1px solid rgba(120, 90, 65, 0.25)"
-                }}>
-                  {t("profileExtended.providerStripe")}
-                </Badge>
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.providerStripe","Provider: Stripe")}</Badge>
               )}
               {provider === "apple" && (
-                <Badge variant="secondary" className="text-xs" style={{
-                  background: "rgba(60, 45, 30, 0.3)",
-                  color: "rgba(224, 216, 200, 0.8)",
-                  border: "1px solid rgba(120, 90, 65, 0.25)"
-                }}>
-                  {t("profileExtended.providerApple")}
-                </Badge>
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.providerApple","Provider: Apple")}</Badge>
               )}
               {subscription?.status && typeof subscription.status === 'string' ? (
-                <Badge variant="secondary" className="text-xs" style={{
-                  background: "rgba(60, 45, 30, 0.3)",
-                  color: "rgba(224, 216, 200, 0.8)",
-                  border: "1px solid rgba(120, 90, 65, 0.25)"
-                }}>
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">
                   {statusLabels[subscription.status] || subscription.status}
                 </Badge>
               ) : null}
@@ -535,26 +424,17 @@ export default function ProfilePage() {
 
             {/* Avatar */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
-                {t("profileExtended.profilePicture")}
-              </Label>
+              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.profilePicture","Profile picture")}</Label>
               <div className="flex items-center gap-4">
-                <div 
-                  className="relative w-20 h-20 rounded-full overflow-hidden flex items-center justify-center group"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(180, 140, 75, 0.25), rgba(160, 120, 65, 0.35))",
-                    border: "2px solid rgba(120, 90, 65, 0.4)",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.4)"
-                  }}
-                >
+                <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-amber-200 to-amber-300 overflow-hidden flex items-center justify-center group">
                   {formData.avatar_url ? (
-                    <img src={formData.avatar_url} alt={t("profileExtended.avatarAlt")} className="w-full h-full object-cover" />
+                    <img src={formData.avatar_url} alt={t("profileExtended.avatarAlt","Avatar")} className="w-full h-full object-cover" />
                   ) : (
-                    <User className="w-9 h-9" style={{ color: "rgba(180, 140, 75, 0.6)" }} />
+                    <User className="w-10 h-10 text-amber-700" />
                   )}
-                  <label className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity rounded-full" style={{ background: "rgba(0,0,0,0.5)" }}>
+                  <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity rounded-full">
                     <input type="file" accept="image/*" onChange={handleAvatarFileSelected} className="hidden" disabled={uploadingAvatar} />
-                    <Pencil className="w-4 h-4" style={{ color: "rgba(224, 216, 200, 0.95)" }} />
+                    <Pencil className="w-5 h-5 text-white" />
                   </label>
                 </div>
                 <div className="flex items-center gap-2">
@@ -566,18 +446,9 @@ export default function ProfilePage() {
                       className="hidden"
                       disabled={uploadingAvatar}
                     />
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      disabled={uploadingAvatar}
-                      style={{
-                        background: "rgba(60, 42, 28, 0.35)",
-                        borderColor: "rgba(120, 90, 65, 0.3)",
-                        color: "#F5F1E7"
-                      }}
-                    >
-                      <Upload className="w-3.5 h-3.5 mr-2" />
-                      {uploadingAvatar ? t("profileExtended.uploading") : t("common.upload")}
+                    <Button type="button" variant="outline" disabled={uploadingAvatar} className="text-stone-700 hover:text-stone-900">
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploadingAvatar ? t("profileExtended.uploading","Uploading…") : t("common.upload","Upload")}
                     </Button>
                   </label>
                 </div>
@@ -596,35 +467,20 @@ export default function ProfilePage() {
             {/* Basic */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-sm font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
-                  {t("profileExtended.displayName")}
-                </Label>
+                <Label className="text-stone-700 font-medium break-words">{t("profileExtended.displayName","Display name")}</Label>
                 <Input
                   value={formData.display_name}
                   onChange={(e) => setFormData((p) => ({ ...p, display_name: e.target.value }))}
                 />
               </div>
               <div>
-                <Label className="text-sm font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
-                  {t("common.email")}
-                </Label>
-                <Input 
-                  value={user?.email || ""} 
-                  disabled 
-                  style={{
-                    background: "rgba(30, 20, 15, 0.5)",
-                    borderColor: "rgba(120, 90, 65, 0.2)",
-                    color: "rgba(224, 216, 200, 0.5)",
-                    cursor: "not-allowed"
-                  }}
-                />
+                <Label className="text-stone-700 font-medium break-words">{t("common.email","Email")}</Label>
+                <Input value={user?.email || ""} disabled className="bg-stone-50 text-stone-500 cursor-not-allowed" />
               </div>
             </div>
 
             <div>
-              <Label className="text-sm font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
-                {t("profileExtended.bio")}
-              </Label>
+              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.bio","Bio")}</Label>
               <Textarea
                 value={formData.bio}
                 onChange={(e) => setFormData((p) => ({ ...p, bio: e.target.value }))}
@@ -635,13 +491,9 @@ export default function ProfilePage() {
             {/* Location */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
-                  {t("profileExtended.location")}
-                </Label>
+                <Label className="text-stone-700 font-medium break-words">{t("profileExtended.location","Location")}</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
-                    {t("profileExtended.showOnProfile")}
-                  </span>
+                  <span className="text-sm text-stone-600">{t("profileExtended.showOnProfile","Show on profile")}</span>
                   <Switch
                     checked={formData.show_location}
                     onCheckedChange={(v) => setFormData((p) => ({ ...p, show_location: !!v }))}
@@ -652,22 +504,22 @@ export default function ProfilePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  placeholder={t("profileExtended.cityPlaceholder")}
+                  placeholder={t("profileExtended.cityPlaceholder","City")}
                   value={formData.city}
                   onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
                 />
                 <Input
-                  placeholder={t("profileExtended.stateProvincePlaceholder")}
+                  placeholder={t("profileExtended.stateProvincePlaceholder","State/Province")}
                   value={formData.state_province}
                   onChange={(e) => setFormData((p) => ({ ...p, state_province: e.target.value }))}
                 />
                 <Input
-                  placeholder={t("profileExtended.countryPlaceholder")}
+                  placeholder={t("profileExtended.countryPlaceholder","Country")}
                   value={formData.country}
                   onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
                 />
                 <Input
-                  placeholder={t("profileExtended.postalCodePlaceholder")}
+                  placeholder={t("profileExtended.postalCodePlaceholder","Postal code")}
                   value={formData.postal_code}
                   onChange={(e) => setFormData((p) => ({ ...p, postal_code: e.target.value }))}
                 />
@@ -676,14 +528,10 @@ export default function ProfilePage() {
 
             {/* Privacy */}
             <div className="space-y-3">
-              <Label className="text-sm font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
-                {t("profileExtended.privacy")}
-              </Label>
+              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.privacy","Privacy")}</Label>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: "#F5F1E7" }}>
-                  {t("profileExtended.hideValues")}
-                </span>
+                <span className="text-sm text-stone-700">{t("profileExtended.hideValues","Hide values")}</span>
                 <Switch
                   checked={formData.privacy_hide_values}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
@@ -692,9 +540,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: "#F5F1E7" }}>
-                  {t("profileExtended.hideInventory")}
-                </span>
+                <span className="text-sm text-stone-700">{t("profileExtended.hideInventory","Hide inventory")}</span>
                 <Switch
                   checked={formData.privacy_hide_inventory}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
@@ -703,9 +549,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: "#F5F1E7" }}>
-                  {t("profileExtended.hideCollectionCounts")}
-                </span>
+                <span className="text-sm text-stone-700">{t("profileExtended.hideCollectionCounts","Hide collection counts")}</span>
                 <Switch
                   checked={formData.privacy_hide_collection_counts}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
@@ -715,12 +559,8 @@ export default function ProfilePage() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-medium" style={{ color: "#F5F1E7" }}>
-                    {t("profileExtended.hideHomeValues")}
-                  </span>
-                  <p className="text-xs mt-0.5" style={{ color: "rgba(224, 216, 200, 0.6)" }}>
-                    {t("profileExtended.hideHomeValuesDesc")}
-                  </p>
+                  <span className="text-sm font-medium text-stone-700">{t("profileExtended.hideHomeValues", "Hide collection values on home page")}</span>
+                  <p className="text-xs text-stone-500 mt-0.5">{t("profileExtended.hideHomeValuesDesc", "Hides pipe and tobacco collection values from your home page dashboard. Calculations still run in the background.")}</p>
                 </div>
                 <Switch
                   checked={formData.home_hide_collection_values}
@@ -731,12 +571,8 @@ export default function ProfilePage() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-medium" style={{ color: "#F5F1E7" }}>
-                    {t("profile.enableMessaging")}
-                  </div>
-                  <div className="text-xs" style={{ color: "rgba(224, 216, 200, 0.6)" }}>
-                    {t("profile.enableMessagingDesc")}
-                  </div>
+                  <div className="text-sm font-medium text-stone-700">{t("profile.enableMessaging")}</div>
+                  <div className="text-xs text-stone-600">{t("profile.enableMessagingDesc")}</div>
                 </div>
                 <Switch
                   checked={formData.enable_messaging}
@@ -748,9 +584,7 @@ export default function ProfilePage() {
 
             {/* Preferences */}
              <div className="space-y-3">
-               <Label className="text-sm font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
-                 {t("profileExtended.clenchingPreference")}
-               </Label>
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.clenchingPreference","Clenching preference")}</Label>
                <div className="flex flex-wrap gap-2">
                  {["Yes", "No", "Sometimes"].map((pref) => {
                    const active = formData.clenching_preference === pref;
@@ -758,18 +592,9 @@ export default function ProfilePage() {
                      <Badge
                        key={pref}
                        onClick={() => setFormData((p) => ({ ...p, clenching_preference: pref }))}
-                       className="cursor-pointer border text-xs"
-                       style={active ? {
-                         background: "linear-gradient(135deg, rgba(180, 140, 75, 0.9), rgba(160, 120, 65, 1))",
-                         borderColor: "rgba(180, 140, 75, 1)",
-                         color: "#1a120a"
-                       } : {
-                         background: "rgba(40, 28, 18, 0.4)",
-                         borderColor: "rgba(120, 90, 65, 0.3)",
-                         color: "rgba(224, 216, 200, 0.8)"
-                       }}
+                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
                      >
-                       {clenchingLabels[pref] ?? pref}
+                       {pref}
                      </Badge>
                    );
                  })}
@@ -777,9 +602,7 @@ export default function ProfilePage() {
              </div>
 
              <div className="space-y-3">
-               <Label className="text-sm font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
-                 {t("profileExtended.smokeDurationPreference")}
-               </Label>
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.smokeDurationPreference","Smoke duration preference")}</Label>
                <div className="flex flex-wrap gap-2">
                  {["Short (15-30 min)", "Medium (30-60 min)", "Long (60+ min)", "No Preference"].map((pref) => {
                    const active = formData.smoke_duration_preference === pref;
@@ -787,18 +610,9 @@ export default function ProfilePage() {
                      <Badge
                        key={pref}
                        onClick={() => setFormData((p) => ({ ...p, smoke_duration_preference: pref }))}
-                       className="cursor-pointer border text-xs"
-                       style={active ? {
-                         background: "linear-gradient(135deg, rgba(180, 140, 75, 0.9), rgba(160, 120, 65, 1))",
-                         borderColor: "rgba(180, 140, 75, 1)",
-                         color: "#1a120a"
-                       } : {
-                         background: "rgba(40, 28, 18, 0.4)",
-                         borderColor: "rgba(120, 90, 65, 0.3)",
-                         color: "rgba(224, 216, 200, 0.8)"
-                       }}
+                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
                      >
-                       {smokeDurationLabels[pref] ?? pref}
+                       {pref}
                      </Badge>
                    );
                  })}
@@ -806,9 +620,7 @@ export default function ProfilePage() {
              </div>
 
              <div className="space-y-3">
-               <Label className="text-sm font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
-                 {t("profileExtended.pipeSizePreference")}
-               </Label>
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.pipeSizePreference","Pipe size preference")}</Label>
                <div className="flex flex-wrap gap-2">
                  {["Small", "Medium", "Large", "Extra Large", "No Preference"].map((pref) => {
                    const active = formData.pipe_size_preference === pref;
@@ -816,18 +628,9 @@ export default function ProfilePage() {
                      <Badge
                        key={pref}
                        onClick={() => setFormData((p) => ({ ...p, pipe_size_preference: pref }))}
-                       className="cursor-pointer border text-xs"
-                       style={active ? {
-                         background: "linear-gradient(135deg, rgba(180, 140, 75, 0.9), rgba(160, 120, 65, 1))",
-                         borderColor: "rgba(180, 140, 75, 1)",
-                         color: "#1a120a"
-                       } : {
-                         background: "rgba(40, 28, 18, 0.4)",
-                         borderColor: "rgba(120, 90, 65, 0.3)",
-                         color: "rgba(224, 216, 200, 0.8)"
-                       }}
+                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
                      >
-                       {pipeSizeLabels[pref] ?? pref}
+                       {pref}
                      </Badge>
                    );
                  })}
@@ -835,9 +638,7 @@ export default function ProfilePage() {
              </div>
 
              <div className="space-y-3">
-               <Label className="text-sm font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
-                 {t("profileExtended.strengthPreference")}
-               </Label>
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.strengthPreference","Strength preference")}</Label>
                <div className="flex flex-wrap gap-2">
                  {["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full", "No Preference"].map((pref) => {
                    const active = formData.strength_preference === pref;
@@ -845,18 +646,9 @@ export default function ProfilePage() {
                      <Badge
                        key={pref}
                        onClick={() => setFormData((p) => ({ ...p, strength_preference: pref }))}
-                       className="cursor-pointer border text-xs"
-                       style={active ? {
-                         background: "linear-gradient(135deg, rgba(180, 140, 75, 0.9), rgba(160, 120, 65, 1))",
-                         borderColor: "rgba(180, 140, 75, 1)",
-                         color: "#1a120a"
-                       } : {
-                         background: "rgba(40, 28, 18, 0.4)",
-                         borderColor: "rgba(120, 90, 65, 0.3)",
-                         color: "rgba(224, 216, 200, 0.8)"
-                       }}
+                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
                      >
-                       {strengthLabels[pref] ?? pref}
+                       {pref}
                      </Badge>
                    );
                  })}
@@ -864,9 +656,7 @@ export default function ProfilePage() {
              </div>
 
              <div className="space-y-3">
-               <Label className="text-sm font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
-                 {t("profileExtended.preferredBlendTypes")}
-               </Label>
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.preferredBlendTypes","Preferred blend types")}</Label>
               <div className="flex flex-wrap gap-2">
                 {BLEND_TYPES.map((bt) => {
                   const active = formData.preferred_blend_types.includes(bt);
@@ -874,18 +664,9 @@ export default function ProfilePage() {
                     <Badge
                       key={bt}
                       onClick={() => toggleBlendType(bt)}
-                      className="cursor-pointer border text-xs"
-                      style={active ? {
-                        background: "linear-gradient(135deg, rgba(90, 124, 90, 0.9), rgba(74, 108, 74, 1))",
-                        borderColor: "rgba(90, 124, 90, 1)",
-                        color: "#fff"
-                      } : {
-                        background: "rgba(40, 28, 18, 0.4)",
-                        borderColor: "rgba(120, 90, 65, 0.3)",
-                        color: "rgba(224, 216, 200, 0.8)"
-                      }}
+                      className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
                     >
-                      {t(`blendTypes.${bt}`, bt)}
+                      {bt}
                     </Badge>
                   );
                 })}
@@ -893,9 +674,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-3">
-              <Label className="text-sm font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
-                {t("profileExtended.preferredPipeShapes")}
-              </Label>
+              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.preferredPipeShapes","Preferred pipe shapes")}</Label>
               <div className="flex flex-wrap gap-2">
                 {PIPE_SHAPES.map((sh) => {
                   const active = formData.preferred_shapes.includes(sh);
@@ -903,18 +682,9 @@ export default function ProfilePage() {
                     <Badge
                       key={sh}
                       onClick={() => toggleShape(sh)}
-                      className="cursor-pointer border text-xs"
-                      style={active ? {
-                        background: "linear-gradient(135deg, rgba(180, 140, 75, 0.9), rgba(160, 120, 65, 1))",
-                        borderColor: "rgba(180, 140, 75, 1)",
-                        color: "#1a120a"
-                      } : {
-                        background: "rgba(40, 28, 18, 0.4)",
-                        borderColor: "rgba(120, 90, 65, 0.3)",
-                        color: "rgba(224, 216, 200, 0.8)"
-                      }}
+                      className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
                     >
-                      {t(`shapes.${sh}`, sh)}
+                      {sh}
                     </Badge>
                   );
                 })}
@@ -922,9 +692,7 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <Label className="text-sm font-medium" style={{ color: "rgba(180, 140, 75, 0.9)" }}>
-                {t("common.notes")}
-              </Label>
+              <Label className="text-stone-700 font-medium break-words">{t("common.notes","Notes")}</Label>
               <Textarea
                 value={formData.notes}
                 onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
@@ -935,12 +703,8 @@ export default function ProfilePage() {
             {/* Public profile toggle */}
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium" style={{ color: "#F5F1E7" }}>
-                  {t("profileExtended.publicCommunityProfile")}
-                </div>
-                <div className="text-sm" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
-                  {t("profileExtended.allowOthersToView")}
-                </div>
+                <div className="font-medium text-stone-800">{t("profileExtended.publicCommunityProfile","Public community profile")}</div>
+                <div className="text-sm text-stone-600">{t("profileExtended.allowOthersToView","Allow others to view your profile in the community.")}</div>
               </div>
               <Switch
                 checked={formData.is_public}
@@ -956,7 +720,7 @@ export default function ProfilePage() {
                 disabled={saveMutation.isPending}
                 className="bg-[#A35C5C] hover:bg-[#8C4A4A]"
               >
-                {saveMutation.isPending ? t("profileExtended.saving") : t("common.save")}
+                {saveMutation.isPending ? t("profileExtended.saving","Saving…") : t("common.save","Save")}
               </Button>
 
               {user?.email ? (
@@ -968,18 +732,14 @@ export default function ProfilePage() {
                       navigate(createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}&preview=true`));
                     } catch {}
                   }}
-                  style={{
-                    background: "rgba(60, 42, 28, 0.35)",
-                    borderColor: "rgba(120, 90, 65, 0.3)",
-                    color: "#F5F1E7"
-                  }}
+                  className="text-stone-700 border-stone-300 hover:bg-stone-50 hover:text-stone-900"
                 >
-                  {t("profileExtended.previewPublicProfile")}
+                  {t("profileExtended.previewPublicProfile","Preview public profile")}
                 </Button>
               ) : null}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         <SubscriptionBackupModeModal
           isOpen={showBackupModal}

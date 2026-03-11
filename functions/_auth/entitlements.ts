@@ -1,20 +1,6 @@
 // Pro launch cutoff - must match frontend exactly
 const PRO_LAUNCH_CUTOFF_ISO = "2026-02-01T00:00:00.000Z";
 
-// Platform module keys — must match functions/_platform/entitlements.ts
-// and src/platform/entitlements.js
-const PLATFORM_MODULES = {
-  PIPE: "pipes",
-  TOBACCO: "tobacco",
-  WHISKEY: "whiskey",
-  CIGAR: "cigars",
-  COFFEE: "coffee",
-} as const;
-
-// Modules enabled for all current PipeKeeper subscribers.
-// Extend this list when future modules are launched.
-const PIPEKEEPER_ENABLED_MODULES = [PLATFORM_MODULES.PIPE, PLATFORM_MODULES.TOBACCO];
-
 function isBeforeProLaunch(isoDate) {
   if (!isoDate) return false;
   return new Date(isoDate) < new Date(PRO_LAUNCH_CUTOFF_ISO);
@@ -100,13 +86,6 @@ export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscript
     return false;
   };
 
-  // Module entitlements — current PipeKeeper build enables pipes and tobacco for all tiers.
-  // Future modules (whiskey, cigars, coffee) will be added here when launched.
-  const enabledModules = PIPEKEEPER_ENABLED_MODULES;
-  const moduleEntitlements = Object.fromEntries(
-    Object.values(PLATFORM_MODULES).map((m) => [m, { enabled: enabledModules.includes(m) }])
-  );
-
   return {
     tier,
     isLegacyPremium,
@@ -116,7 +95,5 @@ export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscript
     isOnTrial: !!isOnTrial,
     limits,
     canUse,
-    // Platform module entitlements — pipes and tobacco are always enabled in this build.
-    modules: moduleEntitlements,
   };
 }

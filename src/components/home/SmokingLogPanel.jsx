@@ -140,7 +140,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   // Get pipe rest status (safe from invalid dates)
    const getPipeRestStatus = (pipeId) => {
-     if (!logs || logs.length === 0) return { ready: true, message: t("smokingLog.noUsageLogged") };
+     if (!logs || logs.length === 0) return { ready: true, message: t("smokingLog.noUsageLogged", "No usage logged yet.") };
 
      const pipeLogs = logs.filter(l => l && l.pipe_id === pipeId).sort((a, b) => {
        try {
@@ -149,11 +149,11 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
          return 0;
        }
      });
-     if (pipeLogs.length === 0) return { ready: true, message: t("smokingLog.noUsageLogged") };
+     if (pipeLogs.length === 0) return { ready: true, message: t("smokingLog.noUsageLogged", "No usage logged yet.") };
 
      try {
        const lastSmoked = parseLocalCalendarDate(pipeLogs[0].date);
-       if (Number.isNaN(lastSmoked.getTime())) return { ready: true, message: t("smokingLog.noUsageLogged") };
+       if (Number.isNaN(lastSmoked.getTime())) return { ready: true, message: t("smokingLog.noUsageLogged", "No usage logged yet.") };
 
        const hoursSinceSmoke = differenceInHours(new Date(), lastSmoked);
        const daysRested = Math.floor(hoursSinceSmoke / 24);
@@ -684,7 +684,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               />
               {formData.pipe_id && formData.bowls_used && (
                 <p className="text-xs text-[#A4B0C4]">
-                  {t("smokingLog.estUsage")}: ~{Number(estimateTobaccoUsage(selectedPipe, parseInt(formData.bowls_used) || 1)).toFixed(2)} {t("units.oz")}
+                  {t("smokingLog.estUsage")}: ~{Number(estimateTobaccoUsage(selectedPipe, parseInt(formData.bowls_used) || 1)).toFixed(2)} {t("units.oz", "oz")}
                 </p>
               )}
             </div>
@@ -774,7 +774,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       <AlertDialog open={!!confirmDeleteLog} onOpenChange={(open) => !open && setConfirmDeleteLog(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("smokingLog.deleteConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("smokingLog.deleteConfirmTitle", "Delete Session")}</AlertDialogTitle>
             <AlertDialogDescription>
               {t("smokingLog.deleteConfirm")}
             </AlertDialogDescription>
@@ -790,7 +790,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 }
               }}
             >
-              {t("common.delete")}
+              {t("common.delete", "Delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

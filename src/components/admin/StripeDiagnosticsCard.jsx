@@ -21,14 +21,14 @@ export default function StripeDiagnosticsCard() {
       const res = await base44.functions.invoke('stripeRuntimeKey');
       setRuntimeKey(res.data);
       if (res.data?.ok && res.data.prefix === "sk") {
-        toast.success(t("admin.runtimeKeyPassed"));
+        toast.success(t("admin.runtimeKeyPassed", "Runtime key check passed"));
       } else if (res.data?.looksExpired) {
-        toast.error(t("admin.keyMayBeExpired"));
+        toast.error(t("admin.keyMayBeExpired", "WARNING: Key may be expired"));
       } else {
-        toast.error(t("admin.runtimeKeyIssue"));
+        toast.error(t("admin.runtimeKeyIssue", "Runtime key issue detected"));
       }
     } catch (err) {
-      toast.error(t("admin.runtimeKeyFailed", { msg: err.message || "Unknown error" }));
+      toast.error(t("admin.runtimeKeyFailed", "Runtime key check failed: {msg}", { msg: err.message || "Unknown error" }));
       setRuntimeKey({ ok: false, error: err.message });
     }
   };
@@ -38,17 +38,17 @@ export default function StripeDiagnosticsCard() {
     try {
       const res = await base44.functions.invoke('forceStripeRefresh');
       if (res.data?.ok) {
-        toast.success(t("admin.stripeRefreshed"));
+        toast.success(t("admin.stripeRefreshed", "Stripe refreshed and validated"));
         // Re-check all diagnostics
         await Promise.all([
           runRuntimeKeyCheck(),
           checkDeploymentStatus()
         ]);
       } else {
-        toast.error(t("admin.stripeRefreshFailed", { msg: res.data?.message || "Unknown" }));
+        toast.error(t("admin.stripeRefreshFailed", "Stripe refresh failed: {msg}", { msg: res.data?.message || "Unknown" }));
       }
     } catch (err) {
-      toast.error(t("admin.refreshFailed", { msg: err.message || "Unknown error" }));
+      toast.error(t("admin.refreshFailed", "Refresh failed: {msg}", { msg: err.message || "Unknown error" }));
     } finally {
       setRefreshing(false);
     }
@@ -90,12 +90,12 @@ export default function StripeDiagnosticsCard() {
       
       setDeployStatus(transformed);
       if (transformed.ok) {
-        toast.success(t("admin.deploymentHealthy"));
+        toast.success(t("admin.deploymentHealthy", "Deployment status: Healthy"));
       } else {
-        toast.warning(t("admin.deploymentIssues"));
+        toast.warning(t("admin.deploymentIssues", "Deployment issues detected"));
       }
     } catch (err) {
-      toast.error(t("admin.statusCheckFailed", { msg: err.message || "Unknown" }));
+      toast.error(t("admin.statusCheckFailed", "Status check failed: {msg}", { msg: err.message || "Unknown" }));
       setDeployStatus({ ok: false, error: err.message });
     }
   };
@@ -105,12 +105,12 @@ export default function StripeDiagnosticsCard() {
       const res = await base44.functions.invoke('stripeForbiddenScan');
       setForbiddenScan(res.data);
       if (res.data?.ok && res.data.violationCount === 0) {
-        toast.success(t("admin.noForbiddenPatterns"));
+        toast.success(t("admin.noForbiddenPatterns", "No forbidden Stripe patterns found"));
       } else if (res.data?.violationCount > 0) {
-        toast.error(t("admin.forbiddenPatternsFound", { n: res.data.violationCount }));
+        toast.error(t("admin.forbiddenPatternsFound", "Found {n} forbidden Stripe pattern(s)", { n: res.data.violationCount }));
       }
     } catch (err) {
-      toast.error(t("admin.forbiddenScanFailed", { msg: err.message || "Unknown error" }));
+      toast.error(t("admin.forbiddenScanFailed", "Forbidden scan failed: {msg}", { msg: err.message || "Unknown error" }));
       setForbiddenScan({ ok: false, error: err.message });
     }
   };
@@ -119,12 +119,12 @@ export default function StripeDiagnosticsCard() {
     try {
       const res = await base44.functions.invoke('admin/ping');
       if (res.data?.ok) {
-        toast.success(t("admin.adminRoutingWorking"));
+        toast.success(t("admin.adminRoutingWorking", "Admin routing is working"));
       } else {
-        toast.error(t("admin.adminPingFailed"));
+        toast.error(t("admin.adminPingFailed", "Admin ping failed"));
       }
     } catch (err) {
-      toast.error(t("admin.adminPingFailedMsg", { msg: err.message || "Unknown error" }));
+      toast.error(t("admin.adminPingFailedMsg", "Admin ping failed: {msg}", { msg: err.message || "Unknown error" }));
     }
   };
 
@@ -137,14 +137,14 @@ export default function StripeDiagnosticsCard() {
       setResult(response.data);
       
       if (response.data.hardFail) {
-        toast.error(t("admin.criticalForbiddenConstructors"));
+        toast.error(t("admin.criticalForbiddenConstructors", "Critical: Forbidden Stripe constructors detected!"));
       } else if (!response.data.stripeSanityOk) {
-        toast.error(t("admin.stripeAuthFailed"));
+        toast.error(t("admin.stripeAuthFailed", "Stripe authentication failed"));
       } else {
-        toast.success(t("admin.stripeDiagsPassed"));
+        toast.success(t("admin.stripeDiagsPassed", "Stripe diagnostics passed"));
       }
     } catch (err) {
-      toast.error(err.message || t("admin.failedToRunDiagnostics"));
+      toast.error(err.message || t("admin.failedToRunDiagnostics", "Failed to run diagnostics"));
       setResult({ ok: false, error: err.message });
     } finally {
       setLoading(false);
@@ -156,10 +156,10 @@ export default function StripeDiagnosticsCard() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Activity className="w-5 h-5 text-purple-600" />
-          <CardTitle className="text-purple-900">{t("admin.stripeDiagnosticsTitle")}</CardTitle>
+          <CardTitle className="text-purple-900">Stripe Diagnostics</CardTitle>
         </div>
         <CardDescription className="text-purple-800">
-          {t("admin.stripeDiagnosticsDesc")}
+          Validate Stripe configuration and detect forbidden patterns
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -168,8 +168,8 @@ export default function StripeDiagnosticsCard() {
           <div className="font-bold text-blue-900 mb-2">🔄 After Updating STRIPE_SECRET_KEY:</div>
           <div className="text-sm text-blue-800 space-y-1">
             <div>1. Click "Full Status Check" below to verify current state</div>
-            <div>{t("admin.fixRefreshStep")}</div>
-            <div>{t("admin.fixCheckStep")}</div>
+            <div>2. Click "Force Refresh" to reload Stripe client</div>
+            <div>3. If key mismatch persists → Manually trigger "Redeploy Functions" in Base44 Dashboard</div>
           </div>
         </div>
         
@@ -178,28 +178,28 @@ export default function StripeDiagnosticsCard() {
             onClick={checkDeploymentStatus}
             className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
           >
-            {t("admin.fullStatusCheck")}
+            Full Status Check
           </Button>
           <Button
             onClick={forceStripeRefresh}
             disabled={refreshing}
             className="bg-green-600 hover:bg-green-700 text-white flex-1"
           >
-            {refreshing ? t("admin.refreshing") : t("admin.forceRefresh")}
+            {refreshing ? "Refreshing..." : "Force Refresh"}
           </Button>
           <Button
             onClick={runRuntimeKeyCheck}
             variant="outline"
             className="flex-1"
           >
-            {t("admin.runtimeKeyBtn")}
+            Runtime Key
           </Button>
           <Button
             onClick={runForbiddenScan}
             variant="outline"
             className="flex-1"
           >
-            {t("admin.scanCodeBtn")}
+            Scan Code
           </Button>
         </div>
 
@@ -210,18 +210,18 @@ export default function StripeDiagnosticsCard() {
             <AlertDescription>
               <div className="space-y-3">
                 <div className="font-bold text-lg flex items-center gap-2">
-                  {deployStatus.ok ? '✅' : '❌'} {t("admin.deploymentStatusHeading")}
+                  {deployStatus.ok ? '✅' : '❌'} Deployment Status
                 </div>
                 
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span className="text-gray-600">{t("admin.environmentLabel")}</span>{" "}
+                    <span className="text-gray-600">Environment:</span>{" "}
                     <code className={`font-mono font-semibold ${deployStatus.environment === "live" ? "text-green-700" : "text-yellow-700"}`}>
                       {deployStatus.environment || "unknown"}
                     </code>
                   </div>
                   <div>
-                    <span className="text-gray-600">{t("admin.healthLabel")}</span>{" "}
+                    <span className="text-gray-600">Health:</span>{" "}
                     <span className={`font-bold ${deployStatus.deployment?.healthy ? "text-green-700" : "text-red-700"}`}>
                       {deployStatus.deployment?.healthy ? "HEALTHY" : "UNHEALTHY"}
                     </span>
@@ -229,22 +229,22 @@ export default function StripeDiagnosticsCard() {
                 </div>
 
                 <div className="space-y-1 text-sm">
-                  <div className="font-semibold">{t("admin.checkResults")}</div>
+                  <div className="font-semibold">Check Results:</div>
                   <div className="ml-3 space-y-1">
                     <div>
-                      {deployStatus.checks?.secretPresent?.passed ? '✅' : '❌'} {t("admin.secretPresentLabel")}
+                      {deployStatus.checks?.secretPresent?.passed ? '✅' : '❌'} Secret Present
                       {deployStatus.checks?.secretPresent?.keyMasked && 
                         <code className="ml-2 text-xs bg-gray-100 px-1 rounded">{deployStatus.checks.secretPresent.keyMasked}</code>
                       }
                     </div>
                     <div>
-                      {deployStatus.checks?.stripeInit?.passed ? '✅' : '❌'} {t("admin.stripeInitLabel")}
+                      {deployStatus.checks?.stripeInit?.passed ? '✅' : '❌'} Stripe Init
                       {!deployStatus.checks?.stripeInit?.passed && deployStatus.checks?.stripeInit?.error && 
                         <span className="ml-2 text-xs text-red-600">{deployStatus.checks.stripeInit.error}</span>
                       }
                     </div>
                     <div>
-                      {deployStatus.checks?.apiConnect?.passed ? '✅' : '❌'} {t("admin.apiConnectLabel")}
+                      {deployStatus.checks?.apiConnect?.passed ? '✅' : '❌'} API Connect
                       {!deployStatus.checks?.apiConnect?.passed && deployStatus.checks?.apiConnect?.error && 
                         <span className="ml-2 text-xs text-red-600">{deployStatus.checks.apiConnect.error}</span>
                       }
@@ -280,33 +280,33 @@ export default function StripeDiagnosticsCard() {
                 <div className="font-bold text-lg">🔑 Runtime Stripe Key (LIVE)</div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <span className="text-gray-600">{t("admin.prefixLabel")}</span>{" "}
+                    <span className="text-gray-600">Prefix:</span>{" "}
                     <code className={`font-mono font-bold text-lg ${runtimeKey.prefix === "sk" ? "text-green-700" : "text-red-700"}`}>
                       {runtimeKey.prefix || "N/A"}
                     </code>
                   </div>
                   <div>
-                    <span className="text-gray-600">{t("admin.presentLabel")}</span>{" "}
+                    <span className="text-gray-600">Present:</span>{" "}
                     <code className={`font-mono font-semibold ${runtimeKey.present ? "text-green-700" : "text-red-700"}`}>
                       {runtimeKey.present ? "YES" : "NO"}
                     </code>
                   </div>
                   <div className="col-span-2">
-                    <span className="text-gray-600">{t("admin.maskedKeyLabel")}</span>{" "}
+                    <span className="text-gray-600">Masked Key:</span>{" "}
                     <code className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{runtimeKey.masked || "N/A"}</code>
                   </div>
                   <div>
-                    <span className="text-gray-600">{t("admin.lengthLabel")}</span>{" "}
+                    <span className="text-gray-600">Length:</span>{" "}
                     <span className="font-mono">{runtimeKey.length || 0} chars</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">{t("admin.environmentLabel")}</span>{" "}
+                    <span className="text-gray-600">Environment:</span>{" "}
                     <code className={`font-mono font-semibold ${runtimeKey.environment === "live" ? "text-green-700" : "text-yellow-700"}`}>
                       {runtimeKey.environment || "unknown"}
                     </code>
                   </div>
                   <div className="col-span-2">
-                    <span className="text-gray-600">{t("admin.timestampLabel")}</span>{" "}
+                    <span className="text-gray-600">Timestamp:</span>{" "}
                     <span className="text-xs">{runtimeKey.timestamp ? new Date(runtimeKey.timestamp).toLocaleTimeString() : "N/A"}</span>
                   </div>
                 </div>
@@ -329,8 +329,8 @@ export default function StripeDiagnosticsCard() {
                       <div className="font-bold">🔧 IMMEDIATE FIX ({runtimeKey.environment === "live" ? "LIVE" : "PREVIEW"} RUNTIME):</div>
                       <div className="space-y-1 ml-2">
                         <div>Step 1: Verify Dashboard → Settings → Secrets shows new <code className="bg-gray-200 px-1">sk_live_…</code> key</div>
-                        <div>{t("admin.fixRefreshStep")}</div>
-                        <div>{t("admin.fixCheckStep")}</div>
+                        <div>Step 2: Click "Force Refresh" button above</div>
+                        <div>Step 3: Click "Check Runtime Key" to verify update</div>
                         <div className="text-red-700 font-bold mt-1">⚠️ If still failing after Force Refresh:</div>
                         <div className="ml-2">→ Base44 backend functions need manual redeploy</div>
                         <div className="ml-2">→ Go to Base44 Dashboard → Code → Functions</div>
@@ -360,14 +360,14 @@ export default function StripeDiagnosticsCard() {
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               <div className="space-y-2">
-                <div className="font-bold">{t("admin.forbiddenScanTitle")}</div>
+                <div className="font-bold">Forbidden Stripe Pattern Scan</div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span className="text-gray-600">{t("admin.filesScanned")}</span>{" "}
+                    <span className="text-gray-600">Files Scanned:</span>{" "}
                     <span className="font-semibold">{forbiddenScan.scannedCount || 0}</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">{t("admin.violations")}</span>{" "}
+                    <span className="text-gray-600">Violations:</span>{" "}
                     <span className={`font-bold ${forbiddenScan.violationCount > 0 ? "text-red-700" : "text-green-700"}`}>
                       {forbiddenScan.violationCount || 0}
                     </span>
@@ -375,29 +375,29 @@ export default function StripeDiagnosticsCard() {
                 </div>
                 {forbiddenScan.violationCount > 0 && (
                   <div className="mt-2 max-h-48 overflow-auto">
-                    <div className="text-xs font-semibold text-red-900 mb-1">{t("admin.fixRequired")}</div>
+                    <div className="text-xs font-semibold text-red-900 mb-1">Fix Required:</div>
                     {forbiddenScan.violations.slice(0, 10).map((v, i) => (
                       <div key={i} className="text-xs bg-red-50 p-2 rounded mb-1 border border-red-200">
                         <div className="font-mono text-red-900">{v.file}:{v.line}</div>
-                        <div className="text-red-700">{t("admin.patternLabel")} {v.pattern}</div>
+                        <div className="text-red-700">Pattern: {v.pattern}</div>
                         <div className="text-gray-600 truncate">→ {v.excerpt}</div>
                       </div>
                     ))}
                     {forbiddenScan.violationCount > 10 && (
                       <div className="text-xs text-red-700 mt-1">
-                        {t("admin.andMoreViolations", { n: forbiddenScan.violationCount - 10 })}
+                        ... and {forbiddenScan.violationCount - 10} more violations
                       </div>
                     )}
                   </div>
                 )}
                 {forbiddenScan.ok && forbiddenScan.violationCount === 0 && (
                   <div className="text-sm font-semibold text-green-900 mt-2 bg-green-50 border border-green-400 p-2 rounded">
-                    {t("admin.allStripeUsageClean")}
+                    ✅ All Stripe usage goes through helper function
                   </div>
                 )}
                 {forbiddenScan.scanError && (
                   <div className="text-xs text-yellow-800 bg-yellow-50 p-2 rounded border border-yellow-300 mt-2">
-                    {t("admin.scanErrorMsg", { error: forbiddenScan.scanError })}
+                    ⚠️ Scan error: {forbiddenScan.scanError}
                   </div>
                 )}
               </div>
@@ -409,7 +409,7 @@ export default function StripeDiagnosticsCard() {
           <Alert variant="destructive" className="bg-red-100 border-red-400">
             <AlertTriangle className="h-5 w-5" />
             <AlertDescription>
-              <div className="font-bold text-red-900 mb-2">{t("admin.criticalForbiddenTitle")}</div>
+              <div className="font-bold text-red-900 mb-2">CRITICAL: Forbidden Stripe Constructors Detected</div>
               <div className="text-red-800 text-sm mb-2">{result.hardFailHint}</div>
               <div className="text-red-900 text-xs font-mono bg-red-50 p-2 rounded mt-2 max-h-32 overflow-auto">
                 {result.forbiddenStripeConstructorsScan.forbidden.map((file, i) => (
@@ -425,9 +425,9 @@ export default function StripeDiagnosticsCard() {
             <XCircle className="h-5 w-5" />
             <AlertDescription>
               <div className="space-y-2">
-                <div className="font-bold text-red-900">{t("admin.stripeAuthFailedTitle")}</div>
+                <div className="font-bold text-red-900">Stripe Authentication Failed</div>
                 <div className="text-red-800 text-sm">
-                  <span className="font-semibold">{t("admin.keyPrefixLabel")}</span>{" "}
+                  <span className="font-semibold">Key Prefix:</span>{" "}
                   <code className="bg-red-200 px-2 py-0.5 rounded font-mono text-red-900">
                     {result.keyPrefix || result.stripeKeyPrefix || "unknown"}
                   </code>
@@ -439,7 +439,7 @@ export default function StripeDiagnosticsCard() {
                 )}
                 {(result.keyPrefix === "mk" || result.keyPrefix === "pk" || result.keyPrefix === "missing" || result.keyPrefix === "other" || !result.stripeKeyValid) && (
                   <div className="text-sm font-semibold text-red-900 mt-2 bg-yellow-100 border border-yellow-400 p-2 rounded">
-                    {t("admin.stripeKeyMustStartWith")}
+                    ⚠️ STRIPE_SECRET_KEY must start with <code className="font-mono bg-yellow-200 px-1">sk_</code> (secret) or <code className="font-mono bg-yellow-200 px-1">rk_</code> (restricted)
                   </div>
                 )}
               </div>
@@ -451,22 +451,22 @@ export default function StripeDiagnosticsCard() {
           <div className="space-y-3 pt-4 border-t border-purple-200">
             <div className="flex items-center gap-2 text-green-700">
               <CheckCircle className="w-5 h-5" />
-              <span className="font-semibold">{t("admin.allChecksPassed")}</span>
+              <span className="font-semibold">All Checks Passed</span>
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="bg-white/50 rounded p-2">
-                <div className="text-purple-600 text-xs">{t("admin.keyPrefixShort")}</div>
+                <div className="text-purple-600 text-xs">Key Prefix</div>
                 <div className="text-purple-900 font-mono font-semibold">{result.keyPrefix}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-purple-600 text-xs">{t("admin.apiConnectionLabel")}</div>
+                <div className="text-purple-600 text-xs">API Connection</div>
                 <div className="text-purple-900 font-semibold">
-                  {result.stripeSanityOk ? t("admin.apiOk") : t("admin.apiFailed")}
+                  {result.stripeSanityOk ? "OK" : "Failed"}
                 </div>
               </div>
               <div className="bg-white/50 rounded p-2">
-                <div className="text-purple-600 text-xs">{t("admin.forbiddenConstructorsLabel")}</div>
+                <div className="text-purple-600 text-xs">Forbidden Constructors</div>
                 <div className="text-purple-900 font-semibold">
                   {result.forbiddenStripeConstructorsScan?.ok 
                     ? result.forbiddenStripeConstructorsScan.forbidden.length 
@@ -481,7 +481,7 @@ export default function StripeDiagnosticsCard() {
           <Alert className="bg-yellow-100 border-yellow-400">
             <AlertTriangle className="h-4 w-4 text-yellow-700" />
             <AlertDescription className="text-yellow-900 text-sm">
-              {t("admin.couldNotScanForbidden", { error: result.forbiddenStripeConstructorsScan.error })}
+              Could not scan for forbidden constructors: {result.forbiddenStripeConstructorsScan.error}
             </AlertDescription>
           </Alert>
         )}

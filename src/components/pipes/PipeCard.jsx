@@ -1,5 +1,5 @@
 import React from 'react';
-import { HeritageCard } from "@/components/ui/HeritageCard";
+import { PKCard } from "@/components/ui/pk-surface";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Star } from "lucide-react";
@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import PipeShapeIcon from "./PipeShapeIcon";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
-import LuxuryObjectFrame from "@/components/ui/LuxuryObjectFrame";
 
 export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
   const { t } = useTranslation();
@@ -18,118 +17,69 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
     >
-      <HeritageCard 
+      <PKCard 
         className="overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300"
         onClick={onClick}
-        withTexture={false}
       >
-        <LuxuryObjectFrame
-          src={mainPhoto}
-          alt={pipe.name}
-          aspectRatio="16/9"
-          objectFit="contain"
-          fallback={
-            <div className="text-[#E0D8C8]/30 text-center">
-              <PipeShapeIcon shape={pipe.shape} className="w-12 h-12 mx-auto mb-2" style={{ color: "rgba(180,140,75,0.4)" }} />
-              <p className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(180,140,75,0.5)" }}>
-                {pipe.shape || t("pipesExtended.noPhoto")}
-              </p>
+        <div className="relative aspect-[16/9] bg-gradient-to-br from-[#1A2B3A] to-[#243548] overflow-hidden">
+          {mainPhoto ? (
+            <img 
+              src={mainPhoto} 
+              alt={pipe.name} 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+            <div className="text-[#E0D8C8]/50 text-center">
+                <PipeShapeIcon shape={pipe.shape} className="w-16 h-16 mb-2" />
+                <p className="text-xs">{pipe.shape || t("pipesExtended.noPhoto")}</p>
+              </div>
             </div>
-          }
-        >
-          {/* Absolute positioned overlays */}
-        </LuxuryObjectFrame>
-        
-        {/* Floating overlay controls */}
-        <div className="absolute top-3 right-3 z-30">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 rounded-full shadow-lg"
-            style={{
-              background: "rgba(20, 14, 10, 0.85)",
-              border: "1px solid rgba(120, 90, 65, 0.3)",
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onToggleFavorite?.(pipe);
-            }}
-          >
-            <Heart className={`w-3.5 h-3.5 ${pipe.is_favorite ? 'fill-rose-400 text-rose-400' : 'text-[#E0D8C8]/60'}`} />
-          </Button>
-        </div>
-        
-        {pipe.estimated_value && (
-          <div className="absolute bottom-3 left-3 right-3 z-30">
-            <Badge 
-              className="border-0 backdrop-blur-md font-semibold shadow-lg text-xs truncate max-w-full"
-              style={{
-                background: "linear-gradient(135deg, rgba(46, 125, 92, 0.9), rgba(40, 110, 80, 0.95))",
-                color: "#fff"
+          )}
+          <div className="absolute top-3 right-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 bg-[#223447]/90 hover:bg-[#223447] shadow-md"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleFavorite?.(pipe);
               }}
             >
-              {formatCurrency(+pipe.estimated_value)}
-            </Badge>
+              <Heart className={`w-4 h-4 ${pipe.is_favorite ? 'fill-rose-500 text-rose-500' : 'text-stone-400'}`} />
+            </Button>
           </div>
-        )}
-        <div className="p-5 min-w-0">
-         <h3 
-           className="font-semibold truncate text-lg leading-snug mb-1.5" 
-           style={{ 
-             color: "#F5F1E7",
-             fontFamily: "'Georgia', serif",
-             textShadow: "0 1px 2px rgba(0,0,0,0.5)"
-           }}
-         >
-           {pipe.name}
-         </h3>
-         <p className="text-sm truncate" style={{ color: "rgba(180, 140, 75, 0.75)" }}>
-           {pipe.maker || t("pipesExtended.unknownMaker")}
-         </p>
+          {pipe.estimated_value && (
+            <div className="absolute bottom-3 left-3 max-w-[calc(100%-24px)]">
+              <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm font-semibold shadow-sm text-sm truncate max-w-full">
+                {formatCurrency(+pipe.estimated_value)}
+              </Badge>
+            </div>
+          )}
+        </div>
+        <div className="p-4 min-w-0">
+         <h3 className="font-semibold text-[#E0D8C8] truncate text-base">{pipe.name}</h3>
+         <p className="text-sm text-[#E0D8C8]/70 truncate">{pipe.maker || t("pipesExtended.unknownMaker")}</p>
           <div className="flex flex-wrap gap-1.5 mt-3">
             {pipe.shape && (
-              <Badge 
-                variant="secondary" 
-                className="text-[10px] px-2 py-0.5"
-                style={{
-                  background: "rgba(180, 140, 75, 0.15)",
-                  color: "rgba(180, 140, 75, 0.9)",
-                  border: "1px solid rgba(180, 140, 75, 0.25)"
-                }}
-              >
+              <Badge variant="secondary" className="bg-amber-700/40 text-amber-100 border-amber-600/50 text-xs">
                 {t(`shapes.${pipe.shape}`, pipe.shape)}
               </Badge>
             )}
             {pipe.bowl_material && (
-              <Badge 
-                variant="secondary" 
-                className="text-[10px] px-2 py-0.5"
-                style={{
-                  background: "rgba(100, 80, 60, 0.15)",
-                  color: "rgba(200, 180, 160, 0.9)",
-                  border: "1px solid rgba(120, 100, 80, 0.25)"
-                }}
-              >
+              <Badge variant="secondary" className="bg-slate-700/40 text-slate-100 border-slate-600/50 text-xs">
                 {t(`materials.${pipe.bowl_material}`, pipe.bowl_material)}
               </Badge>
             )}
             {pipe.chamber_volume && (
-              <Badge 
-                variant="secondary" 
-                className="text-[10px] px-2 py-0.5"
-                style={{
-                  background: "rgba(180, 140, 75, 0.15)",
-                  color: "rgba(180, 140, 75, 0.9)",
-                  border: "1px solid rgba(180, 140, 75, 0.25)"
-                }}
-              >
+              <Badge variant="secondary" className="bg-amber-700/40 text-amber-100 border-amber-600/50 text-xs">
                 {t(`sizes.${pipe.chamber_volume}`, pipe.chamber_volume)}
               </Badge>
             )}
           </div>
           </div>
-          </HeritageCard>
+          </PKCard>
     </motion.div>
   );
 }

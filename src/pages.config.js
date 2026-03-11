@@ -48,20 +48,14 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AIUpdates from './pages/AIUpdates';
-import AdminReports from './pages/AdminReports';
-import AdminSubscriptionRequests from './pages/AdminSubscriptionRequests';
-import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
 import AgeGate from './pages/AgeGate';
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import Community from './pages/Community';
-import Curator from './pages/Curator';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
 import Home from './pages/Home';
 import HowTo from './pages/HowTo';
-import Import from './pages/Import';
-import Insights from './pages/Insights';
 import Invite from './pages/Invite';
 import InviteFull from './pages/InviteFull';
 import PipeDetail from './pages/PipeDetail';
@@ -71,8 +65,6 @@ import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
 import Subscription from './pages/Subscription';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
-import SubscriptionE2ETest from './pages/SubscriptionE2ETest';
-import SubscriptionEventsLog from './pages/SubscriptionEventsLog';
 import SubscriptionFull from './pages/SubscriptionFull';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionSupport from './pages/SubscriptionSupport';
@@ -84,28 +76,20 @@ import TobaccoDetail from './pages/TobaccoDetail';
 import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
 import Troubleshooting from './pages/Troubleshooting';
 import TroubleshootingFull from './pages/TroubleshootingFull';
-import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
-import index from './pages/index';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AIUpdates": AIUpdates,
-    "AdminReports": AdminReports,
-    "AdminSubscriptionRequests": AdminSubscriptionRequests,
-    "AdminSubscriptionTools": AdminSubscriptionTools,
     "AgeGate": AgeGate,
     "BulkLogoUpload": BulkLogoUpload,
     "Community": Community,
-    "Curator": Curator,
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
     "Home": Home,
     "HowTo": HowTo,
-    "Import": Import,
-    "Insights": Insights,
     "Invite": Invite,
     "InviteFull": InviteFull,
     "PipeDetail": PipeDetail,
@@ -115,8 +99,6 @@ export const PAGES = {
     "PublicProfile": PublicProfile,
     "Subscription": Subscription,
     "SubscriptionCancelled": SubscriptionCancelled,
-    "SubscriptionE2ETest": SubscriptionE2ETest,
-    "SubscriptionEventsLog": SubscriptionEventsLog,
     "SubscriptionFull": SubscriptionFull,
     "SubscriptionSuccess": SubscriptionSuccess,
     "SubscriptionSupport": SubscriptionSupport,
@@ -128,9 +110,7 @@ export const PAGES = {
     "TobaccoLibrarySync": TobaccoLibrarySync,
     "Troubleshooting": Troubleshooting,
     "TroubleshootingFull": TroubleshootingFull,
-    "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
-    "index": index,
 }
 
 export const pagesConfig = {

@@ -58,7 +58,7 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
             onValueChange={(value) => handleUpdate('overall_condition', value)}
           >
             <SelectTrigger>
-              <SelectValue placeholder={t("conditionTracker.selectCondition")} />
+              <SelectValue placeholder={t("conditionTracker.selectCondition", "Select condition")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Mint">{t("conditionTracker.conditionMint")}</SelectItem>
@@ -90,7 +90,7 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
             className="mb-2"
           />
           <p className="text-xs text-[#E0D8C8]/60">
-            {condition.cake_level}% - {t("conditionTracker.optimalRange")}
+            {condition.cake_level}% - {t("conditionTracker.optimalRange", "Optimal range: 30–70%")}
           </p>
         </div>
 
@@ -112,12 +112,12 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
             className="mb-2"
           />
           <p className="text-xs text-[#E0D8C8]/60">
-            {condition.stem_oxidation}% {t("conditionTracker.oxidation")}
+            {condition.stem_oxidation}% {t("conditionTracker.oxidation", "oxidation")}
           </p>
         </div>
 
         <div>
-          <Label className="mb-2 block">{t("conditionTracker.generalWear")}</Label>
+          <Label className="mb-2 block">{t("conditionTracker.generalWear", "General Wear")}</Label>
           <Slider
             value={[condition.wear_level]}
             onValueChange={([value]) => handleUpdate('wear_level', value)}
@@ -126,10 +126,10 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
             className="mb-2"
           />
           <p className="text-xs text-[#E0D8C8]/60">
-            {condition.wear_level}% {t("conditionTracker.wear")} - {
-              condition.wear_level < 20 ? t("conditionTracker.minimalWear") :
-              condition.wear_level < 50 ? t("conditionTracker.lightWear") :
-              condition.wear_level < 75 ? t("conditionTracker.moderateWear") : t("conditionTracker.heavyWear")
+            {condition.wear_level}% {t("conditionTracker.wear", "wear")} - {
+              condition.wear_level < 20 ? t("conditionTracker.minimalWear", "Minimal Wear") :
+              condition.wear_level < 50 ? t("conditionTracker.lightWear", "Light Wear") :
+              condition.wear_level < 75 ? t("conditionTracker.moderateWear", "Moderate Wear") : t("conditionTracker.heavyWear", "Heavy Wear")
             }
           </p>
         </div>

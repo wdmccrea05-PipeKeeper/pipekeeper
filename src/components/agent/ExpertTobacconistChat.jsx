@@ -12,8 +12,6 @@ export default function ExpertTobacconistChat({
   threadId,
   setThreadId,
   onAnsweredBy,
-  preFillMessage,
-  onPreFillConsumed,
 }) {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
@@ -24,21 +22,6 @@ export default function ExpertTobacconistChat({
   const [initializing, setInitializing] = useState(false);
 
   const listRef = useRef(null);
-
-  // Store onPreFillConsumed in a ref to avoid stale closure issues.
-  const onPreFillConsumedRef = useRef(onPreFillConsumed);
-  useEffect(() => {
-    onPreFillConsumedRef.current = onPreFillConsumed;
-  }, [onPreFillConsumed]);
-
-  // Apply pre-fill message when provided from a proactive insight action.
-  // Only re-runs when preFillMessage changes (intentional: the ref handles the callback).
-  useEffect(() => {
-    if (preFillMessage) {
-      setInput(preFillMessage);
-      onPreFillConsumedRef.current?.();
-    }
-  }, [preFillMessage]);
 
   const canSend = useMemo(() => {
     return !!input.trim() && !sending && !initializing;
@@ -239,7 +222,7 @@ export default function ExpertTobacconistChat({
           disabled={sending || initializing}
         />
         <Button onClick={sendMessage} disabled={!canSend}>
-          {sending ? t("common.sending") : t("common.send")}
+          {sending ? t("common.sending", "Sending…") : t("common.send", "Send")}
         </Button>
       </div>
 

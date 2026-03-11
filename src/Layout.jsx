@@ -53,39 +53,21 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false, 
       to={createPageUrl(item.page)}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1 font-medium transition-all duration-200 flex-shrink-0 whitespace-nowrap",
-        isNav ? "px-2 sm:px-3 py-2 text-xs" : "px-3 py-2.5 text-sm",
-        isMobile && "text-[#1a2c42]"
+        "flex items-center gap-1 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 flex-shrink-0 whitespace-nowrap",
+        isNav ? "px-1.5 sm:px-2 py-1.5 sm:py-2 text-xs" : "px-2 py-2 text-xs",
+        isActive
+          ? "bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8] shadow-md"
+          : isMobile
+          ? "text-[#1a2c42] hover:bg-[#A35C5C]/10"
+          : "text-[#E0D8C8]/70 hover:bg-[#A35C5C]/30 hover:text-[#E0D8C8]"
       )}
-      style={{
-        WebkitTapHighlightColor: "transparent",
-        borderRadius: "0.375rem",
-        ...(isActive ? {
-          background: "linear-gradient(135deg, rgba(100, 70, 45, 0.7), rgba(80, 55, 35, 0.8))",
-          border: "1px solid rgba(120, 90, 65, 0.5)",
-          color: "#F5F1E7",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.15)",
-        } : isMobile ? {
-          color: "#1a2c42"
-        } : {
-          color: "rgba(224, 216, 200, 0.7)",
-        })
-      }}
+      style={{ WebkitTapHighlightColor: "transparent" }}
       aria-current={isActive ? "page" : undefined}
       role="link"
       title={item.name}
     >
       {item.isIconComponent ? (
-        <item.icon 
-          className="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0" 
-          style={{
-            color: isActive 
-              ? "rgba(180, 140, 75, 1)" 
-              : isMobile 
-              ? "#1a2c42"
-              : "rgba(180, 140, 75, 0.7)"
-          }}
-        />
+        <item.icon className="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0" />
       ) : (
         <img
           src={item.icon}
@@ -95,15 +77,15 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false, 
             filter: isMobile
               ? "brightness(0)"
               : isActive
-              ? "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.95)"
-              : "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.85) opacity(0.7)",
+              ? "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(1)"
+              : "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.7)",
           }}
         />
       )}
 
       <span className={cn("truncate hidden sm:inline text-xs sm:text-sm", isMobile ? "inline" : "")}>{item.name}</span>
 
-      {item.isPremium && !hasPaidAccess && <Crown className="w-2.5 sm:w-3 h-2.5 sm:h-3 flex-shrink-0" style={{ color: "#D4AF37" }} />}
+      {item.isPremium && !hasPaidAccess && <Crown className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-amber-500 flex-shrink-0" />}
     </Link>
   );
 }
@@ -263,10 +245,10 @@ export default function Layout({ children, currentPageName }) {
   const { user, isLoading: userLoading, error: userError, hasPremium, hasPaid, hasPro, isAdmin, subscription, isLoading: subLoading } = useCurrentUser();
 
   const adminNavItems = useMemo(() => isAdmin ? [
-    { name: t("nav.subscriptionSupport"), page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
-    { name: t("nav.userReport"), page: "UserReport", icon: Users, isIconComponent: true },
-    { name: t("nav.contentModeration"), page: "AdminReports", icon: Shield, isIconComponent: true },
-    { name: t("nav.eventsLog"), page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
+    { name: t("nav.subscriptionSupport") || "Subscription Support", page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
+    { name: t("nav.userReport") || "User Report", page: "UserReport", icon: Users, isIconComponent: true },
+    { name: t("nav.contentModeration") || "Content Moderation", page: "AdminReports", icon: Shield, isIconComponent: true },
+    { name: t("nav.eventsLog") || "Events Log", page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
   ] : [], [isAdmin, lang]);
 
   // Block render until subscription is loaded (prevents Apple fallback race)
@@ -592,23 +574,8 @@ export default function Layout({ children, currentPageName }) {
         <DocumentTitle title={t("layout.appTitle")} />
         <Toaster position="top-center" />
         <MeasurementProvider>
-        <div className="dark min-h-screen flex flex-col" style={{ 
-          colorScheme: 'dark'
-        }}>
-          <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b overflow-x-hidden shadow-[0_3px_12px_rgba(0,0,0,0.65),inset_0_-1px_0_rgba(180,140,75,0.12)]" style={{ 
-            paddingTop: 'var(--safe-area-top)',
-            background: 'linear-gradient(to bottom, rgba(28, 20, 14, 0.97), rgba(24, 16, 12, 0.99))',
-            borderBottomColor: 'rgba(120, 90, 65, 0.35)',
-            backgroundImage: `
-              repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 4px,
-                rgba(80, 60, 40, 0.025) 4px,
-                rgba(80, 60, 40, 0.025) 5px
-              )
-            `
-          }}>
+        <div className="dark min-h-screen flex flex-col bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320]" style={{ colorScheme: 'dark' }}>
+          <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg overflow-x-hidden" style={{ paddingTop: 'var(--safe-area-top)' }}>
             <div className="w-full">
               <div className="flex items-center justify-between h-16 gap-2 px-3 lg:px-6">
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -661,20 +628,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </nav>
 
-          <nav className="md:hidden fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b shadow-[0_3px_12px_rgba(0,0,0,0.65),inset_0_-1px_0_rgba(180,140,75,0.12)]" style={{ 
-            paddingTop: 'env(safe-area-inset-top, 0px)',
-            background: 'linear-gradient(to bottom, rgba(28, 20, 14, 0.97), rgba(24, 16, 12, 0.99))',
-            borderBottomColor: 'rgba(120, 90, 65, 0.35)',
-            backgroundImage: `
-              repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 4px,
-                rgba(80, 60, 40, 0.025) 4px,
-                rgba(80, 60, 40, 0.025) 5px
-              )
-            `
-          }}>
+          <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
             <div className="flex items-center justify-between h-16 px-4">
               <div className="flex items-center gap-2">
                 <BackButton currentPageName={currentPageName} />
@@ -691,7 +645,7 @@ export default function Layout({ children, currentPageName }) {
                 }}
                 className="text-[#E0D8C8] p-2 -mr-2 hover:bg-[#A35C5C]/20 rounded-lg active:scale-95 transition-all duration-200"
                 style={{ WebkitTapHighlightColor: "transparent" }}
-                aria-label={t("layout.toggleMenu")}
+                aria-label={t("layout.toggleMenu","Toggle menu")}
               >
                 {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -758,19 +712,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </main>
 
-          <footer className="border-t mt-auto shadow-[0_-3px_12px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(180,140,75,0.1)]" style={{
-            background: 'linear-gradient(to top, rgba(20, 14, 10, 0.99), rgba(26, 18, 13, 0.96))',
-            borderTopColor: 'rgba(120, 90, 65, 0.3)',
-            backgroundImage: `
-              repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 4px,
-                rgba(80, 60, 40, 0.02) 4px,
-                rgba(80, 60, 40, 0.02) 5px
-              )
-            `
-          }}>
+          <footer className="bg-[#1A2B3A]/95 border-t border-[#A35C5C]/50 mt-auto">
             <div className="max-w-7xl mx-auto px-6 py-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">

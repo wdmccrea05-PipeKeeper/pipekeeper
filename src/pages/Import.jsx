@@ -193,7 +193,7 @@ export default function ImportPage() {
         <a href={createPageUrl('Home')}>
           <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            {t("common.backToHome")}
+            {t("nav.backToHome")}
           </Button>
         </a>
 
@@ -227,8 +227,8 @@ export default function ImportPage() {
                   <div className="mt-3 pt-3 border-t border-amber-300">
                     <p className="text-sm font-semibold text-amber-900 mb-1">{t("import.requiredFields")}:</p>
                     <ul className="text-sm text-amber-800 space-y-1">
-                      <li>• <strong>{t("import.fieldName")}</strong> - {t("import.pipeNameDesc")}</li>
-                      <li>• <strong>{t("import.fieldMaker")}</strong> - {t("import.pipeMakerDesc")}</li>
+                      <li>• <strong>name</strong> - {t("import.pipeNameDesc")}</li>
+                      <li>• <strong>maker</strong> - {t("import.pipeMakerDesc")}</li>
                     </ul>
                     <p className="text-xs text-amber-700 mt-2 italic">{t("import.pipeNoteCustom")}</p>
                   </div>
@@ -289,7 +289,7 @@ export default function ImportPage() {
                   <div className="mt-3 pt-3 border-t border-amber-300">
                     <p className="text-sm font-semibold text-amber-900 mb-1">{t("import.requiredFields")}:</p>
                     <ul className="text-sm text-amber-800 space-y-1">
-                      <li>• <strong>{t("import.fieldName")}</strong> - {t("import.tobaccoNameDesc")}</li>
+                      <li>• <strong>name</strong> - {t("import.tobaccoNameDesc")}</li>
                     </ul>
                     <p className="text-sm font-semibold text-amber-900 mt-3 mb-1">{t("import.inventoryFields")}:</p>
                     <ul className="text-xs text-amber-800 space-y-1">

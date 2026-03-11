@@ -16,9 +16,6 @@ import PipeListItem from "@/components/pipes/PipeListItem";
 import PipeForm from "@/components/pipes/PipeForm";
 import QuickSearchPipe from "@/components/ai/QuickSearchPipe";
 import PipeExporter from "@/components/export/PipeExporter";
-import CollectorDisplayCard from "@/components/ui/CollectorDisplayCard";
-import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
-import { Badge } from "@/components/ui/badge";
 import { PK_THEME } from "@/components/utils/pkTheme";
 import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
 import { canCreatePipe } from "@/components/utils/limitChecks";
@@ -26,7 +23,6 @@ import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
-import { Package2 } from "lucide-react";
 
 const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Brandy", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
 const MATERIALS = ["Briar", "Cherry Wood", "Clay", "Corn Cob", "Meerschaum", "Morta", "Olive Wood", "Other"];
@@ -42,9 +38,6 @@ export default function PipesPage() {
   const [materialFilter, setMaterialFilter] = useState('');
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('pipesViewMode') || 'grid';
-  });
-  const [displayMode, setDisplayMode] = useState(() => {
-    return localStorage.getItem('pipesDisplayMode') === 'collector';
   });
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [sortBy, setSortBy] = useState('date');
@@ -183,7 +176,7 @@ export default function PipesPage() {
           <div>
             <PkPageTitle>{t("pipesPage.myPipes")}</PkPageTitle>
             <PkText className="mt-1">
-              {pipes.length} {t("pipesPage.pipes")} {totalValue > 0 && `• ${formatCurrency(totalValue)} ${t("pipesPage.totalValue")}`}
+              {pipes.length} {t("pipesPage.pipes", "pipes")} {totalValue > 0 && `• ${formatCurrency(totalValue)} ${t("pipesPage.totalValue", "total value")}`}
             </PkText>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -247,7 +240,7 @@ export default function PipesPage() {
                </SelectTrigger>
                <SelectContent>
                  <SelectItem value={ALL_SHAPES}>{t("pipes.allShapes")}</SelectItem>
-                 {SHAPES.map(shape => <SelectItem key={shape} value={shape}>{t(`shapes.${shape}`, shape)}</SelectItem>)}
+                 {SHAPES.map(shape => <SelectItem key={shape} value={shape}>{shape}</SelectItem>)}
                </SelectContent>
              </Select>
              <Select
@@ -259,12 +252,12 @@ export default function PipesPage() {
                </SelectTrigger>
                <SelectContent>
                  <SelectItem value={ALL_MATERIALS}>{t("pipes.allMaterials")}</SelectItem>
-                 {MATERIALS.map(material => <SelectItem key={material} value={material}>{t(`materials.${material}`, material)}</SelectItem>)}
+                 {MATERIALS.map(material => <SelectItem key={material} value={material}>{material}</SelectItem>)}
                </SelectContent>
              </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className={PK_THEME.input} aria-label={t("pipesPage.sortBy")}>
-                <SelectValue placeholder={t("pipesPage.sortBy")} />
+              <SelectTrigger className={PK_THEME.input} aria-label={t("pipesPage.sortBy", "Sort by")}>
+                <SelectValue placeholder={t("pipesPage.sortBy", "Sort by")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="date">{t("pipesPage.newestFirst")}</SelectItem>
@@ -273,51 +266,33 @@ export default function PipesPage() {
                 <SelectItem value="name">{t("pipesPage.byName")}</SelectItem>
               </SelectContent>
             </Select>
-            <div className="flex gap-2">
-              <div className={`flex border rounded-lg ${PK_THEME.card}`} role="group" aria-label={t("pipesPage.viewMode")}>
-                <Button
-                  variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                  size="icon"
-                  onClick={() => {
-                    setViewMode('grid');
-                    localStorage.setItem('pipesViewMode', 'grid');
-                  }}
-                  className={`rounded-r-none ${viewMode === 'grid' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
-                  aria-label={t("pipes.gridView")}
-                  aria-pressed={viewMode === 'grid'}
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                  size="icon"
-                  onClick={() => {
-                    setViewMode('list');
-                    localStorage.setItem('pipesViewMode', 'list');
-                  }}
-                  className={`rounded-l-none ${viewMode === 'list' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
-                  aria-label={t("pipes.listView")}
-                  aria-pressed={viewMode === 'list'}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </div>
-              
-              {hasPaid && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    const newMode = !displayMode;
-                    setDisplayMode(newMode);
-                    localStorage.setItem('pipesDisplayMode', newMode ? 'collector' : 'standard');
-                  }}
-                  className={displayMode ? 'border-amber-600/60 bg-amber-600/20' : ''}
-                  title="Collector Display Mode"
-                >
-                  <Package2 className="w-4 h-4" style={{ color: displayMode ? "rgba(180, 140, 75, 1)" : "rgba(224, 216, 200, 0.7)" }} />
-                </Button>
-              )}
+            <div className={`flex border rounded-lg w-full sm:w-fit justify-center sm:justify-start ${PK_THEME.card}`} role="group" aria-label={t("pipesPage.viewMode", "View mode")}>
+              <Button
+                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                size="icon"
+                onClick={() => {
+                  setViewMode('grid');
+                  localStorage.setItem('pipesViewMode', 'grid');
+                }}
+                className={`rounded-r-none flex-1 sm:flex-none ${viewMode === 'grid' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
+                aria-label={t("pipes.gridView")}
+                aria-pressed={viewMode === 'grid'}
+              >
+                <Grid3X3 className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="icon"
+                onClick={() => {
+                  setViewMode('list');
+                  localStorage.setItem('pipesViewMode', 'list');
+                }}
+                className={`rounded-l-none flex-1 sm:flex-none ${viewMode === 'list' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
+                aria-label={t("pipes.listView")}
+                aria-pressed={viewMode === 'list'}
+              >
+                <List className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </motion.div>
@@ -332,106 +307,19 @@ export default function PipesPage() {
         ) : filteredPipes.length === 0 ? (
           <EmptyState
             icon={Package}
-            title={pipes.length === 0 ? t("pipesPage.startCollection") : t("pipesPage.noPipesFound")}
+            title={pipes.length === 0 ? t("pipesPage.startCollection", "Start Your Collection") : t("pipesPage.noPipesFound", "No Pipes Found")}
             description={
               pipes.length === 0 
-                ? t("pipesPage.startCollectionDesc")
+                ? t("pipesPage.startCollectionDesc", "Begin your pipe journey by adding your first piece. Track details, photos, and smoking notes all in one place.")
                 : searchQuery 
-                  ? t("pipesPage.noMatchSearch")
-                  : t("pipesPage.noMatchFilters")
+                  ? t("pipesPage.noMatchSearch", `No pipes match "${searchQuery}". Try adjusting your search or filters.`)
+                  : t("pipesPage.noMatchFilters", "No pipes match your current filters. Try adjusting your selections.")
             }
-            actionLabel={pipes.length === 0 ? t("pipesPage.addFirstPipe") : null}
+            actionLabel={pipes.length === 0 ? t("pipesPage.addFirstPipe", "Add Your First Pipe") : null}
             onAction={pipes.length === 0 ? () => setShowForm(true) : null}
             secondaryActionLabel={pipes.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || shapeFilter || materialFilter ? t("pipesPage.clearFilters") : null}
             onSecondaryAction={pipes.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setShapeFilter(''); setMaterialFilter(''); }}
           />
-        ) : displayMode && viewMode === 'grid' ? (
-          <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-            layout
-          >
-            <AnimatePresence>
-              {filteredPipes.map(pipe => (
-                <motion.div
-                  key={pipe.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                >
-                  <CollectorDisplayCard
-                    image={pipe.photos?.[0]}
-                    title={pipe.name}
-                    subtitle={pipe.maker || t("pipesExtended.unknownMaker")}
-                    badges={
-                      <>
-                        {pipe.shape && (
-                          <Badge 
-                            className="text-[10px] px-2 py-0.5"
-                            style={{
-                              background: "rgba(180, 140, 75, 0.15)",
-                              color: "rgba(180, 140, 75, 0.9)",
-                              border: "1px solid rgba(180, 140, 75, 0.25)"
-                            }}
-                          >
-                            {t(`shapes.${pipe.shape}`, pipe.shape)}
-                          </Badge>
-                        )}
-                        {pipe.bowl_material && (
-                          <Badge 
-                            className="text-[10px] px-2 py-0.5"
-                            style={{
-                              background: "rgba(100, 80, 60, 0.15)",
-                              color: "rgba(200, 180, 160, 0.9)",
-                              border: "1px solid rgba(120, 100, 80, 0.25)"
-                            }}
-                          >
-                            {t(`materials.${pipe.bowl_material}`, pipe.bowl_material)}
-                          </Badge>
-                        )}
-                        {pipe.chamber_volume && (
-                          <Badge 
-                            className="text-[10px] px-2 py-0.5"
-                            style={{
-                              background: "rgba(180, 140, 75, 0.15)",
-                              color: "rgba(180, 140, 75, 0.9)",
-                              border: "1px solid rgba(180, 140, 75, 0.25)"
-                            }}
-                          >
-                            {t(`sizes.${pipe.chamber_volume}`, pipe.chamber_volume)}
-                          </Badge>
-                        )}
-                      </>
-                    }
-                    valueDisplay={
-                      pipe.estimated_value ? (
-                        <Badge 
-                          className="border-0 backdrop-blur-md font-semibold shadow-lg text-sm"
-                          style={{
-                            background: "linear-gradient(135deg, rgba(46, 125, 92, 0.9), rgba(40, 110, 80, 0.95))",
-                            color: "#fff"
-                          }}
-                        >
-                          {formatCurrency(+pipe.estimated_value)}
-                        </Badge>
-                      ) : null
-                    }
-                    isFavorite={pipe.is_favorite}
-                    onToggleFavorite={() => handleToggleFavorite(pipe)}
-                    onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}
-                    fallbackIcon={
-                      <div className="text-[#E0D8C8]/25 text-center">
-                        <PipeShapeIcon shape={pipe.shape} className="w-16 h-16 mx-auto mb-2" style={{ color: "rgba(180,140,75,0.3)" }} />
-                        <p className="text-xs uppercase tracking-wider" style={{ color: "rgba(180,140,75,0.4)" }}>
-                          {pipe.shape || t("pipesExtended.noPhoto")}
-                        </p>
-                      </div>
-                    }
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
         ) : (
           <motion.div 
             className={viewMode === 'grid' 

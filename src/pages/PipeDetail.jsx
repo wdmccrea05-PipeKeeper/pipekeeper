@@ -47,7 +47,6 @@ import PipeMeasurementCalculator from "@/components/ai/PipeMeasurementCalculator
 import InterchangeableBowls from "@/components/pipes/InterchangeableBowls";
 import PipeConditionTracker from "@/components/pipes/PipeConditionTracker";
 import MaintenanceLog from "@/components/pipes/MaintenanceLog";
-import CuratorItemNote from "@/components/curator/CuratorItemNote";
 
 export default function PipeDetailPage() {
   const { t } = useTranslation();
@@ -216,7 +215,7 @@ export default function PipeDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-8">
+      <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_rgba(99,67,40,0.12),_transparent_45%),linear-gradient(180deg,_#17100c_0%,_#110d0a_100%)] p-8">
         <div className="max-w-6xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 w-48 bg-stone-200 rounded" />
@@ -235,7 +234,7 @@ export default function PipeDetailPage() {
 
   if (!pipe || error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+      <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_rgba(99,67,40,0.12),_transparent_45%),linear-gradient(180deg,_#17100c_0%,_#110d0a_100%)] flex items-center justify-center">
         <div className="text-center">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
@@ -256,7 +255,7 @@ export default function PipeDetailPage() {
   const photoCount = (pipe?.photos || []).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_rgba(99,67,40,0.12),_transparent_45%),linear-gradient(180deg,_#17100c_0%,_#110d0a_100%)]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <a href={createPageUrl('Pipes')}>
@@ -272,12 +271,12 @@ export default function PipeDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[#E0D8C8]">
                 <Sparkles className="w-5 h-5" />
-                {t("pipeDetailTabs.aiSpecializationSuggestion")}
+                {t("pipeDetailTabs.aiSpecializationSuggestion", "AI Specialization Suggestion")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-[#E0D8C8]/70 mb-4">
-                {t("pipeDetailTabs.aiSpecializationDesc")}
+                {t("pipeDetailTabs.aiSpecializationDesc", "Get personalized recommendations on what tobacco types this pipe would be best suited for based on its characteristics and your collection.")}
               </p>
               <SpecializationRecommender 
                 pipe={pipe}
@@ -311,7 +310,7 @@ export default function PipeDetailPage() {
                  <TabsTrigger value="breakin" className="flex items-center gap-1.5">
                    <Flame className="w-4 h-4" />
                    <span className="hidden sm:inline">{t("pipeDetailTabs.breakIn")}</span>
-                   <span className="sm:hidden truncate">{t("pipeDetailTabs.breakInShort")}</span>
+                   <span className="sm:hidden truncate">{t("pipeDetailTabs.breakInShort", "Break")}</span>
                  </TabsTrigger>
                 </TabsList>
 
@@ -374,7 +373,7 @@ export default function PipeDetailPage() {
                 <div className="w-full h-full flex items-center justify-center">
                   <div className="text-stone-400 text-center">
                     <PipeShapeIcon shape={pipe.shape} className="w-24 h-24 mb-4" />
-                    <p>{pipe.shape ? t(`shapes.${pipe.shape}`, pipe.shape) : t("pipesExtended.noPhoto")}</p>
+                    <p>{pipe.shape || t("pipesExtended.noPhoto")}</p>
                   </div>
                 </div>
               )}
@@ -394,7 +393,7 @@ export default function PipeDetailPage() {
                     <img src={photo} alt="" className="w-full h-full object-cover" />
                     {idx >= photoCount && (
                       <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] text-center py-0.5 leading-tight">
-                        {t("pipesExtended.stamping")}
+                        {t("pipesExtended.stamping", "Stamping")}
                       </span>
                     )}
                   </button>
@@ -463,42 +462,42 @@ export default function PipeDetailPage() {
             <div className="flex flex-wrap gap-2">
               {pipe.shape && pipe.shape !== 'Unknown' && (
                 <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
-                  {t(`shapes.${pipe.shape}`, pipe.shape)}
+                  {pipe.shape}
                 </Badge>
               )}
               {pipe.bowlStyle && pipe.bowlStyle !== 'Unknown' && (
                 <Badge className="bg-purple-700 text-purple-100 border-purple-600/50">
-                  {t(`bowlStyles.${pipe.bowlStyle}`, pipe.bowlStyle)}
+                  {pipe.bowlStyle}
                 </Badge>
               )}
               {pipe.shankShape && pipe.shankShape !== 'Unknown' && (
                 <Badge className="bg-teal-700 text-teal-100 border-teal-600/50">
-                  {t("pipesExtended.shank")} {t(`shankShapes.${pipe.shankShape}`, pipe.shankShape)}
+                  {t("pipesExtended.shank")} {pipe.shankShape}
                 </Badge>
               )}
               {pipe.bend && pipe.bend !== 'Unknown' && (
                 <Badge className="bg-indigo-700 text-indigo-100 border-indigo-600/50">
-                  {t(`bends.${pipe.bend}`, pipe.bend)}
+                  {pipe.bend}
                 </Badge>
               )}
               {pipe.sizeClass && pipe.sizeClass !== 'Unknown' && pipe.sizeClass !== 'Standard' && (
                 <Badge className="bg-orange-700 text-orange-100 border-orange-600/50">
-                  {t(`sizeClasses.${pipe.sizeClass}`, pipe.sizeClass)}
+                  {pipe.sizeClass}
                 </Badge>
               )}
               {pipe.bowl_material && (
                 <Badge className="bg-slate-700 text-slate-100 border-slate-600/50">
-                  {t(`materials.${pipe.bowl_material}`, pipe.bowl_material)}
+                  {pipe.bowl_material}
                 </Badge>
               )}
               {pipe.chamber_volume && (
                 <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
-                  {t(`sizes.${pipe.chamber_volume}`, pipe.chamber_volume)} {t("formsExtended.chamberVolume")}
+                  {pipe.chamber_volume} {t("formsExtended.chamberVolume","Chamber")}
                 </Badge>
               )}
               {pipe.condition && (
-                <Badge className="bg-blue-700 text-blue-100 border-blue-600/50">
-                  {t(`conditions.${pipe.condition}`, pipe.condition)}
+                <Badge className="bg-[#3F3428] text-[#E6D2B2] border-[#8B6B45]/40">
+                  {pipe.condition}
                 </Badge>
               )}
             </div>
@@ -576,7 +575,7 @@ export default function PipeDetailPage() {
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-[#E0D8C8]/60" />
                       <div>
-                        <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.country")}</p>
+                        <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.country","Country of Origin")}</p>
                         <p className="font-medium text-[#E0D8C8]">{pipe.country_of_origin}</p>
                       </div>
                     </div>
@@ -585,27 +584,27 @@ export default function PipeDetailPage() {
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-[#E0D8C8]/60" />
                       <div>
-                        <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.yearMade")}</p>
+                        <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.yearMade","Year Made")}</p>
                         <p className="font-medium text-[#E0D8C8]">{pipe.year_made}</p>
                       </div>
                     </div>
                   )}
                   {pipe.stem_material && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.stemMaterial")}</p>
-                      <p className="font-medium text-[#E0D8C8]">{t(`stemMaterials.${pipe.stem_material}`, pipe.stem_material)}</p>
+                      <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.stemMaterial","Stem Material")}</p>
+                      <p className="font-medium text-[#E0D8C8]">{pipe.stem_material}</p>
                     </div>
                   )}
                   {pipe.finish && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.finish")}</p>
-                      <p className="font-medium text-[#E0D8C8]">{t(`finishes.${pipe.finish}`, pipe.finish)}</p>
+                      <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.finish","Finish")}</p>
+                      <p className="font-medium text-[#E0D8C8]">{pipe.finish}</p>
                     </div>
                   )}
                   {pipe.filter_type && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.filterType")}</p>
-                      <p className="font-medium text-[#E0D8C8]">{t(`filterTypes.${pipe.filter_type}`, pipe.filter_type)}</p>
+                      <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.filterType","Filter Type")}</p>
+                      <p className="font-medium text-[#E0D8C8]">{pipe.filter_type}</p>
                     </div>
                   )}
                 </div>
@@ -639,13 +638,13 @@ export default function PipeDetailPage() {
                 <CardContent className="p-6 space-y-4">
                   {getUsageCharacteristics(pipe) && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("pipesExtended.usageCharacteristics")}</p>
+                      <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("pipesExtended.usageCharacteristics","Usage Characteristics")}</p>
                       <p className="text-[#E0D8C8]/80">{getUsageCharacteristics(pipe)}</p>
                     </div>
                   )}
                   {pipe.notes && (
                   <div>
-                    <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("common.notes")}</p>
+                    <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("common.notes","Notes")}</p>
                       <p className="text-[#E0D8C8]/80 break-words">{pipe.notes}</p>
                     </div>
                   )}
@@ -691,7 +690,7 @@ export default function PipeDetailPage() {
                 ) : (
                   <UpgradePrompt 
                     featureName={t("pipesExtended.valueLookup")}
-                    description={t("pipeDetailTabs.valueLookupDesc")}
+                    description={t("pipeDetailTabs.valueLookupDesc", "Get instant market value estimates for your pipes based on maker, model, condition, and current market trends.")}
                   />
                 )}
               </CardContent>
@@ -711,16 +710,13 @@ export default function PipeDetailPage() {
                 ) : (
                   <UpgradePrompt 
                     featureName={t("pipesExtended.identifyPipe")}
-                    description={t("pipeDetailTabs.identifyPipeDesc")}
+                    description={t("pipeDetailTabs.identifyPipeDesc", "Use advanced AI to identify your pipe's maker, model, year, and other details from photos of stampings and characteristics.")}
                   />
                 )}
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Curator Note — lightweight intelligence micro-surface */}
-        <CuratorItemNote moduleType="pipe" item={pipe} />
 
         {/* Comments Section */}
         {ownerProfile?.allow_comments && (

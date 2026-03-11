@@ -5,19 +5,6 @@
 
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 
-// Recognized aromatic category focus keywords
-const AROMATIC_FOCUS_KEYWORDS = ["aromatic", "aromatics"];
-
-// Recognized non-aromatic blend-type category focus keywords
-const NON_AROMATIC_FOCUS_KEYWORDS = [
-  "english", "virginia", "burley", "balkan", "latakia",
-  "oriental", "turkish", "virginia/perique", "virginia/burley", "navy flake",
-  "dark fired", "cavendish", "perique", "american", "burley-based",
-];
-
-// All recognized category keywords (used for category-gating logic)
-const CATEGORY_KEYWORDS = [...AROMATIC_FOCUS_KEYWORDS, ...NON_AROMATIC_FOCUS_KEYWORDS];
-
 /**
  * CANONICAL blend category inference
  */
@@ -82,28 +69,18 @@ export function normalizeFocus(focusArr) {
     lower.some((x) => x.includes("medium arom")) ||
     (lower.some((x) => x.includes("arom")) && !wantsHeavyAromatics && !wantsLightAromatics);
 
-  // True when ALL focus items are pure aromatic category keywords
-  const allAromaticCategory =
-    lower.length > 0 &&
-    lower.every((x) => AROMATIC_FOCUS_KEYWORDS.includes(x));
-
-  // True when ALL focus items are pure non-aromatic blend-type keywords
-  const allNonAromaticCategory =
-    lower.length > 0 &&
-    lower.every((x) => NON_AROMATIC_FOCUS_KEYWORDS.some((k) => x === k || x === k + "s"));
-
-  // Dedicated/Only flags: explicit language OR fully-categorical focus array
+  // Dedicated/Only flags must be explicit
   const aromaticOnly =
     !isUtility &&
-    (lower.some((x) =>
+    lower.some((x) =>
       /(aromatic(s)?\s*only|aromatic[-\s]*dedicated|dedicated\s*to\s*aromatic)/.test(x)
-    ) || allAromaticCategory);
+    );
 
   const nonAromaticOnly =
     !isUtility &&
-    (lower.some((x) =>
+    lower.some((x) =>
       /(non[-\s]?aromatic(s)?\s*only|non[-\s]?aromatic[-\s]*dedicated|dedicated\s*to\s*non)/.test(x)
-    ) || allNonAromaticCategory);
+    );
 
   return {
     focus,
@@ -151,6 +128,12 @@ export function scorePipeBlend(pipeVariant, blend, userProfile) {
   }
 
   // ── Detect if focus contains specific blend names (not just categories) ──
+  // Blend-type/category keywords for category gating (only these should influence gating)
+  const CATEGORY_KEYWORDS = [
+    "aromatic", "aromatics", "english", "virginia", "burley", "balkan", "latakia",
+    "oriental", "turkish", "virginia/perique", "virginia/burley", "navy flake",
+    "dark fired", "cavendish", "perique", "american", "burley-based",
+  ];
   // Only apply category gating based on focus items that ARE recognized category keywords
   const categoryFocusItems = nf.lower.filter((f) =>
     CATEGORY_KEYWORDS.some((k) => f === k || f === k + "s" || f.startsWith(k + " ") || f.endsWith(" " + k))

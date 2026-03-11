@@ -15,10 +15,7 @@ import TobaccoForm from "@/components/tobacco/TobaccoForm";
 import QuickSearchTobacco from "@/components/ai/QuickSearchTobacco";
 import TobaccoExporter from "@/components/export/TobaccoExporter";
 import BulkTobaccoUpdate from "@/components/tobacco/BulkTobaccoUpdate";
-import CollectorDisplayCard from "@/components/ui/CollectorDisplayCard";
-import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import QuickEditPanel from "@/components/tobacco/QuickEditPanel";
 import { toast } from "sonner";
 import { safeUpdate, safeBatchUpdate } from "@/components/utils/safeUpdate";
@@ -30,8 +27,6 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import CellarDriftAlert from "../components/tobacco/CellarDriftAlert";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { isAppleBuild } from "@/components/utils/appVariant";
-import { formatWeight } from "@/components/utils/localeFormatters";
-import { Package2 } from "lucide-react";
 
 const BLEND_TYPES = [
   "American",
@@ -80,9 +75,6 @@ export default function TobaccoPage() {
   const [sortBy, setSortBy] = useState('-created_date');
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('tobaccoViewMode') || 'grid';
-  });
-  const [displayMode, setDisplayMode] = useState(() => {
-    return localStorage.getItem('tobaccoDisplayMode') === 'collector';
   });
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showBulkUpdate, setShowBulkUpdate] = useState(false);
@@ -172,11 +164,11 @@ export default function TobaccoPage() {
     },
     onSuccess: (count) => {
       invalidateBlendQueries(queryClient, user?.email);
-      toast.success(t("tobaccoPage.successfullyUpdated", { count }));
+      toast.success(t("tobaccoPage.successfullyUpdated", `Successfully updated ${count} blend${count !== 1 ? 's' : ''}!`));
       exitQuickEdit();
     },
     onError: (error) => {
-      toast.error(t("tobaccoPage.failedToUpdateBlends"));
+      toast.error(t("tobaccoPage.failedToUpdateBlends", "Failed to update blends. Please try again."));
       console.error('Bulk update error:', error);
     }
   });
@@ -357,7 +349,7 @@ export default function TobaccoPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={null}>{t("tobacco.allTypes")}</SelectItem>
-              {BLEND_TYPES.map(type => <SelectItem key={type} value={type}>{t(`blendTypes.${type}`, type)}</SelectItem>)}
+              {BLEND_TYPES.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={strengthFilter} onValueChange={setStrengthFilter}>
@@ -366,7 +358,7 @@ export default function TobaccoPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={null}>{t("tobacco.allStrengths")}</SelectItem>
-              {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{t(`strengths.${strength}`, strength)}</SelectItem>)}
+              {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{strength}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -377,47 +369,29 @@ export default function TobaccoPage() {
               {SORT_OPTIONS.map(option => <SelectItem key={option.value} value={option.value}>{option.label.startsWith('tobaccoPage.') ? t(option.label) : option.label}</SelectItem>)}
             </SelectContent>
           </Select>
-          <div className="flex gap-2">
-            <div className={`flex border rounded-lg ${PK_THEME.card}`}>
-              <Button
-                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                size="icon"
-                onClick={() => {
-                  setViewMode('grid');
-                  localStorage.setItem('tobaccoViewMode', 'grid');
-                }}
-                className={`rounded-r-none ${viewMode === 'grid' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
-              >
-                <Grid3X3 className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="icon"
-                onClick={() => {
-                  setViewMode('list');
-                  localStorage.setItem('tobaccoViewMode', 'list');
-                }}
-                className={`rounded-l-none ${viewMode === 'list' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
-              >
-                <List className="w-4 h-4" />
-              </Button>
-            </div>
-            
-            {hasPaid && !quickEditMode && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  const newMode = !displayMode;
-                  setDisplayMode(newMode);
-                  localStorage.setItem('tobaccoDisplayMode', newMode ? 'collector' : 'standard');
-                }}
-                className={displayMode ? 'border-amber-600/60 bg-amber-600/20' : ''}
-                title="Collector Display Mode"
-              >
-                <Package2 className="w-4 h-4" style={{ color: displayMode ? "rgba(180, 140, 75, 1)" : "rgba(224, 216, 200, 0.7)" }} />
-              </Button>
-            )}
+          <div className={`flex border rounded-lg ${PK_THEME.card}`}>
+            <Button
+              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+              size="icon"
+              onClick={() => {
+                setViewMode('grid');
+                localStorage.setItem('tobaccoViewMode', 'grid');
+              }}
+              className={`rounded-r-none ${viewMode === 'grid' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
+            >
+              <Grid3X3 className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+              size="icon"
+              onClick={() => {
+                setViewMode('list');
+                localStorage.setItem('tobaccoViewMode', 'list');
+              }}
+              className={`rounded-l-none ${viewMode === 'list' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
+            >
+              <List className="w-4 h-4" />
+            </Button>
           </div>
         </motion.div>
 
@@ -431,100 +405,19 @@ export default function TobaccoPage() {
         ) : filteredBlends.length === 0 ? (
           <EmptyState
             icon={Leaf}
-            title={blends.length === 0 ? t("tobaccoPage.buildCellar") : t("tobaccoPage.noBlendsFound")}
+            title={blends.length === 0 ? t("tobaccoPage.buildCellar", "Build Your Cellar") : t("tobaccoPage.noBlendsFound", "No Blends Found")}
             description={
               blends.length === 0 
-                ? t("tobaccoPage.buildCellarDesc")
+                ? t("tobaccoPage.buildCellarDesc", "Start your tobacco cellar by adding your first blend. Track inventory, aging dates, and tasting notes.")
                 : searchQuery 
-                  ? t("tobaccoPage.noMatchSearch")
-                  : t("tobaccoPage.noMatchFilters")
+                  ? t("tobaccoPage.noMatchSearch", `No blends match "${searchQuery}". Try adjusting your search or filters.`)
+                  : t("tobaccoPage.noMatchFilters", "No blends match your current filters. Try adjusting your selections.")
             }
-            actionLabel={blends.length === 0 ? t("tobaccoPage.addFirstBlend") : null}
+            actionLabel={blends.length === 0 ? t("tobaccoPage.addFirstBlend", "Add Your First Blend") : null}
             onAction={blends.length === 0 ? () => setShowForm(true) : null}
             secondaryActionLabel={blends.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || typeFilter || strengthFilter ? t("pipesPage.clearFilters") : null}
             onSecondaryAction={blends.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setTypeFilter(''); setStrengthFilter(''); }}
           />
-        ) : displayMode && viewMode === 'grid' && !quickEditMode ? (
-          <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-            layout
-          >
-            <AnimatePresence>
-              {filteredBlends.map(blend => {
-                const totalOz = 
-                  (Number(blend.tin_total_quantity_oz) || 0) +
-                  (Number(blend.bulk_total_quantity_oz) || 0) +
-                  (Number(blend.pouch_total_quantity_oz) || 0);
-                
-                return (
-                  <motion.div
-                    key={blend.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                  >
-                    <CollectorDisplayCard
-                      image={blend.logo || blend.photo}
-                      title={blend.name}
-                      subtitle={blend.manufacturer || t("tobaccoExtended.unknownMaker")}
-                      badges={
-                        <>
-                          {blend.blend_type && (
-                            <Badge 
-                              className="text-[10px] px-2 py-0.5"
-                              style={{
-                                background: "rgba(90, 124, 90, 0.18)",
-                                color: "rgba(144, 180, 144, 0.95)",
-                                border: "1px solid rgba(90, 124, 90, 0.3)"
-                              }}
-                            >
-                              {t(`blendTypes.${blend.blend_type}`, blend.blend_type)}
-                            </Badge>
-                          )}
-                          {blend.strength && (
-                            <Badge 
-                              className="text-[10px] px-2 py-0.5"
-                              style={{
-                                background: "rgba(100, 80, 60, 0.15)",
-                                color: "rgba(200, 180, 160, 0.9)",
-                                border: "1px solid rgba(120, 100, 80, 0.25)"
-                              }}
-                            >
-                              {t(`strengths.${blend.strength}`, blend.strength)}
-                            </Badge>
-                          )}
-                          {totalOz > 0 && (
-                            <Badge 
-                              className="text-[10px] px-2 py-0.5"
-                              style={{
-                                background: "rgba(180, 140, 75, 0.2)",
-                                color: "rgba(180, 140, 75, 1)",
-                                border: "1px solid rgba(180, 140, 75, 0.35)"
-                              }}
-                            >
-                              {formatWeight(totalOz)}
-                            </Badge>
-                          )}
-                        </>
-                      }
-                      isFavorite={blend.is_favorite}
-                      onToggleFavorite={() => handleToggleFavorite(blend)}
-                      onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}
-                      fallbackIcon={
-                        <div className="text-[#E0D8C8]/20 text-center">
-                          <Leaf className="w-14 h-14 mx-auto mb-2" style={{ color: "rgba(90,124,90,0.25)" }} />
-                          <p className="text-xs uppercase tracking-wider" style={{ color: "rgba(180,140,75,0.35)" }}>
-                            {blend.manufacturer || t("tobaccoExtended.unknownMaker")}
-                          </p>
-                        </div>
-                      }
-                    />
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </motion.div>
         ) : (
           <motion.div 
             className={viewMode === 'grid' 

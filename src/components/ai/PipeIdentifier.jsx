@@ -7,20 +7,23 @@ export default function AIPipeIdentifier() {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">
-        {t("tobacconist.identificationTitle")}
+        {t("tobacconist.identificationTitle", "AI Pipe Identifier")}
       </h3>
 
       <p className="opacity-70">
-        {t("tobacconist.identificationSubtitle")}
+        {t(
+          "tobacconist.identificationSubtitle",
+          "Upload photos to identify and add pipes instantly"
+        )}
       </p>
 
       <div className="flex gap-4">
         <button className="btn">
-          {t("common.uploadPhotos")}
+          {t("common.uploadPhotos", "Upload Photos")}
         </button>
 
         <button className="btn">
-          {t("common.takePhoto")}
+          {t("common.takePhoto", "Take Photo")}
         </button>
       </div>
     </div>

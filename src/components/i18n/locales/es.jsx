@@ -224,7 +224,6 @@ const translations = {
   pipeGeometry: {
     selectPipeTitle: "Seleccionar pipa para analizar", choosePipe: "Elige una pipa...",
     photosCount: "Fotos: {count}", dimensions: "Dimensiones", noDimensions: "Ninguna",
-    length: "Longitud", bowlHeight: "Altura del cuenco", chamberDiameter: "Diámetro de la cámara", weight: "Peso",
     analyzeBtn: "Analizar geometría de la pipa", analyzing: "Analizando...",
     analysisResults: "Resultados del análisis", analyzedPhotos: "Analizadas {count} foto(s)",
     andDimensions: " y dimensiones", applyAllHigh: "Aplicar todas de alta confianza",
@@ -515,20 +514,13 @@ const translations = {
     quickSearchAddPipe: "Búsqueda rápida y agregar pipa",
     quickSearchAddTobacco: "Búsqueda rápida y agregar tabaco",
     searchPipeDesc: "Busca en nuestra base de datos para agregar rápidamente una pipa a tu colección",
-    searchTobaccoDesc: "Busca en nuestra base de datos para agregar rápidamente tabaco a tu bodega",
     pipePlaceholder: "Buscar por fabricante, modelo (ej. 'Peterson System 314')",
-    tobaccoPlaceholder: "Buscar por nombre de mezcla o fabricante (ej. 'Orlik Golden Sliced')",
     foundResults: "Se encontraron {count} resultado(s)",
     noResults: "No se encontraron resultados. Intenta con una búsqueda diferente.",
     adding: "Agregando…", addToCollection: "Agregar a la colección", addToCellar: "Agregar a la bodega",
-    enterPipeName: "Ingresa un nombre de pipa para buscar",
-    pipeExamples: "ej. Peterson System 314, Dunhill Shell",
     enterTobaccoName: "Ingresa un nombre de mezcla de tabaco para buscar",
     tobaccoExamples: "ej. Orlik Golden Sliced, Dunhill Early Morning Pipe",
     flavors: "Sabores", components: "Componentes", tinSize: "Tamaño de lata",
-    avgRating: "Calificación prom.", madeIn: "Fabricado en {country}", era: "Época",
-    bowl: "Hornillo", deep: "profundo", typicalValue: "Valor típico",
-    searchButton: "Buscar",
   },
 
   quickEdit: {
@@ -549,20 +541,8 @@ const translations = {
   },
 
   cellarLog: {
-    cellaredTobacco: "Tabaco en bodega",
-    cellaringLog: "Registro de bodega",
-    addEntry: "Agregar entrada", addCellarTransaction: "Agregar transacción de bodega",
-    transactionType: "Tipo de transacción", addedToCellarOption: "Agregado a la bodega", removedFromCellarOption: "Retirado de la bodega",
-    date: "Fecha", amountOz: "Cantidad (oz)", containerType: "Tipo de contenedor",
-    containerTin: "Lata", containerJar: "Tarro", containerPouch: "Bolsa", containerBulk: "Granel",
-    destination: "Destino", movedToOpenCollection: "Movido a colección abierta", exchanged: "Intercambiado", discarded: "Descartado",
-    notesOptional: "Notas (opcional)", notesPlaceholder: "Detalles adicionales...",
-    saving: "Guardando...", saveEntry: "Guardar entrada",
-    added: "Agregado", removed: "Retirado", net: "Neto",
-    noTransactionsYet: "Sin transacciones aún", ozUnit: "oz", amountPlaceholder: "2.0",
-    overRemoved: "exceso eliminado", deleteConfirmTitle: "Eliminar entrada",
-    noOpenedTobacco: "Sin tabaco abierto", updateInventory: "Actualizar inventario",
-    upgradeDesc: "Registra transacciones detalladas de bodega incluyendo fechas de adición/retiro, cantidades en onzas, tipos de contenedores y notas.",
+    cellaredTobacco: "Tabaco en bodega", overRemoved: "exceso eliminado",
+    deleteConfirmTitle: "Eliminar entrada",
   },
 
   inventory: {
@@ -929,20 +909,6 @@ const translations = {
     preferredPipeShapes: "Formas de pipa preferidas",
     hideHomeValues: "Ocultar valores de la colección en la página de inicio",
     hideHomeValuesDesc: "Oculta los valores de las colecciones de pipas y tabaco en tu panel de inicio. Los cálculos siguen ejecutándose en segundo plano.",
-    profilePicture: "Foto de perfil", avatarAlt: "Avatar", uploading: "Subiendo…",
-    displayName: "Nombre para mostrar", bio: "Biografía", location: "Ubicación",
-    showOnProfile: "Mostrar en perfil",
-    cityPlaceholder: "Ciudad", stateProvincePlaceholder: "Estado/Provincia",
-    countryPlaceholder: "País", postalCodePlaceholder: "Código postal",
-    privacy: "Privacidad", hideValues: "Ocultar valores",
-    hideInventory: "Ocultar inventario", hideCollectionCounts: "Ocultar conteos de colección",
-    clenchingPreference: "Preferencia de sujeción",
-    smokeDurationPreference: "Preferencia de duración",
-    pipeSizePreference: "Preferencia de tamaño",
-    strengthPreference: "Preferencia de intensidad",
-    publicCommunityProfile: "Perfil público de la comunidad",
-    allowOthersToView: "Permite que otros vean tu perfil en la comunidad.",
-    saving: "Guardando…", previewPublicProfile: "Vista previa del perfil público",
   },
 
   optimizer: {
@@ -955,10 +921,7 @@ const translations = {
     specialized: "Especializada", changesImproveCollectionCoverage: "Estos cambios mejorarían la cobertura de tu colección",
     somethingWentWrong: "Algo salió mal", unknownError: "Ocurrió un error desconocido",
     couldntLoadResponse: "No se pudo cargar una respuesta. Por favor intenta de nuevo.",
-    analyzeImpact: "Analizar impacto", regenerate: "Regenerar",
-    expectedImprovement: "Mejora esperada para {blendTypes}",
-    priorityChange: "Cambio prioritario #{num}",
-    expectedImprovementGeneral: "Mejora esperada",
+    analyzeImpact: "Analizar impacto",
   },
 
   publicProfile: {
@@ -1057,14 +1020,12 @@ const translations = {
     "Ribbon": "Cinta", "Flake": "Flake", "Broken Flake": "Broken Flake",
     "Ready Rubbed": "Ready Rubbed", "Plug": "Plug", "Coin": "Coin",
     "Cube Cut": "Cube Cut", "Crumble Cake": "Crumble Cake", "Shag": "Shag",
-    "Rope": "Rope", "Twist": "Twist", "Mixture": "Mezcla",
-    "Krumble Cake": "Crumble Cake", "Krumble cake": "Crumble Cake", "Other": "Otro",
+    "Rope": "Rope", "Twist": "Twist", "Other": "Otro",
   },
 
   strengths: {
     "Mild": "Suave", "Mild-Medium": "Suave-Medio", "Medium": "Medio",
-    "Medium-Strong": "Medio-Fuerte", "Medium-Full": "Medio-Completo",
-    "Strong": "Fuerte", "Full": "Completo",
+    "Medium-Full": "Medio-Fuerte", "Full": "Fuerte",
   },
 
   conditions: {
@@ -1115,12 +1076,12 @@ const translations = {
     "Natural": "Natural", "Other": "Otro",
   },
 
-  productionStatuses: {
+  productionStatus: {
     "Current Production": "Producción actual", "Discontinued": "Descontinuado",
     "Limited Edition": "Edición limitada", "Vintage": "Vintage",
   },
 
-  agingPotentials: {
+  agingPotential: {
     "Poor": "Bajo", "Fair": "Regular", "Good": "Bueno", "Excellent": "Excelente",
   },
 
@@ -1242,13 +1203,6 @@ const translations = {
     optimalRange: "Rango óptimo: 30–70%", stemOxidation: "Oxidación de la boquilla",
     good: "Bueno", thin: "Delgado", thick: "Grueso",
     heavyOxidation: "Oxidación intensa", moderateOxidation: "Oxidación moderada",
-    conditionMint: "Mint", conditionExcellent: "Excelente",
-    conditionVeryGood: "Muy bueno", conditionGood: "Bueno",
-    conditionFair: "Regular", conditionPoor: "Malo",
-    conditionEstateUnrestored: "Colección - Sin restaurar",
-    oxidation: "oxidación", generalWear: "Desgaste general", wear: "desgaste",
-    minimalWear: "Desgaste mínimo", lightWear: "Desgaste leve",
-    moderateWear: "Desgaste moderado", heavyWear: "Desgaste intenso",
   },
 
   maintenanceLog: {
@@ -1263,10 +1217,6 @@ const translations = {
     reaming: "Escariado", polishing: "Pulido", stemWork: "Trabajo en la boquilla", other: "Otro",
     by: "Por", type: "Tipo", date: "Fecha", description: "Descripción", cost: "Costo",
     performedBy: "Realizado por", save: "Guardar entrada",
-    descriptionPlaceholder: "Describe el mantenimiento realizado…",
-    performedByPlaceholder: "Ej.: Yo mismo, Profesional",
-    costOptional: "Costo (Opcional)",
-    saveEntry: "Guardar entrada",
   },
 
   focusOptions: {
@@ -1310,7 +1260,6 @@ const translations = {
 
   admin: {
     accessRequired: "Se requiere acceso de administrador",
-    accessDenied: "Acceso denegado",
     adminOnly: "Solo los administradores pueden acceder a esta página.",
     searchEmail: "Buscar correo", source: "Fuente", allSources: "Todas las fuentes",
     loading: "Cargando solicitudes...", subscriptionEventsLog: "Registro de eventos de suscripción",
@@ -1352,74 +1301,6 @@ const translations = {
     usersCreatedLabel: "Usuarios creados", subsLinkedLabel: "Suscripciones vinculadas",
     usersUpdatedLabel: "Usuarios actualizados", skippedAppleLabel: "Apple omitidos",
     conflictsLabel: "Conflictos",
-    // AdminReports.jsx
-    contentModeration: "Moderación de contenido",
-    reviewManageReports: "Revisar y gestionar informes de abuso",
-    userSubscriptionReport: "Informe de suscripción de usuarios",
-    backfillStripe: "Rellenar Stripe",
-    syncing: "Sincronizando...",
-    tabPending: "Pendiente ({count})",
-    tabReviewed: "Revisado ({count})",
-    tabActioned: "Procesado ({count})",
-    tabDismissed: "Descartado ({count})",
-    noPendingReports: "Sin informes pendientes",
-    noReviewedReports: "Sin informes revisados",
-    noActionedReports: "Sin informes procesados",
-    noDismissedReports: "Sin informes descartados",
-    reportedDate: "Reportado:",
-    reporterLabel: "Reportador:",
-    reportedUserLabel: "Usuario reportado:",
-    reasonLabel: "Razón:",
-    reviewBtn: "Revisar",
-    hideContentBtn: "Ocultar contenido",
-    blockUserBtn: "Bloquear usuario",
-    dismissBtn: "Descartar",
-    reportUpdated: "Informe actualizado",
-    failedToUpdateReport: "No se pudo actualizar el informe",
-    contentHidden: "Contenido ocultado",
-    failedToHideContent: "No se pudo ocultar el contenido",
-    userBlocked: "Usuario bloqueado",
-    failedToBlockUser: "No se pudo bloquear al usuario",
-    stripeBackfillCompleted: "Relleno de Stripe completado",
-    backfillFailedMsg: "Relleno fallido: {error}",
-    // SubscriptionEventsLog.jsx
-    all: "Todos",
-    success: "Exitoso",
-    error: "Error",
-    eventsCount: "Eventos ({count})",
-    loadingEvents: "Cargando eventos...",
-    noEventsFound: "No se encontraron eventos",
-    emailLabel: "Correo:",
-    // AdminSubscriptionRequests.jsx
-    tierTerm: "Nivel / Término",
-    paymentRef: "Ref. de pago",
-    actions: "Acciones",
-    hide: "Ocultar",
-    show: "Mostrar",
-    userMessage: "Mensaje del usuario",
-    adminNotesLabel: "Notas del administrador",
-    granting: "Otorgando...",
-    grantTier: "Otorgar {tier}",
-    reject: "Rechazar",
-    resolving: "Resolviendo...",
-    markResolved: "Marcar como resuelto",
-    rejectionReasonPlaceholder: "Razón de rechazo opcional...",
-    confirmRejection: "Confirmar rechazo",
-    // AdminSubscriptionTools.jsx
-    subscriptionAdminTools: "Herramientas de administración de suscripciones",
-    manageUserSubscription: "Gestionar suscripción de usuario",
-    emailAddress: "Dirección de correo",
-    updatedUser: "Usuario actualizado",
-    nameLabel: "Nombre",
-    subscriptionLevel: "Nivel de suscripción",
-    subscriptionStatus: "Estado de suscripción",
-    subscriptionTier: "Nivel de suscripción",
-    none: "Ninguno",
-    accessGrantedSuccess: "¡Acceso otorgado exitosamente!",
-    failedToGrantAccess: "No se pudo otorgar acceso",
-    accessRevokedSuccess: "¡Acceso revocado exitosamente!",
-    failedToRevokeAccess: "No se pudo revocar acceso",
-    pleaseEnterEmail: "Por favor ingresa una dirección de correo",
   },
 
   pipeExporter: {
@@ -1449,19 +1330,6 @@ const translations = {
     entitlements: "Cálculos del sistema de derechos", limitCheck: "Compatibilidad de verificación de límites",
     premiumAccess: "Acceso a funciones premium", proAccess: "Acceso a funciones pro",
     providerDetection: "Detección de proveedor", planLabel: "Generación de etiqueta de plan",
-  },
-
-  tobaccoLibrarySync: {
-    title: "Sincronización de logos de tabaco",
-    description: "Sincroniza tu colección con la biblioteca de logos para agregar logos faltantes.",
-    syncStatus: "Estado de sincronización", totalBlends: "Total de mezclas",
-    missingLogos: "Logos faltantes",
-    willBeUpdated: "mezclas se actualizarán",
-    syncing: "Sincronizando…", syncButton: "Sincronizar {count} mezcla(s)",
-    allHaveLogos: "Todas las mezclas tienen logos",
-    noSyncNeeded: "No se necesita sincronización",
-    complete: "Sincronización completa", updated: "{count} mezcla(s) actualizada(s)",
-    failed: "{count} fallida(s)",
   },
 };
 

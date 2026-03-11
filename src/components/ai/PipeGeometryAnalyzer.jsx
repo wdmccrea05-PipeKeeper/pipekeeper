@@ -335,10 +335,10 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
               <p>
                 {t('pipeGeometry.photosCount', { count: selectedPipe.photos?.length || 0 })} | {t('pipeGeometry.dimensions')}:{" "}
                 {[
-                  selectedPipe.length_mm && t('pipeGeometry.length'),
-                  selectedPipe.bowl_height_mm && t('pipeGeometry.bowlHeight'),
-                  selectedPipe.bowl_diameter_mm && t('pipeGeometry.chamberDiameter'),
-                  selectedPipe.weight_grams && t('pipeGeometry.weight'),
+                  selectedPipe.length_mm && "Length",
+                  selectedPipe.bowl_height_mm && "Bowl Height",
+                  selectedPipe.bowl_diameter_mm && "Chamber Diameter",
+                  selectedPipe.weight_grams && "Weight",
                 ]
                   .filter(Boolean)
                   .join(", ") || t('pipeGeometry.noDimensions')}
