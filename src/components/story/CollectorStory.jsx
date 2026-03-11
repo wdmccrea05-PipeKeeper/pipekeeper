@@ -449,8 +449,12 @@ function StoryCard({
           {/* Sub text */}
           {sub && (
             <div
-              className="text-base font-semibold leading-snug"
-              style={{ color: `rgba(180,140,75,0.85)`, fontFamily: "'Georgia', serif" }}
+              className="text-base font-semibold leading-snug px-2"
+              style={{ 
+                color: `rgba(180,140,75,0.85)`, 
+                fontFamily: "'Georgia', serif",
+                fontSize: isClosingCard ? "clamp(0.9rem, 3.5vw, 1.1rem)" : "1rem",
+              }}
             >
               {sub}
             </div>
