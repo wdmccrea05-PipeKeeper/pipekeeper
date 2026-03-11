@@ -21,7 +21,7 @@ export function HeroCard({
   value,
   sub,
   accent = "#C87941",
-  icon: Icon,
+  icon,
   heroImage,
   bgImage,
   silhouetteType,
@@ -29,6 +29,7 @@ export function HeroCard({
   className,
   children,
 }) {
+  const Icon = icon;
   const heroRotation = silhouetteType === "pipe" ? "12deg" : "-8deg";
 
   return (
@@ -196,7 +197,7 @@ export function HeroCard({
  * Used for metrics like Total Sessions, Collection Value, etc.
  */
 export function StatusCard({
-  icon: Icon,
+  icon,
   label,
   value,
   accent = "#4A7C9C",
@@ -204,6 +205,7 @@ export function StatusCard({
   bgImage,
   className,
 }) {
+  const Icon = icon;
   return (
     <div
       className={cn(
