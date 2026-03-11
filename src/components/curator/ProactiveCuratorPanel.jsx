@@ -1,139 +1,91 @@
 import React, { useMemo } from "react";
-import { Sparkles, TrendingUp, Leaf, Clock, Target, X, BookOpen, ArrowRight } from "lucide-react";
+import { Target, TrendingUp, Leaf, Clock, X, ArrowRight } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { differenceInMonths } from "date-fns";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { getKeeperIntelligence, PipesModule, TobaccoModule } from "@/components/keeperIntelligence";
+
+const ICON_MAP = {
+  Target,
+  TrendingUp,
+  Leaf,
+  Clock
+};
+
+const ACCENT_MAP = {
+  pipes: {
+    "keeper.pipes.rotationTitle": "#C87941",
+    "keeper.pipes.restTitle": "#D4743B",
+    "keeper.pipes.growthTitle": "#4A9C6A",
+    "keeper.pipes.loggingTitle": "#8B5CF6"
+  },
+  tobacco: {
+    "keeper.tobacco.diversityTitle": "#5A7C5A",
+    "keeper.tobacco.agingTitle": "#F59E0B",
+    "keeper.tobacco.cellarTitle": "#6B7280"
+  }
+};
 
 /**
- * ProactiveCuratorPanel — Actionable AI collection insights
- * Analyzes collection health and provides specific recommendations
+ * ProactiveCuratorPanel — Keeper Intelligence Display
+ * Displays insights from Keeper Intelligence engine
  */
 export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, curatorEnabled = true }) {
   const { t } = useTranslation();
 
   const insights = useMemo(() => {
     if (!curatorEnabled) return [];
+
+    // Initialize engine
+    const engine = getKeeperIntelligence();
     
+    // Register and activate modules
+    if (!engine.modules.pipes) {
+      engine.registerModule("pipes", PipesModule);
+      engine.registerModule("tobacco", TobaccoModule);
+    }
+    
+    engine.activateModule("pipes");
+    engine.activateModule("tobacco");
+
+    // Collect data
+    const data = {
+      pipes: pipes || [],
+      blends: blends || [],
+      logs: logs || []
+    };
+
+    // Synchronously analyze (no await in useMemo)
     const generated = [];
+    
+    for (const moduleName of engine.getActiveModules()) {
+      const module = engine.modules[moduleName];
+      if (!module) continue;
 
-    // Analyze pipe usage from logs
-    const pipeUsage = {};
-    logs.forEach(log => {
-      if (log?.pipe_id) {
-        pipeUsage[log.pipe_id] = (pipeUsage[log.pipe_id] || 0) + (log.bowls_used || 1);
-      }
-    });
-
-    const underusedPipes = pipes.filter(p => !pipeUsage[p.id] || pipeUsage[p.id] < 3);
-
-    // 1. Rotation Planning - actionable with specific count
-    if (pipes.length >= 5 && underusedPipes.length >= 3) {
-      generated.push({
-        id: "rotation-planning",
-        icon: Target,
-        accent: "#C87941",
-        title: t("curator.rotationPlanning"),
-        message: t("curator.growthModerate", { count: pipes.length }),
-        action: t("curator.growthModerateAction"),
-        ctaLabel: t("curator.openRotationView"),
-        ctaLink: "Insights?tab=rotation"
-      });
-    }
-
-    // 2. Cellar Diversity - actionable
-    if (blends.length > 0) {
-      const blendTypes = new Set(blends.map(b => b.blend_type).filter(Boolean));
-      if (blendTypes.size < 3) {
-        generated.push({
-          id: "cellar-diversity",
-          icon: Leaf,
-          accent: "#5A7C5A",
-          title: t("curator.cellarDiversity"),
-          message: t("curator.diversityLow"),
-          action: t("curator.diversityAction"),
-          ctaLabel: t("curator.browseBlendTypes"),
-          ctaLink: "Tobacco"
-        });
-      }
-    }
-
-    // 3. Logging Opportunity - actionable
-    if (pipes.length >= 3 && logs.length < 10) {
-      generated.push({
-        id: "logging-opportunity",
-        icon: BookOpen,
-        accent: "#8B5CF6",
-        title: t("curator.usageInsight"),
-        message: t("curator.consistencyEncourage"),
-        action: t("curator.consistencyAction"),
-        ctaLabel: t("curator.logSession"),
-        ctaLink: "Insights?tab=log"
-      });
-    }
-
-    // 4. Aging Opportunity - actionable with count
-    const agingBlends = blends.filter(b => {
-      const hasCellared = (Number(b.tin_tins_cellared) || 0) > 0 || 
-                          (Number(b.bulk_cellared) || 0) > 0 || 
-                          (Number(b.pouch_pouches_cellared) || 0) > 0;
-      if (!hasCellared) return false;
-      
-      const dates = [b.tin_cellared_date, b.bulk_cellared_date, b.pouch_cellared_date].filter(Boolean);
-      if (dates.length === 0) return false;
-      
-      const oldestDate = dates.reduce((oldest, d) => {
-        try {
-          const dTime = new Date(d).getTime();
-          const oldTime = new Date(oldest).getTime();
-          return dTime < oldTime ? d : oldest;
-        } catch {
-          return oldest;
-        }
-      });
-      
       try {
-        const months = differenceInMonths(new Date(), new Date(oldestDate));
-        const potential = b.aging_potential;
+        const analysis = module.analyzeCollection(data);
+        const moduleInsights = module.generateInsights(analysis);
         
-        if (potential === "Excellent" && months >= 24) return true;
-        if (potential === "Good" && months >= 12) return true;
-        if (potential === "Fair" && months >= 3) return true;
-      } catch {
-        return false;
+        moduleInsights.forEach(insight => {
+          generated.push({
+            module: moduleName,
+            ...insight
+          });
+        });
+      } catch (error) {
+        console.error(`Error analyzing ${moduleName}:`, error);
       }
-      
-      return false;
+    }
+
+    // Sort by priority
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+    generated.sort((a, b) => {
+      const aPriority = priorityOrder[a.priority] ?? 3;
+      const bPriority = priorityOrder[b.priority] ?? 3;
+      return aPriority - bPriority;
     });
-
-    if (agingBlends.length > 0) {
-      generated.push({
-        id: "aging-opportunity",
-        icon: Clock,
-        accent: "#F59E0B",
-        title: t("curator.agingInsight"),
-        message: t("curator.agingReady", { count: agingBlends.length }),
-        action: t("curator.agingAction"),
-        ctaLabel: t("curator.viewAgedBlends"),
-        ctaLink: "Insights?tab=aging"
-      });
-    }
-
-    // 5. Early collection growth - actionable
-    if (pipes.length > 0 && pipes.length < 5 && !generated.some(g => g.id === "rotation-planning")) {
-      generated.push({
-        id: "growth-early",
-        icon: TrendingUp,
-        accent: "#4A9C6A",
-        title: t("curator.collectionGrowth"),
-        message: t("curator.growthEarly"),
-        action: t("curator.growthEarlyAction"),
-        ctaLabel: t("curator.openRotationView"),
-        ctaLink: "Insights?tab=rotation"
-      });
-    }
 
     return generated.slice(0, 3); // Show max 3 insights
-  }, [pipes, blends, logs, curatorEnabled, t]);
+  }, [pipes, blends, logs, curatorEnabled]);
 
   if (!curatorEnabled || insights.length === 0) return null;
 
@@ -195,40 +147,43 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
       {/* Insights */}
       <div className="space-y-3">
         {insights.map((insight) => {
-          const Icon = insight.icon;
+          const Icon = ICON_MAP[insight.icon];
+          const moduleAccents = ACCENT_MAP[insight.module] || {};
+          const accent = moduleAccents[insight.title] || "#C87941";
+          
           return (
             <div
-              key={insight.id}
+              key={`${insight.module}-${insight.title}`}
               className="rounded-lg p-4"
               style={{
                 background: "linear-gradient(135deg, rgba(50,35,25,0.6), rgba(40,28,20,0.8))",
-                border: `1px solid ${insight.accent}30`,
-                boxShadow: `0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 ${insight.accent}15`
+                border: `1px solid ${accent}30`,
+                boxShadow: `0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 ${accent}15`
               }}
             >
               <div className="flex items-start gap-3">
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                   style={{
-                    background: `${insight.accent}20`,
-                    border: `1px solid ${insight.accent}40`
+                    background: `${accent}20`,
+                    border: `1px solid ${accent}40`
                   }}
                 >
-                  <Icon className="w-4 h-4" style={{ color: insight.accent }} />
+                  {Icon && <Icon className="w-4 h-4" style={{ color: accent }} />}
                 </div>
                 <div className="flex-1 min-w-0 space-y-2">
                   <div>
                     <h4 
                       className="text-sm font-semibold mb-0.5" 
-                      style={{ color: insight.accent }}
+                      style={{ color: accent }}
                     >
-                      {insight.title}
+                      {t(insight.title, insight.vars)}
                     </h4>
                     <p 
                       className="text-sm leading-relaxed" 
                       style={{ color: "rgba(224,216,200,0.85)" }}
                     >
-                      {insight.message}
+                      {t(insight.insight, insight.vars)}
                     </p>
                   </div>
                   {insight.action && (
@@ -236,7 +191,7 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
                       className="text-xs font-medium" 
                       style={{ color: "rgba(180,140,75,0.75)" }}
                     >
-                      → {insight.action}
+                      → {t(insight.action, insight.vars)}
                     </p>
                   )}
                   {insight.ctaLink && (
@@ -244,13 +199,13 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
                       href={createPageUrl(insight.ctaLink)}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:scale-105"
                       style={{
-                        background: `${insight.accent}25`,
-                        border: `1px solid ${insight.accent}40`,
-                        color: insight.accent,
+                        background: `${accent}25`,
+                        border: `1px solid ${accent}40`,
+                        color: accent,
                         boxShadow: `0 1px 3px rgba(0,0,0,0.3)`
                       }}
                     >
-                      {insight.ctaLabel}
+                      {t(insight.cta, insight.vars)}
                       <ArrowRight className="w-3 h-3" />
                     </a>
                   )}
