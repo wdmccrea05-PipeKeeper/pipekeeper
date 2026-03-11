@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
-import { Sparkles, TrendingUp, Leaf, Clock, Target, X, BookOpen, ArrowRight, Calendar, BarChart3 } from "lucide-react";
+import { Sparkles, TrendingUp, Leaf, Clock, Target, X, BookOpen, ArrowRight } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { differenceInMonths, differenceInDays } from "date-fns";
+import { differenceInMonths } from "date-fns";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
 /**
@@ -152,12 +152,12 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{
-              background: "linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.15))",
-              border: "1px solid rgba(139, 92, 246, 0.4)",
-              boxShadow: "0 0 16px rgba(139, 92, 246, 0.2)"
+              background: "linear-gradient(135deg, rgba(100, 70, 45, 0.5), rgba(80, 55, 35, 0.6))",
+              border: "1px solid rgba(120, 90, 65, 0.45)",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)"
             }}
           >
-            <BookOpen className="w-5 h-5" style={{ color: "#A78BFA" }} />
+            <BookOpen className="w-5 h-5" style={{ color: "rgba(180, 140, 75, 1)" }} />
           </div>
           <div>
             <h3 
@@ -167,10 +167,10 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
                 fontFamily: "'Georgia', serif"
               }}
             >
-              {t("curator.title", { defaultValue: "Collection Curator" })}
+              {t("curator.title")}
             </h3>
             <p className="text-xs" style={{ color: "rgba(224,216,200,0.6)" }}>
-              {t("curator.subtitle", { defaultValue: "AI-generated insights for your collection" })}
+              {t("curator.subtitle")}
             </p>
           </div>
         </div>
