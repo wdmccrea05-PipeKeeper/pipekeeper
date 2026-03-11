@@ -8,9 +8,9 @@ import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 // This is safe because a navigation to /Curator always triggers a full mount.
 function getTabFromUrl() {
   try {
-    return new URLSearchParams(window.location.search).get("tab") || "optimizer";
+    return new URLSearchParams(window.location.search).get("tab") || "for_you";
   } catch {
-    return "optimizer";
+    return "for_you";
   }
 }
 
