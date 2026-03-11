@@ -10,13 +10,25 @@ const docs = {
   howTo: {
     pageTitle: "How To",
     pageSubtitle: "Quick answers with clear navigation paths",
+    gettingStarted: "Getting Started",
+    gettingStartedQ: "Where do I start with PipeKeeper?",
+    gettingStartedSteps: [
+      "Create an account with your email address",
+      "Accept the Terms of Service and Privacy Policy",
+      "Start by adding your first pipe to your collection",
+      "Add tobacco blends you own to your cellar",
+      "Log your first smoking session to begin building your history",
+      "Explore the Insights and Curator pages to see recommendations"
+    ],
     managingPipes: "Managing Pipes",
     addPipeQ: "How do I add a pipe to my collection?",
     addPipeBasicSteps: [
       "Tap the Pipes tab in the navigation menu",
       "Tap the + Add Pipe button in the top right",
-      "Fill in the pipe details (name, maker, shape, etc.)",
+      "Fill in the pipe details (name, maker, shape, bend, size, etc.)",
+      "Add measurements and condition information",
       "Optionally add photos using the photo upload area",
+      "Add pipe focus tags (e.g., 'Virginia', 'English', 'Versatile')",
       "Tap Save to add the pipe to your collection"
     ],
     updatePipeQ: "How do I update a pipe's details?",
@@ -33,13 +45,22 @@ const docs = {
       "Tap the heart icon on the pipe card or detail page",
       "The heart will turn red to indicate it is a favorite"
     ],
-    managingTobacco: "Managing Tobacco",
+    deletePipeQ: "How do I delete a pipe from my collection?",
+    deletePipeSteps: [
+      "Navigate to the Pipes page or pipe detail page",
+      "Tap the menu icon (three dots) on the pipe",
+      "Select Delete",
+      "Confirm deletion. This cannot be undone."
+    ],
+    managingTobacco: "Managing Tobacco & Cellar",
     addTobaccoQ: "How do I add a tobacco blend?",
     addTobaccoSteps: [
       "Tap the Tobacco tab in the navigation menu",
       "Tap the + Add Blend button",
       "Search for the blend by name to auto-fill details, or enter manually",
-      "Set your inventory (tins, bulk oz, status)",
+      "Set your open inventory (tins, bulk oz, pouches)",
+      "If aging, mark tins as cellared and set the cellaring date",
+      "Add blend type, strength, and flavor notes",
       "Tap Save"
     ],
     updateTobaccoQ: "How do I update a tobacco blend?",
@@ -49,21 +70,46 @@ const docs = {
       "On the blend detail page, tap the Edit icon",
       "Make your changes and tap Save"
     ],
+    manageCellarQ: "How do I manage my aging cellar?",
+    manageCellarSteps: [
+      "On a tobacco detail page, look for the Cellar section",
+      "Mark tins or quantities as 'Cellared' and set the date",
+      "The Cellar Log tracks when you cellared and when you remove items",
+      "Review aging recommendations on the Tobacco page",
+      "Use the Cellar Aging Dashboard to see your entire aging collection"
+    ],
+    deleteTobaccoQ: "How do I delete a tobacco blend?",
+    deleteTobaccoSteps: [
+      "Navigate to the Tobacco page or blend detail page",
+      "Tap the menu icon (three dots) on the blend",
+      "Select Delete",
+      "Confirm deletion. Smoking logs associated with this blend will remain."
+    ],
     loggingSessions: "Logging Sessions",
     logSessionQ: "How do I log a smoking session?",
     logSessionSteps: [
       "Go to the Home page",
-      "Scroll to the Collection Insights panel",
-      "Tap the Log tab",
-      "Select the pipe and tobacco blend you used",
-      "Fill in session details (duration, rating, notes)",
+      "Scroll to the Smoking Log panel",
+      "Tap Add Session or the Log button",
+      "Select the pipe you smoked",
+      "Select the tobacco blend you used",
+      "Enter the number of bowls smoked",
+      "Optionally add session notes or ratings",
       "Tap Save Session"
     ],
     viewLogsQ: "How do I view my smoking history?",
     viewLogsSteps: [
       "Go to the Home page",
-      "Scroll to the Collection Insights panel",
-      "Tap the Log tab to see your session history"
+      "Scroll to the Smoking Log panel",
+      "View recent sessions or tap View All to see complete history",
+      "Tap any session to view or edit details"
+    ],
+    streaksQ: "What are smoking streaks and how are they calculated?",
+    streaksSteps: [
+      "A streak is consecutive days with logged sessions",
+      "Your longest streak is highlighted in Collection Insights",
+      "Streaks help you stay consistent with your collection",
+      "Streaks reset if you skip a day"
     ],
     measurements: "Pipe Measurements",
     measurePipeQ: "How do I add measurements to a pipe?",
@@ -74,34 +120,108 @@ const docs = {
       "Enter the dimensions manually, or use the AI Geometry tool to auto-fill from photos",
       "Tap Save"
     ],
-    aiFeatures: "AI Features",
+    insights: "Understanding Insights",
+    insightsQ: "What are Insights and how do I use them?",
+    insightsSteps: [
+      "Insights appear on your Home page and show collection statistics",
+      "Highlight cards display your most smoked pipe, favorite blend, total value, and more",
+      "Collection statistics show pipe count, cellar size, total sessions, and streak",
+      "These metrics update automatically as you log sessions and add items"
+    ],
+    curatorQ: "What does the Collection Curator do?",
+    curatorSteps: [
+      "The Curator analyzes your collection and provides personalized guidance",
+      "Insights are organized into 5 categories: Rotation, Cellar, Pairing, Discovery, and Stewardship",
+      "It may suggest rotating underused pipes, aging windows for tobacco, or new blend styles",
+      "Visit the Curator panel on your Home page to see active insights",
+      "You can toggle curator guidance on/off in your Profile settings"
+    ],
+    storyCardQ: "What are Collector Story cards?",
+    storyCardSteps: [
+      "Story cards are beautiful, shareable cards that tell your collector journey",
+      "Tap View Story on the Home page to open the story viewer",
+      "Browse through cards like Most Smoked Pipe, Favorite Blend, and Collection Value",
+      "Tap Share to export a card as an image to share on social media",
+      "Story cards automatically update as your collection grows"
+    ],
+    aiFeatures: "AI Features & Advanced Tools",
     generatePairingsQ: "How do I generate pipe-tobacco pairing recommendations?",
     generatePairingsSteps: [
       "Go to the Home page",
       "Find the AI Updates panel",
       "Tap Regenerate next to Pairing Matrix",
-      "Once generated, view pairings in Collection Insights > Pairing Grid"
+      "AI analyzes pipe shapes, sizes, and your focus tags against tobacco characteristics",
+      "Once complete, view pairings in Collection Insights > Pairing Grid tab"
     ],
     identifyPipeQ: "How do I use AI to identify a pipe?",
     identifyPipeSteps: [
-      "Go to the Curator page (Collection Curator tab)",
-      "Tap the Identification tab",
-      "Upload a photo of your pipe",
-      "Tap Analyze to get AI identification results"
+      "Go to the Home page and find the AI Updates panel",
+      "Tap the Pipe Identification tool",
+      "Upload clear photos of your pipe from multiple angles",
+      "Tap Analyze to get AI identification results",
+      "Review suggestions for maker, shape, size, and condition"
     ],
-    subscriptions: "Subscriptions",
+    optimizeQ: "How do I optimize my collection?",
+    optimizeSteps: [
+      "Go to the Home page",
+      "Find the AI Updates panel",
+      "Tap Regenerate next to Collection Optimization",
+      "AI suggests pipe specializations and identifies collection gaps",
+      "Review recommendations to improve balance and variety"
+    ],
+    geometryQ: "How do I measure my pipe using AI geometry analysis?",
+    geometrySteps: [
+      "Open a pipe's detail page",
+      "Find the Geometry Analysis section",
+      "Upload clear photos showing the bowl and shank",
+      "Tap Analyze Geometry to get AI-calculated measurements",
+      "Review and apply suggested dimensions to your pipe record"
+    ],
+    sharing: "Sharing & Exporting",
+    shareQ: "How do I share my collection or story cards?",
+    shareSteps: [
+      "Go to your Home page and tap View Story",
+      "Browse through your collection narrative",
+      "Tap Share or Export to get a shareable image",
+      "Download and share on Reddit, Facebook, Instagram, or Discord"
+    ],
+    exportQ: "Can I export my collection data?",
+    exportSteps: [
+      "Go to the Pipes or Tobacco page",
+      "Look for the Export button (usually at the top)",
+      "Select export format (CSV or Excel)",
+      "Download your data to use elsewhere"
+    ],
+    profileQ: "Can I make my profile public?",
+    profileSteps: [
+      "Go to your Profile page",
+      "Find Profile Settings",
+      "Toggle Make Profile Public",
+      "Others can now view your collection (based on your privacy settings)",
+      "You control which data is visible: pipes, blends, counts, values"
+    ],
+    subscriptions: "Subscriptions & Billing",
     upgradeQ: "How do I upgrade my subscription?",
     upgradeSteps: [
       "Go to the Profile page",
-      "Tap Manage Subscription or Upgrade",
-      "Select your desired plan",
-      "Complete the checkout process"
+      "Tap Subscription or Upgrade Plan",
+      "View available tiers (Free, Premium, Pro)",
+      "Select your desired plan (monthly or annual)",
+      "Complete checkout. Access begins immediately."
     ],
     cancelQ: "How do I cancel my subscription?",
     cancelSteps: [
       "Go to the Profile page",
       "Tap Manage Subscription",
-      "Follow the cancellation steps in your subscription portal"
+      "In your subscription portal, select Cancel Subscription",
+      "Confirm cancellation. Access continues through period end."
+    ],
+    tierDiffQ: "What's the difference between Premium and Pro?",
+    tierDiffSteps: [
+      "Premium: AI pairings, optimization, pipe identification",
+      "Pro: All Premium features plus AI tobacco valuation and market trends",
+      "Premium users who subscribed before Feb 1 2026 keep all Pro features",
+      "See the Subscription page for complete feature comparison"
     ],
   },
 
