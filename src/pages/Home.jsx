@@ -159,12 +159,40 @@ export default function Home() {
 
       {/* 3. PORTFOLIO SUMMARY */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <PKCard className="p-4 flex flex-col justify-between min-h-[80px] relative overflow-hidden">
+        <PKCard
+          className="p-4 flex flex-col justify-between min-h-[80px] relative overflow-hidden"
+          style={{
+            background: "linear-gradient(145deg, #1a2535 0%, #111a25 62%, #C8794128 100%)",
+            border: "1px solid #C8794150",
+            boxShadow: "0 0 0 1px #C8794120, 0 4px 24px -4px #C8794138",
+          }}
+        >
+          {/* Blurred collection image background */}
+          {(featuredPipe?.photos?.[0] || featuredBlend?.logo || featuredBlend?.photo) && (
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: `url(${featuredPipe?.photos?.[0] || featuredBlend?.logo || featuredBlend?.photo})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                filter: "blur(14px) brightness(0.14) saturate(0.40)",
+                opacity: 0.88,
+                transform: "scale(1.1)",
+              }}
+            />
+          )}
+          {/* Gradient overlay */}
           <div
-            className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, #C8794128 0%, transparent 70%)", transform: "translate(30%, -30%)" }}
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(145deg, rgba(26,37,53,0.97) 0%, rgba(17,26,37,0.91) 55%, rgba(200,121,65,0.18) 100%)",
+            }}
           />
-          {/* Subtle warm grain texture */}
+          <div
+            className="absolute top-0 right-0 w-24 h-24 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, #C8794135 0%, transparent 70%)", transform: "translate(35%, -35%)" }}
+          />
+          {/* Warm grain texture */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="home-grain-val" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
@@ -190,12 +218,40 @@ export default function Home() {
           </div>
         </PKCard>
 
-        <PKCard className="p-4 flex flex-col justify-between min-h-[80px] relative overflow-hidden">
+        <PKCard
+          className="p-4 flex flex-col justify-between min-h-[80px] relative overflow-hidden"
+          style={{
+            background: "linear-gradient(145deg, #1a2535 0%, #111a25 62%, #4A7C9C28 100%)",
+            border: "1px solid #4A7C9C50",
+            boxShadow: "0 0 0 1px #4A7C9C20, 0 4px 24px -4px #4A7C9C38",
+          }}
+        >
+          {/* Blurred pipe image background */}
+          {featuredPipe?.photos?.[0] && (
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: `url(${featuredPipe.photos[0]})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                filter: "blur(14px) brightness(0.14) saturate(0.40)",
+                opacity: 0.88,
+                transform: "scale(1.1)",
+              }}
+            />
+          )}
+          {/* Gradient overlay */}
           <div
-            className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, #4A7C9C28 0%, transparent 70%)", transform: "translate(30%, -30%)" }}
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(145deg, rgba(26,37,53,0.97) 0%, rgba(17,26,37,0.91) 55%, rgba(74,124,156,0.18) 100%)",
+            }}
           />
-          {/* Subtle wood grain texture — pipes */}
+          <div
+            className="absolute top-0 right-0 w-24 h-24 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, #4A7C9C35 0%, transparent 70%)", transform: "translate(35%, -35%)" }}
+          />
+          {/* Wood grain texture — pipes */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="home-wood-pipes" x="0" y="0" width="120" height="18" patternUnits="userSpaceOnUse">
@@ -212,12 +268,40 @@ export default function Home() {
           <div className="text-2xl font-bold text-[#E0D8C8] mt-2 relative">{pipes.length}</div>
         </PKCard>
 
-        <PKCard className="p-4 flex flex-col justify-between min-h-[80px] relative overflow-hidden">
+        <PKCard
+          className="p-4 flex flex-col justify-between min-h-[80px] relative overflow-hidden"
+          style={{
+            background: "linear-gradient(145deg, #1a2535 0%, #111a25 62%, #4A7C5928 100%)",
+            border: "1px solid #4A7C5950",
+            boxShadow: "0 0 0 1px #4A7C5920, 0 4px 24px -4px #4A7C5938",
+          }}
+        >
+          {/* Blurred blend image background */}
+          {(featuredBlend?.logo || featuredBlend?.photo) && (
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: `url(${featuredBlend.logo || featuredBlend.photo})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                filter: "blur(14px) brightness(0.14) saturate(0.40)",
+                opacity: 0.88,
+                transform: "scale(1.1)",
+              }}
+            />
+          )}
+          {/* Gradient overlay */}
           <div
-            className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, #4A7C5928 0%, transparent 70%)", transform: "translate(30%, -30%)" }}
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(145deg, rgba(26,37,53,0.97) 0%, rgba(17,26,37,0.91) 55%, rgba(74,124,89,0.18) 100%)",
+            }}
           />
-          {/* Subtle paper label texture — tobacco */}
+          <div
+            className="absolute top-0 right-0 w-24 h-24 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, #4A7C5935 0%, transparent 70%)", transform: "translate(35%, -35%)" }}
+          />
+          {/* Paper label texture — tobacco */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="home-paper-blends" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -240,12 +324,40 @@ export default function Home() {
           <div className="text-2xl font-bold text-[#E0D8C8] mt-2 relative">{blends.length}</div>
         </PKCard>
 
-        <PKCard className="p-4 flex flex-col justify-between min-h-[80px] relative overflow-hidden">
+        <PKCard
+          className="p-4 flex flex-col justify-between min-h-[80px] relative overflow-hidden"
+          style={{
+            background: "linear-gradient(145deg, #1a2535 0%, #111a25 62%, #22D3EE22 100%)",
+            border: "1px solid #22D3EE40",
+            boxShadow: "0 0 0 1px #22D3EE15, 0 4px 24px -4px #22D3EE28",
+          }}
+        >
+          {/* Blurred any-collection image */}
+          {(featuredPipe?.photos?.[0] || featuredBlend?.logo || featuredBlend?.photo) && (
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: `url(${featuredBlend?.logo || featuredBlend?.photo || featuredPipe?.photos?.[0]})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                filter: "blur(14px) brightness(0.14) saturate(0.38)",
+                opacity: 0.85,
+                transform: "scale(1.1)",
+              }}
+            />
+          )}
+          {/* Gradient overlay */}
           <div
-            className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, #22D3EE22 0%, transparent 70%)", transform: "translate(30%, -30%)" }}
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(145deg, rgba(26,37,53,0.97) 0%, rgba(17,26,37,0.91) 55%, rgba(34,211,238,0.14) 100%)",
+            }}
           />
-          {/* Subtle grain for cellared oz */}
+          <div
+            className="absolute top-0 right-0 w-24 h-24 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, #22D3EE28 0%, transparent 70%)", transform: "translate(35%, -35%)" }}
+          />
+          {/* Grain for cellared oz */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="home-grain-cellar" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
