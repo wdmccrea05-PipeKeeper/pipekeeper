@@ -12,9 +12,9 @@ export function HeritageCard({ children, className, style, accent, withTexture =
     <div
       className={cn("relative rounded-lg overflow-hidden", className)}
       style={{
-        background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
-        border: "1px solid rgba(120, 90, 65, 0.3)",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)",
+        background: "linear-gradient(145deg, rgba(48, 34, 22, 0.75), rgba(38, 26, 18, 0.88))",
+        border: "1px solid rgba(120, 90, 65, 0.32)",
+        boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)",
         ...style,
       }}
     >
@@ -28,29 +28,39 @@ export function HeritageCard({ children, className, style, accent, withTexture =
 export function HeritageStatCard({ icon: Icon, label, value, accent = "#B48C4B", className }) {
   return (
     <div
-      className={cn("rounded-lg p-4", className)}
+      className={cn("rounded-lg p-5", className)}
       style={{
-        background: "linear-gradient(135deg, rgba(50, 35, 22, 0.6), rgba(42, 30, 20, 0.75))",
-        border: "1px solid rgba(120, 90, 65, 0.25)",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.06)",
+        background: "linear-gradient(145deg, rgba(52, 37, 24, 0.68), rgba(44, 31, 21, 0.80))",
+        border: "1px solid rgba(120, 90, 65, 0.28)",
+        boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.1), inset 0 -1px 2px rgba(0,0,0,0.2)",
       }}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-3.5">
         <div
-          className="w-10 h-10 flex items-center justify-center rounded-lg shrink-0"
+          className="w-11 h-11 flex items-center justify-center rounded-lg shrink-0"
           style={{
-            background: "linear-gradient(135deg, rgba(100, 70, 45, 0.35), rgba(80, 55, 35, 0.4))",
-            border: "1px solid rgba(120, 90, 65, 0.3)",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(180, 140, 100, 0.1)",
+            background: "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
+            border: "1px solid rgba(120, 90, 65, 0.4)",
+            boxShadow: "0 3px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180, 140, 100, 0.18)",
           }}
         >
-          {Icon && <Icon className="w-5 h-5" style={{ color: accent }} />}
+          {Icon && <Icon className="w-4 h-4" style={{ color: accent, filter: `drop-shadow(0 0 2px ${accent}50)` }} />}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-2xl font-bold" style={{ color: "#F5F1E7" }}>
+          <div 
+            className="text-2xl font-bold mb-1.5" 
+            style={{ 
+              color: "#F5F1E7",
+              textShadow: "0 1px 3px rgba(0,0,0,0.6)",
+              fontFamily: "'Georgia', serif"
+            }}
+          >
             {value}
           </div>
-          <div className="text-xs mt-1" style={{ color: "rgba(224, 216, 200, 0.6)" }}>
+          <div 
+            className="text-xs uppercase tracking-[0.08em] font-medium" 
+            style={{ color: "rgba(180, 140, 75, 0.75)" }}
+          >
             {label}
           </div>
         </div>
