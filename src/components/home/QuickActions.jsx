@@ -1,5 +1,5 @@
 import React from "react";
-import { BookOpen, Camera, TrendingUp, Lightbulb } from "lucide-react";
+import { BookOpen, Camera, TrendingUp, Archive } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const ACTIONS = [
@@ -31,13 +31,13 @@ const ACTIONS = [
     borderColor: "border-[#4A7C9C]/30",
   },
   {
-    key: "askCurator",
-    Icon: Lightbulb,
-    accent: "#8b3a3a",
-    iconColor: "text-[#cc7070]",
-    bgColor: "bg-[#8b3a3a]/15",
-    hoverColor: "hover:bg-[#8b3a3a]/25",
-    borderColor: "border-[#8b3a3a]/30",
+    key: "collectionCurator",
+    Icon: Archive,
+    accent: "#8b5e3a",
+    iconColor: "text-[#d4956a]",
+    bgColor: "bg-[#8b5e3a]/15",
+    hoverColor: "hover:bg-[#8b5e3a]/25",
+    borderColor: "border-[#8b5e3a]/30",
   },
 ];
 
@@ -48,11 +48,11 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
     logSession: onLogSession,
     identify: onIdentify,
     optimize: onOptimize,
-    askCurator: onAskCurator,
+    collectionCurator: onAskCurator,
   };
 
   return (
-    <div>
+    <div className="rounded-2xl border border-[#E0D8C8]/10 bg-[#1a2d3f]/60 p-4">
       <div className="text-xs text-[#E0D8C8]/50 uppercase tracking-wider font-medium mb-3">
         {t("quickActions.sectionTitle")}
       </div>

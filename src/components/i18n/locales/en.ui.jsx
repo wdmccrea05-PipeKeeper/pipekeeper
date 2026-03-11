@@ -2424,7 +2424,7 @@ const enUI = {
     logSession: "Log Session",
     identify: "Identify",
     optimize: "Optimize",
-    askCurator: "Ask Curator",
+    collectionCurator: "Collection Curator",
   },
   pipesPage: {
     myPipes: "My Pipes",
