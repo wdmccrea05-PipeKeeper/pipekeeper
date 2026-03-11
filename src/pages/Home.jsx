@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { PKCard } from "@/components/ui/pk-surface";
@@ -7,11 +7,9 @@ import { formatCurrency, formatWeight } from "@/components/utils/localeFormatter
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCellaredOzFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
-import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 import CollectionIntelligencePanel from "@/components/home/CollectionIntelligencePanel";
-import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 import QuickActions from "@/components/home/QuickActions";
-import { Leaf, Heart, Sparkles, ArrowRight, Crown } from "lucide-react";
+import { Leaf, Heart, Sparkles, ArrowRight, Crown, BarChart3 } from "lucide-react";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { isAppleBuild } from "@/components/utils/appVariant";
 
@@ -58,34 +56,56 @@ export default function Home() {
     staleTime: 30000,
   });
 
-  const insightsSectionRef = useRef(null);
-  const curatorSectionRef = useRef(null);
-  const [insightsTab, setInsightsTab] = useState("log");
-  const [expertTab, setExpertTab] = useState("identifier");
+  const { data: smokingLogs = [] } = useQuery({
+    queryKey: ["smoking-logs", user?.email],
+    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, "-date", 1000),
+    enabled: !!user?.email,
+    staleTime: 60000,
+  });
 
-  const scrollTo = (ref) => {
-    const SCROLL_DELAY_MS = 50;
-    setTimeout(() => ref.current?.scrollIntoView({ behavior: "smooth", block: "start" }), SCROLL_DELAY_MS);
-  };
+  const { data: activePairings } = useQuery({
+    queryKey: ["activePairings", user?.email],
+    enabled: !!user?.email,
+    queryFn: async () => {
+      const active = await base44.entities.PairingMatrix.filter(
+        { created_by: user.email, is_active: true },
+        "-created_date",
+        1
+      );
+      return active?.[0] || null;
+    },
+    staleTime: 60_000,
+  });
+
+  const { data: activeOpt } = useQuery({
+    queryKey: ["activeOptimization", user?.email],
+    enabled: !!user?.email,
+    queryFn: async () => {
+      const active = await base44.entities.CollectionOptimization.filter(
+        { created_by: user.email, is_active: true },
+        "-created_date",
+        1
+      );
+      return active?.[0] || null;
+    },
+    staleTime: 60_000,
+  });
 
   const handleLogSession = () => {
-    setInsightsTab("log");
-    scrollTo(insightsSectionRef);
+    if (isAppleBuild) return;
+    window.location.href = createPageUrl("Curator?tab=log");
   };
 
   const handleIdentify = () => {
-    setExpertTab("identifier");
-    scrollTo(curatorSectionRef);
+    window.location.href = createPageUrl("Curator?tab=identifier");
   };
 
   const handleOptimize = () => {
-    setExpertTab("optimizer");
-    scrollTo(curatorSectionRef);
+    window.location.href = createPageUrl("Curator?tab=optimizer");
   };
 
   const handleAskCurator = () => {
-    setExpertTab("whatif");
-    scrollTo(curatorSectionRef);
+    window.location.href = createPageUrl("Curator?tab=whatif");
   };
 
   const totalPipeValue = pipes.reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0);
@@ -96,8 +116,11 @@ export default function Home() {
   const favoritePipes = pipes.filter((p) => p?.is_favorite);
   const favoriteBlends = blends.filter((b) => b?.is_favorite);
 
+  // Summary stats for compact insights card
+  const aiUpdateCount = (activePairings ? 1 : 0) + (activeOpt ? 1 : 0);
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* 1. HERO */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold font-serif text-[#E0D8C8]">
@@ -291,61 +314,64 @@ export default function Home() {
       {/* 6. COLLECTION INTELLIGENCE */}
       <CollectionIntelligencePanel pipes={pipes} blends={blends} user={user} />
 
-      {/* 7. COLLECTION INSIGHTS PANEL */}
-      <div ref={insightsSectionRef}>
-        <CollectionInsightsPanel
-          pipes={pipes}
-          blends={blends}
-          user={user}
-          activeTab={insightsTab}
-          onTabChange={setInsightsTab}
-        />
-      </div>
+      {/* 7. COLLECTION INSIGHTS — compact summary card */}
+      {!isAppleBuild && (pipes.length > 0 || blends.length > 0) && (
+        <PKCard className="p-4 flex items-center gap-4">
+          <BarChart3 className="w-8 h-8 text-[#6aabc0] shrink-0" aria-hidden="true" />
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-[#E0D8C8] text-sm">
+              {t("insights.title")}
+            </div>
+            <div className="text-xs text-[#E0D8C8]/60 mt-0.5 space-y-0.5">
+              {smokingLogs.length > 0 && (
+                <div>{smokingLogs.length} {t("home.insightsSessions")}</div>
+              )}
+              {aiUpdateCount > 0 && (
+                <div>{aiUpdateCount} {t("home.insightsAiUpdates")}</div>
+              )}
+            </div>
+          </div>
+          <a
+            href={createPageUrl("Curator?tab=log")}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#4A7C9C]/15 hover:bg-[#4A7C9C]/25 border border-[#4A7C9C]/30 text-[#E0D8C8] text-xs font-medium transition-colors shrink-0 whitespace-nowrap min-h-[36px]"
+          >
+            {t("home.openInsights")} <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </PKCard>
+      )}
 
-      {/* 8. CURATOR ANCHOR TARGET */}
-      <div ref={curatorSectionRef}>
-        <ExpertTobacconist
-          pipes={pipes}
-          blends={blends}
-          isPaidUser={hasPaid}
-          user={user}
-          activeTab={expertTab}
-          onTabChange={setExpertTab}
-        />
-      </div>
-
-      {/* 9. RECENT PIPES & RECENT TOBACCO */}
+      {/* 8. RECENT PIPES & RECENT TOBACCO */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <PKCard className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">{t("home.recentPipes")}</h2>
+        <PKCard className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-[#E0D8C8]">{t("home.recentPipes")}</h2>
             <a
               href={createPageUrl("Pipes")}
-              className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8]"
+              className="text-xs text-[#E0D8C8]/60 hover:text-[#E0D8C8]"
             >
               {t("home.viewAll")} →
             </a>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {pipes.slice(0, 4).map((p) => (
               <a
                 key={p.id}
                 href={createPageUrl(`PipeDetail?id=${encodeURIComponent(p.id)}`)}
                 className="flex items-center gap-3 hover:bg-white/5 rounded-lg p-1.5 -mx-1.5 transition-colors"
               >
-                <div className="w-12 h-12 rounded-lg bg-[#1E2F43] overflow-hidden shrink-0 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-[#1E2F43] overflow-hidden shrink-0 flex items-center justify-center">
                   {p.photos?.[0] ? (
                     <img src={p.photos[0]} alt={p.name} className="w-full h-full object-cover" />
                   ) : (
-                    <PipeShapeIcon shape={p.shape} className="w-6 h-6" />
+                    <PipeShapeIcon shape={p.shape} className="w-5 h-5" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{p.name}</div>
-                  {p.maker && <div className="text-sm opacity-60 truncate">{p.maker}</div>}
+                  <div className="text-sm font-medium truncate">{p.name}</div>
+                  {p.maker && <div className="text-xs opacity-60 truncate">{p.maker}</div>}
                 </div>
                 {p.estimated_value > 0 && (
-                  <span className="text-green-400 text-sm font-medium shrink-0">
+                  <span className="text-green-400 text-xs font-medium shrink-0">
                     {formatCurrency(p.estimated_value)}
                   </span>
                 )}
@@ -354,33 +380,33 @@ export default function Home() {
           </div>
         </PKCard>
 
-        <PKCard className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">{t("home.recentTobacco")}</h2>
+        <PKCard className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-[#E0D8C8]">{t("home.recentTobacco")}</h2>
             <a
               href={createPageUrl("Tobacco")}
-              className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8]"
+              className="text-xs text-[#E0D8C8]/60 hover:text-[#E0D8C8]"
             >
               {t("home.viewAll")} →
             </a>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {blends.slice(0, 4).map((b) => (
               <a
                 key={b.id}
                 href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(b.id)}`)}
                 className="flex items-center gap-3 hover:bg-white/5 rounded-lg p-1.5 -mx-1.5 transition-colors"
               >
-                <div className="w-12 h-12 rounded-full bg-[#1E2F43] overflow-hidden shrink-0 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-[#1E2F43] overflow-hidden shrink-0 flex items-center justify-center">
                   {b.logo || b.photo ? (
                     <img src={b.logo || b.photo} alt={b.name} className="w-full h-full object-cover" />
                   ) : (
-                    <Leaf className="w-6 h-6 opacity-40" />
+                    <Leaf className="w-5 h-5 opacity-40" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{b.name}</div>
-                  {b.manufacturer && <div className="text-sm opacity-60 truncate">{b.manufacturer}</div>}
+                  <div className="text-sm font-medium truncate">{b.name}</div>
+                  {b.manufacturer && <div className="text-xs opacity-60 truncate">{b.manufacturer}</div>}
                 </div>
               </a>
             ))}
@@ -388,7 +414,7 @@ export default function Home() {
         </PKCard>
       </div>
 
-      {/* 10. BULK IMPORT FOOTER */}
+      {/* 9. BULK IMPORT FOOTER */}
       <a href={createPageUrl("Import")} className="block">
         <PKCard className="p-4 flex items-center gap-4 hover:bg-[#2a3f57] transition-colors cursor-pointer">
           <Sparkles className="w-8 h-8 text-amber-400 shrink-0" />

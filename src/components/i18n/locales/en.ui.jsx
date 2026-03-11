@@ -543,6 +543,9 @@ const enUI = {
     viewTobacco: "View Tobacco",
     viewPairings: "View Pairings",
     viewOptimization: "View Analysis",
+    reviewOnePipe: "Review 1 Pipe",
+    reviewPipes: "Review {count} Pipes",
+    neverUsed: "Never used",
 
     // Recommendations section
     recommendationsTitle: "Recommendations",
@@ -2412,6 +2415,9 @@ const enUI = {
     bulkImport: "Bulk Import",
     importDesc: "Import pipes & tobacco from CSV",
     totalValue: "Total Collection Value",
+    insightsSessions: "sessions logged",
+    insightsAiUpdates: "AI updates",
+    openInsights: "Open Insights",
   },
   quickActions: {
     sectionTitle: "Quick Actions",

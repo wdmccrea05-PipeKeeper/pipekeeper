@@ -22,6 +22,7 @@ import PrivacyPolicy from "./PrivacyPolicy";
 import TobaccoLibrarySync from "./TobaccoLibrarySync";
 import BulkLogoUpload from "./BulkLogoUpload";
 import AIUpdates from "./AIUpdates";
+import Curator from "./Curator";
 
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
 import AppleBlockedFeature from "@/components/compliance/AppleBlockedFeature";
@@ -46,6 +47,7 @@ const ROUTES = {
   "/TobaccoLibrarySync": TobaccoLibrarySync,
   "/BulkLogoUpload": BulkLogoUpload,
   "/AIUpdates": AIUpdates,
+  "/Curator": Curator,
 };
 
 // Route → feature mapping for Apple compliance
