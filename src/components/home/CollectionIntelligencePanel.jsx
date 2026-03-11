@@ -17,6 +17,12 @@ import {
   ChevronUp,
   CheckCircle2,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Maximum insights shown by default (prevents cognitive overload)
 const DEFAULT_VISIBLE = 4;
@@ -33,9 +39,101 @@ const CATEGORIES = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// InsightCard — single readable insight with optional action button
+// CollapsibleSection — section with a toggleable header
 // ─────────────────────────────────────────────────────────────────────────────
-function InsightCard({ insight }) {
+function CollapsibleSection({ label, defaultOpen = false, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section aria-label={label}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between mb-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40 rounded"
+        aria-expanded={open}
+      >
+        <h3 className="text-xs font-semibold text-[#E0D8C8]/60 uppercase tracking-wider group-hover:text-[#E0D8C8]/80 transition-colors">
+          {label}
+        </h3>
+        {open ? (
+          <ChevronUp className="w-4 h-4 text-[#E0D8C8]/40 group-hover:text-[#E0D8C8]/60 transition-colors shrink-0" aria-hidden="true" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-[#E0D8C8]/40 group-hover:text-[#E0D8C8]/60 transition-colors shrink-0" aria-hidden="true" />
+        )}
+      </button>
+      {open && <div>{children}</div>}
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RotationDrillDownModal — targeted list of overdue pipes
+// ─────────────────────────────────────────────────────────────────────────────
+function RotationDrillDownModal({ pipes, latestLogByPipe, open, onClose }) {
+  const { t } = useTranslation();
+  const now = new Date();
+
+  const overduePipes = pipes.filter((p) => {
+    const lastDate = latestLogByPipe[p.id];
+    if (!lastDate) return true;
+    try {
+      return differenceInCalendarDays(now, new Date(lastDate)) > 60;
+    } catch {
+      return false;
+    }
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="max-w-md w-full">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <RotateCcw className="w-4 h-4 text-amber-400 shrink-0" aria-hidden="true" />
+            {t("collectionIntelligence.insightRotationTitle")}
+          </DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-[#E0D8C8]/70 -mt-1 mb-3">
+          {overduePipes.length === 1
+            ? t("collectionIntelligence.insightRotationDescOne")
+            : t("collectionIntelligence.insightRotationDesc", { count: overduePipes.length })}
+        </p>
+        <div className="space-y-2 max-h-72 overflow-y-auto">
+          {overduePipes.map((p) => {
+            const lastDate = latestLogByPipe[p.id];
+            let lastUsedLabel = t("collectionIntelligence.neverUsed");
+            try {
+              if (lastDate) {
+                lastUsedLabel = formatDistanceToNow(new Date(lastDate), { addSuffix: true });
+              }
+            } catch {
+              // ignore
+            }
+            return (
+              <a
+                key={p.id}
+                href={createPageUrl(`PipeDetail?id=${encodeURIComponent(p.id)}`)}
+                className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-[#E0D8C8] truncate">{p.name}</div>
+                  {p.maker && (
+                    <div className="text-xs text-[#E0D8C8]/50 truncate">{p.maker}</div>
+                  )}
+                </div>
+                <div className="text-xs text-[#E0D8C8]/50 shrink-0">{lastUsedLabel}</div>
+              </a>
+            );
+          })}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// InsightCard — single readable insight with optional action button
+// Supports both link-based and callback-based actions.
+// ─────────────────────────────────────────────────────────────────────────────
+function InsightCard({ insight, onAction }) {
   const iconMap = {
     clock: RotateCcw,
     leaf: Leaf,
@@ -44,6 +142,25 @@ function InsightCard({ insight }) {
     activity: Activity,
   };
   const Icon = iconMap[insight.icon] || Activity;
+
+  const actionButton = insight.actionLabel && (insight.actionUrl || onAction) ? (
+    insight.actionUrl ? (
+      <a
+        href={insight.actionUrl}
+        className="self-start ml-7 text-xs font-medium text-amber-400 border border-amber-400/30 px-3 py-1.5 rounded-lg hover:bg-amber-400/10 transition-colors"
+      >
+        {insight.actionLabel}
+      </a>
+    ) : (
+      <button
+        type="button"
+        onClick={onAction}
+        className="self-start ml-7 text-xs font-medium text-amber-400 border border-amber-400/30 px-3 py-1.5 rounded-lg hover:bg-amber-400/10 transition-colors"
+      >
+        {insight.actionLabel}
+      </button>
+    )
+  ) : null;
 
   return (
     <div className="rounded-xl bg-white/5 p-4 flex flex-col gap-3">
@@ -54,14 +171,7 @@ function InsightCard({ insight }) {
           <p className="text-sm text-[#E0D8C8]/70 mt-1 leading-relaxed">{insight.description}</p>
         </div>
       </div>
-      {insight.actionLabel && insight.actionUrl && (
-        <a
-          href={insight.actionUrl}
-          className="self-start ml-7 text-xs font-medium text-amber-400 border border-amber-400/30 px-3 py-1.5 rounded-lg hover:bg-amber-400/10 transition-colors"
-        >
-          {insight.actionLabel}
-        </a>
-      )}
+      {actionButton}
     </div>
   );
 }
@@ -132,6 +242,7 @@ function UpdateFeedItem({ update }) {
 export default function CollectionIntelligencePanel({ pipes, blends, user }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
+  const [rotationModalOpen, setRotationModalOpen] = useState(false);
 
   // ── Data fetching (all cached — does not block page render) ─────────────────
 
@@ -175,7 +286,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
   });
 
   // ── Insight & health generation (memoised — no side-effects) ────────────────
-  const { insights, healthMetrics, topRecommendations, aiUpdates } = useMemo(() => {
+  const { insights, healthMetrics, topRecommendations, aiUpdates, latestLogByPipe, overduePipes } = useMemo(() => {
     // Respect the platform-level ai_excluded rule for all AI-driven output.
     // Excluded items still count toward value, inventory, and statistics —
     // only the recommendation/insight pipeline excludes them.
@@ -227,8 +338,12 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
             : t("collectionIntelligence.insightRotationDesc", {
                 count: overduePipes.length,
               }),
-        actionLabel: t("collectionIntelligence.viewPipes"),
-        actionUrl: createPageUrl("Pipes"),
+        actionLabel:
+          overduePipes.length === 1
+            ? t("collectionIntelligence.reviewOnePipe")
+            : t("collectionIntelligence.reviewPipes", { count: overduePipes.length }),
+        actionUrl: null,
+        isDrillDown: true,
       });
     }
 
@@ -453,7 +568,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
       });
     }
 
-    return { insights, healthMetrics, topRecommendations, aiUpdates };
+    return { insights, healthMetrics, topRecommendations, aiUpdates, latestLogByPipe, overduePipes };
   }, [pipes, blends, logs, activePairings, activeOpt, t]);
 
   // Don't render if the collection is completely empty
@@ -465,118 +580,138 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
   const hiddenCount = insights.length - DEFAULT_VISIBLE;
 
   return (
-    <PKCard className="p-6 space-y-6">
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-3">
-        <Brain className="w-5 h-5 text-amber-400 shrink-0" aria-hidden="true" />
-        <div>
-          <h2 className="text-xl font-semibold text-[#E0D8C8]">
-            {t("collectionIntelligence.title")}
-          </h2>
-          <p className="text-sm text-[#E0D8C8]/60">
-            {t("collectionIntelligence.subtitle")}
-          </p>
+    <>
+      <PKCard className="p-6 space-y-5">
+        {/* ── Header ─────────────────────────────────────────────────────────── */}
+        <div className="flex items-center gap-3">
+          <Brain className="w-5 h-5 text-amber-400 shrink-0" aria-hidden="true" />
+          <div>
+            <h2 className="text-xl font-semibold text-[#E0D8C8]">
+              {t("collectionIntelligence.title")}
+            </h2>
+            <p className="text-sm text-[#E0D8C8]/60">
+              {t("collectionIntelligence.subtitle")}
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* ── Collection Health Summary ───────────────────────────────────────── */}
-      <section aria-label={t("collectionIntelligence.healthTitle")}>
-        <h3 className="text-xs font-semibold text-[#E0D8C8]/60 uppercase tracking-wider mb-3">
-          {t("collectionIntelligence.healthTitle")}
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          {healthMetrics.map((m, i) => {
-            const isGood =
-              m.value === t("collectionIntelligence.healthGood") ||
-              m.value === t("collectionIntelligence.healthStrong");
-            const isMod = m.value === t("collectionIntelligence.healthModerate");
-            const isLow = m.value === t("collectionIntelligence.healthLow");
-            return (
-              <div
-                key={i}
-                className="flex justify-between items-center px-3 py-2.5 rounded-lg bg-white/5"
-              >
-                <span className="text-sm text-[#E0D8C8]/70">{m.label}</span>
-                <span
-                  className={`text-sm font-semibold ${
-                    isGood
-                      ? "text-green-400"
-                      : isMod
-                      ? "text-amber-400"
-                      : isLow
-                      ? "text-red-400"
-                      : "text-[#E0D8C8]/40"
-                  }`}
+        {/* ── Collection Health — expanded by default ─────────────────────── */}
+        <CollapsibleSection
+          label={t("collectionIntelligence.healthTitle")}
+          defaultOpen={true}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {healthMetrics.map((m, i) => {
+              const isGood =
+                m.value === t("collectionIntelligence.healthGood") ||
+                m.value === t("collectionIntelligence.healthStrong");
+              const isMod = m.value === t("collectionIntelligence.healthModerate");
+              const isLow = m.value === t("collectionIntelligence.healthLow");
+              return (
+                <div
+                  key={i}
+                  className="flex justify-between items-center px-3 py-2.5 rounded-lg bg-white/5"
                 >
-                  {m.value}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ── Insight Cards ──────────────────────────────────────────────────── */}
-      {insights.length > 0 && (
-        <section aria-label={t("collectionIntelligence.insightsTitle")}>
-          <h3 className="text-xs font-semibold text-[#E0D8C8]/60 uppercase tracking-wider mb-3">
-            {t("collectionIntelligence.insightsTitle")}
-          </h3>
-          <div className="space-y-3">
-            {visibleInsights.map((insight) => (
-              <InsightCard key={insight.id} insight={insight} />
-            ))}
+                  <span className="text-sm text-[#E0D8C8]/70">{m.label}</span>
+                  <span
+                    className={`text-sm font-semibold ${
+                      isGood
+                        ? "text-green-400"
+                        : isMod
+                        ? "text-amber-400"
+                        : isLow
+                        ? "text-red-400"
+                        : "text-[#E0D8C8]/40"
+                    }`}
+                  >
+                    {m.value}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-          {insights.length > DEFAULT_VISIBLE && (
-            <button
-              onClick={() => setExpanded((e) => !e)}
-              className="mt-3 flex items-center gap-1.5 text-sm text-[#E0D8C8]/60 hover:text-[#E0D8C8] transition-colors"
-            >
-              {expanded ? (
-                <>
-                  <ChevronUp className="w-4 h-4" aria-hidden="true" />
-                  {t("collectionIntelligence.showLess")}
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="w-4 h-4" aria-hidden="true" />
-                  {t("collectionIntelligence.showMore", {
-                    count: hiddenCount,
-                  })}
-                </>
+        </CollapsibleSection>
+
+        {/* ── Insights — collapsed by default ────────────────────────────── */}
+        {insights.length > 0 && (
+          <CollapsibleSection
+            label={t("collectionIntelligence.insightsTitle")}
+            defaultOpen={false}
+          >
+            <div className="space-y-3">
+              {visibleInsights.map((insight) => (
+                <InsightCard
+                  key={insight.id}
+                  insight={insight}
+                  onAction={
+                    insight.isDrillDown
+                      ? () => setRotationModalOpen(true)
+                      : undefined
+                  }
+                />
+              ))}
+            </div>
+            {insights.length > DEFAULT_VISIBLE && (
+              <button
+                onClick={() => setExpanded((e) => !e)}
+                className="mt-3 flex items-center gap-1.5 text-sm text-[#E0D8C8]/60 hover:text-[#E0D8C8] transition-colors"
+              >
+                {expanded ? (
+                  <>
+                    <ChevronUp className="w-4 h-4" aria-hidden="true" />
+                    {t("collectionIntelligence.showLess")}
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-4 h-4" aria-hidden="true" />
+                    {t("collectionIntelligence.showMore", {
+                      count: hiddenCount,
+                    })}
+                  </>
+                )}
+              </button>
+            )}
+          </CollapsibleSection>
+        )}
+
+        {/* ── AI Updates — collapsed by default ──────────────────────────── */}
+        {(topRecommendations.length > 0 || aiUpdates.length > 0) && (
+          <CollapsibleSection
+            label={t("collectionIntelligence.updatesTitle")}
+            defaultOpen={false}
+          >
+            <div className="space-y-4">
+              {topRecommendations.length > 0 && (
+                <div>
+                  <div className="text-xs text-[#E0D8C8]/50 uppercase tracking-wider mb-2">
+                    {t("collectionIntelligence.recommendationsTitle")}
+                  </div>
+                  <div className="space-y-3">
+                    {topRecommendations.map((rec, i) => (
+                      <RecommendationCard key={i} rec={rec} t={t} />
+                    ))}
+                  </div>
+                </div>
               )}
-            </button>
-          )}
-        </section>
-      )}
+              {aiUpdates.length > 0 && (
+                <div className="space-y-2">
+                  {aiUpdates.map((update) => (
+                    <UpdateFeedItem key={update.id} update={update} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </CollapsibleSection>
+        )}
+      </PKCard>
 
-      {/* ── AI Recommendations ────────────────────────────────────────────── */}
-      {topRecommendations.length > 0 && (
-        <section aria-label={t("collectionIntelligence.recommendationsTitle")}>
-          <h3 className="text-xs font-semibold text-[#E0D8C8]/60 uppercase tracking-wider mb-3">
-            {t("collectionIntelligence.recommendationsTitle")}
-          </h3>
-          <div className="space-y-3">
-            {topRecommendations.map((rec, i) => (
-              <RecommendationCard key={i} rec={rec} t={t} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ── AI Updates Feed ───────────────────────────────────────────────── */}
-      {aiUpdates.length > 0 && (
-        <section aria-label={t("collectionIntelligence.updatesTitle")}>
-          <h3 className="text-xs font-semibold text-[#E0D8C8]/60 uppercase tracking-wider mb-3">
-            {t("collectionIntelligence.updatesTitle")}
-          </h3>
-          <div className="space-y-2">
-            {aiUpdates.map((update) => (
-              <UpdateFeedItem key={update.id} update={update} />
-            ))}
-          </div>
-        </section>
-      )}
-    </PKCard>
+      {/* ── Rotation drill-down modal ─────────────────────────────────────── */}
+      <RotationDrillDownModal
+        pipes={overduePipes}
+        latestLogByPipe={latestLogByPipe}
+        open={rotationModalOpen}
+        onClose={() => setRotationModalOpen(false)}
+      />
+    </>
   );
 }
