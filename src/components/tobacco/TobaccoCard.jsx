@@ -62,29 +62,27 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
           }
         >
           {/* Absolute positioned overlays */}
-        </LuxuryObjectFrame>
-
-        {/* Floating controls */}
-        <div className="absolute top-3 right-3 z-30">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 rounded-full shadow-lg"
-            style={{
-              background: "rgba(20, 14, 10, 0.85)",
-              border: "1px solid rgba(120, 90, 65, 0.3)",
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onToggleFavorite?.(blend);
-            }}
-          >
-            <Heart className={`w-3.5 h-3.5 ${blend.is_favorite ? 'fill-rose-400 text-rose-400' : 'text-[#E0D8C8]/60'}`} />
-          </Button>
-        </div>
-        
-        <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-1.5 z-30">
+          {/* Floating controls */}
+          <div className="absolute top-3 right-3 z-30">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-full shadow-lg"
+              style={{
+                background: "rgba(20, 14, 10, 0.85)",
+                border: "1px solid rgba(120, 90, 65, 0.3)",
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleFavorite?.(blend);
+              }}
+            >
+              <Heart className={`w-3.5 h-3.5 ${blend.is_favorite ? 'fill-rose-400 text-rose-400' : 'text-[#E0D8C8]/60'}`} />
+            </Button>
+          </div>
+          
+          <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-1.5 z-30">
             {(blend.tin_total_quantity_oz || 0) > 0 && (
               <div className="flex flex-wrap gap-1">
                 <Badge 
@@ -166,6 +164,7 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
                 )}
               </div>
             )}
+          </div>
         </LuxuryObjectFrame>
         <div className="p-4">
          <div className="flex items-start justify-between gap-2">
