@@ -65,26 +65,26 @@ export default function FAQFull() {
           </div>
         </div>
 
-      <Section title={t("helpCenter.topicGeneral", "General")}>
-         <Q id="verification-help" q={t("verificationHelp.pageTitle", "Email Verification Help")}>
+      <Section title={t("helpCenter.topicGeneral")}>
+         <Q id="verification-help" q={t("verificationHelp.pageTitle")}>
            <div className="space-y-3">
-             <p>{t("verificationHelp.expiredDesc", "If your email verification code expired or you missed the 10-minute window, you have a few options:")}</p>
+             <p>{t("verificationHelp.expiredDesc")}</p>
              <div className="bg-stone-50 p-3 rounded">
-               <p className="font-semibold mb-2">{t("verificationHelp.option1Title", "Option 1: Request a New Verification Code")}</p>
-               <p className="text-sm">{t("verificationHelp.option1Desc", "Click below to return to the login page. Enter your email again and a fresh verification code will be sent automatically with a new 10-minute window.")}</p>
+               <p className="font-semibold mb-2">{t("verificationHelp.option1Title")}</p>
+               <p className="text-sm">{t("verificationHelp.option1Desc")}</p>
              </div>
            </div>
          </Q>
        </Section>
 
-       <Section title={t("helpCenter.topicGettingStarted", "Getting Started")}>
-         <Q id="getting-started" q={t("help.gettingStarted", "How do I get started with PipeKeeper?")}>
-           <p>{t("helpCenter.gettingStartedDesc", "Start by adding your first pipe and tobacco blend to your collection. Then explore features like smoking logs, pairing recommendations, and collection insights.")}</p>
+       <Section title={t("helpCenter.topicGettingStarted")}>
+         <Q id="getting-started" q={t("help.gettingStarted")}>
+           <p>{t("helpCenter.gettingStartedDesc")}</p>
          </Q>
-         <Q id="what-is-pipekeeper" q={t("faqExtended.whatIsApp", "What is PipeKeeper?")}>
-           <p>{t("faqExtended.whatIsAppAnswer", "PipeKeeper is a comprehensive pipe and tobacco collection management app for pipe enthusiasts.")}</p>
+         <Q id="what-is-pipekeeper" q={t("faqExtended.whatIsApp")}>
+           <p>{t("faqExtended.whatIsAppAnswer")}</p>
          </Q>
-         <Q id="what-can-do" q={t("faqExtended.whatCanDo", "What can I do with PipeKeeper?")}>
+         <Q id="what-can-do" q={t("faqExtended.whatCanDo")}>
            <ul className="list-disc list-inside space-y-1">
              <li>{t("faqExtended.whatCanDoList1")}</li>
              <li>{t("faqExtended.whatCanDoList2")}</li>
@@ -95,66 +95,66 @@ export default function FAQFull() {
          </Q>
        </Section>
 
-       <Section title={t("helpCenter.topicFieldDefinitions", "Field Definitions")}>
-         <Q id="field-definitions" q={t("help.fieldDefinitions", "What do the different fields mean?")}>
-           <p>{t("helpCenter.fieldDefinitionsDesc", "Check the Help menu for detailed explanations of each field in the pipe and tobacco forms.")}</p>
+       <Section title={t("helpCenter.topicFieldDefinitions")}>
+         <Q id="field-definitions" q={t("help.fieldDefinitions")}>
+           <p>{t("helpCenter.fieldDefinitionsDesc")}</p>
          </Q>
        </Section>
 
-       <Section title={t("helpCenter.topicTobaccoValuation", "Tobacco Valuation")}>
-         <Q id="tobacco-valuation" q={t("help.tobaccoValuation", "How is tobacco value calculated?")}>
-           <p>{t("helpCenter.tobaccoValuationDesc", "AI valuation analyzes public marketplace data to estimate market value. Manual market value can be entered directly on the tobacco detail page.")}</p>
+       <Section title={t("helpCenter.topicTobaccoValuation")}>
+         <Q id="tobacco-valuation" q={t("help.tobaccoValuation")}>
+           <p>{t("helpCenter.tobaccoValuationDesc")}</p>
          </Q>
        </Section>
 
-       <Section title={t("helpCenter.topicFeaturesAndTools", "Features & Tools")}>
-         <Q id="features-ai" q={t("help.aiFeatures", "What AI features are available?")}>
-           <p>{t("helpCenter.aiDesc", "PipeKeeper includes AI pipe identification, tobacco matching, collection optimization, and geometry analysis from photos.")}</p>
+       <Section title={t("helpCenter.topicFeaturesAndTools")}>
+         <Q id="features-ai" q={t("help.aiFeatures")}>
+           <p>{t("helpCenter.aiDesc")}</p>
          </Q>
 
         {/* Subscription Tiers Comparison */}
-        <Q id="subscription-tiers" q={t("faqFull.subscriptionTiersQuestion","What are the subscription tiers and what's included?")}>
+        <Q id="subscription-tiers" q={t("faqFull.subscriptionTiersQuestion")}>
           <div className="space-y-4">
             <div className="p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-semibold text-gray-900 mb-2">{t("faqFull.freeTier","Free Tier")}</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t("faqFull.freeTier")}</h4>
               <ul className="list-disc ml-4 space-y-1 text-gray-700">
-                <li>{t("faqFull.freeTrial7Days","7-day trial of all premium features")}</li>
-                <li>{t("faqFull.upTo5Pipes","Up to 5 pipes")}</li>
-                <li>{t("faqFull.upTo10Tobacco","Up to 10 tobacco blends")}</li>
-                <li>{t("faqFull.basicCollection","Basic collection management")}</li>
-                <li>{t("faqFull.photoUploads","Photo uploads")}</li>
+                <li>{t("faqFull.freeTrial7Days")}</li>
+                <li>{t("faqFull.upTo5Pipes")}</li>
+                <li>{t("faqFull.upTo10Tobacco")}</li>
+                <li>{t("faqFull.basicCollection")}</li>
+                <li>{t("faqFull.photoUploads")}</li>
               </ul>
             </div>
 
             <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-              <h4 className="font-semibold text-amber-900 mb-2">{t("faqFull.premiumTier","Premium Tier")}</h4>
+              <h4 className="font-semibold text-amber-900 mb-2">{t("faqFull.premiumTier")}</h4>
               <ul className="list-disc ml-4 space-y-1 text-gray-700">
-                <li>{t("faqFull.unlimitedPipesTobacco","Unlimited pipes and tobacco blends")}</li>
-                <li>{t("faqFull.aiMatching","AI tobacco matching recommendations")}</li>
-                <li>{t("faqFull.pairingMatrix","Pairing matrix and optimization")}</li>
-                <li>{t("faqFull.smokingLog","Smoking log and rotation planner")}</li>
-                <li>{t("faqFull.collectionInsights","Collection insights and statistics")}</li>
-                <li>{t("faqFull.exportReports","Export reports (PDF, CSV, Excel)")}</li>
-                <li>{t("faqFull.publicProfile","Public profile and community features")}</li>
-                <li>{t("faqFull.breakInSchedules","Break-in schedules")}</li>
+                <li>{t("faqFull.unlimitedPipesTobacco")}</li>
+                <li>{t("faqFull.aiMatching")}</li>
+                <li>{t("faqFull.pairingMatrix")}</li>
+                <li>{t("faqFull.smokingLog")}</li>
+                <li>{t("faqFull.collectionInsights")}</li>
+                <li>{t("faqFull.exportReports")}</li>
+                <li>{t("faqFull.publicProfile")}</li>
+                <li>{t("faqFull.breakInSchedules")}</li>
               </ul>
             </div>
 
             <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-              <h4 className="font-semibold text-purple-900 mb-2">{t("faqFull.proTier","Pro Tier")}</h4>
+              <h4 className="font-semibold text-purple-900 mb-2">{t("faqFull.proTier")}</h4>
               <ul className="list-disc ml-4 space-y-1 text-gray-700">
-                <li>{t("faqFull.everythingInPremium","Everything in Premium, plus:")}</li>
-                <li>{t("faqFull.aiPipeIdentification","AI pipe identification from photos")}</li>
-                <li>{t("faqFull.marketValueLookup","Market value lookup for pipes and tobacco")}</li>
-                <li>{t("faqFull.geometryAnalysis","Geometry analysis from photos")}</li>
-                <li>{t("faqFull.tobaccoAgingProjections","Tobacco aging projections and cellar trends")}</li>
-                <li>{t("faqFull.advancedValuation","Advanced valuation tracking")}</li>
-                <li>{t("faqFull.prioritySupport","Priority support")}</li>
+                <li>{t("faqFull.everythingInPremium")}</li>
+                <li>{t("faqFull.aiPipeIdentification")}</li>
+                <li>{t("faqFull.marketValueLookup")}</li>
+                <li>{t("faqFull.geometryAnalysis")}</li>
+                <li>{t("faqFull.tobaccoAgingProjections")}</li>
+                <li>{t("faqFull.advancedValuation")}</li>
+                <li>{t("faqFull.prioritySupport")}</li>
               </ul>
             </div>
 
             <p className="text-sm text-gray-600 mt-4">
-              {t("faqFull.fullFeatureDescription","For a full feature description visit")}:{" "}
+              {t("faqFull.fullFeatureDescription")}:{" "}
               <a href="https://www.pipekeeperapp.com/features" target="_blank" rel="noopener noreferrer" className="text-[#8b3a3a] hover:text-[#a94747] underline">
                 https://www.pipekeeperapp.com/features
               </a>
@@ -163,17 +163,17 @@ export default function FAQFull() {
         </Q>
       </Section>
 
-      <Section title={t("helpCenter.topicAccountsAndData", "Accounts & Data")}>
-        <Q id="account-security" q={t("help.accountSecurity", "How is my account secured?")}>
-          <p>{t("helpCenter.accountSecurityDesc", "Your account data is encrypted and secured by Base44's authentication system. We never store password data.")}</p>
+      <Section title={t("helpCenter.topicAccountsAndData")}>
+        <Q id="account-security" q={t("help.accountSecurity")}>
+          <p>{t("helpCenter.accountSecurityDesc")}</p>
         </Q>
-        <Q id="data-privacy" q={t("help.dataPrivacy", "What data does PipeKeeper collect?")}>
-          <p>{t("helpCenter.dataPrivacyDesc", "PipeKeeper only collects data you explicitly enter — your pipe and tobacco collection details, smoking logs, and profile preferences. We do not sell your data.")}</p>
+        <Q id="data-privacy" q={t("help.dataPrivacy")}>
+          <p>{t("helpCenter.dataPrivacyDesc")}</p>
         </Q>
       </Section>
 
-      <Section title={t("helpCenter.topicPlansAndSubscriptions", "Plans & Subscriptions")}>
-        <Q id="tiers" q={t("faqExtended.whatAreTiers", "What are the subscription tiers?")}>
+      <Section title={t("helpCenter.topicPlansAndSubscriptions")}>
+        <Q id="tiers" q={t("faqExtended.whatAreTiers")}>
           <ul className="list-disc list-inside space-y-2">
             <li><strong>{t("subscription.free")}:</strong> {t("faqExtended.freeTierDesc")}</li>
             <li><strong>{t("subscription.premium")}:</strong> {t("faqExtended.premiumTierDesc")}</li>
@@ -182,22 +182,22 @@ export default function FAQFull() {
         </Q>
       </Section>
 
-      <Section title={t("helpCenter.topicAI", "AI Features & Accuracy")}>
-        <Q id="ai-accuracy" q={t("help.aiAccuracy", "How accurate are the AI recommendations?")}>
-          <p>{t("helpCenter.aiAccuracyDesc", "AI recommendations are based on your collection data and preferences. Results improve as you add more details and log smoking sessions.")}</p>
+      <Section title={t("helpCenter.topicAI")}>
+        <Q id="ai-accuracy" q={t("help.aiAccuracy")}>
+          <p>{t("helpCenter.aiAccuracyDesc")}</p>
         </Q>
-        <Q id="ai-how-it-works" q={t("help.aiHowItWorks", "How do AI pairings work?")}>
-          <p>{t("helpCenter.aiHowItWorksDesc", "AI pairings analyze your pipe's characteristics (shape, size, focus) and your tobacco blend's profile (type, strength, components) to generate compatibility scores from 0–10.")}</p>
+        <Q id="ai-how-it-works" q={t("help.aiHowItWorks")}>
+          <p>{t("helpCenter.aiHowItWorksDesc")}</p>
         </Q>
-        <Q id="ai-regenerate" q={t("help.aiRegenerate", "When should I regenerate AI pairings?")}>
-          <p>{t("helpCenter.aiRegenerateDesc", "Regenerate pairings when you add or remove pipes/blends, update pipe focus tags, or when the AI Updates page shows 'out of date'.")}</p>
+        <Q id="ai-regenerate" q={t("help.aiRegenerate")}>
+          <p>{t("helpCenter.aiRegenerateDesc")}</p>
         </Q>
       </Section>
 
-      <Section title={t("helpCenter.topicSupport", "Support")}>
-        <Q id="contact-support" q={t("help.contactSupport", "How do I contact support?")}>
+      <Section title={t("helpCenter.topicSupport")}>
+        <Q id="contact-support" q={t("help.contactSupport")}>
           <div className="space-y-3">
-            <p>{t("helpCenter.contactDesc", "Visit the Support page in the app menu or email us directly. Links to all support resources are available in the footer.")}</p>
+            <p>{t("helpCenter.contactDesc")}</p>
             <ul className="mt-2 space-y-1">
               <li>
                 <Link to={createPageUrl('Support')} className="text-[#8b3a3a] hover:text-[#a94747] underline">{t("nav.support")}</Link>

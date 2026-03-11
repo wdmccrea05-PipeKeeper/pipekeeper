@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@/components/i18n";
+import { AuthProvider } from "@/components/contexts/AuthContext";
 
 import Layout from "../Layout";
 import Home from "./Home";
@@ -22,6 +23,7 @@ import PrivacyPolicy from "./PrivacyPolicy";
 import TobaccoLibrarySync from "./TobaccoLibrarySync";
 import BulkLogoUpload from "./BulkLogoUpload";
 import AIUpdates from "./AIUpdates";
+import Curator from "./Curator";
 
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
 import AppleBlockedFeature from "@/components/compliance/AppleBlockedFeature";
@@ -46,6 +48,7 @@ const ROUTES = {
   "/TobaccoLibrarySync": TobaccoLibrarySync,
   "/BulkLogoUpload": BulkLogoUpload,
   "/AIUpdates": AIUpdates,
+  "/Curator": Curator,
 };
 
 // Route → feature mapping for Apple compliance
@@ -131,10 +134,12 @@ export default function Pages() {
   const currentPageName = matchedKey.replace("/", "") || "Home";
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Layout currentPageName={currentPageName}>
-        <Comp />
-      </Layout>
-    </QueryClientProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <Layout currentPageName={currentPageName}>
+          <Comp />
+        </Layout>
+      </QueryClientProvider>
+    </AuthProvider>
   );
 }

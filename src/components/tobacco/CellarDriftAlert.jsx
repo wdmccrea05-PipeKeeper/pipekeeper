@@ -45,11 +45,11 @@ export default function CellarDriftAlert({ blends, user }) {
       }
       
       await queryClient.invalidateQueries({ queryKey: ["blends"] });
-      toast.success(t("cellarDrift.reconcileSuccess", "Reconciled {count} blend(s) - cellared amounts synced to transaction history", { count: fixed }));
+      toast.success(t("cellarDrift.reconcileSuccess", { count: fixed }));
       setShowReport(false);
     } catch (err) {
       console.error("Reconciliation failed:", err);
-      toast.error(t("cellarDrift.reconcileFailed", "Failed to reconcile inventory"));
+      toast.error(t("cellarDrift.reconcileFailed"));
     } finally {
       setReconciling(false);
     }
@@ -60,7 +60,7 @@ export default function CellarDriftAlert({ blends, user }) {
       <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
         <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
         <div className="flex-1">
-          <h3 className="font-semibold text-amber-900">{t("cellarDrift.title", "Cellar Inventory Drift Detected")}</h3>
+          <h3 className="font-semibold text-amber-900">{t("cellarDrift.title")}</h3>
           <p className="text-sm text-amber-800 mt-1">
             {t("cellarDrift.description", "{count} blend(s) have cellared amounts that don't match your transaction logs ({diff} oz total difference).", { count: driftedBlends.length, diff: formatNumber(totalDrift, 2) })}
           </p>
@@ -72,7 +72,7 @@ export default function CellarDriftAlert({ blends, user }) {
             onClick={() => setShowReport(true)}
             className="border-amber-300 text-amber-900 hover:bg-amber-100"
           >
-            {t("cellarDrift.viewDetails", "View Details")}
+            {t("cellarDrift.viewDetails")}
           </Button>
         </div>
       </div>
@@ -80,7 +80,7 @@ export default function CellarDriftAlert({ blends, user }) {
       <Dialog open={showReport} onOpenChange={setShowReport}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t("cellarDrift.reconciliationTitle", "Cellar Inventory Reconciliation")}</DialogTitle>
+            <DialogTitle>{t("cellarDrift.reconciliationTitle")}</DialogTitle>
             <DialogDescription>
               {t("cellarDrift.sourceOfTruth", "Source of truth: CellarLog transactions. This will update {count} computed cellared totals based on your transaction history. Your notes and other data remain unchanged.", { count: driftedBlends.length })}
             </DialogDescription>
@@ -88,7 +88,7 @@ export default function CellarDriftAlert({ blends, user }) {
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
             <p className="text-sm text-blue-900">
-              <strong>{t("cellarDrift.whatWillBeUpdatedBold", "What will be updated:")}</strong> {t("cellarDrift.whatWillBeUpdatedDesc", "Only cellared quantity fields (tin_tins_cellared, bulk_cellared, pouch_pouches_cellared) will be recalculated from your CellarLog transaction history. Your notes, names, photos, and all other data remain unchanged.")}
+              <strong>{t("cellarDrift.whatWillBeUpdatedBold")}</strong> {t("cellarDrift.whatWillBeUpdatedDesc")}
             </p>
           </div>
 
@@ -98,15 +98,15 @@ export default function CellarDriftAlert({ blends, user }) {
                 <h4 className="font-semibold text-stone-900">{drifted.blend_name}</h4>
                 <div className="mt-2 space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-stone-600">{t("cellarDrift.currentComputed", "Current (computed):")}</span>
+                    <span className="text-stone-600">{t("cellarDrift.currentComputed")}</span>
                     <span className="font-mono">{formatNumber(drifted.entityValue, 2)} oz</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-stone-600">{t("cellarDrift.willChangeTo", "Will change to (ledger):")}</span>
+                    <span className="text-stone-600">{t("cellarDrift.willChangeTo")}</span>
                     <span className="font-mono text-emerald-700 font-semibold">{formatNumber(drifted.logValue, 2)} oz</span>
                   </div>
                   <div className="flex justify-between border-t border-stone-200 pt-1 mt-1">
-                    <span className="text-stone-600">{t("cellarDrift.difference", "Difference:")}</span>
+                    <span className="text-stone-600">{t("cellarDrift.difference")}</span>
                     <span className={`font-mono font-semibold ${drifted.drift > 0 ? 'text-red-600' : 'text-blue-600'}`}>
                       {drifted.drift > 0 ? '+' : ''}{formatNumber(drifted.drift, 2)} oz
                     </span>
@@ -118,7 +118,7 @@ export default function CellarDriftAlert({ blends, user }) {
 
           <div className="flex gap-3 justify-end pt-4 border-t">
             <Button variant="outline" onClick={() => setShowReport(false)}>
-              {t("forms.cancel", "Cancel")}
+              {t("forms.cancel")}
             </Button>
             <Button
               onClick={handleReconcile}
@@ -128,12 +128,12 @@ export default function CellarDriftAlert({ blends, user }) {
               {reconciling ? (
                 <>
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  {t("cellarDrift.reconciling", "Reconciling...")}
+                  {t("cellarDrift.reconciling")}
                 </>
               ) : (
                 <>
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  {t("cellarDrift.reconcileAll", "Reconcile All")} ({driftedBlends.length})
+                  {t("cellarDrift.reconcileAll")} ({driftedBlends.length})
                 </>
               )}
             </Button>

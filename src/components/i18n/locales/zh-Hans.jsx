@@ -44,6 +44,10 @@ export default {
     photosCount: "照片：{count}张",
     dimensions: "尺寸",
     noDimensions: "无",
+    length: "长度",
+    bowlHeight: "碗高",
+    chamberDiameter: "烟室直径",
+    weight: "重量",
     analyzeBtn: "分析烟斗几何形状",
     analyzing: "分析中...",
     analysisResults: "分析结果",
@@ -647,7 +651,12 @@ export default {
     termsOfService: "服务条款",
     faq: "常见问题",
   },
-  cellarLog: { overRemoved: "已移除多余", deleteConfirmTitle: "删除条目" },
+  cellarLog: {
+    cellaredTobacco: "窖藏烟草",
+    addCellarTransaction: "添加窖藏交易",
+    overRemoved: "已移除多余",
+    deleteConfirmTitle: "删除条目",
+  },
   pipeDetailTabs: {
     specialization: "专业化",
     focus: "专注方向",
@@ -1068,6 +1077,20 @@ export default {
     optimalRange: "最优范围：30–70%", stemOxidation: "烟嘴氧化",
     good: "良好", thin: "薄", thick: "厚",
     heavyOxidation: "严重氧化", moderateOxidation: "中度氧化",
+    conditionMint: "全新",
+    conditionExcellent: "优秀",
+    conditionVeryGood: "非常好",
+    conditionGood: "好",
+    conditionFair: "一般",
+    conditionPoor: "较差",
+    conditionEstateUnrestored: "旧物 - 未修复",
+    oxidation: "氧化",
+    generalWear: "一般磨损",
+    wear: "磨损",
+    minimalWear: "轻微磨损",
+    lightWear: "少量磨损",
+    moderateWear: "中等磨损",
+    heavyWear: "严重磨损",
   },
 
   maintenanceLog: {
@@ -1080,6 +1103,10 @@ export default {
     reaming: "扩孔", polishing: "抛光", stemWork: "烟嘴工作", other: "其他",
     by: "由", type: "类型", date: "日期", description: "描述", cost: "费用",
     performedBy: "执行者", save: "保存条目",
+    descriptionPlaceholder: "描述执行的维护…",
+    performedByPlaceholder: "例：自己、专业人员",
+    costOptional: "费用（可选）",
+    saveEntry: "保存条目",
   },
 
   tobaccoExtended: {
@@ -1126,13 +1153,20 @@ export default {
     quickSearchAddPipe: "快速搜索并添加烟斗",
     quickSearchAddTobacco: "快速搜索并添加烟草",
     searchPipeDesc: "搜索我们的数据库以快速将烟斗添加到您的收藏",
+    searchTobaccoDesc: "搜索我们的数据库以快速将烟草添加到您的窖藏",
     pipePlaceholder: "按制造商、型号搜索（例如 'Peterson System 314'）",
+    tobaccoPlaceholder: "按混合物名称或制造商搜索（例如 'Orlik Golden Sliced'）",
     foundResults: "找到{count}个结果",
     noResults: "未找到结果。请尝试不同的搜索。",
     adding: "添加中…", addToCollection: "添加到收藏", addToCellar: "添加到酒窖",
+    enterPipeName: "输入烟斗名称进行搜索",
+    pipeExamples: "例如 Peterson System 314, Dunhill Shell",
     enterTobaccoName: "输入烟草混合物名称进行搜索",
     tobaccoExamples: "例如 Orlik Golden Sliced, Dunhill Early Morning Pipe",
     flavors: "风味", components: "成分", tinSize: "罐子大小",
+    avgRating: "平均评分", madeIn: "产自{country}", era: "年代",
+    bowl: "碗部", deep: "深度", typicalValue: "典型价值",
+    searchButton: "搜索",
   },
 
   quickEdit: {
@@ -1292,9 +1326,9 @@ export default {
 
   shapes: {
     Billiard: "圆形", Dublin: "都柏林", Apple: "苹果形", Pot: "矮罐形",
-    Bulldog: "斗牛犬形", Rhodesian: "罗德西亚形", Brandy: "白兰地形",
+    Bulldog: "斗牛犬形", Rhodesian: "罗德西亚形", Bent: "弯曲形", Brandy: "白兰地形",
     Calabash: "葫芦形", Canadian: "加拿大形", Cavalier: "骑士形",
-    Churchwarden: "教堂执事形", Freehand: "自由形",
+    Chimney: "烟囱形", Churchwarden: "教堂执事形", Freehand: "自由形",
     Horn: "角形", Liverpool: "利物浦形", Lovat: "洛瓦特形", Lumberman: "伐木工形",
     Nautilus: "鹦鹉螺形", Pear: "梨形", Poker: "扑克形", Prince: "王子形",
     Viking: "维京形", Volcano: "火山形", Acorn: "橡果形",
@@ -1306,7 +1340,9 @@ export default {
     "Vest Pocket": "马甲口袋形", MacArthur: "麦克阿瑟形",
     "Reverse Calabash": "反向葫芦形", Author: "作者形", Tomahawk: "战斧形",
     Bullmoose: "牛驼鹿形", Bullcap: "牛帽形",
-    "Oom Paul (Hungarian)": "乌姆保罗（匈牙利）", Tyrolean: "蒂罗尔形",
+    Hungarian: "匈牙利形", "Oom Paul": "乌姆保罗",
+    "Oom Paul (Hungarian)": "乌姆保罗（匈牙利）", Panel: "面板形",
+    Sitter: "坐式形", Woodstock: "伍德斯托克形", Zulu: "祖鲁形", Tyrolean: "蒂罗尔形",
   },
 
   materials: {
@@ -1342,12 +1378,12 @@ export default {
     "Ribbon": "丝带切", "Flake": "薄片", "Broken Flake": "碎薄片",
     "Ready Rubbed": "揉制", "Plug": "塞型", "Coin": "硬币切",
     "Cube Cut": "方块切", "Crumble Cake": "碎蛋糕", "Shag": "细丝",
-    "Rope": "绳型", "Twist": "扭型", "Other": "其他",
+    "Rope": "绳型", "Twist": "扭型", "Mixture": "混合型", "Krumble Cake": "碎蛋糕", "Krumble cake": "碎蛋糕", "Other": "其他",
   },
 
   strengths: {
     "Mild": "轻柔", "Mild-Medium": "轻柔至中等", "Medium": "中等",
-    "Medium-Full": "中等至浓", "Full": "浓烈",
+    "Medium-Strong": "中等偏浓", "Medium-Full": "中等至浓", "Strong": "浓", "Full": "浓烈",
   },
 
   conditions: {
@@ -1398,12 +1434,12 @@ export default {
     "Natural": "天然", "Other": "其他",
   },
 
-  productionStatus: {
+  productionStatuses: {
     "Current Production": "现行生产", "Discontinued": "停产",
     "Limited Edition": "限量版", "Vintage": "复古",
   },
 
-  agingPotential: {
+  agingPotentials: {
     "Poor": "差", "Fair": "一般", "Good": "良好", "Excellent": "优秀",
   },
 
@@ -1451,5 +1487,18 @@ export default {
     cannotDeleteOtherMessage: "您只能删除自己的消息",
     failedToSend: "发送消息失败。请重试。",
     chatDescription: "聊天对话", inboxDescription: "消息收件箱",
+  },
+
+  tobaccoLibrarySync: {
+    title: "烟草标志库同步",
+    description: "将您的收藏与标志库同步以添加缺少的标志。",
+    syncStatus: "同步状态", totalBlends: "混合总数",
+    missingLogos: "缺少标志",
+    willBeUpdated: "个混合将被更新",
+    syncing: "同步中…", syncButton: "同步 {count} 个混合",
+    allHaveLogos: "所有混合都有标志",
+    noSyncNeeded: "无需同步",
+    complete: "同步完成", updated: "已更新 {count} 个混合",
+    failed: "{count} 个失败",
   },
 };

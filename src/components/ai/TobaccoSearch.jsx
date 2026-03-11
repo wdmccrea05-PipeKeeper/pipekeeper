@@ -177,7 +177,7 @@ Return an array of relevant tobacco blend matches with detailed information.`,
                       </div>
                       {blend.flavor_notes && blend.flavor_notes.length > 0 && (
                         <div className="mt-3">
-                          <p className="text-xs text-stone-400">Flavors: <span className="text-stone-300">{blend.flavor_notes.slice(0, 4).join(', ')}</span></p>
+                          <p className="text-xs text-stone-400">{t("tobaccoSearch.flavors")} <span className="text-stone-300">{blend.flavor_notes.slice(0, 4).join(', ')}</span></p>
                         </div>
                       )}
                     </div>

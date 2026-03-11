@@ -36,6 +36,7 @@ import CommentSection from "@/components/community/CommentSection";
 import ImageModal from "@/components/ui/ImageModal";
 import CellarLog from "@/components/tobacco/CellarLog";
 import TobaccoValuation from "@/components/tobacco/TobaccoValuation";
+import CuratorItemNote from "@/components/curator/CuratorItemNote";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -195,7 +196,7 @@ export default function TobaccoDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_rgba(99,67,40,0.12),_transparent_45%),linear-gradient(180deg,_#17100c_0%,_#110d0a_100%)] p-8">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-8">
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 w-48 bg-stone-200 rounded" />
@@ -214,10 +215,10 @@ export default function TobaccoDetailPage() {
 
   if (!blend) {
     return (
-      <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_rgba(99,67,40,0.12),_transparent_45%),linear-gradient(180deg,_#17100c_0%,_#110d0a_100%)] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🍂</div>
-          <h2 className="text-2xl font-semibold text-[#F3E8D4] mb-2">{t("tobaccoExtended.blendNotFound")}</h2>
+          <h2 className="text-2xl font-semibold text-stone-800 mb-2">{t("tobaccoExtended.blendNotFound")}</h2>
           <a href={createPageUrl('Tobacco')}>
             <Button variant="outline">{t("tobaccoExtended.backToTobacco")}</Button>
           </a>
@@ -229,7 +230,7 @@ export default function TobaccoDetailPage() {
   const colorClass = BLEND_COLORS[blend.blend_type] || "bg-stone-100 text-stone-800 border-stone-200";
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_rgba(99,67,40,0.12),_transparent_45%),linear-gradient(180deg,_#17100c_0%,_#110d0a_100%)]">
+    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <a href={createPageUrl('Tobacco')}>
@@ -247,7 +248,7 @@ export default function TobaccoDetailPage() {
           <div className="space-y-6">
             {/* Photo */}
             <motion.div 
-              className="aspect-square rounded-2xl overflow-hidden bg-[linear-gradient(180deg,rgba(64,45,31,0.95),rgba(31,22,16,0.98))] shadow-xl cursor-pointer border border-[rgba(154,118,76,0.2)]"
+              className="aspect-square rounded-2xl overflow-hidden bg-white shadow-xl cursor-pointer"
               layoutId={`blend-${blend.id}`}
               onClick={() => setExpandedImage(blend.logo || blend.photo)}
             >
@@ -259,7 +260,7 @@ export default function TobaccoDetailPage() {
                   onError={() => setPrimaryImgError(true)}
                 />
               ) : primaryImgError ? (
-                <div className="w-full h-full flex items-center justify-center bg-[linear-gradient(180deg,rgba(58,40,29,0.96),rgba(31,22,16,0.98))] p-6">
+                <div className="w-full h-full flex items-center justify-center bg-white p-6">
                   {!fallbackImgError ? (
                     <img 
                       src={getTobaccoLogo(blend.manufacturer)} 
@@ -274,7 +275,7 @@ export default function TobaccoDetailPage() {
                   )}
                 </div>
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[linear-gradient(180deg,rgba(58,40,29,0.96),rgba(31,22,16,0.98))] p-6">
+                <div className="w-full h-full flex items-center justify-center bg-white p-6">
                   {!fallbackImgError ? (
                     <img 
                       src={getTobaccoLogo(blend.manufacturer)} 
@@ -396,26 +397,26 @@ export default function TobaccoDetailPage() {
             <div className="flex flex-wrap gap-2">
               {blend.blend_type && (
                 <Badge className={colorClass}>
-                  {blend.blend_type}
+                  {t(`blendTypes.${blend.blend_type}`, blend.blend_type)}
                 </Badge>
               )}
               {blend.strength && (
                 <Badge className="bg-stone-100 text-stone-700 border-stone-200">
-                  {blend.strength}
+                  {t(`strengths.${blend.strength}`, blend.strength)}
                 </Badge>
               )}
               {blend.cut && (
                 <Badge className="bg-amber-50 text-amber-700 border-amber-200">
-                  {blend.cut}
+                  {t(`cuts.${blend.cut}`, blend.cut)}
                 </Badge>
               )}
               {blend.production_status && (
                 <Badge className={
                   blend.production_status === 'Discontinued' 
                     ? 'bg-rose-100 text-rose-800 border-rose-200'
-                    : 'bg-[#3F3428] text-[#E6D2B2] border-[#8B6B45]/40'
+                    : 'bg-blue-100 text-blue-800 border-blue-200'
                 }>
-                  {blend.production_status}
+                  {t(`productionStatuses.${blend.production_status}`, blend.production_status)}
                 </Badge>
               )}
               {blend.room_note && (
@@ -462,7 +463,7 @@ export default function TobaccoDetailPage() {
               <Card className="border-white/10">
                 <CardContent className="p-4">
                   <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("tobaccoExtended.agingPotential")}</p>
-                  <p className="font-medium text-[#E0D8C8]">{blend.aging_potential}</p>
+                  <p className="font-medium text-[#E0D8C8]">{t(`agingPotentials.${blend.aging_potential}`, blend.aging_potential)}</p>
                 </CardContent>
               </Card>
             )}
@@ -485,6 +486,9 @@ export default function TobaccoDetailPage() {
             />
           </div>
         </div>
+
+        {/* Curator Note — lightweight intelligence micro-surface */}
+        <CuratorItemNote moduleType="tobacco" item={blend} />
 
         {/* Comments Section */}
         {userProfile?.allow_comments && (

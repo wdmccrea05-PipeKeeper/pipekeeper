@@ -50,16 +50,11 @@ const SCAN_ROOTS = [
 // ─── Exclusion rules ─────────────────────────────────────────────────────────
 // Per-problem-statement requirements
 const EXCLUDED_DIRS = [
-  join(ROOT, 'src/components/admin'),
   join(ROOT, 'src/components/debug'),
 ];
 
 // Pages whose basenames start with any of these prefixes are excluded
-const EXCLUDED_PAGE_PREFIXES = [
-  'Admin',
-  'SubscriptionEventsLog',
-  'SubscriptionE2ETest',
-];
+const EXCLUDED_PAGE_PREFIXES = [];
 
 // Patterns from auditConfig that also mark files as excluded
 const CONFIG_EXCLUDE_PATTERNS = (auditConfig.excludePatterns || []).map(
@@ -115,8 +110,12 @@ const RULES = [
   {
     name: 'jsx-text-content',
     // Matches ">  Some Text  <" in JSX (not a translation call, not a variable)
-    // Captures text between JSX tags that looks like a human-readable sentence
-    pattern: />\s*([A-Z][a-zA-Z0-9 '",.:!?()&/-]{4,}[a-zA-Z.!?])\s*</g,
+    // Captures text between JSX tags that looks like a human-readable sentence.
+    // End class extended to include ':' and ')' to catch labels like "Flavors:"
+    // and format strings like "PNG, JPG, WEBP, SVG (multiple files)".
+    // Middle class extended with '_' so instruction text with underscores is caught.
+    // Minimum middle-char count reduced to 3 so 5-char strings like "Clear" are caught.
+    pattern: />\s*([A-Z][a-zA-Z0-9 '",.:\s!?()&/_-]{3,}[a-zA-Z.!?:)])\s*</g,
     severity: 'warn',
   },
   {
@@ -149,6 +148,90 @@ const RULES = [
     pattern: /\btoast\.[a-z]+\(\s*["']([A-Z][^"']{3,})["']/g,
     severity: 'warn',
   },
+  {
+    name: 'jsx-text-before-expr',
+    // Catches text that appears before a JSX expression: > Some label: {value}
+    // This catches partially-translated lines like "Processed: {count}" and
+    // inline labels like "Errors:" that are followed by {expressions}.
+    pattern: />\s*([A-Z][a-zA-Z0-9 '",.!?()&/_-]{2,}[a-zA-Z.!?:])\s*\{/g,
+    severity: 'warn',
+  },
+  {
+    name: 'jsx-kbd-content',
+    // Catches text inside <kbd> elements (keyboard hint labels like "Esc").
+    // Symbol-only keys (↑↓, ↵, etc.) are filtered out by shouldIgnoreText.
+    // minLength: 2 allows 3-char strings like "Esc" to be detected.
+    pattern: /<kbd[^>]*>([A-Za-z][a-zA-Z0-9 ]*)<\/kbd>/g,
+    severity: 'warn',
+    minLength: 2,
+  },
+  {
+    name: 'jsx-strong-content',
+    // Catches literal text inside <strong> or <b> inline elements.
+    // This catches field-label patterns like <strong>name</strong> or
+    // <strong>Filename Format:</strong> that are missed by jsx-text-content
+    // because the text may be lowercase or contain no leading uppercase letter.
+    // Excludes expressions ({...}) and tag content (< >) to avoid false positives.
+    pattern: /<(?:strong|b)(?:\s[^>]*)?>([A-Za-z][^{}<>]+)<\/(?:strong|b)>/g,
+    severity: 'warn',
+    minLength: 2,
+  },
+  {
+    name: 't-fallback-literal',
+    // Catches t("some.key", "English fallback string") calls where the second
+    // argument is a plain string literal rather than an interpolation object.
+    // This pattern indicates that the component is relying on an inline English
+    // fallback instead of a locale key, which is the antipattern we want to eliminate.
+    //
+    // Two variants handle both double-quoted and single-quoted fallback strings.
+    // Each uses (?:[^"\\]|\\.)*  /  (?:[^'\\]|\\.)*  to correctly match through
+    // escaped characters (including escaped quotes and apostrophes inside strings).
+    // This replaces the old [^"'] approach which broke on apostrophes and \"-escapes.
+    //
+    // The trailing [,)] allows matching both 2-arg calls t(key, fallback) and
+    // 3-arg calls t(key, fallback, { options }).
+    //
+    // Captures the first 80 chars of the fallback for reporting; trimming happens
+    // in shouldIgnoreText.  minLength set to 2 so even short fallbacks are flagged.
+    pattern: /\bt\(\s*['"][^'"]+['"]\s*,\s*"((?:[^"\\]|\\.){2,80})"\s*[,)]/g,
+    severity: 'warn',
+    minLength: 2,
+    // For fallback-literal rules, general ignore patterns (lowercase-start, digit-start)
+    // do NOT apply — any literal string as a t() second arg is potentially an issue.
+    bypassIgnorePatterns: true,
+  },
+  {
+    name: 't-fallback-literal-single',
+    // Same as t-fallback-literal but for single-quoted fallback strings.
+    pattern: /\bt\(\s*['"][^'"]+['"]\s*,\s*'((?:[^'\\]|\\.){2,80})'\s*[,)]/g,
+    severity: 'warn',
+    minLength: 2,
+    bypassIgnorePatterns: true,
+  },
+  {
+    name: 't-default-value-literal',
+    // Catches t("some.key", { defaultValue: "English text" }) calls where
+    // defaultValue is used as an inline English fallback instead of adding
+    // the key to the locale file.  This is the object-options variant of the
+    // t-fallback-literal antipattern.
+    //
+    // Matches both double-quoted and single-quoted defaultValue strings and
+    // captures the first 80 chars for reporting.
+    pattern: /\bt\(\s*['"][^'"]+['"]\s*,\s*\{[^}]*defaultValue\s*:\s*["']([^"']{2,80})["'][^}]*\}/g,
+    severity: 'warn',
+    minLength: 2,
+    bypassIgnorePatterns: true,
+  },
+  {
+    name: 't-or-fallback-literal',
+    // Catches t("some.key") || "English fallback" where a t() call is guarded
+    // by an OR-expression with a raw string literal.  This indicates that the
+    // component relies on an inline English fallback instead of a locale key.
+    pattern: /\bt\([^)]+\)\s*\|\|\s*["']([A-Z][^"']{3,})["']/g,
+    severity: 'warn',
+    minLength: 4,
+    bypassIgnorePatterns: true,
+  },
 ];
 
 // Short patterns likely to be false positives (CSS classes, code fragments, etc.)
@@ -163,9 +246,10 @@ const IGNORE_PATTERNS = [
   /^[a-z][a-zA-Z0-9.]+$/, // camelCase or dotted identifiers
 ];
 
-function shouldIgnoreText(text) {
+function shouldIgnoreText(text, minLength = 4, bypassIgnorePatterns = false) {
   const trimmed = text.trim();
-  if (trimmed.length < 4) return true;
+  if (trimmed.length < minLength) return true;
+  if (bypassIgnorePatterns) return false;
   if (IGNORE_PATTERNS.some((re) => re.test(trimmed))) return true;
   return false;
 }
@@ -197,8 +281,10 @@ function scanFile(filePath) {
     while ((match = rule.pattern.exec(source)) !== null) {
       const text = match[1].trim();
 
-      if (shouldIgnoreText(text)) continue;
-      if (isAllowlisted(text)) continue;
+      if (shouldIgnoreText(text, rule.minLength ?? 4, rule.bypassIgnorePatterns ?? false)) continue;
+      // For fallback-literal rules, do NOT skip findings based on the proper-noun
+      // allowlist: even a proper noun inline fallback should be replaced with a key.
+      if (!rule.bypassIgnorePatterns && isAllowlisted(text)) continue;
 
       // Determine line number from match offset
       const offset = match.index;
@@ -283,7 +369,11 @@ function main() {
   console.log('  3. Replace the raw string with a t() call:');
   console.log('     Before: <Button>Save</Button>');
   console.log('     After:  <Button>{t("common.saveButton")}</Button>');
-  console.log('  4. If a string is a proper noun or brand name, add it to');
+  console.log('  4. For t-fallback-literal findings: ensure the locale key exists,');
+  console.log('     then remove the inline English fallback string:');
+  console.log('     Before: {t("common.saveButton", "Save")}');
+  console.log('     After:  {t("common.saveButton")}');
+  console.log('  5. If a string is a proper noun or brand name, add it to');
   console.log('     src/components/i18n/auditConfig.json.jsx → properNounAllowlist.');
   console.log('─'.repeat(60));
   console.log();

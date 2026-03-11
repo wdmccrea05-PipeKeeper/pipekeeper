@@ -75,7 +75,7 @@ function AppleSubscription() {
 
     // Fallback so user never gets a dead click
     window.open("https://apps.apple.com/account/subscriptions", "_blank");
-    toast.info(t("subscription.openedAppleSubsInBrowser", "Opened Apple subscriptions in browser."));
+    toast.info(t("subscription.openedAppleSubsInBrowser"));
   };
 
   const openManage = () => {
@@ -85,7 +85,7 @@ function AppleSubscription() {
     if (openedManage) return;
 
     window.open("https://apps.apple.com/account/subscriptions", "_blank");
-    toast.info(t("subscription.openedAppleSubsMgmtInBrowser", "Opened Apple subscription management in browser."));
+    toast.info(t("subscription.openedAppleSubsMgmtInBrowser"));
   };
 
   return (
@@ -157,8 +157,8 @@ function AppleSubscription() {
         <Card className="bg-black/30 border-white/10">
           <CardContent className="pt-6 text-emerald-400 text-center">
             {hasPaid
-              ? t("subscription.activeSubscription", "✅ Your subscription is active.")
-              : t("subscription.trialActive", "✅ Your free trial is active.")}
+              ? t("subscription.activeSubscription")
+              : t("subscription.trialActive")}
           </CardContent>
         </Card>
       )}

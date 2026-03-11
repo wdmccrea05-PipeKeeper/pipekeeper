@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
     // ============================================
     console.log('\n=== TEST 3: LIST SIZE SANITY ===');
     const count = userBlends.length;
-    const isReasonable = count < 50000;
+    const isReasonable = count < 50000; // Arbitrary but huge threshold
     log(`List size: ${count}`, { reasonable: isReasonable });
 
     if (!isReasonable) {

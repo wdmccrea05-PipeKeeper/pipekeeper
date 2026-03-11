@@ -1,5 +1,5 @@
 import React from 'react';
-import { PKCard } from "@/components/ui/pk-surface";
+import { HeritageCard } from "@/components/ui/HeritageCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Calendar, MapPin, DollarSign } from "lucide-react";
@@ -12,14 +12,17 @@ export default function PipeListItem({ pipe, onClick, onToggleFavorite }) {
   const mainPhoto = pipe.photos?.[0];
   
   return (
-    <PKCard 
+    <HeritageCard 
       className="overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300"
       onClick={onClick}
+      withTexture={false}
     >
       <div className="p-4">
         <div className="flex items-center gap-4">
           {/* Photo */}
-          <div className="relative w-32 h-20 rounded-lg bg-[#1A2B3A] overflow-hidden shrink-0">
+          <div className="relative w-32 h-20 rounded-lg overflow-hidden shrink-0" style={{
+            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.5), rgba(35, 24, 16, 0.7))"
+          }}>
             {mainPhoto ? (
               <img 
                 src={mainPhoto} 
@@ -35,7 +38,7 @@ export default function PipeListItem({ pipe, onClick, onToggleFavorite }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 bg-[rgba(58,40,29,0.95)] hover:bg-[rgba(78,54,37,0.98)] border border-[rgba(154,118,76,0.2)] text-[#F3E8D4] shadow-md"
+                className="h-7 w-7 bg-white/90 hover:bg-white shadow-md"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -97,6 +100,6 @@ export default function PipeListItem({ pipe, onClick, onToggleFavorite }) {
           </div>
           </div>
           </div>
-          </PKCard>
+          </HeritageCard>
   );
 }

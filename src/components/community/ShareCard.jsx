@@ -73,8 +73,18 @@ export default function ShareCard({ item, type, open, onClose }) {
           <DialogTitle>{t('shareCard.title')}</DialogTitle>
         </DialogHeader>
 
-        <div ref={cardRef} className="bg-gradient-to-br from-[#1A2B3A] to-[#243548] p-6 rounded-2xl">
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+        <div ref={cardRef} className="relative overflow-hidden p-6 rounded-2xl" style={{
+          background: "linear-gradient(150deg, #0d1822 0%, #141f2e 40%, #1a2d3f 80%, #1a2f40 100%)",
+          border: "1px solid rgba(200,121,65,0.22)",
+        }}>
+          <div
+            className="relative rounded-xl p-6"
+            style={{
+              background: "linear-gradient(145deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.018) 100%)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              backdropFilter: "blur(4px)",
+            }}
+          >
             {/* Header */}
             <div className="flex items-center gap-3 mb-4">
               {type === 'pipe' ? (
@@ -93,25 +103,33 @@ export default function ShareCard({ item, type, open, onClose }) {
 
             {/* Image */}
             {item.photos?.[0] ? (
-              <div className="mb-4 rounded-lg overflow-hidden">
+              <div className="mb-4 rounded-lg overflow-hidden" style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.5)" }}>
                 <img 
                   src={item.photos[0]} 
                   alt={item.name}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-56 object-cover"
                 />
               </div>
             ) : item.photo ? (
-              <div className="mb-4 rounded-lg overflow-hidden">
+              <div className="mb-4 rounded-lg overflow-hidden" style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.5)" }}>
                 <img 
                   src={item.photo} 
                   alt={item.name}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-56 object-cover"
                 />
               </div>
             ) : null}
 
             {/* Title */}
-            <h3 className="text-2xl font-bold text-[#E0D8C8] mb-2">{item.name}</h3>
+            <h3
+              className="text-3xl font-extrabold text-[#F5F1E7] mb-2"
+              style={{
+                textShadow: "0 2px 12px rgba(0,0,0,0.65), 0 0 24px rgba(200,121,65,0.30)",
+                lineHeight: "1.15",
+              }}
+            >
+              {item.name}
+            </h3>
 
             {/* Details */}
             <div className="space-y-1 text-sm text-[#E0D8C8]/70">

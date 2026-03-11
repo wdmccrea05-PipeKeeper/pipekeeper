@@ -129,10 +129,10 @@ export default function TobaccoCollectionStats({ user: userProp }) {
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <Card className="border-[rgba(154,118,76,0.18)] bg-[linear-gradient(180deg,rgba(59,41,29,0.94),rgba(29,21,15,0.98))] text-[#F3E8D4] shadow-[0_10px_24px_rgba(0,0,0,0.28)]">
+        <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
         <CardHeader className="pb-3">
           <CollapsibleTrigger className="flex-1">
-            <CardTitle className="text-xl text-[#F3E8D4] flex items-center gap-2 hover:opacity-70 transition-opacity">
+            <CardTitle className="text-xl text-emerald-800 flex items-center gap-2 hover:opacity-70 transition-opacity">
               <BarChart3 className="w-6 h-6" />
               {t("stats.tobaccoCollectionStats")}
               <ChevronDown className={`w-5 h-5 ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -144,128 +144,128 @@ export default function TobaccoCollectionStats({ user: userProp }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Quick Stats */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-[#D7C4A7] flex items-center gap-2 mb-3">
-              <Leaf className="w-4 h-4 text-[#CFA86A]" />
+            <h3 className="font-semibold text-stone-700 flex items-center gap-2 mb-3">
+              <Leaf className="w-4 h-4 text-emerald-600" />
               {t("stats.quickStats")}
             </h3>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between items-center py-1.5 px-3 bg-[rgba(255,255,255,0.03)] rounded-lg border border-[rgba(154,118,76,0.14)]">
-                <span className="text-[#D7C4A7]/78">{t("stats.totalBlends")}</span>
-                <span className="font-semibold text-[#E6D2B2]">{totalBlends}</span>
+              <div className="flex justify-between items-center py-1.5 px-3 bg-white rounded-lg">
+                <span className="text-stone-600">{t("stats.totalBlends")}</span>
+                <span className="font-semibold text-emerald-700">{totalBlends}</span>
               </div>
               <button
                 onClick={() => handleDrillDown('brands', brandBreakdown)}
-                className="w-full flex justify-between items-center py-1.5 px-3 bg-[rgba(255,255,255,0.03)] rounded-lg border border-[rgba(154,118,76,0.14)] hover:bg-[rgba(255,255,255,0.06)] transition-colors group"
+                className="w-full flex justify-between items-center py-1.5 px-3 bg-white rounded-lg hover:bg-emerald-50 transition-colors group"
               >
-                <span className="text-[#D7C4A7]/78">{t("stats.uniqueBrands")}</span>
+                <span className="text-stone-600">{t("stats.uniqueBrands")}</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-[#E6D2B2]">{uniqueBrands}</span>
-                  <ChevronRight className="w-4 h-4 text-[#B99767]/70 group-hover:text-[#CFA86A]" />
+                  <span className="font-semibold text-emerald-700">{uniqueBrands}</span>
+                  <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-emerald-600" />
                 </div>
               </button>
               <button
                 onClick={() => handleDrillDown('favorites', favoriteBlends)}
-                className="w-full flex justify-between items-center py-1.5 px-3 bg-[rgba(255,255,255,0.03)] rounded-lg border border-[rgba(154,118,76,0.14)] hover:bg-[rgba(255,255,255,0.06)] transition-colors group"
+                className="w-full flex justify-between items-center py-1.5 px-3 bg-white rounded-lg hover:bg-emerald-50 transition-colors group"
               >
-                <span className="text-[#D7C4A7]/78 flex items-center gap-1">
-                  <Star className="w-3 h-3 text-[#CFA86A] fill-[#CFA86A] fill-amber-500" />
+                <span className="text-stone-600 flex items-center gap-1">
+                  <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
                   {t("stats.favorites")}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-[#E6D2B2]">{favoriteBlends.length}</span>
-                  <ChevronRight className="w-4 h-4 text-[#B99767]/70 group-hover:text-[#CFA86A]" />
+                  <span className="font-semibold text-emerald-700">{favoriteBlends.length}</span>
+                  <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-emerald-600" />
                 </div>
               </button>
-              <div className="space-y-2 bg-[rgba(255,255,255,0.03)] rounded-lg p-2 border border-[#8B6B45]/25">
-                <p className="text-xs font-semibold text-[#CFA86A] uppercase tracking-wide">{t("stats.tins")}</p>
+              <div className="space-y-2 bg-amber-50/50 rounded-lg p-2 border border-amber-200/50">
+                <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">{t("stats.tins")}</p>
                 <button
                   onClick={() => handleDrillDown('tinInventory', { blends: blends.filter(b => (b.tin_total_tins || 0) > 0) })}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-[rgba(255,255,255,0.06)] transition-colors group"
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-amber-50 transition-colors group"
                 >
-                  <span className="text-xs text-[#D7C4A7]/78">{t("stats.totalTins")}</span>
+                  <span className="text-xs text-stone-600">{t("stats.totalTins")}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-[#E6D2B2]">{totalTins}</span>
-                    <ChevronRight className="w-3 h-3 text-[#B99767]/70 group-hover:text-amber-600" />
+                    <span className="text-xs font-semibold text-emerald-700">{totalTins}</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-amber-600" />
                   </div>
                 </button>
                 <button
                   onClick={() => handleDrillDown('tinInventory', { blends: blends.filter(b => (b.tin_total_quantity_oz || 0) > 0) })}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-[rgba(255,255,255,0.06)] transition-colors group"
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-amber-50 transition-colors group"
                 >
-                  <span className="text-xs text-[#D7C4A7]/78">{t("stats.total")}</span>
+                  <span className="text-xs text-stone-600">{t("stats.total")}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-[#E6D2B2]">{formatWeight(tinWeightOz, 'oz')}</span>
-                    <ChevronRight className="w-3 h-3 text-[#B99767]/70 group-hover:text-amber-600" />
+                    <span className="text-xs font-semibold text-emerald-700">{formatWeight(tinWeightOz, 'oz')}</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-amber-600" />
                   </div>
                 </button>
                 <button
                   onClick={() => handleDrillDown('tinOpen', { blends: blends.filter(b => (b.tin_tins_open || 0) > 0) })}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-[rgba(255,255,255,0.06)] transition-colors group"
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-sky-50 transition-colors group"
                 >
-                  <span className="text-xs text-[#D7C4A7]/78">{t("stats.open")}</span>
+                  <span className="text-xs text-stone-600">{t("stats.open")}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-[#CFA86A]">{formatWeight(tinOpenOz, 'oz')}</span>
-                    <ChevronRight className="w-3 h-3 text-[#B99767]/70 group-hover:text-[#CFA86A]" />
+                    <span className="text-xs font-semibold text-sky-600">{formatWeight(tinOpenOz, 'oz')}</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
                   </div>
                 </button>
 
               </div>
               
-              <div className="space-y-2 bg-[rgba(255,255,255,0.03)] rounded-lg p-2 border border-[#8B6B45]/25">
-                <p className="text-xs font-semibold text-[#CFA86A] uppercase tracking-wide">{t("stats.bulk")}</p>
+              <div className="space-y-2 bg-blue-50/50 rounded-lg p-2 border border-blue-200/50">
+                <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide">{t("stats.bulk")}</p>
                 <button
                   onClick={() => handleDrillDown('bulkInventory', { blends: blends.filter(b => (b.bulk_total_quantity_oz || 0) > 0) })}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-[rgba(255,255,255,0.06)] transition-colors group"
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-blue-50 transition-colors group"
                 >
-                  <span className="text-xs text-[#D7C4A7]/78">{t("stats.total")}</span>
+                  <span className="text-xs text-stone-600">{t("stats.total")}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-[#E6D2B2]">{formatWeight(bulkWeightOz, 'oz')}</span>
-                    <ChevronRight className="w-3 h-3 text-[#B99767]/70 group-hover:text-[#CFA86A]" />
+                    <span className="text-xs font-semibold text-emerald-700">{formatWeight(bulkWeightOz, 'oz')}</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-blue-600" />
                   </div>
                 </button>
                 <button
                   onClick={() => handleDrillDown('bulkOpen', { blends: blends.filter(b => (b.bulk_open || 0) > 0) })}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-[rgba(255,255,255,0.06)] transition-colors group"
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-sky-50 transition-colors group"
                 >
-                  <span className="text-xs text-[#D7C4A7]/78">{t("stats.open")}</span>
+                  <span className="text-xs text-stone-600">{t("stats.open")}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-[#CFA86A]">{formatWeight(bulkOpenOz, 'oz')}</span>
-                    <ChevronRight className="w-3 h-3 text-[#B99767]/70 group-hover:text-[#CFA86A]" />
+                    <span className="text-xs font-semibold text-sky-600">{formatWeight(bulkOpenOz, 'oz')}</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
                   </div>
                 </button>
 
               </div>
               
-              <div className="space-y-2 bg-[rgba(255,255,255,0.03)] rounded-lg p-2 border border-[#8B6B45]/25">
-                <p className="text-xs font-semibold text-[#CFA86A] uppercase tracking-wide">{t("stats.pouches")}</p>
+              <div className="space-y-2 bg-purple-50/50 rounded-lg p-2 border border-purple-200/50">
+                <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide">{t("stats.pouches")}</p>
                 <button
                   onClick={() => handleDrillDown('pouchInventory', { blends: blends.filter(b => (b.pouch_total_pouches || 0) > 0) })}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-[rgba(255,255,255,0.06)] transition-colors group"
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-purple-50 transition-colors group"
                 >
-                  <span className="text-xs text-[#D7C4A7]/78">{t("stats.totalPouches")}</span>
+                  <span className="text-xs text-stone-600">{t("stats.totalPouches")}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-[#E6D2B2]">{totalPouches}</span>
-                    <ChevronRight className="w-3 h-3 text-[#B99767]/70 group-hover:text-[#CFA86A]" />
+                    <span className="text-xs font-semibold text-emerald-700">{totalPouches}</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-purple-600" />
                   </div>
                 </button>
                 <button
                   onClick={() => handleDrillDown('pouchInventory', { blends: blends.filter(b => (b.pouch_total_quantity_oz || 0) > 0) })}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-[rgba(255,255,255,0.06)] transition-colors group"
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-purple-50 transition-colors group"
                 >
-                  <span className="text-xs text-[#D7C4A7]/78">{t("stats.total")}</span>
+                  <span className="text-xs text-stone-600">{t("stats.total")}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-[#E6D2B2]">{formatWeight(pouchWeightOz, 'oz')}</span>
-                    <ChevronRight className="w-3 h-3 text-[#B99767]/70 group-hover:text-[#CFA86A]" />
+                    <span className="text-xs font-semibold text-emerald-700">{formatWeight(pouchWeightOz, 'oz')}</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-purple-600" />
                   </div>
                 </button>
                 <button
                   onClick={() => handleDrillDown('pouchOpen', { blends: blends.filter(b => (b.pouch_pouches_open || 0) > 0) })}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-[rgba(255,255,255,0.06)] transition-colors group"
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-sky-50 transition-colors group"
                 >
-                  <span className="text-xs text-[#D7C4A7]/78">{t("stats.open")}</span>
+                  <span className="text-xs text-stone-600">{t("stats.open")}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-[#CFA86A]">{formatWeight(pouchOpenOz, 'oz')}</span>
-                    <ChevronRight className="w-3 h-3 text-[#B99767]/70 group-hover:text-[#CFA86A]" />
+                    <span className="text-xs font-semibold text-sky-600">{formatWeight(pouchOpenOz, 'oz')}</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
                   </div>
                 </button>
 
@@ -277,30 +277,30 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                   onClick={() => handleDrillDown('allInventory', { blends: blends.filter(b => 
                     (b.tin_total_quantity_oz || 0) > 0 || (b.bulk_total_quantity_oz || 0) > 0 || (b.pouch_total_quantity_oz || 0) > 0
                   )})}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-[rgba(255,255,255,0.06)] transition-colors group"
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-stone-50 transition-colors group"
                 >
-                  <span className="text-xs text-[#D7C4A7]/78">{t("stats.totalWeight")}</span>
+                  <span className="text-xs text-stone-600">{t("stats.totalWeight")}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-[#E6D2B2]">{formatWeight(totalWeight, 'oz')}</span>
-                    <ChevronRight className="w-3 h-3 text-[#B99767]/70 group-hover:text-[#D7C4A7]/78" />
+                    <span className="text-xs font-bold text-emerald-700">{formatWeight(totalWeight, 'oz')}</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-stone-600" />
                   </div>
                 </button>
                 <button
                   onClick={() => handleDrillDown('allOpen', { blends: blends.filter(b => 
                     (b.tin_tins_open || 0) > 0 || (b.bulk_open || 0) > 0 || (b.pouch_pouches_open || 0) > 0
                   )})}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-[rgba(255,255,255,0.06)] transition-colors group"
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-sky-50 transition-colors group"
                 >
-                  <span className="text-xs text-[#D7C4A7]/78">{t("stats.totalOpen")}</span>
+                  <span className="text-xs text-stone-600">{t("stats.totalOpen")}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-[#CFA86A]">{formatWeight(totalOpenOz, 'oz')}</span>
-                    <ChevronRight className="w-3 h-3 text-[#B99767]/70 group-hover:text-[#CFA86A]" />
+                    <span className="text-xs font-bold text-sky-600">{formatWeight(totalOpenOz, 'oz')}</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
                   </div>
                 </button>
                 <div className="w-full flex justify-between items-center py-1 px-2 bg-emerald-50 rounded border border-emerald-200">
-                  <span className="text-xs text-[#D7C4A7]/78 font-medium">{t("stats.totalCellared")}</span>
+                  <span className="text-xs text-stone-600 font-medium">{t("stats.totalCellared")}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-[#E6D2B2]">{formatWeight(totalCellaredOz, 'oz')}</span>
+                    <span className="text-xs font-bold text-emerald-700">{formatWeight(totalCellaredOz, 'oz')}</span>
                   </div>
                 </div>
               </div>
@@ -309,8 +309,8 @@ export default function TobaccoCollectionStats({ user: userProp }) {
 
           {/* Blend Type Breakdown */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-[#D7C4A7] flex items-center gap-2 mb-3">
-              <TrendingUp className="w-4 h-4 text-[#CFA86A]" />
+            <h3 className="font-semibold text-stone-700 flex items-center gap-2 mb-3">
+              <TrendingUp className="w-4 h-4 text-emerald-600" />
               {t("stats.blendTypeBreakdown")}
             </h3>
             {lowInventoryBlends.length > 0 && (
@@ -318,7 +318,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 onClick={() => handleDrillDown('lowInventory', lowInventoryBlends)}
                 className="w-full flex justify-between items-center py-2 px-3 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors"
               >
-                <span className="text-xs font-semibold text-[#CFA86A]">⚠ {t("stats.lowInventoryAlert")} ({lowInventoryBlends.length} {lowInventoryBlends.length > 1 ? t("stats.blends") : t("stats.blend")})</span>
+                <span className="text-xs font-semibold text-amber-800">⚠ {t("stats.lowInventoryAlert")} ({lowInventoryBlends.length} {lowInventoryBlends.length > 1 ? t("stats.blends") : t("stats.blend")})</span>
                 <ChevronRight className="w-4 h-4 text-amber-600" />
               </button>
             )}
@@ -332,10 +332,10 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                     className="w-full space-y-1 hover:opacity-80 transition-opacity"
                   >
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-[#D7C4A7]/78">{type}</span>
+                      <span className="text-stone-600">{type}</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-[#E6D2B2]">{count}</span>
-                        <ChevronRight className="w-4 h-4 text-[#B99767]/70" />
+                        <span className="font-semibold text-emerald-700">{count}</span>
+                        <ChevronRight className="w-4 h-4 text-stone-400" />
                       </div>
                     </div>
                     <div className="w-full bg-stone-200 rounded-full h-2">
@@ -389,15 +389,15 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                     <div key={brand} className="bg-stone-50 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-semibold text-stone-800">{brand}</h3>
-                        <Badge className="bg-emerald-100 text-[#F3E8D4]">
+                        <Badge className="bg-emerald-100 text-emerald-800">
                           {brandBlends.length} {brandBlends.length > 1 ? t("stats.blends") : t("stats.blend")}
                         </Badge>
                       </div>
                       <div className="space-y-2">
                         {brandBlends.map(blend => (
                          <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
-                            <div className="flex items-center justify-between p-2 bg-white rounded hover:bg-[rgba(255,255,255,0.06)] transition-colors">
-                              <span className="text-sm text-[#D7C4A7]">{blend.name}</span>
+                            <div className="flex items-center justify-between p-2 bg-white rounded hover:bg-stone-100 transition-colors">
+                              <span className="text-sm text-stone-700">{blend.name}</span>
                               {blend.quantity_owned > 0 && (
                                 <Badge variant="outline" className="text-xs">
                                   {blend.quantity_owned} {blend.quantity_owned > 1 ? t("units.tinPlural") : t("units.tin")}
@@ -416,8 +416,8 @@ export default function TobaccoCollectionStats({ user: userProp }) {
               <>
                 {drillDown.data.map(blend => (
                   <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
-                    <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-[rgba(255,255,255,0.06)] transition-colors">
-                      <div className="w-12 h-12 rounded-lg bg-[linear-gradient(180deg,rgba(58,40,29,0.96),rgba(31,22,16,0.98))] overflow-hidden border border-[rgba(154,118,76,0.18)] flex items-center justify-center flex-shrink-0">
+                    <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
+                      <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
                         {blend.logo || blend.photo ? (
                           <img 
                             src={blend.logo || blend.photo} 
@@ -425,14 +425,14 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                             className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
                           />
                         ) : (
-                          <Leaf className="w-6 h-6 text-[#CFA86A]" />
+                          <Leaf className="w-6 h-6 text-emerald-600" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-stone-800 truncate">{blend.name}</p>
                         <p className="text-sm text-stone-500 truncate">{blend.manufacturer || blend.blend_type}</p>
                       </div>
-                      <Star className="w-5 h-5 text-[#CFA86A] fill-[#CFA86A] fill-amber-500 flex-shrink-0" />
+                      <Star className="w-5 h-5 text-amber-500 fill-amber-500 flex-shrink-0" />
                     </div>
                   </a>
                 ))}
@@ -443,8 +443,8 @@ export default function TobaccoCollectionStats({ user: userProp }) {
               <>
                 {drillDown.data.map(blend => (
                   <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
-                    <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-[rgba(255,255,255,0.06)] transition-colors">
-                      <div className="w-12 h-12 rounded-lg bg-[linear-gradient(180deg,rgba(58,40,29,0.96),rgba(31,22,16,0.98))] overflow-hidden border border-[rgba(154,118,76,0.18)] flex items-center justify-center flex-shrink-0">
+                    <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
+                      <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
                         {blend.logo || blend.photo ? (
                           <img 
                             src={blend.logo || blend.photo} 
@@ -452,7 +452,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                             className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
                           />
                         ) : (
-                          <Leaf className="w-6 h-6 text-[#CFA86A]" />
+                          <Leaf className="w-6 h-6 text-emerald-600" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -463,7 +463,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                           {blend.quantity_owned > 0 && ` • ${blend.quantity_owned} tin${blend.quantity_owned > 1 ? 's' : ''}`}
                         </p>
                       </div>
-                      <Badge className="bg-blue-100 text-[#CFA86A]">{t("stats.opened")}</Badge>
+                      <Badge className="bg-blue-100 text-blue-800">{t("stats.opened")}</Badge>
                     </div>
                   </a>
                 ))}
@@ -474,8 +474,8 @@ export default function TobaccoCollectionStats({ user: userProp }) {
               <>
                 {drillDown.data.blends.map(blend => (
                   <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
-                    <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-[rgba(255,255,255,0.06)] transition-colors">
-                      <div className="w-12 h-12 rounded-lg bg-[linear-gradient(180deg,rgba(58,40,29,0.96),rgba(31,22,16,0.98))] overflow-hidden border border-[rgba(154,118,76,0.18)] flex items-center justify-center flex-shrink-0">
+                    <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
+                      <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
                         {blend.logo || blend.photo ? (
                           <img 
                             src={blend.logo || blend.photo} 
@@ -483,7 +483,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                             className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
                           />
                         ) : (
-                          <Leaf className="w-6 h-6 text-[#CFA86A]" />
+                          <Leaf className="w-6 h-6 text-emerald-600" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -539,8 +539,8 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                   
                   return (
                     <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
-                      <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-[rgba(255,255,255,0.06)] transition-colors">
-                        <div className="w-12 h-12 rounded-lg bg-[linear-gradient(180deg,rgba(58,40,29,0.96),rgba(31,22,16,0.98))] overflow-hidden border border-[rgba(154,118,76,0.18)] flex items-center justify-center flex-shrink-0">
+                      <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
+                        <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
                           {blend.logo || blend.photo ? (
                             <img 
                               src={blend.logo || blend.photo} 
@@ -548,16 +548,16 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                               className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
                             />
                           ) : (
-                            <Leaf className="w-6 h-6 text-[#CFA86A]" />
+                            <Leaf className="w-6 h-6 text-emerald-600" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-stone-800 truncate">{blend.name}</p>
-                          <p className="text-sm text-[#D7C4A7]/78 truncate">
+                          <p className="text-sm text-stone-600 truncate">
                             {blend.manufacturer}
                           </p>
                         </div>
-                        <Badge className="bg-emerald-100 text-[#F3E8D4] flex-shrink-0">
+                        <Badge className="bg-emerald-100 text-emerald-800 flex-shrink-0">
                           {quantityText}
                         </Badge>
                       </div>
@@ -572,7 +572,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 {drillDown.data.map(blend => (
                   <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                     <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors border border-amber-200">
-                      <div className="w-12 h-12 rounded-lg bg-[linear-gradient(180deg,rgba(58,40,29,0.96),rgba(31,22,16,0.98))] overflow-hidden border border-[rgba(154,118,76,0.18)] flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
                         {blend.logo || blend.photo ? (
                           <img 
                             src={blend.logo || blend.photo} 
@@ -580,7 +580,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                             className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
                           />
                         ) : (
-                          <Leaf className="w-6 h-6 text-[#CFA86A]" />
+                          <Leaf className="w-6 h-6 text-emerald-600" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">

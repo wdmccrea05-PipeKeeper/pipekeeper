@@ -37,7 +37,7 @@ export default function AdvancedTobaccoFilters({ filters, onFilterChange, onRese
         <div className="flex items-center justify-between">
           <CardTitle className="text-stone-800 flex items-center gap-2">
             <Filter className="w-5 h-5 text-amber-600" />
-            {t("tobacco.advancedFilters", "Advanced Filters")}
+            {t("tobacco.advancedFilters")}
             {activeFilterCount > 0 && (
               <Badge className="bg-amber-600 text-white">
                 {activeFilterCount}
@@ -52,7 +52,7 @@ export default function AdvancedTobaccoFilters({ filters, onFilterChange, onRese
               className="text-stone-600 hover:text-stone-800"
             >
               <X className="w-4 h-4 mr-1" />
-              {t("common.clearAll", "Clear All")}
+              {t("common.clearAll")}
             </Button>
           )}
         </div>
@@ -60,16 +60,16 @@ export default function AdvancedTobaccoFilters({ filters, onFilterChange, onRese
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>{t("tobacco.blendType", "Blend Type")}</Label>
+            <Label>{t("tobacco.blendType")}</Label>
             <Select 
               value={filters.blend_type || "__ALL__"}
               onValueChange={(value) => onFilterChange('blend_type', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("tobacco.allTypes", "All Types")} />
+                <SelectValue placeholder={t("tobacco.allTypes")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("tobacco.allTypes", "All Types")}</SelectItem>
+                <SelectItem value="__ALL__">{t("tobacco.allTypes")}</SelectItem>
                 {BLEND_TYPES.map(type => (
                   <SelectItem key={type} value={type}>{type}</SelectItem>
                 ))}
@@ -78,16 +78,16 @@ export default function AdvancedTobaccoFilters({ filters, onFilterChange, onRese
           </div>
 
           <div className="space-y-2">
-            <Label>{t("tobacco.cut", "Cut")}</Label>
+            <Label>{t("tobacco.cut")}</Label>
             <Select 
               value={filters.cut || "__ALL__"}
               onValueChange={(value) => onFilterChange('cut', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("tobacco.allCuts", "All Cuts")} />
+                <SelectValue placeholder={t("tobacco.allCuts")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("tobacco.allCuts", "All Cuts")}</SelectItem>
+                <SelectItem value="__ALL__">{t("tobacco.allCuts")}</SelectItem>
                 {CUTS.map(cut => (
                   <SelectItem key={cut} value={cut}>{cut}</SelectItem>
                 ))}
@@ -96,16 +96,16 @@ export default function AdvancedTobaccoFilters({ filters, onFilterChange, onRese
           </div>
 
           <div className="space-y-2">
-            <Label>{t("tobacco.strength", "Strength")}</Label>
+            <Label>{t("tobacco.strength")}</Label>
             <Select 
               value={filters.strength || "__ALL__"}
               onValueChange={(value) => onFilterChange('strength', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("tobacco.allStrengths", "All Strengths")} />
+                <SelectValue placeholder={t("tobacco.allStrengths")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("tobacco.allStrengths", "All Strengths")}</SelectItem>
+                <SelectItem value="__ALL__">{t("tobacco.allStrengths")}</SelectItem>
                 {STRENGTHS.map(strength => (
                   <SelectItem key={strength} value={strength}>{strength}</SelectItem>
                 ))}
@@ -114,16 +114,16 @@ export default function AdvancedTobaccoFilters({ filters, onFilterChange, onRese
           </div>
 
           <div className="space-y-2">
-            <Label>{t("tobacco.roomNote", "Room Note")}</Label>
+            <Label>{t("tobacco.roomNote")}</Label>
             <Select 
               value={filters.room_note || "__ALL__"}
               onValueChange={(value) => onFilterChange('room_note', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("tobacco.allRoomNotes", "All Room Notes")} />
+                <SelectValue placeholder={t("tobacco.allRoomNotes")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("tobacco.allRoomNotes", "All Room Notes")}</SelectItem>
+                <SelectItem value="__ALL__">{t("tobacco.allRoomNotes")}</SelectItem>
                 {ROOM_NOTES.map(note => (
                   <SelectItem key={note} value={note}>{note}</SelectItem>
                 ))}
@@ -132,16 +132,16 @@ export default function AdvancedTobaccoFilters({ filters, onFilterChange, onRese
           </div>
 
           <div className="space-y-2">
-            <Label>{t("tobacco.productionStatus", "Production Status")}</Label>
+            <Label>{t("tobacco.productionStatus")}</Label>
             <Select 
               value={filters.production_status || "__ALL__"}
               onValueChange={(value) => onFilterChange('production_status', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("tobacco.allStatuses", "All Statuses")} />
+                <SelectValue placeholder={t("tobacco.allStatuses")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("tobacco.allStatuses", "All Statuses")}</SelectItem>
+                <SelectItem value="__ALL__">{t("tobacco.allStatuses")}</SelectItem>
                 {PRODUCTION_STATUSES.map(status => (
                   <SelectItem key={status} value={status}>{status}</SelectItem>
                 ))}
@@ -150,16 +150,16 @@ export default function AdvancedTobaccoFilters({ filters, onFilterChange, onRese
           </div>
 
           <div className="space-y-2">
-            <Label>{t("tobacco.agingPotential", "Aging Potential")}</Label>
+            <Label>{t("tobacco.agingPotential")}</Label>
             <Select 
               value={filters.aging_potential || "__ALL__"}
               onValueChange={(value) => onFilterChange('aging_potential', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("tobacco.allAgingPotentials", "All Aging Potentials")} />
+                <SelectValue placeholder={t("tobacco.allAgingPotentials")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("tobacco.allAgingPotentials", "All Aging Potentials")}</SelectItem>
+                <SelectItem value="__ALL__">{t("tobacco.allAgingPotentials")}</SelectItem>
                 {AGING_POTENTIALS.map(potential => (
                   <SelectItem key={potential} value={potential}>{potential}</SelectItem>
                 ))}
@@ -176,7 +176,7 @@ export default function AdvancedTobaccoFilters({ filters, onFilterChange, onRese
               onCheckedChange={(checked) => onFilterChange('has_inventory', checked)}
             />
             <Label htmlFor="has-inventory" className="cursor-pointer">
-              {t("tobacco.onlyShowWithInventory", "Only show blends with inventory")}
+              {t("tobacco.onlyShowWithInventory")}
             </Label>
           </div>
 
@@ -187,7 +187,7 @@ export default function AdvancedTobaccoFilters({ filters, onFilterChange, onRese
               onCheckedChange={(checked) => onFilterChange('open_only', checked)}
             />
             <Label htmlFor="open-only" className="cursor-pointer">
-              {t("tobacco.onlyShowOpen", "Only show open tins/containers")}
+              {t("tobacco.onlyShowOpen")}
             </Label>
           </div>
 
@@ -198,7 +198,7 @@ export default function AdvancedTobaccoFilters({ filters, onFilterChange, onRese
               onCheckedChange={(checked) => onFilterChange('cellared_only', checked)}
             />
             <Label htmlFor="cellared-only" className="cursor-pointer">
-              {t("tobacco.onlyShowCellared", "Only show cellared tobacco")}
+              {t("tobacco.onlyShowCellared")}
             </Label>
           </div>
         </div>
@@ -206,7 +206,7 @@ export default function AdvancedTobaccoFilters({ filters, onFilterChange, onRese
         <div className="space-y-3 pt-2 border-t border-stone-200">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>{t("tobacco.totalQuantity", "Total Quantity (oz)")}</Label>
+              <Label>{t("tobacco.totalQuantity")}</Label>
               <span className="text-xs text-stone-600">
                 {filters.total_quantity?.min || 0}oz - {filters.total_quantity?.max || 100}oz
               </span>
@@ -223,7 +223,7 @@ export default function AdvancedTobaccoFilters({ filters, onFilterChange, onRese
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>{t("tobacco.rating", "Rating")}</Label>
+              <Label>{t("tobacco.rating")}</Label>
               <span className="text-xs text-stone-600">
                 {filters.rating?.min || 0} - {filters.rating?.max || 5} stars
               </span>

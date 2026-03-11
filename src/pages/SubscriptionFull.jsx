@@ -31,7 +31,7 @@ function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoa
           {({ free: t("subscription.free"), premium: t("subscription.premium"), pro: t("subscription.pro") }[tier] ?? (tier.charAt(0).toUpperCase() + tier.slice(1)))}
         </CardTitle>
         <div className="text-2xl font-bold text-[#A35C5C] mt-2">${price}</div>
-        <div className="text-sm text-[#e8d5b7]/60">{t("subscriptionFull.per","per")} {interval}</div>
+        <div className="text-sm text-[#e8d5b7]/60">{t("subscriptionFull.per")} {interval}</div>
       </CardHeader>
       <CardContent className="space-y-3">
         {features.map((f, i) => (
@@ -45,7 +45,7 @@ function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoa
           variant={isSelected ? "default" : "outline"}
           disabled={isLoading}
         >
-          {isSelected ? t("subscriptionFull.selected","Selected") : t("subscriptionFull.choose","Choose")}
+          {isSelected ? t("subscriptionFull.selected") : t("subscriptionFull.choose")}
         </Button>
       </CardContent>
     </Card>
@@ -77,7 +77,7 @@ export default function SubscriptionFull() {
       const active = !!payload.active;
       setSubActive(active);
       setSubTier(payload?.tier || (payload?.productId || ""));
-      if (active) setMessage(t("subscriptionFull.subActiveCheck","Subscription active ✅"));
+      if (active) setMessage(t("subscriptionFull.subActiveCheck"));
 
       // FIX ISSUE-17: Invalidate cached user/subscription data so FeatureGate re-evaluates
       // entitlements immediately after the native subscription status updates local state.
@@ -138,33 +138,33 @@ export default function SubscriptionFull() {
   };
 
   const freeFeatures = [
-    t("subscriptionFull.basicItemRecords","Basic item records"),
-    t("subscriptionFull.notesAndPhotos","Notes and photos"),
-    t("subscriptionFull.manualOrganization","Manual organization"),
+    t("subscriptionFull.basicItemRecords"),
+    t("subscriptionFull.notesAndPhotos"),
+    t("subscriptionFull.manualOrganization"),
   ];
 
   const tierDescriptions = {
-    free: t("subscriptionFull.freeTierDesc","Core cataloging for pipes and cellar items."),
-    premium: t("subscriptionFull.premiumTierDesc","Premium adds expanded insights, reports, and advanced organization tools for collectors who actively manage and grow their collections."),
-    pro: t("subscriptionFull.proTierDesc","Pro is designed for collectors who want deep analytics and optional AI-assisted tools for advanced organization and analysis."),
+    free: t("subscriptionFull.freeTierDesc"),
+    premium: t("subscriptionFull.premiumTierDesc"),
+    pro: t("subscriptionFull.proTierDesc"),
   };
 
   const tierTaglines = {
-    premium: t("subscriptionFull.premiumTagline","For active collectors"),
-    pro: t("subscriptionFull.proTagline","For advanced collectors"),
+    premium: t("subscriptionFull.premiumTagline"),
+    pro: t("subscriptionFull.proTagline"),
   };
 
   const tierFeatures = {
     premium: [
-      t("subscriptionFull.collectionInsights","Collection insights and summaries"),
-      t("subscriptionFull.reportsAndExports","Reports and exports"),
-      t("subscriptionFull.advancedOrgTools","Advanced organization tools"),
-      t("subscriptionFull.priorityAccess","Priority access to new features"),
+      t("subscriptionFull.collectionInsights"),
+      t("subscriptionFull.reportsAndExports"),
+      t("subscriptionFull.advancedOrgTools"),
+      t("subscriptionFull.priorityAccess"),
     ],
     pro: [
-      t("subscriptionFull.deepAnalytics","Deep collection analytics"),
-      t("subscriptionFull.aiAssistedTools","AI-assisted organization tools"),
-      t("subscriptionFull.powerUserFeatures","Power-user features"),
+      t("subscriptionFull.deepAnalytics"),
+      t("subscriptionFull.aiAssistedTools"),
+      t("subscriptionFull.powerUserFeatures"),
     ],
   };
 
@@ -185,11 +185,11 @@ export default function SubscriptionFull() {
       if (response.data?.url) {
         window.location.href = response.data.url;
       } else {
-        setMessage(t("subscriptionFull.checkoutError","Error starting checkout. Please try again."));
+        setMessage(t("subscriptionFull.checkoutError"));
       }
     } catch (e) {
       console.error("[SubscriptionFull] Checkout error:", e);
-      setMessage(t("subscriptionFull.checkoutError","Error starting checkout. Please try again."));
+      setMessage(t("subscriptionFull.checkoutError"));
     }
   };
 
@@ -206,10 +206,10 @@ export default function SubscriptionFull() {
       if (response.data?.url) {
         window.location.href = response.data.url;
       } else {
-        setMessage(t("subscriptionFull.manageError","Error: Could not open subscription management"));
+        setMessage(t("subscriptionFull.manageError"));
       }
     } catch (e) {
-      setMessage(t("subscriptionFull.manageError","Error: Could not open subscription management"));
+      setMessage(t("subscriptionFull.manageError"));
     }
   };
 
@@ -220,10 +220,10 @@ export default function SubscriptionFull() {
       await refetch();
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
       await queryClient.invalidateQueries({ queryKey: ["subscription"] });
-      setMessage(t("subscriptionFull.subUpdated","✅ Subscription updated"));
+      setMessage(t("subscriptionFull.subUpdated"));
       setTimeout(() => setMessage(""), 3000);
     } catch (e) {
-      setMessage(t("subscriptionFull.refreshError","Could not refresh. Please try again."));
+      setMessage(t("subscriptionFull.refreshError"));
     }
   };
 
@@ -231,29 +231,29 @@ export default function SubscriptionFull() {
     return (
       <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold text-[#e8d5b7]">{t("subscriptionFull.pipekeeperSubs","PipeKeeper Subscriptions")}</h1>
+          <h1 className="text-2xl font-semibold text-[#e8d5b7]">{t("subscriptionFull.pipekeeperSubs")}</h1>
           <Button variant="secondary" onClick={handleManage}>
-            {t("subscriptionFull.manage","Manage")}
+            {t("subscriptionFull.manage")}
           </Button>
         </div>
 
         <Card className="bg-black/40 border-white/10">
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.iosAppStore","iOS App Store")}</CardTitle>
+            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.iosAppStore")}</CardTitle>
           </CardHeader>
           <CardContent className="text-[#e8d5b7]/80">
-            <p className="mb-4">{t("subscriptionFull.handledThroughApple","Purchases and subscription management are handled through Apple.")}</p>
+            <p className="mb-4">{t("subscriptionFull.handledThroughApple")}</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <Button className="w-full" onClick={() => handleUpgrade("premium")}>
-                {t("subscriptionFull.upgradePremiumAppStore","Upgrade to Premium (App Store)")}
+                {t("subscriptionFull.upgradePremiumAppStore")}
               </Button>
               <Button className="w-full" onClick={() => handleUpgrade("pro")}>
-                {t("subscriptionFull.upgradeProAppStore","Upgrade to Pro (App Store)")}
+                {t("subscriptionFull.upgradeProAppStore")}
               </Button>
             </div>
             {subActive && (
               <div className="mt-4 text-emerald-500">
-                {t("subscriptionFull.statusActive","Status: Active ✅")}{subTier ? ` (${subTier})` : ""}
+                {t("subscriptionFull.statusActive")}{subTier ? ` (${subTier})` : ""}
               </div>
             )}
             {message && <div className="mt-4 text-red-500">{message}</div>}
@@ -267,18 +267,18 @@ export default function SubscriptionFull() {
     return (
       <div className="w-full max-w-3xl mx-auto p-4 space-y-6 text-center">
         <h1 className="text-2xl font-bold text-[#e8d5b7]">
-          {t("subscriptionFull.alreadySubscribed", "You're already subscribed")}
+          {t("subscriptionFull.alreadySubscribed")}
         </h1>
         <p className="text-[#e8d5b7]/70">
           {alreadyPro
-            ? t("subscriptionFull.currentlyOnPro", "You're currently on the Pro plan.")
-            : t("subscriptionFull.currentlyOnPremium", "You're currently on the Premium plan.")}
+            ? t("subscriptionFull.currentlyOnPro")
+            : t("subscriptionFull.currentlyOnPremium")}
         </p>
         <Button className="w-full max-w-xs mx-auto" onClick={handleManage}>
-          {t("subscriptionFull.manageSubscription", "Manage Subscription")}
+          {t("subscriptionFull.manageSubscription")}
         </Button>
         <Button variant="secondary" className="w-full max-w-xs mx-auto mt-2" onClick={handleManualRefresh}>
-          {t("subscriptionFull.refreshStatus", "Refresh status")}
+          {t("subscriptionFull.refreshStatus")}
         </Button>
         {message && (
           <div className={`text-center text-sm ${message.includes("✅") ? "text-emerald-500" : "text-red-500"}`}>
@@ -292,24 +292,24 @@ export default function SubscriptionFull() {
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">{t("subscriptionFull.continueWithPremium","Continue using Premium tools for your collection")}</h1>
-        <p className="text-[#e8d5b7]/70">{t("subscriptionFull.fullAccessPrompt","You've had full access — choose how you'd like to continue.")}</p>
+        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">{t("subscriptionFull.continueWithPremium")}</h1>
+        <p className="text-[#e8d5b7]/70">{t("subscriptionFull.fullAccessPrompt")}</p>
       </div>
 
       {/* Billing Interval Toggle */}
       <div className="flex gap-4 items-center">
-         <span className="text-[#e8d5b7]">{t("subscriptionFull.billing","Billing")}:</span>
+         <span className="text-[#e8d5b7]">{t("subscriptionFull.billing")}:</span>
          <Button
            variant={selectedInterval === "monthly" ? "default" : "outline"}
            onClick={() => setSelectedInterval("monthly")}
          >
-           {t("subscriptionFull.monthly","Monthly")}
+           {t("subscriptionFull.monthly")}
          </Button>
          <Button
            variant={selectedInterval === "annual" ? "default" : "outline"}
            onClick={() => setSelectedInterval("annual")}
          >
-           {t("subscriptionFull.annualSave","Annual")} ({t("subscriptionFull.save","Save")} {getDiscountPct(selectedTier, tierPrices)}%)
+           {t("subscriptionFull.annualSave")} ({t("subscriptionFull.save")} {getDiscountPct(selectedTier, tierPrices)}%)
          </Button>
        </div>
 
@@ -318,7 +318,7 @@ export default function SubscriptionFull() {
         {/* Free Tier */}
         <Card className="border-white/10">
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.free","Free")}</CardTitle>
+            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.free")}</CardTitle>
             <p className="text-sm text-[#e8d5b7]/70 mt-2">{tierDescriptions.free}</p>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -329,7 +329,7 @@ export default function SubscriptionFull() {
               </div>
             ))}
             <Button variant="outline" className="w-full mt-4" disabled>
-              {t("subscriptionFull.continueWithFree","Continue with Free")}
+              {t("subscriptionFull.continueWithFree")}
             </Button>
           </CardContent>
         </Card>
@@ -337,15 +337,15 @@ export default function SubscriptionFull() {
         {/* Premium Tier - Emphasized */}
         <Card className="border-[#A35C5C] bg-[#1A2B3A]/60 relative overflow-visible">
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#A35C5C] text-white px-3 py-1 rounded-full text-xs font-semibold">
-            {t("subscriptionFull.recommended","Recommended")}
+            {t("subscriptionFull.recommended")}
           </div>
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.premium","Premium")}</CardTitle>
+            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.premium")}</CardTitle>
             <p className="text-xs text-[#A35C5C] font-semibold">{tierTaglines.premium}</p>
             <p className="text-sm text-[#e8d5b7]/70 mt-2">{tierDescriptions.premium}</p>
             <div className="text-2xl font-bold text-[#A35C5C] mt-3">${tierPrices.premium[selectedInterval]}</div>
             <div className="text-sm text-[#e8d5b7]/60">
-              {t("subscriptionFull.per","per")} {selectedInterval === "monthly" ? t("subscriptionFull.month","month") : t("subscriptionFull.year","year")}
+              {t("subscriptionFull.per")} {selectedInterval === "monthly" ? t("subscriptionFull.month") : t("subscriptionFull.year")}
             </div>
             {selectedInterval === "annual" && (
               <p className="text-xs text-emerald-500 mt-1">{t("subscription.annualSavings")}</p>
@@ -362,7 +362,7 @@ export default function SubscriptionFull() {
               className="w-full mt-4"
               onClick={() => handleUpgrade("premium", selectedInterval)}
             >
-              {t("subscriptionFull.continueWithPremiumBtn","Continue with Premium")}
+              {t("subscriptionFull.continueWithPremiumBtn")}
             </Button>
           </CardContent>
         </Card>
@@ -370,12 +370,12 @@ export default function SubscriptionFull() {
         {/* Pro Tier */}
         <Card className="border-white/10">
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.pro","Pro")}</CardTitle>
+            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.pro")}</CardTitle>
             <p className="text-xs text-[#A35C5C] font-semibold">{tierTaglines.pro}</p>
             <p className="text-sm text-[#e8d5b7]/70 mt-2">{tierDescriptions.pro}</p>
             <div className="text-2xl font-bold text-[#A35C5C] mt-3">${tierPrices.pro[selectedInterval]}</div>
             <div className="text-sm text-[#e8d5b7]/60">
-              {t("subscriptionFull.per","per")} {selectedInterval === "monthly" ? t("subscriptionFull.month","month") : t("subscriptionFull.year","year")}
+              {t("subscriptionFull.per")} {selectedInterval === "monthly" ? t("subscriptionFull.month") : t("subscriptionFull.year")}
             </div>
             {selectedInterval === "annual" && (
               <p className="text-xs text-emerald-500 mt-1">{t("subscription.annualSavings")}</p>
@@ -393,7 +393,7 @@ export default function SubscriptionFull() {
               className="w-full mt-4"
               onClick={() => handleUpgrade("pro", selectedInterval)}
             >
-              {t("subscriptionFull.upgradeToPro","Upgrade to Pro")}
+              {t("subscriptionFull.upgradeToPro")}
             </Button>
           </CardContent>
         </Card>
@@ -401,18 +401,18 @@ export default function SubscriptionFull() {
 
       {/* Reassurance Copy */}
       <div className="text-center space-y-2 text-sm text-[#e8d5b7]/60">
-         <p>{t("subscriptionFull.cancelAnytime","• Cancel anytime")}</p>
-         {!isIOSApp && <p>{t("subscriptionFull.managedThroughStripe","• Subscription managed through Stripe")}</p>}
-         <p>{t("subscriptionFull.dataUnaffected","• Your existing data is never affected")}</p>
+         <p>{t("subscriptionFull.cancelAnytime")}</p>
+         {!isIOSApp && <p>{t("subscriptionFull.managedThroughStripe")}</p>}
+         <p>{t("subscriptionFull.dataUnaffected")}</p>
        </div>
 
        {/* Manage Subscription */}
        <div className="space-y-3">
          <Button variant="outline" className="w-full" onClick={handleManage}>
-           {t("subscriptionFull.manageSubscription","Manage Subscription")}
+           {t("subscriptionFull.manageSubscription")}
          </Button>
          <Button variant="secondary" className="w-full" onClick={() => setShowBackupModal(true)}>
-           {t("subscriptionFull.manualBackupCheckout","Manual Backup Checkout")}
+           {t("subscriptionFull.manualBackupCheckout")}
          </Button>
        </div>
 

@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Upload, X, Loader2, Camera, Plus, Search, Check, Edit, Library } from "lucide-react";
+import { Upload, X, Loader2, Camera, Plus, Search, Check, Edit, Library, Bot } from "lucide-react";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLogoLibrary";
@@ -66,7 +67,8 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
     notes: '',
     photo: '',
     logo: '',
-    is_favorite: false
+    is_favorite: false,
+    ai_excluded: false
   });
   const [uploading, setUploading] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -601,7 +603,7 @@ Return complete and accurate information based on the blend name or description 
       {/* Basic Info */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.basicInfo", "Basic Info")}</CardTitle>
+          <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.basicInfo")}</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWithInfo 
@@ -640,7 +642,7 @@ Return complete and accurate information based on the blend name or description 
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {BLEND_TYPES.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                {BLEND_TYPES.map(type => <SelectItem key={type} value={type}>{t(`blendTypes.${type}`, type)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -653,7 +655,7 @@ Return complete and accurate information based on the blend name or description 
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {CUTS.map(cut => <SelectItem key={cut} value={cut}>{cut}</SelectItem>)}
+                {CUTS.map(cut => <SelectItem key={cut} value={cut}>{t(`cuts.${cut}`, cut)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -666,7 +668,7 @@ Return complete and accurate information based on the blend name or description 
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{strength}</SelectItem>)}
+                {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{t(`strengths.${strength}`, strength)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -679,7 +681,7 @@ Return complete and accurate information based on the blend name or description 
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {ROOM_NOTES.map(note => <SelectItem key={note} value={note}>{note}</SelectItem>)}
+                {ROOM_NOTES.map(note => <SelectItem key={note} value={note}>{t(`roomNotes.${note}`, note)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -737,7 +739,7 @@ Return complete and accurate information based on the blend name or description 
                 }`}
                 onClick={() => toggleFlavorNote(note)}
               >
-                {note}
+                {t(`flavorNotes.${note}`, note)}
               </Badge>
             ))}
           </div>
@@ -753,9 +755,9 @@ Return complete and accurate information based on the blend name or description 
         <CardContent className="space-y-6">
           <Tabs defaultValue="tins" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="tins">{t("tobaccoExtended.tins", "Tins")}</TabsTrigger>
-              <TabsTrigger value="bulk">{t("tobaccoExtended.bulk", "Bulk")}</TabsTrigger>
-              <TabsTrigger value="pouches">{t("tobaccoExtended.pouches", "Pouches")}</TabsTrigger>
+              <TabsTrigger value="tins">{t("tobaccoExtended.tins")}</TabsTrigger>
+              <TabsTrigger value="bulk">{t("tobaccoExtended.bulk")}</TabsTrigger>
+              <TabsTrigger value="pouches">{t("tobaccoExtended.pouches")}</TabsTrigger>
             </TabsList>
 
             {/* Tins Tab */}
@@ -1015,7 +1017,7 @@ Return complete and accurate information based on the blend name or description 
                   <SelectValue placeholder={t("common.selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {PRODUCTION_STATUS.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}
+                  {PRODUCTION_STATUS.map(status => <SelectItem key={status} value={status}>{t(`productionStatuses.${status}`, status)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -1026,7 +1028,7 @@ Return complete and accurate information based on the blend name or description 
                   <SelectValue placeholder={t("common.selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {AGING_POTENTIAL.map(potential => <SelectItem key={potential} value={potential}>{potential}</SelectItem>)}
+                  {AGING_POTENTIAL.map(potential => <SelectItem key={potential} value={potential}>{t(`agingPotentials.${potential}`, potential)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -1082,6 +1084,26 @@ Return complete and accurate information based on the blend name or description 
         </CardContent>
       </Card>
 
+      {/* Collector Settings */}
+      <Card className="border-stone-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-[#E0D8C8] flex items-center gap-2">
+            <Bot className="w-5 h-5 flex-shrink-0" />
+            {t("formsExtended.collectorSettings")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Switch
+              checked={!formData.ai_excluded}
+              onCheckedChange={(v) => handleChange('ai_excluded', !v)}
+            />
+            <Label className="break-words">{t("formsExtended.includeInAI")}</Label>
+            <InfoTooltip text={t("formsExtended.includeInAITooltip")} />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Actions */}
       <div className="flex gap-3 justify-end pt-2">
         <Button type="button" variant="outline" onClick={onCancel} className="text-stone-800">
@@ -1093,7 +1115,7 @@ Return complete and accurate information based on the blend name or description 
           className="bg-amber-700 hover:bg-amber-800"
         >
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-          {blend ? t("tobaccoExtended.updateBlend", "Update Blend") : t("tobaccoExtended.addBlend", "Add Blend")}
+          {blend ? t("tobaccoExtended.updateBlend") : t("tobaccoExtended.addBlend")}
         </Button>
       </div>
     </form>

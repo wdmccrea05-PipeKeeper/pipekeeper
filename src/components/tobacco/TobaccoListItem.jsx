@@ -1,5 +1,5 @@
 import React from 'react';
-import { PKCard } from "@/components/ui/pk-surface";
+import { HeritageCard } from "@/components/ui/HeritageCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Star, Package } from "lucide-react";
@@ -36,14 +36,18 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
     : "";
   
   return (
-    <PKCard 
+    <HeritageCard 
       className="overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300"
       onClick={onClick}
+      withTexture={false}
     >
       <div className="p-4">
         <div className="flex items-center gap-4">
           {/* Photo */}
-          <div className="relative w-24 h-24 rounded-lg bg-[#1A2B3A] border border-white/10 overflow-hidden shrink-0">
+          <div className="relative w-24 h-24 rounded-lg border overflow-hidden shrink-0" style={{
+            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.5), rgba(35, 24, 16, 0.7))",
+            borderColor: "rgba(120, 90, 65, 0.2)"
+          }}>
             {blend.logo || blend.photo ? (
               <img 
                 src={blend.logo || blend.photo} 
@@ -55,7 +59,9 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
                 }}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center p-2 bg-[#1A2B3A]">
+              <div className="w-full h-full flex items-center justify-center p-2" style={{
+                background: "linear-gradient(135deg, rgba(42, 30, 20, 0.5), rgba(35, 24, 16, 0.7))"
+              }}>
                <img 
                   src={getTobaccoLogo(blend.manufacturer)} 
                   alt={blend.manufacturer || 'Tobacco'}
@@ -71,7 +77,7 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 bg-[rgba(58,40,29,0.95)] hover:bg-[rgba(78,54,37,0.98)] border border-[rgba(154,118,76,0.2)] text-[#F3E8D4] shadow-md"
+                className="h-7 w-7 bg-white/90 hover:bg-white shadow-md"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -113,17 +119,17 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
               )}
               {blend.blend_type && (
                 <Badge variant="secondary" className={`${colorClass} text-xs`}>
-                  {blend.blend_type}
+                  {t(`blendTypes.${blend.blend_type}`, blend.blend_type)}
                 </Badge>
               )}
               {blend.strength && (
                <Badge variant="secondary" className="bg-slate-700 text-slate-100 border-slate-600/50 text-xs">
-                 {blend.strength}
+                 {t(`strengths.${blend.strength}`, blend.strength)}
                </Badge>
               )}
               {blend.cut && (
                <Badge variant="secondary" className="bg-amber-700 text-amber-100 border-amber-600/50 text-xs hidden sm:inline-flex">
-                 {blend.cut}
+                 {t(`cuts.${blend.cut}`, blend.cut)}
                </Badge>
               )}
               {(blend.tin_total_quantity_oz || 0) > 0 && (
@@ -151,6 +157,6 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
           </div>
         </div>
       </div>
-    </PKCard>
+    </HeritageCard>
   );
 }

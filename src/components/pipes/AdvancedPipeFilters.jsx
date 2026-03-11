@@ -31,7 +31,7 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
         <div className="flex items-center justify-between">
           <CardTitle className="text-stone-800 flex items-center gap-2">
             <Filter className="w-5 h-5 text-amber-600" />
-            {t("pipes.advancedFilters", "Advanced Filters")}
+            {t("pipes.advancedFilters")}
             {activeFilterCount > 0 && (
               <Badge className="bg-amber-600 text-white">
                 {activeFilterCount}
@@ -46,7 +46,7 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
               className="text-stone-600 hover:text-stone-800"
             >
               <X className="w-4 h-4 mr-1" />
-              {t("common.clearAll", "Clear All")}
+              {t("common.clearAll")}
             </Button>
           )}
         </div>
@@ -54,16 +54,16 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>{t("pipes.shape", "Shape")}</Label>
+            <Label>{t("pipes.shape")}</Label>
             <Select 
               value={filters.shape || "__ALL__"}
               onValueChange={(value) => onFilterChange('shape', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("pipes.allShapes", "All Shapes")} />
+                <SelectValue placeholder={t("pipes.allShapes")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("pipes.allShapes", "All Shapes")}</SelectItem>
+                <SelectItem value="__ALL__">{t("pipes.allShapes")}</SelectItem>
                 {SHAPES.map(shape => (
                   <SelectItem key={shape} value={shape}>{shape}</SelectItem>
                 ))}
@@ -72,16 +72,16 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
           </div>
 
           <div className="space-y-2">
-            <Label>{t("pipes.bowlMaterial", "Bowl Material")}</Label>
+            <Label>{t("pipes.bowlMaterial")}</Label>
             <Select 
               value={filters.bowl_material || "__ALL__"}
               onValueChange={(value) => onFilterChange('bowl_material', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("pipes.allMaterials", "All Materials")} />
+                <SelectValue placeholder={t("pipes.allMaterials")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("pipes.allMaterials", "All Materials")}</SelectItem>
+                <SelectItem value="__ALL__">{t("pipes.allMaterials")}</SelectItem>
                 {MATERIALS.map(material => (
                   <SelectItem key={material} value={material}>{material}</SelectItem>
                 ))}
@@ -90,16 +90,16 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
           </div>
 
           <div className="space-y-2">
-            <Label>{t("pipes.finish", "Finish")}</Label>
+            <Label>{t("pipes.finish")}</Label>
             <Select 
               value={filters.finish || "__ALL__"}
               onValueChange={(value) => onFilterChange('finish', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("pipes.allFinishes", "All Finishes")} />
+                <SelectValue placeholder={t("pipes.allFinishes")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("pipes.allFinishes", "All Finishes")}</SelectItem>
+                <SelectItem value="__ALL__">{t("pipes.allFinishes")}</SelectItem>
                 {FINISHES.map(finish => (
                   <SelectItem key={finish} value={finish}>{finish}</SelectItem>
                 ))}
@@ -108,16 +108,16 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
           </div>
 
           <div className="space-y-2">
-            <Label>{t("pipes.condition", "Condition")}</Label>
+            <Label>{t("pipes.condition")}</Label>
             <Select 
               value={filters.condition || "__ALL__"}
               onValueChange={(value) => onFilterChange('condition', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("pipes.allConditions", "All Conditions")} />
+                <SelectValue placeholder={t("pipes.allConditions")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("pipes.allConditions", "All Conditions")}</SelectItem>
+                <SelectItem value="__ALL__">{t("pipes.allConditions")}</SelectItem>
                 {CONDITIONS.map(condition => (
                   <SelectItem key={condition} value={condition}>{condition}</SelectItem>
                 ))}
@@ -126,16 +126,16 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
           </div>
 
           <div className="space-y-2">
-            <Label>{t("pipes.chamberVolume", "Chamber Volume")}</Label>
+            <Label>{t("pipes.chamberVolume")}</Label>
             <Select 
               value={filters.chamber_volume || "__ALL__"}
               onValueChange={(value) => onFilterChange('chamber_volume', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("pipes.allSizes", "All Sizes")} />
+                <SelectValue placeholder={t("pipes.allSizes")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("pipes.allSizes", "All Sizes")}</SelectItem>
+                <SelectItem value="__ALL__">{t("pipes.allSizes")}</SelectItem>
                 {CHAMBER_VOLUMES.map(volume => (
                   <SelectItem key={volume} value={volume}>{volume}</SelectItem>
                 ))}
@@ -144,16 +144,16 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
           </div>
 
           <div className="space-y-2">
-            <Label>{t("pipes.bend", "Bend")}</Label>
+            <Label>{t("pipes.bend")}</Label>
             <Select 
               value={filters.bend || "__ALL__"}
               onValueChange={(value) => onFilterChange('bend', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("pipes.allBends", "All Bends")} />
+                <SelectValue placeholder={t("pipes.allBends")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("pipes.allBends", "All Bends")}</SelectItem>
+                <SelectItem value="__ALL__">{t("pipes.allBends")}</SelectItem>
                 {BENDS.map(bend => (
                   <SelectItem key={bend} value={bend}>{bend}</SelectItem>
                 ))}
@@ -162,16 +162,16 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
           </div>
 
           <div className="space-y-2">
-            <Label>{t("pipes.sizeClass", "Size Class")}</Label>
+            <Label>{t("pipes.sizeClass")}</Label>
             <Select 
               value={filters.sizeClass || "__ALL__"}
               onValueChange={(value) => onFilterChange('sizeClass', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("pipes.allSizes", "All Sizes")} />
+                <SelectValue placeholder={t("pipes.allSizes")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("pipes.allSizes", "All Sizes")}</SelectItem>
+                <SelectItem value="__ALL__">{t("pipes.allSizes")}</SelectItem>
                 {SIZE_CLASSES.map(size => (
                   <SelectItem key={size} value={size}>{size}</SelectItem>
                 ))}
@@ -180,25 +180,25 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
           </div>
 
           <div className="space-y-2">
-            <Label>{t("pipes.countryOfOrigin", "Country of Origin")}</Label>
+            <Label>{t("pipes.countryOfOrigin")}</Label>
             <Select 
               value={filters.country_of_origin || "__ALL__"}
               onValueChange={(value) => onFilterChange('country_of_origin', value === "__ALL__" ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("pipes.allCountries", "All Countries")} />
+                <SelectValue placeholder={t("pipes.allCountries")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__ALL__">{t("pipes.allCountries", "All Countries")}</SelectItem>
-                <SelectItem value="Italy">Italy</SelectItem>
-                <SelectItem value="Denmark">Denmark</SelectItem>
-                <SelectItem value="England">England</SelectItem>
-                <SelectItem value="United States">United States</SelectItem>
-                <SelectItem value="France">France</SelectItem>
-                <SelectItem value="Germany">Germany</SelectItem>
-                <SelectItem value="Ireland">Ireland</SelectItem>
-                <SelectItem value="Japan">Japan</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
+                <SelectItem value="__ALL__">{t("pipes.allCountries")}</SelectItem>
+                <SelectItem value="Italy">{t("countries.italy")}</SelectItem>
+                <SelectItem value="Denmark">{t("countries.denmark")}</SelectItem>
+                <SelectItem value="England">{t("countries.england")}</SelectItem>
+                <SelectItem value="United States">{t("countries.unitedStates")}</SelectItem>
+                <SelectItem value="France">{t("countries.france")}</SelectItem>
+                <SelectItem value="Germany">{t("countries.germany")}</SelectItem>
+                <SelectItem value="Ireland">{t("countries.ireland")}</SelectItem>
+                <SelectItem value="Japan">{t("countries.japan")}</SelectItem>
+                <SelectItem value="Other">{t("common.other")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -207,7 +207,7 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
         <div className="space-y-3 pt-2">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>{t("pipes.length", "Length (mm)")}</Label>
+              <Label>{t("pipes.length")}</Label>
               <span className="text-xs text-stone-600">
                 {filters.length_mm?.min || 0}mm - {filters.length_mm?.max || 250}mm
               </span>
@@ -224,7 +224,7 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>{t("pipes.weight", "Weight (grams)")}</Label>
+              <Label>{t("pipes.weight")}</Label>
               <span className="text-xs text-stone-600">
                 {filters.weight_grams?.min || 0}g - {filters.weight_grams?.max || 150}g
               </span>
@@ -241,7 +241,7 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>{t("pipes.estimatedValue", "Estimated Value ($)")}</Label>
+              <Label>{t("pipes.estimatedValue")}</Label>
               <span className="text-xs text-stone-600">
                 ${filters.estimated_value?.min || 0} - ${filters.estimated_value?.max || 1000}
               </span>

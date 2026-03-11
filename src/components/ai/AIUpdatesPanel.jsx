@@ -157,7 +157,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
         pipe_name: pipes.find((p) => String(p.id) === String(c.pipe_id))?.name || "Unknown",
         current_focus: c.before_focus || [],
         recommended_focus: c.after_focus || [],
-        score_improvement: `Priority #${i + 1} change`,
+        score_improvement: t("optimizer.priorityChange", { num: i + 1 }),
         reasoning: c.rationale || "",
       }));
 
@@ -167,7 +167,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
         gap_filled: rec,
         chamber_specs: rec,
         budget_range: "Varies",
-        score_improvement: "Expected improvement",
+        score_improvement: t("optimizer.expectedImprovementGeneral"),
       }));
 
       if (activeOpt?.id) {
@@ -539,11 +539,11 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           <Ruler className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.analyzePipeGeometry", {defaultValue: "Analyze Pipe Geometry"})}</h3>
-              <InfoTooltip text={t("tobacconist.analyzePipeGeometryTooltip", {defaultValue: "Use AI to identify shape, bowl style, and shank characteristics from photos"})} className="text-[#1a2c42]/70" />
+              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.analyzePipeGeometry")}</h3>
+              <InfoTooltip text={t("tobacconist.analyzePipeGeometryTooltip")} className="text-[#1a2c42]/70" />
             </div>
             <p className="text-sm text-[#1a2c42] mt-1">
-              {t("tobacconist.classifyGeometryFromPhotos", {defaultValue: "Classify geometry from photos"})}
+              {t("tobacconist.classifyGeometryFromPhotos")}
             </p>
           </div>
         </div>
@@ -593,11 +593,11 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.breakInSchedules", {defaultValue: "Break-In Schedules"})}</h3>
-              <InfoTooltip text={t("tobacconist.breakInSchedulesTooltip", {defaultValue: "Progressive tobacco recommendations to break in new pipes properly"})} className="text-[#1a2c42]/70" />
+              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.breakInSchedules")}</h3>
+              <InfoTooltip text={t("tobacconist.breakInSchedulesTooltip")} className="text-[#1a2c42]/70" />
             </div>
             <p className="text-sm text-[#1a2c42] mt-1">
-              {t("tobacconist.breakInSchedulesDesc", {defaultValue: "Personalized break-in recommendations generated per pipe"})}
+              {t("tobacconist.breakInSchedulesDesc")}
             </p>
           </div>
         </div>

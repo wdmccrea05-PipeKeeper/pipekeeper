@@ -22,6 +22,7 @@ import { SafeText, SafeLabel } from "@/components/ui/SafeText";
 function CommunityPageInner() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('discover');
+  const [profile, setProfile] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSearchQuery, setActiveSearchQuery] = useState('');
   const [locationFilters, setLocationFilters] = useState({
@@ -45,12 +46,20 @@ function CommunityPageInner() {
     queryKey: ['user-profile', user?.id, user?.email],
     queryFn: async () => {
       const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
-      return profiles[0] || null;
+      const foundProfile = profiles[0] || null;
+      setProfile(foundProfile);
+      return foundProfile;
     },
     enabled: !!user?.email,
     staleTime: 10_000,
     gcTime: 60_000,
   });
+
+  useEffect(() => {
+    if (userProfile) {
+      setProfile(userProfile);
+    }
+  }, [userProfile]);
 
   const blocked = Array.isArray(userProfile?.blocked_users) ? userProfile.blocked_users : [];
 
@@ -215,7 +224,7 @@ function CommunityPageInner() {
 
   if (!hasPaid) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+      <div className="min-h-screen">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <UpgradePrompt
             featureName={t("communityExtended.communityFeatures")}
@@ -227,16 +236,34 @@ function CommunityPageInner() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+    <div className="min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">{t("nav.community")}</h1>
-          <p className="text-[#e8d5b7]/70">{t("communityExtended.connectEnthusiasts")}</p>
+          <h1 
+            className="text-3xl font-bold mb-2" 
+            style={{ 
+              color: "#F5F1E7",
+              fontFamily: "'Georgia', serif",
+              textShadow: "0 2px 4px rgba(0,0,0,0.6)"
+            }}
+          >
+            {t("nav.community")}
+          </h1>
+          <p className="text-base" style={{ color: "rgba(224, 216, 200, 0.75)" }}>
+            {t("communityExtended.connectEnthusiasts")}
+          </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="bg-[#223447]/60 border border-[#E0D8C8]/15 inline-flex min-w-full sm:w-auto">
+            <TabsList 
+              className="inline-flex min-w-full sm:w-auto"
+              style={{
+                background: "linear-gradient(145deg, rgba(52, 37, 24, 0.75), rgba(42, 30, 20, 0.88))",
+                border: "1px solid rgba(120, 90, 65, 0.32)",
+                boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.1)"
+              }}
+            >
               <TabsTrigger value="discover" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
                 <Search className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="hidden sm:inline ml-2">{t("communityExtended.discover")}</span>
@@ -256,7 +283,7 @@ function CommunityPageInner() {
               </TabsTrigger>
               <TabsTrigger value="inbox" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4 relative">
                 <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline ml-2">{t("communityExtended.inbox", "Inbox")}</span>
+                <span className="hidden sm:inline ml-2">{t("communityExtended.inbox")}</span>
                 {unreadInboxCount > 0 && (
                   <Badge className="absolute -top-1 -right-0 sm:relative sm:top-0 sm:right-0 sm:ml-1 bg-rose-600 text-white text-[10px] sm:text-xs px-1 sm:px-1.5 py-0 min-w-[14px] sm:min-w-[16px]">
                     {unreadInboxCount}
@@ -280,25 +307,55 @@ function CommunityPageInner() {
 
           <TabsContent value="discover" className="space-y-6">
             {!profileLoading && !profileFetching && !userProfile?.is_public && (
-              <Card className="bg-[#1E2F43] border-[#E0D8C8]/15">
-                <CardContent className="p-4">
-                  <p className="text-sm text-[#E0D8C8]/70 mb-2">
+              <div 
+                className="rounded-lg p-5"
+                style={{
+                  background: "linear-gradient(145deg, rgba(180, 140, 75, 0.12), rgba(160, 120, 65, 0.18))",
+                  border: "1px solid rgba(180, 140, 75, 0.3)",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.3)"
+                }}
+              >
+                <div>
+                  <p className="text-sm mb-3" style={{ color: "rgba(224, 216, 200, 0.9)" }}>
                     <strong>{t("communityExtended.profilePrivate")}</strong> {t("communityExtended.profilePrivateDesc")}
                   </p>
                   <a href={createPageUrl('Profile')}>
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      style={{
+                        background: "rgba(60, 42, 28, 0.4)",
+                        borderColor: "rgba(180, 140, 75, 0.4)",
+                        color: "#F5F1E7"
+                      }}
+                    >
                       {t("communityExtended.updateSettings")}
                     </Button>
                   </a>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
-            <Card className="bg-[#223447] border-[#E0D8C8]/15">
-              <CardHeader>
-                <CardTitle className="text-[#E0D8C8]">{t("communityExtended.findUsers")}</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <div
+              className="rounded-lg overflow-hidden"
+              style={{
+                background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                border: "1px solid rgba(120, 90, 65, 0.32)",
+                boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)",
+              }}
+            >
+              <div 
+                className="px-6 py-5 border-b"
+                style={{
+                  borderBottomColor: "rgba(120, 90, 65, 0.25)",
+                  background: "linear-gradient(to bottom, rgba(60, 42, 28, 0.35), transparent)"
+                }}
+              >
+                <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
+                  {t("communityExtended.findUsers")}
+                </h2>
+              </div>
+              <div className="p-6">
                 <div className="space-y-4 mb-6">
                   <div className="flex gap-2">
                     <div className="relative flex-1">
@@ -322,10 +379,19 @@ function CommunityPageInner() {
                     </Button>
                   </div>
 
-                  <div className="space-y-3 p-4 bg-[#1E2F43] rounded-lg border border-[#E0D8C8]/15">
+                  <div 
+                   className="space-y-3 p-5 rounded-lg"
+                   style={{
+                     background: "rgba(35, 24, 16, 0.6)",
+                     border: "1px solid rgba(120, 90, 65, 0.25)",
+                     boxShadow: "inset 0 1px 2px rgba(0,0,0,0.2)"
+                   }}
+                  >
                     <div className="flex items-center gap-2 mb-2">
-                      <MapPin className="w-4 h-4 text-[#E0D8C8]/70" />
-                      <h4 className="font-semibold text-[#E0D8C8] text-sm">{t("communityExtended.searchByLocation")}</h4>
+                      <MapPin className="w-3.5 h-3.5" style={{ color: "rgba(180, 140, 75, 0.8)" }} />
+                      <h4 className="font-semibold text-sm" style={{ color: "#F5F1E7" }}>
+                        {t("communityExtended.searchByLocation")}
+                      </h4>
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -341,26 +407,26 @@ function CommunityPageInner() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__ALL__">{t("communityExtended.allCountries")}</SelectItem>
-                          <SelectItem value="United States">{t("countries.unitedStates","United States")}</SelectItem>
-                          <SelectItem value="Canada">{t("countries.canada","Canada")}</SelectItem>
-                          <SelectItem value="United Kingdom">{t("countries.unitedKingdom","United Kingdom")}</SelectItem>
-                          <SelectItem value="Ireland">{t("countries.ireland","Ireland")}</SelectItem>
-                          <SelectItem value="Australia">{t("countries.australia","Australia")}</SelectItem>
-                          <SelectItem value="New Zealand">{t("countries.newZealand","New Zealand")}</SelectItem>
-                          <SelectItem value="Germany">{t("countries.germany","Germany")}</SelectItem>
-                          <SelectItem value="France">{t("countries.france","France")}</SelectItem>
-                          <SelectItem value="Italy">{t("countries.italy","Italy")}</SelectItem>
-                          <SelectItem value="Spain">{t("countries.spain","Spain")}</SelectItem>
-                          <SelectItem value="Netherlands">{t("countries.netherlands","Netherlands")}</SelectItem>
-                          <SelectItem value="Belgium">{t("countries.belgium","Belgium")}</SelectItem>
-                          <SelectItem value="Switzerland">{t("countries.switzerland","Switzerland")}</SelectItem>
-                          <SelectItem value="Austria">{t("countries.austria","Austria")}</SelectItem>
-                          <SelectItem value="Denmark">{t("countries.denmark","Denmark")}</SelectItem>
-                          <SelectItem value="Sweden">{t("countries.sweden","Sweden")}</SelectItem>
-                          <SelectItem value="Norway">{t("countries.norway","Norway")}</SelectItem>
-                          <SelectItem value="Finland">{t("countries.finland","Finland")}</SelectItem>
-                          <SelectItem value="Japan">{t("countries.japan","Japan")}</SelectItem>
-                          <SelectItem value="South Korea">{t("countries.southKorea","South Korea")}</SelectItem>
+                          <SelectItem value="United States">{t("countries.unitedStates")}</SelectItem>
+                          <SelectItem value="Canada">{t("countries.canada")}</SelectItem>
+                          <SelectItem value="United Kingdom">{t("countries.unitedKingdom")}</SelectItem>
+                          <SelectItem value="Ireland">{t("countries.ireland")}</SelectItem>
+                          <SelectItem value="Australia">{t("countries.australia")}</SelectItem>
+                          <SelectItem value="New Zealand">{t("countries.newZealand")}</SelectItem>
+                          <SelectItem value="Germany">{t("countries.germany")}</SelectItem>
+                          <SelectItem value="France">{t("countries.france")}</SelectItem>
+                          <SelectItem value="Italy">{t("countries.italy")}</SelectItem>
+                          <SelectItem value="Spain">{t("countries.spain")}</SelectItem>
+                          <SelectItem value="Netherlands">{t("countries.netherlands")}</SelectItem>
+                          <SelectItem value="Belgium">{t("countries.belgium")}</SelectItem>
+                          <SelectItem value="Switzerland">{t("countries.switzerland")}</SelectItem>
+                          <SelectItem value="Austria">{t("countries.austria")}</SelectItem>
+                          <SelectItem value="Denmark">{t("countries.denmark")}</SelectItem>
+                          <SelectItem value="Sweden">{t("countries.sweden")}</SelectItem>
+                          <SelectItem value="Norway">{t("countries.norway")}</SelectItem>
+                          <SelectItem value="Finland">{t("countries.finland")}</SelectItem>
+                          <SelectItem value="Japan">{t("countries.japan")}</SelectItem>
+                          <SelectItem value="South Korea">{t("countries.southKorea")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <Input
@@ -403,8 +469,8 @@ function CommunityPageInner() {
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Search Results Sheet */}
             <Sheet open={showResults} onOpenChange={setShowResults}>
@@ -431,7 +497,15 @@ function CommunityPageInner() {
                 </SheetHeader>
                 <div className="space-y-2 mt-6">
                   {publicProfiles.filter(p => p.user_email !== user?.email).map((profile) => (
-                    <div key={profile.id} className="p-4 bg-[#223447] border border-[#E0D8C8]/15 rounded-lg hover:border-[#A35C5C]/50 transition-colors">
+                    <div 
+                     key={profile.id} 
+                     className="p-5 rounded-lg transition-all duration-200 hover:-translate-y-0.5"
+                     style={{
+                       background: "linear-gradient(145deg, rgba(48, 34, 22, 0.65), rgba(38, 26, 18, 0.78))",
+                       border: "1px solid rgba(120, 90, 65, 0.28)",
+                       boxShadow: "0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180,140,100,0.08)"
+                     }}
+                    >
                       <div className="flex items-center gap-4">
                         <Avatar className="w-12 h-12 flex-shrink-0">
                           <AvatarImage src={profile.avatar_url} />
@@ -522,18 +596,18 @@ function CommunityPageInner() {
                   {t("common.loading")}
                 </CardContent>
               </Card>
-            ) : !userProfile?.enable_messaging ? (
+            ) : !profile?.enable_messaging ? (
               <Card className="bg-[#1E2F43] border-amber-500/30">
                 <CardContent className="p-4 flex items-start gap-3">
                   <Mail className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm text-[#E0D8C8]/80 font-medium">{t("messaging.messagingDisabled")}</p>
-                    <p className="text-xs text-[#E0D8C8]/60 mt-1">{t("messaging.messagingDisabledDesc")}</p>
+                    <p className="text-sm text-[#E0D8C8]/80 font-medium">Messaging disabled</p>
+                    <p className="text-xs text-[#E0D8C8]/60 mt-1">Enable messaging in your profile settings.</p>
                   </div>
                   <a href={createPageUrl('Profile')}>
                     <Button size="sm">
                       <Settings className="w-4 h-4 mr-2" />
-                      {t("messaging.goToSettings")}
+                      Go to settings
                     </Button>
                   </a>
                 </CardContent>
@@ -557,27 +631,57 @@ function CommunityPageInner() {
 
           <TabsContent value="friends" className="space-y-6">
             {acceptedFriends.length === 0 ? (
-              <Card className="bg-[#223447] border-[#E0D8C8]/15">
-                <CardContent className="py-12 text-center text-[#E0D8C8]/70">
-                  <UserCog className="w-12 h-12 mx-auto mb-4 opacity-30" />
+              <div 
+                className="rounded-lg"
+                style={{
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.7), rgba(42, 30, 20, 0.84))",
+                  border: "1px solid rgba(120, 90, 65, 0.28)",
+                  boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
+                }}
+              >
+                <div className="py-12 text-center" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
+                  <UserCog className="w-12 h-12 mx-auto mb-4 opacity-20" style={{ color: "rgba(180, 140, 75, 0.5)" }} />
                   <p>{t("communityExtended.noFriendsYet")}</p>
                   <p className="text-sm mt-2">{t("communityExtended.noFriendsYetDesc")}</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ) : (
-              <Card className="bg-[#223447] border-[#E0D8C8]/15">
-                <CardHeader>
-                  <CardTitle className="text-[#E0D8C8]">{t("communityExtended.yourFriends")}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
+              <div
+                className="rounded-lg overflow-hidden"
+                style={{
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                  border: "1px solid rgba(120, 90, 65, 0.32)",
+                  boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
+                }}
+              >
+                <div 
+                  className="px-6 py-5 border-b"
+                  style={{
+                    borderBottomColor: "rgba(120, 90, 65, 0.28)",
+                    background: "linear-gradient(to bottom, rgba(62, 44, 30, 0.4), transparent)"
+                  }}
+                >
+                  <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
+                    {t("communityExtended.yourFriends")}
+                  </h2>
+                </div>
+                <div className="p-6 space-y-3">
                   {acceptedFriends.map((friendship) => {
                     const friendEmail = friendship.requester_email === user?.email 
                       ? friendship.recipient_email 
                       : friendship.requester_email;
                     const profile = publicProfiles.find(p => p.user_email === friendEmail);
                     return (
-                      <Card key={friendship.id} className="bg-[#1E2F43] border-[#E0D8C8]/15">
-                        <CardContent className="p-4">
+                      <div 
+                        key={friendship.id}
+                        className="p-5 rounded-lg"
+                        style={{
+                         background: "linear-gradient(145deg, rgba(45, 32, 22, 0.65), rgba(35, 24, 16, 0.78))",
+                         border: "1px solid rgba(120, 90, 65, 0.25)",
+                         boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
+                        }}
+                        >
+                        <div>
                           <div className="flex items-center gap-3">
                             <Avatar className="w-12 h-12 flex-shrink-0">
                               <AvatarImage src={profile?.avatar_url} />
@@ -615,35 +719,65 @@ function CommunityPageInner() {
                               <span className="hidden sm:inline">{t("communityExtended.remove")}</span>
                             </Button>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     );
                   })}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </TabsContent>
 
           <TabsContent value="requests" className="space-y-6">
             {friendRequests.length === 0 ? (
-              <Card className="bg-[#223447] border-[#E0D8C8]/15">
-                <CardContent className="py-12 text-center text-[#E0D8C8]/70">
-                  <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
+              <div 
+                className="rounded-lg"
+                style={{
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.7), rgba(42, 30, 20, 0.84))",
+                  border: "1px solid rgba(120, 90, 65, 0.28)",
+                  boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
+                }}
+              >
+                <div className="py-12 text-center" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
+                  <Mail className="w-12 h-12 mx-auto mb-4 opacity-20" style={{ color: "rgba(180, 140, 75, 0.5)" }} />
                   <p>{t("communityExtended.noPendingRequests")}</p>
                   <p className="text-sm mt-2">{t("communityExtended.noPendingRequestsDesc")}</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ) : (
-              <Card className="bg-[#223447] border-[#E0D8C8]/15">
-                <CardHeader>
-                  <CardTitle className="text-[#E0D8C8]">{t("communityExtended.pendingFriendRequests")}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
+              <div
+                className="rounded-lg overflow-hidden"
+                style={{
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                  border: "1px solid rgba(120, 90, 65, 0.32)",
+                  boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
+                }}
+              >
+                <div 
+                  className="px-6 py-5 border-b"
+                  style={{
+                    borderBottomColor: "rgba(120, 90, 65, 0.28)",
+                    background: "linear-gradient(to bottom, rgba(62, 44, 30, 0.4), transparent)"
+                  }}
+                >
+                  <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
+                    {t("communityExtended.pendingFriendRequests")}
+                  </h2>
+                </div>
+                <div className="p-6 space-y-3">
                   {friendRequests.map((request) => {
                     const profile = publicProfiles.find(p => p.user_email === request.requester_email);
                     return (
-                      <Card key={request.id} className="bg-[#1E2F43] border-[#E0D8C8]/15">
-                        <CardContent className="p-4">
+                      <div 
+                        key={request.id}
+                        className="p-5 rounded-lg"
+                        style={{
+                         background: "linear-gradient(145deg, rgba(45, 32, 22, 0.65), rgba(35, 24, 16, 0.78))",
+                         border: "1px solid rgba(120, 90, 65, 0.25)",
+                         boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
+                        }}
+                        >
+                        <div>
                           <div className="flex items-center gap-3">
                             <Avatar className="w-12 h-12 flex-shrink-0">
                               <AvatarImage src={profile?.avatar_url} />
@@ -681,36 +815,51 @@ function CommunityPageInner() {
                               </Button>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     );
                   })}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </TabsContent>
 
           <TabsContent value="following" className="space-y-4">
             {connections.length === 0 ? (
-              <Card className="bg-[#223447] border-[#E0D8C8]/15">
-                <CardContent className="py-12 text-center text-[#E0D8C8]/70">
-                  <Users className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>{t("community.notFollowingYet","Not Following Anyone")}</p>
-                  <p className="text-sm mt-2">{t("community.notFollowingYetDesc","Discover and follow pipe enthusiasts in the community to see their collections")}</p>
+              <div 
+                className="rounded-lg"
+                style={{
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.7), rgba(42, 30, 20, 0.84))",
+                  border: "1px solid rgba(120, 90, 65, 0.28)",
+                  boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
+                }}
+              >
+                <div className="py-12 text-center" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
+                  <Users className="w-12 h-12 mx-auto mb-4 opacity-20" style={{ color: "rgba(180, 140, 75, 0.5)" }} />
+                  <p>{t("community.notFollowingYet")}</p>
+                  <p className="text-sm mt-2">{t("community.notFollowingYetDesc")}</p>
                   <a href={createPageUrl('Community')}>
                     <Button className="mt-4" onClick={() => setActiveTab('discover')}>
                       <Search className="w-4 h-4 mr-2" />
-                      {t("community.exploreCommunity","Explore Community")}
+                      {t("community.exploreCommunity")}
                     </Button>
                   </a>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ) : (
               connections.map((connection) => {
                 const profile = publicProfiles.find(p => p.user_email === connection.following_email);
                 return (
-                  <Card key={connection.id} className="bg-[#223447] border-[#E0D8C8]/15">
-                    <CardContent className="p-4">
+                  <div 
+                    key={connection.id}
+                    className="p-5 rounded-lg"
+                    style={{
+                      background: "linear-gradient(145deg, rgba(48, 34, 22, 0.68), rgba(38, 26, 18, 0.82))",
+                      border: "1px solid rgba(120, 90, 65, 0.28)",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180,140,100,0.08)"
+                    }}
+                  >
+                    <div>
                       <div className="flex items-center gap-3">
                         <Avatar className="w-12 h-12 flex-shrink-0">
                           <AvatarImage src={profile?.avatar_url} />
@@ -744,18 +893,33 @@ function CommunityPageInner() {
                           <span className="hidden sm:inline">{t("communityExtended.remove")}</span>
                         </Button>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 );
               })
             )}
           </TabsContent>
 
           <TabsContent value="myprofile">
-            <Card className="bg-[#223447] border-[#E0D8C8]/15">
-              <CardHeader>
+            <div
+              className="rounded-lg overflow-hidden"
+              style={{
+                background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                border: "1px solid rgba(120, 90, 65, 0.32)",
+                boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
+              }}
+            >
+              <div 
+                className="px-6 py-5 border-b"
+                style={{
+                  borderBottomColor: "rgba(120, 90, 65, 0.25)",
+                  background: "linear-gradient(to bottom, rgba(60, 42, 28, 0.35), transparent)"
+                }}
+              >
                 <div className="flex items-center justify-between">
-                <CardTitle className="text-[#E0D8C8]">{t("communityExtended.yourPublicProfile")}</CardTitle>
+                  <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
+                    {t("communityExtended.yourPublicProfile")}
+                  </h2>
                 {user?.email && (
                   <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}${userProfile?.is_public ? '' : '&preview=true'}`)}>
                     <Button variant="outline" size="sm">
@@ -765,26 +929,34 @@ function CommunityPageInner() {
                   </a>
                 )}
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              </div>
+              <div className="p-6 space-y-4">
                 {userProfile?.is_public ? (
                   <>
-                    <div className="p-4 bg-[#2EAF6F]/20 border border-[#2EAF6F]/30 rounded-lg">
-                      <p className="text-sm text-[#2EAF6F]">
+                    <div 
+                      className="p-4 rounded-lg"
+                      style={{
+                        background: "rgba(46, 175, 111, 0.15)",
+                        border: "1px solid rgba(46, 175, 111, 0.3)"
+                      }}
+                    >
+                      <p className="text-sm" style={{ color: "rgba(46, 175, 111, 1)" }}>
                         ✅ {t("communityExtended.profilePublic")}
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-semibold text-[#E0D8C8]">{t("communityExtended.profileSettings")}</h4>
-                      <p className="text-sm text-[#E0D8C8]/70">
+                      <h4 className="font-semibold" style={{ color: "#F5F1E7" }}>
+                        {t("communityExtended.profileSettings")}
+                      </h4>
+                      <p className="text-sm" style={{ color: "rgba(224, 216, 200, 0.8)" }}>
                         {t("communityExtended.displayName")}: <strong>{userProfile.display_name || t("communityExtended.notSet")}</strong>
                       </p>
                       {userProfile.bio && (
-                        <p className="text-sm text-[#E0D8C8]/70 break-words">
+                        <p className="text-sm break-words" style={{ color: "rgba(224, 216, 200, 0.8)" }}>
                           {t("communityExtended.bio")}: {userProfile.bio}
                         </p>
                       )}
-                      <p className="text-sm text-[#E0D8C8]/70">
+                      <p className="text-sm" style={{ color: "rgba(224, 216, 200, 0.8)" }}>
                         {t("communityExtended.commentsLabel")}: <strong>{userProfile.allow_comments ? t("community.commentsEnabled") : t("community.commentsDisabled")}</strong>
                       </p>
                     </div>
@@ -797,8 +969,14 @@ function CommunityPageInner() {
                   </>
                 ) : (
                   <>
-                    <div className="p-4 bg-[#1E2F43] border border-[#E0D8C8]/15 rounded-lg">
-                      <p className="text-sm text-[#E0D8C8]/70 mb-2">
+                    <div 
+                      className="p-4 rounded-lg"
+                      style={{
+                        background: "rgba(30, 20, 15, 0.6)",
+                        border: "1px solid rgba(120, 90, 65, 0.2)"
+                      }}
+                    >
+                      <p className="text-sm mb-2" style={{ color: "rgba(224, 216, 200, 0.8)" }}>
                         {t("communityExtended.profileCurrentlyPrivate")}
                       </p>
                     </div>
@@ -810,17 +988,32 @@ function CommunityPageInner() {
                     </a>
                   </>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="invite">
-            <Card className="bg-[#223447] border-[#E0D8C8]/15">
-              <CardHeader>
-                <CardTitle className="text-[#E0D8C8]">{t("communityExtended.inviteFriends")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-[#E0D8C8]/70 mb-4">
+            <div
+              className="rounded-lg overflow-hidden"
+              style={{
+                background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                border: "1px solid rgba(120, 90, 65, 0.32)",
+                boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
+              }}
+            >
+              <div 
+                className="px-6 py-5 border-b"
+                style={{
+                  borderBottomColor: "rgba(120, 90, 65, 0.25)",
+                  background: "linear-gradient(to bottom, rgba(60, 42, 28, 0.35), transparent)"
+                }}
+              >
+                <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
+                  {t("communityExtended.inviteFriends")}
+                </h2>
+              </div>
+              <div className="p-6">
+                <p className="mb-4" style={{ color: "rgba(224, 216, 200, 0.8)" }}>
                   {t("communityExtended.inviteFriendsDesc")}
                 </p>
                 <a href={createPageUrl('Invite')}>
@@ -829,8 +1022,8 @@ function CommunityPageInner() {
                     {t("communityExtended.sendInvitations")}
                   </Button>
                 </a>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
