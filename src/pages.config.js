@@ -54,6 +54,7 @@ import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
 import AgeGate from './pages/AgeGate';
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import Community from './pages/Community';
+import Curator from './pages/Curator';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
@@ -84,7 +85,6 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
-import Curator from './pages/Curator';
 import Home from './pages/Home';
 import Insights from './pages/Insights';
 import __Layout from './Layout.jsx';
@@ -98,6 +98,7 @@ export const PAGES = {
     "AgeGate": AgeGate,
     "BulkLogoUpload": BulkLogoUpload,
     "Community": Community,
+    "Curator": Curator,
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
@@ -128,7 +129,6 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
-    "Curator": Curator,
     "Home": Home,
     "Insights": Insights,
 }

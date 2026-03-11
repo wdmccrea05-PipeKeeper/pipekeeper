@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 import { PIPE_SILHOUETTE_URL } from "@/components/utils/collectionConstants";
+import { StatusCard, HeroCard, CATEGORY_COLORS } from "@/components/ui/HeroCard";
 
 const DEFAULT_INSIGHTS_TAB = "log";
 
@@ -181,101 +182,7 @@ function LeafSilhouette({ className, style }) {
   );
 }
 
-// ── Snapshot metric cards (top row) ───────────────────────────────────────────
-function SnapshotCard({ icon: Icon, label, value, accent = "#4A7C9C", sub, bgImage }) {
-  return (
-    <div
-      className="relative rounded-2xl overflow-hidden flex flex-col gap-3 p-4 min-h-[100px]"
-      style={{
-        background: `linear-gradient(145deg, #1a2535 0%, #111a25 62%, ${accent}28 100%)`,
-        border: `1px solid ${accent}50`,
-        boxShadow: `0 0 0 1px ${accent}20, 0 4px 24px -4px ${accent}38`,
-      }}
-    >
-      {/* Blurred real collection image layer */}
-      {bgImage && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `url(${bgImage})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            filter: "blur(14px) brightness(0.15) saturate(0.42)",
-            opacity: 0.90,
-            transform: "scale(1.1)",
-          }}
-        />
-      )}
-
-      {/* Gradient overlay — ensures readability over blurred image */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: bgImage
-            ? `linear-gradient(145deg, rgba(26,37,53,0.97) 0%, rgba(17,26,37,0.90) 55%, ${accent}28 100%)`
-            : `linear-gradient(145deg, transparent 0%, transparent 60%, ${accent}10 100%)`,
-        }}
-      />
-
-      {/* Grain texture overlay */}
-      <ArtifactTexture type="grain" accent={accent} uid={`snap-${accent.replace("#","")}`} />
-
-      {/* Top-right accent glow blob — more prominent */}
-      <div
-        className="absolute top-0 right-0 w-24 h-24 rounded-full pointer-events-none"
-        style={{
-          background: `radial-gradient(circle, ${accent}35 0%, transparent 70%)`,
-          transform: "translate(35%, -35%)",
-        }}
-      />
-
-      {/* Bottom-left ambient bloom */}
-      <div
-        className="absolute bottom-0 left-0 w-16 h-16 rounded-full pointer-events-none"
-        style={{
-          background: `radial-gradient(circle, ${accent}20 0%, transparent 70%)`,
-          transform: "translate(-25%, 25%)",
-        }}
-      />
-
-      <div className="relative flex items-center gap-2.5">
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-          style={{
-            background: `linear-gradient(135deg, ${accent}40 0%, ${accent}20 100%)`,
-            border: `1px solid ${accent}50`,
-            boxShadow: `0 0 14px ${accent}35, inset 0 1px 0 ${accent}30`,
-          }}
-        >
-          <Icon className="w-4 h-4" style={{ color: accent, filter: `drop-shadow(0 0 5px ${accent}cc)` }} />
-        </div>
-        <span className="text-[11px] text-[#E0D8C8]/55 uppercase tracking-[0.09em] font-semibold leading-tight">
-          {label}
-        </span>
-      </div>
-
-      <div className="relative">
-        <div
-          className="text-3xl font-bold leading-none tracking-tight"
-          style={{ color: "#F5F1E7", textShadow: `0 0 20px ${accent}40` }}
-        >
-          {value}
-        </div>
-        {sub && (
-          <div className="text-[11px] mt-1" style={{ color: `${accent}99` }}>
-            {sub}
-          </div>
-        )}
-      </div>
-
-      {/* Bottom accent line */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-[1px]"
-        style={{ background: `linear-gradient(90deg, transparent, ${accent}55, transparent)` }}
-      />
-    </div>
-  );
-}
+// Use StatusCard from HeroCard component for consistency
 
 // ── Highlight card (story card grid item) ─────────────────────────────────────
 // heroImage — sharp foreground spotlight (item cards only: Most Smoked, Favorite Blend, Most Valuable)
@@ -1130,45 +1037,45 @@ export default function Insights() {
 
       {/* ── COLLECTION SNAPSHOT CARDS ────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <SnapshotCard
+        <StatusCard
           icon={Flame}
           label={t("insights.snapshotSessions", { defaultValue: "Total Sessions" })}
           value={smokingLogs.length}
-          accent="#C87941"
+          accent={CATEGORY_COLORS.pipe}
           sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek", { defaultValue: "this week" })}`}
           bgImage={analyticsImages.snapshotSessions}
         />
-        <SnapshotCard
+        <StatusCard
           icon={isAppleBuild ? Leaf : BarChart3}
           label={t("home.pipesInCollection")}
           value={pipes.length}
-          accent="#4A7C9C"
+          accent={CATEGORY_COLORS.general}
           bgImage={analyticsImages.snapshotPipes}
         />
-        <SnapshotCard
+        <StatusCard
           icon={Leaf}
           label={t("home.tobaccoBlends")}
           value={blends.length}
-          accent="#4A7C59"
+          accent={CATEGORY_COLORS.tobacco}
           sub={`${totalCellaredOz.toFixed(1)} oz ${t("home.cellared", { defaultValue: "cellared" })}`}
           bgImage={analyticsImages.snapshotBlends}
         />
-        <SnapshotCard
+        <StatusCard
           icon={TrendingUp}
           label={t("home.totalValue")}
           value={formatCurrency(Math.round(totalCollectionValue))}
-          accent="#C4963A"
+          accent={CATEGORY_COLORS.value}
           bgImage={analyticsImages.snapshotValue}
         />
-        <SnapshotCard
+        <StatusCard
           icon={Clock}
           label={t("insights.snapshotStreak", { defaultValue: "Longest Streak" })}
           value={`${longestStreak}d`}
-          accent="#8B5CF6"
+          accent={CATEGORY_COLORS.streak}
           sub={t("insights.snapshotConsecutiveDays", { defaultValue: "consecutive days" })}
           bgImage={analyticsImages.snapshotStreak}
         />
-        <SnapshotCard
+        <StatusCard
           icon={Calendar}
           label={t("insights.snapshotAvgWeek", { defaultValue: "Avg / Week" })}
           value={
@@ -1187,7 +1094,7 @@ export default function Insights() {
                 ).toFixed(1)
               : "—"
           }
-          accent="#22D3EE"
+          accent={CATEGORY_COLORS.activity}
           sub={t("insights.snapshotSessionsPerWeek", { defaultValue: "sessions / week" })}
           bgImage={analyticsImages.snapshotAvg}
         />
