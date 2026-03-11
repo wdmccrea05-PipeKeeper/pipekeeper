@@ -380,11 +380,12 @@ function CommunityPageInner() {
                   </div>
 
                   <div 
-                    className="space-y-3 p-4 rounded-lg"
-                    style={{
-                      background: "rgba(30, 20, 15, 0.5)",
-                      border: "1px solid rgba(120, 90, 65, 0.2)"
-                    }}
+                   className="space-y-3 p-5 rounded-lg"
+                   style={{
+                     background: "rgba(35, 24, 16, 0.6)",
+                     border: "1px solid rgba(120, 90, 65, 0.25)",
+                     boxShadow: "inset 0 1px 2px rgba(0,0,0,0.2)"
+                   }}
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <MapPin className="w-3.5 h-3.5" style={{ color: "rgba(180, 140, 75, 0.8)" }} />

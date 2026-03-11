@@ -448,8 +448,8 @@ export default function ProfilePage() {
           <div 
             className="px-6 py-5 border-b flex items-center justify-between"
             style={{
-              borderBottomColor: "rgba(120, 90, 65, 0.25)",
-              background: "linear-gradient(to bottom, rgba(60, 42, 28, 0.35), transparent)"
+              borderBottomColor: "rgba(120, 90, 65, 0.28)",
+              background: "linear-gradient(to bottom, rgba(62, 44, 30, 0.4), transparent)"
             }}
           >
             <div className="flex items-center gap-3 flex-1">
@@ -489,7 +489,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="p-6 space-y-6">
+          <div className="p-7 space-y-7">
             {/* Badges */}
             <div className="flex gap-2 flex-wrap">
               <Badge 

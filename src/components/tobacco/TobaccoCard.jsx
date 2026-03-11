@@ -166,19 +166,20 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
             )}
           </div>
         </LuxuryObjectFrame>
-        <div className="p-4">
+        <div className="p-5">
          <div className="flex items-start justify-between gap-2">
            <div className="flex-1 min-w-0">
              <h3 
-               className="font-semibold truncate leading-snug mb-1" 
+               className="font-semibold truncate text-lg leading-snug mb-1.5" 
                style={{ 
                  color: "#F5F1E7",
-                 fontFamily: "'Georgia', serif"
+                 fontFamily: "'Georgia', serif",
+                 textShadow: "0 1px 2px rgba(0,0,0,0.5)"
                }}
              >
                {blend.name}
              </h3>
-             <p className="text-sm truncate" style={{ color: "rgba(180, 140, 75, 0.7)" }}>
+             <p className="text-sm truncate" style={{ color: "rgba(180, 140, 75, 0.75)" }}>
                {blend.manufacturer || t("tobaccoExtended.unknownMaker")}
              </p>
             </div>

@@ -40,9 +40,9 @@ export function HeroCard({
         className
       )}
       style={{
-        background: `linear-gradient(155deg, rgba(52, 37, 24, 0.88), rgba(38, 26, 18, 0.96))`,
-        border: `1px solid rgba(120, 90, 65, 0.35)`,
-        boxShadow: `0 3px 12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)`,
+        background: `linear-gradient(155deg, rgba(54, 38, 25, 0.90), rgba(42, 29, 19, 0.97))`,
+        border: `1px solid rgba(120, 90, 65, 0.38)`,
+        boxShadow: `0 4px 16px rgba(0,0,0,0.65), inset 0 1px 0 rgba(180,140,100,0.14), inset 0 -3px 4px rgba(0,0,0,0.28)`,
       }}
       onClick={onClick}
     >
@@ -147,28 +147,28 @@ export function HeroCard({
       />
 
       {/* Main content */}
-      <div className="relative p-5 pb-3 flex flex-col gap-4 flex-1">
+      <div className="relative p-6 pb-4 flex flex-col gap-4 flex-1">
         {/* Icon badge */}
         {Icon && (
           <div
             className="rounded-2xl flex items-center justify-center shrink-0"
             style={{
-              width: "3.25rem",
-              height: "3.25rem",
-              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.4) 0%, rgba(80, 55, 35, 0.5) 100%)`,
-              border: `1px solid rgba(120, 90, 65, 0.4)`,
-              boxShadow: `0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(180, 140, 100, 0.15)`,
+              width: "3.5rem",
+              height: "3.5rem",
+              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.48) 0%, rgba(80, 55, 35, 0.58) 100%)`,
+              border: `1px solid rgba(120, 90, 65, 0.45)`,
+              boxShadow: `0 3px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180, 140, 100, 0.2)`,
             }}
           >
             <Icon
               className="w-5 h-5"
-              style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 4px rgba(180, 140, 75, 0.7))` }}
+              style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 5px rgba(180, 140, 75, 0.75))` }}
             />
           </div>
         )}
 
         {/* Text hierarchy */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <div
             className="text-[10px] uppercase tracking-[0.16em] font-bold"
             style={{ color: `rgba(180, 140, 75, 0.95)` }}
@@ -176,11 +176,12 @@ export function HeroCard({
             {title}
           </div>
           <div
-            className="text-[2.1rem] font-extrabold leading-tight tracking-tight"
+            className="text-[2.25rem] font-extrabold leading-tight tracking-tight"
             style={{
               color: "#F5F1E7",
-              textShadow: `0 2px 8px rgba(0,0,0,0.75), 0 1px 2px rgba(0,0,0,0.9)`,
-              WebkitTextStroke: "0.3px rgba(255,255,255,0.1)",
+              textShadow: `0 2px 10px rgba(0,0,0,0.8), 0 1px 3px rgba(0,0,0,0.95)`,
+              WebkitTextStroke: "0.4px rgba(255,255,255,0.12)",
+              fontFamily: "'Georgia', serif"
             }}
           >
             {value ?? "—"}
@@ -188,7 +189,10 @@ export function HeroCard({
           {sub && (
             <div
               className="text-xs leading-snug pt-0.5 font-semibold"
-              style={{ color: `rgba(180, 140, 75, 0.85)` }}
+              style={{ 
+                color: `rgba(180, 140, 75, 0.88)`,
+                textShadow: "0 1px 2px rgba(0,0,0,0.6)"
+              }}
             >
               {sub}
             </div>
@@ -218,13 +222,13 @@ export function StatusCard({
   return (
     <div
       className={cn(
-        "relative rounded-2xl overflow-hidden flex flex-col gap-3 p-4 min-h-[100px]",
+        "relative rounded-2xl overflow-hidden flex flex-col gap-3 p-5 min-h-[110px]",
         className
       )}
       style={{
-        background: `linear-gradient(145deg, rgba(50, 35, 22, 0.8), rgba(40, 28, 18, 0.9))`,
-        border: `1px solid rgba(120, 90, 65, 0.3)`,
-        boxShadow: `0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.1), inset 0 -1px 2px rgba(0,0,0,0.2)`,
+        background: `linear-gradient(145deg, rgba(52, 37, 24, 0.82), rgba(42, 30, 20, 0.92))`,
+        border: `1px solid rgba(120, 90, 65, 0.32)`,
+        boxShadow: `0 3px 10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 2px rgba(0,0,0,0.25)`,
       }}
     >
       {/* Blurred collection image background */}
@@ -265,18 +269,18 @@ export function StatusCard({
       />
 
       {/* Content */}
-      <div className="relative flex items-center gap-2.5">
+      <div className="relative flex items-center gap-3">
         <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
           style={{
-            background: `linear-gradient(135deg, rgba(100, 70, 45, 0.45) 0%, rgba(80, 55, 35, 0.5) 100%)`,
-            border: `1px solid rgba(120, 90, 65, 0.4)`,
-            boxShadow: `0 3px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180, 140, 100, 0.15)`,
+            background: `linear-gradient(135deg, rgba(100, 70, 45, 0.48) 0%, rgba(80, 55, 35, 0.58) 100%)`,
+            border: `1px solid rgba(120, 90, 65, 0.45)`,
+            boxShadow: `0 3px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180, 140, 100, 0.2)`,
           }}
         >
-          <Icon className="w-3.5 h-3.5" style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 3px rgba(180, 140, 75, 0.6))` }} />
+          <Icon className="w-4 h-4" style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 4px rgba(180, 140, 75, 0.7))` }} />
         </div>
-        <span className="text-[11px] text-[#E0D8C8]/55 uppercase tracking-[0.09em] font-semibold leading-tight">
+        <span className="text-[11px] uppercase tracking-[0.1em] font-semibold leading-tight" style={{ color: "rgba(180, 140, 75, 0.85)" }}>
           {label}
         </span>
       </div>
@@ -284,12 +288,16 @@ export function StatusCard({
       <div className="relative">
         <div
           className="text-3xl font-bold leading-none tracking-tight"
-          style={{ color: "#F5F1E7", textShadow: `0 1px 3px rgba(0,0,0,0.7)` }}
+          style={{ 
+            color: "#F5F1E7", 
+            textShadow: `0 2px 6px rgba(0,0,0,0.75)`,
+            fontFamily: "'Georgia', serif"
+          }}
         >
           {value}
         </div>
         {sub && (
-          <div className="text-[11px] mt-1" style={{ color: `rgba(180, 140, 75, 0.7)` }}>
+          <div className="text-xs mt-1.5 font-medium" style={{ color: `rgba(180, 140, 75, 0.75)` }}>
             {sub}
           </div>
         )}
