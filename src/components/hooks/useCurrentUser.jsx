@@ -11,7 +11,7 @@ import {
 import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 import { useEffect } from "react";
 import { useQuery as useQueryRQ, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/lib/AuthContext";
+import { useAuth } from "@/components/contexts/AuthContext";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@/components/i18n";
-import { AuthProvider } from "@/lib/AuthContext";
+import { AuthProvider } from "@/components/contexts/AuthContext";
 
 import Layout from "../Layout";
 import Home from "./Home";
