@@ -949,14 +949,16 @@ export default function Insights() {
   const hasData = pipes.length > 0 || blends.length > 0 || smokingLogs.length > 0;
 
   // ── Analytics card images: stable random picks from the collection ──────────
+  // Intentionally depends on collection *size* rather than full arrays so that
+  // images are stable within a session and don't flicker on every React Query
+  // refetch. A user would need to add/remove items before the picks change.
   const analyticsImages = useMemo(() => {
-    const { pipeImgs, blendImgs, allImgs } = gatherCollectionImages(pipes, blends);
+    const { pipeImgs, allImgs } = gatherCollectionImages(pipes, blends);
     return {
       streak: pickRandom(pipeImgs),
       sessions: pickRandom(allImgs),
-      collectionValue: pickRandom(allImgs) || pickRandom(blendImgs),
+      collectionValue: pickRandom(allImgs),
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pipes.length, blends.length]); // re-pick only when collection size changes
 
   // ── Share: capture a DOM node and share/download as image ─────────────────
