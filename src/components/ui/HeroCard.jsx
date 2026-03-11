@@ -40,9 +40,9 @@ export function HeroCard({
         className
       )}
       style={{
-        background: `linear-gradient(155deg, #1a2535 0%, #0e1520 45%, ${accent}28 100%)`,
-        border: `1px solid ${accent}55`,
-        boxShadow: `0 0 0 1px ${accent}22, 0 12px 40px -8px ${accent}50, 0 4px 12px rgba(0,0,0,0.5)`,
+        background: `linear-gradient(145deg, rgba(45, 32, 22, 0.85), rgba(32, 22, 15, 0.95))`,
+        border: `1px solid rgba(120, 90, 65, 0.3)`,
+        boxShadow: `0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)`,
       }}
       onClick={onClick}
     >
@@ -55,8 +55,8 @@ export function HeroCard({
             backgroundSize: "cover",
             backgroundPosition: "center",
             filter: heroImage
-              ? "blur(22px) brightness(0.26) saturate(0.6)"
-              : "blur(20px) brightness(0.22) saturate(0.5)",
+              ? "blur(22px) brightness(0.3) saturate(0.7) sepia(0.2)"
+              : "blur(20px) brightness(0.25) saturate(0.6) sepia(0.2)",
             opacity: 0.95,
             transform: "scale(1.12)",
           }}
@@ -89,7 +89,7 @@ export function HeroCard({
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to right, rgba(10,17,28,1) 0%, rgba(10,17,28,0.42) 38%, transparent 72%)",
+              background: "linear-gradient(to right, rgba(28, 18, 10, 0.95) 0%, rgba(28, 18, 10, 0.5) 38%, transparent 72%)",
             }}
           />
         </div>
@@ -100,8 +100,8 @@ export function HeroCard({
         className="absolute inset-0 pointer-events-none"
         style={{
           background: (bgImage || heroImage)
-            ? `linear-gradient(to right, rgba(14,21,32,0.92) 0%, rgba(14,21,32,0.72) 45%, rgba(14,21,32,0.28) 75%, transparent 100%)`
-            : `linear-gradient(155deg, rgba(14,21,32,0.72) 0%, rgba(14,21,32,0.52) 45%, ${accent}22 100%)`,
+            ? `linear-gradient(to right, rgba(28, 18, 10, 0.92) 0%, rgba(28, 18, 10, 0.72) 45%, rgba(28, 18, 10, 0.28) 75%, transparent 100%)`
+            : `linear-gradient(145deg, rgba(35, 22, 15, 0.72) 0%, rgba(28, 18, 10, 0.52) 45%, transparent 100%)`,
         }}
       />
 
@@ -111,7 +111,7 @@ export function HeroCard({
           className="absolute bottom-0 left-0 right-0 pointer-events-none"
           style={{
             height: "58%",
-            background: "linear-gradient(to top, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.30) 50%, transparent 100%)",
+            background: "linear-gradient(to top, rgba(20, 12, 8, 0.75) 0%, rgba(20, 12, 8, 0.35) 50%, transparent 100%)",
           }}
         />
       )}
@@ -123,7 +123,7 @@ export function HeroCard({
       <div
         className="absolute bottom-0 right-0 w-40 h-40 rounded-full pointer-events-none"
         style={{
-          background: `radial-gradient(circle, ${accent}30 0%, transparent 70%)`,
+          background: `radial-gradient(circle, rgba(180, 140, 75, 0.15) 0%, transparent 70%)`,
           transform: "translate(30%, 30%)",
         }}
       />
@@ -132,8 +132,8 @@ export function HeroCard({
       <div
         className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl"
         style={{
-          background: `linear-gradient(90deg, ${accent}00 0%, ${accent}ee 35%, ${accent}ff 50%, ${accent}ee 65%, ${accent}00 100%)`,
-          boxShadow: `0 0 8px ${accent}cc`,
+          background: `linear-gradient(90deg, transparent 0%, rgba(180, 140, 75, 0.5) 35%, rgba(180, 140, 75, 0.6) 50%, rgba(180, 140, 75, 0.5) 65%, transparent 100%)`,
+          boxShadow: `0 0 4px rgba(180, 140, 75, 0.3)`,
         }}
       />
 
@@ -146,14 +146,14 @@ export function HeroCard({
             style={{
               width: "3.25rem",
               height: "3.25rem",
-              background: `linear-gradient(135deg, ${accent}50 0%, ${accent}28 100%)`,
-              border: `1px solid ${accent}55`,
-              boxShadow: `0 0 18px ${accent}50, inset 0 1px 0 ${accent}40`,
+              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.4) 0%, rgba(80, 55, 35, 0.5) 100%)`,
+              border: `1px solid rgba(120, 90, 65, 0.4)`,
+              boxShadow: `0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(180, 140, 100, 0.15)`,
             }}
           >
             <Icon
               className="w-6 h-6"
-              style={{ color: accent, filter: `drop-shadow(0 0 6px ${accent}cc)` }}
+              style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 4px rgba(180, 140, 75, 0.6))` }}
             />
           </div>
         )}
@@ -162,7 +162,7 @@ export function HeroCard({
         <div className="space-y-1.5">
           <div
             className="text-[10px] uppercase tracking-[0.16em] font-bold"
-            style={{ color: `${accent}ee` }}
+            style={{ color: `rgba(180, 140, 75, 0.95)` }}
           >
             {title}
           </div>
@@ -170,8 +170,8 @@ export function HeroCard({
             className="text-[2.1rem] font-extrabold leading-tight tracking-tight"
             style={{
               color: "#F5F1E7",
-              textShadow: `0 2px 10px rgba(0,0,0,0.80), 0 0 28px ${accent}65, 0 0 52px ${accent}28`,
-              WebkitTextStroke: "0.4px rgba(255,255,255,0.15)",
+              textShadow: `0 2px 8px rgba(0,0,0,0.75), 0 1px 2px rgba(0,0,0,0.9)`,
+              WebkitTextStroke: "0.3px rgba(255,255,255,0.1)",
             }}
           >
             {value ?? "—"}
@@ -179,7 +179,7 @@ export function HeroCard({
           {sub && (
             <div
               className="text-xs leading-snug pt-0.5 font-semibold"
-              style={{ color: `${accent}cc` }}
+              style={{ color: `rgba(180, 140, 75, 0.85)` }}
             >
               {sub}
             </div>
@@ -213,9 +213,9 @@ export function StatusCard({
         className
       )}
       style={{
-        background: `linear-gradient(145deg, #1a2535 0%, #111a25 62%, ${accent}28 100%)`,
-        border: `1px solid ${accent}50`,
-        boxShadow: `0 0 0 1px ${accent}20, 0 4px 24px -4px ${accent}38`,
+        background: `linear-gradient(145deg, rgba(42, 30, 20, 0.8), rgba(35, 24, 16, 0.9))`,
+        border: `1px solid rgba(120, 90, 65, 0.25)`,
+        boxShadow: `0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.06)`,
       }}
     >
       {/* Blurred collection image background */}
@@ -226,7 +226,7 @@ export function StatusCard({
             backgroundImage: `url(${bgImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            filter: "blur(14px) brightness(0.15) saturate(0.42)",
+            filter: "blur(14px) brightness(0.2) saturate(0.5) sepia(0.15)",
             opacity: 0.90,
             transform: "scale(1.1)",
           }}
@@ -238,8 +238,8 @@ export function StatusCard({
         className="absolute inset-0 pointer-events-none"
         style={{
           background: bgImage
-            ? `linear-gradient(145deg, rgba(26,37,53,0.97) 0%, rgba(17,26,37,0.90) 55%, ${accent}28 100%)`
-            : `linear-gradient(145deg, transparent 0%, transparent 60%, ${accent}10 100%)`,
+            ? `linear-gradient(145deg, rgba(35, 25, 18, 0.95) 0%, rgba(30, 20, 15, 0.88) 55%, transparent 100%)`
+            : `linear-gradient(145deg, transparent 0%, transparent 60%, rgba(40, 30, 20, 0.15) 100%)`,
         }}
       />
 
@@ -250,7 +250,7 @@ export function StatusCard({
       <div
         className="absolute top-0 right-0 w-24 h-24 rounded-full pointer-events-none"
         style={{
-          background: `radial-gradient(circle, ${accent}35 0%, transparent 70%)`,
+          background: `radial-gradient(circle, rgba(180, 140, 75, 0.12) 0%, transparent 70%)`,
           transform: "translate(35%, -35%)",
         }}
       />
@@ -260,12 +260,12 @@ export function StatusCard({
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
           style={{
-            background: `linear-gradient(135deg, ${accent}40 0%, ${accent}20 100%)`,
-            border: `1px solid ${accent}50`,
-            boxShadow: `0 0 14px ${accent}35, inset 0 1px 0 ${accent}30`,
+            background: `linear-gradient(135deg, rgba(100, 70, 45, 0.35) 0%, rgba(80, 55, 35, 0.4) 100%)`,
+            border: `1px solid rgba(120, 90, 65, 0.35)`,
+            boxShadow: `0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(180, 140, 100, 0.12)`,
           }}
         >
-          <Icon className="w-4 h-4" style={{ color: accent, filter: `drop-shadow(0 0 5px ${accent}cc)` }} />
+          <Icon className="w-4 h-4" style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 3px rgba(180, 140, 75, 0.5))` }} />
         </div>
         <span className="text-[11px] text-[#E0D8C8]/55 uppercase tracking-[0.09em] font-semibold leading-tight">
           {label}
@@ -275,12 +275,12 @@ export function StatusCard({
       <div className="relative">
         <div
           className="text-3xl font-bold leading-none tracking-tight"
-          style={{ color: "#F5F1E7", textShadow: `0 0 20px ${accent}40` }}
+          style={{ color: "#F5F1E7", textShadow: `0 1px 3px rgba(0,0,0,0.7)` }}
         >
           {value}
         </div>
         {sub && (
-          <div className="text-[11px] mt-1" style={{ color: `${accent}99` }}>
+          <div className="text-[11px] mt-1" style={{ color: `rgba(180, 140, 75, 0.7)` }}>
             {sub}
           </div>
         )}
@@ -289,7 +289,7 @@ export function StatusCard({
       {/* Bottom accent line */}
       <div
         className="absolute bottom-0 left-0 right-0 h-[1px]"
-        style={{ background: `linear-gradient(90deg, transparent, ${accent}55, transparent)` }}
+        style={{ background: `linear-gradient(90deg, transparent, rgba(120, 90, 65, 0.35), transparent)` }}
       />
     </div>
   );
@@ -340,10 +340,10 @@ function GrainTexture({ accent = "#4A7C9C" }) {
  * Category color constants for consistent theming
  */
 export const CATEGORY_COLORS = {
-  pipe: "#C87941",      // Warm copper / ember glow
-  tobacco: "#4A7C59",   // Olive / green glow
-  value: "#C4963A",     // Gold / amber
-  activity: "#22D3EE",  // Cyan
-  streak: "#8B5CF6",    // Violet
-  general: "#4A7C9C",   // Default blue-gray
+  pipe: "#B48C4B",      // Aged brass
+  tobacco: "#5A7C5A",   // Forest green
+  value: "#B4824B",     // Walnut gold
+  activity: "#8B6F4A",  // Leather brown
+  streak: "#9B6B5F",    // Burgundy brown
+  general: "#8B7B6B",   // Charcoal brown
 };
