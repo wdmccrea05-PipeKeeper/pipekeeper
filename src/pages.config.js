@@ -47,19 +47,16 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AIUpdates from './pages/AIUpdates';
 import AdminReports from './pages/AdminReports';
 import AdminSubscriptionRequests from './pages/AdminSubscriptionRequests';
 import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
-import AIUpdates from './pages/AIUpdates';
 import AgeGate from './pages/AgeGate';
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import Community from './pages/Community';
-import Curator from './pages/Curator';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
-import Home from './pages/Home';
-import Insights from './pages/Insights';
 import HowTo from './pages/HowTo';
 import Import from './pages/Import';
 import Invite from './pages/Invite';
@@ -86,25 +83,26 @@ import Troubleshooting from './pages/Troubleshooting';
 import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
+import index from './pages/index';
+import Curator from './pages/Curator';
+import Home from './pages/Home';
+import Insights from './pages/Insights';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AIUpdates": AIUpdates,
     "AdminReports": AdminReports,
     "AdminSubscriptionRequests": AdminSubscriptionRequests,
     "AdminSubscriptionTools": AdminSubscriptionTools,
-    "AIUpdates": AIUpdates,
     "AgeGate": AgeGate,
     "BulkLogoUpload": BulkLogoUpload,
     "Community": Community,
-    "Curator": Curator,
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
-    "Home": Home,
     "HowTo": HowTo,
     "Import": Import,
-    "Insights": Insights,
     "Invite": Invite,
     "InviteFull": InviteFull,
     "PipeDetail": PipeDetail,
@@ -129,6 +127,10 @@ export const PAGES = {
     "TroubleshootingFull": TroubleshootingFull,
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
+    "index": index,
+    "Curator": Curator,
+    "Home": Home,
+    "Insights": Insights,
 }
 
 export const pagesConfig = {

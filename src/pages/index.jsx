@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@/components/i18n";
+import { AuthProvider } from "@/lib/AuthContext";
 
 import Layout from "../Layout";
 import Home from "./Home";
@@ -134,9 +135,11 @@ export default function Pages() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Layout currentPageName={currentPageName}>
-        <Comp />
-      </Layout>
+      <AuthProvider>
+        <Layout currentPageName={currentPageName}>
+          <Comp />
+        </Layout>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
