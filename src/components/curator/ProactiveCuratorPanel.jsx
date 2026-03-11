@@ -162,17 +162,18 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
               }}
             >
               <div className="flex items-start gap-3">
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                  style={{
-                    background: `${accent}20`,
-                    border: `1px solid ${accent}40`
-                  }}
-                >
-                  {Icon && <Icon className="w-4 h-4" style={{ color: accent }} />}
-                </div>
-                <div className="flex-1 min-w-0 space-y-2">
-                  <div>
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                style={{
+                  background: `${accent}20`,
+                  border: `1px solid ${accent}40`
+                }}
+              >
+                {Icon && <Icon className="w-4 h-4" style={{ color: accent }} />}
+              </div>
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
                     <h4 
                       className="text-sm font-semibold mb-0.5" 
                       style={{ color: accent }}
@@ -186,30 +187,43 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
                       {t(insight.insight, insight.vars)}
                     </p>
                   </div>
-                  {insight.action && (
-                    <p 
-                      className="text-xs font-medium" 
-                      style={{ color: "rgba(180,140,75,0.75)" }}
-                    >
-                      → {t(insight.action, insight.vars)}
-                    </p>
-                  )}
-                  {insight.ctaLink && (
-                    <a
-                      href={createPageUrl(insight.ctaLink)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:scale-105"
+                  {insight.category && (
+                    <div
+                      className="px-2 py-1 rounded text-xs font-medium whitespace-nowrap mt-0.5"
                       style={{
-                        background: `${accent}25`,
-                        border: `1px solid ${accent}40`,
+                        background: `${accent}15`,
                         color: accent,
-                        boxShadow: `0 1px 3px rgba(0,0,0,0.3)`
+                        border: `1px solid ${accent}25`
                       }}
                     >
-                      {t(insight.cta, insight.vars)}
-                      <ArrowRight className="w-3 h-3" />
-                    </a>
+                      {insight.category}
+                    </div>
                   )}
                 </div>
+                {insight.action && (
+                  <p 
+                    className="text-xs font-medium" 
+                    style={{ color: "rgba(180,140,75,0.75)" }}
+                  >
+                    → {t(insight.action, insight.vars)}
+                  </p>
+                )}
+                {insight.ctaLink && (
+                  <a
+                    href={createPageUrl(insight.ctaLink)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:scale-105"
+                    style={{
+                      background: `${accent}25`,
+                      border: `1px solid ${accent}40`,
+                      color: accent,
+                      boxShadow: `0 1px 3px rgba(0,0,0,0.3)`
+                    }}
+                  >
+                    {t(insight.cta, insight.vars)}
+                    <ArrowRight className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
               </div>
             </div>
           );
