@@ -607,9 +607,9 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
       <div 
         className="p-6 space-y-5 rounded-lg"
         style={{
-          background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
+          background: "linear-gradient(145deg, rgba(50, 35, 22, 0.75), rgba(38, 26, 18, 0.88))",
           border: "1px solid rgba(120, 90, 65, 0.3)",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1), inset 0 -1px 2px rgba(0,0,0,0.25)",
         }}
       >
         {/* ── Header ─────────────────────────────────────────────────────────── */}
@@ -642,8 +642,9 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
                   key={i}
                   className="flex justify-between items-center px-3 py-2.5 rounded-lg"
                   style={{
-                    background: "rgba(50, 35, 22, 0.35)",
-                    border: "1px solid rgba(120, 90, 65, 0.2)",
+                    background: "linear-gradient(135deg, rgba(55, 40, 25, 0.45), rgba(45, 32, 22, 0.55))",
+                    border: "1px solid rgba(120, 90, 65, 0.3)",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(180,140,100,0.08)",
                   }}
                 >
                   <span className="text-sm" style={{ color: "rgba(224, 216, 200, 0.8)" }}>{m.label}</span>

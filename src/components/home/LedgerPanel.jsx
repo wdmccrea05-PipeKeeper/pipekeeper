@@ -14,26 +14,26 @@ export default function LedgerPanel({ label, value, sub, icon: Icon, accent = "#
         className
       )}
       style={{
-        background: `linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))`,
-        border: `1px solid rgba(120, 90, 65, 0.25)`,
+        background: `linear-gradient(145deg, rgba(50, 35, 22, 0.75), rgba(38, 26, 18, 0.88))`,
+        border: `1px solid rgba(120, 90, 65, 0.3)`,
         boxShadow: `
-          0 1px 3px rgba(0,0,0,0.4),
-          inset 0 1px 0 rgba(180,140,100,0.06),
-          inset 0 -1px 0 rgba(0,0,0,0.2)
+          0 2px 6px rgba(0,0,0,0.5),
+          inset 0 1px 0 rgba(180,140,100,0.1),
+          inset 0 -1px 2px rgba(0,0,0,0.3)
         `,
       }}
     >
-      {/* Parchment texture */}
+      {/* Subtle leather grain */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-15"
+        className="absolute inset-0 pointer-events-none opacity-8"
         style={{
           backgroundImage: `
             repeating-linear-gradient(
               0deg,
               transparent,
-              transparent 2px,
-              rgba(80, 60, 40, 0.1) 2px,
-              rgba(80, 60, 40, 0.1) 3px
+              transparent 3px,
+              rgba(80, 60, 40, 0.08) 3px,
+              rgba(80, 60, 40, 0.08) 4px
             )
           `
         }}
@@ -50,14 +50,14 @@ export default function LedgerPanel({ label, value, sub, icon: Icon, accent = "#
         {Icon && (
           <div className="inline-flex">
             <div
-              className="w-7 h-7 rounded flex items-center justify-center"
+              className="w-8 h-8 rounded flex items-center justify-center"
               style={{
-                background: `linear-gradient(135deg, rgba(100, 70, 45, 0.3), rgba(80, 55, 35, 0.4))`,
-                border: `1px solid rgba(120, 90, 65, 0.3)`,
-                boxShadow: `0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(180, 140, 100, 0.1)`,
+                background: `linear-gradient(135deg, rgba(100, 70, 45, 0.4), rgba(80, 55, 35, 0.5))`,
+                border: `1px solid rgba(120, 90, 65, 0.4)`,
+                boxShadow: `0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180, 140, 100, 0.15)`,
               }}
             >
-              <Icon className="w-4 h-4" style={{ color: accent, filter: `drop-shadow(0 0 2px ${accent}80)` }} />
+              <Icon className="w-3.5 h-3.5" style={{ color: accent, filter: `drop-shadow(0 0 3px ${accent}90)` }} />
             </div>
           </div>
         )}

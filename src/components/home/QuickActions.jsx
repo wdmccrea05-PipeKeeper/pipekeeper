@@ -73,22 +73,22 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
     <div
       className="relative rounded-lg overflow-hidden p-5"
       style={{
-        background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
+        background: "linear-gradient(145deg, rgba(50, 35, 22, 0.7), rgba(38, 26, 18, 0.85))",
         border: "1px solid rgba(120, 90, 65, 0.3)",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1), inset 0 -1px 2px rgba(0,0,0,0.25)",
       }}
     >
-      {/* Parchment texture */}
+      {/* Subtle grain */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-15"
+        className="absolute inset-0 pointer-events-none opacity-6"
         style={{
           backgroundImage: `
             repeating-linear-gradient(
               0deg,
               transparent,
-              transparent 2px,
-              rgba(80, 60, 40, 0.1) 2px,
-              rgba(80, 60, 40, 0.1) 3px
+              transparent 3px,
+              rgba(80, 60, 40, 0.06) 3px,
+              rgba(80, 60, 40, 0.06) 4px
             )
           `
         }}
@@ -107,19 +107,19 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
             onClick={handlers[key]}
             className="flex flex-col items-center justify-center gap-3 p-4 transition-all duration-200 min-h-[90px] w-full focus-visible:outline-none group"
             style={{
-              background: "linear-gradient(135deg, rgba(50, 35, 22, 0.5), rgba(42, 30, 20, 0.6))",
-              border: "1px solid rgba(120, 90, 65, 0.25)",
+              background: "linear-gradient(145deg, rgba(55, 40, 25, 0.6), rgba(45, 32, 22, 0.7))",
+              border: "1px solid rgba(120, 90, 65, 0.3)",
               borderRadius: "0.5rem",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.06)",
+              boxShadow: "0 2px 5px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -1px 1px rgba(0,0,0,0.2)",
             }}
           >
             <div
               className="w-10 h-10 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-110"
               style={{
-                background: "linear-gradient(135deg, rgba(100, 70, 45, 0.35), rgba(80, 55, 35, 0.4))",
-                border: "1px solid rgba(120, 90, 65, 0.3)",
+                background: "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
+                border: "1px solid rgba(120, 90, 65, 0.4)",
                 borderRadius: "0.375rem",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(180, 140, 100, 0.1)",
+                boxShadow: "0 3px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180, 140, 100, 0.18)",
               }}
             >
               {key === "collectionCurator" ? (
@@ -130,7 +130,7 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
                   aria-hidden="true"
                 />
               ) : (
-                <Icon className="w-5 h-5" style={{ color: "rgba(180, 140, 75, 0.9)" }} aria-hidden="true" />
+                <Icon className="w-4 h-4" style={{ color: "rgba(180, 140, 75, 0.95)" }} aria-hidden="true" />
               )}
             </div>
             <span 

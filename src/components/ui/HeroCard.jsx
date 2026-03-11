@@ -40,9 +40,9 @@ export function HeroCard({
         className
       )}
       style={{
-        background: `linear-gradient(145deg, rgba(45, 32, 22, 0.85), rgba(32, 22, 15, 0.95))`,
-        border: `1px solid rgba(120, 90, 65, 0.3)`,
-        boxShadow: `0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)`,
+        background: `linear-gradient(155deg, rgba(52, 37, 24, 0.88), rgba(38, 26, 18, 0.96))`,
+        border: `1px solid rgba(120, 90, 65, 0.35)`,
+        boxShadow: `0 3px 12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)`,
       }}
       onClick={onClick}
     >
@@ -55,9 +55,9 @@ export function HeroCard({
             backgroundSize: "cover",
             backgroundPosition: "center",
             filter: heroImage
-              ? "blur(22px) brightness(0.3) saturate(0.7) sepia(0.2)"
-              : "blur(20px) brightness(0.25) saturate(0.6) sepia(0.2)",
-            opacity: 0.95,
+              ? "blur(24px) brightness(0.28) saturate(0.65) sepia(0.22)"
+              : "blur(22px) brightness(0.22) saturate(0.55) sepia(0.2)",
+            opacity: 0.92,
             transform: "scale(1.12)",
           }}
         />
@@ -152,8 +152,8 @@ export function HeroCard({
             }}
           >
             <Icon
-              className="w-6 h-6"
-              style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 4px rgba(180, 140, 75, 0.6))` }}
+              className="w-5 h-5"
+              style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 4px rgba(180, 140, 75, 0.7))` }}
             />
           </div>
         )}
@@ -213,9 +213,9 @@ export function StatusCard({
         className
       )}
       style={{
-        background: `linear-gradient(145deg, rgba(42, 30, 20, 0.8), rgba(35, 24, 16, 0.9))`,
-        border: `1px solid rgba(120, 90, 65, 0.25)`,
-        boxShadow: `0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.06)`,
+        background: `linear-gradient(145deg, rgba(50, 35, 22, 0.8), rgba(40, 28, 18, 0.9))`,
+        border: `1px solid rgba(120, 90, 65, 0.3)`,
+        boxShadow: `0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.1), inset 0 -1px 2px rgba(0,0,0,0.2)`,
       }}
     >
       {/* Blurred collection image background */}
@@ -260,12 +260,12 @@ export function StatusCard({
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
           style={{
-            background: `linear-gradient(135deg, rgba(100, 70, 45, 0.35) 0%, rgba(80, 55, 35, 0.4) 100%)`,
-            border: `1px solid rgba(120, 90, 65, 0.35)`,
-            boxShadow: `0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(180, 140, 100, 0.12)`,
+            background: `linear-gradient(135deg, rgba(100, 70, 45, 0.45) 0%, rgba(80, 55, 35, 0.5) 100%)`,
+            border: `1px solid rgba(120, 90, 65, 0.4)`,
+            boxShadow: `0 3px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180, 140, 100, 0.15)`,
           }}
         >
-          <Icon className="w-4 h-4" style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 3px rgba(180, 140, 75, 0.5))` }} />
+          <Icon className="w-3.5 h-3.5" style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 3px rgba(180, 140, 75, 0.6))` }} />
         </div>
         <span className="text-[11px] text-[#E0D8C8]/55 uppercase tracking-[0.09em] font-semibold leading-tight">
           {label}
