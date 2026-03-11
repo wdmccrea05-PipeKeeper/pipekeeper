@@ -245,10 +245,10 @@ function StoryCard({
       style={{
         width: "min(340px, 90vw)",
         height: "min(600px, 85vh)",
-        borderRadius: "24px",
-        background: `linear-gradient(175deg, #0e1520 0%, #131d2a 30%, ${accent}35 70%, ${accent}55 100%)`,
-        border: `1px solid ${accent}66`,
-        boxShadow: `0 0 0 1px ${accent}30, 0 32px 80px -16px ${accent}70, 0 8px 32px rgba(0,0,0,0.6)`,
+        borderRadius: "16px",
+        background: `linear-gradient(165deg, rgba(32, 22, 15, 0.98), rgba(42, 30, 20, 0.95))`,
+        border: `1px solid rgba(120, 90, 65, 0.4)`,
+        boxShadow: `0 4px 16px rgba(0,0,0,0.7), inset 0 1px 0 rgba(180,140,100,0.1)`,
         display: "flex",
         flexDirection: "column",
       }}
@@ -261,7 +261,7 @@ function StoryCard({
             backgroundImage: `url(${bgImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            filter: "blur(30px) brightness(0.28) saturate(0.62)",
+            filter: "blur(30px) brightness(0.3) saturate(0.65) sepia(0.25)",
             opacity: 0.95,
             transform: "scale(1.12)",
           }}
@@ -287,13 +287,13 @@ function StoryCard({
               maxWidth: "none",
               width: "auto",
               objectFit: "contain",
-              filter: `drop-shadow(0 0 30px ${accent}85) drop-shadow(0 8px 24px rgba(0,0,0,0.65))`,
+              filter: `drop-shadow(0 0 20px rgba(180,140,75,0.4)) drop-shadow(0 8px 24px rgba(0,0,0,0.7))`,
             }}
           />
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to bottom, rgba(10,17,28,1) 0%, rgba(10,17,28,0.18) 18%, transparent 40%, rgba(10,17,28,0.18) 78%, rgba(10,17,28,0.85) 100%)",
+              background: "linear-gradient(to bottom, rgba(28,18,10,1) 0%, rgba(28,18,10,0.2) 18%, transparent 40%, rgba(28,18,10,0.2) 78%, rgba(20,12,8,0.90) 100%)",
             }}
           />
         </div>
@@ -309,13 +309,13 @@ function StoryCard({
                 backgroundImage: `url(${bgImage})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center 60%",
-                filter: "blur(6px) brightness(0.38) saturate(0.80)",
+                filter: "blur(6px) brightness(0.4) saturate(0.75) sepia(0.2)",
               }}
             />
             <div
               className="absolute inset-0"
               style={{
-                background: "linear-gradient(to bottom, rgba(10,17,28,1) 0%, rgba(10,17,28,0.55) 35%, transparent 75%)",
+                background: "linear-gradient(to bottom, rgba(28,18,10,1) 0%, rgba(28,18,10,0.55) 35%, transparent 75%)",
               }}
             />
           </div>
@@ -327,8 +327,8 @@ function StoryCard({
         className="absolute inset-0 pointer-events-none"
         style={{
           background: bgImage
-            ? `linear-gradient(175deg, rgba(14,21,32,0.90) 0%, rgba(14,21,32,0.65) 30%, rgba(14,21,32,0.32) 60%, ${accent}30 85%, ${accent}44 100%)`
-            : `linear-gradient(175deg, rgba(14,21,32,0.78) 0%, rgba(19,29,42,0.58) 30%, ${accent}28 70%, ${accent}42 100%)`,
+            ? `linear-gradient(165deg, rgba(28,18,10,0.92) 0%, rgba(28,18,10,0.70) 30%, rgba(28,18,10,0.35) 60%, transparent 90%)`
+            : `linear-gradient(165deg, rgba(32,22,15,0.85) 0%, rgba(35,24,16,0.65) 30%, rgba(40,28,18,0.3) 70%, transparent 100%)`,
         }}
       />
 
@@ -344,7 +344,7 @@ function StoryCard({
           width: "280px",
           height: "280px",
           borderRadius: "50%",
-          background: `radial-gradient(circle, ${accent}55 0%, transparent 65%)`,
+          background: `radial-gradient(circle, rgba(180,140,75,0.2) 0%, transparent 65%)`,
         }}
       />
 
@@ -352,8 +352,8 @@ function StoryCard({
       <div
         className="absolute top-0 left-0 right-0 h-[3px]"
         style={{
-          background: `linear-gradient(90deg, ${accent}00 0%, ${accent}ff 50%, ${accent}00 100%)`,
-          boxShadow: `0 0 12px ${accent}cc`,
+          background: `linear-gradient(90deg, transparent 0%, rgba(180,140,75,0.6) 50%, transparent 100%)`,
+          boxShadow: `0 0 6px rgba(180,140,75,0.4)`,
         }}
       />
 
@@ -361,16 +361,16 @@ function StoryCard({
       <div className="relative flex items-center justify-between px-7 pt-7 pb-0">
         <div
           className="text-[10px] uppercase tracking-[0.22em] font-bold"
-          style={{ color: `${accent}99` }}
+          style={{ color: `rgba(180,140,75,0.75)` }}
         >
           PipeKeeper
         </div>
         <div
           className="text-[9px] uppercase tracking-[0.14em] font-semibold px-2 py-0.5 rounded-full"
           style={{
-            background: `${accent}22`,
-            border: `1px solid ${accent}44`,
-            color: `${accent}cc`,
+            background: `rgba(100,70,45,0.25)`,
+            border: `1px solid rgba(120,90,65,0.4)`,
+            color: `rgba(180,140,75,0.9)`,
           }}
         >
           {cardNumber} / {totalCards}
@@ -398,10 +398,10 @@ function StoryCard({
               style={{
                 width: heroImage ? "64px" : "90px",
                 height: heroImage ? "64px" : "90px",
-                borderRadius: "20px",
-                background: `linear-gradient(135deg, ${accent}60 0%, ${accent}30 100%)`,
-                border: `1.5px solid ${accent}66`,
-                boxShadow: `0 0 40px ${accent}60, inset 0 1px 0 ${accent}50`,
+                borderRadius: "12px",
+                background: `linear-gradient(135deg, rgba(100,70,45,0.5) 0%, rgba(80,55,35,0.6) 100%)`,
+                border: `1.5px solid rgba(120,90,65,0.5)`,
+                boxShadow: `0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.2)`,
               }}
             >
               <Icon
@@ -409,7 +409,7 @@ function StoryCard({
                   width: heroImage ? "30px" : "44px",
                   height: heroImage ? "30px" : "44px",
                   color: accent,
-                  filter: `drop-shadow(0 0 12px ${accent}dd)`,
+                  filter: `drop-shadow(0 0 8px rgba(180,140,75,0.7))`,
                 }}
               />
             </div>
@@ -429,8 +429,9 @@ function StoryCard({
             style={{
               fontSize: "clamp(2.8rem, 11vw, 4.2rem)",
               color: "#F5F1E7",
-              textShadow: `0 3px 18px rgba(0,0,0,0.90), 0 0 50px ${accent}80, 0 0 80px ${accent}40`,
-              WebkitTextStroke: "0.5px rgba(255,255,255,0.12)",
+              textShadow: `0 3px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)`,
+              WebkitTextStroke: "0.4px rgba(255,255,255,0.08)",
+              fontFamily: "'Georgia', serif",
             }}
           >
             {value ?? "—"}
@@ -440,7 +441,7 @@ function StoryCard({
           {sub && (
             <div
               className="text-base font-semibold leading-snug"
-              style={{ color: `${accent}cc` }}
+              style={{ color: `rgba(180,140,75,0.85)`, fontFamily: "'Georgia', serif" }}
             >
               {sub}
             </div>
@@ -451,16 +452,16 @@ function StoryCard({
       {/* Bottom action bar */}
       <div
         className="relative flex items-center justify-center gap-3 px-7 pb-7 pt-4"
-        style={{ borderTop: `1px solid ${accent}22` }}
+        style={{ borderTop: `1px solid rgba(120,90,65,0.25)` }}
       >
         <button
           onClick={onShare}
           className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-95"
           style={{
-            background: `linear-gradient(135deg, ${accent}cc 0%, ${accent}99 100%)`,
-            color: "#0e1520",
-            boxShadow: `0 0 20px ${accent}60`,
-            border: `1px solid ${accent}aa`,
+            background: `linear-gradient(135deg, rgba(180,140,75,1) 0%, rgba(160,120,65,1) 100%)`,
+            color: "rgba(28,18,10,1)",
+            boxShadow: `0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)`,
+            border: `1px solid rgba(140,105,60,0.8)`,
           }}
         >
           <Share2 className="w-4 h-4" />
