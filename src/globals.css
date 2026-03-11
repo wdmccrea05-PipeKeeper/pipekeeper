@@ -10,6 +10,9 @@
     --safe-area-left: env(safe-area-inset-left, 0px);
     --safe-area-right: env(safe-area-inset-right, 0px);
     
+    /* Global collector background */
+    --collector-bg-base: #0f0b08;
+    
     --background: 0 0% 100%;
     --foreground: 0 0% 6%;
     --card: 0 0% 100%;
@@ -105,18 +108,20 @@
   * {
     @apply border-border outline-ring/50;
   }
+  
+  html {
+    background: #0f0b08;
+    min-height: 100vh;
+  }
+  
   body {
     background: 
-      linear-gradient(
-        135deg,
-        rgba(16, 11, 8, 1) 0%,
-        rgba(22, 15, 11, 1) 25%,
-        rgba(26, 18, 13, 1) 50%,
-        rgba(22, 15, 11, 1) 75%,
-        rgba(16, 11, 8, 1) 100%
-      );
+      radial-gradient(circle at 30% 20%, rgba(120,85,55,0.15), transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(70,50,35,0.2), transparent 50%),
+      #0f0b08;
     color: hsl(var(--foreground));
     position: relative;
+    min-height: 100vh;
   }
   
   body::before {
@@ -160,6 +165,8 @@
   #root {
     position: relative;
     z-index: 1;
+    min-height: 100vh;
+    background: transparent;
   }
   
   html {

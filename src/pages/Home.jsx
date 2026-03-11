@@ -8,6 +8,7 @@ import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCellaredOzFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
 import CollectionIntelligencePanel from "@/components/home/CollectionIntelligencePanel";
+import ProactiveCuratorPanel from "@/components/curator/ProactiveCuratorPanel";
 import QuickActions from "@/components/home/QuickActions";
 import LogSessionModal from "@/components/home/LogSessionModal";
 import IdentifyModal from "@/components/home/IdentifyModal";
