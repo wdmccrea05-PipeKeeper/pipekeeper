@@ -39,6 +39,32 @@ function getTabFromUrl() {
   }
 }
 
+// ── Image-selection helpers ───────────────────────────────────────────────────
+function getPipeImage(pipe) {
+  if (!pipe) return null;
+  return pipe.photos?.[0] || pipe.primary_photo || pipe.image || null;
+}
+
+function getBlendImage(blend) {
+  if (!blend) return null;
+  return blend.logo || blend.photo || blend.tin_image || blend.brand_logo || null;
+}
+
+function pickRandom(arr) {
+  if (!arr || arr.length === 0) return null;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function gatherCollectionImages(pipes, blends) {
+  const pipeImgs = (pipes || []).flatMap((p) =>
+    [p?.photos?.[0], p?.primary_photo, p?.image].filter(Boolean)
+  );
+  const blendImgs = (blends || []).flatMap((b) =>
+    [b?.logo, b?.photo, b?.tin_image, b?.brand_logo].filter(Boolean)
+  );
+  return { pipeImgs, blendImgs, allImgs: [...pipeImgs, ...blendImgs] };
+}
+
 // ── Real texture overlays (grain, wood grain, paper) ─────────────────────────
 // uid must be unique per rendered instance to avoid SVG pattern ID collisions.
 function getTextureType(silhouetteType) {
@@ -218,9 +244,12 @@ function SnapshotCard({ icon: Icon, label, value, accent = "#4A7C9C", sub }) {
 }
 
 // ── Highlight card (story card grid item) ─────────────────────────────────────
-function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onShare, onStory, cardRef, patternIndex = 0, artifactImage, silhouetteType }) {
+// heroImage — sharp foreground spotlight (item cards only: Most Smoked, Favorite Blend, Most Valuable)
+// artifactImage — blurred ambient background (all cards; random collection image for analytics cards)
+function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onShare, onStory, cardRef, patternIndex = 0, artifactImage, heroImage, silhouetteType }) {
   // Derive category-appropriate texture: wood grain for pipe, paper for tobacco, grain for general
   const textureType = getTextureType(silhouetteType);
+  const heroRotation = silhouetteType === "pipe" ? "12deg" : "-8deg";
 
   return (
     <div
@@ -232,7 +261,9 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         boxShadow: `0 0 0 1px ${accent}22, 0 12px 40px -8px ${accent}50, 0 4px 12px rgba(0,0,0,0.5)`,
       }}
     >
-      {/* Layer 2a: Ambient blurred background from actual item photo */}
+      {/* Layer 1 (base gradient is the card background above) */}
+
+      {/* Layer 2a: Ambient blurred background from actual item/collection photo */}
       {artifactImage && (
         <div
           className="absolute inset-0 pointer-events-none"
@@ -240,66 +271,103 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
             backgroundImage: `url(${artifactImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            filter: "blur(22px) brightness(0.26) saturate(0.6)",
+            filter: heroImage
+              ? "blur(22px) brightness(0.26) saturate(0.6)"
+              : "blur(20px) brightness(0.22) saturate(0.5)",
             opacity: 0.95,
             transform: "scale(1.12)",
           }}
         />
       )}
 
-      {/* Layer 2b: Hero crop — actual item photo visible on right side of card */}
-      {artifactImage && (
+      {/* Layer 2b: Hero Pipe Spotlight — sharp <img> entering from right, slightly angled */}
+      {heroImage ? (
         <div
           className="absolute right-0 top-0 bottom-0 pointer-events-none overflow-hidden"
-          style={{ width: "52%" }}
+          style={{ width: "55%" }}
         >
+          <img
+            src={heroImage}
+            alt=""
+            loading="lazy"
+            className="absolute"
+            style={{
+              right: "-8%",
+              top: "50%",
+              transform: `translateY(-50%) rotate(${heroRotation})`,
+              height: "115%",
+              maxWidth: "none",
+              width: "auto",
+              objectFit: "contain",
+              filter: `drop-shadow(0 0 22px ${accent}80) drop-shadow(0 6px 14px rgba(0,0,0,0.65))`,
+            }}
+          />
+          {/* Fade left edge of hero image smoothly into the background */}
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `url(${artifactImage})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              filter: "blur(4px) brightness(0.40) saturate(0.82)",
+              background: "linear-gradient(to right, rgba(10,17,28,1) 0%, rgba(10,17,28,0.42) 38%, transparent 72%)",
             }}
           />
-          {/* Fade hero crop's left edge into the base layer */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(to right, rgba(10,17,28,1) 0%, rgba(10,17,28,0.55) 38%, transparent 78%)",
-            }}
-          />
+          {/* Ember glow at bottom-right for pipe cards */}
+          {silhouetteType === "pipe" && (
+            <div
+              className="absolute bottom-0 right-0 w-28 h-28 pointer-events-none"
+              style={{
+                background: `radial-gradient(circle, ${accent}50 0%, transparent 70%)`,
+                transform: "translate(20%, 20%)",
+              }}
+            />
+          )}
+          {/* Tin lid ring glow for blend cards */}
+          {silhouetteType === "leaf" && (
+            <div
+              className="absolute"
+              style={{
+                right: "8%",
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: "100px",
+                height: "100px",
+                borderRadius: "50%",
+                border: `1px solid ${accent}28`,
+                pointerEvents: "none",
+              }}
+            />
+          )}
         </div>
+      ) : (
+        /* Analytics cards: no hero — show silhouette watermark instead */
+        <>
+          {silhouetteType === "pipe" && (
+            <div className="absolute bottom-0 right-0 w-40 h-40 pointer-events-none" style={{ opacity: 0.07 }}>
+              <img
+                src={PIPE_SILHOUETTE_URL}
+                alt=""
+                className="w-full h-full object-contain"
+                style={{ filter: "brightness(0) invert(1)" }}
+                loading="lazy"
+              />
+            </div>
+          )}
+          {silhouetteType === "leaf" && (
+            <LeafSilhouette
+              className="absolute bottom-1 right-1 w-36 h-36 pointer-events-none"
+              style={{ opacity: 0.07 }}
+            />
+          )}
+        </>
       )}
 
-      {/* Layer 2c: Directional gradient overlay — dark left (text) → transparent right (photo) */}
+      {/* Layer 2c: Directional gradient overlay — dark left (text) → transparent right */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: artifactImage
+          background: (artifactImage || heroImage)
             ? `linear-gradient(to right, rgba(14,21,32,0.92) 0%, rgba(14,21,32,0.72) 45%, rgba(14,21,32,0.28) 75%, transparent 100%)`
             : `linear-gradient(155deg, rgba(14,21,32,0.72) 0%, rgba(14,21,32,0.52) 45%, ${accent}22 100%)`,
         }}
       />
-
-      {/* Silhouette watermark — only shown when no hero photo fills the right side */}
-      {silhouetteType === "pipe" && (
-        <div className="absolute bottom-0 right-0 w-40 h-40 pointer-events-none" style={{ opacity: 0.07 }}>
-          <img
-            src={PIPE_SILHOUETTE_URL}
-            alt=""
-            className="w-full h-full object-contain"
-            style={{ filter: "brightness(0) invert(1)" }}
-            loading="lazy"
-          />
-        </div>
-      )}
-      {silhouetteType === "leaf" && (
-        <LeafSilhouette
-          className="absolute bottom-1 right-1 w-36 h-36 pointer-events-none"
-          style={{ opacity: 0.07 }}
-        />
-      )}
 
       {/* Layer 3: Real texture overlay — category-specific */}
       <ArtifactTexture type={textureType} accent={accent} uid={String(patternIndex)} />
@@ -439,8 +507,9 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
 }
 
 // ── Full-screen Story / Share card modal ──────────────────────────────────────
-function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExport, storyRef, artifactImage, silhouetteType }) {
+function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExport, storyRef, artifactImage, heroImage, silhouetteType }) {
   const storyTextureType = getTextureType(silhouetteType);
+  const heroRotation = silhouetteType === "pipe" ? "8deg" : "-5deg";
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -472,7 +541,7 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
           flexDirection: "column",
         }}
       >
-        {/* Layer 2a: Ambient blurred background from actual item photo */}
+        {/* Layer 2a: Ambient blurred background from actual item/collection photo */}
         {artifactImage && (
           <div
             className="absolute inset-0 pointer-events-none"
@@ -487,29 +556,71 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
           />
         )}
 
-        {/* Layer 2b: Hero crop — item photo enlarged at bottom portion of story card */}
-        {artifactImage && (
+        {/* Layer 2b: Hero Pipe Spotlight — sharp <img> centered in card, slightly rotated */}
+        {heroImage ? (
           <div
-            className="absolute left-0 right-0 bottom-0 pointer-events-none overflow-hidden"
-            style={{ height: "55%" }}
+            className="absolute left-0 right-0 pointer-events-none overflow-hidden"
+            style={{ top: "28%", bottom: "18%" }}
           >
+            <img
+              src={heroImage}
+              alt=""
+              loading="lazy"
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                transform: `translate(-50%, -50%) rotate(${heroRotation})`,
+                height: "105%",
+                maxWidth: "none",
+                width: "auto",
+                objectFit: "contain",
+                filter: `drop-shadow(0 0 30px ${accent}85) drop-shadow(0 8px 24px rgba(0,0,0,0.65))`,
+              }}
+            />
+            {/* Fade top + bottom edges of hero into the background */}
             <div
               className="absolute inset-0"
               style={{
-                backgroundImage: `url(${artifactImage})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center 60%",
-                filter: "blur(6px) brightness(0.38) saturate(0.80)",
+                background: "linear-gradient(to bottom, rgba(10,17,28,1) 0%, rgba(10,17,28,0.18) 18%, transparent 40%, rgba(10,17,28,0.18) 78%, rgba(10,17,28,0.85) 100%)",
               }}
             />
-            {/* Fade hero crop's top edge */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background: "linear-gradient(to bottom, rgba(10,17,28,1) 0%, rgba(10,17,28,0.55) 35%, transparent 75%)",
-              }}
-            />
+            {/* Ember glow below hero for pipe cards */}
+            {silhouetteType === "pipe" && (
+              <div
+                className="absolute bottom-0 left-1/2 w-40 h-16 pointer-events-none"
+                style={{
+                  background: `radial-gradient(ellipse, ${accent}50 0%, transparent 70%)`,
+                  transform: "translateX(-50%) translateY(40%)",
+                }}
+              />
+            )}
           </div>
+        ) : (
+          /* Analytics / fallback: retain the original blurred crop at bottom */
+          artifactImage && (
+            <div
+              className="absolute left-0 right-0 bottom-0 pointer-events-none overflow-hidden"
+              style={{ height: "55%" }}
+            >
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `url(${artifactImage})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center 60%",
+                  filter: "blur(6px) brightness(0.38) saturate(0.80)",
+                }}
+              />
+              {/* Fade hero crop's top edge */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: "linear-gradient(to bottom, rgba(10,17,28,1) 0%, rgba(10,17,28,0.55) 35%, transparent 75%)",
+                }}
+              />
+            </div>
+          )
         )}
 
         {/* Layer 2c: Gradient overlay — dark top/edges, reveals hero in lower middle */}
@@ -522,8 +633,8 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
           }}
         />
 
-        {/* Silhouette watermark */}
-        {silhouetteType === "pipe" && (
+        {/* Silhouette watermark — shown only when no hero image */}
+        {!heroImage && silhouetteType === "pipe" && (
           <div
             className="absolute pointer-events-none"
             style={{ bottom: "70px", right: "-20px", width: "200px", height: "200px", opacity: 0.08 }}
@@ -537,7 +648,7 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
             />
           </div>
         )}
-        {silhouetteType === "leaf" && (
+        {!heroImage && silhouetteType === "leaf" && (
           <LeafSilhouette
             className="absolute pointer-events-none"
             style={{ bottom: "70px", right: "-10px", width: "180px", height: "180px", opacity: 0.08 }}
@@ -600,15 +711,23 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
           </div>
         </div>
 
-        {/* Central content — vertically centered */}
-        <div className="relative flex flex-col items-center justify-center flex-1 px-7 text-center gap-6">
-          {/* Icon orb */}
+        {/* Central content — top-aligned when hero fills the center, otherwise vertically centered */}
+        <div
+          className="relative flex flex-col items-center px-7 text-center gap-5"
+          style={{
+            justifyContent: heroImage ? "flex-start" : "center",
+            flex: 1,
+            paddingTop: heroImage ? "1.25rem" : undefined,
+            paddingBottom: heroImage ? "0" : undefined,
+          }}
+        >
+          {/* Icon orb — smaller when hero image is present to save vertical space */}
           <div
             className="flex items-center justify-center"
             style={{
-              width: "90px",
-              height: "90px",
-              borderRadius: "24px",
+              width: heroImage ? "64px" : "90px",
+              height: heroImage ? "64px" : "90px",
+              borderRadius: "20px",
               background: `linear-gradient(135deg, ${accent}60 0%, ${accent}30 100%)`,
               border: `1.5px solid ${accent}66`,
               boxShadow: `0 0 40px ${accent}60, inset 0 1px 0 ${accent}50`,
@@ -616,8 +735,8 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
           >
             <Icon
               style={{
-                width: "44px",
-                height: "44px",
+                width: heroImage ? "30px" : "44px",
+                height: heroImage ? "30px" : "44px",
                 color: accent,
                 filter: `drop-shadow(0 0 12px ${accent}dd)`,
               }}
@@ -828,6 +947,19 @@ export default function Insights() {
   const longestStreak = useMemo(() => computeLongestStreak(smokingLogs), [smokingLogs]);
 
   const hasData = pipes.length > 0 || blends.length > 0 || smokingLogs.length > 0;
+
+  // ── Analytics card images: stable random picks from the collection ──────────
+  // Intentionally depends on collection *size* rather than full arrays so that
+  // images are stable within a session and don't flicker on every React Query
+  // refetch. A user would need to add/remove items before the picks change.
+  const analyticsImages = useMemo(() => {
+    const { pipeImgs, allImgs } = gatherCollectionImages(pipes, blends);
+    return {
+      streak: pickRandom(pipeImgs),
+      sessions: pickRandom(allImgs),
+      collectionValue: pickRandom(allImgs),
+    };
+  }, [pipes.length, blends.length]); // re-pick only when collection size changes
 
   // ── Share: capture a DOM node and share/download as image ─────────────────
   const captureAndShare = async (node, filename) => {
@@ -1043,52 +1175,62 @@ export default function Insights() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {mostUsedPipe && (
-              <HighlightCard
-                title={t("insights.highlightMostSmoked", { defaultValue: "Most Smoked Pipe" })}
-                value={mostUsedPipe.pipe.name}
-                sub={`${mostUsedPipe.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`}
-                accent="#C87941"
-                icon={Star}
-                patternIndex={0}
-                artifactImage={mostUsedPipe.pipe.photos?.[0]}
-                silhouetteType="pipe"
-                cardRef={(el) => (highlightRefs.current["mostPipe"] = el)}
-                onShare={() => handleShareCard("mostPipe")}
-                onStory={() => setActiveStory({
-                  title: t("insights.highlightMostSmoked", { defaultValue: "Most Smoked Pipe" }),
-                  value: mostUsedPipe.pipe.name,
-                  sub: `${mostUsedPipe.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`,
-                  accent: "#C87941",
-                  icon: Star,
-                  artifactImage: mostUsedPipe.pipe.photos?.[0],
-                  silhouetteType: "pipe",
-                })}
-              />
-            )}
-            {mostUsedBlend && (
-              <HighlightCard
-                title={t("insights.highlightFavoriteBlend", { defaultValue: "Favorite Blend" })}
-                value={mostUsedBlend.blend.name}
-                sub={`${mostUsedBlend.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`}
-                accent="#4A9C6A"
-                icon={Leaf}
-                patternIndex={1}
-                artifactImage={mostUsedBlend.blend.logo || mostUsedBlend.blend.photo}
-                silhouetteType="leaf"
-                cardRef={(el) => (highlightRefs.current["mostBlend"] = el)}
-                onShare={() => handleShareCard("mostBlend")}
-                onStory={() => setActiveStory({
-                  title: t("insights.highlightFavoriteBlend", { defaultValue: "Favorite Blend" }),
-                  value: mostUsedBlend.blend.name,
-                  sub: `${mostUsedBlend.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`,
-                  accent: "#4A9C6A",
-                  icon: Leaf,
-                  artifactImage: mostUsedBlend.blend.logo || mostUsedBlend.blend.photo,
-                  silhouetteType: "leaf",
-                })}
-              />
-            )}
+            {mostUsedPipe && (() => {
+              const img = getPipeImage(mostUsedPipe.pipe);
+              return (
+                <HighlightCard
+                  title={t("insights.highlightMostSmoked", { defaultValue: "Most Smoked Pipe" })}
+                  value={mostUsedPipe.pipe.name}
+                  sub={`${mostUsedPipe.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`}
+                  accent="#C87941"
+                  icon={Star}
+                  patternIndex={0}
+                  artifactImage={img}
+                  heroImage={img}
+                  silhouetteType="pipe"
+                  cardRef={(el) => (highlightRefs.current["mostPipe"] = el)}
+                  onShare={() => handleShareCard("mostPipe")}
+                  onStory={() => setActiveStory({
+                    title: t("insights.highlightMostSmoked", { defaultValue: "Most Smoked Pipe" }),
+                    value: mostUsedPipe.pipe.name,
+                    sub: `${mostUsedPipe.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`,
+                    accent: "#C87941",
+                    icon: Star,
+                    artifactImage: img,
+                    heroImage: img,
+                    silhouetteType: "pipe",
+                  })}
+                />
+              );
+            })()}
+            {mostUsedBlend && (() => {
+              const img = getBlendImage(mostUsedBlend.blend);
+              return (
+                <HighlightCard
+                  title={t("insights.highlightFavoriteBlend", { defaultValue: "Favorite Blend" })}
+                  value={mostUsedBlend.blend.name}
+                  sub={`${mostUsedBlend.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`}
+                  accent="#4A9C6A"
+                  icon={Leaf}
+                  patternIndex={1}
+                  artifactImage={img}
+                  heroImage={img}
+                  silhouetteType="leaf"
+                  cardRef={(el) => (highlightRefs.current["mostBlend"] = el)}
+                  onShare={() => handleShareCard("mostBlend")}
+                  onStory={() => setActiveStory({
+                    title: t("insights.highlightFavoriteBlend", { defaultValue: "Favorite Blend" }),
+                    value: mostUsedBlend.blend.name,
+                    sub: `${mostUsedBlend.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`,
+                    accent: "#4A9C6A",
+                    icon: Leaf,
+                    artifactImage: img,
+                    heroImage: img,
+                    silhouetteType: "leaf",
+                  })}
+                />
+              );
+            })()}
             {longestStreak > 0 && (
               <HighlightCard
                 title={t("insights.highlightLongestStreak", { defaultValue: "Longest Streak" })}
@@ -1097,6 +1239,7 @@ export default function Insights() {
                 accent="#8B5CF6"
                 icon={Zap}
                 patternIndex={2}
+                artifactImage={analyticsImages.streak}
                 silhouetteType="pipe"
                 cardRef={(el) => (highlightRefs.current["streak"] = el)}
                 onShare={() => handleShareCard("streak")}
@@ -1106,33 +1249,39 @@ export default function Insights() {
                   sub: t("insights.highlightConsecutive", { defaultValue: "consecutive smoking days" }),
                   accent: "#8B5CF6",
                   icon: Zap,
+                  artifactImage: analyticsImages.streak,
                   silhouetteType: "pipe",
                 })}
               />
             )}
-            {mostValuablePipe && (
-              <HighlightCard
-                title={t("insights.highlightMostValuable", { defaultValue: "Most Valuable Pipe" })}
-                value={mostValuablePipe.name}
-                sub={formatCurrency(mostValuablePipe.estimated_value)}
-                accent="#C0392B"
-                icon={Award}
-                patternIndex={3}
-                artifactImage={mostValuablePipe.photos?.[0]}
-                silhouetteType="pipe"
-                cardRef={(el) => (highlightRefs.current["valuePipe"] = el)}
-                onShare={() => handleShareCard("valuePipe")}
-                onStory={() => setActiveStory({
-                  title: t("insights.highlightMostValuable", { defaultValue: "Most Valuable Pipe" }),
-                  value: mostValuablePipe.name,
-                  sub: formatCurrency(mostValuablePipe.estimated_value),
-                  accent: "#C0392B",
-                  icon: Award,
-                  artifactImage: mostValuablePipe.photos?.[0],
-                  silhouetteType: "pipe",
-                })}
-              />
-            )}
+            {mostValuablePipe && (() => {
+              const img = getPipeImage(mostValuablePipe);
+              return (
+                <HighlightCard
+                  title={t("insights.highlightMostValuable", { defaultValue: "Most Valuable Pipe" })}
+                  value={mostValuablePipe.name}
+                  sub={formatCurrency(mostValuablePipe.estimated_value)}
+                  accent="#C0392B"
+                  icon={Award}
+                  patternIndex={3}
+                  artifactImage={img}
+                  heroImage={img}
+                  silhouetteType="pipe"
+                  cardRef={(el) => (highlightRefs.current["valuePipe"] = el)}
+                  onShare={() => handleShareCard("valuePipe")}
+                  onStory={() => setActiveStory({
+                    title: t("insights.highlightMostValuable", { defaultValue: "Most Valuable Pipe" }),
+                    value: mostValuablePipe.name,
+                    sub: formatCurrency(mostValuablePipe.estimated_value),
+                    accent: "#C0392B",
+                    icon: Award,
+                    artifactImage: img,
+                    heroImage: img,
+                    silhouetteType: "pipe",
+                  })}
+                />
+              );
+            })()}
             {smokingLogs.length > 0 && (
               <HighlightCard
                 title={t("insights.highlightTotalSessions", { defaultValue: "Total Sessions Logged" })}
@@ -1141,6 +1290,7 @@ export default function Insights() {
                 accent="#22D3EE"
                 icon={Flame}
                 patternIndex={4}
+                artifactImage={analyticsImages.sessions}
                 silhouetteType="pipe"
                 cardRef={(el) => (highlightRefs.current["totalSessions"] = el)}
                 onShare={() => handleShareCard("totalSessions")}
@@ -1150,6 +1300,7 @@ export default function Insights() {
                   sub: `${sessionsThisWeek} ${t("insights.snapshotThisWeek", { defaultValue: "this week" })}`,
                   accent: "#22D3EE",
                   icon: Flame,
+                  artifactImage: analyticsImages.sessions,
                   silhouetteType: "pipe",
                 })}
               />
@@ -1162,6 +1313,7 @@ export default function Insights() {
                 accent="#10B981"
                 icon={TrendingUp}
                 patternIndex={5}
+                artifactImage={analyticsImages.collectionValue}
                 silhouetteType="leaf"
                 cardRef={(el) => (highlightRefs.current["collectionValue"] = el)}
                 onShare={() => handleShareCard("collectionValue")}
@@ -1171,6 +1323,7 @@ export default function Insights() {
                   sub: `${pipes.length} ${t("home.pipesInCollection")} · ${blends.length} ${t("home.tobaccoBlends")}`,
                   accent: "#10B981",
                   icon: TrendingUp,
+                  artifactImage: analyticsImages.collectionValue,
                   silhouetteType: "leaf",
                 })}
               />
