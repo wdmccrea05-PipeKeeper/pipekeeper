@@ -1,5 +1,5 @@
 import React from 'react';
-import { PKCard } from "@/components/ui/pk-surface";
+import { HeritageCard } from "@/components/ui/HeritageCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Star } from "lucide-react";
@@ -17,11 +17,14 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
     >
-      <PKCard 
+      <HeritageCard 
         className="overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300"
         onClick={onClick}
+        withTexture={false}
       >
-        <div className="relative aspect-[16/9] bg-gradient-to-br from-[#1A2B3A] to-[#243548] overflow-hidden">
+        <div className="relative aspect-[16/9] overflow-hidden" style={{
+          background: "linear-gradient(135deg, rgba(42, 30, 20, 0.5), rgba(35, 24, 16, 0.7))"
+        }}>
           {mainPhoto ? (
             <img 
               src={mainPhoto} 
@@ -79,7 +82,7 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
             )}
           </div>
           </div>
-          </PKCard>
+          </HeritageCard>
     </motion.div>
   );
 }

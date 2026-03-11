@@ -1,5 +1,5 @@
 import React from 'react';
-import { PKCard } from "@/components/ui/pk-surface";
+import { HeritageCard } from "@/components/ui/HeritageCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Star } from "lucide-react";
@@ -41,11 +41,14 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
     >
-      <PKCard 
+      <HeritageCard 
         className="overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300"
         onClick={onClick}
+        withTexture={false}
       >
-        <div className="relative aspect-[4/3] bg-[#1A2B3A] overflow-hidden">
+        <div className="relative aspect-[4/3] overflow-hidden" style={{
+          background: "linear-gradient(135deg, rgba(42, 30, 20, 0.5), rgba(35, 24, 16, 0.7))"
+        }}>
           {blend.logo || blend.photo ? (
             <img 
               src={blend.logo || blend.photo} 
@@ -57,7 +60,9 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
               }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-[#1A2B3A] p-3">
+            <div className="w-full h-full flex items-center justify-center p-3" style={{
+              background: "linear-gradient(135deg, rgba(42, 30, 20, 0.5), rgba(35, 24, 16, 0.7))"
+            }}>
               <img 
                 src={getTobaccoLogo(blend.manufacturer)} 
                 alt={blend.manufacturer || 'Tobacco'}
@@ -173,7 +178,7 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
             )}
           </div>
           </div>
-          </PKCard>
+          </HeritageCard>
     </motion.div>
   );
 }
