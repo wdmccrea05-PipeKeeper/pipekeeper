@@ -2412,6 +2412,11 @@ const enUI = {
     bulkImport: "Bulk Import",
     importDesc: "Import pipes & tobacco from CSV",
     totalValue: "Total Collection Value",
+    quickActions: "Quick Actions",
+    quickActionAddPipe: "Add Pipe",
+    quickActionAddTobacco: "Add Tobacco",
+    quickActionLogSession: "Log Session",
+    quickActionCollectionCurator: "Collection Curator",
   },
   pipesPage: {
     myPipes: "My Pipes",

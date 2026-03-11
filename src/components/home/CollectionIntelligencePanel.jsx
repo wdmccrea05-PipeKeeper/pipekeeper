@@ -33,9 +33,32 @@ const CATEGORIES = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// InsightCard — single readable insight with optional action button
+// CollapsibleSection — reusable section with toggle header
+// ─────────────────────────────────────────────────────────────────────────────
+function CollapsibleSection({ title, defaultOpen = false, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center justify-between w-full mb-2 group"
+        aria-expanded={open}
+      >
+        <h3 className="text-xs font-semibold text-[#E0D8C8]/60 uppercase tracking-wider group-hover:text-[#E0D8C8]/80 transition-colors">
+          {open ? "▼" : "▶"} {title}
+        </h3>
+      </button>
+      {open && <div>{children}</div>}
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// InsightCard — single readable insight with drill-down explanation support
 // ─────────────────────────────────────────────────────────────────────────────
 function InsightCard({ insight }) {
+  const [expanded, setExpanded] = useState(false);
   const iconMap = {
     clock: RotateCcw,
     leaf: Leaf,
@@ -44,6 +67,7 @@ function InsightCard({ insight }) {
     activity: Activity,
   };
   const Icon = iconMap[insight.icon] || Activity;
+  const hasDetail = !!(insight.explanation || (insight.affectedItems && insight.affectedItems.length > 0));
 
   return (
     <div className="rounded-xl bg-white/5 p-4 flex flex-col gap-3">
@@ -53,7 +77,39 @@ function InsightCard({ insight }) {
           <div className="font-semibold text-[#E0D8C8] text-sm leading-snug">{insight.title}</div>
           <p className="text-sm text-[#E0D8C8]/70 mt-1 leading-relaxed">{insight.description}</p>
         </div>
+        {hasDetail && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            className="shrink-0 text-[#E0D8C8]/40 hover:text-[#E0D8C8]/70 transition-colors"
+          >
+            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        )}
       </div>
+      {expanded && hasDetail && (
+        <div className="ml-7 space-y-2 border-t border-white/10 pt-2">
+          {insight.explanation && (
+            <div>
+              <div className="text-xs font-semibold text-[#E0D8C8]/50 uppercase tracking-wider mb-1">Why this matters</div>
+              <p className="text-xs text-[#E0D8C8]/60 leading-relaxed">{insight.explanation}</p>
+            </div>
+          )}
+          {insight.affectedItems && insight.affectedItems.length > 0 && (
+            <div>
+              <div className="text-xs font-semibold text-[#E0D8C8]/50 uppercase tracking-wider mb-1">Affected Items</div>
+              <ul className="space-y-0.5">
+                {insight.affectedItems.map((item, i) => (
+                  <li key={i} className="text-xs text-[#E0D8C8]/60 flex items-center gap-1">
+                    <span className="text-amber-400">•</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
       {insight.actionLabel && insight.actionUrl && (
         <a
           href={insight.actionUrl}
@@ -227,6 +283,8 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
             : t("collectionIntelligence.insightRotationDesc", {
                 count: overduePipes.length,
               }),
+        explanation: "Regular rotation helps prevent flavor ghosting, uneven cake buildup, and ensures each pipe stays in good playing condition.",
+        affectedItems: overduePipes.slice(0, 5).map((p) => p.name).filter(Boolean),
         actionLabel: t("collectionIntelligence.viewPipes"),
         actionUrl: createPageUrl("Pipes"),
       });
@@ -264,6 +322,8 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
             : t("collectionIntelligence.insightCellarDesc", {
                 count: peakBlends.length,
               }),
+        explanation: "Tobacco that has reached its optimal aging window develops a smoother, more complex flavor profile. Consider sampling these blends soon.",
+        affectedItems: peakBlends.slice(0, 5).map((b) => b.name).filter(Boolean),
         actionLabel: t("collectionIntelligence.viewCellar"),
         actionUrl: createPageUrl("Tobacco"),
       });
@@ -282,6 +342,8 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
             : t("collectionIntelligence.insightCollectorDesc", {
                 count: excludedCount,
               }),
+        explanation: "Collector-only items are intentionally kept out of AI pairing and optimization to protect pieces you don't plan to use.",
+        affectedItems: [],
         actionLabel: null,
         actionUrl: null,
       });
@@ -302,6 +364,8 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
           description: t("collectionIntelligence.insightDiversityLowDesc", {
             count: blendTypes.size,
           }),
+          explanation: "A variety of blend types — Virginias, Englishes, Aromatics, and more — offers a richer smoking experience and helps you discover new preferences.",
+          affectedItems: [],
           actionLabel: t("collectionIntelligence.viewTobacco"),
           actionUrl: createPageUrl("Tobacco"),
         });
@@ -314,6 +378,8 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
           description: t("collectionIntelligence.insightDiversityHighDesc", {
             count: blendTypes.size,
           }),
+          explanation: "A diverse cellar means more pairing options and a well-rounded smoking experience across moods, occasions, and seasons.",
+          affectedItems: [],
           actionLabel: null,
           actionUrl: null,
         });
@@ -337,6 +403,8 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
           description: t("collectionIntelligence.insightGapDesc", {
             type: gapName,
           }),
+          explanation: `Filling coverage gaps improves the range of pairings available and ensures you have good options for different pipe types and smoking occasions.`,
+          affectedItems: [],
           actionLabel: t("collectionIntelligence.viewOptimization"),
           actionUrl: createPageUrl("Home"),
         });
@@ -479,11 +547,8 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
         </div>
       </div>
 
-      {/* ── Collection Health Summary ───────────────────────────────────────── */}
-      <section aria-label={t("collectionIntelligence.healthTitle")}>
-        <h3 className="text-xs font-semibold text-[#E0D8C8]/60 uppercase tracking-wider mb-3">
-          {t("collectionIntelligence.healthTitle")}
-        </h3>
+      {/* ── Collection Health Summary (expanded by default) ─────────────────── */}
+      <CollapsibleSection title={t("collectionIntelligence.healthTitle")} defaultOpen={true}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {healthMetrics.map((m, i) => {
             const isGood =
@@ -514,14 +579,11 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
             );
           })}
         </div>
-      </section>
+      </CollapsibleSection>
 
-      {/* ── Insight Cards ──────────────────────────────────────────────────── */}
+      {/* ── Insight Cards (collapsed by default) ──────────────────────────── */}
       {insights.length > 0 && (
-        <section aria-label={t("collectionIntelligence.insightsTitle")}>
-          <h3 className="text-xs font-semibold text-[#E0D8C8]/60 uppercase tracking-wider mb-3">
-            {t("collectionIntelligence.insightsTitle")}
-          </h3>
+        <CollapsibleSection title={t("collectionIntelligence.insightsTitle")} defaultOpen={false}>
           <div className="space-y-3">
             {visibleInsights.map((insight) => (
               <InsightCard key={insight.id} insight={insight} />
@@ -547,35 +609,29 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
               )}
             </button>
           )}
-        </section>
+        </CollapsibleSection>
       )}
 
       {/* ── AI Recommendations ────────────────────────────────────────────── */}
       {topRecommendations.length > 0 && (
-        <section aria-label={t("collectionIntelligence.recommendationsTitle")}>
-          <h3 className="text-xs font-semibold text-[#E0D8C8]/60 uppercase tracking-wider mb-3">
-            {t("collectionIntelligence.recommendationsTitle")}
-          </h3>
+        <CollapsibleSection title={t("collectionIntelligence.recommendationsTitle")} defaultOpen={false}>
           <div className="space-y-3">
             {topRecommendations.map((rec, i) => (
               <RecommendationCard key={i} rec={rec} t={t} />
             ))}
           </div>
-        </section>
+        </CollapsibleSection>
       )}
 
-      {/* ── AI Updates Feed ───────────────────────────────────────────────── */}
+      {/* ── AI Updates Feed (collapsed by default) ────────────────────────── */}
       {aiUpdates.length > 0 && (
-        <section aria-label={t("collectionIntelligence.updatesTitle")}>
-          <h3 className="text-xs font-semibold text-[#E0D8C8]/60 uppercase tracking-wider mb-3">
-            {t("collectionIntelligence.updatesTitle")}
-          </h3>
+        <CollapsibleSection title={t("collectionIntelligence.updatesTitle")} defaultOpen={false}>
           <div className="space-y-2">
             {aiUpdates.map((update) => (
               <UpdateFeedItem key={update.id} update={update} />
             ))}
           </div>
-        </section>
+        </CollapsibleSection>
       )}
     </PKCard>
   );

@@ -9,11 +9,12 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCellaredOzFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 import CollectionIntelligencePanel from "@/components/home/CollectionIntelligencePanel";
-import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
-import { Leaf, Heart, Sparkles, ArrowRight, Crown } from "lucide-react";
+import { Leaf, Heart, Sparkles, ArrowRight, Crown, PlusCircle, BookOpen } from "lucide-react";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
+import { isAppleBuild } from "@/components/utils/appVariant";
 
 const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
+const CURATOR_ICON = 'https://github.com/user-attachments/assets/c6da10bc-a008-4307-8dc7-214105e04c02';
 
 export default function Home() {
   const { t } = useTranslation();
@@ -108,7 +109,46 @@ export default function Home() {
         </PKCard>
       </div>
 
-      {/* 4. MODULE OVERVIEW CARDS — stacked on mobile, horizontal rows on desktop */}
+      {/* 4. QUICK ACTIONS */}
+      <PKCard className="p-4 sm:p-5">
+        <h2 className="text-sm font-semibold text-[#E0D8C8]/60 uppercase tracking-wider mb-3">{t("home.quickActions")}</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <a
+            href={createPageUrl("Pipes")}
+            className="flex flex-col items-center gap-2 px-3 py-4 rounded-xl bg-[#C87941]/10 hover:bg-[#C87941]/20 text-[#E0D8C8] font-medium text-sm transition-colors min-h-[44px] text-center"
+          >
+            <PlusCircle className="w-6 h-6 text-[#C87941]" />
+            <span>{t("home.quickActionAddPipe")}</span>
+          </a>
+          <a
+            href={createPageUrl("Tobacco")}
+            className="flex flex-col items-center gap-2 px-3 py-4 rounded-xl bg-[#4A7C59]/10 hover:bg-[#4A7C59]/20 text-[#E0D8C8] font-medium text-sm transition-colors min-h-[44px] text-center"
+          >
+            <Leaf className="w-6 h-6 text-[#6aab80]" />
+            <span>{t("home.quickActionAddTobacco")}</span>
+          </a>
+          <a
+            href={createPageUrl("Home")}
+            className="flex flex-col items-center gap-2 px-3 py-4 rounded-xl bg-white/5 hover:bg-white/10 text-[#E0D8C8] font-medium text-sm transition-colors min-h-[44px] text-center"
+          >
+            <BookOpen className="w-6 h-6 text-[#E0D8C8]/70" />
+            <span>{t("home.quickActionLogSession")}</span>
+          </a>
+          {!isAppleBuild && (
+            <a
+              href={createPageUrl("CollectionCurator")}
+              className="flex flex-col items-center gap-2 px-3 py-4 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-[#E0D8C8] font-medium text-sm transition-colors min-h-[44px] text-center"
+            >
+              <div className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center bg-amber-900/30">
+                <img src={CURATOR_ICON} alt="" className="w-full h-full object-cover" />
+              </div>
+              <span>{t("home.quickActionCollectionCurator")}</span>
+            </a>
+          )}
+        </div>
+      </PKCard>
+
+      {/* 5. COLLECTION OVERVIEW — stacked on mobile, horizontal rows on desktop */}
       <div className="flex flex-col gap-4">
         {/* Pipe Collection Module Card */}
         <PKCard className="p-4 sm:p-5 border-l-4 border-[#C87941]">
@@ -181,7 +221,7 @@ export default function Home() {
         </PKCard>
       </div>
 
-      {/* 4. FAVORITES SECTION */}
+      {/* 5b. FAVORITES SECTION */}
       {favoritePipes.length + favoriteBlends.length > 0 && (
         <PKCard className="p-6">
           <div className="flex items-center gap-2 mb-4">
@@ -205,14 +245,11 @@ export default function Home() {
         </PKCard>
       )}
 
-      {/* 5. COLLECTION INTELLIGENCE */}
+      {/* 6. COLLECTION INTELLIGENCE */}
       <CollectionIntelligencePanel pipes={pipes} blends={blends} user={user} />
 
-      {/* 6. COLLECTION INSIGHTS PANEL */}
+      {/* 7. COLLECTION INSIGHTS PANEL */}
       <CollectionInsightsPanel pipes={pipes} blends={blends} user={user} />
-
-      {/* 7. EXPERT TOBACCONIST */}
-      <ExpertTobacconist pipes={pipes} blends={blends} isPaidUser={hasPaid} user={user} userProfile={userProfile} />
 
       {/* 8. RECENT PIPES & RECENT TOBACCO */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -274,7 +311,7 @@ export default function Home() {
         </PKCard>
       </div>
 
-      {/* 8. BULK IMPORT FOOTER */}
+      {/* 9. BULK IMPORT FOOTER */}
       <a href={createPageUrl("Import")} className="block">
         <PKCard className="p-4 flex items-center gap-4 hover:bg-[#2a3f57] transition-colors cursor-pointer">
           <Sparkles className="w-8 h-8 text-amber-400 shrink-0" />
