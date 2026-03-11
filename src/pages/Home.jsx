@@ -28,7 +28,7 @@ const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/pu
 
 export default function Home() {
   const { t } = useTranslation();
-  const { user, hasPaid, planLabel } = useCurrentUser();
+  const { user, hasPaid, hasPremium, hasPro, planLabel } = useCurrentUser();
 
   const [showLogSession, setShowLogSession] = useState(false);
   const [showIdentify, setShowIdentify] = useState(false);
