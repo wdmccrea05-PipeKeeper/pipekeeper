@@ -110,7 +110,7 @@ export default function Home() {
   };
 
   const handleAskCurator = () => {
-    window.location.href = createPageUrl("Curator?tab=whatif");
+    window.location.href = createPageUrl("Curator");
   };
 
   const totalPipeValue = pipes.reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0);

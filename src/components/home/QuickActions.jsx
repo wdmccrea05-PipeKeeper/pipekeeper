@@ -1,6 +1,9 @@
 import React from "react";
-import { BookOpen, Camera, TrendingUp, Archive } from "lucide-react";
+import { BookOpen, Camera, TrendingUp } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+
+const CURATOR_ICON =
+  "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png";
 
 const ACTIONS = [
   {
@@ -32,7 +35,6 @@ const ACTIONS = [
   },
   {
     key: "collectionCurator",
-    Icon: Archive,
     accent: "#8b5e3a",
     iconColor: "text-[#d4956a]",
     bgColor: "bg-[#8b5e3a]/15",
@@ -63,8 +65,17 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
             onClick={handlers[key]}
             className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border ${borderColor} ${bgColor} ${hoverColor} transition-colors min-h-[80px] w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30`}
           >
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center bg-white/5`}>
-              <Icon className={`w-5 h-5 ${iconColor}`} aria-hidden="true" />
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 overflow-hidden`}>
+              {key === "collectionCurator" ? (
+                <img
+                  src={CURATOR_ICON}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  aria-hidden="true"
+                />
+              ) : (
+                <Icon className={`w-5 h-5 ${iconColor}`} aria-hidden="true" />
+              )}
             </div>
             <span className="text-sm font-medium text-[#E0D8C8] leading-tight">
               {t(`quickActions.${key}`)}
