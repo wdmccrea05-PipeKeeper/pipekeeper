@@ -5,39 +5,56 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
-const ACTIONS = [
-  {
-    key: "logSession",
-    Icon: BookOpen,
-    accent: "#4A7C59",
-    iconColor: "text-[#6aab80]",
-    hoverColor: "hover:bg-[#4A7C59]/20",
-    borderColor: "border-[#4A7C59]/30",
-  },
-  {
-    key: "identify",
-    Icon: Camera,
-    accent: "#C87941",
-    iconColor: "text-[#e09060]",
-    hoverColor: "hover:bg-[#C87941]/20",
-    borderColor: "border-[#C87941]/30",
-  },
-  {
-    key: "optimize",
-    Icon: TrendingUp,
-    accent: "#4A7C9C",
-    iconColor: "text-[#6aabc0]",
-    hoverColor: "hover:bg-[#4A7C9C]/20",
-    borderColor: "border-[#4A7C9C]/30",
-  },
-  {
-    key: "collectionCurator",
-    accent: "#8b5e3a",
-    iconColor: "text-[#d4956a]",
-    hoverColor: "hover:bg-[#8b5e3a]/20",
-    borderColor: "border-[#8b5e3a]/30",
-  },
-];
+function getActions(hasStoryData) {
+  const actions = [];
+
+  if (hasStoryData) {
+    actions.push({
+      key: "viewStory",
+      Icon: SparkleIcon,
+      accent: "#F59E0B",
+      iconColor: "text-[#F59E0B]",
+      hoverColor: "hover:bg-[#F59E0B]/20",
+      borderColor: "border-[#F59E0B]/30",
+    });
+  }
+
+  actions.push(
+    {
+      key: "logSession",
+      Icon: BookOpen,
+      accent: "#4A7C59",
+      iconColor: "text-[#6aab80]",
+      hoverColor: "hover:bg-[#4A7C59]/20",
+      borderColor: "border-[#4A7C59]/30",
+    },
+    {
+      key: "identify",
+      Icon: Camera,
+      accent: "#C87941",
+      iconColor: "text-[#e09060]",
+      hoverColor: "hover:bg-[#C87941]/20",
+      borderColor: "border-[#C87941]/30",
+    },
+    {
+      key: "optimize",
+      Icon: TrendingUp,
+      accent: "#4A7C9C",
+      iconColor: "text-[#6aabc0]",
+      hoverColor: "hover:bg-[#4A7C9C]/20",
+      borderColor: "border-[#4A7C9C]/30",
+    },
+    {
+      key: "collectionCurator",
+      accent: "#8b5e3a",
+      iconColor: "text-[#d4956a]",
+      hoverColor: "hover:bg-[#8b5e3a]/20",
+      borderColor: "border-[#8b5e3a]/30",
+    }
+  );
+
+  return actions;
+}
 
 export default function QuickActions({ onLogSession, onIdentify, onOptimize, onAskCurator, onViewStory, hasStoryData }) {
   const { t } = useTranslation();
@@ -47,7 +64,10 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
     identify: onIdentify,
     optimize: onOptimize,
     collectionCurator: onAskCurator,
+    viewStory: onViewStory,
   };
+
+  const actions = getActions(hasStoryData);
 
   return (
     <div
@@ -80,8 +100,8 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
       <div className="text-xs text-[#E0D8C8]/50 uppercase tracking-wider font-medium mb-3 relative">
         {t("quickActions.sectionTitle")}
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 relative">
-        {ACTIONS.map(({ key, Icon, accent, iconColor, hoverColor, borderColor }) => (
+      <div className={`grid gap-3 relative ${hasStoryData ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-2 md:grid-cols-4'}`}>
+        {actions.map(({ key, Icon, accent, iconColor, hoverColor, borderColor }) => (
           <button
             key={key}
             onClick={handlers[key]}
