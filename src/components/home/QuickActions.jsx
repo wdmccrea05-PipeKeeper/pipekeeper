@@ -71,52 +71,55 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
 
   return (
     <div
-      className="relative rounded-2xl overflow-hidden p-4"
+      className="relative rounded-lg overflow-hidden p-5"
       style={{
-        background: "linear-gradient(145deg, #141f2d 0%, #0f1920 60%, rgba(74,124,89,0.08) 100%)",
-        border: "1px solid rgba(224,216,200,0.12)",
-        boxShadow: "0 4px 24px rgba(0,0,0,0.30)",
+        background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
+        border: "1px solid rgba(120, 90, 65, 0.3)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)",
       }}
     >
-      {/* Subtle grain texture */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="qa-grain" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-            <circle cx="8" cy="12" r="0.38" fill="#E0D8C8" fillOpacity="0.030" />
-            <circle cx="24" cy="5" r="0.28" fill="#E0D8C8" fillOpacity="0.022" />
-            <circle cx="41" cy="19" r="0.42" fill="#E0D8C8" fillOpacity="0.028" />
-            <circle cx="60" cy="8" r="0.32" fill="#E0D8C8" fillOpacity="0.030" />
-            <circle cx="73" cy="27" r="0.38" fill="#E0D8C8" fillOpacity="0.022" />
-            <circle cx="14" cy="37" r="0.28" fill="#E0D8C8" fillOpacity="0.028" />
-            <circle cx="47" cy="45" r="0.42" fill="#E0D8C8" fillOpacity="0.030" />
-            <circle cx="66" cy="55" r="0.32" fill="#E0D8C8" fillOpacity="0.022" />
-            <circle cx="29" cy="67" r="0.38" fill="#E0D8C8" fillOpacity="0.028" />
-            <circle cx="53" cy="75" r="0.28" fill="#E0D8C8" fillOpacity="0.030" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#qa-grain)" />
-      </svg>
+      {/* Parchment texture */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-15"
+        style={{
+          backgroundImage: `
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 2px,
+              rgba(80, 60, 40, 0.1) 2px,
+              rgba(80, 60, 40, 0.1) 3px
+            )
+          `
+        }}
+      />
 
-      <div className="text-xs text-[#E0D8C8]/50 uppercase tracking-wider font-medium mb-3 relative">
+      <h3 
+        className="text-xs uppercase tracking-[0.14em] font-semibold mb-4 relative"
+        style={{ color: "rgba(180, 140, 75, 0.8)" }}
+      >
         {t("quickActions.sectionTitle")}
-      </div>
+      </h3>
       <div className={`grid gap-3 relative ${hasStoryData ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-2 md:grid-cols-4'}`}>
         {actions.map(({ key, Icon, accent, iconColor, hoverColor, borderColor }) => (
           <button
             key={key}
             onClick={handlers[key]}
-            className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border ${borderColor} ${hoverColor} transition-all duration-200 min-h-[80px] w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30`}
+            className="flex flex-col items-center justify-center gap-3 p-4 transition-all duration-200 min-h-[90px] w-full focus-visible:outline-none group"
             style={{
-              background: `linear-gradient(145deg, ${accent}14 0%, ${accent}08 55%, ${accent}1a 100%)`,
-              boxShadow: `inset 0 1px 0 ${accent}12`,
+              background: "linear-gradient(135deg, rgba(50, 35, 22, 0.5), rgba(42, 30, 20, 0.6))",
+              border: "1px solid rgba(120, 90, 65, 0.25)",
+              borderRadius: "0.5rem",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.06)",
             }}
           >
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden"
+              className="w-10 h-10 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-110"
               style={{
-                background: `linear-gradient(135deg, ${accent}38 0%, ${accent}1c 100%)`,
-                border: `1px solid ${accent}45`,
-                boxShadow: `0 0 12px ${accent}30`,
+                background: "linear-gradient(135deg, rgba(100, 70, 45, 0.35), rgba(80, 55, 35, 0.4))",
+                border: "1px solid rgba(120, 90, 65, 0.3)",
+                borderRadius: "0.375rem",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(180, 140, 100, 0.1)",
               }}
             >
               {key === "collectionCurator" ? (
@@ -127,10 +130,13 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
                   aria-hidden="true"
                 />
               ) : (
-                <Icon className={`w-5 h-5 ${iconColor}`} aria-hidden="true" />
+                <Icon className="w-5 h-5" style={{ color: "rgba(180, 140, 75, 0.9)" }} aria-hidden="true" />
               )}
             </div>
-            <span className="text-sm font-medium text-[#E0D8C8] leading-tight">
+            <span 
+              className="text-xs font-medium leading-tight text-center"
+              style={{ color: "#F5F1E7" }}
+            >
               {t(`quickActions.${key}`)}
             </span>
           </button>
