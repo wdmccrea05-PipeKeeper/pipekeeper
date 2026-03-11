@@ -370,10 +370,17 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 7. CURATOR INTELLIGENCE */}
+      {/* 7. PROACTIVE CURATOR */}
+      {(hasPremium || hasPro) && (
+        <ProactiveCuratorPanel
+          pipes={pipes}
+          blends={blends}
+          logs={smokingLogs}
+          curatorEnabled={userProfile?.enable_curator !== false}
+        />
+      )}
 
-
-      {/* 7. CURATOR INTELLIGENCE */}
+      {/* 8. COLLECTION INTELLIGENCE */}
       <div 
         className="rounded-lg overflow-hidden mt-2"
         style={{
@@ -384,7 +391,7 @@ export default function Home() {
         <CollectionIntelligencePanel pipes={pipes} blends={blends} user={user} />
       </div>
 
-      {/* 8. FAVORITES SECTION */}
+      {/* 9. FAVORITES SECTION */}
       {favoritePipes.length + favoriteBlends.length > 0 && (
         <div
           className="rounded-lg p-5"
@@ -447,7 +454,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* 9. INSIGHTS REFERENCE */}
+      {/* 10. INSIGHTS REFERENCE */}
       {!isAppleBuild && (pipes.length > 0 || blends.length > 0) && (
         <div 
           className="p-5 flex items-center gap-4 rounded-lg transition-all hover:scale-[1.01]"
@@ -487,7 +494,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* 10. RECENT ITEMS */}
+      {/* 11. RECENT ITEMS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div
           className="rounded-lg p-5"
@@ -595,7 +602,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 11. IMPORT TOOL */}
+      {/* 12. IMPORT TOOL */}
       <a href={createPageUrl("Import")} className="block">
         <div 
           className="p-5 flex items-center gap-4 transition-all cursor-pointer rounded-lg hover:scale-[1.01]"
