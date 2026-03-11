@@ -28,7 +28,7 @@ export const homeTranslations = {
       viewCellar: "View Cellar",
       favorites: "Favorites",
       insightsError: "Unable to load insights. Please try refreshing.",
-      expertTobacconistError: "Unable to load Expert Tobacconist. Please try refreshing.",
+      expertTobacconistError: "Unable to load Collection Curator. Please try refreshing.",
       recentPipes: "Recent Pipes",
       recentTobacco: "Recent Tobacco",
       viewAll: "View all",

@@ -61,39 +61,77 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
   return (
     <div
       ref={cardRef}
-      className="relative rounded-2xl overflow-hidden p-5 flex flex-col gap-3 min-h-[140px]"
+      className="relative rounded-2xl overflow-hidden flex flex-col justify-between min-h-[170px]"
       style={{
-        background: `linear-gradient(135deg, ${accent}30 0%, ${accent}10 100%)`,
-        border: `1px solid ${accent}40`,
+        background: `linear-gradient(145deg, #1a2535 0%, #111921 50%, ${accent}18 100%)`,
+        border: `1px solid ${accent}55`,
+        boxShadow: `0 0 0 1px ${accent}20, 0 8px 32px -8px ${accent}40, 0 2px 8px rgba(0,0,0,0.4)`,
       }}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: `${accent}25` }}
-        >
-          <Icon className="w-5 h-5" style={{ color: accent }} />
-        </div>
-        {onShare && (
-          <button
-            onClick={onShare}
-            className="text-[#E0D8C8]/40 hover:text-[#E0D8C8]/80 transition-colors p-1 rounded"
-            title="Share"
+      {/* Top accent bar */}
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl"
+        style={{ background: `linear-gradient(90deg, ${accent}00 0%, ${accent}cc 40%, ${accent}ff 60%, ${accent}00 100%)` }}
+      />
+
+      {/* Content */}
+      <div className="p-5 pb-3 flex flex-col gap-4 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          {/* Icon with glow */}
+          <div
+            className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+            style={{
+              background: `linear-gradient(135deg, ${accent}35 0%, ${accent}18 100%)`,
+              border: `1px solid ${accent}40`,
+              boxShadow: `0 0 12px ${accent}30`,
+            }}
           >
-            <Share2 className="w-4 h-4" />
-          </button>
-        )}
-      </div>
-      <div>
-        <div className="text-xs text-[#E0D8C8]/60 uppercase tracking-wide font-semibold mb-1">
-          {title}
+            <Icon className="w-5 h-5" style={{ color: accent, filter: `drop-shadow(0 0 4px ${accent}80)` }} />
+          </div>
+
+          {/* Share button — elegant top-right placement */}
+          {onShare && (
+            <button
+              onClick={onShare}
+              className="flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 opacity-50 hover:opacity-100"
+              style={{
+                background: `${accent}20`,
+                border: `1px solid ${accent}40`,
+              }}
+              title="Share"
+            >
+              <Share2 className="w-3.5 h-3.5" style={{ color: accent }} />
+            </button>
+          )}
         </div>
-        <div className="text-lg font-bold text-[#E0D8C8] leading-tight">{value ?? "—"}</div>
-        {sub && <div className="text-xs text-[#E0D8C8]/60 mt-1">{sub}</div>}
+
+        {/* Text hierarchy */}
+        <div className="space-y-1">
+          <div
+            className="text-[10px] uppercase tracking-[0.12em] font-bold"
+            style={{ color: `${accent}cc` }}
+          >
+            {title}
+          </div>
+          <div className="text-2xl font-bold text-[#F0EAD8] leading-tight tracking-tight">
+            {value ?? "—"}
+          </div>
+          {sub && (
+            <div className="text-xs text-[#E0D8C8]/55 leading-snug pt-0.5">
+              {sub}
+            </div>
+          )}
+        </div>
       </div>
-      {/* subtle PipeKeeper branding */}
-      <div className="absolute bottom-2 right-3 text-[10px] text-[#E0D8C8]/20 font-medium select-none">
-        PipeKeeper
+
+      {/* Bottom branding strip */}
+      <div
+        className="px-5 py-2 flex items-center justify-end"
+        style={{ borderTop: `1px solid ${accent}18` }}
+      >
+        <span className="text-[9px] uppercase tracking-[0.15em] font-semibold select-none" style={{ color: `${accent}50` }}>
+          PipeKeeper
+        </span>
       </div>
     </div>
   );
@@ -250,18 +288,31 @@ export default function Insights() {
     const node = highlightRefs.current[key];
     if (!node) return;
     try {
-      const canvas = await html2canvas(node, { backgroundColor: null, scale: 2 });
+      const canvas = await html2canvas(node, {
+        backgroundColor: "#111921",
+        scale: 3,
+        useCORS: true,
+        logging: false,
+      });
       const dataUrl = canvas.toDataURL("image/png");
-      if (navigator.share) {
-        const blob = await (await fetch(dataUrl)).blob();
-        const file = new File([blob], "pipekeeper-highlight.png", { type: "image/png" });
-        await navigator.share({ files: [file], title: "My PipeKeeper Highlight" });
-      } else {
-        const link = document.createElement("a");
-        link.download = "pipekeeper-highlight.png";
-        link.href = dataUrl;
-        link.click();
+      if (navigator.share && navigator.canShare) {
+        try {
+          const blob = await (await fetch(dataUrl)).blob();
+          const file = new File([blob], "pipekeeper-highlight.png", { type: "image/png" });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: "My PipeKeeper Highlight" });
+            return;
+          }
+        } catch (shareErr) {
+          if (shareErr?.name === "AbortError") return;
+          // Fall through to download
+        }
       }
+      // Fallback: download
+      const link = document.createElement("a");
+      link.download = `pipekeeper-highlight-${key}.png`;
+      link.href = dataUrl;
+      link.click();
     } catch (err) {
       if (err?.name !== "AbortError") {
         toast.error(t("insights.shareError", { defaultValue: "Could not share card" }));
@@ -350,14 +401,22 @@ export default function Insights() {
 
       {/* ── TOP HIGHLIGHTS (Spotify Wrapped style) ────────── */}
       {hasData && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-amber-400" />
-            <h2 className="text-base font-semibold text-[#E0D8C8]">
-              {t("insights.topHighlights", { defaultValue: "Top Highlights" })}
-            </h2>
+        <div className="space-y-4">
+          {/* Premium section heading */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.2)]">
+              <Trophy className="w-4 h-4 text-amber-400" style={{ filter: "drop-shadow(0 0 4px rgba(245,158,11,0.6))" }} />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-[#F0EAD8] tracking-tight">
+                {t("insights.topHighlights", { defaultValue: "Top Highlights" })}
+              </h2>
+              <p className="text-[11px] text-[#E0D8C8]/40 uppercase tracking-[0.1em]">
+                {t("insights.topHighlightsSub", { defaultValue: "Your collection at a glance" })}
+              </p>
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {mostUsedPipe && (
               <HighlightCard
                 title={t("insights.highlightMostSmoked", { defaultValue: "Most Smoked Pipe" })}

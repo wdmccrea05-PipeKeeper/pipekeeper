@@ -933,7 +933,7 @@ ${englishUserText}
     safeSetItem("collectionOptimizerCollapsed", String(newState));
   };
 
-  // ---- Standalone “Ask the Expert” mode (home card) ----
+  // ---- Standalone “Ask the Curator” mode (home card) ----
   if (initialShowWhatIf || showWhatIf) {
     return (
       <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
@@ -1802,7 +1802,7 @@ ${englishUserText}
               </div>
             )}
 
-            {/* Discuss / Ask Expert (embedded) */}
+            {/* Discuss / Ask Curator (embedded) */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-stone-800 flex items-center gap-2">
