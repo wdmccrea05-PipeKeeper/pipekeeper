@@ -633,9 +633,9 @@ function CommunityPageInner() {
               <div 
                 className="rounded-lg"
                 style={{
-                  background: "linear-gradient(145deg, rgba(50, 35, 22, 0.65), rgba(38, 26, 18, 0.80))",
-                  border: "1px solid rgba(120, 90, 65, 0.25)",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.7), rgba(42, 30, 20, 0.84))",
+                  border: "1px solid rgba(120, 90, 65, 0.28)",
+                  boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
                 }}
               >
                 <div className="py-12 text-center" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
@@ -648,16 +648,16 @@ function CommunityPageInner() {
               <div
                 className="rounded-lg overflow-hidden"
                 style={{
-                  background: "linear-gradient(145deg, rgba(50, 35, 22, 0.75), rgba(38, 26, 18, 0.88))",
-                  border: "1px solid rgba(120, 90, 65, 0.3)",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1)"
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                  border: "1px solid rgba(120, 90, 65, 0.32)",
+                  boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
                 }}
               >
                 <div 
                   className="px-6 py-5 border-b"
                   style={{
-                    borderBottomColor: "rgba(120, 90, 65, 0.25)",
-                    background: "linear-gradient(to bottom, rgba(60, 42, 28, 0.35), transparent)"
+                    borderBottomColor: "rgba(120, 90, 65, 0.28)",
+                    background: "linear-gradient(to bottom, rgba(62, 44, 30, 0.4), transparent)"
                   }}
                 >
                   <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
@@ -732,9 +732,9 @@ function CommunityPageInner() {
               <div 
                 className="rounded-lg"
                 style={{
-                  background: "linear-gradient(145deg, rgba(50, 35, 22, 0.65), rgba(38, 26, 18, 0.80))",
-                  border: "1px solid rgba(120, 90, 65, 0.25)",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.7), rgba(42, 30, 20, 0.84))",
+                  border: "1px solid rgba(120, 90, 65, 0.28)",
+                  boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
                 }}
               >
                 <div className="py-12 text-center" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
@@ -747,16 +747,16 @@ function CommunityPageInner() {
               <div
                 className="rounded-lg overflow-hidden"
                 style={{
-                  background: "linear-gradient(145deg, rgba(50, 35, 22, 0.75), rgba(38, 26, 18, 0.88))",
-                  border: "1px solid rgba(120, 90, 65, 0.3)",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1)"
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                  border: "1px solid rgba(120, 90, 65, 0.32)",
+                  boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
                 }}
               >
                 <div 
                   className="px-6 py-5 border-b"
                   style={{
-                    borderBottomColor: "rgba(120, 90, 65, 0.25)",
-                    background: "linear-gradient(to bottom, rgba(60, 42, 28, 0.35), transparent)"
+                    borderBottomColor: "rgba(120, 90, 65, 0.28)",
+                    background: "linear-gradient(to bottom, rgba(62, 44, 30, 0.4), transparent)"
                   }}
                 >
                   <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
@@ -828,9 +828,9 @@ function CommunityPageInner() {
               <div 
                 className="rounded-lg"
                 style={{
-                  background: "linear-gradient(145deg, rgba(50, 35, 22, 0.65), rgba(38, 26, 18, 0.80))",
-                  border: "1px solid rgba(120, 90, 65, 0.25)",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.7), rgba(42, 30, 20, 0.84))",
+                  border: "1px solid rgba(120, 90, 65, 0.28)",
+                  boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
                 }}
               >
                 <div className="py-12 text-center" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
@@ -903,9 +903,9 @@ function CommunityPageInner() {
             <div
               className="rounded-lg overflow-hidden"
               style={{
-                background: "linear-gradient(145deg, rgba(50, 35, 22, 0.75), rgba(38, 26, 18, 0.88))",
-                border: "1px solid rgba(120, 90, 65, 0.3)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1)"
+                background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                border: "1px solid rgba(120, 90, 65, 0.32)",
+                boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
               }}
             >
               <div 
@@ -995,9 +995,9 @@ function CommunityPageInner() {
             <div
               className="rounded-lg overflow-hidden"
               style={{
-                background: "linear-gradient(145deg, rgba(50, 35, 22, 0.75), rgba(38, 26, 18, 0.88))",
-                border: "1px solid rgba(120, 90, 65, 0.3)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1)"
+                background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                border: "1px solid rgba(120, 90, 65, 0.32)",
+                boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
               }}
             >
               <div 
