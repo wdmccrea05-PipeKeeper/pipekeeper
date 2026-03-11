@@ -109,19 +109,23 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
 
   return (
     <div className="rounded-lg" style={{
-      background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
-      border: "1px solid rgba(120, 90, 65, 0.3)",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)",
+      background: "linear-gradient(145deg, rgba(48, 34, 22, 0.75), rgba(38, 26, 18, 0.88))",
+      border: "1px solid rgba(120, 90, 65, 0.32)",
+      boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)",
     }}>
-      <div className="p-6">
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
+      <div className="p-7">
+        <div className="mb-5">
+          <div className="flex items-center gap-2 mb-1.5">
+            <h2 className="text-xl font-semibold" style={{ 
+              color: "#F5F1E7", 
+              fontFamily: "'Georgia', serif",
+              textShadow: "0 1px 2px rgba(0,0,0,0.5)"
+            }}>
               {isAppleBuild ? t("insights.titleInventory") : t("insights.title")}
             </h2>
             <InfoTooltip text={t("insights.tooltipSummary")} />
           </div>
-          <p className="text-sm" style={{ color: "rgba(224, 216, 200, 0.75)" }}>{t("insights.subtitle")}</p>
+          <p className="text-sm" style={{ color: "rgba(224, 216, 200, 0.8)" }}>{t("insights.subtitle")}</p>
         </div>
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className={`grid w-full items-center justify-center ${isAppleBuild ? "grid-cols-1" : "grid-cols-7"} gap-0 h-20`}>

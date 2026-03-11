@@ -19,18 +19,19 @@ export default function CatalogPlate({
     <div
       className={cn(
         "relative rounded-lg overflow-hidden transition-all duration-300",
-        "min-h-[180px]",
-        onClick && "cursor-pointer hover:translate-y-[-2px]",
+        "min-h-[200px]",
+        onClick && "cursor-pointer hover:translate-y-[-3px] hover:shadow-2xl",
         className
       )}
       onClick={onClick}
       style={{
-        background: `linear-gradient(135deg, rgba(42, 30, 20, 0.9), rgba(32, 22, 15, 0.95))`,
-        border: `1px solid rgba(120, 90, 65, 0.35)`,
+        background: `linear-gradient(145deg, rgba(45, 32, 22, 0.92), rgba(35, 24, 16, 0.97))`,
+        border: `1px solid rgba(120, 90, 65, 0.38)`,
         boxShadow: `
-          0 3px 12px rgba(0,0,0,0.6),
-          inset 0 1px 0 rgba(180,140,100,0.08),
-          inset 0 0 60px rgba(0,0,0,0.3)
+          0 4px 16px rgba(0,0,0,0.65),
+          inset 0 1px 0 rgba(180,140,100,0.1),
+          inset 0 0 80px rgba(0,0,0,0.35),
+          inset 0 -3px 4px rgba(0,0,0,0.3)
         `,
       }}
     >
@@ -131,21 +132,21 @@ export default function CatalogPlate({
       />
 
       {/* Content */}
-      <div className="relative p-6 flex flex-col justify-end h-full">
+      <div className="relative p-7 flex flex-col justify-end h-full">
         {/* Category label */}
         <div
-          className="text-[10px] uppercase tracking-[0.14em] font-bold mb-2"
-          style={{ color: `${accent}dd` }}
+          className="text-[10px] uppercase tracking-[0.15em] font-bold mb-3"
+          style={{ color: `${accent}e5` }}
         >
           {title}
         </div>
 
         {/* Main value - editorial typography */}
         <div
-          className="text-3xl font-bold leading-tight tracking-tight mb-1"
+          className="text-4xl font-bold leading-tight tracking-tight mb-2"
           style={{
             color: "#F5F1E7",
-            textShadow: `0 2px 8px rgba(0,0,0,0.8), 0 1px 2px rgba(0,0,0,0.9)`,
+            textShadow: `0 2px 10px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)`,
             fontFamily: "'Georgia', serif",
           }}
         >
@@ -155,8 +156,11 @@ export default function CatalogPlate({
         {/* Subtitle */}
         {subtitle && (
           <div
-            className="text-sm font-medium leading-snug"
-            style={{ color: `${accent}cc` }}
+            className="text-sm font-semibold leading-snug"
+            style={{ 
+              color: `${accent}d5`,
+              textShadow: "0 1px 2px rgba(0,0,0,0.6)"
+            }}
           >
             {subtitle}
           </div>

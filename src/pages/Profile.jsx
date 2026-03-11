@@ -326,11 +326,11 @@ export default function ProfilePage() {
 
         {/* Subscription Status / Management */}
         <div
-          className="rounded-lg p-6"
+          className="rounded-lg p-7"
           style={{
-            background: "linear-gradient(145deg, rgba(50, 35, 22, 0.75), rgba(38, 26, 18, 0.88))",
-            border: "1px solid rgba(120, 90, 65, 0.3)",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1), inset 0 -1px 2px rgba(0,0,0,0.25)",
+            background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+            border: "1px solid rgba(120, 90, 65, 0.32)",
+            boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)",
           }}
         >
           <div className="relative">
@@ -442,16 +442,16 @@ export default function ProfilePage() {
         <div
           className="rounded-lg overflow-hidden"
           style={{
-            background: "linear-gradient(145deg, rgba(50, 35, 22, 0.75), rgba(38, 26, 18, 0.88))",
-            border: "1px solid rgba(120, 90, 65, 0.3)",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1), inset 0 -1px 2px rgba(0,0,0,0.25)",
+            background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+            border: "1px solid rgba(120, 90, 65, 0.32)",
+            boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)",
           }}
         >
           <div 
             className="px-6 py-5 border-b flex items-center justify-between"
             style={{
-              borderBottomColor: "rgba(120, 90, 65, 0.25)",
-              background: "linear-gradient(to bottom, rgba(60, 42, 28, 0.35), transparent)"
+              borderBottomColor: "rgba(120, 90, 65, 0.28)",
+              background: "linear-gradient(to bottom, rgba(62, 44, 30, 0.4), transparent)"
             }}
           >
             <div className="flex items-center gap-3 flex-1">
@@ -491,7 +491,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="p-6 space-y-6">
+          <div className="p-7 space-y-7">
             {/* Badges */}
             <div className="flex gap-2 flex-wrap">
               <Badge 

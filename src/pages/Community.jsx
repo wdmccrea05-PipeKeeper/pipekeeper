@@ -259,9 +259,9 @@ function CommunityPageInner() {
             <TabsList 
               className="inline-flex min-w-full sm:w-auto"
               style={{
-                background: "linear-gradient(145deg, rgba(50, 35, 22, 0.7), rgba(38, 26, 18, 0.85))",
-                border: "1px solid rgba(120, 90, 65, 0.3)",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
+                background: "linear-gradient(145deg, rgba(52, 37, 24, 0.75), rgba(42, 30, 20, 0.88))",
+                border: "1px solid rgba(120, 90, 65, 0.32)",
+                boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.1)"
               }}
             >
               <TabsTrigger value="discover" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
@@ -339,9 +339,9 @@ function CommunityPageInner() {
             <div
               className="rounded-lg overflow-hidden"
               style={{
-                background: "linear-gradient(145deg, rgba(50, 35, 22, 0.75), rgba(38, 26, 18, 0.88))",
-                border: "1px solid rgba(120, 90, 65, 0.3)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1), inset 0 -1px 2px rgba(0,0,0,0.25)",
+                background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                border: "1px solid rgba(120, 90, 65, 0.32)",
+                boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)",
               }}
             >
               <div 
@@ -380,11 +380,12 @@ function CommunityPageInner() {
                   </div>
 
                   <div 
-                    className="space-y-3 p-4 rounded-lg"
-                    style={{
-                      background: "rgba(30, 20, 15, 0.5)",
-                      border: "1px solid rgba(120, 90, 65, 0.2)"
-                    }}
+                   className="space-y-3 p-5 rounded-lg"
+                   style={{
+                     background: "rgba(35, 24, 16, 0.6)",
+                     border: "1px solid rgba(120, 90, 65, 0.25)",
+                     boxShadow: "inset 0 1px 2px rgba(0,0,0,0.2)"
+                   }}
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <MapPin className="w-3.5 h-3.5" style={{ color: "rgba(180, 140, 75, 0.8)" }} />
@@ -497,13 +498,13 @@ function CommunityPageInner() {
                 <div className="space-y-2 mt-6">
                   {publicProfiles.filter(p => p.user_email !== user?.email).map((profile) => (
                     <div 
-                      key={profile.id} 
-                      className="p-4 rounded-lg transition-all duration-200"
-                      style={{
-                        background: "linear-gradient(145deg, rgba(45, 32, 22, 0.6), rgba(35, 24, 16, 0.75))",
-                        border: "1px solid rgba(120, 90, 65, 0.25)",
-                        boxShadow: "0 1px 4px rgba(0,0,0,0.3)"
-                      }}
+                     key={profile.id} 
+                     className="p-5 rounded-lg transition-all duration-200 hover:-translate-y-0.5"
+                     style={{
+                       background: "linear-gradient(145deg, rgba(48, 34, 22, 0.65), rgba(38, 26, 18, 0.78))",
+                       border: "1px solid rgba(120, 90, 65, 0.28)",
+                       boxShadow: "0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180,140,100,0.08)"
+                     }}
                     >
                       <div className="flex items-center gap-4">
                         <Avatar className="w-12 h-12 flex-shrink-0">
@@ -633,9 +634,9 @@ function CommunityPageInner() {
               <div 
                 className="rounded-lg"
                 style={{
-                  background: "linear-gradient(145deg, rgba(50, 35, 22, 0.65), rgba(38, 26, 18, 0.80))",
-                  border: "1px solid rgba(120, 90, 65, 0.25)",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.7), rgba(42, 30, 20, 0.84))",
+                  border: "1px solid rgba(120, 90, 65, 0.28)",
+                  boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
                 }}
               >
                 <div className="py-12 text-center" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
@@ -648,16 +649,16 @@ function CommunityPageInner() {
               <div
                 className="rounded-lg overflow-hidden"
                 style={{
-                  background: "linear-gradient(145deg, rgba(50, 35, 22, 0.75), rgba(38, 26, 18, 0.88))",
-                  border: "1px solid rgba(120, 90, 65, 0.3)",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1)"
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                  border: "1px solid rgba(120, 90, 65, 0.32)",
+                  boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
                 }}
               >
                 <div 
                   className="px-6 py-5 border-b"
                   style={{
-                    borderBottomColor: "rgba(120, 90, 65, 0.25)",
-                    background: "linear-gradient(to bottom, rgba(60, 42, 28, 0.35), transparent)"
+                    borderBottomColor: "rgba(120, 90, 65, 0.28)",
+                    background: "linear-gradient(to bottom, rgba(62, 44, 30, 0.4), transparent)"
                   }}
                 >
                   <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
@@ -673,13 +674,13 @@ function CommunityPageInner() {
                     return (
                       <div 
                         key={friendship.id}
-                        className="p-4 rounded-lg"
+                        className="p-5 rounded-lg"
                         style={{
-                          background: "linear-gradient(145deg, rgba(40, 28, 18, 0.6), rgba(32, 22, 15, 0.75))",
-                          border: "1px solid rgba(120, 90, 65, 0.2)",
-                          boxShadow: "0 1px 4px rgba(0,0,0,0.3)"
+                         background: "linear-gradient(145deg, rgba(45, 32, 22, 0.65), rgba(35, 24, 16, 0.78))",
+                         border: "1px solid rgba(120, 90, 65, 0.25)",
+                         boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
                         }}
-                      >
+                        >
                         <div>
                           <div className="flex items-center gap-3">
                             <Avatar className="w-12 h-12 flex-shrink-0">
@@ -732,9 +733,9 @@ function CommunityPageInner() {
               <div 
                 className="rounded-lg"
                 style={{
-                  background: "linear-gradient(145deg, rgba(50, 35, 22, 0.65), rgba(38, 26, 18, 0.80))",
-                  border: "1px solid rgba(120, 90, 65, 0.25)",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.7), rgba(42, 30, 20, 0.84))",
+                  border: "1px solid rgba(120, 90, 65, 0.28)",
+                  boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
                 }}
               >
                 <div className="py-12 text-center" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
@@ -747,16 +748,16 @@ function CommunityPageInner() {
               <div
                 className="rounded-lg overflow-hidden"
                 style={{
-                  background: "linear-gradient(145deg, rgba(50, 35, 22, 0.75), rgba(38, 26, 18, 0.88))",
-                  border: "1px solid rgba(120, 90, 65, 0.3)",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1)"
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                  border: "1px solid rgba(120, 90, 65, 0.32)",
+                  boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
                 }}
               >
                 <div 
                   className="px-6 py-5 border-b"
                   style={{
-                    borderBottomColor: "rgba(120, 90, 65, 0.25)",
-                    background: "linear-gradient(to bottom, rgba(60, 42, 28, 0.35), transparent)"
+                    borderBottomColor: "rgba(120, 90, 65, 0.28)",
+                    background: "linear-gradient(to bottom, rgba(62, 44, 30, 0.4), transparent)"
                   }}
                 >
                   <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
@@ -769,13 +770,13 @@ function CommunityPageInner() {
                     return (
                       <div 
                         key={request.id}
-                        className="p-4 rounded-lg"
+                        className="p-5 rounded-lg"
                         style={{
-                          background: "linear-gradient(145deg, rgba(40, 28, 18, 0.6), rgba(32, 22, 15, 0.75))",
-                          border: "1px solid rgba(120, 90, 65, 0.2)",
-                          boxShadow: "0 1px 4px rgba(0,0,0,0.3)"
+                         background: "linear-gradient(145deg, rgba(45, 32, 22, 0.65), rgba(35, 24, 16, 0.78))",
+                         border: "1px solid rgba(120, 90, 65, 0.25)",
+                         boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
                         }}
-                      >
+                        >
                         <div>
                           <div className="flex items-center gap-3">
                             <Avatar className="w-12 h-12 flex-shrink-0">
@@ -828,9 +829,9 @@ function CommunityPageInner() {
               <div 
                 className="rounded-lg"
                 style={{
-                  background: "linear-gradient(145deg, rgba(50, 35, 22, 0.65), rgba(38, 26, 18, 0.80))",
-                  border: "1px solid rgba(120, 90, 65, 0.25)",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
+                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.7), rgba(42, 30, 20, 0.84))",
+                  border: "1px solid rgba(120, 90, 65, 0.28)",
+                  boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
                 }}
               >
                 <div className="py-12 text-center" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
@@ -851,11 +852,11 @@ function CommunityPageInner() {
                 return (
                   <div 
                     key={connection.id}
-                    className="p-4 rounded-lg"
+                    className="p-5 rounded-lg"
                     style={{
-                      background: "linear-gradient(145deg, rgba(45, 32, 22, 0.65), rgba(35, 24, 16, 0.80))",
-                      border: "1px solid rgba(120, 90, 65, 0.25)",
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.3)"
+                      background: "linear-gradient(145deg, rgba(48, 34, 22, 0.68), rgba(38, 26, 18, 0.82))",
+                      border: "1px solid rgba(120, 90, 65, 0.28)",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180,140,100,0.08)"
                     }}
                   >
                     <div>
@@ -903,9 +904,9 @@ function CommunityPageInner() {
             <div
               className="rounded-lg overflow-hidden"
               style={{
-                background: "linear-gradient(145deg, rgba(50, 35, 22, 0.75), rgba(38, 26, 18, 0.88))",
-                border: "1px solid rgba(120, 90, 65, 0.3)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1)"
+                background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                border: "1px solid rgba(120, 90, 65, 0.32)",
+                boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
               }}
             >
               <div 
@@ -995,9 +996,9 @@ function CommunityPageInner() {
             <div
               className="rounded-lg overflow-hidden"
               style={{
-                background: "linear-gradient(145deg, rgba(50, 35, 22, 0.75), rgba(38, 26, 18, 0.88))",
-                border: "1px solid rgba(120, 90, 65, 0.3)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1)"
+                background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                border: "1px solid rgba(120, 90, 65, 0.32)",
+                boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
               }}
             >
               <div 
