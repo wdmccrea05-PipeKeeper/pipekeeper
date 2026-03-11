@@ -425,13 +425,16 @@ function StoryCard({
 
           {/* Main stat — huge typography */}
           <div
-            className="font-extrabold leading-none tracking-tighter break-words max-w-full"
+            className="font-extrabold leading-none tracking-tighter break-words max-w-full px-2"
             style={{
               fontSize: "clamp(2.8rem, 11vw, 4.2rem)",
               color: "#F5F1E7",
               textShadow: `0 3px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)`,
               WebkitTextStroke: "0.4px rgba(255,255,255,0.08)",
               fontFamily: "'Georgia', serif",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+              hyphens: "auto",
             }}
           >
             {value ?? "—"}
