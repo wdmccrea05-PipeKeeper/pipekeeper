@@ -56,43 +56,48 @@ export const insightsTranslations = {
   es: {
     keeper: {
       title: "Curador de Colección",
-      subtitle: "Perspectivas de colección impulsadas por IA",
+      subtitle: "Orientación experta para tu colección",
       pipes: {
-        rotationTitle: "Planificación de Rotación",
-        rotationInsight: "Con {count} pipas, tienes suficiente variedad para construir una rotación adecuada.",
-        rotationAction: "Rota tres pipas que no has fumado recientemente esta semana.",
-        rotationCTA: "Ver Pipas Subutilizadas",
+        balancedRotationTitle: "Tu Rotación está Bien Equilibrada",
+        balancedRotationInsight: "Tu colección de pipas muestra una rotación saludable. Este enfoque equilibrado preserva la longevidad de las pipas.",
+        balancedRotationAction: "Continúa esta práctica para asegurar que cada pipa reciba descanso adecuado entre sesiones.",
         
-        restTitle: "Descanso de Pipa",
-        restInsight: "Tu pipa '{pipeName}' se está utilizando significativamente más que otras.",
-        restAction: "Deja que esta pipa descanse durante al menos 24 horas y rota alternativas.",
-        restCTA: "Ver Detalles de la Pipa",
+        overusedTitle: "Una Pipa Requiere Descanso",
+        overusedInsight: "Tu '{pipeName}' ha sido fumada significativamente más que las otras. El descanso adecuado mejora la longevidad.",
+        overusedAction: "Deja que esta pipa descanse al menos 24 horas y rótala con otras.",
+        overusedCTA: "Ver Pipa",
         
-        growthTitle: "Construyendo tu Colección",
-        growthInsight: "Tienes {count} pipas. Esta es una gran base para construir una rotación de coleccionista.",
-        growthAction: "Considera añadir 1-2 pipas más para crear opciones de rotación significativas.",
-        growthCTA: "Explorar Pipas",
+        foundationTitle: "Construyendo una Colección de Coleccionista",
+        foundationInsight: "Con {count} pipas, tienes una sólida base para desarrollar una rotación significativa.",
+        foundationAction: "A medida que crezca tu colección, apunta a 5-7 pipas para un cronograma de rotación adecuado.",
+        foundationCTA: "Explorar Pipas",
         
-        loggingTitle: "Captura tus Sesiones",
-        loggingInsight: "Comienza a registrar tus sesiones de fumado para desbloquear perspectivas de uso.",
-        loggingAction: "Registra tu próxima sesión para comenzar a construir tu historial de fumado.",
-        loggingCTA: "Registrar una Sesión"
+        shapeVarietyTitle: "Expande tus Formas",
+        shapeVarietyInsight: "La mayoría de tu colección comparte formas similares. Añadir diferentes formas amplía tus experiencias de fumado.",
+        shapeVarietyAction: "Considera una pipa curva o doblada para complementar tus billiares.",
+        
+        restingTitle: "El Descanso Adecuado Mejora el Sabor",
+        restingInsight: "Las pipas se benefician del descanso adecuado entre sesiones. Esto permite que la humedad se disipe.",
+        restingAction: "Mantén una rotación donde cada pipa descanse al menos 24-48 horas entre usos."
       },
       tobacco: {
-        diversityTitle: "Diversidad de Mezclas",
-        diversityInsight: "Tu bodega contiene solo algunos estilos de mezclas. Considera expandir.",
-        diversityAction: "Añade una mezcla Virginia o Balkan para ampliar la variedad.",
-        diversityCTA: "Explorar Tipos de Mezclas",
+        diversityTitle: "Expande tus Estilos de Mezcla",
+        diversityInsight: "Tu bodega se concentra en un rango estrecho de estilos. La variedad más amplia mejora tu experiencia de degustación.",
+        diversityAction: "Una mezcla Virginia o Balkan introduciría nuevos perfiles de sabor.",
+        diversityCTA: "Explorar Mezclas",
         
-        agingTitle: "Oportunidad de Envejecimiento",
-        agingInsight: "{count} de tus latas pueden estar alcanzando ventanas de envejecimiento ideales.",
-        agingAction: "Revisa las mezclas envejecidas antes de abrir latas nuevas.",
-        agingCTA: "Ver Mezclas Envejecidas",
+        agingOpportunityTitle: "Ventana de Envejecimiento Cercana",
+        agingOpportunityInsight: "{count} de tus mezclas envejecidas pueden estar alcanzando una ventana ideal. Los stocks más antiguos ofrecen complejidad notable.",
+        agingOpportunityAction: "Considera probar una de estas latas envejecidas para experimentar cómo el tiempo ha transformado el sabor.",
+        agingOpportunityCTA: "Ver Bodega",
         
-        cellarTitle: "Monitoreo de Bodega",
-        cellarInsight: "Tu bodega en crecimiento merece un mantenimiento y organización regulares.",
-        cellarAction: "Revisa tu cronograma de envejecimiento y planifica rotaciones.",
-        cellarCTA: "Ver Estado de Bodega"
+        styleDiscoveryTitle: "Explora Mezclas {styles}",
+        styleDiscoveryInsight: "Aún no has explorado estilos {styles}. Estos complementarían tu colección actual.",
+        styleDiscoveryAction: "Añadir uno de estos estilos introduciría profundidad y variedad a tu rotación.",
+        
+        stewardshipStorageTitle: "El Almacenamiento Adecuado Preserva la Calidad",
+        stewardshipStorageInsight: "Con una bodega en crecimiento, mantener condiciones consistentes es esencial para preservar la calidad.",
+        stewardshipStorageAction: "Asegúrate de que los contenedores permanezcan correctamente sellados y almacenados."
       }
     }
   },
