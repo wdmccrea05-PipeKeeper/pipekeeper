@@ -48,6 +48,8 @@ const enUI = {
     analyzingPhotos: "Analyzing Photos...",
     identifyAndFill: "Identify & Fill Details",
     uploadHint: "Upload clear photos of the pipe and any visible stamps or markings",
+    identifyTitle: "AI Pipe Identification",
+    identifySubtitle: "Upload photos to identify a pipe",
   },
   breakIn: {
     featureName: "Break-In Schedules",
@@ -405,6 +407,9 @@ const enUI = {
     email: "Email",
     continue: "Continue",
     accessDenied: "Access Denied",
+    saved: "saved",
+    shareExport: "Share / Export",
+    collectorDisplayMode: "Collector Display Mode",
   },
   layout: {
     appTitle: "PipeKeeper",
@@ -599,6 +604,10 @@ const enUI = {
     highlightTotalSessions: "Total Sessions Logged",
     highlightCellarValue: "Collection Value",
     shareError: "Could not share card",
+    topHighlightsSub: "Your collector story",
+    story: "Story",
+    highlight: "Highlight",
+    viewStoryCard: "View story card",
   },
   optimizer: {
     wellMatchedBlends: "Well-Matched Blends",
@@ -1512,10 +1521,24 @@ const enUI = {
 
   faq: {
     downloadBtn: "Download FAQ",
+    subtitle: "Definitions, general information, and disclaimers",
+  },
+
+  story: {
+    viewStory: "View Story",
+    downloadSuccess: "Story card saved!",
+    shareError: "Could not share story",
+    sessionsLogged: "smoking sessions logged",
+    pipes: "pipes",
+    blends: "blends",
+    collectorPersonality: "Collector Personality",
+    collectionGrowth: "Collection Growth",
+    share: "Share",
   },
 
   pipes: {
     customSpecializationPlaceholder: "Custom specialization...",
+    collectorDisplayMode: "Collector Display Mode",
     advancedFilters: "Advanced Filters",
     shape: "Shape",
     allShapes: "All Shapes",
@@ -2190,6 +2213,7 @@ const enUI = {
     totalQuantity: "Total Quantity (oz)",
     rating: "Rating",
     open: "open",
+    collectorDisplayMode: "Collector Display Mode",
   },
   bulkEdit: {
     featureName: "Bulk Tobacco Edit",
@@ -2436,6 +2460,12 @@ const enUI = {
     insightsSessions: "sessions logged",
     insightsAiUpdates: "AI updates",
     openInsights: "Open Insights",
+    collectionSummary: "Collection Summary",
+    highlights: "Collection Highlights",
+    mostSmoked: "Most Smoked",
+    mostValuable: "Most Valuable",
+    favoriteBlend: "Favorite Blend",
+    collection: "Collection",
   },
   quickActions: {
     sectionTitle: "Quick Actions",
@@ -2495,6 +2525,8 @@ const enUI = {
     hideCollectionCounts: "Hide collection counts",
     hideHomeValues: "Hide collection values on home page",
     hideHomeValuesDesc: "Hides pipe and tobacco collection values from your home page dashboard. Calculations still run in the background.",
+    showCuratorMessages: "Show Curator Guidance",
+    showCuratorMessagesDesc: "Display proactive collection suggestions and insights on the home page.",
     clenchingPreference: "Clenching preference",
     smokeDurationPreference: "Smoke duration preference",
     pipeSizePreference: "Pipe size preference",

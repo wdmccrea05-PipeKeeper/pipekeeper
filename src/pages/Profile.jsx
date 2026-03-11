@@ -129,6 +129,7 @@ export default function ProfilePage() {
     privacy_hide_inventory: false,
     privacy_hide_collection_counts: false,
     home_hide_collection_values: false,
+    show_curator_messages: true,
     show_social_media: false,
     clenching_preference: "Sometimes",
     smoke_duration_preference: "No Preference",
@@ -160,6 +161,7 @@ export default function ProfilePage() {
       enable_messaging: !!profile.enable_messaging,
       allow_web_lookups: profile.allow_web_lookups !== false,
       home_hide_collection_values: !!profile.home_hide_collection_values,
+      show_curator_messages: profile.show_curator_messages !== false,
       privacy_hide_values: !!profile.privacy_hide_values,
       privacy_hide_inventory: !!profile.privacy_hide_inventory,
       privacy_hide_collection_counts: !!profile.privacy_hide_collection_counts,
@@ -725,6 +727,22 @@ export default function ProfilePage() {
                 <Switch
                   checked={formData.home_hide_collection_values}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, home_hide_collection_values: !!v }))}
+                  className="data-[state=checked]:bg-[#A35C5C]"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-medium" style={{ color: "#F5F1E7" }}>
+                    {t("profileExtended.showCuratorMessages")}
+                  </span>
+                  <p className="text-xs mt-0.5" style={{ color: "rgba(224, 216, 200, 0.6)" }}>
+                    {t("profileExtended.showCuratorMessagesDesc")}
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.show_curator_messages}
+                  onCheckedChange={(v) => setFormData((p) => ({ ...p, show_curator_messages: !!v }))}
                   className="data-[state=checked]:bg-[#A35C5C]"
                 />
               </div>

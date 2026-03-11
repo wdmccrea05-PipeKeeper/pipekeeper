@@ -123,9 +123,9 @@ export default function CollectorStory({ isOpen, onClose, storyCards }) {
       link.download = `pipekeeper-story-${currentIndex + 1}.png`;
       link.href = dataUrl;
       link.click();
-      toast.success(t("story.downloadSuccess", { defaultValue: "Story card saved!" }));
+      toast.success(t("story.downloadSuccess"));
     } catch (err) {
-      toast.error(t("story.shareError", { defaultValue: "Could not share story" }));
+      toast.error(t("story.shareError"));
     }
   };
 
@@ -237,6 +237,7 @@ function StoryCard({
   customContent,
   isClosingCard = false,
 }) {
+  const { t } = useTranslation();
   const heroRotation = silhouetteType === "pipe" ? "8deg" : "-5deg";
 
   return (
@@ -478,7 +479,7 @@ function StoryCard({
           }}
         >
           <Share2 className="w-4 h-4" />
-          Share
+          {t("common.share")}
         </button>
       </div>
     </div>

@@ -44,9 +44,9 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
   if (mostUsedPipe) {
     const img = getPipeImage(mostUsedPipe.pipe);
     cards.push({
-      title: t("insights.highlightMostSmoked", { defaultValue: "Most Smoked Pipe" }),
+      title: t("insights.highlightMostSmoked"),
       value: mostUsedPipe.pipe.name,
-      sub: `${mostUsedPipe.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`,
+      sub: `${mostUsedPipe.count} ${t("insights.highlightBowls")}`,
       accent: "#C87941",
       icon: Star,
       heroImage: img,
@@ -66,9 +66,9 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
   if (mostUsedBlend) {
     const img = getBlendImage(mostUsedBlend.blend);
     cards.push({
-      title: t("insights.highlightFavoriteBlend", { defaultValue: "Favorite Blend" }),
+      title: t("insights.highlightFavoriteBlend"),
       value: mostUsedBlend.blend.name,
-      sub: `${mostUsedBlend.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`,
+      sub: `${mostUsedBlend.count} ${t("insights.highlightBowls")}`,
       accent: "#4A9C6A",
       icon: Leaf,
       heroImage: img,
@@ -82,9 +82,9 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
   if (longestStreak > 0) {
     const randomPipeImg = pipes.find(p => p.photos?.length)?.photos?.[0] || null;
     cards.push({
-      title: t("insights.highlightLongestStreak", { defaultValue: "Longest Streak" }),
+      title: t("insights.highlightLongestStreak"),
       value: `${longestStreak} days`,
-      sub: t("insights.highlightConsecutive", { defaultValue: "consecutive smoking days" }),
+      sub: t("insights.highlightConsecutive"),
       accent: "#8B5CF6",
       icon: Zap,
       bgImage: randomPipeImg,
@@ -98,9 +98,9 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
                       blends.find(b => b.logo || b.photo)?.logo || 
                       blends.find(b => b.logo || b.photo)?.photo || null;
     cards.push({
-      title: t("insights.highlightTotalSessions", { defaultValue: "Total Sessions" }),
+      title: t("insights.highlightTotalSessions"),
       value: smokingLogs.length,
-      sub: t("story.sessionsLogged", { defaultValue: "smoking sessions logged" }),
+      sub: t("story.sessionsLogged"),
       accent: "#22D3EE",
       icon: Flame,
       bgImage: randomImg,
@@ -113,9 +113,9 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
     const randomImg = pipes.find(p => p.photos?.length)?.photos?.[0] || 
                       blends.find(b => b.logo || b.photo)?.logo || null;
     cards.push({
-      title: t("insights.highlightCellarValue", { defaultValue: "Collection Value" }),
+      title: t("insights.highlightCellarValue"),
       value: formatCurrency(Math.round(totalCollectionValue)),
-      sub: `${pipes.length} ${t("story.pipes", { defaultValue: "pipes" })} · ${blends.length} ${t("story.blends", { defaultValue: "blends" })}`,
+      sub: `${pipes.length} ${t("story.pipes")} · ${blends.length} ${t("story.blends")}`,
       accent: "#C4963A",
       icon: TrendingUp,
       bgImage: randomImg,
@@ -135,7 +135,7 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
   if (mostValuablePipe) {
     const img = getPipeImage(mostValuablePipe);
     cards.push({
-      title: t("insights.highlightMostValuable", { defaultValue: "Most Valuable Pipe" }),
+      title: t("insights.highlightMostValuable"),
       value: mostValuablePipe.name,
       sub: formatCurrency(mostValuablePipe.estimated_value),
       accent: "#C0392B",
@@ -150,7 +150,7 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
   if (pipes.length > 3 || blends.length > 5) {
     const trait = getCollectorPersonality(pipes, blends, smokingLogs);
     cards.push({
-      title: t("story.collectorPersonality", { defaultValue: "Collector Personality" }),
+      title: t("story.collectorPersonality"),
       value: trait.label,
       sub: trait.description,
       accent: "#A78BFA",
@@ -164,7 +164,7 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
   if (pipes.length > 0 || blends.length > 0) {
     const insight = getGrowthInsight(pipes, blends);
     cards.push({
-      title: t("story.collectionGrowth", { defaultValue: "Collection Growth" }),
+      title: t("story.collectionGrowth"),
       value: insight.label,
       sub: insight.description,
       accent: "#10B981",

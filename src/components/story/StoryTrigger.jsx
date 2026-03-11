@@ -33,7 +33,7 @@ export default function StoryTrigger({ onClick, variant = "primary", className, 
       )}
     >
       <Sparkles className={size === "small" ? "w-3.5 h-3.5" : "w-4 h-4"} />
-      <span>{t("story.viewStory", { defaultValue: "View Story" })}</span>
+      <span>{t("story.viewStory")}</span>
     </button>
   );
 }

@@ -600,13 +600,13 @@ function CommunityPageInner() {
                 <CardContent className="p-4 flex items-start gap-3">
                   <Mail className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm text-[#E0D8C8]/80 font-medium">Messaging disabled</p>
-                    <p className="text-xs text-[#E0D8C8]/60 mt-1">Enable messaging in your profile settings.</p>
+                    <p className="text-sm text-[#E0D8C8]/80 font-medium">{t("communityExtended.messagingDisabled")}</p>
+                    <p className="text-xs text-[#E0D8C8]/60 mt-1">{t("communityExtended.messagingDisabledDesc")}</p>
                   </div>
                   <a href={createPageUrl('Profile')}>
                     <Button size="sm">
                       <Settings className="w-4 h-4 mr-2" />
-                      Go to settings
+                      {t("communityExtended.goToSettings")}
                     </Button>
                   </a>
                 </CardContent>

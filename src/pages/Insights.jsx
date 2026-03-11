@@ -191,6 +191,7 @@ function LeafSilhouette({ className, style }) {
 // heroImage — sharp foreground spotlight (item cards only: Most Smoked, Favorite Blend, Most Valuable)
 // artifactImage — blurred ambient background (all cards; random collection image for analytics cards)
 function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onShare, onStory, cardRef, patternIndex = 0, artifactImage, heroImage, silhouetteType }) {
+  const { t } = useTranslation();
   // Derive category-appropriate texture: wood grain for pipe, paper for tobacco, grain for general
   const textureType = getTextureType(silhouetteType);
   const heroRotation = silhouetteType === "pipe" ? "12deg" : "-8deg";
@@ -383,10 +384,10 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
                   border: `1px solid ${accent}50`,
                   color: accent,
                 }}
-                title="View story card"
+                title={t("insights.viewStoryCard")}
               >
                 <Sparkles className="w-3 h-3" />
-                Story
+                {t("insights.story")}
               </button>
             )}
             {/* Share button */}
@@ -398,7 +399,7 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
                   background: `${accent}25`,
                   border: `1px solid ${accent}45`,
                 }}
-                title="Share"
+                title={t("common.share")}
               >
                 <Share2 className="w-3.5 h-3.5" style={{ color: accent }} />
               </button>
@@ -458,7 +459,7 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
             }}
           >
             <Share2 className="w-2.5 h-2.5" />
-            Share
+            {t("common.share")}
           </button>
         )}
       </div>
@@ -468,6 +469,7 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
 
 // ── Full-screen Story / Share card modal ──────────────────────────────────────
 function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExport, storyRef, artifactImage, heroImage, silhouetteType }) {
+  const { t } = useTranslation();
   const storyTextureType = getTextureType(silhouetteType);
   const heroRotation = silhouetteType === "pipe" ? "8deg" : "-5deg";
   return (
@@ -667,7 +669,7 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
               color: `rgba(180,140,75,0.9)`,
             }}
           >
-            Highlight
+            {t("insights.highlight")}
           </div>
         </div>
 
@@ -758,7 +760,7 @@ function StoryCardModal({ title, value, sub, accent, icon: Icon, onClose, onExpo
             }}
           >
             <Share2 className="w-4 h-4" />
-            Share / Export
+            {t("common.shareExport")}
           </button>
         </div>
       </div>
@@ -980,7 +982,7 @@ export default function Insights() {
       await captureAndShare(node, `pipekeeper-highlight-${key}`);
     } catch (err) {
       if (err?.name !== "AbortError") {
-        toast.error(t("insights.shareError", { defaultValue: "Could not share card" }));
+        toast.error(t("insights.shareError"));
       }
     }
   };
@@ -992,7 +994,7 @@ export default function Insights() {
       await captureAndShare(node, "pipekeeper-story-card");
     } catch (err) {
       if (err?.name !== "AbortError") {
-        toast.error(t("insights.shareError", { defaultValue: "Could not share card" }));
+        toast.error(t("insights.shareError"));
       }
     }
   };
@@ -1051,7 +1053,7 @@ export default function Insights() {
               </h1>
               {hasPaid && (
                 <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-xs">
-                  {t("subscription.proBadge", { defaultValue: "Pro" })}
+                  {t("subscription.proBadge")}
                 </Badge>
               )}
             </div>
@@ -1064,10 +1066,10 @@ export default function Insights() {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <StatusCard
           icon={Flame}
-          label={t("insights.snapshotSessions", { defaultValue: "Total Sessions" })}
+          label={t("insights.snapshotSessions")}
           value={smokingLogs.length}
           accent={CATEGORY_COLORS.pipe}
-          sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek", { defaultValue: "this week" })}`}
+          sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek")}`}
           bgImage={analyticsImages.snapshotSessions}
         />
         <StatusCard
@@ -1082,7 +1084,7 @@ export default function Insights() {
           label={t("home.tobaccoBlends")}
           value={blends.length}
           accent={CATEGORY_COLORS.tobacco}
-          sub={`${totalCellaredOz.toFixed(1)} oz ${t("home.cellared", { defaultValue: "cellared" })}`}
+          sub={`${totalCellaredOz.toFixed(1)} oz ${t("home.cellared")}`}
           bgImage={analyticsImages.snapshotBlends}
         />
         <StatusCard
@@ -1094,16 +1096,16 @@ export default function Insights() {
         />
         <StatusCard
           icon={Clock}
-          label={t("insights.snapshotStreak", { defaultValue: "Longest Streak" })}
+          label={t("insights.snapshotStreak")}
           value={`${longestStreak}d`}
           accent={CATEGORY_COLORS.streak}
-          sub={t("insights.snapshotConsecutiveDays", { defaultValue: "consecutive days" })}
+          sub={t("insights.snapshotConsecutiveDays")}
           bgImage={analyticsImages.streak}
           useBlurredBg={true}
         />
         <StatusCard
           icon={Calendar}
-          label={t("insights.snapshotAvgWeek", { defaultValue: "Avg / Week" })}
+          label={t("insights.snapshotAvgWeek")}
           value={
             smokingLogs.length > 0
               ? (
@@ -1121,7 +1123,7 @@ export default function Insights() {
               : "—"
           }
           accent={CATEGORY_COLORS.activity}
-          sub={t("insights.snapshotSessionsPerWeek", { defaultValue: "sessions / week" })}
+          sub={t("insights.snapshotSessionsPerWeek")}
           bgImage={analyticsImages.snapshotAvg}
         />
       </div>
@@ -1160,10 +1162,10 @@ export default function Insights() {
                     backgroundClip: "text",
                   }}
                 >
-                  {t("insights.topHighlights", { defaultValue: "Top Highlights" })}
+                  {t("insights.topHighlights")}
                 </h2>
                 <p className="text-[11px] text-[#E0D8C8]/45 uppercase tracking-[0.14em] font-semibold mt-0.5">
-                  {t("insights.topHighlightsSub", { defaultValue: "Your collector story" })}
+                  {t("insights.topHighlightsSub")}
                 </p>
               </div>
               {fullStoryCards.length > 0 && (
@@ -1177,9 +1179,9 @@ export default function Insights() {
               const img = getPipeImage(mostUsedPipe.pipe);
               return (
                 <HighlightCard
-                  title={t("insights.highlightMostSmoked", { defaultValue: "Most Smoked Pipe" })}
+                  title={t("insights.highlightMostSmoked")}
                   value={mostUsedPipe.pipe.name}
-                  sub={`${mostUsedPipe.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`}
+                  sub={`${mostUsedPipe.count} ${t("insights.highlightBowls")}`}
                   accent="#C87941"
                   icon={Star}
                   patternIndex={0}
@@ -1189,9 +1191,9 @@ export default function Insights() {
                   cardRef={(el) => (highlightRefs.current["mostPipe"] = el)}
                   onShare={() => handleShareCard("mostPipe")}
                   onStory={() => setActiveStory({
-                    title: t("insights.highlightMostSmoked", { defaultValue: "Most Smoked Pipe" }),
+                    title: t("insights.highlightMostSmoked"),
                     value: mostUsedPipe.pipe.name,
-                    sub: `${mostUsedPipe.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`,
+                    sub: `${mostUsedPipe.count} ${t("insights.highlightBowls")}`,
                     accent: "#C87941",
                     icon: Star,
                     artifactImage: img,
@@ -1205,9 +1207,9 @@ export default function Insights() {
               const img = getBlendImage(mostUsedBlend.blend);
               return (
                 <HighlightCard
-                  title={t("insights.highlightFavoriteBlend", { defaultValue: "Favorite Blend" })}
+                  title={t("insights.highlightFavoriteBlend")}
                   value={mostUsedBlend.blend.name}
-                  sub={`${mostUsedBlend.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`}
+                  sub={`${mostUsedBlend.count} ${t("insights.highlightBowls")}`}
                   accent="#4A9C6A"
                   icon={Leaf}
                   patternIndex={1}
@@ -1217,9 +1219,9 @@ export default function Insights() {
                   cardRef={(el) => (highlightRefs.current["mostBlend"] = el)}
                   onShare={() => handleShareCard("mostBlend")}
                   onStory={() => setActiveStory({
-                    title: t("insights.highlightFavoriteBlend", { defaultValue: "Favorite Blend" }),
+                    title: t("insights.highlightFavoriteBlend"),
                     value: mostUsedBlend.blend.name,
-                    sub: `${mostUsedBlend.count} ${t("insights.highlightBowls", { defaultValue: "bowls this period" })}`,
+                    sub: `${mostUsedBlend.count} ${t("insights.highlightBowls")}`,
                     accent: "#4A9C6A",
                     icon: Leaf,
                     artifactImage: img,
@@ -1231,9 +1233,9 @@ export default function Insights() {
             })()}
             {longestStreak > 0 && (
               <HighlightCard
-                title={t("insights.highlightLongestStreak", { defaultValue: "Longest Streak" })}
+                title={t("insights.highlightLongestStreak")}
                 value={`${longestStreak} days`}
-                sub={t("insights.highlightConsecutive", { defaultValue: "consecutive smoking days" })}
+                sub={t("insights.highlightConsecutive")}
                 accent="#8B5CF6"
                 icon={Zap}
                 patternIndex={2}
@@ -1243,9 +1245,9 @@ export default function Insights() {
                 cardRef={(el) => (highlightRefs.current["streak"] = el)}
                 onShare={() => handleShareCard("streak")}
                 onStory={() => setActiveStory({
-                  title: t("insights.highlightLongestStreak", { defaultValue: "Longest Streak" }),
+                  title: t("insights.highlightLongestStreak"),
                   value: `${longestStreak} days`,
-                  sub: t("insights.highlightConsecutive", { defaultValue: "consecutive smoking days" }),
+                  sub: t("insights.highlightConsecutive"),
                   accent: "#8B5CF6",
                   icon: Zap,
                   artifactImage: analyticsImages.streak,
@@ -1258,7 +1260,7 @@ export default function Insights() {
               const img = getPipeImage(mostValuablePipe);
               return (
                 <HighlightCard
-                  title={t("insights.highlightMostValuable", { defaultValue: "Most Valuable Pipe" })}
+                  title={t("insights.highlightMostValuable")}
                   value={mostValuablePipe.name}
                   sub={formatCurrency(mostValuablePipe.estimated_value)}
                   accent="#C0392B"
@@ -1270,7 +1272,7 @@ export default function Insights() {
                   cardRef={(el) => (highlightRefs.current["valuePipe"] = el)}
                   onShare={() => handleShareCard("valuePipe")}
                   onStory={() => setActiveStory({
-                    title: t("insights.highlightMostValuable", { defaultValue: "Most Valuable Pipe" }),
+                    title: t("insights.highlightMostValuable"),
                     value: mostValuablePipe.name,
                     sub: formatCurrency(mostValuablePipe.estimated_value),
                     accent: "#C0392B",
@@ -1284,9 +1286,9 @@ export default function Insights() {
             })()}
             {smokingLogs.length > 0 && (
               <HighlightCard
-                title={t("insights.highlightTotalSessions", { defaultValue: "Total Sessions Logged" })}
+                title={t("insights.highlightTotalSessions")}
                 value={smokingLogs.length}
-                sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek", { defaultValue: "this week" })}`}
+                sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek")}`}
                 accent="#22D3EE"
                 icon={Flame}
                 patternIndex={4}
@@ -1296,9 +1298,9 @@ export default function Insights() {
                 cardRef={(el) => (highlightRefs.current["totalSessions"] = el)}
                 onShare={() => handleShareCard("totalSessions")}
                 onStory={() => setActiveStory({
-                  title: t("insights.highlightTotalSessions", { defaultValue: "Total Sessions Logged" }),
+                  title: t("insights.highlightTotalSessions"),
                   value: smokingLogs.length,
-                  sub: `${sessionsThisWeek} ${t("insights.snapshotThisWeek", { defaultValue: "this week" })}`,
+                  sub: `${sessionsThisWeek} ${t("insights.snapshotThisWeek")}`,
                   accent: "#22D3EE",
                   icon: Flame,
                   artifactImage: analyticsImages.sessions,
@@ -1309,7 +1311,7 @@ export default function Insights() {
             )}
             {blends.length > 0 && (
               <HighlightCard
-                title={t("insights.highlightCellarValue", { defaultValue: "Collection Value" })}
+                title={t("insights.highlightCellarValue")}
                 value={formatCurrency(Math.round(totalCollectionValue))}
                 sub={`${pipes.length} ${t("home.pipesInCollection")} · ${blends.length} ${t("home.tobaccoBlends")}`}
                 accent="#10B981"
@@ -1321,7 +1323,7 @@ export default function Insights() {
                 cardRef={(el) => (highlightRefs.current["collectionValue"] = el)}
                 onShare={() => handleShareCard("collectionValue")}
                 onStory={() => setActiveStory({
-                  title: t("insights.highlightCellarValue", { defaultValue: "Collection Value" }),
+                  title: t("insights.highlightCellarValue"),
                   value: formatCurrency(Math.round(totalCollectionValue)),
                   sub: `${pipes.length} ${t("home.pipesInCollection")} · ${blends.length} ${t("home.tobaccoBlends")}`,
                   accent: "#10B981",

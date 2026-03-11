@@ -127,6 +127,7 @@ export default function Home() {
   const totalTobaccoValue = calculateTobaccoCollectionValue(blends, cellarLogs);
   const totalCollectionValue = totalPipeValue + totalTobaccoValue;
   const hideHomeValues = !!userProfile?.home_hide_collection_values;
+  const showCuratorMessages = userProfile?.show_curator_messages !== false;
   const favoritePipes = pipes.filter((p) => p?.is_favorite);
   const favoriteBlends = blends.filter((b) => b?.is_favorite);
 
@@ -231,7 +232,7 @@ export default function Home() {
           className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
           style={{ color: "rgba(180, 140, 75, 0.8)" }}
         >
-          {t("home.collectionSummary", "Collection Summary")}
+          {t("home.collectionSummary")}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <LedgerPanel
@@ -277,12 +278,12 @@ export default function Home() {
             className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
             style={{ color: "rgba(180, 140, 75, 0.8)" }}
           >
-            {t("home.highlights", "Collection Highlights")}
+            {t("home.highlights")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {mostSmokedPipe && (
               <CatalogPlate
-                title={t("home.mostSmoked", "Most Smoked")}
+                title={t("home.mostSmoked")}
                 value={mostSmokedPipe.name}
                 subtitle={mostSmokedPipe.maker}
                 heroImage={mostSmokedPipe.photos?.[0]}
@@ -293,7 +294,7 @@ export default function Home() {
             )}
             {mostValuablePipe && (
               <CatalogPlate
-                title={t("home.mostValuable", "Most Valuable")}
+                title={t("home.mostValuable")}
                 value={formatCurrency(mostValuablePipe.estimated_value)}
                 subtitle={mostValuablePipe.name}
                 heroImage={mostValuablePipe.photos?.[0]}
@@ -304,7 +305,7 @@ export default function Home() {
             )}
             {favoriteBlend && (
               <CatalogPlate
-                title={t("home.favoriteBlend", "Favorite Blend")}
+                title={t("home.favoriteBlend")}
                 value={favoriteBlend.name}
                 subtitle={favoriteBlend.manufacturer}
                 heroImage={favoriteBlend.logo || favoriteBlend.photo}
@@ -333,7 +334,7 @@ export default function Home() {
           className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
           style={{ color: "rgba(180, 140, 75, 0.8)" }}
         >
-          {t("home.collection", "Collection")}
+          {t("home.collection")}
         </h2>
         <div className="flex flex-col gap-4">
         <DrawerRow
@@ -370,18 +371,17 @@ export default function Home() {
       </div>
 
       {/* 7. CURATOR INTELLIGENCE */}
-
-
-      {/* 7. CURATOR INTELLIGENCE */}
-      <div 
-        className="rounded-lg overflow-hidden mt-2"
-        style={{
-          border: "1px solid rgba(180, 140, 75, 0.28)",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.5)"
-        }}
-      >
-        <CollectionIntelligencePanel pipes={pipes} blends={blends} user={user} />
-      </div>
+      {showCuratorMessages && (
+        <div 
+          className="rounded-lg overflow-hidden mt-2"
+          style={{
+            border: "1px solid rgba(180, 140, 75, 0.28)",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.5)"
+          }}
+        >
+          <CollectionIntelligencePanel pipes={pipes} blends={blends} user={user} />
+        </div>
+      )}
 
       {/* 8. FAVORITES SECTION */}
       {favoritePipes.length + favoriteBlends.length > 0 && (

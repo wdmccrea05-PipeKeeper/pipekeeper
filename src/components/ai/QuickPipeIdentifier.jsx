@@ -460,8 +460,8 @@ Return JSON:
             <Sparkles className="w-5 h-5 text-[#A35C5C]" />
           </div>
           <div>
-            <p className="font-semibold text-[#E0D8C8] text-lg">AI Pipe Identification</p>
-            <p className="text-sm text-[#E0D8C8]/70">Upload photos to identify a pipe</p>
+            <p className="font-semibold text-[#E0D8C8] text-lg">{t("photoIdentifier.identifyTitle")}</p>
+            <p className="text-sm text-[#E0D8C8]/70">{t("photoIdentifier.identifySubtitle")}</p>
           </div>
         </div>
 

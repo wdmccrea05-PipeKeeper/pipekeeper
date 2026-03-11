@@ -276,7 +276,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
         notes: "",
       });
       onClose();
-      toast.success(t("smokingLog.logSession") + " " + t("common.saved", { defaultValue: "saved" }));
+      toast.success(t("smokingLog.logSession") + " " + t("common.saved"));
     },
   });
 
