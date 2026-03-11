@@ -198,11 +198,11 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
   return (
     <div
       ref={cardRef}
-      className="relative rounded-2xl overflow-hidden flex flex-col justify-between min-h-[200px] cursor-default group"
+      className="relative rounded-2xl overflow-hidden flex flex-col justify-between min-h-[220px] cursor-default group hover:-translate-y-1 transition-transform duration-300"
       style={{
-        background: `linear-gradient(155deg, rgba(32, 22, 15, 0.95), rgba(28, 18, 10, 0.98))`,
-        border: `1px solid rgba(120, 90, 65, 0.4)`,
-        boxShadow: `0 4px 16px rgba(0,0,0,0.7), inset 0 1px 0 rgba(180,140,100,0.1)`,
+        background: `linear-gradient(155deg, rgba(38, 26, 18, 0.96), rgba(32, 22, 15, 0.99))`,
+        border: `1px solid rgba(120, 90, 65, 0.42)`,
+        boxShadow: `0 5px 20px rgba(0,0,0,0.75), inset 0 1px 0 rgba(180,140,100,0.14), inset 0 -3px 4px rgba(0,0,0,0.3)`,
       }}
     >
       {/* Layer 1 (base gradient is the card background above) */}
@@ -353,22 +353,22 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
       />
 
       {/* Main content */}
-      <div className="relative p-5 pb-3 flex flex-col gap-4 flex-1">
+      <div className="relative p-6 pb-4 flex flex-col gap-5 flex-1">
         {/* Top row: icon + share */}
         <div className="flex items-start justify-between gap-2">
           <div
             className="rounded-2xl flex items-center justify-center shrink-0"
             style={{
-              width: "3.25rem",
-              height: "3.25rem",
-              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.45) 0%, rgba(80, 55, 35, 0.35) 100%)`,
-              border: `1px solid rgba(120, 90, 65, 0.4)`,
-              boxShadow: `0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180, 140, 100, 0.2)`,
+              width: "3.5rem",
+              height: "3.5rem",
+              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.5) 0%, rgba(80, 55, 35, 0.6) 100%)`,
+              border: `1px solid rgba(120, 90, 65, 0.45)`,
+              boxShadow: `0 3px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.22)`,
             }}
           >
             <Icon
-              className="w-6 h-6"
-              style={{ color: accent, filter: `drop-shadow(0 0 6px ${accent}cc)` }}
+              className="w-5 h-5"
+              style={{ color: accent, filter: `drop-shadow(0 0 7px ${accent}dd)` }}
             />
           </div>
 
@@ -407,19 +407,19 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
         </div>
 
         {/* Story text hierarchy */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <div
             className="text-[10px] uppercase tracking-[0.16em] font-bold"
-            style={{ color: `rgba(180,140,75,0.85)`, fontFamily: "'Georgia', serif" }}
+            style={{ color: `rgba(180,140,75,0.9)` }}
           >
             {title}
           </div>
           <div
-            className="text-[2.1rem] font-extrabold leading-tight tracking-tight"
+            className="text-[2.25rem] font-extrabold leading-tight tracking-tight"
             style={{
               color: "#F5F1E7",
-              textShadow: `0 2px 8px rgba(0,0,0,0.85)`,
-              WebkitTextStroke: "0.3px rgba(255,255,255,0.1)",
+              textShadow: `0 2px 10px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)`,
+              WebkitTextStroke: "0.4px rgba(255,255,255,0.12)",
               fontFamily: "'Georgia', serif",
             }}
           >
@@ -427,8 +427,11 @@ function HighlightCard({ title, value, sub, accent = "#C87941", icon: Icon, onSh
           </div>
           {sub && (
             <div
-              className="text-xs leading-snug pt-0.5 font-semibold"
-              style={{ color: `rgba(180,140,75,0.8)` }}
+              className="text-sm leading-snug pt-1 font-semibold"
+              style={{ 
+                color: `rgba(180,140,75,0.85)`,
+                textShadow: "0 1px 2px rgba(0,0,0,0.6)"
+              }}
             >
               {sub}
             </div>
@@ -998,7 +1001,7 @@ export default function Insights() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* ── Story Card Modal ────────────────────────────────── */}
       {activeStory && (
         <StoryCardModal
@@ -1022,46 +1025,51 @@ export default function Insights() {
         <div
           className="absolute inset-0 rounded-2xl pointer-events-none"
           style={{
-            background: "radial-gradient(ellipse at 20% 50%, #C8794118 0%, transparent 60%)",
+            background: "radial-gradient(ellipse at 20% 50%, rgba(180, 140, 75, 0.08) 0%, transparent 60%)",
           }}
         />
-        <div className="relative flex items-start justify-between gap-3 py-1">
+        <div className="relative flex items-start justify-between gap-3 py-2">
           <div>
-            <div className="flex items-center gap-2.5 mb-1.5">
+            <div className="flex items-center gap-3 mb-2">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
                 style={{
-                  background: "linear-gradient(135deg, #6aabc040 0%, #6aabc020 100%)",
-                  border: "1px solid #6aabc050",
-                  boxShadow: "0 0 16px #6aabc030",
+                  background: "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
+                  border: "1px solid rgba(120, 90, 65, 0.45)",
+                  boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)",
                 }}
               >
-                <BarChart3 className="w-5 h-5" style={{ color: "#6aabc0", filter: "drop-shadow(0 0 6px #6aabc099)" }} />
+                <BarChart3 className="w-5 h-5" style={{ color: "rgba(180, 140, 75, 1)", filter: "drop-shadow(0 0 4px rgba(180,140,75,0.7))" }} />
               </div>
               <h1
-                className="text-3xl font-bold font-serif tracking-tight"
+                className="text-4xl font-bold tracking-tight"
                 style={{
-                  background: "linear-gradient(135deg, #F5F1E7 0%, #C8B89A 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
+                  color: "#F5F1E7",
+                  fontFamily: "'Georgia', serif",
+                  textShadow: "0 2px 6px rgba(0,0,0,0.7)"
                 }}
               >
                 {t("insights.title")}
               </h1>
               {hasPaid && (
-                <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-xs">
+                <Badge 
+                  className="border-0 text-xs"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(180, 140, 75, 0.9), rgba(160, 120, 65, 1))",
+                    color: "#1a120a"
+                  }}
+                >
                   {t("subscription.proBadge", { defaultValue: "Pro" })}
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-[#E0D8C8]/55 pl-12">{t("insights.subtitle")}</p>
+            <p className="text-base pl-14" style={{ color: "rgba(224, 216, 200, 0.75)" }}>{t("insights.subtitle")}</p>
           </div>
         </div>
       </div>
 
       {/* ── COLLECTION SNAPSHOT CARDS ────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <StatusCard
           icon={Flame}
           label={t("insights.snapshotSessions", { defaultValue: "Total Sessions" })}
@@ -1128,41 +1136,40 @@ export default function Insights() {
 
       {/* ── TOP HIGHLIGHTS ────────────────────────────────── */}
       {hasData && (
-        <div className="space-y-6">
+        <div className="space-y-7">
           {/* Dramatic section heading */}
           <div className="relative">
             {/* Background glow strip */}
             <div
               className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 pointer-events-none"
-              style={{ background: "linear-gradient(90deg, transparent 0%, #F59E0B55 40%, #F59E0B55 60%, transparent 100%)" }}
+              style={{ background: "linear-gradient(90deg, transparent 0%, rgba(180, 140, 75, 0.25) 40%, rgba(180, 140, 75, 0.25) 60%, transparent 100%)" }}
             />
-            <div className="relative flex items-center gap-4 py-2">
+            <div className="relative flex items-center gap-4 py-3">
               <div
-                className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+                className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
                 style={{
-                  background: "linear-gradient(135deg, #F59E0B35 0%, #F59E0B18 100%)",
-                  border: "1px solid #F59E0B45",
-                  boxShadow: "0 0 24px #F59E0B35, inset 0 1px 0 #F59E0B30",
+                  background: "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
+                  border: "1px solid rgba(120, 90, 65, 0.45)",
+                  boxShadow: "0 3px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)",
                 }}
               >
                 <Trophy
-                  className="w-6 h-6"
-                  style={{ color: "#F59E0B", filter: "drop-shadow(0 0 8px #F59E0Bcc)" }}
+                  className="w-5 h-5"
+                  style={{ color: "rgba(180, 140, 75, 1)", filter: "drop-shadow(0 0 5px rgba(180,140,75,0.75))" }}
                 />
               </div>
               <div className="flex-1">
                 <h2
                   className="text-2xl font-bold tracking-tight"
                   style={{
-                    background: "linear-gradient(135deg, #F5F1E7 0%, #F59E0B 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
+                    color: "#F5F1E7",
+                    fontFamily: "'Georgia', serif",
+                    textShadow: "0 2px 4px rgba(0,0,0,0.6)"
                   }}
                 >
                   {t("insights.topHighlights", { defaultValue: "Top Highlights" })}
                 </h2>
-                <p className="text-[11px] text-[#E0D8C8]/45 uppercase tracking-[0.14em] font-semibold mt-0.5">
+                <p className="text-xs uppercase tracking-[0.12em] font-semibold mt-1" style={{ color: "rgba(180, 140, 75, 0.75)" }}>
                   {t("insights.topHighlightsSub", { defaultValue: "Your collector story" })}
                 </p>
               </div>
@@ -1172,7 +1179,7 @@ export default function Insights() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {mostUsedPipe && (() => {
               const img = getPipeImage(mostUsedPipe.pipe);
               return (
@@ -1337,12 +1344,14 @@ export default function Insights() {
       )}
 
       {/* ── FULL ANALYTICS PANEL ─────────────────────────── */}
-      <CollectionInsightsPanel
-        pipes={pipes}
-        blends={blends}
-        user={user}
-        activeTab={initialTab}
-      />
+      <div className="mt-2">
+        <CollectionInsightsPanel
+          pipes={pipes}
+          blends={blends}
+          user={user}
+          activeTab={initialTab}
+        />
+      </div>
     </div>
   );
 }
