@@ -21,6 +21,7 @@ import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
 import { PK_THEME } from "@/components/utils/pkTheme";
 import FoundingMemberPopup from "@/components/subscription/FoundingMemberPopup";
+import WhatsNewPopup from "@/components/onboarding/WhatsNewPopup";
 import EntitlementDebug from "@/components/debug/EntitlementDebug";
 import PermissionDebugPanel from "@/components/debug/PermissionDebugPanel";
 
@@ -793,6 +794,8 @@ export default function Layout({ children, currentPageName }) {
           </footer>
 
           <TermsGate user={user} />
+
+          <WhatsNewPopup user={user} />
 
           <FoundingMemberPopup
             isOpen={showFoundingMemberPopup}
