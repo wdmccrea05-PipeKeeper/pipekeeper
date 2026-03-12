@@ -102,7 +102,7 @@ export default function DrawerRow({
             }}
           >
             {iconImage ? (
-              <img src={iconImage} alt="" className="w-full h-full object-cover" style={{ filter: "brightness(0) invert(1) sepia(0.3) saturate(1.2)" }} />
+              <img src={iconImage} alt="" className="w-full h-full object-cover" style={{ filter: "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.85)" }} />
             ) : Icon ? (
               <Icon className="w-4 h-4" style={{ color: accent, filter: `drop-shadow(0 0 2px ${accent}60)` }} />
             ) : null}
