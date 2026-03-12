@@ -50,6 +50,30 @@ function generateWhatIfPrompt(insight, t) {
 export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, curatorEnabled = true, onInsightClick }) {
   const { t } = useTranslation();
 
+  const handleClick = (insight) => {
+    if (onInsightClick) {
+      // Build a contextual What-If prompt based on insight category
+      let whatIfPrompt = '';
+      
+      if (insight.category === 'Rotation') {
+        whatIfPrompt = `I have pipes that haven't been used in a while. Help me create a rotation plan to bring them back into regular use.`;
+      } else if (insight.category === 'Cellar') {
+        whatIfPrompt = `Some of my cellared blends have reached aging milestones. When should I open them and how should I evaluate their development?`;
+      } else if (insight.category === 'Discovery') {
+        whatIfPrompt = `My collection has limited variety. What should I add to improve balance and diversity?`;
+      } else if (insight.category === 'Stewardship') {
+        whatIfPrompt = `How can I better care for and maintain my collection?`;
+      } else {
+        whatIfPrompt = t(insight.action, insight.vars) || '';
+      }
+      
+      onInsightClick({
+        ...insight,
+        whatif_prompt: whatIfPrompt
+      });
+    }
+  };
+
   const insights = useMemo(() => {
     if (!curatorEnabled) return [];
 
@@ -164,16 +188,14 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
 
       {/* Insights */}
       <div className="space-y-3">
-        {insights.map((insight) => {
+        {insights.map((insight, index) => {
           const Icon = ICON_MAP[insight.icon];
           const moduleAccents = ACCENT_MAP[insight.module] || {};
           const accent = moduleAccents[insight.title] || "#C87941";
           
-          const whatIfPrompt = generateWhatIfPrompt(insight, t);
-          
           return (
             <button
-              key={`${insight.module}-${insight.title}-${index}`}
+              key={`${insight.module}-${insight.category}-${index}`}
               onClick={() => handleClick(insight)}
               className="w-full rounded-lg p-4 text-left transition-all hover:scale-[1.02] cursor-pointer"
               style={{
@@ -181,7 +203,7 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
                 border: `1px solid ${accent}30`,
                 boxShadow: `0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 ${accent}15`
               }}
-              aria-label={`Explore: ${t(insight.title, insight.vars)}`}
+              aria-label={`Explore: ${t(insight.title, insight.vars || {})}`}
             >
               <div className="flex items-start gap-3">
               <div
@@ -218,7 +240,7 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
                         border: `1px solid ${accent}25`
                       }}
                     >
-                      {t(`curator.category.${insight.category}`, insight.category)}
+                      {insight.category}
                     </div>
                   )}
                 </div>
