@@ -57,6 +57,16 @@ const docs = {
       default: "Tell me more about this recommendation",
     },
   },
+  
+  subscription: {
+    gracePeriod: "Payment overdue — grace period active",
+    gracePeriodDays: "Payment overdue — {{days}} days remaining",
+    suspended: "Paid access suspended",
+    updatePayment: "Please update your payment method",
+    active: "Active",
+    trial: "Trial Active",
+    noSubscription: "No active subscription",
+  },
 
   story: {
     shareYourStory: "SHARE YOUR STORY",
