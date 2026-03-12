@@ -1,184 +1,154 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { ChevronDown, RefreshCw, AlertCircle, Sparkles, Tags, Target, Info, BookOpen, Crown } from "lucide-react";
+import { ChevronDown, BookOpen, CircleHelp, RefreshCw, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+
+function TroubleshootingItem({ id, title, children, openItems, setOpenItems }) {
+  const open = !!openItems[id];
+
+  return (
+    <Card className="overflow-hidden">
+      <button
+        onClick={() => setOpenItems((p) => ({ ...p, [id]: !p[id] }))}
+        className="w-full text-left p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+      >
+        <span className="font-semibold text-[#F5F1E7] pr-4">{title}</span>
+        <ChevronDown
+          className={`w-5 h-5 text-[#D7C9B2] flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open ? (
+        <CardContent className="px-4 pb-4 pt-0 text-[#D7C9B2] leading-relaxed">
+          {children}
+        </CardContent>
+      ) : null}
+    </Card>
+  );
+}
+
+function Section({ icon: Icon, title, children, accentClass = "text-amber-300" }) {
+  return (
+    <div className="mb-10">
+      <div className="flex items-center gap-3 mb-4">
+        <Icon className={`w-7 h-7 ${accentClass}`} />
+        <h2 className="text-2xl font-bold text-[#F5F1E7]">{title}</h2>
+      </div>
+      <div className="space-y-3">{children}</div>
+    </div>
+  );
+}
 
 export default function TroubleshootingFull() {
   const { t } = useTranslation();
   const [openItems, setOpenItems] = useState({});
 
-  const toggleItem = (id) => {
-    setOpenItems(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const Section = ({ title, children }) => (
-    <div style={{ marginBottom: 32 }}>
-      <h2 className="text-2xl font-bold text-[#E0D8C8] mb-4">{title}</h2>
-      <div className="space-y-3">{children}</div>
-    </div>
-  );
-
-  const Q = ({ id, q, children }) => (
-    <Card className="bg-white border-gray-200 overflow-hidden">
-      <button
-        onClick={() => toggleItem(id)}
-        className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-      >
-        <span className="font-semibold text-gray-900 pr-4">{q}</span>
-        <ChevronDown
-          className={`w-5 h-5 text-gray-600 flex-shrink-0 transition-transform ${openItems[id] ? 'rotate-180' : ''}`}
-        />
-      </button>
-      {openItems[id] && (
-        <CardContent className="px-4 pb-4 pt-0 text-gray-700 leading-relaxed">
-          {children}
-        </CardContent>
-      )}
-    </Card>
-  );
-
-  const troubleshootingTopics = [
-    {
-      id: "pageRefresh",
-      icon: RefreshCw,
-      title: t("helpCenter.topicPageRefresh"),
-      color: "text-blue-400",
-      questions: [
-        { q: t("troubleshooting.pageRefresh_q1"), a: t("troubleshooting.pageRefresh_a1") },
-        { q: t("troubleshooting.pageRefresh_q2"), a: t("troubleshooting.pageRefresh_a2") },
-        { q: t("troubleshooting.pageRefresh_q3"), a: t("troubleshooting.pageRefresh_a3") },
-        { q: t("troubleshooting.pageRefresh_q4"), a: t("troubleshooting.pageRefresh_a4") },
-      ]
-    },
-    {
-      id: "aiFeatures",
-      icon: Sparkles,
-      title: t("helpCenter.topicAIFeatures"),
-      color: "text-purple-400",
-      questions: [
-        { q: t("troubleshooting.aiFeatures_q1"), a: t("troubleshooting.aiFeatures_a1") },
-        { q: t("troubleshooting.aiFeatures_q2"), a: t("troubleshooting.aiFeatures_a2") },
-        { q: t("troubleshooting.aiFeatures_q3"), a: t("troubleshooting.aiFeatures_a3") },
-        { q: t("troubleshooting.aiFeatures_q4"), a: t("troubleshooting.aiFeatures_a4") },
-        { q: t("troubleshooting.aiFeatures_q5"), a: t("troubleshooting.aiFeatures_a5") },
-        { q: t("troubleshooting.aiFeatures_q6"), a: t("troubleshooting.aiFeatures_a6") },
-        { q: t("troubleshooting.aiFeatures_q7"), a: t("troubleshooting.aiFeatures_a7") },
-        { q: t("troubleshooting.aiFeatures_q8"), a: t("troubleshooting.aiFeatures_a8") },
-        { q: t("troubleshooting.aiFeatures_q9"), a: t("troubleshooting.aiFeatures_a9") },
-      ]
-    },
-    {
-      id: "blendTypes",
-      icon: Tags,
-      title: t("helpCenter.topicBlendTypes"),
-      color: "text-amber-400",
-      questions: [
-        { q: t("troubleshooting.blendTypes_q1"), a: t("troubleshooting.blendTypes_a1") },
-        { q: t("troubleshooting.blendTypes_q2"), a: t("troubleshooting.blendTypes_a2") },
-        { q: t("troubleshooting.blendTypes_q3"), a: t("troubleshooting.blendTypes_a3") },
-        { q: t("troubleshooting.blendTypes_q4"), a: t("troubleshooting.blendTypes_a4") },
-        { q: t("troubleshooting.blendTypes_q5"), a: t("troubleshooting.blendTypes_a5") },
-        { q: t("troubleshooting.blendTypes_q6"), a: t("troubleshooting.blendTypes_a6") },
-      ]
-    },
-    {
-      id: "specialization",
-      icon: Target,
-      title: t("helpCenter.topicSpecialization"),
-      color: "text-green-400",
-      questions: [
-        { q: t("troubleshooting.specialization_q1"), a: t("troubleshooting.specialization_a1") },
-        { q: t("troubleshooting.specialization_q2"), a: t("troubleshooting.specialization_a2") },
-        { q: t("troubleshooting.specialization_q3"), a: t("troubleshooting.specialization_a3") },
-        { q: t("troubleshooting.specialization_q4"), a: t("troubleshooting.specialization_a4") },
-        { q: t("troubleshooting.specialization_q5"), a: t("troubleshooting.specialization_a5") },
-        { q: t("troubleshooting.specialization_q6"), a: t("troubleshooting.specialization_a6") },
-      ]
-    },
-    {
-      id: "proFeatures",
-      icon: Crown,
-      title: t("helpCenter.topicProFeatures"),
-      color: "text-amber-400",
-      questions: [
-        { q: t("troubleshooting.proFeatures_q1"), a: t("troubleshooting.proFeatures_a1") },
-        { q: t("troubleshooting.proFeatures_q2"), a: t("troubleshooting.proFeatures_a2") },
-        { q: t("troubleshooting.proFeatures_q3"), a: t("troubleshooting.proFeatures_a3") },
-        { q: t("troubleshooting.proFeatures_q4"), a: t("troubleshooting.proFeatures_a4") },
-        { q: t("troubleshooting.proFeatures_q5"), a: t("troubleshooting.proFeatures_a5") },
-        { q: t("troubleshooting.proFeatures_q6"), a: t("troubleshooting.proFeatures_a6") },
-        { q: t("troubleshooting.proFeatures_q7"), a: t("troubleshooting.proFeatures_a7") },
-        { q: t("troubleshooting.proFeatures_q8"), a: t("troubleshooting.proFeatures_a8") },
-      ]
-    },
-    {
-      id: "appFunctions",
-      icon: AlertCircle,
-      title: t("helpCenter.topicAppFunctions"),
-      color: "text-red-400",
-      questions: [
-        { q: t("troubleshooting.appFunctions_q1"), a: t("troubleshooting.appFunctions_a1") },
-        { q: t("troubleshooting.appFunctions_q2"), a: t("troubleshooting.appFunctions_a2") },
-        { q: t("troubleshooting.appFunctions_q3"), a: t("troubleshooting.appFunctions_a3") },
-        { q: t("troubleshooting.appFunctions_q4"), a: t("troubleshooting.appFunctions_a4") },
-        { q: t("troubleshooting.appFunctions_q5"), a: t("troubleshooting.appFunctions_a5") },
-        { q: t("troubleshooting.appFunctions_q6"), a: t("troubleshooting.appFunctions_a6") },
-        { q: t("troubleshooting.appFunctions_q7"), a: t("troubleshooting.appFunctions_a7") },
-        { q: t("troubleshooting.appFunctions_q8"), a: t("troubleshooting.appFunctions_a8") },
-        { q: t("troubleshooting.appFunctions_q9"), a: t("troubleshooting.appFunctions_a9") },
-        { q: t("troubleshooting.appFunctions_q10"), a: t("troubleshooting.appFunctions_a10") },
-      ]
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
-      <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(90,58,30,0.18),transparent_28%),linear-gradient(180deg,#140f0b_0%,#0b0908_100%)]">
+      <div className="max-w-[980px] mx-auto px-4 py-10">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">{t("troubleshooting.title")}</h1>
-          <p className="text-[#E0D8C8]/80 mb-4">{t("troubleshooting.subtitle")}</p>
+          <h1 className="text-4xl font-bold text-[#F5F1E7] mb-2">
+            {t("help.troubleshooting", "Troubleshooting")}
+          </h1>
+          <p className="text-[#D7C9B2]/80 mb-4">
+            {t("helpCenter.troubleshootingSubtitle", "Common issues and solutions")}
+          </p>
+
           <div className="flex gap-3 justify-center mt-4 flex-wrap">
-            <Link to={createPageUrl('HowTo')}>
-              <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
+            <Link to={createPageUrl("HowTo")}>
+              <Button
+                variant="outline"
+                className="border-[rgba(140,105,65,0.35)] text-[#F5F1E7] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)]"
+              >
                 <BookOpen className="w-4 h-4 mr-2" />
-                {t("troubleshooting.navHowTo")}
+                {t("help.howTo", "How-To Guides")}
               </Button>
             </Link>
-            <Link to={createPageUrl('FAQ')}>
-              <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
-                <Info className="w-4 h-4 mr-2" />
-                {t("troubleshooting.navFAQ")}
+
+            <Link to={createPageUrl("FAQFull")}>
+              <Button
+                variant="outline"
+                className="border-[rgba(140,105,65,0.35)] text-[#F5F1E7] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)]"
+              >
+                <CircleHelp className="w-4 h-4 mr-2" />
+                {t("help.faq", "FAQ")}
               </Button>
             </Link>
           </div>
         </div>
 
-        {troubleshootingTopics.map((topic) => {
-          const IconComponent = topic.icon;
-          return (
-            <Section
-              key={topic.id}
-              title={<span className="flex items-center gap-2"><IconComponent className={`w-6 h-6 ${topic.color}`} />{topic.title}</span>}
-            >
-              {topic.questions.map((item, idx) => (
-                <Q key={idx} id={`${topic.id}-${idx}`} q={item.q}>
-                  <p>{item.a}</p>
-                </Q>
-              ))}
-            </Section>
-          );
-        })}
+        <Section icon={RefreshCw} title={t("helpCenter.troubleshootCaching", "Caching & Page Refresh")} accentClass="text-sky-300">
+          <TroubleshootingItem
+            id="changes-not-appearing"
+            title={t("helpCenter.changesNotAppearing", "Changes aren't appearing after I update something")}
+            openItems={openItems}
+            setOpenItems={setOpenItems}
+          >
+            <ul className="list-disc list-inside space-y-2">
+              <li>{t("helpCenter.refreshPage", "Refresh the page once after saving changes.")}</li>
+              <li>{t("helpCenter.waitSync", "Give the app a moment to sync your latest data.")}</li>
+              <li>{t("helpCenter.checkFilters", "Check whether a filter, sort, or search is hiding the updated item.")}</li>
+            </ul>
+          </TroubleshootingItem>
 
-        <div className="mt-8 p-6 bg-white border border-gray-200 rounded-2xl text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t("troubleshooting.stillNeedHelp")}</h2>
-          <p className="text-gray-700 mb-4">
-            {t("troubleshooting.contactText")}{" "}
-            <Link to={createPageUrl('Support')} className="text-[#8b3a3a] hover:text-[#a94747] underline">{t("help.contactSupport")}</Link>.
-          </p>
-        </div>
+          <TroubleshootingItem
+            id="missing-new-features"
+            title={t("helpCenter.newFeaturesMissing", "New features or cards are missing")}
+            openItems={openItems}
+            setOpenItems={setOpenItems}
+          >
+            <p>{t("helpCenter.newFeaturesMissingDesc", "Refresh the app, sign out and back in, and confirm you are on the latest build.")}</p>
+          </TroubleshootingItem>
+
+          <TroubleshootingItem
+            id="stale-data"
+            title={t("helpCenter.dataOutdated", "Data seems outdated or stale")}
+            openItems={openItems}
+            setOpenItems={setOpenItems}
+          >
+            <p>{t("helpCenter.dataOutdatedDesc", "Stale data is usually resolved by refreshing the page or revisiting the screen after a save completes.")}</p>
+          </TroubleshootingItem>
+
+          <TroubleshootingItem
+            id="old-version-after-update"
+            title={t("helpCenter.oldVersionAfterUpdate", "App is showing old version after an update")}
+            openItems={openItems}
+            setOpenItems={setOpenItems}
+          >
+            <p>{t("helpCenter.oldVersionAfterUpdateDesc", "Close and reopen the app or reload the website fully to pull the newest assets.")}</p>
+          </TroubleshootingItem>
+        </Section>
+
+        <Section icon={Sparkles} title={t("helpCenter.aiFeatures", "AI Features")} accentClass="text-violet-300">
+          <TroubleshootingItem
+            id="regenerate-pairings"
+            title={t("helpCenter.whyRegeneratePairings", "Why do I need to regenerate pairings?")}
+            openItems={openItems}
+            setOpenItems={setOpenItems}
+          >
+            <p>{t("helpCenter.whyRegeneratePairingsDesc", "Pairings can change when your collection changes, so regenerated results reflect your current pipes and blends.")}</p>
+          </TroubleshootingItem>
+
+          <TroubleshootingItem
+            id="ai-updates-out-of-date"
+            title={t("helpCenter.outOfDateAiUpdates", "What does 'out of date' mean on AI Updates?")}
+            openItems={openItems}
+            setOpenItems={setOpenItems}
+          >
+            <p>{t("helpCenter.outOfDateAiUpdatesDesc", "It means your last AI-generated results were based on older collection data and may need refreshing.")}</p>
+          </TroubleshootingItem>
+
+          <TroubleshootingItem
+            id="undo-ai-regeneration"
+            title={t("helpCenter.undoAiRegenerations", "Can I undo AI regenerations?")}
+            openItems={openItems}
+            setOpenItems={setOpenItems}
+          >
+            <p>{t("helpCenter.undoAiRegenerationsDesc", "Most AI refreshes replace prior generated outputs, so review and save anything important before rerunning them.")}</p>
+          </TroubleshootingItem>
+        </Section>
       </div>
     </div>
   );
