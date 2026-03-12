@@ -502,28 +502,29 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <Card className="border-[#E0D8C8]/15 bg-[#223447]">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-70 transition-opacity">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-[#E0D8C8]">
-                    <Flame className="w-5 h-5" />
-                    {t("smokingLog.usageLog")}
-                    <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                  </CardTitle>
-                  <p className="text-sm text-[#E0D8C8]/70 mt-1">
-                   {t("smokingLog.totalBowls", { total: String(totalBowls || 0), breakIn: String(breakInBowls || 0) })}
-                  </p>
-                </div>
-              </CollapsibleTrigger>
-              <Button
-                onClick={() => setShowAddLog(true)}
-                size="sm"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                {t("smokingLog.logSession")}
-              </Button>
-            </div>
-          </CardHeader>
+             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+               <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-70 transition-opacity flex-1 min-w-0">
+                 <div className="min-w-0 flex-1">
+                   <CardTitle className="flex items-center gap-2 text-[#E0D8C8] flex-wrap">
+                     <Flame className="w-5 h-5 flex-shrink-0" />
+                     <span className="break-words">{t("smokingLog.usageLog")}</span>
+                     <ChevronDown className={`w-4 h-4 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+                   </CardTitle>
+                   <p className="text-xs sm:text-sm text-[#E0D8C8]/70 mt-1 break-words">
+                    {t("smokingLog.totalBowls", { total: String(totalBowls || 0), breakIn: String(breakInBowls || 0) })}
+                   </p>
+                 </div>
+               </CollapsibleTrigger>
+               <Button
+                 onClick={() => setShowAddLog(true)}
+                 size="sm"
+                 className="flex-shrink-0"
+               >
+                 <Plus className="w-4 h-4 mr-2" />
+                 {t("smokingLog.logSession")}
+               </Button>
+             </div>
+           </CardHeader>
           <CollapsibleContent>
             <CardContent>
           {logs.length === 0 ? (
@@ -625,7 +626,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                     <SelectValue placeholder={t("smokingLog.selectBowl")} />
                     </SelectTrigger>
                     <SelectContent>
-                    <SelectItem value="">{t("smokingLog.noSpecificBowl")}</SelectItem>
+                    <SelectItem value={null}>{t("smokingLog.noSpecificBowl")}</SelectItem>
                     {selectedPipe.interchangeable_bowls.map((bowl, idx) => {
                       const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
                       return (
@@ -663,7 +664,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                     <SelectValue placeholder={t("smokingLog.autoNone")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">{t("smokingLog.autoNone")}</SelectItem>
+                    <SelectItem value={null}>{t("smokingLog.autoNone")}</SelectItem>
                     {containers.map(c => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.container_name} — {c.quantity_grams ?? 0}g
