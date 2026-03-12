@@ -129,65 +129,11 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
   // Apply pre-filled prompt from URL or insight + auto-send
   useEffect(() => {
     if (preFilledPrompt?.trim() && threadId && !sending) {
-      setInput(preFilledPrompt);
-      // Auto-send after input is set
-      setTimeout(() => {
-        if (threadId && !sending) {
-          // Create a synthetic message send since state update is async
-          const text = preFilledPrompt.trim();
-          setSending(true);
-          const locale = getCurrentLocale();
-          
-          const optimistic = {
-            id: `local-${Date.now()}`,
-            role: "user",
-            content: text,
-            meta: {},
-          };
-          setMessages((prev) => [...prev, optimistic]);
-          
-          (async () => {
-            try {
-              const englishText = await translateToEnglish(text, locale);
-              const res = await base44.ai.sendMessage({
-                thread_id: threadId,
-                agent: "expert_tobacconist",
-                message: englishText,
-              });
-              
-              const newMsgs = await Promise.all(
-                (res?.messages || []).map(async (m) => {
-                  const translatedContent =
-                    m.role === "assistant"
-                      ? await translateFromEnglish(m.content || "", locale)
-                      : m.content || "";
-                  return {
-                    id: m.id || `${m.role}-${Math.random()}`,
-                    role: m.role,
-                    content: translatedContent,
-                    meta: m.meta || {},
-                  };
-                })
-              );
-              
-              setMessages((prev) => {
-                const withoutLocal = prev.filter((m) => !String(m.id).startsWith("local-"));
-                return [...withoutLocal, ...newMsgs];
-              });
-              setInput("");
-              // Mark prompt as consumed only after successful send
-              onPromptConsumedRef.current?.();
-            } catch (e) {
-              console.error(e);
-              toast.error(t("curator.sendError"));
-            } finally {
-              setSending(false);
-            }
-          })();
-        }
-      }, 100);
+      sendMessage(preFilledPrompt);
+      // Mark prompt as consumed after submission
+      onPromptConsumedRef.current?.();
     }
-  }, [preFilledPrompt, threadId]);
+  }, [preFilledPrompt, threadId, sending]);
   
   // Auto-scroll to bottom
   useEffect(() => {
