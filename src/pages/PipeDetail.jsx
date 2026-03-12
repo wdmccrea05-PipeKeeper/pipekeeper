@@ -432,17 +432,20 @@ export default function PipeDetailPage() {
                 >
                   <Heart className={`w-5 h-5 ${pipe.is_favorite ? "fill-current" : ""}`} />
                 </Button>
-                <Button variant="outline" size="icon" onClick={() => setShowEdit(true)} className="border-[rgba(140,105,65,0.35)] bg-black/15 hover:bg-white/5">
-                  <Edit className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="text-rose-500 hover:text-rose-600 border-[rgba(140,105,65,0.35)] bg-black/15 hover:bg-white/5"
-                  onClick={() => setShowDelete(true)}
-                >
-                  <Trash2 className="w-5 h-5" />
-                </Button>
+                <Button variant="outline" size="icon" onClick={() => setShowShare(true)} className="border-[rgba(140,105,65,0.35)] bg-black/15 hover:bg-white/5">
+                    <Share2 className="w-5 h-5" />
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={() => setShowEdit(true)} className="border-[rgba(140,105,65,0.35)] bg-black/15 hover:bg-white/5">
+                    <Edit className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="text-rose-500 hover:text-rose-600 border-[rgba(140,105,65,0.35)] bg-black/15 hover:bg-white/5"
+                    onClick={() => setShowDelete(true)}
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
               </div>
             </div>
 
