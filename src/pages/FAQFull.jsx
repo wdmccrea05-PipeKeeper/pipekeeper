@@ -53,13 +53,13 @@ export default function FAQFull() {
             <Link to={createPageUrl('HowTo')}>
               <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
                 <BookOpen className="w-4 h-4 mr-2" />
-                {t("help.howTo")}
+                {t("help.howTo", "How-To")}
                 </Button>
                 </Link>
                 <Link to={createPageUrl('TroubleshootingFull')}>
                 <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
                  <Wrench className="w-4 h-4 mr-2" />
-                 {t("help.troubleshooting")}
+                 {t("help.troubleshooting", "Troubleshooting")}
               </Button>
             </Link>
           </div>

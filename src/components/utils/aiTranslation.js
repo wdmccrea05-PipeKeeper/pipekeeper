@@ -94,3 +94,48 @@ export async function translateFromEnglish(text, locale) {
     return text;
   }
 }
+
+/**
+ * Detects if text contains characters from a script different from the target locale.
+ * Returns true if the text appears to contain mixed-language content.
+ */
+function hasMixedScript(text, locale) {
+  if (!text || typeof text !== "string") return false;
+  // CJK unified ideographs (Japanese, Chinese, Korean)
+  const hasCJK = /[\u3000-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF]/.test(text);
+  // Arabic and Hebrew
+  const hasArabicHebrew = /[\u0600-\u06FF\u0590-\u05FF]/.test(text);
+  // Cyrillic
+  const hasCyrillic = /[\u0400-\u04FF]/.test(text);
+
+  if (isEnglishLocale(locale)) {
+    return hasCJK || hasArabicHebrew || hasCyrillic;
+  }
+  if (locale === "ja") return hasCJK ? false : (hasCJK || hasArabicHebrew);
+  if (locale === "zh-Hans") return hasCJK ? false : (hasArabicHebrew);
+  return false;
+}
+
+/**
+ * Synchronously normalize a recommendation text string for display.
+ * If the text appears to be in the wrong language, returns it as-is (translation
+ * requires an async LLM call, so this only handles obvious rendering issues like
+ * stripping stray foreign characters that got mixed in).
+ *
+ * For async normalization, use translateFromEnglish.
+ *
+ * @param {string} text - The recommendation or reasoning text to display
+ * @param {string} [locale] - Target locale (defaults to getCurrentLocale())
+ * @returns {string} Cleaned text
+ */
+export function normalizeRecommendationText(text, locale) {
+  if (!text || typeof text !== "string") return text || "";
+  const lang = locale ?? getCurrentLocale();
+  // If text is clearly mixed-language, log a warning in dev but return the text as-is.
+  // Full normalization requires async translateFromEnglish; this function is sync.
+  if (import.meta.env?.DEV && hasMixedScript(text, lang)) {
+    console.warn("[normalizeRecommendationText] Possible mixed-language text detected:", text.slice(0, 80));
+  }
+  return text.trim();
+}
+

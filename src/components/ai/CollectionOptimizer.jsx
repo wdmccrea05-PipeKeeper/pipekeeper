@@ -53,7 +53,7 @@ import { FormattedTobacconistResponse } from "@/components/utils/formatTobacconi
 import { getPipeVariantKey, expandPipesToVariants } from "@/components/utils/pipeVariants";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation, translate } from "@/components/i18n/safeTranslation";
-import { translateToEnglish, translateFromEnglish, getCurrentLocale } from "@/components/utils/aiTranslation";
+import { translateToEnglish, translateFromEnglish, getCurrentLocale, normalizeRecommendationText } from "@/components/utils/aiTranslation";
 
 /**
  * Drop-in replacement notes:
@@ -1378,7 +1378,7 @@ ${englishUserText}
                         <div>
                           <p className="text-xs text-emerald-700 font-medium mb-1">{t("tobacconist.recommended")}</p>
                           <div className="flex flex-wrap gap-1">
-                            {spec.recommended_blend_types.map((f, i) => (
+                            {[...new Set(spec.recommended_blend_types)].map((f, i) => (
                               <Badge key={i} className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs">
                                 {asText(f)}
                               </Badge>
@@ -1625,7 +1625,7 @@ ${englishUserText}
 
                                 {/* ✅ Removed beige hex; use readable theme-safe colors */}
                                 <p className="text-sm text-stone-700 dark:text-white/90 mb-2 whitespace-normal break-words">
-                                  {asText(spec.reasoning)}
+                                  {normalizeRecommendationText(asText(spec.reasoning))}
                                 </p>
 
                                 {spec.score_improvement && (
@@ -1805,7 +1805,7 @@ ${englishUserText}
                             <div key={idx} className="text-sm bg-yellow-50 rounded p-2 border border-yellow-200">
                               <span className="font-medium text-yellow-900 break-words whitespace-normal">{r.blend_type}: </span>
                               <span className="text-yellow-700 break-words whitespace-normal">{r.pipe_names?.join(", ")}</span>
-                              {r.recommendation && <p className="text-xs text-yellow-600 mt-1 break-words whitespace-normal">{r.recommendation}</p>}
+                              {r.recommendation && <p className="text-xs text-yellow-600 mt-1 break-words whitespace-normal">{normalizeRecommendationText(r.recommendation)}</p>}
                             </div>
                           ))}
                         </div>
