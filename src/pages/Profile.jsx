@@ -276,9 +276,9 @@ export default function ProfilePage() {
       show_social_media: !!(profile?.show_social_media),
       clenching_preference: profile?.clenching_preference || "Sometimes",
       smoke_duration_preference: profile?.smoke_duration_preference || "No Preference",
-      preferred_blend_types: Array.isArray(profile?.preferred_blend_types) ? profile.preferred_blend_types : [],
+      preferred_blend_types: Array.isArray(profile?.preferred_blend_types) ? profile?.preferred_blend_types : [],
       pipe_size_preference: profile?.pipe_size_preference || "No Preference",
-      preferred_shapes: Array.isArray(profile?.preferred_shapes) ? profile.preferred_shapes : [],
+      preferred_shapes: Array.isArray(profile?.preferred_shapes) ? profile?.preferred_shapes : [],
       strength_preference: profile?.strength_preference || "No Preference",
       notes: profile?.notes || "",
     }));

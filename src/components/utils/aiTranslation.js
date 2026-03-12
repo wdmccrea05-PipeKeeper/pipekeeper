@@ -111,8 +111,8 @@ function hasMixedScript(text, locale) {
   if (isEnglishLocale(locale)) {
     return hasCJK || hasArabicHebrew || hasCyrillic;
   }
-  if (locale === "ja") return hasCJK ? false : (hasCJK || hasArabicHebrew);
-  if (locale === "zh-Hans") return hasCJK ? false : (hasArabicHebrew);
+  // For Japanese and Chinese, flag content that contains Arabic/Hebrew (clearly wrong script)
+  if (locale === "ja" || locale === "zh-Hans") return hasArabicHebrew;
   return false;
 }
 

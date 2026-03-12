@@ -56,7 +56,7 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false, 
       className={cn(
         "flex items-center gap-1 font-medium transition-all duration-200 flex-shrink-0 whitespace-nowrap",
         isNav ? "px-2 sm:px-3 py-2 text-xs" : "px-3 py-2.5 text-sm",
-        isMobile && "text-[#1a2c42]"
+        isMobile && "text-[#E0D8C8]"
       )}
       style={{
         WebkitTapHighlightColor: "transparent",
@@ -67,7 +67,7 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false, 
           color: "#F5F1E7",
           boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.15)",
         } : isMobile ? {
-          color: "#1a2c42"
+          color: "#E0D8C8"
         } : {
           color: "rgba(224, 216, 200, 0.7)",
         })
@@ -83,7 +83,7 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false, 
             color: isActive 
               ? "rgba(180, 140, 75, 1)" 
               : isMobile 
-              ? "#1a2c42"
+              ? "rgba(224, 216, 200, 0.8)"
               : "rgba(180, 140, 75, 0.7)"
           }}
         />
@@ -545,7 +545,7 @@ export default function Layout({ children, currentPageName }) {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center p-4">
         <div className="text-center">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
@@ -560,7 +560,7 @@ export default function Layout({ children, currentPageName }) {
 
   if ((userError || !user?.email) && !PUBLIC_PAGES.has(currentPageName)) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center p-4">
         <div className="text-center">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
@@ -577,7 +577,7 @@ export default function Layout({ children, currentPageName }) {
   // Block render until subscription is ready (prevents provider mis-detection)
   if (!subscriptionReady) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-[#e8d5b7] rounded-full animate-spin" />
       </div>
     );
@@ -707,10 +707,12 @@ export default function Layout({ children, currentPageName }) {
 
           <div
             className={cn(
-              "md:hidden fixed right-0 w-64 bg-white z-50 shadow-xl overflow-y-auto transition-transform duration-200",
+              "md:hidden fixed right-0 w-64 z-50 shadow-xl overflow-y-auto transition-transform duration-200",
               mobileOpen ? "translate-x-0" : "translate-x-full"
             )}
             style={{ 
+              background: "linear-gradient(145deg, rgba(30,22,16,0.98), rgba(22,15,10,0.98))",
+              borderLeft: "1px solid rgba(140,105,65,0.25)",
               top: 'calc(4rem + env(safe-area-inset-top, 0px))',
               height: 'calc(100vh - 4rem - env(safe-area-inset-top, 0px))'
             }}
@@ -729,8 +731,8 @@ export default function Layout({ children, currentPageName }) {
               
               {adminNavItems.length > 0 && (
                 <>
-                  <div className="h-px bg-gray-200 my-2" />
-                  <p className="text-xs text-gray-500 px-2 mb-1 uppercase tracking-wider">{t("layout.admin")}</p>
+                  <div className="h-px bg-[#8b6239]/25 my-2" />
+                  <p className="text-xs text-[#8b6239]/70 px-2 mb-1 uppercase tracking-wider">{t("layout.admin")}</p>
                   {adminNavItems.map((item) => (
                     <NavLink
                       key={item.page}
@@ -744,7 +746,7 @@ export default function Layout({ children, currentPageName }) {
                 </>
               )}
               
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="mt-4 pt-4 border-t border-[#8b6239]/25">
                 <LanguageSwitcher />
               </div>
             </div>
@@ -812,7 +814,7 @@ export default function Layout({ children, currentPageName }) {
 
           {showSubscribePrompt && (
             <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
-              <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
+              <div className="w-full max-w-lg rounded-2xl bg-gradient-to-br from-[#2a1f18] to-[#1f1510] border border-[#A35C5C]/60 shadow-2xl p-6">
                 <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">{t("subscription.trialEndedTitle")}</h3>
                 <p className="text-[#E0D8C8]/80 mb-5">
                   {t("subscription.trialEndedBody")}

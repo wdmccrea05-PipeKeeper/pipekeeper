@@ -14,7 +14,7 @@ function AppleSupport() {
           {t("appleSupport.subtitle")}
         </p>
       </div>
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+      <Card className="border-[#8b3a3a]/40 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
         <CardHeader>
           <CardTitle className="text-[#e8d5b7]">{t("appleSupport.beforeContactTitle")}</CardTitle>
         </CardHeader>
@@ -27,7 +27,7 @@ function AppleSupport() {
           </ul>
         </CardContent>
       </Card>
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+      <Card className="border-[#8b3a3a]/40 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
         <CardHeader>
           <CardTitle className="text-[#e8d5b7]">{t("appleSupport.includeInMessageTitle")}</CardTitle>
         </CardHeader>
@@ -40,7 +40,7 @@ function AppleSupport() {
           </ul>
         </CardContent>
       </Card>
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+      <Card className="border-[#8b3a3a]/40 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
         <CardHeader>
           <CardTitle className="text-[#e8d5b7]">{t("appleSupport.aboutBuildTitle")}</CardTitle>
         </CardHeader>
