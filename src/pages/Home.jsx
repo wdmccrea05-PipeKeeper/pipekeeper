@@ -411,11 +411,12 @@ export default function Home() {
           curatorEnabled={userProfile?.enable_curator !== false}
           onInsightClick={(insight) => {
             const prompt = insight?.whatif_prompt || '';
+            const params = new URLSearchParams();
+            params.set('tab', 'curator');
             if (prompt) {
-              window.location.href = createPageUrl(`Curator?prompt=${encodeURIComponent(prompt)}`);
-            } else {
-              window.location.href = createPageUrl('Curator');
+              params.set('prompt', prompt);
             }
+            window.location.href = createPageUrl(`Curator?${params.toString()}`);
           }}
         />
       )}
