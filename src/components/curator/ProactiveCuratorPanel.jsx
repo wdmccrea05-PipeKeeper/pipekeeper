@@ -173,14 +173,15 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
           
           return (
             <button
-              key={`${insight.module}-${insight.title}`}
-              onClick={() => onInsightClick?.(insight, whatIfPrompt)}
+              key={`${insight.module}-${insight.title}-${index}`}
+              onClick={() => handleClick(insight)}
               className="w-full rounded-lg p-4 text-left transition-all hover:scale-[1.02] cursor-pointer"
               style={{
                 background: "linear-gradient(135deg, rgba(50,35,25,0.6), rgba(40,28,20,0.8))",
                 border: `1px solid ${accent}30`,
                 boxShadow: `0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 ${accent}15`
               }}
+              aria-label={`Explore: ${t(insight.title, insight.vars)}`}
             >
               <div className="flex items-start gap-3">
               <div
@@ -217,7 +218,7 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
                         border: `1px solid ${accent}25`
                       }}
                     >
-                      {insight.category}
+                      {t(`curator.category.${insight.category}`, insight.category)}
                     </div>
                   )}
                 </div>
