@@ -26,10 +26,10 @@ const normalizeTier = (raw) => {
   if (!t) return "free";
 
   if (t === "pro") return "pro";
-  if (t === "premium") return "premium";
+  if (t === "premium") return "pro"; // Collapse Premium → Pro
 
   // Explicit legacy synonyms only — no substring matching
-  if (t === "paid" || t === "plus" || t === "subscriber" || t === "subscribed") return "premium";
+  if (t === "paid" || t === "plus" || t === "subscriber" || t === "subscribed") return "pro";
 
   return "free";
 };
