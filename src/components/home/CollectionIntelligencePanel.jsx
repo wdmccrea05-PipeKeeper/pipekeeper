@@ -297,7 +297,10 @@ function UpdateFeedItem({ update }) {
     } else {
       prompt = t("collectionIntelligence.updateExplainPrompt", `Explain the ${update.title} update.`);
     }
-    window.location.href = createPageUrl(`Curator?prompt=${encodeURIComponent(prompt)}`);
+    const params = new URLSearchParams();
+    params.set('tab', 'curator');
+    params.set('prompt', prompt);
+    window.location.href = createPageUrl(`Curator?${params.toString()}`);
   };
 
   return (
