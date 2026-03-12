@@ -26,7 +26,7 @@ export default function LanguageSwitcher({ className = "" }) {
       onChange={(e) => setLang(e.target.value)}
       className={
         className ||
-        "bg-[#1A2B3A]/90 border border-[#A35C5C]/40 text-[#E0D8C8] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/50"
+        "bg-gradient-to-br from-[#3a2a20] to-[#2a1a10] border border-[#8b6239]/30 text-[#E0D8C8] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A574]/50"
       }
       aria-label={t("common.language")}
     >
