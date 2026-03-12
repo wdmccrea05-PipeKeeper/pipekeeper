@@ -123,7 +123,10 @@ export default function Home() {
     window.location.href = createPageUrl("Curator");
   };
 
-  const totalPipeValue = pipes.reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0);
+  const totalPipeValue = pipes.reduce((sum, p) => {
+    const val = Number(p?.estimated_value) || 0;
+    return sum + (Number.isFinite(val) ? val : 0);
+  }, 0);
   const totalCellaredOz = calculateCellaredOzFromLogs(cellarLogs);
   const totalTobaccoValue = calculateTobaccoCollectionValue(blends, cellarLogs);
   const totalCollectionValue = totalPipeValue + totalTobaccoValue;
@@ -138,11 +141,11 @@ export default function Home() {
   // Summary stats for compact insights card
   const aiUpdateCount = (activePairings ? 1 : 0) + (activeOpt ? 1 : 0);
 
-  // Generate story cards
+  // Generate story cards with stable dependencies
   const storyCards = useMemo(() => {
     if (!pipes.length && !blends.length) return [];
     return generateStoryCards(pipes, blends, smokingLogs, totalCollectionValue, formatCurrency, t);
-  }, [pipes, blends, smokingLogs, totalCollectionValue, t]);
+  }, [pipes.length, blends.length, smokingLogs.length, totalCollectionValue]);
 
   // Most smoked pipe
   const mostSmokedPipe = useMemo(() => {
@@ -155,9 +158,12 @@ export default function Home() {
     return pipes.find((p) => p.id === topId);
   }, [pipes, smokingLogs]);
 
-  // Most valuable pipe
+  // Most valuable pipe with safe handling
   const mostValuablePipe = useMemo(() => {
-    return pipes.filter((p) => (p.estimated_value || 0) > 0).sort((a, b) => (b.estimated_value || 0) - (a.estimated_value || 0))[0] || null;
+    const withValue = pipes.filter(p => (Number(p?.estimated_value) || 0) > 0);
+    if (!withValue.length) return null;
+    const sorted = withValue.sort((a, b) => (Number(b.estimated_value) || 0) - (Number(a.estimated_value) || 0));
+    return sorted[0] || null;
   }, [pipes]);
 
   // Favorite blend
