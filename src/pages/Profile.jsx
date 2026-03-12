@@ -278,15 +278,9 @@ export default function ProfilePage() {
     );
   }
 
-  const statusLabels = {
-    active: t("profileExtended.statusActive"),
-    trialing: t("profileExtended.statusTrialing"),
-    trial: t("profileExtended.statusTrial"),
-    past_due: t("profileExtended.statusPastDue"),
-    canceled: t("profileExtended.statusCanceled"),
-    incomplete: t("profileExtended.statusIncomplete"),
-    unpaid: t("profileExtended.statusUnpaid"),
-  };
+  // Use centralized grace period status messaging
+  const graceStatus = getGraceStatus(subscription);
+  const subscriptionStatusMessage = getSubscriptionStatusMessage(subscription, t);
 
   const clenchingLabels = {
     "Yes": t("profilePreferences.yes"),
@@ -349,8 +343,24 @@ export default function ProfilePage() {
                       <div className="font-semibold" style={{ color: "#F5F1E7" }}>
                         {hasPro ? t("profile.proActive") : t("profile.premiumActive")}
                       </div>
-                      <div className="text-sm" style={{ color: "rgba(180, 140, 75, 0.8)" }}>
-                        {t("profile.fullAccess")}
+                      <div className="text-sm flex items-center gap-2" style={{ color: "rgba(180, 140, 75, 0.8)" }}>
+                        {graceStatus.inGrace ? (
+                          <>
+                            <AlertCircle className="w-4 h-4 text-amber-500" />
+                            <span>{t("subscription.gracePeriod", `Payment overdue — ${graceStatus.daysRemaining} day${graceStatus.daysRemaining > 1 ? 's' : ''} remaining`)}</span>
+                          </>
+                        ) : (
+                          t("profile.fullAccess")
+                        )}
+                      </div>
+                    </>
+                  ) : graceStatus.gracePeriodExpired ? (
+                    <>
+                      <div className="font-semibold" style={{ color: "rgba(224, 100, 100, 0.9)" }}>
+                        {t("subscription.suspended", "Paid access suspended")}
+                      </div>
+                      <div className="text-sm" style={{ color: "rgba(224, 100, 100, 0.7)" }}>
+                        {t("subscription.updatePayment", "Please update your payment method")}
                       </div>
                     </>
                   ) : isTrial ? (
@@ -523,12 +533,21 @@ export default function ProfilePage() {
                 </Badge>
               )}
               {subscription?.status && typeof subscription.status === 'string' ? (
-                <Badge variant="secondary" className="text-xs" style={{
-                  background: "rgba(60, 45, 30, 0.3)",
-                  color: "rgba(224, 216, 200, 0.8)",
-                  border: "1px solid rgba(120, 90, 65, 0.25)"
+                <Badge variant="secondary" className="text-xs flex items-center gap-1" style={{
+                  background: graceStatus.inGrace 
+                    ? "rgba(245, 158, 11, 0.15)" 
+                    : graceStatus.gracePeriodExpired
+                    ? "rgba(220, 60, 60, 0.15)"
+                    : "rgba(60, 45, 30, 0.3)",
+                  color: graceStatus.inGrace
+                    ? "rgba(245, 158, 11, 0.95)"
+                    : graceStatus.gracePeriodExpired
+                    ? "rgba(220, 60, 60, 0.95)"
+                    : "rgba(224, 216, 200, 0.8)",
+                  border: `1px solid ${graceStatus.inGrace ? "rgba(245, 158, 11, 0.35)" : graceStatus.gracePeriodExpired ? "rgba(220, 60, 60, 0.35)" : "rgba(120, 90, 65, 0.25)"}`
                 }}>
-                  {statusLabels[subscription.status] || subscription.status}
+                  {graceStatus.inGrace && <AlertCircle className="w-3 h-3" />}
+                  {subscriptionStatusMessage}
                 </Badge>
               ) : null}
             </div>
