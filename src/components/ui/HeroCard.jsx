@@ -278,29 +278,28 @@ export function StatusCard({
       />
 
       {/* Content */}
-      <div className="relative flex items-center gap-3 min-w-0">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{
-            background: `linear-gradient(135deg, rgba(100, 70, 45, 0.48) 0%, rgba(80, 55, 35, 0.58) 100%)`,
-            border: `1px solid rgba(120, 90, 65, 0.45)`,
-            boxShadow: `0 3px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180, 140, 100, 0.2)`,
-          }}
-        >
-          <Icon className="w-4 h-4" style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 4px rgba(180, 140, 75, 0.7))` }} />
-        </div>
-        <span 
-          className="text-[10px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold leading-tight flex-1 min-w-0" 
-          style={{ 
-            color: "rgba(180, 140, 75, 0.85)",
-            whiteSpace: "normal",
-            wordWrap: "break-word",
-            hyphens: "none"
-          }}
-        >
-          {label}
-        </span>
-      </div>
+      <div className="relative flex items-center gap-3 min-w-0 flex-wrap">
+         <div
+           className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+           style={{
+             background: `linear-gradient(135deg, rgba(100, 70, 45, 0.48) 0%, rgba(80, 55, 35, 0.58) 100%)`,
+             border: `1px solid rgba(120, 90, 65, 0.45)`,
+             boxShadow: `0 3px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180, 140, 100, 0.2)`,
+           }}
+         >
+           <Icon className="w-4 h-4" style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 4px rgba(180, 140, 75, 0.7))` }} />
+         </div>
+         <span 
+           className="text-[10px] sm:text-[11px] uppercase tracking-[0.05em] sm:tracking-[0.1em] font-semibold leading-tight break-words" 
+           style={{ 
+             color: "rgba(180, 140, 75, 0.85)",
+             whiteSpace: "normal",
+             overflow: "break-word"
+           }}
+         >
+           {label}
+         </span>
+       </div>
 
       <div className="relative min-w-0">
         <div
