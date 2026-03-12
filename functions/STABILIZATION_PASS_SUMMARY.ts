@@ -9,6 +9,8 @@
  * This is a documentation file. Call via admin console for verification.
  */
 
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.20";
+
 const STABILIZATION_SUMMARY = {
   timestamp: "2026-03-12T00:00:00Z",
   phase: "COMPLETE",
