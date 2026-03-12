@@ -518,7 +518,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                <Button
                  onClick={() => setShowAddLog(true)}
                  size="sm"
-                 className="flex-shrink-0"
+                 className="flex-shrink-0 bg-[#A35C5C] text-[#F5F1E7] hover:bg-[#8F4E4E]"
                >
                  <Plus className="w-4 h-4 mr-2" />
                  {t("smokingLog.logSession")}
