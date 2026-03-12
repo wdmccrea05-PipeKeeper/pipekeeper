@@ -24,8 +24,8 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
     // Check if user has skipped tutorial
     const skipKey = `pk_quickstart_skipped_${user.email}`;
     const completeKey = `pk_quickstart_completed_${user.email}`;
-    const hasSkipped = localStorage.getItem(skipKey) === 'true';
-    const hasCompleted = localStorage.getItem(completeKey) === 'true';
+    const hasSkipped = safeLocalStorage(skipKey) === 'true';
+    const hasCompleted = safeLocalStorage(completeKey) === 'true';
 
     // Show tutorial if: new user (no pipes/blends), hasn't skipped, and hasn't completed
     if (!hasSkipped && !hasCompleted && pipes.length === 0 && blends.length === 0) {
