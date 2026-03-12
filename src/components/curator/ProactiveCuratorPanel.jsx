@@ -74,12 +74,13 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
     }
     
     if (onInsightClick) {
+      // Use callback if provided (ExpertTobacconist mode)
       onInsightClick({
         ...insight,
         whatif_prompt: whatIfPrompt
       });
     } else {
-      // Navigate to Curator with pre-filled prompt
+      // Fallback: navigate to Curator with pre-filled prompt via URL params
       const params = new URLSearchParams();
       params.set('tab', 'curator');
       params.set('prompt', whatIfPrompt);
