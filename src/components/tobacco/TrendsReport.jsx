@@ -500,11 +500,11 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
 
       {/* Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">{t("trends.overview")}</TabsTrigger>
-          <TabsTrigger value="usage">{t("trends.usage")}</TabsTrigger>
-          <TabsTrigger value="taste">{t("trends.taste")}</TabsTrigger>
-          <TabsTrigger value="geometry">{t("trends.geometry")}</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 bg-[#3a2a20]/40 border border-[#8b6239]/25">
+          <TabsTrigger value="overview" className="text-[#E0D8C8] data-[state=active]:text-[#F5F1E7] data-[state=active]:bg-[#8b6239]/30">{t("trends.overview")}</TabsTrigger>
+          <TabsTrigger value="usage" className="text-[#E0D8C8] data-[state=active]:text-[#F5F1E7] data-[state=active]:bg-[#8b6239]/30">{t("trends.usage")}</TabsTrigger>
+          <TabsTrigger value="taste" className="text-[#E0D8C8] data-[state=active]:text-[#F5F1E7] data-[state=active]:bg-[#8b6239]/30">{t("trends.taste")}</TabsTrigger>
+          <TabsTrigger value="geometry" className="text-[#E0D8C8] data-[state=active]:text-[#F5F1E7] data-[state=active]:bg-[#8b6239]/30">{t("trends.geometry")}</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
