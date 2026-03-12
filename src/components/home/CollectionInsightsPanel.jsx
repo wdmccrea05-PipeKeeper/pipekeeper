@@ -210,8 +210,8 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
                 {pipes.length === 0 || blends.length === 0 ? (
                   <div className="text-center py-12">
                     <BookOpen className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                    <p className="text-[#A4B0C4] mb-2">{t("empty.usageLogNoPipes")}</p>
-                    <p className="text-sm text-[#8F9DB3] mb-4">{t("empty.usageLogAction")}</p>
+                    <p className="text-[#E0D8C8]/70 mb-2">{t("empty.usageLogNoPipes")}</p>
+                        <p className="text-sm text-[#E0D8C8]/60 mb-4">{t("empty.usageLogAction")}</p>
                     <div className="flex gap-3 justify-center">
                       {pipes.length === 0 && (
                         <Button asChild size="sm">
