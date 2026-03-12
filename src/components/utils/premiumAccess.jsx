@@ -131,8 +131,7 @@ export function isTrialingAccess(user, subscription) {
 // Optional labeling helper
 export function getPlanLabel(user, subscription) {
   const tier = getEntitlementTier(user, subscription);
-  if (tier === "pro") return "Pro";
-  if (tier === "premium") return "Premium";
+  if (tier === "pro") return "Pro"; // Premium collapses to Pro
   return "Free";
 }
 
