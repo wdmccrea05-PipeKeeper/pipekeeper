@@ -129,13 +129,17 @@ export default function TobaccoCollectionStats({ user: userProp }) {
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
+        <Card style={{
+          background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+          border: "1px solid rgba(140,105,65,0.35)",
+          boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+        }}>
         <CardHeader className="pb-3">
           <CollapsibleTrigger className="flex-1">
-            <CardTitle className="text-xl text-emerald-800 flex items-center gap-2 hover:opacity-70 transition-opacity">
-              <BarChart3 className="w-6 h-6" />
+            <CardTitle className="text-xl flex items-center gap-2 hover:opacity-70 transition-opacity" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
+              <BarChart3 className="w-6 h-6" style={{ color: "rgba(180,140,75,0.9)" }} />
               {t("stats.tobaccoCollectionStats")}
-              <ChevronDown className={`w-5 h-5 ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-5 h-5 ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} style={{ color: "rgba(180,140,75,0.6)" }} />
             </CardTitle>
           </CollapsibleTrigger>
         </CardHeader>
@@ -144,23 +148,32 @@ export default function TobaccoCollectionStats({ user: userProp }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Quick Stats */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-stone-700 flex items-center gap-2 mb-3">
-              <Leaf className="w-4 h-4 text-emerald-600" />
+            <h3 className="font-semibold flex items-center gap-2 mb-3" style={{ color: "#F5F1E7" }}>
+              <Leaf className="w-4 h-4" style={{ color: "rgba(90,124,90,0.8)" }} />
               {t("stats.quickStats")}
             </h3>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between items-center py-1.5 px-3 bg-white rounded-lg">
-                <span className="text-stone-600">{t("stats.totalBlends")}</span>
-                <span className="font-semibold text-emerald-700">{totalBlends}</span>
+              <div className="flex justify-between items-center py-1.5 px-3 rounded-lg" style={{
+                background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                border: "1px solid rgba(140,105,65,0.2)",
+                color: "#E0D8C8"
+              }}>
+                <span style={{ color: "rgba(224,216,200,0.7)" }}>{t("stats.totalBlends")}</span>
+                <span className="font-semibold" style={{ color: "rgba(180,140,75,0.9)" }}>{totalBlends}</span>
               </div>
               <button
                 onClick={() => handleDrillDown('brands', brandBreakdown)}
-                className="w-full flex justify-between items-center py-1.5 px-3 bg-white rounded-lg hover:bg-emerald-50 transition-colors group"
+                className="w-full flex justify-between items-center py-1.5 px-3 rounded-lg transition-colors group"
+                style={{
+                  background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                  border: "1px solid rgba(140,105,65,0.2)",
+                  color: "#E0D8C8"
+                }}
               >
-                <span className="text-stone-600">{t("stats.uniqueBrands")}</span>
+                <span style={{ color: "rgba(224,216,200,0.7)" }}>{t("stats.uniqueBrands")}</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-emerald-700">{uniqueBrands}</span>
-                  <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-emerald-600" />
+                  <span className="font-semibold" style={{ color: "rgba(180,140,75,0.9)" }}>{uniqueBrands}</span>
+                  <ChevronRight className="w-4 h-4" style={{ color: "rgba(180,140,75,0.6)" }} />
                 </div>
               </button>
               <button
@@ -309,8 +322,8 @@ export default function TobaccoCollectionStats({ user: userProp }) {
 
           {/* Blend Type Breakdown */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-stone-700 flex items-center gap-2 mb-3">
-              <TrendingUp className="w-4 h-4 text-emerald-600" />
+            <h3 className="font-semibold flex items-center gap-2 mb-3" style={{ color: "#F5F1E7" }}>
+              <TrendingUp className="w-4 h-4" style={{ color: "rgba(180,140,75,0.8)" }} />
               {t("stats.blendTypeBreakdown")}
             </h3>
             {lowInventoryBlends.length > 0 && (

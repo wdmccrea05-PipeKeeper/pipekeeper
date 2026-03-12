@@ -128,7 +128,11 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
           <p className="text-sm" style={{ color: "rgba(224, 216, 200, 0.8)" }}>{t("insights.subtitle")}</p>
         </div>
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className={`grid w-full items-center justify-center ${isAppleBuild ? "grid-cols-1" : "grid-cols-7"} gap-0 h-20`}>
+          <TabsList className={`grid w-full items-center justify-center ${isAppleBuild ? "grid-cols-1" : "grid-cols-7"} gap-0 h-20`} style={{
+            background: "linear-gradient(145deg, rgba(35,24,16,0.7), rgba(28,18,12,0.85))",
+            border: "1px solid rgba(140,105,65,0.2)",
+            borderRadius: "0.5rem"
+          }}>
             {isAppleBuild ? (
               <TabsTrigger value="stats" className="flex items-center justify-center gap-2">
                 <BarChart3 className="w-4 h-4" />
@@ -136,27 +140,27 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
               </TabsTrigger>
             ) : (
               <>
-                <TabsTrigger value="log" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                <TabsTrigger value="log" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 data-[state=active]:bg-amber-600/20 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent" style={{ color: "rgba(224,216,200,0.6)" }}>
                   <BookOpen className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.log")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="reference" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                <TabsTrigger value="reference" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 data-[state=active]:bg-amber-600/20 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent" style={{ color: "rgba(224,216,200,0.6)" }}>
                   <Grid3x3 className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.pairingGrid")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="rotation" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                <TabsTrigger value="rotation" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 data-[state=active]:bg-amber-600/20 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent" style={{ color: "rgba(224,216,200,0.6)" }}>
                   <CalendarClock className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.rotation")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="stats" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                <TabsTrigger value="stats" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 data-[state=active]:bg-amber-600/20 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent" style={{ color: "rgba(224,216,200,0.6)" }}>
                   <BarChart3 className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.stats")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="trends" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                <TabsTrigger value="trends" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 data-[state=active]:bg-amber-600/20 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent" style={{ color: "rgba(224,216,200,0.6)" }}>
                   <BarChart3 className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.trends")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="aging" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 relative">
+                <TabsTrigger value="aging" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 relative data-[state=active]:bg-amber-600/20 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent" style={{ color: "rgba(224,216,200,0.6)" }}>
                   <Clock className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.aging")}</span>
                   {agingAlertCount > 0 && (
@@ -165,7 +169,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
                     </div>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="reports" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                <TabsTrigger value="reports" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 data-[state=active]:bg-amber-600/20 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent" style={{ color: "rgba(224,216,200,0.6)" }}>
                   <FileText className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.reports")}</span>
                 </TabsTrigger>
