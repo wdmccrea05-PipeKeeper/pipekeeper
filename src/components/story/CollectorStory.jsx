@@ -456,9 +456,9 @@ function StoryCard({
               textShadow: `0 3px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)`,
               WebkitTextStroke: "0.4px rgba(255,255,255,0.08)",
               fontFamily: "'Georgia', serif",
-              wordBreak: "normal",
-              overflowWrap: "break-word",
-              hyphens: "auto",
+              wordBreak: "break-word",
+              whiteSpace: "normal",
+              hyphens: "none",
               letterSpacing: isClosingCard ? "-0.02em" : "-0.01em",
               textAlign: 'center',
             }}
