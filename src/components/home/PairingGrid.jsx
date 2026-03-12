@@ -360,7 +360,7 @@ function PipeCard({ row, allBlends, userProfile }) {
       <div className="mt-3 space-y-2">
         <div className="text-xs font-semibold text-white">{t("pairingGrid.checkAnyBlend")}</div>
         <Select value={selectedBlendId} onValueChange={setSelectedBlendId}>
-          <SelectTrigger className="text-sm">
+          <SelectTrigger className="text-sm text-[#E0D8C8] border-[#8b6239]/30 bg-[#3a2a20]/50 hover:bg-[#3a2a20]/70">
             <SelectValue placeholder={t("pairingGrid.selectABlend")} />
           </SelectTrigger>
           <SelectContent>
