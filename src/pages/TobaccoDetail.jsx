@@ -230,7 +230,7 @@ export default function TobaccoDetailPage() {
   const colorClass = BLEND_COLORS[blend.blend_type] || "bg-stone-100 text-stone-800 border-stone-200";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+    <div className="min-h-screen" style={{ background: "linear-gradient(135deg, rgba(15,11,8,0.95), rgba(20,15,10,0.95))" }}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <a href={createPageUrl('Tobacco')}>
@@ -248,7 +248,11 @@ export default function TobaccoDetailPage() {
           <div className="space-y-6">
             {/* Photo */}
             <motion.div 
-              className="aspect-square rounded-2xl overflow-hidden bg-white shadow-xl cursor-pointer"
+              className="aspect-square rounded-2xl overflow-hidden shadow-xl cursor-pointer"
+              style={{
+                background: "linear-gradient(145deg, rgba(50,40,30,0.7), rgba(40,28,20,0.9))",
+                border: "1px solid rgba(140,105,65,0.3)"
+              }}
               layoutId={`blend-${blend.id}`}
               onClick={() => setExpandedImage(blend.logo || blend.photo)}
             >
@@ -260,7 +264,9 @@ export default function TobaccoDetailPage() {
                   onError={() => setPrimaryImgError(true)}
                 />
               ) : primaryImgError ? (
-                <div className="w-full h-full flex items-center justify-center bg-white p-6">
+                <div className="w-full h-full flex items-center justify-center p-6" style={{
+                  background: "linear-gradient(145deg, rgba(50,40,30,0.7), rgba(40,28,20,0.9))"
+                }}>
                   {!fallbackImgError ? (
                     <img 
                       src={getTobaccoLogo(blend.manufacturer)} 
@@ -275,7 +281,9 @@ export default function TobaccoDetailPage() {
                   )}
                 </div>
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-white p-6">
+                <div className="w-full h-full flex items-center justify-center p-6" style={{
+                  background: "linear-gradient(145deg, rgba(50,40,30,0.7), rgba(40,28,20,0.9))"
+                }}>
                   {!fallbackImgError ? (
                     <img 
                       src={getTobaccoLogo(blend.manufacturer)} 
@@ -415,11 +423,11 @@ export default function TobaccoDetailPage() {
                 </Badge>
               )}
               {blend.production_status && (
-                <Badge className={
-                  blend.production_status === 'Discontinued' 
-                    ? 'bg-rose-100 text-rose-800 border-rose-200'
-                    : 'bg-blue-100 text-blue-800 border-blue-200'
-                }>
+                <Badge style={{
+                  background: "rgba(140,105,65,0.3)",
+                  color: "#E0D8C8",
+                  borderColor: "rgba(140,105,65,0.5)"
+                }}>
                   {t(`productionStatuses.${blend.production_status}`, blend.production_status)}
                 </Badge>
               )}
