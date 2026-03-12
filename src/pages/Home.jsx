@@ -575,7 +575,7 @@ export default function Home() {
               <a
                 key={b.id}
                 href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(b.id)}`)}
-                className="flex items-center gap-3 p-1.5 -mx-1.5 transition-all"
+                className="flex items-center gap-3 p-1.5 -mx-1.5 transition-all hover:bg-[rgba(60,45,30,0.2)] rounded"
               >
                 <div 
                   className="w-10 h-10 rounded-full overflow-hidden shrink-0 flex items-center justify-center"
