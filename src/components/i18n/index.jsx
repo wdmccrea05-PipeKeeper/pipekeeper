@@ -11,6 +11,7 @@ import ja from './locales/ja.jsx';
 import zhHans from './locales/zh-Hans.jsx';
 import { homeTranslations } from './homeContent.jsx';
 import { insightsTranslations } from './insightsContent.jsx';
+import enCollectionIntelligence from './locales/en.collectionIntelligence.jsx';
 
 // Documentation files — split out to keep main locale files under the size limit
 // Each docs file contains: howTo (steps), troubleshooting (full Q&A), faqExtended,
@@ -89,13 +90,16 @@ const rawLocales = {
   'zh-Hans': zhHans,
 };
 
-// Merge homeContent + insights + docs translations into each language pack
-// Priority: locale file wins > homeContent > insights > docs (English fallback handles missing keys)
+// Merge homeContent + insights + collectionIntelligence + docs translations into each language pack
+// Priority: locale file wins > homeContent > insights > collectionIntelligence > docs (English fallback handles missing keys)
 export const translations = Object.fromEntries(
   Object.entries(rawLocales).map(([lang, pack]) => {
     const withHome = deepMerge(pack, (homeTranslations[lang] || {}));
     const withInsights = deepMerge(withHome, (insightsTranslations[lang] || {}));
-    const withDocs = deepMerge(withInsights, (docsLocales[lang] || {}));
+    const withIntelligence = lang === 'en' 
+      ? deepMerge(withInsights, { collectionIntelligence: enCollectionIntelligence })
+      : withInsights;
+    const withDocs = deepMerge(withIntelligence, (docsLocales[lang] || {}));
     return [lang, withDocs];
   })
 );
