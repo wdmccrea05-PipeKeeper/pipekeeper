@@ -22,18 +22,22 @@ export default function FAQFull() {
   );
 
   const Q = ({ id, q, children }) => (
-    <Card className="bg-white border-gray-200 overflow-hidden">
+    <Card className="overflow-hidden" style={{
+      background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+      border: "1px solid rgba(140,105,65,0.35)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+    }}>
       <button
         onClick={() => toggleItem(id)}
-        className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        className="w-full text-left p-4 flex items-center justify-between hover:bg-[#3a2a20]/50 transition-colors"
       >
-        <span className="font-semibold text-gray-900 pr-4">{q}</span>
+        <span className="font-semibold text-[#E0D8C8] pr-4">{q}</span>
         <ChevronDown 
-          className={`w-5 h-5 text-gray-600 flex-shrink-0 transition-transform ${openItems[id] ? 'rotate-180' : ''}`}
+          className={`w-5 h-5 text-[#8b6239] flex-shrink-0 transition-transform ${openItems[id] ? 'rotate-180' : ''}`}
         />
       </button>
       {openItems[id] && (
-        <CardContent className="px-4 pb-4 pt-0 text-gray-700 leading-relaxed">
+        <CardContent className="px-4 pb-4 pt-0 text-[#E0D8C8]/80 leading-relaxed">
           {children}
         </CardContent>
       )}
@@ -44,26 +48,34 @@ export default function FAQFull() {
   // These will fallback to empty objects if keys are missing, preventing blank sections
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
+    <div className="min-h-screen" style={{ background: "linear-gradient(135deg, rgba(15,11,8,0.95), rgba(20,15,10,0.95))" }}>
       <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">{t("faqExtended.pageTitle")}</h1>
            <p className="text-[#E0D8C8]/80 mb-4">{t("faqExtended.pageSubtitle")}</p>
           <div className="flex gap-3 justify-center mt-4 flex-wrap">
             <Link to={createPageUrl('HowTo')}>
-              <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
+              <Button variant="outline" style={{
+                background: "rgba(60, 42, 28, 0.35)",
+                borderColor: "rgba(120, 90, 65, 0.3)",
+                color: "#F5F1E7"
+              }}>
                 <BookOpen className="w-4 h-4 mr-2" />
                 {t("help.howTo", "How-To")}
                 </Button>
                 </Link>
                 <Link to={createPageUrl('TroubleshootingFull')}>
-                <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
+                <Button variant="outline" style={{
+                  background: "rgba(60, 42, 28, 0.35)",
+                  borderColor: "rgba(120, 90, 65, 0.3)",
+                  color: "#F5F1E7"
+                }}>
                  <Wrench className="w-4 h-4 mr-2" />
                  {t("help.troubleshooting", "Troubleshooting")}
-              </Button>
-            </Link>
-          </div>
-        </div>
+               </Button>
+             </Link>
+           </div>
+         </div>
 
       <Section title={t("helpCenter.topicGeneral")}>
          <Q id="verification-help" q={t("verificationHelp.pageTitle")}>
@@ -117,9 +129,12 @@ export default function FAQFull() {
         {/* Subscription Tiers Comparison */}
         <Q id="subscription-tiers" q={t("faqFull.subscriptionTiersQuestion")}>
           <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-semibold text-gray-900 mb-2">{t("faqFull.freeTier")}</h4>
-              <ul className="list-disc ml-4 space-y-1 text-gray-700">
+            <div className="p-4 rounded-lg" style={{
+              background: "rgba(60, 45, 30, 0.3)",
+              border: "1px solid rgba(140, 105, 65, 0.25)"
+            }}>
+              <h4 className="font-semibold text-[#E0D8C8] mb-2">{t("faqFull.freeTier")}</h4>
+              <ul className="list-disc ml-4 space-y-1 text-[#E0D8C8]/80">
                 <li>{t("faqFull.freeTrial7Days")}</li>
                 <li>{t("faqFull.upTo5Pipes")}</li>
                 <li>{t("faqFull.upTo10Tobacco")}</li>
@@ -128,9 +143,12 @@ export default function FAQFull() {
               </ul>
             </div>
 
-            <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-              <h4 className="font-semibold text-amber-900 mb-2">{t("faqFull.premiumTier")}</h4>
-              <ul className="list-disc ml-4 space-y-1 text-gray-700">
+            <div className="p-4 rounded-lg" style={{
+              background: "rgba(140, 100, 60, 0.15)",
+              border: "1px solid rgba(180, 140, 75, 0.3)"
+            }}>
+              <h4 className="font-semibold text-[#D4A574] mb-2">{t("faqFull.premiumTier")}</h4>
+              <ul className="list-disc ml-4 space-y-1 text-[#E0D8C8]/80">
                 <li>{t("faqFull.unlimitedPipesTobacco")}</li>
                 <li>{t("faqFull.aiMatching")}</li>
                 <li>{t("faqFull.pairingMatrix")}</li>
@@ -142,9 +160,12 @@ export default function FAQFull() {
               </ul>
             </div>
 
-            <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-              <h4 className="font-semibold text-purple-900 mb-2">{t("faqFull.proTier")}</h4>
-              <ul className="list-disc ml-4 space-y-1 text-gray-700">
+            <div className="p-4 rounded-lg" style={{
+              background: "rgba(100, 70, 130, 0.15)",
+              border: "1px solid rgba(150, 100, 180, 0.3)"
+            }}>
+              <h4 className="font-semibold text-[#D4A574] mb-2">{t("faqFull.proTier")}</h4>
+              <ul className="list-disc ml-4 space-y-1 text-[#E0D8C8]/80">
                 <li>{t("faqFull.everythingInPremium")}</li>
                 <li>{t("faqFull.aiPipeIdentification")}</li>
                 <li>{t("faqFull.marketValueLookup")}</li>
@@ -155,7 +176,7 @@ export default function FAQFull() {
               </ul>
             </div>
 
-            <p className="text-sm text-gray-600 mt-4">
+            <p className="text-sm text-[#E0D8C8]/70 mt-4">
               {t("faqFull.fullFeatureDescription")}:{" "}
               <a href="https://www.pipekeeperapp.com/features" target="_blank" rel="noopener noreferrer" className="text-[#8b3a3a] hover:text-[#a94747] underline">
                 https://www.pipekeeperapp.com/features

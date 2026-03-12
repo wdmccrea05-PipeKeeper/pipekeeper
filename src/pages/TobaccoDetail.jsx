@@ -227,7 +227,7 @@ export default function TobaccoDetailPage() {
     );
   }
 
-  const colorClass = BLEND_COLORS[blend.blend_type] || "bg-stone-100 text-stone-800 border-stone-200";
+  const colorClass = BLEND_COLORS[blend.blend_type] || "bg-[#3a2a20]/50 text-[#E0D8C8] border-[#8b6239]/30";
 
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(135deg, rgba(15,11,8,0.95), rgba(20,15,10,0.95))" }}>
@@ -418,7 +418,7 @@ export default function TobaccoDetailPage() {
                 </Badge>
               )}
               {blend.cut && (
-                <Badge className="bg-amber-50 text-amber-700 border-amber-200">
+                <Badge className="bg-[#3a2a20]/50 text-[#E0D8C8] border-[#8b6239]/30">
                   {t(`cuts.${blend.cut}`, blend.cut)}
                 </Badge>
               )}
@@ -432,7 +432,7 @@ export default function TobaccoDetailPage() {
                 </Badge>
               )}
               {blend.room_note && (
-                <Badge className="bg-violet-100 text-violet-800 border-violet-200">
+                <Badge className="bg-[#3a2a20]/50 text-[#E0D8C8] border-[#8b6239]/30">
                   {t("tobaccoExtended.roomNote")} {t(`roomNotes.${blend.room_note}`, blend.room_note)}
                 </Badge>
               )}

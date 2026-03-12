@@ -487,27 +487,27 @@ export default function PipeDetailPage() {
                 </Badge>
               )}
               {pipe.bowlStyle && pipe.bowlStyle !== 'Unknown' && (
-                <Badge className="bg-purple-700 text-purple-100 border-purple-600/50">
+                <Badge className="bg-[#3a2a20]/50 text-[#E0D8C8] border-[#8b6239]/30">
                   {t(`bowlStyles.${pipe.bowlStyle}`, pipe.bowlStyle)}
                 </Badge>
               )}
               {pipe.shankShape && pipe.shankShape !== 'Unknown' && (
-                <Badge className="bg-teal-700 text-teal-100 border-teal-600/50">
+                <Badge className="bg-[#3a2a20]/50 text-[#E0D8C8] border-[#8b6239]/30">
                   {t("pipesExtended.shank")} {t(`shankShapes.${pipe.shankShape}`, pipe.shankShape)}
                 </Badge>
               )}
               {pipe.bend && pipe.bend !== 'Unknown' && (
-                <Badge className="bg-indigo-700 text-indigo-100 border-indigo-600/50">
+                <Badge className="bg-[#3a2a20]/50 text-[#E0D8C8] border-[#8b6239]/30">
                   {t(`bends.${pipe.bend}`, pipe.bend)}
                 </Badge>
               )}
               {pipe.sizeClass && pipe.sizeClass !== 'Unknown' && pipe.sizeClass !== 'Standard' && (
-                <Badge className="bg-orange-700 text-orange-100 border-orange-600/50">
+                <Badge className="bg-[#3a2a20]/50 text-[#E0D8C8] border-[#8b6239]/30">
                   {t(`sizeClasses.${pipe.sizeClass}`, pipe.sizeClass)}
                 </Badge>
               )}
               {pipe.bowl_material && (
-                <Badge className="bg-slate-700 text-slate-100 border-slate-600/50">
+                <Badge className="bg-[#3a2a20]/50 text-[#E0D8C8] border-[#8b6239]/30">
                   {t(`materials.${pipe.bowl_material}`, pipe.bowl_material)}
                 </Badge>
               )}
