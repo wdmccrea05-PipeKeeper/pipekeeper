@@ -46,8 +46,8 @@ export default function FAQFull() {
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(78,48,24,0.18),transparent_24%),linear-gradient(180deg,#0d0806_0%,#160f0b_50%,#0b0705_100%)]">
       <div className="mx-auto max-w-[980px] px-4 py-10">
         <div className="mb-8 text-center">
-          <h1 className="mb-2 text-4xl font-bold text-[#F5F1E7]">{t("faqExtended.pageTitle")}</h1>
-          <p className="mb-4 text-[#D8C7A6]/80">{t("faqExtended.pageSubtitle")}</p>
+          <h1 className="mb-2 text-4xl font-bold text-[#F5F1E7]">{t("helpCenter.howToTitle")}</h1>
+          <p className="mb-4 text-[#D8C7A6]/80">{t("helpCenter.howToSubtitle")}</p>
           <div className="mt-4 flex flex-wrap justify-center gap-3">
             <Link to={createPageUrl("HowTo")}>
               <Button variant="outline" className="border-[rgba(140,105,65,0.35)] bg-[rgba(28,21,16,0.72)] text-[#F5F1E7] hover:bg-[rgba(163,92,92,0.12)]">
