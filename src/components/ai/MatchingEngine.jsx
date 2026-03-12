@@ -153,6 +153,11 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
         activePairings,
         skipIfUpToDate: true,
       });
+      
+      // FIX: After successful regeneration, invalidate and refetch pairings
+      // so UI immediately reflects updated results without stale cache
+      await queryClient.invalidateQueries({ queryKey: ["activePairings", user?.email] });
+      
       toast.success(t("matching.regenerateSuccess"));
     } catch (error) {
       toast.error(t("errors.regenerateFailed"));
