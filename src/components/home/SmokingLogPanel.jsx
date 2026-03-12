@@ -500,31 +500,30 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <Card className="border-[#E0D8C8]/15 bg-[#223447]">
+        <Card className="border-[rgba(140,105,65,0.35)] bg-[linear-gradient(145deg,rgba(40,28,20,0.95),rgba(32,22,15,0.95))] shadow-[0_10px_28px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(200,160,110,0.12)]">
           <CardHeader>
-             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-               <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-70 transition-opacity flex-1 min-w-0">
-                 <div className="min-w-0 flex-1">
-                   <CardTitle className="flex items-center gap-2 text-[#E0D8C8] flex-wrap">
-                     <Flame className="w-5 h-5 flex-shrink-0" />
-                     <span className="break-words">{t("smokingLog.usageLog")}</span>
-                     <ChevronDown className={`w-4 h-4 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
-                   </CardTitle>
-                   <p className="text-xs sm:text-sm text-[#E0D8C8]/70 mt-1 break-words">
-                    {t("smokingLog.totalBowls", { total: String(totalBowls || 0), breakIn: String(breakInBowls || 0) })}
-                   </p>
-                 </div>
-               </CollapsibleTrigger>
-               <Button
-                 onClick={() => setShowAddLog(true)}
-                 size="sm"
-                 className="flex-shrink-0 bg-[#A35C5C] text-[#F5F1E7] hover:bg-[#8F4E4E]"
-               >
-                 <Plus className="w-4 h-4 mr-2" />
-                 {t("smokingLog.logSession")}
-               </Button>
-             </div>
-           </CardHeader>
+            <div className="flex items-center justify-between">
+              <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-70 transition-opacity">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-[#E0D8C8]">
+                    <Flame className="w-5 h-5" />
+                    {t("smokingLog.usageLog")}
+                    <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                  </CardTitle>
+                  <p className="text-sm text-[#E0D8C8]/70 mt-1">
+                   {t("smokingLog.totalBowls", { total: String(totalBowls || 0), breakIn: String(breakInBowls || 0) })}
+                  </p>
+                </div>
+              </CollapsibleTrigger>
+              <Button
+                onClick={() => setShowAddLog(true)}
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {t("smokingLog.logSession")}
+              </Button>
+            </div>
+          </CardHeader>
           <CollapsibleContent>
             <CardContent>
           {logs.length === 0 ? (
@@ -536,7 +535,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               {logs.map((log) => (
                 <div 
                   key={log.id}
-                  className="flex items-start justify-between p-3 rounded-lg bg-[#1E2F43] border border-[#E0D8C8]/15 hover:border-[#A35C5C]/50 transition-colors group"
+                  className="flex items-start justify-between p-3 rounded-lg bg-[linear-gradient(145deg,rgba(36,25,18,0.94),rgba(28,20,15,0.94))] border border-[rgba(140,105,65,0.24)] hover:border-[#A35C5C]/50 transition-colors group"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -563,7 +562,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/5"
                       onClick={() => setEditingLog(log)}
                     >
                       <Edit className="w-4 h-4 text-[#E0D8C8]/70" />
@@ -626,7 +625,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                     <SelectValue placeholder={t("smokingLog.selectBowl")} />
                     </SelectTrigger>
                     <SelectContent>
-                    <SelectItem value={null}>{t("smokingLog.noSpecificBowl")}</SelectItem>
+                    <SelectItem value="">{t("smokingLog.noSpecificBowl")}</SelectItem>
                     {selectedPipe.interchangeable_bowls.map((bowl, idx) => {
                       const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
                       return (
@@ -664,7 +663,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                     <SelectValue placeholder={t("smokingLog.autoNone")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={null}>{t("smokingLog.autoNone")}</SelectItem>
+                    <SelectItem value="">{t("smokingLog.autoNone")}</SelectItem>
                     {containers.map(c => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.container_name} — {c.quantity_grams ?? 0}g
