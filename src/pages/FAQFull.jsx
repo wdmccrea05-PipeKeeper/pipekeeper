@@ -238,6 +238,8 @@ export default function FAQFull() {
               if (user?.email) {
                 localStorage.removeItem(`pk_quickstart_skipped_${user.email}`);
                 localStorage.removeItem(`pk_quickstart_completed_${user.email}`);
+                // Signal Home to force show tutorial
+                localStorage.setItem(`pk_force_tutorial_${user.email}`, 'true');
               }
             } catch (e) {
               console.error('Error clearing tutorial state:', e);
