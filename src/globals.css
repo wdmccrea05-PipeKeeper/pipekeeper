@@ -293,6 +293,40 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
   }
   
+  /* CRITICAL: Mobile layout stabilization rules */
+  /* No container text may shrink below minimum readable width */
+  
+  /* Metric & stat cards: minimum readable width to prevent vertical stacking */
+  .grid > div {
+    min-width: 140px;
+  }
+  
+  /* Text wrapping: force word-break, prevent character stacking */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-wrap;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: none;
+  }
+  
+  p, span, div {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  /* Numeric values must never break mid-number */
+  [style*="font-bold"], [style*="font-extrabold"] {
+    word-spacing: -0.08em;
+    letter-spacing: normal;
+  }
+  
+  /* Drawer row mobile stacking */
+  @media (max-width: 768px) {
+    .flex.items-center.gap-4 {
+      @apply flex-col items-start;
+    }
+  }
+  
   /* Dialog and modal styling */
   [role="dialog"] {
     @apply rounded-2xl;
