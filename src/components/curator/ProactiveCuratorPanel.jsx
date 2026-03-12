@@ -5,6 +5,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { getKeeperIntelligence, PipesModule, TobaccoModule } from "@/components/keeperIntelligence";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { sanitizeRecommendationText } from "@/components/utils/aiTextNormalization";
 
 const ICON_MAP = {
   Target,
@@ -50,7 +51,7 @@ function generateWhatIfPrompt(insight, t) {
 }
 
 export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, curatorEnabled = true, onInsightClick }) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [refreshKey, setRefreshKey] = useState(0);
   const [cleared, setCleared] = useState(false);
 
@@ -114,7 +115,10 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
         moduleInsights.forEach(insight => {
           generated.push({
             module: moduleName,
-            ...insight
+            ...insight,
+            // Normalize text to prevent multilingual bleed
+            insight: sanitizeRecommendationText(insight.insight, lang),
+            title: sanitizeRecommendationText(insight.title, lang),
           });
         });
       } catch (error) {
