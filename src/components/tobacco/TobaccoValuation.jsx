@@ -17,6 +17,18 @@ const INTERNAL_SOURCE_RE = /^turn\d+(search|fetch|open|view|click)\d+$/i;
 const URL_RE = /(https?:\/\/[^\s)]+)/i;
 const DOMAIN_RE = /(?:^|\/\/)?(?:www\.)?([a-z0-9-]+(?:\.[a-z0-9-]+)+)/i;
 
+const CARD_STYLE = {
+  background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+  border: "1px solid rgba(140,105,65,0.35)",
+  boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)",
+};
+
+const INNER_PANEL_STYLE = {
+  background: "linear-gradient(145deg, rgba(30,22,17,0.92), rgba(22,17,13,0.92))",
+  border: "1px solid rgba(140,105,65,0.24)",
+  boxShadow: "0 4px 14px rgba(0,0,0,0.35)",
+};
+
 function normalizeEvidenceSources(rawSources) {
   if (!Array.isArray(rawSources)) return [];
 
@@ -29,7 +41,7 @@ function normalizeEvidenceSources(rawSources) {
 
     const urlMatch = text.match(URL_RE);
     if (urlMatch?.[1]) {
-      const href = urlMatch[1].replace(/[),.;]+$/, '');
+      const href = urlMatch[1].replace(/[),.;]+$/, "");
       if (!seen.has(href)) {
         seen.add(href);
         normalized.push({
@@ -56,12 +68,11 @@ function normalizeEvidenceSources(rawSources) {
 
 export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
   const { t } = useTranslation();
-  const { user, subscription, hasPro, hasPremium } = useCurrentUser();
+  const { subscription, hasPro, hasPremium } = useCurrentUser();
   const [showProModal, setShowProModal] = useState(false);
   const [estimating, setEstimating] = useState(false);
   const normalizedSources = normalizeEvidenceSources(blend?.ai_evidence_sources);
 
-  // Legacy Premium (before Feb 1, 2026) gets Pro features
   const hasProAccess = hasPro || isLegacyPremium(subscription);
 
   const handleManualValueChange = (field, value) => {
@@ -77,18 +88,17 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
       setShowProModal(true);
       return;
     }
-    
+
     setEstimating(true);
     try {
-      const response = await base44.functions.invoke('estimateTobaccoValues', {
-        blend_ids: [blend.id]
+      const response = await base44.functions.invoke("estimateTobaccoValues", {
+        blend_ids: [blend.id],
       });
 
       const data = response.data;
-      
+
       if (data.success && data.results?.length > 0) {
         toast.success(t("tobaccoValuation.aiValuationComplete"));
-        // Backend already updated the entity, force refresh
         onUpdate({ ai_last_updated: new Date().toISOString() });
       } else {
         throw new Error(data.error || "Estimation failed");
@@ -103,29 +113,31 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
 
   return (
     <>
-      <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30">
+      <Card style={CARD_STYLE}>
         <CardHeader>
           <CardTitle className="text-[#e8d5b7] flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <DollarSign className="w-5 h-5" />
+              <DollarSign className="w-5 h-5 text-amber-400" />
               {t("tobaccoValuation.tobaccoValuation")}
             </div>
           </CardTitle>
         </CardHeader>
+
         <CardContent className="space-y-6">
-          {/* Manual Market Value - Premium */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <Label className="text-[#e8d5b7] font-medium flex items-center gap-2">
                 {t("tobaccoValuation.manualMarketValue")}
-                {!hasPremium && <Lock className="w-3 h-3 text-blue-600" />}
+                {!hasPremium ? <Lock className="w-3 h-3 text-amber-400" /> : null}
               </Label>
-              {!hasPremium && (
-                <Badge variant="outline" className="text-xs bg-blue-100 text-blue-800 border-blue-300 font-semibold">
+
+              {!hasPremium ? (
+                <Badge variant="outline" className="text-xs bg-amber-900/20 text-amber-200 border-amber-500/30 font-semibold">
                   {t("subscription.premium")}
                 </Badge>
-              )}
+              ) : null}
             </div>
+
             <div className="relative">
               <Input
                 type="number"
@@ -134,33 +146,27 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                 onChange={(e) => handleManualValueChange("manual_market_value", parseFloat(e.target.value) || null)}
                 placeholder={hasPremium ? t("tobaccoValuation.enterValue") : t("tobaccoValuation.upgradeToPremium")}
                 disabled={!hasPremium || isUpdating}
-                className="bg-[#243548] border-[#e8d5b7]/20 text-[#e8d5b7]"
               />
-              {!hasPremium && (
-                <div 
-                  className="absolute inset-0 cursor-pointer" 
-                  onClick={() => setShowProModal(true)}
-                />
-              )}
+              {!hasPremium ? <div className="absolute inset-0 cursor-pointer" onClick={() => setShowProModal(true)} /> : null}
             </div>
-            <p className="text-xs text-[#e8d5b7]/50">
-              {t("tobaccoValuation.yourAssessment")}
-            </p>
+
+            <p className="text-xs text-[#e8d5b7]/50">{t("tobaccoValuation.yourAssessment")}</p>
           </div>
 
-          {/* Cost Basis - Premium */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <Label className="text-[#e8d5b7] font-medium flex items-center gap-2">
                 {t("tobaccoValuation.costBasis")}
-                {!hasPremium && <Lock className="w-3 h-3 text-blue-600" />}
+                {!hasPremium ? <Lock className="w-3 h-3 text-amber-400" /> : null}
               </Label>
-              {!hasPremium && (
-                <Badge variant="outline" className="text-xs bg-blue-100 text-blue-800 border-blue-300 font-semibold">
+
+              {!hasPremium ? (
+                <Badge variant="outline" className="text-xs bg-amber-900/20 text-amber-200 border-amber-500/30 font-semibold">
                   {t("subscription.premium")}
                 </Badge>
-              )}
+              ) : null}
             </div>
+
             <div className="relative">
               <Input
                 type="number"
@@ -169,35 +175,28 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                 onChange={(e) => handleManualValueChange("cost_basis", parseFloat(e.target.value) || null)}
                 placeholder={hasPremium ? t("tobaccoValuation.enterCost") : t("tobaccoValuation.upgradeToPremium")}
                 disabled={!hasPremium || isUpdating}
-                className="bg-[#243548] border-[#e8d5b7]/20 text-[#e8d5b7]"
               />
-              {!hasPremium && (
-                <div 
-                  className="absolute inset-0 cursor-pointer" 
-                  onClick={() => setShowProModal(true)}
-                />
-              )}
+              {!hasPremium ? <div className="absolute inset-0 cursor-pointer" onClick={() => setShowProModal(true)} /> : null}
             </div>
-            <p className="text-xs text-[#e8d5b7]/50">
-              {t("tobaccoValuation.whatYouPaid")}
-            </p>
+
+            <p className="text-xs text-[#e8d5b7]/50">{t("tobaccoValuation.whatYouPaid")}</p>
           </div>
 
-          {/* AI Assisted Valuation - Pro */}
           <div className="border-t border-[#e8d5b7]/10 pt-6 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
                 <Label className="text-[#e8d5b7] font-medium flex items-center gap-2">
                   {t("tobaccoValuation.aiAssistedValuation")}
-                  {!hasProAccess && <Lock className="w-3 h-3 text-amber-400" />}
+                  {!hasProAccess ? <Lock className="w-3 h-3 text-amber-400" /> : null}
                 </Label>
               </div>
-              {!hasProAccess && (
+
+              {!hasProAccess ? (
                 <Badge className="bg-amber-100 text-amber-800 border-amber-300 font-semibold">
                   {t("subscription.pro")}
                 </Badge>
-              )}
+              ) : null}
             </div>
 
             <Button
@@ -205,36 +204,33 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
               disabled={!hasProAccess || estimating || isUpdating}
               className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 disabled:opacity-50"
             >
-              {!hasProAccess && <Lock className="w-4 h-4 mr-2" />}
-              {estimating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {estimating ? t("tobaccoValuation.estimating") : hasProAccess ? t("tobaccoValuation.runAIValuation") : t("tobaccoValuation.upgradeToPro")}
+              {!hasProAccess ? <Lock className="w-4 h-4 mr-2" /> : null}
+              {estimating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              {estimating
+                ? t("tobaccoValuation.estimating")
+                : hasProAccess
+                ? t("tobaccoValuation.runAIValuation")
+                : t("tobaccoValuation.upgradeToPro")}
             </Button>
 
-            {blend?.ai_estimated_value && (
-              <div className="space-y-4 bg-[#243548]/50 rounded-lg p-4">
-                {/* Estimated Value */}
+            {blend?.ai_estimated_value ? (
+              <div className="space-y-4 rounded-lg p-4" style={INNER_PANEL_STYLE}>
                 <div>
                   <p className="text-xs text-[#e8d5b7]/50 mb-1">{t("tobaccoValuation.estimatedValuePerOz")}</p>
-                  <p className="text-2xl font-bold text-[#e8d5b7]">
-                    {formatCurrency(blend.ai_estimated_value)}
-                  </p>
-                  <p className="text-xs text-[#e8d5b7]/40 mt-1">
-                    {t("tobaccoValuation.aiAssistedEstimate")}
-                  </p>
+                  <p className="text-2xl font-bold text-[#e8d5b7]">{formatCurrency(blend.ai_estimated_value)}</p>
+                  <p className="text-xs text-[#e8d5b7]/40 mt-1">{t("tobaccoValuation.aiAssistedEstimate")}</p>
                 </div>
 
-                {/* Value Range */}
-                {blend.ai_value_range_low && blend.ai_value_range_high && hasProAccess && (
+                {blend.ai_value_range_low && blend.ai_value_range_high && hasProAccess ? (
                   <div>
                     <p className="text-xs text-[#e8d5b7]/50 mb-1">{t("tobaccoValuation.estimatedRange")}</p>
                     <p className="text-lg text-[#e8d5b7]">
                       {formatCurrency(blend.ai_value_range_low)} - {formatCurrency(blend.ai_value_range_high)}
                     </p>
                   </div>
-                )}
+                ) : null}
 
-                {/* Confidence */}
-                {blend.ai_confidence && hasProAccess && (
+                {blend.ai_confidence && hasProAccess ? (
                   <div>
                     <p className="text-xs text-[#e8d5b7]/50 mb-1">{t("tobaccoValuation.confidence")}</p>
                     <Badge
@@ -249,10 +245,9 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                       {blend.ai_confidence}
                     </Badge>
                   </div>
-                )}
+                ) : null}
 
-                {/* Evidence Sources */}
-                {normalizedSources.length > 0 && hasProAccess && (
+                {normalizedSources.length > 0 && hasProAccess ? (
                   <div>
                     <p className="text-xs text-white mb-2">{t("tobaccoValuation.evidenceSources")}</p>
                     <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
@@ -267,7 +262,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                         >
                           <Badge
                             variant="outline"
-                            className="text-xs border-[#e8d5b7]/40 text-white bg-[#243548]/50 cursor-pointer whitespace-nowrap hover:bg-[#2d4258]"
+                            className="text-xs border-[#e8d5b7]/30 text-white bg-black/15 cursor-pointer whitespace-nowrap hover:bg-white/5"
                           >
                             {source.label}
                           </Badge>
@@ -275,70 +270,62 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                       ))}
                     </div>
                   </div>
-                )}
+                ) : null}
 
-                {/* Predictive Projections */}
-                {(blend.ai_projection_12m || blend.ai_projection_36m) && hasProAccess && (
-                  <div className="border-t border-[#e8d5b7]/10 pt-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <TrendingUp className="w-4 h-4 text-amber-400" />
-                      <p className="text-sm font-semibold text-[#e8d5b7]">{t("tobaccoValuation.predictiveValueProjections")}</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      {blend.ai_projection_12m && (
-                        <div className="bg-[#243548]/70 rounded-lg p-3">
-                          <p className="text-xs text-[#e8d5b7]/50 mb-1">12 {t("tobaccoValuation.months")}</p>
-                          <p className="text-lg font-bold text-emerald-400">
-                            {formatCurrency(blend.ai_projection_12m)}
-                          </p>
-                          <p className="text-xs text-[#e8d5b7]/30 mt-1">
-                            {t("tobaccoValuation.notGuaranteed")}
-                          </p>
-                        </div>
-                      )}
-                      {blend.ai_projection_36m && (
-                        <div className="bg-[#243548]/70 rounded-lg p-3">
-                          <p className="text-xs text-[#e8d5b7]/50 mb-1">36 {t("tobaccoValuation.months")}</p>
-                          <p className="text-lg font-bold text-emerald-400">
-                            {formatCurrency(blend.ai_projection_36m)}
-                          </p>
-                          <p className="text-xs text-[#e8d5b7]/30 mt-1">
-                            {t("tobaccoValuation.notGuaranteed")}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+                {blend.ai_projection_12m || blend.ai_projection_36m ? (
+                  hasProAccess ? (
+                    <div className="border-t border-[#e8d5b7]/10 pt-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <TrendingUp className="w-4 h-4 text-amber-400" />
+                        <p className="text-sm font-semibold text-[#e8d5b7]">
+                          {t("tobaccoValuation.predictiveValueProjections")}
+                        </p>
+                      </div>
 
-                {/* Last Updated */}
-                {blend.ai_last_updated && hasProAccess && (
+                      <div className="grid grid-cols-2 gap-3">
+                        {blend.ai_projection_12m ? (
+                          <div className="rounded-lg p-3 bg-black/15 border border-[rgba(140,105,65,0.22)]">
+                            <p className="text-xs text-[#e8d5b7]/50 mb-1">12 {t("tobaccoValuation.months")}</p>
+                            <p className="text-lg font-bold text-emerald-400">{formatCurrency(blend.ai_projection_12m)}</p>
+                            <p className="text-xs text-[#e8d5b7]/30 mt-1">{t("tobaccoValuation.notGuaranteed")}</p>
+                          </div>
+                        ) : null}
+
+                        {blend.ai_projection_36m ? (
+                          <div className="rounded-lg p-3 bg-black/15 border border-[rgba(140,105,65,0.22)]">
+                            <p className="text-xs text-[#e8d5b7]/50 mb-1">36 {t("tobaccoValuation.months")}</p>
+                            <p className="text-lg font-bold text-emerald-400">{formatCurrency(blend.ai_projection_36m)}</p>
+                            <p className="text-xs text-[#e8d5b7]/30 mt-1">{t("tobaccoValuation.notGuaranteed")}</p>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : null
+                ) : null}
+
+                {blend.ai_last_updated && hasProAccess ? (
                   <p className="text-xs text-[#e8d5b7]/40 pt-2 border-t border-[#e8d5b7]/10">
                     {t("tobaccoValuation.lastUpdated")} {new Date(blend.ai_last_updated).toLocaleDateString()}
                   </p>
-                )}
+                ) : null}
               </div>
-            )}
+            ) : null}
 
-            {!hasProAccess && !blend?.ai_estimated_value && (
+            {!hasProAccess && !blend?.ai_estimated_value ? (
               <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-4 text-center">
                 <Lock className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-                <p className="text-sm text-[#e8d5b7]/70">
-                  {t("tobaccoValuation.upgradeToUnlockValuation")}
-                </p>
+                <p className="text-sm text-[#e8d5b7]/70">{t("tobaccoValuation.upgradeToUnlockValuation")}</p>
               </div>
-            )}
-            
-            {!hasProAccess && blend?.ai_estimated_value && (
+            ) : null}
+
+            {!hasProAccess && blend?.ai_estimated_value ? (
               <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
                 <div className="flex items-start gap-2">
                   <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-[#e8d5b7]/70">
-                    {t("tobaccoValuation.valuedWithProAccess")}
-                  </p>
+                  <p className="text-xs text-[#e8d5b7]/70">{t("tobaccoValuation.valuedWithProAccess")}</p>
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
         </CardContent>
       </Card>
