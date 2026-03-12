@@ -4,11 +4,15 @@ import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 
-// Read optional tab param from URL synchronously (e.g. /Curator?tab=optimizer).
+// Read optional tab param from URL synchronously (e.g. /Curator?tab=curator&prompt=...).
 // This is safe because a navigation to /Curator always triggers a full mount.
 function getTabFromUrl() {
   try {
-    return new URLSearchParams(window.location.search).get("tab") || "for_you";
+    const params = new URLSearchParams(window.location.search);
+    // If prompt is provided, default to curator tab unless explicitly overridden
+    const tab = params.get("tab");
+    const hasPrompt = params.has("prompt");
+    return tab || (hasPrompt ? "curator" : "for_you");
   } catch {
     return "for_you";
   }
