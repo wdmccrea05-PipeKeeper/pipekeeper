@@ -182,22 +182,13 @@ function InsightCard({ insight, onAskCurator, onDismiss, onOpenWhatIf }) {
         ) : null}
         <button
           type="button"
-          onClick={handleAskCurator}
-          className="text-xs font-medium text-[#E0D8C8]/70 border border-[#E0D8C8]/20 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-1"
+          onClick={handleWhatIf}
+          className="text-xs font-medium text-amber-400 border border-amber-400/30 px-3 py-1.5 rounded-lg hover:bg-amber-400/10 transition-colors flex items-center gap-1"
+          aria-label={t("curator.forYou.exploreCurator")}
         >
-          <MessageSquare className="w-3 h-3" aria-hidden="true" />
-          {t("curator.forYou.askCurator")}
+          <Sparkles className="w-3 h-3" aria-hidden="true" />
+          {t("curator.forYou.exploreThis")}
         </button>
-        {(insight.category === "rotation" || insight.category === "pairing") && (
-          <button
-            type="button"
-            onClick={handleWhatIf}
-            className="text-xs font-medium text-[#E0D8C8]/70 border border-[#E0D8C8]/20 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-1"
-          >
-            <Sparkles className="w-3 h-3" aria-hidden="true" />
-            {t("curator.forYou.openWhatIf")}
-          </button>
-        )}
       </div>
     </div>
   );
@@ -239,8 +230,8 @@ function EmptyState({ t }) {
  * @param {object} props
  * @param {object[]} props.pipes
  * @param {object[]} props.blends
- * @param {function} [props.onAskCurator]   - Called with an insight to pre-fill the Ask tab.
- * @param {function} [props.onOpenWhatIf]   - Called with an insight to navigate to What-If tab.
+ * @param {function} [props.onAskCurator]   - Called with an insight to open Curator with prefill.
+ * @param {function} [props.onOpenWhatIf]   - Called with an insight to open Curator with what-if prompt.
  */
 export default function CuratorForYouPanel({ pipes = [], blends = [], onAskCurator, onOpenWhatIf }) {
   const { t } = useTranslation();
