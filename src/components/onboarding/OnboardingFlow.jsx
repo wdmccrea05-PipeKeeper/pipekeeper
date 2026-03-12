@@ -13,6 +13,24 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from '@/components/i18n/safeTranslation';
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/d2be37fcd_IMG_4833.jpeg';
 
+// Safe localStorage wrapper for onboarding state
+function safeGetOnboarding(key, defaultVal = false) {
+  try {
+    const val = localStorage.getItem(key);
+    return val === 'true' || defaultVal;
+  } catch {
+    return defaultVal;
+  }
+}
+
+function safeSetOnboarding(key, value) {
+  try {
+    localStorage.setItem(key, value ? 'true' : 'false');
+  } catch {
+    // Storage unavailable — fail gracefully
+  }
+}
+
 export default function OnboardingFlow({ onComplete, onSkip }) {
   const [currentStep, setCurrentStep] = useState(0);
   const navigate = useNavigate();
