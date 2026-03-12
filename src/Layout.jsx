@@ -94,7 +94,7 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false, 
           className="w-4 sm:w-5 h-4 sm:h-5 object-contain flex-shrink-0"
           style={{
             filter: isMobile
-              ? "brightness(0)"
+              ? "brightness(0) invert(1)"
               : isActive
               ? "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.95)"
               : "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.85) opacity(0.7)",
