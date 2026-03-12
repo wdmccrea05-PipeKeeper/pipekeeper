@@ -90,11 +90,11 @@ export default function DrawerRow({
         <rect width="100%" height="100%" fill={`url(#drawer-grain-${accent})`} />
       </svg>
 
-      <div className="relative flex items-center gap-4 p-5">
+      <div className="relative flex flex-col lg:flex-row lg:items-center gap-4 p-5">
         {/* Icon / Label plate */}
-        <div className="flex items-center gap-3 min-w-[140px] sm:min-w-[180px] shrink-0">
+        <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
           <div
-            className="w-10 h-10 rounded flex items-center justify-center overflow-hidden"
+            className="w-10 h-10 rounded flex items-center justify-center overflow-hidden flex-shrink-0"
             style={{
               background: `linear-gradient(135deg, rgba(100, 70, 45, 0.5), rgba(80, 55, 35, 0.6))`,
               border: `1px solid rgba(120, 90, 65, 0.45)`,
@@ -108,27 +108,33 @@ export default function DrawerRow({
             ) : null}
           </div>
           <h2 
-            className="text-lg font-semibold tracking-tight"
+            className="text-lg font-semibold tracking-tight min-w-0"
             style={{ 
               color: "#F5F1E7",
               textShadow: "0 1px 3px rgba(0,0,0,0.6)",
-              fontFamily: "'Georgia', serif"
+              fontFamily: "'Georgia', serif",
+              whiteSpace: "normal",
+              wordWrap: "break-word",
+              hyphens: "none"
             }}
           >
             {title}
           </h2>
         </div>
 
-        {/* Stats ledger entries */}
-        <div className="flex flex-wrap gap-x-8 gap-y-2 flex-1">
+        {/* Stats ledger entries — stack on mobile, inline on lg+ */}
+        <div className="grid grid-cols-2 lg:flex lg:flex-wrap gap-x-6 lg:gap-x-8 gap-y-3 lg:gap-y-2 flex-1 min-w-0">
           {stats.map((stat, i) => (
-            <div key={i} className="flex flex-col">
+            <div key={i} className="flex flex-col min-w-0">
               <div 
-                className="text-xl font-bold leading-none mb-1"
+                className="text-lg lg:text-xl font-bold leading-none mb-1"
                 style={{ 
                   color: "#F5F1E7",
                   textShadow: "0 1px 3px rgba(0,0,0,0.6)",
-                  fontFamily: "'Georgia', serif"
+                  fontFamily: "'Georgia', serif",
+                  whiteSpace: "normal",
+                  wordWrap: "break-word",
+                  hyphens: "none"
                 }}
               >
                 {stat.value}
@@ -139,7 +145,8 @@ export default function DrawerRow({
                   color: "rgba(180, 140, 75, 0.75)",
                   whiteSpace: "normal",
                   wordWrap: "break-word",
-                  hyphens: "none"
+                  hyphens: "none",
+                  minWidth: "80px"
                 }}
               >
                 {stat.label}
@@ -150,7 +157,7 @@ export default function DrawerRow({
 
         {/* Arrow indicator */}
         {href && (
-          <div className="shrink-0">
+          <div className="flex justify-end lg:justify-start flex-shrink-0">
             <div
               className="w-8 h-8 rounded flex items-center justify-center transition-transform group-hover:translate-x-1"
               style={{
