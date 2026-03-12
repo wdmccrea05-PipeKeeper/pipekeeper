@@ -443,25 +443,25 @@ export default function Layout({ children, currentPageName }) {
       }
     };
 
-    const shouldManage = (t) => {
-      const text = (t || "").trim().toLowerCase();
+    const shouldManage = (text) => {
+      const normalized = (text || "").trim().toLowerCase();
       return (
-        text.includes("manage subscription") ||
-        text.includes("update subscription") ||
-        text.includes("cancel subscription") ||
-        text.includes("manage plan") ||
-        text.includes("manage billing")
+        normalized.includes("manage subscription") ||
+        normalized.includes("update subscription") ||
+        normalized.includes("cancel subscription") ||
+        normalized.includes("manage plan") ||
+        normalized.includes("manage billing")
       );
     };
 
-    const shouldUpgrade = (t) => {
-      const text = (t || "").trim().toLowerCase();
+    const shouldUpgrade = (text) => {
+      const normalized = (text || "").trim().toLowerCase();
       return (
-        text === "upgrade" ||
-        text.includes("upgrade to pro") ||
-        text.includes("upgrade (app store)") ||
-        text.includes("subscribe") ||
-        text.includes("go pro")
+        normalized === "upgrade" ||
+        normalized.includes("upgrade to pro") ||
+        normalized.includes("upgrade (app store)") ||
+        normalized.includes("subscribe") ||
+        normalized.includes("go pro")
       );
     };
 
