@@ -30,8 +30,6 @@ import {
   ChevronDown,
   ChevronUp,
   X,
-  MessageSquare,
-  TrendingUp,
   ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -314,11 +312,7 @@ export default function CuratorForYouPanel({ pipes = [], blends = [], onAskCurat
 
   const handleOpenWhatIf = useCallback(
     (insight) => {
-      // Pass the insight's whatif_prompt for prefilling
-      onOpenWhatIf?.({
-        ...insight,
-        whatif_prompt: insight.whatif_prompt || insight.summary || ''
-      });
+      onOpenWhatIf?.(insight);
     },
     [onOpenWhatIf]
   );

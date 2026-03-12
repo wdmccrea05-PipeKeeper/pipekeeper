@@ -17,6 +17,7 @@ import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { Send, Sparkles, Brain } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { useQuery } from "@tanstack/react-query";
 
 // Dynamic quick prompts based on collection state
 function generateQuickPrompts({ pipes = [], blends = [], logs = [], t }) {
@@ -110,7 +111,7 @@ function MessageBubble({ message }) {
   );
 }
 
-export default function CuratorWorkspace({ pipes = [], blends = [], logs = [], preFilledPrompt, onPromptConsumed }) {
+export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPrompt, onPromptConsumed }) {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
   
@@ -122,6 +123,17 @@ export default function CuratorWorkspace({ pipes = [], blends = [], logs = [], p
   
   const messagesEndRef = useRef(null);
   const onPromptConsumedRef = useRef(onPromptConsumed);
+  
+  // Fetch smoking logs for quick prompts
+  const { data: logs = [] } = useQuery({
+    queryKey: ["smokingLogs", user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.SmokingLog.filter({ created_by: user?.email });
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 30_000,
+  });
   
   useEffect(() => {
     onPromptConsumedRef.current = onPromptConsumed;
