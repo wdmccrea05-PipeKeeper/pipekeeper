@@ -151,34 +151,34 @@ export default function CollectionReportExporter({ user }) {
   const generateInsurancePDF = async () => {
     const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
-    
-    let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #111827;">
-      <h1 style="color: #1a2c42;">${t("reports.insuranceValuationReport")}</h1>
-      <p style="color: #111827;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
-      <p style="color: #111827;"><strong>${t("reports.owner")}:</strong> ${user?.full_name || user?.email}</p>
-      <p style="color: #111827;"><strong>${t("reports.totalCollectionValue")}:</strong> ${formatCurrency(totalValue)}</p>
+
+    let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #1a1a1a;">
+      <h1 style="color: #0a0a0a; font-weight: bold; font-size: 28px;">${t("reports.insuranceValuationReport")}</h1>
+      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
+      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.owner")}:</strong> ${user?.full_name || user?.email}</p>
+      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.totalCollectionValue")}:</strong> ${formatCurrency(totalValue)}</p>
       <hr style="margin: 20px 0;">
-      <p style="font-style: italic; color: #444444;">${t("reports.insuranceReportDesc")}</p>
+      <p style="font-style: italic; color: #333333; font-weight: 500;">${t("reports.insuranceReportDesc")}</p>
       <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
         <thead>
-          <tr style="background-color: #f0f0f0;">
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">${t("reports.item")}</th>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">${t("pipesExtended.maker")}</th>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">${t("pipesExtended.condition")}</th>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">${t("common.value")}</th>
+          <tr style="background-color: #e8e8e8;">
+            <th style="border: 1px solid #999; padding: 10px; text-align: left; font-weight: bold; color: #1a1a1a;">${t("reports.item")}</th>
+            <th style="border: 1px solid #999; padding: 10px; text-align: left; font-weight: bold; color: #1a1a1a;">${t("pipesExtended.maker")}</th>
+            <th style="border: 1px solid #999; padding: 10px; text-align: left; font-weight: bold; color: #1a1a1a;">${t("pipesExtended.condition")}</th>
+            <th style="border: 1px solid #999; padding: 10px; text-align: right; font-weight: bold; color: #1a1a1a;">${t("common.value")}</th>
           </tr>
         </thead>
         <tbody>`;
-    
+
     pipes.forEach(p => {
       html += `<tr>
-        <td style="border: 1px solid #ddd; padding: 8px;">${p.name || t("reports.unnamed")}</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">${p.maker || '-'}</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">${p.condition || '-'}</td>
-        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatCurrency(p.estimated_value || 0)}</td>
+        <td style="border: 1px solid #ccc; padding: 10px; color: #1a1a1a; font-weight: 500;">${p.name || t("reports.unnamed")}</td>
+        <td style="border: 1px solid #ccc; padding: 10px; color: #1a1a1a; font-weight: 500;">${p.maker || '-'}</td>
+        <td style="border: 1px solid #ccc; padding: 10px; color: #1a1a1a; font-weight: 500;">${p.condition || '-'}</td>
+        <td style="border: 1px solid #ccc; padding: 10px; text-align: right; color: #1a1a1a; font-weight: 600;">${formatCurrency(p.estimated_value || 0)}</td>
       </tr>`;
     });
-    
+
     html += `</tbody></table></div>`;
     return html;
   };
