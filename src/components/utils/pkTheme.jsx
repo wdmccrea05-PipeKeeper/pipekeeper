@@ -30,7 +30,7 @@ export const PK_THEME = {
   buttonDanger: "bg-[#D45C5C] hover:bg-[#C44A4A] text-[#F5F1E7]",
 
   // Forms - collector input style
-  input: "bg-[#1a1510] border border-[#8b6239]/25 text-[#E0D8C8] placeholder:text-[#8b6239]/50 rounded-lg",
+  input: "bg-[#1a1510] border border-[#8b6239]/25 text-[#FFFFFF] placeholder:text-[#E0D8C8]/60 rounded-lg",
   inputFocus: "focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/50 focus:border-[#8b6239]/40",
 
   // Tabs - burgundy accent for active
