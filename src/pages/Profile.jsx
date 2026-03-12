@@ -23,9 +23,11 @@ import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion 
 import { getEntitlementTier, hasPaidAccess, hasProAccess, isTrialingAccess, getPlanLabel } from "@/components/utils/premiumAccess";
 import { isTrialWindow } from "@/components/utils/access";
 import { PK_THEME } from "@/components/utils/pkTheme";
+import { AlertCircle } from "lucide-react";
 
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
+import { getGraceStatus, getSubscriptionStatusMessage } from "@/components/utils/gracePeriod";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -619,8 +621,9 @@ export default function ProfilePage() {
                   {t("profileExtended.displayName")}
                 </Label>
                 <Input
-                  value={formData.display_name}
+                  value={formData.display_name || ""}
                   onChange={(e) => setFormData((p) => ({ ...p, display_name: e.target.value }))}
+                  placeholder={t("profileExtended.displayNamePlaceholder", "Your display name")}
                 />
               </div>
               <div>
@@ -645,8 +648,9 @@ export default function ProfilePage() {
                 {t("profileExtended.bio")}
               </Label>
               <Textarea
-                value={formData.bio}
+                value={formData.bio || ""}
                 onChange={(e) => setFormData((p) => ({ ...p, bio: e.target.value }))}
+                placeholder={t("profileExtended.bioPlaceholder", "Tell us about yourself...")}
                 rows={4}
               />
             </div>
@@ -671,23 +675,23 @@ export default function ProfilePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  placeholder={t("profileExtended.cityPlaceholder")}
-                  value={formData.city}
+                  placeholder={t("profileExtended.cityPlaceholder", "City")}
+                  value={formData.city || ""}
                   onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
                 />
                 <Input
-                  placeholder={t("profileExtended.stateProvincePlaceholder")}
-                  value={formData.state_province}
+                  placeholder={t("profileExtended.stateProvincePlaceholder", "State/Province")}
+                  value={formData.state_province || ""}
                   onChange={(e) => setFormData((p) => ({ ...p, state_province: e.target.value }))}
                 />
                 <Input
-                  placeholder={t("profileExtended.countryPlaceholder")}
-                  value={formData.country}
+                  placeholder={t("profileExtended.countryPlaceholder", "Country")}
+                  value={formData.country || ""}
                   onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
                 />
                 <Input
-                  placeholder={t("profileExtended.postalCodePlaceholder")}
-                  value={formData.postal_code}
+                  placeholder={t("profileExtended.postalCodePlaceholder", "Postal code")}
+                  value={formData.postal_code || ""}
                   onChange={(e) => setFormData((p) => ({ ...p, postal_code: e.target.value }))}
                 />
               </div>
@@ -945,8 +949,9 @@ export default function ProfilePage() {
                 {t("common.notes")}
               </Label>
               <Textarea
-                value={formData.notes}
+                value={formData.notes || ""}
                 onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
+                placeholder={t("profileExtended.notesPlaceholder", "Additional notes about your preferences...")}
                 rows={4}
               />
             </div>
