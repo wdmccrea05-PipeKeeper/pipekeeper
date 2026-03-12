@@ -108,30 +108,30 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
         </div>
       </CardHeader>
       <CardContent>
-        {logs.length === 0 ? (
-          <div className="text-center py-8 space-y-2">
-            <Wrench className="w-8 h-8 mx-auto" style={{ color: "rgba(140,105,65,0.4)" }} />
-            <p style={{ color: "rgba(224,216,200,0.5)" }}>{t("maintenanceLog.noRecordsYet", "No maintenance records yet.")}</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {logs.map((log) => (
-              <div key={log.id} className="rounded-lg p-4" style={{
-                background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
-                border: "1px solid rgba(140,105,65,0.2)"
-              }}>
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium" style={{ color: "#E0D8C8" }}>{maintenanceTypes[log.maintenance_type]}</span>
-                      <span className="text-xs" style={{ color: "rgba(180,140,75,0.7)" }}>
-                        {parseLocalCalendarDate(log.date).toLocaleDateString()}
-                      </span>
-                    </div>
-                    {log.description && (
-                      <p className="text-sm" style={{ color: "rgba(224,216,200,0.7)" }}>{log.description}</p>
-                    )}
-                  </div>
+         {logs.length === 0 ? (
+           <div className="text-center py-8 space-y-2">
+             <Wrench className="w-8 h-8 mx-auto" style={{ color: "rgba(140,105,65,0.4)" }} />
+             <p style={{ color: "rgba(224,216,200,0.5)" }}>{t("maintenanceLog.noRecordsYet", "No maintenance records yet.")}</p>
+           </div>
+         ) : (
+           <div className="space-y-3">
+             {logs.map((log) => (
+               <div key={log.id} className="rounded-lg p-4" style={{
+                 background: "rgba(50, 40, 30, 0.3)",
+                 border: "1px solid rgba(140, 105, 65, 0.2)"
+               }}>
+                 <div className="flex items-start justify-between mb-2">
+                   <div>
+                     <div className="flex items-center gap-2 mb-1">
+                       <span className="font-medium" style={{ color: "#E0D8C8" }}>{maintenanceTypes[log.maintenance_type]}</span>
+                       <span className="text-xs" style={{ color: "rgba(180, 140, 75, 0.8)" }}>
+                         {parseLocalCalendarDate(log.date).toLocaleDateString()}
+                       </span>
+                     </div>
+                     {log.description && (
+                       <p className="text-sm" style={{ color: "#E0D8C8" }}>{log.description}</p>
+                     )}
+                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -141,7 +141,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
-                <div className="flex items-center gap-4 text-xs" style={{ color: "rgba(180,140,75,0.6)" }}>
+                <div className="flex items-center gap-4 text-xs" style={{ color: "rgba(180, 140, 75, 0.8)" }}>
                   {log.performed_by && (
                     <span>{t("maintenanceLog.by", "by")} {log.performed_by}</span>
                   )}
