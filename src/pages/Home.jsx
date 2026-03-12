@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import TutorialSystem from "@/components/onboarding/TutorialSystem";
+import TutorialSystem from "@/components/onboarding/TutorialSystem.jsx";
 import { PKCard } from "@/components/ui/pk-surface";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { formatCurrency, formatWeight } from "@/components/utils/localeFormatters";
