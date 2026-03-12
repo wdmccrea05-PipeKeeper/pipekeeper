@@ -252,7 +252,7 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
                     boxShadow: `0 1px 3px rgba(0,0,0,0.3)`
                   }}
                 >
-                  {t("curator.exploreThis", "Explore This")}
+                  {t("curator.forYou.exploreThis")}
                   <ArrowRight className="w-3 h-3" />
                 </div>
               </div>
