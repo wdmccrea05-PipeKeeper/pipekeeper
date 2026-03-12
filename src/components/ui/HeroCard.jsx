@@ -288,7 +288,15 @@ export function StatusCard({
         >
           <Icon className="w-4 h-4" style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 4px rgba(180, 140, 75, 0.7))` }} />
         </div>
-        <span className="text-[11px] uppercase tracking-[0.1em] font-semibold leading-tight break-words" style={{ color: "rgba(180, 140, 75, 0.85)" }}>
+        <span 
+          className="text-[11px] uppercase tracking-[0.1em] font-semibold leading-tight flex-1" 
+          style={{ 
+            color: "rgba(180, 140, 75, 0.85)",
+            wordBreak: "break-word",
+            overflowWrap: "break-word",
+            hyphens: "auto"
+          }}
+        >
           {label}
         </span>
       </div>
