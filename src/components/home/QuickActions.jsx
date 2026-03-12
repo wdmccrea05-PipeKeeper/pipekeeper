@@ -106,6 +106,7 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
             key={key}
             onClick={handlers[key]}
             className="flex flex-col items-center justify-center gap-3 p-5 transition-all duration-200 min-h-[100px] w-full focus-visible:outline-none group hover:-translate-y-0.5"
+            aria-label={t(`quickActions.${key}`)}
             style={{
               background: "linear-gradient(145deg, rgba(58, 42, 28, 0.65), rgba(48, 34, 24, 0.78))",
               border: "1px solid rgba(120, 90, 65, 0.35)",
