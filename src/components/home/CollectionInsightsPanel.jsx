@@ -194,7 +194,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
             {pipes.length === 0 && blends.length === 0 ? (
               <div className="text-center py-12">
                 <BarChart3 className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                <p className="text-[#A4B0C4] mb-4">{t("insights.statsEmpty")}</p>
+                <p className="text-[#E0D8C8]/70 mb-4">{t("insights.statsEmpty")}</p>
                 <Button asChild>
                   <a href={createPageUrl('Pipes')}>{t("insights.addFirstItem")}</a>
                 </Button>
