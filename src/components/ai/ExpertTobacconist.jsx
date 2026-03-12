@@ -40,7 +40,8 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
       if (promptFromUrl) {
         setWhatIfPreFill(promptFromUrl);
         // Clean URL after reading
-        const newUrl = window.location.pathname + (params.toString().replace(/[?&]prompt=[^&]*/, '') ? '?' + params.toString().replace(/[?&]prompt=[^&]*/, '') : '');
+        params.delete("prompt");
+        const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
         window.history.replaceState({}, '', newUrl);
       }
     } catch (e) {

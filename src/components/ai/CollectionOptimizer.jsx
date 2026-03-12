@@ -155,7 +155,7 @@ function CollectionOptimizerInner({
   }, []);
 
   // Ask-the-expert chat state
-  const [whatIfQuery, setWhatIfQuery] = useState(preFilledPrompt || "");
+  const [whatIfQuery, setWhatIfQuery] = useState("");
   const [whatIfFollowUp, setWhatIfFollowUp] = useState("");
   const [whatIfPhotos, setWhatIfPhotos] = useState([]);
   const [whatIfDescription, setWhatIfDescription] = useState("");
@@ -163,13 +163,19 @@ function CollectionOptimizerInner({
   const [whatIfResult, setWhatIfResult] = useState(null);
   const [conversationMessages, setConversationMessages] = useState([]);
 
+  // Store onPromptConsumed in ref to avoid stale closures
+  const onPromptConsumedRef = useRef(onPromptConsumed);
+  useEffect(() => {
+    onPromptConsumedRef.current = onPromptConsumed;
+  }, [onPromptConsumed]);
+
   // Apply prefilled prompt when it changes
   useEffect(() => {
-    if (preFilledPrompt) {
+    if (preFilledPrompt && preFilledPrompt.trim()) {
       setWhatIfQuery(preFilledPrompt);
-      onPromptConsumed?.();
+      onPromptConsumedRef.current?.();
     }
-  }, [preFilledPrompt, onPromptConsumed]);
+  }, [preFilledPrompt]);
 
   // Optimization apply state
   const [pipeFeedback, setPipeFeedback] = useState({});
