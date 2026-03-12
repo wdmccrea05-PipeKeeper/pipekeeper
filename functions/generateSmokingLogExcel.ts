@@ -1,6 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import XLSX from 'npm:xlsx@0.18.5';
-import { requireEntitlement } from './_auth/requireEntitlement.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -11,7 +10,36 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await requireEntitlement(base44, user, 'EXPORT_REPORTS');
+    // Check for premium access (basic entitlement check)
+    const isActiveStatus = (s) => {
+      const status = String(s?.status || '').toLowerCase();
+      return status === 'active' || status === 'trialing' || status === 'trial';
+    };
+
+    let hasPremium = false;
+    
+    try {
+      const subs = await base44.entities.Subscription.filter({ user_id: user.id });
+      if (Array.isArray(subs) && subs.some(isActiveStatus)) {
+        hasPremium = true;
+      }
+    } catch {}
+    
+    if (!hasPremium && user?.email) {
+      try {
+        const emailSubs = await base44.entities.Subscription.filter({ 
+          provider: 'stripe', 
+          user_email: user.email.toLowerCase() 
+        });
+        if (Array.isArray(emailSubs) && emailSubs.some(isActiveStatus)) {
+          hasPremium = true;
+        }
+      } catch {}
+    }
+
+    if (!hasPremium) {
+      return Response.json({ error: 'Premium subscription required for exports' }, { status: 403 });
+    }
 
     const payload = await req.json();
     const { startDate, endDate } = payload;
