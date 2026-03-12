@@ -209,7 +209,10 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
       meta: {},
     };
     setMessages((prev) => [...prev, optimistic]);
-    setInput("");
+    // Only clear input if NOT using override (i.e., regular send button press)
+    if (!textOverride) {
+      setInput("");
+    }
     
     try {
       const englishText = await translateToEnglish(text, locale);
