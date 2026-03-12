@@ -236,10 +236,10 @@ export default function TobaccoCollectionStats({ user: userProp }) {
               </div>
               
               <div className="space-y-2 rounded-lg p-2" style={{
-                background: "rgba(140,140,140,0.1)",
-                border: "1px solid rgba(140,140,140,0.25)"
-              }}>
-                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(160,160,160,0.8)" }}>{t("stats.bulk")}</p>
+                  background: "rgba(120, 100, 80, 0.1)",
+                  border: "1px solid rgba(140, 115, 90, 0.25)"
+                }}>
+                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(160, 135, 110, 0.9)" }}>{t("stats.bulk")}</p>
                 <button
                   onClick={() => handleDrillDown('bulkInventory', { blends: blends.filter(b => (b.bulk_total_quantity_oz || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 rounded transition-colors group"
@@ -266,10 +266,10 @@ export default function TobaccoCollectionStats({ user: userProp }) {
               </div>
               
               <div className="space-y-2 rounded-lg p-2" style={{
-                background: "rgba(140,100,140,0.1)",
-                border: "1px solid rgba(140,100,140,0.25)"
+                background: "rgba(100, 80, 120, 0.1)",
+                border: "1px solid rgba(130, 100, 150, 0.25)"
               }}>
-                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(160,120,160,0.8)" }}>{t("stats.pouches")}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(160, 130, 180, 0.9)" }}>{t("stats.pouches")}</p>
                 <button
                   onClick={() => handleDrillDown('pouchInventory', { blends: blends.filter(b => (b.pouch_total_pouches || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 rounded transition-colors group"
@@ -307,10 +307,10 @@ export default function TobaccoCollectionStats({ user: userProp }) {
               </div>
               
               <div className="space-y-2 rounded-lg p-2" style={{
-                background: "rgba(80,80,80,0.1)",
-                border: "1px solid rgba(120,120,120,0.25)"
+                background: "rgba(120, 100, 80, 0.1)",
+                border: "1px solid rgba(140, 115, 90, 0.25)"
               }}>
-                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(180,180,180,0.8)" }}>{t("stats.overall")}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(160, 135, 110, 0.9)" }}>{t("stats.overall")}</p>
                 <button
                   onClick={() => handleDrillDown('allInventory', { blends: blends.filter(b => 
                     (b.tin_total_quantity_oz || 0) > 0 || (b.bulk_total_quantity_oz || 0) > 0 || (b.pouch_total_quantity_oz || 0) > 0
