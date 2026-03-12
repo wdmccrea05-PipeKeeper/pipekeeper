@@ -31,7 +31,7 @@ const CardContent = ({ className, ...props }) => (
 )
 
 const CardFooter = ({ className, ...props }) => (
-  <div className={cn("p-5 border-t border-white/10", className)} {...props} />
+  <div className={cn("p-5 border-t border-[rgba(140,105,65,0.2)]", className)} {...props} />
 )
 
 export {
