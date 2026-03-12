@@ -163,7 +163,7 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
                 } else {
                   step.action?.();
                   if (user?.email) {
-                    localStorage.setItem(`pk_quickstart_completed_${user.email}`, 'true');
+                    safeSetLocalStorage(`pk_quickstart_completed_${user.email}`, 'true');
                   }
                 }
               }}
