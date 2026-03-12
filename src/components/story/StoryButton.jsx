@@ -9,8 +9,10 @@ import StoryViewer from './StoryViewer';
 import { useCollectorStory } from './useCollectorStory';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { toast } from 'sonner';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function StoryButton() {
+  const { t } = useTranslation();
   const { user } = useCurrentUser();
   const { data: cards = [] } = useCollectorStory(user);
   const [showViewer, setShowViewer] = useState(false);
@@ -23,7 +25,7 @@ export default function StoryButton() {
     // Get the card element for export
     const cardElement = document.querySelector('[data-story-card]');
     if (!cardElement) {
-      toast.error('Could not export card');
+      toast.error(t("story.shareError"));
       return;
     }
 
@@ -45,8 +47,8 @@ export default function StoryButton() {
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: currentCard?.title || 'My PipeKeeper Story',
-          text: 'Check out my collector story!'
+          title: currentCard?.title || t("story.appName"),
+          text: t("story.shareYourStory")
         });
       } else {
         // Fallback: download
@@ -56,12 +58,12 @@ export default function StoryButton() {
         link.download = `pipekeeper-story-${currentIndex + 1}.png`;
         link.click();
         URL.revokeObjectURL(url);
-        toast.success('Story card saved!');
+        toast.success(t("story.downloadSuccess"));
       }
     } catch (error) {
       if (error?.name !== 'AbortError') {
         console.error('Share failed:', error);
-        toast.error('Could not share story');
+        toast.error(t("story.shareError"));
       }
     }
   };
@@ -79,7 +81,7 @@ export default function StoryButton() {
         }}
       >
         <BookOpen className="w-4 h-4" />
-        <span>View Story</span>
+        <span>{t("home.viewStory")}</span>
       </button>
 
       {showViewer && (

@@ -462,25 +462,25 @@ export default function ProfilePage() {
               background: "linear-gradient(to bottom, rgba(62, 44, 30, 0.4), transparent)"
             }}
           >
-            <div className="flex items-center gap-3 flex-1">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{
-                  background: "linear-gradient(135deg, rgba(100, 70, 45, 0.5), rgba(80, 55, 35, 0.6))",
-                  border: "1px solid rgba(120, 90, 65, 0.4)",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180, 140, 100, 0.15)"
-                }}
-              >
-                <User className="w-4 h-4" style={{ color: "rgba(180, 140, 75, 1)" }} />
-              </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
-                  {t("profile.smokingProfile")}
-                </h2>
-                <p className="text-sm" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
-                  {t("profile.personalizeAIRecommendations")}
-                </p>
-              </div>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div 
+              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+              style={{
+                background: "linear-gradient(135deg, rgba(100, 70, 45, 0.5), rgba(80, 55, 35, 0.6))",
+                border: "1px solid rgba(120, 90, 65, 0.4)",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180, 140, 100, 0.15)"
+              }}
+            >
+              <User className="w-4 h-4" style={{ color: "rgba(180, 140, 75, 1)" }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl font-semibold break-words" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
+                {t("profile.smokingProfile")}
+              </h2>
+              <p className="text-sm break-words" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
+                {t("profile.personalizeAIRecommendations")}
+              </p>
+            </div>
             </div>
 
             <div className="flex gap-2">

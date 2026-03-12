@@ -1299,7 +1299,7 @@ export default function Insights() {
           label={t("home.tobaccoBlends")}
           value={blends.length}
           accent={CATEGORY_COLORS.tobacco}
-          sub={`${totalCellaredOz.toFixed(1)} oz ${t("home.cellared")}`}
+          sub={`${totalCellaredOz.toFixed(1)} ${t("units.oz")} ${t("home.cellared")}`}
           bgImage={analyticsImages.snapshotBlends}
         />
         <StatusCard
