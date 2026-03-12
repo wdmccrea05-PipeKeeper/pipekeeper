@@ -780,6 +780,15 @@ export default function PipeDetailPage() {
         </AlertDialog>
 
         <ImageModal imageUrl={expandedImage} isOpen={!!expandedImage} onClose={() => setExpandedImage(null)} alt={pipe.name} />
+
+        <ShareRecordModal
+          isOpen={showShare}
+          onOpenChange={setShowShare}
+          moduleType="pipe"
+          record={pipe}
+          userProfile={ownerProfile}
+          privacySettings={{}}
+        />
       </div>
     </div>
   );
