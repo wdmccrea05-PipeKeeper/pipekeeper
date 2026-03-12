@@ -30,6 +30,7 @@ import {
   Activity,
   Wrench,
   Flame,
+  Share2,
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
