@@ -45,11 +45,16 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
       if (promptFromUrl) {
         setCuratorPreFill(promptFromUrl);
         setActiveTab("curator");
-      }
-      
-      // Clean URL after reading
-      if (promptFromUrl || legacyTab === "whatif" || legacyTab === "ask") {
-        params.delete("prompt");
+        // Clean URL params AFTER setting state (use microtask to ensure state is updated)
+        // This prevents the prompt from being lost due to early URL cleanup
+        Promise.resolve().then(() => {
+          params.delete("prompt");
+          params.delete("tab");
+          const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+          window.history.replaceState({}, '', newUrl);
+        });
+      } else if (legacyTab === "whatif" || legacyTab === "ask") {
+        // Clean legacy tab param
         params.delete("tab");
         const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
         window.history.replaceState({}, '', newUrl);
