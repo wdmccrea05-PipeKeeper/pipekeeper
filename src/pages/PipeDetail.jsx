@@ -99,6 +99,7 @@ export default function PipeDetailPage() {
 
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(0);
   const [expandedImage, setExpandedImage] = useState(null);
 
