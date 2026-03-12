@@ -299,13 +299,9 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
   };
   
   const handleQuickPrompt = (prompt) => {
-   setInput(prompt);
-   // Auto-send after input state updates (use setTimeout to ensure input is set)
-   setTimeout(() => {
-     if (threadId && !sending) {
-       sendMessage();
-     }
-   }, 0);
+    if (threadId && !sending) {
+      sendMessage(prompt);
+    }
   };
   
   const handleKeyDown = (e) => {
