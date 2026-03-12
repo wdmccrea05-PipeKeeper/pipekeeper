@@ -30,6 +30,23 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
   const [activeTab, setActiveTab] = useState(externalActiveTab ?? "for_you");
   const [chatThreadId, setChatThreadId] = useState(null);
   const [preFillMessage, setPreFillMessage] = useState("");
+  const [whatIfPreFill, setWhatIfPreFill] = useState("");
+
+  // Read prefilled prompt from URL on mount
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const promptFromUrl = params.get("prompt");
+      if (promptFromUrl) {
+        setWhatIfPreFill(promptFromUrl);
+        // Clean URL after reading
+        const newUrl = window.location.pathname + (params.toString().replace(/[?&]prompt=[^&]*/, '') ? '?' + params.toString().replace(/[?&]prompt=[^&]*/, '') : '');
+        window.history.replaceState({}, '', newUrl);
+      }
+    } catch (e) {
+      console.error("Error reading URL params:", e);
+    }
+  }, []);
 
   useEffect(() => {
     if (externalActiveTab !== undefined) setActiveTab(externalActiveTab);
@@ -195,7 +212,14 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
                   </div>
                 </div>
               ) : (
-                <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={true} improvedWhatIf={true} />
+                <CollectionOptimizer 
+                  pipes={pipes} 
+                  blends={blends} 
+                  showWhatIf={true} 
+                  improvedWhatIf={true}
+                  preFilledPrompt={whatIfPreFill}
+                  onPromptConsumed={() => setWhatIfPreFill("")}
+                />
               )
             ) : (
               <p className="text-sm text-[#E0D8C8]/60 text-center py-4">

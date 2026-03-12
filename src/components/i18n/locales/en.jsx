@@ -12,6 +12,22 @@ const docs = {
     topHighlightsSub: "Your collection at a glance",
   },
 
+  curator: {
+    title: "Collection Curator",
+    subtitle: "Personalized guidance for your collection",
+    exploreThis: "Explore This",
+    whatif: {
+      rotation: "What if I rotate three underused pipes this week instead of smoking my usual favorites?",
+      rest: "What if I let my most-used pipe rest for a few days and rotate alternatives?",
+      growth: "What if I add another pipe to expand my rotation?",
+      logging: "What insights would improve if I logged my next five sessions?",
+      diversity: "What if I add a Virginia or Balkan blend to improve cellar diversity?",
+      aging: "What if I open one of my older blends instead of a newer tin?",
+      cellar: "What if I cellar a few tins of my favorite blend for aging?",
+      default: "Tell me more about this recommendation",
+    },
+  },
+
   story: {
     shareYourStory: "SHARE YOUR STORY",
     appName: "PipeKeeper",

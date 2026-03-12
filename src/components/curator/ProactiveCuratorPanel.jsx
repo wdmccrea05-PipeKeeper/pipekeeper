@@ -29,7 +29,25 @@ const ACCENT_MAP = {
  * ProactiveCuratorPanel — Keeper Intelligence Display
  * Displays insights from Keeper Intelligence engine
  */
-export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, curatorEnabled = true }) {
+// Generate What If prompt based on insight type
+function generateWhatIfPrompt(insight, t) {
+  const titleKey = insight.title;
+  
+  // Map insight types to contextual What If prompts
+  const promptMap = {
+    "keeper.pipes.rotationTitle": t("curator.whatif.rotation", "What if I rotate three underused pipes this week instead of smoking my usual favorites?"),
+    "keeper.pipes.restTitle": t("curator.whatif.rest", "What if I let my most-used pipe rest for a few days and rotate alternatives?"),
+    "keeper.pipes.growthTitle": t("curator.whatif.growth", "What if I add another pipe to expand my rotation?"),
+    "keeper.pipes.loggingTitle": t("curator.whatif.logging", "What insights would improve if I logged my next five sessions?"),
+    "keeper.tobacco.diversityTitle": t("curator.whatif.diversity", "What if I add a Virginia or Balkan blend to improve cellar diversity?"),
+    "keeper.tobacco.agingTitle": t("curator.whatif.aging", "What if I open one of my older blends instead of a newer tin?"),
+    "keeper.tobacco.cellarTitle": t("curator.whatif.cellar", "What if I cellar a few tins of my favorite blend for aging?"),
+  };
+  
+  return promptMap[titleKey] || t("curator.whatif.default", "Tell me more about this recommendation");
+}
+
+export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, curatorEnabled = true, onInsightClick }) {
   const { t } = useTranslation();
 
   const insights = useMemo(() => {
@@ -151,10 +169,13 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
           const moduleAccents = ACCENT_MAP[insight.module] || {};
           const accent = moduleAccents[insight.title] || "#C87941";
           
+          const whatIfPrompt = generateWhatIfPrompt(insight, t);
+          
           return (
-            <div
+            <button
               key={`${insight.module}-${insight.title}`}
-              className="rounded-lg p-4"
+              onClick={() => onInsightClick?.(insight, whatIfPrompt)}
+              className="w-full rounded-lg p-4 text-left transition-all hover:scale-[1.02] cursor-pointer"
               style={{
                 background: "linear-gradient(135deg, rgba(50,35,25,0.6), rgba(40,28,20,0.8))",
                 border: `1px solid ${accent}30`,
@@ -200,32 +221,20 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
                     </div>
                   )}
                 </div>
-                {insight.action && (
-                  <p 
-                    className="text-xs font-medium" 
-                    style={{ color: "rgba(180,140,75,0.75)" }}
-                  >
-                    → {t(insight.action, insight.vars)}
-                  </p>
-                )}
-                {insight.ctaLink && (
-                  <a
-                    href={createPageUrl(insight.ctaLink)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:scale-105"
-                    style={{
-                      background: `${accent}25`,
-                      border: `1px solid ${accent}40`,
-                      color: accent,
-                      boxShadow: `0 1px 3px rgba(0,0,0,0.3)`
-                    }}
-                  >
-                    {t(insight.cta, insight.vars)}
-                    <ArrowRight className="w-3 h-3" />
-                  </a>
-                )}
+                <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
+                  style={{
+                    background: `${accent}25`,
+                    border: `1px solid ${accent}40`,
+                    color: accent,
+                    boxShadow: `0 1px 3px rgba(0,0,0,0.3)`
+                  }}
+                >
+                  {t("curator.exploreThis", "Explore This")}
+                  <ArrowRight className="w-3 h-3" />
+                </div>
               </div>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

@@ -136,6 +136,8 @@ function CollectionOptimizerInner({
   blends,
   showWhatIf: initialShowWhatIf = false,
   improvedWhatIf = false, // kept for compatibility
+  preFilledPrompt = "",
+  onPromptConsumed,
 }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -153,13 +155,21 @@ function CollectionOptimizerInner({
   }, []);
 
   // Ask-the-expert chat state
-  const [whatIfQuery, setWhatIfQuery] = useState("");
+  const [whatIfQuery, setWhatIfQuery] = useState(preFilledPrompt || "");
   const [whatIfFollowUp, setWhatIfFollowUp] = useState("");
   const [whatIfPhotos, setWhatIfPhotos] = useState([]);
   const [whatIfDescription, setWhatIfDescription] = useState("");
   const [whatIfLoading, setWhatIfLoading] = useState(false);
   const [whatIfResult, setWhatIfResult] = useState(null);
   const [conversationMessages, setConversationMessages] = useState([]);
+
+  // Apply prefilled prompt when it changes
+  useEffect(() => {
+    if (preFilledPrompt) {
+      setWhatIfQuery(preFilledPrompt);
+      onPromptConsumed?.();
+    }
+  }, [preFilledPrompt, onPromptConsumed]);
 
   // Optimization apply state
   const [pipeFeedback, setPipeFeedback] = useState({});
