@@ -1598,30 +1598,30 @@ ${englishUserText}
                                   </div>
 
                                   {pipe?.focus && pipe.focus.length > 0 && (
-                                  <div className="mb-3">
-                                    <p className="text-sm font-medium text-stone-700 dark:text-white/90 mb-1">{t("tobacconist.currentFocus")}</p>
-                                    <div className="flex flex-wrap gap-1">
-                                      {pipe.focus.map((type, i) => (
-                                        <Badge key={i} className="bg-indigo-100 text-indigo-800 border-indigo-200">
-                                          {asText(type)}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-                                  )}
+                                                   <div className="mb-3">
+                                                     <p className="text-sm font-medium text-stone-700 dark:text-white/90 mb-1">{t("tobacconist.currentFocus")}</p>
+                                                     <div className="flex flex-wrap gap-1">
+                                                       {[...new Set(pipe.focus)].map((type, i) => (
+                                                         <Badge key={i} className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                                                           {asText(type)}
+                                                         </Badge>
+                                                       ))}
+                                                     </div>
+                                                   </div>
+                                                   )}
 
                                 {spec.recommended_blend_types?.length > 0 && (
-                                  <div className="mb-3">
-                                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">{t("tobacconist.specializeFor")}</p>
-                                    <div className="flex flex-wrap gap-1">
-                                      {spec.recommended_blend_types.map((type, i) => (
-                                        <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200">
-                                          {asText(type)}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
+                                                   <div className="mb-3">
+                                                     <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">{t("tobacconist.specializeFor")}</p>
+                                                     <div className="flex flex-wrap gap-1">
+                                                       {[...new Set(spec.recommended_blend_types)].map((type, i) => (
+                                                         <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200">
+                                                           {asText(type)}
+                                                         </Badge>
+                                                       ))}
+                                                     </div>
+                                                   </div>
+                                                 )}
 
                                 {/* ✅ Removed beige hex; use readable theme-safe colors */}
                                 <p className="text-sm text-stone-700 dark:text-white/90 mb-2">
