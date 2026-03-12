@@ -59,19 +59,8 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
 
   const handleClick = (insight) => {
     // Build a contextual What-If prompt based on insight category
-    let whatIfPrompt = '';
-    
-    if (insight.category === 'Rotation') {
-      whatIfPrompt = `I have pipes that haven't been used in a while. Help me create a rotation plan to bring them back into regular use.`;
-    } else if (insight.category === 'Cellar') {
-      whatIfPrompt = `Some of my cellared blends have reached aging milestones. When should I open them and how should I evaluate their development?`;
-    } else if (insight.category === 'Discovery') {
-      whatIfPrompt = `My collection has limited variety. What should I add to improve balance and diversity?`;
-    } else if (insight.category === 'Stewardship') {
-      whatIfPrompt = `How can I better care for and maintain my collection?`;
-    } else {
-      whatIfPrompt = t(insight.action, insight.vars) || '';
-    }
+    const titleKey = insight.title;
+    const whatIfPrompt = generateWhatIfPrompt(insight, t);
     
     if (onInsightClick) {
       // Use callback if provided (ExpertTobacconist mode)
