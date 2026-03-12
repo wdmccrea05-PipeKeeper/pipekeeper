@@ -440,17 +440,16 @@ Deno.serve(async (req) => {
         let resolvedTier;
         
         if (metaTier === "pro" || metaTier === "premium") {
-          resolvedTier = metaTier;
+          resolvedTier = metaTier === "premium" ? "pro" : metaTier; // COLLAPSE: Premium → Pro
         } else if (detectedTier) {
-          resolvedTier = detectedTier;
+          resolvedTier = detectedTier === "premium" ? "pro" : detectedTier; // COLLAPSE: Premium → Pro
         } else if (existing?.tier) {
-          // Keep existing tier if we can't determine new one
-          resolvedTier = existing.tier;
+          // Keep existing tier if we can't determine new one (but normalize it)
+          resolvedTier = existing.tier === "premium" ? "pro" : existing.tier;
         } else if (isPaid) {
-          // FIX: Only default to premium if subscription actively grants access
-          // Never assume unknown subscriptions are premium
-          resolvedTier = "premium";
-          console.warn(`[webhook] Subscription ${sub.id} tier unknown but isPaid=true, safe default to premium`);
+          // FIX: Only default to pro if subscription actively grants access
+          resolvedTier = "pro";
+          console.warn(`[webhook] Subscription ${sub.id} tier unknown but isPaid=true, safe default to pro`);
         } else {
           // Unknown status and doesn't grant access - don't guess
           resolvedTier = null;
