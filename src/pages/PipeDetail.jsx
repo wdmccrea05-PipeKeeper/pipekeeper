@@ -268,7 +268,11 @@ export default function PipeDetailPage() {
 
         {/* AI Specialization Suggestion - show prominently for pipes without focus */}
         {blends.length > 0 && (!pipe.focus || pipe.focus.length === 0) && (
-          <Card className="mb-6 border-[#A35C5C]/50" variant="elevated">
+          <Card className="mb-6" style={{
+            background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+            border: "1px solid rgba(140,105,65,0.35)",
+            boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+          }}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[#E0D8C8]">
                 <Sparkles className="w-5 h-5" />
@@ -289,7 +293,11 @@ export default function PipeDetailPage() {
 
         {/* Pipe Management Card with Tabs */}
         {blends.length > 0 && (
-          <Card className="mb-6">
+          <Card className="mb-6" style={{
+            background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+            border: "1px solid rgba(140,105,65,0.35)",
+            boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+          }}>
             <CardContent className="p-6">
               <Tabs defaultValue="specialization">
                 <TabsList className="grid grid-cols-4 w-full mb-6">
@@ -436,23 +444,31 @@ export default function PipeDetailPage() {
             {/* Quick Info */}
             <div className="grid grid-cols-2 gap-4">
               {pipe.estimated_value && (
-                <Card className="border-emerald-500/30 bg-emerald-500/15">
+                <Card style={{
+                  background: "linear-gradient(145deg, rgba(50,40,30,0.7), rgba(40,28,20,0.9))",
+                  border: "1px solid rgba(200,160,110,0.3)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(200,160,110,0.1)"
+                }}>
                   <CardContent className="p-4 flex items-center gap-3">
-                    <DollarSign className="w-5 h-5 text-emerald-400" />
+                    <DollarSign className="w-5 h-5 text-amber-400" />
                     <div>
                       <p className="text-xs text-[#E0D8C8]/70">{t("pipesExtended.estValue")}</p>
-                      <p className="font-semibold text-emerald-200">{formatCurrency(+pipe.estimated_value)}</p>
+                      <p className="font-semibold text-amber-100">{formatCurrency(+pipe.estimated_value)}</p>
                     </div>
                   </CardContent>
                 </Card>
               )}
               {pipe.purchase_price && (
-                <Card className="border-amber-500/30 bg-amber-500/15">
+                <Card style={{
+                  background: "linear-gradient(145deg, rgba(50,40,30,0.7), rgba(40,28,20,0.9))",
+                  border: "1px solid rgba(200,160,110,0.3)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(200,160,110,0.1)"
+                }}>
                   <CardContent className="p-4 flex items-center gap-3">
                     <DollarSign className="w-5 h-5 text-amber-400" />
                     <div>
                       <p className="text-xs text-[#E0D8C8]/70">{t("pipesExtended.paid")}</p>
-                      <p className="font-semibold text-amber-200">{formatCurrency(+pipe.purchase_price)}</p>
+                      <p className="font-semibold text-amber-100">{formatCurrency(+pipe.purchase_price)}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -504,7 +520,11 @@ export default function PipeDetailPage() {
             </div>
 
             {/* Details Grid */}
-             <Card className="border-white/10">
+             <Card style={{
+               background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+               border: "1px solid rgba(140,105,65,0.35)",
+               boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+             }}>
                <CardContent className="p-6">
                  <div className="flex items-center justify-between mb-4">
                    <h3 className="text-sm font-semibold text-[#E0D8C8]">{t("pipesExtended.detailsMeasurements")}</h3>
@@ -625,7 +645,11 @@ export default function PipeDetailPage() {
 
             {/* Stamping */}
              {pipe.stamping && (
-               <Card className="border-white/10">
+               <Card style={{
+                 background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+                 border: "1px solid rgba(140,105,65,0.35)",
+                 boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+               }}>
                  <CardContent className="p-6">
                    <p className="text-xs text-[#E0D8C8]/60 mb-1">{t("pipesExtended.stamping")}</p>
                    <p className="font-medium text-[#E0D8C8]">{pipe.stamping}</p>
@@ -635,7 +659,11 @@ export default function PipeDetailPage() {
 
             {/* Notes */}
             {(getUsageCharacteristics(pipe) || pipe.notes) && (
-              <Card className="border-white/10">
+              <Card style={{
+                background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+                border: "1px solid rgba(140,105,65,0.35)",
+                boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+              }}>
                 <CardContent className="p-6 space-y-4">
                   {getUsageCharacteristics(pipe) && (
                     <div>
@@ -657,18 +685,28 @@ export default function PipeDetailPage() {
 
         {/* AI Features Tabs */}
         <Tabs defaultValue="match" className="space-y-6">
-          <TabsList className="bg-transparent border border-white/10 p-1 overflow-x-auto flex-nowrap w-full">
-            <TabsTrigger value="match" className="data-[state=active]:bg-[#A35C5C] data-[state=active]:text-[#E0D8C8] text-[#E0D8C8]/70 shrink-0">
+          <TabsList style={{
+            background: "linear-gradient(145deg, rgba(40,28,20,0.7), rgba(32,22,15,0.85))",
+            border: "1px solid rgba(140,105,65,0.35)",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.4)"
+          }} className="p-1 overflow-x-auto flex-nowrap w-full">
+            <TabsTrigger value="match" style={{
+              color: "rgba(224,216,200,0.7)"
+            }} className="data-[state=active]:bg-[#A35C5C]/60 data-[state=active]:text-[#E0D8C8] shrink-0">
               <Sparkles className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">{t("pipesExtended.tobaccoMatching")}</span>
               <span className="sm:hidden truncate">{t("pipesExtended.matching")}</span>
             </TabsTrigger>
-            <TabsTrigger value="value" className="data-[state=active]:bg-[#A35C5C] data-[state=active]:text-[#E0D8C8] text-[#E0D8C8]/70 shrink-0">
+            <TabsTrigger value="value" style={{
+              color: "rgba(224,216,200,0.7)"
+            }} className="data-[state=active]:bg-[#A35C5C]/60 data-[state=active]:text-[#E0D8C8] shrink-0">
               <DollarSign className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">{t("pipesExtended.valueLookup")}</span>
               <span className="sm:hidden truncate">{t("pipesExtended.value")}</span>
             </TabsTrigger>
-            <TabsTrigger value="identify" className="data-[state=active]:bg-[#A35C5C] data-[state=active]:text-[#E0D8C8] text-[#E0D8C8]/70 shrink-0">
+            <TabsTrigger value="identify" style={{
+              color: "rgba(224,216,200,0.7)"
+            }} className="data-[state=active]:bg-[#A35C5C]/60 data-[state=active]:text-[#E0D8C8] shrink-0">
               <ScanSearch className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">{t("pipesExtended.identifyPipe")}</span>
               <span className="sm:hidden truncate">{t("pipesExtended.identify")}</span>
@@ -676,7 +714,11 @@ export default function PipeDetailPage() {
           </TabsList>
 
           <TabsContent value="match">
-            <Card className="bg-[#182838] border-[#465C6E]">
+            <Card style={{
+              background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+              border: "1px solid rgba(140,105,65,0.35)",
+              boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+            }}>
               <CardContent className="p-6">
                 <MatchingEngine pipe={pipe} blends={blends} isPaidUser={isPaidUser} />
               </CardContent>
@@ -684,7 +726,11 @@ export default function PipeDetailPage() {
           </TabsContent>
 
           <TabsContent value="value">
-            <Card className="bg-[#182838] border-[#465C6E]">
+            <Card style={{
+              background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+              border: "1px solid rgba(140,105,65,0.35)",
+              boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+            }}>
               <CardContent className="p-6">
                 {isPaidUser ? (
                   <ValueLookup pipe={pipe} onUpdateValue={handleValueUpdate} />
@@ -699,12 +745,16 @@ export default function PipeDetailPage() {
           </TabsContent>
 
           <TabsContent value="identify">
-            <Card className="bg-[#182838] border-[#465C6E]">
+            <Card style={{
+              background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+              border: "1px solid rgba(140,105,65,0.35)",
+              boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+            }}>
               <CardContent className="p-6">
                 {isPaidUser ? (
                   <>
                     <PipeIdentifier pipe={pipe} onUpdatePipe={handlePipeUpdate} />
-                    <div className="mt-6 pt-6 border-t border-[#465C6E]">
+                    <div className="mt-6 pt-6 border-t border-[rgba(140,105,65,0.35)]">
                       <PipeMeasurementCalculator pipe={pipe} onUpdate={handlePipeUpdate} />
                     </div>
                   </>
@@ -724,7 +774,11 @@ export default function PipeDetailPage() {
 
         {/* Comments Section */}
         {ownerProfile?.allow_comments && (
-          <Card className="border-white/10 mt-8">
+          <Card className="mt-8" style={{
+            background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+            border: "1px solid rgba(140,105,65,0.35)",
+            boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+          }}>
             <CardContent className="p-6">
               <CommentSection
                 entityType="pipe"
