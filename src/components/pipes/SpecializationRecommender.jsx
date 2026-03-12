@@ -133,9 +133,8 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                       <Lightbulb className="w-4 h-4" />
                       {t("specializationRec.whyThisWorks")}
                     </h3>
-                    <p className="text-sm text-[#E0D8C8]/80 leading-relaxed">
-                      {recommendation.reasoning}
-                    </p>
+                    <p className="text-sm text-[#E0D8C8]/80 leading-relaxed whitespace-normal break-words">
+                      {String(recommendation.reasoning || '')}
                   </CardContent>
                 </Card>
               )}
@@ -145,9 +144,8 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                 <Card className="border-white/10">
                   <CardContent className="p-4">
                     <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("specializationRec.collectionFit")}</h3>
-                    <p className="text-sm text-[#E0D8C8]/80 leading-relaxed">
-                      {recommendation.collection_fit}
-                    </p>
+                    <p className="text-sm text-[#E0D8C8]/80 leading-relaxed whitespace-normal break-words">
+                       {String(recommendation.collection_fit || '')}
                   </CardContent>
                 </Card>
               )}
@@ -158,9 +156,9 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                   <CardContent className="p-4">
                     <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("specializationRec.recommendedBlendsFromCollection")}</h3>
                     <div className="flex flex-wrap gap-2">
-                      {recommendation.specific_blends.map((blend, idx) => (
-                        <Badge key={idx} variant="outline" className="border-white/20 text-[#E0D8C8]">
-                          {blend}
+                    {recommendation.specific_blends.map((blend, idx) => (
+                      <Badge key={idx} variant="outline" className="border-white/20 text-[#E0D8C8] break-words whitespace-normal">
+                        {String(blend)}
                         </Badge>
                       ))}
                     </div>
@@ -176,9 +174,8 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                       <AlertCircle className="w-4 h-4 text-[#E0D8C8] mt-0.5 shrink-0" />
                       <div>
                         <h3 className="font-semibold text-[#E0D8C8] mb-1">{t("specializationRec.importantConsiderations")}</h3>
-                        <p className="text-sm text-[#E0D8C8]/80 leading-relaxed">
-                          {recommendation.considerations}
-                        </p>
+                        <p className="text-sm text-[#E0D8C8]/80 leading-relaxed whitespace-normal break-words">
+                           {String(recommendation.considerations || '')}
                       </div>
                     </div>
                   </CardContent>
@@ -190,9 +187,8 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                 <Card className="border-white/10">
                   <CardContent className="p-4">
                     <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("specializationRec.alternativeUses")}</h3>
-                    <p className="text-sm text-[#E0D8C8]/80 leading-relaxed">
-                      {recommendation.alternative_uses}
-                    </p>
+                    <p className="text-sm text-[#E0D8C8]/80 leading-relaxed whitespace-normal break-words">
+                       {String(recommendation.alternative_uses || '')}
                   </CardContent>
                 </Card>
               )}

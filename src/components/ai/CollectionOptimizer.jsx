@@ -1615,7 +1615,7 @@ ${englishUserText}
                                                      <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">{t("tobacconist.specializeFor")}</p>
                                                      <div className="flex flex-wrap gap-1">
                                                        {[...new Set(spec.recommended_blend_types)].map((type, i) => (
-                                                         <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200">
+                                                         <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200 break-words whitespace-normal">
                                                            {asText(type)}
                                                          </Badge>
                                                        ))}
@@ -1624,7 +1624,7 @@ ${englishUserText}
                                                  )}
 
                                 {/* ✅ Removed beige hex; use readable theme-safe colors */}
-                                <p className="text-sm text-stone-700 dark:text-white/90 mb-2">
+                                <p className="text-sm text-stone-700 dark:text-white/90 mb-2 whitespace-normal break-words">
                                   {asText(spec.reasoning)}
                                 </p>
 
@@ -1777,22 +1777,22 @@ ${englishUserText}
                     )}
 
                     <div>
-                      <p className="text-sm font-medium text-stone-700 mb-2">{t("tobacconist.overallAssessment")}</p>
-                      <p className="text-sm text-stone-700">{asText(optimization.collection_gaps.overall_assessment)}</p>
-                    </div>
+                       <p className="text-sm font-medium text-stone-700 mb-2">{t("tobacconist.overallAssessment")}</p>
+                       <p className="text-sm text-stone-700 whitespace-normal break-words">{asText(optimization.collection_gaps.overall_assessment)}</p>
+                     </div>
 
                     {optimization.collection_gaps.missing_coverage?.length > 0 && (
-                      <div>
-                        <p className="text-sm font-medium text-rose-700 mb-2">{t("tobacconist.coverageGaps")}</p>
-                        <div className="flex flex-wrap gap-1">
-                          {optimization.collection_gaps.missing_coverage.map((gap, i) => (
-                            <Badge key={i} className="bg-rose-100 text-rose-800 border-rose-200">
-                              {asText(gap)}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                       <div>
+                         <p className="text-sm font-medium text-rose-700 mb-2">{t("tobacconist.coverageGaps")}</p>
+                         <div className="flex flex-wrap gap-1">
+                           {optimization.collection_gaps.missing_coverage.map((gap, i) => (
+                             <Badge key={i} className="bg-rose-100 text-rose-800 border-rose-200 break-words whitespace-normal">
+                               {asText(gap)}
+                             </Badge>
+                           ))}
+                         </div>
+                       </div>
+                     )}
 
                     {optimization.collection_gaps.redundancies?.length > 0 && (
                       <div className="mt-4">
@@ -1803,9 +1803,9 @@ ${englishUserText}
                         <div className="space-y-2">
                           {optimization.collection_gaps.redundancies.map((r, idx) => (
                             <div key={idx} className="text-sm bg-yellow-50 rounded p-2 border border-yellow-200">
-                              <span className="font-medium text-yellow-900">{r.blend_type}: </span>
-                              <span className="text-yellow-700">{r.pipe_names?.join(", ")}</span>
-                              {r.recommendation && <p className="text-xs text-yellow-600 mt-1">{r.recommendation}</p>}
+                              <span className="font-medium text-yellow-900 break-words whitespace-normal">{r.blend_type}: </span>
+                              <span className="text-yellow-700 break-words whitespace-normal">{r.pipe_names?.join(", ")}</span>
+                              {r.recommendation && <p className="text-xs text-yellow-600 mt-1 break-words whitespace-normal">{r.recommendation}</p>}
                             </div>
                           ))}
                         </div>
@@ -1821,9 +1821,9 @@ ${englishUserText}
                         <div className="space-y-2">
                           {optimization.collection_gaps.purchase_suggestions.map((s, idx) => (
                             <div key={idx} className="text-sm bg-indigo-50 rounded p-3 border border-indigo-200">
-                              <div className="font-medium text-indigo-900 mb-1">{s.gap_blend_type}</div>
-                              <div className="text-indigo-700">{s.suggested_pipe_characteristics}</div>
-                              {s.rationale && <p className="text-xs text-indigo-500 mt-1">{s.rationale}</p>}
+                              <div className="font-medium text-indigo-900 mb-1 break-words whitespace-normal">{s.gap_blend_type}</div>
+                              <div className="text-indigo-700 break-words whitespace-normal">{s.suggested_pipe_characteristics}</div>
+                              {s.rationale && <p className="text-xs text-indigo-500 mt-1 break-words whitespace-normal">{s.rationale}</p>}
                             </div>
                           ))}
                         </div>

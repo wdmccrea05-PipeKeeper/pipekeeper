@@ -53,7 +53,7 @@ export default function PairingCard({ pipe, blend, score, reasoning }) {
         <div className="text-sm text-[#e8d5b7]">
           <span className="font-semibold">{t("pairingCard.scoreLabel")}:</span> {score}/10
         </div>
-        <div className="text-sm text-[#e8d5b7]/80 leading-relaxed">{reasoning}</div>
+        <div className="text-sm text-[#e8d5b7]/80 leading-relaxed whitespace-normal break-words">{reasoning}</div>
 
         <div className="flex gap-2 pt-2">
           <Button

@@ -293,7 +293,7 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
                       {t(insight.title, insight.vars)}
                     </h4>
                     <p 
-                      className="text-sm leading-relaxed" 
+                      className="text-sm leading-relaxed whitespace-normal break-words" 
                       style={{ color: "rgba(224,216,200,0.85)" }}
                     >
                       {t(insight.insight, insight.vars)}
