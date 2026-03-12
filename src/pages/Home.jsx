@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import TutorialSystem from "@/components/onboarding/TutorialSystem";
 import { PKCard } from "@/components/ui/pk-surface";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { formatCurrency, formatWeight } from "@/components/utils/localeFormatters";
@@ -33,6 +34,18 @@ export default function Home() {
   const [showLogSession, setShowLogSession] = useState(false);
   const [showIdentify, setShowIdentify] = useState(false);
   const [showStory, setShowStory] = useState(false);
+  const [forceTutorial, setForceTutorial] = useState(false);
+
+  // Check for forced tutorial from FAQ
+  useEffect(() => {
+    if (user?.email) {
+      const flag = localStorage.getItem(`pk_force_tutorial_${user.email}`);
+      if (flag) {
+        setForceTutorial(true);
+        localStorage.removeItem(`pk_force_tutorial_${user.email}`);
+      }
+    }
+  }, [user?.email]);
 
   const { data: pipes = [] } = useQuery({
     queryKey: ["pipes", user?.email],
@@ -661,6 +674,14 @@ export default function Home() {
         isOpen={showStory}
         onClose={() => setShowStory(false)}
         storyCards={storyCards}
+      />
+
+      <TutorialSystem 
+        user={user}
+        pipes={pipes}
+        blends={blends}
+        forceTutorial={forceTutorial}
+        onTutorialClose={() => setForceTutorial(false)}
       />
     </div>
   );
