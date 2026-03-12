@@ -2,9 +2,38 @@
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import Stripe from "npm:stripe@17.5.0";
-import { subscriptionGrantsPaidAccess } from "./_auth/entitlementHelpers.ts";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
+
+// ============================================================================
+// GRACE PERIOD POLICY (centralized constant)
+// ============================================================================
+const GRACE_PERIOD_DAYS = 5;
+
+function isSubscriptionInGracePeriod(subscription) {
+  if (!subscription) return false;
+  const status = String(subscription?.status || "").toLowerCase();
+  if (status !== "past_due" && status !== "incomplete" && status !== "unpaid") return false;
+  const periodEnd = subscription?.current_period_end;
+  if (!periodEnd) return false;
+  try {
+    const endDate = new Date(periodEnd);
+    const graceEnd = new Date(endDate.getTime() + (GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000));
+    return Date.now() <= graceEnd.getTime();
+  } catch {
+    return false;
+  }
+}
+
+function subscriptionGrantsPaidAccess(subscription) {
+  if (!subscription) return false;
+  const status = String(subscription?.status || "").toLowerCase();
+  if (status === "active" || status === "trialing" || status === "trial") return true;
+  if (status === "past_due" || status === "incomplete" || status === "unpaid") {
+    return isSubscriptionInGracePeriod(subscription);
+  }
+  return false;
+}
 
 const PRICE_ID_PREMIUM_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim();
 const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim();

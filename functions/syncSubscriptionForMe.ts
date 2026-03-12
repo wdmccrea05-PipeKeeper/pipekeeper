@@ -17,6 +17,36 @@ function isoFromUnixSeconds(sec) {
   return new Date(ms).toISOString();
 }
 
+// ============================================================================
+// GRACE PERIOD POLICY (centralized constant)
+// ============================================================================
+const GRACE_PERIOD_DAYS = 5;
+
+function isSubscriptionInGracePeriod(subscription) {
+  if (!subscription) return false;
+  const status = String(subscription?.status || "").toLowerCase();
+  if (status !== "past_due" && status !== "incomplete" && status !== "unpaid") return false;
+  const periodEnd = subscription?.current_period_end;
+  if (!periodEnd) return false;
+  try {
+    const endDate = new Date(periodEnd);
+    const graceEnd = new Date(endDate.getTime() + (GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000));
+    return Date.now() <= graceEnd.getTime();
+  } catch {
+    return false;
+  }
+}
+
+function subscriptionGrantsPaidAccess(subscription) {
+  if (!subscription) return false;
+  const status = String(subscription?.status || "").toLowerCase();
+  if (status === "active" || status === "trialing" || status === "trial") return true;
+  if (status === "past_due" || status === "incomplete" || status === "unpaid") {
+    return isSubscriptionInGracePeriod(subscription);
+  }
+  return false;
+}
+
 function pickBestSubscription(subs) {
   if (!Array.isArray(subs) || subs.length === 0) return null;
 
@@ -204,8 +234,7 @@ Deno.serve(async (req) => {
       subscriptionRowId = created?.id || null;
     }
 
-    // Use centralized grace period logic
-    const { subscriptionGrantsPaidAccess } = await import("./_auth/entitlementHelpers.ts");
+    // Use centralized grace period logic (inlined above)
     const reconstructedSub = {
       status: best.status,
       current_period_end: periodEnd,

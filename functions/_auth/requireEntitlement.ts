@@ -1,8 +1,117 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getEntitlementTier, isLegacyPremium as checkLegacyPremium, subscriptionGrantsPaidAccess } from "./entitlementHelpers.ts";
 
 function normEmail(email) {
   return String(email || "").trim().toLowerCase();
+}
+
+// ============================================================================
+// GRACE PERIOD POLICY (centralized constant)
+// ============================================================================
+const GRACE_PERIOD_DAYS = 5;
+
+function isSubscriptionInGracePeriod(subscription) {
+  if (!subscription) return false;
+  
+  const status = String(subscription?.status || "").toLowerCase();
+  if (status !== "past_due" && status !== "incomplete" && status !== "unpaid") {
+    return false;
+  }
+  
+  const periodEnd = subscription?.current_period_end;
+  if (!periodEnd) return false;
+  
+  try {
+    const endDate = new Date(periodEnd);
+    const graceEnd = new Date(endDate.getTime() + (GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000));
+    return Date.now() <= graceEnd.getTime();
+  } catch {
+    return false;
+  }
+}
+
+function subscriptionGrantsPaidAccess(subscription) {
+  if (!subscription) return false;
+  
+  const status = String(subscription?.status || "").toLowerCase();
+  
+  if (status === "active" || status === "trialing" || status === "trial") {
+    return true;
+  }
+  
+  if (status === "past_due" || status === "incomplete" || status === "unpaid") {
+    return isSubscriptionInGracePeriod(subscription);
+  }
+  
+  return false;
+}
+
+// ============================================================================
+// TIER RESOLUTION
+// ============================================================================
+const LEGACY_PREMIUM_CUTOFF = "2026-02-01T00:00:00.000Z";
+
+function normalizeTier(raw) {
+  const t = String(raw || "").trim().toLowerCase();
+  if (!t) return "free";
+  if (t === "pro") return "pro";
+  if (t === "premium") return "premium";
+  if (t === "paid" || t === "plus" || t === "subscriber" || t === "subscribed") return "premium";
+  return "free";
+}
+
+function getEntitlementTier(user, subscription) {
+  const role = (user?.role || "").toLowerCase();
+  if (role === "admin" || role === "owner" || user?.is_admin === true) {
+    return "pro";
+  }
+
+  const fromUserEntitlement =
+    user?.data?.entitlement_tier ??
+    user?.entitlement_tier ??
+    user?.entitlementTier ??
+    user?.entitlement ??
+    user?.tier;
+
+  const t1 = normalizeTier(fromUserEntitlement);
+  if (t1 !== "free") return t1;
+
+  const fromUserLegacy =
+    user?.subscription_tier ??
+    user?.subscriptionTier ??
+    user?.subscriptionLevel ??
+    user?.plan ??
+    user?.plan_level;
+
+  const t2 = normalizeTier(fromUserLegacy);
+  if (t2 !== "free") return t2;
+
+  if (subscription && subscriptionGrantsPaidAccess(subscription)) {
+    const fromSub =
+      subscription?.tier ??
+      subscription?.subscription_tier ??
+      subscription?.plan ??
+      subscription?.plan_level;
+
+    const t3 = normalizeTier(fromSub);
+    if (t3 !== "free") return t3;
+  }
+
+  return "free";
+}
+
+function checkLegacyPremium(subscription) {
+  if (!subscription) return false;
+  const tier = (subscription.tier || "").toLowerCase();
+  if (tier === "pro") return false;
+  const startDate = subscription.subscriptionStartedAt || subscription.started_at;
+  if (!startDate) return false;
+  try {
+    const cutoff = new Date(LEGACY_PREMIUM_CUTOFF);
+    const start = new Date(startDate);
+    return start < cutoff;
+  } catch {
+    return false;
+  }
 }
 
 // FIX BUG-06: Add optional requiredTier parameter for Pro-tier backend gating
