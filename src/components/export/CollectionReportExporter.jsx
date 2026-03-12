@@ -220,32 +220,32 @@ export default function CollectionReportExporter({ user }) {
 
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
     const totalOz = blends.reduce((sum, b) => sum + calculateTotalOzFromBlend(b), 0);
-    
-    let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #111827;">
-      <h1 style="color: #1a2c42;">${t("reports.collectionStatisticsReport")}</h1>
-      <p style="color: #111827;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
-      <hr style="margin: 20px 0;">
-      
-      <h2 style="color: #8b3a3a;">${t("reports.pipeCollectionSection")}</h2>
-      <ul>
-        <li style="color: #111827;">${t("reports.totalPipes")}: ${pipes.length}</li>
-        <li style="color: #111827;">${t("reports.totalValue")}: ${formatCurrency(totalValue)}</li>
-        <li style="color: #111827;">${t("reports.avgValue")}: ${pipes.length > 0 ? formatCurrency(Math.round(totalValue / pipes.length)) : formatCurrency(0)}</li>
+
+    let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #1a1a1a;">
+      <h1 style="color: #0a0a0a; font-weight: bold; font-size: 28px;">${t("reports.collectionStatisticsReport")}</h1>
+      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
+      <hr style="margin: 20px 0; border-color: #ccc;">
+
+      <h2 style="color: #1a1a1a; font-weight: bold; font-size: 18px;">${t("reports.pipeCollectionSection")}</h2>
+      <ul style="color: #1a1a1a; font-weight: 500; line-height: 1.8;">
+        <li>${t("reports.totalPipes")}: ${pipes.length}</li>
+        <li>${t("reports.totalValue")}: ${formatCurrency(totalValue)}</li>
+        <li>${t("reports.avgValue")}: ${pipes.length > 0 ? formatCurrency(Math.round(totalValue / pipes.length)) : formatCurrency(0)}</li>
       </ul>
-      
-      <h2 style="color: #3d5a4d;">${t("reports.tobaccoCollectionSection")}</h2>
-      <ul>
-        <li style="color: #111827;">${t("reports.totalBlends")}: ${blends.length}</li>
-        <li style="color: #111827;">${t("reports.totalQuantity")}: ${formatWeight(totalOz, 'oz')}</li>
+
+      <h2 style="color: #1a1a1a; font-weight: bold; font-size: 18px; margin-top: 20px;">${t("reports.tobaccoCollectionSection")}</h2>
+      <ul style="color: #1a1a1a; font-weight: 500; line-height: 1.8;">
+        <li>${t("reports.totalBlends")}: ${blends.length}</li>
+        <li>${t("reports.totalQuantity")}: ${formatWeight(totalOz, 'oz')}</li>
       </ul>
-      
-      <h2 style="color: #1a2c42;">${t("reports.usageActivitySection")}</h2>
-      <ul>
-        <li style="color: #111827;">${t("reports.totalSessions")}: ${logs.length}</li>
-        <li style="color: #111827;">${t("reports.breakInSessions")}: ${logs.filter(l => l.is_break_in).length}</li>
+
+      <h2 style="color: #1a1a1a; font-weight: bold; font-size: 18px; margin-top: 20px;">${t("reports.usageActivitySection")}</h2>
+      <ul style="color: #1a1a1a; font-weight: 500; line-height: 1.8;">
+        <li>${t("reports.totalSessions")}: ${logs.length}</li>
+        <li>${t("reports.breakInSessions")}: ${logs.filter(l => l.is_break_in).length}</li>
       </ul>
     </div>`;
-    
+
     return html;
   };
 
