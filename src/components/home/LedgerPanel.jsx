@@ -46,57 +46,66 @@ export default function LedgerPanel({ label, value, sub, icon: Icon, accent = "#
       />
 
       <div className="relative p-4 space-y-2">
-        {/* Icon badge */}
-        {Icon && (
-          <div className="inline-flex">
-            <div
-              className="w-8 h-8 rounded flex items-center justify-center"
-              style={{
-                background: `linear-gradient(135deg, rgba(100, 70, 45, 0.4), rgba(80, 55, 35, 0.5))`,
-                border: `1px solid rgba(120, 90, 65, 0.4)`,
-                boxShadow: `0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180, 140, 100, 0.15)`,
-              }}
-            >
-              <Icon className="w-3.5 h-3.5" style={{ color: accent, filter: `drop-shadow(0 0 3px ${accent}90)` }} />
-            </div>
-          </div>
-        )}
+         {/* Icon badge */}
+         {Icon && (
+           <div className="inline-flex flex-shrink-0">
+             <div
+               className="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
+               style={{
+                 background: `linear-gradient(135deg, rgba(100, 70, 45, 0.4), rgba(80, 55, 35, 0.5))`,
+                 border: `1px solid rgba(120, 90, 65, 0.4)`,
+                 boxShadow: `0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180, 140, 100, 0.15)`,
+               }}
+             >
+               <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: accent, filter: `drop-shadow(0 0 3px ${accent}90)` }} />
+             </div>
+           </div>
+         )}
 
-        {/* Label */}
-        <div 
-          className="text-[10px] uppercase tracking-[0.12em] font-semibold leading-tight"
-          style={{ 
-            color: `rgba(180, 140, 75, 0.75)`,
-            whiteSpace: "normal",
-            wordWrap: "break-word",
-            hyphens: "none"
-          }}
-        >
-          {label}
-        </div>
+         {/* Label */}
+         <div 
+           className="text-[10px] uppercase tracking-[0.12em] font-semibold leading-tight min-w-0"
+           style={{ 
+             color: `rgba(180, 140, 75, 0.75)`,
+             whiteSpace: "normal",
+             wordWrap: "break-word",
+             hyphens: "none",
+             minWidth: "60px"
+           }}
+         >
+           {label}
+         </div>
 
-        {/* Value */}
-        <div 
-          className="text-2xl font-bold leading-none"
-          style={{
-            color: "#F5F1E7",
-            textShadow: `0 1px 2px rgba(0,0,0,0.6)`,
-            fontFamily: "'Georgia', serif"
-          }}
-        >
-          {value}
-        </div>
+         {/* Value */}
+         <div 
+           className="text-xl sm:text-2xl font-bold leading-none"
+           style={{
+             color: "#F5F1E7",
+             textShadow: `0 1px 2px rgba(0,0,0,0.6)`,
+             fontFamily: "'Georgia', serif",
+             whiteSpace: "normal",
+             wordWrap: "break-word",
+             hyphens: "none"
+           }}
+         >
+           {value}
+         </div>
 
-        {/* Sub text */}
-        {sub && (
-          <div 
-            className="text-xs leading-snug pt-0.5"
-            style={{ color: `rgba(180, 140, 75, 0.65)` }}
-          >
-            {sub}
-          </div>
-        )}
-      </div>
+         {/* Sub text */}
+         {sub && (
+           <div 
+             className="text-xs leading-snug pt-0.5"
+             style={{ 
+               color: `rgba(180, 140, 75, 0.65)`,
+               whiteSpace: "normal",
+               wordWrap: "break-word",
+               hyphens: "none"
+             }}
+           >
+             {sub}
+           </div>
+         )}
+       </div>
     </div>
   );
 }
