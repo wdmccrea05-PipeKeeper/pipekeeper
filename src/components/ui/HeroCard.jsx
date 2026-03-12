@@ -170,26 +170,26 @@ export function HeroCard({
         {/* Text hierarchy */}
         <div className="space-y-2">
           <div
-            className="text-[10px] uppercase tracking-[0.16em] font-bold break-words"
+            className="text-[10px] uppercase tracking-[0.16em] font-bold leading-tight"
             style={{ 
               color: `rgba(180, 140, 75, 0.95)`,
-              wordBreak: "break-word",
-              overflowWrap: "break-word",
-              hyphens: "auto"
+              whiteSpace: "normal",
+              wordWrap: "break-word",
+              hyphens: "none"
             }}
           >
             {title}
           </div>
           <div
-            className="text-[2.25rem] font-extrabold leading-tight tracking-tight break-words"
+            className="text-[2.25rem] font-extrabold leading-tight tracking-tight"
             style={{
               color: "#F5F1E7",
               textShadow: `0 2px 10px rgba(0,0,0,0.8), 0 1px 3px rgba(0,0,0,0.95)`,
               WebkitTextStroke: "0.4px rgba(255,255,255,0.12)",
               fontFamily: "'Georgia', serif",
-              wordBreak: "break-word",
-              overflowWrap: "break-word",
-              hyphens: "auto"
+              whiteSpace: "normal",
+              wordWrap: "break-word",
+              hyphens: "none"
             }}
           >
             {value ?? "—"}
@@ -292,9 +292,9 @@ export function StatusCard({
           className="text-[11px] uppercase tracking-[0.1em] font-semibold leading-tight flex-1" 
           style={{ 
             color: "rgba(180, 140, 75, 0.85)",
-            wordBreak: "break-word",
-            overflowWrap: "break-word",
-            hyphens: "auto"
+            whiteSpace: "normal",
+            wordWrap: "break-word",
+            hyphens: "none"
           }}
         >
           {label}

@@ -134,12 +134,12 @@ export default function DrawerRow({
                 {stat.value}
               </div>
               <div 
-                className="text-[10px] uppercase tracking-[0.1em] font-semibold"
+                className="text-[10px] uppercase tracking-[0.1em] font-semibold leading-tight"
                 style={{ 
                   color: "rgba(180, 140, 75, 0.75)",
-                  wordBreak: "break-word",
-                  overflowWrap: "break-word",
-                  hyphens: "auto"
+                  whiteSpace: "normal",
+                  wordWrap: "break-word",
+                  hyphens: "none"
                 }}
               >
                 {stat.label}
