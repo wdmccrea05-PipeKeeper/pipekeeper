@@ -26,18 +26,23 @@ export default function HowTo() {
   );
 
   const Q = ({ id, q, children }) => (
-    <Card className="bg-white border-gray-200 overflow-hidden">
+    <Card style={{
+      background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+      border: "1px solid rgba(140,105,65,0.25)"
+    }} className="overflow-hidden">
       <button
         onClick={() => toggleItem(id)}
-        className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        className="w-full text-left p-4 flex items-center justify-between transition-colors"
+        style={{ color: "#E0D8C8" }}
       >
-        <span className="font-semibold text-gray-900 pr-4">{q}</span>
+        <span className="font-semibold pr-4" style={{ color: "#E0D8C8" }}>{q}</span>
         <ChevronDown 
-          className={`w-5 h-5 text-gray-600 flex-shrink-0 transition-transform ${openItems[id] ? 'rotate-180' : ''}`}
+          className={`w-5 h-5 flex-shrink-0 transition-transform ${openItems[id] ? 'rotate-180' : ''}`}
+          style={{ color: "rgba(180,140,75,0.7)" }}
         />
       </button>
       {openItems[id] && (
-        <CardContent className="px-4 pb-4 pt-0 text-gray-700 leading-relaxed space-y-3">
+        <CardContent className="px-4 pb-4 pt-0 leading-relaxed space-y-3" style={{ color: "rgba(224,216,200,0.8)" }}>
           {children}
         </CardContent>
       )}
@@ -45,20 +50,28 @@ export default function HowTo() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
+    <div className="min-h-screen" style={{ background: "linear-gradient(135deg, rgba(15,11,8,0.95), rgba(20,15,10,0.95))" }}>
       <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">{t("howTo.pageTitle")}</h1>
           <p className="text-[#E0D8C8]/80 mb-4">{t("howTo.pageSubtitle")}</p>
           <div className="flex gap-3 justify-center mt-4 flex-wrap">
             <Link to={createPageUrl('FAQ')}>
-              <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
+              <Button variant="outline" style={{
+                background: "linear-gradient(135deg, rgba(60,45,30,0.5), rgba(50,35,25,0.6))",
+                border: "1px solid rgba(140,105,65,0.4)",
+                color: "#E0D8C8"
+              }}>
                 <Info className="w-4 h-4 mr-2" />
                 {t("help.faq")}
               </Button>
             </Link>
             <Link to={createPageUrl('TroubleshootingFull')}>
-              <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
+              <Button variant="outline" style={{
+                background: "linear-gradient(135deg, rgba(60,45,30,0.5), rgba(50,35,25,0.6))",
+                border: "1px solid rgba(140,105,65,0.4)",
+                color: "#E0D8C8"
+              }}>
                 <Wrench className="w-4 h-4 mr-2" />
                 {t("help.troubleshooting")}
               </Button>

@@ -421,12 +421,15 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
   return (
     <div className="space-y-4">
       {/* ✅ NEW: Reclassify Blends card (this is what was missing) */}
-      <div className="border border-gray-200 rounded-lg p-4 bg-white">
+      <div className="rounded-lg p-4" style={{
+        background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+        border: "1px solid rgba(140,105,65,0.25)"
+      }}>
         <div className="flex items-start gap-3 mb-3">
-          <Tags className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <Tags className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "rgba(180,140,75,0.9)" }} />
           <div className="flex-1">
-            <h3 className="font-semibold text-[#1a2c42]">{t("aiUpdates.tobaccoBlendClassification")}</h3>
-            <p className="text-sm text-[#1a2c42]/85 mt-1">
+            <h3 className="font-semibold" style={{ color: "#E0D8C8" }}>{t("aiUpdates.tobaccoBlendClassification")}</h3>
+            <p className="text-sm mt-1" style={{ color: "rgba(224,216,200,0.7)" }}>
               {t("aiUpdates.reclassifyBlendsDesc")}
             </p>
           </div>
@@ -446,19 +449,22 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         </Button>
       </div>
 
-      <div className="border border-gray-200 rounded-lg p-4 bg-white">
+      <div className="rounded-lg p-4" style={{
+        background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+        border: "1px solid rgba(140,105,65,0.25)"
+      }}>
         <div className="flex items-start gap-3 mb-3">
           {pairingsStale ? (
-            <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
           ) : (
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "rgba(100,180,100,0.8)" }} />
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">{t("aiUpdates.pairingMatrixTitle")}</h3>
-              <InfoTooltip text={t("aiUpdates.pairingMatrixTooltip")} className="text-[#1a2c42]/70" />
+              <h3 className="font-semibold" style={{ color: "#E0D8C8" }}>{t("aiUpdates.pairingMatrixTitle")}</h3>
+              <InfoTooltip text={t("aiUpdates.pairingMatrixTooltip")} />
             </div>
-            <p className="text-sm text-[#1a2c42]/85 mt-1">
+            <p className="text-sm mt-1" style={{ color: "rgba(224,216,200,0.7)" }}>
               {pairingsStale ? (
                 <span className="text-amber-700 font-semibold">{t("aiUpdates.outOfDate")}</span>
               ) : (
@@ -473,7 +479,11 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             size="sm"
             disabled={!activePairings?.previous_active_id || anyBusy}
             onClick={() => undoPairings.mutate()}
-            className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50"
+            style={{
+              background: "linear-gradient(135deg, rgba(60,45,30,0.5), rgba(50,35,25,0.6))",
+              border: "1px solid rgba(140,105,65,0.4)",
+              color: "#E0D8C8"
+            }}
           >
             <Undo className="w-3 h-3 mr-1" />
             {t("tobacconist.undo")}
@@ -490,19 +500,22 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-lg p-4 bg-white">
+      <div className="rounded-lg p-4" style={{
+        background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+        border: "1px solid rgba(140,105,65,0.25)"
+      }}>
         <div className="flex items-start gap-3 mb-3">
           {optStale ? (
-            <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
           ) : (
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "rgba(100,180,100,0.8)" }} />
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">{t("aiUpdates.collectionOptTitle")}</h3>
-              <InfoTooltip text={t("aiUpdates.collectionOptTooltip")} className="text-[#1a2c42]/70" />
+              <h3 className="font-semibold" style={{ color: "#E0D8C8" }}>{t("aiUpdates.collectionOptTitle")}</h3>
+              <InfoTooltip text={t("aiUpdates.collectionOptTooltip")} />
             </div>
-            <p className="text-sm text-[#1a2c42]/85 mt-1">
+            <p className="text-sm mt-1" style={{ color: "rgba(224,216,200,0.7)" }}>
               {optStale ? (
                 <span className="text-amber-700 font-semibold">{t("aiUpdates.outOfDateOpt")}</span>
               ) : (
@@ -517,7 +530,11 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             size="sm"
             disabled={!activeOpt?.previous_active_id || anyBusy}
             onClick={() => undoOpt.mutate()}
-            className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50"
+            style={{
+              background: "linear-gradient(135deg, rgba(60,45,30,0.5), rgba(50,35,25,0.6))",
+              border: "1px solid rgba(140,105,65,0.4)",
+              color: "#E0D8C8"
+            }}
           >
             <Undo className="w-3 h-3 mr-1" />
             {t("tobacconist.undo")}
@@ -534,15 +551,18 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-lg p-4 bg-white">
+      <div className="rounded-lg p-4" style={{
+        background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+        border: "1px solid rgba(140,105,65,0.25)"
+      }}>
         <div className="flex items-start gap-3 mb-3">
-          <Ruler className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+          <Ruler className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "rgba(180,140,75,0.9)" }} />
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.analyzePipeGeometry")}</h3>
-              <InfoTooltip text={t("tobacconist.analyzePipeGeometryTooltip")} className="text-[#1a2c42]/70" />
+              <h3 className="font-semibold" style={{ color: "#E0D8C8" }}>{t("tobacconist.analyzePipeGeometry")}</h3>
+              <InfoTooltip text={t("tobacconist.analyzePipeGeometryTooltip")} />
             </div>
-            <p className="text-sm text-[#1a2c42] mt-1">
+            <p className="text-sm mt-1" style={{ color: "rgba(224,216,200,0.7)" }}>
               {t("tobacconist.classifyGeometryFromPhotos")}
             </p>
           </div>
@@ -552,7 +572,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             size="sm"
             disabled={anyBusy}
             onClick={() => { window.location.href = createPageUrl("AIUpdates") + "?focus=geometry"; }}
-            className="bg-gradient-to-r from-emerald-600 to-emerald-700"
+            className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
           >
             <Ruler className="w-3 h-3 mr-1" />
             {t("tobacconist.analyzeGeometryFromPhotos")}
@@ -562,15 +582,19 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             size="sm"
             variant="outline"
             onClick={() => setShowVerifiedLookup(!showVerifiedLookup)}
-            className="border-gray-300 text-[#1a2c42]"
+            style={{
+              background: "linear-gradient(135deg, rgba(60,45,30,0.5), rgba(50,35,25,0.6))",
+              border: "1px solid rgba(140,105,65,0.4)",
+              color: "#E0D8C8"
+            }}
           >
             <Info className="w-3 h-3 mr-1" />
             {showVerifiedLookup ? t("tobacconist.hide") : t("tobacconist.findVerifiedSpecs")}
           </Button>
 
           {showVerifiedLookup && (
-            <div className="mt-2 pt-2 border-t border-gray-200">
-              <p className="text-xs text-[#1a2c42]/70 mb-2">
+            <div className="mt-2 pt-2" style={{ borderTop: "1px solid rgba(140,105,65,0.2)" }}>
+              <p className="text-xs mb-2" style={{ color: "rgba(224,216,200,0.6)" }}>
                 {t("tobacconist.findSpecsDesc")}
               </p>
               <Button
@@ -578,7 +602,12 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
                 disabled={anyBusy}
                 onClick={() => fillMeasurements.mutate()}
                 variant="outline"
-                className="border-gray-300 text-[#1a2c42] w-full"
+                style={{
+                  background: "linear-gradient(135deg, rgba(60,45,30,0.5), rgba(50,35,25,0.6))",
+                  border: "1px solid rgba(140,105,65,0.4)",
+                  color: "#E0D8C8",
+                  width: "100%"
+                }}
               >
                 {busy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Ruler className="w-3 h-3 mr-1" />}
                 {t("tobacconist.findSpecs")}
@@ -588,15 +617,18 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-lg p-4 bg-white">
+      <div className="rounded-lg p-4" style={{
+        background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+        border: "1px solid rgba(140,105,65,0.25)"
+      }}>
         <div className="flex items-start gap-3">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+          <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "rgba(100,180,100,0.8)" }} />
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.breakInSchedules")}</h3>
-              <InfoTooltip text={t("tobacconist.breakInSchedulesTooltip")} className="text-[#1a2c42]/70" />
+              <h3 className="font-semibold" style={{ color: "#E0D8C8" }}>{t("tobacconist.breakInSchedules")}</h3>
+              <InfoTooltip text={t("tobacconist.breakInSchedulesTooltip")} />
             </div>
-            <p className="text-sm text-[#1a2c42] mt-1">
+            <p className="text-sm mt-1" style={{ color: "rgba(224,216,200,0.7)" }}>
               {t("tobacconist.breakInSchedulesDesc")}
             </p>
           </div>

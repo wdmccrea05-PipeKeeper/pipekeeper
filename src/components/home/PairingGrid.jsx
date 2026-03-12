@@ -175,7 +175,11 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   }
 
   return (
-    <Card>
+    <Card style={{
+      background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+      border: "1px solid rgba(140,105,65,0.35)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+    }}>
       <CardHeader>
          <div className="flex items-center justify-between">
            <div className="flex-1 min-w-0">
@@ -325,7 +329,10 @@ function PipeCard({ row, allBlends, userProfile }) {
   }, [selectedBlendId, allBlends]);
 
   return (
-    <div className="border rounded-lg p-3 bg-[#1A2B3A]/50">
+    <div className="border rounded-lg p-3" style={{
+      background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+      border: "1px solid rgba(140,105,65,0.25)"
+    }}>
       <div className="font-semibold text-white">{row.name}</div>
       <div className="text-xs text-[#E0D8C8]/80 mt-1">
         {t("pairingGrid.focus")} {row.focus?.length ? row.focus.join(", ") : "—"}

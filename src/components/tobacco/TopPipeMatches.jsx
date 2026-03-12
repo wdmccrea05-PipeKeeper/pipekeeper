@@ -115,10 +115,10 @@ export default function TopPipeMatches({ blend, pipes }) {
     setLoading(false);
   };
 
-  const getScoreColor = (score) => {
-    if (score >= 9) return 'bg-emerald-100 text-emerald-800 border-emerald-300';
-    if (score >= 7) return 'bg-blue-100 text-blue-800 border-blue-300';
-    return 'bg-amber-100 text-amber-800 border-amber-300';
+  const getScoreStyle = (score) => {
+    if (score >= 9) return { background: "rgba(60,100,60,0.4)", color: "rgba(140,220,140,0.9)", borderColor: "rgba(80,140,80,0.4)" };
+    if (score >= 7) return { background: "rgba(140,105,65,0.3)", color: "rgba(220,180,100,0.9)", borderColor: "rgba(140,105,65,0.5)" };
+    return { background: "rgba(100,70,40,0.3)", color: "rgba(200,160,100,0.85)", borderColor: "rgba(120,85,50,0.4)" };
   };
 
   if (pipes.length === 0) return null;
@@ -200,7 +200,7 @@ export default function TopPipeMatches({ blend, pipes }) {
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="font-bold text-lg" style={{ color: "rgba(180,140,75,0.9)" }}>#{displayIdx + 1}</span>
                           <span className="font-semibold" style={{ color: "#F5F1E7" }}>{match.pipe_name}</span>
-                          <Badge className={getScoreColor(match.match_score)}>
+                          <Badge style={getScoreStyle(match.match_score)}>
                             {match.match_score}/10
                           </Badge>
                         </div>

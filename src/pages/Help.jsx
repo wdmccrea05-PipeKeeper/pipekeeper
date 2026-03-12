@@ -12,9 +12,9 @@ export default function Help() {
       title: t("helpCenter.faq"),
       description: t("helpCenter.faqDesc"),
       icon: HelpCircle,
-      color: "text-blue-400",
-      bgColor: "bg-blue-400/10",
-      borderColor: "border-blue-400/30",
+      color: "text-amber-400",
+      bgColor: "bg-amber-400/10",
+      borderColor: "border-amber-400/30",
       link: createPageUrl("FAQ"),
       topicsKeys: [
         "helpCenter.topicWhatIsPipeKeeper",
@@ -62,12 +62,12 @@ export default function Help() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
+    <div className="min-h-screen" style={{ background: "linear-gradient(135deg, rgba(15,11,8,0.95), rgba(20,15,10,0.95))" }}>
       <div className="max-w-5xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#8b3a3a]/20 mb-6">
-            <HelpCircle className="w-10 h-10 text-blue-400" />
+            <HelpCircle className="w-10 h-10" style={{ color: "rgba(180,140,75,0.9)" }} />
           </div>
           <h1 className="text-5xl font-bold text-[#E0D8C8] mb-4">{t("helpCenter.helpCenter")}</h1>
           <p className="text-xl text-[#E0D8C8]/80 max-w-2xl mx-auto">
@@ -112,7 +112,10 @@ export default function Help() {
         </div>
 
         {/* Quick Links */}
-        <Card className="border-[#E0D8C8]/20 bg-[#243548]">
+        <Card style={{
+          background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+          border: "1px solid rgba(140,105,65,0.35)"
+        }}>
            <CardHeader>
              <CardTitle className="text-[#E0D8C8]">{t("helpCenter.quickLinks")}</CardTitle>
            </CardHeader>
