@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Target, TrendingUp, Leaf, Clock, X, ArrowRight, RefreshCw, Trash2 } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { getKeeperIntelligence, PipesModule, TobaccoModule } from "@/components/keeperIntelligence";
 import { Button } from "@/components/ui/button";
@@ -52,30 +53,36 @@ function generateWhatIfPrompt(insight, t) {
 
 export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, curatorEnabled = true, onInsightClick }) {
   const { t, lang } = useTranslation();
+  const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
   const [cleared, setCleared] = useState(false);
 
   const handleClick = (insight) => {
+    // Build a contextual What-If prompt based on insight category
+    let whatIfPrompt = '';
+    
+    if (insight.category === 'Rotation') {
+      whatIfPrompt = `I have pipes that haven't been used in a while. Help me create a rotation plan to bring them back into regular use.`;
+    } else if (insight.category === 'Cellar') {
+      whatIfPrompt = `Some of my cellared blends have reached aging milestones. When should I open them and how should I evaluate their development?`;
+    } else if (insight.category === 'Discovery') {
+      whatIfPrompt = `My collection has limited variety. What should I add to improve balance and diversity?`;
+    } else if (insight.category === 'Stewardship') {
+      whatIfPrompt = `How can I better care for and maintain my collection?`;
+    } else {
+      whatIfPrompt = t(insight.action, insight.vars) || '';
+    }
+    
     if (onInsightClick) {
-      // Build a contextual What-If prompt based on insight category
-      let whatIfPrompt = '';
-      
-      if (insight.category === 'Rotation') {
-        whatIfPrompt = `I have pipes that haven't been used in a while. Help me create a rotation plan to bring them back into regular use.`;
-      } else if (insight.category === 'Cellar') {
-        whatIfPrompt = `Some of my cellared blends have reached aging milestones. When should I open them and how should I evaluate their development?`;
-      } else if (insight.category === 'Discovery') {
-        whatIfPrompt = `My collection has limited variety. What should I add to improve balance and diversity?`;
-      } else if (insight.category === 'Stewardship') {
-        whatIfPrompt = `How can I better care for and maintain my collection?`;
-      } else {
-        whatIfPrompt = t(insight.action, insight.vars) || '';
-      }
-      
       onInsightClick({
         ...insight,
         whatif_prompt: whatIfPrompt
       });
+    } else {
+      // Navigate to Curator with pre-filled prompt
+      const params = new URLSearchParams();
+      params.set('prompt', whatIfPrompt);
+      navigate(`${createPageUrl('Curator')}?${params.toString()}`);
     }
   };
 
