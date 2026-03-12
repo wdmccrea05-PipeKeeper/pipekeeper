@@ -177,14 +177,14 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <CardTitle>{t("pairingGrid.title")}</CardTitle>
-              <InfoTooltip text={t("pairingGrid.tooltipText")} />
-            </div>
-            <CardDescription>{t("pairingGrid.subtitle")}</CardDescription>
-            </div>
+         <div className="flex items-center justify-between">
+           <div className="flex-1 min-w-0">
+             <div className="flex items-center gap-2 flex-wrap">
+               <CardTitle className="break-words whitespace-normal">{t("pairingGrid.title")}</CardTitle>
+               <InfoTooltip text={t("pairingGrid.tooltipText")} />
+             </div>
+             <CardDescription className="break-words whitespace-normal">{t("pairingGrid.subtitle")}</CardDescription>
+             </div>
             <div className="flex gap-2">
             <Button
               variant="ghost"

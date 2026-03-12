@@ -628,27 +628,27 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
     ];
 
     // ── Top AI recommendations (from PairingMatrix, ai_excluded respected) ───
-    // Items with ai_excluded=true were already excluded from the matrix at
-    // generation time, so we just pick the highest-scoring results.
-    const topRecommendations = (activePairings?.pairings || [])
-      .filter((p) => p.score >= 7)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3)
-      .map((p) => ({
-        pipe_name: sanitizeRecommendationText(p.pipe_name, t.language || 'en'),
-        tobacco_name: sanitizeRecommendationText(p.tobacco_name, t.language || 'en'),
-        score: p.score,
-        blend_type: p.blend_type,
-        // Natural-language reason — avoids technical AI terminology
-        reason: sanitizeRecommendationText(
-          p.blend_type
-            ? t("collectionIntelligence.pairingReasonBlendType", {
-                blendType: p.blend_type,
-              })
-            : t("collectionIntelligence.pairingReasonDefault"),
-          t.language || 'en'
-        ),
-      }));
+     // Items with ai_excluded=true were already excluded from the matrix at
+     // generation time, so we just pick the highest-scoring results.
+     const topRecommendations = (activePairings?.pairings || [])
+       .filter((p) => p.score >= 7)
+       .sort((a, b) => b.score - a.score)
+       .slice(0, 3)
+       .map((p) => ({
+         pipe_name: sanitizeRecommendationText(p.pipe_name, lang),
+         tobacco_name: sanitizeRecommendationText(p.tobacco_name, lang),
+         score: p.score,
+         blend_type: p.blend_type,
+         // Natural-language reason — avoids technical AI terminology
+         reason: sanitizeRecommendationText(
+           p.blend_type
+             ? t("collectionIntelligence.pairingReasonBlendType", {
+                 blendType: p.blend_type,
+               })
+             : t("collectionIntelligence.pairingReasonDefault"),
+           lang
+         ),
+       }));
 
     // ── AI Updates feed ──────────────────────────────────────────────────────
     const aiUpdates = [];
