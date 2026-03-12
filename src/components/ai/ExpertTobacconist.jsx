@@ -161,7 +161,6 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
             <CuratorWorkspace
               pipes={pipes}
               blends={blends}
-              logs={[]}
               preFilledPrompt={curatorPreFill}
               onPromptConsumed={() => setCuratorPreFill("")}
             />

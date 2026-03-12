@@ -1,13 +1,11 @@
 /**
  * CuratorWorkspace.jsx
  * 
- * The complete Collection Curator AI workspace.
- * Handles all AI interactions: advice, scenario analysis, optimization, explanations.
- * 
- * This is the final, production-ready Curator interface.
+ * Complete Collection Curator AI workspace - handles all AI interactions.
+ * Final production architecture for PipeKeeper's central intelligence system.
  */
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { translateToEnglish, translateFromEnglish, getCurrentLocale } from "@/components/utils/aiTranslation";
 import { Button } from "@/components/ui/button";
@@ -15,47 +13,27 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { Send, Sparkles, Brain } from "lucide-react";
-import ReactMarkdown from "react-markdown";
 import { useQuery } from "@tanstack/react-query";
+import { Send, Sparkles } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 // Dynamic quick prompts based on collection state
 function generateQuickPrompts({ pipes = [], blends = [], logs = [], t }) {
   const prompts = [];
   
-  // Collection size-based
-  if (pipes.length > 10) {
-    prompts.push(t("curator.quickPrompt.underused"));
-  }
+  if (pipes.length > 10) prompts.push(t("curator.quickPrompt.underused"));
+  if (pipes.length === 0) prompts.push(t("curator.quickPrompt.startBuilding"));
+  else if (pipes.length < 5) prompts.push(t("curator.quickPrompt.nextPipe"));
   
-  if (pipes.length === 0) {
-    prompts.push(t("curator.quickPrompt.startBuilding"));
-  } else if (pipes.length < 5) {
-    prompts.push(t("curator.quickPrompt.nextPipe"));
-  }
-  
-  // Cellar-based
   const blendTypes = new Set(blends.map(b => b.blend_type).filter(Boolean));
   if (blends.length >= 5 && blendTypes.size < 3) {
     prompts.push(t("curator.quickPrompt.cellarDiversity"));
   }
   
-  // Usage-based
-  if (logs.length > 5) {
-    prompts.push(t("curator.quickPrompt.tonightPipe"));
-  }
+  if (logs.length > 5) prompts.push(t("curator.quickPrompt.tonightPipe"));
+  if (pipes.length >= 3 && logs.length > 0) prompts.push(t("curator.quickPrompt.rotation"));
+  if (pipes.length >= 5) prompts.push(t("curator.quickPrompt.value"));
   
-  // Rotation-based
-  if (pipes.length >= 3 && logs.length > 0) {
-    prompts.push(t("curator.quickPrompt.rotation"));
-  }
-  
-  // Value-based
-  if (pipes.length >= 5) {
-    prompts.push(t("curator.quickPrompt.value"));
-  }
-  
-  // Default prompts if collection is empty
   if (prompts.length === 0) {
     prompts.push(
       t("curator.quickPrompt.default1"),
@@ -75,9 +53,18 @@ function MessageBubble({ message }) {
       <div
         className={`max-w-[85%] rounded-2xl px-4 py-3 ${
           isUser
-            ? "bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] text-white"
-            : "bg-gradient-to-br from-white/10 to-white/5 text-[#E0D8C8] border border-white/10"
+            ? "text-white"
+            : "text-[#E0D8C8]"
         }`}
+        style={{
+          background: isUser
+            ? "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))"
+            : "linear-gradient(135deg, rgba(60,45,30,0.5), rgba(50,35,25,0.7))",
+          border: isUser ? "none" : "1px solid rgba(140,105,65,0.3)",
+          boxShadow: isUser
+            ? "0 2px 8px rgba(0,0,0,0.3)"
+            : "0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.1)",
+        }}
       >
         {isUser ? (
           <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
@@ -93,11 +80,11 @@ function MessageBubble({ message }) {
               em: ({ children }) => <em className="italic text-[#E0D8C8]/90">{children}</em>,
               code: ({ inline, children }) =>
                 inline ? (
-                  <code className="px-1.5 py-0.5 rounded bg-black/30 text-amber-300 text-xs font-mono">
+                  <code className="px-1.5 py-0.5 rounded text-amber-300 text-xs font-mono" style={{ background: "rgba(0,0,0,0.3)" }}>
                     {children}
                   </code>
                 ) : (
-                  <code className="block px-3 py-2 rounded bg-black/40 text-amber-300 text-xs font-mono my-2">
+                  <code className="block px-3 py-2 rounded text-amber-300 text-xs font-mono my-2" style={{ background: "rgba(0,0,0,0.4)" }}>
                     {children}
                   </code>
                 ),
@@ -124,6 +111,10 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
   const messagesEndRef = useRef(null);
   const onPromptConsumedRef = useRef(onPromptConsumed);
   
+  useEffect(() => {
+    onPromptConsumedRef.current = onPromptConsumed;
+  }, [onPromptConsumed]);
+  
   // Fetch smoking logs for quick prompts
   const { data: logs = [] } = useQuery({
     queryKey: ["smokingLogs", user?.email],
@@ -134,10 +125,6 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
     enabled: !!user?.email,
     staleTime: 30_000,
   });
-  
-  useEffect(() => {
-    onPromptConsumedRef.current = onPromptConsumed;
-  }, [onPromptConsumed]);
   
   // Apply pre-filled prompt from URL or insight
   useEffect(() => {
@@ -286,17 +273,8 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
           background: "rgba(20,14,10,0.4)",
         }}
       >
-        <div className="flex items-start gap-4">
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{
-              background: "linear-gradient(135deg, rgba(139,58,58,0.8), rgba(109,46,46,0.9))",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
-            }}
-          >
-            <Brain className="w-6 h-6 text-amber-300" />
-          </div>
-          <div className="flex-1 min-w-0">
+        <div className="space-y-4">
+          <div>
             <h2
               className="text-xl font-bold mb-1"
               style={{
@@ -310,32 +288,32 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
               {t("curator.workspaceSubtitle")}
             </p>
           </div>
-        </div>
-        
-        {/* Quick prompts */}
-        {quickPrompts.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: "rgba(180,140,75,0.6)" }}>
-              {t("curator.tryAsking")}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {quickPrompts.map((prompt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleQuickPrompt(prompt)}
-                  className="text-xs px-3 py-1.5 rounded-lg border transition-all hover:scale-[1.02]"
-                  style={{
-                    color: "rgba(180,140,75,1)",
-                    borderColor: "rgba(140,105,65,0.3)",
-                    background: "rgba(100,70,45,0.15)",
-                  }}
-                >
-                  {prompt}
-                </button>
-              ))}
+          
+          {/* Quick prompts */}
+          {quickPrompts.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-wider" style={{ color: "rgba(180,140,75,0.6)" }}>
+                {t("curator.tryAsking")}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {quickPrompts.map((prompt, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleQuickPrompt(prompt)}
+                    className="text-xs px-3 py-1.5 rounded-lg border transition-all hover:scale-[1.02]"
+                    style={{
+                      color: "rgba(180,140,75,1)",
+                      borderColor: "rgba(140,105,65,0.3)",
+                      background: "rgba(100,70,45,0.15)",
+                    }}
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       
       {/* Conversation */}
@@ -387,7 +365,11 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
           <Button
             onClick={sendMessage}
             disabled={!input.trim() || sending || initializing}
-            className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] hover:from-[#9b4a4a] hover:to-[#7d3e3e] border-0"
+            style={{
+              background: "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))",
+              border: "none",
+            }}
+            className="hover:opacity-90"
           >
             {sending ? (
               <span className="animate-pulse">{t("common.sending")}</span>
