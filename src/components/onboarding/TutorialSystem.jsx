@@ -94,7 +94,7 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
             <button
               onClick={() => {
                 if (user?.email) {
-                  localStorage.setItem(`pk_quickstart_skipped_${user.email}`, 'true');
+                  safeSetLocalStorage(`pk_quickstart_skipped_${user.email}`, 'true');
                 }
                 setIsVisible(false);
                 onTutorialClose?.();
