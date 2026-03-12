@@ -81,10 +81,14 @@ export default function RotationPlanner({ user }) {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card style={{
+        background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+        border: "1px solid rgba(140,105,65,0.35)",
+        boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+      }}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarClock className="w-5 h-5" />
+          <CardTitle className="flex items-center gap-2" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
+            <CalendarClock className="w-5 h-5" style={{ color: "rgba(180,140,75,0.9)" }} />
             {t("tobacconist.rotationPlanner")}
           </CardTitle>
         </CardHeader>
@@ -95,7 +99,7 @@ export default function RotationPlanner({ user }) {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4 text-orange-500" />
-                    <h3 className="font-semibold text-sm">{t("tobacconist.needsRotation")} ({needsRotation.length})</h3>
+                    <h3 className="font-semibold text-sm" style={{ color: "#E0D8C8" }}>{t("tobacconist.needsRotation")} ({needsRotation.length})</h3>
                   </div>
                   {needsRotation.length > 5 && (
                     <Button
@@ -119,14 +123,17 @@ export default function RotationPlanner({ user }) {
                       to={createPageUrl('PipeDetail') + `?id=${pipe.id}`}
                       className="block"
                     >
-                      <div className="flex items-center justify-between p-3 border border-orange-200 rounded-lg hover:bg-orange-50 transition-colors">
+                      <div className="flex items-center justify-between p-3 rounded-lg transition-colors" style={{
+                        background: "linear-gradient(135deg, rgba(80,50,30,0.3), rgba(70,40,25,0.5))",
+                        border: "1px solid rgba(200,120,60,0.3)"
+                      }}>
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-sm truncate">{pipe.name}</p>
-                          <p className="text-xs text-stone-500 truncate">
+                          <p className="font-medium text-sm truncate" style={{ color: "#E0D8C8" }}>{pipe.name}</p>
+                          <p className="text-xs truncate" style={{ color: "rgba(200,140,80,0.8)" }}>
                             {t("tobacconist.lastSmokedDaysAgo", {days: pipe.daysSince})}
                             </p>
                             </div>
-                            <Badge variant="outline" className="text-orange-600 border-orange-300 flex-shrink-0">
+                            <Badge variant="outline" style={{ color: "rgba(220,140,80,0.9)", borderColor: "rgba(200,120,60,0.4)" }} className="flex-shrink-0">
                           {pipe.daysSince}d
                         </Badge>
                       </div>
@@ -141,7 +148,7 @@ export default function RotationPlanner({ user }) {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4 text-red-500" />
-                    <h3 className="font-semibold text-sm">{t("tobacconist.neverSmoked")} ({neverSmoked.length})</h3>
+                    <h3 className="font-semibold text-sm" style={{ color: "#E0D8C8" }}>{t("tobacconist.neverSmoked")} ({neverSmoked.length})</h3>
                   </div>
                   {neverSmoked.length > 3 && (
                     <Button
@@ -165,12 +172,15 @@ export default function RotationPlanner({ user }) {
                       to={createPageUrl('PipeDetail') + `?id=${pipe.id}`}
                       className="block"
                     >
-                      <div className="flex items-center justify-between p-3 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
+                      <div className="flex items-center justify-between p-3 rounded-lg transition-colors" style={{
+                        background: "linear-gradient(135deg, rgba(70,35,35,0.3), rgba(60,25,25,0.5))",
+                        border: "1px solid rgba(180,80,80,0.3)"
+                      }}>
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-sm truncate">{pipe.name}</p>
-                          <p className="text-xs text-stone-500 truncate">{t("tobacconist.noUsageSessionsRecorded")}</p>
+                          <p className="font-medium text-sm truncate" style={{ color: "#E0D8C8" }}>{pipe.name}</p>
+                          <p className="text-xs truncate" style={{ color: "rgba(200,120,120,0.8)" }}>{t("tobacconist.noUsageSessionsRecorded")}</p>
                         </div>
-                        <Badge variant="outline" className="text-red-600 border-red-300 flex-shrink-0">
+                        <Badge variant="outline" style={{ color: "rgba(200,120,120,0.9)", borderColor: "rgba(180,80,80,0.4)" }} className="flex-shrink-0">
                           {t("tobacconist.new")}
                         </Badge>
                       </div>
@@ -185,7 +195,7 @@ export default function RotationPlanner({ user }) {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    <h3 className="font-semibold text-sm">{t("tobacconist.recentlyUsed")}</h3>
+                    <h3 className="font-semibold text-sm" style={{ color: "#E0D8C8" }}>{t("tobacconist.recentlyUsed")}</h3>
                   </div>
                   {recentlySmoked.length > 3 && (
                     <Button
@@ -206,15 +216,19 @@ export default function RotationPlanner({ user }) {
                   {recentlySmoked.slice(0, expandedRecentlySmoked ? 10 : 3).map(pipe => (
                     <div 
                       key={pipe.id} 
-                      className="flex items-center justify-between p-3 border border-green-200 rounded-lg"
+                      className="flex items-center justify-between p-3 rounded-lg"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(35,60,35,0.3), rgba(28,50,28,0.5))",
+                        border: "1px solid rgba(80,160,80,0.3)"
+                      }}
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm truncate">{pipe.name}</p>
-                        <p className="text-xs text-stone-500 truncate">
+                        <p className="font-medium text-sm truncate" style={{ color: "#E0D8C8" }}>{pipe.name}</p>
+                        <p className="text-xs truncate" style={{ color: "rgba(100,180,100,0.8)" }}>
                           {pipe.daysSince === 0 ? t("tobacconist.today") : `${pipe.daysSince} ${pipe.daysSince > 1 ? t("tobacconist.days") : t("tobacconist.day")} ${t("common.ago")}`}
                         </p>
                       </div>
-                      <Badge variant="outline" className="text-green-600 border-green-300 flex-shrink-0">
+                      <Badge variant="outline" style={{ color: "rgba(100,180,100,0.9)", borderColor: "rgba(80,160,80,0.4)" }} className="flex-shrink-0">
                         {t("tobacconist.active")}
                       </Badge>
                     </div>
@@ -228,7 +242,7 @@ export default function RotationPlanner({ user }) {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-blue-500" />
-                    <h3 className="font-semibold text-sm">{t("tobacconist.inRegularRotation")} ({inRegularRotation.length})</h3>
+                    <h3 className="font-semibold text-sm" style={{ color: "#E0D8C8" }}>{t("tobacconist.inRegularRotation")} ({inRegularRotation.length})</h3>
                   </div>
                   {inRegularRotation.length > 3 && (
                     <Button
@@ -252,14 +266,17 @@ export default function RotationPlanner({ user }) {
                       to={createPageUrl('PipeDetail') + `?id=${pipe.id}`}
                       className="block"
                     >
-                      <div className="flex items-center justify-between p-3 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+                      <div className="flex items-center justify-between p-3 rounded-lg transition-colors" style={{
+                        background: "linear-gradient(135deg, rgba(35,50,70,0.3), rgba(28,40,60,0.5))",
+                        border: "1px solid rgba(80,120,180,0.3)"
+                      }}>
                         <div>
-                          <p className="font-medium text-sm">{pipe.name}</p>
-                          <p className="text-xs text-stone-500">
+                          <p className="font-medium text-sm" style={{ color: "#E0D8C8" }}>{pipe.name}</p>
+                          <p className="text-xs" style={{ color: "rgba(100,150,220,0.8)" }}>
                             {t("tobacconist.lastSmokedDaysAgo", {days: pipe.daysSince})}
                             </p>
                             </div>
-                            <Badge variant="outline" className="text-blue-600 border-blue-300">
+                            <Badge variant="outline" style={{ color: "rgba(100,150,220,0.9)", borderColor: "rgba(80,120,180,0.4)" }}>
                           {pipe.daysSince}d
                         </Badge>
                       </div>
@@ -270,7 +287,7 @@ export default function RotationPlanner({ user }) {
             )}
 
             {needsRotation.length === 0 && neverSmoked.length === 0 && recentlySmoked.length === 0 && inRegularRotation.length === 0 && (
-              <p className="text-center text-stone-500 py-8">
+              <p className="text-center py-8" style={{ color: "rgba(224,216,200,0.5)" }}>
                 {t("tobacconist.noPipesInCollection")}
               </p>
             )}

@@ -86,14 +86,22 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
   };
 
   return (
-    <Card>
+    <Card style={{
+      background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+      border: "1px solid rgba(140,105,65,0.35)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+    }}>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Wrench className="w-5 h-5" />
+          <CardTitle className="flex items-center gap-2" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
+            <Wrench className="w-5 h-5" style={{ color: "rgba(180,140,75,0.9)" }} />
             {t("maintenanceLog.maintenanceLog")}
           </CardTitle>
-          <Button onClick={() => setShowDialog(true)} size="sm">
+          <Button onClick={() => setShowDialog(true)} size="sm" style={{
+            background: "linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))",
+            border: "1px solid rgba(140,105,65,0.4)",
+            color: "#E0D8C8"
+          }}>
             <Plus className="w-4 h-4 mr-1" />
             {t("maintenanceLog.addEntry")}
           </Button>
@@ -101,32 +109,39 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
       </CardHeader>
       <CardContent>
         {logs.length === 0 ? (
-          <p className="text-center text-stone-500 py-8">{t("maintenanceLog.noRecordsYet")}</p>
+          <div className="text-center py-8 space-y-2">
+            <Wrench className="w-8 h-8 mx-auto" style={{ color: "rgba(140,105,65,0.4)" }} />
+            <p style={{ color: "rgba(224,216,200,0.5)" }}>{t("maintenanceLog.noRecordsYet")}</p>
+          </div>
         ) : (
           <div className="space-y-3">
             {logs.map((log) => (
-              <div key={log.id} className="border border-stone-200 rounded-lg p-4">
+              <div key={log.id} className="rounded-lg p-4" style={{
+                background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                border: "1px solid rgba(140,105,65,0.2)"
+              }}>
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium">{maintenanceTypes[log.maintenance_type]}</span>
-                      <span className="text-xs text-stone-500">
+                      <span className="font-medium" style={{ color: "#E0D8C8" }}>{maintenanceTypes[log.maintenance_type]}</span>
+                      <span className="text-xs" style={{ color: "rgba(180,140,75,0.7)" }}>
                         {parseLocalCalendarDate(log.date).toLocaleDateString()}
                       </span>
                     </div>
                     {log.description && (
-                      <p className="text-sm text-stone-600">{log.description}</p>
+                      <p className="text-sm" style={{ color: "rgba(224,216,200,0.7)" }}>{log.description}</p>
                     )}
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => deleteLogMutation.mutate(log.id)}
+                    style={{ color: "rgba(200,80,80,0.7)" }}
                   >
-                    <Trash2 className="w-4 h-4 text-red-500" />
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-stone-500">
+                <div className="flex items-center gap-4 text-xs" style={{ color: "rgba(180,140,75,0.6)" }}>
                   {log.performed_by && (
                     <span>{t("maintenanceLog.by")} {log.performed_by}</span>
                   )}

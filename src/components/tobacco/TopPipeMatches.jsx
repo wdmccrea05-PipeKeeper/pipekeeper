@@ -124,13 +124,17 @@ export default function TopPipeMatches({ blend, pipes }) {
   if (pipes.length === 0) return null;
 
   return (
-    <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+    <Card style={{
+      background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+      border: "1px solid rgba(140,105,65,0.35)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+    }}>
       <CardContent className="p-4">
         {!matches || matches.length === 0 ? (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#8b3a3a]" />
-              <span className="text-sm text-white font-bold">{t("topPipeMatches.findBestMatches")}</span>
+              <Sparkles className="w-4 h-4" style={{ color: "rgba(180,140,75,0.9)" }} />
+              <span className="text-sm font-bold" style={{ color: "#F5F1E7" }}>{t("topPipeMatches.findBestMatches")}</span>
             </div>
             <Button
               size="sm"
@@ -155,8 +159,8 @@ export default function TopPipeMatches({ blend, pipes }) {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-[#8b3a3a]" />
-                <span className="font-bold text-[#e8d5b7] text-base">{t("topPipeMatches.topPipeMatches")}</span>
+                <Sparkles className="w-5 h-5" style={{ color: "rgba(180,140,75,0.9)" }} />
+                <span className="font-bold text-base" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>{t("topPipeMatches.topPipeMatches")}</span>
               </div>
               <Button 
                 size="sm" 
@@ -178,8 +182,14 @@ export default function TopPipeMatches({ blend, pipes }) {
 
                 return (
                   <a key={match.pipe_id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
-                    <div className="flex items-start gap-3 p-3 rounded-lg border border-[#8b3a3a]/30 hover:border-[#8b3a3a] hover:bg-[#8b3a3a]/15 transition-all cursor-pointer">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#1a2c42] to-[#243548] border border-[#8b3a3a]/20 overflow-hidden flex items-center justify-center shrink-0">
+                    <div className="flex items-start gap-3 p-3 rounded-lg transition-all cursor-pointer" style={{
+                    background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                    border: "1px solid rgba(140,105,65,0.25)"
+                  }}>
+                      <div className="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center shrink-0" style={{
+                        background: "linear-gradient(135deg, rgba(50,40,30,0.5), rgba(40,30,20,0.7))",
+                        border: "1px solid rgba(140,105,65,0.2)"
+                      }}>
                         {pipe.photos?.[0] ? (
                           <img src={pipe.photos[0]} alt="" className="w-full h-full object-cover" />
                         ) : (
@@ -188,13 +198,13 @@ export default function TopPipeMatches({ blend, pipes }) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="font-bold text-white text-lg">#{displayIdx + 1}</span>
-                          <span className="font-semibold text-white">{match.pipe_name}</span>
+                          <span className="font-bold text-lg" style={{ color: "rgba(180,140,75,0.9)" }}>#{displayIdx + 1}</span>
+                          <span className="font-semibold" style={{ color: "#F5F1E7" }}>{match.pipe_name}</span>
                           <Badge className={getScoreColor(match.match_score)}>
                             {match.match_score}/10
                           </Badge>
                         </div>
-                        <p className="text-xs text-[#e8d5b7] leading-relaxed">{match.reasoning}</p>
+                        <p className="text-xs leading-relaxed" style={{ color: "rgba(224,216,200,0.75)" }}>{match.reasoning}</p>
                       </div>
                     </div>
                   </a>
