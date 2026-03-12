@@ -81,6 +81,7 @@ export default function TobaccoDetailPage() {
   const [expandedImage, setExpandedImage] = useState(null);
   const [primaryImgError, setPrimaryImgError] = useState(false);
   const [fallbackImgError, setFallbackImgError] = useState(false);
+  const [showShare, setShowShare] = useState(false);
 
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
@@ -361,6 +362,9 @@ export default function TobaccoDetailPage() {
                 >
                   <Heart className={`w-5 h-5 ${blend.is_favorite ? "fill-current" : ""}`} />
                 </Button>
+                <Button variant="outline" size="icon" onClick={() => setShowShare(true)} className="border-[rgba(140,105,65,0.35)] bg-black/15 hover:bg-white/5" title={t("common.share", { defaultValue: "Share" })}>
+                  <Share2 className="w-5 h-5" />
+                </Button>
                 <Button variant="outline" size="icon" onClick={() => setShowEdit(true)} className="border-[rgba(140,105,65,0.35)] bg-black/15 hover:bg-white/5">
                   <Edit className="w-5 h-5" />
                 </Button>
@@ -503,6 +507,18 @@ export default function TobaccoDetailPage() {
           </AlertDialogContent>
         </AlertDialog>
 
+
+        <ShareRecordModal
+          isOpen={showShare}
+          onOpenChange={setShowShare}
+          moduleType="tobacco"
+          record={blend}
+          userProfile={{
+            ...(userProfile || {}),
+            email: currentUser?.email || blend?.created_by,
+          }}
+          privacySettings={userProfile || {}}
+        />
         <ImageModal imageUrl={expandedImage} isOpen={!!expandedImage} onClose={() => setExpandedImage(null)} alt={blend.name} />
       </div>
     </div>
