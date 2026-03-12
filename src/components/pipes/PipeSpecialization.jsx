@@ -90,18 +90,26 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
 
   if (!editing && (!designations || designations.length === 0)) {
     return (
-      <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+      <Card style={{
+        background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+        border: "1px solid rgba(140,105,65,0.35)",
+        boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+      }}>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-blue-600" />
-              <span className="text-sm text-stone-600">{t("pipeDetailTabs.noSpecializationSet")}</span>
+              <Target className="w-4 h-4" style={{ color: "rgba(180,140,75,0.9)" }} />
+              <span className="text-sm" style={{ color: "#E0D8C8" }}>{t("pipeDetailTabs.noSpecializationSet")}</span>
             </div>
             <Button
               size="sm"
               variant="outline"
               onClick={() => setEditing(true)}
-              className="border-blue-300 text-blue-700 hover:bg-blue-50"
+              style={{
+                background: "linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))",
+                border: "1px solid rgba(140,105,65,0.4)",
+                color: "#E0D8C8"
+              }}
             >
               <Plus className="w-4 h-4 mr-1" />
               {t("pipeDetailTabs.addSpecialization")}
@@ -113,12 +121,16 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
   }
 
   return (
-    <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+    <Card style={{
+      background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+      border: "1px solid rgba(140,105,65,0.35)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+    }}>
       <CardContent className="p-4 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-blue-600" />
-            <span className="font-semibold text-blue-800">{t("pipeDetailTabs.pipeSpecialization")}</span>
+            <Target className="w-5 h-5" style={{ color: "rgba(180,140,75,0.9)" }} />
+            <span className="font-semibold" style={{ color: "#E0D8C8" }}>{t("pipeDetailTabs.pipeSpecialization")}</span>
           </div>
           <div className="flex gap-2 w-full sm:w-auto overflow-hidden">
             <SpecializationRecommender 
@@ -133,7 +145,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
               size="sm"
               variant="ghost"
               onClick={() => setEditing(!editing)}
-              className="shrink-0 text-blue-900 hover:text-blue-950"
+              style={{ color: "#E0D8C8" }}
             >
               {editing ? t("pipeDetailTabs.done") : t("common.edit")}
             </Button>
@@ -145,12 +157,12 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
             const labelKey = FOCUS_LABEL_KEY[canonical];
             const label = labelKey ? t(labelKey, canonical) : canonical;
             return (
-              <Badge key={idx} className="bg-blue-100 text-blue-800 border-blue-200 pr-1">
+              <Badge key={idx} style={{ background: "rgba(140,105,65,0.3)", color: "#E0D8C8", borderColor: "rgba(140,105,65,0.5)" }} className="pr-1">
                 {label}
                 {editing && (
                   <button
                     onClick={() => handleRemove(idx)}
-                    className="ml-1 hover:bg-blue-200 rounded-full p-0.5"
+                    className="ml-1 rounded-full p-0.5" style={{ color: "rgba(140,105,65,0.7)" }}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -163,7 +175,11 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
         {editing && (
           <div className="space-y-3">
             <Select onValueChange={handleSelectFocus}>
-              <SelectTrigger className="text-sm">
+              <SelectTrigger className="text-sm" style={{
+                background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))",
+                borderColor: "rgba(140,105,65,0.4)",
+                color: "#E0D8C8"
+              }}>
                 <SelectValue placeholder={t("pipeDetailTabs.addDesignationPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
@@ -175,12 +191,16 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
               </SelectContent>
             </Select>
             <div className="flex flex-wrap gap-1.5">
-              <p className="text-xs text-stone-500 w-full mb-1">{t("pipeDetailTabs.quickAdd")}</p>
+              <p className="text-xs" style={{ color: "rgba(224,216,200,0.5)" }} className="w-full mb-1">{t("pipeDetailTabs.quickAdd")}</p>
               {FOCUS_OPTIONS.filter(o => !designations.includes(o.canonical)).map(option => (
                 <Badge
                   key={option.canonical}
                   variant="outline"
-                  className="cursor-pointer hover:bg-blue-100 text-xs border-blue-200"
+                  className="cursor-pointer text-xs"
+                  style={{
+                    borderColor: "rgba(140,105,65,0.4)",
+                    color: "#E0D8C8"
+                  }}
                   onClick={() => handleSelectFocus(option.canonical)}
                 >
                   {t(option.labelKey, option.canonical)}
@@ -194,14 +214,26 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
                 onChange={(e) => setCustomText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddCustom()}
                 placeholder={t("pipes.customSpecializationPlaceholder")}
-                className="flex-1 px-2 py-1.5 text-sm border border-blue-200 rounded bg-white text-stone-900 placeholder-stone-400 focus:outline-none focus:border-blue-400"
+                style={{
+                  flex: 1,
+                  padding: "0.375rem 0.5rem",
+                  fontSize: "0.875rem",
+                  border: "1px solid rgba(140,105,65,0.4)",
+                  borderRadius: "0.375rem",
+                  background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))",
+                  color: "#E0D8C8"
+                }}
               />
               <Button
                 size="sm"
                 variant="outline"
                 onClick={handleAddCustom}
                 disabled={!customText.trim()}
-                className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                style={{
+                  background: "linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))",
+                  border: "1px solid rgba(140,105,65,0.4)",
+                  color: "#E0D8C8"
+                }}
               >
                 <Plus className="w-3 h-3" />
               </Button>
@@ -211,17 +243,23 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
 
         {matchingBlends.length > 0 && (
           <div>
-            <p className="text-xs font-medium text-blue-700 mb-2">{t("pipeDetailTabs.matchingBlends")}</p>
+            <p className="text-xs font-medium mb-2" style={{ color: "rgba(180,140,75,0.9)" }}>{t("pipeDetailTabs.matchingBlends")}</p>
             <div className="flex flex-wrap gap-1.5">
               {matchingBlends.slice(0, 5).map(blend => (
                 <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
-                  <Badge variant="outline" className="cursor-pointer hover:bg-blue-50 border-blue-200 text-blue-700">
+                  <Badge variant="outline" className="cursor-pointer text-xs" style={{
+                    borderColor: "rgba(140,105,65,0.4)",
+                    color: "#E0D8C8"
+                  }}>
                     {blend.name}
                   </Badge>
                 </a>
               ))}
               {matchingBlends.length > 5 && (
-                <Badge variant="outline" className="border-blue-200 text-blue-600">
+                <Badge variant="outline" style={{
+                  borderColor: "rgba(140,105,65,0.4)",
+                  color: "rgba(224,216,200,0.7)"
+                }}>
                   +{matchingBlends.length - 5} {t("pipeDetailTabs.more")}
                 </Badge>
               )}
