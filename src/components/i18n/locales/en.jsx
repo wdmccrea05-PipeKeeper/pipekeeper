@@ -7,6 +7,11 @@ const docs = {
   // inviteFull, appleSupport, termsOfService, privacyPolicy → moved to en.docs.js
   // The i18n index merges docs files so all keys remain available.
 
+  insights: {
+    topHighlights: "Top Highlights",
+    topHighlightsSub: "Your collection at a glance",
+  },
+
   story: {
     shareYourStory: "SHARE YOUR STORY",
     appName: "PipeKeeper",
@@ -16,6 +21,26 @@ const docs = {
     blends: "blends",
     collectorPersonality: "Collector Personality",
     collectionGrowth: "Collection Growth",
+    personalityCurator: "The Curator",
+    personalityCuratorDesc: "You value quality over quantity in your pipe collection",
+    personalityCellarMaster: "The Cellar Master",
+    personalityCellarMasterDesc: "Building a diverse tobacco library for the ages",
+    personalityEnthusiast: "The Enthusiast",
+    personalityEnthusiastDesc: "A dedicated practitioner of the art",
+    personalityBalanced: "The Balanced Collector",
+    personalityBalancedDesc: "Thoughtfully building pipes and cellar together",
+    personalityExplorer: "The Explorer",
+    personalityExplorerDesc: "Just beginning your pipe collecting journey",
+    growthImpressive: "Impressive",
+    growthImpressiveDesc: "You've built a serious collection",
+    growthGrowing: "Growing Strong",
+    growthGrowingDesc: "Your collection is taking shape beautifully",
+    growthWellStarted: "Well Started",
+    growthWellStartedDesc: "Building a solid foundation",
+    growthJustBeginning: "Just Beginning",
+    growthJustBeginningDesc: "Every great collection starts with a single pipe",
+    downloadSuccess: "Story card saved!",
+    shareError: "Could not share story",
   },
 
   usageLogReport: {
