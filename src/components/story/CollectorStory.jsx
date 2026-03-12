@@ -218,6 +218,7 @@ export default function CollectorStory({ isOpen, onClose, storyCards }) {
           onShare={handleShare}
           cardNumber={currentIndex + 1}
           totalCards={totalCards}
+          t={t}
         />
       </div>
 
@@ -251,6 +252,7 @@ function StoryCard({
   totalCards,
   customContent,
   isClosingCard = false,
+  t,
 }) {
   const heroRotation = silhouetteType === "pipe" ? "8deg" : "-5deg";
 
