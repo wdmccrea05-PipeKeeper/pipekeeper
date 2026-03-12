@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ChevronDown, Wrench, BookOpen, Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function FAQFull() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [openItems, setOpenItems] = useState({});
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -227,31 +228,45 @@ export default function FAQFull() {
         }
 
         function TutorialSystemPreview({ onClose }) {
-        const { t } = useTranslation();
+          const { t } = useTranslation();
+          const navigate = useNavigate();
 
-        return (
-        <div className="fixed inset-0 bg-stone-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-2xl bg-gradient-to-br from-[#2a1f18] to-[#1f1510] rounded-2xl border border-[rgba(140,105,65,0.35)] p-8 text-center space-y-4">
-        <h2 className="text-2xl font-bold text-[#F5F1E7]">{t("help.tutorialModalTitle", "Start Your Tutorial?")}</h2>
-        <p className="text-[#D8C7A6]/80">
-          {t("help.tutorialModalDesc", "The Quick Start guide will walk you through adding your first pipes, blends, and more.")}
-        </p>
-        <div className="flex gap-3 justify-center pt-4">
-          <Button variant="outline" onClick={onClose} className="border-[rgba(140,105,65,0.35)] text-[#F5F1E7]">
-            {t("common.cancel", "Cancel")}
-          </Button>
-          <Button 
-            onClick={() => {
-              localStorage.removeItem(`pk_quickstart_skipped_${localStorage.getItem('user_email') || ''}`);
-              window.location.reload();
-              onClose();
-            }}
-            className="bg-amber-700 hover:bg-amber-600 text-[#F5F1E7]"
-          >
-            {t("help.startTutorial", "Start Tutorial")}
-          </Button>
-        </div>
-        </div>
-        </div>
-        );
+          const handleStartTutorial = async () => {
+            try {
+              // Get current user to clear skip flag
+              const user = await (await import("@/api/base44Client")).base44.auth.me();
+              if (user?.email) {
+                localStorage.removeItem(`pk_quickstart_skipped_${user.email}`);
+                localStorage.removeItem(`pk_quickstart_completed_${user.email}`);
+              }
+            } catch (e) {
+              console.error('Error clearing tutorial state:', e);
+            }
+
+            // Navigate to Home where tutorial system is active
+            navigate(createPageUrl("Home"));
+            onClose();
+          };
+
+          return (
+            <div className="fixed inset-0 bg-stone-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="w-full max-w-2xl bg-gradient-to-br from-[#2a1f18] to-[#1f1510] rounded-2xl border border-[rgba(140,105,65,0.35)] p-8 text-center space-y-4">
+                <h2 className="text-2xl font-bold text-[#F5F1E7]">{t("help.tutorialModalTitle", "Start Your Tutorial?")}</h2>
+                <p className="text-[#D8C7A6]/80">
+                  {t("help.tutorialModalDesc", "The Quick Start guide will walk you through adding your first pipes, blends, and more.")}
+                </p>
+                <div className="flex gap-3 justify-center pt-4">
+                  <Button variant="outline" onClick={onClose} className="border-[rgba(140,105,65,0.35)] text-[#F5F1E7]">
+                    {t("common.cancel", "Cancel")}
+                  </Button>
+                  <Button 
+                    onClick={handleStartTutorial}
+                    className="bg-amber-700 hover:bg-amber-600 text-[#F5F1E7]"
+                  >
+                    {t("help.startTutorial", "Start Tutorial")}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
         }
