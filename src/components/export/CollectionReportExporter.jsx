@@ -104,29 +104,29 @@ export default function CollectionReportExporter({ user }) {
 
   const generateTobaccoPDF = async () => {
     const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
-    
-    let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #111827;">
-      <h1 style="color: #1a2c42;">${t("reports.tobaccoCollectionReportTitle")}</h1>
-      <p style="color: #111827;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
-      <p style="color: #111827;"><strong>${t("reports.totalBlends")}:</strong> ${blends.length}</p>
-      <hr style="margin: 20px 0;">`;
-    
+
+    let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #1a1a1a;">
+      <h1 style="color: #0a0a0a; font-weight: bold; font-size: 28px;">${t("reports.tobaccoCollectionReportTitle")}</h1>
+      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
+      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.totalBlends")}:</strong> ${blends.length}</p>
+      <hr style="margin: 20px 0; border-color: #ccc;">`;
+
     blends.forEach(b => {
       const totalOz = calculateTotalOzFromBlend(b);
       const cellaredOz = calculateCellaredOzFromBlend(b);
-      html += `<div style="margin-bottom: 30px; border-bottom: 1px solid #ddd; padding-bottom: 20px;">
-        <h3 style="color: #3d5a4d; margin-bottom: 10px;">${b.name || t("reports.unnamedBlend")}</h3>
+      html += `<div style="margin-bottom: 30px; border-bottom: 1px solid #ccc; padding-bottom: 20px;">
+        <h3 style="color: #1a1a1a; margin-bottom: 10px; font-weight: bold; font-size: 16px;">${b.name || t("reports.unnamedBlend")}</h3>
         <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 5px; width: 150px;"><strong>${t("tobaccoExtended.manufacturer")}:</strong></td><td>${b.manufacturer || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("common.type")}:</strong></td><td>${b.blend_type || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("tobaccoExtended.strength")}:</strong></td><td>${b.strength || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("reports.totalQuantity")}:</strong></td><td>${formatWeight(totalOz, 'oz')}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("reports.cellared")}:</strong></td><td>${formatWeight(cellaredOz, 'oz')}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("common.rating")}:</strong></td><td>${b.rating || '-'} / 5</td></tr>
+          <tr><td style="padding: 8px; width: 150px; font-weight: 600; color: #1a1a1a;"><strong>${t("tobaccoExtended.manufacturer")}:</strong></td><td style="padding: 8px; color: #1a1a1a; font-weight: 500;">${b.manufacturer || '-'}</td></tr>
+          <tr><td style="padding: 8px; font-weight: 600; color: #1a1a1a;"><strong>${t("common.type")}:</strong></td><td style="padding: 8px; color: #1a1a1a; font-weight: 500;">${b.blend_type || '-'}</td></tr>
+          <tr><td style="padding: 8px; font-weight: 600; color: #1a1a1a;"><strong>${t("tobaccoExtended.strength")}:</strong></td><td style="padding: 8px; color: #1a1a1a; font-weight: 500;">${b.strength || '-'}</td></tr>
+          <tr><td style="padding: 8px; font-weight: 600; color: #1a1a1a;"><strong>${t("reports.totalQuantity")}:</strong></td><td style="padding: 8px; color: #1a1a1a; font-weight: 500;">${formatWeight(totalOz, 'oz')}</td></tr>
+          <tr><td style="padding: 8px; font-weight: 600; color: #1a1a1a;"><strong>${t("reports.cellared")}:</strong></td><td style="padding: 8px; color: #1a1a1a; font-weight: 500;">${formatWeight(cellaredOz, 'oz')}</td></tr>
+          <tr><td style="padding: 8px; font-weight: 600; color: #1a1a1a;"><strong>${t("common.rating")}:</strong></td><td style="padding: 8px; color: #1a1a1a; font-weight: 500;">${b.rating || '-'} / 5</td></tr>
         </table>
       </div>`;
     });
-    
+
     html += `</div>`;
     return html;
   };
