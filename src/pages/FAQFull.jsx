@@ -5,7 +5,6 @@ import { ChevronDown, Wrench, BookOpen, Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { useState } from "react";
 
 export default function FAQFull() {
   const { t } = useTranslation();
