@@ -193,15 +193,12 @@ export default function ProfilePage() {
       return base44.entities.UserProfile.create(payload);
     },
     onSuccess: async (savedData) => {
-      console.log("[Profile] Save successful, returned data:", savedData);
       toast.success(t("notifications.saved"));
-      // Force refetch to ensure UI reflects database state
-      await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
-      // Wait for refetch to complete
+      // Invalidate ALL user-profile cache variants to ensure fresh data on reload
+      await queryClient.invalidateQueries({ queryKey: ["user-profile"] });
       await queryClient.refetchQueries({ queryKey: ["user-profile", userId, email] });
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
-      // Also invalidate the community profile cache
-      await queryClient.invalidateQueries({ queryKey: ['user-profile', user?.id, user?.email] });
+      await queryClient.invalidateQueries({ queryKey: ["public-profile"] });
     },
     onError: (err) => {
       console.error("[Profile] save failed:", err);
