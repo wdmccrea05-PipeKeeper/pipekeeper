@@ -11,7 +11,6 @@ import ja from './locales/ja.jsx';
 import zhHans from './locales/zh-Hans.jsx';
 import { homeTranslations } from './homeContent.jsx';
 import { insightsTranslations } from './insightsContent.jsx';
-import curatorEN from './locales/en.curator.js';
 
 // Documentation files — split out to keep main locale files under the size limit
 // Each docs file contains: howTo (steps), troubleshooting (full Q&A), faqExtended,
@@ -90,14 +89,13 @@ const rawLocales = {
   'zh-Hans': zhHans,
 };
 
-// Merge homeContent + insights + curator + docs translations into each language pack
-// Priority: locale file wins > homeContent > insights > curator > docs (English fallback handles missing keys)
+// Merge homeContent + insights + docs translations into each language pack
+// Priority: locale file wins > homeContent > insights > docs (English fallback handles missing keys)
 export const translations = Object.fromEntries(
   Object.entries(rawLocales).map(([lang, pack]) => {
     const withHome = deepMerge(pack, (homeTranslations[lang] || {}));
     const withInsights = deepMerge(withHome, (insightsTranslations[lang] || {}));
-    const withCurator = deepMerge(withInsights, lang === 'en' ? curatorEN : {});
-    const withDocs = deepMerge(withCurator, (docsLocales[lang] || {}));
+    const withDocs = deepMerge(withInsights, (docsLocales[lang] || {}));
     return [lang, withDocs];
   })
 );
