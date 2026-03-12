@@ -398,14 +398,6 @@ Deno.serve(async (req) => {
           existing = byLegacy?.[0];
         }
 
-        // Use centralized grace period logic
-        const reconstructedSub = {
-          status: sub.status,
-          current_period_end: periodEnd,
-          tier: payload.tier,
-        };
-        const isPaid = subscriptionGrantsPaidAccess(reconstructedSub);
-
         const payload = {
           user_id: user_id || existing?.user_id || null,
           user_email,
@@ -422,6 +414,13 @@ Deno.serve(async (req) => {
             ? sub.items.data[0].price.unit_amount / 100
             : null,
         };
+
+        // Use centralized grace period logic
+        const reconstructedSub = {
+          status: sub.status,
+          current_period_end: periodEnd,
+        };
+        const isPaid = subscriptionGrantsPaidAccess(reconstructedSub);
 
         if (!existing?.started_at) {
           payload.started_at = new Date().toISOString();
