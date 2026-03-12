@@ -301,7 +301,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
                         <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.agingDashboard")}</h3>
                         <InfoTooltip text={t("insights.agingTooltip")} />
                       </div>
-                      <p className="text-sm text-[#A4B0C4]">{t("insights.agingSubtitle")}</p>
+                      <p className="text-sm text-[#E0D8C8]/70">{t("insights.agingSubtitle")}</p>
                     </div>
                     <CellarAgingDashboard user={user} />
                   </>
