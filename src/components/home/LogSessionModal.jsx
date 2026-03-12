@@ -183,30 +183,42 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       if (autoReduceInventory && variables.tobaccoUsed > 0 && hasPaid) {
         const blend = (blends || []).find((b) => b.id === variables.blend_id);
         if (blend) {
-          let remaining = variables.tobaccoUsed;
+          let remaining = Number(variables.tobaccoUsed);
           const updateData = {};
-          if (blend.bulk_open > 0 && remaining > 0) {
+          
+          // First try to reduce from bulk_open
+          if ((blend.bulk_open || 0) > 0 && remaining > 0) {
             const toReduce = Math.min(blend.bulk_open, remaining);
-            updateData.bulk_open = Math.max(0, blend.bulk_open - toReduce);
+            updateData.bulk_open = Math.max(0, (blend.bulk_open || 0) - toReduce);
             updateData.bulk_total_quantity_oz = Math.max(
               0,
               (blend.bulk_total_quantity_oz || 0) - toReduce
             );
             remaining -= toReduce;
           }
-          if (blend.tin_tins_open > 0 && remaining > 0 && blend.tin_size_oz) {
-            const tinsToReduce = Math.ceil(remaining / blend.tin_size_oz);
-            const actualReduction = Math.min(tinsToReduce, blend.tin_tins_open);
-            updateData.tin_tins_open = Math.max(0, blend.tin_tins_open - actualReduction);
+          
+          // Then reduce from open tins if needed
+          if ((blend.tin_tins_open || 0) > 0 && remaining > 0 && blend.tin_size_oz) {
+            const ozToReduce = remaining;
+            const tinsToOpen = Math.ceil(ozToReduce / blend.tin_size_oz);
+            const actualTinReduction = Math.min(tinsToOpen, blend.tin_tins_open);
+            const actualOzReduction = Math.min(
+              actualTinReduction * blend.tin_size_oz,
+              remaining
+            );
+            
+            updateData.tin_tins_open = Math.max(0, (blend.tin_tins_open || 0) - actualTinReduction);
             updateData.tin_total_tins = Math.max(
               0,
-              (blend.tin_total_tins || 0) - actualReduction
+              (blend.tin_total_tins || 0) - actualTinReduction
             );
             updateData.tin_total_quantity_oz = Math.max(
               0,
-              (blend.tin_total_quantity_oz || 0) - actualReduction * blend.tin_size_oz
+              (blend.tin_total_quantity_oz || 0) - actualOzReduction
             );
+            remaining -= actualOzReduction;
           }
+          
           if (Object.keys(updateData).length > 0) {
             try {
               await updateBlendMutation.mutateAsync({ id: blend.id, data: updateData });
@@ -385,7 +397,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
                   <SelectValue placeholder={t("smokingLog.selectBowl")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t("smokingLog.noSpecificBowl")}</SelectItem>
+                  <SelectItem value={null}>{t("smokingLog.noSpecificBowl")}</SelectItem>
                   {selectedPipe.interchangeable_bowls.map((bowl, idx) => {
                     const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
                     return (
@@ -431,7 +443,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
                   <SelectValue placeholder={t("smokingLog.autoNone")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t("smokingLog.autoNone")}</SelectItem>
+                  <SelectItem value={null}>{t("smokingLog.autoNone")}</SelectItem>
                   {containers.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.container_name} — {c.quantity_grams ?? 0}g
