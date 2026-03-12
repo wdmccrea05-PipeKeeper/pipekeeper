@@ -81,6 +81,7 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
     } else {
       // Navigate to Curator with pre-filled prompt
       const params = new URLSearchParams();
+      params.set('tab', 'curator');
       params.set('prompt', whatIfPrompt);
       navigate(`${createPageUrl('Curator')}?${params.toString()}`);
     }
