@@ -29,7 +29,12 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     queryFn: async () => {
       if (!userEmail) return null;
       const rows = await base44.entities.UserProfile.filter({ user_email: userEmail });
-      return rows?.[0] || null;
+      // Select newest row if multiple exist
+      const sorted = [...(rows || [])].sort((a, b) => 
+        (Date.parse(b.updated_date ?? b.updated_at ?? b.created_date ?? "") || 0) -
+        (Date.parse(a.updated_date ?? a.updated_at ?? a.created_date ?? "") || 0)
+      );
+      return sorted?.[0] || null;
     },
     enabled: !!userEmail,
     staleTime: 30_000,
@@ -49,8 +54,13 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
       try {
         const profiles = await base44.entities.UserProfile.filter({ user_email: userEmail });
         if (cancelled) return;
-        if (profiles[0]) {
-          await safeUpdate('UserProfile', profiles[0].id, {
+        // Select newest row if multiple exist
+        const sorted = [...(profiles || [])].sort((a, b) => 
+          (Date.parse(b.updated_date ?? b.updated_at ?? b.created_date ?? "") || 0) -
+          (Date.parse(a.updated_date ?? a.updated_at ?? a.created_date ?? "") || 0)
+        );
+        if (sorted[0]) {
+          await safeUpdate('UserProfile', sorted[0].id, {
             last_seen: new Date().toISOString()
           }, userEmail);
         }

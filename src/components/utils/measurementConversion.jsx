@@ -33,7 +33,12 @@ export function MeasurementProvider({ children }) {
     (async () => {
       try {
         const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
-        const profile = profiles?.[0];
+        // Select newest row if multiple exist
+        const sorted = [...(profiles || [])].sort((a, b) => 
+          (Date.parse(b.updated_date ?? b.updated_at ?? b.created_date ?? "") || 0) -
+          (Date.parse(a.updated_date ?? a.updated_at ?? a.created_date ?? "") || 0)
+        );
+        const profile = sorted?.[0];
         if (profile?.measurement_preference) {
           setUseImperialState(profile.measurement_preference === 'imperial');
         }
@@ -49,7 +54,13 @@ export function MeasurementProvider({ children }) {
     mutationFn: async (preference) => {
       if (!user?.email) return;
       const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
-      const profile = profiles?.[0];
+      
+      // Select newest row if multiple exist
+      const sorted = [...(profiles || [])].sort((a, b) => 
+        (Date.parse(b.updated_date ?? b.updated_at ?? b.created_date ?? "") || 0) -
+        (Date.parse(a.updated_date ?? a.updated_at ?? a.created_date ?? "") || 0)
+      );
+      const profile = sorted?.[0];
       
       if (profile) {
         await base44.entities.UserProfile.update(profile.id, {

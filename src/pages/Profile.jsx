@@ -45,19 +45,72 @@ const PIPE_SHAPES = [
   "Prince", "Rhodesian", "Zulu", "Calabash",
 ];
 
-function pickBestProfile(rows = []) {
+function consolidateProfiles(rows = []) {
   if (!Array.isArray(rows) || rows.length === 0) return null;
-  const scored = rows.map((r) => {
-    const updated = Date.parse(r.updated_date ?? r.updated_at ?? r.updatedAt ?? "") || 0;
-    const created = Date.parse(r.created_at ?? r.createdAt ?? "") || 0;
-    const hasName = r.display_name ? 1 : 0;
-    const hasTos = r.tos_accepted_at ? 1 : 0;
-    const hasAvatar = r.avatar_url ? 1 : 0;
-    const score = hasTos * 10 + hasName * 5 + hasAvatar * 2 + (updated || created) / 1e12;
-    return { r, score };
+
+  // Sort by newest first (updated_date > updated_at > updatedAt > created_at > created_date)
+  const sorted = [...rows].sort((a, b) => {
+    const getTimestamp = (r) => {
+      const ts = Date.parse(r.updated_date ?? r.updated_at ?? r.updatedAt ?? r.created_at ?? r.created_date ?? "");
+      return ts || 0;
+    };
+    return getTimestamp(b) - getTimestamp(a);
   });
-  scored.sort((a, b) => b.score - a.score);
-  return scored[0].r;
+
+  const master = sorted[0];
+  const merged = { ...master };
+
+  // Merge fields field-by-field, taking first non-empty value from newest → oldest
+  const fieldsToPrioritize = [
+    'display_name', 'bio', 'avatar_url', 'city', 'state_province', 'country', 'postal_code',
+    'clenching_preference', 'smoke_duration_preference', 'pipe_size_preference', 'strength_preference', 'notes'
+  ];
+
+  for (const field of fieldsToPrioritize) {
+    for (const row of sorted) {
+      const val = row[field];
+      if (val !== null && val !== undefined && val !== '') {
+        merged[field] = val;
+        break;
+      }
+    }
+  }
+
+  // Handle booleans correctly (false is valid)
+  const boolFields = [
+    'show_location', 'is_public', 'allow_comments', 'enable_messaging', 'allow_web_lookups',
+    'privacy_hide_values', 'privacy_hide_inventory', 'privacy_hide_collection_counts', 'home_hide_collection_values',
+    'show_social_media'
+  ];
+
+  for (const field of boolFields) {
+    let hasSet = false;
+    for (const row of sorted) {
+      if (row[field] !== null && row[field] !== undefined) {
+        merged[field] = !!row[field];
+        hasSet = true;
+        break;
+      }
+    }
+    if (!hasSet) merged[field] = false;
+  }
+
+  // Handle arrays (preferred_blend_types, preferred_shapes)
+  const arrayFields = ['preferred_blend_types', 'preferred_shapes'];
+  for (const field of arrayFields) {
+    for (const row of sorted) {
+      if (Array.isArray(row[field]) && row[field].length > 0) {
+        merged[field] = row[field];
+        break;
+      }
+    }
+    if (!Array.isArray(merged[field])) merged[field] = [];
+  }
+
+  return {
+    masterId: master.id,
+    merged
+  };
 }
 
 export default function ProfilePage() {
@@ -70,24 +123,60 @@ export default function ProfilePage() {
   const email = useMemo(() => normEmail(user?.email), [user?.email]);
   const userId = user?.id || null;
 
-  const { data: profile, isLoading: profileLoading } = useQuery({
+  const { data: profileBundle, isLoading: profileLoading } = useQuery({
     queryKey: ["user-profile", userId, email],
     queryFn: async () => {
-      if (!email) return null;
+      if (!userId && !email) return null;
       try {
-        const records = await base44.entities.UserProfile.filter({
-          user_email: email,
+        let records = [];
+        
+        // Query by user_id if available
+        if (userId) {
+          try {
+            const byUserId = await base44.entities.UserProfile.filter({ user_id: userId });
+            records = [...records, ...byUserId];
+          } catch {
+            // Ignore error, try email next
+          }
+        }
+        
+        // Query by user_email if available
+        if (email) {
+          try {
+            const byEmail = await base44.entities.UserProfile.filter({ user_email: email });
+            records = [...records, ...byEmail];
+          } catch {
+            // Ignore error
+          }
+        }
+
+        // De-duplicate by id
+        const seen = new Set();
+        const uniqueRecords = records.filter((r) => {
+          if (seen.has(r.id)) return false;
+          seen.add(r.id);
+          return true;
         });
-        return pickBestProfile(records) || null;
+
+        // Dev logging for duplicates
+        if (import.meta.env.DEV && uniqueRecords.length > 1) {
+          console.warn("[Profile] Multiple UserProfile rows detected", uniqueRecords.map(r => r.id));
+        }
+
+        return consolidateProfiles(uniqueRecords) || null;
       } catch (e) {
         console.warn("[Profile] Could not load UserProfile:", e);
         return null;
       }
     },
-    enabled: !!email,
+    enabled: !!(userId || email),
     staleTime: 30_000,
     gcTime: 60_000,
   });
+
+  // Derive profile and profileId from bundle
+  const profile = profileBundle?.merged || null;
+  const profileId = profileBundle?.masterId || null;
 
   useEffect(() => {
     if (!profile || !import.meta.env.DEV) return;
@@ -186,8 +275,8 @@ export default function ProfilePage() {
         user_email: email || undefined,
       };
 
-      if (profile?.id) {
-        return safeUpdate("UserProfile", profile.id, payload, email);
+      if (profileId) {
+        return safeUpdate("UserProfile", profileId, payload, email);
       }
 
       return base44.entities.UserProfile.create(payload);
@@ -220,11 +309,21 @@ export default function ProfilePage() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file: croppedFile });
       setFormData((p) => ({ ...p, avatar_url: file_url }));
-      if (profile?.id) {
-        await safeUpdate("UserProfile", profile.id, { avatar_url: file_url }, email);
+      
+      if (profileId) {
+        await safeUpdate("UserProfile", profileId, { avatar_url: file_url }, email);
         await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
         await queryClient.invalidateQueries({ queryKey: ["public-profile", email] });
+      } else {
+        // No profile exists yet, create one with avatar
+        const newProfile = await base44.entities.UserProfile.create({
+          user_id: userId || undefined,
+          user_email: email || undefined,
+          avatar_url: file_url,
+        });
+        await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
       }
+      
       toast.success(t("profile.avatarUploadedSuccessfully"));
     } catch (err) {
       console.error("[Profile] avatar upload error:", err);
