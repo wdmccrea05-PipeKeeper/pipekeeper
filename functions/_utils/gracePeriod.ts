@@ -56,7 +56,7 @@ export function subscriptionGrantsPaidAccess(subscription: any): boolean {
 }
 
 /**
- * Get grace status information for UI display
+ * Get grace status information for logging/debugging
  */
 export function getGraceStatus(subscription: any): {
   inGrace: boolean;
@@ -95,4 +95,12 @@ export function getGraceStatus(subscription: any): {
   } catch {
     return { inGrace: false, daysRemaining: 0, gracePeriodExpired: true };
   }
+}
+
+export function stripeKeyErrorResponse(e: any) {
+  return {
+    ok: false,
+    error: "STRIPE_KEY_ERROR",
+    message: String(e?.message || e || "Stripe key configuration error")
+  };
 }
