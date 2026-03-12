@@ -33,10 +33,11 @@ export default function FeatureGate({
   }
 
   // Check tier if specified (for simple tier gating without feature key)
-  if (!feature && requiredTier) {
+  if (!feature && requiredTier && entitlements) {
     // FIX BUG-05: Legacy premium users (isLegacyPremium) get all pro features (grandfathered)
+    // Safely handle null entitlements object — fail closed to premium/pro gate
     const hasAccess = requiredTier === "premium" 
-      ? entitlements.tier !== "free" || entitlements.isFreeGrandfathered
+      ? (entitlements.tier !== "free" && entitlements.tier !== undefined) || entitlements.isFreeGrandfathered
       : entitlements.tier === "pro" || entitlements.isLegacyPremium; // legacy gets pro features
 
     if (!hasAccess) {
