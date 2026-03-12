@@ -57,27 +57,27 @@ export default function CollectionReportExporter({ user }) {
   const generatePipePDF = async () => {
     const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
-    
-    let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #111827;">
-      <h1 style="color: #1a2c42;">${t("reports.pipeCollectionReportTitle")}</h1>
-      <p style="color: #111827;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
-      <p style="color: #111827;"><strong>${t("reports.totalPipes")}:</strong> ${pipes.length}</p>
-      <p style="color: #111827;"><strong>${t("reports.totalValue")}:</strong> ${formatCurrency(totalValue)}</p>
-      <hr style="margin: 20px 0;">`;
-    
+
+    let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #1a1a1a;">
+      <h1 style="color: #0a0a0a; font-weight: bold; font-size: 28px;">${t("reports.pipeCollectionReportTitle")}</h1>
+      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
+      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.totalPipes")}:</strong> ${pipes.length}</p>
+      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.totalValue")}:</strong> ${formatCurrency(totalValue)}</p>
+      <hr style="margin: 20px 0; border-color: #ccc;">`;
+
     pipes.forEach(p => {
-      html += `<div style="margin-bottom: 30px; border-bottom: 1px solid #ddd; padding-bottom: 20px;">
-        <h3 style="color: #8b3a3a; margin-bottom: 10px;">${p.name || t("reports.unnamedPipe")}</h3>
+      html += `<div style="margin-bottom: 30px; border-bottom: 1px solid #ccc; padding-bottom: 20px;">
+        <h3 style="color: #1a1a1a; margin-bottom: 10px; font-weight: bold; font-size: 16px;">${p.name || t("reports.unnamedPipe")}</h3>
         <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 5px; width: 150px;"><strong>${t("pipesExtended.maker")}:</strong></td><td>${p.maker || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("pipesExtended.shape")}:</strong></td><td>${p.shape || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("reports.materials")}:</strong></td><td>${p.bowl_material || '-'} / ${p.stem_material || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("pipesExtended.condition")}:</strong></td><td>${p.condition || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("common.value")}:</strong></td><td>${formatCurrency(p.estimated_value || 0)}</td></tr>
+          <tr><td style="padding: 8px; width: 150px; font-weight: 600; color: #1a1a1a;"><strong>${t("pipesExtended.maker")}:</strong></td><td style="padding: 8px; color: #1a1a1a; font-weight: 500;">${p.maker || '-'}</td></tr>
+          <tr><td style="padding: 8px; font-weight: 600; color: #1a1a1a;"><strong>${t("pipesExtended.shape")}:</strong></td><td style="padding: 8px; color: #1a1a1a; font-weight: 500;">${p.shape || '-'}</td></tr>
+          <tr><td style="padding: 8px; font-weight: 600; color: #1a1a1a;"><strong>${t("reports.materials")}:</strong></td><td style="padding: 8px; color: #1a1a1a; font-weight: 500;">${p.bowl_material || '-'} / ${p.stem_material || '-'}</td></tr>
+          <tr><td style="padding: 8px; font-weight: 600; color: #1a1a1a;"><strong>${t("pipesExtended.condition")}:</strong></td><td style="padding: 8px; color: #1a1a1a; font-weight: 500;">${p.condition || '-'}</td></tr>
+          <tr><td style="padding: 8px; font-weight: 600; color: #1a1a1a;"><strong>${t("common.value")}:</strong></td><td style="padding: 8px; color: #1a1a1a; font-weight: 600;">${formatCurrency(p.estimated_value || 0)}</td></tr>
         </table>
       </div>`;
     });
-    
+
     html += `</div>`;
     return html;
   };
