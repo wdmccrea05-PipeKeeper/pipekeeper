@@ -1,5 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import { getEntitlementTier, isLegacyPremium as checkLegacyPremium } from "./premiumAccessResolver.ts";
+import { subscriptionGrantsPaidAccess, GRACE_PERIOD_DAYS } from "../_utils/gracePeriod.ts";
 
 function normEmail(email) {
   return String(email || "").trim().toLowerCase();
@@ -17,24 +18,9 @@ export async function requireEntitlement(req, requiredTier = "paid") {
 
   const email = normEmail(me.email);
 
-  // FIX BUG-08: Also accept "trial" and "past_due" (with grace period) to match frontend
+  // Use centralized grace period helper
   const isActive = (s) => {
-    const status = String(s?.status || "").toLowerCase();
-    if (status === "active" || status === "trialing" || status === "trial") return true;
-    
-    // past_due: allow if period hasn't ended (grace period)
-    if (status === "past_due") {
-      const periodEnd = s?.current_period_end;
-      return !periodEnd || new Date(periodEnd).getTime() > Date.now();
-    }
-    
-    // Allow incomplete ONLY if period_end is in future
-    if (status === "incomplete") {
-      const periodEnd = s?.current_period_end;
-      return periodEnd && new Date(periodEnd).getTime() > Date.now();
-    }
-    
-    return false;
+    return subscriptionGrantsPaidAccess(s);
   };
 
   // FIX BUG-06: Helper to check tier when requiredTier === "pro"

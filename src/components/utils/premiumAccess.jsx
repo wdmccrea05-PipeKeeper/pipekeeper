@@ -11,7 +11,13 @@
  *
  * We must NEVER block paid access just because Subscription entity fetch fails
  * or because a component used an old variable name.
+ * 
+ * Grace Period Policy:
+ * Failed payments (past_due, incomplete, unpaid) receive a 5-day grace period
+ * after current_period_end before paid access is suspended.
  */
+
+import { subscriptionGrantsPaidAccess } from "./gracePeriod";
 
 // FIX ISSUE-21: Replace overly broad substring matching with exact matching plus an explicit
 // allowlist of known synonyms to prevent arbitrary strings from being promoted to paid tiers.
@@ -60,15 +66,10 @@ export function getEntitlementTier(user, subscription) {
 
   // 3) Subscription entity / provider-derived
   if (subscription) {
-    const subStatus = (subscription.status || "").toLowerCase();
+    // Use grace period helper to determine if subscription grants access
+    const grantsAccess = subscriptionGrantsPaidAccess(subscription);
     
-    // FIX BUG-03: Check active status independently from expiration.
-    // Stripe webhooks may lag, so don't reject ACTIVE subscriptions with past period_end.
-    // Only reject if status is explicitly inactive (canceled, expired, incomplete_expired, etc).
-    const activeStatuses = ["active", "trialing", "trial"];
-    const isActiveStatus = activeStatuses.includes(subStatus);
-    
-    if (isActiveStatus) {
+    if (grantsAccess) {
       const fromSub =
         subscription?.tier ??
         subscription?.subscription_tier ??

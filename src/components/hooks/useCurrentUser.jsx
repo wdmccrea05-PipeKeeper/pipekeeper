@@ -102,11 +102,9 @@ export function useCurrentUser() {
 
         if (!subs || subs.length === 0) return null;
 
-        // Filter to valid active or in-progress plans
-        const valid = subs.filter((s) => {
-          const status = s.status || "";
-          return ["active", "trialing", "trial", "past_due", "incomplete"].includes(status);
-        });
+        // Filter to subscriptions that grant paid access (including grace period)
+        const { subscriptionGrantsPaidAccess } = await import("@/components/utils/gracePeriod");
+        const valid = subs.filter((s) => subscriptionGrantsPaidAccess(s));
 
         if (valid.length === 0) {
           // FIX BUG-04: When all subscriptions are in a non-active state (e.g. "canceled"

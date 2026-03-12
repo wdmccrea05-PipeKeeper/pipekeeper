@@ -204,9 +204,14 @@ Deno.serve(async (req) => {
       subscriptionRowId = created?.id || null;
     }
 
-    const status = String(best.status || "").toLowerCase();
-    const endOk = !periodEnd || new Date(periodEnd).getTime() > Date.now();
-    const isPaid = (status === "active" || status === "trialing") && endOk;
+    // Use centralized grace period logic
+    const { subscriptionGrantsPaidAccess } = await import("./_utils/gracePeriod.ts");
+    const reconstructedSub = {
+      status: best.status,
+      current_period_end: periodEnd,
+      tier: subTier,
+    };
+    const isPaid = subscriptionGrantsPaidAccess(reconstructedSub);
 
     const FOUNDING_CUTOFF = new Date("2026-03-31T00:00:00.000Z");
     const trialEnd = isoFromUnixSeconds(best.trial_end);

@@ -1,7 +1,8 @@
-// DEPLOYMENT: 2026-02-02T03:55:00Z - Backup Mode resilient
+// DEPLOYMENT: 2026-03-12 - Grace Period Implementation
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import Stripe from "npm:stripe@17.5.0";
+import { subscriptionGrantsPaidAccess } from "./_utils/gracePeriod.ts";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -367,7 +368,13 @@ Deno.serve(async (req) => {
           existing = byLegacy?.[0];
         }
 
-        const isPaid = sub.status === "active" || sub.status === "trialing";
+        // Use centralized grace period logic
+        const reconstructedSub = {
+          status: sub.status,
+          current_period_end: periodEnd,
+          tier: payload.tier,
+        };
+        const isPaid = subscriptionGrantsPaidAccess(reconstructedSub);
 
         const payload = {
           user_id: user_id || existing?.user_id || null,
