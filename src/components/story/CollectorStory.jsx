@@ -63,8 +63,8 @@ function getValueStyle(value) {
 
   if (isVeryLongSingleWord) {
     return {
-      fontSize: "clamp(2.4rem, 9vw, 3.6rem)",
-      lineHeight: 0.98,
+      fontSize: "clamp(2rem, 7.5vw, 3rem)",
+      lineHeight: 1.0,
       wordBreak: "normal",
       overflowWrap: "normal",
       hyphens: "none",
@@ -75,8 +75,8 @@ function getValueStyle(value) {
 
   if (isLongMultiWord) {
     return {
-      fontSize: "clamp(2.5rem, 9.5vw, 3.9rem)",
-      lineHeight: 0.96,
+      fontSize: "clamp(2rem, 8vw, 3.2rem)",
+      lineHeight: 1.0,
       wordBreak: "normal",
       overflowWrap: "break-word",
       hyphens: "none",
@@ -86,8 +86,8 @@ function getValueStyle(value) {
   }
 
   return {
-    fontSize: "clamp(2.8rem, 11vw, 4.2rem)",
-    lineHeight: 0.95,
+    fontSize: "clamp(2.4rem, 9vw, 3.4rem)",
+    lineHeight: 1.0,
     wordBreak: "normal",
     overflowWrap: "normal",
     hyphens: "none",
@@ -298,13 +298,17 @@ function StorySlide({ card, current, total, slideRef }) {
         </div>
 
         <div
-          className="font-extrabold tracking-tighter px-4 max-w-full"
+          className="font-extrabold tracking-tighter px-4 max-w-full flex items-center justify-center"
           style={{
             color: "#F5F1E7",
             textShadow: "0 3px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)",
             WebkitTextStroke: "0.35px rgba(255,255,255,0.08)",
             fontFamily: "'Georgia', serif",
             maxWidth: "100%",
+            minHeight: "90px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             ...getValueStyle(value),
           }}
         >
