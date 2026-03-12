@@ -241,7 +241,7 @@ export default function RotationPlanner({ user }) {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-blue-500" />
+                    <CheckCircle className="w-4 h-4" style={{ color: "rgba(180,140,75,0.8)" }} />
                     <h3 className="font-semibold text-sm" style={{ color: "#E0D8C8" }}>{t("tobacconist.inRegularRotation")} ({inRegularRotation.length})</h3>
                   </div>
                   {inRegularRotation.length > 3 && (
@@ -267,16 +267,16 @@ export default function RotationPlanner({ user }) {
                       className="block"
                     >
                       <div className="flex items-center justify-between p-3 rounded-lg transition-colors" style={{
-                        background: "linear-gradient(135deg, rgba(35,50,70,0.3), rgba(28,40,60,0.5))",
-                        border: "1px solid rgba(80,120,180,0.3)"
+                        background: "linear-gradient(135deg, rgba(50,40,30,0.3), rgba(40,30,20,0.5))",
+                        border: "1px solid rgba(140,105,65,0.3)"
                       }}>
                         <div>
                           <p className="font-medium text-sm" style={{ color: "#E0D8C8" }}>{pipe.name}</p>
-                          <p className="text-xs" style={{ color: "rgba(100,150,220,0.8)" }}>
+                          <p className="text-xs" style={{ color: "rgba(180,140,75,0.7)" }}>
                             {t("tobacconist.lastSmokedDaysAgo", {days: pipe.daysSince})}
                             </p>
                             </div>
-                            <Badge variant="outline" style={{ color: "rgba(100,150,220,0.9)", borderColor: "rgba(80,120,180,0.4)" }}>
+                            <Badge variant="outline" style={{ color: "rgba(180,140,75,0.9)", borderColor: "rgba(140,105,65,0.4)" }}>
                           {pipe.daysSince}d
                         </Badge>
                       </div>
