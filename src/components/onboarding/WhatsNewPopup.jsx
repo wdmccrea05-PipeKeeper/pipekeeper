@@ -26,8 +26,12 @@ export default function WhatsNewPopup({ user }) {
       return;
     }
 
-    // Show popup on first load after update
-    setIsOpen(true);
+    // Delay showing popup to avoid overwhelming user on login
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+    }, 2000); // 2 second delay
+
+    return () => clearTimeout(timer);
   }, [user?.email]);
 
   const handleDismiss = () => {

@@ -18,10 +18,33 @@ Deno.serve(async (req) => {
 
     const smokingLogs = await base44.entities.SmokingLog.filter({ created_by: user.email });
     
+    if (!smokingLogs || smokingLogs.length === 0) {
+      return Response.json({ 
+        error: 'No smoking log entries available to export. Please log some sessions first.' 
+      }, { status: 400 });
+    }
+    
     const filteredLogs = smokingLogs.filter(log => {
-      const logDate = new Date(log.date);
-      return logDate >= new Date(startDate) && logDate <= new Date(endDate);
-    }).sort((a, b) => new Date(b.date) - new Date(a.date));
+      try {
+        const logDate = new Date(log.date);
+        if (isNaN(logDate.getTime())) return false;
+        return logDate >= new Date(startDate) && logDate <= new Date(endDate);
+      } catch {
+        return false;
+      }
+    }).sort((a, b) => {
+      try {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      } catch {
+        return 0;
+      }
+    });
+
+    if (filteredLogs.length === 0) {
+      return Response.json({ 
+        error: 'No smoking sessions found in the selected date range. Try expanding your date range.' 
+      }, { status: 400 });
+    }
 
     const doc = new jsPDF();
     doc.setFontSize(16);
@@ -45,11 +68,20 @@ Deno.serve(async (req) => {
         y = 20;
       }
 
-      const logDate = new Date(log.date).toLocaleDateString();
+      let logDate = 'Invalid Date';
+      try {
+        const parsed = new Date(log.date);
+        if (!isNaN(parsed.getTime())) {
+          logDate = parsed.toLocaleDateString();
+        }
+      } catch {
+        // use fallback
+      }
+      
       doc.text(logDate, 20, y);
       doc.text(log.pipe_name || 'Unknown', 60, y);
       doc.text(log.blend_name || 'Unknown', 110, y);
-      doc.text(String(log.bowls_smoked || 1), 160, y);
+      doc.text(String(log.bowls_used || log.bowls_smoked || 1), 160, y);
 
       // Notes are intentionally included in personal exports (not shown on public profiles)
       if (log.notes) {

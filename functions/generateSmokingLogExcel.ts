@@ -18,18 +18,53 @@ Deno.serve(async (req) => {
 
     const smokingLogs = await base44.entities.SmokingLog.filter({ created_by: user.email });
     
+    if (!smokingLogs || smokingLogs.length === 0) {
+      return Response.json({ 
+        error: 'No smoking log entries available to export. Please log some sessions first.' 
+      }, { status: 400 });
+    }
+    
     const filteredLogs = smokingLogs.filter(log => {
-      const logDate = new Date(log.date);
-      return logDate >= new Date(startDate) && logDate <= new Date(endDate);
-    }).sort((a, b) => new Date(b.date) - new Date(a.date));
+      try {
+        const logDate = new Date(log.date);
+        if (isNaN(logDate.getTime())) return false;
+        return logDate >= new Date(startDate) && logDate <= new Date(endDate);
+      } catch {
+        return false;
+      }
+    }).sort((a, b) => {
+      try {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      } catch {
+        return 0;
+      }
+    });
 
-    const rows = filteredLogs.map(log => ({
-      Date: new Date(log.date).toLocaleDateString(),
-      Pipe: log.pipe_name || 'Unknown',
-      Tobacco: log.blend_name || 'Unknown',
-      Bowls: log.bowls_smoked || 1,
-      Notes: log.notes || ''
-    }));
+    if (filteredLogs.length === 0) {
+      return Response.json({ 
+        error: 'No smoking sessions found in the selected date range. Try expanding your date range.' 
+      }, { status: 400 });
+    }
+
+    const rows = filteredLogs.map(log => {
+      let dateStr = 'Invalid Date';
+      try {
+        const parsed = new Date(log.date);
+        if (!isNaN(parsed.getTime())) {
+          dateStr = parsed.toLocaleDateString();
+        }
+      } catch {
+        // use fallback
+      }
+      
+      return {
+        Date: dateStr,
+        Pipe: log.pipe_name || 'Unknown',
+        Tobacco: log.blend_name || 'Unknown',
+        Bowls: log.bowls_used || log.bowls_smoked || 1,
+        Notes: log.notes || ''
+      };
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
     const workbook = XLSX.utils.book_new();

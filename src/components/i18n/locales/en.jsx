@@ -7,6 +7,34 @@ const docs = {
   // inviteFull, appleSupport, termsOfService, privacyPolicy → moved to en.docs.js
   // The i18n index merges docs files so all keys remain available.
 
+  story: {
+    shareYourStory: "SHARE YOUR STORY",
+    appName: "PipeKeeper",
+    tagline: "Track. Organize. Enjoy.",
+    sessionsLogged: "smoking sessions logged",
+    pipes: "pipes",
+    blends: "blends",
+    collectorPersonality: "Collector Personality",
+    collectionGrowth: "Collection Growth",
+  },
+
+  usageLogReport: {
+    featureName: "Smoking Log Export",
+    featureDescription: "Export your smoking history to Excel or PDF",
+    title: "Smoking Log Report",
+    startDate: "Start Date",
+    endDate: "End Date",
+    downloadPdf: "PDF",
+    downloadExcel: "Excel",
+    failedPdf: "Unable to generate PDF export. Please try again.",
+    failedExcel: "Unable to generate Excel export. Please try again.",
+    failedPdfDetail: "PDF export failed: {{error}}",
+    failedExcelDetail: "Excel export failed: {{error}}",
+    noDataGenerated: "No export data was generated. Please try again.",
+    pdfDownloaded: "PDF export downloaded successfully!",
+    excelDownloaded: "Excel export downloaded successfully!",
+  },
+
   helpBubbles: {
     pipeCollectionTitle: "Pipe Collection",
     pipeCollectionDesc: "Add and manage the pipes in your collection. Attach photos, track condition and value, and log which blends you enjoy in each pipe.",

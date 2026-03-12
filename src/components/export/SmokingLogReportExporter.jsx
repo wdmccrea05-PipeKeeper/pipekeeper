@@ -35,6 +35,17 @@ export default function SmokingLogReportExporter({ user }) {
         startDate,
         endDate
       });
+      
+      if (response.status === 400 && response.data?.error) {
+        toast.error(response.data.error);
+        return;
+      }
+      
+      if (!response.data) {
+        toast.error(t("usageLogReport.noDataGenerated"));
+        return;
+      }
+      
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -44,9 +55,11 @@ export default function SmokingLogReportExporter({ user }) {
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
+      toast.success(t("usageLogReport.pdfDownloaded"));
     } catch (error) {
-      console.error('PDF export failed:', error);
-      toast.error(t("usageLogReport.failedPdf"));
+      console.error('[SmokingLogExport] PDF generation error:', error);
+      const errorMsg = error?.response?.data?.error || error?.message || 'Unknown error';
+      toast.error(t("usageLogReport.failedPdfDetail", { error: errorMsg }));
     } finally {
       setLoading(false);
     }
@@ -59,6 +72,17 @@ export default function SmokingLogReportExporter({ user }) {
         startDate,
         endDate
       });
+      
+      if (response.status === 400 && response.data?.error) {
+        toast.error(response.data.error);
+        return;
+      }
+      
+      if (!response.data) {
+        toast.error(t("usageLogReport.noDataGenerated"));
+        return;
+      }
+      
       const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -68,9 +92,11 @@ export default function SmokingLogReportExporter({ user }) {
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
+      toast.success(t("usageLogReport.excelDownloaded"));
     } catch (error) {
-      console.error('Excel export failed:', error);
-      toast.error(t("usageLogReport.failedExcel"));
+      console.error('[SmokingLogExport] Excel generation error:', error);
+      const errorMsg = error?.response?.data?.error || error?.message || 'Unknown error';
+      toast.error(t("usageLogReport.failedExcelDetail", { error: errorMsg }));
     } finally {
       setLoading(false);
     }

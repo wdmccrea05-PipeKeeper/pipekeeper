@@ -177,9 +177,9 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
 
   // Closing share card
   cards.push({
-    title: "SHARE YOUR STORY",
-    value: "PipeKeeper",
-    sub: "Track. Organize. Enjoy.",
+    title: t("story.shareYourStory", { defaultValue: "SHARE YOUR STORY" }),
+    value: t("story.appName", { defaultValue: "PipeKeeper" }),
+    sub: t("story.tagline", { defaultValue: "Track. Organize. Enjoy." }),
     accent: "#F59E0B",
     icon: Heart,
     bgImage: pipes.find(p => p.photos?.length)?.photos?.[0] || 

@@ -426,21 +426,24 @@ function StoryCard({
 
           {/* Main stat — huge typography */}
           <div
-            className="font-extrabold leading-tight tracking-tighter break-words max-w-full px-4"
+            className="font-extrabold leading-tight tracking-tighter break-words max-w-full px-6"
             style={{
               fontSize: isClosingCard 
-                ? "clamp(3rem, 11vw, 4.2rem)" 
-                : value && value.length > 20 
-                ? "clamp(2rem, 8vw, 3.2rem)" 
-                : "clamp(2.5rem, 10vw, 3.8rem)",
+                ? "clamp(2.8rem, 10vw, 4rem)" 
+                : value && String(value).length > 25 
+                ? "clamp(1.8rem, 7vw, 2.8rem)" 
+                : value && String(value).length > 15
+                ? "clamp(2.2rem, 8.5vw, 3.4rem)"
+                : "clamp(2.5rem, 9.5vw, 3.8rem)",
               color: "#F5F1E7",
               textShadow: `0 3px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)`,
               WebkitTextStroke: "0.4px rgba(255,255,255,0.08)",
               fontFamily: "'Georgia', serif",
               wordBreak: "normal",
-              overflowWrap: "normal",
-              hyphens: "none",
+              overflowWrap: "break-word",
+              hyphens: "auto",
               letterSpacing: isClosingCard ? "-0.02em" : "-0.01em",
+              textAlign: 'center',
             }}
           >
             {value ?? "—"}
@@ -449,11 +452,14 @@ function StoryCard({
           {/* Sub text */}
           {sub && (
             <div
-              className="text-base font-semibold leading-snug px-2"
+              className="text-base font-semibold leading-snug px-6"
               style={{ 
                 color: `rgba(180,140,75,0.85)`, 
                 fontFamily: "'Georgia', serif",
                 fontSize: isClosingCard ? "clamp(0.9rem, 3.5vw, 1.1rem)" : "1rem",
+                wordBreak: 'normal',
+                overflowWrap: 'break-word',
+                textAlign: 'center',
               }}
             >
               {sub}

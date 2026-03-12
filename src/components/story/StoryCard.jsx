@@ -199,7 +199,7 @@ function StoryCardLayout({ icon: Icon, title, value, descriptor, accent }) {
         <Icon className="w-8 h-8" style={{ color: accent }} />
       </div>
 
-      <div className="text-center space-y-3">
+      <div className="text-center space-y-3 px-6">
         <p
           className="text-xs font-semibold uppercase tracking-widest"
           style={{ color: accent }}
@@ -208,14 +208,20 @@ function StoryCardLayout({ icon: Icon, title, value, descriptor, accent }) {
         </p>
 
         <h2
-          className="text-5xl font-bold leading-tight"
-          style={{ color: '#E0D8C8' }}
+          className="font-bold leading-tight break-words max-w-full"
+          style={{ 
+            fontSize: value && String(value).length > 20 ? 'clamp(2rem, 9vw, 3.5rem)' : 'clamp(2.5rem, 10vw, 5rem)',
+            color: '#E0D8C8',
+            wordBreak: 'normal',
+            overflowWrap: 'break-word',
+            hyphens: 'auto'
+          }}
         >
           {value}
         </h2>
 
         <p
-          className="text-sm"
+          className="text-sm px-2"
           style={{ color: 'rgba(224,216,200,0.7)' }}
         >
           {descriptor}
@@ -238,17 +244,25 @@ function JourneyCardLayout({ title, message, accent }) {
         <BookOpen className="w-8 h-8" style={{ color: accent }} />
       </div>
 
-      <div className="text-center space-y-4 max-w-xs">
+      <div className="text-center space-y-4 px-6 max-w-md">
         <h2
-          className="text-3xl font-bold"
-          style={{ color: '#E0D8C8' }}
+          className="text-3xl font-bold break-words"
+          style={{ 
+            color: '#E0D8C8',
+            wordBreak: 'normal',
+            overflowWrap: 'break-word'
+          }}
         >
           {title}
         </h2>
 
         <p
-          className="text-base leading-relaxed"
-          style={{ color: 'rgba(224,216,200,0.8)' }}
+          className="text-base leading-relaxed break-words"
+          style={{ 
+            color: 'rgba(224,216,200,0.8)',
+            wordBreak: 'normal',
+            overflowWrap: 'break-word'
+          }}
         >
           {message}
         </p>
@@ -262,17 +276,25 @@ function MilestoneCardLayout({ title, message, emoji, accent }) {
     <>
       <div className="text-6xl mb-6">{emoji}</div>
 
-      <div className="text-center space-y-4 max-w-xs">
+      <div className="text-center space-y-4 px-6 max-w-md">
         <h2
-          className="text-3xl font-bold"
-          style={{ color: accent }}
+          className="text-3xl font-bold break-words"
+          style={{ 
+            color: accent,
+            wordBreak: 'normal',
+            overflowWrap: 'break-word'
+          }}
         >
           {title}
         </h2>
 
         <p
-          className="text-lg leading-relaxed"
-          style={{ color: 'rgba(224,216,200,0.85)' }}
+          className="text-lg leading-relaxed break-words"
+          style={{ 
+            color: 'rgba(224,216,200,0.85)',
+            wordBreak: 'normal',
+            overflowWrap: 'break-word'
+          }}
         >
           {message}
         </p>

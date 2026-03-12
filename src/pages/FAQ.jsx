@@ -40,6 +40,8 @@ function AppleFAQ() {
             <li>{t("faqExtended.whatCanDoList3")}</li>
             <li>{t("faqExtended.whatCanDoList4")}</li>
             <li>{t("faqExtended.whatCanDoList5")}</li>
+            <li>{t("faqExtended.whatCanDoList6")}</li>
+            <li>{t("faqExtended.whatCanDoList7")}</li>
           </ul>
         </CardContent>
       </Card>
