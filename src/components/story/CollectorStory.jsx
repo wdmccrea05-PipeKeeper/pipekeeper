@@ -1,292 +1,170 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import { X, ChevronLeft, ChevronRight, Share2, Download } from "lucide-react";
-import { cn } from "@/lib/utils";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
+import { X, ChevronLeft, ChevronRight, Share2 } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { PIPE_SILHOUETTE_URL } from "@/components/utils/collectionConstants";
 
-/**
- * CollectorStory — Instagram-style swipeable story viewer
- * Generates 6-10 portrait cards from user's collection data
- */
-export default function CollectorStory({ isOpen, onClose, storyCards }) {
-  const { t } = useTranslation();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
-  const cardRef = useRef(null);
-  const progressIntervalRef = useRef(null);
-
-  // Reset to first card when reopened
-  useEffect(() => {
-    if (isOpen) {
-      setCurrentIndex(0);
-    }
-  }, [isOpen]);
-
-  const totalCards = storyCards?.length || 0;
-  const currentCard = storyCards?.[currentIndex];
-
-  // Auto-advance every 5 seconds
-  useEffect(() => {
-    if (!isOpen || !totalCards) return;
-
-    progressIntervalRef.current = setInterval(() => {
-      setCurrentIndex((prev) => {
-        if (prev >= totalCards - 1) {
-          clearInterval(progressIntervalRef.current);
-          return prev;
-        }
-        return prev + 1;
-      });
-    }, 5000);
-
-    return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
-    };
-  }, [isOpen, currentIndex, totalCards]);
-
-  // Touch gesture handlers for mobile swipe
-  const handleTouchStart = (e) => {
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
-
-    if (isLeftSwipe && currentIndex < totalCards - 1) {
-      goToNext();
-    }
-    if (isRightSwipe && currentIndex > 0) {
-      goToPrevious();
-    }
-
-    // Clean up touch state
-    setTouchStart(0);
-    setTouchEnd(0);
-  };
-
-  const goToNext = () => {
-    if (currentIndex < totalCards - 1) {
-      setCurrentIndex(currentIndex + 1);
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
-    }
-  };
-
-  const goToPrevious = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
-    }
-  };
-
-  const handleShare = async () => {
-    const node = cardRef.current;
-    if (!node) return;
-
-    try {
-      const canvas = await html2canvas(node, {
-        backgroundColor: "#0e1520",
-        scale: 3,
-        useCORS: true,
-        logging: false,
-      });
-
-      const dataUrl = canvas.toDataURL("image/png");
-
-      // Try native share API first
-      if (navigator.share && navigator.canShare) {
-        try {
-          const blob = await (await fetch(dataUrl)).blob();
-          const file = new File([blob], `pipekeeper-story-${currentIndex + 1}.png`, { type: "image/png" });
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({ 
-              files: [file], 
-              title: "My PipeKeeper Story",
-              text: currentCard?.title || "Check out my collection!"
-            });
-            return;
-          }
-        } catch (shareErr) {
-          if (shareErr?.name === "AbortError") return;
-        }
-      }
-
-      // Fallback to download
-      const link = document.createElement("a");
-      link.download = `pipekeeper-story-${currentIndex + 1}.png`;
-      link.href = dataUrl;
-      link.click();
-      toast.success(t("story.downloadSuccess", { defaultValue: "Story card saved!" }));
-    } catch (err) {
-      toast.error(t("story.shareError", { defaultValue: "Could not share story" }));
-    }
-  };
-
-  if (!isOpen || !totalCards) return null;
-
+function ArtifactTexture({ accent = "#C87941", uid = "story" }) {
+  const safeId = `story-tex-${accent.replace("#", "")}-${uid}`;
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ 
-        background: "rgba(0,0,0,0.95)", 
-        backdropFilter: "blur(12px)",
-        touchAction: "pan-y pinch-zoom"
-      }}
-      onClick={onClose}
-    >
-      {/* Progress bars */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-1 z-10" style={{ width: "min(340px, 90vw)" }}>
-        {storyCards.map((_, idx) => (
-          <div
-            key={idx}
-            className="h-0.5 flex-1 rounded-full bg-white/20 overflow-hidden"
-          >
-            <div
-              className="h-full bg-white transition-all duration-300"
-              style={{
-                width: idx < currentIndex ? "100%" : idx === currentIndex ? "100%" : "0%",
-                opacity: idx <= currentIndex ? 1 : 0.3,
-              }}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Close button */}
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors"
-        style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
-        aria-label={t("story.close", { defaultValue: "Close story" })}
-      >
-        <X className="w-5 h-5" />
-      </button>
-
-      {/* Navigation arrows (desktop) */}
-      {currentIndex > 0 && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            goToPrevious();
-          }}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all hidden sm:flex"
-          aria-label={t("story.previous", { defaultValue: "Previous card" })}
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-      )}
-      {currentIndex < totalCards - 1 && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            goToNext();
-          }}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all hidden sm:flex"
-          aria-label={t("story.next", { defaultValue: "Next card" })}
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-      )}
-
-      {/* Story card */}
-      <div
-        onClick={(e) => e.stopPropagation()}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className="relative"
-        style={{ touchAction: "pan-y" }}
-      >
-        <StoryCard
-          {...currentCard}
-          cardRef={cardRef}
-          onShare={handleShare}
-          cardNumber={currentIndex + 1}
-          totalCards={totalCards}
-          t={t}
-        />
-      </div>
-
-      {/* Card counter */}
-      <div 
-        className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-xs font-medium"
-        role="status"
-        aria-live="polite"
-      >
-        {currentIndex + 1} / {totalCards}
-      </div>
-    </div>
+    <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id={safeId} x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+          <circle cx="8" cy="13" r="0.48" fill={accent} fillOpacity="0.07" />
+          <circle cx="23" cy="5" r="0.32" fill={accent} fillOpacity="0.05" />
+          <circle cx="42" cy="19" r="0.52" fill={accent} fillOpacity="0.065" />
+          <circle cx="58" cy="8" r="0.38" fill={accent} fillOpacity="0.07" />
+          <circle cx="74" cy="25" r="0.44" fill={accent} fillOpacity="0.055" />
+          <circle cx="92" cy="11" r="0.34" fill={accent} fillOpacity="0.06" />
+          <circle cx="105" cy="30" r="0.52" fill={accent} fillOpacity="0.07" />
+          <circle cx="14" cy="39" r="0.38" fill={accent} fillOpacity="0.06" />
+          <circle cx="34" cy="45" r="0.48" fill={accent} fillOpacity="0.055" />
+          <circle cx="55" cy="52" r="0.34" fill={accent} fillOpacity="0.07" />
+          <circle cx="77" cy="41" r="0.52" fill={accent} fillOpacity="0.06" />
+          <circle cx="96" cy="58" r="0.38" fill={accent} fillOpacity="0.055" />
+          <circle cx="111" cy="47" r="0.30" fill={accent} fillOpacity="0.07" />
+          <circle cx="7" cy="65" r="0.48" fill={accent} fillOpacity="0.06" />
+          <circle cx="28" cy="72" r="0.38" fill={accent} fillOpacity="0.055" />
+          <circle cx="49" cy="80" r="0.52" fill={accent} fillOpacity="0.07" />
+          <circle cx="68" cy="67" r="0.34" fill={accent} fillOpacity="0.06" />
+          <circle cx="88" cy="85" r="0.48" fill={accent} fillOpacity="0.055" />
+          <circle cx="103" cy="74" r="0.38" fill={accent} fillOpacity="0.07" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill={`url(#${safeId})`} />
+    </svg>
   );
 }
 
-/**
- * StoryCard — Individual portrait card with full-bleed imagery
- */
-function StoryCard({ 
-  title, 
-  value, 
-  sub, 
-  accent = "#C87941", 
-  icon: Icon, 
-  heroImage, 
-  bgImage, 
-  silhouetteType,
-  cardRef,
-  onShare,
-  cardNumber,
-  totalCards,
-  customContent,
-  isClosingCard = false,
-  t,
-}) {
+function LeafSilhouette({ className, style }) {
+  return (
+    <svg className={className} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style={style}>
+      <path
+        d="M50 5 C20 5, 5 30, 5 55 C5 75, 20 92, 50 95 C80 92, 95 75, 95 55 C95 30, 80 5, 50 5Z"
+        fill="white"
+      />
+      <line x1="50" y1="95" x2="50" y2="5" stroke="white" strokeWidth="2" />
+      <line x1="50" y1="40" x2="20" y2="25" stroke="white" strokeWidth="1.5" />
+      <line x1="50" y1="55" x2="15" y2="50" stroke="white" strokeWidth="1.5" />
+      <line x1="50" y1="70" x2="20" y2="65" stroke="white" strokeWidth="1.5" />
+      <line x1="50" y1="40" x2="80" y2="25" stroke="white" strokeWidth="1.5" />
+      <line x1="50" y1="55" x2="85" y2="50" stroke="white" strokeWidth="1.5" />
+      <line x1="50" y1="70" x2="80" y2="65" stroke="white" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function getValueStyle(value) {
+  const text = String(value ?? "");
+  const hasSpaces = /\s/.test(text);
+  const isVeryLongSingleWord = !hasSpaces && text.length >= 10;
+  const isLongMultiWord = hasSpaces && text.length >= 22;
+
+  if (isVeryLongSingleWord) {
+    return {
+      fontSize: "clamp(2.4rem, 9vw, 3.6rem)",
+      lineHeight: 0.98,
+      wordBreak: "normal",
+      overflowWrap: "normal",
+      hyphens: "none",
+      textWrap: "balance",
+      whiteSpace: "normal",
+    };
+  }
+
+  if (isLongMultiWord) {
+    return {
+      fontSize: "clamp(2.5rem, 9.5vw, 3.9rem)",
+      lineHeight: 0.96,
+      wordBreak: "normal",
+      overflowWrap: "break-word",
+      hyphens: "none",
+      textWrap: "balance",
+      whiteSpace: "normal",
+    };
+  }
+
+  return {
+    fontSize: "clamp(2.8rem, 11vw, 4.2rem)",
+    lineHeight: 0.95,
+    wordBreak: "normal",
+    overflowWrap: "normal",
+    hyphens: "none",
+    textWrap: "balance",
+    whiteSpace: "normal",
+  };
+}
+
+async function captureAndShare(node, filename) {
+  const canvas = await html2canvas(node, {
+    backgroundColor: "#0b0908",
+    scale: 3,
+    useCORS: true,
+    logging: false,
+  });
+  const dataUrl = canvas.toDataURL("image/png");
+
+  if (navigator.share && navigator.canShare) {
+    try {
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], `${filename}.png`, { type: "image/png" });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: "PipeKeeper Story" });
+        return;
+      }
+    } catch (err) {
+      if (err?.name === "AbortError") return;
+    }
+  }
+
+  const link = document.createElement("a");
+  link.download = `${filename}.png`;
+  link.href = dataUrl;
+  link.click();
+}
+
+function StorySlide({ card, current, total, slideRef }) {
+  const { t } = useTranslation();
+  const Icon = card?.icon || Share2;
+  const accent = card?.accent || "#C87941";
+  const artifactImage = card?.artifactImage || null;
+  const heroImage = card?.heroImage || null;
+  const silhouetteType = card?.silhouetteType || "pipe";
+  const value = card?.value ?? "—";
+  const title = card?.title ?? "";
+  const sub = card?.sub ?? "";
   const heroRotation = silhouetteType === "pipe" ? "8deg" : "-5deg";
 
   return (
     <div
-      ref={cardRef}
+      ref={slideRef}
       className="relative overflow-hidden"
       style={{
         width: "min(340px, 90vw)",
-        height: "min(600px, 85vh)",
-        borderRadius: "16px",
-        background: `linear-gradient(165deg, rgba(32, 22, 15, 0.98), rgba(42, 30, 20, 0.95))`,
-        border: `1px solid rgba(120, 90, 65, 0.4)`,
-        boxShadow: `0 4px 16px rgba(0,0,0,0.7), inset 0 1px 0 rgba(180,140,100,0.1)`,
+        height: "min(560px, 85vh)",
+        borderRadius: "20px",
+        background: "linear-gradient(165deg, rgba(32, 22, 15, 0.98), rgba(42, 30, 20, 0.95))",
+        border: "1px solid rgba(120, 90, 65, 0.42)",
+        boxShadow: "0 8px 26px rgba(0,0,0,0.72), inset 0 1px 0 rgba(180,140,100,0.12)",
         display: "flex",
         flexDirection: "column",
       }}
     >
-      {/* Background imagery */}
-      {bgImage && (
+      {artifactImage && (
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage: `url(${bgImage})`,
+            backgroundImage: `url(${artifactImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            filter: "blur(30px) brightness(0.3) saturate(0.65) sepia(0.25)",
+            filter: "blur(28px) brightness(0.28) saturate(0.62) sepia(0.22)",
             opacity: 0.95,
             transform: "scale(1.12)",
           }}
         />
       )}
 
-      {/* Hero spotlight */}
       {heroImage ? (
         <div
           className="absolute left-0 right-0 pointer-events-none overflow-hidden"
@@ -295,7 +173,7 @@ function StoryCard({
           <img
             src={heroImage}
             alt=""
-            loading="eager"
+            loading="lazy"
             style={{
               position: "absolute",
               left: "50%",
@@ -305,55 +183,59 @@ function StoryCard({
               maxWidth: "none",
               width: "auto",
               objectFit: "contain",
-              filter: `drop-shadow(0 0 20px rgba(180,140,75,0.4)) drop-shadow(0 8px 24px rgba(0,0,0,0.7))`,
+              filter: `drop-shadow(0 0 18px ${accent}55) drop-shadow(0 8px 24px rgba(0,0,0,0.7))`,
             }}
           />
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to bottom, rgba(28,18,10,1) 0%, rgba(28,18,10,0.2) 18%, transparent 40%, rgba(28,18,10,0.2) 78%, rgba(20,12,8,0.90) 100%)",
+              background:
+                "linear-gradient(to bottom, rgba(28,18,10,1) 0%, rgba(28,18,10,0.2) 18%, transparent 40%, rgba(28,18,10,0.2) 78%, rgba(20,12,8,0.90) 100%)",
             }}
           />
         </div>
       ) : (
-        bgImage && (
-          <div
-            className="absolute left-0 right-0 bottom-0 pointer-events-none overflow-hidden"
-            style={{ height: "55%" }}
-          >
+        <>
+          {silhouetteType === "pipe" && (
             <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `url(${bgImage})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center 60%",
-                filter: "blur(6px) brightness(0.4) saturate(0.75) sepia(0.2)",
-              }}
+              className="absolute pointer-events-none"
+              style={{ bottom: "72px", right: "-16px", width: "190px", height: "190px", opacity: 0.075 }}
+            >
+              <img
+                src={PIPE_SILHOUETTE_URL}
+                alt=""
+                className="w-full h-full object-contain"
+                style={{ filter: "brightness(0) invert(1)" }}
+              />
+            </div>
+          )}
+          {silhouetteType === "leaf" && (
+            <LeafSilhouette
+              className="absolute pointer-events-none"
+              style={{ bottom: "75px", right: "-8px", width: "170px", height: "170px", opacity: 0.08 }}
             />
-            <div
-              className="absolute inset-0"
-              style={{
-                background: "linear-gradient(to bottom, rgba(28,18,10,1) 0%, rgba(28,18,10,0.55) 35%, transparent 75%)",
-              }}
-            />
-          </div>
-        )
+          )}
+        </>
       )}
 
-      {/* Gradient overlay */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: bgImage
-            ? `linear-gradient(165deg, rgba(28,18,10,0.92) 0%, rgba(28,18,10,0.70) 30%, rgba(28,18,10,0.35) 60%, transparent 90%)`
-            : `linear-gradient(165deg, rgba(32,22,15,0.85) 0%, rgba(35,24,16,0.65) 30%, rgba(40,28,18,0.3) 70%, transparent 100%)`,
+          background:
+            "linear-gradient(165deg, rgba(28,18,10,0.92) 0%, rgba(28,18,10,0.70) 32%, rgba(28,18,10,0.35) 60%, transparent 92%)",
         }}
       />
 
-      {/* Grain texture */}
-      <GrainTexture accent={accent} />
+      <ArtifactTexture accent={accent} uid={`slide-${current}`} />
 
-      {/* Ambient glow blobs */}
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{
+          background: `linear-gradient(90deg, transparent 0%, ${accent}aa 50%, transparent 100%)`,
+          boxShadow: `0 0 7px ${accent}55`,
+        }}
+      />
+
       <div
         className="absolute pointer-events-none"
         style={{
@@ -362,170 +244,197 @@ function StoryCard({
           width: "280px",
           height: "280px",
           borderRadius: "50%",
-          background: `radial-gradient(circle, rgba(180,140,75,0.2) 0%, transparent 65%)`,
+          background: `radial-gradient(circle, ${accent}28 0%, transparent 65%)`,
         }}
       />
 
-      {/* Top glow bar */}
-      <div
-        className="absolute top-0 left-0 right-0 h-[3px]"
-        style={{
-          background: `linear-gradient(90deg, transparent 0%, rgba(180,140,75,0.6) 50%, transparent 100%)`,
-          boxShadow: `0 0 6px rgba(180,140,75,0.4)`,
-        }}
-      />
-
-      {/* Header branding */}
-      <div className="relative flex items-center justify-between px-7 pt-7 pb-0">
+      <div className="relative flex items-center justify-between px-7 pt-7">
         <div
-          className="text-[10px] uppercase tracking-[0.22em] font-bold"
-          style={{ color: `rgba(180,140,75,0.75)` }}
+          className="text-[10px] uppercase tracking-[0.22em] font-bold whitespace-nowrap"
+          style={{ color: "rgba(180,140,75,0.72)" }}
         >
           PipeKeeper
         </div>
+
         <div
-          className="text-[9px] uppercase tracking-[0.14em] font-semibold px-2 py-0.5 rounded-full"
+          className="text-[10px] font-semibold px-3 py-1 rounded-full"
           style={{
-            background: `rgba(100,70,45,0.25)`,
-            border: `1px solid rgba(120,90,65,0.4)`,
-            color: `rgba(180,140,75,0.9)`,
+            background: "rgba(100,70,45,0.16)",
+            border: "1px solid rgba(120,90,65,0.35)",
+            color: "rgba(180,140,75,0.92)",
           }}
         >
-          {cardNumber} / {totalCards}
+          {current + 1} / {total}
         </div>
       </div>
 
-      {/* Main content */}
-      {customContent ? (
-        <div className="relative flex-1 flex items-center justify-center px-7">
-          {customContent}
-        </div>
-      ) : (
+      <div className="relative flex flex-col items-center px-7 text-center gap-5 flex-1 pt-6">
         <div
-          className="relative flex flex-col items-center px-7 text-center gap-5"
+          className="flex items-center justify-center"
           style={{
-            justifyContent: heroImage ? "flex-start" : "center",
-            flex: 1,
-            paddingTop: heroImage ? "1.25rem" : undefined,
+            width: "76px",
+            height: "76px",
+            borderRadius: "20px",
+            background: "linear-gradient(135deg, rgba(100,70,45,0.5) 0%, rgba(80,55,35,0.6) 100%)",
+            border: "1.5px solid rgba(120,90,65,0.5)",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.2)",
           }}
         >
-          {/* Icon orb */}
-          {Icon && (
-            <div
-              className="flex items-center justify-center"
-              style={{
-                width: heroImage ? "64px" : "90px",
-                height: heroImage ? "64px" : "90px",
-                borderRadius: "12px",
-                background: `linear-gradient(135deg, rgba(100,70,45,0.5) 0%, rgba(80,55,35,0.6) 100%)`,
-                border: `1.5px solid rgba(120,90,65,0.5)`,
-                boxShadow: `0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.2)`,
-              }}
-            >
-              <Icon
-                style={{
-                  width: heroImage ? "30px" : "44px",
-                  height: heroImage ? "30px" : "44px",
-                  color: accent,
-                  filter: `drop-shadow(0 0 8px rgba(180,140,75,0.7))`,
-                }}
-              />
-            </div>
-          )}
-
-          {/* Category label */}
-          <div
-            className="text-[11px] uppercase tracking-[0.22em] font-bold"
-            style={{ color: `rgba(180,140,75,0.9)`, fontFamily: "'Georgia', serif" }}
-          >
-            {title}
-          </div>
-
-          {/* Main stat — huge typography */}
-          <div
-            className="font-extrabold leading-tight tracking-tighter break-words max-w-full px-6"
+          <Icon
             style={{
-              fontSize: isClosingCard 
-                ? "clamp(2.8rem, 10vw, 4rem)" 
-                : value && String(value).length > 25 
-                ? "clamp(1.8rem, 7vw, 2.8rem)" 
-                : value && String(value).length > 15
-                ? "clamp(2.2rem, 8.5vw, 3.4rem)"
-                : "clamp(2.5rem, 9.5vw, 3.8rem)",
-              color: "#F5F1E7",
-              textShadow: `0 3px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)`,
-              WebkitTextStroke: "0.4px rgba(255,255,255,0.08)",
-              fontFamily: "'Georgia', serif",
-              wordBreak: "break-word",
-              whiteSpace: "normal",
+              width: "34px",
+              height: "34px",
+              color: accent,
+              filter: `drop-shadow(0 0 8px ${accent}88)`,
+            }}
+          />
+        </div>
+
+        <div
+          className="text-[11px] uppercase tracking-[0.22em] font-bold whitespace-nowrap"
+          style={{ color: "rgba(180,140,75,0.86)", fontFamily: "'Georgia', serif" }}
+        >
+          {title}
+        </div>
+
+        <div
+          className="font-extrabold tracking-tighter px-4 max-w-full"
+          style={{
+            color: "#F5F1E7",
+            textShadow: "0 3px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)",
+            WebkitTextStroke: "0.35px rgba(255,255,255,0.08)",
+            fontFamily: "'Georgia', serif",
+            maxWidth: "100%",
+            ...getValueStyle(value),
+          }}
+        >
+          {value}
+        </div>
+
+        {sub ? (
+          <div
+            className="text-base font-semibold leading-snug px-4 max-w-[92%]"
+            style={{
+              color: "rgba(180,140,75,0.82)",
+              wordBreak: "normal",
+              overflowWrap: "break-word",
               hyphens: "none",
-              letterSpacing: isClosingCard ? "-0.02em" : "-0.01em",
-              textAlign: 'center',
+              textWrap: "balance",
             }}
           >
-            {value ?? "—"}
+            {sub}
           </div>
+        ) : null}
+      </div>
 
-          {/* Sub text */}
-          {sub && (
-            <div
-              className="text-base font-semibold leading-snug px-6"
-              style={{ 
-                color: `rgba(180,140,75,0.85)`, 
-                fontFamily: "'Georgia', serif",
-                fontSize: isClosingCard ? "clamp(0.9rem, 3.5vw, 1.1rem)" : "1rem",
-                wordBreak: 'normal',
-                overflowWrap: 'break-word',
-                textAlign: 'center',
-              }}
-            >
-              {sub}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Bottom action bar */}
       <div
-        className="relative flex items-center justify-center gap-3 px-7 pb-7 pt-4"
-        style={{ borderTop: `1px solid rgba(120,90,65,0.25)` }}
+        className="relative flex items-center justify-center px-7 pb-7 pt-5"
+        style={{ borderTop: "1px solid rgba(120,90,65,0.22)" }}
       >
         <button
-          onClick={onShare}
+          type="button"
           className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-95"
           style={{
-            background: `linear-gradient(135deg, rgba(180,140,75,1) 0%, rgba(160,120,65,1) 100%)`,
+            background: "linear-gradient(135deg, rgba(180,140,75,1) 0%, rgba(160,120,65,1) 100%)",
             color: "rgba(28,18,10,1)",
-            boxShadow: `0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)`,
-            border: `1px solid rgba(140,105,60,0.8)`,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)",
+            border: "1px solid rgba(140,105,60,0.8)",
           }}
-          aria-label={t("story.shareCard", { defaultValue: "Share this card" })}
+          onClick={() => {
+            const evt = new CustomEvent("pipekeeper-story-share");
+            window.dispatchEvent(evt);
+          }}
         >
           <Share2 className="w-4 h-4" />
-          {t("story.share", { defaultValue: "Share" })}
+          {t("common.share", "Share")}
         </button>
       </div>
     </div>
   );
 }
 
-function GrainTexture({ accent }) {
-  const patternId = `story-grain-${accent.replace("#", "")}`;
-  
+export default function CollectorStory({ isOpen, onClose, storyCards = [] }) {
+  const { t } = useTranslation();
+  const [index, setIndex] = useState(0);
+  const slideRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setIndex(0);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    function onKey(e) {
+      if (e.key === "Escape") onClose?.();
+      if (e.key === "ArrowRight") setIndex((i) => Math.min(i + 1, storyCards.length - 1));
+      if (e.key === "ArrowLeft") setIndex((i) => Math.max(i - 1, 0));
+    }
+
+    async function onShare() {
+      if (!slideRef.current) return;
+      try {
+        await captureAndShare(slideRef.current, `pipekeeper-story-${index + 1}`);
+      } catch (err) {
+        if (err?.name !== "AbortError") {
+          toast.error(t("insights.shareError", "Failed to share card"));
+        }
+      }
+    }
+
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("pipekeeper-story-share", onShare);
+
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pipekeeper-story-share", onShare);
+    };
+  }, [isOpen, index, onClose, storyCards.length, t]);
+
+  if (!isOpen || !storyCards.length) return null;
+
+  const current = storyCards[Math.max(0, Math.min(index, storyCards.length - 1))];
+
   return (
-    <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id={patternId} x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
-          <circle cx="8" cy="13" r="0.48" fill={accent} fillOpacity="0.075" />
-          <circle cx="23" cy="5" r="0.32" fill={accent} fillOpacity="0.055" />
-          <circle cx="42" cy="19" r="0.52" fill={accent} fillOpacity="0.07" />
-          <circle cx="58" cy="8" r="0.38" fill={accent} fillOpacity="0.075" />
-          <circle cx="74" cy="25" r="0.44" fill={accent} fillOpacity="0.06" />
-          <circle cx="92" cy="11" r="0.34" fill={accent} fillOpacity="0.07" />
-          <circle cx="105" cy="30" r="0.52" fill={accent} fillOpacity="0.075" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill={`url(#${patternId})`} />
-    </svg>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors"
+        style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
+      >
+        <X className="w-5 h-5" />
+      </button>
+
+      <div className="relative flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          onClick={() => setIndex((i) => Math.max(i - 1, 0))}
+          disabled={index === 0}
+          className="w-11 h-11 rounded-full flex items-center justify-center disabled:opacity-30"
+          style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
+          aria-label={t("common.previous", "Previous")}
+        >
+          <ChevronLeft className="w-5 h-5 text-white" />
+        </button>
+
+        <StorySlide card={current} current={index} total={storyCards.length} slideRef={slideRef} />
+
+        <button
+          type="button"
+          onClick={() => setIndex((i) => Math.min(i + 1, storyCards.length - 1))}
+          disabled={index === storyCards.length - 1}
+          className="w-11 h-11 rounded-full flex items-center justify-center disabled:opacity-30"
+          style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
+          aria-label={t("common.next", "Next")}
+        >
+          <ChevronRight className="w-5 h-5 text-white" />
+        </button>
+      </div>
+    </div>
   );
 }
