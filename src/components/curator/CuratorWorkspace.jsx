@@ -372,7 +372,7 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
             className="flex-1 bg-white/5 border-white/10 text-[#E0D8C8] placeholder:text-[#E0D8C8]/40"
           />
           <Button
-            onClick={sendMessage}
+            onClick={() => sendMessage(null)}
             disabled={!input.trim() || sending || initializing || !threadId}
             style={{
               background: "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))",
