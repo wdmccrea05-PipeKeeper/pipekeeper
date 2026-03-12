@@ -64,8 +64,13 @@ export default function LedgerPanel({ label, value, sub, icon: Icon, accent = "#
 
         {/* Label */}
         <div 
-          className="text-[10px] uppercase tracking-[0.12em] font-semibold"
-          style={{ color: `rgba(180, 140, 75, 0.75)` }}
+          className="text-[10px] uppercase tracking-[0.12em] font-semibold leading-tight"
+          style={{ 
+            color: `rgba(180, 140, 75, 0.75)`,
+            whiteSpace: "normal",
+            wordWrap: "break-word",
+            hyphens: "none"
+          }}
         >
           {label}
         </div>

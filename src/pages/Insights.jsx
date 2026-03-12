@@ -554,8 +554,13 @@ function HighlightCard({
 
         <div className="space-y-2">
           <div
-            className="text-[10px] uppercase tracking-[0.16em] font-bold"
-            style={{ color: "rgba(180,140,75,0.9)" }}
+            className="text-[10px] uppercase tracking-[0.16em] font-bold leading-tight"
+            style={{ 
+              color: "rgba(180,140,75,0.9)",
+              whiteSpace: "normal",
+              wordWrap: "break-word",
+              hyphens: "none"
+            }}
           >
             {title}
           </div>
@@ -567,6 +572,9 @@ function HighlightCard({
                 "0 2px 10px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)",
               WebkitTextStroke: "0.4px rgba(255,255,255,0.12)",
               fontFamily: "'Georgia', serif",
+              whiteSpace: "normal",
+              wordWrap: "break-word",
+              hyphens: "none"
             }}
           >
             {value ?? "—"}
