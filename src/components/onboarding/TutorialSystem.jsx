@@ -157,8 +157,8 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
               onClick={() => {
                 if (currentStep < steps.length - 1) {
                   step.action?.();
-                  // Only increment if not navigating away
-                  setTimeout(() => setCurrentStep(currentStep + 1), 100);
+                  // Increment after action completes
+                  requestAnimationFrame(() => setCurrentStep(currentStep + 1));
                 } else {
                   step.action?.();
                   if (user?.email) {
