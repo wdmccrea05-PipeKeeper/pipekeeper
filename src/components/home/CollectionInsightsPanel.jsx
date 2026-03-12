@@ -264,7 +264,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
                         <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.reports")}</h3>
                         <InfoTooltip text={t("insights.reportsTooltip")} />
                       </div>
-                      <p className="text-sm text-[#A4B0C4]">{t("insights.reportsSubtitle")}</p>
+                      <p className="text-sm text-[#E0D8C8]/70">{t("insights.reportsSubtitle")}</p>
                     </div>
                     <SmokingLogReportExporter user={user} />
                     <AgingReportExporter user={user} />
