@@ -6,6 +6,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { base44 } from "@/api/base44Client";
 import { filterAiEligibleItems } from "@/components/platform/aiEligibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { sanitizeRecommendationText } from "@/components/utils/aiTextNormalization";
 import {
   Brain,
   RotateCcw,
@@ -634,16 +635,19 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
       .sort((a, b) => b.score - a.score)
       .slice(0, 3)
       .map((p) => ({
-        pipe_name: p.pipe_name,
-        tobacco_name: p.tobacco_name,
+        pipe_name: sanitizeRecommendationText(p.pipe_name, t.language || 'en'),
+        tobacco_name: sanitizeRecommendationText(p.tobacco_name, t.language || 'en'),
         score: p.score,
         blend_type: p.blend_type,
         // Natural-language reason — avoids technical AI terminology
-        reason: p.blend_type
-          ? t("collectionIntelligence.pairingReasonBlendType", {
-              blendType: p.blend_type,
-            })
-          : t("collectionIntelligence.pairingReasonDefault"),
+        reason: sanitizeRecommendationText(
+          p.blend_type
+            ? t("collectionIntelligence.pairingReasonBlendType", {
+                blendType: p.blend_type,
+              })
+            : t("collectionIntelligence.pairingReasonDefault"),
+          t.language || 'en'
+        ),
       }));
 
     // ── AI Updates feed ──────────────────────────────────────────────────────
