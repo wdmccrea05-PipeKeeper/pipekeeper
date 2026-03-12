@@ -140,8 +140,9 @@ export function isFoundingMember(user = null) {
   return user?.isFoundingMember === true;
 }
 
-// Legacy Premium check (for features that are Pro-only but grandfathered for old Premium)
-const LEGACY_PREMIUM_CUTOFF = "2026-02-01T00:00:00.000Z";
+// CANONICAL founding member / legacy premium cutoff
+// Users who became paid subscribers BEFORE this date get grandfathered access to Pro features
+export const FOUNDING_MEMBER_CUTOFF = new Date("2026-02-01T00:00:00.000Z");
 
 export function isLegacyPremium(subscription = null) {
   if (!subscription) return false;
@@ -154,9 +155,8 @@ export function isLegacyPremium(subscription = null) {
   if (!startDate) return false;
   
   try {
-    const cutoff = new Date(LEGACY_PREMIUM_CUTOFF);
     const start = new Date(startDate);
-    return start < cutoff;
+    return start < FOUNDING_MEMBER_CUTOFF;
   } catch {
     return false;
   }
