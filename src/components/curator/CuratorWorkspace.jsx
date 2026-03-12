@@ -127,8 +127,11 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
   });
   
   // Apply pre-filled prompt from URL or insight + auto-send
+  // Only execute once per unique prompt
+  const preFilledPromptRef = useRef(null);
   useEffect(() => {
-    if (preFilledPrompt?.trim() && threadId && !sending) {
+    if (preFilledPrompt?.trim() && threadId && !sending && preFilledPromptRef.current !== preFilledPrompt) {
+      preFilledPromptRef.current = preFilledPrompt;
       sendMessage(preFilledPrompt);
       // Mark prompt as consumed after submission
       onPromptConsumedRef.current?.();
