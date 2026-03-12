@@ -9,14 +9,27 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const CHECKLIST_KEY = 'pk_quickstart_dismissed';
 
+// Safe localStorage wrapper for onboarding state
+function safeGetChecklist() {
+  try {
+    const val = localStorage.getItem(CHECKLIST_KEY);
+    return val === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function safeSetChecklist(dismissed) {
+  try {
+    localStorage.setItem(CHECKLIST_KEY, dismissed ? 'true' : 'false');
+  } catch {
+    // Storage unavailable — fail gracefully (checklist will re-show on reload)
+  }
+}
+
 export default function QuickStartChecklist({ pipes, blends, hasNotes, hasViewedInsights }) {
   const { t } = useTranslation();
-  const [dismissed, setDismissed] = useState(false);
-
-  useEffect(() => {
-    const isDismissed = localStorage.getItem(CHECKLIST_KEY);
-    setDismissed(isDismissed === 'true');
-  }, []);
+  const [dismissed, setDismissed] = useState(() => safeGetChecklist());
 
   const items = [
     { id: 'pipe', label: t("quickStart.addPipe"), done: pipes.length > 0, url: createPageUrl('Pipes') },
@@ -32,7 +45,7 @@ export default function QuickStartChecklist({ pipes, blends, hasNotes, hasViewed
   useEffect(() => {
     if (allComplete && !dismissed) {
       const timer = setTimeout(() => {
-        localStorage.setItem(CHECKLIST_KEY, 'true');
+        safeSetChecklist(true);
         setDismissed(true);
       }, 3000);
       return () => clearTimeout(timer);
@@ -40,7 +53,7 @@ export default function QuickStartChecklist({ pipes, blends, hasNotes, hasViewed
   }, [allComplete, dismissed]);
 
   const handleDismiss = () => {
-    localStorage.setItem(CHECKLIST_KEY, 'true');
+    safeSetChecklist(true);
     setDismissed(true);
   };
 
