@@ -138,6 +138,7 @@ function CollectionOptimizerInner({
   improvedWhatIf = false, // kept for compatibility
   preFilledPrompt = "",
   onPromptConsumed,
+  onExploreWithCurator,
 }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -1649,26 +1650,41 @@ ${englishUserText}
                                 )}
 
                                 <div className="flex flex-wrap gap-2 mt-3">
-                                   <Button
-                                     size="sm"
-                                     className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                                     onClick={() => applySpecialization(spec.pipe_id, spec.recommended_blend_types, spec.bowl_variant_id)}
-                                   >
-                                     <Check className="w-4 h-4 mr-1" />
-                                     {t("tobacconist.adoptThisChange")}
-                                   </Button>
+                                  <Button
+                                    size="sm"
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                    onClick={() => applySpecialization(spec.pipe_id, spec.recommended_blend_types, spec.bowl_variant_id)}
+                                  >
+                                    <Check className="w-4 h-4 mr-1" />
+                                    {t("tobacconist.adoptThisChange")}
+                                  </Button>
 
-                                   <Button
-                                     size="sm"
-                                     variant="outline"
-                                     className="border-amber-300 text-amber-700 hover:bg-amber-50"
-                                     onClick={() => setShowFeedbackFor(showFeedbackFor === variantKey ? null : variantKey)}
-                                     disabled={loading || whatIfLoading}
-                                   >
-                                     <HelpCircle className="w-4 h-4 mr-1" />
-                                     {showFeedbackFor === variantKey ? t("common.cancel") : t("tobacconist.askClarification")}
-                                   </Button>
-                                 </div>
+                                  {onExploreWithCurator && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                                      onClick={() => onExploreWithCurator({
+                                        prompt: `Why should I change ${spec.pipe_name || 'this pipe'} to ${spec.recommended_blend_types?.join(', ')}? ${spec.reasoning}`,
+                                        rationale: spec.reasoning
+                                      })}
+                                    >
+                                      <Sparkles className="w-4 h-4 mr-1" />
+                                      {t("curator.exploreWithCurator")}
+                                    </Button>
+                                  )}
+
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                                    onClick={() => setShowFeedbackFor(showFeedbackFor === variantKey ? null : variantKey)}
+                                    disabled={loading || whatIfLoading}
+                                  >
+                                    <HelpCircle className="w-4 h-4 mr-1" />
+                                    {showFeedbackFor === variantKey ? t("common.cancel") : t("tobacconist.askClarification")}
+                                  </Button>
+                                </div>
 
                                 {showFeedbackFor === variantKey && (
                                   <motion.div
