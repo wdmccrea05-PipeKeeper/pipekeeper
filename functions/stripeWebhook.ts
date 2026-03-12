@@ -2,7 +2,7 @@
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import Stripe from "npm:stripe@17.5.0";
-import { subscriptionGrantsPaidAccess } from "./_utils/gracePeriod.ts";
+import { subscriptionGrantsPaidAccess } from "./_auth/entitlementHelpers.ts";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 

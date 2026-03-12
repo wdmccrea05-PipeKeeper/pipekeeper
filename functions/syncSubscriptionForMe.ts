@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
     }
 
     // Use centralized grace period logic
-    const { subscriptionGrantsPaidAccess } = await import("./_utils/gracePeriod.ts");
+    const { subscriptionGrantsPaidAccess } = await import("./_auth/entitlementHelpers.ts");
     const reconstructedSub = {
       status: best.status,
       current_period_end: periodEnd,

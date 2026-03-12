@@ -1,6 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getEntitlementTier, isLegacyPremium as checkLegacyPremium } from "./premiumAccessResolver.ts";
-import { subscriptionGrantsPaidAccess, GRACE_PERIOD_DAYS } from "../_utils/gracePeriod.ts";
+import { getEntitlementTier, isLegacyPremium as checkLegacyPremium, subscriptionGrantsPaidAccess } from "./entitlementHelpers.ts";
 
 function normEmail(email) {
   return String(email || "").trim().toLowerCase();
