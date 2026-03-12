@@ -9,8 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, X, Loader2, Camera, Search, Edit, ArrowLeftRight, Bot } from "lucide-react";
-import InfoTooltip from "@/components/ui/InfoTooltip";
+import { Upload, X, Loader2, Camera, Search, Edit, ArrowLeftRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import PipeSearch from "@/components/ai/PipeSearch";
@@ -76,8 +75,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     photos: [],
     stamping_photos: [],
     is_favorite: false,
-    interchangeable_bowls: [],
-    ai_excluded: false
+    interchangeable_bowls: []
   });
   const [hasInterchangeableBowls, setHasInterchangeableBowls] = useState(
     pipe?.interchangeable_bowls?.length > 0 || false
@@ -318,7 +316,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#243548] px-2 text-[#E0D8C8]/70">{t("formsExtended.orEnterManually")}</span>
+              <span className="bg-[rgba(20,15,11,0.98)] px-2 text-[#D7C9B2]/70">{t("formsExtended.orEnterManually")}</span>
             </div>
           </div>
         </>
@@ -913,30 +911,10 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </CardContent>
       </Card>
 
-      {/* ===== SECTION: Collector Settings ===== */}
-      <Card className="border-[#E0D8C8]/15">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8] flex items-center gap-2">
-            <Bot className="w-5 h-5 flex-shrink-0" />
-            {t("formsExtended.collectorSettings")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Switch
-              checked={!formData.ai_excluded}
-              onCheckedChange={(v) => handleChange('ai_excluded', !v)}
-            />
-            <Label className="break-words">{t("formsExtended.includeInAI")}</Label>
-            <InfoTooltip text={t("formsExtended.includeInAITooltip")} />
-          </div>
-        </CardContent>
-      </Card>
-
       {/* ===== SECTION: Form Actions ===== */}
       {/* Actions */}
-      <div className="sticky bottom-0 bg-gradient-to-t from-[#243548] to-[#243548]/80 backdrop-blur-sm border-t border-[#E0D8C8]/15 p-4 sm:p-6 flex gap-3 justify-end -mx-6 sm:-mx-8 px-6 sm:px-8">
-        <Button type="button" variant="outline" onClick={onCancel} className="bg-white/10 border-white/30 text-[#E0D8C8] hover:bg-white/20">
+      <div className="sticky bottom-0 bg-[linear-gradient(180deg,rgba(22,18,14,0.94)_0%,rgba(18,14,11,0.97)_100%)] backdrop-blur-sm border-t border-[rgba(140,105,65,0.18)] p-4 sm:p-6 flex gap-3 justify-end -mx-6 sm:-mx-8 px-6 sm:px-8">
+        <Button type="button" variant="outline" onClick={onCancel} className="bg-black/15 border-[rgba(140,105,65,0.35)] text-[#E0D8C8] hover:bg-white/5">
           {t("common.cancel")}
         </Button>
         <Button 
