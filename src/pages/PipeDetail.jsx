@@ -235,7 +235,8 @@ export default function PipeDetailPage() {
 
   if (!pipe || error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+      <div className="min-h-screen" style={{ background: "linear-gradient(135deg, rgba(15,11,8,0.95), rgba(20,15,10,0.95))" }}>
+        <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
@@ -256,7 +257,7 @@ export default function PipeDetailPage() {
   const photoCount = (pipe?.photos || []).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+    <div className="min-h-screen" style={{ background: "linear-gradient(135deg, rgba(15,11,8,0.95), rgba(20,15,10,0.95))" }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <a href={createPageUrl('Pipes')}>
@@ -368,7 +369,11 @@ export default function PipeDetailPage() {
           {/* Photo Gallery */}
           <div className="space-y-4">
             <motion.div 
-              className="aspect-[16/9] rounded-2xl overflow-hidden bg-gradient-to-br from-stone-100 to-stone-200 shadow-xl cursor-pointer"
+              className="aspect-[16/9] rounded-2xl overflow-hidden shadow-xl cursor-pointer"
+              style={{
+                background: "linear-gradient(145deg, rgba(50,40,30,0.7), rgba(40,28,20,0.9))",
+                border: "1px solid rgba(140,105,65,0.3)"
+              }}
               layoutId={`pipe-${pipe.id}`}
               onClick={() => allPhotos.length > 0 && setExpandedImage(allPhotos[selectedPhoto])}
             >
@@ -513,7 +518,7 @@ export default function PipeDetailPage() {
                 </Badge>
               )}
               {pipe.condition && (
-                <Badge className="bg-blue-700 text-blue-100 border-blue-600/50">
+                <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
                   {t(`conditions.${pipe.condition}`, pipe.condition)}
                 </Badge>
               )}
