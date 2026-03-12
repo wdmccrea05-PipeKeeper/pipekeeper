@@ -12,33 +12,33 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
   // Helper: get primary image from pipe
   const getPipeImage = (pipe) => {
     if (!pipe) return null;
-    return pipe.photos?.[0] || pipe.primary_photo || pipe.image || null;
+    return pipe?.photos?.[0] || pipe?.primary_photo || pipe?.image || null;
   };
 
   // Helper: get primary image from blend
   const getBlendImage = (blend) => {
     if (!blend) return null;
-    return blend.logo || blend.photo || blend.tin_image || blend.brand_logo || null;
+    return blend?.logo || blend?.photo || blend?.tin_image || blend?.brand_logo || null;
   };
 
   // Compute usage stats
   const pipeUsage = {};
   const blendUsage = {};
-  smokingLogs.forEach((l) => {
+  (smokingLogs || []).forEach((l) => {
     if (l?.pipe_id) {
-      pipeUsage[l.pipe_id] = (pipeUsage[l.pipe_id] || 0) + getBowlsUsed(l);
+      pipeUsage[l.pipe_id] = (pipeUsage[l.pipe_id] || 0) + (getBowlsUsed(l) || 1);
     }
     if (l?.blend_id) {
-      blendUsage[l.blend_id] = (blendUsage[l.blend_id] || 0) + getBowlsUsed(l);
+      blendUsage[l.blend_id] = (blendUsage[l.blend_id] || 0) + (getBowlsUsed(l) || 1);
     }
   });
 
   // Most smoked pipe
   const mostUsedPipe = (() => {
     if (!Object.keys(pipeUsage).length) return null;
-    const topId = Object.entries(pipeUsage).sort((a, b) => b[1] - a[1])[0]?.[0];
-    const pipe = pipes.find((p) => p.id === topId);
-    return pipe ? { pipe, count: pipeUsage[topId] } : null;
+    const topId = Object.entries(pipeUsage).sort((a, b) => (b[1] || 0) - (a[1] || 0))[0]?.[0];
+    const pipe = (pipes || []).find((p) => p?.id === topId);
+    return pipe ? { pipe, count: pipeUsage[topId] || 0 } : null;
   })();
 
   if (mostUsedPipe) {
@@ -58,9 +58,9 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
   // Favorite blend
   const mostUsedBlend = (() => {
     if (!Object.keys(blendUsage).length) return null;
-    const topId = Object.entries(blendUsage).sort((a, b) => b[1] - a[1])[0]?.[0];
-    const blend = blends.find((b) => b.id === topId);
-    return blend ? { blend, count: blendUsage[topId] } : null;
+    const topId = Object.entries(blendUsage).sort((a, b) => (b[1] || 0) - (a[1] || 0))[0]?.[0];
+    const blend = (blends || []).find((b) => b?.id === topId);
+    return blend ? { blend, count: blendUsage[topId] || 0 } : null;
   })();
 
   if (mostUsedBlend) {
@@ -78,9 +78,9 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
   }
 
   // Longest streak
-  const longestStreak = computeLongestStreak(smokingLogs);
+  const longestStreak = computeLongestStreak(smokingLogs || []);
   if (longestStreak > 0) {
-    const randomPipeImg = pipes.find(p => p.photos?.length)?.photos?.[0] || null;
+    const randomPipeImg = (pipes || []).find(p => p?.photos?.length)?.photos?.[0] || null;
     cards.push({
       title: t("insights.highlightLongestStreak", { defaultValue: "Longest Streak" }),
       value: `${longestStreak} days`,
@@ -93,13 +93,13 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
   }
 
   // Total sessions
-  if (smokingLogs.length > 0) {
-    const randomImg = pipes.find(p => p.photos?.length)?.photos?.[0] || 
-                      blends.find(b => b.logo || b.photo)?.logo || 
-                      blends.find(b => b.logo || b.photo)?.photo || null;
+  if ((smokingLogs || []).length > 0) {
+    const randomImg = (pipes || []).find(p => p?.photos?.length)?.photos?.[0] || 
+                      (blends || []).find(b => b?.logo || b?.photo)?.logo || 
+                      (blends || []).find(b => b?.logo || b?.photo)?.photo || null;
     cards.push({
       title: t("insights.highlightTotalSessions", { defaultValue: "Total Sessions" }),
-      value: smokingLogs.length,
+      value: (smokingLogs || []).length,
       sub: t("story.sessionsLogged", { defaultValue: "smoking sessions logged" }),
       accent: "#22D3EE",
       icon: Flame,
@@ -109,13 +109,13 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
   }
 
   // Collection value
-  if (totalCollectionValue > 0) {
-    const randomImg = pipes.find(p => p.photos?.length)?.photos?.[0] || 
-                      blends.find(b => b.logo || b.photo)?.logo || null;
+  if ((totalCollectionValue || 0) > 0) {
+    const randomImg = (pipes || []).find(p => p?.photos?.length)?.photos?.[0] || 
+                      (blends || []).find(b => b?.logo || b?.photo)?.logo || null;
     cards.push({
       title: t("insights.highlightCellarValue", { defaultValue: "Collection Value" }),
-      value: formatCurrency(Math.round(totalCollectionValue)),
-      sub: `${pipes.length} ${t("story.pipes", { defaultValue: "pipes" })} · ${blends.length} ${t("story.blends", { defaultValue: "blends" })}`,
+      value: formatCurrency(Math.round(totalCollectionValue || 0)),
+      sub: `${(pipes || []).length} ${t("story.pipes", { defaultValue: "pipes" })} · ${(blends || []).length} ${t("story.blends", { defaultValue: "blends" })}`,
       accent: "#C4963A",
       icon: TrendingUp,
       bgImage: randomImg,
@@ -125,19 +125,19 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
 
   // Most valuable pipe
   const mostValuablePipe = (() => {
-    if (!pipes.length) return null;
-    const top = [...pipes].sort(
+    if (!(pipes || []).length) return null;
+    const top = [...(pipes || [])].sort(
       (a, b) => (Number(b?.estimated_value) || 0) - (Number(a?.estimated_value) || 0)
     )[0];
-    return top?.estimated_value ? top : null;
+    return (top?.estimated_value && Number(top.estimated_value) > 0) ? top : null;
   })();
 
   if (mostValuablePipe) {
     const img = getPipeImage(mostValuablePipe);
     cards.push({
       title: t("insights.highlightMostValuable", { defaultValue: "Most Valuable Pipe" }),
-      value: mostValuablePipe.name,
-      sub: formatCurrency(mostValuablePipe.estimated_value),
+      value: mostValuablePipe?.name || "Unknown",
+      sub: formatCurrency(Number(mostValuablePipe?.estimated_value) || 0),
       accent: "#C0392B",
       icon: Award,
       heroImage: img,
@@ -147,43 +147,43 @@ export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionVa
   }
 
   // Collector personality (simple trait based on collection)
-  if (pipes.length > 3 || blends.length > 5) {
-    const trait = getCollectorPersonality(pipes, blends, smokingLogs);
+  if ((pipes || []).length > 3 || (blends || []).length > 5) {
+    const trait = getCollectorPersonality(pipes || [], blends || [], smokingLogs || []);
     cards.push({
       title: t("story.collectorPersonality", { defaultValue: "Collector Personality" }),
-      value: trait.label,
-      sub: trait.description,
+      value: trait?.label || "Explorer",
+      sub: trait?.description || "Building your collection",
       accent: "#A78BFA",
       icon: Sparkles,
-      bgImage: pipes.find(p => p.photos?.length)?.photos?.[0] || null,
+      bgImage: (pipes || []).find(p => p?.photos?.length)?.photos?.[0] || null,
       silhouetteType: "pipe",
     });
   }
 
   // Growth insight
-  if (pipes.length > 0 || blends.length > 0) {
-    const insight = getGrowthInsight(pipes, blends);
+  if ((pipes || []).length > 0 || (blends || []).length > 0) {
+    const insight = getGrowthInsight(pipes || [], blends || []);
     cards.push({
       title: t("story.collectionGrowth", { defaultValue: "Collection Growth" }),
-      value: insight.label,
-      sub: insight.description,
+      value: insight?.label || "Just Beginning",
+      sub: insight?.description || "Every collection starts somewhere",
       accent: "#10B981",
       icon: BarChart3,
-      bgImage: blends.find(b => b.logo || b.photo)?.logo || 
-               blends.find(b => b.logo || b.photo)?.photo || null,
+      bgImage: (blends || []).find(b => b?.logo || b?.photo)?.logo || 
+               (blends || []).find(b => b?.logo || b?.photo)?.photo || null,
       silhouetteType: "leaf",
     });
   }
 
   // Closing share card
   cards.push({
-    title: t("story.shareYourStory", { defaultValue: "SHARE YOUR STORY" }),
+    title: t("story.shareYourStory", { defaultValue: "Share Your Story" }),
     value: t("story.appName", { defaultValue: "PipeKeeper" }),
     sub: t("story.tagline", { defaultValue: "Track. Organize. Enjoy." }),
     accent: "#F59E0B",
     icon: Heart,
-    bgImage: pipes.find(p => p.photos?.length)?.photos?.[0] || 
-             blends.find(b => b.logo || b.photo)?.logo || null,
+    bgImage: (pipes || []).find(p => p?.photos?.length)?.photos?.[0] || 
+             (blends || []).find(b => b?.logo || b?.photo)?.logo || null,
     silhouetteType: "pipe",
     isClosingCard: true,
   });
@@ -222,9 +222,9 @@ function computeLongestStreak(logs) {
 }
 
 function getCollectorPersonality(pipes, blends, logs) {
-  const pipeCount = pipes.length;
-  const blendCount = blends.length;
-  const sessionCount = logs.length;
+  const pipeCount = (pipes || []).length;
+  const blendCount = (blends || []).length;
+  const sessionCount = (logs || []).length;
 
   // Curated collector — high pipes, moderate blends
   if (pipeCount > 10 && blendCount < pipeCount * 1.5) {
@@ -266,7 +266,7 @@ function getCollectorPersonality(pipes, blends, logs) {
 }
 
 function getGrowthInsight(pipes, blends) {
-  const total = pipes.length + blends.length;
+  const total = (pipes || []).length + (blends || []).length;
 
   if (total > 50) {
     return {
