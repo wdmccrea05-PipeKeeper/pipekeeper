@@ -7,6 +7,11 @@ import { getBowlsUsed } from "@/components/utils/schemaCompatibility";
  * Returns array of 6-10 portrait cards with imagery and stats
  */
 export function generateStoryCards(pipes, blends, smokingLogs, totalCollectionValue, formatCurrency, t) {
+  // Guard against missing data
+  if (!pipes && !blends && !smokingLogs) {
+    return [];
+  }
+
   const cards = [];
 
   // Helper: get primary image from pipe
