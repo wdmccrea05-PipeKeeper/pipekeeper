@@ -287,17 +287,24 @@ export function StatusCard({
 
       <div className="relative">
         <div
-          className="text-3xl font-bold leading-none tracking-tight"
+          className="text-3xl font-bold leading-none tracking-tight break-words"
           style={{ 
             color: "#F5F1E7", 
             textShadow: `0 2px 6px rgba(0,0,0,0.75)`,
-            fontFamily: "'Georgia', serif"
+            fontFamily: "'Georgia', serif",
+            wordWrap: "break-word",
+            overflowWrap: "break-word",
+            hyphens: "auto"
           }}
         >
           {value}
         </div>
         {sub && (
-          <div className="text-xs mt-1.5 font-medium" style={{ color: `rgba(180, 140, 75, 0.75)` }}>
+          <div className="text-xs mt-1.5 font-medium break-words" style={{ 
+            color: `rgba(180, 140, 75, 0.75)`,
+            wordWrap: "break-word",
+            overflowWrap: "break-word"
+          }}>
             {sub}
           </div>
         )}
