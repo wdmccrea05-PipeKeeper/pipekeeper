@@ -14,30 +14,35 @@ import { cn } from "@/lib/utils";
  *  - <PKField> ... </PKField>       // consistent "boxed" field surface (for custom blocks)
  */
 
+/**
+ * PipeKeeper Canonical Surface Colors
+ * ====================================
+ * Collector theme surfaces with warm brown/espresso base,
+ * muted gold borders, and burgundy accents.
+ */
 export const PK_COLORS = {
-  // App frame/background stays handled elsewhere (Layout), but surfaces are standardized here
-  surface: "#223447",      // primary card surface
-  surface2: "#1E2F43",     // slightly deeper panel surface
-  border: "rgba(255,255,255,0.10)",
+  surface: "#2a1f18",          // primary card surface - warm brown
+  surface2: "#1f1510",         // deeper panel surface - darker espresso
+  border: "rgba(139, 98, 57, 0.25)",  // muted gold/brown borders
 
   text: "#F5F1E7",
-  textMuted: "rgba(224,216,200,0.70)",
+  textMuted: "rgba(180, 140, 75, 0.8)",
 
-  accent: "#A35C5C",       // PipeKeeper maroon accent
-  accent2: "#B84A4A",      // deeper accent for active states if needed
+  accent: "#A35C5C",           // burgundy accent
+  accent2: "#8F4E4E",          // darker burgundy for active/focus
 };
 
 export const PK_TW = {
-  // Primary card surface (your default)
-  card: "rounded-2xl border border-white/10 bg-[#223447] text-[#F5F1E7] shadow-sm",
+  // Primary card surface - collector theme
+  card: "rounded-2xl border border-[#8b6239]/25 bg-gradient-to-br from-[#2a1f18] to-[#1f1510] text-[#F5F1E7] shadow-lg",
 
-  // Secondary panel surface (nested cards / sub-panels)
-  panel: "rounded-2xl border border-white/10 bg-[#1E2F43] text-[#F5F1E7] shadow-sm",
+  // Secondary panel surface - deeper collector tone
+  panel: "rounded-2xl border border-[#8b6239]/20 bg-gradient-to-br from-[#1f1510] to-[#1a100a] text-[#F5F1E7] shadow-lg",
 
-  // Inner "slot" surface for list items inside a panel
-  item: "rounded-xl border border-white/10 bg-white/0 hover:bg-white/5 transition-colors",
+  // Inner "slot" surface for list items
+  item: "rounded-xl border border-[#8b6239]/15 bg-[#3a2a20]/30 hover:bg-[#3a2a20]/50 transition-colors",
 
-  // Headings
+  // Headings - warm ivory
   h1: "text-2xl md:text-3xl font-semibold tracking-tight text-[#F5F1E7]",
   h2: "text-lg md:text-xl font-semibold text-[#F5F1E7]",
   sub: "text-sm text-[#E0D8C8]/70",
@@ -45,11 +50,11 @@ export const PK_TW = {
   // Section spacing
   section: "space-y-4",
 
-  // Consistent divider
-  divider: "border-t border-white/10",
+  // Consistent divider - muted gold
+  divider: "border-t border-[#8b6239]/20",
 
-  // Optional: a consistent "field surface" for custom controls that aren't using <Input/>
-  field: "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[#F5F1E7] placeholder:text-[#8F9DB3] focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/40",
+  // Field surface for custom controls
+  field: "w-full rounded-xl border border-[#8b6239]/25 bg-[#1a2b3a] px-3 py-2 text-[#E0D8C8] placeholder:text-[#8b6239]/50 focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/50 focus:border-[#8b6239]/40",
 };
 
 export function PKCard({ className, children, ...props }) {
