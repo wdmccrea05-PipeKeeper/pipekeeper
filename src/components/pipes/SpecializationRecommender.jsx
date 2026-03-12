@@ -134,8 +134,9 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                       {t("specializationRec.whyThisWorks")}
                     </h3>
                     <p className="text-sm text-[#E0D8C8]/80 leading-relaxed whitespace-normal break-words">
-                      {String(recommendation.reasoning || '')}
-                  </CardContent>
+                       {String(recommendation.reasoning || '')}
+                    </p>
+                    </CardContent>
                 </Card>
               )}
 
@@ -145,8 +146,9 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                   <CardContent className="p-4">
                     <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("specializationRec.collectionFit")}</h3>
                     <p className="text-sm text-[#E0D8C8]/80 leading-relaxed whitespace-normal break-words">
-                       {String(recommendation.collection_fit || '')}
-                  </CardContent>
+                        {String(recommendation.collection_fit || '')}
+                    </p>
+                    </CardContent>
                 </Card>
               )}
 
@@ -176,7 +178,8 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                         <h3 className="font-semibold text-[#E0D8C8] mb-1">{t("specializationRec.importantConsiderations")}</h3>
                         <p className="text-sm text-[#E0D8C8]/80 leading-relaxed whitespace-normal break-words">
                            {String(recommendation.considerations || '')}
-                      </div>
+                        </p>
+                        </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -189,7 +192,8 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                     <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("specializationRec.alternativeUses")}</h3>
                     <p className="text-sm text-[#E0D8C8]/80 leading-relaxed whitespace-normal break-words">
                        {String(recommendation.alternative_uses || '')}
-                  </CardContent>
+                    </p>
+                    </CardContent>
                 </Card>
               )}
 
