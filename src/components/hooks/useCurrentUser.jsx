@@ -150,7 +150,9 @@ export function useCurrentUser() {
       }
     },
     enabled: !!(userId || email),
-    staleTime: 0,
+    // FIX: Set reasonable staleTime to reduce unnecessary refetches
+    // Subscription data is mostly static; sync logic handles webhook delays
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Ensure user record exists with platform info
@@ -187,16 +189,21 @@ export function useCurrentUser() {
     };
   }, [userLoading, user?.email, refetchUser]);
 
-  // One-time entitlement sync per session: fixes delayed webhook timing on re-login.
-  // FIX ISSUE-13: Use a timestamp-based gate (5 minutes) instead of a permanent session flag
-  // so that users navigating back to the app after a delayed webhook still get a fresh sync.
+  // Subscription sync on mount: fixes delayed webhook timing on re-login.
+  // FIX ISSUE-13: Use timestamp-based gate (10 minutes) to balance freshness vs churn
+  // Webhooks typically deliver within seconds; 10-min gate prevents excessive background syncs
+  // while still catching delayed webhooks within a reasonable window.
   useEffect(() => {
     if (userLoading || !user?.email) return;
 
     const sessionKey = `pk_subscription_sync_${user.email}`;
     const lastSync = sessionStorage.getItem(sessionKey);
-    const ONE_MINUTE = 60 * 1000;
-    if (lastSync && Date.now() - Number(lastSync) < ONE_MINUTE) return;
+    const SYNC_INTERVAL = 10 * 60 * 1000; // 10 minutes
+    
+    if (lastSync && Date.now() - Number(lastSync) < SYNC_INTERVAL) {
+      // Sync ran recently, skip
+      return;
+    }
 
     let cancelled = false;
 
@@ -210,7 +217,7 @@ export function useCurrentUser() {
       } finally {
         if (!cancelled) {
           sessionStorage.setItem(sessionKey, String(Date.now()));
-          // FIX BUG-04: Explicitly invalidate subscription cache after sync
+          // Invalidate and refetch subscription cache to pick up sync results
           await queryClient.invalidateQueries({ queryKey: ["subscription"] });
           await Promise.all([refetchUser(), refetchSubscription()]);
         }
