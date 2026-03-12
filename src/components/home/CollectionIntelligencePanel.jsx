@@ -4,7 +4,7 @@ import { differenceInCalendarDays, differenceInMonths, formatDistanceToNow } fro
 import { PKCard } from "@/components/ui/pk-surface";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { base44 } from "@/api/base44Client";
-import { filterAiEligibleItems } from "@/platform/aiEligibility";
+import { filterAiEligibleItems } from "@/components/platform/aiEligibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import {
   Brain,

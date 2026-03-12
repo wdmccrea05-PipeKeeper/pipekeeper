@@ -14,8 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { getActiveOptimizeScopes } from "@/platform/collectionCuratorAI.js";
-import { getAiEligibilityStats } from "@/platform/aiEligibility.js";
+import { getActiveOptimizeScopes } from "@/components/platform/collectionCuratorAI.js";
+import { getAiEligibilityStats } from "@/components/platform/aiEligibility.js";
 
 const TOBACCONIST_ICON = 'https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png';
 

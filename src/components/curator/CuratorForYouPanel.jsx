@@ -17,7 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { generateProactiveInsights } from "@/platform/proactiveInsights";
+import { generateProactiveInsights } from "@/components/platform/proactiveInsights";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import {
   Brain,

@@ -522,12 +522,7 @@ export default function Home() {
               <a
                 key={p.id}
                 href={createPageUrl(`PipeDetail?id=${encodeURIComponent(p.id)}`)}
-                className="flex items-center gap-3 rounded p-1.5 -mx-1.5 transition-all"
-                style={{
-                  "&:hover": {
-                    background: "rgba(60, 45, 30, 0.2)"
-                  }
-                }}
+                className="flex items-center gap-3 rounded p-1.5 -mx-1.5 transition-all hover:bg-[rgba(60,45,30,0.2)]"
               >
                 <div 
                   className="w-10 h-10 overflow-hidden shrink-0 flex items-center justify-center"

@@ -1,6 +1,6 @@
 import { base44 } from "@/api/base44Client";
 import { buildPairingsForPipes, isAromaticBlend, getAromaticIntensity } from "@/components/utils/pairingScoreCanonical";
-import { filterAiEligibleItems } from "@/platform/aiEligibility.js";
+import { filterAiEligibleItems } from "@/components/platform/aiEligibility.js";
 
 // === Hard Rules Enforcement ===
 
