@@ -7,8 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Upload, X, Loader2, Camera, Plus, Search, Check, Edit, Library, Bot } from "lucide-react";
-import InfoTooltip from "@/components/ui/InfoTooltip";
+import { Upload, X, Loader2, Camera, Plus, Search, Check, Edit, Library } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLogoLibrary";
@@ -67,8 +66,7 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
     notes: '',
     photo: '',
     logo: '',
-    is_favorite: false,
-    ai_excluded: false
+    is_favorite: false
   });
   const [uploading, setUploading] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -355,7 +353,7 @@ Return complete and accurate information based on the blend name or description 
                   className={`relative aspect-square rounded-lg border-2 transition-all hover:border-amber-500 ${
                     formData.logo === logo.logo_url 
                       ? 'border-amber-600 bg-amber-100' 
-                      : 'border-stone-200 bg-white'
+                      : 'border-[rgba(140,105,65,0.28)] bg-[rgba(36,25,18,0.92)]'
                   }`}
                 >
                   <img 
@@ -368,12 +366,12 @@ Return complete and accurate information based on the blend name or description 
                       <Check className="w-3 h-3 text-white" />
                     </div>
                   )}
-                  <p className="text-xs text-stone-600 mt-1 truncate px-1">{logo.brand_name}</p>
+                  <p className="text-xs text-[#D7C9B2]/80 mt-1 truncate px-1">{logo.brand_name}</p>
                 </button>
               ))}
             </div>
             {filteredLogos.length === 0 && (
-              <div className="text-center py-12 text-stone-500">
+              <div className="text-center py-12 text-[#D7C9B2]/70">
                 <Library className="w-12 h-12 mx-auto mb-4 opacity-30" />
                 <p>{t("tobaccoExtended.noLogos")}</p>
               </div>
@@ -392,7 +390,7 @@ Return complete and accurate information based on the blend name or description 
                 <Search className="w-5 h-5" />
                 {t("tobaccoExtended.searchForBlend")}
               </CardTitle>
-              <p className="text-sm text-stone-600">
+              <p className="text-sm text-[#D7C9B2]/80">
                 {t("tobaccoExtended.searchDesc")}
               </p>
             </CardHeader>
@@ -402,7 +400,7 @@ Return complete and accurate information based on the blend name or description 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t("tobaccoExtended.searchPlaceholder")}
-                  className="border-stone-200"
+                  className="border-[rgba(140,105,65,0.28)]"
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
                 />
                 <Button 
@@ -429,10 +427,10 @@ Return complete and accurate information based on the blend name or description 
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-stone-200" />
+              <div className="w-full border-t border-[rgba(140,105,65,0.28)]" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-stone-500">{t("formsExtended.orEnterManually")}</span>
+              <span className="bg-[rgba(20,15,11,0.98)] px-2 text-[#D7C9B2]/70">{t("formsExtended.orEnterManually", "Or enter manually")}</span>
             </div>
           </div>
         </>
@@ -443,7 +441,7 @@ Return complete and accurate information based on the blend name or description 
         <Card className="border-amber-200 bg-amber-50/50">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg text-stone-800">{t("tobaccoExtended.selectLogo")}</CardTitle>
-            <p className="text-sm text-stone-600">
+            <p className="text-sm text-[#D7C9B2]/80">
               {t("tobaccoExtended.selectLogoDesc", { manufacturer: formData.manufacturer })}
             </p>
           </CardHeader>
@@ -460,7 +458,7 @@ Return complete and accurate information based on the blend name or description 
                   className={`relative aspect-square rounded-lg border-2 transition-all hover:border-amber-500 ${
                     formData.logo === match.logo 
                       ? 'border-amber-600 bg-amber-100' 
-                      : 'border-stone-200 bg-white'
+                      : 'border-[rgba(140,105,65,0.28)] bg-[rgba(36,25,18,0.92)]'
                   }`}
                 >
                   <img 
@@ -473,7 +471,7 @@ Return complete and accurate information based on the blend name or description 
                       <Check className="w-3 h-3 text-white" />
                     </div>
                   )}
-                  <p className="text-xs text-stone-600 mt-1">{match.brand}</p>
+                  <p className="text-xs text-[#D7C9B2]/80 mt-1">{match.brand}</p>
                 </button>
               ))}
             </div>
@@ -482,11 +480,11 @@ Return complete and accurate information based on the blend name or description 
       )}
 
       {/* Photo & Logo */}
-      <Card className="border-stone-200">
+      <Card className="border-[rgba(140,105,65,0.28)]">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.images")}</CardTitle>
           {formData.logo && !uploading && !uploadingLogo && (
-            <p className="text-xs text-stone-500">
+            <p className="text-xs text-[#D7C9B2]/70">
               {t("tobaccoExtended.logoAutoPopulated")}
             </p>
           )}
@@ -498,13 +496,13 @@ Return complete and accurate information based on the blend name or description 
               <Label className="text-sm font-medium break-words">{t("tobaccoExtended.tinPhoto")}</Label>
                <div className="flex items-center gap-4">
                  {formData.photo ? (
-                   <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200 group">
+                   <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-[rgba(140,105,65,0.28)] group">
                      <img src={formData.photo} alt="" className="w-full h-full object-cover" />
                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
                        <button
                          type="button"
                          onClick={() => editPhoto('photo')}
-                         className="bg-white/90 rounded-full p-1.5 hover:bg-white"
+                         className="bg-[rgba(36,25,18,0.92)] rounded-full p-1.5 hover:bg-[rgba(48,34,24,0.96)]"
                        >
                          <Edit className="w-3.5 h-3.5 text-stone-700" />
                        </button>
@@ -556,13 +554,13 @@ Return complete and accurate information based on the blend name or description 
                </div>
                <div className="flex items-center gap-4">
                  {formData.logo ? (
-                   <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200 bg-white group">
+                   <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-[rgba(140,105,65,0.28)] bg-[rgba(36,25,18,0.92)] group">
                      <img src={formData.logo} alt="" className="w-full h-full object-contain p-2" />
                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
                        <button
                          type="button"
                          onClick={() => editPhoto('logo')}
-                         className="bg-white/90 rounded-full p-1.5 hover:bg-white"
+                         className="bg-[rgba(36,25,18,0.92)] rounded-full p-1.5 hover:bg-[rgba(48,34,24,0.96)]"
                        >
                          <Edit className="w-3.5 h-3.5 text-stone-700" />
                        </button>
@@ -601,7 +599,7 @@ Return complete and accurate information based on the blend name or description 
       </Card>
 
       {/* Basic Info */}
-      <Card className="border-stone-200">
+      <Card className="border-[rgba(140,105,65,0.28)]">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.basicInfo")}</CardTitle>
         </CardHeader>
@@ -616,7 +614,7 @@ Return complete and accurate information based on the blend name or description 
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder={t("tobaccoExtended.blendNamePlaceholder")}
               required
-              className="border-stone-200"
+              className="border-[rgba(140,105,65,0.28)]"
             />
           </FieldWithInfo>
           <FieldWithInfo 
@@ -630,7 +628,7 @@ Return complete and accurate information based on the blend name or description 
               placeholder={t("tobaccoExtended.manufacturerPlaceholder")}
               searchPlaceholder={t("common.searchPlaceholder")}
               allowCustom={true}
-              className="border-stone-200"
+              className="border-[rgba(140,105,65,0.28)]"
             />
           </FieldWithInfo>
           <FieldWithInfo 
@@ -638,7 +636,7 @@ Return complete and accurate information based on the blend name or description 
             helpText={t("tobaccoExtended.blendTypeHelp")}
           >
             <Select value={formData.blend_type} onValueChange={(v) => handleChange('blend_type', v)}>
-              <SelectTrigger className="border-stone-200">
+              <SelectTrigger className="border-[rgba(140,105,65,0.28)]">
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
@@ -651,7 +649,7 @@ Return complete and accurate information based on the blend name or description 
             helpText={t("tobaccoExtended.cutHelp")}
           >
             <Select value={formData.cut} onValueChange={(v) => handleChange('cut', v)}>
-              <SelectTrigger className="border-stone-200">
+              <SelectTrigger className="border-[rgba(140,105,65,0.28)]">
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
@@ -664,7 +662,7 @@ Return complete and accurate information based on the blend name or description 
             helpText={t("tobaccoExtended.strengthHelp")}
           >
             <Select value={formData.strength} onValueChange={(v) => handleChange('strength', v)}>
-              <SelectTrigger className="border-stone-200">
+              <SelectTrigger className="border-[rgba(140,105,65,0.28)]">
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
@@ -677,7 +675,7 @@ Return complete and accurate information based on the blend name or description 
             helpText={t("tobaccoExtended.roomNoteHelp")}
           >
             <Select value={formData.room_note} onValueChange={(v) => handleChange('room_note', v)}>
-              <SelectTrigger className="border-stone-200">
+              <SelectTrigger className="border-[rgba(140,105,65,0.28)]">
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
@@ -689,10 +687,10 @@ Return complete and accurate information based on the blend name or description 
       </Card>
 
       {/* Tobacco Components */}
-      <Card className="border-stone-200">
+      <Card className="border-[rgba(140,105,65,0.28)]">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.tobaccoComponents")}</CardTitle>
-          <p className="text-sm text-stone-500">{t("tobaccoExtended.tobaccoComponentsDesc")}</p>
+          <p className="text-sm text-[#D7C9B2]/70">{t("tobaccoExtended.tobaccoComponentsDesc")}</p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex gap-2">
@@ -700,7 +698,7 @@ Return complete and accurate information based on the blend name or description 
               value={newComponent}
               onChange={(e) => setNewComponent(e.target.value)}
               placeholder={t("tobaccoExtended.componentPlaceholder")}
-              className="border-stone-200"
+              className="border-[rgba(140,105,65,0.28)]"
               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addComponent())}
             />
             <Button type="button" onClick={addComponent} variant="outline" className="shrink-0">
@@ -721,10 +719,10 @@ Return complete and accurate information based on the blend name or description 
       </Card>
 
       {/* Flavor Notes */}
-      <Card className="border-stone-200">
+      <Card className="border-[rgba(140,105,65,0.28)]">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.flavorNotes")}</CardTitle>
-          <p className="text-sm text-stone-500">{t("tobaccoExtended.flavorNotesDesc")}</p>
+          <p className="text-sm text-[#D7C9B2]/70">{t("tobaccoExtended.flavorNotesDesc")}</p>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
@@ -735,7 +733,7 @@ Return complete and accurate information based on the blend name or description 
                 className={`cursor-pointer transition-colors ${
                   formData.flavor_notes?.includes(note)
                     ? 'bg-amber-600 text-white border-amber-700'
-                    : 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200'
+                    : 'bg-stone-100 text-[#D7C9B2]/80 border-[rgba(140,105,65,0.28)] hover:bg-stone-200'
                 }`}
                 onClick={() => toggleFlavorNote(note)}
               >
@@ -747,10 +745,10 @@ Return complete and accurate information based on the blend name or description 
       </Card>
 
       {/* Inventory & Status */}
-      <Card className="border-stone-200">
+      <Card className="border-[rgba(140,105,65,0.28)]">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.inventoryStatus")}</CardTitle>
-          <p className="text-sm text-stone-500">{t("tobaccoExtended.inventoryStatusDesc")}</p>
+          <p className="text-sm text-[#D7C9B2]/70">{t("tobaccoExtended.inventoryStatusDesc")}</p>
         </CardHeader>
         <CardContent className="space-y-6">
           <Tabs defaultValue="tins" className="w-full">
@@ -777,7 +775,7 @@ Return complete and accurate information based on the blend name or description 
                       }
                     }}
                     placeholder="e.g., 1.75"
-                    className="border-stone-200"
+                    className="border-[rgba(140,105,65,0.28)]"
                   />
                 </div>
                 <div className="space-y-2">
@@ -793,7 +791,7 @@ Return complete and accurate information based on the blend name or description 
                       }
                     }}
                     placeholder="e.g., 5"
-                    className="border-stone-200"
+                    className="border-[rgba(140,105,65,0.28)]"
                   />
                 </div>
                 <div className="space-y-2">
@@ -805,7 +803,7 @@ Return complete and accurate information based on the blend name or description 
                     value={formData.tin_total_quantity_oz || ''}
                     onChange={(e) => handleChange('tin_total_quantity_oz', e.target.value)}
                     placeholder={t("tobaccoExtended.autoCalculated")}
-                    className="border-stone-200 bg-stone-50"
+                    className="border-[rgba(140,105,65,0.28)] bg-[rgba(36,25,18,0.92)]"
                     readOnly
                   />
                 </div>
@@ -822,7 +820,7 @@ Return complete and accurate information based on the blend name or description 
                        }
                      }}
                      placeholder="e.g., 1"
-                     className="border-stone-200"
+                     className="border-[rgba(140,105,65,0.28)]"
                    />
                  </div>
                  <div className="space-y-2">
@@ -838,7 +836,7 @@ Return complete and accurate information based on the blend name or description 
                        }
                      }}
                      placeholder="e.g., 4"
-                     className="border-stone-200"
+                     className="border-[rgba(140,105,65,0.28)]"
                    />
                  </div>
                 <div className="space-y-2">
@@ -847,7 +845,7 @@ Return complete and accurate information based on the blend name or description 
                     type="date"
                     value={formData.tin_cellared_date || ''}
                     onChange={(e) => handleChange('tin_cellared_date', e.target.value)}
-                    className="border-stone-200"
+                    className="border-[rgba(140,105,65,0.28)]"
                   />
                 </div>
               </div>
@@ -865,7 +863,7 @@ Return complete and accurate information based on the blend name or description 
                     value={formData.bulk_total_quantity_oz || ''}
                     onChange={(e) => handleChange('bulk_total_quantity_oz', e.target.value)}
                     placeholder="e.g., 16"
-                    className="border-stone-200"
+                    className="border-[rgba(140,105,65,0.28)]"
                   />
                 </div>
                 <div className="space-y-2">
@@ -882,7 +880,7 @@ Return complete and accurate information based on the blend name or description 
                        }
                      }}
                      placeholder="e.g., 2"
-                     className="border-stone-200"
+                     className="border-[rgba(140,105,65,0.28)]"
                    />
                  </div>
                  <div className="space-y-2">
@@ -899,7 +897,7 @@ Return complete and accurate information based on the blend name or description 
                        }
                      }}
                      placeholder="e.g., 14"
-                     className="border-stone-200"
+                     className="border-[rgba(140,105,65,0.28)]"
                      />
                      </div>
                      <div className="space-y-2">
@@ -908,7 +906,7 @@ Return complete and accurate information based on the blend name or description 
                      type="date"
                      value={formData.bulk_cellared_date || ''}
                      onChange={(e) => handleChange('bulk_cellared_date', e.target.value)}
-                     className="border-stone-200"
+                     className="border-[rgba(140,105,65,0.28)]"
                      />
                      </div>
               </div>
@@ -931,7 +929,7 @@ Return complete and accurate information based on the blend name or description 
                       }
                     }}
                     placeholder="e.g., 1.5"
-                    className="border-stone-200"
+                    className="border-[rgba(140,105,65,0.28)]"
                   />
                 </div>
                 <div className="space-y-2">
@@ -947,7 +945,7 @@ Return complete and accurate information based on the blend name or description 
                       }
                     }}
                     placeholder="e.g., 3"
-                    className="border-stone-200"
+                    className="border-[rgba(140,105,65,0.28)]"
                   />
                 </div>
                 <div className="space-y-2">
@@ -959,7 +957,7 @@ Return complete and accurate information based on the blend name or description 
                     value={formData.pouch_total_quantity_oz || ''}
                     onChange={(e) => handleChange('pouch_total_quantity_oz', e.target.value)}
                     placeholder={t("tobaccoExtended.autoCalculated")}
-                    className="border-stone-200 bg-stone-50"
+                    className="border-[rgba(140,105,65,0.28)] bg-[rgba(36,25,18,0.92)]"
                     readOnly
                   />
                 </div>
@@ -976,7 +974,7 @@ Return complete and accurate information based on the blend name or description 
                        }
                      }}
                      placeholder="e.g., 1"
-                     className="border-stone-200"
+                     className="border-[rgba(140,105,65,0.28)]"
                    />
                  </div>
                  <div className="space-y-2">
@@ -992,7 +990,7 @@ Return complete and accurate information based on the blend name or description 
                        }
                      }}
                      placeholder="e.g., 2"
-                     className="border-stone-200"
+                     className="border-[rgba(140,105,65,0.28)]"
                      />
                      </div>
                      <div className="space-y-2">
@@ -1001,7 +999,7 @@ Return complete and accurate information based on the blend name or description 
                      type="date"
                      value={formData.pouch_cellared_date || ''}
                      onChange={(e) => handleChange('pouch_cellared_date', e.target.value)}
-                     className="border-stone-200"
+                     className="border-[rgba(140,105,65,0.28)]"
                      />
                      </div>
               </div>
@@ -1013,7 +1011,7 @@ Return complete and accurate information based on the blend name or description 
             <div className="space-y-2">
               <Label className="break-words">{t("tobaccoExtended.productionStatus")}</Label>
               <Select value={formData.production_status} onValueChange={(v) => handleChange('production_status', v)}>
-                <SelectTrigger className="border-stone-200">
+                <SelectTrigger className="border-[rgba(140,105,65,0.28)]">
                   <SelectValue placeholder={t("common.selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -1024,7 +1022,7 @@ Return complete and accurate information based on the blend name or description 
             <div className="space-y-2">
               <Label className="break-words">{t("tobaccoExtended.agingPotential")}</Label>
               <Select value={formData.aging_potential} onValueChange={(v) => handleChange('aging_potential', v)}>
-                <SelectTrigger className="border-stone-200">
+                <SelectTrigger className="border-[rgba(140,105,65,0.28)]">
                   <SelectValue placeholder={t("common.selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -1052,7 +1050,7 @@ Return complete and accurate information based on the blend name or description 
                   }
                 }}
                 placeholder={t("tobaccoExtended.ratingPlaceholder")}
-                className="border-stone-200"
+                className="border-[rgba(140,105,65,0.28)]"
               />
             </div>
           </div>
@@ -1060,7 +1058,7 @@ Return complete and accurate information based on the blend name or description 
       </Card>
 
       {/* Notes */}
-      <Card className="border-stone-200">
+      <Card className="border-[rgba(140,105,65,0.28)]">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-[#E0D8C8]">{t("common.notes")}</CardTitle>
         </CardHeader>
@@ -1070,7 +1068,7 @@ Return complete and accurate information based on the blend name or description 
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
               placeholder={t("tobaccoExtended.notesPlaceholder")}
-              className="border-stone-200"
+              className="border-[rgba(140,105,65,0.28)]"
               rows={4}
             />
           </div>
@@ -1080,26 +1078,6 @@ Return complete and accurate information based on the blend name or description 
               onCheckedChange={(v) => handleChange('is_favorite', v)}
             />
             <Label className="break-words">{t("formsExtended.markAsFavorite")}</Label>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Collector Settings */}
-      <Card className="border-stone-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8] flex items-center gap-2">
-            <Bot className="w-5 h-5 flex-shrink-0" />
-            {t("formsExtended.collectorSettings")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Switch
-              checked={!formData.ai_excluded}
-              onCheckedChange={(v) => handleChange('ai_excluded', !v)}
-            />
-            <Label className="break-words">{t("formsExtended.includeInAI")}</Label>
-            <InfoTooltip text={t("formsExtended.includeInAITooltip")} />
           </div>
         </CardContent>
       </Card>
