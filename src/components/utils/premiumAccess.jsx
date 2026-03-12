@@ -86,7 +86,7 @@ export function getEntitlementTier(user, subscription) {
 
 export function hasPaidAccess(user, subscription) {
   const tier = getEntitlementTier(user, subscription);
-  return tier === "premium" || tier === "pro";
+  return tier === "pro"; // Premium collapses to Pro
 }
 
 export function hasPremiumAccess(user, subscription) {
