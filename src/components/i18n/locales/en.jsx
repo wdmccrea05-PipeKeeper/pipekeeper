@@ -29,6 +29,10 @@ const docs = {
     pressCmdEnter: "Press Cmd+Enter to send",
     exploreWithCurator: "Explore With Curator",
     askClarification: "Ask Clarification",
+    refreshAdvice: "Refresh Advice",
+    clearAdvice: "Clear Advice",
+    adviceRefreshed: "Curator advice refreshed",
+    adviceCleared: "Curator advice cleared",
     category: {
       rotation: "Rotation",
       aging: "Aging",
@@ -40,6 +44,10 @@ const docs = {
       acquisition_opportunity: "Discovery",
       maintenance: "Maintenance",
       usage_pattern: "Usage",
+      cellar: "Cellar",
+      discovery: "Discovery",
+      stewardship: "Stewardship",
+      usage: "Usage",
     },
     forYou: {
       title: "For You",
