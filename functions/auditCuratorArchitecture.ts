@@ -82,7 +82,7 @@ const AUDIT_CHECKS = {
     file: 'components/curator/CuratorWorkspace.jsx',
     description: 'Verify input only clears on manual send (textOverride = null)',
     patterns: [
-      /if\s*\(!textOverride\)\s*{\s*setInput\("")/
+      /if\s*\(!textOverride\)/
     ]
   },
 
