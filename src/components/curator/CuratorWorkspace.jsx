@@ -246,8 +246,8 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
     load();
   }, [threadId]);
   
-  const sendMessage = async () => {
-    const text = input.trim();
+  const sendMessage = async (textOverride = null) => {
+    const text = (textOverride || input).trim();
     if (!text || !threadId || sending) return;
     
     setSending(true);
@@ -260,7 +260,7 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
       meta: {},
     };
     setMessages((prev) => [...prev, optimistic]);
-    setInput("");
+    if (!textOverride) setInput("");
     
     try {
       const englishText = await translateToEnglish(text, locale);
