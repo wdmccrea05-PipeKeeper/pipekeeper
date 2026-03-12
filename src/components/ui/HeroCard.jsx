@@ -301,31 +301,29 @@ export function StatusCard({
          </span>
        </div>
 
-      <div className="relative min-w-0">
-        <div
-          className="text-2xl sm:text-3xl font-bold leading-none tracking-tight"
-          style={{ 
-            color: "#F5F1E7", 
-            textShadow: `0 2px 6px rgba(0,0,0,0.75)`,
-            fontFamily: "'Georgia', serif",
-            whiteSpace: "normal",
-            wordWrap: "break-word",
-            hyphens: "none"
-          }}
-        >
-          {value}
-        </div>
-        {sub && (
-          <div className="text-xs mt-1.5 font-medium" style={{ 
-            color: `rgba(180, 140, 75, 0.75)`,
-            whiteSpace: "normal",
-            wordWrap: "break-word",
-            hyphens: "none"
-          }}>
-            {sub}
-          </div>
-        )}
-      </div>
+      <div className="relative w-full">
+         <div
+           className="text-2xl sm:text-3xl font-bold leading-snug tracking-tight break-words"
+           style={{ 
+             color: "#F5F1E7", 
+             textShadow: `0 2px 6px rgba(0,0,0,0.75)`,
+             fontFamily: "'Georgia', serif",
+             whiteSpace: "normal",
+             overflow: "break-word"
+           }}
+         >
+           {value}
+         </div>
+         {sub && (
+           <div className="text-xs mt-1.5 font-medium break-words" style={{ 
+             color: `rgba(180, 140, 75, 0.75)`,
+             whiteSpace: "normal",
+             overflow: "break-word"
+           }}>
+             {sub}
+           </div>
+         )}
+       </div>
 
       {/* Bottom accent line */}
       <div
