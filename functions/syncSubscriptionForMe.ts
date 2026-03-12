@@ -242,7 +242,8 @@ Deno.serve(async (req) => {
     };
     const isPaid = subscriptionGrantsPaidAccess(reconstructedSub);
 
-    const FOUNDING_CUTOFF = new Date("2026-03-31T00:00:00.000Z");
+    // CANONICAL founding member cutoff — matches frontend constant
+    const FOUNDING_CUTOFF = new Date("2026-02-01T00:00:00.000Z");
     const trialEnd = isoFromUnixSeconds(best.trial_end);
     const startedAt = periodStart || (trialEnd ? new Date(trialEnd).toISOString() : null);
     
