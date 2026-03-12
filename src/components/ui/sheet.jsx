@@ -4,6 +4,7 @@ import * as React from "react";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/components/i18n/index.jsx";
 
 const Sheet = SheetPrimitive.Root;
 const SheetTrigger = SheetPrimitive.Trigger;
@@ -14,8 +15,7 @@ const SheetOverlay = React.forwardRef(({ className, ...props }, ref) => (
   <SheetPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/70 backdrop-blur-[6px]",
-      "data-[state=open]:animate-in data-[state=closed]:animate-out",
+      "fixed inset-0 z-50 bg-black/70 backdrop-blur-[6px] data-[state=open]:animate-in data-[state=closed]:animate-out",
       className
     )}
     {...props}
@@ -30,8 +30,10 @@ const sheetVariants = {
   bottom: "inset-x-0 bottom-0 border-t",
 };
 
-const SheetContent = React.forwardRef(
-  ({ side = "right", className, children, ...props }, ref) => (
+const SheetContent = React.forwardRef(({ side = "right", className, children, ...props }, ref) => {
+  const { t } = useTranslation();
+
+  return (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Content
@@ -41,8 +43,7 @@ const SheetContent = React.forwardRef(
           sheetVariants[side],
           "border-[rgba(140,105,65,0.32)]",
           "bg-[linear-gradient(180deg,rgba(20,15,11,0.985)_0%,rgba(14,11,9,0.99)_100%)]",
-          "text-[#F5F1E7]",
-          "shadow-[0_18px_60px_rgba(0,0,0,0.72)]",
+          "text-[#F5F1E7] shadow-[0_18px_60px_rgba(0,0,0,0.72)]",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           className
         )}
@@ -57,52 +58,40 @@ const SheetContent = React.forwardRef(
         />
         {children}
         <SheetPrimitive.Close
-          className="absolute right-4 top-4 rounded-md border border-[rgba(140,105,65,0.35)] bg-black/20 p-1 text-[#D7C9B2] hover:bg-white/5 hover:text-white transition-colors"
-          aria-label="Close"
+          className="absolute right-4 top-4 rounded-md border border-[rgba(140,105,65,0.35)] bg-black/20 p-1 text-[#D7C9B2] transition-colors hover:bg-white/5 hover:text-white"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4" />
+          <span className="sr-only">{t('common.close')}</span>
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>
     </SheetPortal>
-  )
-);
+  );
+});
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 
 const SheetHeader = ({ className, ...props }) => (
-  <div
-    className={cn(
-      "flex flex-col space-y-1.5 p-6 border-b border-[rgba(140,105,65,0.18)]",
-      className
-    )}
-    {...props}
-  />
+  <div className={cn("flex flex-col space-y-2 text-center sm:text-left border-b border-[rgba(140,105,65,0.18)] p-6", className)} {...props} />
 );
+SheetHeader.displayName = "SheetHeader";
 
 const SheetFooter = ({ className, ...props }) => (
   <div
     className={cn(
-      "sticky bottom-0 z-10 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 p-6 border-t border-[rgba(140,105,65,0.18)] bg-[linear-gradient(180deg,rgba(22,18,14,0.94)_0%,rgba(18,14,11,0.97)_100%)] backdrop-blur-[10px]",
+      "sticky bottom-0 z-10 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 border-t border-[rgba(140,105,65,0.18)] bg-[linear-gradient(180deg,rgba(22,18,14,0.94)_0%,rgba(18,14,11,0.97)_100%)] p-6 backdrop-blur-[10px]",
       className
     )}
     {...props}
   />
 );
+SheetFooter.displayName = "SheetFooter";
 
 const SheetTitle = React.forwardRef(({ className, ...props }, ref) => (
-  <SheetPrimitive.Title
-    ref={ref}
-    className={cn("text-2xl font-semibold tracking-tight text-[#F5F1E7]", className)}
-    {...props}
-  />
+  <SheetPrimitive.Title ref={ref} className={cn("text-lg font-semibold text-[#F5F1E7]", className)} {...props} />
 ));
 SheetTitle.displayName = SheetPrimitive.Title.displayName;
 
 const SheetDescription = React.forwardRef(({ className, ...props }, ref) => (
-  <SheetPrimitive.Description
-    ref={ref}
-    className={cn("text-sm text-[#D7C9B2]/78", className)}
-    {...props}
-  />
+  <SheetPrimitive.Description ref={ref} className={cn("text-sm text-[#D7C9B2]/78", className)} {...props} />
 ));
 SheetDescription.displayName = SheetPrimitive.Description.displayName;
 
