@@ -260,7 +260,7 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       e.preventDefault();
       if (input.trim() && !sending) {
-        sendMessage();
+        sendMessage(null);
       }
     }
   };
