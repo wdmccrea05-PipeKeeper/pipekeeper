@@ -217,7 +217,41 @@ export default function FAQFull() {
             </div>
           </Q>
         </Section>
-      </div>
-    </div>
-  );
-}
+        </div>
+
+        {showTutorial && (
+        <TutorialSystemPreview onClose={() => setShowTutorial(false)} />
+        )}
+        </div>
+        );
+        }
+
+        function TutorialSystemPreview({ onClose }) {
+        const { t } = useTranslation();
+
+        return (
+        <div className="fixed inset-0 bg-stone-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl bg-gradient-to-br from-[#2a1f18] to-[#1f1510] rounded-2xl border border-[rgba(140,105,65,0.35)] p-8 text-center space-y-4">
+        <h2 className="text-2xl font-bold text-[#F5F1E7]">{t("help.tutorialModalTitle", "Start Your Tutorial?")}</h2>
+        <p className="text-[#D8C7A6]/80">
+          {t("help.tutorialModalDesc", "The Quick Start guide will walk you through adding your first pipes, blends, and more.")}
+        </p>
+        <div className="flex gap-3 justify-center pt-4">
+          <Button variant="outline" onClick={onClose} className="border-[rgba(140,105,65,0.35)] text-[#F5F1E7]">
+            {t("common.cancel", "Cancel")}
+          </Button>
+          <Button 
+            onClick={() => {
+              localStorage.removeItem(`pk_quickstart_skipped_${localStorage.getItem('user_email') || ''}`);
+              window.location.reload();
+              onClose();
+            }}
+            className="bg-amber-700 hover:bg-amber-600 text-[#F5F1E7]"
+          >
+            {t("help.startTutorial", "Start Tutorial")}
+          </Button>
+        </div>
+        </div>
+        </div>
+        );
+        }
