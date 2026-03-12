@@ -386,9 +386,9 @@ export default function Home() {
           onInsightClick={(insight) => {
             const prompt = insight?.whatif_prompt || '';
             if (prompt) {
-              window.location.href = createPageUrl(`Curator?tab=whatif&prompt=${encodeURIComponent(prompt)}`);
+              window.location.href = createPageUrl(`Curator?prompt=${encodeURIComponent(prompt)}`);
             } else {
-              window.location.href = createPageUrl('Curator?tab=whatif');
+              window.location.href = createPageUrl('Curator');
             }
           }}
         />

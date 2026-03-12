@@ -16,7 +16,10 @@ import {
   ChevronDown,
   ChevronUp,
   CheckCircle2,
+  MessageSquare,
+  ArrowRight,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -66,7 +69,7 @@ function CollapsibleSection({ label, defaultOpen = false, children }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// RotationDrillDownModal — targeted list of overdue pipes
+// RotationDrillDownModal — targeted list of overdue pipes with Curator handoff
 // ─────────────────────────────────────────────────────────────────────────────
 function RotationDrillDownModal({ pipes, latestLogByPipe, open, onClose }) {
   const { t } = useTranslation();
@@ -81,6 +84,14 @@ function RotationDrillDownModal({ pipes, latestLogByPipe, open, onClose }) {
       return false;
     }
   });
+
+  const handleBuildRotation = () => {
+    const pipeIds = overduePipes.map(p => p.id).join(',');
+    const prompt = t("collectionIntelligence.rotationCuratorPrompt", 
+      "Help me create a rotation plan for these underused pipes."
+    );
+    window.location.href = createPageUrl(`Curator?prompt=${encodeURIComponent(prompt)}&pipeIds=${encodeURIComponent(pipeIds)}`);
+  };
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
@@ -128,16 +139,29 @@ function RotationDrillDownModal({ pipes, latestLogByPipe, open, onClose }) {
             );
           })}
         </div>
+        <div className="mt-4 pt-4 border-t" style={{ borderColor: "rgba(120,90,65,0.2)" }}>
+          <Button
+            onClick={handleBuildRotation}
+            className="w-full"
+            style={{
+              background: "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))",
+              border: "none"
+            }}
+          >
+            <MessageSquare className="w-4 h-4 mr-2" />
+            {t("collectionIntelligence.buildRotationCurator")}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// InsightCard — single readable insight with optional action button
-// Supports both link-based and callback-based actions.
+// InsightCard — single readable insight with Curator-connected actions
 // ─────────────────────────────────────────────────────────────────────────────
 function InsightCard({ insight, onAction }) {
+  const { t } = useTranslation();
   const iconMap = {
     clock: RotateCcw,
     leaf: Leaf,
@@ -147,11 +171,17 @@ function InsightCard({ insight, onAction }) {
   };
   const Icon = iconMap[insight.icon] || Activity;
 
-  const actionButton = insight.actionLabel && (insight.actionUrl || onAction) ? (
+  const handleCuratorAction = () => {
+    if (insight.curatorPrompt) {
+      window.location.href = createPageUrl(`Curator?prompt=${encodeURIComponent(insight.curatorPrompt)}`);
+    }
+  };
+
+  const actionButton = insight.actionLabel ? (
     insight.actionUrl ? (
       <a
         href={insight.actionUrl}
-        className="self-start ml-7 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+        className="self-start ml-7 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
         style={{
           color: "rgba(180, 140, 75, 1)",
           border: "1px solid rgba(120, 90, 65, 0.4)",
@@ -159,12 +189,27 @@ function InsightCard({ insight, onAction }) {
         }}
       >
         {insight.actionLabel}
+        <ArrowRight className="w-3 h-3" />
       </a>
-    ) : (
+    ) : insight.curatorPrompt ? (
+      <button
+        type="button"
+        onClick={handleCuratorAction}
+        className="self-start ml-7 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+        style={{
+          color: "rgba(180, 140, 75, 1)",
+          border: "1px solid rgba(120, 90, 65, 0.4)",
+          background: "rgba(100, 70, 45, 0.15)",
+        }}
+      >
+        <MessageSquare className="w-3 h-3" />
+        {insight.actionLabel}
+      </button>
+    ) : onAction ? (
       <button
         type="button"
         onClick={onAction}
-        className="self-start ml-7 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+        className="self-start ml-7 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
         style={{
           color: "rgba(180, 140, 75, 1)",
           border: "1px solid rgba(120, 90, 65, 0.4)",
@@ -172,8 +217,9 @@ function InsightCard({ insight, onAction }) {
         }}
       >
         {insight.actionLabel}
+        <ArrowRight className="w-3 h-3" />
       </button>
-    )
+    ) : null
   ) : null;
 
   return (
@@ -223,9 +269,10 @@ function RecommendationCard({ rec, t }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// UpdateFeedItem — structured entry in the AI updates feed
+// UpdateFeedItem — AI update with Curator action
 // ─────────────────────────────────────────────────────────────────────────────
 function UpdateFeedItem({ update }) {
+  const { t } = useTranslation();
   let timeLabel = "";
   try {
     if (update.timeAgo) {
@@ -235,18 +282,46 @@ function UpdateFeedItem({ update }) {
     // ignore invalid date
   }
 
+  const handleExplain = () => {
+    let prompt = "";
+    if (update.id === "pairing_matrix") {
+      prompt = t("collectionIntelligence.pairingExplainPrompt", "Explain what changed in my pairing matrix and how I should use it.");
+    } else if (update.id === "optimization") {
+      prompt = t("collectionIntelligence.optimizationExplainPrompt", "Explain the latest collection optimization recommendations and their impact.");
+    } else {
+      prompt = t("collectionIntelligence.updateExplainPrompt", `Explain the ${update.title} update.`);
+    }
+    window.location.href = createPageUrl(`Curator?prompt=${encodeURIComponent(prompt)}`);
+  };
+
   return (
-    <div className="flex items-start gap-3 px-3 py-2.5 rounded-lg" style={{
+    <div className="rounded-lg" style={{
       background: "rgba(50, 35, 22, 0.35)",
       border: "1px solid rgba(120, 90, 65, 0.2)",
     }}>
-      <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#46BD5C" }} aria-hidden="true" />
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium leading-snug" style={{ color: "#F5F1E7" }}>{update.title}</div>
-        <div className="text-xs mt-0.5 leading-relaxed" style={{ color: "rgba(224, 216, 200, 0.6)" }}>{update.description}</div>
-        {timeLabel && (
-          <div className="text-xs mt-0.5" style={{ color: "rgba(224, 216, 200, 0.5)" }}>{timeLabel}</div>
-        )}
+      <div className="flex items-start gap-3 px-3 py-2.5">
+        <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#46BD5C" }} aria-hidden="true" />
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium leading-snug" style={{ color: "#F5F1E7" }}>{update.title}</div>
+          <div className="text-xs mt-0.5 leading-relaxed" style={{ color: "rgba(224, 216, 200, 0.6)" }}>{update.description}</div>
+          {timeLabel && (
+            <div className="text-xs mt-0.5" style={{ color: "rgba(224, 216, 200, 0.5)" }}>{timeLabel}</div>
+          )}
+        </div>
+      </div>
+      <div className="px-3 pb-3">
+        <button
+          onClick={handleExplain}
+          className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+          style={{
+            color: "rgba(180, 140, 75, 1)",
+            border: "1px solid rgba(120, 90, 65, 0.4)",
+            background: "rgba(100, 70, 45, 0.15)",
+          }}
+        >
+          <MessageSquare className="w-3 h-3" />
+          {t("collectionIntelligence.explainThis")}
+        </button>
       </div>
     </div>
   );
@@ -367,6 +442,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
             : t("collectionIntelligence.reviewPipes", { count: overduePipes.length }),
         actionUrl: null,
         isDrillDown: true,
+        curatorPrompt: t("collectionIntelligence.rotationCuratorPrompt", "Help me create a rotation plan for the pipes I have not used in over 60 days."),
       });
     }
 
@@ -402,8 +478,9 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
             : t("collectionIntelligence.insightCellarDesc", {
                 count: peakBlends.length,
               }),
-        actionLabel: t("collectionIntelligence.viewCellar"),
-        actionUrl: createPageUrl("Tobacco"),
+        actionLabel: t("collectionIntelligence.askCurator"),
+        actionUrl: null,
+        curatorPrompt: t("collectionIntelligence.cellarCuratorPrompt", "Which of my aged blends should I review or open first, and why?"),
       });
     }
 
@@ -440,8 +517,9 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
           description: t("collectionIntelligence.insightDiversityLowDesc", {
             count: blendTypes.size,
           }),
-          actionLabel: t("collectionIntelligence.viewTobacco"),
-          actionUrl: createPageUrl("Tobacco"),
+          actionLabel: t("collectionIntelligence.askCurator"),
+          actionUrl: null,
+          curatorPrompt: t("collectionIntelligence.diversityCuratorPrompt", "Analyze my tobacco cellar variety and tell me what additions would improve balance."),
         });
       } else if (blendTypes.size >= 5) {
         insights.push({
@@ -452,8 +530,9 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
           description: t("collectionIntelligence.insightDiversityHighDesc", {
             count: blendTypes.size,
           }),
-          actionLabel: null,
+          actionLabel: t("collectionIntelligence.askCurator"),
           actionUrl: null,
+          curatorPrompt: t("collectionIntelligence.diversityAnalysisCuratorPrompt", "Explain how my tobacco cellar variety supports different smoking experiences."),
         });
       }
     }
@@ -475,8 +554,9 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
           description: t("collectionIntelligence.insightGapDesc", {
             type: gapName,
           }),
-          actionLabel: t("collectionIntelligence.viewOptimization"),
-          actionUrl: createPageUrl("Home"),
+          actionLabel: t("collectionIntelligence.exploreCurator"),
+          actionUrl: null,
+          curatorPrompt: t("collectionIntelligence.gapCuratorPrompt", `My collection has a gap in ${gapName}. What should I consider adding to improve coverage?`).replace('${gapName}', gapName),
         });
       }
     }

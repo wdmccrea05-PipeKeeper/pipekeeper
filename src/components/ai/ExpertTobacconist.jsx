@@ -30,16 +30,27 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
   const [activeTab, setActiveTab] = useState(externalActiveTab ?? "for_you");
   const [curatorPreFill, setCuratorPreFill] = useState("");
 
-  // Read prefilled prompt from URL on mount
+  // Read prefilled prompt from URL on mount (normalize legacy tab= params)
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const promptFromUrl = params.get("prompt");
+      const legacyTab = params.get("tab");
+      
+      // Legacy routing cleanup: whatif, ask → curator
+      if (legacyTab === "whatif" || legacyTab === "ask") {
+        setActiveTab("curator");
+      }
+      
       if (promptFromUrl) {
         setCuratorPreFill(promptFromUrl);
         setActiveTab("curator");
-        // Clean URL after reading
+      }
+      
+      // Clean URL after reading
+      if (promptFromUrl || legacyTab === "whatif" || legacyTab === "ask") {
         params.delete("prompt");
+        params.delete("tab");
         const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
         window.history.replaceState({}, '', newUrl);
       }

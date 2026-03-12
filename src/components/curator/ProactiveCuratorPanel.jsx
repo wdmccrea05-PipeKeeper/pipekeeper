@@ -1,8 +1,10 @@
-import React, { useMemo } from "react";
-import { Target, TrendingUp, Leaf, Clock, X, ArrowRight } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { Target, TrendingUp, Leaf, Clock, X, ArrowRight, RefreshCw, Trash2 } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { getKeeperIntelligence, PipesModule, TobaccoModule } from "@/components/keeperIntelligence";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const ICON_MAP = {
   Target,
@@ -49,6 +51,8 @@ function generateWhatIfPrompt(insight, t) {
 
 export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, curatorEnabled = true, onInsightClick }) {
   const { t } = useTranslation();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [cleared, setCleared] = useState(false);
 
   const handleClick = (insight) => {
     if (onInsightClick) {
@@ -75,7 +79,7 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
   };
 
   const insights = useMemo(() => {
-    if (!curatorEnabled) return [];
+    if (!curatorEnabled || cleared) return [];
 
     // Initialize engine
     const engine = getKeeperIntelligence();
@@ -127,9 +131,20 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
     });
 
     return generated.slice(0, 3); // Show max 3 insights
-  }, [pipes, blends, logs, curatorEnabled]);
+  }, [pipes, blends, logs, curatorEnabled, cleared, refreshKey]);
 
-  if (!curatorEnabled || insights.length === 0) return null;
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+    setCleared(false);
+    toast.success(t("curator.adviceRefreshed"));
+  };
+
+  const handleClear = () => {
+    setCleared(true);
+    toast.success(t("curator.adviceCleared"));
+  };
+
+  if (!curatorEnabled || (insights.length === 0 && !cleared)) return null;
 
   return (
     <div 
@@ -153,8 +168,18 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
           >
             <img 
               src="https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png" 
-              alt="Collection Curator"
+              alt={t("curator.title")}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const fallback = document.createElement('div');
+                fallback.innerHTML = '🎩';
+                fallback.style.fontSize = '24px';
+                fallback.style.display = 'flex';
+                fallback.style.alignItems = 'center';
+                fallback.style.justifyContent = 'center';
+                e.currentTarget.parentElement.appendChild(fallback);
+              }}
             />
           </div>
           <div>
@@ -172,23 +197,62 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
             </p>
           </div>
         </div>
-        {onDismiss && (
-          <button
-            onClick={onDismiss}
-            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-            style={{
-              background: "rgba(60,40,30,0.5)",
-              border: "1px solid rgba(120,90,65,0.25)"
-            }}
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleRefresh}
+            className="h-8 px-2 hover:bg-white/5"
+            title={t("curator.refreshAdvice")}
           >
-            <X className="w-4 h-4" style={{ color: "rgba(224,216,200,0.6)" }} />
-          </button>
-        )}
+            <RefreshCw className="w-4 h-4" style={{ color: "rgba(180,140,75,0.8)" }} />
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleClear}
+            className="h-8 px-2 hover:bg-white/5"
+            title={t("curator.clearAdvice")}
+          >
+            <Trash2 className="w-4 h-4" style={{ color: "rgba(180,140,75,0.6)" }} />
+          </Button>
+          {onDismiss && (
+            <button
+              onClick={onDismiss}
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+              style={{
+                background: "rgba(60,40,30,0.5)",
+                border: "1px solid rgba(120,90,65,0.25)"
+              }}
+            >
+              <X className="w-4 h-4" style={{ color: "rgba(224,216,200,0.6)" }} />
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Insights */}
-      <div className="space-y-3">
-        {insights.map((insight, index) => {
+      {/* Insights or empty state */}
+      {cleared ? (
+        <div className="text-center py-8 space-y-3">
+          <p className="text-sm" style={{ color: "rgba(224,216,200,0.6)" }}>
+            {t("curator.adviceCleared")}
+          </p>
+          <Button
+            onClick={handleRefresh}
+            size="sm"
+            className="mx-auto"
+            style={{
+              background: "linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))",
+              border: "1px solid rgba(120,90,65,0.4)"
+            }}
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            {t("curator.refreshAdvice")}
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {insights.map((insight, index) => {
           const Icon = ICON_MAP[insight.icon];
           const moduleAccents = ACCENT_MAP[insight.module] || {};
           const accent = moduleAccents[insight.title] || "#C87941";
@@ -233,14 +297,17 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
                   </div>
                   {insight.category && (
                     <div
-                      className="px-2 py-1 rounded text-xs font-medium whitespace-nowrap mt-0.5"
+                      className="px-2 py-1 rounded text-xs font-medium whitespace-nowrap mt-0.5 leading-tight"
                       style={{
                         background: `${accent}15`,
                         color: accent,
-                        border: `1px solid ${accent}25`
+                        border: `1px solid ${accent}25`,
+                        whiteSpace: "normal",
+                        wordWrap: "break-word",
+                        hyphens: "none"
                       }}
                     >
-                      {insight.category}
+                      {t(`curator.category.${insight.category.toLowerCase()}`, insight.category)}
                     </div>
                   )}
                 </div>
@@ -259,8 +326,9 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
               </div>
             </button>
           );
-        })}
-      </div>
+          })}
+        </div>
+      )}
     </div>
   );
 }
