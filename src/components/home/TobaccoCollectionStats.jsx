@@ -178,19 +178,27 @@ export default function TobaccoCollectionStats({ user: userProp }) {
               </button>
               <button
                 onClick={() => handleDrillDown('favorites', favoriteBlends)}
-                className="w-full flex justify-between items-center py-1.5 px-3 bg-white rounded-lg hover:bg-emerald-50 transition-colors group"
+                className="w-full flex justify-between items-center py-1.5 px-3 rounded-lg transition-colors group"
+                style={{
+                  background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                  border: "1px solid rgba(140,105,65,0.2)",
+                  color: "#E0D8C8"
+                }}
               >
-                <span className="text-stone-600 flex items-center gap-1">
+                <span style={{ color: "rgba(224,216,200,0.7)" }} className="flex items-center gap-1">
                   <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
                   {t("stats.favorites")}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-emerald-700">{favoriteBlends.length}</span>
-                  <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-emerald-600" />
+                  <span className="font-semibold" style={{ color: "rgba(180,140,75,0.9)" }}>{favoriteBlends.length}</span>
+                  <ChevronRight className="w-4 h-4" style={{ color: "rgba(180,140,75,0.6)" }} />
                 </div>
               </button>
-              <div className="space-y-2 bg-amber-50/50 rounded-lg p-2 border border-amber-200/50">
-                <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">{t("stats.tins")}</p>
+              <div className="space-y-2 rounded-lg p-2" style={{
+                background: "rgba(180,140,75,0.1)",
+                border: "1px solid rgba(180,140,75,0.25)"
+              }}>
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(180,140,75,0.9)" }}>{t("stats.tins")}</p>
                 <button
                   onClick={() => handleDrillDown('tinInventory', { blends: blends.filter(b => (b.tin_total_tins || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-amber-50 transition-colors group"
@@ -224,8 +232,11 @@ export default function TobaccoCollectionStats({ user: userProp }) {
 
               </div>
               
-              <div className="space-y-2 bg-blue-50/50 rounded-lg p-2 border border-blue-200/50">
-                <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide">{t("stats.bulk")}</p>
+              <div className="space-y-2 rounded-lg p-2" style={{
+                background: "rgba(140,140,140,0.1)",
+                border: "1px solid rgba(140,140,140,0.25)"
+              }}>
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(160,160,160,0.8)" }}>{t("stats.bulk")}</p>
                 <button
                   onClick={() => handleDrillDown('bulkInventory', { blends: blends.filter(b => (b.bulk_total_quantity_oz || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-blue-50 transition-colors group"
@@ -249,8 +260,11 @@ export default function TobaccoCollectionStats({ user: userProp }) {
 
               </div>
               
-              <div className="space-y-2 bg-purple-50/50 rounded-lg p-2 border border-purple-200/50">
-                <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide">{t("stats.pouches")}</p>
+              <div className="space-y-2 rounded-lg p-2" style={{
+                background: "rgba(140,100,140,0.1)",
+                border: "1px solid rgba(140,100,140,0.25)"
+              }}>
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(160,120,160,0.8)" }}>{t("stats.pouches")}</p>
                 <button
                   onClick={() => handleDrillDown('pouchInventory', { blends: blends.filter(b => (b.pouch_total_pouches || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-purple-50 transition-colors group"
@@ -284,8 +298,11 @@ export default function TobaccoCollectionStats({ user: userProp }) {
 
               </div>
               
-              <div className="space-y-2 bg-stone-50 rounded-lg p-2 border border-stone-200">
-                <p className="text-xs font-semibold text-stone-800 uppercase tracking-wide">{t("stats.overall")}</p>
+              <div className="space-y-2 rounded-lg p-2" style={{
+                background: "rgba(80,80,80,0.1)",
+                border: "1px solid rgba(120,120,120,0.25)"
+              }}>
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(180,180,180,0.8)" }}>{t("stats.overall")}</p>
                 <button
                   onClick={() => handleDrillDown('allInventory', { blends: blends.filter(b => 
                     (b.tin_total_quantity_oz || 0) > 0 || (b.bulk_total_quantity_oz || 0) > 0 || (b.pouch_total_quantity_oz || 0) > 0
