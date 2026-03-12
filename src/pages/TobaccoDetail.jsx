@@ -293,31 +293,35 @@ export default function TobaccoDetailPage() {
             </motion.div>
 
             {/* Inventory & Cellaring Management */}
-            <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 overflow-hidden">
+            <Card className="overflow-hidden" style={{
+              background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+              border: "1px solid rgba(140,105,65,0.35)",
+              boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+            }}>
               <Tabs defaultValue="containers" className="w-full">
-                <div className="relative border-b border-[#A35C5C]/30 overflow-x-auto">
+                <div className="relative border-b border-[rgba(140,105,65,0.35)] overflow-x-auto">
                   <div className="pointer-events-none absolute right-0 inset-y-0 w-8 bg-gradient-to-l from-[#1a2c42]" />
                   <TabsList className="w-full justify-start bg-transparent h-auto p-0 rounded-none inline-flex min-w-full">
                     <TabsTrigger 
-                      value="containers" 
-                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] data-[state=active]:text-[#E0D8C8] rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 text-[#E0D8C8]/70"
-                    >
-                      <span className="hidden sm:inline">{t("tobaccoExtended.openTobacco")}</span>
-                      <span className="sm:hidden">{t("tobaccoExtended.open")}</span>
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="log" 
-                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] data-[state=active]:text-[#E0D8C8] rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 text-[#E0D8C8]/70"
-                    >
-                      <span className="hidden sm:inline">{t("cellarLog.cellaredTobacco")}</span>
-                      <span className="sm:hidden">{t("tobaccoExtended.cellared")}</span>
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="inventory" 
-                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] data-[state=active]:text-[#E0D8C8] rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 text-[#E0D8C8]/70"
-                    >
-                      {t("tobaccoExtended.inventory")}
-                    </TabsTrigger>
+                        value="containers" 
+                        className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 data-[state=active]:text-[#E0D8C8] rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 text-[#E0D8C8]/70"
+                      >
+                        <span className="hidden sm:inline">{t("tobaccoExtended.openTobacco")}</span>
+                        <span className="sm:hidden">{t("tobaccoExtended.open")}</span>
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="log" 
+                        className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 data-[state=active]:text-[#E0D8C8] rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 text-[#E0D8C8]/70"
+                      >
+                        <span className="hidden sm:inline">{t("cellarLog.cellaredTobacco")}</span>
+                        <span className="sm:hidden">{t("tobaccoExtended.cellared")}</span>
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="inventory" 
+                        className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 data-[state=active]:text-[#E0D8C8] rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 text-[#E0D8C8]/70"
+                      >
+                        {t("tobaccoExtended.inventory")}
+                      </TabsTrigger>
                   </TabsList>
                 </div>
 
@@ -428,12 +432,16 @@ export default function TobaccoDetailPage() {
 
             {/* Tobacco Components */}
             {blend.tobacco_components?.length > 0 && (
-              <Card className="border-white/10">
+              <Card style={{
+                background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+                border: "1px solid rgba(140,105,65,0.35)",
+                boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+              }}>
                 <CardContent className="p-4">
                   <p className="text-xs text-[#E0D8C8]/70 mb-2">{t("tobaccoExtended.tobaccoComponents")}</p>
                   <div className="flex flex-wrap gap-2">
                     {blend.tobacco_components.map((comp) => (
-                      <Badge key={comp} variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
+                      <Badge key={comp} variant="secondary" className="bg-amber-700 text-amber-100 border-amber-600">
                         {comp}
                       </Badge>
                     ))}
@@ -444,12 +452,16 @@ export default function TobaccoDetailPage() {
 
             {/* Flavor Notes */}
             {blend.flavor_notes?.length > 0 && (
-              <Card className="border-white/10">
+              <Card style={{
+                background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+                border: "1px solid rgba(140,105,65,0.35)",
+                boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+              }}>
                 <CardContent className="p-4">
                   <p className="text-xs text-[#E0D8C8]/70 mb-2">{t("tobaccoExtended.flavorNotes")}</p>
                   <div className="flex flex-wrap gap-2">
                     {blend.flavor_notes.map((note) => (
-                      <Badge key={note} variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
+                      <Badge key={note} variant="secondary" className="bg-amber-700 text-amber-100 border-amber-600">
                         {note}
                       </Badge>
                     ))}
@@ -460,7 +472,11 @@ export default function TobaccoDetailPage() {
 
             {/* Aging Potential */}
             {blend.aging_potential && (
-              <Card className="border-white/10">
+              <Card style={{
+                background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+                border: "1px solid rgba(140,105,65,0.35)",
+                boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+              }}>
                 <CardContent className="p-4">
                   <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("tobaccoExtended.agingPotential")}</p>
                   <p className="font-medium text-[#E0D8C8]">{t(`agingPotentials.${blend.aging_potential}`, blend.aging_potential)}</p>
@@ -470,7 +486,11 @@ export default function TobaccoDetailPage() {
 
             {/* Notes */}
             {blend.notes && (
-              <Card className="border-white/10">
+              <Card style={{
+                background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+                border: "1px solid rgba(140,105,65,0.35)",
+                boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+              }}>
                 <CardContent className="p-4">
                   <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("formsExtended.notes")}</p>
                   <p className="text-[#E0D8C8]/80 break-words">{blend.notes}</p>
@@ -492,7 +512,11 @@ export default function TobaccoDetailPage() {
 
         {/* Comments Section */}
         {userProfile?.allow_comments && (
-          <Card className="border-white/10 mt-8">
+          <Card className="mt-8" style={{
+            background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+            border: "1px solid rgba(140,105,65,0.35)",
+            boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+          }}>
             <CardContent className="p-6">
               <CommentSection
                 entityType="blend"
