@@ -130,7 +130,6 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
   useEffect(() => {
     if (preFilledPrompt?.trim() && threadId && !sending) {
       setInput(preFilledPrompt);
-      onPromptConsumedRef.current?.();
       // Auto-send after input is set
       setTimeout(() => {
         if (threadId && !sending) {
@@ -176,6 +175,8 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
                 return [...withoutLocal, ...newMsgs];
               });
               setInput("");
+              // Mark prompt as consumed only after successful send
+              onPromptConsumedRef.current?.();
             } catch (e) {
               console.error(e);
               toast.error(t("curator.sendError"));
