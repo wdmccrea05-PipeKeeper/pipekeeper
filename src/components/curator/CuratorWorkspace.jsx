@@ -206,7 +206,7 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
       meta: {},
     };
     setMessages((prev) => [...prev, optimistic]);
-    if (!textOverride) setInput("");
+    setInput("");
     
     try {
       const englishText = await translateToEnglish(text, locale);
