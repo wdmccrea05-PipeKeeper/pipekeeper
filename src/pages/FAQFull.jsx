@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { ChevronDown, Wrench, BookOpen } from "lucide-react";
+import { ChevronDown, Wrench, BookOpen, Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -9,6 +9,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 export default function FAQFull() {
   const { t } = useTranslation();
   const [openItems, setOpenItems] = useState({});
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const toggleItem = (id) => {
     setOpenItems((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -59,6 +60,14 @@ export default function FAQFull() {
                 {t("help.troubleshooting", "Troubleshooting")}
               </Button>
             </Link>
+            <Button 
+              onClick={() => setShowTutorial(true)}
+              className="border-[rgba(180,140,75,0.35)] bg-[rgba(58,40,22,0.72)] text-[#F5F1E7] hover:bg-[rgba(180,140,75,0.2)]"
+              variant="outline"
+            >
+              <Play className="mr-2 h-4 w-4" />
+              {t("help.launchTutorial", "Launch Tutorial")}
+            </Button>
           </div>
         </div>
 
