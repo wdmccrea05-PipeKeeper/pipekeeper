@@ -377,8 +377,13 @@ export default function Home() {
           blends={blends}
           logs={smokingLogs}
           curatorEnabled={userProfile?.enable_curator !== false}
-          onInsightClick={(insight, whatIfPrompt) => {
-            window.location.href = createPageUrl(`Curator?tab=whatif&prompt=${encodeURIComponent(whatIfPrompt)}`);
+          onInsightClick={(insight) => {
+            const prompt = insight?.whatif_prompt || '';
+            if (prompt) {
+              window.location.href = createPageUrl(`Curator?tab=whatif&prompt=${encodeURIComponent(prompt)}`);
+            } else {
+              window.location.href = createPageUrl('Curator?tab=whatif');
+            }
           }}
         />
       )}
