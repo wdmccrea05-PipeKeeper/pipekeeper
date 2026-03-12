@@ -101,6 +101,7 @@ export function hasProAccess(user, subscription) {
 
 // Trial should NEVER be required to grant paid access.
 // Trial is informational and can be used for UX prompts only.
+// FIX: Validate trial end date — if trial is past, do not treat as active trial
 export function isTrialingAccess(user, subscription) {
   const userTrial =
     !!user?.trial_active ||
@@ -108,9 +109,21 @@ export function isTrialingAccess(user, subscription) {
     !!user?.trialing ||
     !!user?.trial;
 
-  const subTrial =
-    String(subscription?.status || "").toLowerCase() === "trialing" ||
-    !!subscription?.is_trialing;
+  const subStatus = String(subscription?.status || "").toLowerCase();
+  let subTrial = subStatus === "trialing" || !!subscription?.is_trialing;
+  
+  // FIX: Validate subscription trial hasn't expired
+  if (subTrial && subscription?.trial_end) {
+    try {
+      const trialEnd = new Date(subscription.trial_end);
+      if (Date.now() > trialEnd.getTime()) {
+        subTrial = false; // Trial is expired
+      }
+    } catch {
+      // If we can't parse trial_end, assume it's invalid
+      subTrial = false;
+    }
+  }
 
   return userTrial || subTrial;
 }
