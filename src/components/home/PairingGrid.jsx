@@ -384,7 +384,7 @@ function PipeCard({ row, allBlends, userProfile }) {
                 size="sm"
                 variant="outline"
                 onClick={calculateScore}
-                className="w-full text-white border-[#E0D8C8]/30 hover:bg-white/10"
+                className="w-full text-[#E0D8C8] border-[#8b6239]/30 hover:bg-[#3a2a20]/50"
               >
                 {t("pairingGrid.getScore")}
               </Button>

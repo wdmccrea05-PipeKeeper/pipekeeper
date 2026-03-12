@@ -344,7 +344,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
 
     try {
       const canvas = await html2canvas(shareImageRef, {
-        backgroundColor: '#1a2c42',
+        backgroundColor: '#0f0b08',
         scale: 2
       });
       

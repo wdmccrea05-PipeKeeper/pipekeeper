@@ -39,18 +39,18 @@ import TobaccoValuation from "@/components/tobacco/TobaccoValuation";
 import CuratorItemNote from "@/components/curator/CuratorItemNote";
 
 const BLEND_COLORS = {
-  "Virginia": "bg-yellow-100 text-yellow-800 border-yellow-200",
-  "Virginia/Perique": "bg-orange-100 text-orange-800 border-orange-200",
-  "English": "bg-stone-700 text-white border-stone-600",
-  "Balkan": "bg-stone-600 text-white border-stone-500",
-  "Aromatic": "bg-purple-100 text-purple-800 border-purple-200",
-  "Burley": "bg-amber-100 text-amber-800 border-amber-200",
-  "Virginia/Burley": "bg-yellow-200 text-yellow-900 border-yellow-300",
-  "Latakia Blend": "bg-stone-800 text-white border-stone-700",
-  "Oriental/Turkish": "bg-rose-100 text-rose-800 border-rose-200",
-  "Navy Flake": "bg-blue-100 text-blue-800 border-blue-200",
-  "Dark Fired": "bg-stone-500 text-white border-stone-400",
-  "Cavendish": "bg-amber-200 text-amber-900 border-amber-300",
+  "Virginia": "bg-yellow-900/30 text-yellow-200 border-yellow-700/40",
+  "Virginia/Perique": "bg-orange-900/30 text-orange-200 border-orange-700/40",
+  "English": "bg-stone-700/50 text-[#E0D8C8] border-stone-600/40",
+  "Balkan": "bg-stone-600/50 text-[#E0D8C8] border-stone-500/40",
+  "Aromatic": "bg-purple-900/30 text-purple-200 border-purple-700/40",
+  "Burley": "bg-amber-900/30 text-amber-200 border-amber-700/40",
+  "Virginia/Burley": "bg-yellow-900/30 text-yellow-200 border-yellow-700/40",
+  "Latakia Blend": "bg-stone-800/50 text-[#E0D8C8] border-stone-700/40",
+  "Oriental/Turkish": "bg-rose-900/30 text-rose-200 border-rose-700/40",
+  "Navy Flake": "bg-stone-700/50 text-[#E0D8C8] border-stone-600/40",
+  "Dark Fired": "bg-stone-500/50 text-[#E0D8C8] border-stone-400/40",
+  "Cavendish": "bg-amber-900/30 text-amber-200 border-amber-700/40",
 };
 
 export default function TobaccoDetailPage() {
@@ -196,7 +196,7 @@ export default function TobaccoDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-8">
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] p-8">
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 w-48 bg-stone-200 rounded" />
@@ -215,10 +215,10 @@ export default function TobaccoDetailPage() {
 
   if (!blend) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🍂</div>
-          <h2 className="text-2xl font-semibold text-stone-800 mb-2">{t("tobaccoExtended.blendNotFound")}</h2>
+          <h2 className="text-2xl font-semibold text-[#E0D8C8] mb-2">{t("tobaccoExtended.blendNotFound")}</h2>
           <a href={createPageUrl('Tobacco')}>
             <Button variant="outline">{t("tobaccoExtended.backToTobacco")}</Button>
           </a>
@@ -308,7 +308,7 @@ export default function TobaccoDetailPage() {
             }}>
               <Tabs defaultValue="containers" className="w-full">
                 <div className="relative border-b border-[rgba(140,105,65,0.35)] overflow-x-auto">
-                  <div className="pointer-events-none absolute right-0 inset-y-0 w-8 bg-gradient-to-l from-[#1a2c42]" />
+                  <div className="pointer-events-none absolute right-0 inset-y-0 w-8 bg-gradient-to-l from-[#0f0b08]" />
                   <TabsList className="w-full justify-start bg-transparent h-auto p-0 rounded-none inline-flex min-w-full">
                     <TabsTrigger 
                         value="containers" 
@@ -413,7 +413,7 @@ export default function TobaccoDetailPage() {
                 </Badge>
               )}
               {blend.strength && (
-                <Badge className="bg-stone-100 text-stone-700 border-stone-200">
+                <Badge className="bg-[#3a2a20]/50 text-[#E0D8C8] border-[#8b6239]/30">
                   {t(`strengths.${blend.strength}`, blend.strength)}
                 </Badge>
               )}

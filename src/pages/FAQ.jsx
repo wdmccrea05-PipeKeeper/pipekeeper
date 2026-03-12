@@ -17,7 +17,7 @@ function AppleFAQ() {
         </p>
       </div>
 
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+      <Card className="border-[#8b3a3a]/40 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
         <CardHeader>
           <CardTitle className="text-[#e8d5b7]">{t("faqExtended.whatIsApp")}</CardTitle>
         </CardHeader>
@@ -29,7 +29,7 @@ function AppleFAQ() {
         </CardContent>
       </Card>
 
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+      <Card className="border-[#8b3a3a]/40 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
         <CardHeader>
           <CardTitle className="text-[#e8d5b7]">{t("faqExtended.whatCanDo")}</CardTitle>
         </CardHeader>
@@ -46,7 +46,7 @@ function AppleFAQ() {
         </CardContent>
       </Card>
 
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+      <Card className="border-[#8b3a3a]/40 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
         <CardHeader>
           <CardTitle className="text-[#e8d5b7]">{t("faqExtended.whyMissingFeatures")}</CardTitle>
         </CardHeader>
@@ -57,7 +57,7 @@ function AppleFAQ() {
         </CardContent>
       </Card>
 
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+      <Card className="border-[#8b3a3a]/40 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
         <CardHeader>
           <CardTitle className="text-[#e8d5b7]">{t("faqExtended.whatAreTiers")}</CardTitle>
         </CardHeader>
@@ -79,7 +79,7 @@ function AppleFAQ() {
         </CardContent>
       </Card>
 
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+      <Card className="border-[#8b3a3a]/40 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
         <CardHeader>
           <CardTitle className="text-[#e8d5b7]">{t("faqExtended.howGetSupport")}</CardTitle>
         </CardHeader>

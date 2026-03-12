@@ -54,7 +54,7 @@ export const PK_TW = {
   divider: "border-t border-[#8b6239]/20",
 
   // Field surface for custom controls
-  field: "w-full rounded-xl border border-[#8b6239]/25 bg-[#1a2b3a] px-3 py-2 text-[#E0D8C8] placeholder:text-[#8b6239]/50 focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/50 focus:border-[#8b6239]/40",
+  field: "w-full rounded-xl border border-[#8b6239]/25 bg-[#1a1510] px-3 py-2 text-[#E0D8C8] placeholder:text-[#8b6239]/50 focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/50 focus:border-[#8b6239]/40",
 };
 
 export function PKCard({ className, children, ...props }) {

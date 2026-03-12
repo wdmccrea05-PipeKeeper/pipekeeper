@@ -148,22 +148,41 @@ export default function ProfilePage() {
           } catch {
             // Ignore error
           }
+          // Also query by created_by which may differ from user_email in some legacy rows
+          try {
+            const byCreatedBy = await base44.entities.UserProfile.filter({ created_by: email });
+            records = [...records, ...byCreatedBy];
+          } catch {
+            // Ignore error
+          }
         }
 
-        // De-duplicate by id
+        // De-duplicate using robust key: prefer id, fall back to composite
         const seen = new Set();
         const uniqueRecords = records.filter((r) => {
-          if (seen.has(r.id)) return false;
-          seen.add(r.id);
+          const key = r?.id || `${r?.user_id || ""}|${r?.user_email || ""}|${r?.created_by || ""}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
           return true;
         });
 
-        // Dev logging for duplicates
-        if (import.meta.env.DEV && uniqueRecords.length > 1) {
-          console.warn("[Profile] Multiple UserProfile rows detected", uniqueRecords.map(r => r.id));
+        if (import.meta.env.DEV) {
+          console.log("[Profile] Rows found:", uniqueRecords.length, "| IDs:", uniqueRecords.map(r => r.id));
         }
 
-        return consolidateProfiles(uniqueRecords) || null;
+        const bundle = consolidateProfiles(uniqueRecords) || null;
+
+        if (import.meta.env.DEV && bundle) {
+          console.log("[Profile] Master row ID:", bundle.masterId);
+          console.log("[Profile] Merged fields used for hydration:", {
+            display_name: bundle.merged?.display_name,
+            avatar_url: bundle.merged?.avatar_url,
+            bio: bundle.merged?.bio,
+            city: bundle.merged?.city,
+          });
+        }
+
+        return bundle;
       } catch (e) {
         console.warn("[Profile] Could not load UserProfile:", e);
         return null;
@@ -234,36 +253,36 @@ export default function ProfilePage() {
   const isWithinTrial = isTrial;
 
   useEffect(() => {
-    if (!profile) return;
+    if (!profile && !user) return;
 
     setFormData((prev) => ({
       ...prev,
-      display_name: profile.display_name || "",
-      bio: profile.bio || "",
-      avatar_url: profile.avatar_url || "",
-      city: profile.city || "",
-      state_province: profile.state_province || "",
-      country: profile.country || "",
-      postal_code: profile.postal_code || "",
-      show_location: !!profile.show_location,
-      is_public: !!profile.is_public,
-      allow_comments: profile.allow_comments !== undefined ? !!profile.allow_comments : true,
-      enable_messaging: !!profile.enable_messaging,
-      allow_web_lookups: profile.allow_web_lookups !== false,
-      home_hide_collection_values: !!profile.home_hide_collection_values,
-      privacy_hide_values: !!profile.privacy_hide_values,
-      privacy_hide_inventory: !!profile.privacy_hide_inventory,
-      privacy_hide_collection_counts: !!profile.privacy_hide_collection_counts,
-      show_social_media: !!profile.show_social_media,
-      clenching_preference: profile.clenching_preference || "Sometimes",
-      smoke_duration_preference: profile.smoke_duration_preference || "No Preference",
-      preferred_blend_types: Array.isArray(profile.preferred_blend_types) ? profile.preferred_blend_types : [],
-      pipe_size_preference: profile.pipe_size_preference || "No Preference",
-      preferred_shapes: Array.isArray(profile.preferred_shapes) ? profile.preferred_shapes : [],
-      strength_preference: profile.strength_preference || "No Preference",
-      notes: profile.notes || "",
+      display_name: profile?.display_name || user?.display_name || user?.full_name || user?.name || "",
+      bio: profile?.bio || user?.bio || "",
+      avatar_url: profile?.avatar_url || user?.avatar_url || "",
+      city: profile?.city || "",
+      state_province: profile?.state_province || "",
+      country: profile?.country || "",
+      postal_code: profile?.postal_code || "",
+      show_location: !!(profile?.show_location),
+      is_public: !!(profile?.is_public),
+      allow_comments: profile?.allow_comments !== undefined ? !!(profile.allow_comments) : true,
+      enable_messaging: !!(profile?.enable_messaging),
+      allow_web_lookups: profile?.allow_web_lookups !== false,
+      home_hide_collection_values: !!(profile?.home_hide_collection_values),
+      privacy_hide_values: !!(profile?.privacy_hide_values),
+      privacy_hide_inventory: !!(profile?.privacy_hide_inventory),
+      privacy_hide_collection_counts: !!(profile?.privacy_hide_collection_counts),
+      show_social_media: !!(profile?.show_social_media),
+      clenching_preference: profile?.clenching_preference || "Sometimes",
+      smoke_duration_preference: profile?.smoke_duration_preference || "No Preference",
+      preferred_blend_types: Array.isArray(profile?.preferred_blend_types) ? profile?.preferred_blend_types : [],
+      pipe_size_preference: profile?.pipe_size_preference || "No Preference",
+      preferred_shapes: Array.isArray(profile?.preferred_shapes) ? profile?.preferred_shapes : [],
+      strength_preference: profile?.strength_preference || "No Preference",
+      notes: profile?.notes || "",
     }));
-  }, [profile]);
+  }, [profile, user]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
