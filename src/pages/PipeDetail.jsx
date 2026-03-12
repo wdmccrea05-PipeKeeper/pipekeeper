@@ -63,6 +63,7 @@ import InterchangeableBowls from "@/components/pipes/InterchangeableBowls";
 import PipeConditionTracker from "@/components/pipes/PipeConditionTracker";
 import MaintenanceLog from "@/components/pipes/MaintenanceLog";
 import CuratorItemNote from "@/components/curator/CuratorItemNote";
+import ShareRecordModal from "@/components/share/ShareRecordModal";
 
 const PAGE_BG =
   "linear-gradient(180deg, rgba(14,10,8,0.98) 0%, rgba(11,9,8,1) 100%)";
