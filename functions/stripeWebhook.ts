@@ -112,9 +112,10 @@ async function getTier(sub, stripe) {
     }
   }
 
-  // Priority 5: Default to "premium" if tier cannot be determined from any source
-  console.warn(`[getTier] Could not determine tier for subscription ${sub.id}, price ${priceId} - defaulting to "premium"`);
-  return "premium";
+  // Priority 5: Unknown tier — do NOT default to premium (security risk)
+  // Log the error but return null so caller can use fallback logic
+  console.error(`[getTier] CRITICAL: Could not determine tier for subscription ${sub.id}, price ${priceId} - no fallback to premium allowed`);
+  return null;
 }
 
 Deno.serve(async (req) => {
@@ -435,19 +436,32 @@ Deno.serve(async (req) => {
 
         const detectedTier = await getTier(sub, stripe);
         
-        // FIX ISSUE-15: Also check subscription metadata for a tier hint before falling back.
+        // FIX ISSUE-15: Check subscription metadata for tier hint
         const metaTier = (sub.metadata?.tier || "").toLowerCase();
-        let resolvedTier: string;
+        let resolvedTier;
+        
         if (metaTier === "pro" || metaTier === "premium") {
           resolvedTier = metaTier;
+        } else if (detectedTier) {
+          resolvedTier = detectedTier;
+        } else if (existing?.tier) {
+          // Keep existing tier if we can't determine new one
+          resolvedTier = existing.tier;
+        } else if (isPaid) {
+          // FIX: Only default to premium if subscription actively grants access
+          // Never assume unknown subscriptions are premium
+          resolvedTier = "premium";
+          console.warn(`[webhook] Subscription ${sub.id} tier unknown but isPaid=true, safe default to premium`);
         } else {
-          // Keep existing tier if we can't determine new one, default to premium for active subs
-          resolvedTier = detectedTier || existing?.tier || (isPaid ? "premium" : null);
+          // Unknown status and doesn't grant access - don't guess
+          resolvedTier = null;
+          console.error(`[webhook] CRITICAL: Subscription ${sub.id} has unknown tier and isPaid=false, cannot resolve tier`);
         }
+        
         payload.tier = resolvedTier;
         
-        if (!detectedTier && !metaTier) {
-          console.warn(`[webhook] Could not determine tier for subscription ${sub.id}, using fallback: ${payload.tier || 'null'}`);
+        if (!detectedTier && !metaTier && !existing?.tier) {
+          console.warn(`[webhook] Tier resolution chain exhausted for ${sub.id}: detected=${detectedTier}, meta=${metaTier}, existing=${existing?.tier}, resolved=${resolvedTier}`);
         }
 
         await upsertSubscription(payload);
