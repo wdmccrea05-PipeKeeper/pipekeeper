@@ -194,6 +194,21 @@ export default function FAQFull() {
         <Q id="ai-regenerate" q={t("help.aiRegenerate")}>
           <p>{t("helpCenter.aiRegenerateDesc")}</p>
         </Q>
+        <Q id="collection-value" q={t("faqExtended.collectValueQ")}>
+          <p>{t("faqExtended.collectValueAnswer")}</p>
+        </Q>
+        <Q id="curator" q={t("faqExtended.curatorQ")}>
+          <p>{t("faqExtended.curatorAnswer")}</p>
+        </Q>
+        <Q id="story-cards" q={t("faqExtended.storyCardsQ")}>
+          <p>{t("faqExtended.storyCardsAnswer")}</p>
+        </Q>
+        <Q id="ai-valuation" q={t("faqExtended.aiValueQ")}>
+          <p>{t("faqExtended.aiValueAnswer")}</p>
+        </Q>
+        <Q id="logging-optional" q={t("faqExtended.loggingOptionalQ")}>
+          <p>{t("faqExtended.loggingOptionalAnswer")}</p>
+        </Q>
       </Section>
 
       <Section title={t("helpCenter.topicSupport")}>

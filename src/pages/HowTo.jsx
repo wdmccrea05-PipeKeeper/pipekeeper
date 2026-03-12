@@ -75,15 +75,7 @@ export default function HowTo() {
             </ol>
           </Q>
 
-          {/* Photo upload not in current en.json, skip */}
 
-          <Q id="measure-pipe" q={t("howTo.measurePipeQ")}>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.measurePipeSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
 
           <Q id="update-pipe" q={t("howTo.updatePipeQ")}>
             <ol className="list-decimal list-inside space-y-2">
@@ -96,6 +88,14 @@ export default function HowTo() {
           <Q id="mark-favorite" q={t("howTo.markFavoriteQ")}>
             <ol className="list-decimal list-inside space-y-2">
               {tArray("howTo.markFavoriteSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+
+          <Q id="delete-pipe" q={t("howTo.deletePipeQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.deletePipeSteps").map((step, i) => (
                 <li key={i}>{step}</li>
               ))}
             </ol>
@@ -118,6 +118,22 @@ export default function HowTo() {
               ))}
             </ol>
           </Q>
+
+          <Q id="manage-cellar" q={t("howTo.manageCellarQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.manageCellarSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+
+          <Q id="delete-tobacco" q={t("howTo.deleteTobaccoQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.deleteTobaccoSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
         </Section>
 
         <Section title={t("howTo.loggingSessions")}>
@@ -131,6 +147,47 @@ export default function HowTo() {
           <Q id="view-logs" q={t("howTo.viewLogsQ")}>
             <ol className="list-decimal list-inside space-y-2">
               {tArray("howTo.viewLogsSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+          <Q id="streaks" q={t("howTo.streaksQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.streaksSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+        </Section>
+
+        <Section title={t("howTo.measurements")}>
+          <Q id="measure-pipe" q={t("howTo.measurePipeQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.measurePipeSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+        </Section>
+
+        <Section title={t("howTo.insights")}>
+          <Q id="insights-general" q={t("howTo.insightsQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.insightsSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+          <Q id="curator" q={t("howTo.curatorQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.curatorSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+          <Q id="story-cards" q={t("howTo.storyCardQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.storyCardSteps").map((step, i) => (
                 <li key={i}>{step}</li>
               ))}
             </ol>
@@ -152,6 +209,44 @@ export default function HowTo() {
               ))}
             </ol>
           </Q>
+          <Q id="optimize" q={t("howTo.optimizeQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.optimizeSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+          <Q id="geometry" q={t("howTo.geometryQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.geometrySteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+        </Section>
+
+        <Section title={t("howTo.sharing")}>
+          <Q id="share" q={t("howTo.shareQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.shareSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+          <Q id="export" q={t("howTo.exportQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.exportSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+          <Q id="profile" q={t("howTo.profileQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.profileSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
         </Section>
 
         <Section title={t("howTo.subscriptions")}>
@@ -165,6 +260,13 @@ export default function HowTo() {
           <Q id="cancel" q={t("howTo.cancelQ")}>
             <ol className="list-decimal list-inside space-y-2">
               {tArray("howTo.cancelSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+          <Q id="tier-diff" q={t("howTo.tierDiffQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.tierDiffSteps").map((step, i) => (
                 <li key={i}>{step}</li>
               ))}
             </ol>
