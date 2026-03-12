@@ -338,7 +338,11 @@ export default function CollectionReportExporter({ user }) {
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="bg-gradient-to-br from-[#3a2a20] to-[#2a1a10] border border-[#8b6239]/30 rounded-lg p-4 space-y-4">
+        <div>
+          <h3 className="font-semibold text-[#E0D8C8] mb-3">{t("reports.collectionReports")}</h3>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Pipe Collection Report */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -434,6 +438,7 @@ export default function CollectionReportExporter({ user }) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </div>
 
       {/* PDF Preview Dialog */}
