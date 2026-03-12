@@ -30,34 +30,34 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
   const [activeTab, setActiveTab] = useState(externalActiveTab ?? "for_you");
   const [curatorPreFill, setCuratorPreFill] = useState("");
 
-  // Read prefilled prompt from URL on mount (normalize legacy tab= params)
+  // Read routed prompt and tab from URL on mount
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const promptFromUrl = params.get("prompt");
-      const legacyTab = params.get("tab");
+      const tabFromUrl = params.get("tab");
       
-      // Legacy routing cleanup: whatif, ask → curator
-      if (legacyTab === "whatif" || legacyTab === "ask") {
-        setActiveTab("curator");
-      }
-      
+      // Handle routed prompt (from Explore This, etc)
       if (promptFromUrl) {
         setCuratorPreFill(promptFromUrl);
+        // Prompt routing always targets curator tab
         setActiveTab("curator");
-        // Clean URL params AFTER setting state (use microtask to ensure state is updated)
-        // This prevents the prompt from being lost due to early URL cleanup
+        // Clean URL to prevent resubmission on refresh
         Promise.resolve().then(() => {
           params.delete("prompt");
           params.delete("tab");
           const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
           window.history.replaceState({}, '', newUrl);
         });
-      } else if (legacyTab === "whatif" || legacyTab === "ask") {
-        // Clean legacy tab param
-        params.delete("tab");
-        const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-        window.history.replaceState({}, '', newUrl);
+      } else if (tabFromUrl) {
+        // Explicit tab routing (without prompt)
+        setActiveTab(tabFromUrl);
+        // Clean tab param from URL
+        Promise.resolve().then(() => {
+          params.delete("tab");
+          const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+          window.history.replaceState({}, '', newUrl);
+        });
       }
     } catch (e) {
       console.error("Error reading URL params:", e);
