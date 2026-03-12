@@ -312,10 +312,10 @@ Deno.serve(async (req) => {
         // Ensure user exists before setting entitlement
         await ensureUserExists(user_email, customerId);
 
-        // FIX BUG-03: Default tierValue to "premium" when tier can't be determined from metadata.
-        // The user just paid, so they should receive at least premium access immediately.
+        // FIX BUG-03: Default tierValue to "pro" when tier can't be determined from metadata.
+        // The user just paid, so they should receive at least pro access immediately.
         const sessionTier = (session.metadata?.tier || "").toLowerCase();
-        const tierValue = (sessionTier === "pro" || sessionTier === "premium") ? sessionTier : "premium";
+        const tierValue = sessionTier === "pro" ? "pro" : "pro"; // COLLAPSE: Premium → Pro
         
         console.log(`[stripeWebhook] checkout.session.completed for ${user_email}, user_id=${user_id}, tier=${tierValue}`);
         
