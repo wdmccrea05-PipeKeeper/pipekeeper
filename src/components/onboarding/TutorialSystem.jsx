@@ -3,6 +3,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronLeft } from "lucide-react";
+import { safeLocalStorage, safeSetLocalStorage } from "@/components/utils/safeOperations";
 
 export default function TutorialSystem({ user, pipes = [], blends = [], forceTutorial = false, onTutorialClose }) {
   const { t } = useTranslation();
