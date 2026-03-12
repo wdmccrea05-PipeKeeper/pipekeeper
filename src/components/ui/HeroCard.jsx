@@ -237,6 +237,7 @@ export function StatusCard({
         background: `linear-gradient(145deg, rgba(52, 37, 24, 0.82), rgba(42, 30, 20, 0.92))`,
         border: `1px solid rgba(120, 90, 65, 0.32)`,
         boxShadow: `0 3px 10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 2px rgba(0,0,0,0.25)`,
+        minWidth: "140px"
       }}
     >
       {/* Blurred collection image background */}
@@ -277,9 +278,9 @@ export function StatusCard({
       />
 
       {/* Content */}
-      <div className="relative flex items-center gap-3">
+      <div className="relative flex items-center gap-3 min-w-0">
         <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{
             background: `linear-gradient(135deg, rgba(100, 70, 45, 0.48) 0%, rgba(80, 55, 35, 0.58) 100%)`,
             border: `1px solid rgba(120, 90, 65, 0.45)`,
@@ -289,7 +290,7 @@ export function StatusCard({
           <Icon className="w-4 h-4" style={{ color: "rgba(180, 140, 75, 1)", filter: `drop-shadow(0 0 4px rgba(180, 140, 75, 0.7))` }} />
         </div>
         <span 
-          className="text-[11px] uppercase tracking-[0.1em] font-semibold leading-tight flex-1" 
+          className="text-[10px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold leading-tight flex-1 min-w-0" 
           style={{ 
             color: "rgba(180, 140, 75, 0.85)",
             whiteSpace: "normal",
@@ -301,25 +302,26 @@ export function StatusCard({
         </span>
       </div>
 
-      <div className="relative">
+      <div className="relative min-w-0">
         <div
-          className="text-3xl font-bold leading-none tracking-tight break-words"
+          className="text-2xl sm:text-3xl font-bold leading-none tracking-tight"
           style={{ 
             color: "#F5F1E7", 
             textShadow: `0 2px 6px rgba(0,0,0,0.75)`,
             fontFamily: "'Georgia', serif",
+            whiteSpace: "normal",
             wordWrap: "break-word",
-            overflowWrap: "break-word",
-            hyphens: "auto"
+            hyphens: "none"
           }}
         >
           {value}
         </div>
         {sub && (
-          <div className="text-xs mt-1.5 font-medium break-words" style={{ 
+          <div className="text-xs mt-1.5 font-medium" style={{ 
             color: `rgba(180, 140, 75, 0.75)`,
+            whiteSpace: "normal",
             wordWrap: "break-word",
-            overflowWrap: "break-word"
+            hyphens: "none"
           }}>
             {sub}
           </div>
