@@ -87,11 +87,13 @@ function RotationDrillDownModal({ pipes, latestLogByPipe, open, onClose }) {
   });
 
   const handleBuildRotation = () => {
-    const pipeIds = overduePipes.map(p => p.id).join(',');
     const prompt = t("collectionIntelligence.rotationCuratorPrompt", 
       "Help me create a rotation plan for these underused pipes."
     );
-    window.location.href = createPageUrl(`Curator?prompt=${encodeURIComponent(prompt)}&pipeIds=${encodeURIComponent(pipeIds)}`);
+    const params = new URLSearchParams();
+    params.set('tab', 'curator');
+    params.set('prompt', prompt);
+    window.location.href = createPageUrl(`Curator?${params.toString()}`);
   };
 
   return (
