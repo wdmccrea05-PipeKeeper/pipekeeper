@@ -170,18 +170,26 @@ export function HeroCard({
         {/* Text hierarchy */}
         <div className="space-y-2">
           <div
-            className="text-[10px] uppercase tracking-[0.16em] font-bold"
-            style={{ color: `rgba(180, 140, 75, 0.95)` }}
+            className="text-[10px] uppercase tracking-[0.16em] font-bold break-words"
+            style={{ 
+              color: `rgba(180, 140, 75, 0.95)`,
+              wordBreak: "break-word",
+              overflowWrap: "break-word",
+              hyphens: "auto"
+            }}
           >
             {title}
           </div>
           <div
-            className="text-[2.25rem] font-extrabold leading-tight tracking-tight"
+            className="text-[2.25rem] font-extrabold leading-tight tracking-tight break-words"
             style={{
               color: "#F5F1E7",
               textShadow: `0 2px 10px rgba(0,0,0,0.8), 0 1px 3px rgba(0,0,0,0.95)`,
               WebkitTextStroke: "0.4px rgba(255,255,255,0.12)",
-              fontFamily: "'Georgia', serif"
+              fontFamily: "'Georgia', serif",
+              wordBreak: "break-word",
+              overflowWrap: "break-word",
+              hyphens: "auto"
             }}
           >
             {value ?? "—"}
