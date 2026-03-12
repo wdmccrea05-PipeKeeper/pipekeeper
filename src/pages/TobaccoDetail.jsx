@@ -34,6 +34,7 @@ import ImageModal from "@/components/ui/ImageModal";
 import CellarLog from "@/components/tobacco/CellarLog";
 import TobaccoValuation from "@/components/tobacco/TobaccoValuation";
 import CuratorItemNote from "@/components/curator/CuratorItemNote";
+import ShareRecordModal from "@/components/share/ShareRecordModal";
 
 const PAGE_BG =
   "linear-gradient(180deg, rgba(14,10,8,0.98) 0%, rgba(11,9,8,1) 100%)";
