@@ -59,38 +59,7 @@ export default function StoryViewer({ cards, onClose, onShare, user }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentIndex, cards.length]);
 
-  const handleExportCard = async () => {
-    try {
-      // Get the card element
-      const cardElement = containerRef.current?.querySelector('[data-card-export]');
-      if (!cardElement) {
-        toast.error('Could not export card');
-        return;
-      }
 
-      // Use html2canvas to capture the card
-      const html2canvas = (await import('html2canvas')).default;
-      const canvas = await html2canvas(cardElement, {
-        backgroundColor: null,
-        scale: 2,
-        useCORS: true
-      });
-
-      // Convert to blob and download
-      canvas.toBlob((blob) => {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `pipekeeper-story-${currentIndex + 1}.png`;
-        link.click();
-        URL.revokeObjectURL(url);
-        toast.success('Card exported!');
-      });
-    } catch (error) {
-      console.error('Export failed:', error);
-      toast.error('Could not export card');
-    }
-  };
 
   if (!currentCard || cards.length === 0) {
     return null;
@@ -123,9 +92,10 @@ export default function StoryViewer({ cards, onClose, onShare, user }) {
 
       {/* Share button */}
       <button
-        onClick={() => onShare(currentCard)}
+        onClick={() => onShare(currentCard, currentIndex)}
         className="absolute top-6 right-6 z-10 p-2 rounded-lg hover:bg-white/10 transition-all flex items-center gap-2 text-white text-sm"
         title="Share or export this card"
+        aria-label="Share current story card"
       >
         <Share2 className="w-5 h-5" />
         <span className="hidden sm:inline">Share</span>
@@ -135,7 +105,9 @@ export default function StoryViewer({ cards, onClose, onShare, user }) {
       <div
         ref={containerRef}
         className="w-full max-w-md aspect-[9/16] flex items-center justify-center relative"
-        data-card-export
+        data-story-card
+        role="region"
+        aria-label={`Story card ${currentIndex + 1} of ${cards.length}`}
       >
         <StoryCard card={currentCard} />
       </div>
@@ -146,11 +118,12 @@ export default function StoryViewer({ cards, onClose, onShare, user }) {
           onClick={handlePrev}
           disabled={currentIndex === 0}
           className="p-2 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          aria-label="Previous card"
         >
           <ChevronLeft className="w-6 h-6 text-white" />
         </button>
 
-        <div className="text-white text-sm font-semibold">
+        <div className="text-white text-sm font-semibold" role="status" aria-live="polite">
           {currentIndex + 1} / {cards.length}
         </div>
 
@@ -158,6 +131,7 @@ export default function StoryViewer({ cards, onClose, onShare, user }) {
           onClick={handleNext}
           disabled={currentIndex === cards.length - 1}
           className="p-2 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          aria-label="Next card"
         >
           <ChevronRight className="w-6 h-6 text-white" />
         </button>

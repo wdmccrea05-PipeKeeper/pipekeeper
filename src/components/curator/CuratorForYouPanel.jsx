@@ -323,7 +323,11 @@ export default function CuratorForYouPanel({ pipes = [], blends = [], onAskCurat
 
   const handleOpenWhatIf = useCallback(
     (insight) => {
-      onOpenWhatIf?.(insight);
+      // Pass the insight's whatif_prompt for prefilling
+      onOpenWhatIf?.({
+        ...insight,
+        whatif_prompt: insight.whatif_prompt || insight.summary || ''
+      });
     },
     [onOpenWhatIf]
   );

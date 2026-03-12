@@ -19,24 +19,49 @@ export default function StoryButton() {
     return null; // Don't show button if no story to display
   }
 
-  const handleShare = async (card) => {
+  const handleShare = async (currentCard, currentIndex) => {
+    // Get the card element for export
+    const cardElement = document.querySelector('[data-story-card]');
+    if (!cardElement) {
+      toast.error('Could not export card');
+      return;
+    }
+
     try {
+      // Use html2canvas to capture the current card
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(cardElement, {
+        backgroundColor: '#0e1520',
+        scale: 3,
+        useCORS: true,
+        logging: false
+      });
+
+      // Convert to blob
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const file = new File([blob], `pipekeeper-story-${currentIndex + 1}.png`, { type: 'image/png' });
+
       // Try native share if available
-      if (navigator.share) {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
-          title: 'My PipeKeeper Story',
-          text: `Check out my collector story on PipeKeeper!`,
-          url: window.location.href
+          files: [file],
+          title: currentCard?.title || 'My PipeKeeper Story',
+          text: 'Check out my collector story!'
         });
       } else {
-        // Fallback: copy link to clipboard
-        await navigator.clipboard.writeText(window.location.href);
-        toast.success('Link copied to clipboard!');
+        // Fallback: download
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `pipekeeper-story-${currentIndex + 1}.png`;
+        link.click();
+        URL.revokeObjectURL(url);
+        toast.success('Story card saved!');
       }
     } catch (error) {
-      if (error.name !== 'AbortError') {
+      if (error?.name !== 'AbortError') {
         console.error('Share failed:', error);
-        toast.error('Could not share');
+        toast.error('Could not share story');
       }
     }
   };

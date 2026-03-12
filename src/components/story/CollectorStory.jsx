@@ -17,6 +17,13 @@ export default function CollectorStory({ isOpen, onClose, storyCards }) {
   const cardRef = useRef(null);
   const progressIntervalRef = useRef(null);
 
+  // Reset to first card when reopened
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentIndex(0);
+    }
+  }, [isOpen]);
+
   const totalCards = storyCards?.length || 0;
   const currentCard = storyCards?.[currentIndex];
 
@@ -64,6 +71,7 @@ export default function CollectorStory({ isOpen, onClose, storyCards }) {
       goToPrevious();
     }
 
+    // Clean up touch state
     setTouchStart(0);
     setTouchEnd(0);
   };
@@ -164,6 +172,7 @@ export default function CollectorStory({ isOpen, onClose, storyCards }) {
         onClick={onClose}
         className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors"
         style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
+        aria-label={t("story.close", { defaultValue: "Close story" })}
       >
         <X className="w-5 h-5" />
       </button>
@@ -176,6 +185,7 @@ export default function CollectorStory({ isOpen, onClose, storyCards }) {
             goToPrevious();
           }}
           className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all hidden sm:flex"
+          aria-label={t("story.previous", { defaultValue: "Previous card" })}
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -187,6 +197,7 @@ export default function CollectorStory({ isOpen, onClose, storyCards }) {
             goToNext();
           }}
           className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all hidden sm:flex"
+          aria-label={t("story.next", { defaultValue: "Next card" })}
         >
           <ChevronRight className="w-6 h-6" />
         </button>
@@ -211,7 +222,11 @@ export default function CollectorStory({ isOpen, onClose, storyCards }) {
       </div>
 
       {/* Card counter */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-xs font-medium">
+      <div 
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-xs font-medium"
+        role="status"
+        aria-live="polite"
+      >
         {currentIndex + 1} / {totalCards}
       </div>
     </div>
@@ -482,9 +497,10 @@ function StoryCard({
             boxShadow: `0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)`,
             border: `1px solid rgba(140,105,60,0.8)`,
           }}
+          aria-label={t("story.shareCard", { defaultValue: "Share this card" })}
         >
           <Share2 className="w-4 h-4" />
-          Share
+          {t("story.share", { defaultValue: "Share" })}
         </button>
       </div>
     </div>

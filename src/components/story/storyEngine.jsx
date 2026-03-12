@@ -94,20 +94,33 @@ export const storyEngine = {
       longestStreak = Math.max(longestStreak, currentStreak);
     }
 
-    // Calculate collection value
-    const pipeValue = pipes.reduce((sum, p) => sum + (Number(p.estimated_value) || 0), 0);
+    // Calculate collection value using canonical helpers
+    const pipeValue = pipes.reduce((sum, p) => {
+      const val = Number(p.estimated_value) || 0;
+      return sum + val;
+    }, 0);
+    
+    // FIXED: Use canonical tobacco value calculation (value per oz * actual quantity)
+    // Import calculateTotalOzFromBlend if available or inline the logic
     const blendValue = blends.reduce((sum, b) => {
-      const manualValue = Number(b.manual_market_value) || 0;
-      const aiValue = Number(b.ai_estimated_value) || 0;
-      return sum + (manualValue || aiValue || 0);
+      const valuePerOz = Number(b.manual_market_value) || Number(b.ai_estimated_value) || 0;
+      if (valuePerOz <= 0) return sum;
+      
+      // Calculate total quantity from all formats
+      const tinOz = Number(b.tin_total_quantity_oz) || 0;
+      const bulkOz = Number(b.bulk_total_quantity_oz) || 0;
+      const pouchOz = Number(b.pouch_total_quantity_oz) || 0;
+      const totalOz = tinOz + bulkOz + pouchOz;
+      
+      return sum + (valuePerOz * totalOz);
     }, 0);
 
-    // Analyze cellar
+    // Analyze cellar using canonical quantity calculation
     const totalCellarOz = blends.reduce((sum, b) => {
-      const tin = Number(b.tin_total_quantity_oz) || 0;
-      const bulk = Number(b.bulk_total_quantity_oz) || 0;
-      const pouch = Number(b.pouch_total_quantity_oz) || 0;
-      return sum + tin + bulk + pouch;
+      const tinOz = Number(b.tin_total_quantity_oz) || 0;
+      const bulkOz = Number(b.bulk_total_quantity_oz) || 0;
+      const pouchOz = Number(b.pouch_total_quantity_oz) || 0;
+      return sum + tinOz + bulkOz + pouchOz;
     }, 0);
 
     return {

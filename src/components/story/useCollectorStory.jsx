@@ -15,11 +15,11 @@ export function useCollectorStory(user) {
       }
 
       try {
-        // Fetch all collection data
+        // Fetch user-scoped collection data
         const [pipes, blends, logs] = await Promise.all([
-          base44.entities.Pipe.list(),
-          base44.entities.TobaccoBlend.list(),
-          base44.entities.SmokingLog.list()
+          base44.entities.Pipe.filter({ created_by: user.email }),
+          base44.entities.TobaccoBlend.filter({ created_by: user.email }),
+          base44.entities.SmokingLog.filter({ created_by: user.email })
         ]);
 
         // Generate story cards

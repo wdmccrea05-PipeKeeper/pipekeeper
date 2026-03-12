@@ -68,41 +68,41 @@ export default function WhatsNewPopup({ user }) {
           }}>
             <Sparkles className="w-7 h-7" style={{ color: '#D4A574' }} />
           </div>
-          <h2 className="text-3xl font-bold text-[#E0D8C8] mb-2">What's New</h2>
-          <p className="text-[#E0D8C8]/70">PipeKeeper has been updated with exciting new features</p>
+          <h2 className="text-3xl font-bold text-[#E0D8C8] mb-2">{t("whatsNew.title", { defaultValue: "What's New" })}</h2>
+          <p className="text-[#E0D8C8]/70">{t("whatsNew.subtitle", { defaultValue: "PipeKeeper has been updated with exciting new features" })}</p>
         </div>
 
         {/* Content */}
         <div className="px-8 py-6 space-y-4 max-h-96 overflow-y-auto">
           <FeatureItem
             icon="📖"
-            title="Collector Story Cards"
-            description="View and share beautiful narrative cards about your collector journey. Tap View Story on your Home page."
+            title={t("whatsNew.storyTitle", { defaultValue: "Collector Story Cards" })}
+            description={t("whatsNew.storyDesc", { defaultValue: "View and share beautiful narrative cards about your collector journey. Tap View Story on your Home page." })}
           />
           <FeatureItem
             icon="🎯"
-            title="Enhanced Collection Curator"
-            description="Get expert guidance organized into 5 categories: Rotation, Cellar, Pairing, Discovery, and Stewardship."
+            title={t("whatsNew.curatorTitle", { defaultValue: "Enhanced Collection Curator" })}
+            description={t("whatsNew.curatorDesc", { defaultValue: "Get expert guidance organized into 5 categories: Rotation, Cellar, Pairing, Discovery, and Stewardship." })}
           />
           <FeatureItem
             icon="📊"
-            title="Improved Insights Dashboard"
-            description="More detailed collection statistics, smoking streaks, and collection highlights with beautiful visualizations."
+            title={t("whatsNew.insightsTitle", { defaultValue: "Improved Insights Dashboard" })}
+            description={t("whatsNew.insightsDesc", { defaultValue: "More detailed collection statistics, smoking streaks, and collection highlights with beautiful visualizations." })}
           />
           <FeatureItem
             icon="💡"
-            title="Better Recommendations"
-            description="Smarter AI pairing suggestions, collection optimization, and curator insights based on your preferences."
+            title={t("whatsNew.recommendationsTitle", { defaultValue: "Better Recommendations" })}
+            description={t("whatsNew.recommendationsDesc", { defaultValue: "Smarter AI pairing suggestions, collection optimization, and curator insights based on your preferences." })}
           />
           <FeatureItem
             icon="🔍"
-            title="Advanced AI Tools"
-            description="Use AI to identify pipes, analyze geometry from photos, and estimate tobacco market values."
+            title={t("whatsNew.aiToolsTitle", { defaultValue: "Advanced AI Tools" })}
+            description={t("whatsNew.aiToolsDesc", { defaultValue: "Use AI to identify pipes, analyze geometry from photos, and estimate tobacco market values." })}
           />
           <FeatureItem
             icon="🌍"
-            title="Enhanced Sharing"
-            description="Export story cards and collection insights to share with other enthusiasts on social media."
+            title={t("whatsNew.sharingTitle", { defaultValue: "Enhanced Sharing" })}
+            description={t("whatsNew.sharingDesc", { defaultValue: "Export story cards and collection insights to share with other enthusiasts on social media." })}
           />
         </div>
 
@@ -116,7 +116,7 @@ export default function WhatsNewPopup({ user }) {
               className="w-4 h-4 rounded cursor-pointer"
             />
             <span className="text-sm text-[#E0D8C8]/70 group-hover:text-[#E0D8C8] transition-colors">
-              Don't show this again
+              {t("whatsNew.dontShowAgain", { defaultValue: "Don't show this again" })}
             </span>
           </label>
           <div className="flex gap-3">
@@ -125,18 +125,18 @@ export default function WhatsNewPopup({ user }) {
               className="flex-1 px-4 py-2.5 rounded-lg font-semibold transition-all hover:bg-white/10"
               style={{ color: '#D4A574' }}
             >
-              Dismiss
+              {t("whatsNew.dismiss", { defaultValue: "Dismiss" })}
             </button>
             <a
               href="/Help"
               onClick={handleDismiss}
-              className="flex-1 px-4 py-2.5 rounded-lg font-semibold text-white transition-all"
+              className="flex-1 px-4 py-2.5 rounded-lg font-semibold text-white transition-all text-center"
               style={{
                 background: 'linear-gradient(135deg, rgba(212, 175, 116, 0.3), rgba(212, 175, 116, 0.15))',
                 border: '1px solid rgba(212, 175, 116, 0.4)'
               }}
             >
-              Learn More
+              {t("whatsNew.learnMore", { defaultValue: "Learn More" })}
             </a>
           </div>
         </div>
