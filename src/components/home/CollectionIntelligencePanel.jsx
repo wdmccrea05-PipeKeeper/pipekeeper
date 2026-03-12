@@ -176,7 +176,10 @@ function InsightCard({ insight, onAction }) {
 
   const handleCuratorAction = () => {
     if (insight.curatorPrompt) {
-      window.location.href = createPageUrl(`Curator?prompt=${encodeURIComponent(insight.curatorPrompt)}`);
+      const params = new URLSearchParams();
+      params.set('tab', 'curator');
+      params.set('prompt', insight.curatorPrompt);
+      window.location.href = createPageUrl(`Curator?${params.toString()}`);
     }
   };
 
