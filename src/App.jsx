@@ -12,6 +12,7 @@ import PublicSharedRecord from '@/pages/PublicSharedRecord';
 import CuratorAnalyticsDashboard from '@/pages/CuratorAnalyticsDashboard';
 import CollectionInsightsShare from '@/pages/CollectionInsightsShare';
 import Whiskey from '@/pages/Whiskey';
+import Subscription from '@/pages/Subscription';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
