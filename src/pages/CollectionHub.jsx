@@ -132,7 +132,7 @@ export default function CollectionHub() {
       <RecentActivity />
 
       {/* Curator Section (with ecosystem context) */}
-      <CuratorHub summary={summary} />
+      <CuratorHub summary={summary} recentActivities={recentActivities} />
 
       {/* Coming Soon Section (from registry) */}
       {comingSoonModules.length > 0 && (
