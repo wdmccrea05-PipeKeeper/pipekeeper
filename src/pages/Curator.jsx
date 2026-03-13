@@ -9,15 +9,6 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
 
-function getUrlPrompt() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    return String(params.get("prompt") || "").trim();
-  } catch {
-    return "";
-  }
-}
-
 function readStoredCuratorContext() {
   try {
     const stored = sessionStorage.getItem("pk_curator_context");
@@ -27,6 +18,15 @@ function readStoredCuratorContext() {
   } catch (e) {
     console.warn("Failed to parse curator context:", e);
     return null;
+  }
+}
+
+function getUrlPrompt() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return String(params.get("prompt") || "").trim();
+  } catch {
+    return "";
   }
 }
 
@@ -44,21 +44,21 @@ function resolveLaunchContext() {
 
   const ctx = stored || {};
 
-  // This is the key fix:
-  // prefer recommendation-specific routed content over generic fallback prompt strings.
+  // CRITICAL FIX:
+  // Prefer the clicked recommendation text over the generic mapped prompt.
   const initialPrompt =
-    String(ctx.whatif_prompt || "").trim() ||
     String(ctx.originalPrompt || "").trim() ||
     String(ctx.originalInsight || "").trim() ||
+    String(ctx.whatif_prompt || "").trim() ||
     String(ctx.prompt || "").trim() ||
     urlPrompt ||
     "";
 
   return {
     source:
-      (ctx.whatif_prompt && "stored.whatif_prompt") ||
       (ctx.originalPrompt && "stored.originalPrompt") ||
       (ctx.originalInsight && "stored.originalInsight") ||
+      (ctx.whatif_prompt && "stored.whatif_prompt") ||
       (ctx.prompt && "stored.prompt") ||
       (urlPrompt && "url.prompt") ||
       "none",
