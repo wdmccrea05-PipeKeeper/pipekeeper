@@ -409,15 +409,6 @@ export default function Home() {
           blends={blends}
           logs={smokingLogs}
           curatorEnabled={userProfile?.enable_curator !== false}
-          onInsightClick={(insight) => {
-            const prompt = insight?.whatif_prompt || '';
-            const params = new URLSearchParams();
-            params.set('tab', 'curator');
-            if (prompt) {
-              params.set('prompt', prompt);
-            }
-            window.location.href = createPageUrl(`Curator?${params.toString()}`);
-          }}
         />
       )}
 
