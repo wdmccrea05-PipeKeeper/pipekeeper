@@ -91,7 +91,6 @@ function RotationDrillDownModal({ pipes, latestLogByPipe, open, onClose }) {
       "Help me create a rotation plan for these underused pipes."
     );
     const params = new URLSearchParams();
-    params.set('tab', 'curator');
     params.set('prompt', prompt);
     window.location.href = createPageUrl(`Curator?${params.toString()}`);
   };
@@ -177,7 +176,6 @@ function InsightCard({ insight, onAction }) {
   const handleCuratorAction = () => {
     if (insight.curatorPrompt) {
       const params = new URLSearchParams();
-      params.set('tab', 'curator');
       params.set('prompt', insight.curatorPrompt);
       window.location.href = createPageUrl(`Curator?${params.toString()}`);
     }
@@ -298,7 +296,6 @@ function UpdateFeedItem({ update }) {
       prompt = t("collectionIntelligence.updateExplainPrompt", `Explain the ${update.title} update.`);
     }
     const params = new URLSearchParams();
-    params.set('tab', 'curator');
     params.set('prompt', prompt);
     window.location.href = createPageUrl(`Curator?${params.toString()}`);
   };

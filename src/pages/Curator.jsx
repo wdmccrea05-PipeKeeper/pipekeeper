@@ -1,26 +1,37 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
+import CuratorWorkspace from "@/components/curator/CuratorWorkspace";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import InfoTooltip from "@/components/ui/InfoTooltip";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
-// Read optional tab param from URL synchronously (e.g. /Curator?tab=curator&prompt=...).
-// This is safe because a navigation to /Curator always triggers a full mount.
-function getTabFromUrl() {
+const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
+
+function getRoutedPrompt() {
   try {
     const params = new URLSearchParams(window.location.search);
-    // If prompt is provided, default to curator tab unless explicitly overridden
-    const tab = params.get("tab");
-    const hasPrompt = params.has("prompt");
-    return tab || (hasPrompt ? "curator" : "for_you");
+    return (params.get('prompt') || '').trim();
   } catch {
-    return "for_you";
+    return '';
   }
+}
+
+function clearRouteState() {
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('prompt');
+    url.searchParams.delete('tab');
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  } catch {}
 }
 
 export default function Curator() {
   const { user, hasPaid } = useCurrentUser();
-  const initialTab = getTabFromUrl();
+  const { t } = useTranslation();
+  const [routedPrompt, setRoutedPrompt] = useState(getRoutedPrompt());
 
   const { data: pipes = [] } = useQuery({
     queryKey: ["pipes", user?.email],
@@ -42,15 +53,49 @@ export default function Curator() {
     staleTime: 10000,
   });
 
+  useEffect(() => {
+    const prompt = getRoutedPrompt();
+    if (prompt) {
+      setRoutedPrompt(prompt);
+    }
+  }, []);
+
+  const handlePromptConsumed = () => {
+    clearRouteState();
+    setRoutedPrompt('');
+  };
+
   return (
     <div className="space-y-5">
-      <ExpertTobacconist
-        pipes={pipes}
-        blends={blends}
-        isPaidUser={hasPaid}
-        user={user}
-        activeTab={initialTab}
-      />
+      <Card>
+        <CardHeader className="border-b border-[#1a2c42]/20">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+              <img
+                src={TOBACCONIST_ICON}
+                alt={t("curator.workspaceTitle")}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <CardTitle className="text-base sm:text-xl text-[#E0D8C8] leading-tight">{t("curator.workspaceTitle")}</CardTitle>
+                <Badge variant="outline" className="text-xs border-[#E0D8C8]/30 text-[#E0D8C8]/80 shrink-0">{t("tobacconist.optional")}</Badge>
+                <InfoTooltip text={t("curator.workspaceTooltip")} />
+              </div>
+              <p className="text-sm text-[#E0D8C8]/70">{t("curator.workspaceSubtitle")}</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <CuratorWorkspace
+            pipes={pipes}
+            blends={blends}
+            preFilledPrompt={routedPrompt}
+            onPromptConsumed={handlePromptConsumed}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
