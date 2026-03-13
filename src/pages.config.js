@@ -53,8 +53,11 @@ import AdminSubscriptionRequests from './pages/AdminSubscriptionRequests';
 import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
 import AgeGate from './pages/AgeGate';
 import BulkLogoUpload from './pages/BulkLogoUpload';
+import CollectionHub from './pages/CollectionHub';
+import CollectionInsightsShare from './pages/CollectionInsightsShare';
 import Community from './pages/Community';
 import Curator from './pages/Curator';
+import CuratorAnalyticsDashboard from './pages/CuratorAnalyticsDashboard';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
@@ -69,6 +72,7 @@ import Pipes from './pages/Pipes';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
+import PublicSharedRecord from './pages/PublicSharedRecord';
 import Subscription from './pages/Subscription';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
 import SubscriptionE2ETest from './pages/SubscriptionE2ETest';
@@ -86,7 +90,10 @@ import Troubleshooting from './pages/Troubleshooting';
 import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
+import Whiskey from './pages/Whiskey';
 import index from './pages/index';
+import PipeKeeper from './pages/PipeKeeper';
+import WhiskeyKeeper from './pages/WhiskeyKeeper';
 import __Layout from './Layout.jsx';
 
 
@@ -97,8 +104,11 @@ export const PAGES = {
     "AdminSubscriptionTools": AdminSubscriptionTools,
     "AgeGate": AgeGate,
     "BulkLogoUpload": BulkLogoUpload,
+    "CollectionHub": CollectionHub,
+    "CollectionInsightsShare": CollectionInsightsShare,
     "Community": Community,
     "Curator": Curator,
+    "CuratorAnalyticsDashboard": CuratorAnalyticsDashboard,
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
@@ -113,6 +123,7 @@ export const PAGES = {
     "PrivacyPolicy": PrivacyPolicy,
     "Profile": Profile,
     "PublicProfile": PublicProfile,
+    "PublicSharedRecord": PublicSharedRecord,
     "Subscription": Subscription,
     "SubscriptionCancelled": SubscriptionCancelled,
     "SubscriptionE2ETest": SubscriptionE2ETest,
@@ -130,7 +141,10 @@ export const PAGES = {
     "TroubleshootingFull": TroubleshootingFull,
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
+    "Whiskey": Whiskey,
     "index": index,
+    "PipeKeeper": PipeKeeper,
+    "WhiskeyKeeper": WhiskeyKeeper,
 }
 
 export const pagesConfig = {
