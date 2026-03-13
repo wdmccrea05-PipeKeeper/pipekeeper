@@ -10,6 +10,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import GlobalErrorBoundary from '@/components/system/GlobalErrorBoundary';
 import PublicSharedRecord from '@/pages/PublicSharedRecord';
 import CuratorAnalyticsDashboard from '@/pages/CuratorAnalyticsDashboard';
+import CollectionInsightsShare from '@/pages/CollectionInsightsShare';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
