@@ -16,11 +16,18 @@ export default function RecentActivity({ onActivitiesLoaded = null }) {
         const recentActivities = await getRecentCrossModuleActivity();
         if (!cancelled) {
           setActivities(recentActivities);
+          // Notify parent of loaded activities (for Curator context)
+          if (onActivitiesLoaded) {
+            onActivitiesLoaded(recentActivities);
+          }
         }
       } catch (error) {
         console.warn('[RecentActivity] Error loading activities:', error);
         if (!cancelled) {
           setActivities([]);
+          if (onActivitiesLoaded) {
+            onActivitiesLoaded([]);
+          }
         }
       } finally {
         if (!cancelled) {
@@ -32,7 +39,7 @@ export default function RecentActivity({ onActivitiesLoaded = null }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [onActivitiesLoaded]);
 
   if (loading) {
     return (
