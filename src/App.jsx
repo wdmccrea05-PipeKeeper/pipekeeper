@@ -56,6 +56,11 @@ const AuthenticatedApp = () => {
           <Whiskey />
         </LayoutWrapper>
       } />
+      <Route path="/Curator" element={
+        <LayoutWrapper currentPageName="Curator">
+          <Curator />
+        </LayoutWrapper>
+      } />
       <Route path="/Subscription" element={
         <LayoutWrapper currentPageName="Subscription">
           <Subscription />
