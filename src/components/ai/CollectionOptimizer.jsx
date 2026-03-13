@@ -53,7 +53,7 @@ import { FormattedTobacconistResponse } from "@/components/utils/formatTobacconi
 import { getPipeVariantKey, expandPipesToVariants } from "@/components/utils/pipeVariants";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation, translate } from "@/components/i18n/safeTranslation";
-import { translateToEnglish, translateFromEnglish, getCurrentLocale, normalizeRecommendationText } from "@/components/utils/aiTranslation";
+import { translateToEnglish, translateFromEnglish, getCurrentLocale } from "@/components/utils/aiTranslation";
 
 /**
  * Drop-in replacement notes:
@@ -136,9 +136,9 @@ function CollectionOptimizerInner({
   blends,
   showWhatIf: initialShowWhatIf = false,
   improvedWhatIf = false, // kept for compatibility
-  preFilledPrompt = "",
-  onPromptConsumed,
-  onExploreWithCurator,
+  prefilledPrompt = "",
+  autoSubmitPrompt = false,
+  onAutoSubmitComplete,
 }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -148,6 +148,8 @@ function CollectionOptimizerInner({
   const [optimization, setOptimization] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showWhatIf, setShowWhatIf] = useState(initialShowWhatIf);
+  const autoPromptConsumedRef = useRef(false);
+  const lastAutoPromptRef = useRef("");
 
   // iOS-safe: load collapse state in useEffect
   useEffect(() => {
@@ -163,20 +165,6 @@ function CollectionOptimizerInner({
   const [whatIfLoading, setWhatIfLoading] = useState(false);
   const [whatIfResult, setWhatIfResult] = useState(null);
   const [conversationMessages, setConversationMessages] = useState([]);
-
-  // Store onPromptConsumed in ref to avoid stale closures
-  const onPromptConsumedRef = useRef(onPromptConsumed);
-  useEffect(() => {
-    onPromptConsumedRef.current = onPromptConsumed;
-  }, [onPromptConsumed]);
-
-  // Apply prefilled prompt when it changes
-  useEffect(() => {
-    if (preFilledPrompt && preFilledPrompt.trim()) {
-      setWhatIfQuery(preFilledPrompt);
-      onPromptConsumedRef.current?.();
-    }
-  }, [preFilledPrompt]);
 
   // Optimization apply state
   const [pipeFeedback, setPipeFeedback] = useState({});
@@ -230,6 +218,33 @@ function CollectionOptimizerInner({
   });
 
   const contextLoading = pairingLoading || logsLoading;
+
+  useEffect(() => {
+    const nextPrompt = String(prefilledPrompt || "").trim();
+    if (!nextPrompt) return;
+    if (lastAutoPromptRef.current !== nextPrompt) {
+      autoPromptConsumedRef.current = false;
+      lastAutoPromptRef.current = nextPrompt;
+    }
+  }, [prefilledPrompt]);
+
+  useEffect(() => {
+    const nextPrompt = String(prefilledPrompt || "").trim();
+    if (!autoSubmitPrompt || !showWhatIf || !nextPrompt) return;
+    if (autoPromptConsumedRef.current) return;
+    if (whatIfLoading || contextLoading) return;
+
+    autoPromptConsumedRef.current = true;
+    setWhatIfQuery("");
+    setWhatIfFollowUp("");
+    setWhatIfResult(null);
+    setConversationMessages([]);
+
+    Promise.resolve().then(() => sendToExpertAgent({ userText: nextPrompt, source: "routed_explore_this" }))
+      .finally(() => {
+        if (typeof onAutoSubmitComplete === "function") onAutoSubmitComplete();
+      });
+  }, [autoSubmitPrompt, prefilledPrompt, showWhatIf, whatIfLoading, contextLoading]);
 
   // Load active optimization (scoped to current user)
   const { data: activeOpt, isLoading: optLoading } = useQuery({
@@ -362,9 +377,9 @@ function CollectionOptimizerInner({
               pipe_name: pipeName,
               recommended_blend_types: change.after_focus || [],
               reasoning: change.rationale || "",
-              usage_pattern: `Specialized for ${(change.after_focus || []).join(", ")}`,
+              usage_pattern: t("optimizer.specialized", { types: (change.after_focus || []).join(", ") }),
               versatility_score: (change.after_focus || []).length === 1 ? 3 : 5,
-              score_improvement: `Improved coverage for ${(change.after_focus || []).join(", ")}`,
+              score_improvement: t("optimizer.expectedImprovement", { blendTypes: (change.after_focus || []).join(", ") }),
               trophy_blends: [],
               score_delta: change.score_delta ?? null,
               fills_gap_for: change.fills_gap_for ?? null,
@@ -385,7 +400,7 @@ function CollectionOptimizerInner({
             pipe_name: pipes.find((p) => p.id === change.pipe_id)?.name || t("optimizer.unknownPipe"),
             current_focus: change.before_focus || [],
             recommended_focus: change.after_focus || [],
-            score_improvement: `Priority change #${idx + 1}`,
+            score_improvement: t("optimizer.priorityChange", { num: idx + 1 }),
             trophy_blends_gained: [],
             reasoning: change.rationale || "",
             score_delta: change.score_delta ?? null,
@@ -400,7 +415,7 @@ function CollectionOptimizerInner({
           budget_range: "Varies",
           reasoning: rec,
           trophy_blends: [],
-          score_improvement: "Expected improvement for collection coverage",
+          score_improvement: t("optimizer.expectedImprovementGeneral"),
         })),
       };
 
@@ -840,10 +855,10 @@ ${englishUserText}
         impact_score: result.applyable_changes?.length > 0 ? 8 : 6,
         trophy_pairings: (result.next_additions || []).slice(0, 5),
         redundancy_analysis: result.summary || "",
-        recommendation_category: result.recommendation_category || "STRONG ADDITION",
+        recommendation_category: "STRONG ADDITION",
         detailed_reasoning: result.summary || "",
         gaps_filled: result.collection_gaps || [],
-        score_improvements: result.score_improvements || "Changes improve collection coverage",
+        score_improvements: t("optimizer.changesImproveCollectionCoverage", { additions: (result.next_additions || []).join(", ") }),
         applyable_changes: result.applyable_changes || [],
       });
 
@@ -950,7 +965,7 @@ ${englishUserText}
     safeSetItem("collectionOptimizerCollapsed", String(newState));
   };
 
-  // ---- Standalone “Ask the Curator” mode (home card) ----
+  // ---- Standalone “Ask the Expert” mode (home card) ----
   if (initialShowWhatIf || showWhatIf) {
     return (
       <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
@@ -1378,7 +1393,7 @@ ${englishUserText}
                         <div>
                           <p className="text-xs text-emerald-700 font-medium mb-1">{t("tobacconist.recommended")}</p>
                           <div className="flex flex-wrap gap-1">
-                            {[...new Set(spec.recommended_blend_types)].map((f, i) => (
+                            {spec.recommended_blend_types.map((f, i) => (
                               <Badge key={i} className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs">
                                 {asText(f)}
                               </Badge>
@@ -1598,34 +1613,34 @@ ${englishUserText}
                                   </div>
 
                                   {pipe?.focus && pipe.focus.length > 0 && (
-                                                   <div className="mb-3">
-                                                     <p className="text-sm font-medium text-stone-700 dark:text-white/90 mb-1">{t("tobacconist.currentFocus")}</p>
-                                                     <div className="flex flex-wrap gap-1">
-                                                       {[...new Set(pipe.focus)].map((type, i) => (
-                                                         <Badge key={i} className="bg-indigo-100 text-indigo-800 border-indigo-200">
-                                                           {asText(type)}
-                                                         </Badge>
-                                                       ))}
-                                                     </div>
-                                                   </div>
-                                                   )}
+                                  <div className="mb-3">
+                                    <p className="text-sm font-medium text-stone-700 dark:text-white/90 mb-1">{t("tobacconist.currentFocus")}</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {pipe.focus.map((type, i) => (
+                                        <Badge key={i} className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                                          {asText(type)}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  )}
 
                                 {spec.recommended_blend_types?.length > 0 && (
-                                                   <div className="mb-3">
-                                                     <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">{t("tobacconist.specializeFor")}</p>
-                                                     <div className="flex flex-wrap gap-1">
-                                                       {[...new Set(spec.recommended_blend_types)].map((type, i) => (
-                                                         <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200 break-words whitespace-normal">
-                                                           {asText(type)}
-                                                         </Badge>
-                                                       ))}
-                                                     </div>
-                                                   </div>
-                                                 )}
+                                  <div className="mb-3">
+                                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">{t("tobacconist.specializeFor")}</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {spec.recommended_blend_types.map((type, i) => (
+                                        <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200">
+                                          {asText(type)}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
 
                                 {/* ✅ Removed beige hex; use readable theme-safe colors */}
-                                <p className="text-sm text-stone-700 dark:text-white/90 mb-2 whitespace-normal break-words">
-                                  {normalizeRecommendationText(asText(spec.reasoning))}
+                                <p className="text-sm text-stone-700 dark:text-white/90 mb-2">
+                                  {asText(spec.reasoning)}
                                 </p>
 
                                 {spec.score_improvement && (
@@ -1650,41 +1665,26 @@ ${englishUserText}
                                 )}
 
                                 <div className="flex flex-wrap gap-2 mt-3">
-                                  <Button
-                                    size="sm"
-                                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                                    onClick={() => applySpecialization(spec.pipe_id, spec.recommended_blend_types, spec.bowl_variant_id)}
-                                  >
-                                    <Check className="w-4 h-4 mr-1" />
-                                    {t("tobacconist.adoptThisChange")}
-                                  </Button>
+                                   <Button
+                                     size="sm"
+                                     className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                     onClick={() => applySpecialization(spec.pipe_id, spec.recommended_blend_types, spec.bowl_variant_id)}
+                                   >
+                                     <Check className="w-4 h-4 mr-1" />
+                                     {t("tobacconist.adoptThisChange")}
+                                   </Button>
 
-                                  {onExploreWithCurator && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="border-amber-300 text-amber-700 hover:bg-amber-50"
-                                      onClick={() => onExploreWithCurator({
-                                        prompt: `Why should I change ${spec.pipe_name || 'this pipe'} to ${spec.recommended_blend_types?.join(', ')}? ${spec.reasoning}`,
-                                        rationale: spec.reasoning
-                                      })}
-                                    >
-                                      <Sparkles className="w-4 h-4 mr-1" />
-                                      {t("curator.exploreWithCurator")}
-                                    </Button>
-                                  )}
-
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="border-amber-300 text-amber-700 hover:bg-amber-50"
-                                    onClick={() => setShowFeedbackFor(showFeedbackFor === variantKey ? null : variantKey)}
-                                    disabled={loading || whatIfLoading}
-                                  >
-                                    <HelpCircle className="w-4 h-4 mr-1" />
-                                    {showFeedbackFor === variantKey ? t("common.cancel") : t("tobacconist.askClarification")}
-                                  </Button>
-                                </div>
+                                   <Button
+                                     size="sm"
+                                     variant="outline"
+                                     className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                                     onClick={() => setShowFeedbackFor(showFeedbackFor === variantKey ? null : variantKey)}
+                                     disabled={loading || whatIfLoading}
+                                   >
+                                     <HelpCircle className="w-4 h-4 mr-1" />
+                                     {showFeedbackFor === variantKey ? t("common.cancel") : t("tobacconist.askClarification")}
+                                   </Button>
+                                 </div>
 
                                 {showFeedbackFor === variantKey && (
                                   <motion.div
@@ -1777,22 +1777,22 @@ ${englishUserText}
                     )}
 
                     <div>
-                       <p className="text-sm font-medium text-stone-700 mb-2">{t("tobacconist.overallAssessment")}</p>
-                       <p className="text-sm text-stone-700 whitespace-normal break-words">{asText(optimization.collection_gaps.overall_assessment)}</p>
-                     </div>
+                      <p className="text-sm font-medium text-stone-700 mb-2">{t("tobacconist.overallAssessment")}</p>
+                      <p className="text-sm text-stone-700">{asText(optimization.collection_gaps.overall_assessment)}</p>
+                    </div>
 
                     {optimization.collection_gaps.missing_coverage?.length > 0 && (
-                       <div>
-                         <p className="text-sm font-medium text-rose-700 mb-2">{t("tobacconist.coverageGaps")}</p>
-                         <div className="flex flex-wrap gap-1">
-                           {optimization.collection_gaps.missing_coverage.map((gap, i) => (
-                             <Badge key={i} className="bg-rose-100 text-rose-800 border-rose-200 break-words whitespace-normal">
-                               {asText(gap)}
-                             </Badge>
-                           ))}
-                         </div>
-                       </div>
-                     )}
+                      <div>
+                        <p className="text-sm font-medium text-rose-700 mb-2">{t("tobacconist.coverageGaps")}</p>
+                        <div className="flex flex-wrap gap-1">
+                          {optimization.collection_gaps.missing_coverage.map((gap, i) => (
+                            <Badge key={i} className="bg-rose-100 text-rose-800 border-rose-200">
+                              {asText(gap)}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {optimization.collection_gaps.redundancies?.length > 0 && (
                       <div className="mt-4">
@@ -1803,9 +1803,9 @@ ${englishUserText}
                         <div className="space-y-2">
                           {optimization.collection_gaps.redundancies.map((r, idx) => (
                             <div key={idx} className="text-sm bg-yellow-50 rounded p-2 border border-yellow-200">
-                              <span className="font-medium text-yellow-900 break-words whitespace-normal">{r.blend_type}: </span>
-                              <span className="text-yellow-700 break-words whitespace-normal">{r.pipe_names?.join(", ")}</span>
-                              {r.recommendation && <p className="text-xs text-yellow-600 mt-1 break-words whitespace-normal">{normalizeRecommendationText(r.recommendation)}</p>}
+                              <span className="font-medium text-yellow-900">{r.blend_type}: </span>
+                              <span className="text-yellow-700">{r.pipe_names?.join(", ")}</span>
+                              {r.recommendation && <p className="text-xs text-yellow-600 mt-1">{r.recommendation}</p>}
                             </div>
                           ))}
                         </div>
@@ -1821,9 +1821,9 @@ ${englishUserText}
                         <div className="space-y-2">
                           {optimization.collection_gaps.purchase_suggestions.map((s, idx) => (
                             <div key={idx} className="text-sm bg-indigo-50 rounded p-3 border border-indigo-200">
-                              <div className="font-medium text-indigo-900 mb-1 break-words whitespace-normal">{s.gap_blend_type}</div>
-                              <div className="text-indigo-700 break-words whitespace-normal">{s.suggested_pipe_characteristics}</div>
-                              {s.rationale && <p className="text-xs text-indigo-500 mt-1 break-words whitespace-normal">{s.rationale}</p>}
+                              <div className="font-medium text-indigo-900 mb-1">{s.gap_blend_type}</div>
+                              <div className="text-indigo-700">{s.suggested_pipe_characteristics}</div>
+                              {s.rationale && <p className="text-xs text-indigo-500 mt-1">{s.rationale}</p>}
                             </div>
                           ))}
                         </div>
@@ -1834,7 +1834,7 @@ ${englishUserText}
               </div>
             )}
 
-            {/* Discuss / Ask Curator (embedded) */}
+            {/* Discuss / Ask Expert (embedded) */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-stone-800 flex items-center gap-2">
