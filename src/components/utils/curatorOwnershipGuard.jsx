@@ -26,39 +26,37 @@ export function sanitizeOwnershipClaims(responseText, verifiedSets) {
 
   let sanitized = responseText;
 
-  const patterns = [
-    {
-      // Your Dunhill Shell Briar...
-      regex:
-        /\b(your)\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})(?=\s+(?:is|are|was|were|would|could|should|can|may|might|pairs|pair|works|work|benefits|benefit|with|for|in|on|at|and|but|,|\.))/g,
-      replace: (_match, pronoun, itemName) => {
-        if (isVerifiedOwned(itemName, verifiedSets)) return `${pronoun} ${itemName}`;
-        return `a ${itemName}`;
-      },
-    },
-    {
-      // You have a Dunhill Shell Briar...
-      regex:
-        /\b(you\s+have\s+(?:a|an))\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})(?=\s+(?:is|are|was|were|would|could|should|can|may|might|pairs|pair|works|work|benefits|benefit|with|for|in|on|at|and|but|,|\.))/gi,
-      replace: (_match, prefix, itemName) => {
-        if (isVerifiedOwned(itemName, verifiedSets)) return `${prefix} ${itemName}`;
-        return `a ${itemName}`;
-      },
-    },
-    {
-      // The Dunhill you own...
-      regex:
-        /\b(the)\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})\s+(you\s+own|in\s+your\s+collection)\b/gi,
-      replace: (_match, article, itemName, tail) => {
-        if (isVerifiedOwned(itemName, verifiedSets)) return `${article} ${itemName} ${tail}`;
-        return `a ${itemName} worth considering`;
-      },
-    },
-  ];
+  sanitized = sanitized.replace(
+    /\bYour\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})/g,
+    (match, itemName) => {
+      if (isVerifiedOwned(itemName, verifiedSets)) return match;
+      return `a ${itemName}`;
+    }
+  );
 
-  for (const pattern of patterns) {
-    sanitized = sanitized.replace(pattern.regex, pattern.replace);
-  }
+  sanitized = sanitized.replace(
+    /\byour\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})/g,
+    (match, itemName) => {
+      if (isVerifiedOwned(itemName, verifiedSets)) return match;
+      return `a ${itemName}`;
+    }
+  );
+
+  sanitized = sanitized.replace(
+    /\byou\s+have\s+(?:a|an)\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})/gi,
+    (_match, itemName) => {
+      if (isVerifiedOwned(itemName, verifiedSets)) return `you have a ${itemName}`;
+      return `a ${itemName}`;
+    }
+  );
+
+  sanitized = sanitized.replace(
+    /\bthe\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})\s+(you own|in your collection)\b/gi,
+    (_match, itemName) => {
+      if (isVerifiedOwned(itemName, verifiedSets)) return `the ${itemName} you own`;
+      return `a ${itemName} worth considering`;
+    }
+  );
 
   return sanitized;
 }
