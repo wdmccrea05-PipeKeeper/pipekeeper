@@ -28,6 +28,7 @@ import { useRecentValues } from "@/components/hooks/useRecentValues";
 import { Combobox } from "@/components/ui/combobox";
 import { preparePipeData } from "@/components/utils/schemaCompatibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { CuratorEvents } from "@/components/utils/curatorEventLogger";
 
 const SHAPES = ["Billiard", "Bent Billiard", "Apple", "Bent Apple", "Dublin", "Bent Dublin", "Bulldog", "Rhodesian", "Canadian", "Liverpool", "Lovat", "Lumberman", "Prince", "Author", "Brandy", "Pot", "Tomato", "Egg", "Acorn", "Pear", "Cutty", "Devil Anse", "Hawkbill", "Diplomat", "Poker", "Cherrywood", "Duke", "Don", "Tankard", "Churchwarden", "Nosewarmer", "Vest Pocket", "MacArthur", "Calabash", "Reverse Calabash", "Cavalier", "Freehand", "Blowfish", "Volcano", "Horn", "Nautilus", "Tomahawk", "Bullmoose", "Bullcap", "Oom Paul (Hungarian)", "Tyrolean", "Unknown", "Other"];
 const BOWL_STYLES = ["Cylindrical (Straight Wall)", "Conical (Tapered)", "Rounded / Ball", "Oval / Egg", "Squat / Pot", "Chimney (Tall)", "Paneled", "Faceted / Multi-Panel", "Horn-Shaped", "Freeform", "Unknown"];
@@ -275,6 +276,25 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       estimated_value: formData.estimated_value ? Number(formData.estimated_value) : null,
       interchangeable_bowls: hasInterchangeableBowls ? formData.interchangeable_bowls : [],
     };
+
+    // Log event
+    if (!pipe) {
+      CuratorEvents.itemAdded({
+        metadata: {
+          item_type: 'pipe',
+          has_photos: (formData.photos?.length || 0) > 0,
+          data_source: dataSource,
+        },
+      });
+    } else {
+      CuratorEvents.itemEdited({
+        metadata: {
+          item_type: 'pipe',
+          item_id: pipe.id,
+        },
+      });
+    }
+
     onSave(preparePipeData(cleanedData));
   };
 
@@ -883,7 +903,17 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               <div className="flex items-center gap-3">
                 <Switch
                   checked={formData.ai_excluded || false}
-                  onCheckedChange={(v) => handleChange('ai_excluded', v)}
+                  onCheckedChange={(v) => {
+                    handleChange('ai_excluded', v);
+                    // Log collectible toggle event
+                    CuratorEvents.collectibleToggled({
+                      metadata: {
+                        item_type: 'pipe',
+                        item_id: pipe?.id || 'new',
+                        ai_excluded: v,
+                      },
+                    });
+                  }}
                 />
                 <span className="text-sm text-[#E0D8C8]/70">{formData.ai_excluded ? t("formsExtended.aiExcluded", "Excluded from AI") : t("formsExtended.aiIncluded", "Included in AI")}</span>
               </div>
