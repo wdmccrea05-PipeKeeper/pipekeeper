@@ -689,8 +689,8 @@ export default function PipeDetailPage() {
             </TabsTrigger>
             <TabsTrigger value="identify" className="shrink-0">
               <ScanSearch className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">{t("pipesExtended.identifyPipe")}</span>
-              <span className="sm:hidden truncate">{t("pipesExtended.identify")}</span>
+              <span className="hidden sm:inline">{t("pipesExtended.identifyPipe", "Identify Pipe")}</span>
+              <span className="sm:hidden truncate">{t("pipesExtended.identify", "Identify")}</span>
             </TabsTrigger>
           </TabsList>
 
