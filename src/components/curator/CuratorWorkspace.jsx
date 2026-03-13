@@ -162,7 +162,8 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
         }
       } catch (e) {
         console.error("Failed to initialize curator thread:", e);
-        toast.error(t("curator.initError"));
+        const errorMsg = e?.message || String(e);
+        toast.error(`${t("curator.initError")}: ${errorMsg.slice(0, 80)}`);
       } finally {
         setInitializing(false);
       }
