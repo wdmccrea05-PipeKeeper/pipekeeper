@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function ModuleCard({ module, icon, itemCount, summary, action, isComingSoon }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleOpen = () => {
     if (!isComingSoon) {
@@ -34,7 +36,7 @@ export default function ModuleCard({ module, icon, itemCount, summary, action, i
             <div>
               <h3 className="text-lg font-semibold text-[#E0D8C8]">{module}</h3>
               {isComingSoon && (
-                <p className="text-xs text-[#D4A574] font-medium mt-1">Coming Soon</p>
+                <p className="text-xs text-[#D4A574] font-medium mt-1">{t('hub.comingSoonLabel')}</p>
               )}
             </div>
           </div>
@@ -44,7 +46,7 @@ export default function ModuleCard({ module, icon, itemCount, summary, action, i
         {!isComingSoon && (
           <div className="space-y-2 bg-[#1a1410]/60 rounded-lg p-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-[#E0D8C8]/70">Items</span>
+              <span className="text-sm text-[#E0D8C8]/70">{t('hub.items')}</span>
               <span className="text-lg font-semibold text-[#D4A574]">{itemCount}</span>
             </div>
             {summary && (
@@ -59,7 +61,7 @@ export default function ModuleCard({ module, icon, itemCount, summary, action, i
         {/* Description for Coming Soon */}
         {isComingSoon && (
           <p className="text-sm text-[#E0D8C8]/60">
-            Expanding your CollectionKeeper ecosystem soon.
+            {t('hub.expandingEcosystem')}
           </p>
         )}
 
@@ -70,7 +72,7 @@ export default function ModuleCard({ module, icon, itemCount, summary, action, i
             variant="secondary"
             className="w-full justify-between group"
           >
-            <span>Open Module</span>
+            <span>{t('hub.openModule')}</span>
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Button>
         )}
