@@ -174,7 +174,10 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
   };
 
   return (
-    <div className="space-y-4 bg-[#223447] rounded-lg p-4 border border-white/10">
+    <div className="space-y-4 rounded-lg p-4 border" style={{
+      background: "linear-gradient(145deg, rgba(50,35,25,0.6), rgba(30,20,15,0.8))",
+      borderColor: "rgba(120,90,65,0.25)"
+    }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Package className="w-5 h-5 text-[#E0D8C8]" />
