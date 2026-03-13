@@ -54,6 +54,11 @@ const AuthenticatedApp = () => {
           <Whiskey />
         </LayoutWrapper>
       } />
+      <Route path="/Subscription" element={
+        <LayoutWrapper currentPageName="Subscription">
+          <Subscription />
+        </LayoutWrapper>
+      } />
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
           <MainPage />
