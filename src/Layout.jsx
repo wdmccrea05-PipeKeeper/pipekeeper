@@ -109,8 +109,8 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false, 
   );
 }
 
-const AGE_GATE_KEY = "pk_age_confirmed";
-const SUB_PROMPT_KEY = "pk_subscribe_prompt_last_shown";
+const AGE_GATE_KEY = "ck_age_confirmed";
+const SUB_PROMPT_KEY = "ck_subscribe_prompt_last_shown";
 
 function syncKey(email) {
   return `pk_stripe_sync_last_${email || "unknown"}`;
