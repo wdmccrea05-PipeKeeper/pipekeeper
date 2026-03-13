@@ -42,6 +42,11 @@ const AuthenticatedApp = () => {
           <CuratorAnalyticsDashboard />
         </LayoutWrapper>
       } />
+      <Route path="/CollectionInsightsShare" element={
+        <LayoutWrapper currentPageName="CollectionInsightsShare">
+          <CollectionInsightsShare />
+        </LayoutWrapper>
+      } />
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
           <MainPage />
