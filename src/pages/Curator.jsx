@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
@@ -9,45 +9,81 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
 
-function getRoutedContext() {
-  try {
-    const stored = sessionStorage.getItem("pk_curator_context");
-    if (stored) {
-      sessionStorage.removeItem("pk_curator_context");
-      return JSON.parse(stored);
-    }
-  } catch (e) {
-    console.warn("Failed to parse curator context:", e);
-  }
-
-  // Fallback to URL param only
+function getUrlPrompt() {
   try {
     const params = new URLSearchParams(window.location.search);
-    const prompt = params.get("prompt");
-    if (prompt) return { prompt: prompt.trim() };
-  } catch {}
+    return String(params.get("prompt") || "").trim();
+  } catch {
+    return "";
+  }
+}
 
-  return null;
+function readStoredCuratorContext() {
+  try {
+    const stored = sessionStorage.getItem("pk_curator_context");
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch (e) {
+    console.warn("Failed to parse curator context:", e);
+    return null;
+  }
+}
+
+function resolveLaunchContext() {
+  const stored = readStoredCuratorContext();
+  const urlPrompt = getUrlPrompt();
+
+  if (!stored && !urlPrompt) {
+    return {
+      source: "none",
+      initialPrompt: "",
+      recommendationContext: null,
+    };
+  }
+
+  const ctx = stored || {};
+
+  // This is the key fix:
+  // prefer recommendation-specific routed content over generic fallback prompt strings.
+  const initialPrompt =
+    String(ctx.whatif_prompt || "").trim() ||
+    String(ctx.originalPrompt || "").trim() ||
+    String(ctx.originalInsight || "").trim() ||
+    String(ctx.prompt || "").trim() ||
+    urlPrompt ||
+    "";
+
+  return {
+    source:
+      (ctx.whatif_prompt && "stored.whatif_prompt") ||
+      (ctx.originalPrompt && "stored.originalPrompt") ||
+      (ctx.originalInsight && "stored.originalInsight") ||
+      (ctx.prompt && "stored.prompt") ||
+      (urlPrompt && "url.prompt") ||
+      "none",
+    initialPrompt,
+    recommendationContext: ctx || null,
+  };
 }
 
 function clearRouteState() {
+  try {
+    sessionStorage.removeItem("pk_curator_context");
+  } catch {}
+
   try {
     const url = new URL(window.location.href);
     url.searchParams.delete("prompt");
     url.searchParams.delete("tab");
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
   } catch {}
-  
-  try {
-    sessionStorage.removeItem("pk_curator_context");
-  } catch {}
 }
 
 export default function Curator() {
   const { user } = useCurrentUser();
   const { t } = useTranslation();
-  const [routedContext, setRoutedContext] = useState(getRoutedContext());
-  const [routedPrompt, setRoutedPrompt] = useState(routedContext?.prompt || "");
+  const [launchContext, setLaunchContext] = useState(() => resolveLaunchContext());
 
   const { data: pipes = [] } = useQuery({
     queryKey: ["pipes", user?.email],
@@ -69,28 +105,34 @@ export default function Curator() {
     staleTime: 10000,
   });
 
-  useEffect(() => {
-    const ctx = getRoutedContext();
-    if (ctx) {
-      setRoutedContext(ctx);
-      setRoutedPrompt(ctx.prompt || "");
-    }
-  }, []);
-
   const handlePromptConsumed = () => {
     clearRouteState();
-    setRoutedPrompt("");
-    setRoutedContext(null);
+    setLaunchContext({
+      source: "none",
+      initialPrompt: "",
+      recommendationContext: null,
+    });
   };
 
   const subtitle = useMemo(() => {
-    if (routedContext?.originalTitle) {
-      return `${routedContext.originalTitle} — ${t("curator.workspaceSubtitleRouted", { defaultValue: "Opening Curator with your selected prompt…" })}`;
+    const ctx = launchContext?.recommendationContext;
+
+    if (ctx?.originalTitle) {
+      return `${ctx.originalTitle} — ${t("curator.workspaceSubtitleRouted", {
+        defaultValue: "Opening Curator with your selected prompt…",
+      })}`;
     }
-    return routedPrompt
-      ? t("curator.workspaceSubtitleRouted", { defaultValue: "Opening Curator with your selected prompt…" })
-      : t("curator.workspaceSubtitle", { defaultValue: "Ask questions, follow up on recommendations, and get collection-specific guidance." });
-  }, [routedPrompt, routedContext, t]);
+
+    if (launchContext?.initialPrompt) {
+      return t("curator.workspaceSubtitleRouted", {
+        defaultValue: "Opening Curator with your selected prompt…",
+      });
+    }
+
+    return t("curator.workspaceSubtitle", {
+      defaultValue: "Ask questions, follow up on recommendations, and get collection-specific guidance.",
+    });
+  }, [launchContext, t]);
 
   return (
     <div className="space-y-5">
@@ -98,7 +140,11 @@ export default function Curator() {
         <CardHeader className="border-b border-[#1a2c42]/20">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-              <img src={CURATOR_ICON} alt={t("curator.workspaceTitle", { defaultValue: "Curator" })} className="w-full h-full object-cover" />
+              <img
+                src={CURATOR_ICON}
+                alt={t("curator.workspaceTitle", { defaultValue: "Curator" })}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="flex-1 min-w-0">
               <CardTitle className="text-base sm:text-xl text-[#E0D8C8] leading-tight mb-1">
@@ -108,12 +154,14 @@ export default function Curator() {
             </div>
           </div>
         </CardHeader>
+
         <CardContent className="pt-6">
           <CuratorWorkspace
             pipes={pipes}
             blends={blends}
-            preFilledPrompt={routedPrompt}
-            routedContext={routedContext}
+            launchContext={launchContext}
+            preFilledPrompt={launchContext?.initialPrompt || ""}
+            routedContext={launchContext?.recommendationContext || null}
             onPromptConsumed={handlePromptConsumed}
           />
         </CardContent>
