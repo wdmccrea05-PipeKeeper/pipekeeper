@@ -990,6 +990,7 @@ function computeLongestStreak(logs) {
 export default function Insights() {
   const { t } = useTranslation();
   const { user, hasPaid } = useCurrentUser();
+  const navigate = useNavigate();
   const initialTab = getTabFromUrl();
 
   const highlightRefs = useRef({});
