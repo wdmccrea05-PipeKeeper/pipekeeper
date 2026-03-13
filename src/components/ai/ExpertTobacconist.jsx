@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, RefreshCw, Brain, MessageSquare } from "lucide-react";
+import { Camera, Sparkles, TrendingUp, Lightbulb, RefreshCw } from "lucide-react";
+import QuickPipeIdentifier from "@/components/ai/QuickPipeIdentifier";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import AIUpdatesPanel from "@/components/ai/AIUpdatesPanel";
-import CuratorForYouPanel from "@/components/curator/CuratorForYouPanel";
-import CuratorWorkspace from "@/components/curator/CuratorWorkspace";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
@@ -14,80 +13,60 @@ import { Badge } from "@/components/ui/badge";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { getActiveOptimizeScopes } from "@/components/platform/collectionCuratorAI";
-import { getAiEligibilityStats } from "@/components/platform/aiEligibility";
 
-const TOBACCONIST_ICON = 'https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png';
+const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
+const DEFAULT_TAB = 'identifier';
 
-const activeScopes = getActiveOptimizeScopes();
-const DEFAULT_OPTIMIZE_SCOPE = activeScopes[0]?.id ?? "pipe_tobacco_pairings";
+function getRequestedTab() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const tab = (params.get('tab') || '').toLowerCase();
+    if (['identifier', 'optimizer', 'whatif', 'updates', 'curator', 'ask'].includes(tab)) {
+      if (tab === 'curator' || tab === 'ask') return 'whatif';
+      return tab;
+    }
+    return DEFAULT_TAB;
+  } catch {
+    return DEFAULT_TAB;
+  }
+}
 
-export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, userProfile, activeTab: externalActiveTab, onTabChange }) {
+function getRequestedPrompt() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return (params.get('prompt') || '').trim();
+  } catch {
+    return '';
+  }
+}
+
+function clearConsumedRouteState() {
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('prompt');
+    url.searchParams.delete('tab');
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  } catch {}
+}
+
+export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, userProfile }) {
   const { t } = useTranslation();
   const entitlements = useEntitlements();
   const canOptimize = entitlements.canUse("COLLECTION_OPTIMIZATION");
-  const [optimizeScope, setOptimizeScope] = useState(DEFAULT_OPTIMIZE_SCOPE);
-  const [activeTab, setActiveTab] = useState(externalActiveTab ?? "for_you");
-  const [curatorPreFill, setCuratorPreFill] = useState("");
+  const [activeTab, setActiveTab] = useState(getRequestedTab());
+  const [routedPrompt, setRoutedPrompt] = useState(getRequestedPrompt());
+  const shouldAutoSubmit = useMemo(() => activeTab === 'whatif' && !!routedPrompt, [activeTab, routedPrompt]);
 
-  // Read routed prompt and tab from URL on mount
   useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const promptFromUrl = params.get("prompt");
-      const tabFromUrl = params.get("tab");
-      
-      // Handle routed prompt (from Explore This, etc)
-      if (promptFromUrl) {
-        setCuratorPreFill(promptFromUrl);
-        // Prompt routing always targets curator tab
-        setActiveTab("curator");
-        // Clean URL to prevent resubmission on refresh
-        Promise.resolve().then(() => {
-          params.delete("prompt");
-          params.delete("tab");
-          const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-          window.history.replaceState({}, '', newUrl);
-        });
-      } else if (tabFromUrl) {
-        // Explicit tab routing (without prompt)
-        setActiveTab(tabFromUrl);
-        // Clean tab param from URL
-        Promise.resolve().then(() => {
-          params.delete("tab");
-          const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-          window.history.replaceState({}, '', newUrl);
-        });
-      }
-    } catch (e) {
-      console.error("Error reading URL params:", e);
+    const nextPrompt = getRequestedPrompt();
+    const nextTab = getRequestedTab();
+    if (nextPrompt) {
+      setActiveTab(nextTab || 'whatif');
+      setRoutedPrompt(nextPrompt);
     }
   }, []);
 
-  useEffect(() => {
-    if (externalActiveTab !== undefined) setActiveTab(externalActiveTab);
-  }, [externalActiveTab]);
-
-  const handleTabChange = useCallback((tab) => {
-    setActiveTab(tab);
-    onTabChange?.(tab);
-  }, [onTabChange]);
-
-  // When a "For You" insight triggers curator interaction
-  const handleOpenCuratorFromInsight = useCallback((insight) => {
-    if (insight?.whatif_prompt) {
-      setCuratorPreFill(insight.whatif_prompt);
-    } else if (insight) {
-      setCuratorPreFill(`${insight.title}. ${insight.summary}`);
-    }
-    handleTabChange("curator");
-  }, [handleTabChange]);
-
   if (isAppleBuild) return null;
-
-  const pipeStats = getAiEligibilityStats(pipes || []);
-  const blendStats = getAiEligibilityStats(blends || []);
-  const totalExcluded = pipeStats.excluded + blendStats.excluded;
 
   return (
     <Card>
@@ -102,50 +81,65 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <CardTitle className="text-base sm:text-xl text-[#E0D8C8] leading-tight">{t("collectionCurator.systemTitle")}</CardTitle>
+              <CardTitle className="text-base sm:text-xl text-[#E0D8C8] leading-tight">{t("tobacconist.title")}</CardTitle>
               <Badge variant="outline" className="text-xs border-[#E0D8C8]/30 text-[#E0D8C8]/80 shrink-0">{t("tobacconist.optional")}</Badge>
-              <InfoTooltip text={t("collectionCurator.tooltipText")} />
+              <InfoTooltip text={t("tobacconist.tooltipText")} />
             </div>
-            <p className="text-sm text-[#E0D8C8]/70">{t("collectionCurator.subtitle")}</p>
-            {totalExcluded > 0 && (
-              <p className="text-xs text-[#E0D8C8]/50 mt-1">
-                {t("collectionCurator.excludedNote", { count: totalExcluded })}
-              </p>
-            )}
+            <p className="text-sm text-[#E0D8C8]/70">{t("tobacconist.subtitle")}</p>
           </div>
         </div>
       </CardHeader>
       <CardContent className="pt-6 space-y-6">
-        <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="for_you" aria-label={t("curator.forYouTitle")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
-              <Brain className="w-4 h-4 flex-shrink-0" />
-              <span className="hidden sm:inline truncate">{t("curator.forYouTitle")}</span>
+            <TabsTrigger value="identifier" aria-label={t("tobacconist.identify")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
+              <Camera className="w-5 h-5 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">{t("tobacconist.identify")}</span>
             </TabsTrigger>
-            <TabsTrigger value="optimizer" aria-label={t("curator.optimizeTitle")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
-              <TrendingUp className="w-4 h-4 flex-shrink-0" />
-              <span className="hidden sm:inline truncate">{t("curator.optimizeTitle")}</span>
+            <TabsTrigger value="optimizer" aria-label={t("tobacconist.optimize")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
+              <TrendingUp className="w-5 h-5 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">{t("tobacconist.optimize")}</span>
             </TabsTrigger>
-            <TabsTrigger value="curator" aria-label={t("curator.curatorTitle")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
-              <MessageSquare className="w-4 h-4 flex-shrink-0" />
-              <span className="hidden sm:inline truncate">{t("curator.curatorTitle")}</span>
+            <TabsTrigger value="whatif" aria-label={t("tobacconist.whatIf")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
+              <Lightbulb className="w-5 h-5 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">{t("tobacconist.whatIf")}</span>
             </TabsTrigger>
-            <TabsTrigger value="updates" aria-label={t("curator.updatesTitle")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
-              <RefreshCw className="w-4 h-4 flex-shrink-0" />
-              <span className="hidden sm:inline truncate">{t("curator.updatesTitle")}</span>
+            <TabsTrigger value="updates" aria-label={t("tobacconist.aiUpdates")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
+              <RefreshCw className="w-5 h-5 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">{t("tobacconist.aiUpdates")}</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="for_you" className="mt-6">
-            <CuratorForYouPanel
-              pipes={pipes}
-              blends={blends}
-              onAskCurator={handleOpenCuratorFromInsight}
-              onOpenWhatIf={handleOpenCuratorFromInsight}
-            />
-          </TabsContent>
-
-          <TabsContent value="optimizer" className="mt-6">
+          <TabsContent value="identifier" className="mt-6"> <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-base font-semibold text-[#E0D8C8]">{t("tobacconist.identificationTitle")}</h3>
+                <InfoTooltip text={t("tobacconist.identificationTooltip")} />
+              </div>
+              <p className="text-sm text-[#E0D8C8]/60">{t("tobacconist.identificationSubtitle")}</p>
+            </div>
+            {pipes.length === 0 && blends.length === 0 ? (
+              <div className="text-center py-8">
+                <Camera className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
+                <p className="text-[#E0D8C8]/60 mb-4">{t("tobacconist.identificationEmpty")}</p>
+                <div className="flex gap-3 justify-center">
+                  <a href={createPageUrl('Pipes')}>
+                    <Button size="sm">{t("tobacconist.addFirstPipe")}</Button>
+                  </a>
+                  <a href={createPageUrl('Tobacco')}>
+                    <Button size="sm" variant="outline">{t("tobacconist.addFirstBlend")}</Button>
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <QuickPipeIdentifier pipes={pipes} blends={blends} />
+            )} </TabsContent>
+          <TabsContent value="optimizer" className="mt-6"> <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-base font-semibold text-[#E0D8C8]">{t("tobacconist.optimizationTitle")}</h3>
+                <InfoTooltip text={t("tobacconist.optimizationTooltip")} />
+              </div>
+              <p className="text-sm text-[#E0D8C8]/60">{t("tobacconist.optimizationSubtitle")}</p>
+            </div>
             <FeatureGate 
               feature="COLLECTION_OPTIMIZATION"
               featureName={t("featureGate.collectionOptimizationName")}
@@ -160,29 +154,60 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
                   </a>
                 </div>
               ) : (
-                <CollectionOptimizer 
-                  pipes={pipes} 
-                  blends={blends} 
-                  showWhatIf={false}
-                  onExploreWithCurator={(suggestion) => {
-                    setCuratorPreFill(suggestion?.prompt || suggestion?.rationale || "");
-                    handleTabChange("curator");
+                <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={false} />
+              )}
+            </FeatureGate> </TabsContent>
+          <TabsContent value="whatif" className="mt-6">
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-base font-semibold text-[#E0D8C8]">{t("tobacconist.whatIfTitle")}</h3>
+                <InfoTooltip text={t("tobacconist.whatIfTooltip")} />
+              </div>
+              <p className="text-sm text-[#E0D8C8]/60">{t("tobacconist.whatIfSubtitle")}</p>
+            </div>
+            {canOptimize ? (
+              pipes.length === 0 ? (
+                <div className="text-center py-8">
+                  <Lightbulb className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
+                  <p className="text-[#E0D8C8]/60 mb-4">{t("tobacconist.whatIfEmpty")}</p>
+                  <div className="flex gap-3 justify-center">
+                    <a href={createPageUrl('Pipes')}>
+                      <Button size="sm">{t("tobacconist.addFirstPipe")}</Button>
+                    </a>
+                    <a href={createPageUrl('Tobacco')}>
+                      <Button size="sm" variant="outline">{t("tobacconist.addFirstBlend")}</Button>
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <CollectionOptimizer
+                  pipes={pipes}
+                  blends={blends}
+                  showWhatIf={true}
+                  improvedWhatIf={true}
+                  prefilledPrompt={routedPrompt}
+                  autoSubmitPrompt={shouldAutoSubmit}
+                  onAutoSubmitComplete={() => {
+                    clearConsumedRouteState();
+                    setRoutedPrompt('');
                   }}
                 />
-              )}
-            </FeatureGate>
-          </TabsContent>
-
-          <TabsContent value="curator" className="mt-6">
-            <CuratorWorkspace
-              pipes={pipes}
-              blends={blends}
-              preFilledPrompt={curatorPreFill}
-              onPromptConsumed={() => setCuratorPreFill("")}
-            />
+              )
+            ) : (
+              <p className="text-sm text-[#E0D8C8]/60 text-center py-4">
+                {t("tobacconist.upgradeInOptimizeTab")}
+              </p>
+            )}
           </TabsContent>
 
           <TabsContent value="updates" className="mt-6">
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-base font-semibold text-[#E0D8C8]">{t("tobacconist.updatesTitle")}</h3>
+                <InfoTooltip text={t("tobacconist.updatesTooltip")} />
+              </div>
+              <p className="text-sm text-[#E0D8C8]/60">{t("tobacconist.updatesSubtitle")}</p>
+            </div>
             <AIUpdatesPanel pipes={pipes} blends={blends} profile={userProfile} />
           </TabsContent>
         </Tabs>
