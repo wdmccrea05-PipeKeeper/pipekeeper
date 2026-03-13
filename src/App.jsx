@@ -60,6 +60,11 @@ const AuthenticatedApp = () => {
           <Subscription />
         </LayoutWrapper>
       } />
+      <Route path="/CollectionHub" element={
+        <LayoutWrapper currentPageName="CollectionHub">
+          <CollectionHub />
+        </LayoutWrapper>
+      } />
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
           <MainPage />
