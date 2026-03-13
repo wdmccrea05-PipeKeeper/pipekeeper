@@ -236,6 +236,7 @@ export default function Layout({ children, currentPageName }) {
       icon: Leaf,
       isIconComponent: true,
     },
+    { name: "WhiskeyKeeper", page: "Whiskey", icon: "🥃", isIconComponent: false },
     ...(FEATURES.community
       ? [{ name: t("nav.community"), page: "Community", icon: Users, isIconComponent: true, isPremium: true }]
       : []),
