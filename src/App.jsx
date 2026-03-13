@@ -15,6 +15,8 @@ import Whiskey from '@/pages/Whiskey';
 import Curator from '@/pages/Curator';
 import Subscription from '@/pages/Subscription';
 import CollectionHub from '@/pages/CollectionHub';
+import PipeKeeper from '@/pages/PipeKeeper';
+import WhiskeyKeeper from '@/pages/WhiskeyKeeper';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
