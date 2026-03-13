@@ -24,19 +24,6 @@ function isVerifiedOwned(
   );
 }
 
-function replaceVerifiedOrGeneric(
-  prefix: string,
-  itemName: string,
-  verifiedSets: { pipeNames: Set<string>; blendNames: Set<string> },
-  verifiedFormatter: (prefix: string, itemName: string) => string,
-  unverifiedFormatter: (prefix: string, itemName: string) => string
-): string {
-  if (isVerifiedOwned(itemName, verifiedSets)) {
-    return verifiedFormatter(prefix, itemName);
-  }
-  return unverifiedFormatter(prefix, itemName);
-}
-
 export function sanitizeOwnershipClaims(
   responseText: string,
   verifiedSets: { pipeNames: Set<string>; blendNames: Set<string> }
@@ -45,41 +32,36 @@ export function sanitizeOwnershipClaims(
 
   let sanitized = responseText;
 
-  sanitized = sanitized.replace(
-    /\b(your)\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})(?=\s+(?:is|are|was|were|would|could|should|can|may|might|pairs|pair|works|work|benefits|benefit|with|for|in|on|at|and|but|,|\.))/g,
-    (_match: string, prefix: string, itemName: string) =>
-      replaceVerifiedOrGeneric(
-        prefix,
-        itemName,
-        verifiedSets,
-        (p, name) => `${p} ${name}`,
-        (_p, name) => `a ${name}`
-      )
-  );
+  const patterns = [
+    {
+      regex:
+        /\b(your)\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})(?=\s+(?:is|are|was|were|would|could|should|can|may|might|pairs|pair|works|work|benefits|benefit|with|for|in|on|at|and|but|,|\.))/g,
+      replace: (_match: string, pronoun: string, itemName: string) => {
+        if (isVerifiedOwned(itemName, verifiedSets)) return `${pronoun} ${itemName}`;
+        return `a ${itemName}`;
+      },
+    },
+    {
+      regex:
+        /\b(you\s+have\s+(?:a|an))\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})(?=\s+(?:is|are|was|were|would|could|should|can|may|might|pairs|pair|works|work|benefits|benefit|with|for|in|on|at|and|but|,|\.))/gi,
+      replace: (_match: string, prefix: string, itemName: string) => {
+        if (isVerifiedOwned(itemName, verifiedSets)) return `${prefix} ${itemName}`;
+        return `a ${itemName}`;
+      },
+    },
+    {
+      regex:
+        /\b(the)\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})\s+(you\s+own|in\s+your\s+collection)\b/gi,
+      replace: (_match: string, article: string, itemName: string, tail: string) => {
+        if (isVerifiedOwned(itemName, verifiedSets)) return `${article} ${itemName} ${tail}`;
+        return `a ${itemName} worth considering`;
+      },
+    },
+  ];
 
-  sanitized = sanitized.replace(
-    /\b(you\s+have\s+(?:a|an))\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})(?=\s+(?:is|are|was|were|would|could|should|can|may|might|pairs|pair|works|work|benefits|benefit|with|for|in|on|at|and|but|,|\.))/gi,
-    (_match: string, prefix: string, itemName: string) =>
-      replaceVerifiedOrGeneric(
-        prefix,
-        itemName,
-        verifiedSets,
-        (p, name) => `${p} ${name}`,
-        (_p, name) => `a ${name}`
-      )
-  );
-
-  sanitized = sanitized.replace(
-    /\b(the)\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})\s+(you\s+own|in\s+your\s+collection)\b/gi,
-    (_match: string, article: string, itemName: string, tail: string) =>
-      replaceVerifiedOrGeneric(
-        itemName,
-        itemName,
-        verifiedSets,
-        () => `${article} ${itemName} ${tail}`,
-        () => `a ${itemName} worth considering`
-      )
-  );
+  for (const pattern of patterns) {
+    sanitized = sanitized.replace(pattern.regex, pattern.replace as any);
+  }
 
   return sanitized;
 }
