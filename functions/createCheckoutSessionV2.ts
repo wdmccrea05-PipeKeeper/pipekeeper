@@ -1,5 +1,16 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient } from "./_utils/stripeClient.ts";
+import Stripe from "npm:stripe@17.5.0";
+
+function getStripeClient() {
+  const key = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
+  if (!key || !key.startsWith("sk_")) {
+    throw new Error("STRIPE_SECRET_KEY missing or invalid");
+  }
+  const stripe = new Stripe(key, { apiVersion: "2024-06-20" });
+  const environment = key.startsWith("sk_live_") ? "live" : "test";
+  const masked = `${key.slice(0, 8)}...${key.slice(-4)}`;
+  return { stripe, meta: { environment, masked } };
+}
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
