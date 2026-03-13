@@ -12,87 +12,106 @@ const ICON_MAP = {
   Target,
   TrendingUp,
   Leaf,
-  Clock
+  Clock,
 };
 
 const ACCENT_MAP = {
   pipes: {
-    "keeper.pipes.rotationTitle": "#C87941",
-    "keeper.pipes.restTitle": "#D4743B",
-    "keeper.pipes.growthTitle": "#4A9C6A",
-    "keeper.pipes.loggingTitle": "#8B5CF6"
+    "keeper.pipes.balancedRotationTitle": "#C87941",
+    "keeper.pipes.overusedTitle": "#D4743B",
+    "keeper.pipes.foundationTitle": "#4A9C6A",
+    "keeper.pipes.shapeVarietyTitle": "#8B5CF6",
+    "keeper.pipes.restingTitle": "#D4743B",
   },
   tobacco: {
+    "keeper.tobacco.agingOpportunityTitle": "#F59E0B",
     "keeper.tobacco.diversityTitle": "#5A7C5A",
-    "keeper.tobacco.agingTitle": "#F59E0B",
-    "keeper.tobacco.cellarTitle": "#6B7280"
-  }
+    "keeper.tobacco.styleDiscoveryTitle": "#6B7280",
+    "keeper.tobacco.stewardshipStorageTitle": "#7C5A3A",
+  },
 };
 
-/**
- * ProactiveCuratorPanel — Keeper Intelligence Display
- * Displays insights from Keeper Intelligence engine
- */
-// Generate What If prompt based on insight type
 function generateWhatIfPrompt(insight, t) {
-  const titleKey = insight.title;
-  
-  // Map insight types to contextual What If prompts
+  if (insight?.whatif_prompt) return insight.whatif_prompt;
+
+  const titleKey = insight?.titleKey || insight?.rawTitle || insight?.title || "";
+
   const promptMap = {
-    "keeper.pipes.rotationTitle": t("curator.whatif.rotation", "What if I rotate three underused pipes this week instead of smoking my usual favorites?"),
-    "keeper.pipes.restTitle": t("curator.whatif.rest", "What if I let my most-used pipe rest for a few days and rotate alternatives?"),
-    "keeper.pipes.growthTitle": t("curator.whatif.growth", "What if I add another pipe to expand my rotation?"),
-    "keeper.pipes.loggingTitle": t("curator.whatif.logging", "What insights would improve if I logged my next five sessions?"),
-    "keeper.tobacco.diversityTitle": t("curator.whatif.diversity", "What if I add a Virginia or Balkan blend to improve cellar diversity?"),
-    "keeper.tobacco.agingTitle": t("curator.whatif.aging", "What if I open one of my older blends instead of a newer tin?"),
-    "keeper.tobacco.cellarTitle": t("curator.whatif.cellar", "What if I cellar a few tins of my favorite blend for aging?"),
+    "keeper.pipes.balancedRotationTitle": t(
+      "curator.whatif.balancedRotation",
+      { defaultValue: "What does my current rotation pattern say about the strengths and blind spots in my collection?" }
+    ),
+    "keeper.pipes.overusedTitle": t(
+      "curator.whatif.overused",
+      { defaultValue: "What should I rotate in alongside my most-used pipe to give it more rest?" }
+    ),
+    "keeper.pipes.foundationTitle": t(
+      "curator.whatif.foundation",
+      { defaultValue: "What kind of next pipe would best round out the foundation of my collection?" }
+    ),
+    "keeper.pipes.shapeVarietyTitle": t(
+      "curator.whatif.shapeVariety",
+      { defaultValue: "What pipe shapes or formats would add the most variety to my collection?" }
+    ),
+    "keeper.pipes.restingTitle": t(
+      "curator.whatif.rest",
+      { defaultValue: "What if I let my most-used pipe rest for a few days and rotate alternatives?" }
+    ),
+    "keeper.tobacco.agingOpportunityTitle": t(
+      "curator.whatif.aging",
+      { defaultValue: "Which blends in my cellar are the best candidates to open now, and which should keep aging?" }
+    ),
+    "keeper.tobacco.diversityTitle": t(
+      "curator.whatif.diversity",
+      { defaultValue: "What blend types should I add to improve my cellar diversity?" }
+    ),
+    "keeper.tobacco.styleDiscoveryTitle": t(
+      "curator.whatif.styleDiscovery",
+      { defaultValue: "Which tobacco styles would expand my cellar in the most meaningful way?" }
+    ),
+    "keeper.tobacco.stewardshipStorageTitle": t(
+      "curator.whatif.cellarStorage",
+      { defaultValue: "How can I organize and store my cellar better for aging and easy use?" }
+    ),
   };
-  
-  return promptMap[titleKey] || t("curator.whatif.default", "Tell me more about this recommendation");
+
+  return promptMap[titleKey] || t("curator.whatif.default", { defaultValue: "Tell me more about this recommendation" });
 }
 
-export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, curatorEnabled = true, onInsightClick }) {
+export default function ProactiveCuratorPanel({
+  pipes,
+  blends,
+  logs,
+  onDismiss,
+  curatorEnabled = true,
+  onInsightClick,
+}) {
   const { t, lang } = useTranslation();
   const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
   const [cleared, setCleared] = useState(false);
 
-  const handleClick = (insight) => {
-    // Build a contextual What-If prompt based on insight category
-    const titleKey = insight.title;
-    const whatIfPrompt = generateWhatIfPrompt(insight, t);
-    
-    // Always navigate to Curator with pre-filled prompt via URL params
-    const params = new URLSearchParams();
-    params.set('prompt', whatIfPrompt);
-    navigate(`${createPageUrl('Curator')}?${params.toString()}`);
-  };
-
   const insights = useMemo(() => {
     if (!curatorEnabled || cleared) return [];
 
-    // Initialize engine
     const engine = getKeeperIntelligence();
-    
-    // Register and activate modules
+
     if (!engine.modules.pipes) {
       engine.registerModule("pipes", PipesModule);
       engine.registerModule("tobacco", TobaccoModule);
     }
-    
+
     engine.activateModule("pipes");
     engine.activateModule("tobacco");
 
-    // Collect data
     const data = {
       pipes: pipes || [],
       blends: blends || [],
-      logs: logs || []
+      logs: logs || [],
     };
 
-    // Synchronously analyze (no await in useMemo)
     const generated = [];
-    
+
     for (const moduleName of engine.getActiveModules()) {
       const module = engine.modules[moduleName];
       if (!module) continue;
@@ -100,12 +119,15 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
       try {
         const analysis = module.analyzeCollection(data);
         const moduleInsights = module.generateInsights(analysis);
-        
-        moduleInsights.forEach(insight => {
+
+        moduleInsights.forEach((insight) => {
           generated.push({
             module: moduleName,
             ...insight,
-            // Normalize text to prevent multilingual bleed
+            titleKey: insight.title,
+            rawTitle: insight.title,
+            rawInsight: insight.insight,
+            whatif_prompt: insight.whatif_prompt || null,
             insight: sanitizeRecommendationText(insight.insight, lang),
             title: sanitizeRecommendationText(insight.title, lang),
           });
@@ -115,7 +137,6 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
       }
     }
 
-    // Sort by priority
     const priorityOrder = { high: 0, medium: 1, low: 2 };
     generated.sort((a, b) => {
       const aPriority = priorityOrder[a.priority] ?? 3;
@@ -123,11 +144,27 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
       return aPriority - bPriority;
     });
 
-    return generated.slice(0, 3); // Show max 3 insights
-  }, [pipes, blends, logs, curatorEnabled, cleared, refreshKey]);
+    return generated.slice(0, 3);
+  }, [pipes, blends, logs, curatorEnabled, cleared, refreshKey, lang]);
+
+  const handleClick = (insight) => {
+    const whatIfPrompt = generateWhatIfPrompt(insight, t);
+
+    if (onInsightClick) {
+      onInsightClick({
+        ...insight,
+        whatif_prompt: whatIfPrompt,
+      });
+      return;
+    }
+
+    const params = new URLSearchParams();
+    params.set("prompt", whatIfPrompt);
+    navigate(`${createPageUrl("Curator")}?${params.toString()}`);
+  };
 
   const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
     setCleared(false);
     toast.success(t("curator.adviceRefreshed"));
   };
@@ -140,15 +177,14 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
   if (!curatorEnabled || (insights.length === 0 && !cleared)) return null;
 
   return (
-    <div 
+    <div
       className="rounded-lg p-6 space-y-4 relative"
       style={{
         background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
         border: "1px solid rgba(140,105,65,0.35)",
-        boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
+        boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)",
       }}
     >
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div
@@ -156,31 +192,31 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
             style={{
               background: "linear-gradient(135deg, rgba(100, 70, 45, 0.5), rgba(80, 55, 35, 0.6))",
               border: "1px solid rgba(120, 90, 65, 0.45)",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)"
+              boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)",
             }}
           >
-            <img 
-              src="https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png" 
+            <img
+              src="https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png"
               alt={t("curator.title")}
               className="w-full h-full object-cover"
               onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const fallback = document.createElement('div');
-                fallback.innerHTML = '🎩';
-                fallback.style.fontSize = '24px';
-                fallback.style.display = 'flex';
-                fallback.style.alignItems = 'center';
-                fallback.style.justifyContent = 'center';
+                e.currentTarget.style.display = "none";
+                const fallback = document.createElement("div");
+                fallback.innerHTML = "🎩";
+                fallback.style.fontSize = "24px";
+                fallback.style.display = "flex";
+                fallback.style.alignItems = "center";
+                fallback.style.justifyContent = "center";
                 e.currentTarget.parentElement.appendChild(fallback);
               }}
             />
           </div>
           <div>
-            <h3 
-              className="text-lg font-semibold" 
-              style={{ 
+            <h3
+              className="text-lg font-semibold"
+              style={{
                 color: "#F5F1E7",
-                fontFamily: "'Georgia', serif"
+                fontFamily: "'Georgia', serif",
               }}
             >
               {t("curator.title")}
@@ -215,7 +251,7 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
               className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
               style={{
                 background: "rgba(60,40,30,0.5)",
-                border: "1px solid rgba(120,90,65,0.25)"
+                border: "1px solid rgba(120,90,65,0.25)",
               }}
             >
               <X className="w-4 h-4" style={{ color: "rgba(224,216,200,0.6)" }} />
@@ -224,7 +260,6 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
         </div>
       </div>
 
-      {/* Insights or empty state */}
       {cleared ? (
         <div className="text-center py-8 space-y-3">
           <p className="text-sm" style={{ color: "rgba(224,216,200,0.6)" }}>
@@ -236,7 +271,7 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
             className="mx-auto"
             style={{
               background: "linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))",
-              border: "1px solid rgba(120,90,65,0.4)"
+              border: "1px solid rgba(120,90,65,0.4)",
             }}
           >
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -246,79 +281,52 @@ export default function ProactiveCuratorPanel({ pipes, blends, logs, onDismiss, 
       ) : (
         <div className="space-y-3">
           {insights.map((insight, index) => {
-          const Icon = ICON_MAP[insight.icon];
-          const moduleAccents = ACCENT_MAP[insight.module] || {};
-          const accent = moduleAccents[insight.title] || "#C87941";
-          
-          return (
-            <button
-              key={`${insight.module}-${insight.category}-${index}`}
-              onClick={() => handleClick(insight)}
-              className="w-full rounded-lg p-4 text-left transition-all hover:scale-[1.02] cursor-pointer"
-              style={{
-                background: "linear-gradient(135deg, rgba(50,35,25,0.6), rgba(40,28,20,0.8))",
-                border: `1px solid ${accent}30`,
-                boxShadow: `0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 ${accent}15`
-              }}
-              aria-label={`Explore: ${t(insight.title, insight.vars || {})}`}
-            >
-              <div className="flex items-start gap-3">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            const Icon = ICON_MAP[insight.icon] || Target;
+            const moduleAccents = ACCENT_MAP[insight.module] || {};
+            const accent = moduleAccents[insight.titleKey] || "#C87941";
+
+            return (
+              <button
+                key={`${insight.module}-${insight.category}-${index}`}
+                onClick={() => handleClick(insight)}
+                className="w-full rounded-lg p-4 text-left transition-all hover:scale-[1.02] cursor-pointer"
                 style={{
-                  background: `${accent}20`,
-                  border: `1px solid ${accent}40`
+                  background: "linear-gradient(135deg, rgba(50,35,25,0.6), rgba(40,28,20,0.8))",
+                  border: `1px solid ${accent}30`,
                 }}
               >
-                {Icon && <Icon className="w-4 h-4" style={{ color: accent }} />}
-              </div>
-              <div className="flex-1 min-w-0 space-y-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <h4 
-                      className="text-sm font-semibold mb-0.5" 
-                      style={{ color: accent }}
-                    >
-                      {t(insight.title, insight.vars)}
-                    </h4>
-                    <p 
-                      className="text-sm leading-relaxed whitespace-normal break-words" 
-                      style={{ color: "rgba(224,216,200,0.85)" }}
-                    >
-                      {t(insight.insight, insight.vars)}
+                <div className="flex items-start gap-3">
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                    style={{
+                      background: `${accent}20`,
+                      border: `1px solid ${accent}40`,
+                    }}
+                  >
+                    <Icon className="w-5 h-5" style={{ color: accent }} />
+                  </div>
+
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <h4 className="font-semibold text-sm" style={{ color: "#F5F1E7" }}>
+                        {t(insight.rawTitle || insight.titleKey || insight.title, {
+                          defaultValue: insight.title,
+                          ...(insight.vars || {}),
+                        })}
+                      </h4>
+                      <ArrowRight className="w-4 h-4 shrink-0" style={{ color: "rgba(224,216,200,0.45)" }} />
+                    </div>
+
+                    <p className="text-sm leading-relaxed" style={{ color: "rgba(224,216,200,0.72)" }}>
+                      {t(insight.rawInsight || insight.insight, {
+                        defaultValue: insight.insight,
+                        ...(insight.vars || {}),
+                      })}
                     </p>
                   </div>
-                  {insight.category && (
-                    <div
-                      className="px-2 py-1 rounded text-xs font-medium whitespace-nowrap mt-0.5 leading-tight"
-                      style={{
-                        background: `${accent}15`,
-                        color: accent,
-                        border: `1px solid ${accent}25`,
-                        whiteSpace: "normal",
-                        wordWrap: "break-word",
-                        hyphens: "none"
-                      }}
-                    >
-                      {t(`curator.category.${insight.category.toLowerCase()}`, insight.category)}
-                    </div>
-                  )}
                 </div>
-                <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
-                  style={{
-                    background: `${accent}25`,
-                    border: `1px solid ${accent}40`,
-                    color: accent,
-                    boxShadow: `0 1px 3px rgba(0,0,0,0.3)`
-                  }}
-                >
-                  {t("curator.forYou.exploreThis")}
-                  <ArrowRight className="w-3 h-3" />
-                </div>
-              </div>
-              </div>
-            </button>
-          );
+              </button>
+            );
           })}
         </div>
       )}
