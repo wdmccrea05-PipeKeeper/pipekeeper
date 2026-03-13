@@ -13,6 +13,7 @@ export default function StoryViewer({ cards, onClose, onShare, user }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [showSocialShare, setShowSocialShare] = useState(false);
   const containerRef = useRef(null);
 
   const minSwipeDistance = 50;
