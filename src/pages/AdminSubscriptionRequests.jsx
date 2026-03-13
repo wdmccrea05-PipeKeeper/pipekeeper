@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AlertCircle, CheckCircle2, Clock, Loader2, Search, ZoomOut } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Loader2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -191,7 +191,7 @@ export default function AdminSubscriptionRequests() {
         {filteredRequests.length === 0 ? (
           <Card className="bg-[#1A2B3A] border-[#A35C5C]/50">
             <CardContent className="pt-12 pb-12 text-center">
-              <ZoomOut className="w-8 h-8 text-[#E0D8C8]/40 mx-auto mb-2" />
+              <Search className="w-8 h-8 text-[#E0D8C8]/40 mx-auto mb-2" />
               <p className="text-[#E0D8C8]/70">
                 {searchEmail ? t("admin.noMatchingRequests") : t("admin.noPendingRequests")}
               </p>

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
-import { AlertCircle, CheckCircle, RefreshCw, Settings, Users, User, AlertTriangle } from "lucide-react";
+import { AlertCircle, CheckCircle, RefreshCw, Settings, Users, User } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -296,7 +296,7 @@ export default function SubscriptionSupport() {
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert>
-            <AlertTriangle className="h-4 w-4" />
+            <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               {t("subscriptionSupport.bulkUpdateDescription")}
             </AlertDescription>

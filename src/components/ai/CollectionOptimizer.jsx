@@ -19,7 +19,6 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
-  Trophy,
   HelpCircle,
   X,
   Lightbulb,
@@ -31,6 +30,7 @@ import {
 import { toast } from "sonner";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { generateOptimizationAI } from "@/components/utils/aiGenerators";
+import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 import { motion } from "framer-motion";
 import { Textarea } from "@/components/ui/textarea";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -46,7 +46,7 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { safeUpdate } from "@/components/utils/safeUpdate";
-import { invalidatePipeQueries, invalidateAIQueries } from "@/components/utils/cacheInvalidation";
+import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import PhotoUploader from "@/components/PhotoUploader";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { FormattedTobacconistResponse } from "@/components/utils/formatTobacconistResponse";

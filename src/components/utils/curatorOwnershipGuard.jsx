@@ -42,24 +42,31 @@ export function sanitizeOwnershipClaims(responseText, verifiedSets) {
 
   const ownershipPatterns = [
     {
-      // "Your Peterson System..."
-      regex: /\b(your)\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})\b/g,
+      // "Your Peterson System..." - only reframe if multi-word capitalized (likely brand/blend name)
+      regex: /\b(your)\s+([A-Z][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){1,4})\b/gi,
       replace: (_match, pronoun, itemName) => {
+        // Check if it's a verified item
         if (isVerifiedOwned(itemName, verifiedSets)) return `${pronoun} ${itemName}`;
-        return `a ${itemName}`;
+        // Only reframe if it looks like a brand/model (2+ words or starts with capital)
+        const normalized = itemName.trim();
+        if (/^[A-Z]/.test(normalized) && (normalized.includes(' ') || /\d/.test(normalized))) {
+          return `a ${itemName}`;
+        }
+        // Keep normal phrases like "your collection", "your preferences" unchanged
+        return `${pronoun} ${itemName}`;
       },
     },
     {
-      // "You have a McClelland 5100..."
-      regex: /\b(you\s+have\s+(?:a|an))\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})\b/g,
+      // "You have a McClelland 5100..." - precise ownership claim
+      regex: /\b(you\s+have\s+(?:a|an))\s+([A-Z][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})\b/gi,
       replace: (_match, _lead, itemName) => {
         if (isVerifiedOwned(itemName, verifiedSets)) return `you have a ${itemName}`;
         return `a ${itemName}`;
       },
     },
     {
-      // "The Dunhill you own..."
-      regex: /\b(the)\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})\s+(you\s+own|in\s+your\s+collection)\b/g,
+      // "The Dunhill you own..." - explicit collection reference
+      regex: /\b(the)\s+([A-Z][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})\s+(you\s+own|in\s+your\s+collection)\b/gi,
       replace: (_match, article, itemName, tail) => {
         if (isVerifiedOwned(itemName, verifiedSets)) return `${article} ${itemName} ${tail}`;
         return `a ${itemName} worth considering`;

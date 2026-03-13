@@ -21,7 +21,6 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion } from "@/components/utils/companion";
 import { getEntitlementTier, hasPaidAccess, hasProAccess, isTrialingAccess, getPlanLabel } from "@/components/utils/premiumAccess";
-import { isTrialWindow } from "@/components/utils/access";
 import { PK_THEME } from "@/components/utils/pkTheme";
 
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
@@ -206,8 +205,7 @@ export default function ProfilePage() {
     notes: "",
   });
 
-  const hasActiveSubscription = hasPaid;
-  const isWithinTrial = isTrial;
+
 
   useEffect(() => {
     if (!profile && !user) return;
@@ -440,7 +438,7 @@ export default function ProfilePage() {
                         </Button>
                       ) : null}
 
-                    {shouldShowPurchaseUI() && !hasActiveSubscription && (
+                    {shouldShowPurchaseUI() && !hasPaid && (
                       <Button
                         onClick={() => navigate(createPageUrl("Subscription"))}
                         className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"

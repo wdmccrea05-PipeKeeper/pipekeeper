@@ -7,11 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, RefreshCw } from "lucide-react";
 import { expandPipesToVariants, getPipeVariantKey, getVariantFromPipe } from "@/components/utils/pipeVariants";
 import { toast } from "sonner";
-import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
-import { generatePairingsAI } from "@/components/utils/aiGenerators";
 import { regeneratePairingsConsistent } from "@/components/utils/pairingRegeneration";
-import { safeUpdate } from "@/components/utils/safeUpdate";
-import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import InfoTooltip from "@/components/ui/InfoTooltip";
