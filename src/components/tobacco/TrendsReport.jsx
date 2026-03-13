@@ -430,9 +430,9 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
 
   if (filteredLogs.length === 0) {
     return (
-      <Card className="border-blue-200">
+      <Card className="border-[#8b6239]/30">
         <CardContent className="p-12 text-center">
-          <Calendar className="w-16 h-16 mx-auto mb-4 text-blue-300" />
+          <Calendar className="w-16 h-16 mx-auto mb-4 text-[#8b6239]/60" />
           <h3 className="text-xl font-semibold text-[#E0D8C8] mb-2">{t("trends.noSessionsLoggedTitle")}</h3>
           <p className="text-[#E0D8C8]/60 mb-6">
             {t("trends.noSessionsForPeriod")}

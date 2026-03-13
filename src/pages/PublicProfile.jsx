@@ -193,7 +193,7 @@ export default function PublicProfilePage() {
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center">
         <div className="text-[#E0D8C8]">{t("common.loading")}</div>
       </div>
     );
@@ -201,7 +201,7 @@ export default function PublicProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center">
         <Card className="bg-white/95 max-w-md">
           <CardContent className="p-8 text-center">
             <h2 className="text-xl font-semibold text-stone-800 mb-2">{t("publicProfile.profileNotFoundTitle")}</h2>
@@ -220,7 +220,7 @@ export default function PublicProfilePage() {
 
   if (!profile.is_public && !isPreview) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center">
         <Card className="bg-white/95 max-w-md">
           <CardContent className="p-8 text-center">
             <h2 className="text-xl font-semibold text-stone-800 mb-2">{t("publicProfile.profileNotAvailableTitle")}</h2>
@@ -238,7 +238,7 @@ export default function PublicProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isPreview && isOwnProfile ? (
           <a href={createPageUrl('Profile')}>

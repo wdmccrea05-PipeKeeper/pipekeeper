@@ -138,7 +138,7 @@ export default function Curator() {
   return (
     <div className="space-y-5">
       <Card>
-        <CardHeader className="border-b border-[#1a2c42]/20">
+        <CardHeader className="border-b border-[#8b6239]/20">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
               <img

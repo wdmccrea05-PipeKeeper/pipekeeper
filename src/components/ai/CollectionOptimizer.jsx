@@ -968,7 +968,7 @@ ${englishUserText}
   // ---- Standalone “Ask the Expert” mode (home card) ----
   if (initialShowWhatIf || showWhatIf) {
     return (
-      <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
+      <Card className="border-[#8b6239]/30 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-[#E0D8C8] text-lg">
             <Lightbulb className="w-5 h-5" />
@@ -980,7 +980,7 @@ ${englishUserText}
         <CardContent className="space-y-4">
           {/* Conversation */}
           {conversationMessages.length > 0 && (
-            <div className="space-y-4 max-h-[500px] overflow-y-auto border rounded-lg p-4 bg-stone-50">
+            <div className="space-y-4 max-h-[500px] overflow-y-auto border border-[#8b6239]/30 rounded-lg p-4 bg-[#1f1510]/50">
               {conversationMessages.map((msg, idx) => {
                 const isUser = msg.role === "user";
                 const c = msg.content;
@@ -989,10 +989,10 @@ ${englishUserText}
                 const isGeneralAdvice = !!c?.is_general_advice;
 
                 return (
-                  <div key={idx} className="bg-white rounded-lg border border-stone-200 p-4 space-y-3">
+                  <div key={idx} className="bg-[#2a1f18]/80 rounded-lg border border-[#8b6239]/30 p-4 space-y-3">
                     {isUser ? (
                       <div className="text-right">
-                        <div className="inline-block bg-indigo-600 text-white rounded-lg px-4 py-2 max-w-[85%]">
+                        <div className="inline-block bg-[#A35C5C] text-white rounded-lg px-4 py-2 max-w-[85%]">
                           <p className="text-sm break-words">{asText(c)}</p>
                           {msg.photos?.length > 0 && (
                             <div className="flex gap-2 mt-2 justify-end">
@@ -1005,7 +1005,7 @@ ${englishUserText}
                       </div>
                     ) : (
                       <div className="text-left">
-                        <div className="bg-stone-50 border border-stone-200 rounded-lg px-4 py-3">
+                        <div className="bg-[#1f1510]/60 border border-[#8b6239]/20 rounded-lg px-4 py-3">
                           {isImpact ? (
                             <div className="text-sm space-y-3 text-stone-900">
                               <div className="flex items-center gap-2 flex-wrap">
@@ -1087,12 +1087,12 @@ ${englishUserText}
 
           {/* Bulk Options (only if there are recommendations ready to apply) */}
           {showAcceptAll && !conversationMessages.length && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm font-medium text-blue-900 mb-3">{t("tobacconist.reviewApplyDesc")}</p>
+            <div className="bg-[#2a1f18]/60 border border-[#8b6239]/30 rounded-lg p-4">
+              <p className="text-sm font-medium text-[#E0D8C8] mb-3">{t("tobacconist.reviewApplyDesc")}</p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
-                  className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+                  className="flex-1 border-[#8b6239]/40 text-[#E0D8C8] hover:bg-[#2a1f18]"
                   onClick={() => setShowConfirmation(true)}
                 >
                   {t("tobacconist.reviewApply")}
@@ -1192,7 +1192,7 @@ ${englishUserText}
                 <Button
                   onClick={submitFollowUp}
                   disabled={whatIfLoading || !whatIfFollowUp.trim()}
-                  className="bg-indigo-600 hover:bg-indigo-700 w-full"
+                  className="bg-[#A35C5C] hover:bg-[#8B4A4A] w-full"
                 >
                   {whatIfLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <HelpCircle className="w-4 h-4 mr-2" />}
                   {t("tobacconist.sendMessage")}
@@ -1203,13 +1203,13 @@ ${englishUserText}
                     onClick={analyzeCollectionImpact}
                     disabled={whatIfLoading}
                     variant="outline"
-                    className="border-blue-400 bg-blue-600 text-white hover:bg-blue-700 hover:text-white flex-1"
+                    className="border-[#8b6239]/40 bg-[#6d4e2e] text-white hover:bg-[#5a3f24] hover:text-white flex-1"
                   >
                     {whatIfLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Target className="w-4 h-4 mr-2" />}
                     {t("tobacconist.analyzeImpact")}
                     </Button>
 
-                  <Button variant="outline" onClick={resetWhatIf} className="flex-1 bg-stone-700 text-white hover:bg-stone-800 border-stone-600">
+                  <Button variant="outline" onClick={resetWhatIf} className="flex-1 bg-[#3a2a20] text-[#E0D8C8] hover:bg-[#4a3a2a] border-[#8b6239]/40">
                     {t("tobacconist.reset")}
                   </Button>
                 </div>
@@ -1223,7 +1223,7 @@ ${englishUserText}
                   sendToExpertAgent({ userText: text, source: "ask_expert_start" });
                 }}
                 disabled={whatIfLoading || !whatIfQuery.trim()}
-                className="bg-indigo-600 hover:bg-indigo-700 w-full"
+                className="bg-[#A35C5C] hover:bg-[#8B4A4A] w-full"
               >
                 {whatIfLoading ? (
                   <>
@@ -1854,7 +1854,7 @@ ${englishUserText}
                     placeholder={t("tobacconist.askPlaceholder")}
                     value={whatIfQuery}
                     onChange={(e) => setWhatIfQuery(e.target.value)}
-                    className="min-h-[70px] bg-white text-stone-900 placeholder:text-stone-500"
+                    className="min-h-[70px] bg-[#1f1510] border-[#8b6239]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/50"
                   />
 
                   <div className="flex flex-col sm:flex-row gap-2">
@@ -1875,20 +1875,20 @@ ${englishUserText}
                       onClick={analyzeCollectionImpact}
                       disabled={!conversationMessages.length || whatIfLoading}
                       variant="outline"
-                      className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+                      className="flex-1 border-[#8b6239]/40 text-[#D4A574] hover:bg-[#2a1f18]"
                       title={!conversationMessages.length ? t("tobacconist.askFirstToAnalyze") : t("tobacconist.analyzeImpact")}
                     >
                       {whatIfLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Target className="w-4 h-4 mr-2" />}
                       {t("tobacconist.analyzeImpact")}
                     </Button>
 
-                    <Button onClick={resetWhatIf} variant="outline" className="flex-1 bg-white text-stone-700 hover:bg-stone-50 border-stone-300">
+                    <Button onClick={resetWhatIf} variant="outline" className="flex-1 bg-[#1f1510] text-[#E0D8C8] hover:bg-[#2a1f18] border-[#8b6239]/40">
                       {t("tobacconist.reset")}
                     </Button>
                   </div>
 
                   {conversationMessages.length > 0 && (
-                    <div className="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-3 bg-white">
+                    <div className="space-y-3 max-h-96 overflow-y-auto border border-[#8b6239]/30 rounded-lg p-3 bg-[#1f1510]/50">
                       {conversationMessages.map((msg, idx) => {
                         const isUser = msg.role === "user";
                         const c = msg.content;
@@ -1898,19 +1898,19 @@ ${englishUserText}
                         return (
                           <div key={idx} className={`${isUser ? "text-right" : "text-left"}`}>
                             {isUser ? (
-                              <div className="inline-block bg-indigo-600 text-white rounded-lg px-3 py-2 max-w-[85%]">
+                              <div className="inline-block bg-[#A35C5C] text-white rounded-lg px-3 py-2 max-w-[85%]">
                                 <p className="text-xs sm:text-sm break-words">{asText(c)}</p>
                               </div>
                             ) : (
-                              <div className="inline-block bg-stone-100 rounded-lg px-3 py-2 max-w-[85%] text-left">
+                              <div className="inline-block bg-[#2a1f18]/80 border border-[#8b6239]/20 rounded-lg px-3 py-2 max-w-[85%] text-left">
                                 {isImpact ? (
-                                  <div className="text-xs sm:text-sm text-stone-800 space-y-2">
+                                  <div className="text-xs sm:text-sm text-[#E0D8C8] space-y-2">
                                     <p className="font-semibold">{t("tobacconist.impactScore")}: {asText(c?.impact_score)}/10</p>
                                     <p>{asText(c?.recommendation_category)}</p>
                                     <p className="text-stone-700">{asText(c?.detailed_reasoning)}</p>
                                   </div>
                                 ) : isGeneralAdvice ? (
-                                  <div className="text-xs sm:text-sm text-stone-800 space-y-2">
+                                  <div className="text-xs sm:text-sm text-[#E0D8C8] space-y-2">
                                     <FormattedTobacconistResponse content={asText(c?.advice)} style="light_structure" />
                                     {c?.routed_to && (
                                       <p className="text-[11px] font-mono text-stone-600 border-t border-stone-300 pt-2">
@@ -1919,7 +1919,7 @@ ${englishUserText}
                                     )}
                                   </div>
                                 ) : (
-                                  <div className="text-xs sm:text-sm text-stone-800 space-y-2">
+                                  <div className="text-xs sm:text-sm text-[#E0D8C8] space-y-2">
                                     <FormattedTobacconistResponse content={asText(c?.response || c?.advice || c)} style="light_structure" />
                                   </div>
                                 )}
