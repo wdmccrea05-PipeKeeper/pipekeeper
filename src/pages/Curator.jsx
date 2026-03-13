@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
+const CURATOR_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
 
 function getRoutedPrompt() {
   try {
@@ -72,7 +72,7 @@ export default function Curator() {
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
               <img
-                src={TOBACCONIST_ICON}
+                src={CURATOR_ICON}
                 alt={t("curator.workspaceTitle")}
                 className="w-full h-full object-cover"
               />

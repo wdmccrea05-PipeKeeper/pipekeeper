@@ -90,6 +90,9 @@ const docs = {
       default2: "How should I care for my collection?",
       default3: "What's the ideal aging time for this tobacco?",
     },
+    initError: "Failed to start curator",
+    pressEnter: "Press Enter to send",
+    workspaceTooltip: "Ask personalized questions about your collection",
   },
   
   subscription: {
