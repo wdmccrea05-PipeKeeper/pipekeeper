@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
 import { translate } from "@/components/i18n/safeTranslation";
 
 class ErrorBoundary extends React.Component {
@@ -23,9 +22,8 @@ class ErrorBoundary extends React.Component {
       const { onReset } = this.props;
       return (
         <Card className="border-rose-200 bg-rose-50">
-          <CardContent className="p-6 text-center">
-            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-rose-800 mb-2">
+           <CardContent className="p-6 text-center">
+             <h3 className="text-lg font-semibold text-rose-800 mb-2">
               {translate("errorBoundary.title", "Something went wrong")}
             </h3>
             <p className="text-sm text-rose-600 mb-4">

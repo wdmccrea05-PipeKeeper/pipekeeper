@@ -2,9 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
-import ErrorBoundary from "@/components/system/ErrorBoundary";
 import GlobalErrorBoundary from "@/components/system/GlobalErrorBoundary";
-import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown, AlertCircle, Settings, Shield, FileText, Target } from "lucide-react";
+import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown, Settings, Shield, FileText, Target } from "lucide-react";
 import GlobalSearchTrigger from "@/components/search/GlobalSearchTrigger";
 import BackButton from "@/components/navigation/BackButton";
 import { Button } from "@/components/ui/button";
@@ -587,7 +586,6 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <GlobalErrorBoundary>
-      <ErrorBoundary>
         <DocumentTitle title={t("layout.appTitle")} />
         <Toaster position="top-center" />
         <MeasurementProvider>
@@ -881,9 +879,8 @@ export default function Layout({ children, currentPageName }) {
               Bridge: ✅ | {subActive ? `Pro ✅` : t('subscription.free')}
             </div>
           )}
-        </div>
-      </MeasurementProvider>
-    </ErrorBoundary>
-  </GlobalErrorBoundary>
-  );
-}
+          </div>
+          </MeasurementProvider>
+          </GlobalErrorBoundary>
+          );
+          }
