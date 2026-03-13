@@ -5,8 +5,11 @@ import ModuleCard from '@/components/hub/ModuleCard';
 import CombinedSummary from '@/components/hub/CombinedSummary';
 import CuratorHub from '@/components/hub/CuratorHub';
 import RecentActivity from '@/components/hub/RecentActivity';
-import { getCombinedCollectionSummary } from '@/components/utils/hubDataHelpers';
-import { getEnabledModules, getComingSoonModules } from '@/components/hub/keeperModuleRegistry';
+import {
+  getCollectionHubSummary,
+  getEnabledModules,
+  getComingSoonModules,
+} from '@/components/keeper-core';
 
 export default function CollectionHub() {
   const { t } = useTranslation();
