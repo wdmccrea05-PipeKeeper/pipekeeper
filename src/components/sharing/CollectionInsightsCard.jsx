@@ -234,8 +234,10 @@ export function CollectionInsightsShareModal({
 
     try {
       const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: null,
+        backgroundColor: '#0f0b08',
         scale: 2,
+        useCORS: true,
+        logging: false,
       });
 
       const link = document.createElement('a');
