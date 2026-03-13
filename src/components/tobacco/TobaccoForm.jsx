@@ -66,7 +66,8 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
     notes: '',
     photo: '',
     logo: '',
-    is_favorite: false
+    is_favorite: false,
+    ai_excluded: false
   });
   const [uploading, setUploading] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -1078,6 +1079,20 @@ Return complete and accurate information based on the blend name or description 
               onCheckedChange={(v) => handleChange('is_favorite', v)}
             />
             <Label className="break-words">{t("formsExtended.markAsFavorite")}</Label>
+          </div>
+          <div className="pt-4 border-t border-[#E0D8C8]/20">
+            <FieldWithInfo 
+              label={t("formsExtended.collectibleOnly", "Collectible Only")}
+              helpText={t("formsExtended.collectibleOnlyHelpTobacco", "Exclude this blend from AI matching, pairing, and usage recommendations. It will still remain in your cellar inventory, valuation totals, exports, and insurance documentation.")}
+            >
+              <div className="flex items-center gap-3">
+                <Switch
+                  checked={formData.ai_excluded || false}
+                  onCheckedChange={(v) => handleChange('ai_excluded', v)}
+                />
+                <span className="text-sm text-[#E0D8C8]/70">{formData.ai_excluded ? t("formsExtended.aiExcluded", "Excluded from AI") : t("formsExtended.aiIncluded", "Included in AI")}</span>
+              </div>
+            </FieldWithInfo>
           </div>
         </CardContent>
       </Card>

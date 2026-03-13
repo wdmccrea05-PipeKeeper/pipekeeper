@@ -3,9 +3,14 @@
  * Advanced rotation and stewardship analysis
  */
 
+import { filterAiEligibleItems } from "../../platform/aiEligibility";
+
 export const PipesModule = {
   analyzeCollection(data) {
     const { pipes = [], logs = [] } = data;
+    
+    // Filter to AI-eligible pipes only
+    const eligiblePipes = filterAiEligibleItems(pipes);
 
     // Analyze pipe usage patterns
     const pipeUsage = {};
@@ -29,26 +34,26 @@ export const PipesModule = {
       }
     });
 
-    // Categorize pipes by usage
-    const underusedPipes = pipes.filter(p => !pipeUsage[p.id] || pipeUsage[p.id] < 3);
-    const regularPipes = pipes.filter(p => {
+    // Categorize pipes by usage (AI-eligible only)
+    const underusedPipes = eligiblePipes.filter(p => !pipeUsage[p.id] || pipeUsage[p.id] < 3);
+    const regularPipes = eligiblePipes.filter(p => {
       const usage = pipeUsage[p.id] || 0;
       return usage >= 3 && usage <= 10;
     });
-    const mostUsedPipe = pipes.length > 0
-      ? pipes.reduce((max, p) => (pipeUsage[p.id] || 0) > (pipeUsage[max.id] || 0) ? p : max)
+    const mostUsedPipe = eligiblePipes.length > 0
+      ? eligiblePipes.reduce((max, p) => (pipeUsage[p.id] || 0) > (pipeUsage[max.id] || 0) ? p : max)
       : null;
 
     // Calculate rotation balance
     const totalUsage = Object.values(pipeUsage).reduce((a, b) => a + b, 0);
-    const avgUsage = totalUsage / (pipes.length || 1);
-    const isBalanced = pipes.length > 0 && regularPipes.length >= pipes.length * 0.6;
+    const avgUsage = totalUsage / (eligiblePipes.length || 1);
+    const isBalanced = eligiblePipes.length > 0 && regularPipes.length >= eligiblePipes.length * 0.6;
 
-    // Analyze pipe shapes
-    const shapeCount = new Set(pipes.map(p => p.shape).filter(Boolean)).size;
+    // Analyze pipe shapes (AI-eligible only)
+    const shapeCount = new Set(eligiblePipes.map(p => p.shape).filter(Boolean)).size;
 
     return {
-      pipeCount: pipes.length,
+      pipeCount: eligiblePipes.length,
       totalLogs: logs.length,
       underusedPipes,
       regularPipes,
@@ -57,7 +62,7 @@ export const PipesModule = {
       isBalanced,
       avgUsage,
       shapeCount,
-      pipes
+      pipes: eligiblePipes
     };
   },
 

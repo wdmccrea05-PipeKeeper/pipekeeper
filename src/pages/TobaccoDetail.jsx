@@ -399,6 +399,11 @@ export default function TobaccoDetailPage() {
             {pipes.length > 0 ? <TopPipeMatches blend={blend} pipes={pipes} /> : null}
 
             <div className="flex flex-wrap gap-2">
+              {blend.ai_excluded === true ? (
+                <Badge className="bg-purple-900/50 text-purple-200 border-purple-700/50">
+                  {t("formsExtended.collectibleOnly", "Collectible Only")}
+                </Badge>
+              ) : null}
               {blend.blend_type ? <Badge className={colorClass}>{t(`blendTypes.${blend.blend_type}`, blend.blend_type)}</Badge> : null}
               {blend.strength ? <Badge className="bg-[#3a2a20]/50 text-[#E0D8C8] border-[#8b6239]/30">{t(`strengths.${blend.strength}`, blend.strength)}</Badge> : null}
               {blend.cut ? <Badge className="bg-[#3a2a20]/50 text-[#E0D8C8] border-[#8b6239]/30">{t(`cuts.${blend.cut}`, blend.cut)}</Badge> : null}

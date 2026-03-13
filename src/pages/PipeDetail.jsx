@@ -476,6 +476,11 @@ export default function PipeDetailPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
+              {pipe.ai_excluded === true ? (
+                <Badge className="bg-purple-900/50 text-purple-200 border-purple-700/50">
+                  {t("formsExtended.collectibleOnly", "Collectible Only")}
+                </Badge>
+              ) : null}
               {pipe.shape && pipe.shape !== "Unknown" ? (
                 <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
                   {t(`shapes.${pipe.shape}`, pipe.shape)}

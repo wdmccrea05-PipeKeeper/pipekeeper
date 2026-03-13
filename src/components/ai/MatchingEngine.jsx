@@ -11,6 +11,7 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { getPipeVariantKey } from "@/components/utils/pipeVariants";
 import { regeneratePairingsConsistent } from "@/components/utils/pairingRegeneration";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { filterAiEligibleItems } from "@/components/platform/aiEligibility";
 
 export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
   const { t } = useTranslation();
@@ -97,8 +98,11 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
       .slice(0, 3);
   }, [pairingEntry]);
 
+  // Filter blends to AI-eligible only
+  const eligibleBlends = useMemo(() => filterAiEligibleItems(blends), [blends]);
+
   const [selectedBlendId, setSelectedBlendId] = useState("");
-  const selectedBlend = useMemo(() => blends.find((b) => String(b.id) === String(selectedBlendId)) || null, [blends, selectedBlendId]);
+  const selectedBlend = useMemo(() => eligibleBlends.find((b) => String(b.id) === String(selectedBlendId)) || null, [eligibleBlends, selectedBlendId]);
 
   const selectedBlendScore = useMemo(() => {
     if (!selectedBlend || !pairingEntry) return null;
@@ -237,7 +241,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
                 <SelectValue placeholder={t("matching.selectBlend")} />
               </SelectTrigger>
               <SelectContent>
-                {blends.map((b) => (
+                {eligibleBlends.map((b) => (
                   <SelectItem key={b.id} value={String(b.id)}>
                     {b.name}
                   </SelectItem>

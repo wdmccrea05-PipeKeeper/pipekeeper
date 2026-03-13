@@ -75,6 +75,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     photos: [],
     stamping_photos: [],
     is_favorite: false,
+    ai_excluded: false,
     interchangeable_bowls: []
   });
   const [hasInterchangeableBowls, setHasInterchangeableBowls] = useState(
@@ -873,6 +874,20 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               onCheckedChange={(v) => handleChange('is_favorite', v)}
             />
             <Label className="break-words">{t("formsExtended.markAsFavorite")}</Label>
+          </div>
+          <div className="pt-4 border-t border-[#E0D8C8]/20">
+            <FieldWithInfo 
+              label={t("formsExtended.collectibleOnly", "Collectible Only")}
+              helpText={t("formsExtended.collectibleOnlyHelp", "Exclude this pipe from AI matching, rotation, and recommendation logic. It will still remain in your collection, valuation totals, exports, and insurance documentation.")}
+            >
+              <div className="flex items-center gap-3">
+                <Switch
+                  checked={formData.ai_excluded || false}
+                  onCheckedChange={(v) => handleChange('ai_excluded', v)}
+                />
+                <span className="text-sm text-[#E0D8C8]/70">{formData.ai_excluded ? t("formsExtended.aiExcluded", "Excluded from AI") : t("formsExtended.aiIncluded", "Included in AI")}</span>
+              </div>
+            </FieldWithInfo>
           </div>
         </CardContent>
       </Card>

@@ -4,16 +4,20 @@
  */
 
 import { differenceInMonths } from 'date-fns';
+import { filterAiEligibleItems } from "../../platform/aiEligibility";
 
 export const TobaccoModule = {
   analyzeCollection(data) {
     const { blends = [] } = data;
-
-    // Analyze blend types
-    const blendTypes = new Set(blends.map(b => b.blend_type).filter(Boolean));
     
-    // Analyze cellared tobacco
-    const agingBlends = blends.filter(b => {
+    // Filter to AI-eligible blends only
+    const eligibleBlends = filterAiEligibleItems(blends);
+
+    // Analyze blend types (AI-eligible only)
+    const blendTypes = new Set(eligibleBlends.map(b => b.blend_type).filter(Boolean));
+    
+    // Analyze cellared tobacco (AI-eligible only)
+    const agingBlends = eligibleBlends.filter(b => {
       const hasCellared = (Number(b.tin_tins_cellared) || 0) > 0 || 
                           (Number(b.bulk_cellared) || 0) > 0 || 
                           (Number(b.pouch_pouches_cellared) || 0) > 0;
@@ -52,8 +56,8 @@ export const TobaccoModule = {
       return false;
     });
 
-    // Calculate total cellar quantity
-    const totalQuantityOz = blends.reduce((sum, b) => {
+    // Calculate total cellar quantity (AI-eligible only)
+    const totalQuantityOz = eligibleBlends.reduce((sum, b) => {
       const tinQty = Number(b.tin_total_quantity_oz) || 0;
       const bulkQty = Number(b.bulk_total_quantity_oz) || 0;
       const pouchQty = Number(b.pouch_total_quantity_oz) || 0;
@@ -67,7 +71,7 @@ export const TobaccoModule = {
     const hasLatakia = blendTypes.has("Latakia Blend");
 
     return {
-      blendCount: blends.length,
+      blendCount: eligibleBlends.length,
       blendTypeCount: blendTypes.size,
       agingBlendCount: agingBlends.length,
       readyForAgingCount: readyForAging.length,
@@ -77,7 +81,7 @@ export const TobaccoModule = {
       hasEnglish,
       hasOriental,
       hasLatakia,
-      blends
+      blends: eligibleBlends
     };
   },
 
