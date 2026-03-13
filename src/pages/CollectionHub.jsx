@@ -72,7 +72,7 @@ export default function CollectionHub() {
       module.type === 'pipes'
         ? summary.pipes
         : module.type === 'whiskey'
-          ? summary.bottles
+          ? summary.whiskey
           : { count: 0, value: 0 };
 
     return {
