@@ -75,8 +75,12 @@ export default function CollectionHub() {
           ? summary.whiskey
           : { count: 0, value: 0 };
 
+    // Map module types to dashboard routes
+    const dashboardRoute = module.type === 'pipes' ? 'PipeKeeper' : module.type === 'whiskey' ? 'WhiskeyKeeper' : module.route;
+
     return {
       ...module,
+      route: dashboardRoute,
       itemCount: moduleData.count,
       summary: {
         label: t('hub.totalValue'),
