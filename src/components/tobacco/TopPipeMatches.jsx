@@ -10,6 +10,7 @@ import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { filterAiEligibleItems } from "@/components/platform/aiEligibility";
 
 export default function TopPipeMatches({ blend, pipes }) {
   const { t } = useTranslation();
@@ -68,9 +69,12 @@ export default function TopPipeMatches({ blend, pipes }) {
   const updateMatchesFromData = () => {
     if (!blend) return;
 
-    // ALWAYS calculate scores for ALL pipes against THIS specific blend
+    // Filter to AI-eligible pipes only
+    const eligiblePipes = filterAiEligibleItems(pipes);
+
+    // ALWAYS calculate scores for ALL eligible pipes against THIS specific blend
     // Don't rely on pre-computed top-10 which might exclude this blend
-    const scoredPipes = pipes.map((pipe) => {
+    const scoredPipes = eligiblePipes.map((pipe) => {
       const { score, why } = scorePipeBlend(
         { focus: pipe.focus || [], pipe_id: pipe.id, pipe_name: pipe.name, bowl_variant_id: null },
         {
