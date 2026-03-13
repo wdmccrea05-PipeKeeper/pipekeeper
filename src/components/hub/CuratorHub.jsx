@@ -41,11 +41,9 @@ export default function CuratorHub({ summary = null, recentActivities = [] }) {
           <p className="text-sm text-[#E0D8C8]/70 mt-1">
             {t('hub.curatorDescription')}
           </p>
-          {summary && (
-            <p className="text-xs text-[#D4A574] mt-2">
-              {summary.total.items} items across {summary.enabledModuleCount} modules
-            </p>
-          )}
+          <p className="text-xs text-[#D4A574] mt-2">
+            {entryText}
+          </p>
         </div>
       </div>
 
