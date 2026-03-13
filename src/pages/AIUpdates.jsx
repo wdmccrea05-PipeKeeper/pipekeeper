@@ -178,7 +178,7 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
       </div>
 
       <div className="space-y-4">
-        <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+        <Card className="border-[#8b6239]/30 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
               <Tags className="w-5 h-5 text-blue-400" />
@@ -214,7 +214,7 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
         />
 
         <div id="geometry-section">
-          <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+          <Card className="border-[#8b6239]/30 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
                 <Ruler className="w-5 h-5 text-blue-400" />
@@ -237,7 +237,7 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
           />
         </div>
 
-        <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+        <Card className="border-[#8b6239]/30 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]/70 text-base">
               <Info className="w-4 h-4 text-[#e8d5b7]/50" />
@@ -261,7 +261,7 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
               <div className="space-y-3 pt-2 border-t border-[#e8d5b7]/10">
                 <div className="flex gap-2">
                   <select
-                    className="flex-1 bg-[#1a2c42] border border-[#e8d5b7]/20 rounded-lg px-3 py-2 text-[#e8d5b7] text-sm"
+                    className="flex-1 bg-[#1f1510] border border-[#8b6239]/20 rounded-lg px-3 py-2 text-[#e8d5b7] text-sm"
                     value={measurementLookupState.selectedPipeId || ""}
                     onChange={(e) =>
                       setMeasurementLookupState({ ...measurementLookupState, selectedPipeId: e.target.value })
@@ -420,7 +420,7 @@ Return JSON with:
 
                 {/* Lookup Results */}
                 {measurementLookupState.status !== "idle" && measurementLookupState.results && (
-                  <div className="border border-[#e8d5b7]/20 rounded-lg p-4 bg-[#1a2c42]/50 space-y-3">
+                  <div className="border border-[#8b6239]/20 rounded-lg p-4 bg-[#1f1510]/80 space-y-3">
                     {measurementLookupState.status === "completed" && measurementLookupState.results.updates && (
                       <div>
                         <p className="text-sm font-semibold text-green-400 mb-2">
@@ -469,7 +469,7 @@ Return JSON with:
           </CardContent>
         </Card>
 
-        <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+        <Card className="border-[#8b6239]/30 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
               <Layers className="w-5 h-5 text-purple-400" />

@@ -970,11 +970,11 @@ ${englishUserText}
     return (
       <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-indigo-800 text-lg">
+          <CardTitle className="flex items-center gap-2 text-[#E0D8C8] text-lg">
             <Lightbulb className="w-5 h-5" />
             {t("tobacconist.askTheExpert")}
           </CardTitle>
-          <p className="text-sm text-stone-800">{t("tobacconist.askTheExpertDesc")}</p>
+          <p className="text-sm text-[#E0D8C8]/80">{t("tobacconist.askTheExpertDesc")}</p>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -1461,23 +1461,23 @@ ${englishUserText}
       </Dialog>
 
       {/* Main Optimization Card */}
-      <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+      <Card className="border-[#8b6239]/30 bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2">
-                  <CardTitle className="flex items-center gap-2 text-blue-800 text-lg sm:text-base">
+                  <CardTitle className="flex items-center gap-2 text-[#E0D8C8] text-lg sm:text-base">
                     <Target className="w-5 h-5 flex-shrink-0" />
                     <span className="truncate">{t("tobacconist.optimizationTitle")}</span>
                   </CardTitle>
                   <InfoTooltip text={t("tobacconist.optimizationTooltip")} />
                 </div>
-                <Button variant="ghost" size="sm" onClick={toggleCollapse} className="text-blue-600 hover:text-blue-800 flex-shrink-0">
+                <Button variant="ghost" size="sm" onClick={toggleCollapse} className="text-[#D4A574] hover:text-[#E0D8C8] flex-shrink-0">
                   {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
                 </Button>
               </div>
-              <p className="mt-2 text-stone-700 text-xs sm:text-sm">
+              <p className="mt-2 text-[#E0D8C8]/80 text-xs sm:text-sm">
                 {t("tobacconist.strategicSpecializations")}
               </p>
             </div>
@@ -1486,7 +1486,7 @@ ${englishUserText}
               <Button
                 onClick={() => analyzeCollection(false)}
                 disabled={loading}
-                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 w-full sm:w-auto flex-shrink-0"
+                className="bg-gradient-to-r from-[#8b6239] to-[#6d4e2e] hover:from-[#6d4e2e] hover:to-[#5a3f24] w-full sm:w-auto flex-shrink-0"
               >
                 {loading ? (
                   <>

@@ -170,7 +170,7 @@ export default function ImportPage() {
 
   if (!isPaidUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <a href={createPageUrl('Home')}>
             <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
@@ -188,7 +188,7 @@ export default function ImportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <a href={createPageUrl('Home')}>
           <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">

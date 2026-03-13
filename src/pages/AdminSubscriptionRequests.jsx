@@ -38,28 +38,13 @@ const STATUS_ICONS = {
 export default function AdminSubscriptionRequests() {
   const { user, isLoading: userLoading } = useCurrentUser();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  
+  // ALL HOOKS FIRST - before any conditional returns
   const [searchEmail, setSearchEmail] = useState("");
   const [expandedId, setExpandedId] = useState(null);
   const [rejectingId, setRejectingId] = useState(null);
   const [rejectNotes, setRejectNotes] = useState("");
-  const queryClient = useQueryClient();
-
-  // Check admin access
-  if (!userLoading && user?.role !== "admin") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] flex items-center justify-center">
-        <Card className="max-w-md w-full bg-[#1A2B3A] border-[#A35C5C]/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-red-500 mb-4">
-              <AlertCircle className="w-5 h-5" />
-              <span>{t("admin.accessRequired")}</span>
-            </div>
-            <p className="text-sm text-[#E0D8C8]/70">{t("admin.adminOnly")}</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   // Fetch subscription support requests
   const { data: requests, isLoading: requestsLoading } = useQuery({
@@ -79,7 +64,6 @@ export default function AdminSubscriptionRequests() {
   // Grant access mutation
   const grantMutation = useMutation({
     mutationFn: async ({ requestId, tier }) => {
-      // Call admin function to grant access
       const response = await base44.functions.invoke("adminGrantSubscriptionAccess", {
         email: requests.find((r) => r.id === requestId)?.user_email,
         tier,
@@ -91,7 +75,6 @@ export default function AdminSubscriptionRequests() {
         throw new Error(response?.data?.message || "Failed to grant access");
       }
 
-      // Update request status
       await base44.entities.SubscriptionSupportRequest.update(requestId, {
         status: "access_granted",
         granted_by: user.email,
@@ -150,6 +133,23 @@ export default function AdminSubscriptionRequests() {
     requests?.filter((r) =>
       r.user_email?.toLowerCase().includes(searchEmail.toLowerCase())
     ) || [];
+
+  // NOW conditional returns are safe - all hooks declared
+  if (!userLoading && user?.role !== "admin") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] flex items-center justify-center">
+        <Card className="max-w-md w-full bg-[#1A2B3A] border-[#A35C5C]/50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-red-500 mb-4">
+              <AlertCircle className="w-5 h-5" />
+              <span>{t("admin.accessRequired")}</span>
+            </div>
+            <p className="text-sm text-[#E0D8C8]/70">{t("admin.adminOnly")}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (requestsLoading) {
     return (

@@ -18,7 +18,7 @@ export default function VerificationHelp() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center p-4">
       <div className="w-full max-w-2xl space-y-6">
         <Card>
           <CardHeader>

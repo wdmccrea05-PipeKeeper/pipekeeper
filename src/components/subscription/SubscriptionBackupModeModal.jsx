@@ -13,7 +13,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
   const { t } = useTranslation();
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedTier, setSelectedTier] = useState("premium");
+  const [selectedTier, setSelectedTier] = useState("pro");
   const [selectedTerm, setSelectedTerm] = useState("monthly");
   const [paymentReference, setPaymentReference] = useState("");
   const [userMessage, setUserMessage] = useState("");
@@ -152,40 +152,6 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <a
-                href={getStripePaymentLink("premium", "monthly")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block"
-              >
-                <Button
-                  variant="outline"
-                  className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
-                >
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="font-semibold">{t("subscriptionBackup.premiumMonthly")}</span>
-                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.premiumMonthlyPrice")}</span>
-                  </div>
-                </Button>
-              </a>
-
-              <a
-                href={getStripePaymentLink("premium", "annual")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block"
-              >
-                <Button
-                  variant="outline"
-                  className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
-                >
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="font-semibold">{t("subscriptionBackup.premiumAnnual")}</span>
-                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.premiumAnnualPrice")}</span>
-                  </div>
-                </Button>
-              </a>
-
-              <a
                 href={getStripePaymentLink("pro", "monthly")}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -238,7 +204,6 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="premium">{t("subscriptionSupport.premium")}</SelectItem>
                     <SelectItem value="pro">{t("subscriptionSupport.pro")}</SelectItem>
                   </SelectContent>
                 </Select>

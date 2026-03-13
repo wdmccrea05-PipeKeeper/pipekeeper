@@ -133,7 +133,7 @@ export default function FAQFull() {
               </div>
 
               <div className="rounded-xl border border-[rgba(180,140,75,0.32)] bg-[rgba(58,40,22,0.72)] p-4">
-                <h4 className="mb-2 font-semibold text-[#F5F1E7]">{t("faqFull.premiumTier")}</h4>
+                <h4 className="mb-2 font-semibold text-[#F5F1E7]">{t("faqFull.proTier")}</h4>
                 <ul className="ml-4 list-disc space-y-1 text-[#D8C7A6]/90">
                   <li>{t("faqFull.unlimitedPipesTobacco")}</li>
                   <li>{t("faqFull.aiMatching")}</li>
@@ -143,13 +143,6 @@ export default function FAQFull() {
                   <li>{t("faqFull.exportReports")}</li>
                   <li>{t("faqFull.publicProfile")}</li>
                   <li>{t("faqFull.breakInSchedules")}</li>
-                </ul>
-              </div>
-
-              <div className="rounded-xl border border-[rgba(132,92,163,0.28)] bg-[rgba(48,30,54,0.55)] p-4">
-                <h4 className="mb-2 font-semibold text-[#F5F1E7]">{t("faqFull.proTier")}</h4>
-                <ul className="ml-4 list-disc space-y-1 text-[#D8C7A6]/90">
-                  <li>{t("faqFull.everythingInPremium")}</li>
                   <li>{t("faqFull.aiPipeIdentification")}</li>
                   <li>{t("faqFull.marketValueLookup")}</li>
                   <li>{t("faqFull.geometryAnalysis")}</li>
@@ -182,9 +175,11 @@ export default function FAQFull() {
           <Q id="tiers" q={t("faqExtended.whatAreTiers")}>
             <ul className="list-disc list-inside space-y-2">
               <li><strong>{t("subscription.free")}:</strong> {t("faqExtended.freeTierDesc")}</li>
-              <li><strong>{t("subscription.premium")}:</strong> {t("faqExtended.premiumTierDesc")}</li>
               <li><strong>{t("subscription.pro")}:</strong> {t("faqExtended.proTierDesc", { date: "February 1, 2026" })}</li>
             </ul>
+            <p className="mt-3 text-sm text-[#D8C7A6]/75">
+              {t("faqExtended.legacySubscriberNote", { date: "February 1, 2026", defaultValue: "Note: Early subscribers (before Feb 1, 2026) have access to all Pro features." })}
+            </p>
           </Q>
         </Section>
 

@@ -39,7 +39,7 @@ export default function PairingCard({ pipe, blend, score, reasoning }) {
   }
 
   return (
-    <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+    <Card className="border-[#8b3a3a]/40 bg-gradient-to-br from-[#2a1f18]/95 to-[#1f1510]/95">
       <CardContent className="p-4 space-y-3">
         <div className="text-xs text-[#e8d5b7]/60">{t("pairingCard.shareable")}</div>
         <div>

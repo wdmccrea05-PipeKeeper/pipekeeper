@@ -86,7 +86,7 @@ export async function startSubscriptionCheckout(billingInterval) {
     try {
       const { startApplePurchaseFlow } = await import("./nativeIAPBridge");
       if (startApplePurchaseFlow) {
-        startApplePurchaseFlow("premium");
+        startApplePurchaseFlow("pro");
         return;
       }
     } catch (e) {
@@ -100,7 +100,7 @@ export async function startSubscriptionCheckout(billingInterval) {
   try {
     const interval = billingInterval === "monthly" ? "monthly" : "annual";
     const response = await base44.functions.invoke("createCheckoutSession", { 
-      tier: "premium", 
+      tier: "pro", 
       interval 
     });
     const url = response?.data?.url;

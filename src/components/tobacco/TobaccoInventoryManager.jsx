@@ -247,7 +247,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 min="0"
                 value={formData.tin_total_quantity_oz !== '' ? parseFloat(formData.tin_total_quantity_oz).toFixed(2) : ''}
                 placeholder={t("tobaccoExtended.autoCalculated")}
-                className="border-[#E0D8C8]/20 bg-[#223447] text-[#E0D8C8]/70"
+                className="border-[#8b6239]/20 bg-[#1f1510]/60 text-[#E0D8C8]/70"
                 readOnly
               />
             </div>
@@ -390,7 +390,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 min="0"
                 value={formData.pouch_total_quantity_oz !== '' ? parseFloat(formData.pouch_total_quantity_oz).toFixed(2) : ''}
                 placeholder={t("tobaccoExtended.autoCalculated")}
-                className="border-[#E0D8C8]/20 bg-[#223447] text-[#E0D8C8]/70"
+                className="border-[#8b6239]/20 bg-[#1f1510]/60 text-[#E0D8C8]/70"
                 readOnly
               />
             </div>

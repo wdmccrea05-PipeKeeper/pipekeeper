@@ -172,15 +172,18 @@ export default function CellarLog({ blend }) {
 
   return (
     <>
-      <div className="bg-white rounded-lg p-4 space-y-4">
+      <div className="rounded-lg p-4 space-y-4" style={{
+        background: "linear-gradient(145deg, rgba(245,241,231,0.95), rgba(235,228,215,0.95))",
+        border: "1px solid rgba(140,105,65,0.25)"
+      }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-[#1a2c42]" />
-            <h3 className="font-semibold text-[#1a2c42]">{t("cellarLog.cellaredTobacco")}</h3>
+            <Package className="w-5 h-5 text-[#3a2a20]" />
+            <h3 className="font-semibold text-[#3a2a20]">{t("cellarLog.cellaredTobacco")}</h3>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="bg-[#D1A75D] hover:bg-[#D1A75D]/90 text-[#1a2c42] font-semibold">
+              <Button size="sm" className="bg-[#A35C5C] hover:bg-[#8B4A4A] text-white font-semibold">
                 <Plus className="w-4 h-4 mr-1" />
                 {t("cellarLog.addEntry")}
               </Button>
@@ -297,7 +300,7 @@ export default function CellarLog({ blend }) {
             <ArrowDownToLine className="w-3.5 h-3.5 text-green-600 shrink-0" />
             <span className="text-xs text-green-700 font-medium truncate">{t("cellarLog.added")}</span>
           </div>
-          <p className="text-base font-bold text-[#1a2c42] leading-tight">{formatWeight(totalAdded)}</p>
+          <p className="text-base font-bold text-[#3a2a20] leading-tight">{formatWeight(totalAdded)}</p>
         </div>
 
         <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-2 text-center">
@@ -319,9 +322,9 @@ export default function CellarLog({ blend }) {
 
         {/* Log Entries */}
         {isLoading ? (
-          <p className="text-sm text-[#1a2c42]/60 text-center py-4">{t("common.loading")}</p>
+          <p className="text-sm text-[#3a2a20]/60 text-center py-4">{t("common.loading")}</p>
         ) : logs.length === 0 ? (
-          <p className="text-sm text-[#1a2c42]/60 text-center py-4">
+          <p className="text-sm text-[#3a2a20]/60 text-center py-4">
             {t("cellarLog.noTransactionsYet")}
           </p>
         ) : (
@@ -329,7 +332,7 @@ export default function CellarLog({ blend }) {
             {logs.map((log) => (
               <div
                 key={log.id}
-                className="flex items-start gap-3 p-3 rounded-lg border border-[#1a2c42]/20 hover:bg-gray-50 transition-colors"
+                className="flex items-start gap-3 p-3 rounded-lg border border-[#8b6239]/20 hover:bg-white/10 transition-colors"
               >
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                   log.transaction_type === 'added' 
@@ -346,14 +349,14 @@ export default function CellarLog({ blend }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div>
-                      <p className="font-semibold text-[#1a2c42]">
+                      <p className="font-semibold text-[#3a2a20]">
                         {log.transaction_type === 'added' ? t("cellarLog.addedToCellar") : t("cellarLog.removedFromCellar")}
                       </p>
                       <div className="flex items-center gap-2 flex-wrap mt-1">
-                        <Badge variant="outline" className="text-xs bg-gray-100 text-[#1a2c42] border-[#1a2c42]/20">
+                        <Badge variant="outline" className="text-xs bg-white/80 text-[#3a2a20] border-[#8b6239]/20">
                           {log.amount_oz} {t("cellarLog.ozUnit")}
                         </Badge>
-                        <Badge variant="outline" className="text-xs bg-gray-100 text-[#1a2c42] border-[#1a2c42]/20">
+                        <Badge variant="outline" className="text-xs bg-white/80 text-[#3a2a20] border-[#8b6239]/20">
                           {containerLabel[log.container_type] || log.container_type}
                         </Badge>
                         {log.removal_destination && (
@@ -363,7 +366,7 @@ export default function CellarLog({ blend }) {
                             {log.removal_destination === 'discarded' && t("cellarLog.discarded")}
                           </Badge>
                         )}
-                        <span className="flex items-center gap-1 text-xs text-[#1a2c42]/60">
+                        <span className="flex items-center gap-1 text-xs text-[#3a2a20]/60">
                           <Calendar className="w-3 h-3" />
                           {format(new Date(log.date), 'MMM d, yyyy')}
                         </span>
@@ -377,13 +380,13 @@ export default function CellarLog({ blend }) {
                           deleteLogMutation.mutate(log.id);
                         }
                       }}
-                      className="text-[#1a2c42]/40 hover:text-red-600"
+                      className="text-[#3a2a20]/40 hover:text-red-600"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                   {log.notes && (
-                    <p className="text-xs text-[#1a2c42]/70 mt-1">{log.notes}</p>
+                    <p className="text-xs text-[#3a2a20]/70 mt-1">{log.notes}</p>
                   )}
                 </div>
               </div>

@@ -89,9 +89,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Missing tier or interval" }, { status: 400 });
     }
 
-    const priceId = getPriceIdFromTierAndInterval(tier, interval);
+    // COLLAPSE: Premium → Pro for all new purchases
+    const normalizedTier = String(tier).toLowerCase() === "premium" ? "pro" : tier;
+    const priceId = getPriceIdFromTierAndInterval(normalizedTier, interval);
     if (!priceId) {
-      return Response.json({ error: "Invalid tier/interval combination" }, { status: 400 });
+      return Response.json({ error: "Invalid tier/interval combination. Supported: pro + monthly/annual." }, { status: 400 });
     }
 
     // Get or create customer
@@ -120,7 +122,7 @@ Deno.serve(async (req) => {
         user_email: emailLower,
         user_id: userId,
         platform: platform,
-        tier: String(tier).toLowerCase(),
+        tier: normalizedTier,
         interval: interval === "annual" ? "annual" : "monthly",
       },
       subscription_data: {
@@ -128,7 +130,7 @@ Deno.serve(async (req) => {
           user_email: emailLower,
           user_id: userId,
           platform: platform,
-          tier: String(tier).toLowerCase(),
+          tier: normalizedTier,
           interval: interval === "annual" ? "annual" : "monthly",
         },
       },

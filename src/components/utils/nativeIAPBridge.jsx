@@ -58,7 +58,9 @@ export const openAppleManageSubscriptions = () => {
 };
 
 export const startApplePurchaseFlow = (tier) => {
-  return safePost({ action: "showPaywall", tier: tier || "premium" });
+  // COLLAPSE: Premium → Pro for all new purchases
+  const normalizedTier = String(tier || "pro").toLowerCase() === "premium" ? "pro" : (tier || "pro");
+  return safePost({ action: "showPaywall", tier: normalizedTier });
 };
 
 export const nativeDebugPing = (label = "ping") => {
@@ -70,7 +72,7 @@ export const nativeDebugPing = (label = "ping") => {
  * iOS wrapper should dispatch full payload:
  * {
  *   active: boolean,
- *   tier?: "premium" | "pro",
+ *   tier?: "pro" (legacy "premium" normalizes to "pro"),
  *   expiresAt?: ISO date string,
  *   productId?: string,
  *   originalTransactionId?: string (REQUIRED for proper account linking)
