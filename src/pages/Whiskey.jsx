@@ -1,0 +1,325 @@
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { Button } from '@/components/ui/button';
+import { Plus, Wine } from 'lucide-react';
+import { useTranslation } from '@/components/i18n/safeTranslation';
+import BottleCard from '@/components/whiskey/BottleCard';
+import BottleForm from '@/components/whiskey/BottleForm';
+import TastingLogForm from '@/components/whiskey/TastingLog';
+import BottleInsights from '@/components/whiskey/BottleInsights';
+import { toast } from 'sonner';
+
+export default function WhiskeyPage() {
+  const { t } = useTranslation();
+  const { user } = useCurrentUser();
+  const queryClient = useQueryClient();
+
+  const [showForm, setShowForm] = useState(false);
+  const [editingBottle, setEditingBottle] = useState(null);
+  const [showTastingLog, setShowTastingLog] = useState(null);
+
+  // Fetch bottles
+  const { data: bottles = [] } = useQuery({
+    queryKey: ['bottles', user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.Bottle.filter({ created_by: user?.email });
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
+  // Fetch tasting logs
+  const { data: tastingLogs = [] } = useQuery({
+    queryKey: ['tasting-logs', user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.TastingLog.filter({ created_by: user?.email }, '-tasting_date', 100);
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
+  // Create bottle
+  const createBottleMutation = useMutation({
+    mutationFn: (data) => base44.entities.Bottle.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bottles'] });
+      setShowForm(false);
+      setEditingBottle(null);
+      toast.success('Bottle added!');
+    },
+  });
+
+  // Update bottle
+  const updateBottleMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Bottle.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bottles'] });
+      setShowForm(false);
+      setEditingBottle(null);
+      toast.success('Bottle updated!');
+    },
+  });
+
+  // Delete bottle
+  const deleteBottleMutation = useMutation({
+    mutationFn: (id) => base44.entities.Bottle.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bottles'] });
+      toast.success('Bottle deleted!');
+    },
+  });
+
+  // Create tasting log
+  const createTastingLogMutation = useMutation({
+    mutationFn: (data) => base44.entities.TastingLog.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasting-logs'] });
+      setShowTastingLog(null);
+      toast.success('Tasting logged!');
+    },
+  });
+
+  const handleSaveBottle = (data) => {
+    if (editingBottle) {
+      updateBottleMutation.mutate({ id: editingBottle.id, data });
+    } else {
+      createBottleMutation.mutate(data);
+    }
+  };
+
+  const handleDeleteBottle = (id) => {
+    if (confirm('Are you sure you want to delete this bottle?')) {
+      deleteBottleMutation.mutate(id);
+    }
+  };
+
+  const handleSaveTastingLog = (data) => {
+    createTastingLogMutation.mutate(data);
+  };
+
+  const handleEditBottle = (bottle) => {
+    setEditingBottle(bottle);
+    setShowForm(true);
+  };
+
+  return (
+    <div className="space-y-10">
+      {/* Header */}
+      <div className="relative">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))',
+                  border: '1px solid rgba(120, 90, 65, 0.45)',
+                  boxShadow: '0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)',
+                }}
+              >
+                <Wine
+                  className="w-5 h-5"
+                  style={{
+                    color: 'rgba(180, 140, 75, 1)',
+                    filter: 'drop-shadow(0 0 4px rgba(180,140,75,0.7))',
+                  }}
+                />
+              </div>
+
+              <h1
+                className="text-4xl font-bold tracking-tight"
+                style={{
+                  color: '#F5F1E7',
+                  fontFamily: "'Georgia', serif",
+                  textShadow: '0 2px 6px rgba(0,0,0,0.7)',
+                }}
+              >
+                WhiskeyKeeper
+              </h1>
+            </div>
+
+            <p
+              className="text-base pl-14"
+              style={{ color: 'rgba(224, 216, 200, 0.75)' }}
+            >
+              Track your whiskey collection and tasting notes
+            </p>
+          </div>
+
+          <Button
+            onClick={() => {
+              setEditingBottle(null);
+              setShowForm(true);
+            }}
+            className="bg-[#A35C5C] hover:bg-[#8C4A4A]"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Bottle
+          </Button>
+        </div>
+      </div>
+
+      {/* Modals */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <BottleForm
+            bottle={editingBottle}
+            onSubmit={handleSaveBottle}
+            onCancel={() => {
+              setShowForm(false);
+              setEditingBottle(null);
+            }}
+          />
+        </div>
+      )}
+
+      {showTastingLog && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <TastingLogForm
+            bottle={showTastingLog}
+            onSubmit={handleSaveTastingLog}
+            onCancel={() => setShowTastingLog(null)}
+          />
+        </div>
+      )}
+
+      {/* Insights */}
+      {bottles.length > 0 && (
+        <div
+          className="rounded-2xl p-6"
+          style={{
+            background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))',
+            border: '1px solid rgba(180, 140, 75, 0.15)',
+          }}
+        >
+          <BottleInsights bottles={bottles} tastingLogs={tastingLogs} />
+        </div>
+      )}
+
+      {/* Collection Grid */}
+      {bottles.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {bottles.map((bottle) => (
+            <div key={bottle.id} className="space-y-3">
+              <BottleCard bottle={bottle} onClick={() => handleEditBottle(bottle)} />
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowTastingLog(bottle)}
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                >
+                  Log Tasting
+                </Button>
+                <Button
+                  onClick={() => {
+                    setEditingBottle(bottle);
+                    setShowForm(true);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                >
+                  Edit
+                </Button>
+                <Button
+                  onClick={() => handleDeleteBottle(bottle.id)}
+                  variant="outline"
+                  size="sm"
+                  className="text-red-400 border-red-400/30"
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div
+          className="rounded-2xl p-12 text-center"
+          style={{
+            background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.3), rgba(31, 21, 16, 0.3))',
+            border: '1px solid rgba(180, 140, 75, 0.15)',
+          }}
+        >
+          <Wine className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(180,140,75,0.5)' }} />
+          <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">
+            No bottles yet
+          </h2>
+          <p style={{ color: 'rgba(224,216,200,0.6)' }} className="mb-6">
+            Start tracking your whiskey collection
+          </p>
+          <Button
+            onClick={() => setShowForm(true)}
+            style={{
+              background: 'linear-gradient(135deg, rgba(163, 92, 92, 1), rgba(140, 74, 74, 1))',
+              color: '#F5F1E7',
+            }}
+          >
+            Add Your First Bottle
+          </Button>
+        </div>
+      )}
+
+      {/* Recent Tastings */}
+      {tastingLogs.length > 0 && (
+        <div className="space-y-4">
+          <h2
+            style={{ color: '#F5F1E7' }}
+            className="text-2xl font-bold"
+          >
+            Recent Tastings
+          </h2>
+          <div className="grid grid-cols-1 gap-3">
+            {tastingLogs.slice(0, 5).map((log) => (
+              <div
+                key={log.id}
+                className="rounded-lg p-4"
+                style={{
+                  background: 'rgba(180, 140, 75, 0.08)',
+                  border: '1px solid rgba(180, 140, 75, 0.15)',
+                }}
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p style={{ color: '#F5F1E7' }} className="font-semibold">
+                      {log.bottle_name}
+                    </p>
+                    <p style={{ color: 'rgba(224,216,200,0.6)' }} className="text-sm">
+                      {new Date(log.tasting_date).toLocaleDateString()}
+                    </p>
+                  </div>
+                  {log.rating && (
+                    <div
+                      style={{
+                        background: 'rgba(212, 175, 55, 0.2)',
+                        color: '#D4AF37',
+                      }}
+                      className="px-3 py-1 rounded-full text-sm font-semibold"
+                    >
+                      {log.rating.toFixed(1)}/5
+                    </div>
+                  )}
+                </div>
+                {log.notes && (
+                  <p style={{ color: 'rgba(224,216,200,0.7)' }} className="text-sm mt-2">
+                    {log.notes}
+                  </p>
+                )}
+                {log.pairing && (
+                  <p style={{ color: 'rgba(180,140,75,0.8)' }} className="text-sm mt-1">
+                    Pairing: {log.pairing}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
