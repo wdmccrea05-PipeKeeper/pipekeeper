@@ -228,7 +228,7 @@ export default function Layout({ children, currentPageName }) {
   }, [mobileOpen, navigate]);
 
   const navItems = useMemo(() => [
-    { name: t("nav.home"), page: "Home", icon: Home, isIconComponent: true },
+    { name: t("nav.hub"), page: "CollectionHub", icon: Home, isIconComponent: true },
     { name: t("nav.pipes"), page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
     {
       name: isAppleBuild ? t("nav.cellar") : t("nav.tobacco"),
