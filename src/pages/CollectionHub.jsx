@@ -122,9 +122,9 @@ export default function CollectionHub() {
       <CombinedSummary
         pipeCount={summary.pipes.count}
         tobaccoCount={summary.tobacco.count}
-        bottleCount={summary.bottles.count}
+        bottleCount={summary.whiskey.count}
         totalValue={summary.total.value}
-        enabledModuleCount={summary.enabledModuleCount}
+        enabledModuleCount={summary.hubContributorCount}
       />
 
       {/* Recent Activity */}
