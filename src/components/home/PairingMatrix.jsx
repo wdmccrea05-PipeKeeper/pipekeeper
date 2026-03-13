@@ -9,7 +9,6 @@ import { ChevronDown, ChevronRight, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { getPipeVariantKey } from "@/components/utils/pipeVariants";
 import { regeneratePairings } from "@/components/utils/pairingRegeneration";
-import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 

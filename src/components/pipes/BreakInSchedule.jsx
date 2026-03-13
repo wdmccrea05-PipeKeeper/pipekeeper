@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Sparkles, Loader2, Plus, Check, AlertTriangle, Undo } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { generateBreakInScheduleAI } from "@/components/utils/aiGenerators";
 import { safeUpdate } from "@/components/utils/safeUpdate";
