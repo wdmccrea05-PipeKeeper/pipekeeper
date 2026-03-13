@@ -36,7 +36,7 @@ function AppleSubscription() {
     t("subscription.appleFeatureFree7"),
   ];
 
-  const premiumFeatures = [
+  const proFeatures = [
     t("subscription.appleFeaturePremium1"),
     t("subscription.appleFeaturePremium2"),
     t("subscription.appleFeaturePremium3"),
@@ -47,9 +47,6 @@ function AppleSubscription() {
     t("subscription.appleFeaturePremium8"),
     t("subscription.appleFeaturePremium9"),
     t("subscription.appleFeaturePremium10"),
-  ];
-
-  const proFeatures = [
     t("subscription.appleFeaturePro1"),
     t("subscription.appleFeaturePro2"),
     t("subscription.appleFeaturePro3"),
@@ -60,7 +57,7 @@ function AppleSubscription() {
     t("subscription.appleFeaturePro8"),
   ];
 
-  const openSubscription = (tier = "premium") => {
+  const openSubscription = (tier = "pro") => {
     if (!isAppleBuild) return;
 
     // Prefer tier-aware paywall so Pro upgrades present the correct product.
@@ -98,7 +95,7 @@ function AppleSubscription() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card className="bg-black/40 border-white/10">
           <CardHeader>
             <CardTitle className="text-[#e8d5b7]">{t("subscription.free")}</CardTitle>
@@ -113,23 +110,14 @@ function AppleSubscription() {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/40 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">{t("subscription.premium")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <FeatureList items={premiumFeatures} />
-            <div className="mt-4">
-              <Button className="w-full" onClick={() => openSubscription("premium")}>
-                {t("subscription.subscribe")}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-black/40 border-white/10">
+        <Card className="bg-black/40 border-[#A35C5C] relative overflow-visible">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#A35C5C] text-white px-3 py-1 rounded-full text-xs font-semibold">
+            {t("subscriptionFull.recommended")}
+          </div>
           <CardHeader>
             <CardTitle className="text-[#e8d5b7]">{t("subscription.pro")}</CardTitle>
+            <p className="text-xs text-[#A35C5C] font-semibold">{tierTaglines.pro}</p>
+            <p className="text-sm text-[#e8d5b7]/70 mt-2">{tierDescriptions.pro}</p>
           </CardHeader>
           <CardContent>
             <FeatureList items={proFeatures} />

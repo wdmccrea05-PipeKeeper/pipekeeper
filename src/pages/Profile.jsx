@@ -391,7 +391,7 @@ export default function ProfilePage() {
                   {hasPaid ? (
                     <>
                       <div className="font-semibold text-amber-900">
-                        {hasPro ? t("profile.proActive") : t("profile.premiumActive")}
+                        {t("profile.proActive")}
                       </div>
                       <div className="text-sm text-amber-700">{t("profile.fullAccess")}</div>
                     </>

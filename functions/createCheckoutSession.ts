@@ -143,11 +143,13 @@ Deno.serve(async (req) => {
     
     // Prefer tier + interval approach
     if (tier && interval) {
-      priceId = getPriceIdFromTierAndInterval(tier, interval);
+      // BLOCK: Premium is no longer publicly purchasable — remap to Pro
+      const normalizedTier = String(tier).toLowerCase() === "premium" ? "pro" : tier;
+      priceId = getPriceIdFromTierAndInterval(normalizedTier, interval);
       
       if (!priceId) {
         return Response.json(
-          { error: `Invalid tier/interval combination: ${tier}/${interval}. Supported: premium/pro + monthly/annual.` },
+          { error: `Invalid tier/interval combination: ${tier}/${interval}. Supported: pro + monthly/annual.` },
           { status: 400 }
         );
       }

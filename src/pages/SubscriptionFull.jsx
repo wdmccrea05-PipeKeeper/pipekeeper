@@ -60,7 +60,7 @@ export default function SubscriptionFull() {
   const [subActive, setSubActive] = useState(false);
   const [subTier, setSubTier] = useState("");
   const [message, setMessage] = useState("");
-  const [selectedTier, setSelectedTier] = useState("premium");
+  const [selectedTier, setSelectedTier] = useState("pro");
   const [selectedInterval, setSelectedInterval] = useState("monthly");
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [refreshTimeout, setRefreshTimeout] = useState(null);
@@ -127,7 +127,6 @@ export default function SubscriptionFull() {
   }, [isIOSApp, refetch, queryClient]);
 
   const tierPrices = {
-    premium: { monthly: 1.99, annual: 19.99 },
     pro: { monthly: 2.99, annual: 29.99 },
   };
 
@@ -145,23 +144,19 @@ export default function SubscriptionFull() {
 
   const tierDescriptions = {
     free: t("subscriptionFull.freeTierDesc"),
-    premium: t("subscriptionFull.premiumTierDesc"),
     pro: t("subscriptionFull.proTierDesc"),
   };
 
   const tierTaglines = {
-    premium: t("subscriptionFull.premiumTagline"),
     pro: t("subscriptionFull.proTagline"),
   };
 
   const tierFeatures = {
-    premium: [
+    pro: [
       t("subscriptionFull.collectionInsights"),
       t("subscriptionFull.reportsAndExports"),
       t("subscriptionFull.advancedOrgTools"),
       t("subscriptionFull.priorityAccess"),
-    ],
-    pro: [
       t("subscriptionFull.deepAnalytics"),
       t("subscriptionFull.aiAssistedTools"),
       t("subscriptionFull.powerUserFeatures"),
@@ -170,7 +165,7 @@ export default function SubscriptionFull() {
 
   const handleUpgrade = async (tier, interval) => {
     if (isIOSApp) {
-      const requestedTier = tier || selectedTier || "premium";
+      const requestedTier = tier || selectedTier || "pro";
       const ok = startApplePurchaseFlow(requestedTier);
       if (!ok) openNativePaywall();
       return;
@@ -243,10 +238,7 @@ export default function SubscriptionFull() {
           </CardHeader>
           <CardContent className="text-[#e8d5b7]/80">
             <p className="mb-4">{t("subscriptionFull.handledThroughApple")}</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Button className="w-full" onClick={() => handleUpgrade("premium")}>
-                {t("subscriptionFull.upgradePremiumAppStore")}
-              </Button>
+            <div className="grid gap-3">
               <Button className="w-full" onClick={() => handleUpgrade("pro")}>
                 {t("subscriptionFull.upgradeProAppStore")}
               </Button>
@@ -270,9 +262,7 @@ export default function SubscriptionFull() {
           {t("subscriptionFull.alreadySubscribed")}
         </h1>
         <p className="text-[#e8d5b7]/70">
-          {alreadyPro
-            ? t("subscriptionFull.currentlyOnPro")
-            : t("subscriptionFull.currentlyOnPremium")}
+          {t("subscriptionFull.currentlyOnPro")}
         </p>
         <Button className="w-full max-w-xs mx-auto" onClick={handleManage}>
           {t("subscriptionFull.manageSubscription")}
@@ -292,7 +282,7 @@ export default function SubscriptionFull() {
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">{t("subscriptionFull.continueWithPremium")}</h1>
+        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">{t("subscriptionFull.unlockProFeatures")}</h1>
         <p className="text-[#e8d5b7]/70">{t("subscriptionFull.fullAccessPrompt")}</p>
       </div>
 
@@ -314,7 +304,7 @@ export default function SubscriptionFull() {
        </div>
 
       {/* Tier Selection */}
-      <div className="grid gap-6 md:grid-cols-3 mt-4">
+      <div className="grid gap-6 md:grid-cols-2 mt-4">
         {/* Free Tier */}
         <Card className="border-white/10">
           <CardHeader>
@@ -334,41 +324,11 @@ export default function SubscriptionFull() {
           </CardContent>
         </Card>
 
-        {/* Premium Tier - Emphasized */}
+        {/* Pro Tier - Emphasized */}
         <Card className="border-[#A35C5C] bg-[#1A2B3A]/60 relative overflow-visible">
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#A35C5C] text-white px-3 py-1 rounded-full text-xs font-semibold">
             {t("subscriptionFull.recommended")}
           </div>
-          <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.premium")}</CardTitle>
-            <p className="text-xs text-[#A35C5C] font-semibold">{tierTaglines.premium}</p>
-            <p className="text-sm text-[#e8d5b7]/70 mt-2">{tierDescriptions.premium}</p>
-            <div className="text-2xl font-bold text-[#A35C5C] mt-3">${tierPrices.premium[selectedInterval]}</div>
-            <div className="text-sm text-[#e8d5b7]/60">
-              {t("subscriptionFull.per")} {selectedInterval === "monthly" ? t("subscriptionFull.month") : t("subscriptionFull.year")}
-            </div>
-            {selectedInterval === "annual" && (
-              <p className="text-xs text-emerald-500 mt-1">{t("subscription.annualSavings")}</p>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {tierFeatures.premium.map((f, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span className="text-sm text-[#e8d5b7]/80">{f}</span>
-              </div>
-            ))}
-            <Button
-              className="w-full mt-4"
-              onClick={() => handleUpgrade("premium", selectedInterval)}
-            >
-              {t("subscriptionFull.continueWithPremiumBtn")}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Pro Tier */}
-        <Card className="border-white/10">
           <CardHeader>
             <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.pro")}</CardTitle>
             <p className="text-xs text-[#A35C5C] font-semibold">{tierTaglines.pro}</p>
@@ -389,7 +349,6 @@ export default function SubscriptionFull() {
               </div>
             ))}
             <Button
-              variant="outline"
               className="w-full mt-4"
               onClick={() => handleUpgrade("pro", selectedInterval)}
             >

@@ -33,11 +33,18 @@ export default function SubscriptionSupport() {
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkResult, setBulkResult] = useState(null);
   const [userEmail, setUserEmail] = useState("");
-  const [userTier, setUserTier] = useState("premium");
+  const [userTier, setUserTier] = useState("pro");
   const [userLoading, setUserLoading] = useState(false);
   const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   const [showUserConfirm, setShowUserConfirm] = useState(false);
   const [forceOverride, setForceOverride] = useState(false);
+
+  // HOOKS FIRST - All hooks must be declared at component top level
+  React.useEffect(() => {
+    loadHealth();
+    loadFunnel();
+    loadDrift();
+  }, [timeWindow]);
 
   if (!isAdmin) {
     return (
@@ -147,12 +154,6 @@ export default function SubscriptionSupport() {
       setUserLoading(false);
     }
   };
-
-  React.useEffect(() => {
-    loadHealth();
-    loadFunnel();
-    loadDrift();
-  }, [timeWindow]);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -357,7 +358,6 @@ export default function SubscriptionSupport() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="free">{t("subscriptionSupport.free")}</SelectItem>
-                <SelectItem value="premium">{t("subscriptionSupport.premium")}</SelectItem>
                 <SelectItem value="pro">{t("subscriptionSupport.pro")}</SelectItem>
               </SelectContent>
             </Select>

@@ -14,10 +14,10 @@ function normalizeTier(raw: any): string {
   if (!t) return "free";
 
   if (t === "pro") return "pro";
-  if (t === "premium") return "premium";
+  if (t === "premium") return "pro"; // COLLAPSE: Premium → Pro
 
   // Explicit legacy synonyms only
-  if (t === "paid" || t === "plus" || t === "subscriber" || t === "subscribed") return "premium";
+  if (t === "paid" || t === "plus" || t === "subscriber" || t === "subscribed") return "pro";
 
   return "free";
 }
