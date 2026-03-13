@@ -5,7 +5,33 @@
  * Used by requireEntitlement for tier-specific checks.
  */
 
-import { subscriptionGrantsPaidAccess } from "./_utils/gracePeriod.ts";
+// Inline grace period logic to avoid import issues
+const GRACE_PERIOD_DAYS = 5;
+
+function isSubscriptionInGracePeriod(subscription: any): boolean {
+  if (!subscription) return false;
+  const status = String(subscription?.status || "").toLowerCase();
+  if (status !== "past_due" && status !== "incomplete" && status !== "unpaid") return false;
+  const periodEnd = subscription?.current_period_end;
+  if (!periodEnd) return false;
+  try {
+    const endDate = new Date(periodEnd);
+    const graceEnd = new Date(endDate.getTime() + (GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000));
+    return Date.now() <= graceEnd.getTime();
+  } catch {
+    return false;
+  }
+}
+
+function subscriptionGrantsPaidAccess(subscription: any): boolean {
+  if (!subscription) return false;
+  const status = String(subscription?.status || "").toLowerCase();
+  if (status === "active" || status === "trialing" || status === "trial") return true;
+  if (status === "past_due" || status === "incomplete" || status === "unpaid") {
+    return isSubscriptionInGracePeriod(subscription);
+  }
+  return false;
+}
 
 const LEGACY_PREMIUM_CUTOFF = "2026-02-01T00:00:00.000Z";
 
