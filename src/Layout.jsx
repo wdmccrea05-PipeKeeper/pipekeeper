@@ -672,8 +672,8 @@ export default function Layout({ children, currentPageName }) {
             <div className="flex items-center justify-between h-16 px-4">
               <div className="flex items-center gap-2">
                 <BackButton currentPageName={currentPageName} />
-                <Link to={createPageUrl("Home")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                  <img src={PIPEKEEPER_LOGO} alt={t("layout.appTitle")} className="w-7 h-7 object-contain" />
+                <Link to={createPageUrl("CollectionHub")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+                  <img src={COLLECTIONKEEPER_LOGO} alt={t("layout.appTitle")} className="w-7 h-7 object-contain" />
                   <span className="font-bold text-lg text-[#E0D8C8]">{t("layout.appTitle")}</span>
                 </Link>
               </div>
