@@ -592,7 +592,7 @@ export default function Layout({ children, currentPageName }) {
         <MeasurementProvider>
         <div className="dark min-h-screen flex flex-col" style={{ 
           colorScheme: 'dark',
-          background: 'radial-gradient(circle at 30% 20%, rgba(120,85,55,0.15), transparent 40%), radial-gradient(circle at 80% 70%, rgba(70,50,35,0.2), transparent 50%), #0f0b08'
+          background: 'radial-gradient(circle at 30% 20%, rgba(140,100,65,0.18), transparent 40%), radial-gradient(circle at 80% 70%, rgba(90,65,45,0.24), transparent 50%), #1a140f'
         }}>
           <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b overflow-x-hidden shadow-[0_3px_12px_rgba(0,0,0,0.65),inset_0_-1px_0_rgba(180,140,75,0.12)]" style={{ 
             paddingTop: 'var(--safe-area-top)',
