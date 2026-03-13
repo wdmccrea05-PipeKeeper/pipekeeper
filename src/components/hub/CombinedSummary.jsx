@@ -1,13 +1,17 @@
 import React from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { getEnabledModuleCount } from './keeperModuleRegistry';
 
-export default function CombinedSummary({ pipeCount, bottleCount, totalValue }) {
+export default function CombinedSummary({ pipeCount, tobaccoCount, bottleCount, totalValue, enabledModuleCount }) {
   const { t } = useTranslation();
+
+  const totalItems = pipeCount + tobaccoCount + bottleCount;
+  const moduleCount = enabledModuleCount || getEnabledModuleCount();
 
   const stats = [
     {
       label: t('hub.totalItems'),
-      value: pipeCount + bottleCount,
+      value: totalItems,
     },
     {
       label: t('hub.totalValue'),
@@ -15,7 +19,7 @@ export default function CombinedSummary({ pipeCount, bottleCount, totalValue }) 
     },
     {
       label: t('hub.modules'),
-      value: '2',
+      value: moduleCount,
     },
   ];
 
