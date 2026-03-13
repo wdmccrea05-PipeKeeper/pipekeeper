@@ -4,7 +4,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import ErrorBoundary from "@/components/system/ErrorBoundary";
 import GlobalErrorBoundary from "@/components/system/GlobalErrorBoundary";
-import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown, AlertCircle, Settings, Shield, FileText } from "lucide-react";
+import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown, AlertCircle, Settings, Shield, FileText, Target } from "lucide-react";
 import GlobalSearchTrigger from "@/components/search/GlobalSearchTrigger";
 import BackButton from "@/components/navigation/BackButton";
 import { Button } from "@/components/ui/button";
@@ -265,6 +265,7 @@ export default function Layout({ children, currentPageName }) {
     { name: t("nav.userReport"), page: "UserReport", icon: Users, isIconComponent: true },
     { name: t("nav.contentModeration"), page: "AdminReports", icon: Shield, isIconComponent: true },
     { name: t("nav.eventsLog"), page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
+    { name: "Curator Analytics", page: "CuratorAnalyticsDashboard", icon: Target, isIconComponent: true },
   ] : [], [isAdmin, lang]);
 
   // Block render until subscription is loaded (prevents Apple fallback race)

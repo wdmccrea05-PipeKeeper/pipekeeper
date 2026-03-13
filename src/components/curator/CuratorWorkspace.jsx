@@ -9,6 +9,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQuery } from "@tanstack/react-query";
 import { Send, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { startCuratorSession, endCuratorSession, CuratorEvents } from "@/components/utils/curatorEventLogger";
 
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
@@ -88,6 +89,7 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
   const { t } = useTranslation();
   const { user } = useCurrentUser();
   const [threadId, setThreadId] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -98,6 +100,7 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
   const routedPromptConsumedRef = useRef(false);
   const threadInitPromiseRef = useRef(null);
   const routedContextRef = useRef(routedContext);
+  const sessionStartedRef = useRef(false);
 
   const { data: logs = [] } = useQuery({
     queryKey: ["smokingLogs", user?.email],
@@ -137,6 +140,23 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
         }
 
         setThreadId(id);
+
+        // Start session tracking if not already started
+        if (!sessionStartedRef.current) {
+          const sessionData = await startCuratorSession({
+            agentConversationId: id,
+            originatingRecommendation: routedContextRef.current || null,
+            initialPrompt: preFilledPrompt || "",
+            pipesCount: pipes.length,
+            blendsCount: blends.length,
+          });
+
+          if (sessionData?.session_id) {
+            setSessionId(sessionData.session_id);
+            sessionStartedRef.current = true;
+          }
+        }
+
         return id;
       } catch (e) {
         const msg = e?.message || String(e);
@@ -149,7 +169,7 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
     })();
 
     return threadInitPromiseRef.current;
-  }, [threadId, t]);
+  }, [threadId, t, pipes.length, blends.length, preFilledPrompt]);
 
   useEffect(() => {
     if (!user?.id || threadId) return;
@@ -262,6 +282,16 @@ ${englishText}`;
           { id: `assistant-${Date.now()}`, role: "assistant", content: translatedResponse, meta: {} },
         ];
       });
+
+      // Log message event
+      await CuratorEvents.messageSent({
+        sessionId,
+        metadata: {
+          message_length: text.length,
+          is_initial: messages.length === 0,
+        },
+      });
+
       return true;
     } catch (e) {
       console.error("Curator send failed:", e);

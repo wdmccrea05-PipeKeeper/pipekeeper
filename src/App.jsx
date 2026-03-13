@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import GlobalErrorBoundary from '@/components/system/GlobalErrorBoundary';
 import PublicSharedRecord from '@/pages/PublicSharedRecord';
+import CuratorAnalyticsDashboard from '@/pages/CuratorAnalyticsDashboard';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -35,6 +36,11 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/share/:moduleType/:shareToken" element={<PublicSharedRecord />} />
+      <Route path="/CuratorAnalyticsDashboard" element={
+        <LayoutWrapper currentPageName="CuratorAnalyticsDashboard">
+          <CuratorAnalyticsDashboard />
+        </LayoutWrapper>
+      } />
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
           <MainPage />

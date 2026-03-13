@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Target, TrendingUp, Leaf, Clock, X, ArrowRight, RefreshCw, Trash2 } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import { getKeeperIntelligence, PipesModule, TobaccoModule } from "@/components/
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { sanitizeRecommendationText } from "@/components/utils/aiTextNormalization";
+import { CuratorEvents } from "@/components/utils/curatorEventLogger";
 
 const ICON_MAP = {
   Target,
@@ -147,8 +148,41 @@ export default function ProactiveCuratorPanel({
     return generated.slice(0, 3);
   }, [pipes, blends, logs, curatorEnabled, cleared, refreshKey, lang]);
 
+  // Log recommendation impressions when shown
+  useEffect(() => {
+    if (insights.length === 0) return;
+
+    insights.forEach((insight) => {
+      CuratorEvents.recommendationShown({
+        recommendationId: `${insight.module}_${insight.category}_${insight.titleKey}`,
+        recommendationContext: {
+          titleKey: insight.titleKey,
+          title: insight.title,
+          module: insight.module,
+          category: insight.category,
+        },
+        collectionContext: {
+          pipes_count: pipes?.length || 0,
+          blends_count: blends?.length || 0,
+        },
+      });
+    });
+  }, [insights.map(i => i.titleKey).join(',')]);
+
   const handleClick = (insight) => {
     const whatIfPrompt = generateWhatIfPrompt(insight, t);
+
+    // Log explore event
+    CuratorEvents.recommendationExplored({
+      recommendationId: `${insight.module}_${insight.category}_${insight.titleKey}`,
+      recommendationContext: {
+        titleKey: insight.titleKey,
+        title: insight.title,
+        module: insight.module,
+        category: insight.category,
+        whatif_prompt: whatIfPrompt,
+      },
+    });
 
     if (onInsightClick) {
       onInsightClick({
