@@ -23,6 +23,7 @@ export default function CollectionHub() {
     enabledModuleCount: 0,
     hubContributorCount: 0,
   });
+  const [recentActivities, setRecentActivities] = useState([]);
 
   useEffect(() => {
     if (!user?.email) return;
