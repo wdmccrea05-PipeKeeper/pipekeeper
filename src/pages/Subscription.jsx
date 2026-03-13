@@ -116,8 +116,6 @@ function AppleSubscription() {
           </div>
           <CardHeader>
             <CardTitle className="text-[#e8d5b7]">{t("subscription.pro")}</CardTitle>
-            <p className="text-xs text-[#A35C5C] font-semibold">{tierTaglines.pro}</p>
-            <p className="text-sm text-[#e8d5b7]/70 mt-2">{tierDescriptions.pro}</p>
           </CardHeader>
           <CardContent>
             <FeatureList items={proFeatures} />
