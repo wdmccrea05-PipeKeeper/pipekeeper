@@ -113,7 +113,7 @@ const AGE_GATE_KEY = "ck_age_confirmed";
 const SUB_PROMPT_KEY = "ck_subscribe_prompt_last_shown";
 
 function syncKey(email) {
-  return `pk_stripe_sync_last_${email || "unknown"}`;
+  return `ck_stripe_sync_last_${email || "unknown"}`;
 }
 
 function shouldRunStripeSync(email) {
