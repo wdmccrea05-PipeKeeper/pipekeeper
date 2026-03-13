@@ -156,6 +156,9 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
         
         if (created?.id) {
           setThreadId(created.id);
+        } else {
+          console.error("Thread created but no ID returned");
+          toast.error(t("curator.initError"));
         }
       } catch (e) {
         console.error("Failed to initialize curator thread:", e);
