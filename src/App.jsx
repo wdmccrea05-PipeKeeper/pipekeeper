@@ -73,6 +73,16 @@ const AuthenticatedApp = () => {
           <CollectionHub />
         </LayoutWrapper>
       } />
+      <Route path="/PipeKeeper" element={
+        <LayoutWrapper currentPageName="PipeKeeper">
+          <PipeKeeper />
+        </LayoutWrapper>
+      } />
+      <Route path="/WhiskeyKeeper" element={
+        <LayoutWrapper currentPageName="WhiskeyKeeper">
+          <WhiskeyKeeper />
+        </LayoutWrapper>
+      } />
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
           <MainPage />
