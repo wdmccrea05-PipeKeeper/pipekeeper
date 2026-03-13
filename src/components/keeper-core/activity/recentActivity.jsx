@@ -10,20 +10,27 @@ import { base44 } from '@/api/base44Client';
 /**
  * Get recent cross-module activity for the current user
  * Aggregates smoking logs, tastings, and item additions
- * @param {string} userEmail - Current user's email for scoping (optional, uses all if not provided)
+ * CRITICAL: Always filters by created_by to ensure user-scoped data
+ * @param {string} userEmail - Current user's email (REQUIRED for scoping)
  * @param {Object} options - Configuration options
  * @returns {Promise<Array>} Array of activity items sorted by date
  */
 export async function getRecentCrossModuleActivity(userEmail = null, options = {}) {
   const { maxItems = 5, includeModules = ['pipes', 'whiskey'] } = options;
 
+  // CRITICAL: If no user email provided, return empty (don't fetch global data)
+  if (!userEmail) {
+    console.warn('[recentActivity] No userEmail provided - returning empty activity');
+    return [];
+  }
+
   try {
     const activities = [];
 
-    // Fetch recent smoking logs (PipeKeeper)
+    // Fetch recent smoking logs (PipeKeeper) - User-scoped
     if (includeModules.includes('pipes')) {
       try {
-        const logs = await base44.entities.SmokingLog.list('-date', maxItems);
+        const logs = await base44.entities.SmokingLog.filter({ created_by: userEmail }, '-date', maxItems);
         if (logs && logs.length > 0) {
           activities.push(
             ...logs.map(log => ({
@@ -43,10 +50,10 @@ export async function getRecentCrossModuleActivity(userEmail = null, options = {
       }
     }
 
-    // Fetch recent tasting logs (WhiskeyKeeper)
+    // Fetch recent tasting logs (WhiskeyKeeper) - User-scoped
     if (includeModules.includes('whiskey')) {
       try {
-        const tastings = await base44.entities.TastingLog.list('-tasting_date', maxItems);
+        const tastings = await base44.entities.TastingLog.filter({ created_by: userEmail }, '-tasting_date', maxItems);
         if (tastings && tastings.length > 0) {
           activities.push(
             ...tastings.map(tasting => ({

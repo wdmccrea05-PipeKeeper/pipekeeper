@@ -229,8 +229,8 @@ export default function Layout({ children, currentPageName }) {
 
   const navItems = useMemo(() => [
     { name: t("nav.hub"), page: "CollectionHub", icon: Home, isIconComponent: true },
-    { name: t("nav.pipekeeper"), page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
-    { name: t("nav.whiskeykeeper"), page: "Whiskey", icon: "🥃", isIconComponent: false },
+    { name: t("nav.pipekeeper"), page: "PipeKeeper", icon: PIPE_ICON, isIconComponent: false },
+    { name: t("nav.whiskeykeeper"), page: "WhiskeyKeeper", icon: "🥃", isIconComponent: false },
     { name: t("nav.curator"), page: "Curator", icon: Target, isIconComponent: true },
     ...(FEATURES.community
       ? [{ name: t("nav.community"), page: "Community", icon: Users, isIconComponent: true, isPremium: true }]

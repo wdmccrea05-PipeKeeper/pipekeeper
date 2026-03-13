@@ -13,7 +13,18 @@ export default function RecentActivity({ onActivitiesLoaded = null }) {
     (async () => {
       try {
         setLoading(true);
-        const recentActivities = await getRecentCrossModuleActivity();
+        // Get current user email for scoping
+        const { base44 } = await import('@/api/base44Client');
+        const user = await base44.auth.me();
+        
+        if (!user?.email) {
+          console.warn('[RecentActivity] No authenticated user');
+          setActivities([]);
+          return;
+        }
+
+        // Fetch user-scoped activity
+        const recentActivities = await getRecentCrossModuleActivity(user.email);
         if (!cancelled) {
           setActivities(recentActivities);
           // Notify parent of loaded activities (for Curator context)
