@@ -98,4 +98,16 @@ export default {
   footer: {
     copyright: "© 2026 CollectionKeeper. All rights reserved.",
   },
+
+  layout: {
+    appTitle: "CollectionKeeper",
+    toggleMenu: "Toggle menu",
+    admin: "Admin",
+    iapAlreadyLinked: "Subscription already linked to this account",
+    iapSyncFailed: "Failed to sync subscription",
+    iapOpeningSubscriptions: "Opening subscription management...",
+    iapOpeningUpgrade: "Opening upgrade options...",
+    iapBridgeUnavailableSubs: "Subscription bridge unavailable",
+    iapBridgeUnavailableUpgrade: "Upgrade bridge unavailable",
+  },
 };
