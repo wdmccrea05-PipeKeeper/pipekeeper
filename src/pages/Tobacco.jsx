@@ -3,7 +3,7 @@ import { scopedEntities } from "@/components/api/scopedEntities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Grid3X3, List, Sparkles, Edit3, Leaf } from "lucide-react";
+import { Plus, Search, Grid3X3, List, Sparkles, Edit3, Leaf, Package2 } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
