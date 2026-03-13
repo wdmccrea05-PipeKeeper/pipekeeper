@@ -38,10 +38,10 @@ import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 
 // Dev mode verification console output
 if (import.meta?.env?.DEV) {
-  console.log('[PipeKeeper] Canonical entitlement system active');
+  console.log('[CollectionKeeper] Canonical entitlement system active');
 }
 
-const PIPEKEEPER_LOGO =
+const COLLECTIONKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
 const PIPE_ICON =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
