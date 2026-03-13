@@ -99,7 +99,7 @@ export default function Home() {
 
   const { data: smokingLogs = [] } = useQuery({
     queryKey: ["smoking-logs", user?.email],
-    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, "-date", 1000),
+    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, "-date"),
     enabled: !!user?.email,
     staleTime: 60000,
   });

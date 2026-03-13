@@ -97,7 +97,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   const { data: logs = [] } = useQuery({
     queryKey: ['smoking-logs', user?.email],
-    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 50),
+    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date'),
     enabled: !!user?.email,
   });
 
@@ -442,13 +442,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check free tier limits
-    if (entitlements.tier === "free") {
-    if ((logs || []).length >= entitlements.limits.smokingLogs) {
-      toast.error(t("smokingLog.freeLimitReached", { limit: entitlements.limits.smokingLogs }));
-      return;
-    }
-    }
+    // No limits on smoking logs - removed to allow long-term tracking
 
     const pipe = (pipes || []).find(p => p && p.id === formData.pipe_id);
     const blend = (blends || []).find(b => b && b.id === formData.blend_id);
@@ -625,7 +619,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                     <SelectValue placeholder={t("smokingLog.selectBowl")} />
                     </SelectTrigger>
                     <SelectContent>
-                    <SelectItem value="">{t("smokingLog.noSpecificBowl")}</SelectItem>
+                    <SelectItem value={null}>{t("smokingLog.noSpecificBowl")}</SelectItem>
                     {selectedPipe.interchangeable_bowls.map((bowl, idx) => {
                       const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
                       return (
@@ -663,7 +657,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                     <SelectValue placeholder={t("smokingLog.autoNone")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">{t("smokingLog.autoNone")}</SelectItem>
+                    <SelectItem value={null}>{t("smokingLog.autoNone")}</SelectItem>
                     {containers.map(c => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.container_name} — {c.quantity_grams ?? 0}g
