@@ -6,6 +6,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, ChevronRight, ChevronLeft, Share2 } from 'lucide-react';
 import StoryCard from './StoryCard';
+import SocialMediaShareButtons from '@/components/share/SocialMediaShareButtons';
 import { toast } from 'sonner';
 
 export default function StoryViewer({ cards, onClose, onShare, user }) {
