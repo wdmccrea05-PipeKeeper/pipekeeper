@@ -126,15 +126,12 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
       setInitializing(true);
       setInitError("");
       try {
-        let created = null;
-        try {
-          created = await base44.ai.createThread({ agent: AGENT_NAME });
-        } catch (firstErr) {
-          console.warn("Curator createThread(agent) failed, retrying generic thread creation", firstErr);
-          created = await base44.ai.createThread({});
-        }
+        const conversation = await base44.agents.createConversation({
+          agent_name: AGENT_NAME,
+          metadata: { source: "curator_workspace" },
+        });
 
-        const id = created?.id || created?.thread_id || null;
+        const id = conversation?.id;
         if (!id) {
           throw new Error(t("curator.threadCreateNoId", { defaultValue: "Thread created without an ID." }));
         }
@@ -165,8 +162,8 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
     const load = async () => {
       if (!threadId) return;
       try {
-        const history = await base44.ai.getThreadMessages({ thread_id: threadId });
-        const mapped = (history?.messages || []).map((m) => ({
+        const conversation = await base44.agents.getConversation(threadId);
+        const mapped = (conversation?.messages || []).map((m) => ({
           id: m.id || `${m.role}-${Math.random()}`,
           role: m.role,
           content: m.content || "",
@@ -205,24 +202,46 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
     try {
       const ensuredThreadId = await ensureThread();
       const englishText = await translateToEnglish(text, locale);
-      const res = await base44.ai.sendMessage({
-        thread_id: ensuredThreadId,
-        agent: AGENT_NAME,
-        message: englishText,
+      
+      const conversation = await base44.agents.getConversation(ensuredThreadId);
+      
+      // Build context message
+      const contextMessage = `USER COLLECTION:
+Pipes: ${pipes.length}
+Tobaccos: ${blends.length}
+
+USER QUESTION:
+${englishText}`;
+
+      await base44.agents.addMessage(conversation, {
+        role: "user",
+        content: contextMessage,
       });
 
-      const newMsgs = await Promise.all(
-        (res?.messages || []).map(async (m) => ({
-          id: m.id || `${m.role}-${Math.random()}`,
-          role: m.role,
-          content: m.role === "assistant" ? await translateFromEnglish(m.content || "", locale) : m.content || "",
-          meta: m.meta || {},
-        }))
-      );
+      // Wait for assistant response
+      const waitForResponse = async (maxWait = 90000) => {
+        const startTime = Date.now();
+        while (Date.now() - startTime < maxWait) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const updated = await base44.agents.getConversation(ensuredThreadId);
+          const lastMsg = updated?.messages?.[updated.messages.length - 1];
+          if (lastMsg?.role === "assistant" && lastMsg?.content) {
+            return lastMsg.content;
+          }
+        }
+        throw new Error("Response timeout");
+      };
+
+      const assistantResponse = await waitForResponse();
+      const translatedResponse = await translateFromEnglish(assistantResponse, locale);
 
       setMessages((prev) => {
         const withoutLocal = prev.filter((m) => m.id !== optimisticId);
-        return [...withoutLocal, ...newMsgs];
+        return [
+          ...withoutLocal,
+          { id: `user-${Date.now()}`, role: "user", content: text, meta: {} },
+          { id: `assistant-${Date.now()}`, role: "assistant", content: translatedResponse, meta: {} },
+        ];
       });
       return true;
     } catch (e) {
