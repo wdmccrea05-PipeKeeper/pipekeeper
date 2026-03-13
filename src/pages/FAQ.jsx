@@ -66,15 +66,13 @@ function AppleFAQ() {
             <li>
               <b>{t("subscription.free")}:</b> {t("faqExtended.freeTierDesc")}
             </li>
-            <li>
-              <b>{t("subscription.premium")}:</b> {t("faqExtended.premiumTierDesc")}
-            </li>
+
             <li>
               <b>{t("subscription.pro")}:</b> {t("faqExtended.proTierDesc", { date: proLaunchDateLabel })}
             </li>
           </ul>
           <p className="text-[#e8d5b7]/70">
-            {t("faqExtended.earlySubscriberNote", { date: proLaunchDateLabel })}
+            {t("faqExtended.legacySubscriberNote", { date: proLaunchDateLabel, defaultValue: "Early subscribers (before Feb 1, 2026) have grandfathered access to all Pro features." })}
           </p>
         </CardContent>
       </Card>
