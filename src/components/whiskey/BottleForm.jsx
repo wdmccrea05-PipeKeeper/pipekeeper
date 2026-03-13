@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X } from 'lucide-react';
+import { X, Upload, ImageIcon } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { base44 } from '@/api/base44Client';
 
 export default function BottleForm({ bottle, onSubmit, onCancel }) {
   const { t } = useTranslation();
@@ -27,11 +28,33 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
       opened_date: '',
       bottle_count: 1,
       favorite: false,
+      photo: '',
     }
   );
 
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState(bottle?.photo || '');
+
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingPhoto(true);
+      const uploadedFile = await base44.integrations.Core.UploadFile({ file });
+      if (uploadedFile?.file_url) {
+        setFormData((prev) => ({ ...prev, photo: uploadedFile.file_url }));
+        setPhotoPreview(uploadedFile.file_url);
+      }
+    } catch (error) {
+      console.error('Photo upload failed:', error);
+    } finally {
+      setUploadingPhoto(false);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -247,6 +270,54 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
             placeholder="5.0"
             className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
           />
+        </div>
+
+        {/* Photo */}
+        <div>
+          <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.photo') || 'Bottle Photo'}</label>
+          <div className="space-y-3">
+            {photoPreview && (
+              <div className="relative w-full h-40 rounded-lg overflow-hidden border border-[rgba(180,140,75,0.2)]">
+                <img 
+                  src={photoPreview} 
+                  alt="Bottle preview" 
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPhotoPreview('');
+                    handleChange('photo', '');
+                  }}
+                  className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1 rounded"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            <label className="flex items-center justify-center w-full p-4 border-2 border-dashed border-[rgba(180,140,75,0.3)] rounded-lg cursor-pointer hover:border-[rgba(180,140,75,0.5)] transition-colors">
+              <div className="flex flex-col items-center gap-2">
+                {uploadingPhoto ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-[#D4A574] border-t-transparent rounded-full animate-spin" />
+                    <span className="text-xs text-[#D8C7A6]">Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <ImageIcon className="w-5 h-5 text-[#D4A574]" />
+                    <span className="text-xs text-[#D8C7A6]">Click to upload photo</span>
+                  </>
+                )}
+              </div>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                disabled={uploadingPhoto}
+                className="hidden"
+              />
+            </label>
+          </div>
         </div>
 
         {/* Notes */}
