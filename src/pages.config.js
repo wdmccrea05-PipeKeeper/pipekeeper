@@ -68,6 +68,7 @@ import Insights from './pages/Insights';
 import Invite from './pages/Invite';
 import InviteFull from './pages/InviteFull';
 import PipeDetail from './pages/PipeDetail';
+import PipeKeeper from './pages/PipeKeeper';
 import Pipes from './pages/Pipes';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Profile from './pages/Profile';
@@ -91,9 +92,8 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import Whiskey from './pages/Whiskey';
-import index from './pages/index';
-import PipeKeeper from './pages/PipeKeeper';
 import WhiskeyKeeper from './pages/WhiskeyKeeper';
+import index from './pages/index';
 import __Layout from './Layout.jsx';
 
 
@@ -119,6 +119,7 @@ export const PAGES = {
     "Invite": Invite,
     "InviteFull": InviteFull,
     "PipeDetail": PipeDetail,
+    "PipeKeeper": PipeKeeper,
     "Pipes": Pipes,
     "PrivacyPolicy": PrivacyPolicy,
     "Profile": Profile,
@@ -142,9 +143,8 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "Whiskey": Whiskey,
-    "index": index,
-    "PipeKeeper": PipeKeeper,
     "WhiskeyKeeper": WhiskeyKeeper,
+    "index": index,
 }
 
 export const pagesConfig = {

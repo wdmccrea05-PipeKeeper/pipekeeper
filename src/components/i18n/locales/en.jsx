@@ -100,6 +100,7 @@ export default {
     insights: "Insights",
     bottles: "Bottles",
     tastingNotes: "Tasting Notes",
+    analytics: "Analytics",
   },
 
   pipekeeper: {
@@ -115,6 +116,10 @@ export default {
     optimizeCollection: "Get insights",
     explore: "Explore",
     sessions: "sessions logged",
+    pipesDesc: "Manage your pipe collection with details and valuations",
+    tobaccoDesc: "Organize and track your tobacco blends",
+    sessionsDesc: "Log and review your smoking sessions",
+    insightsDesc: "Analyze your collection and smoking patterns",
   },
 
   whiskeykeeper: {
@@ -141,6 +146,10 @@ export default {
     recentTastings: "Recent Tastings",
     recentActivity: "Recent Activity",
     tastingsLogged: "tastings logged",
+    whiskeyDesc: "Browse and manage your whiskey inventory",
+    tastingsDesc: "View and log tasting notes and experiences",
+    whiskeyinsightsDesc: "Discover insights about your collection",
+    whiskeyanalyticsDesc: "Analyze trends and collection metrics",
   },
 
   whiskey: {
@@ -159,6 +168,7 @@ export default {
     bottleCount: "Bottle Count",
     rating: "Rating (1-5)",
     tastingNotes: "Tasting Notes",
+    photo: "Bottle Photo",
     addBottle: "Add Bottle",
     editBottle: "Edit Bottle",
     updateBottle: "Update Bottle",
@@ -166,6 +176,19 @@ export default {
 
   footer: {
     copyright: "© 2026 CollectionKeeper. All rights reserved.",
+  },
+
+  home: {
+    collectionSummary: "Collection Summary",
+    highlights: "Collection Highlights",
+    mostSmoked: "Most Smoked",
+    mostValuable: "Most Valuable",
+    favoriteBlend: "Favorite Blend",
+    favorites: "Favorites",
+    totalValue: "Total Value",
+    pipesInCollection: "Pipes",
+    tobaccoBlends: "Blends",
+    cellared: "Cellared",
   },
 
   layout: {

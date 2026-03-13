@@ -436,7 +436,7 @@ export default function PipeKeeper() {
                   <h3 className="text-lg font-semibold text-[#E0D8C8]">{item.name}</h3>
                 </div>
                 <p className="text-sm text-[#E0D8C8]/60">
-                  {t(`pipekeeper.${item.path.slice(1).toLowerCase()}Desc`) || `Manage your ${item.name.toLowerCase()}`}
+                  {t(`pipekeeper.${item.path.slice(1).toLowerCase()}Desc`) || t('pipekeeper.explore')}
                 </p>
               </button>
             );

@@ -391,7 +391,7 @@ export default function WhiskeyKeeper() {
                   <h3 className="text-lg font-semibold text-[#E0D8C8]">{item.name}</h3>
                 </div>
                 <p className="text-sm text-[#E0D8C8]/60">
-                  {t(`whiskeykeeper.${item.path.slice(1).toLowerCase()}Desc`) || `Manage your ${item.name.toLowerCase()}`}
+                  {t(`whiskeykeeper.${item.path.slice(1).toLowerCase()}Desc`) || t('whiskeykeeper.explore')}
                 </p>
               </button>
             );
