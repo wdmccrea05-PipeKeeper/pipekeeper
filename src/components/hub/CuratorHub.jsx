@@ -1,18 +1,31 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Zap, ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import {
+  buildCuratorHubContext,
+  prepareCuratorNavigationState,
+  buildCuratorEntryText,
+} from '@/components/keeper-core';
 
-export default function CuratorHub({ summary = null }) {
+export default function CuratorHub({ summary = null, recentActivities = [] }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [context] = useState('ecosystem');
+
+  // Build curator context from summary using Keeper Core service
+  const curatorContext = useMemo(() => {
+    return buildCuratorHubContext(summary, recentActivities);
+  }, [summary, recentActivities]);
+
+  const entryText = useMemo(() => {
+    return buildCuratorEntryText(curatorContext);
+  }, [curatorContext]);
 
   const handleCuratorClick = () => {
-    // Pass ecosystem context to Curator if available
-    // This would be extended to launch Curator with CollectionKeeper-level context
-    navigate('/Curator', { state: { context: 'ecosystem', summary } });
+    // Use Keeper Core service to prepare navigation state
+    const navigationState = prepareCuratorNavigationState(curatorContext);
+    navigate('/Curator', { state: navigationState });
   };
 
   return (
