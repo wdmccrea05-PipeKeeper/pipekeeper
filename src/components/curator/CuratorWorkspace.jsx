@@ -413,7 +413,7 @@ ${englishText}`;
         const assistantResponse = await waitForResponse();
         
         // CRITICAL HARDENING: Ownership claim guard
-        const { validateOwnershipIntegrity } = await import("@/functions/_utils/curatorOwnershipGuard");
+        const { validateOwnershipIntegrity } = await import("@/components/utils/curatorOwnershipGuard");
         const sanitizedResponse = validateOwnershipIntegrity(assistantResponse, pipes, blends);
         
         const translatedResponse = await translateFromEnglish(sanitizedResponse, locale);
