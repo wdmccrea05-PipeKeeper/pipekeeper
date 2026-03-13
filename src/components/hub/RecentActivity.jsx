@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { getRecentCrossModuleActivity, formatActivityDate } from '@/components/keeper-core';
 
-export default function RecentActivity() {
+export default function RecentActivity({ onActivitiesLoaded = null }) {
   const { t } = useTranslation();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
