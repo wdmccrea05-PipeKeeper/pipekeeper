@@ -1,18 +1,4 @@
-/**
- * CuratorWorkspace.jsx
- * 
- * CANONICAL CURATOR AI WORKSPACE
- * Single source of truth for all Curator conversations.
- * 
- * Owns:
- * - Conversation thread state
- * - Message submission
- * - Routed prompt auto-submit
- * - Send button behavior
- * - Follow-up conversation flow
- */
-
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { translateToEnglish, translateFromEnglish, getCurrentLocale } from "@/components/utils/aiTranslation";
 import { Button } from "@/components/ui/button";
@@ -24,47 +10,38 @@ import { useQuery } from "@tanstack/react-query";
 import { Send, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
-const CURATOR_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
+const CURATOR_ICON =
+  "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png";
+const AGENT_NAME = "expert_tobacconist";
 
-// Dynamic quick prompts based on collection state
 function generateQuickPrompts({ pipes = [], blends = [], logs = [], t }) {
   const prompts = [];
-  
-  if (pipes.length > 10) prompts.push(t("curator.quickPrompt.underused"));
-  if (pipes.length === 0) prompts.push(t("curator.quickPrompt.startBuilding"));
-  else if (pipes.length < 5) prompts.push(t("curator.quickPrompt.nextPipe"));
-  
-  const blendTypes = new Set(blends.map(b => b.blend_type).filter(Boolean));
+  if (pipes.length > 10) prompts.push(t("curator.quickPrompt.underused", { defaultValue: "Which pipes in my collection are the most underused right now?" }));
+  if (pipes.length === 0) prompts.push(t("curator.quickPrompt.startBuilding", { defaultValue: "How should I start building my first pipe collection?" }));
+  else if (pipes.length < 5) prompts.push(t("curator.quickPrompt.nextPipe", { defaultValue: "What type of pipe would best round out what I already own?" }));
+  const blendTypes = new Set(blends.map((b) => b?.blend_type).filter(Boolean));
   if (blends.length >= 5 && blendTypes.size < 3) {
-    prompts.push(t("curator.quickPrompt.cellarDiversity"));
+    prompts.push(t("curator.quickPrompt.cellarDiversity", { defaultValue: "How balanced is my tobacco cellar right now?" }));
   }
-  
-  if (logs.length > 5) prompts.push(t("curator.quickPrompt.tonightPipe"));
-  if (pipes.length >= 3 && logs.length > 0) prompts.push(t("curator.quickPrompt.rotation"));
-  if (pipes.length >= 5) prompts.push(t("curator.quickPrompt.value"));
-  
+  if (logs.length > 5) prompts.push(t("curator.quickPrompt.tonightPipe", { defaultValue: "Based on my collection, what should I smoke tonight?" }));
+  if (pipes.length >= 3 && logs.length > 0) prompts.push(t("curator.quickPrompt.rotation", { defaultValue: "Help me build a better rotation from my current pipes." }));
+  if (pipes.length >= 5) prompts.push(t("curator.quickPrompt.value", { defaultValue: "What stands out as most valuable or overlooked in my collection?" }));
   if (prompts.length === 0) {
     prompts.push(
-      t("curator.quickPrompt.default1"),
-      t("curator.quickPrompt.default2"),
-      t("curator.quickPrompt.default3")
+      t("curator.quickPrompt.default1", { defaultValue: "What should I focus on first in my collection?" }),
+      t("curator.quickPrompt.default2", { defaultValue: "What are the biggest strengths of my collection right now?" }),
+      t("curator.quickPrompt.default3", { defaultValue: "What should I improve next?" })
     );
   }
-  
   return prompts.slice(0, 4);
 }
 
 function MessageBubble({ message }) {
   const isUser = message.role === "user";
-  
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}>
       <div
-        className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-          isUser
-            ? "text-white"
-            : "text-[#E0D8C8]"
-        }`}
+        className={`max-w-[85%] rounded-2xl px-4 py-3 ${isUser ? "text-white" : "text-[#E0D8C8]"}`}
         style={{
           background: isUser
             ? "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))"
@@ -110,18 +87,18 @@ function MessageBubble({ message }) {
 export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPrompt, onPromptConsumed }) {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
-  
   const [threadId, setThreadId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [initializing, setInitializing] = useState(false);
-  
+  const [initError, setInitError] = useState("");
+
   const messagesEndRef = useRef(null);
   const routedPromptConsumedRef = useRef(false);
   const lastRoutedPromptRef = useRef("");
-  
-  // Fetch smoking logs for quick prompts
+  const threadInitPromiseRef = useRef(null);
+
   const { data: logs = [] } = useQuery({
     queryKey: ["smokingLogs", user?.email],
     queryFn: async () => {
@@ -129,54 +106,64 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 30_000,
+    staleTime: 30000,
   });
-  
-  // Auto-scroll to bottom when messages change
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-  
-  // Generate context-aware quick prompts
+  }, [messages, sending]);
+
   const quickPrompts = useMemo(
     () => generateQuickPrompts({ pipes, blends, logs, t }),
     [pipes.length, blends.length, logs.length, t]
   );
-  
-  // Initialize chat thread
-  useEffect(() => {
-    const init = async () => {
-      if (!user?.id || threadId) return;
-      
+
+  const ensureThread = useCallback(async () => {
+    if (threadId) return threadId;
+    if (threadInitPromiseRef.current) return threadInitPromiseRef.current;
+
+    threadInitPromiseRef.current = (async () => {
+      setInitializing(true);
+      setInitError("");
       try {
-        setInitializing(true);
-        const created = await base44.ai.createThread({
-          agent: "expert_tobacconist",
-        });
-        
-        if (created?.id) {
-          setThreadId(created.id);
-        } else {
-          console.error("Thread created but no ID returned");
-          toast.error(t("curator.initError"));
+        let created = null;
+        try {
+          created = await base44.ai.createThread({ agent: AGENT_NAME });
+        } catch (firstErr) {
+          console.warn("Curator createThread(agent) failed, retrying generic thread creation", firstErr);
+          created = await base44.ai.createThread({});
         }
+
+        const id = created?.id || created?.thread_id || null;
+        if (!id) {
+          throw new Error(t("curator.threadCreateNoId", { defaultValue: "Thread created without an ID." }));
+        }
+
+        setThreadId(id);
+        return id;
       } catch (e) {
-        console.error("Failed to initialize curator thread:", e);
-        const errorMsg = e?.message || String(e);
-        toast.error(`${t("curator.initError")}: ${errorMsg.slice(0, 80)}`);
+        const msg = e?.message || String(e);
+        setInitError(msg);
+        throw e;
       } finally {
         setInitializing(false);
+        threadInitPromiseRef.current = null;
       }
-    };
-    
-    init();
-  }, [user?.id, threadId, t]);
-  
-  // Load thread messages
+    })();
+
+    return threadInitPromiseRef.current;
+  }, [threadId, t]);
+
+  useEffect(() => {
+    if (!user?.id || threadId) return;
+    ensureThread().catch((e) => {
+      console.error("Failed to initialize curator thread:", e);
+    });
+  }, [user?.id, threadId, ensureThread]);
+
   useEffect(() => {
     const load = async () => {
       if (!threadId) return;
-      
       try {
         const history = await base44.ai.getThreadMessages({ thread_id: threadId });
         const mapped = (history?.messages || []).map((m) => ({
@@ -190,134 +177,107 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
         console.error("Failed to load curator messages:", e);
       }
     };
-    
     load();
   }, [threadId]);
-  
-  // Track routed prompt changes
+
   useEffect(() => {
     const nextPrompt = String(preFilledPrompt || "").trim();
     if (!nextPrompt) return;
-    
-    // If prompt changed, reset consumption tracking
+    setInput(nextPrompt);
     if (lastRoutedPromptRef.current !== nextPrompt) {
       routedPromptConsumedRef.current = false;
       lastRoutedPromptRef.current = nextPrompt;
     }
   }, [preFilledPrompt]);
-  
-  // Auto-submit routed prompt once when ready
-  useEffect(() => {
-    const nextPrompt = String(preFilledPrompt || "").trim();
-    
-    // Guard conditions
-    if (!nextPrompt) return;
-    if (!threadId) return;
-    if (sending) return;
-    if (initializing) return;
-    if (routedPromptConsumedRef.current) return;
-    
-    // Mark as consumed BEFORE sending to prevent race conditions
-    routedPromptConsumedRef.current = true;
-    
-    // Submit the routed prompt
-    sendMessage(nextPrompt);
-    
-    // Notify parent to clear route state
-    if (onPromptConsumed) {
-      onPromptConsumed();
-    }
-  }, [preFilledPrompt, threadId, sending, initializing, onPromptConsumed]);
-  
-  // CANONICAL SUBMIT HANDLER
-  const sendMessage = async (textOverride = null) => {
-    const text = (textOverride || input).trim();
-    if (!text || !threadId || sending) return;
-    
+
+  const sendMessage = useCallback(async (textOverride = null) => {
+    const text = String(textOverride ?? input).trim();
+    if (!text || sending) return false;
+
     setSending(true);
+    setInitError("");
     const locale = getCurrentLocale();
-    
-    // Optimistic user message
-    const optimistic = {
-      id: `local-${Date.now()}`,
-      role: "user",
-      content: text,
-      meta: {},
-    };
+    const optimisticId = `local-${Date.now()}`;
+    const optimistic = { id: optimisticId, role: "user", content: text, meta: {} };
     setMessages((prev) => [...prev, optimistic]);
-    
-    // Clear input only if using manual input (not routed prompt)
-    if (!textOverride) {
-      setInput("");
-    }
-    
+    if (!textOverride) setInput("");
+
     try {
-      // Translate to English for AI
+      const ensuredThreadId = await ensureThread();
       const englishText = await translateToEnglish(text, locale);
-      
-      // Send to AI
       const res = await base44.ai.sendMessage({
-        thread_id: threadId,
-        agent: "expert_tobacconist",
+        thread_id: ensuredThreadId,
+        agent: AGENT_NAME,
         message: englishText,
       });
-      
-      // Translate responses back to user locale
+
       const newMsgs = await Promise.all(
-        (res?.messages || []).map(async (m) => {
-          const translatedContent =
-            m.role === "assistant"
-              ? await translateFromEnglish(m.content || "", locale)
-              : m.content || "";
-          return {
-            id: m.id || `${m.role}-${Math.random()}`,
-            role: m.role,
-            content: translatedContent,
-            meta: m.meta || {},
-          };
-        })
+        (res?.messages || []).map(async (m) => ({
+          id: m.id || `${m.role}-${Math.random()}`,
+          role: m.role,
+          content: m.role === "assistant" ? await translateFromEnglish(m.content || "", locale) : m.content || "",
+          meta: m.meta || {},
+        }))
       );
-      
-      // Replace optimistic with server truth
+
       setMessages((prev) => {
-        const withoutLocal = prev.filter((m) => !String(m.id).startsWith("local-"));
+        const withoutLocal = prev.filter((m) => m.id !== optimisticId);
         return [...withoutLocal, ...newMsgs];
       });
+      return true;
     } catch (e) {
-      console.error(e);
-      toast.error(t("curator.sendError"));
-      
-      // Remove failed optimistic message
-      setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+      console.error("Curator send failed:", e);
+      const msg = e?.message || String(e);
+      setInitError(msg);
+      toast.error(`${t("curator.sendError", { defaultValue: "Failed to start Curator" })}: ${msg.slice(0, 120)}`);
+      setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      if (textOverride) setInput(text);
+      return false;
     } finally {
       setSending(false);
     }
-  };
-  
+  }, [input, sending, ensureThread, t]);
+
+  useEffect(() => {
+    const nextPrompt = String(preFilledPrompt || "").trim();
+    if (!nextPrompt) return;
+    if (routedPromptConsumedRef.current) return;
+    if (sending) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        await ensureThread();
+        if (cancelled || routedPromptConsumedRef.current) return;
+        routedPromptConsumedRef.current = true;
+        const ok = await sendMessage(nextPrompt);
+        if (ok) onPromptConsumed?.();
+      } catch (e) {
+        console.error("Curator routed prompt failed:", e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [preFilledPrompt, sending, ensureThread, sendMessage, onPromptConsumed]);
+
   const handleQuickPrompt = (prompt) => {
-    if (threadId && !sending) {
-      sendMessage(prompt);
-    }
+    setInput(prompt);
+    sendMessage(prompt);
   };
-  
+
   const handleKeyDown = (e) => {
-    // Submit on Enter (without modifiers)
     if (e.key === "Enter" && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
       e.preventDefault();
-      if (input.trim() && !sending && threadId) {
-        sendMessage(null);
-      }
+      if (input.trim() && !sending) sendMessage(null);
     }
-    
-    // Also support Cmd+Enter / Ctrl+Enter
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       e.preventDefault();
-      if (input.trim() && !sending && threadId) {
-        sendMessage(null);
-      }
+      if (input.trim() && !sending) sendMessage(null);
     }
   };
-  
+
   return (
     <div
       className="rounded-xl overflow-hidden shadow-2xl"
@@ -327,100 +287,71 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
         boxShadow: "0 10px 28px rgba(0,0,0,0.6)",
       }}
     >
-      {/* Header */}
       <div
         className="px-6 py-5 border-b"
-        style={{
-          borderColor: "rgba(140,105,65,0.2)",
-          background: "rgba(20,14,10,0.4)",
-        }}
+        style={{ borderColor: "rgba(140,105,65,0.2)", background: "rgba(20,14,10,0.4)" }}
       >
         <div className="space-y-4">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-              <img
-                src={CURATOR_ICON}
-                alt={t("curator.workspaceTitle")}
-                className="w-full h-full object-cover"
-              />
+              <img src={CURATOR_ICON} alt={t("curator.workspaceTitle", { defaultValue: "Curator" })} className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
-              <h2
-                className="text-xl font-bold mb-1"
-                style={{
-                  color: "#F5F1E7",
-                  fontFamily: "Georgia, serif",
-                }}
-              >
-                {t("curator.workspaceTitle")}
+              <h2 className="text-xl font-bold mb-1" style={{ color: "#F5F1E7", fontFamily: "Georgia, serif" }}>
+                {t("curator.workspaceTitle", { defaultValue: "Curator" })}
               </h2>
               <p className="text-sm leading-relaxed" style={{ color: "rgba(224,216,200,0.7)" }}>
-                {t("curator.workspaceSubtitle")}
+                {t("curator.workspaceSubtitle", { defaultValue: "Ask questions, follow up on recommendations, and get collection-specific guidance." })}
               </p>
             </div>
           </div>
-          
-          {/* Quick prompts */}
-          {quickPrompts.length > 0 && messages.length === 0 && (
+
+          {initError ? (
+            <div className="rounded-lg px-4 py-3 text-sm" style={{ background: "rgba(139,58,58,0.18)", border: "1px solid rgba(139,58,58,0.35)", color: "#F5D4D4" }}>
+              <div className="font-semibold mb-1">{t("curator.initError", { defaultValue: "Failed to start Curator" })}</div>
+              <div className="opacity-90 break-words">{initError}</div>
+            </div>
+          ) : null}
+
+          {quickPrompts.length > 0 && messages.length === 0 ? (
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-wider" style={{ color: "rgba(180,140,75,0.6)" }}>
-                {t("curator.tryAsking")}
+                {t("curator.tryAsking", { defaultValue: "Try asking" })}
               </p>
               <div className="flex flex-wrap gap-2">
                 {quickPrompts.map((prompt, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleQuickPrompt(prompt)}
-                    disabled={sending || initializing || !threadId}
+                    disabled={sending || initializing}
                     className="text-xs px-3 py-1.5 rounded-lg border transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{
-                      color: "rgba(180,140,75,1)",
-                      borderColor: "rgba(140,105,65,0.3)",
-                      background: "rgba(100,70,45,0.15)",
-                    }}
+                    style={{ color: "rgba(180,140,75,1)", borderColor: "rgba(140,105,65,0.3)", background: "rgba(100,70,45,0.15)" }}
                   >
                     {prompt}
                   </button>
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
-      
-      {/* Conversation */}
-      <div
-        className="px-6 py-4"
-        style={{
-          minHeight: "300px",
-          maxHeight: "500px",
-          overflowY: "auto",
-          background: "rgba(15,10,8,0.3)",
-        }}
-      >
+
+      <div className="px-6 py-4" style={{ minHeight: "300px", maxHeight: "500px", overflowY: "auto", background: "rgba(15,10,8,0.3)" }}>
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full min-h-[200px]">
             <div className="text-center space-y-3 max-w-md">
               <Sparkles className="w-10 h-10 mx-auto" style={{ color: "rgba(180,140,75,0.4)" }} />
               <p className="text-sm leading-relaxed" style={{ color: "rgba(224,216,200,0.5)" }}>
-                {t("curator.emptyConversation")}
+                {t("curator.emptyConversation", { defaultValue: "Ask Curator a question about your collection to get started." })}
               </p>
             </div>
           </div>
         ) : (
           <>
-            {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} />
-            ))}
-            {sending && (
+            {messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)}
+            {sending ? (
               <div className="flex justify-start mb-4">
-                <div
-                  className="max-w-[85%] rounded-2xl px-4 py-3"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(60,45,30,0.5), rgba(50,35,25,0.7))",
-                    border: "1px solid rgba(140,105,65,0.3)",
-                  }}
-                >
+                <div className="max-w-[85%] rounded-2xl px-4 py-3" style={{ background: "linear-gradient(135deg, rgba(60,45,30,0.5), rgba(50,35,25,0.7))", border: "1px solid rgba(140,105,65,0.3)" }}>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
                     <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }}></div>
@@ -428,50 +359,40 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
                   </div>
                 </div>
               </div>
-            )}
+            ) : null}
             <div ref={messagesEndRef} />
           </>
         )}
       </div>
-      
-      {/* Input area */}
-      <div
-        className="px-6 py-4 border-t"
-        style={{
-          borderColor: "rgba(140,105,65,0.2)",
-          background: "rgba(20,14,10,0.4)",
-        }}
-      >
+
+      <div className="px-6 py-4 border-t" style={{ borderColor: "rgba(140,105,65,0.2)", background: "rgba(20,14,10,0.4)" }}>
         <div className="flex gap-3">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={t("curator.inputPlaceholder")}
-            disabled={sending || initializing || !threadId}
+            placeholder={t("curator.inputPlaceholder", { defaultValue: "Ask Curator about your collection…" })}
+            disabled={sending || initializing}
             className="flex-1 bg-white/5 border-white/10 text-[#E0D8C8] placeholder:text-[#E0D8C8]/40"
           />
           <Button
             onClick={() => sendMessage(null)}
-            disabled={!input.trim() || sending || initializing || !threadId}
-            style={{
-              background: "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))",
-              border: "none",
-            }}
+            disabled={!input.trim() || sending || initializing}
+            style={{ background: "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))", border: "none" }}
             className="hover:opacity-90"
           >
             {sending ? (
-              <span className="animate-pulse">{t("common.sending")}</span>
+              <span className="animate-pulse">{t("common.sending", { defaultValue: "Sending…" })}</span>
             ) : (
               <>
                 <Send className="w-4 h-4 mr-2" />
-                {t("common.send")}
+                {t("common.send", { defaultValue: "Send" })}
               </>
             )}
           </Button>
         </div>
         <p className="text-xs mt-2" style={{ color: "rgba(224,216,200,0.4)" }}>
-          {t("curator.pressEnter")}
+          {t("curator.pressEnter", { defaultValue: "Press Enter to send. Cmd/Ctrl+Enter also works." })}
         </p>
       </div>
     </div>
