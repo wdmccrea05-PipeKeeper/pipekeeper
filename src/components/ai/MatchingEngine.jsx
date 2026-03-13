@@ -169,7 +169,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
   return (
     <Card className="border-stone-200">
       <CardContent className="p-0">
-        <div className="flex flex-col md:flex-row md:items-center gap-3 p-4 border-b bg-[#243548]">
+        <div className="flex flex-col md:flex-row md:items-center gap-3 p-4 border-b" style={{ background: "rgba(40,28,20,0.6)", borderColor: "rgba(140,105,65,0.2)" }}>
           <div className="flex-1">
             <div className="text-sm font-semibold text-white">{t("matching.recommendationsFor")}</div>
             <div className="text-xs text-[#E0D8C8]">{pipe.name}</div>
