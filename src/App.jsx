@@ -48,6 +48,11 @@ const AuthenticatedApp = () => {
           <CollectionInsightsShare />
         </LayoutWrapper>
       } />
+      <Route path="/Whiskey" element={
+        <LayoutWrapper currentPageName="Whiskey">
+          <Whiskey />
+        </LayoutWrapper>
+      } />
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
           <MainPage />
