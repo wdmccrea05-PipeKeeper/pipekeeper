@@ -48,11 +48,6 @@ export default function BreakInSchedule({ pipe, blends }) {
     [pipe, blends, userProfile]
   );
 
-  const isStale = React.useMemo(() => 
-    !!pipe?.break_in_schedule?.length && (!pipe.break_in_schedule_input_fingerprint || pipe.break_in_schedule_input_fingerprint !== currentFingerprint),
-    [pipe, currentFingerprint]
-  );
-
   // Don't auto-show regen dialog - user can manually regenerate if desired
 
   const updatePipeMutation = useMutation({
@@ -196,7 +191,6 @@ export default function BreakInSchedule({ pipe, blends }) {
           <DialogFooter>
             <Button variant="outline" onClick={() => {
               setShowRegenDialog(false);
-              setDismissedFingerprint(currentFingerprint);
             }}>
               {t("breakInSchedule.notNow")}
             </Button>
