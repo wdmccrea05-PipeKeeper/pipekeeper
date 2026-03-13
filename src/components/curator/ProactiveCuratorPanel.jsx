@@ -38,45 +38,55 @@ function generateWhatIfPrompt(insight, t) {
   const titleKey = insight?.titleKey || insight?.rawTitle || insight?.title || "";
 
   const promptMap = {
-    "keeper.pipes.balancedRotationTitle": t(
-      "curator.whatif.balancedRotation",
-      { defaultValue: "What does my current rotation pattern say about the strengths and blind spots in my collection?" }
-    ),
-    "keeper.pipes.overusedTitle": t(
-      "curator.whatif.overused",
-      { defaultValue: "What should I rotate in alongside my most-used pipe to give it more rest?" }
-    ),
-    "keeper.pipes.foundationTitle": t(
-      "curator.whatif.foundation",
-      { defaultValue: "What kind of next pipe would best round out the foundation of my collection?" }
-    ),
-    "keeper.pipes.shapeVarietyTitle": t(
-      "curator.whatif.shapeVariety",
-      { defaultValue: "What pipe shapes or formats would add the most variety to my collection?" }
-    ),
-    "keeper.pipes.restingTitle": t(
-      "curator.whatif.rest",
-      { defaultValue: "What if I let my most-used pipe rest for a few days and rotate alternatives?" }
-    ),
-    "keeper.tobacco.agingOpportunityTitle": t(
-      "curator.whatif.aging",
-      { defaultValue: "Which blends in my cellar are the best candidates to open now, and which should keep aging?" }
-    ),
-    "keeper.tobacco.diversityTitle": t(
-      "curator.whatif.diversity",
-      { defaultValue: "What blend types should I add to improve my cellar diversity?" }
-    ),
-    "keeper.tobacco.styleDiscoveryTitle": t(
-      "curator.whatif.styleDiscovery",
-      { defaultValue: "Which tobacco styles would expand my cellar in the most meaningful way?" }
-    ),
-    "keeper.tobacco.stewardshipStorageTitle": t(
-      "curator.whatif.cellarStorage",
-      { defaultValue: "How can I organize and store my cellar better for aging and easy use?" }
-    ),
+    "keeper.pipes.balancedRotationTitle": t("curator.whatif.balancedRotation", {
+      defaultValue:
+        "What does my current rotation pattern say about the strengths and blind spots in my collection?",
+    }),
+    "keeper.pipes.overusedTitle": t("curator.whatif.overused", {
+      defaultValue: "What should I rotate in alongside my most-used pipe to give it more rest?",
+    }),
+    "keeper.pipes.foundationTitle": t("curator.whatif.foundation", {
+      defaultValue: "What kind of next pipe would best round out the foundation of my collection?",
+    }),
+    "keeper.pipes.shapeVarietyTitle": t("curator.whatif.shapeVariety", {
+      defaultValue: "What pipe shapes or formats would add the most variety to my collection?",
+    }),
+    "keeper.pipes.restingTitle": t("curator.whatif.rest", {
+      defaultValue: "What if I let my most-used pipe rest for a few days and rotate alternatives?",
+    }),
+    "keeper.tobacco.agingOpportunityTitle": t("curator.whatif.aging", {
+      defaultValue: "Which blends in my cellar are the best candidates to open now, and which should keep aging?",
+    }),
+    "keeper.tobacco.diversityTitle": t("curator.whatif.diversity", {
+      defaultValue: "What blend types should I add to improve my cellar diversity?",
+    }),
+    "keeper.tobacco.styleDiscoveryTitle": t("curator.whatif.styleDiscovery", {
+      defaultValue: "Which tobacco styles would expand my cellar in the most meaningful way?",
+    }),
+    "keeper.tobacco.stewardshipStorageTitle": t("curator.whatif.cellarStorage", {
+      defaultValue: "How can I organize and store my cellar better for aging and easy use?",
+    }),
   };
 
-  return promptMap[titleKey] || t("curator.whatif.default", { defaultValue: "Tell me more about this recommendation" });
+  return promptMap[titleKey] || t("curator.whatif.default", {
+    defaultValue: "Tell me more about this recommendation",
+  });
+}
+
+function buildRecommendationPrompt(displayTitle, displayInsight, whatIfPrompt) {
+  const title = String(displayTitle || "").trim();
+  const insight = String(displayInsight || "").trim();
+  const whatIf = String(whatIfPrompt || "").trim();
+
+  if (insight) {
+    return `Please expand on this recommendation from Curator:\n\n${insight}`;
+  }
+
+  if (title && whatIf) {
+    return `Please expand on this Curator recommendation: ${title}\n\n${whatIf}`;
+  }
+
+  return whatIf || title || "Tell me more about this recommendation.";
 }
 
 export default function ProactiveCuratorPanel({
@@ -122,15 +132,28 @@ export default function ProactiveCuratorPanel({
         const moduleInsights = module.generateInsights(analysis);
 
         moduleInsights.forEach((insight) => {
+          const displayTitle = t(insight.title, {
+            defaultValue: sanitizeRecommendationText(insight.title, lang),
+            ...(insight.vars || {}),
+          });
+
+          const displayInsight = t(insight.insight, {
+            defaultValue: sanitizeRecommendationText(insight.insight, lang),
+            ...(insight.vars || {}),
+          });
+
           generated.push({
             module: moduleName,
             ...insight,
             titleKey: insight.title,
+            insightKey: insight.insight,
             rawTitle: insight.title,
             rawInsight: insight.insight,
+            displayTitle,
+            displayInsight,
+            title: displayTitle,
+            insight: displayInsight,
             whatif_prompt: insight.whatif_prompt || null,
-            insight: sanitizeRecommendationText(insight.insight, lang),
-            title: sanitizeRecommendationText(insight.title, lang),
           });
         });
       } catch (error) {
@@ -146,9 +169,8 @@ export default function ProactiveCuratorPanel({
     });
 
     return generated.slice(0, 3);
-  }, [pipes, blends, logs, curatorEnabled, cleared, refreshKey, lang]);
+  }, [pipes, blends, logs, curatorEnabled, cleared, refreshKey, lang, t]);
 
-  // Log recommendation impressions when shown
   useEffect(() => {
     if (insights.length === 0) return;
 
@@ -157,7 +179,7 @@ export default function ProactiveCuratorPanel({
         recommendationId: `${insight.module}_${insight.category}_${insight.titleKey}`,
         recommendationContext: {
           titleKey: insight.titleKey,
-          title: insight.title,
+          title: insight.displayTitle,
           module: insight.module,
           category: insight.category,
         },
@@ -167,17 +189,21 @@ export default function ProactiveCuratorPanel({
         },
       });
     });
-  }, [insights.map(i => i.titleKey).join(',')]);
+  }, [insights, pipes?.length, blends?.length]);
 
   const handleClick = (insight) => {
     const whatIfPrompt = generateWhatIfPrompt(insight, t);
+    const displayPrompt = buildRecommendationPrompt(
+      insight.displayTitle,
+      insight.displayInsight,
+      whatIfPrompt
+    );
 
-    // Log explore event
     CuratorEvents.recommendationExplored({
       recommendationId: `${insight.module}_${insight.category}_${insight.titleKey}`,
       recommendationContext: {
         titleKey: insight.titleKey,
-        title: insight.title,
+        title: insight.displayTitle,
         module: insight.module,
         category: insight.category,
         whatif_prompt: whatIfPrompt,
@@ -188,23 +214,24 @@ export default function ProactiveCuratorPanel({
       onInsightClick({
         ...insight,
         whatif_prompt: whatIfPrompt,
+        displayPrompt,
       });
       return;
     }
 
-    // Preserve full recommendation context via sessionStorage
     const payload = {
-      originalPrompt: insight.rawInsight || insight.insight || "",
-      prompt: whatIfPrompt,
+      originalPrompt: displayPrompt,
+      prompt: displayPrompt,
       whatif_prompt: whatIfPrompt,
-      originalTitle: insight.title || insight.rawTitle || "",
-      originalInsight: insight.rawInsight || insight.insight || "",
-      titleKey: insight.titleKey || "",
+      originalTitle: insight.displayTitle || "",
+      originalInsight: insight.displayInsight || "",
+      rawTitleKey: insight.titleKey || "",
+      rawInsightKey: insight.insightKey || "",
       module: insight.module || "",
       category: insight.category || "",
       vars: insight.vars || {},
     };
-    
+
     try {
       sessionStorage.setItem("pk_curator_context", JSON.stringify(payload));
     } catch (e) {
@@ -212,7 +239,7 @@ export default function ProactiveCuratorPanel({
     }
 
     const params = new URLSearchParams();
-    params.set("prompt", whatIfPrompt);
+    params.set("prompt", displayPrompt);
     navigate(`${createPageUrl("Curator")}?${params.toString()}`);
   };
 
@@ -362,19 +389,16 @@ export default function ProactiveCuratorPanel({
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center justify-between gap-3">
                       <h4 className="font-semibold text-sm" style={{ color: "#F5F1E7" }}>
-                        {t(insight.rawTitle || insight.titleKey || insight.title, {
-                          defaultValue: insight.title,
-                          ...(insight.vars || {}),
-                        })}
+                        {insight.displayTitle}
                       </h4>
-                      <ArrowRight className="w-4 h-4 shrink-0" style={{ color: "rgba(224,216,200,0.45)" }} />
+                      <ArrowRight
+                        className="w-4 h-4 shrink-0"
+                        style={{ color: "rgba(224,216,200,0.45)" }}
+                      />
                     </div>
 
                     <p className="text-sm leading-relaxed" style={{ color: "rgba(224,216,200,0.72)" }}>
-                      {t(insight.rawInsight || insight.insight, {
-                        defaultValue: insight.insight,
-                        ...(insight.vars || {}),
-                      })}
+                      {insight.displayInsight}
                     </p>
                   </div>
                 </div>
