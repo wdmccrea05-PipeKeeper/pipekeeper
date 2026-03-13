@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { getRecentCrossModuleActivity, formatActivityDate } from './hubActivityFeed';
+import { getRecentCrossModuleActivity, formatActivityDate } from '@/components/keeper-core';
 
 export default function RecentActivity() {
   const { t } = useTranslation();
