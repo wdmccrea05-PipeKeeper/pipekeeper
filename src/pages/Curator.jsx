@@ -117,8 +117,9 @@ export default function Curator() {
   const subtitle = useMemo(() => {
     const ctx = launchContext?.recommendationContext;
 
-    if (ctx?.originalTitle) {
-      return `${ctx.originalTitle} — ${t("curator.workspaceSubtitleRouted", {
+    const routedTitle = ctx?.displayTitle || ctx?.originalTitle || "";
+    if (routedTitle) {
+      return `${routedTitle} — ${t("curator.workspaceSubtitleRouted", {
         defaultValue: "Opening Curator with your selected prompt…",
       })}`;
     }
