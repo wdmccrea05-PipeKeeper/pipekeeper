@@ -96,8 +96,8 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
 
   const messagesEndRef = useRef(null);
   const routedPromptConsumedRef = useRef(false);
-  const lastRoutedPromptRef = useRef("");
   const threadInitPromiseRef = useRef(null);
+  const routedContextRef = useRef(routedContext);
 
   const { data: logs = [] } = useQuery({
     queryKey: ["smokingLogs", user?.email],
@@ -177,17 +177,12 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
     load();
   }, [threadId]);
 
+  // Update ref when routedContext changes
   useEffect(() => {
-    const nextPrompt = String(preFilledPrompt || "").trim();
-    if (!nextPrompt) return;
-    setInput(nextPrompt);
-    if (lastRoutedPromptRef.current !== nextPrompt) {
-      routedPromptConsumedRef.current = false;
-      lastRoutedPromptRef.current = nextPrompt;
-    }
-  }, [preFilledPrompt]);
+    routedContextRef.current = routedContext;
+  }, [routedContext]);
 
-  const sendMessage = useCallback(async (textOverride = null) => {
+  const sendMessage = useCallback(async (textOverride = null, contextOverride = null) => {
     const text = String(textOverride ?? input).trim();
     if (!text || sending) return false;
 
@@ -218,15 +213,18 @@ ${pipesList || "None yet"}
 TOBACCOS (${blends.length} total):
 ${blendsList || "None yet"}`;
 
+      // Use context override if provided (for initial routed recommendation), otherwise check current state
+      const activeContext = contextOverride || routedContextRef.current;
+      
       // If this is the first message from a routed recommendation, include original context
-      if (messages.length === 0 && routedContext?.originalTitle && routedContext?.originalInsight) {
+      if (messages.length === 0 && activeContext?.originalTitle && activeContext?.originalInsight) {
         contextMessage += `
 
 ORIGINAL RECOMMENDATION CONTEXT:
-Title: ${routedContext.originalTitle}
-Insight: ${routedContext.originalInsight}
-Module: ${routedContext.module || "general"}
-Category: ${routedContext.category || "general"}`;
+Title: ${activeContext.originalTitle}
+Insight: ${activeContext.originalInsight}
+Module: ${activeContext.module || "general"}
+Category: ${activeContext.category || "general"}`;
       }
 
       contextMessage += `
@@ -276,31 +274,39 @@ ${englishText}`;
     } finally {
       setSending(false);
     }
-  }, [input, sending, ensureThread, t]);
+  }, [input, sending, ensureThread, t, pipes, blends, messages.length]);
 
   useEffect(() => {
     const nextPrompt = String(preFilledPrompt || "").trim();
     if (!nextPrompt) return;
     if (routedPromptConsumedRef.current) return;
-    if (sending) return;
+    if (sending || initializing) return;
+    if (!user?.id) return;
 
     let cancelled = false;
     (async () => {
       try {
         await ensureThread();
         if (cancelled || routedPromptConsumedRef.current) return;
+        
+        // Mark as consumed BEFORE sending to prevent double-fire
         routedPromptConsumedRef.current = true;
-        const ok = await sendMessage(nextPrompt);
-        if (ok) onPromptConsumed?.();
+        
+        // Send with routed context to preserve recommendation payload
+        const ok = await sendMessage(nextPrompt, routedContextRef.current);
+        if (ok && onPromptConsumed) {
+          onPromptConsumed();
+        }
       } catch (e) {
         console.error("Curator routed prompt failed:", e);
+        routedPromptConsumedRef.current = false; // Reset on failure
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [preFilledPrompt, sending, ensureThread, sendMessage, onPromptConsumed]);
+  }, [preFilledPrompt, sending, initializing, user?.id, ensureThread, onPromptConsumed]);
 
   const handleQuickPrompt = (prompt) => {
     setInput(prompt);
