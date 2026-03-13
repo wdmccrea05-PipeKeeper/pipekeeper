@@ -93,15 +93,28 @@ export default function StoryViewer({ cards, onClose, onShare, user }) {
       </button>
 
       {/* Share button */}
-      <button
-        onClick={() => onShare(currentCard, currentIndex)}
-        className="absolute top-6 right-6 z-10 p-2 rounded-lg hover:bg-white/10 transition-all flex items-center gap-2 text-white text-sm"
-        title="Share or export this card"
-        aria-label="Share current story card"
-      >
-        <Share2 className="w-5 h-5" />
-        <span className="hidden sm:inline">Share</span>
-      </button>
+      <div className="absolute top-6 right-6 z-10 flex items-center gap-2">
+        {showSocialShare && (
+          <div className="bg-black/70 rounded-lg p-3 mr-2">
+            <SocialMediaShareButtons 
+              url={window.location.href}
+              title={currentCard?.title || "Check out my collection"}
+              text={currentCard?.description || "Check out this amazing item"}
+              image={currentCard?.image || ""}
+              onShare={() => toast.success("Shared on social media!")}
+            />
+          </div>
+        )}
+        <button
+          onClick={() => setShowSocialShare(!showSocialShare)}
+          className="p-2 rounded-lg hover:bg-white/10 transition-all flex items-center gap-2 text-white text-sm"
+          title="Share on social media"
+          aria-label="Share story card on social media"
+        >
+          <Share2 className="w-5 h-5" />
+          <span className="hidden sm:inline">Share</span>
+        </button>
+      </div>
 
       {/* Main card display */}
       <div
