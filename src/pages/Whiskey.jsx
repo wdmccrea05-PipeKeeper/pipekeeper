@@ -10,6 +10,7 @@ import BottleForm from '@/components/whiskey/BottleForm';
 import TastingLogForm from '@/components/whiskey/TastingLog';
 import BottleInsights from '@/components/whiskey/BottleInsights';
 import { toast } from 'sonner';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 export default function WhiskeyPage() {
   const { t } = useTranslation();
@@ -91,6 +92,11 @@ export default function WhiskeyPage() {
     }
   };
 
+  const handleAddBottle = () => {
+    setEditingBottle(null);
+    setShowForm(true);
+  };
+
   const handleDeleteBottle = (id) => {
     if (confirm('Are you sure you want to delete this bottle?')) {
       deleteBottleMutation.mutate(id);
@@ -151,21 +157,21 @@ export default function WhiskeyPage() {
           </div>
 
           <Button
-            onClick={() => {
-              setEditingBottle(null);
-              setShowForm(true);
-            }}
+            onClick={handleAddBottle}
             className="bg-[#A35C5C] hover:bg-[#8C4A4A]"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Add Bottle
+            {t('whiskey.addBottle') || 'Add Bottle'}
           </Button>
         </div>
       </div>
 
-      {/* Modals */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+      {/* Add/Edit Bottle Sheet */}
+      <Sheet open={showForm} onOpenChange={setShowForm}>
+        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <SheetTitle>{editingBottle ? t('whiskey.editBottle') || 'Edit Bottle' : t('whiskey.addBottle') || 'Add Bottle'}</SheetTitle>
+          </SheetHeader>
           <BottleForm
             bottle={editingBottle}
             onSubmit={handleSaveBottle}
@@ -174,8 +180,8 @@ export default function WhiskeyPage() {
               setEditingBottle(null);
             }}
           />
-        </div>
-      )}
+        </SheetContent>
+      </Sheet>
 
       {showTastingLog && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
@@ -213,7 +219,7 @@ export default function WhiskeyPage() {
                   size="sm"
                   className="flex-1"
                 >
-                  Log Tasting
+                  {t('whiskey.logTasting') || 'Log Tasting'}
                 </Button>
                 <Button
                   onClick={() => {
@@ -224,7 +230,7 @@ export default function WhiskeyPage() {
                   size="sm"
                   className="flex-1"
                 >
-                  Edit
+                  {t('common.edit') || 'Edit'}
                 </Button>
                 <Button
                   onClick={() => handleDeleteBottle(bottle.id)}
@@ -232,7 +238,7 @@ export default function WhiskeyPage() {
                   size="sm"
                   className="text-red-400 border-red-400/30"
                 >
-                  Delete
+                  {t('common.delete') || 'Delete'}
                 </Button>
               </div>
             </div>
@@ -248,19 +254,19 @@ export default function WhiskeyPage() {
         >
           <Wine className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(180,140,75,0.5)' }} />
           <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">
-            No bottles yet
+            {t('whiskey.noBottlesYet') || 'No bottles yet'}
           </h2>
           <p style={{ color: 'rgba(224,216,200,0.6)' }} className="mb-6">
-            Start tracking your whiskey collection
+            {t('whiskey.startTracking') || 'Start tracking your whiskey collection'}
           </p>
           <Button
-            onClick={() => setShowForm(true)}
+            onClick={handleAddBottle}
             style={{
               background: 'linear-gradient(135deg, rgba(163, 92, 92, 1), rgba(140, 74, 74, 1))',
               color: '#F5F1E7',
             }}
           >
-            Add Your First Bottle
+            {t('whiskey.addFirstBottle') || 'Add Your First Bottle'}
           </Button>
         </div>
       )}
@@ -272,7 +278,7 @@ export default function WhiskeyPage() {
             style={{ color: '#F5F1E7' }}
             className="text-2xl font-bold"
           >
-            Recent Tastings
+            {t('whiskey.recentTastings') || 'Recent Tastings'}
           </h2>
           <div className="grid grid-cols-1 gap-3">
             {tastingLogs.slice(0, 5).map((log) => (
