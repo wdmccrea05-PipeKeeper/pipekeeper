@@ -770,9 +770,9 @@ export default function Layout({ children, currentPageName }) {
             <div className="max-w-7xl mx-auto px-6 py-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                  <img src={PIPEKEEPER_LOGO} alt={t("layout.appTitle")} className="w-5 h-5 object-contain" />
-                  <span className="text-sm text-[#E0D8C8]/70">{t("footer.copyright")}</span>
-                </div>
+                    <img src={COLLECTIONKEEPER_LOGO} alt={t("layout.appTitle")} className="w-5 h-5 object-contain" />
+                    <span className="text-sm text-[#E0D8C8]/70">{t("footer.copyright")}</span>
+                  </div>
                 <div className="flex gap-6">
                   <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
                     {t("nav.faq")}
