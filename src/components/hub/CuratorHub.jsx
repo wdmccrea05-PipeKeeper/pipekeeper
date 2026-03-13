@@ -1,12 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Zap, ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
-export default function CuratorHub() {
+export default function CuratorHub({ summary = null }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [context] = useState('ecosystem');
+
+  const handleCuratorClick = () => {
+    // Pass ecosystem context to Curator if available
+    // This would be extended to launch Curator with CollectionKeeper-level context
+    navigate('/Curator', { state: { context: 'ecosystem', summary } });
+  };
 
   return (
     <div className="bg-gradient-to-r from-[#8b6239]/20 to-[#D4A574]/10 border border-[#D4A574]/30 rounded-2xl p-8 flex items-center justify-between gap-6">
@@ -21,11 +28,16 @@ export default function CuratorHub() {
           <p className="text-sm text-[#E0D8C8]/70 mt-1">
             {t('hub.curatorDescription')}
           </p>
+          {summary && (
+            <p className="text-xs text-[#D4A574] mt-2">
+              {summary.total.items} items across {summary.enabledModuleCount} modules
+            </p>
+          )}
         </div>
       </div>
 
       <Button
-        onClick={() => navigate('/Curator')}
+        onClick={handleCuratorClick}
         className="flex items-center gap-2 flex-shrink-0 bg-[#D4A574] hover:bg-[#C99A66] text-[#1a1410]"
       >
         {t('hub.curatorAction')}
