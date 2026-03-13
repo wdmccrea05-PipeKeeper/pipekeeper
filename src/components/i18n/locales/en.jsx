@@ -77,14 +77,15 @@ export default {
 
   nav: {
     home: "Home",
-    pipes: "Pipes",
-    tobacco: "Tobacco",
+    hub: "Hub",
+    pipekeeper: "PipeKeeper",
+    whiskeykeeper: "WhiskeyKeeper",
+    curator: "Curator",
     community: "Community",
     profile: "Profile",
     help: "Help",
     faq: "FAQ",
     support: "Support",
-    hub: "Hub",
     quickAccess: "Quick Access",
     syncing: "Syncing...",
     subscriptionSupport: "Subscription Support",
@@ -92,7 +93,6 @@ export default {
     contentModeration: "Content Moderation",
     eventsLog: "Events Log",
     admin: "Admin",
-    cellar: "Cellar",
   },
 
   footer: {
