@@ -1407,13 +1407,29 @@ export default function Insights() {
                 </p>
               </div>
 
-              {fullStoryCards.length > 0 && (
-                <StoryTrigger
-                  onClick={() => setShowFullStory(true)}
-                  variant="secondary"
-                  size="small"
-                />
-              )}
+              <div className="flex gap-2">
+                {fullStoryCards.length > 0 && (
+                  <StoryTrigger
+                    onClick={() => setShowFullStory(true)}
+                    variant="secondary"
+                    size="small"
+                  />
+                )}
+                <button
+                  onClick={() => navigate(createPageUrl("CollectionInsightsShare"))}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 active:scale-95"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(180,140,75,1) 0%, rgba(160,120,65,1) 100%)",
+                    color: "rgba(28,18,10,1)",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)",
+                    border: "1px solid rgba(140,105,60,0.8)",
+                  }}
+                  title="Generate shareable collection insights"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Share Insights</span>
+                </button>
+              </div>
             </div>
           </div>
 
