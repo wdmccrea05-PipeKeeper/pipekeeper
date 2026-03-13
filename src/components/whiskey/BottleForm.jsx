@@ -49,7 +49,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
     >
       <div className="flex items-center justify-between">
         <h2 style={{ color: '#F5F1E7' }} className="text-2xl font-bold">
-          {bottle ? 'Edit Bottle' : 'Add Bottle'}
+          {bottle ? t('whiskey.editBottle') || 'Edit Bottle' : t('whiskey.addBottle') || 'Add Bottle'}
         </h2>
         <button onClick={onCancel} className="text-[#E0D8C8]/70 hover:text-[#E0D8C8]">
           <X className="w-5 h-5" />
@@ -60,7 +60,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
         {/* Name & Distillery */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">Name *</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.name') || 'Name'} *</label>
             <Input
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
@@ -70,7 +70,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
             />
           </div>
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">Distillery</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.distillery') || 'Distillery'}</label>
             <Input
               value={formData.distillery}
               onChange={(e) => handleChange('distillery', e.target.value)}
@@ -83,7 +83,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
         {/* Region & Country */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">Region</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.region') || 'Region'}</label>
             <Input
               value={formData.region}
               onChange={(e) => handleChange('region', e.target.value)}
@@ -92,7 +92,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
             />
           </div>
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">Country</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.country') || 'Country'}</label>
             <Input
               value={formData.country}
               onChange={(e) => handleChange('country', e.target.value)}
@@ -105,7 +105,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
         {/* Type & Age */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">Type</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.type') || 'Type'}</label>
             <Select value={formData.type} onValueChange={(value) => handleChange('type', value)}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
                 <SelectValue />
@@ -126,7 +126,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
             </Select>
           </div>
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">Age (years)</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.age') || 'Age (years)'}</label>
             <Input
               type="number"
               value={formData.age}
@@ -140,7 +140,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
         {/* ABV & Bottle Size */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">ABV (%)</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.abv') || 'ABV (%)'}</label>
             <Input
               type="number"
               step="0.1"
@@ -151,7 +151,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
             />
           </div>
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">Bottle Size</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.bottleSize') || 'Bottle Size'}</label>
             <Select value={formData.bottle_size} onValueChange={(value) => handleChange('bottle_size', value)}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
                 <SelectValue />
@@ -175,7 +175,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
         {/* Purchase Info */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">Price ($)</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.purchasePrice') || 'Price ($)'}</label>
             <Input
               type="number"
               step="0.01"
@@ -186,7 +186,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
             />
           </div>
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">Purchase Location</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.purchaseLocation') || 'Purchase Location'}</label>
             <Input
               value={formData.purchase_location}
               onChange={(e) => handleChange('purchase_location', e.target.value)}
@@ -195,7 +195,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
             />
           </div>
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">Purchase Date</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.purchaseDate') || 'Purchase Date'}</label>
             <Input
               type="date"
               value={formData.purchase_date}
@@ -208,7 +208,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
         {/* Inventory */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">Fill Level</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.fillLevel') || 'Fill Level'}</label>
             <Select value={formData.fill_level} onValueChange={(value) => handleChange('fill_level', value)}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
                 <SelectValue />
@@ -223,7 +223,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
             </Select>
           </div>
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">Bottle Count</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.bottleCount') || 'Bottle Count'}</label>
             <Input
               type="number"
               min="1"
@@ -236,7 +236,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
 
         {/* Rating */}
         <div>
-          <label className="text-sm text-[#D8C7A6] block mb-2">Rating (1-5)</label>
+          <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.rating') || 'Rating (1-5)'}</label>
           <Input
             type="number"
             step="0.5"
@@ -251,7 +251,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
 
         {/* Notes */}
         <div>
-          <label className="text-sm text-[#D8C7A6] block mb-2">Tasting Notes</label>
+          <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.tastingNotes') || 'Tasting Notes'}</label>
           <Textarea
             value={formData.notes}
             onChange={(e) => handleChange('notes', e.target.value)}
@@ -263,7 +263,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
         {/* Actions */}
         <div className="flex gap-3 justify-end pt-4">
           <Button variant="outline" onClick={onCancel}>
-            Cancel
+            {t('common.cancel') || 'Cancel'}
           </Button>
           <Button
             type="submit"
@@ -272,7 +272,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
               color: '#F5F1E7',
             }}
           >
-            {bottle ? 'Update Bottle' : 'Add Bottle'}
+            {bottle ? t('whiskey.updateBottle') || 'Update Bottle' : t('whiskey.addBottle') || 'Add Bottle'}
           </Button>
         </div>
       </form>
