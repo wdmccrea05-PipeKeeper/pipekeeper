@@ -25,10 +25,6 @@ import WhatsNewPopup from "@/components/onboarding/WhatsNewPopup";
 import EntitlementDebug from "@/components/debug/EntitlementDebug";
 import PermissionDebugPanel from "@/components/debug/PermissionDebugPanel";
 
-// Dev mode verification console output
-if (import.meta?.env?.DEV) {
-  console.log('[PipeKeeper] Canonical entitlement system active');
-}
 import {
   isIOSWebView,
   openAppleSubscriptions,
@@ -40,6 +36,11 @@ import {
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
+
+// Dev mode verification console output
+if (import.meta?.env?.DEV) {
+  console.log('[PipeKeeper] Canonical entitlement system active');
+}
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";

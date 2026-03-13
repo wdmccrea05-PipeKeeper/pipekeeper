@@ -50,7 +50,7 @@ import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import PhotoUploader from "@/components/PhotoUploader";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { FormattedTobacconistResponse } from "@/components/utils/formatTobacconistResponse";
-import { getPipeVariantKey, expandPipesToVariants } from "@/components/utils/pipeVariants";
+import { getPipeVariantKey } from "@/components/utils/pipeVariants";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation, translate } from "@/components/i18n/safeTranslation";
 import { translateToEnglish, translateFromEnglish, getCurrentLocale } from "@/components/utils/aiTranslation";

@@ -40,7 +40,7 @@ export default function SubscriptionSupport() {
   const [forceOverride, setForceOverride] = useState(false);
 
   // HOOKS FIRST - All hooks must be declared at component top level
-  React.useEffect(() => {
+  useEffect(() => {
     loadHealth();
     loadFunnel();
     loadDrift();

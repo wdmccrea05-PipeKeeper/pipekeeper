@@ -184,7 +184,7 @@ export const ANIMATION = {
  * Generate background gradient class
  */
 export function bgGradientClass() {
-  return `bg-gradient-to-br from-[${COLORS.bgGradient.from}] via-[${COLORS.bgGradient.via}] to-[${COLORS.bgGradient.to}]`;
+  return "bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]";
 }
 
 /**

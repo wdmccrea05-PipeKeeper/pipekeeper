@@ -3,7 +3,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
-import { generatePairingsAI, generateOptimizationAI } from "@/components/utils/aiGenerators";
+import { generateOptimizationAI } from "@/components/utils/aiGenerators";
 import { Button } from "@/components/ui/button";
 import {
   AlertCircle,
