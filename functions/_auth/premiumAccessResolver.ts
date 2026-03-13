@@ -5,7 +5,7 @@
  * Used by requireEntitlement for tier-specific checks.
  */
 
-import { subscriptionGrantsPaidAccess } from "../_utils/gracePeriod.ts";
+import { subscriptionGrantsPaidAccess } from "./_utils/gracePeriod.ts";
 
 const LEGACY_PREMIUM_CUTOFF = "2026-02-01T00:00:00.000Z";
 
