@@ -1,36 +1,50 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import ModuleCard from '@/components/hub/ModuleCard';
 import CombinedSummary from '@/components/hub/CombinedSummary';
 import CuratorHub from '@/components/hub/CuratorHub';
-import { getCombinedCollectionSummary, getModuleSummary } from '@/components/utils/hubDataHelpers';
+import RecentActivity from '@/components/hub/RecentActivity';
+import { getCombinedCollectionSummary } from '@/components/utils/hubDataHelpers';
+import { getEnabledModules, getComingSoonModules } from '@/components/hub/keeperModuleRegistry';
 
 export default function CollectionHub() {
   const { t } = useTranslation();
+  const { user } = useCurrentUser();
   const [loading, setLoading] = useState(true);
-  const [pipeData, setPipeData] = useState({ count: 0, value: 0 });
-  const [bottleData, setBottleData] = useState({ count: 0, value: 0 });
+  const [summary, setSummary] = useState({
+    pipes: { count: 0, value: 0 },
+    tobacco: { count: 0, value: 0 },
+    bottles: { count: 0, value: 0 },
+    total: { items: 0, value: 0 },
+    enabledModuleCount: 2,
+  });
 
   useEffect(() => {
+    if (!user?.email) return;
+
     let cancelled = false;
 
     (async () => {
       try {
         setLoading(true);
-        const summary = await getCombinedCollectionSummary();
+        // USER-SCOPED: pass user email to ensure data filtering
+        const collectionSummary = await getCombinedCollectionSummary(user.email);
 
         if (!cancelled) {
-          setPipeData({
-            count: summary.pipes.count,
-            value: summary.pipes.value,
-          });
-          setBottleData({
-            count: summary.bottles.count,
-            value: summary.bottles.value,
-          });
+          setSummary(collectionSummary);
         }
       } catch (error) {
         console.error('[CollectionHub] Error loading summary:', error);
+        if (!cancelled) {
+          setSummary({
+            pipes: { count: 0, value: 0 },
+            tobacco: { count: 0, value: 0 },
+            bottles: { count: 0, value: 0 },
+            total: { items: 0, value: 0 },
+            enabledModuleCount: 2,
+          });
+        }
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -41,41 +55,29 @@ export default function CollectionHub() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [user?.email]);
 
-  const modules = [
-    {
-      name: t('hub.pipekeeper'),
-      icon: '🔴',
-      itemCount: pipeData.count,
+  const enabledModules = getEnabledModules();
+  const comingSoonModules = getComingSoonModules();
+
+  // Map module registry to card data
+  const activeModuleCards = enabledModules.map((module) => {
+    const moduleData =
+      module.type === 'pipes'
+        ? summary.pipes
+        : module.type === 'whiskey'
+          ? summary.bottles
+          : { count: 0, value: 0 };
+
+    return {
+      ...module,
+      itemCount: moduleData.count,
       summary: {
         label: t('hub.totalValue'),
-        value: pipeData.value > 0 ? `$${pipeData.value.toLocaleString()}` : '—',
+        value: moduleData.value > 0 ? `$${moduleData.value.toLocaleString()}` : '—',
       },
-      action: 'Pipes',
-    },
-    {
-      name: t('hub.whiskeykeeper'),
-      icon: '🥃',
-      itemCount: bottleData.count,
-      summary: {
-        label: t('hub.totalValue'),
-        value: bottleData.value > 0 ? `$${bottleData.value.toLocaleString()}` : '—',
-      },
-      action: 'Whiskey',
-    },
-  ];
-
-  const comingSoon = [
-    {
-      name: t('hub.cigarkeeper'),
-      icon: '🔘',
-    },
-    {
-      name: t('hub.coffeekeeper'),
-      icon: '☕',
-    },
-  ];
+    };
+  });
 
   return (
     <div className="space-y-8">
@@ -91,55 +93,62 @@ export default function CollectionHub() {
         </div>
       </div>
 
-      {/* Active Modules Section */}
+      {/* Active Modules Section (from registry) */}
       <div className="space-y-3">
         <h2 className="text-xl font-semibold text-[#E0D8C8]">
           {t('hub.yourModules')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {modules.map((module) => (
+          {activeModuleCards.map((module) => (
             <ModuleCard
-              key={module.action}
-              module={module.name}
+              key={module.type}
+              module={t(module.titleKey)}
               icon={module.icon}
               itemCount={module.itemCount}
               summary={module.summary}
-              action={module.action}
+              action={module.route}
               isComingSoon={false}
             />
           ))}
         </div>
       </div>
 
-      {/* Combined Summary */}
+      {/* Combined Summary (dynamic) */}
       <CombinedSummary
-        pipeCount={pipeData.count}
-        bottleCount={bottleData.count}
-        totalValue={pipeData.value + bottleData.value}
+        pipeCount={summary.pipes.count}
+        tobaccoCount={summary.tobacco.count}
+        bottleCount={summary.bottles.count}
+        totalValue={summary.total.value}
+        enabledModuleCount={summary.enabledModuleCount}
       />
 
-      {/* Curator Section */}
-      <CuratorHub />
+      {/* Recent Activity */}
+      <RecentActivity />
 
-      {/* Coming Soon Section */}
-      <div className="space-y-3">
-        <h2 className="text-xl font-semibold text-[#E0D8C8]">
-          {t('hub.comingSoon')}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {comingSoon.map((module) => (
-            <ModuleCard
-              key={module.name}
-              module={module.name}
-              icon={module.icon}
-              itemCount={0}
-              summary={null}
-              action={null}
-              isComingSoon={true}
-            />
-          ))}
+      {/* Curator Section (with ecosystem context) */}
+      <CuratorHub summary={summary} />
+
+      {/* Coming Soon Section (from registry) */}
+      {comingSoonModules.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-xl font-semibold text-[#E0D8C8]">
+            {t('hub.comingSoon')}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {comingSoonModules.map((module) => (
+              <ModuleCard
+                key={module.type}
+                module={t(module.titleKey)}
+                icon={module.icon}
+                itemCount={0}
+                summary={null}
+                action={null}
+                isComingSoon={true}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
