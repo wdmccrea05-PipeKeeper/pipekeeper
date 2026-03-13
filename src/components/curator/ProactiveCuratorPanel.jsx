@@ -194,9 +194,11 @@ export default function ProactiveCuratorPanel({
 
     // Preserve full recommendation context via sessionStorage
     const payload = {
+      originalPrompt: insight.rawInsight || insight.insight || "",
       prompt: whatIfPrompt,
+      whatif_prompt: whatIfPrompt,
       originalTitle: insight.title || insight.rawTitle || "",
-      originalInsight: insight.insight || insight.rawInsight || "",
+      originalInsight: insight.rawInsight || insight.insight || "",
       titleKey: insight.titleKey || "",
       module: insight.module || "",
       category: insight.category || "",
