@@ -159,13 +159,15 @@ function MessageBubble({ message }) {
 function resolveWorkspaceLaunchContext(launchContext, preFilledPrompt, routedContext) {
   const context = launchContext?.recommendationContext || routedContext || null;
 
+  // CRITICAL FIX:
+  // The clicked recommendation text must beat the generic mapped prompt.
   const initialPrompt =
     String(launchContext?.initialPrompt || "").trim() ||
-    String(preFilledPrompt || "").trim() ||
-    String(context?.whatif_prompt || "").trim() ||
     String(context?.originalPrompt || "").trim() ||
     String(context?.originalInsight || "").trim() ||
+    String(context?.whatif_prompt || "").trim() ||
     String(context?.prompt || "").trim() ||
+    String(preFilledPrompt || "").trim() ||
     "";
 
   return {
@@ -335,7 +337,6 @@ export default function CuratorWorkspace({
       try {
         const ensuredThreadId = await ensureThread();
         const englishText = await translateToEnglish(text, locale);
-
         const conversation = await base44.agents.getConversation(ensuredThreadId);
 
         const pipesList = pipes
