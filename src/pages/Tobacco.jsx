@@ -29,7 +29,6 @@ import CellarDriftAlert from "../components/tobacco/CellarDriftAlert";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { formatWeight } from "@/components/utils/localeFormatters";
-import { Package2 } from "lucide-react";
 
 const BLEND_TYPES = [
   "American",
