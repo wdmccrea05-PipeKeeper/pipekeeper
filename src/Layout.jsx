@@ -607,8 +607,8 @@ export default function Layout({ children, currentPageName }) {
               <div className="flex items-center justify-between h-16 gap-2 px-3 lg:px-6">
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <BackButton currentPageName={currentPageName} />
-                  <Link to={createPageUrl("Home")} className="flex items-center gap-2 flex-shrink-0">
-                    <img src={PIPEKEEPER_LOGO} alt={t("layout.appTitle")} className="w-7 h-7 lg:w-8 lg:h-8 object-contain" />
+                  <Link to={createPageUrl("CollectionHub")} className="flex items-center gap-2 flex-shrink-0">
+                    <img src={COLLECTIONKEEPER_LOGO} alt={t("layout.appTitle")} className="w-7 h-7 lg:w-8 lg:h-8 object-contain" />
                     <span className="font-bold text-lg lg:text-xl text-[#E0D8C8] hidden sm:inline whitespace-nowrap">{t("layout.appTitle")}</span>
                   </Link>
                 </div>
