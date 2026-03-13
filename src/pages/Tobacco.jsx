@@ -328,7 +328,7 @@ export default function TobaccoPage() {
               onCheckedChange={toggleSelectAll}
               className="touch-none pointer-events-none"
             />
-            <span className={`font-medium ${PK_THEME.textBody}`}>
+            <span className="font-medium text-white">
               {t("tobaccoPage.selectAll")} ({selectedForEdit.length} {t("common.of")} {filteredBlends.length} {t("tobaccoPage.selected")})
             </span>
           </div>
