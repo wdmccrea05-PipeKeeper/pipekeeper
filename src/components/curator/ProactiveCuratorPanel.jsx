@@ -171,12 +171,22 @@ export default function ProactiveCuratorPanel({
     return generated.slice(0, 3);
   }, [pipes, blends, logs, curatorEnabled, cleared, refreshKey, lang, t]);
 
+  // CRITICAL HARDENING: Deduplicated impression logging
+  const loggedImpressionsRef = useRef(new Set());
+
   useEffect(() => {
     if (insights.length === 0) return;
 
     insights.forEach((insight) => {
+      const recId = `${insight.module}_${insight.category}_${insight.titleKey}`;
+      
+      // Only log each recommendation once per component mount
+      if (loggedImpressionsRef.current.has(recId)) return;
+      
+      loggedImpressionsRef.current.add(recId);
+      
       CuratorEvents.recommendationShown({
-        recommendationId: `${insight.module}_${insight.category}_${insight.titleKey}`,
+        recommendationId: recId,
         recommendationContext: {
           titleKey: insight.titleKey,
           title: insight.displayTitle,

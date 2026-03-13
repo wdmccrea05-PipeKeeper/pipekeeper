@@ -411,7 +411,15 @@ ${englishText}`;
         };
 
         const assistantResponse = await waitForResponse();
-        const translatedResponse = await translateFromEnglish(assistantResponse, locale);
+        
+        // CRITICAL HARDENING: Ownership claim guard
+        const { validateOwnershipIntegrity } = await import("@/functions/_utils/curatorOwnershipGuard");
+        const sanitizedResponse = validateOwnershipIntegrity(assistantResponse, pipes, blends);
+        
+        const translatedResponse = await translateFromEnglish(sanitizedResponse, locale);
+
+        const userMsgIndex = messages.filter((m) => m.role === "user").length;
+        const assistantMsgIndex = messages.filter((m) => m.role === "assistant").length;
 
         setMessages((prev) => {
           const withoutLocal = prev.filter((m) => m.id !== optimisticId);
@@ -426,6 +434,27 @@ ${englishText}`;
             },
           ];
         });
+
+        // CRITICAL HARDENING: Persist messages to CuratorMessage
+        if (sessionId) {
+          try {
+            await base44.functions.invoke('persistCuratorMessage', {
+              session_id: sessionId,
+              role: 'user',
+              content: text,
+              message_index: userMsgIndex,
+            });
+
+            await base44.functions.invoke('persistCuratorMessage', {
+              session_id: sessionId,
+              role: 'assistant',
+              content: translatedResponse,
+              message_index: assistantMsgIndex,
+            });
+          } catch (persistError) {
+            console.error('Failed to persist curator messages:', persistError);
+          }
+        }
 
         await CuratorEvents.messageSent({
           sessionId,
@@ -527,8 +556,23 @@ ${englishText}`;
     }
   };
 
+  // CRITICAL HARDENING: Session lifecycle with visibility-based flush
   useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && sessionId) {
+        // Best-effort close on page hide
+        endCuratorSession({
+          sessionId,
+          resultedInAction: false,
+        }).catch((e) => console.warn('Failed to close session on visibility change:', e));
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
       if (sessionId) {
         endCuratorSession({
           sessionId,

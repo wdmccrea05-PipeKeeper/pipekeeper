@@ -29,14 +29,22 @@ Deno.serve(async (req) => {
 
         if (existingSignals.length > 0) continue;
 
-        // Get messages for this session
+        // HARDENING: Get messages for this session - verify they exist
         const messages = await base44.asServiceRole.entities.CuratorMessage.filter(
           { session_id: session.session_id },
           'message_index',
           100
         );
 
-        if (messages.length === 0) continue;
+        if (messages.length === 0) {
+          console.warn(`Session ${session.session_id} has no persisted messages - skipping extraction`);
+          errors.push({ 
+            session_id: session.session_id, 
+            error: 'No persisted messages found',
+            reason: 'missing_message_data'
+          });
+          continue;
+        }
 
         // Extract conversation text
         const conversationText = messages
