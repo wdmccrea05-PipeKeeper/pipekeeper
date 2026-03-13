@@ -21,61 +21,44 @@ function isVerifiedOwned(itemName, verifiedSets) {
   );
 }
 
-function replaceVerifiedOrGeneric(prefix, itemName, verifiedSets, verifiedFormatter, unverifiedFormatter) {
-  if (isVerifiedOwned(itemName, verifiedSets)) {
-    return verifiedFormatter(prefix, itemName);
-  }
-  return unverifiedFormatter(prefix, itemName);
-}
-
 export function sanitizeOwnershipClaims(responseText, verifiedSets) {
   if (!responseText || typeof responseText !== "string") return responseText;
 
   let sanitized = responseText;
 
-  // Pattern 1:
-  // "Your Peterson Sherlock Holmes ..."
-  // "your Nightcap ..."
-  // Stops before common sentence continuations.
-  sanitized = sanitized.replace(
-    /\b(your)\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})(?=\s+(?:is|are|was|were|would|could|should|can|may|might|pairs|pair|works|work|benefits|benefit|with|for|in|on|at|and|but|,|\.))/g,
-    (_match, prefix, itemName) =>
-      replaceVerifiedOrGeneric(
-        prefix,
-        itemName,
-        verifiedSets,
-        (p, name) => `${p} ${name}`,
-        (_p, name) => `a ${name}`
-      )
-  );
+  const patterns = [
+    {
+      // Your Dunhill Shell Briar...
+      regex:
+        /\b(your)\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})(?=\s+(?:is|are|was|were|would|could|should|can|may|might|pairs|pair|works|work|benefits|benefit|with|for|in|on|at|and|but|,|\.))/g,
+      replace: (_match, pronoun, itemName) => {
+        if (isVerifiedOwned(itemName, verifiedSets)) return `${pronoun} ${itemName}`;
+        return `a ${itemName}`;
+      },
+    },
+    {
+      // You have a Dunhill Shell Briar...
+      regex:
+        /\b(you\s+have\s+(?:a|an))\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})(?=\s+(?:is|are|was|were|would|could|should|can|may|might|pairs|pair|works|work|benefits|benefit|with|for|in|on|at|and|but|,|\.))/gi,
+      replace: (_match, prefix, itemName) => {
+        if (isVerifiedOwned(itemName, verifiedSets)) return `${prefix} ${itemName}`;
+        return `a ${itemName}`;
+      },
+    },
+    {
+      // The Dunhill you own...
+      regex:
+        /\b(the)\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})\s+(you\s+own|in\s+your\s+collection)\b/gi,
+      replace: (_match, article, itemName, tail) => {
+        if (isVerifiedOwned(itemName, verifiedSets)) return `${article} ${itemName} ${tail}`;
+        return `a ${itemName} worth considering`;
+      },
+    },
+  ];
 
-  // Pattern 2:
-  // "You have a McClelland 5100 ..."
-  sanitized = sanitized.replace(
-    /\b(you\s+have\s+(?:a|an))\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})(?=\s+(?:is|are|was|were|would|could|should|can|may|might|pairs|pair|works|work|benefits|benefit|with|for|in|on|at|and|but|,|\.))/gi,
-    (_match, prefix, itemName) =>
-      replaceVerifiedOrGeneric(
-        prefix,
-        itemName,
-        verifiedSets,
-        (p, name) => `${p} ${name}`,
-        (_p, name) => `a ${name}`
-      )
-  );
-
-  // Pattern 3:
-  // "The Dunhill you own"
-  sanitized = sanitized.replace(
-    /\b(the)\s+([A-Z0-9][A-Za-z0-9&'.-]*(?:\s+[A-Z0-9][A-Za-z0-9&'.-]*){0,4})\s+(you\s+own|in\s+your\s+collection)\b/gi,
-    (_match, article, itemName, tail) =>
-      replaceVerifiedOrGeneric(
-        itemName,
-        itemName,
-        verifiedSets,
-        () => `${article} ${itemName} ${tail}`,
-        () => `a ${itemName} worth considering`
-      )
-  );
+  for (const pattern of patterns) {
+    sanitized = sanitized.replace(pattern.regex, pattern.replace);
+  }
 
   return sanitized;
 }
