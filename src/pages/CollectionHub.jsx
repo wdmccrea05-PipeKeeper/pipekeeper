@@ -31,8 +31,8 @@ export default function CollectionHub() {
     (async () => {
       try {
         setLoading(true);
-        // USER-SCOPED: pass user email to ensure data filtering
-        const collectionSummary = await getCombinedCollectionSummary(user.email);
+        // Uses Keeper Core service for user-scoped aggregation
+        const collectionSummary = await getCollectionHubSummary(user.email);
 
         if (!cancelled) {
           setSummary(collectionSummary);
@@ -43,9 +43,10 @@ export default function CollectionHub() {
           setSummary({
             pipes: { count: 0, value: 0 },
             tobacco: { count: 0, value: 0 },
-            bottles: { count: 0, value: 0 },
+            whiskey: { count: 0, value: 0 },
             total: { items: 0, value: 0 },
-            enabledModuleCount: 2,
+            enabledModuleCount: 0,
+            hubContributorCount: 0,
           });
         }
       } finally {
