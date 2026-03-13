@@ -354,6 +354,18 @@ ${englishText}`;
     }
   };
 
+  // Cleanup session on unmount
+  useEffect(() => {
+    return () => {
+      if (sessionId) {
+        endCuratorSession({
+          sessionId,
+          resultedInAction: false,
+        });
+      }
+    };
+  }, [sessionId]);
+
   return (
     <div
       className="rounded-xl overflow-hidden shadow-2xl"
