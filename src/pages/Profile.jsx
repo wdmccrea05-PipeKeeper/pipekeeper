@@ -801,7 +801,7 @@ export default function ProfilePage() {
               />
             </div>
 
-            {/* Save */}
+            {/* Save & Share */}
             <div className="flex flex-col md:flex-row gap-3">
               <Button
                 onClick={() => saveMutation.mutate()}
@@ -809,6 +809,15 @@ export default function ProfilePage() {
                 className="bg-[#A35C5C] hover:bg-[#8C4A4A]"
               >
                 {saveMutation.isPending ? t("profileExtended.saving") : t("common.save")}
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => navigate(createPageUrl("CollectionInsightsShare"))}
+                className="text-stone-700 border-stone-300 hover:bg-stone-50 hover:text-stone-900"
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share Collection Insights
               </Button>
 
               {user?.email ? (
