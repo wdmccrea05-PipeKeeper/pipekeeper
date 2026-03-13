@@ -90,25 +90,25 @@ export default function CollectionHub() {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Hero Section */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#E0D8C8]">
+          <h1 className="text-5xl md:text-6xl font-bold text-[#F5F1E7]" style={{ fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
             {t('hub.title')}
           </h1>
-          <p className="text-lg text-[#E0D8C8]/70 max-w-2xl">
+          <p className="text-lg text-[#E0D8C8]/75 max-w-3xl leading-relaxed">
             {t('hub.description')}
           </p>
         </div>
       </div>
 
-      {/* Active Modules Section (from registry) */}
-      <div className="space-y-3">
-        <h2 className="text-xl font-semibold text-[#E0D8C8]">
+      {/* Your Collections Section */}
+      <div className="space-y-4">
+        <h2 className="text-sm uppercase tracking-[0.12em] font-semibold" style={{ color: 'rgba(180, 140, 75, 0.8)' }}>
           {t('hub.yourModules')}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {activeModuleCards.map((module) => (
             <ModuleCard
               key={module.type}
@@ -140,11 +140,11 @@ export default function CollectionHub() {
 
       {/* Coming Soon Section (from registry) */}
       {comingSoonModules.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-xl font-semibold text-[#E0D8C8]">
+        <div className="space-y-4">
+          <h2 className="text-sm uppercase tracking-[0.12em] font-semibold" style={{ color: 'rgba(180, 140, 75, 0.8)' }}>
             {t('hub.comingSoon')}
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {comingSoonModules.map((module) => (
               <ModuleCard
                 key={module.type}
