@@ -1,0 +1,72 @@
+/**
+ * Central module registry for CollectionKeeper ecosystem
+ * Defines all available modules (active and coming soon)
+ * Used to drive Hub UI, module cards, and future extensibility
+ */
+
+export const KEEPER_MODULES = [
+  {
+    type: 'pipes',
+    titleKey: 'hub.pipekeeper',
+    icon: '🔴',
+    route: 'Pipes',
+    enabled: true,
+    description: 'Manage your pipe collection with detailed specifications and smoking logs.',
+    moduleKey: 'pipekeeper',
+  },
+  {
+    type: 'whiskey',
+    titleKey: 'hub.whiskeykeeper',
+    icon: '🥃',
+    route: 'Whiskey',
+    enabled: true,
+    description: 'Track your whiskey collection with tasting notes and region analysis.',
+    moduleKey: 'whiskeykeeper',
+  },
+  {
+    type: 'cigars',
+    titleKey: 'hub.cigarkeeper',
+    icon: '🔘',
+    route: null,
+    enabled: false,
+    description: 'Coming soon: Curate and track your cigar collection.',
+    moduleKey: 'cigarkeeper',
+  },
+  {
+    type: 'coffee',
+    titleKey: 'hub.coffeekeeper',
+    icon: '☕',
+    route: null,
+    enabled: false,
+    description: 'Coming soon: Manage your coffee bean collection.',
+    moduleKey: 'coffeekeeper',
+  },
+];
+
+/**
+ * Get enabled modules (active modules)
+ */
+export function getEnabledModules() {
+  return KEEPER_MODULES.filter(m => m.enabled);
+}
+
+/**
+ * Get coming soon modules
+ */
+export function getComingSoonModules() {
+  return KEEPER_MODULES.filter(m => !m.enabled);
+}
+
+/**
+ * Get module by type
+ */
+export function getModuleByType(type) {
+  return KEEPER_MODULES.find(m => m.type === type);
+}
+
+/**
+ * Get count of enabled modules
+ */
+export function getEnabledModuleCount() {
+  return getEnabledModules().length;
+}
