@@ -129,8 +129,6 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
     }).sort((a, b) => (a?.name || '').localeCompare(b?.name || ''));
   }, [pipeVariants, allPipes, pairingsByVariant, t]);
 
-  if (isAppleBuild) return null;
-
   const regenPairings = async () => {
     setRegenerating(true);
     try {
@@ -160,6 +158,8 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
       setRegenerating(false);
     }
   };
+
+  if (isAppleBuild) return null;
 
   if (pipesLoading || pairingsLoading || blendsLoading) {
     return (
