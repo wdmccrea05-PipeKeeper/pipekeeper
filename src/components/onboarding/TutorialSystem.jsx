@@ -27,12 +27,17 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
     const hasSkipped = safeLocalStorage(skipKey) === 'true';
     const hasCompleted = safeLocalStorage(completeKey) === 'true';
 
-    // Show tutorial if: new user (no pipes/blends), hasn't skipped, and hasn't completed
-    if (!hasSkipped && !hasCompleted && pipes.length === 0 && blends.length === 0) {
+    // Show tutorial ONLY on first login (user created today)
+    const isNewAccount = user?.created_date ? 
+      new Date(user.created_date).toDateString() === new Date().toDateString() 
+      : false;
+
+    // Show tutorial if: user is brand new (created today), hasn't skipped, and hasn't completed
+    if (isNewAccount && !hasSkipped && !hasCompleted) {
       setIsVisible(true);
       setCurrentStep(0);
     }
-  }, [user?.email, pipes.length, blends.length, forceTutorial]);
+  }, [user?.email, user?.created_date, forceTutorial]);
 
   const steps = [
     {
