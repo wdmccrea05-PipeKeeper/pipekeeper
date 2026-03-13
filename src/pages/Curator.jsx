@@ -7,15 +7,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const CURATOR_ICON =
-  "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png";
+  "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
 
-function getRoutedPrompt() {
+function getRoutedContext() {
+  try {
+    const stored = sessionStorage.getItem("pk_curator_context");
+    if (stored) {
+      sessionStorage.removeItem("pk_curator_context");
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.warn("Failed to parse curator context:", e);
+  }
+
+  // Fallback to URL param only
   try {
     const params = new URLSearchParams(window.location.search);
-    return (params.get("prompt") || "").trim();
-  } catch {
-    return "";
-  }
+    const prompt = params.get("prompt");
+    if (prompt) return { prompt: prompt.trim() };
+  } catch {}
+
+  return null;
 }
 
 function clearRouteState() {
@@ -25,12 +37,17 @@ function clearRouteState() {
     url.searchParams.delete("tab");
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
   } catch {}
+  
+  try {
+    sessionStorage.removeItem("pk_curator_context");
+  } catch {}
 }
 
 export default function Curator() {
   const { user } = useCurrentUser();
   const { t } = useTranslation();
-  const [routedPrompt, setRoutedPrompt] = useState(getRoutedPrompt());
+  const [routedContext, setRoutedContext] = useState(getRoutedContext());
+  const [routedPrompt, setRoutedPrompt] = useState(routedContext?.prompt || "");
 
   const { data: pipes = [] } = useQuery({
     queryKey: ["pipes", user?.email],
@@ -53,20 +70,27 @@ export default function Curator() {
   });
 
   useEffect(() => {
-    const prompt = getRoutedPrompt();
-    if (prompt) setRoutedPrompt(prompt);
+    const ctx = getRoutedContext();
+    if (ctx) {
+      setRoutedContext(ctx);
+      setRoutedPrompt(ctx.prompt || "");
+    }
   }, []);
 
   const handlePromptConsumed = () => {
     clearRouteState();
     setRoutedPrompt("");
+    setRoutedContext(null);
   };
 
   const subtitle = useMemo(() => {
+    if (routedContext?.originalTitle) {
+      return `${routedContext.originalTitle} — ${t("curator.workspaceSubtitleRouted", { defaultValue: "Opening Curator with your selected prompt…" })}`;
+    }
     return routedPrompt
       ? t("curator.workspaceSubtitleRouted", { defaultValue: "Opening Curator with your selected prompt…" })
       : t("curator.workspaceSubtitle", { defaultValue: "Ask questions, follow up on recommendations, and get collection-specific guidance." });
-  }, [routedPrompt, t]);
+  }, [routedPrompt, routedContext, t]);
 
   return (
     <div className="space-y-5">
@@ -89,6 +113,7 @@ export default function Curator() {
             pipes={pipes}
             blends={blends}
             preFilledPrompt={routedPrompt}
+            routedContext={routedContext}
             onPromptConsumed={handlePromptConsumed}
           />
         </CardContent>

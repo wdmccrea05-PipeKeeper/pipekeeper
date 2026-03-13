@@ -158,6 +158,23 @@ export default function ProactiveCuratorPanel({
       return;
     }
 
+    // Preserve full recommendation context via sessionStorage
+    const payload = {
+      prompt: whatIfPrompt,
+      originalTitle: insight.title || insight.rawTitle || "",
+      originalInsight: insight.insight || insight.rawInsight || "",
+      titleKey: insight.titleKey || "",
+      module: insight.module || "",
+      category: insight.category || "",
+      vars: insight.vars || {},
+    };
+    
+    try {
+      sessionStorage.setItem("pk_curator_context", JSON.stringify(payload));
+    } catch (e) {
+      console.warn("Failed to save curator context:", e);
+    }
+
     const params = new URLSearchParams();
     params.set("prompt", whatIfPrompt);
     navigate(`${createPageUrl("Curator")}?${params.toString()}`);

@@ -11,7 +11,7 @@ import { Send, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 const CURATOR_ICON =
-  "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png";
+  "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
 const AGENT_NAME = "expert_tobacconist";
 
 function generateQuickPrompts({ pipes = [], blends = [], logs = [], t }) {
@@ -84,7 +84,7 @@ function MessageBubble({ message }) {
   );
 }
 
-export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPrompt, onPromptConsumed }) {
+export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPrompt, routedContext, onPromptConsumed }) {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
   const [threadId, setThreadId] = useState(null);
@@ -205,10 +205,31 @@ export default function CuratorWorkspace({ pipes = [], blends = [], preFilledPro
       
       const conversation = await base44.agents.getConversation(ensuredThreadId);
       
-      // Build context message
-      const contextMessage = `USER COLLECTION:
-Pipes: ${pipes.length}
-Tobaccos: ${blends.length}
+      // Build detailed collection inventory
+      const pipesList = pipes.map(p => `- ${p.name} (${p.maker || "unknown maker"}, ${p.shape || "unknown shape"}${p.focus?.length ? `, focus: ${p.focus.join(", ")}` : ""})`).join("\n");
+      const blendsList = blends.map(b => `- ${b.name} (${b.manufacturer || "unknown"}, ${b.blend_type || "unknown type"}${b.strength ? `, ${b.strength}` : ""})`).join("\n");
+      
+      // Build context message with actual collection items
+      let contextMessage = `USER COLLECTION:
+
+PIPES (${pipes.length} total):
+${pipesList || "None yet"}
+
+TOBACCOS (${blends.length} total):
+${blendsList || "None yet"}`;
+
+      // If this is the first message from a routed recommendation, include original context
+      if (messages.length === 0 && routedContext?.originalTitle && routedContext?.originalInsight) {
+        contextMessage += `
+
+ORIGINAL RECOMMENDATION CONTEXT:
+Title: ${routedContext.originalTitle}
+Insight: ${routedContext.originalInsight}
+Module: ${routedContext.module || "general"}
+Category: ${routedContext.category || "general"}`;
+      }
+
+      contextMessage += `
 
 USER QUESTION:
 ${englishText}`;
