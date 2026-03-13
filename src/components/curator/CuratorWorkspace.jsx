@@ -18,6 +18,7 @@ import {
   endCuratorSession,
   CuratorEvents,
 } from "@/components/utils/curatorEventLogger";
+import { validateOwnershipIntegrity } from "@/components/utils/curatorOwnershipGuard";
 
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
@@ -413,7 +414,6 @@ ${englishText}`;
         const assistantResponse = await waitForResponse();
         
         // CRITICAL HARDENING: Ownership claim guard
-        const { validateOwnershipIntegrity } = await import("@/components/utils/curatorOwnershipGuard");
         const sanitizedResponse = validateOwnershipIntegrity(assistantResponse, pipes, blends);
         
         const translatedResponse = await translateFromEnglish(sanitizedResponse, locale);
