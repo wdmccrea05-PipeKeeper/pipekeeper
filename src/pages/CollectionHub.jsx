@@ -129,7 +129,7 @@ export default function CollectionHub() {
       />
 
       {/* Recent Activity */}
-      <RecentActivity />
+      <RecentActivity onActivitiesLoaded={setRecentActivities} />
 
       {/* Curator Section (with ecosystem context) */}
       <CuratorHub summary={summary} recentActivities={recentActivities} />
