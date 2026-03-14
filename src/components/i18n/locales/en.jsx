@@ -74,6 +74,8 @@ export default {
     noRecentActivity: "No recent activity yet. Start by adding to your collections!",
     loading: "Loading ecosystem data...",
     comingSoon: "Expanding Soon",
+    quickLaunch: "Quick Launch",
+    quickLaunchDescription: "Jump directly into your collections",
   },
 
   nav: {
@@ -138,6 +140,8 @@ export default {
     recentTasting: "Recent Tasting",
     bottlesInCollection: "Bottles",
     totalValue: "Total Value",
+    totalBottles: "Total Bottles",
+    avgRating: "Avg Rating",
     unopened: "Unopened",
     openBottles: "Open",
     noBottlesYet: "No bottles yet",
@@ -148,8 +152,17 @@ export default {
     tastingsLogged: "tastings logged",
     whiskeyDesc: "Browse and manage your whiskey inventory",
     tastingsDesc: "View and log tasting notes and experiences",
+    insightsDescription: "Trends and statistics from your whiskey collection",
+    analyticsDescription: "Deep dive into your collection metrics",
     whiskeyinsightsDesc: "Discover insights about your collection",
     whiskeyanalyticsDesc: "Analyze trends and collection metrics",
+    noTastings: "No tasting notes yet",
+    startLogging: "Log your first tasting to track your whiskey journey",
+    pairing: "Pairing",
+    noInsights: "No insights yet",
+    addBottlesForInsights: "Add bottles to your collection to see insights",
+    noAnalytics: "No analytics yet",
+    addBottlesForAnalytics: "Add bottles to see detailed analytics",
   },
 
   whiskey: {
@@ -172,6 +185,11 @@ export default {
     addBottle: "Add Bottle",
     editBottle: "Edit Bottle",
     updateBottle: "Update Bottle",
+    logTasting: "Log Tasting",
+    noBottlesYet: "No bottles yet",
+    startTracking: "Start tracking your whiskey collection",
+    addFirstBottle: "Add Your First Bottle",
+    recentTastings: "Recent Tastings",
   },
 
   footer: {
