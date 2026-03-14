@@ -1,24 +1,30 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Wind, Leaf, BookOpen, TrendingUp, ArrowRight } from 'lucide-react';
+import { Wind, Leaf, BookOpen, TrendingUp, Plus, Search, Camera, Target } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency, formatWeight } from '@/components/utils/localeFormatters';
 import { calculateCellaredOzFromLogs } from '@/components/utils/tobaccoQuantityHelpers';
 import ModuleNav from './ModuleNav';
 import CatalogPlate from '@/components/home/CatalogPlate';
+import ModuleQuickLaunch from './ModuleQuickLaunch';
+import QuickSearchPipe from '@/components/ai/QuickSearchPipe';
 
 const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
+const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
 export default function PipeKeeperModule() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useCurrentUser();
+  const queryClient = useQueryClient();
+  
+  const [showQuickSearch, setShowQuickSearch] = useState(false);
 
   // Module navigation
   const moduleNav = [
@@ -90,6 +96,50 @@ export default function PipeKeeperModule() {
   }, [pipes]);
 
   const favoriteBlends = useMemo(() => blends.filter(b => b?.is_favorite), [blends]);
+
+  const handlePipeAdded = () => {
+    queryClient.invalidateQueries({ queryKey: ['pipes-summary'] });
+    queryClient.invalidateQueries({ queryKey: ['pipes'] });
+  };
+
+  const quickLaunchActions = [
+    {
+      key: 'addPipe',
+      Icon: Plus,
+      label: t('quickActions.addPipe'),
+      onClick: () => navigate('/Pipes?action=add')
+    },
+    {
+      key: 'addBlend',
+      Icon: Leaf,
+      label: t('quickActions.addBlend'),
+      onClick: () => navigate('/Tobacco?action=add')
+    },
+    {
+      key: 'quickSearch',
+      Icon: Search,
+      label: t('quickActions.quickSearchPipe'),
+      onClick: () => setShowQuickSearch(true)
+    },
+    {
+      key: 'logSession',
+      Icon: BookOpen,
+      label: t('quickActions.logSession'),
+      onClick: () => navigate('/Home')
+    },
+    {
+      key: 'curator',
+      iconImage: CURATOR_ICON,
+      label: t('quickActions.collectionCurator'),
+      onClick: () => navigate('/Curator')
+    },
+    {
+      key: 'insights',
+      Icon: TrendingUp,
+      label: t('quickActions.insights'),
+      onClick: () => navigate('/Insights')
+    }
+  ];
 
   return (
     <div className="space-y-8">
@@ -168,6 +218,9 @@ export default function PipeKeeperModule() {
         </div>
       </div>
 
+      {/* Quick Launch */}
+      <ModuleQuickLaunch actions={quickLaunchActions} />
+
       {/* Highlights */}
       {(mostSmokedPipe || mostValuablePipe || favoriteBlends.length > 0) && (
         <div>
@@ -211,6 +264,13 @@ export default function PipeKeeperModule() {
           </div>
         </div>
       )}
+
+      {/* Quick Search Modal */}
+      <QuickSearchPipe 
+        open={showQuickSearch} 
+        onOpenChange={setShowQuickSearch}
+        onAdd={handlePipeAdded}
+      />
     </div>
   );
 }
