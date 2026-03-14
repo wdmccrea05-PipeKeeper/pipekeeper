@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tantml:react-query';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Plus, Wine } from 'lucide-react';
+import { Plus, Wine, BookOpen, TrendingUp, BarChart3 } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import ModuleNav from '@/components/modules/ModuleNav';
 import BottleCard from '@/components/whiskey/BottleCard';
 import BottleForm from '@/components/whiskey/BottleForm';
 import TastingLogForm from '@/components/whiskey/TastingLog';
@@ -20,6 +21,13 @@ export default function WhiskeyPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingBottle, setEditingBottle] = useState(null);
   const [showTastingLog, setShowTastingLog] = useState(null);
+
+  const moduleNavItems = [
+    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: Wine },
+    { name: t('nav.tastingNotes') || 'Tastings', path: '/Tastings', icon: BookOpen },
+    { name: t('nav.insights') || 'Insights', path: '/WhiskeyInsights', icon: TrendingUp },
+    { name: t('nav.analytics') || 'Analytics', path: '/WhiskeyAnalytics', icon: BarChart3 },
+  ];
 
   // Fetch bottles
   const { data: bottles = [] } = useQuery({
@@ -113,7 +121,9 @@ export default function WhiskeyPage() {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
+      <ModuleNav items={moduleNavItems} currentPath="/Whiskey" />
+      
       {/* Header */}
       <div className="relative">
         <div className="flex items-start justify-between gap-3">
