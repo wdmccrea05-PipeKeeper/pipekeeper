@@ -5,12 +5,13 @@ import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Grid3X3, List, Sparkles, Package2, Package } from "lucide-react";
+import { Plus, Search, Grid3X3, List, Sparkles, Package2, Package, Wind, Leaf, BookOpen, TrendingUp } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import ModuleNav from "@/components/modules/ModuleNav";
 import PipeCard from "@/components/pipes/PipeCard";
 import PipeListItem from "@/components/pipes/PipeListItem";
 import PipeForm from "@/components/pipes/PipeForm";
@@ -52,6 +53,13 @@ export default function PipesPage() {
   const queryClient = useQueryClient();
 
   const { user, hasPaid, isTrial } = useCurrentUser();
+
+  const moduleNavItems = [
+    { name: t('nav.pipes') || 'Pipes', path: '/Pipes', icon: Wind },
+    { name: t('nav.tobacco') || 'Tobacco', path: '/Tobacco', icon: Leaf },
+    { name: t('nav.smokingLog') || 'Sessions', path: '/Home', icon: BookOpen },
+    { name: t('nav.insights') || 'Insights', path: '/Insights', icon: TrendingUp },
+  ];
 
   const { data: pipes = [], isLoading } = useQuery({
     queryKey: ['pipes', user?.email, sortBy],
@@ -172,10 +180,10 @@ export default function PipesPage() {
   const totalValue = (pipes || []).reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0);
 
   return (
-    <div className="min-h-screen" style={{
-      background: 'radial-gradient(circle at 30% 20%, rgba(120,85,55,0.15), transparent 40%), radial-gradient(circle at 80% 70%, rgba(70,50,35,0.2), transparent 50%), #0f0b08'
-    }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="space-y-6">
+      <ModuleNav items={moduleNavItems} currentPath="/Pipes" />
+      
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
