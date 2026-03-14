@@ -282,6 +282,13 @@ export default {
     identifyBottle: "Identify Bottle",
   },
 
+  hub: {
+    collectionSummary: "Collection Overview",
+    pipes: "Pipes",
+    bottles: "Bottles",
+    activeModules: "Active Modules",
+  },
+
   layout: {
     appTitle: "CollectionKeeper",
     toggleMenu: "Toggle menu",
