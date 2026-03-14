@@ -94,6 +94,9 @@ import VerificationHelp from './pages/VerificationHelp';
 import Whiskey from './pages/Whiskey';
 import WhiskeyKeeper from './pages/WhiskeyKeeper';
 import index from './pages/index';
+import Tastings from './pages/Tastings';
+import WhiskeyInsights from './pages/WhiskeyInsights';
+import WhiskeyAnalytics from './pages/WhiskeyAnalytics';
 import __Layout from './Layout.jsx';
 
 
@@ -145,6 +148,9 @@ export const PAGES = {
     "Whiskey": Whiskey,
     "WhiskeyKeeper": WhiskeyKeeper,
     "index": index,
+    "Tastings": Tastings,
+    "WhiskeyInsights": WhiskeyInsights,
+    "WhiskeyAnalytics": WhiskeyAnalytics,
 }
 
 export const pagesConfig = {
