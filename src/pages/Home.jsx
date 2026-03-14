@@ -12,7 +12,8 @@ import ProactiveCuratorPanel from "@/components/curator/ProactiveCuratorPanel";
 import QuickActions from "@/components/home/QuickActions";
 import LogSessionModal from "@/components/home/LogSessionModal";
 import IdentifyModal from "@/components/home/IdentifyModal";
-import { Leaf, Heart, Sparkles, ArrowRight, Crown, BarChart3, Archive, TrendingUp } from "lucide-react";
+import ModuleNav from "@/components/modules/ModuleNav";
+import { Leaf, Heart, Sparkles, ArrowRight, Crown, BarChart3, Archive, TrendingUp, Wind, BookOpen } from "lucide-react";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { PIPE_SILHOUETTE_URL } from "@/components/utils/collectionConstants";
@@ -34,6 +35,13 @@ export default function Home() {
   const [showIdentify, setShowIdentify] = useState(false);
   const [showStory, setShowStory] = useState(false);
   const [forceTutorial, setForceTutorial] = useState(false);
+
+  const moduleNavItems = [
+    { name: t('nav.pipes') || 'Pipes', path: '/Pipes', icon: Wind },
+    { name: t('nav.tobacco') || 'Tobacco', path: '/Tobacco', icon: Leaf },
+    { name: t('nav.smokingLog') || 'Sessions', path: '/Home', icon: BookOpen },
+    { name: t('nav.insights') || 'Insights', path: '/Insights', icon: TrendingUp },
+  ];
 
   // Check for forced tutorial from FAQ
   useEffect(() => {
@@ -197,7 +205,10 @@ export default function Home() {
   }, [favoriteBlends]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <ModuleNav items={moduleNavItems} currentPath="/Home" />
+      
+      <div className="space-y-8">
       {/* 1. HERO - Collector's Study Header */}
       <div className="space-y-4">
         <div className="text-center space-y-2">
@@ -674,6 +685,7 @@ export default function Home() {
         forceTutorial={forceTutorial}
         onTutorialClose={() => setForceTutorial(false)}
       />
+      </div>
     </div>
   );
 }
