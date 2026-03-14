@@ -22,6 +22,17 @@ export default function WhiskeyPage() {
   const [editingBottle, setEditingBottle] = useState(null);
   const [showTastingLog, setShowTastingLog] = useState(null);
 
+  // Handle URL action parameter
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    if (action === 'add') {
+      setShowForm(true);
+      // Clean URL
+      window.history.replaceState({}, '', '/Whiskey');
+    }
+  }, []);
+
   const moduleNavItems = [
     { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: Wine },
     { name: t('nav.tastingNotes') || 'Tastings', path: '/Tastings', icon: BookOpen },
