@@ -91,35 +91,76 @@ export default function CollectionHub() {
   });
 
   return (
-    <div className="space-y-10">
-      {/* Hero Section */}
-      <div className="relative">
-        <div 
-          className="absolute inset-0 rounded-3xl pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse at 30% 40%, rgba(180, 140, 75, 0.12) 0%, transparent 60%)',
-          }}
-        />
-        <div className="relative space-y-4 py-8">
-          <div className="space-y-3 text-center md:text-left">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-[#F5F1E7]" style={{ fontFamily: "'Georgia', serif", textShadow: '0 3px 10px rgba(0,0,0,0.8)' }}>
-              {t('hub.title')}
-            </h1>
-            <p className="text-lg md:text-xl text-[#E0D8C8]/80 max-w-3xl mx-auto md:mx-0 leading-relaxed">
-              {t('hub.description')}
+    <div className="space-y-8">
+      {/* Hero Section - Match Home Page Canonical Style */}
+      <div className="space-y-4">
+        <div className="text-center space-y-2">
+          <h1 
+            className="text-4xl font-bold tracking-tight"
+            style={{ 
+              color: "#F5F1E7",
+              textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+              fontFamily: "'Georgia', serif"
+            }}
+          >
+            {t('hub.title')}
+          </h1>
+          <p 
+            className="text-base max-w-2xl mx-auto leading-relaxed"
+            style={{ color: "rgba(224, 216, 200, 0.75)" }}
+          >
+            {t('hub.description')}
+          </p>
+        </div>
+      </div>
+
+      {/* Collection Summary Ledger - Match Home Page Style */}
+      <div 
+        className="rounded-lg p-5"
+        style={{
+          background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
+          border: "1px solid rgba(120, 90, 65, 0.3)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
+        }}
+      >
+        <h2 
+          className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
+          style={{ color: "rgba(180, 140, 75, 0.8)" }}
+        >
+          {t("hub.collectionSummary")}
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
+              {t('hub.totalValue')}
             </p>
-            <div className="flex items-center gap-2 text-sm justify-center md:justify-start" style={{ color: 'rgba(180, 140, 75, 0.7)' }}>
-              <div className="h-1 w-1 rounded-full" style={{ background: 'rgba(180, 140, 75, 0.7)' }} />
-              <span>{summary.total.items} {t('hub.items')}</span>
-              <div className="h-1 w-1 rounded-full" style={{ background: 'rgba(180, 140, 75, 0.7)' }} />
-              <span>{summary.hubContributorCount} {t('hub.modules')}</span>
-              {summary.total.value > 0 && (
-                <>
-                  <div className="h-1 w-1 rounded-full" style={{ background: 'rgba(180, 140, 75, 0.7)' }} />
-                  <span>${summary.total.value.toLocaleString()}</span>
-                </>
-              )}
-            </div>
+            <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
+              {summary.total.value > 0 ? `$${summary.total.value.toLocaleString()}` : '$0'}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
+              {t('hub.pipes')}
+            </p>
+            <p className="text-2xl font-bold" style={{ color: '#B48C4B' }}>
+              {summary.pipes.count}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
+              {t('hub.bottles')}
+            </p>
+            <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
+              {summary.whiskey.count}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
+              {t('hub.activeModules')}
+            </p>
+            <p className="text-2xl font-bold" style={{ color: '#A35C5C' }}>
+              {summary.hubContributorCount}
+            </p>
           </div>
         </div>
       </div>
@@ -146,15 +187,6 @@ export default function CollectionHub() {
 
       {/* Quick Launch */}
       <QuickLaunch />
-
-      {/* Combined Summary (dynamic) */}
-      <CombinedSummary
-        pipeCount={summary.pipes.count}
-        tobaccoCount={summary.tobacco.count}
-        bottleCount={summary.whiskey.count}
-        totalValue={summary.total.value}
-        enabledModuleCount={summary.hubContributorCount}
-      />
 
       {/* Recent Activity */}
       <RecentActivity onActivitiesLoaded={setRecentActivities} />
