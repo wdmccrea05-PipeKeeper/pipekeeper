@@ -93,14 +93,34 @@ export default function CollectionHub() {
   return (
     <div className="space-y-10">
       {/* Hero Section */}
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <h1 className="text-5xl md:text-6xl font-bold text-[#F5F1E7]" style={{ fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
-            {t('hub.title')}
-          </h1>
-          <p className="text-lg text-[#E0D8C8]/75 max-w-3xl leading-relaxed">
-            {t('hub.description')}
-          </p>
+      <div className="relative">
+        <div 
+          className="absolute inset-0 rounded-3xl pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at 30% 40%, rgba(180, 140, 75, 0.12) 0%, transparent 60%)',
+          }}
+        />
+        <div className="relative space-y-4 py-8">
+          <div className="space-y-3 text-center md:text-left">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-[#F5F1E7]" style={{ fontFamily: "'Georgia', serif", textShadow: '0 3px 10px rgba(0,0,0,0.8)' }}>
+              {t('hub.title')}
+            </h1>
+            <p className="text-lg md:text-xl text-[#E0D8C8]/80 max-w-3xl mx-auto md:mx-0 leading-relaxed">
+              {t('hub.description')}
+            </p>
+            <div className="flex items-center gap-2 text-sm justify-center md:justify-start" style={{ color: 'rgba(180, 140, 75, 0.7)' }}>
+              <div className="h-1 w-1 rounded-full" style={{ background: 'rgba(180, 140, 75, 0.7)' }} />
+              <span>{summary.total.items} {t('hub.items')}</span>
+              <div className="h-1 w-1 rounded-full" style={{ background: 'rgba(180, 140, 75, 0.7)' }} />
+              <span>{summary.hubContributorCount} {t('hub.modules')}</span>
+              {summary.total.value > 0 && (
+                <>
+                  <div className="h-1 w-1 rounded-full" style={{ background: 'rgba(180, 140, 75, 0.7)' }} />
+                  <span>${summary.total.value.toLocaleString()}</span>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
