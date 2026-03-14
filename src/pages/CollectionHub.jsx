@@ -5,6 +5,7 @@ import ModuleCard from '@/components/hub/ModuleCard';
 import CombinedSummary from '@/components/hub/CombinedSummary';
 import CuratorHub from '@/components/hub/CuratorHub';
 import RecentActivity from '@/components/hub/RecentActivity';
+import QuickLaunch from '@/components/hub/QuickLaunch';
 import {
   getCollectionHubSummary,
   getEnabledModules,
@@ -122,6 +123,9 @@ export default function CollectionHub() {
           ))}
         </div>
       </div>
+
+      {/* Quick Launch */}
+      <QuickLaunch />
 
       {/* Combined Summary (dynamic) */}
       <CombinedSummary
