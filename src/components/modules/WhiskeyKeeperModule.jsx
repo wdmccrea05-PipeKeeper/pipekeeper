@@ -1,21 +1,34 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Wine, BookOpen, TrendingUp, BarChart3 } from 'lucide-react';
+import { Wine, BookOpen, TrendingUp, BarChart3, Plus, Search, Camera, Target } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import ModuleNav from './ModuleNav';
 import CatalogPlate from '@/components/home/CatalogPlate';
+import ModuleQuickLaunch from './ModuleQuickLaunch';
+import QuickSearchBottle from '@/components/ai/QuickSearchBottle';
+import BottleIdentifier from '@/components/whiskey/BottleIdentifier';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import BottleForm from '@/components/whiskey/BottleForm';
+
+const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
 export default function WhiskeyKeeperModule() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useCurrentUser();
+  const queryClient = useQueryClient();
+  
+  const [showQuickSearch, setShowQuickSearch] = useState(false);
+  const [showIdentifier, setShowIdentifier] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [identifiedBottleData, setIdentifiedBottleData] = useState(null);
 
   // Module navigation
   const moduleNav = [
@@ -67,6 +80,67 @@ export default function WhiskeyKeeperModule() {
   }, [bottles]);
 
   const recentTasting = useMemo(() => tastingLogs[0] || null, [tastingLogs]);
+
+  const handleBottleAdded = () => {
+    queryClient.invalidateQueries({ queryKey: ['bottles-summary'] });
+    queryClient.invalidateQueries({ queryKey: ['bottles'] });
+  };
+
+  const handleBottleIdentified = (bottleData) => {
+    setIdentifiedBottleData(bottleData);
+    setShowIdentifier(false);
+    setShowQuickAdd(true);
+  };
+
+  const handleQuickAddSubmit = async (data) => {
+    try {
+      await base44.entities.Bottle.create(data);
+      setShowQuickAdd(false);
+      setIdentifiedBottleData(null);
+      handleBottleAdded();
+    } catch (err) {
+      console.error('Quick add error:', err);
+    }
+  };
+
+  const quickLaunchActions = [
+    {
+      key: 'addBottle',
+      Icon: Plus,
+      label: t('quickActions.addBottle'),
+      onClick: () => navigate('/Whiskey?action=add')
+    },
+    {
+      key: 'quickSearch',
+      Icon: Search,
+      label: t('quickActions.quickSearchBottle'),
+      onClick: () => setShowQuickSearch(true)
+    },
+    {
+      key: 'identifyBottle',
+      Icon: Camera,
+      label: t('quickActions.identifyBottle'),
+      onClick: () => setShowIdentifier(true)
+    },
+    {
+      key: 'logTasting',
+      Icon: BookOpen,
+      label: t('quickActions.logTasting'),
+      onClick: () => navigate('/Tastings')
+    },
+    {
+      key: 'curator',
+      iconImage: CURATOR_ICON,
+      label: t('quickActions.collectionCurator'),
+      onClick: () => navigate('/Curator')
+    },
+    {
+      key: 'insights',
+      Icon: TrendingUp,
+      label: t('quickActions.insights'),
+      onClick: () => navigate('/WhiskeyInsights')
+    }
+  ];
 
   return (
     <div className="space-y-8">
@@ -145,6 +219,9 @@ export default function WhiskeyKeeperModule() {
         </div>
       </div>
 
+      {/* Quick Launch */}
+      <ModuleQuickLaunch actions={quickLaunchActions} />
+
       {/* Highlights */}
       {(highestRatedBottle || mostValuableBottle || recentTasting) && (
         <div>
@@ -188,6 +265,44 @@ export default function WhiskeyKeeperModule() {
           </div>
         </div>
       )}
+
+      {/* Quick Search Modal */}
+      <QuickSearchBottle 
+        open={showQuickSearch} 
+        onOpenChange={setShowQuickSearch}
+        onAdd={handleBottleAdded}
+      />
+
+      {/* Bottle Identifier Sheet */}
+      <Sheet open={showIdentifier} onOpenChange={setShowIdentifier}>
+        <SheetContent className="overflow-y-auto w-full sm:max-w-2xl">
+          <SheetHeader>
+            <SheetTitle>{t('bottleIdentifier.aiBottleIdentification')}</SheetTitle>
+          </SheetHeader>
+          <div className="mt-6">
+            <BottleIdentifier onBottleIdentified={handleBottleIdentified} />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Quick Add from Identified Bottle */}
+      <Sheet open={showQuickAdd} onOpenChange={setShowQuickAdd}>
+        <SheetContent className="overflow-y-auto w-full sm:max-w-2xl">
+          <SheetHeader>
+            <SheetTitle>{t('quickActions.quickAddBottle')}</SheetTitle>
+          </SheetHeader>
+          <div className="mt-6">
+            <BottleForm 
+              bottle={identifiedBottleData} 
+              onSubmit={handleQuickAddSubmit}
+              onCancel={() => {
+                setShowQuickAdd(false);
+                setIdentifiedBottleData(null);
+              }}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
