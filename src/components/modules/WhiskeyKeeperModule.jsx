@@ -100,7 +100,13 @@ export default function WhiskeyKeeperModule() {
       handleBottleAdded();
     } catch (err) {
       console.error('Quick add error:', err);
+      throw err;
     }
+  };
+
+  const handleQuickAddCancel = () => {
+    setShowQuickAdd(false);
+    setIdentifiedBottleData(null);
   };
 
   const quickLaunchActions = [
@@ -295,10 +301,7 @@ export default function WhiskeyKeeperModule() {
             <BottleForm 
               bottle={identifiedBottleData} 
               onSubmit={handleQuickAddSubmit}
-              onCancel={() => {
-                setShowQuickAdd(false);
-                setIdentifiedBottleData(null);
-              }}
+              onCancel={handleQuickAddCancel}
             />
           </div>
         </SheetContent>
