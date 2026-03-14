@@ -59,7 +59,25 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    // Clean and convert data types
+    const cleanedData = {
+      ...formData,
+      age: formData.age ? Number(formData.age) : null,
+      abv: formData.abv ? Number(formData.abv) : null,
+      purchase_price: formData.purchase_price ? Number(formData.purchase_price) : null,
+      rating: formData.rating ? Number(formData.rating) : null,
+      bottle_count: formData.bottle_count ? Number(formData.bottle_count) : 1,
+    };
+    
+    // Remove empty strings
+    Object.keys(cleanedData).forEach(key => {
+      if (cleanedData[key] === '') {
+        cleanedData[key] = null;
+      }
+    });
+    
+    onSubmit(cleanedData);
   };
 
   return (
