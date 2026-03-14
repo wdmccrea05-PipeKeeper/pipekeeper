@@ -11,6 +11,7 @@ export default {
     send: "Send",
     sending: "Sending...",
     upload: "Upload",
+    uploading: "Uploading...",
     email: "Email",
     notes: "Notes",
     refresh: "Refresh",
@@ -18,10 +19,12 @@ export default {
     searchPlaceholder: "Search...",
     skip: "Skip",
     to: "to",
+    of: "of",
     unknown: "Unknown",
     tobacco: "Tobacco",
     lastUpdated: "Last updated",
     backToHub: "Back to Hub",
+    takePhoto: "Take Photo",
   },
   
   notifications: {
@@ -287,6 +290,23 @@ export default {
     pipes: "Pipes",
     bottles: "Bottles",
     activeModules: "Active Modules",
+    totalValue: "Total Value",
+  },
+  
+  pipeIdentifier: {
+    uploadPhotosFirst: "Upload photos first",
+    identifyStarted: "Identification started",
+    identifyFailed: "Failed to identify pipe",
+    aiPipeIdentification: "AI Pipe Identification",
+    uploadPhotosToIdentify: "Upload photos to identify a pipe",
+    uploadPhotos: "Upload Photos",
+    photosSelected: "photo(s) selected",
+    optionalHints: "Optional Hints",
+    nameDescription: "Name / Description",
+    brandMaker: "Brand / Maker",
+    shape: "Shape",
+    stampings: "Stampings",
+    identifyPipe: "Identify Pipe",
   },
 
   layout: {
