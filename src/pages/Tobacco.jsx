@@ -93,6 +93,16 @@ export default function TobaccoPage() {
 
   const { user, hasPaid, isTrial } = useCurrentUser();
 
+  // Handle URL action parameter
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    if (action === 'add') {
+      setShowForm(true);
+      window.history.replaceState({}, '', '/Tobacco');
+    }
+  }, []);
+
   const moduleNavItems = [
     { name: t('nav.pipes') || 'Pipes', path: '/Pipes', icon: Wind },
     { name: t('nav.tobacco') || 'Tobacco', path: '/Tobacco', icon: Leaf },
