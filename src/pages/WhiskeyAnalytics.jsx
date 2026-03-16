@@ -38,11 +38,13 @@ export default function WhiskeyAnalyticsPage() {
 
       <div>
         <h1
-          className="text-4xl font-bold tracking-tight mb-2"
+          className="text-3xl sm:text-4xl font-bold tracking-tight mb-2 break-words"
           style={{
             color: '#F5F1E7',
             fontFamily: "'Georgia', serif",
             textShadow: '0 2px 6px rgba(0,0,0,0.7)',
+            wordBreak: "break-word",
+            hyphens: "none"
           }}
         >
           {t('nav.analytics') || 'Analytics'}
