@@ -60,7 +60,6 @@ export default function BottleListItem({ bottle, onClick }) {
 
   return (
     <div
-      onClick={onClick}
       className="flex items-center gap-4 p-4 rounded-lg cursor-pointer group hover:bg-opacity-80 transition-all"
       style={{
         background: 'linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(32, 22, 15, 0.8))',
