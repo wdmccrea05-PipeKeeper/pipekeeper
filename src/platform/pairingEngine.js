@@ -72,13 +72,14 @@ export async function getPairingRecommendations(userEmail, itemId, moduleId, lim
     for (const compatibleModule of compatible) {
       // Handle special cases (tobacco is not an entity, it's part of pipes)
       if (compatibleModule === 'tobacco') {
-        // Get TobaccoBlend recommendations (exclude collection-only)
+        // Get TobaccoBlend recommendations
         const blends = await base44.entities.TobaccoBlend.filter({
           created_by: userEmail,
         });
         
+        // CRITICAL: Exclude collection-only blends (ai_excluded=true)
         const topBlends = (blends || [])
-          .filter(b => b.ai_excluded !== true) // CRITICAL: Exclude collection-only blends
+          .filter(b => b.ai_excluded !== true)
           .sort((a, b) => (b.rating || 0) - (a.rating || 0))
           .slice(0, limit);
         
