@@ -237,7 +237,7 @@ export default function WhiskeyPage() {
       <Sheet open={!!inventoryBottle} onOpenChange={(open) => { if (!open) setInventoryBottle(null); }}>
         <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle>Manage Inventory</SheetTitle>
+            <SheetTitle>{t('whiskey.manageInventory')}</SheetTitle>
           </SheetHeader>
           {inventoryBottle && (
             <InventoryManager bottle={inventoryBottle} onClose={() => setInventoryBottle(null)} />
