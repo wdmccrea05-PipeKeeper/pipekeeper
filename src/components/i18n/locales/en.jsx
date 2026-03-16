@@ -494,4 +494,72 @@ export default {
     photosUsed: "{{used}} / {{max}} photos used",
     noPhotos: "No photos yet",
   },
+
+  modules: {
+    pipekeeper: "PipeKeeper",
+    whiskeykeeper: "WhiskeyKeeper",
+    cigarkeeper: "CigarKeeper",
+    winekeeper: "WineKeeper",
+  },
+
+  subscription: {
+    // Pricing labels
+    moduleMonthly: "{{module}} Pro Monthly",
+    moduleAnnual: "{{module}} Pro Annual",
+    bundle3Monthly: "Any 3 Modules Monthly",
+    bundle3Annual: "Any 3 Modules Annual",
+    bundle4Monthly: "All 4 Modules Monthly",
+    bundle4Annual: "All 4 Modules Annual",
+    foundersOffer: "Founders Bundle",
+
+    // Pricing display
+    priceMonthly: "$2.99/month",
+    priceAnnual: "$29.99/year",
+    price3Monthly: "$7.99/month",
+    price3Annual: "$79.99/year",
+    price4Monthly: "$8.99/month",
+    price4Annual: "$89.99/year",
+    priceFounders: "$49.99 one-time",
+
+    // Descriptions
+    singleModuleDesc: "Unlimited Pro access to {{module}}",
+    bundle3Desc: "Unlimited Pro access to any 3 modules",
+    bundle4Desc: "Unlimited Pro access to all 4 modules",
+    foundersDesc: "PipeKeeper + WhiskeyKeeper lifetime Pro access",
+    
+    // Savings messaging
+    save: "Save {{percent}}%",
+    savingsPerMonth: "Save ${{amount}}/month",
+    savingsPerYear: "Save ${{amount}}/year",
+    unlimitedAccess: "Unlimited Pro features",
+    freeAccess: "Free tier with limits",
+
+    // Upgrade prompts
+    upgradeToBundle3: "Upgrade to the 3-module bundle and save",
+    upgradeToBundle4: "Upgrade to the 4-module bundle for the best value",
+    addingThirdModule: "You're adding a third paid module",
+    addingFourthModule: "You're adding a fourth paid module",
+    
+    // Module-specific messaging
+    pipeekeeperFree: "PipeKeeper Free",
+    pipeekeeperPro: "PipeKeeper Pro",
+    whiskeyekeeperFree: "WhiskeyKeeper Free",
+    whiskeyekeeperPro: "WhiskeyKeeper Pro",
+    cigarekeeperFree: "CigarKeeper Free",
+    cigarekeeperPro: "CigarKeeper Pro",
+    winekeeperFree: "WineKeeper Free",
+    winekeeperPro: "WineKeeper Pro",
+
+    // Limit messaging
+    limitReached: "Free tier limit reached for {{module}}",
+    unlockProFeatures: "Unlock Pro features in {{module}} to remove limits",
+    
+    // Status
+    currentPlan: "Current Plan",
+    selectPlan: "Select Plan",
+    upgrading: "Upgrading...",
+    downgrading: "Downgrading...",
+    managePlan: "Manage Plan",
+    cancelPlan: "Cancel Plan",
+  },
 };
