@@ -7,6 +7,7 @@ import { Plus, BookOpen, TrendingUp, BarChart3, Share2, Search, Package, Grid3X3
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import ModuleNav from '@/components/modules/ModuleNav';
 import BottleCard from '@/components/whiskey/BottleCard';
+import BottleListItem from '@/components/whiskey/BottleListItem';
 import BottleForm from '@/components/whiskey/BottleForm';
 import TastingLogForm from '@/components/whiskey/TastingLog';
 import BottleInsights from '@/components/whiskey/BottleInsights';
