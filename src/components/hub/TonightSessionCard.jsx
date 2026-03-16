@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Moon, RefreshCw, ChevronRight, Brain } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Sparkles, Moon, RefreshCw, ChevronRight, Brain, Save } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 
 const CACHE_KEY = 'ck_tonight_session';
 const CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours
+
+const SESSION_MODES = [
+  { value: 'balanced', label: 'Balanced', description: 'Favorites + underused items' },
+  { value: 'rotation', label: 'Rotation', description: 'Focus on underused pipes' },
+  { value: 'favorites', label: 'Favorites', description: 'Highest-rated items only' },
+  { value: 'exploration', label: 'Exploration', description: 'New combinations' },
+  { value: 'relaxed', label: 'Relaxed', description: 'Smooth, easy options' },
+];
 
 function getCached() {
   try {
@@ -30,6 +40,8 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
   const [recommendation, setRecommendation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [mode, setMode] = useState('balanced');
+  const [savingSession, setSavingSession] = useState(false);
 
   const hasData = pipes.length > 0 || blends.length > 0;
 
