@@ -161,13 +161,13 @@ export default function BottleDetail() {
         {/* Right: Details */}
         <div className="lg:col-span-2 space-y-6">
           {/* Title & Type */}
-          <div>
-            <h1 className="text-4xl font-bold mb-2" style={{ color: '#F5F1E7' }}>
-              {bottle.name}
-            </h1>
-            <p className="text-lg" style={{ color: 'rgba(180,140,75,0.85)' }}>
-              {bottle.distillery || t('whiskey.unknownDistillery')}
-            </p>
+               <div>
+                 <h1 className="text-4xl font-bold mb-2" style={{ color: '#F5F1E7' }}>
+                   {bottle.name}
+                 </h1>
+                 <p className="text-lg" style={{ color: 'rgba(180,140,75,0.85)' }}>
+                   {bottle.distillery || (bottle.bottle_type === 'wine' ? t('wine.unknownWinery') : t('whiskey.unknownDistillery'))}
+                 </p>
             <div className="flex gap-2 mt-3 flex-wrap">
               {bottle.type && <Badge className="text-xs" style={{ background: 'rgba(180,140,75,0.15)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.3)' }}>{bottle.type}</Badge>}
               {bottle.region && <Badge className="text-xs" style={{ background: 'rgba(123,155,91,0.15)', color: '#7B9B5B', border: '1px solid rgba(123,155,91,0.3)' }}>{bottle.region}</Badge>}
