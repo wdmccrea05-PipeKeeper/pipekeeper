@@ -256,13 +256,14 @@ export default function WhiskeyPage() {
           {bottles.map((bottle) => (
             <div key={bottle.id} className="space-y-3">
               <BottleCard bottle={bottle} onClick={() => handleEditBottle(bottle)} />
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button
                   onClick={() => setShowTastingLog(bottle)}
                   variant="outline"
                   size="sm"
                   className="flex-1"
                 >
+                  <BookOpen className="w-3 h-3 mr-1" />
                   {t('whiskey.logTasting') || 'Log Tasting'}
                 </Button>
                 <Button
@@ -275,6 +276,13 @@ export default function WhiskeyPage() {
                   className="flex-1"
                 >
                   {t('common.edit') || 'Edit'}
+                </Button>
+                <Button
+                  onClick={() => setShareBottle(bottle)}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Share2 className="w-3 h-3" />
                 </Button>
                 <Button
                   onClick={() => handleDeleteBottle(bottle.id)}
