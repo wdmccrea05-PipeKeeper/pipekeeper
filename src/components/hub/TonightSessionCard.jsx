@@ -121,9 +121,9 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{
               background: 'linear-gradient(135deg, rgba(180,140,75,0.25), rgba(140,105,50,0.35))',
               border: '1px solid rgba(180,140,75,0.4)',
@@ -131,7 +131,7 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
           >
             <Moon className="w-5 h-5" style={{ color: 'rgba(180,140,75,1)' }} />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <h3 className="text-base font-bold" style={{ color: '#F5F1E7', fontFamily: 'Georgia, serif' }}>
               Tonight's Session
             </h3>
@@ -145,11 +145,33 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
         <button
           onClick={() => generateRecommendation(true)}
           disabled={loading}
-          className="p-2 rounded-lg transition-all hover:bg-white/5 disabled:opacity-40"
+          className="p-2 rounded-lg transition-all hover:bg-white/5 disabled:opacity-40 flex-shrink-0 ml-2"
           title="Regenerate"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} style={{ color: 'rgba(180,140,75,0.7)' }} />
         </button>
+      </div>
+
+      {/* Mode Selector */}
+      <div className="space-y-2">
+        <label className="text-xs uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.6)' }}>
+          Recommendation Mode
+        </label>
+        <Select value={mode} onValueChange={(v) => { setMode(v); setRecommendation(null); }}>
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SESSION_MODES.map(m => (
+              <SelectItem key={m.value} value={m.value}>
+                <div className="flex flex-col">
+                  <span className="font-medium">{m.label}</span>
+                  <span className="text-xs text-muted-foreground">{m.description}</span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Content */}
