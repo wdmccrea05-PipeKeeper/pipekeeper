@@ -466,4 +466,21 @@ export default {
     whiskeyValue: "How are bottle values calculated?",
     whiskeyTastingAnalytics: "What does tasting analytics show?",
   },
+
+  onlineImageSearch: {
+    title: "Search Online Images",
+    subtitle: "Find product images to add to your record",
+    searchOnline: "Search Online",
+    search: "Search",
+    searchQuery: "Search Query",
+    enterQuery: "Enter search query...",
+    tip: "Tip: Include brand, model, or product details for better results",
+    selectImage: "Select an image to edit and use",
+    select: "Select",
+    startSearch: "Enter a search query and click search to find images",
+    searching: "Searching...",
+    noResults: "No images found. Try adjusting your search query.",
+    queryRequired: "Please enter a search query",
+    searchError: "Failed to search for images. Please try again.",
+  },
 };
