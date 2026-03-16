@@ -459,6 +459,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                     console.error('Error reading file:', err);
                   }
                 }}
+                onSearchOnlineClick={() => {
+                  setOnlineSearchType('stamping');
+                  setShowOnlineSearch(true);
+                }}
+                showSearchOption={true}
+                recordType="pipe"
+                recordData={formData}
                 existingPhotos={[]}
                 hideExisting
               />
