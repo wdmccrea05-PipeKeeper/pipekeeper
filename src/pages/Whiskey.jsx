@@ -210,6 +210,19 @@ export default function WhiskeyPage() {
               <List className="w-4 h-4" />
             </Button>
           </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              const newMode = !displayMode;
+              setDisplayMode(newMode);
+              localStorage.setItem('whiskeyDisplayMode', newMode ? 'collector' : 'standard');
+            }}
+            className={displayMode ? 'border-amber-600/60 bg-amber-600/20' : ''}
+            title={t('whiskey.collectorView') || 'Collector View'}
+          >
+            <Package2 className="w-4 h-4" style={{ color: displayMode ? "rgba(180, 140, 75, 1)" : "rgba(224, 216, 200, 0.7)" }} />
+          </Button>
           <Button onClick={() => setShowQuickSearch(true)} variant="outline" className="text-sm">
             <Search className="w-4 h-4 mr-2" />
             {t('quickActions.quickSearchBottle') || 'Quick Add'}
