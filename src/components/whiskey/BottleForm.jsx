@@ -406,28 +406,40 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
                 </button>
               </div>
             )}
-            <label className="flex items-center justify-center w-full p-4 border-2 border-dashed border-[rgba(180,140,75,0.3)] rounded-lg cursor-pointer hover:border-[rgba(180,140,75,0.5)] transition-colors">
-              <div className="flex flex-col items-center gap-2">
-                {uploadingPhoto ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-[#D4A574] border-t-transparent rounded-full animate-spin" />
-                    <span className="text-xs text-[#D8C7A6]">Uploading...</span>
-                  </>
-                ) : (
-                  <>
-                    <ImageIcon className="w-5 h-5 text-[#D4A574]" />
-                    <span className="text-xs text-[#D8C7A6]">Click to upload photo</span>
-                  </>
-                )}
-              </div>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoUpload}
+            <div className="flex gap-2">
+              <label className="flex-1 flex items-center justify-center p-4 border-2 border-dashed border-[rgba(180,140,75,0.3)] rounded-lg cursor-pointer hover:border-[rgba(180,140,75,0.5)] transition-colors">
+                <div className="flex flex-col items-center gap-2">
+                  {uploadingPhoto ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-[#D4A574] border-t-transparent rounded-full animate-spin" />
+                      <span className="text-xs text-[#D8C7A6]">Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="w-5 h-5 text-[#D4A574]" />
+                      <span className="text-xs text-[#D8C7A6]">Upload photo</span>
+                    </>
+                  )}
+                </div>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  disabled={uploadingPhoto}
+                  className="hidden"
+                />
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowOnlineSearch(true)}
                 disabled={uploadingPhoto}
-                className="hidden"
-              />
-            </label>
+                className="px-4"
+              >
+                <Search className="w-4 h-4 mr-2" />
+                {t("onlineImageSearch.searchOnline", "Search Online")}
+              </Button>
+            </div>
           </div>
         </div>
 
