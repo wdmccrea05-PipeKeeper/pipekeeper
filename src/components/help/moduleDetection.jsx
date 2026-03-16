@@ -69,15 +69,16 @@ export function hasModuleAccess(modules, moduleName) {
 
 /**
  * Get recommended tutorials based on active modules
+ * Adapts tutorials to user's specific module access pattern
  */
-export function getRecommendedTutorials(modules) {
+export function getRecommendedTutorials(modules, user) {
   const tutorials = [];
 
   // Hub tutorial always shown first
   tutorials.push({
     module: 'hub',
     id: 'hub-overview',
-    title: 'Hub Overview',
+    titleKey: 'tutorial.hubOverview',
     priority: 1
   });
 
@@ -86,7 +87,7 @@ export function getRecommendedTutorials(modules) {
     tutorials.push({
       module: 'pipekeeper',
       id: 'pipekeeper-getting-started',
-      title: 'PipeKeeper Getting Started',
+      titleKey: 'tutorial.pipekeeperGettingStarted',
       priority: 2
     });
   }
@@ -96,18 +97,29 @@ export function getRecommendedTutorials(modules) {
     tutorials.push({
       module: 'whiskeykeeper',
       id: 'whiskeykeeper-getting-started',
-      title: 'WhiskeyKeeper Getting Started',
+      titleKey: 'tutorial.whiskeykeeperGettingStarted',
       priority: 3
     });
   }
 
-  // Bundle tutorial if both pipekeeper and whiskeykeeper
+  // Show collection pairing tutorial if has both modules
   if (modules.includes('pipekeeper') && modules.includes('whiskeykeeper')) {
     tutorials.push({
-      module: 'bundle',
-      id: 'bundle-overview',
-      title: 'Bundle Overview',
-      priority: 2.5
+      module: 'collection',
+      id: 'cross-module-pairings',
+      titleKey: 'tutorial.crossModulePairings',
+      priority: 2.5,
+      description: 'Discover flavor pairings between your pipes and spirits'
+    });
+  }
+
+  // Show Curator AI tutorial if has paid modules
+  if (modules.some(m => ['pipekeeper', 'whiskeykeeper'].includes(m))) {
+    tutorials.push({
+      module: 'curator',
+      id: 'curator-introduction',
+      titleKey: 'tutorial.curatorIntroduction',
+      priority: 4
     });
   }
 
