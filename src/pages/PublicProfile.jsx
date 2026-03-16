@@ -406,6 +406,12 @@ export default function PublicProfilePage() {
                       <Leaf className="w-4 h-4" />
                       <span>{blends.length} {t("publicProfile.blends")}</span>
                     </div>
+                    {bottles.length > 0 && (
+                      <div className="flex items-center gap-1">
+                        <WhiskeyBottleIcon className="w-4 h-4" style={{ color: '#8B7355' }} />
+                        <span>{bottles.length} {t("publicProfile.bottles")}</span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
                       <span>{logs.length} {t("publicProfile.smokingSessions")}</span>
