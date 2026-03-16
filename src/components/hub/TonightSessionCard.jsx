@@ -212,7 +212,7 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
         <div className="flex items-center gap-3 py-4">
           <Sparkles className="w-5 h-5 animate-pulse" style={{ color: 'rgba(180,140,75,0.6)' }} />
           <span className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            Crafting your perfect session…
+            {t('session.crafting', 'Crafting your perfect session…')}
           </span>
         </div>
       ) : error ? (
