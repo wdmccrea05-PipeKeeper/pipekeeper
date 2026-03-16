@@ -144,6 +144,7 @@ export default function CollectionHub() {
 
   // Map module registry to card data with module-specific stats
   // Compute blend quantity metrics from raw blend data
+  const blendCount = blends.length; // Number of distinct blends
   const totalBlendOz = blends.reduce((sum, b) => {
     const tinOz = Number(b?.tin_total_quantity_oz) || 0;
     const bulkOz = Number(b?.bulk_total_quantity_oz) || 0;
