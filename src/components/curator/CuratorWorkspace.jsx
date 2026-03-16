@@ -19,6 +19,7 @@ import {
   CuratorEvents,
 } from "@/components/utils/curatorEventLogger";
 import { validateOwnershipIntegrity } from "@/components/utils/curatorOwnershipGuard";
+import { useTasteProfile, buildTasteProfileContext } from "@/components/curator/useTasteProfile";
 
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
@@ -259,6 +260,16 @@ export default function CuratorWorkspace({
     staleTime: 30000,
   });
 
+  // Derive adaptive taste profile from all collection signals
+  const tasteProfile = useTasteProfile({
+    pipes,
+    blends,
+    bottles,
+    smokingLogs: logs,
+    tastingLogs,
+    profile: userProfile,
+  });
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, sending]);
@@ -420,6 +431,9 @@ Whiskey flavors: ${(whiskyPrefs?.flavors || []).join(", ") || "any"}
 Drinking style: ${(whiskyPrefs?.drinking_style || []).join(", ") || "any"}
 Cocktail preferences: ${(whiskyPrefs?.cocktails || []).join(", ") || "any"}` : "";
 
+        // Build adaptive taste profile context
+        const tasteProfileContext = buildTasteProfileContext(tasteProfile);
+
         let contextMessage = `USER COLLECTION:
 
 PIPES (${pipes.length} total):
@@ -452,6 +466,10 @@ Title: ${activeContext.originalTitle || "N/A"}
 Insight: ${activeContext.originalInsight || "N/A"}
 Module: ${activeContext.module || "general"}
 Category: ${activeContext.category || "general"}`;
+        }
+
+        if (tasteProfileContext) {
+          contextMessage += `\n\n${tasteProfileContext}`;
         }
 
         contextMessage += `
@@ -555,7 +573,7 @@ ${englishText}`;
         setSending(false);
       }
     },
-    [input, sending, ensureThread, t, pipes, blends, bottles, tastingLogs, userProfile, messages.length, sessionId]
+    [input, sending, ensureThread, t, pipes, blends, bottles, tastingLogs, userProfile, tasteProfile, messages.length, sessionId]
   );
 
   useEffect(() => {
