@@ -73,14 +73,16 @@ Return a JSON object with a "bottles" array.`,
       region: bottle.region,
       country: bottle.country,
       type: bottle.type,
-      age_years: bottle.age_years,
-      abv: bottle.abv,
-      bottle_size_ml: bottle.bottle_size_ml || 750,
-      purchase_price: bottle.typical_price_usd,
+      age: bottle.age_years || null,
+      abv: bottle.abv || null,
+      bottle_size: '750ml',
+      purchase_price: bottle.typical_price_usd || null,
+      average_market_value: bottle.typical_price_usd || null,
     };
     const created = await base44.entities.Bottle.create(bottleData);
     setAddingId(null);
-    onBottleAdded?.(created);
+    // Pass full created record so caller can open inventory manager
+    onBottleAdded?.({ ...bottleData, id: created?.id });
     onClose();
     setQuery("");
     setResults([]);
