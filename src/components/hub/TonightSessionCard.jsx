@@ -120,8 +120,23 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
     }
   }
 
+  // Regenerate when mode changes (not cached)
   useEffect(() => {
-    if (hasData) generateRecommendation(false);
+    if (hasData && recommendation) {
+      generateRecommendation(true);
+    }
+  }, [mode]);
+
+  // Initial generation on mount or data change
+  useEffect(() => {
+    if (hasData) {
+      const cached = getCached();
+      if (cached && !recommendation) {
+        setRecommendation(cached);
+      } else {
+        generateRecommendation(false);
+      }
+    }
   }, [pipes.length, blends.length]);
 
   if (!hasData) return null;
