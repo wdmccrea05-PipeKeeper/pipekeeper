@@ -5,7 +5,7 @@
  * This file is maintained for backward compatibility only.
  */
 
-import { aggregateCollection } from '../../aggregation/collectionAggregation';
+import { aggregateCollection } from '../aggregation/collectionAggregation';
 import { getHubContributorModules } from '../modules/keeperModules';
 
 /**
