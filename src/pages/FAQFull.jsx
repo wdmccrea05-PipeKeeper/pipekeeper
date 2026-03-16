@@ -175,10 +175,10 @@ export default function FAQFull() {
           <Q id="tiers" q={t("faqExtended.whatAreTiers")}>
             <ul className="list-disc list-inside space-y-2">
               <li><strong>{t("subscription.free")}:</strong> {t("faqExtended.freeTierDesc")}</li>
-              <li><strong>{t("subscription.pro")}:</strong> {t("faqExtended.proTierDesc", { date: "February 1, 2026" })}</li>
+              <li><strong>{t("subscription.pro")}:</strong> {t("faqExtended.proTierDesc", { date: "2026" })}</li>
             </ul>
             <p className="mt-3 text-sm text-[#D8C7A6]/75">
-              {t("faqExtended.legacySubscriberNote", { date: "February 1, 2026", defaultValue: "Note: Early subscribers (before Feb 1, 2026) have access to all Pro features." })}
+              {t("faqExtended.legacySubscriberNote", { date: "2026", defaultValue: "Founding subscribers have grandfathered access to all Pro features." })}
             </p>
           </Q>
         </Section>

@@ -6,7 +6,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 function AppleFAQ() {
   const { t } = useTranslation();
-  const proLaunchDateLabel = "February 1, 2026";
+  const proLaunchDateLabel = "2026";
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-4">
@@ -72,7 +72,7 @@ function AppleFAQ() {
             </li>
           </ul>
           <p className="text-[#e8d5b7]/70">
-            {t("faqExtended.legacySubscriberNote", { date: proLaunchDateLabel, defaultValue: "Early subscribers (before Feb 1, 2026) have grandfathered access to all Pro features." })}
+            {t("faqExtended.legacySubscriberNote", { date: proLaunchDateLabel, defaultValue: "Founding subscribers have grandfathered access to all Pro features." })}
           </p>
         </CardContent>
       </Card>

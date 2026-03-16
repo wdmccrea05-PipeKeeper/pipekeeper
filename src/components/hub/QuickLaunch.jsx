@@ -10,14 +10,14 @@ export default function QuickLaunch() {
   const pipeActions = [
     { label: t('pipekeeper.addPipe') || 'Add Pipe', icon: Wind, path: '/Pipes', accent: '#D4A574' },
     { label: t('pipekeeper.addBlend') || 'Add Blend', icon: Leaf, path: '/Tobacco', accent: '#5A7C5A' },
-    { label: t('pipekeeper.logSession') || 'Log Session', icon: BookOpen, path: '/Home', accent: '#C87941' },
+    { label: t('pipekeeper.logSession') || 'Log Session', icon: BookOpen, path: '/Insights', accent: '#C87941' },
     { label: t('nav.insights') || 'Insights', icon: TrendingUp, path: '/Insights', accent: '#8B5CF6' },
   ];
 
   const whiskeyActions = [
-    { label: t('whiskeykeeper.addBottle') || 'Add Bottle', icon: Wine, path: '/Whiskey', accent: '#D4A574' },
-    { label: t('whiskeykeeper.logTasting') || 'Log Tasting', icon: BookOpen, path: '/Whiskey', accent: '#C87941' },
-    { label: t('nav.bottles') || 'Bottles', icon: Wine, path: '/Whiskey', accent: '#B48C4B' },
+    { label: t('whiskeykeeper.addBottle') || 'Add Bottle', icon: GlassWater, path: '/Whiskey', accent: '#D4A574' },
+    { label: t('whiskeykeeper.logTasting') || 'Log Tasting', icon: FlaskConical, path: '/Whiskey', accent: '#C87941' },
+    { label: t('nav.bottles') || 'Bottles', icon: GlassWater, path: '/Whiskey', accent: '#B48C4B' },
     { label: t('nav.insights') || 'Insights', icon: TrendingUp, path: '/WhiskeyInsights', accent: '#8B5CF6' },
   ];
 
