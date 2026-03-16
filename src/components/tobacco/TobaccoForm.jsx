@@ -253,6 +253,13 @@ Return complete and accurate information based on the blend name or description 
     setCropperType(type);
   };
 
+  const handleOnlineImageSelected = (imageUrl) => {
+    setCropperImage(imageUrl);
+    setCropperType(onlineSearchType || 'photo');
+    setShowOnlineSearch(false);
+    setOnlineSearchType(null);
+  };
+
   const addComponent = () => {
     if (newComponent.trim()) {
       handleChange('tobacco_components', [...(formData.tobacco_components || []), newComponent.trim()]);
