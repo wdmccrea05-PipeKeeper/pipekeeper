@@ -35,7 +35,7 @@ export const KEEPER_MODULES = [
   {
     type: 'wine',
     titleKey: 'hub.winekeeper',
-    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/1ef6ff766_WineKNB.png',
+    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/ef580a0c9_WineKNB.png',
     route: null,
     enabled: false,
     description: 'Coming soon: Manage your wine cellar and bottle inventory.',
