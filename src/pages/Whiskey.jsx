@@ -166,6 +166,32 @@ export default function WhiskeyPage() {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <WhiskeyExporter />
+          <div className="flex gap-2 border rounded-lg" style={{ borderColor: 'rgba(180,140,75,0.2)', background: 'rgba(180,140,75,0.05)' }} role="group">
+            <Button
+              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+              size="icon"
+              onClick={() => {
+                setViewMode('grid');
+                localStorage.setItem('whiskeyViewMode', 'grid');
+              }}
+              className="rounded-r-none"
+              title={t('common.gridView')}
+            >
+              <Grid3X3 className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+              size="icon"
+              onClick={() => {
+                setViewMode('list');
+                localStorage.setItem('whiskeyViewMode', 'list');
+              }}
+              className="rounded-l-none"
+              title={t('common.listView')}
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
           <Button onClick={() => setShowQuickSearch(true)} variant="outline" className="text-sm">
             <Search className="w-4 h-4 mr-2" />
             {t('quickActions.quickSearchBottle') || 'Quick Add'}
