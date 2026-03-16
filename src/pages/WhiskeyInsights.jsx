@@ -364,7 +364,7 @@ export default function WhiskeyInsightsPage() {
               border: '1px solid rgba(180, 140, 75, 0.15)',
             }}>
               <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-                {t('insights.tastingActivity') || 'Tasting Activity'}
+                {t('insights.tastingActivity', 'Tasting Activity')}
               </h3>
               {tastingLogs.length > 0 ? (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
