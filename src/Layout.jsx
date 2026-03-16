@@ -678,7 +678,7 @@ export default function Layout({ children, currentPageName }) {
               <div className="flex items-center gap-2">
                 <BackButton currentPageName={currentPageName} />
                 <Link to={createPageUrl("CollectionHub")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                  <img src={COLLECTIONKEEPER_LOGO} alt={t("layout.appTitle")} className="w-7 h-7 object-contain" />
+                  <img src={COLLECTIONKEEPER_LOGO} alt={t("layout.appTitle")} className="w-7 h-7 object-contain" style={{ mixBlendMode: 'screen' }} />
                   <span className="font-bold text-lg text-[#E0D8C8]">{t("layout.appTitle")}</span>
                 </Link>
               </div>
