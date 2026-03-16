@@ -105,6 +105,37 @@ export default function Curator() {
     staleTime: 10000,
   });
 
+  const { data: bottles = [] } = useQuery({
+    queryKey: ["bottles", user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.Bottle.filter({ created_by: user?.email });
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
+  const { data: tastingLogs = [] } = useQuery({
+    queryKey: ["tasting-logs", user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.TastingLog.filter({ created_by: user?.email }, '-tasting_date', 50);
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
+  const { data: userProfile = null } = useQuery({
+    queryKey: ["user-profile-curator", user?.email],
+    queryFn: async () => {
+      if (!user?.email) return null;
+      const results = await base44.entities.UserProfile.filter({ user_email: user.email });
+      return results?.[0] || null;
+    },
+    enabled: !!user?.email,
+    staleTime: 60000,
+  });
+
   const handlePromptConsumed = () => {
     clearRouteState();
     setLaunchContext({
@@ -160,6 +191,9 @@ export default function Curator() {
           <CuratorWorkspace
             pipes={pipes}
             blends={blends}
+            bottles={bottles}
+            tastingLogs={tastingLogs}
+            userProfile={userProfile}
             launchContext={launchContext}
             preFilledPrompt={launchContext?.initialPrompt || ""}
             routedContext={launchContext?.recommendationContext || null}
