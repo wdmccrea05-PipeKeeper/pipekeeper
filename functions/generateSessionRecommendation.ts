@@ -378,8 +378,20 @@ Deno.serve(async (req) => {
     }
 
     const flavorTheme = generateFlavorTheme(selectedPipe, selectedBlend, selectedBottleForPairing);
-    const rationale = generateRationale(selectedPipe, selectedBlend, selectedBottleForPairing);
+    const rationale = generateRationale(selectedPipe, selectedBlend, selectedBottleForPairing, mode);
     const learningContext = generateLearningContext(tasteProfile);
+
+    // Generate mode bias explanation (for transparency)
+    function generateModeBias(mode) {
+      const biasMap = {
+        balanced: 'balanced favorites + underuse + strong ratings',
+        rotation: 'rotation + low recency + underused items',
+        favorites: 'favorites + high ratings + familiar pairings',
+        exploration: 'exploration + untested combos + diversity',
+        relaxed: 'relaxed + smooth profiles + lower intensity',
+      };
+      return biasMap[mode] || 'personalized';
+    }
 
     const recommendation = {
       pipe: selectedPipe.name,
@@ -392,10 +404,17 @@ Deno.serve(async (req) => {
       rationale,
       learning_context: learningContext,
       mode,
+      mode_bias: generateModeBias(mode), // For transparency
       scores: {
         pipe: selectedPipe.score,
         blend: selectedBlend.score,
         whiskey: selectedBottleForPairing?.score || 0,
+      },
+      // Internal debug info (not sent to frontend)
+      _debug: {
+        pipe_factors: selectedPipe._debugFactors,
+        blend_factors: selectedBlend._debugFactors,
+        whiskey_factors: selectedBottleForPairing?._debugFactors,
       },
     };
 
