@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import {
   BarChart,
