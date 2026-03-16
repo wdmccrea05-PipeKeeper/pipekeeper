@@ -185,7 +185,7 @@ export default function CollectionStoryCard() {
            className="flex-1"
          >
            <Share2 className="w-3.5 h-3.5 mr-1.5" />
-           {t('story.share', 'Share Story')}
+           Share Story
          </Button>
          <Button
            onClick={loadStory}
@@ -196,7 +196,7 @@ export default function CollectionStoryCard() {
            }}
          >
            <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-           {t('story.regenerate', 'Regenerate')}
+           Regenerate
            <ChevronRight className="w-3 h-3 ml-1" />
          </Button>
        </div>
