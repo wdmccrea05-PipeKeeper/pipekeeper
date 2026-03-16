@@ -207,25 +207,20 @@ export default function Layout({ children, currentPageName }) {
     }
   }, []);
 
-  // Handle Android back button
+  // Handle Android back button: only intercept to close mobile menu.
+  // Do NOT call e.preventDefault() unconditionally — that blocks native
+  // Android gesture navigation and breaks browser history.
   useEffect(() => {
-    const handlePopState = (e) => {
-      // Prevent default back behavior
-      e.preventDefault();
-
-      // Close mobile menu if open
+    const handlePopState = () => {
+      // Close mobile menu if open — don't block the back navigation itself
       if (mobileOpen) {
         setMobileOpen(false);
-        return;
       }
-
-      // Use React Router's navigate with -1 to go back in history
-      navigate(-1);
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [mobileOpen, navigate]);
+  }, [mobileOpen]);
 
   const navItems = useMemo(() => [
     { name: t("nav.hub"), page: "CollectionHub", icon: Home, isIconComponent: true },
