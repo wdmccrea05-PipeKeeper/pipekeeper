@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Sparkles, Moon, RefreshCw, ChevronRight, Brain, Save } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const CACHE_KEY = 'ck_tonight_session';
 const CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours
