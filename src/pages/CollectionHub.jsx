@@ -257,7 +257,7 @@ export default function CollectionHub() {
               {t('hub.blends')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#7B9B5B' }}>
-              {summary.tobacco.count}
+              {blendCount}
             </p>
             {totalBlendOz > 0 && (
               <p className="text-xs" style={{ color: 'rgba(123,155,91,0.7)' }}>{totalBlendOz.toFixed(0)}oz</p>
@@ -265,10 +265,18 @@ export default function CollectionHub() {
           </div>
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('hub.bottles')}
+              {t('hub.whiskey')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
-              {summary.whiskey.count}
+              {bottles.filter(b => b.bottle_type === 'whiskey').length}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
+              {t('hub.wine')}
+            </p>
+            <p className="text-2xl font-bold" style={{ color: '#A35C6C' }}>
+              {bottles.filter(b => b.bottle_type === 'wine').length}
             </p>
           </div>
           <div className="space-y-2">
