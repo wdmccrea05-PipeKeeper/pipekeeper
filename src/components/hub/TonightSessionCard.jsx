@@ -255,15 +255,22 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
             </p>
           )}
 
-          {/* Learning indicator */}
-          {recommendation.learning_context && (
-            <div className="flex items-center gap-1.5 pt-1">
-              <Brain className="w-3 h-3 flex-shrink-0" style={{ color: 'rgba(180,140,75,0.5)' }} />
-              <span className="text-xs" style={{ color: 'rgba(180,140,75,0.5)' }}>
-                {recommendation.learning_context}
-              </span>
-            </div>
-          )}
+          {/* Learning indicator + Mode bias */}
+          <div className="space-y-1">
+            {recommendation.learning_context && (
+              <div className="flex items-center gap-1.5">
+                <Brain className="w-3 h-3 flex-shrink-0" style={{ color: 'rgba(180,140,75,0.5)' }} />
+                <span className="text-xs" style={{ color: 'rgba(180,140,75,0.5)' }}>
+                  {recommendation.learning_context}
+                </span>
+              </div>
+            )}
+            {recommendation.mode_bias && (
+              <div className="text-xs" style={{ color: 'rgba(180,140,75,0.4)' }}>
+                Mode bias: {recommendation.mode_bias}
+              </div>
+            )}
+          </div>
 
           {/* CTA Buttons */}
           <div className="flex gap-2 pt-2">
