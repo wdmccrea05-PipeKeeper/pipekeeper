@@ -97,33 +97,33 @@ export default function CollectionStoryCard() {
             {story.metrics.pipes}
           </div>
           <div className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            Pipes
+            {t('common.pipes', 'Pipes')}
           </div>
-        </div>
-        <div className="text-center p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.2)' }}>
+          </div>
+          <div className="text-center p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.2)' }}>
           <div className="text-lg font-bold" style={{ color: '#D4AF37' }}>
             {story.metrics.blends}
           </div>
           <div className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            Blends
+            {t('common.blends', 'Blends')}
           </div>
-        </div>
-        <div className="text-center p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.2)' }}>
+          </div>
+          <div className="text-center p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.2)' }}>
           <div className="text-lg font-bold" style={{ color: '#D4AF37' }}>
             {story.metrics.bottles}
           </div>
           <div className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            Bottles
+            {t('common.bottles', 'Bottles')}
           </div>
-        </div>
-        <div className="text-center p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.2)' }}>
+          </div>
+          <div className="text-center p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.2)' }}>
           <div className="text-lg font-bold" style={{ color: '#D4AF37' }}>
             ${(story.metrics.totalValue / 1000).toFixed(1)}k
           </div>
           <div className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            Value
+            {t('common.value', 'Value')}
           </div>
-        </div>
+          </div>
       </div>
 
       {/* Narrative */}
