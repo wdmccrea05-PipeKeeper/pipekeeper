@@ -1,0 +1,272 @@
+/**
+ * UNIFIED COLLECTION AGGREGATION LAYER
+ * 
+ * Single source of truth for all collection statistics across Hub, Stories, Insights, Reports, and Share Cards.
+ * 
+ * This eliminates inconsistencies by:
+ * - Using the same value calculation priority for all modules
+ * - Computing statistics once and reusing results
+ * - Respecting module-aware filtering
+ */
+
+import { base44 } from '@/api/base44Client';
+
+/**
+ * Get the best available value for a bottle
+ * Priority: collector_value > aftermarket_price > retail_price > purchase_price > 0
+ */
+function getBottleValue(bottle) {
+  return (
+    Number(bottle.collector_value) ||
+    Number(bottle.aftermarket_price) ||
+    Number(bottle.retail_price) ||
+    Number(bottle.purchase_price) ||
+    0
+  );
+}
+
+/**
+ * Get the best available value for a pipe
+ * Priority: estimated_value > purchase_price > 0
+ */
+function getPipeValue(pipe) {
+  return (
+    Number(pipe.estimated_value) ||
+    Number(pipe.purchase_price) ||
+    0
+  );
+}
+
+/**
+ * Get the best available value for a tobacco blend
+ * Priority: manual_market_value > ai_estimated_value > 0
+ */
+function getTobaccoValue(blend) {
+  return (
+    Number(blend.manual_market_value) ||
+    Number(blend.ai_estimated_value) ||
+    0
+  );
+}
+
+/**
+ * Aggregate complete collection statistics
+ * Returns unified data structure used by all consumers
+ * @param {string} userEmail - User's email for data scoping
+ * @returns {Promise<Object>} Complete aggregated collection data
+ */
+export async function aggregateCollection(userEmail) {
+  if (!userEmail) {
+    return getEmptyAggregation();
+  }
+
+  try {
+    // Fetch all data in parallel
+    const [pipes, tobaccos, bottles, smokingLogs, tastingLogs, inventoryUnits] = await Promise.all([
+      base44.entities.Pipe.filter({ created_by: userEmail }).catch(() => []),
+      base44.entities.TobaccoBlend.filter({ created_by: userEmail }).catch(() => []),
+      base44.entities.Bottle.filter({ created_by: userEmail }).catch(() => []),
+      base44.entities.SmokingLog.filter({ created_by: userEmail }, '-date', 1000).catch(() => []),
+      base44.entities.TastingLog.filter({ created_by: userEmail }, '-tasting_date', 1000).catch(() => []),
+      base44.entities.WhiskeyInventoryUnit.filter({ created_by: userEmail }).catch(() => []),
+    ]);
+
+    const pipesList = Array.isArray(pipes) ? pipes : [];
+    const tobaccosList = Array.isArray(tobaccos) ? tobaccos : [];
+    const bottlesList = Array.isArray(bottles) ? bottles : [];
+    const smokingLogsList = Array.isArray(smokingLogs) ? smokingLogs : [];
+    const tastingLogsList = Array.isArray(tastingLogs) ? tastingLogs : [];
+    const inventoryUnitsList = Array.isArray(inventoryUnits) ? inventoryUnits : [];
+
+    // === PIPES MODULE ===
+    const pipesCount = pipesList.length;
+    const pipesValue = pipesList.reduce((sum, p) => sum + getPipeValue(p), 0);
+    const pipeStats = {
+      count: pipesCount,
+      value: pipesValue,
+      favorite: pipesList.filter(p => p.is_favorite).length,
+      rated: pipesList.filter(p => p.rating).length,
+      avgRating: pipesList.filter(p => p.rating).length > 0
+        ? (pipesList.reduce((sum, p) => sum + (p.rating || 0), 0) / pipesList.filter(p => p.rating).length).toFixed(2)
+        : 0,
+    };
+
+    // === TOBACCO MODULE ===
+    const tobaccosCount = tobaccosList.length;
+    const tobaccosValue = tobaccosList.reduce((sum, t) => sum + getTobaccoValue(t), 0);
+    const tobaccoStats = {
+      count: tobaccosCount,
+      value: tobaccosValue,
+      favorite: tobaccosList.filter(t => t.is_favorite).length,
+      rated: tobaccosList.filter(t => t.rating).length,
+      avgRating: tobaccosList.filter(t => t.rating).length > 0
+        ? (tobaccosList.reduce((sum, t) => sum + (t.rating || 0), 0) / tobaccosList.filter(t => t.rating).length).toFixed(2)
+        : 0,
+      open: tobaccosList.reduce((sum, t) => sum + (Number(t.tin_tins_open) || 0) + (Number(t.bulk_open) || 0) + (Number(t.pouch_pouches_open) || 0), 0),
+      cellared: tobaccosList.reduce((sum, t) => sum + (Number(t.tin_tins_cellared) || 0) + (Number(t.bulk_cellared) || 0) + (Number(t.pouch_pouches_cellared) || 0), 0),
+    };
+
+    // === WHISKEY MODULE ===
+    const bottlesCount = bottlesList.length;
+    const bottlesValue = bottlesList.reduce((sum, b) => sum + getBottleValue(b), 0);
+    const openBottles = inventoryUnitsList.filter(u => u.status === 'open').length;
+    const sealedBottles = inventoryUnitsList.filter(u => u.status === 'reserve' || u.status === 'drinking').length;
+    const whiskeyStats = {
+      count: bottlesCount,
+      value: bottlesValue,
+      open: openBottles,
+      sealed: sealedBottles,
+      favorite: bottlesList.filter(b => b.favorite).length,
+      rated: bottlesList.filter(b => b.rating).length,
+      avgRating: bottlesList.filter(b => b.rating).length > 0
+        ? (bottlesList.reduce((sum, b) => sum + (b.rating || 0), 0) / bottlesList.filter(b => b.rating).length).toFixed(2)
+        : 0,
+      tastings: tastingLogsList.length,
+    };
+
+    // === USAGE PATTERNS ===
+    const pipeUsageMap = {};
+    smokingLogsList.forEach(log => {
+      if (log.pipe_id) {
+        pipeUsageMap[log.pipe_id] = (pipeUsageMap[log.pipe_id] || 0) + 1;
+      }
+    });
+
+    const bottleUsageMap = {};
+    tastingLogsList.forEach(log => {
+      if (log.bottle_name) {
+        bottleUsageMap[log.bottle_name] = (bottleUsageMap[log.bottle_name] || 0) + 1;
+      }
+    });
+
+    // === HIGHLIGHTS ===
+    const mostUsedPipe = pipesList.length > 0
+      ? pipesList.reduce((max, p) => {
+          const pUses = pipeUsageMap[p.id] || 0;
+          const maxUses = pipeUsageMap[max.id] || 0;
+          return pUses > maxUses ? p : max;
+        })
+      : null;
+
+    const mostTastedBottle = bottlesList.length > 0
+      ? bottlesList.reduce((max, b) => {
+          const bUses = bottleUsageMap[b.name] || 0;
+          const maxUses = bottleUsageMap[max.name] || 0;
+          return bUses > maxUses ? b : max;
+        })
+      : null;
+
+    const mostValuedBottle = bottlesList.length > 0
+      ? bottlesList.reduce((max, b) => {
+          const bVal = getBottleValue(b);
+          const maxVal = getBottleValue(max);
+          return bVal > maxVal ? b : max;
+        })
+      : null;
+
+    const oldestBottle = bottlesList.length > 0
+      ? bottlesList.reduce((oldest, b) => {
+          if (!oldest.purchase_date) return b;
+          if (!b.purchase_date) return oldest;
+          return new Date(b.purchase_date) < new Date(oldest.purchase_date) ? b : oldest;
+        })
+      : null;
+
+    const oldestPipe = pipesList.length > 0
+      ? pipesList.reduce((oldest, p) => {
+          if (!oldest.purchase_date) return p;
+          if (!p.purchase_date) return oldest;
+          return new Date(p.purchase_date) < new Date(oldest.purchase_date) ? p : oldest;
+        })
+      : null;
+
+    const highestRatedBottle = bottlesList.filter(b => b.rating).length > 0
+      ? bottlesList.reduce((max, b) => {
+          const bRating = b.rating || 0;
+          const maxRating = max.rating || 0;
+          return bRating > maxRating ? b : max;
+        })
+      : null;
+
+    // === TOTALS ===
+    const totalItems = pipesCount + tobaccosCount + bottlesCount;
+    const totalValue = pipesValue + tobaccosValue + bottlesValue;
+
+    return {
+      // Per-module statistics
+      pipes: pipeStats,
+      tobacco: tobaccoStats,
+      whiskey: whiskeyStats,
+
+      // Combined totals
+      total: {
+        items: totalItems,
+        value: totalValue,
+        sessions: smokingLogsList.length,
+        tastings: tastingLogsList.length,
+      },
+
+      // Highlights
+      highlights: {
+        mostUsedPipe: mostUsedPipe ? {
+          id: mostUsedPipe.id,
+          name: mostUsedPipe.name,
+          uses: pipeUsageMap[mostUsedPipe.id] || 0,
+          value: getPipeValue(mostUsedPipe),
+        } : null,
+        mostTastedBottle: mostTastedBottle ? {
+          id: mostTastedBottle.id,
+          name: mostTastedBottle.name,
+          tastings: bottleUsageMap[mostTastedBottle.name] || 0,
+        } : null,
+        mostValuedBottle: mostValuedBottle ? {
+          id: mostValuedBottle.id,
+          name: mostValuedBottle.name,
+          value: getBottleValue(mostValuedBottle),
+        } : null,
+        oldestBottle,
+        oldestPipe,
+        highestRatedBottle,
+      },
+
+      // Raw data for further processing (stories, reports, etc.)
+      raw: {
+        pipes: pipesList,
+        tobaccos: tobaccosList,
+        bottles: bottlesList,
+        smokingLogs: smokingLogsList,
+        tastingLogs: tastingLogsList,
+      },
+    };
+  } catch (error) {
+    console.error('[collectionAggregation] Error:', error?.message);
+    return getEmptyAggregation();
+  }
+}
+
+/**
+ * Get empty aggregation structure
+ */
+export function getEmptyAggregation() {
+  return {
+    pipes: { count: 0, value: 0, favorite: 0, rated: 0, avgRating: 0 },
+    tobacco: { count: 0, value: 0, favorite: 0, rated: 0, avgRating: 0, open: 0, cellared: 0 },
+    whiskey: { count: 0, value: 0, open: 0, sealed: 0, favorite: 0, rated: 0, avgRating: 0, tastings: 0 },
+    total: { items: 0, value: 0, sessions: 0, tastings: 0 },
+    highlights: {
+      mostUsedPipe: null,
+      mostTastedBottle: null,
+      mostValuedBottle: null,
+      oldestBottle: null,
+      oldestPipe: null,
+      highestRatedBottle: null,
+    },
+    raw: {
+      pipes: [],
+      tobaccos: [],
+      bottles: [],
+      smokingLogs: [],
+      tastingLogs: [],
+    },
+  };
+}
