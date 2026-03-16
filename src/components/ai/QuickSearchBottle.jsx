@@ -98,7 +98,7 @@ Return a JSON object with a "bottles" array.`,
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg flex flex-col" style={{
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-lg flex flex-col" style={{
         background: "linear-gradient(145deg, rgba(40,28,20,0.98), rgba(30,20,14,0.99))",
         border: "1px solid rgba(140,105,65,0.4)",
         maxHeight: "85vh",
@@ -161,11 +161,11 @@ Return a JSON object with a "bottles" array.`,
                     border: "1px solid rgba(140,105,65,0.25)"
                   }}
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-[#F5F1E7] truncate">{bottle.name}</p>
+                      <p className="font-semibold text-[#F5F1E7] text-sm leading-snug">{bottle.name}</p>
                       {bottle.distillery && (
-                        <p className="text-sm text-[#E0D8C8]/70">{bottle.distillery}</p>
+                        <p className="text-xs text-[#E0D8C8]/70 mt-0.5">{bottle.distillery}</p>
                       )}
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {bottle.type && <Badge className="text-xs bg-amber-900/50 text-amber-200 border-amber-700/40">{bottle.type}</Badge>}
@@ -182,12 +182,12 @@ Return a JSON object with a "bottles" array.`,
                       size="sm"
                       onClick={() => handleAdd(bottle)}
                       disabled={addingId === bottle.name}
-                      className="shrink-0 mt-1"
+                      className="w-full"
                     >
                       {addingId === bottle.name ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> Adding...</>
                       ) : (
-                        <Plus className="w-3.5 h-3.5" />
+                        <><Plus className="w-3.5 h-3.5 mr-1" /> Add to Collection</>
                       )}
                     </Button>
                   </div>
