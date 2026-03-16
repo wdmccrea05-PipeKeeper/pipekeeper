@@ -18,6 +18,7 @@ import CollectionHub from '@/pages/CollectionHub';
 import PipeKeeper from '@/pages/PipeKeeper';
 import WhiskeyKeeper from '@/pages/WhiskeyKeeper';
 import WhiskeyAIUpdates from '@/pages/WhiskeyAIUpdates';
+import BottleDetail from '@/pages/BottleDetail';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
