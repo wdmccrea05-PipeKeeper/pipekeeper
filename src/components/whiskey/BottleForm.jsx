@@ -50,17 +50,39 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
     if (!file) return;
 
     try {
-      setUploadingPhoto(true);
-      const uploadedFile = await base44.integrations.Core.UploadFile({ file });
-      if (uploadedFile?.file_url) {
-        setFormData((prev) => ({ ...prev, photo: uploadedFile.file_url }));
-        setPhotoPreview(uploadedFile.file_url);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCropperImage(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error reading file:', error);
+    }
+  };
+
+  const handleCroppedImage = async (croppedDataUrl) => {
+    setUploadingPhoto(true);
+    try {
+      const response = await fetch(croppedDataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'cropped-image.jpg', { type: 'image/jpeg' });
+      
+      const result = await base44.integrations.Core.UploadFile({ file });
+      if (result?.file_url) {
+        setFormData((prev) => ({ ...prev, photo: result.file_url }));
+        setPhotoPreview(result.file_url);
       }
     } catch (error) {
-      console.error('Photo upload failed:', error);
+      console.error('Upload error:', error);
     } finally {
+      setCropperImage(null);
       setUploadingPhoto(false);
     }
+  };
+
+  const handleOnlineImageSelected = (imageUrl) => {
+    setCropperImage(imageUrl);
+    setShowOnlineSearch(false);
   };
 
   const handleSubmit = (e) => {
