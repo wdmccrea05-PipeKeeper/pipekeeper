@@ -19,6 +19,7 @@ import PipeKeeper from '@/pages/PipeKeeper';
 import WhiskeyKeeper from '@/pages/WhiskeyKeeper';
 import WhiskeyAIUpdates from '@/pages/WhiskeyAIUpdates';
 import BottleDetail from '@/pages/BottleDetail';
+import HelpCenter from '@/pages/HelpCenter';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -93,6 +94,11 @@ const AuthenticatedApp = () => {
       <Route path="/BottleDetail" element={
         <LayoutWrapper currentPageName="BottleDetail">
           <BottleDetail />
+        </LayoutWrapper>
+      } />
+      <Route path="/HelpCenter" element={
+        <LayoutWrapper currentPageName="HelpCenter">
+          <HelpCenter />
         </LayoutWrapper>
       } />
       <Route path="/" element={
