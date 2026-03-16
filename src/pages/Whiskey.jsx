@@ -12,6 +12,7 @@ import TastingLogForm from '@/components/whiskey/TastingLog';
 import BottleInsights from '@/components/whiskey/BottleInsights';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import WhiskeyExporter from '@/components/export/WhiskeyExporter';
 
 export default function WhiskeyPage() {
   const { t } = useTranslation();

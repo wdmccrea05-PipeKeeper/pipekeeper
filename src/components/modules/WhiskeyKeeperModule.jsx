@@ -243,7 +243,7 @@ export default function WhiskeyKeeperModule() {
                 heroImage={highestRatedBottle.photo}
                 bgImage={highestRatedBottle.photo}
                 accent="#D4AF37"
-                onClick={() => navigate('/Whiskey')}
+                onClick={() => navigate(`/Whiskey?highlight=${encodeURIComponent(highestRatedBottle.id)}`)}
               />
             )}
             {mostValuableBottle && (
@@ -254,7 +254,7 @@ export default function WhiskeyKeeperModule() {
                 heroImage={mostValuableBottle.photo}
                 bgImage={mostValuableBottle.photo}
                 accent="#B4824B"
-                onClick={() => navigate('/Whiskey')}
+                onClick={() => navigate(`/Whiskey?highlight=${encodeURIComponent(mostValuableBottle.id)}`)}
               />
             )}
             {recentTasting && (
@@ -265,7 +265,7 @@ export default function WhiskeyKeeperModule() {
                 heroImage={null}
                 bgImage={null}
                 accent="#8B6A47"
-                onClick={() => navigate('/Whiskey')}
+                onClick={() => navigate('/Tastings')}
               />
             )}
           </div>
