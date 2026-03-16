@@ -93,7 +93,7 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
 
   async function recordSession() {
     if (!recommendation || !recommendation.pipe_id || !recommendation.blend_id) {
-      toast.error('Invalid session data');
+      toast.error(t('session.invalidData', 'Invalid session data'));
       return;
     }
 
@@ -108,13 +108,13 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
         bowls_used: 1,
         date: new Date().toISOString().split('T')[0],
         is_break_in: false,
-        notes: `Recommended session (${mode} mode)`,
+        notes: t('session.recordedNote', 'Recommended session') + ` (${mode} ${t('session.mode', 'mode')})`,
       });
 
-      toast.success('Session recorded!');
+      toast.success(t('session.recorded', 'Session recorded!'));
     } catch (e) {
       console.error('Failed to record session:', e);
-      toast.error('Failed to record session');
+      toast.error(t('session.recordFailed', 'Failed to record session'));
     } finally {
       setSavingSession(false);
     }
