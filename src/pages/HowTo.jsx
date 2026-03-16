@@ -5,6 +5,7 @@ import { ChevronDown, Info, Wrench } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import TutorialSystemPreview from "@/components/onboarding/TutorialSystem";
 
 export default function HowTo() {
   const { t } = useTranslation();
@@ -184,21 +185,21 @@ export default function HowTo() {
         </Section>
 
         <Section title={t("howTo.insights")}>
-          <Q id="insights-general" q={t("howTo.insightsQ")}>
+          <Q id="insights-general" q={t("howTo.insights")}>
             <ol className="list-decimal list-inside space-y-2">
               {tArray("howTo.insightsSteps").map((step, i) => (
                 <li key={i}>{step}</li>
               ))}
             </ol>
           </Q>
-          <Q id="curator" q={t("howTo.curatorQ")}>
+          <Q id="curator" q={t("howTo.curator")}>
             <ol className="list-decimal list-inside space-y-2">
               {tArray("howTo.curatorSteps").map((step, i) => (
                 <li key={i}>{step}</li>
               ))}
             </ol>
           </Q>
-          <Q id="story-cards" q={t("howTo.storyCardQ")}>
+          <Q id="story-cards" q={t("howTo.storyCard")}>
             <ol className="list-decimal list-inside space-y-2">
               {tArray("howTo.storyCardSteps").map((step, i) => (
                 <li key={i}>{step}</li>
