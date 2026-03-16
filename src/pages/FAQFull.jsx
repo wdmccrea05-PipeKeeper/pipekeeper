@@ -195,6 +195,42 @@ export default function FAQFull() {
           </Q>
         </Section>
 
+        <Section title={t("helpCenter.topicWhiskeyKeeper")}>
+          <Q id="whiskey-getting-started" q={t("help.whiskeyGettingStarted")}>
+            <p>{t("helpCenter.whiskeyGettingStartedDesc")}</p>
+          </Q>
+          <Q id="whiskey-adding-bottles" q={t("help.whiskeyAddingBottles")}>
+            <p>{t("helpCenter.whiskeyAddingBottlesDesc")}</p>
+          </Q>
+          <Q id="whiskey-logging-tastings" q={t("help.whiskeyLoggingTastings")}>
+            <p>{t("helpCenter.whiskeyLoggingTastingsDesc")}</p>
+          </Q>
+          <Q id="whiskey-viewing-insights" q={t("help.whiskeyViewingInsights")}>
+            <p>{t("helpCenter.whiskeyViewingInsightsDesc")}</p>
+          </Q>
+        </Section>
+
+        <Section title={t("helpCenter.topicWhiskeyAI")}>
+          <Q id="whiskey-quick-add" q={t("help.whiskeyQuickAdd")}>
+            <p>{t("helpCenter.whiskeyQuickAddDesc")}</p>
+          </Q>
+          <Q id="whiskey-bottle-lookup" q={t("help.whiskeyBottleLookup")}>
+            <p>{t("helpCenter.whiskeyBottleLookupDesc")}</p>
+          </Q>
+          <Q id="whiskey-auto-fill" q={t("help.whiskeyAutoFill")}>
+            <p>{t("helpCenter.whiskeyAutoFillDesc")}</p>
+          </Q>
+        </Section>
+
+        <Section title={t("helpCenter.topicWhiskeyInsights")}>
+          <Q id="whiskey-value" q={t("help.whiskeyValue")}>
+            <p>{t("helpCenter.whiskeyValueDesc")}</p>
+          </Q>
+          <Q id="whiskey-tasting-analytics" q={t("help.whiskeyTastingAnalytics")}>
+            <p>{t("helpCenter.whiskeyTastingAnalyticsDesc")}</p>
+          </Q>
+        </Section>
+
         <Section title={t("helpCenter.topicSupport")}>
           <Q id="contact-support" q={t("help.contactSupport")}>
             <div className="space-y-3">
