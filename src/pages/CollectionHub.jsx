@@ -142,26 +142,30 @@ export default function CollectionHub() {
   const enabledModules = getEnabledModules();
   const comingSoonModules = getComingSoonModules();
 
-  // Map module registry to card data
+  // Map module registry to card data with module-specific stats
   const activeModuleCards = enabledModules.map((module) => {
-    const moduleData =
-      module.type === 'pipes'
-        ? summary.pipes
-        : module.type === 'whiskey'
-          ? summary.whiskey
-          : { count: 0, value: 0 };
-
-    // Map module types to dashboard routes
     const dashboardRoute = module.type === 'pipes' ? 'PipeKeeper' : module.type === 'whiskey' ? 'WhiskeyKeeper' : module.route;
+
+    let stats = [];
+    if (module.type === 'pipes') {
+      stats = [
+        { label: t('hub.pipes'), value: summary.pipes.count },
+        { label: t('hub.blends'), value: summary.tobacco.count },
+        { label: t('hub.totalValue'), value: summary.pipes.value > 0 ? `$${summary.pipes.value.toLocaleString()}` : '—' },
+      ];
+    } else if (module.type === 'whiskey') {
+      stats = [
+        { label: t('hub.bottles'), value: summary.whiskey.count },
+        { label: t('hub.totalValue'), value: summary.whiskey.value > 0 ? `$${summary.whiskey.value.toLocaleString()}` : '—' },
+      ];
+    }
 
     return {
       ...module,
       route: dashboardRoute,
-      itemCount: moduleData.count,
-      summary: {
-        label: t('hub.totalValue'),
-        value: moduleData.value > 0 ? `$${moduleData.value.toLocaleString()}` : '—',
-      },
+      itemCount: module.type === 'pipes' ? summary.pipes.count : module.type === 'whiskey' ? summary.whiskey.count : 0,
+      stats,
+      summary: null,
     };
   });
 
@@ -204,7 +208,7 @@ export default function CollectionHub() {
         >
           {t("hub.collectionSummary")}
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
               {t('hub.totalValue')}
@@ -219,6 +223,14 @@ export default function CollectionHub() {
             </p>
             <p className="text-2xl font-bold" style={{ color: '#B48C4B' }}>
               {summary.pipes.count}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
+              {t('hub.blends')}
+            </p>
+            <p className="text-2xl font-bold" style={{ color: '#7B9B5B' }}>
+              {summary.tobacco.count}
             </p>
           </div>
           <div className="space-y-2">
