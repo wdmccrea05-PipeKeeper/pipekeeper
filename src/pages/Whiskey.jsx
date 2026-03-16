@@ -4,9 +4,19 @@ import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
 import { Plus, BookOpen, TrendingUp, BarChart3, Share2, Search, Package } from 'lucide-react';
-import InventoryMigrator from '@/components/whiskey/InventoryMigrator';
+import { useTranslation } from '@/components/i18n/safeTranslation';
+import ModuleNav from '@/components/modules/ModuleNav';
+import BottleCard from '@/components/whiskey/BottleCard';
+import BottleForm from '@/components/whiskey/BottleForm';
+import TastingLogForm from '@/components/whiskey/TastingLog';
+import BottleInsights from '@/components/whiskey/BottleInsights';
+import ShareRecordModal from '@/components/share/ShareRecordModal';
+import QuickSearchBottle from '@/components/ai/QuickSearchBottle';
 import InventoryManager from '@/components/whiskey/InventoryManager';
+import InventoryMigrator from '@/components/whiskey/InventoryMigrator';
+import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import WhiskeyExporter from '@/components/export/WhiskeyExporter';
 
 function WhiskeyBottleIcon({ className, style }) {
   return (
@@ -17,17 +27,6 @@ function WhiskeyBottleIcon({ className, style }) {
     </svg>
   );
 }
-import { useTranslation } from '@/components/i18n/safeTranslation';
-import ModuleNav from '@/components/modules/ModuleNav';
-import BottleCard from '@/components/whiskey/BottleCard';
-import BottleForm from '@/components/whiskey/BottleForm';
-import TastingLogForm from '@/components/whiskey/TastingLog';
-import BottleInsights from '@/components/whiskey/BottleInsights';
-import ShareRecordModal from '@/components/share/ShareRecordModal';
-import QuickSearchBottle from '@/components/ai/QuickSearchBottle';
-import { toast } from 'sonner';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import WhiskeyExporter from '@/components/export/WhiskeyExporter';
 
 export default function WhiskeyPage() {
   const { t } = useTranslation();
@@ -39,14 +38,12 @@ export default function WhiskeyPage() {
   const [showTastingLog, setShowTastingLog] = useState(null);
   const [shareBottle, setShareBottle] = useState(null);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
+  const [inventoryBottle, setInventoryBottle] = useState(null);
 
-  // Handle URL action parameter
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const action = urlParams.get('action');
-    if (action === 'add') {
+    if (urlParams.get('action') === 'add') {
       setShowForm(true);
-      // Clean URL
       window.history.replaceState({}, '', '/Whiskey');
     }
   }, []);
@@ -58,7 +55,6 @@ export default function WhiskeyPage() {
     { name: t('nav.analytics') || 'Analytics', path: '/WhiskeyAnalytics', icon: BarChart3 },
   ];
 
-  // Fetch bottles
   const { data: bottles = [] } = useQuery({
     queryKey: ['bottles', user?.email],
     queryFn: async () => {
@@ -69,7 +65,6 @@ export default function WhiskeyPage() {
     staleTime: 10000,
   });
 
-  // Fetch tasting logs
   const { data: tastingLogs = [] } = useQuery({
     queryKey: ['tasting-logs', user?.email],
     queryFn: async () => {
@@ -80,38 +75,45 @@ export default function WhiskeyPage() {
     staleTime: 10000,
   });
 
-  // Create bottle
   const createBottleMutation = useMutation({
     mutationFn: (data) => base44.entities.Bottle.create(data),
-    onSuccess: () => {
+    onSuccess: (created, data) => {
       queryClient.invalidateQueries({ queryKey: ['bottles'] });
       setShowForm(false);
       setEditingBottle(null);
-      toast.success('Bottle added!');
+      toast.success('Whiskey added!');
+      // Open inventory manager for the new bottle so user can add units
+      if (created?.id) {
+        setInventoryBottle({ ...data, id: created.id });
+      }
     },
   });
 
-  // Update bottle
   const updateBottleMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Bottle.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bottles'] });
       setShowForm(false);
       setEditingBottle(null);
-      toast.success('Bottle updated!');
+      toast.success('Whiskey updated!');
     },
   });
 
-  // Delete bottle
   const deleteBottleMutation = useMutation({
-    mutationFn: (id) => base44.entities.Bottle.delete(id),
+    mutationFn: async (id) => {
+      // Also delete all inventory units
+      const units = await base44.entities.WhiskeyInventoryUnit.filter({ bottle_id: id });
+      for (const u of units) {
+        await base44.entities.WhiskeyInventoryUnit.delete(u.id);
+      }
+      return base44.entities.Bottle.delete(id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bottles'] });
       toast.success('Bottle deleted!');
     },
   });
 
-  // Create tasting log
   const createTastingLogMutation = useMutation({
     mutationFn: (data) => base44.entities.TastingLog.create(data),
     onSuccess: () => {
@@ -129,87 +131,45 @@ export default function WhiskeyPage() {
     }
   };
 
-  const handleAddBottle = () => {
-    setEditingBottle(null);
-    setShowForm(true);
-  };
-
-  const handleDeleteBottle = (id) => {
-    if (confirm('Are you sure you want to delete this bottle?')) {
-      deleteBottleMutation.mutate(id);
-    }
-  };
-
-  const handleSaveTastingLog = (data) => {
-    createTastingLogMutation.mutate(data);
-  };
-
-  const handleEditBottle = (bottle) => {
-    setEditingBottle(bottle);
-    setShowForm(true);
-  };
-
   return (
     <div className="space-y-6">
+      {/* Silent migration of legacy bottle_count → inventory units */}
+      <InventoryMigrator />
+
       <ModuleNav items={moduleNavItems} currentPath="/Whiskey" />
-      
+
       {/* Header */}
-      <div className="relative">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div
-                className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))',
-                  border: '1px solid rgba(120, 90, 65, 0.45)',
-                  boxShadow: '0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)',
-                }}
-              >
-                <WhiskeyBottleIcon
-                  className="w-5 h-5"
-                  style={{ color: 'rgba(180, 140, 75, 1)' }}
-                />
-              </div>
-
-              <h1
-                className="text-4xl font-bold tracking-tight"
-                style={{
-                  color: '#F5F1E7',
-                  fontFamily: "'Georgia', serif",
-                  textShadow: '0 2px 6px rgba(0,0,0,0.7)',
-                }}
-              >
-                WhiskeyKeeper
-              </h1>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+              style={{
+                background: 'linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))',
+                border: '1px solid rgba(120, 90, 65, 0.45)',
+                boxShadow: '0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)',
+              }}
+            >
+              <WhiskeyBottleIcon className="w-5 h-5" style={{ color: 'rgba(180, 140, 75, 1)' }} />
             </div>
-
-            <p
-              className="text-base pl-14"
-              style={{ color: 'rgba(224, 216, 200, 0.75)' }}
-            >
-              Track your whiskey collection and tasting notes
-            </p>
+            <h1 className="text-4xl font-bold tracking-tight"
+              style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
+              WhiskeyKeeper
+            </h1>
           </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <WhiskeyExporter />
-            <Button
-              onClick={() => setShowQuickSearch(true)}
-              variant="outline"
-              className="text-sm"
-            >
-              <Search className="w-4 h-4 mr-2" />
-              {t('quickActions.quickSearchBottle') || 'Quick Add'}
-            </Button>
-            <Button
-              onClick={handleAddBottle}
-              className="bg-[#A35C5C] hover:bg-[#8C4A4A]"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {t('whiskey.addBottle') || 'Add Bottle'}
-            </Button>
-          </div>
+          <p className="text-base pl-14" style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
+            Track your whiskey collection and tasting notes
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <WhiskeyExporter />
+          <Button onClick={() => setShowQuickSearch(true)} variant="outline" className="text-sm">
+            <Search className="w-4 h-4 mr-2" />
+            {t('quickActions.quickSearchBottle') || 'Quick Add'}
+          </Button>
+          <Button onClick={() => { setEditingBottle(null); setShowForm(true); }} className="bg-[#A35C5C] hover:bg-[#8C4A4A]">
+            <Plus className="w-4 h-4 mr-2" />
+            {t('whiskey.addBottle') || 'Add Bottle'}
+          </Button>
         </div>
       </div>
 
@@ -217,24 +177,34 @@ export default function WhiskeyPage() {
       <Sheet open={showForm} onOpenChange={setShowForm}>
         <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle>{editingBottle ? t('whiskey.editBottle') || 'Edit Bottle' : t('whiskey.addBottle') || 'Add Bottle'}</SheetTitle>
+            <SheetTitle>{editingBottle ? 'Edit Whiskey' : 'Add Whiskey'}</SheetTitle>
           </SheetHeader>
           <BottleForm
             bottle={editingBottle}
             onSubmit={handleSaveBottle}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingBottle(null);
-            }}
+            onCancel={() => { setShowForm(false); setEditingBottle(null); }}
           />
         </SheetContent>
       </Sheet>
 
+      {/* Inventory Manager Sheet */}
+      <Sheet open={!!inventoryBottle} onOpenChange={(open) => { if (!open) setInventoryBottle(null); }}>
+        <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <SheetTitle>Manage Inventory</SheetTitle>
+          </SheetHeader>
+          {inventoryBottle && (
+            <InventoryManager bottle={inventoryBottle} onClose={() => setInventoryBottle(null)} />
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Tasting Log Modal */}
       {showTastingLog && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <TastingLogForm
             bottle={showTastingLog}
-            onSubmit={handleSaveTastingLog}
+            onSubmit={(data) => createTastingLogMutation.mutate(data)}
             onCancel={() => setShowTastingLog(null)}
           />
         </div>
@@ -242,13 +212,8 @@ export default function WhiskeyPage() {
 
       {/* Insights */}
       {bottles.length > 0 && (
-        <div
-          className="rounded-2xl p-6"
-          style={{
-            background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))',
-            border: '1px solid rgba(180, 140, 75, 0.15)',
-          }}
-        >
+        <div className="rounded-2xl p-6"
+          style={{ background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))', border: '1px solid rgba(180, 140, 75, 0.15)' }}>
           <BottleInsights bottles={bottles} tastingLogs={tastingLogs} />
         </div>
       )}
@@ -257,41 +222,23 @@ export default function WhiskeyPage() {
       {bottles.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {bottles.map((bottle) => (
-            <div key={bottle.id} className="space-y-3">
-              <BottleCard bottle={bottle} onClick={() => handleEditBottle(bottle)} />
+            <div key={bottle.id} className="space-y-2">
+              <BottleCard bottle={bottle} onClick={() => { setEditingBottle(bottle); setShowForm(true); }} />
               <div className="flex gap-2 flex-wrap">
-                <Button
-                  onClick={() => setShowTastingLog(bottle)}
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                >
+                <Button onClick={() => setShowTastingLog(bottle)} variant="outline" size="sm" className="flex-1">
                   <BookOpen className="w-3 h-3 mr-1" />
-                  {t('whiskey.logTasting') || 'Log Tasting'}
+                  Log Tasting
                 </Button>
-                <Button
-                  onClick={() => {
-                    setEditingBottle(bottle);
-                    setShowForm(true);
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                >
-                  {t('common.edit') || 'Edit'}
+                <Button onClick={() => setInventoryBottle(bottle)} variant="outline" size="sm" className="flex-1">
+                  <Package className="w-3 h-3 mr-1" />
+                  Inventory
                 </Button>
-                <Button
-                  onClick={() => setShareBottle(bottle)}
-                  variant="outline"
-                  size="sm"
-                >
+                <Button onClick={() => setShareBottle(bottle)} variant="outline" size="sm">
                   <Share2 className="w-3 h-3" />
                 </Button>
                 <Button
-                  onClick={() => handleDeleteBottle(bottle.id)}
-                  variant="outline"
-                  size="sm"
-                  className="text-red-400 border-red-400/30"
+                  onClick={() => { if (confirm('Delete this whiskey?')) deleteBottleMutation.mutate(bottle.id); }}
+                  variant="outline" size="sm" className="text-red-400 border-red-400/30"
                 >
                   {t('common.delete') || 'Delete'}
                 </Button>
@@ -300,37 +247,25 @@ export default function WhiskeyPage() {
           ))}
         </div>
       ) : (
-        <div
-          className="rounded-2xl p-12 text-center"
-          style={{
-            background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.3), rgba(31, 21, 16, 0.3))',
-            border: '1px solid rgba(180, 140, 75, 0.15)',
-          }}
-        >
+        <div className="rounded-2xl p-12 text-center"
+          style={{ background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.3), rgba(31, 21, 16, 0.3))', border: '1px solid rgba(180, 140, 75, 0.15)' }}>
           <WhiskeyBottleIcon className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(180,140,75,0.5)' }} />
-          <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">
-            {t('whiskey.noBottlesYet') || 'No bottles yet'}
-          </h2>
-          <p style={{ color: 'rgba(224,216,200,0.6)' }} className="mb-6">
-            {t('whiskey.startTracking') || 'Start tracking your whiskey collection'}
-          </p>
-          <Button
-            onClick={handleAddBottle}
-            style={{
-              background: 'linear-gradient(135deg, rgba(163, 92, 92, 1), rgba(140, 74, 74, 1))',
-              color: '#F5F1E7',
-            }}
-          >
-            {t('whiskey.addFirstBottle') || 'Add Your First Bottle'}
+          <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">No bottles yet</h2>
+          <p style={{ color: 'rgba(224,216,200,0.6)' }} className="mb-6">Start tracking your whiskey collection</p>
+          <Button onClick={() => setShowForm(true)} style={{ background: 'linear-gradient(135deg, rgba(163, 92, 92, 1), rgba(140, 74, 74, 1))', color: '#F5F1E7' }}>
+            Add Your First Bottle
           </Button>
         </div>
       )}
 
-      {/* Quick Search Modal */}
+      {/* Quick Search */}
       <QuickSearchBottle
         isOpen={showQuickSearch}
         onClose={() => setShowQuickSearch(false)}
-        onBottleAdded={() => queryClient.invalidateQueries({ queryKey: ['bottles'] })}
+        onBottleAdded={(created) => {
+          queryClient.invalidateQueries({ queryKey: ['bottles'] });
+          if (created?.id) setInventoryBottle(created);
+        }}
       />
 
       {/* Share Modal */}
@@ -347,53 +282,25 @@ export default function WhiskeyPage() {
       {/* Recent Tastings */}
       {tastingLogs.length > 0 && (
         <div className="space-y-4">
-          <h2
-            style={{ color: '#F5F1E7' }}
-            className="text-2xl font-bold"
-          >
-            {t('whiskey.recentTastings') || 'Recent Tastings'}
-          </h2>
+          <h2 style={{ color: '#F5F1E7' }} className="text-2xl font-bold">Recent Tastings</h2>
           <div className="grid grid-cols-1 gap-3">
             {tastingLogs.slice(0, 5).map((log) => (
-              <div
-                key={log.id}
-                className="rounded-lg p-4"
-                style={{
-                  background: 'rgba(180, 140, 75, 0.08)',
-                  border: '1px solid rgba(180, 140, 75, 0.15)',
-                }}
-              >
+              <div key={log.id} className="rounded-lg p-4"
+                style={{ background: 'rgba(180, 140, 75, 0.08)', border: '1px solid rgba(180, 140, 75, 0.15)' }}>
                 <div className="flex items-start justify-between">
                   <div>
-                    <p style={{ color: '#F5F1E7' }} className="font-semibold">
-                      {log.bottle_name}
-                    </p>
+                    <p style={{ color: '#F5F1E7' }} className="font-semibold">{log.bottle_name}</p>
                     <p style={{ color: 'rgba(224,216,200,0.6)' }} className="text-sm">
                       {new Date(log.tasting_date).toLocaleDateString()}
                     </p>
                   </div>
                   {log.rating && (
-                    <div
-                      style={{
-                        background: 'rgba(212, 175, 55, 0.2)',
-                        color: '#D4AF37',
-                      }}
-                      className="px-3 py-1 rounded-full text-sm font-semibold"
-                    >
-                      {log.rating.toFixed(1)}/5
+                    <div style={{ background: 'rgba(212, 175, 55, 0.2)', color: '#D4AF37' }} className="px-3 py-1 rounded-full text-sm font-semibold">
+                      {Number(log.rating).toFixed(1)}/5
                     </div>
                   )}
                 </div>
-                {log.notes && (
-                  <p style={{ color: 'rgba(224,216,200,0.7)' }} className="text-sm mt-2">
-                    {log.notes}
-                  </p>
-                )}
-                {log.pairing && (
-                  <p style={{ color: 'rgba(180,140,75,0.8)' }} className="text-sm mt-1">
-                    Pairing: {log.pairing}
-                  </p>
-                )}
+                {log.notes && <p style={{ color: 'rgba(224,216,200,0.7)' }} className="text-sm mt-2">{log.notes}</p>}
               </div>
             ))}
           </div>
