@@ -316,6 +316,9 @@ export default function CollectionHub() {
         tasteProfile={tasteProfile}
       />
 
+      {/* Collection Story */}
+      <CollectionStoryCard />
+
       {/* Curator Section (with ecosystem context) */}
       <CuratorHub summary={summary} recentActivities={recentActivities} />
 
