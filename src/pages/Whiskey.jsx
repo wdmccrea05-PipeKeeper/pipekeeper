@@ -163,12 +163,9 @@ export default function WhiskeyPage() {
                   boxShadow: '0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)',
                 }}
               >
-                <Wine
+                <WhiskeyBottleIcon
                   className="w-5 h-5"
-                  style={{
-                    color: 'rgba(180, 140, 75, 1)',
-                    filter: 'drop-shadow(0 0 4px rgba(180,140,75,0.7))',
-                  }}
+                  style={{ color: 'rgba(180, 140, 75, 1)' }}
                 />
               </div>
 
