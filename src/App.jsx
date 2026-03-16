@@ -90,6 +90,11 @@ const AuthenticatedApp = () => {
           <WhiskeyAIUpdates />
         </LayoutWrapper>
       } />
+      <Route path="/BottleDetail" element={
+        <LayoutWrapper currentPageName="BottleDetail">
+          <BottleDetail />
+        </LayoutWrapper>
+      } />
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
           <MainPage />
