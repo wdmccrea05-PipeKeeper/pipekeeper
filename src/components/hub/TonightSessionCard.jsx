@@ -164,12 +164,12 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="text-base font-bold" style={{ color: '#F5F1E7', fontFamily: 'Georgia, serif' }}>
-              Tonight's Session
+              {t('session.tonightTitle', "Tonight's Session")}
             </h3>
             <p className="text-xs" style={{ color: 'rgba(224,216,200,0.55)' }}>
               {tasteProfile?.confidence > 0.2
-                ? 'Adapted from your ratings, sessions, and favorites'
-                : 'Personalized recommendation from your collection'}
+                ? t('session.adaptedFrom', 'Adapted from your ratings, sessions, and favorites')
+                : t('session.personalized', 'Personalized recommendation from your collection')}
             </p>
           </div>
         </div>
