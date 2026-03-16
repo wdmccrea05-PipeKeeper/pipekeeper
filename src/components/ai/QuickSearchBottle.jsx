@@ -25,6 +25,31 @@ export default function QuickSearchBottle({ isOpen, onClose, onBottleAdded }) {
   const [addingId, setAddingId] = useState(null);
   const [searched, setSearched] = useState(false);
 
+  const deduplicateBottles = (bottles) => {
+    if (!bottles || bottles.length === 0) return [];
+    
+    // Normalize bottle names and group similar bottles
+    const normalized = new Map();
+    
+    bottles.forEach((bottle) => {
+      const key = `${(bottle.distillery || '').toLowerCase().trim()}|${(bottle.name || '').toLowerCase().trim()}`;
+      
+      if (!normalized.has(key)) {
+        normalized.set(key, bottle);
+      } else {
+        const existing = normalized.get(key);
+        // Keep bottle with more complete info (more fields filled)
+        const existingFields = Object.values(existing).filter(v => v !== null && v !== undefined && v !== '').length;
+        const newFields = Object.values(bottle).filter(v => v !== null && v !== undefined && v !== '').length;
+        if (newFields > existingFields) {
+          normalized.set(key, bottle);
+        }
+      }
+    });
+    
+    return Array.from(normalized.values());
+  };
+
   const handleSearch = async () => {
     if (!query.trim()) return;
     setSearching(true);
@@ -32,9 +57,10 @@ export default function QuickSearchBottle({ isOpen, onClose, onBottleAdded }) {
     setResults([]);
 
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a whiskey expert database. Search for whiskey bottles matching: "${query}".
-Return up to 5 matching bottles as structured data. For each bottle, provide all known details.
-Return a JSON object with a "bottles" array.`,
+      prompt: `You are a whiskey expert database. Search for exact whiskey bottles matching: "${query}".
+Focus on the core release, not variants. Return up to 8 matching bottles as structured data.
+For each bottle, provide all known details. Include age statement, proof/ABV, and typical retail price.
+Prioritize well-known, commonly available bottles. Return a JSON object with a "bottles" array.`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
@@ -44,16 +70,16 @@ Return a JSON object with a "bottles" array.`,
             items: {
               type: "object",
               properties: {
-                name: { type: "string" },
+                name: { type: "string", description: "Full bottle name including age/proof if applicable" },
                 distillery: { type: "string" },
                 region: { type: "string" },
                 country: { type: "string" },
-                type: { type: "string" },
-                age_years: { type: "number" },
-                abv: { type: "number" },
+                type: { type: "string", description: "e.g. Scotch, Bourbon, Rye, Irish Whiskey" },
+                age_years: { type: "number", description: "Age statement in years, null if NAS" },
+                abv: { type: "number", description: "Alcohol by volume percentage" },
                 bottle_size_ml: { type: "number" },
-                typical_price_usd: { type: "number" },
-                description: { type: "string" },
+                typical_price_usd: { type: "number", description: "Typical retail price USD" },
+                description: { type: "string", description: "Brief tasting notes or description" },
               }
             }
           }
@@ -61,7 +87,8 @@ Return a JSON object with a "bottles" array.`,
       }
     });
 
-    setResults(result?.bottles || []);
+    const deduplicated = deduplicateBottles(result?.bottles || []);
+    setResults(deduplicated.slice(0, 6));
     setSearching(false);
   };
 
