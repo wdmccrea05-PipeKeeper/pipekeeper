@@ -303,7 +303,7 @@ export default function WhiskeyInsightsPage() {
 
                   {mostValuedBottle && (
                     <WhiskeyHighlightCard
-                      title={t('insights.mostValuedBottle') || 'Most Valued Bottle'}
+                      title={t('insights.mostValuedBottle', 'Most Valued Bottle')}
                       value={mostValuedBottle.name}
                       sub={formatCurrency(Math.max(
                         Number(mostValuedBottle.retail_price) || 0,
@@ -317,7 +317,7 @@ export default function WhiskeyInsightsPage() {
                       cardRef={(el) => { highlightRefs.current.mostValued = el; }}
                       onShare={() => handleShareCard('mostValued')}
                       onStory={() => setActiveStory({
-                        title: t('insights.mostValuedBottle') || 'Most Valued Bottle',
+                        title: t('insights.mostValuedBottle', 'Most Valued Bottle'),
                         value: mostValuedBottle.name,
                         sub: formatCurrency(Math.max(
                           Number(mostValuedBottle.retail_price) || 0,
