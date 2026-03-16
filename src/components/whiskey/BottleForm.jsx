@@ -146,8 +146,22 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Name & Distillery */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+         {/* Bottle Type */}
+         <div>
+           <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.bottleType') || 'Bottle Type'} *</label>
+           <Select value={formData.bottle_type} onValueChange={(value) => handleChange('bottle_type', value)}>
+             <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
+               <SelectValue />
+             </SelectTrigger>
+             <SelectContent>
+               <SelectItem value="whiskey">{t('whiskey.whiskeyBottle') || 'Whiskey Bottle'}</SelectItem>
+               <SelectItem value="wine">{t('whiskey.wineBottle') || 'Wine Bottle'}</SelectItem>
+             </SelectContent>
+           </Select>
+         </div>
+
+         {/* Name & Distillery */}
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.name') || 'Name'} *</label>
             <Input
