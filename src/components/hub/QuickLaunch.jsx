@@ -31,9 +31,9 @@ export default function QuickLaunch() {
   const navigate = useNavigate();
 
   const pipeActions = [
-    { label: t('pipekeeper.addPipe') || 'Add Pipe', icon: PipeImgIcon, path: '/Pipes', accent: '#D4A574' },
-    { label: t('pipekeeper.addBlend') || 'Add Blend', icon: Leaf, path: '/Tobacco', accent: '#5A7C5A' },
-    { label: t('pipekeeper.logSession') || 'Log Session', icon: BookOpen, path: '/Insights', accent: '#C87941' },
+    { label: t('quickActions.addPipe') || 'Add Pipe', icon: PipeImgIcon, path: '/Pipes', accent: '#D4A574' },
+    { label: t('quickActions.addBlend') || 'Add Blend', icon: Leaf, path: '/Tobacco', accent: '#5A7C5A' },
+    { label: t('quickActions.logSession') || 'Log Session', icon: BookOpen, path: '/Insights', accent: '#C87941' },
     { label: t('nav.insights') || 'Insights', icon: TrendingUp, path: '/Insights', accent: '#8B5CF6' },
   ];
 
