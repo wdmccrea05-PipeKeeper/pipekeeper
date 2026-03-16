@@ -1,9 +1,17 @@
 import React, { useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { Upload, Camera, Image as ImageIcon, X } from "lucide-react";
+import { Upload, Camera, Image as ImageIcon, Search, X } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], maxPhotos = 10 }) {
+export default function PhotoUploader({ 
+  onPhotosSelected, 
+  existingPhotos = [], 
+  maxPhotos = 10,
+  onSearchOnlineClick = null, // Callback when user clicks "Search Online"
+  showSearchOption = false, // Whether to show the search online button
+  recordType = null, // 'pipe' | 'blend' | 'bottle'
+  recordData = null // Current record data for search query generation
+}) {
   const { t } = useTranslation();
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
