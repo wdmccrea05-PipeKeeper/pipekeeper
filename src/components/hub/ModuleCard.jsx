@@ -77,17 +77,19 @@ export default function ModuleCard({ module, icon, itemCount, summary, action, i
         {/* Icon and Title */}
         <div className="flex items-start gap-3">
           {icon && (
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
-              style={{
-                background: 'rgba(139,98,57,0.2)',
-                border: '1px solid rgba(212,164,116,0.2)',
-              }}
-            >
+            <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
               {typeof icon === 'string' && icon.startsWith('http') ? (
-                <img src={icon} alt={module} className="w-full h-full object-cover" style={{ mixBlendMode: 'darken' }} />
+                <img src={icon} alt={module} className="w-12 h-12 object-contain" />
               ) : typeof icon === 'function' ? (
-                React.createElement(icon, { className: 'w-6 h-6', style: { color: 'rgba(212,164,116,0.9)' } })
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+                  style={{
+                    background: 'rgba(139,98,57,0.2)',
+                    border: '1px solid rgba(212,164,116,0.2)',
+                  }}
+                >
+                  {React.createElement(icon, { className: 'w-6 h-6', style: { color: 'rgba(212,164,116,0.9)' } })}
+                </div>
               ) : (
                 <span className="text-2xl">{icon}</span>
               )}
