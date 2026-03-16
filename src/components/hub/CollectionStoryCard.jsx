@@ -27,7 +27,7 @@ export default function CollectionStoryCard() {
       }
     } catch (e) {
       console.error('Story load error:', e);
-      setError('Could not load collection story');
+      setError(t('story.loadError', 'Could not load collection story'));
     } finally {
       setLoading(false);
     }
