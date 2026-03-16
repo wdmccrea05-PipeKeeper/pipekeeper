@@ -45,7 +45,7 @@ function InventoryBadges({ bottleId }) {
   );
 }
 
-export default function BottleCard({ bottle, onClick }) {
+export default function BottleCard({ bottle, onClick, onEdit, onDelete, onShare }) {
   if (!bottle) return null;
 
   const renderStars = (rating) =>
