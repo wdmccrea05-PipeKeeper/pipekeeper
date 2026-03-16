@@ -4,7 +4,17 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { GlassWater, BookOpen, TrendingUp, BarChart3, Plus, Search, Camera } from 'lucide-react';
+import { BookOpen, TrendingUp, BarChart3, Plus, Search, Camera, Wand2 } from 'lucide-react';
+
+function WhiskeyBottleIconSvg({ className, style }) {
+  return (
+    <svg className={className} style={style} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9 2h6v3l2 3v11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8l2-3V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M7 13h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M9 2h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency } from '@/components/utils/localeFormatters';
@@ -32,7 +42,7 @@ export default function WhiskeyKeeperModule() {
 
   // Module navigation
   const moduleNav = [
-    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: GlassWater },
+    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: WhiskeyBottleIconSvg },
     { name: t('nav.tastingNotes') || 'Tastings', path: '/Tastings', icon: BookOpen },
     { name: t('nav.insights') || 'Insights', path: '/WhiskeyInsights', icon: TrendingUp },
     { name: t('nav.analytics') || 'Analytics', path: '/WhiskeyAnalytics', icon: BarChart3 },
