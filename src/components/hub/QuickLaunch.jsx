@@ -38,9 +38,9 @@ export default function QuickLaunch() {
   ];
 
   const whiskeyActions = [
-    { label: t('whiskeykeeper.addBottle') || 'Add Bottle', icon: WhiskeyBottleIcon, path: '/Whiskey', accent: '#D4A574' },
-    { label: t('whiskeykeeper.logTasting') || 'Log Tasting', icon: BookOpen, path: '/Whiskey', accent: '#C87941' },
-    { label: t('nav.bottles') || 'Bottles', icon: WhiskeyBottleIcon, path: '/Whiskey', accent: '#B48C4B' },
+    { label: t('quickActions.addBottle') || 'Add Bottle', icon: WhiskeyBottleIcon, path: '/Whiskey?action=add', accent: '#D4A574' },
+    { label: t('quickActions.quickSearchBottle') || 'Quick Add', icon: WhiskeyBottleIcon, path: '/WhiskeyKeeper', accent: '#B48C4B' },
+    { label: t('quickActions.logTasting') || 'Log Tasting', icon: BookOpen, path: '/Tastings', accent: '#C87941' },
     { label: t('nav.insights') || 'Insights', icon: TrendingUp, path: '/WhiskeyInsights', accent: '#8B5CF6' },
   ];
 
