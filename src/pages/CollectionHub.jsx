@@ -238,8 +238,8 @@ export default function CollectionHub() {
             </p>
             <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
               {(summary.pipes.value + totalBlendValue + totalBottleValue) > 0
-                ? `$${(summary.pipes.value + totalBlendValue + totalBottleValue).toLocaleString()}`
-                : '$0'}
+                ? `$${(summary.pipes.value + totalBlendValue + totalBottleValue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : '$0.00'}
             </p>
           </div>
           <div className="space-y-2">
