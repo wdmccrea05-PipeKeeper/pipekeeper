@@ -107,22 +107,26 @@ export async function aggregateCollection(userEmail) {
     };
 
     // === WHISKEY MODULE ===
-    const bottlesCount = bottlesList.length;
-    const bottlesValue = bottlesList.reduce((sum, b) => sum + getBottleValue(b), 0);
-    const openBottles = inventoryUnitsList.filter(u => u.status === 'open').length;
-    const sealedBottles = inventoryUnitsList.filter(u => u.status === 'reserve' || u.status === 'drinking').length;
-    const whiskeyStats = {
-      count: bottlesCount,
-      value: bottlesValue,
-      open: openBottles,
-      sealed: sealedBottles,
-      favorite: bottlesList.filter(b => b.favorite).length,
-      rated: bottlesList.filter(b => b.rating).length,
-      avgRating: bottlesList.filter(b => b.rating).length > 0
-        ? (bottlesList.reduce((sum, b) => sum + (b.rating || 0), 0) / bottlesList.filter(b => b.rating).length).toFixed(2)
-        : 0,
-      tastings: tastingLogsList.length,
-    };
+     // Count inventory units (physical bottles), not Bottle records (which may have multiple units)
+     const whiskeyBottles = inventoryUnitsList.length > 0 
+       ? inventoryUnitsList 
+       : bottlesList;
+     const bottlesCount = whiskeyBottles.length;
+     const bottlesValue = bottlesList.reduce((sum, b) => sum + getBottleValue(b), 0);
+     const openBottles = inventoryUnitsList.filter(u => u.status === 'open').length;
+     const sealedBottles = inventoryUnitsList.filter(u => u.status === 'reserve' || u.status === 'drinking').length;
+     const whiskeyStats = {
+       count: bottlesCount,
+       value: bottlesValue,
+       open: openBottles,
+       sealed: sealedBottles,
+       favorite: bottlesList.filter(b => b.favorite).length,
+       rated: bottlesList.filter(b => b.rating).length,
+       avgRating: bottlesList.filter(b => b.rating).length > 0
+         ? (bottlesList.reduce((sum, b) => sum + (b.rating || 0), 0) / bottlesList.filter(b => b.rating).length).toFixed(2)
+         : 0,
+       tastings: tastingLogsList.length,
+     };
 
     // === USAGE PATTERNS ===
     const pipeUsageMap = {};
