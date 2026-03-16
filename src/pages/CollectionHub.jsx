@@ -233,7 +233,7 @@ export default function CollectionHub() {
         >
           {t("hub.collectionSummary")}
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
               {t('hub.totalValue')}
