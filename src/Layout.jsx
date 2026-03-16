@@ -241,7 +241,7 @@ export default function Layout({ children, currentPageName }) {
       ? [{ name: t("nav.community"), page: "Community", icon: Users, isIconComponent: true, isPremium: true }]
       : []),
     { name: t("nav.profile"), page: "Profile", icon: User, isIconComponent: true },
-    { name: t("nav.help"), page: "FAQ", icon: HelpCircle, isIconComponent: true },
+    { name: t("nav.help"), page: "HelpCenter", icon: HelpCircle, isIconComponent: true },
   ], [lang]);
 
   const PUBLIC_PAGES = useMemo(
