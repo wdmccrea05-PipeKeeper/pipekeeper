@@ -59,9 +59,9 @@ export default function OnlineImageSearch({
   }
 
   /**
-   * Search for images using the LLM integration with web search
-   */
-  const handleSearch = useCallback(async (e) => {
+    * Search for images using Bing Image Search API (faster, more reliable)
+    */
+   const handleSearch = useCallback(async (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) {
       setError(t("onlineImageSearch.queryRequired", "Please enter a search query"));
@@ -73,23 +73,14 @@ export default function OnlineImageSearch({
     setImages([]);
 
     try {
-      const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `Search for product images matching this query: "${searchQuery}". Return up to 10 image URLs in JSON format as an array like ["url1", "url2", ...]. Only include direct image URLs, no thumbnails or ads. Focus on product photos.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            images: {
-              type: "array",
-              items: { type: "string" },
-              description: "Array of image URLs"
-            }
-          }
-        },
-        model: "gemini_3_flash" // Uses web search
+      // Use direct image search via backend function for faster results
+      const response = await base44.functions.invoke('searchProductImages', {
+        query: searchQuery,
+        recordType: recordType,
+        limit: 12
       });
 
-      const imageUrls = response.images || [];
+      const imageUrls = response?.images || [];
       if (imageUrls.length === 0) {
         setError(t("onlineImageSearch.noResults", "No images found. Try adjusting your search query."));
       } else {
@@ -101,7 +92,7 @@ export default function OnlineImageSearch({
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, t]);
+  }, [searchQuery, recordType, t]);
 
   /**
    * Handle image selection
