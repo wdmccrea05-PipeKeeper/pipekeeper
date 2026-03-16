@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import BottleForm from '@/components/whiskey/BottleForm';
 import InventoryManager from '@/components/whiskey/InventoryManager';
 import TastingLogForm from '@/components/whiskey/TastingLog';
+import PricingBreakdown from '@/components/whiskey/PricingBreakdown';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/components/utils/localeFormatters';
@@ -212,7 +213,7 @@ export default function BottleDetail() {
           </div>
 
           {/* Rating */}
-          {bottle.rating && (
+           {bottle.rating && (
             <div className="rounded-lg p-4" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
               <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(212,175,55,0.7)' }}>
                 {t('whiskey.rating')}
@@ -225,6 +226,22 @@ export default function BottleDetail() {
                   {Number(bottle.rating).toFixed(1)}/5
                 </span>
               </div>
+            </div>
+          )}
+
+          {/* Purchase Type & Info */}
+          {bottle.purchase_type && (
+            <div className="rounded-lg p-4" style={{ background: 'rgba(100,70,45,0.1)', border: '1px solid rgba(180,140,75,0.15)' }}>
+              <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(180,140,75,0.6)' }}>
+                {t('whiskey.purchaseType')}
+              </p>
+              <p style={{ color: '#D4A574', fontWeight: '500' }}>
+                {bottle.purchase_type === 'retail' && t('whiskey.purchaseTypeRetail')}
+                {bottle.purchase_type === 'aftermarket' && t('whiskey.purchaseTypeAftermarket')}
+                {bottle.purchase_type === 'gift' && t('whiskey.purchaseTypeGift')}
+                {bottle.purchase_type === 'trade' && t('whiskey.purchaseTypeTrade')}
+                {bottle.purchase_type === 'other' && t('whiskey.purchaseTypeOther')}
+              </p>
             </div>
           )}
 
@@ -242,8 +259,11 @@ export default function BottleDetail() {
         </div>
       </div>
 
+      {/* Pricing Breakdown */}
+      <PricingBreakdown bottle={bottle} />
+
       {/* Tasting History */}
-      {tastingLogs.length > 0 && (
+       {tastingLogs.length > 0 && (
         <div className="rounded-lg p-6" style={{ background: 'rgba(42,30,20,0.5)', border: '1px solid rgba(180,140,75,0.15)' }}>
           <h2 className="text-lg font-bold mb-4" style={{ color: '#F5F1E7' }}>
             {t('whiskey.tastingHistory')}
