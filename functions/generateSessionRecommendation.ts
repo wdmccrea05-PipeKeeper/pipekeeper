@@ -310,11 +310,54 @@ Deno.serve(async (req) => {
       return unique.slice(0, 2).join(' & ') || 'Personalized Experience';
     }
 
-    // Generate rationale
-    function generateRationale(pipe, blend, bottle) {
+    // Generate mode-specific rationale
+    function generateRationale(pipe, blend, bottle, mode) {
       const pipeDesc = `${pipe.name}${pipe.rating ? ` (rated ${pipe.rating}/5)` : ''}`;
       const blendDesc = `${blend.name}${blend.rating ? ` (rated ${blend.rating}/5)` : ''}`;
 
+      if (mode === 'balanced') {
+        if (bottle) {
+          return `This recommendation balances your favorites with a moderately underused pairing. The ${blendDesc} tobacco in the ${pipeDesc} complements ${bottle.name} for a well-rounded session.`;
+        } else {
+          return `${blendDesc} in the ${pipeDesc} pairs strong ratings with thoughtful variety—a balanced choice from your collection.`;
+        }
+      }
+
+      if (mode === 'rotation') {
+        if (bottle) {
+          return `This recommendation prioritizes underused items in your collection. The ${blendDesc} and ${bottle.name} haven't been paired recently, offering fresh variety while maintaining flavor compatibility.`;
+        } else {
+          return `${blendDesc} in the ${pipeDesc} gives underused items their turn—a rotation-focused recommendation to expand your active use.`;
+        }
+      }
+
+      if (mode === 'favorites') {
+        if (bottle) {
+          return `This recommendation leans on highly rated and favorite items you consistently enjoy together. The ${blendDesc} with ${bottle.name} are proven favorites for a reliably excellent session.`;
+        } else {
+          return `${blendDesc} in the ${pipeDesc} are favorites you've rated highly—familiar comfort you know you'll enjoy.`;
+        }
+      }
+
+      if (mode === 'exploration') {
+        if (bottle) {
+          return `This pairing surfaces a less commonly used combination chosen to broaden your rotation. The ${blendDesc} and ${bottle.name} together offer novelty while keeping flavor compatibility strong.`;
+        } else {
+          return `${blendDesc} in the ${pipeDesc} explores less charted territory—a chance to discover new favorites.`;
+        }
+      }
+
+      if (mode === 'relaxed') {
+        const strengthNote = blend.strength === 'Mild' ? 'mild-strength' : 'smooth';
+        if (bottle) {
+          const abvNote = bottle.abv < 45 ? 'approachable' : '';
+          return `This pairing favors smoother, easygoing profiles for a more relaxed session. The ${strengthNote} ${blendDesc} pairs beautifully with ${abvNote} ${bottle.name}.`;
+        } else {
+          return `${blendDesc} in the ${pipeDesc} offers a gentle, relaxing smoke—perfect for unwinding without intensity.`;
+        }
+      }
+
+      // Fallback
       if (bottle) {
         return `Pairing ${blendDesc} tobacco with ${bottle.name} creates a harmonious session. The ${blend.blend_type?.toLowerCase() || 'selected'} tobacco complements the ${bottle.type?.toLowerCase() || 'whiskey'}'s character.`;
       } else {
