@@ -281,32 +281,71 @@ export default function WhiskeyPage() {
 
       {/* Collection Grid */}
       {bottles.length > 0 ? (
-        <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
-          {filteredBottles.map((bottle) => (
-           viewMode === 'grid' ? (
-             <div key={bottle.id} className="space-y-2">
-               <BottleCard 
-                 bottle={bottle} 
-                 onClick={() => window.location.href = `/BottleDetail?id=${encodeURIComponent(bottle.id)}`}
-                 onEdit={() => { setEditingBottle(bottle); setShowForm(true); }}
-                 onShare={() => setShareBottle(bottle)}
-                 onDelete={() => { if (confirm(t('common.confirmDelete'))) deleteBottleMutation.mutate(bottle.id); }}
-               />
-               <div className="flex gap-2 flex-wrap">
-                 <Button onClick={() => setShowTastingLog(bottle)} variant="outline" size="sm" className="flex-1">
-                   <BookOpen className="w-3 h-3 mr-1" />
-                   {t('whiskey.logTasting') || 'Log Tasting'}
-                 </Button>
-                 <Button onClick={() => setInventoryBottle(bottle)} variant="outline" size="sm" className="flex-1">
-                   <Package className="w-3 h-3 mr-1" />
-                   {t('whiskey.inventory') || 'Inventory'}
-                 </Button>
-               </div>
-             </div>
-           ) : (
-             <BottleListItem key={bottle.id} bottle={bottle} onClick={() => window.location.href = `/BottleDetail?id=${encodeURIComponent(bottle.id)}`} />
-           )
-          ))}
+        <div className={viewMode === 'grid' ? (displayMode ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6") : "flex flex-col gap-4"}>
+           {filteredBottles.map((bottle) => {
+             if (displayMode && viewMode === 'grid') {
+               return (
+                 <a key={bottle.id} href={createPageUrl(`BottleDetail?id=${encodeURIComponent(bottle.id)}`)}>
+                   <CollectorDisplayCard
+                     image={bottle.photo}
+                     title={bottle.name}
+                     subtitle={bottle.distillery || bottle.region || bottle.country || '—'}
+                     badges={
+                       <>
+                         {bottle.type && <span className="px-2 py-1 rounded text-xs" style={{ background: 'rgba(180,140,75,0.15)', color: 'rgba(224,216,200,0.8)' }}>{bottle.type}</span>}
+                         {bottle.age && <span className="px-2 py-1 rounded text-xs" style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37' }}>{bottle.age}y</span>}
+                       </>
+                     }
+                     valueDisplay={
+                       bottle.collector_value || bottle.aftermarket_price || bottle.retail_price ? (
+                         <span className="px-3 py-1 rounded-full text-sm font-semibold" style={{ background: 'rgba(46, 125, 92, 0.9)', color: '#fff' }}>
+                           ${(bottle.collector_value || bottle.aftermarket_price || bottle.retail_price || 0).toFixed(0)}
+                         </span>
+                       ) : null
+                     }
+                     onClick={() => {}}
+                     fallbackIcon={
+                       <div style={{ color: 'rgba(180,140,75,0.3)' }} className="text-center">
+                         <svg className="w-16 h-16 mx-auto mb-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                           <path d="M9 2h6v3l2 3v11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8l2-3V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                         </svg>
+                         <p className="text-xs uppercase tracking-wider" style={{ color: "rgba(180,140,75,0.4)" }}>
+                           {t('whiskey.noPhoto') || 'No photo'}
+                         </p>
+                       </div>
+                     }
+                   />
+                 </a>
+               );
+             } else if (viewMode === 'grid') {
+               return (
+                 <div key={bottle.id} className="space-y-2">
+                   <a href={createPageUrl(`BottleDetail?id=${encodeURIComponent(bottle.id)}`)}>
+                     <BottleCard 
+                       bottle={bottle} 
+                       onClick={() => {}}
+                     />
+                   </a>
+                   <div className="flex gap-2 flex-wrap">
+                     <Button onClick={() => setShowTastingLog(bottle)} variant="outline" size="sm" className="flex-1">
+                       <BookOpen className="w-3 h-3 mr-1" />
+                       {t('whiskey.logTasting') || 'Log Tasting'}
+                     </Button>
+                     <Button onClick={() => setInventoryBottle(bottle)} variant="outline" size="sm" className="flex-1">
+                       <Package className="w-3 h-3 mr-1" />
+                       {t('whiskey.inventory') || 'Inventory'}
+                     </Button>
+                   </div>
+                 </div>
+               );
+             } else {
+               return (
+                 <a key={bottle.id} href={createPageUrl(`BottleDetail?id=${encodeURIComponent(bottle.id)}`)}>
+                   <BottleListItem bottle={bottle} onClick={() => {}} />
+                 </a>
+               );
+             }
+           })}
         </div>
       ) : (
         <div className="rounded-2xl p-12 text-center"
