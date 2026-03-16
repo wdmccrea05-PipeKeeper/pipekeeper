@@ -291,27 +291,27 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
           {/* CTA Buttons */}
           <div className="flex gap-2 pt-2">
             <Button
-              onClick={recordSession}
-              disabled={savingSession}
-              size="sm"
-              variant="outline"
-              className="flex-1"
-            >
-              <Save className="w-3.5 h-3.5 mr-1.5" />
-              Record Session
-            </Button>
-            <Button
-              onClick={() => navigate('/Curator?prompt=' + encodeURIComponent(`Tell me more about tonight's session: ${recommendation.pipe} with ${recommendation.blend}${recommendation.whiskey ? ` and ${recommendation.whiskey}` : ''}`))}
-              className="flex-1 sm:flex-none"
-              style={{
-                background: 'linear-gradient(135deg, rgba(139,58,58,0.9), rgba(109,46,46,1))',
-                border: 'none',
-              }}
-            >
-              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-              Curator
-              <ChevronRight className="w-3 h-3 ml-1" />
-            </Button>
+               onClick={recordSession}
+               disabled={savingSession}
+               size="sm"
+               variant="outline"
+               className="flex-1"
+             >
+               <Save className="w-3.5 h-3.5 mr-1.5" />
+               {t('session.recordSession', 'Record Session')}
+             </Button>
+             <Button
+               onClick={() => navigate('/Curator?prompt=' + encodeURIComponent(t('session.curatorPrompt', `Tell me more about tonight's session: {{pipe}} with {{blend}}{{whiskey}}`, { pipe: recommendation.pipe, blend: recommendation.blend, whiskey: recommendation.whiskey ? ` and ${recommendation.whiskey}` : '' })))}
+               className="flex-1 sm:flex-none"
+               style={{
+                 background: 'linear-gradient(135deg, rgba(139,58,58,0.9), rgba(109,46,46,1))',
+                 border: 'none',
+               }}
+             >
+               <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+               {t('nav.curator', 'Curator')}
+               <ChevronRight className="w-3 h-3 ml-1" />
+             </Button>
           </div>
         </div>
       ) : null}
