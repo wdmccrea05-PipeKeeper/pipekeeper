@@ -10,6 +10,7 @@ import RecentActivity from '@/components/hub/RecentActivity';
 import QuickLaunch from '@/components/hub/QuickLaunch';
 import TonightSessionCard from '@/components/hub/TonightSessionCard';
 import CollectionIntelligencePanel from '@/components/hub/CollectionIntelligencePanel';
+import { useTasteProfile } from '@/components/curator/useTasteProfile';
 import {
   getCollectionHubSummary,
   getEnabledModules,
@@ -117,6 +118,25 @@ export default function CollectionHub() {
     },
     enabled: !!user?.email,
     staleTime: 60000,
+  });
+
+  const { data: hubSmokingLogs = [] } = useQuery({
+    queryKey: ['hub-tasting-logs', user?.email],
+    queryFn: async () => {
+      const r = await base44.entities.TastingLog.filter({ created_by: user?.email }, '-tasting_date', 50);
+      return Array.isArray(r) ? r : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 60000,
+  });
+
+  const tasteProfile = useTasteProfile({
+    pipes,
+    blends,
+    bottles,
+    smokingLogs,
+    tastingLogs: hubSmokingLogs,
+    profile: hubProfile,
   });
 
   const enabledModules = getEnabledModules();
@@ -249,6 +269,7 @@ export default function CollectionHub() {
         blends={blends}
         bottles={bottles}
         profile={hubProfile}
+        tasteProfile={tasteProfile}
       />
 
       {/* Collection Intelligence */}
@@ -258,6 +279,7 @@ export default function CollectionHub() {
         bottles={bottles}
         logs={smokingLogs}
         profile={hubProfile}
+        tasteProfile={tasteProfile}
       />
 
       {/* Recent Activity */}
