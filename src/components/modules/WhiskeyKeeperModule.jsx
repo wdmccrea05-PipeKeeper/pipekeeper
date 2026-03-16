@@ -69,11 +69,12 @@ export default function WhiskeyKeeperModule() {
     staleTime: 10000,
   });
 
-  // Calculate metrics
+  // Calculate metrics — prefer average_market_value * bottle count, fallback to purchase_price
   const totalBottleValue = useMemo(() => {
     return bottles.reduce((sum, b) => {
-      const val = Number(b?.purchase_price) || 0;
-      return sum + (Number.isFinite(val) ? val : 0);
+      const val = Number(b?.average_market_value) || Number(b?.purchase_price) || 0;
+      const count = Number(b?.bottle_count) || 1;
+      return sum + val * count;
     }, 0);
   }, [bottles]);
 
