@@ -34,6 +34,8 @@ export default function WhiskeyPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingBottle, setEditingBottle] = useState(null);
   const [showTastingLog, setShowTastingLog] = useState(null);
+  const [shareBottle, setShareBottle] = useState(null);
+  const [showQuickSearch, setShowQuickSearch] = useState(false);
 
   // Handle URL action parameter
   React.useEffect(() => {
