@@ -115,9 +115,9 @@ export default function OnlineImageSearch({
   }, [onImageSelected, onClose]);
 
   return (
-    <div className="w-full space-y-4">
-      {/* Search Input */}
-      <form onSubmit={handleSearch} className="space-y-3">
+    <div className="w-full h-full flex flex-col space-y-3">
+      {/* Search Input - Sticky */}
+      <form onSubmit={handleSearch} className="space-y-2 flex-shrink-0">
         <div className="space-y-2">
           <label className="block text-sm font-medium text-[#E0D8C8]">
             {t("onlineImageSearch.searchQuery", "Search Query")}
@@ -151,19 +151,19 @@ export default function OnlineImageSearch({
 
       {/* Error State */}
       {error && (
-        <div className="flex items-start gap-3 p-3 rounded-lg bg-[#E05D5D]/20 border border-[#E05D5D]/40">
+        <div className="flex items-start gap-3 p-3 rounded-lg bg-[#E05D5D]/20 border border-[#E05D5D]/40 flex-shrink-0">
           <AlertCircle className="w-5 h-5 text-[#E05D5D] flex-shrink-0 mt-0.5" />
           <p className="text-sm text-[#E0D8C8]">{error}</p>
         </div>
       )}
 
-      {/* Results Grid */}
+      {/* Results Grid - Scrollable */}
       {images.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-2 flex-1 min-h-0 overflow-y-auto">
           <p className="text-sm text-[#E0D8C8]/70">
             {t("onlineImageSearch.selectImage", "Select an image to edit and use")}
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pb-2">
             {images.map((imageUrl, idx) => (
               <div
                 key={idx}
