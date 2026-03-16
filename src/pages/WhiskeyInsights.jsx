@@ -434,10 +434,10 @@ export default function WhiskeyInsightsPage() {
               border: '1px solid rgba(180, 140, 75, 0.15)',
             }}>
               <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-                {t('insights.reports') || 'Export Reports'}
+                {t('insights.reports', 'Export Reports')}
               </h3>
               <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>
-                Report export functionality coming soon
+                {t('insights.reportsComingSoon', 'Report export functionality coming soon')}
               </p>
             </div>
           )}
