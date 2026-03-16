@@ -26,7 +26,7 @@ export const KEEPER_MODULES = [
   {
     type: 'cigars',
     titleKey: 'hub.cigarkeeper',
-    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/4b732c71b_CigarKNB.png',
+    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/d13026aaa_CigarKNB.png',
     route: null,
     enabled: false,
     description: 'Coming soon: Curate and track your cigar collection.',
@@ -35,7 +35,7 @@ export const KEEPER_MODULES = [
   {
     type: 'wine',
     titleKey: 'hub.winekeeper',
-    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/22a738bbc_WineKNB.png',
+    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/1ef6ff766_WineKNB.png',
     route: null,
     enabled: false,
     description: 'Coming soon: Manage your wine cellar and bottle inventory.',
