@@ -97,7 +97,7 @@ export default function CollectionStoryCard() {
             {story.metrics.pipes}
           </div>
           <div className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            {t('common.pipes', 'Pipes')}
+            Pipes
           </div>
           </div>
           <div className="text-center p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.2)' }}>
@@ -105,7 +105,7 @@ export default function CollectionStoryCard() {
             {story.metrics.blends}
           </div>
           <div className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            {t('common.blends', 'Blends')}
+            Blends
           </div>
           </div>
           <div className="text-center p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.2)' }}>
@@ -113,7 +113,7 @@ export default function CollectionStoryCard() {
             {story.metrics.bottles}
           </div>
           <div className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            {t('common.bottles', 'Bottles')}
+            Bottles
           </div>
           </div>
           <div className="text-center p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.2)' }}>
@@ -121,7 +121,7 @@ export default function CollectionStoryCard() {
             ${(story.metrics.totalValue / 1000).toFixed(1)}k
           </div>
           <div className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            {t('common.value', 'Value')}
+            Value
           </div>
           </div>
       </div>
