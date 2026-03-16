@@ -42,6 +42,7 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
   const [error, setError] = useState(null);
   const [mode, setMode] = useState('balanced');
   const [savingSession, setSavingSession] = useState(false);
+  const [sessionHistory, setSessionHistory] = useState([]); // Track last 5 recommendations
 
   const hasData = pipes.length > 0 || blends.length > 0;
 
@@ -60,12 +61,25 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
         tasteProfile,
         userProfile: profile,
         mode,
-        previousPairings: [], // TODO: load from session history
+        previousPairings: [],
+        sessionHistory, // Pass recent recommendations to avoid repetition
       });
 
       if (result?.data) {
         setCache(result.data);
         setRecommendation(result.data);
+        
+        // Track this recommendation in session history (keep last 5)
+        setSessionHistory(prev => [
+          {
+            pipe_id: result.data.pipe_id,
+            blend_id: result.data.blend_id,
+            whiskey_id: result.data.whiskey_id,
+            mode: result.data.mode,
+            timestamp: Date.now(),
+          },
+          ...prev,
+        ].slice(0, 5));
       }
     } catch (e) {
       console.error('Recommendation error:', e);
