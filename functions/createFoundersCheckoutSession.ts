@@ -1,5 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { getStripeClient } from './_shared/getStripeClient.js';
+
+function getStripeClient() {
+  const Stripe = await import('npm:stripe@15.0.0');
+  return new Stripe.default(Deno.env.get('STRIPE_SECRET_KEY'));
+}
 
 /**
  * Create Stripe checkout session for Founders Bundle
