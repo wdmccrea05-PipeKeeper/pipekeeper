@@ -13,6 +13,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState(
     bottle || {
+      bottle_type: 'whiskey',
       name: '',
       distillery: '',
       region: '',
