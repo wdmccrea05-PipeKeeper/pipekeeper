@@ -289,6 +289,7 @@ export default function CollectionHub() {
               stats={module.stats}
               action={module.route}
               isComingSoon={false}
+              bgImage={module.bgImage}
             />
           ))}
         </div>
