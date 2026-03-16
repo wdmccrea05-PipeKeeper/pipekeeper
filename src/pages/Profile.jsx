@@ -13,8 +13,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 
-import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2 } from "lucide-react";
+import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, GlassWater } from "lucide-react";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
+import WhiskeyPreferencesSection from "@/components/profile/WhiskeyPreferencesSection";
 
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -203,6 +204,12 @@ export default function ProfilePage() {
     preferred_shapes: [],
     strength_preference: "No Preference",
     notes: "",
+    whiskey_preferences: {
+      types: [],
+      flavors: [],
+      drinking_style: [],
+      cocktails: [],
+    },
   });
 
 
@@ -250,6 +257,7 @@ export default function ProfilePage() {
       preferred_shapes: Array.isArray(source.preferred_shapes) ? source.preferred_shapes : [],
       strength_preference: source.strength_preference || "No Preference",
       notes: source.notes || "",
+      whiskey_preferences: source.whiskey_preferences || { types: [], flavors: [], drinking_style: [], cocktails: [] },
     }));
   }, [profile, profileId, user]);
 
