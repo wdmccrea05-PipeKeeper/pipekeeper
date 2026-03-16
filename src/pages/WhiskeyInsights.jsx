@@ -1,4 +1,5 @@
-import React, { useQuery, useMemo, useRef, useState } from '@tanstack/react-query';
+import React, { useState, useRef } from 'react';
+import { useQuery, useMemo } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/safeTranslation';
