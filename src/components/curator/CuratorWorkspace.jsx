@@ -181,6 +181,9 @@ function resolveWorkspaceLaunchContext(launchContext, preFilledPrompt, routedCon
 export default function CuratorWorkspace({
   pipes = [],
   blends = [],
+  bottles = [],
+  tastingLogs = [],
+  userProfile = null,
   preFilledPrompt,
   routedContext,
   launchContext,
@@ -358,13 +361,45 @@ export default function CuratorWorkspace({
           )
           .join("\n");
 
+        const bottlesList = bottles
+          .slice(0, 20)
+          .map(
+            (b) =>
+              `- ${b.name || "Unnamed Bottle"} (${b.distillery || "unknown"}, ${b.whiskey_type || b.type || "unknown type"}${b.age_years ? `, ${b.age_years}yr` : ""}${b.abv ? `, ${b.abv}% ABV` : ""}${b.rating ? `, rated ${b.rating}/5` : ""})`
+          )
+          .join("\n");
+
+        const tastingsList = tastingLogs
+          .slice(0, 10)
+          .map((t) => `- ${t.bottle_name || "Unknown bottle"}: ${(t.flavor_notes || []).join(", ") || "no notes"}${t.rating ? `, ${t.rating}/5` : ""}`)
+          .join("\n");
+
+        const whiskyPrefs = userProfile?.whiskey_preferences;
+        const prefContext = userProfile ? `
+USER PREFERENCES:
+Tobacco strength: ${userProfile.strength_preference || "any"}
+Preferred blend types: ${(userProfile.preferred_blend_types || []).join(", ") || "any"}
+Preferred pipe shapes: ${(userProfile.preferred_shapes || []).join(", ") || "any"}
+Pipe size preference: ${userProfile.pipe_size_preference || "any"}
+Whiskey types: ${(whiskyPrefs?.types || []).join(", ") || "any"}
+Whiskey flavors: ${(whiskyPrefs?.flavors || []).join(", ") || "any"}
+Drinking style: ${(whiskyPrefs?.drinking_style || []).join(", ") || "any"}
+Cocktail preferences: ${(whiskyPrefs?.cocktails || []).join(", ") || "any"}` : "";
+
         let contextMessage = `USER COLLECTION:
 
 PIPES (${pipes.length} total):
 ${pipesList || "None yet"}
 
 TOBACCOS (${blends.length} total):
-${blendsList || "None yet"}`;
+${blendsList || "None yet"}
+
+WHISKEY BOTTLES (${bottles.length} total):
+${bottlesList || "None yet"}
+
+RECENT TASTINGS (${tastingLogs.length} total):
+${tastingsList || "None yet"}
+${prefContext}`;
 
         const activeContext = contextOverride || resolvedContextRef.current?.recommendationContext;
 
@@ -414,7 +449,7 @@ ${englishText}`;
         const assistantResponse = await waitForResponse();
         
         // CRITICAL HARDENING: Ownership claim guard
-        const sanitizedResponse = validateOwnershipIntegrity(assistantResponse, pipes, blends);
+        const sanitizedResponse = validateOwnershipIntegrity(assistantResponse, pipes, blends, bottles);
         
         const translatedResponse = await translateFromEnglish(sanitizedResponse, locale);
 
@@ -486,7 +521,7 @@ ${englishText}`;
         setSending(false);
       }
     },
-    [input, sending, ensureThread, t, pipes, blends, messages.length, sessionId]
+    [input, sending, ensureThread, t, pipes, blends, bottles, tastingLogs, userProfile, messages.length, sessionId]
   );
 
   useEffect(() => {
