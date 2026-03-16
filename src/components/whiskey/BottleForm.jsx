@@ -9,11 +9,11 @@ import { base44 } from '@/api/base44Client';
 import ImageCropper from '@/components/pipes/ImageCropper';
 import OnlineImageSearchModal from '@/components/search/OnlineImageSearchModal';
 
-export default function BottleForm({ bottle, onSubmit, onCancel }) {
+export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleType = 'whiskey' }) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState(
     bottle || {
-      bottle_type: 'whiskey',
+      bottle_type: defaultBottleType,
       name: '',
       distillery: '',
       region: '',
