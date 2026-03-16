@@ -323,6 +323,24 @@ export default function WhiskeyPage() {
         </div>
       )}
 
+      {/* Quick Search Modal */}
+      <QuickSearchBottle
+        isOpen={showQuickSearch}
+        onClose={() => setShowQuickSearch(false)}
+        onBottleAdded={() => queryClient.invalidateQueries({ queryKey: ['bottles'] })}
+      />
+
+      {/* Share Modal */}
+      {shareBottle && (
+        <ShareRecordModal
+          isOpen={!!shareBottle}
+          onOpenChange={(open) => { if (!open) setShareBottle(null); }}
+          moduleType="whiskey"
+          record={shareBottle}
+          userProfile={{ email: user?.email }}
+        />
+      )}
+
       {/* Recent Tastings */}
       {tastingLogs.length > 0 && (
         <div className="space-y-4">
