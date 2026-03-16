@@ -73,10 +73,10 @@ export default function CollectionStoryCard() {
           </div>
           <div>
             <h3 className="text-base font-bold" style={{ color: '#F5F1E7', fontFamily: 'Georgia, serif' }}>
-              Your Collection Story
+              {t('story.title', 'Your Collection Story')}
             </h3>
             <p className="text-xs" style={{ color: 'rgba(224,216,200,0.55)' }}>
-              A narrative of your collector's journey
+              {t('story.subtitle', "A narrative of your collector's journey")}
             </p>
           </div>
         </div>
