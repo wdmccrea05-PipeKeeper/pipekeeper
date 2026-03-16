@@ -236,38 +236,38 @@ export default function WhiskeyInsightsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <StatusCard
                   icon={Wine}
-                  label={t('insights.totalBottles') || 'Total Bottles'}
+                  label={t('insights.totalBottles', 'Total Bottles')}
                   value={totalBottles}
                   accent={CATEGORY_COLORS.pipe}
                 />
                 <StatusCard
                   icon={Zap}
-                  label={t('insights.openBottles') || 'Open Bottles'}
+                  label={t('insights.openBottles', 'Open Bottles')}
                   value={openBottles}
                   accent="#EF4444"
                 />
                 <StatusCard
                   icon={Trophy}
-                  label={t('insights.sealedBottles') || 'Sealed Bottles'}
+                  label={t('insights.sealedBottles', 'Sealed Bottles')}
                   value={sealedBottles}
                   accent="#10B981"
                 />
                 <StatusCard
                   icon={Star}
-                  label={t('insights.totalTastings') || 'Total Tastings'}
+                  label={t('insights.totalTastings', 'Total Tastings')}
                   value={totalTastings}
-                  sub={`${tastingsThisWeek} ${t('insights.thisWeek')}`}
+                  sub={`${tastingsThisWeek} ${t('insights.thisWeek', 'This Week')}`}
                   accent={CATEGORY_COLORS.tobacco}
                 />
                 <StatusCard
                   icon={TrendingUp}
-                  label={t('insights.collectionValue') || 'Collection Value'}
+                  label={t('insights.collectionValue', 'Collection Value')}
                   value={formatCurrency(Math.round(totalValue))}
                   accent={CATEGORY_COLORS.value}
                 />
                 <StatusCard
                   icon={Award}
-                  label={t('insights.averageRating') || 'Average Rating'}
+                  label={t('insights.averageRating', 'Average Rating')}
                   value={`${averageRating}/5`}
                   accent="#8B5CF6"
                 />
