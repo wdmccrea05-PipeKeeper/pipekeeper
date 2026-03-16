@@ -49,7 +49,7 @@ export default function WhiskeyPage() {
   }, []);
 
   const moduleNavItems = [
-    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: Wine },
+    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: WhiskeyBottleIcon },
     { name: t('nav.tastingNotes') || 'Tastings', path: '/Tastings', icon: BookOpen },
     { name: t('nav.insights') || 'Insights', path: '/WhiskeyInsights', icon: TrendingUp },
     { name: t('nav.analytics') || 'Analytics', path: '/WhiskeyAnalytics', icon: BarChart3 },
