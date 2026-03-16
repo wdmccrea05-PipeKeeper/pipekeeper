@@ -80,6 +80,8 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const [cropperType, setCropperType] = useState(null);
   const [showLogoBrowser, setShowLogoBrowser] = useState(false);
   const [logoBrowserSearch, setLogoBrowserSearch] = useState('');
+  const [showOnlineSearch, setShowOnlineSearch] = useState(false);
+  const [onlineSearchType, setOnlineSearchType] = useState(null); // 'photo' | 'logo'
   
   const queryClient = useQueryClient();
   const entitlements = useEntitlements();
