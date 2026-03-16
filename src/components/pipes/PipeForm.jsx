@@ -88,6 +88,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const [cropperImage, setCropperImage] = useState(null);
   const [cropperType, setCropperType] = useState(null);
   const [editingPhotoIndex, setEditingPhotoIndex] = useState(null);
+  const [showOnlineSearch, setShowOnlineSearch] = useState(false);
+  const [onlineSearchType, setOnlineSearchType] = useState(null); // 'photo' | 'stamping'
 
   const { user, hasPaid, isTrial } = useCurrentUser();
   const entitlements = useEntitlements();
