@@ -265,6 +265,7 @@ export default function CollectionHub() {
               icon={module.icon}
               itemCount={module.itemCount}
               summary={module.summary}
+              stats={module.stats}
               action={module.route}
               isComingSoon={false}
             />
