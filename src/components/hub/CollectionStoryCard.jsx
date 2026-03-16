@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Share2, BookOpen, Loader } from 'lucide-react';
+import { Sparkles, Share2, BookOpen, Loader, ChevronRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
