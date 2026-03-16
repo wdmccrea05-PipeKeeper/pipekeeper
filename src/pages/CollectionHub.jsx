@@ -235,7 +235,9 @@ export default function CollectionHub() {
               {t('hub.totalValue')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
-              {summary.total.value > 0 ? `$${summary.total.value.toLocaleString()}` : '$0'}
+              {(summary.pipes.value + totalBlendValue + totalBottleValue) > 0
+                ? `$${(summary.pipes.value + totalBlendValue + totalBottleValue).toLocaleString()}`
+                : '$0'}
             </p>
           </div>
           <div className="space-y-2">
@@ -253,6 +255,9 @@ export default function CollectionHub() {
             <p className="text-2xl font-bold" style={{ color: '#7B9B5B' }}>
               {summary.tobacco.count}
             </p>
+            {totalBlendOz > 0 && (
+              <p className="text-xs" style={{ color: 'rgba(123,155,91,0.7)' }}>{totalBlendOz.toFixed(0)}oz</p>
+            )}
           </div>
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
