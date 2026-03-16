@@ -156,7 +156,9 @@ export default function CollectionHub() {
   }, 0);
 
   const totalBottleValue = bottles.reduce((sum, b) => {
-    return sum + (Number(b?.estimated_value) || Number(b?.purchase_price) || 0);
+    const val = Number(b?.average_market_value) || Number(b?.purchase_price) || 0;
+    const count = Number(b?.bottle_count) || 1;
+    return sum + val * count;
   }, 0);
 
   // Featured images for card art backgrounds
