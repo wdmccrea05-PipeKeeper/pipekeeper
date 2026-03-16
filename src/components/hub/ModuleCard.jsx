@@ -42,23 +42,33 @@ export default function ModuleCard({ module, icon, itemCount, summary, action, i
         }
       }}
     >
-      {/* Art background image treatment */}
+      {/* Art background image treatment - Premium PipeKeeper style */}
       {bgImage && (
-        <div
-          className="absolute inset-0 opacity-[0.08]"
-          style={{
-            backgroundImage: `url(${bgImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            filter: 'blur(2px)',
-          }}
-        />
+        <>
+          <div
+            className="absolute inset-0 opacity-[0.12]"
+            style={{
+              backgroundImage: `url(${bgImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              filter: 'blur(3px)',
+            }}
+          />
+          {/* Gradient vignette for premium art treatment */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'radial-gradient(ellipse at 30% 40%, rgba(212,164,116,0.08) 0%, transparent 60%)',
+              pointerEvents: 'none',
+            }}
+          />
+        </>
       )}
-      {/* Warm vignette overlay */}
+      {/* Rich gradient overlay - heritage collector aesthetic */}
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(135deg, rgba(212,164,116,0.04) 0%, transparent 50%, rgba(0,0,0,0.2) 100%)',
+          background: 'linear-gradient(135deg, rgba(100,70,45,0.08) 0%, transparent 40%, rgba(0,0,0,0.25) 100%)',
           pointerEvents: 'none',
         }}
       />
