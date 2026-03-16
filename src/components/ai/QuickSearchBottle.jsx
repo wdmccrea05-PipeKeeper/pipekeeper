@@ -29,26 +29,51 @@ export default function QuickSearchBottle({ isOpen, onClose, onBottleAdded }) {
   const deduplicateBottles = (bottles) => {
     if (!bottles || bottles.length === 0) return [];
     
-    // Normalize bottle names and group similar bottles
-    const normalized = new Map();
+    // Group by core release (distillery + base name, ignoring proof/year variants)
+    const groups = new Map();
     
     bottles.forEach((bottle) => {
-      const key = `${(bottle.distillery || '').toLowerCase().trim()}|${(bottle.name || '').toLowerCase().trim()}`;
+      const distillery = (bottle.distillery || '').toLowerCase().trim();
+      const name = (bottle.name || '').toLowerCase().trim();
       
-      if (!normalized.has(key)) {
-        normalized.set(key, bottle);
-      } else {
-        const existing = normalized.get(key);
-        // Keep bottle with more complete info (more fields filled)
-        const existingFields = Object.values(existing).filter(v => v !== null && v !== undefined && v !== '').length;
-        const newFields = Object.values(bottle).filter(v => v !== null && v !== undefined && v !== '').length;
-        if (newFields > existingFields) {
-          normalized.set(key, bottle);
-        }
+      // Strip common proof variants to find core release
+      const baseName = name
+        .replace(/\b(barrel proof|cask strength|proof|bp|cs)\b/gi, '')
+        .replace(/\b(standard release|core release|original)\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      const groupKey = `${distillery}|${baseName}`;
+      
+      if (!groups.has(groupKey)) {
+        groups.set(groupKey, []);
+      }
+      groups.get(groupKey).push(bottle);
+    });
+    
+    // From each group, select the best representative
+    const results = [];
+    groups.forEach((group) => {
+      // Prioritize standard releases (most complete data, not barrel proof variants)
+      const standard = group.find(b => 
+        !(b.name || '').toLowerCase().includes('barrel proof') &&
+        !(b.name || '').toLowerCase().includes('cask strength')
+      ) || group[0];
+      
+      // Only keep if has sufficient data
+      if (standard.name && standard.distillery && (standard.age_years !== undefined || standard.abv)) {
+        results.push(standard);
       }
     });
     
-    return Array.from(normalized.values());
+    // Sort by completeness (prefer bottles with all key fields)
+    results.sort((a, b) => {
+      const aComplete = [a.name, a.distillery, a.age_years, a.abv].filter(v => v !== null && v !== undefined && v !== '').length;
+      const bComplete = [b.name, b.distillery, b.age_years, b.abv].filter(v => v !== null && v !== undefined && v !== '').length;
+      return bComplete - aComplete;
+    });
+    
+    return results.slice(0, 8);
   };
 
   const handleSearch = async () => {
