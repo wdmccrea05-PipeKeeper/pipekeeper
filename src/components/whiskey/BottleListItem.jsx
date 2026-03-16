@@ -83,10 +83,10 @@ export default function BottleListItem({ bottle, onClick }) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-base line-clamp-2" style={{ color: '#F5F1E7' }}>
-              {bottle.name || 'Unnamed Bottle'}
+              {bottle.name}
             </h3>
             <p className="text-sm mt-0.5" style={{ color: 'rgba(180,140,75,0.85)' }}>
-              {bottle.distillery || 'Unknown Distillery'}
+              {bottle.distillery || bottle.region || bottle.country || '—'}
             </p>
             <div className="flex items-center gap-2 text-xs mt-2 flex-wrap">
               {bottle.type && <span style={{ color: 'rgba(224,216,200,0.7)' }}>{bottle.type}</span>}
