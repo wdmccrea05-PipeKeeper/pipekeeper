@@ -17,6 +17,7 @@ Deno.serve(async (req) => {
       userProfile = null,
       mode = 'balanced',
       previousPairings = [],
+      sessionHistory = [], // Track last N recommendations to avoid repetition
     } = await req.json();
 
     // Score items based on mode
