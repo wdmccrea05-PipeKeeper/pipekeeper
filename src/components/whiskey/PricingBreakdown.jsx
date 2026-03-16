@@ -69,7 +69,7 @@ export default function PricingBreakdown({ bottle }) {
                 {t('whiskey.actualPaid')}
               </p>
               <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.7)' }}>
-                {getPurchaseTypeLabel(bottle.purchase_type)} on {bottle.purchase_date ? new Date(bottle.purchase_date).toLocaleDateString() : '—'}
+                {bottle.purchase_type ? getPurchaseTypeLabel(bottle.purchase_type) : '—'} {bottle.purchase_date ? `on ${new Date(bottle.purchase_date).toLocaleDateString()}` : ''}
               </p>
             </div>
             <p className="text-xl font-bold" style={{ color: '#D4A574' }}>
