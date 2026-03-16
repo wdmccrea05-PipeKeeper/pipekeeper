@@ -24,7 +24,7 @@ const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
 const AGENT_NAME = "expert_tobacconist";
 
-function generateQuickPrompts({ pipes = [], blends = [], logs = [], t }) {
+function generateQuickPrompts({ pipes = [], blends = [], logs = [], bottles = [], userProfile = null, t }) {
   const prompts = [];
 
   if (pipes.length > 10) {
@@ -79,6 +79,40 @@ function generateQuickPrompts({ pipes = [], blends = [], logs = [], t }) {
     prompts.push(
       t("curator.quickPrompt.value", {
         defaultValue: "What stands out as most valuable or overlooked in my collection?",
+      })
+    );
+  }
+
+  // Cross-collection prompts
+  if (bottles.length > 0 && blends.length > 0) {
+    prompts.push(
+      t("curator.quickPrompt.crossPairing", {
+        defaultValue: "Which of my whiskey bottles pairs best with my tobacco collection?",
+      })
+    );
+  }
+
+  if (bottles.length > 0) {
+    prompts.push(
+      t("curator.quickPrompt.tonightSession", {
+        defaultValue: "What's the ideal pipe, tobacco, and whiskey combination for tonight?",
+      })
+    );
+  }
+
+  const whiskyPrefs = userProfile?.whiskey_preferences;
+  if (whiskyPrefs?.types?.includes('Scotch') || whiskyPrefs?.flavors?.includes('Peated')) {
+    prompts.push(
+      t("curator.quickPrompt.peatPairing", {
+        defaultValue: "Which Latakia or English blends pair well with my peated Scotch?",
+      })
+    );
+  }
+
+  if (whiskyPrefs?.types?.includes('Bourbon') || whiskyPrefs?.flavors?.includes('Sweet')) {
+    prompts.push(
+      t("curator.quickPrompt.bourbonPairing", {
+        defaultValue: "Which Virginia blends complement my bourbon collection?",
       })
     );
   }
@@ -230,8 +264,8 @@ export default function CuratorWorkspace({
   }, [messages, sending]);
 
   const quickPrompts = useMemo(
-    () => generateQuickPrompts({ pipes, blends, logs, t }),
-    [pipes.length, blends.length, logs.length, t]
+    () => generateQuickPrompts({ pipes, blends, logs, bottles, userProfile, t }),
+    [pipes.length, blends.length, logs.length, bottles.length, userProfile, t]
   );
 
   const ensureThread = useCallback(async () => {
