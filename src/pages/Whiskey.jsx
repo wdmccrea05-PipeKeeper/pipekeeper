@@ -39,6 +39,8 @@ export default function WhiskeyPage() {
   const [shareBottle, setShareBottle] = useState(null);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [inventoryBottle, setInventoryBottle] = useState(null);
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('whiskeyViewMode') || 'grid');
+  const [sortBy, setSortBy] = useState(() => localStorage.getItem('whiskeySortBy') || 'date');
 
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
