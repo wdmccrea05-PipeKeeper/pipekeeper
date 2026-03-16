@@ -52,11 +52,13 @@ export function invalidateBlendQueries(queryClient, userEmail = null) {
   invalidateEntityQueries(queryClient, 'tobacco-blend', userEmail);
   invalidateEntityQueries(queryClient, 'tobacco-blends', userEmail);
   
-  // Invalidate related queries
+  // Invalidate related queries (including pairing caches)
   queryClient.invalidateQueries({ 
     predicate: (query) => {
       const key = query.queryKey[0];
       return key === 'pairing-matrix' || 
+             key === 'activePairings' ||
+             key === 'pairingMatrix' ||
              key === 'tobacco-containers';
     }
   });
