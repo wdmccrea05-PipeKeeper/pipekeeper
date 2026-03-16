@@ -5,6 +5,7 @@ export default {
     save: "Save",
     cancel: "Cancel",
     delete: "Delete",
+    confirmDelete: "Delete this item?",
     edit: "Edit",
     search: "Search",
     searching: "Searching...",
@@ -24,7 +25,11 @@ export default {
     tobacco: "Tobacco",
     lastUpdated: "Last updated",
     backToHub: "Back to Hub",
+    back: "Back",
     takePhoto: "Take Photo",
+    gridView: "Grid View",
+    listView: "List View",
+    notFound: "Not found",
   },
   
   notifications: {
