@@ -398,6 +398,12 @@ export default {
     noBottlesInCollection: "No bottles in collection",
   },
 
+  publicProfile: {
+    bottles: "Bottles",
+    whiskey: "Whiskey",
+    noBottlesInCollection: "No bottles in collection",
+  },
+
   help: {
     howTo: "How-To",
     troubleshooting: "Troubleshooting",
