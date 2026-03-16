@@ -16,6 +16,7 @@ export default function ModuleNav({ items, currentPath }) {
       {items.map((item) => {
         const isActive = currentPath === item.path;
         const Icon = item.icon;
+        const isImageIcon = typeof item.icon === 'string';
         return (
           <button
             key={item.path}
@@ -30,7 +31,20 @@ export default function ModuleNav({ items, currentPath }) {
               boxShadow: '0 2px 4px rgba(180,140,75,0.15), inset 0 1px 0 rgba(180,140,100,0.1)',
             } : {}}
           >
-            <Icon className="w-4 h-4" />
+            {isImageIcon ? (
+              <img
+                src={Icon}
+                alt={item.name}
+                className="w-4 h-4 object-contain"
+                style={{
+                  filter: isActive
+                    ? "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.95)"
+                    : "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.85) opacity(0.7)",
+                }}
+              />
+            ) : (
+              <Icon className="w-4 h-4" />
+            )}
             {item.name}
           </button>
         );
