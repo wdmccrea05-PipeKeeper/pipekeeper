@@ -65,6 +65,9 @@ export default {
     totalValue: "Total Value",
     modules: "Active Modules",
     collectionSummary: "Collection Overview",
+    pipes: "Pipes",
+    bottles: "Bottles",
+    activeModules: "Active Modules",
     items: "Items",
     openModule: "Open Module",
     comingSoonLabel: "Coming Soon",
@@ -285,14 +288,6 @@ export default {
     identifyBottle: "Identify Bottle",
   },
 
-  hub: {
-    collectionSummary: "Collection Overview",
-    pipes: "Pipes",
-    bottles: "Bottles",
-    activeModules: "Active Modules",
-    totalValue: "Total Value",
-  },
-  
   pipeIdentifier: {
     uploadPhotosFirst: "Upload photos first",
     identifyStarted: "Identification started",
