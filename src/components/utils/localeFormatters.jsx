@@ -83,7 +83,7 @@ export function formatDateTime(date, includeTime = true) {
 }
 
 /**
- * Format currency with locale-specific format
+ * Format currency with locale-specific format (always 2 decimal places)
  * @param {number} value - Amount to format
  * @param {string} currency - Currency code (default: 'USD')
  */
@@ -93,7 +93,7 @@ export function formatCurrency(value, currency = 'USD') {
   return new Intl.NumberFormat(getLocale(), {
     style: 'currency',
     currency: currency,
-    minimumFractionDigits: 0,
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
 }
