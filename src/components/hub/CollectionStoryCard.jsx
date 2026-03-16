@@ -137,20 +137,20 @@ export default function CollectionStoryCard() {
           {story.highlights.mostUsedPipe && (
             <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
               <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
-                {t('story.mostUsed', 'Most Used')}
+                Most Used
               </div>
               <div style={{ color: '#F5F1E7' }} className="truncate">
                 {story.highlights.mostUsedPipe.name}
               </div>
               <div style={{ color: 'rgba(224,216,200,0.5)' }}>
-                {story.highlights.mostUsedPipe.uses} {t('story.sessions', 'sessions')}
+                {story.highlights.mostUsedPipe.uses} sessions
               </div>
             </div>
           )}
           {story.highlights.favoriteBlend && (
             <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
               <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
-                {t('story.favoriteBlend', 'Favorite Blend')}
+                Favorite Blend
               </div>
               <div style={{ color: '#F5F1E7' }} className="truncate">
                 {story.highlights.favoriteBlend.name}
@@ -163,7 +163,7 @@ export default function CollectionStoryCard() {
           {story.highlights.mostValuableItem && (
             <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
               <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
-                {t('story.crownJewel', 'Crown Jewel')}
+                Crown Jewel
               </div>
               <div style={{ color: '#F5F1E7' }} className="truncate">
                 {story.highlights.mostValuableItem.name}
