@@ -11,7 +11,7 @@ import GlobalErrorBoundary from '@/components/system/GlobalErrorBoundary';
 import PublicSharedRecord from '@/pages/PublicSharedRecord';
 import CuratorAnalyticsDashboard from '@/pages/CuratorAnalyticsDashboard';
 import CollectionInsightsShare from '@/pages/CollectionInsightsShare';
-import Whiskey from '@/pages/Whiskey.jsx';
+import Whiskey from '@/pages/Whiskey';
 import Curator from '@/pages/Curator';
 import Subscription from '@/pages/Subscription';
 import CollectionHub from '@/pages/CollectionHub';
