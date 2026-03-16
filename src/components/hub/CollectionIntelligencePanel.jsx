@@ -26,7 +26,7 @@ function InsightChip({ icon: Icon, label, detail, onClick, color = '#D4A574' }) 
   );
 }
 
-export default function CollectionIntelligencePanel({ pipes = [], blends = [], bottles = [], logs = [], profile = null }) {
+export default function CollectionIntelligencePanel({ pipes = [], blends = [], bottles = [], logs = [], profile = null, tasteProfile = null }) {
   const navigate = useNavigate();
   const [insights, setInsights] = useState([]);
 
@@ -115,17 +115,82 @@ export default function CollectionIntelligencePanel({ pipes = [], blends = [], b
       }
     }
 
-    // --- Cross-collection pairing insight ---
-    const whiskyPrefs = profile?.whiskey_preferences;
-    if (whiskyPrefs?.flavors?.includes('Peated') || whiskyPrefs?.types?.includes('Scotch')) {
+    // --- LEARNED: Top pairing pattern from session history ---
+    if (tasteProfile?.pairing_patterns?.length > 0) {
+      const top = tasteProfile.pairing_patterns[0];
+      if (top.count >= 3) {
+        generated.push({
+          icon: TrendingUp,
+          label: `Your top pairing: ${top.blendType} + ${top.pipeShape} pipe`,
+          detail: `Detected across ${top.count} sessions`,
+          color: '#A574D4',
+          prompt: `Tell me more about my ${top.blendType} tobacco and ${top.pipeShape} pipe pairing pattern.`,
+        });
+      }
+    }
+
+    // --- LEARNED: Highest-rated blend insight ---
+    if (tasteProfile?.best_rated_blend && tasteProfile.best_rated_blend.rating >= 4) {
+      const b = tasteProfile.best_rated_blend;
+      generated.push({
+        icon: TrendingUp,
+        label: `Your highest-rated blend: ${b.name} (${b.rating}/5)`,
+        detail: `${b.blend_type || ''} — consider expanding this style in your cellar`,
+        color: '#8BAA7A',
+        prompt: `I consistently rate ${b.name} highly. What similar blends should I explore?`,
+      });
+    }
+
+    // --- LEARNED: Smoky cross-collection affinity ---
+    if (tasteProfile?.has_smoky_combination) {
       const latakiaBlends = blends.filter(b =>
-        b.blend_type === 'English' || b.blend_type === 'Latakia Blend' || b.blend_type === 'Balkan' ||
-        (b.tobacco_components || []).some(tc => tc.toLowerCase().includes('latakia'))
+        b.blend_type === 'English' || b.blend_type === 'Latakia Blend' || b.blend_type === 'Balkan'
+      );
+      const peatBottles = bottles.filter(b =>
+        (b.whiskey_type || '').toLowerCase().includes('scotch') ||
+        (b.flavor_notes || []).some(f => ['peated', 'smoky', 'peaty'].includes(f.toLowerCase()))
+      );
+      if (latakiaBlends.length > 0 && peatBottles.length > 0) {
+        generated.push({
+          icon: TrendingUp,
+          label: `Smoky affinity detected across your collections`,
+          detail: `${latakiaBlends.length} Latakia blends · ${peatBottles.length} peated/Scotch bottles`,
+          color: '#A574D4',
+          prompt: 'How do my Latakia blends pair with my Scotch whisky collection?',
+        });
+      }
+    }
+
+    // --- LEARNED: Sweet cross-collection affinity ---
+    if (tasteProfile?.has_sweet_combination) {
+      const virginiaBlends = blends.filter(b =>
+        b.blend_type === 'Virginia' || b.blend_type === 'Virginia/Perique'
+      );
+      const bourbonBottles = bottles.filter(b =>
+        (b.whiskey_type || '').toLowerCase().includes('bourbon')
+      );
+      if (virginiaBlends.length > 0 && bourbonBottles.length > 0) {
+        generated.push({
+          icon: TrendingUp,
+          label: `Sweet affinity detected: Virginia blends + Bourbon`,
+          detail: `${virginiaBlends.length} Virginia blends complement your bourbon selection`,
+          color: '#D4A874',
+          prompt: 'How do my Virginia blends pair with my bourbon collection?',
+        });
+      }
+    }
+
+    // --- Cross-collection pairing (profile preferences fallback) ---
+    const whiskyPrefs = profile?.whiskey_preferences;
+    if (!tasteProfile?.has_smoky_combination &&
+      (whiskyPrefs?.flavors?.includes('Peated') || whiskyPrefs?.types?.includes('Scotch'))) {
+      const latakiaBlends = blends.filter(b =>
+        b.blend_type === 'English' || b.blend_type === 'Latakia Blend' || b.blend_type === 'Balkan'
       );
       if (latakiaBlends.length > 0) {
         generated.push({
           icon: TrendingUp,
-          label: `Your Latakia blends pair well with your peated Scotch preferences`,
+          label: `Your Latakia blends pair with your peated Scotch preferences`,
           detail: `${latakiaBlends.length} blend${latakiaBlends.length > 1 ? 's' : ''} complement your whiskey profile`,
           color: '#A574D4',
           prompt: 'How do my Latakia blends pair with my whiskey collection?',
@@ -133,23 +198,20 @@ export default function CollectionIntelligencePanel({ pipes = [], blends = [], b
       }
     }
 
-    if (whiskyPrefs?.types?.includes('Bourbon') || whiskyPrefs?.flavors?.includes('Sweet')) {
-      const virginiaBlends = blends.filter(b =>
-        b.blend_type === 'Virginia' || b.blend_type === 'Virginia/Perique'
-      );
-      if (virginiaBlends.length > 0) {
+    // --- Whiskey collection balance ---
+    if (bottles.length >= 3 && tasteProfile?.preferred_whiskey_types?.length > 0) {
+      const topType = tasteProfile.preferred_whiskey_types[0];
+      const topCount = bottles.filter(b => (b.whiskey_type || b.type) === topType).length;
+      if (topCount > bottles.length * 0.6) {
         generated.push({
           icon: TrendingUp,
-          label: `Your Virginia blends complement your bourbon preferences`,
-          detail: `${virginiaBlends.length} blend${virginiaBlends.length > 1 ? 's' : ''} with natural sweetness`,
-          color: '#A574D4',
-          prompt: 'How do my Virginia blends pair with my bourbon collection?',
+          label: `Your whiskey collection leans heavily ${topType}`,
+          detail: 'Exploring other styles may open new cross-collection pairings',
+          color: '#74A5D4',
+          prompt: `I mostly drink ${topType}. What other whiskey styles complement my tobacco collection?`,
         });
       }
-    }
-
-    // --- Whiskey collection balance ---
-    if (bottles.length >= 3) {
+    } else if (bottles.length >= 3) {
       const typeCounts = {};
       bottles.forEach(b => {
         const t = b.whiskey_type || b.type || 'Unknown';
@@ -168,7 +230,7 @@ export default function CollectionIntelligencePanel({ pipes = [], blends = [], b
     }
 
     setInsights(generated.slice(0, 5));
-  }, [pipes.length, blends.length, bottles.length, logs.length, profile]);
+  }, [pipes.length, blends.length, bottles.length, logs.length, profile, tasteProfile]);
 
   if (insights.length === 0) return null;
 
