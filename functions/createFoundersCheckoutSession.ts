@@ -1,8 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import Stripe from 'npm:stripe@15.0.0';
 
 function getStripeClient() {
-  const Stripe = await import('npm:stripe@15.0.0');
-  return new Stripe.default(Deno.env.get('STRIPE_SECRET_KEY'));
+  return new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 }
 
 /**
