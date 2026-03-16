@@ -58,13 +58,23 @@ export default function WhiskeyPage() {
   ];
 
   const { data: bottles = [] } = useQuery({
-    queryKey: ['bottles', user?.email],
+    queryKey: ['bottles', user?.email, sortBy],
     queryFn: async () => {
       const result = await base44.entities.Bottle.filter({ created_by: user?.email });
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
     staleTime: 10000,
+  });
+
+  const filteredBottles = (bottles || []).sort((a, b) => {
+    if (sortBy === 'name') {
+      return (a.name || '').localeCompare(b.name || '');
+    }
+    if (sortBy === 'rating') {
+      return (Number(b.rating) || 0) - (Number(a.rating) || 0);
+    }
+    return new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime();
   });
 
   const { data: tastingLogs = [] } = useQuery({
