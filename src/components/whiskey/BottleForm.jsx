@@ -24,9 +24,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
       purchase_date: '',
       notes: '',
       rating: '',
-      fill_level: 'Full',
-      opened_date: '',
-      bottle_count: 1,
+      average_market_value: '',
       favorite: false,
       photo: '',
     }
@@ -60,14 +58,13 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Clean and convert data types
     const cleanedData = {
       ...formData,
       age: formData.age ? Number(formData.age) : null,
       abv: formData.abv ? Number(formData.abv) : null,
       purchase_price: formData.purchase_price ? Number(formData.purchase_price) : null,
+      average_market_value: formData.average_market_value ? Number(formData.average_market_value) : null,
       rating: formData.rating ? Number(formData.rating) : null,
-      bottle_count: formData.bottle_count ? Number(formData.bottle_count) : 1,
     };
     
     // Remove empty strings
