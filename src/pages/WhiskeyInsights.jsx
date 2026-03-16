@@ -207,18 +207,24 @@ export default function WhiskeyInsightsPage() {
         <div className="space-y-8">
           {/* Tab Navigation */}
           <div className="flex gap-2 flex-wrap" style={{ borderBottom: '1px solid rgba(180,140,75,0.2)' }}>
-            {['summary', 'usage', 'stats', 'trends', 'reports'].map(tab => (
+            {[
+              { key: 'summary', label: t('insights.tabSummary', 'Summary') },
+              { key: 'usage', label: t('insights.tabUsage', 'Usage') },
+              { key: 'stats', label: t('insights.tabStats', 'Statistics') },
+              { key: 'trends', label: t('insights.tabTrends', 'Trends') },
+              { key: 'reports', label: t('insights.tabReports', 'Reports') }
+            ].map(({ key, label }) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
+                key={key}
+                onClick={() => setActiveTab(key)}
                 className="px-4 py-2 rounded-lg font-medium transition-all"
                 style={{
-                  color: activeTab === tab ? '#D4A574' : 'rgba(224,216,200,0.7)',
-                  background: activeTab === tab ? 'rgba(180,140,75,0.15)' : 'transparent',
-                  borderBottom: activeTab === tab ? '2px solid #D4A574' : 'none',
+                  color: activeTab === key ? '#D4A574' : 'rgba(224,216,200,0.7)',
+                  background: activeTab === key ? 'rgba(180,140,75,0.15)' : 'transparent',
+                  borderBottom: activeTab === key ? '2px solid #D4A574' : 'none',
                 }}
               >
-                {t(`insights.tab_${tab}`) || tab}
+                {label}
               </button>
             ))}
           </div>
