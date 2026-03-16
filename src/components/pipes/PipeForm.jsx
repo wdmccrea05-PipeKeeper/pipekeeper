@@ -248,6 +248,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     setCropperType(isStamping ? 'stamping' : 'photo');
   };
 
+  const handleOnlineImageSelected = (imageUrl) => {
+    setCropperImage(imageUrl);
+    setCropperType(onlineSearchType || 'photo');
+    setShowOnlineSearch(false);
+    setOnlineSearchType(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
