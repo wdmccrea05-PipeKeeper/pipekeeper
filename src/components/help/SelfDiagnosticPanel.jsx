@@ -1,0 +1,197 @@
+import React, { useState, useEffect } from 'react';
+import { AlertCircle, CheckCircle2, Loader2, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/components/i18n/safeTranslation';
+import { base44 } from '@/api/base44Client';
+
+export default function SelfDiagnosticPanel() {
+  const { t } = useTranslation();
+  const [issues, setIssues] = useState([]);
+  const [isScanning, setIsScanning] = useState(false);
+  const [hasScanned, setHasScanned] = useState(false);
+
+  const diagnostics = [
+    {
+      id: 'stale-pairings',
+      name: 'Stale AI Pairings',
+      check: async () => {
+        // Check if pairings are older than collection changes
+        const pairings = await base44.entities.PairingMatrix?.filter?.({});
+        if (!pairings || pairings.length === 0) return null;
+        
+        const pairing = pairings[0];
+        const pairingDate = new Date(pairing.generated_date).getTime();
+        const now = Date.now();
+        const daysSince = (now - pairingDate) / (1000 * 60 * 60 * 24);
+        
+        return daysSince > 7 ? {
+          severity: 'warning',
+          message: t('help.stalePairingsMsg', `Your pairings are ${Math.floor(daysSince)} days old`),
+          action: 'Regenerate Pairings',
+          actionUrl: '/PipeKeeper?tab=pairings'
+        } : null;
+      }
+    },
+    {
+      id: 'cached-ui',
+      name: 'Cached UI Issues',
+      check: () => {
+        // Check if service worker is cached
+        if ('serviceWorker' in navigator) {
+          return {
+            severity: 'info',
+            message: t('help.cacheDetected', 'App cache detected. Hard refresh if features are missing.'),
+            action: 'Hard Refresh (Ctrl+Shift+R)',
+            actionType: 'keyboard'
+          };
+        }
+        return null;
+      }
+    },
+    {
+      id: 'stale-insights',
+      name: 'Stale Insights',
+      check: async () => {
+        // Check if insights need refresh
+        const lastInsightRefresh = sessionStorage.getItem('pk_last_insight_refresh');
+        if (lastInsightRefresh) {
+          const lastTime = new Date(lastInsightRefresh).getTime();
+          const now = Date.now();
+          const hoursSince = (now - lastTime) / (1000 * 60 * 60);
+          
+          if (hoursSince > 4) {
+            return {
+              severity: 'info',
+              message: t('help.staleInsights', 'Insights not updated in the last few hours'),
+              action: 'Refresh Insights',
+              actionUrl: '/Insights'
+            };
+          }
+        }
+        return null;
+      }
+    },
+    {
+      id: 'missing-regeneration',
+      name: 'Missing Pairing Regeneration',
+      check: async () => {
+        // Check if collection has changed since last pairing generation
+        const pipes = await base44.entities.Pipe?.list?.();
+        const pairings = await base44.entities.PairingMatrix?.filter?.({});
+        
+        if (!pipes || !pairings || pairings.length === 0) return null;
+        
+        const pairingDate = new Date(pairings[0].generated_date).getTime();
+        const hasRecentPipe = pipes.some(p => {
+          const pipeDate = new Date(p.updated_date || p.created_date).getTime();
+          return pipeDate > pairingDate;
+        });
+        
+        if (hasRecentPipe) {
+          return {
+            severity: 'warning',
+            message: t('help.needsRegeneration', 'Collection changed since last pairing generation'),
+            action: 'Regenerate',
+            actionUrl: '/PipeKeeper?tab=pairings'
+          };
+        }
+        return null;
+      }
+    }
+  ];
+
+  const runDiagnostics = async () => {
+    setIsScanning(true);
+    setIssues([]);
+
+    for (const diagnostic of diagnostics) {
+      try {
+        const issue = await diagnostic.check();
+        if (issue) {
+          setIssues(prev => [...prev, {
+            id: diagnostic.id,
+            name: diagnostic.name,
+            ...issue
+          }]);
+        }
+      } catch (e) {
+        console.warn(`Diagnostic ${diagnostic.id} failed:`, e);
+      }
+    }
+
+    setIsScanning(false);
+    setHasScanned(true);
+  };
+
+  return (
+    <div className="rounded-lg border border-[rgba(180,140,75,0.2)] bg-[rgba(180,140,75,0.05)] p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-semibold text-[#F5F1E7]">
+          {t('help.selfDiagnostic', 'System Diagnostic')}
+        </h3>
+        <Button
+          onClick={runDiagnostics}
+          disabled={isScanning}
+          size="sm"
+          variant="outline"
+          className="gap-2"
+        >
+          {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+          {isScanning ? t('help.scanning', 'Scanning...') : t('help.runDiagnostic', 'Run Diagnostic')}
+        </Button>
+      </div>
+
+      {hasScanned && issues.length === 0 && !isScanning && (
+        <div className="flex items-center gap-2 text-sm text-[#10B981]">
+          <CheckCircle2 className="w-4 h-4" />
+          {t('help.allSystemsNormal', 'All systems normal')}
+        </div>
+      )}
+
+      {issues.length > 0 && (
+        <div className="space-y-3">
+          {issues.map((issue) => (
+            <div
+              key={issue.id}
+              className={`p-3 rounded-lg border flex items-start gap-3 ${
+                issue.severity === 'warning'
+                  ? 'border-[rgba(240,167,0,0.2)] bg-[rgba(240,167,0,0.05)]'
+                  : 'border-[rgba(100,150,200,0.2)] bg-[rgba(100,150,200,0.05)]'
+              }`}
+            >
+              <AlertCircle
+                className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
+                  issue.severity === 'warning' ? 'text-[#F59E0B]' : 'text-[#3B82F6]'
+                }`}
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-[#F5F1E7]">{issue.name}</p>
+                <p className="text-xs text-[#D7C9B2]/70 mt-1">{issue.message}</p>
+                {issue.action && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-2 text-xs h-7"
+                    onClick={issue.actionType === 'keyboard' ? undefined : () => {
+                      if (issue.actionUrl) {
+                        window.location.href = issue.actionUrl;
+                      }
+                    }}
+                  >
+                    {issue.action}
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!hasScanned && !isScanning && (
+        <p className="text-xs text-[#D7C9B2]/60">
+          {t('help.diagnosticDesc', 'Check for common issues like stale data, caching problems, and outdated AI insights')}
+        </p>
+      )}
+    </div>
+  );
+}
