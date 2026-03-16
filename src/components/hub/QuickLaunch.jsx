@@ -1,23 +1,46 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { Wind, Leaf, BookOpen, FlaskConical, TrendingUp, GlassWater, Sparkles } from 'lucide-react';
+import { Leaf, BookOpen, TrendingUp } from 'lucide-react';
+
+const PIPE_ICON_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
+
+function PipeImgIcon({ className, style }) {
+  return (
+    <img
+      src={PIPE_ICON_URL}
+      alt="pipe"
+      className={className}
+      style={{ ...style, filter: 'brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.95)' }}
+    />
+  );
+}
+
+function WhiskeyBottleIcon({ className, style }) {
+  return (
+    <svg className={className} style={style} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9 2h6v3l2 3v11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8l2-3V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M7 13h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M9 2h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
 
 export default function QuickLaunch() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const pipeActions = [
-    { label: t('pipekeeper.addPipe') || 'Add Pipe', icon: Wind, path: '/Pipes', accent: '#D4A574' },
+    { label: t('pipekeeper.addPipe') || 'Add Pipe', icon: PipeImgIcon, path: '/Pipes', accent: '#D4A574' },
     { label: t('pipekeeper.addBlend') || 'Add Blend', icon: Leaf, path: '/Tobacco', accent: '#5A7C5A' },
     { label: t('pipekeeper.logSession') || 'Log Session', icon: BookOpen, path: '/Insights', accent: '#C87941' },
     { label: t('nav.insights') || 'Insights', icon: TrendingUp, path: '/Insights', accent: '#8B5CF6' },
   ];
 
   const whiskeyActions = [
-    { label: t('whiskeykeeper.addBottle') || 'Add Bottle', icon: GlassWater, path: '/Whiskey', accent: '#D4A574' },
-    { label: t('whiskeykeeper.logTasting') || 'Log Tasting', icon: FlaskConical, path: '/Whiskey', accent: '#C87941' },
-    { label: t('nav.bottles') || 'Bottles', icon: GlassWater, path: '/Whiskey', accent: '#B48C4B' },
+    { label: t('whiskeykeeper.addBottle') || 'Add Bottle', icon: WhiskeyBottleIcon, path: '/Whiskey', accent: '#D4A574' },
+    { label: t('whiskeykeeper.logTasting') || 'Log Tasting', icon: BookOpen, path: '/Whiskey', accent: '#C87941' },
+    { label: t('nav.bottles') || 'Bottles', icon: WhiskeyBottleIcon, path: '/Whiskey', accent: '#B48C4B' },
     { label: t('nav.insights') || 'Insights', icon: TrendingUp, path: '/WhiskeyInsights', accent: '#8B5CF6' },
   ];
 
