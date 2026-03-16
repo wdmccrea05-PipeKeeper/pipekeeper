@@ -132,49 +132,62 @@ export default function CollectionStoryCard() {
       </p>
 
       {/* Highlights */}
-      {(story.highlights.mostUsedPipe || story.highlights.favoritePipe || story.highlights.favoriteBlend) && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 text-xs">
-          {story.highlights.mostUsedPipe && (
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
-              <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
-                Most Used
-              </div>
-              <div style={{ color: '#F5F1E7' }} className="truncate">
-                {story.highlights.mostUsedPipe.name}
-              </div>
-              <div style={{ color: 'rgba(224,216,200,0.5)' }}>
-                {story.highlights.mostUsedPipe.uses} sessions
-              </div>
-            </div>
-          )}
-          {story.highlights.favoriteBlend && (
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
-              <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
-                Favorite Blend
-              </div>
-              <div style={{ color: '#F5F1E7' }} className="truncate">
-                {story.highlights.favoriteBlend.name}
-              </div>
-              <div style={{ color: 'rgba(224,216,200,0.5)' }}>
-                ★ {story.highlights.favoriteBlend.rating}/5
-              </div>
-            </div>
-          )}
-          {story.highlights.mostValuableItem && (
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
-              <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
-                Crown Jewel
-              </div>
-              <div style={{ color: '#F5F1E7' }} className="truncate">
-                {story.highlights.mostValuableItem.name}
-              </div>
-              <div style={{ color: 'rgba(224,216,200,0.5)' }}>
-                ${Math.round(story.highlights.mostValuableItem.value)}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+       {(story.highlights.mostUsedPipe || story.highlights.favoriteBlend || story.highlights.mostTastedBottle || story.highlights.mostValuableItem) && (
+         <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4 text-xs">
+           {story.highlights.mostUsedPipe && (
+             <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
+               <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
+                 Most Used Pipe
+               </div>
+               <div style={{ color: '#F5F1E7' }} className="truncate">
+                 {story.highlights.mostUsedPipe.name}
+               </div>
+               <div style={{ color: 'rgba(224,216,200,0.5)' }}>
+                 {story.highlights.mostUsedPipe.uses} sessions
+               </div>
+             </div>
+           )}
+           {story.highlights.favoriteBlend && (
+             <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
+               <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
+                 Top Blend
+               </div>
+               <div style={{ color: '#F5F1E7' }} className="truncate">
+                 {story.highlights.favoriteBlend.name}
+               </div>
+               <div style={{ color: 'rgba(224,216,200,0.5)' }}>
+                 ★ {story.highlights.favoriteBlend.rating}/5
+               </div>
+             </div>
+           )}
+           {story.highlights.mostTastedBottle && (
+             <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
+               <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
+                 Most Tasted
+               </div>
+               <div style={{ color: '#F5F1E7' }} className="truncate">
+                 {story.highlights.mostTastedBottle.name}
+               </div>
+               <div style={{ color: 'rgba(224,216,200,0.5)' }}>
+                 {story.highlights.mostTastedBottle.tastings} tastings
+               </div>
+             </div>
+           )}
+           {story.highlights.mostValuableItem && (
+             <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
+               <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
+                 Crown Jewel
+               </div>
+               <div style={{ color: '#F5F1E7' }} className="truncate">
+                 {story.highlights.mostValuableItem.name}
+               </div>
+               <div style={{ color: 'rgba(224,216,200,0.5)' }}>
+                 ${Math.round(story.highlights.mostValuableItem.value)}
+               </div>
+             </div>
+           )}
+         </div>
+       )}
 
       {/* Actions */}
        <div className="flex gap-2 pt-2">

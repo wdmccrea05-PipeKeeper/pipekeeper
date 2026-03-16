@@ -266,7 +266,7 @@ export default function CollectionHub() {
               {t('hub.whiskey')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
-              {bottles.filter(b => b.bottle_type === 'whiskey').length}
+              {summary.whiskey.count}
             </p>
           </div>
           <div className="space-y-2">
@@ -274,7 +274,7 @@ export default function CollectionHub() {
               {t('hub.wine')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#A35C6C' }}>
-              {bottles.filter(b => b.bottle_type === 'wine').length}
+              0
             </p>
           </div>
           <div className="space-y-2">

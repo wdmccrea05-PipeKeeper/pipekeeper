@@ -73,6 +73,8 @@ export default {
     pipes: "Pipes",
     blends: "Blends",
     bottles: "Bottles",
+    whiskey: "Whiskey",
+    wine: "Wine",
     activeModules: "Active Modules",
     items: "Items",
     openModule: "Open Module",

@@ -43,12 +43,14 @@ Deno.serve(async (req) => {
     const blends = await base44.entities.TobaccoBlend.filter({ created_by: user.email });
     const bottles = await base44.entities.Bottle.filter({ created_by: user.email });
     const logs = await base44.entities.SmokingLog.filter({ created_by: user.email });
+    const tastingLogs = await base44.entities.TastingLog.filter({ created_by: user.email });
 
     // Ensure arrays
     const pipesList = Array.isArray(pipes) ? pipes : [];
     const blendsList = Array.isArray(blends) ? blends : [];
     const bottlesList = Array.isArray(bottles) ? bottles : [];
     const logsList = Array.isArray(logs) ? logs : [];
+    const tastingLogsList = Array.isArray(tastingLogs) ? tastingLogs : [];
 
     // Calculate collection metrics using unified value functions
     const totalValue = pipesList.reduce((sum, p) => sum + getPipeValue(p), 0) +
@@ -85,6 +87,13 @@ Deno.serve(async (req) => {
     });
     const dominantWhiskyType = Object.entries(whiskyTypes).sort((a, b) => b[1] - a[1])[0]?.[0];
 
+    // Find most tasted bottle
+    const bottleUsage = {};
+    tastingLogsList.forEach(log => {
+      bottleUsage[log.bottle_name] = (bottleUsage[log.bottle_name] || 0) + 1;
+    });
+    const mostTastedBottle = bottlesList.find(b => bottleUsage[b.name] === Math.max(...Object.values(bottleUsage), 0));
+
     // Calculate pairing patterns
     const pairingPatterns = {};
     logsList.forEach(log => {
@@ -112,12 +121,20 @@ Deno.serve(async (req) => {
 
     let narrative = `You've built a thoughtful collection of ${collectionSize.pipes} pipe${collectionSize.pipes !== 1 ? 's' : ''}, ${collectionSize.blends} blend${collectionSize.blends !== 1 ? 's' : ''}, and ${collectionSize.bottles} bottle${collectionSize.bottles !== 1 ? 's' : ''}. `;
 
-    if (dominantBlendType && dominantWhiskyType) {
-      narrative += `Your tastes lean toward ${dominantBlendType.toLowerCase()} tobaccos paired with ${dominantWhiskyType.toLowerCase()}s. `;
+    if (dominantBlendType) {
+      narrative += `Your tobacco preferences lean toward ${dominantBlendType.toLowerCase()}. `;
+    }
+
+    if (dominantWhiskyType) {
+      narrative += `Your whiskey collection emphasizes ${dominantWhiskyType.toLowerCase()}s. `;
     }
 
     if (mostUsedPipe) {
       narrative += `Your most-reached-for pipe is the ${mostUsedPipe.name}. `;
+    }
+
+    if (mostTastedBottle) {
+      narrative += `Your most-tasted whiskey is the ${mostTastedBottle.name}. `;
     }
 
     if (underusedPipes.length > 0) {
@@ -142,6 +159,7 @@ Deno.serve(async (req) => {
         favoritePipe: favorites.pipe ? { name: favorites.pipe.name, id: favorites.pipe.id, rating: favorites.pipe.rating } : null,
         favoriteBlend: favorites.blend ? { name: favorites.blend.name, id: favorites.blend.id, rating: favorites.blend.rating } : null,
         favoriteBottle: favorites.bottle ? { name: favorites.bottle.name, id: favorites.bottle.id, rating: favorites.bottle.rating } : null,
+        mostTastedBottle: mostTastedBottle ? { name: mostTastedBottle.name, id: mostTastedBottle.id, tastings: bottleUsage[mostTastedBottle.name] } : null,
         mostValuableItem: mostValuable ? { name: mostValuable.name, id: mostValuable.id, type: mostValuable.type, value: Math.round(mostValuable.value) } : null,
         underusedCount: underusedPipes.length,
         dominantBlendType,
