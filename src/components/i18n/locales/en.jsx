@@ -175,6 +175,7 @@ export default {
   whiskey: {
     name: "Name",
     distillery: "Distillery",
+    unknownDistillery: "Unknown Distillery",
     region: "Region",
     country: "Country",
     type: "Type",
@@ -193,10 +194,17 @@ export default {
     editBottle: "Edit Bottle",
     updateBottle: "Update Bottle",
     logTasting: "Log Tasting",
+    manageInventory: "Manage Inventory",
+    inventory: "Inventory",
+    value: "Value",
+    tastingHistory: "Tasting History",
     noBottlesYet: "No bottles yet",
     startTracking: "Start tracking your whiskey collection",
     addFirstBottle: "Add Your First Bottle",
     recentTastings: "Recent Tastings",
+    newestFirst: "Newest First",
+    byName: "By Name",
+    byRating: "By Rating",
   },
 
   footer: {
