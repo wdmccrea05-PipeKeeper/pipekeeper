@@ -20,69 +20,182 @@ Deno.serve(async (req) => {
       sessionHistory = [], // Track last N recommendations to avoid repetition
     } = await req.json();
 
-    // Score items based on mode
-    function scoreItem(item, mode, itemType, tasteProfile, userProfile) {
+    // Score items based on mode with distinct weighting strategies
+    function scoreItem(item, mode, itemType, tasteProfile, userProfile, sessionHistory = []) {
       let score = 0;
+      let debugFactors = {};
 
-      // Favorites and ratings
-      if (item.is_favorite) score += 30;
-      if (item.rating) score += item.rating * 5;
-
-      // Calculate underuse factor
-      let underuseFactor = 0;
-      if (tasteProfile && itemType === 'pipe' && tasteProfile.pipe_usage) {
-        const avgUsage = tasteProfile.pipe_usage.avg || 5;
-        const itemUsage = tasteProfile.pipe_usage[item.id] || 0;
-        underuseFactor = Math.max(0, avgUsage - itemUsage);
-      } else if (tasteProfile && itemType === 'blend' && tasteProfile.blend_usage) {
-        const avgUsage = tasteProfile.blend_usage.avg || 5;
-        const itemUsage = tasteProfile.blend_usage[item.id] || 0;
-        underuseFactor = Math.max(0, avgUsage - itemUsage);
-      } else if (tasteProfile && itemType === 'bottle' && tasteProfile.bottle_usage) {
-        const avgUsage = tasteProfile.bottle_usage.avg || 3;
-        const itemUsage = tasteProfile.bottle_usage[item.id] || 0;
-        underuseFactor = Math.max(0, avgUsage - itemUsage);
+      // **BALANCED MODE**: Prioritize favorites + moderately underused + strong ratings
+      if (mode === 'balanced') {
+        // Base score from favorites and ratings
+        if (item.is_favorite) {
+          score += 40;
+          debugFactors.favorite = 40;
+        }
+        if (item.rating) {
+          const ratingBonus = item.rating * 6;
+          score += ratingBonus;
+          debugFactors.rating = ratingBonus;
+        }
+        // Moderate underuse bonus
+        const underuse = getUnderUseFactor(item, itemType, tasteProfile);
+        const underuseBonus = underuse * 10;
+        score += underuseBonus;
+        debugFactors.underuse = underuseBonus;
+        // Avoid very recent items (1 week)
+        const recencyPenalty = getRecencyPenalty(item, 7, 8);
+        score -= recencyPenalty;
+        debugFactors.recency = -recencyPenalty;
       }
 
-      // Mode-specific underuse scoring
-      if (mode === 'rotation') {
-        score += underuseFactor * 20;
-      } else if (mode === 'balanced') {
-        score += underuseFactor * 8;
-      } else if (mode === 'favorites') {
-        score -= underuseFactor * 10; // Penalize underused in favorites mode
-      } else if (mode === 'exploration') {
-        score += underuseFactor * 15;
-      } else if (mode === 'relaxed') {
-        // Prefer mild strength
-        if (itemType === 'blend' && item.strength === 'Mild') {
-          score += 15;
-        } else if (itemType === 'blend' && item.strength === 'Mild-Medium') {
-          score += 8;
+      // **ROTATION MODE**: Heavily prioritize underused items, avoid recent
+      else if (mode === 'rotation') {
+        // Underuse is primary driver
+        const underuse = getUnderUseFactor(item, itemType, tasteProfile);
+        const underuseBonus = underuse * 35; // Much higher weight
+        score += underuseBonus;
+        debugFactors.underuse = underuseBonus;
+        // Small rating bonus
+        if (item.rating) {
+          const ratingBonus = item.rating * 2;
+          score += ratingBonus;
+          debugFactors.rating = ratingBonus;
+        }
+        // Strongly penalize recent use (3 days)
+        const recencyPenalty = getRecencyPenalty(item, 3, 25);
+        score -= recencyPenalty;
+        debugFactors.recency = -recencyPenalty;
+        // Penalty for favorites (want variety, not same favorites)
+        if (item.is_favorite) {
+          score -= 15;
+          debugFactors.favoriteOverride = -15;
         }
       }
 
-      // Avoid recently used items
-      if (item.last_smoked_date) {
-        const lastSmoked = new Date(item.last_smoked_date);
-        const daysSince = Math.floor((Date.now() - lastSmoked.getTime()) / (1000 * 60 * 60 * 24));
-        if (daysSince < 3) {
-          score -= (3 - daysSince) * 15;
+      // **FAVORITES MODE**: Strongly prefer high-rated and favorite items
+      else if (mode === 'favorites') {
+        // Favorites are very important
+        if (item.is_favorite) {
+          score += 60;
+          debugFactors.favorite = 60;
         }
+        // High ratings are critical
+        if (item.rating) {
+          const ratingBonus = item.rating * 12; // Double weight vs balanced
+          score += ratingBonus;
+          debugFactors.rating = ratingBonus;
+        }
+        // Penalize underused (we want familiar favorites)
+        const underuse = getUnderUseFactor(item, itemType, tasteProfile);
+        score -= underuse * 5;
+        debugFactors.underusePenalty = -underuse * 5;
+        // Don't heavily penalize recent (we like our favorites)
+        const recencyPenalty = getRecencyPenalty(item, 7, 3);
+        score -= recencyPenalty;
+        debugFactors.recency = -recencyPenalty;
       }
 
-      // Check previous pairings (for exploration mode)
-      if (mode === 'exploration' && previousPairings.length > 0) {
-        const usedBefore = previousPairings.some(p => {
-          if (itemType === 'pipe') return p.pipe_id === item.id;
-          if (itemType === 'blend') return p.blend_id === item.id;
-          if (itemType === 'bottle') return p.bottle_id === item.id;
+      // **EXPLORATION MODE**: Prioritize untested combinations and diversity
+      else if (mode === 'exploration') {
+        // Base score
+        if (item.rating) {
+          const ratingBonus = item.rating * 4;
+          score += ratingBonus;
+          debugFactors.rating = ratingBonus;
+        }
+        // Bonus for untested items
+        const underuse = getUnderUseFactor(item, itemType, tasteProfile);
+        const unexploredBonus = underuse * 25; // High weight for novelty
+        score += unexploredBonus;
+        debugFactors.unexplored = unexploredBonus;
+        // Bonus if not in recent history
+        const notInHistory = !sessionHistory.some(h => {
+          if (itemType === 'pipe') return h.pipe_id === item.id;
+          if (itemType === 'blend') return h.blend_id === item.id;
+          if (itemType === 'bottle') return h.whiskey_id === item.id;
           return false;
         });
-        if (!usedBefore) score += 20; // Bonus for untested items
+        if (notInHistory) {
+          score += 15;
+          debugFactors.notInHistory = 15;
+        }
+        // Moderate recency penalty
+        const recencyPenalty = getRecencyPenalty(item, 5, 12);
+        score -= recencyPenalty;
+        debugFactors.recency = -recencyPenalty;
       }
 
+      // **RELAXED MODE**: Strongly prefer smoother, easier profiles
+      else if (mode === 'relaxed') {
+        // Strength is critical for relaxed
+        if (itemType === 'blend') {
+          if (item.strength === 'Mild') {
+            score += 50;
+            debugFactors.mildStrength = 50;
+          } else if (item.strength === 'Mild-Medium') {
+            score += 30;
+            debugFactors.mildMedium = 30;
+          } else if (item.strength === 'Medium') {
+            score += 10;
+            debugFactors.medium = 10;
+          } else {
+            score -= 20; // Penalize strong blends
+            debugFactors.strongPenalty = -20;
+          }
+        }
+        // For whiskey, prefer lower ABV and smoother profiles
+        if (itemType === 'bottle') {
+          if (item.abv && item.abv < 45) {
+            score += 30;
+            debugFactors.smoothABV = 30;
+          }
+          // Penalize peated/smoky in relaxed mode
+          if (item.flavor_notes?.some(f => f.toLowerCase().includes('peat'))) {
+            score -= 25;
+            debugFactors.peatedPenalty = -25;
+          }
+        }
+        // Moderate rating bonus
+        if (item.rating) {
+          const ratingBonus = item.rating * 5;
+          score += ratingBonus;
+          debugFactors.rating = ratingBonus;
+        }
+        // Slight recency penalty (familiar comfort is OK)
+        const recencyPenalty = getRecencyPenalty(item, 10, 5);
+        score -= recencyPenalty;
+        debugFactors.recency = -recencyPenalty;
+      }
+
+      item._debugFactors = debugFactors;
       return Math.max(0, score);
+    }
+
+    // Helper: Calculate underuse factor
+    function getUnderUseFactor(item, itemType, tasteProfile) {
+      if (!tasteProfile) return 0;
+      let avg = 5;
+      let usage = 0;
+      if (itemType === 'pipe' && tasteProfile.pipe_usage) {
+        avg = tasteProfile.pipe_usage.avg || 5;
+        usage = tasteProfile.pipe_usage[item.id] || 0;
+      } else if (itemType === 'blend' && tasteProfile.blend_usage) {
+        avg = tasteProfile.blend_usage.avg || 5;
+        usage = tasteProfile.blend_usage[item.id] || 0;
+      } else if (itemType === 'bottle' && tasteProfile.bottle_usage) {
+        avg = tasteProfile.bottle_usage.avg || 3;
+        usage = tasteProfile.bottle_usage[item.id] || 0;
+      }
+      return Math.max(0, avg - usage);
+    }
+
+    // Helper: Calculate recency penalty
+    function getRecencyPenalty(item, dayThreshold, maxPenalty) {
+      if (!item.last_smoked_date) return 0;
+      const lastSmoked = new Date(item.last_smoked_date);
+      const daysSince = Math.floor((Date.now() - lastSmoked.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysSince >= dayThreshold) return 0;
+      return ((dayThreshold - daysSince) / dayThreshold) * maxPenalty;
     }
 
     // Score all items
