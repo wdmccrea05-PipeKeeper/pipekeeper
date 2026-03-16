@@ -39,7 +39,7 @@ export default function Home() {
   const moduleNavItems = [
     { name: t('nav.pipes') || 'Pipes', path: '/Pipes', icon: Wind },
     { name: t('nav.tobacco') || 'Tobacco', path: '/Tobacco', icon: Leaf },
-    { name: t('nav.smokingLog') || 'Sessions', path: '/Home', icon: BookOpen },
+    { name: t('nav.smokingLog') || 'Sessions', path: '/Insights', icon: BookOpen },
     { name: t('nav.insights') || 'Insights', path: '/Insights', icon: TrendingUp },
   ];
 

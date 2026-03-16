@@ -1,265 +1,183 @@
-import React, { useState } from 'react';
-import { useTranslation } from '@/components/i18n/safeTranslation';
-import { formatCurrency } from '@/components/utils/localeFormatters';
+import React, { useState } from "react";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle 
-} from "@/components/ui/dialog";
-import { Loader2, Search, Plus } from "lucide-react";
-import { base44 } from "@/api/base44Client";
-import { motion, AnimatePresence } from "framer-motion";
+import { Search, Plus, Loader2, GlassWater } from "lucide-react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
-export default function QuickSearchBottle({ open, onOpenChange, onAdd }) {
+export default function QuickSearchBottle({ isOpen, onClose, onBottleAdded }) {
   const { t } = useTranslation();
-  const [query, setQuery] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
-  const [adding, setAdding] = useState(null);
+  const [searching, setSearching] = useState(false);
+  const [addingId, setAddingId] = useState(null);
+  const [searched, setSearched] = useState(false);
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const handleSearch = async () => {
     if (!query.trim()) return;
+    setSearching(true);
+    setSearched(true);
+    setResults([]);
 
-    setLoading(true);
-    try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Search for information about this whiskey/bourbon bottle: "${query}"
-
-Search the web for detailed information about this specific whiskey. Include:
-- Exact distillery name and location
-- Full product name
-- Type of whiskey (Bourbon, Scotch, Rye, etc.)
-- Age statement if available
-- ABV (alcohol by volume)
-- Standard bottle size
-- Region/country of origin
-- Tasting notes and flavor profile
-- Typical market price
-- Production status (current, discontinued, limited edition)
-- Any notable characteristics or awards
-
-Return an array of relevant whiskey matches with detailed information. Include 3-5 results if possible.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            bottles: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  distillery: { type: "string" },
-                  region: { type: "string" },
-                  country: { type: "string" },
-                  type: { type: "string" },
-                  age: { type: "number" },
-                  abv: { type: "number" },
-                  bottle_size: { type: "string" },
-                  tasting_notes: { type: "string" },
-                  typical_price: { type: "number" },
-                  production_status: { type: "string" },
-                  description: { type: "string" }
-                }
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt: `You are a whiskey expert database. Search for whiskey bottles matching: "${query}".
+Return up to 5 matching bottles as structured data. For each bottle, provide all known details.
+Return a JSON object with a "bottles" array.`,
+      add_context_from_internet: true,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          bottles: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                distillery: { type: "string" },
+                region: { type: "string" },
+                country: { type: "string" },
+                type: { type: "string" },
+                age_years: { type: "number" },
+                abv: { type: "number" },
+                bottle_size_ml: { type: "number" },
+                typical_price_usd: { type: "number" },
+                description: { type: "string" },
               }
             }
           }
         }
-      });
+      }
+    });
 
-      setResults(result.bottles || []);
-    } catch (err) {
-      console.error('Search error:', err);
-    } finally {
-      setLoading(false);
-    }
+    setResults(result?.bottles || []);
+    setSearching(false);
   };
 
-  const handleAddBottle = async (bottle) => {
-    setAdding(bottle.name);
-    try {
-      const bottleData = {
-        name: bottle.name || '',
-        distillery: bottle.distillery || '',
-        region: bottle.region || '',
-        country: bottle.country || '',
-        type: bottle.type || 'Other',
-        age: bottle.age || null,
-        abv: bottle.abv || null,
-        bottle_size: bottle.bottle_size || '750ml',
-        notes: bottle.tasting_notes || bottle.description || '',
-        purchase_price: bottle.typical_price || null,
-        fill_level: 'Full',
-        bottle_count: 1,
-        favorite: false
-      };
+  const handleAdd = async (bottle) => {
+    setAddingId(bottle.name);
+    const bottleData = {
+      name: bottle.name,
+      distillery: bottle.distillery,
+      region: bottle.region,
+      country: bottle.country,
+      type: bottle.type,
+      age_years: bottle.age_years,
+      abv: bottle.abv,
+      bottle_size_ml: bottle.bottle_size_ml || 750,
+      purchase_price: bottle.typical_price_usd,
+    };
+    const created = await base44.entities.Bottle.create(bottleData);
+    setAddingId(null);
+    onBottleAdded?.(created);
+    onClose();
+    setQuery("");
+    setResults([]);
+    setSearched(false);
+  };
 
-      const created = await base44.entities.Bottle.create(bottleData);
-      
-      onAdd(created);
-      
-      setQuery('');
-      setResults([]);
-      onOpenChange(false);
-    } catch (err) {
-      console.error('Add error:', err);
-    } finally {
-      setAdding(null);
-    }
+  const handleClose = () => {
+    onClose();
+    setQuery("");
+    setResults([]);
+    setSearched(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-lg" style={{
+        background: "linear-gradient(145deg, rgba(40,28,20,0.98), rgba(30,20,14,0.99))",
+        border: "1px solid rgba(140,105,65,0.4)"
+      }}>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Search className="w-5 h-5 text-amber-600" />
+          <DialogTitle className="text-[#F5F1E7] flex items-center gap-2">
+            <GlassWater className="w-5 h-5 text-amber-400" />
             {t("quickSearch.quickSearchAddBottle")}
           </DialogTitle>
-          <DialogDescription>
-            {t("quickSearch.searchBottleDesc")}
-          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 mt-4">
-          <form onSubmit={handleSearch} className="flex gap-2">
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("quickSearch.bottlePlaceholder")}
-              className="border-stone-200"
-              autoFocus
-            />
-            <Button 
-              type="submit" 
-              disabled={loading || !query.trim()}
-              className="bg-amber-700 hover:bg-amber-800 shrink-0"
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <Search className="w-4 h-4 mr-2" />
-                  {t("common.search")}
-                </>
-              )}
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 w-4 h-4 text-[#E0D8C8]/50" />
+              <Input
+                placeholder={t("quickSearch.bottlePlaceholder")}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="pl-10"
+                autoFocus
+              />
+            </div>
+            <Button onClick={handleSearch} disabled={searching || !query.trim()}>
+              {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             </Button>
-          </form>
+          </div>
 
-          <AnimatePresence>
-            {results.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-3"
+          {!searched && (
+            <p className="text-xs text-center" style={{ color: "rgba(224, 216, 200, 0.5)" }}>
+              {t("quickSearch.bottleExamples")}
+            </p>
+          )}
+
+          {searching && (
+            <div className="text-center py-6">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-amber-400" />
+              <p className="text-sm" style={{ color: "rgba(224, 216, 200, 0.7)" }}>{t("common.searching")}</p>
+            </div>
+          )}
+
+          {!searching && searched && results.length === 0 && (
+            <div className="text-center py-6 text-[#E0D8C8]/60">
+              <GlassWater className="w-10 h-10 mx-auto mb-2 opacity-30" />
+              <p className="text-sm">{t("quickSearch.noResults")}</p>
+            </div>
+          )}
+
+          <div className="space-y-2 max-h-80 overflow-y-auto">
+            {results.map((bottle, i) => (
+              <div
+                key={i}
+                className="p-4 rounded-lg"
+                style={{
+                  background: "linear-gradient(135deg, rgba(52,37,24,0.6), rgba(42,30,18,0.75))",
+                  border: "1px solid rgba(140,105,65,0.25)"
+                }}
               >
-                <p className="text-sm font-medium text-stone-700">
-                  {t("quickSearch.foundResults", { count: results.length })}
-                </p>
-                {results.map((bottle, idx) => (
-                  <Card
-                    key={idx}
-                    className="border-stone-300 bg-stone-50/70 hover:border-amber-400 transition-colors"
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-[#F5F1E7] truncate">{bottle.name}</p>
+                    {bottle.distillery && (
+                      <p className="text-sm text-[#E0D8C8]/70">{bottle.distillery}</p>
+                    )}
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {bottle.type && <Badge className="text-xs bg-amber-900/50 text-amber-200 border-amber-700/40">{bottle.type}</Badge>}
+                      {bottle.region && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.region}</Badge>}
+                      {bottle.age_years && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.age_years}yr</Badge>}
+                      {bottle.abv && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.abv}%</Badge>}
+                      {bottle.typical_price_usd && <Badge className="text-xs bg-emerald-900/40 text-emerald-300 border-emerald-700/40">${bottle.typical_price_usd}</Badge>}
+                    </div>
+                    {bottle.description && (
+                      <p className="text-xs text-[#E0D8C8]/50 mt-1 line-clamp-2">{bottle.description}</p>
+                    )}
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => handleAdd(bottle)}
+                    disabled={addingId === bottle.name}
+                    className="shrink-0"
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 font-sans">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-semibold text-stone-950 text-[1.05rem] leading-snug tracking-[0.01em]">{bottle.name}</h4>
-                          </div>
-                          <p className="text-sm text-stone-800 font-semibold">{bottle.distillery}</p>
-                          {bottle.region && bottle.country && (
-                            <p className="text-xs font-medium text-stone-600 mt-1">{bottle.region}, {bottle.country}</p>
-                          )}
-                          {bottle.description && (
-                            <p className="text-sm font-medium text-stone-700 mt-2 leading-relaxed">{bottle.description}</p>
-                          )}
-                          <div className="flex flex-wrap gap-1.5 mt-3">
-                            {bottle.type && (
-                              <Badge variant="secondary" className="bg-amber-100 text-amber-900 border-amber-300 text-xs font-medium">
-                                {bottle.type}
-                              </Badge>
-                            )}
-                            {bottle.age && (
-                              <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300 text-xs font-medium">
-                                {bottle.age} {t("quickSearch.years")}
-                              </Badge>
-                            )}
-                            {bottle.abv && (
-                              <Badge variant="secondary" className="bg-amber-50 text-amber-800 border-amber-300 text-xs font-medium">
-                                {bottle.abv}% ABV
-                              </Badge>
-                            )}
-                            {bottle.bottle_size && (
-                              <Badge variant="secondary" className="bg-stone-100 text-stone-700 border-stone-300 text-xs font-medium">
-                                {bottle.bottle_size}
-                              </Badge>
-                            )}
-                          </div>
-                          {bottle.tasting_notes && (
-                            <p className="text-xs font-medium text-stone-600 mt-2 italic">
-                              {bottle.tasting_notes}
-                            </p>
-                          )}
-                        </div>
-                        <div className="shrink-0 text-right space-y-3">
-                          {bottle.typical_price && (
-                            <div>
-                              <p className="text-xs font-medium text-stone-600">{t("quickSearch.typicalPrice")}</p>
-                              <p className="font-semibold text-emerald-800 text-sm">
-                                {formatCurrency(bottle.typical_price)}
-                              </p>
-                            </div>
-                          )}
-                          <Button
-                            onClick={() => handleAddBottle(bottle)}
-                            disabled={adding !== null}
-                            className="bg-emerald-600 hover:bg-emerald-700 w-full"
-                          >
-                            {adding === bottle.name ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                {t("quickSearch.adding")}
-                              </>
-                            ) : (
-                              <>
-                                <Plus className="w-4 h-4 mr-2" />
-                                {t("quickSearch.addToCollection")}
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {!loading && results.length === 0 && query && (
-            <div className="text-center py-8">
-              <p className="text-stone-500">{t("quickSearch.noResults")}</p>
-            </div>
-          )}
-
-          {!query && !loading && results.length === 0 && (
-            <div className="text-center py-8">
-              <div className="text-4xl mb-3">🥃</div>
-              <p className="text-stone-500">{t("quickSearch.enterBottleName")}</p>
-              <p className="text-xs text-stone-400 mt-2">
-                {t("quickSearch.bottleExamples")}
-              </p>
-            </div>
-          )}
+                    {addingId === bottle.name ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Plus className="w-3.5 h-3.5" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

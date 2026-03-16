@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { Plus, Wind, Leaf, BookOpen, Wine, Sparkles, TrendingUp } from 'lucide-react';
+import { Wind, Leaf, BookOpen, FlaskConical, TrendingUp, GlassWater, Sparkles } from 'lucide-react';
 
 export default function QuickLaunch() {
   const { t } = useTranslation();
