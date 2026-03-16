@@ -167,6 +167,37 @@ export default function PublicProfilePage() {
     staleTime: 5000,
   });
 
+  const { data: bottles = [] } = useQuery({
+    queryKey: ['public-bottles', profileEmail],
+    queryFn: async () => {
+      try {
+        const result = await base44.entities.Bottle.filter({ created_by: profileEmail });
+        return Array.isArray(result) ? result : [];
+      } catch (err) {
+        console.error('Public bottles load error:', err);
+        return [];
+      }
+    },
+    enabled: !!profileEmail && (profile?.is_public === true || isPreview === true),
+    retry: 1,
+    staleTime: 5000,
+  });
+
+  const { data: tastingLogs = [] } = useQuery({
+    queryKey: ['public-tasting-logs', profileEmail],
+    queryFn: async () => {
+      try {
+        const result = await base44.entities.TastingLog.filter({ created_by: profileEmail }, '-tasting_date', 20);
+        return Array.isArray(result) ? result : [];
+      } catch (err) {
+        return [];
+      }
+    },
+    enabled: !!profileEmail && (profile?.is_public === true || isPreview === true),
+    retry: 1,
+    staleTime: 5000,
+  });
+
   const makePublicMutation = useMutation({
     mutationFn: (profileId) => safeUpdate('UserProfile', profileId, { is_public: true }, currentUser?.email),
     onSuccess: () => {
