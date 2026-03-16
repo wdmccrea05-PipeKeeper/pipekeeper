@@ -272,6 +272,9 @@ export default function CollectionHub() {
         tasteProfile={tasteProfile}
       />
 
+      {/* Curator Section (with ecosystem context) */}
+      <CuratorHub summary={summary} recentActivities={recentActivities} />
+
       {/* Collection Intelligence */}
       <CollectionIntelligencePanel
         pipes={pipes}
@@ -284,9 +287,6 @@ export default function CollectionHub() {
 
       {/* Recent Activity */}
       <RecentActivity onActivitiesLoaded={setRecentActivities} />
-
-      {/* Curator Section (with ecosystem context) */}
-      <CuratorHub summary={summary} recentActivities={recentActivities} />
 
       {/* Coming Soon Section (from registry) */}
       {comingSoonModules.length > 0 && (
