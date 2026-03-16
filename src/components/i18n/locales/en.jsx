@@ -392,6 +392,12 @@ export default {
     whiskeyTastingAnalyticsDesc: "Your tasting log history is analyzed to show preferences: favorite types, preferred regions, rating trends, and seasonal patterns. Access this from WhiskeyKeeper → Insights.",
   },
 
+  publicProfile: {
+    bottles: "Bottles",
+    whiskey: "Whiskey",
+    noBottlesInCollection: "No bottles in collection",
+  },
+
   help: {
     howTo: "How-To",
     troubleshooting: "Troubleshooting",
