@@ -3,13 +3,25 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Plus, Wine, BookOpen, TrendingUp, BarChart3 } from 'lucide-react';
+import { Plus, BookOpen, TrendingUp, BarChart3, Share2, Search } from 'lucide-react';
+
+function WhiskeyBottleIcon({ className, style }) {
+  return (
+    <svg className={className} style={style} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9 2h6v3l2 3v11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8l2-3V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M7 13h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M9 2h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import ModuleNav from '@/components/modules/ModuleNav';
 import BottleCard from '@/components/whiskey/BottleCard';
 import BottleForm from '@/components/whiskey/BottleForm';
 import TastingLogForm from '@/components/whiskey/TastingLog';
 import BottleInsights from '@/components/whiskey/BottleInsights';
+import ShareRecordModal from '@/components/share/ShareRecordModal';
+import QuickSearchBottle from '@/components/ai/QuickSearchBottle';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import WhiskeyExporter from '@/components/export/WhiskeyExporter';
