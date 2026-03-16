@@ -240,7 +240,7 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
                 className="p-3 rounded-xl"
                 style={{ background: 'rgba(60,40,25,0.5)', border: '1px solid rgba(120,90,65,0.3)' }}
               >
-                <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'rgba(180,140,75,0.6)' }}>Pipe</p>
+                <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'rgba(180,140,75,0.6)' }}>{t('common.pipe', 'Pipe')}</p>
                 <p className="text-sm font-medium leading-snug" style={{ color: '#E0D8C8' }}>{recommendation.pipe}</p>
               </div>
             )}
@@ -249,7 +249,7 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
                 className="p-3 rounded-xl"
                 style={{ background: 'rgba(60,40,25,0.5)', border: '1px solid rgba(120,90,65,0.3)' }}
               >
-                <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'rgba(180,140,75,0.6)' }}>Tobacco</p>
+                <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'rgba(180,140,75,0.6)' }}>{t('common.tobacco', 'Tobacco')}</p>
                 <p className="text-sm font-medium leading-snug" style={{ color: '#E0D8C8' }}>{recommendation.blend}</p>
               </div>
             )}
@@ -258,7 +258,7 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
                 className="p-3 rounded-xl"
                 style={{ background: 'rgba(60,40,25,0.5)', border: '1px solid rgba(120,90,65,0.3)' }}
               >
-                <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'rgba(180,140,75,0.6)' }}>Whiskey</p>
+                <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'rgba(180,140,75,0.6)' }}>{t('common.whiskey', 'Whiskey')}</p>
                 <p className="text-sm font-medium leading-snug" style={{ color: '#E0D8C8' }}>{recommendation.whiskey}</p>
               </div>
             )}
