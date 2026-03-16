@@ -26,7 +26,7 @@ export const KEEPER_MODULES = [
   {
     type: 'cigars',
     titleKey: 'hub.cigarkeeper',
-    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/d13026aaa_CigarKNB.png',
+    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/c26fb6746_CigarKNB.png',
     route: null,
     enabled: false,
     description: 'Coming soon: Curate and track your cigar collection.',
