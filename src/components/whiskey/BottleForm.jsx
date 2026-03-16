@@ -217,10 +217,25 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
           </div>
         </div>
 
-        {/* Purchase Info */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Purchase Type & Price */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.purchasePrice') || 'Price ($)'}</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.purchaseType') || 'Purchase Type'} *</label>
+            <Select value={formData.purchase_type} onValueChange={(value) => handleChange('purchase_type', value)}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="retail">{t('whiskey.purchaseTypeRetail')}</SelectItem>
+                <SelectItem value="aftermarket">{t('whiskey.purchaseTypeAftermarket')}</SelectItem>
+                <SelectItem value="gift">{t('whiskey.purchaseTypeGift')}</SelectItem>
+                <SelectItem value="trade">{t('whiskey.purchaseTypeTrade')}</SelectItem>
+                <SelectItem value="other">{t('whiskey.purchaseTypeOther')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.purchasePrice') || 'Amount Paid ($)'}</label>
             <Input
               type="number"
               step="0.01"
@@ -230,12 +245,16 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
               className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
             />
           </div>
+        </div>
+
+        {/* Purchase Location & Date */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.purchaseLocation') || 'Purchase Location'}</label>
             <Input
               value={formData.purchase_location}
               onChange={(e) => handleChange('purchase_location', e.target.value)}
-              placeholder="Store, distillery, etc."
+              placeholder="Store, auction, distillery, etc."
               className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
             />
           </div>
@@ -250,19 +269,59 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
           </div>
         </div>
 
-        {/* Market Value */}
-        <div>
-          <label className="text-sm text-[#D8C7A6] block mb-2">Market Value per Bottle ($)</label>
-          <Input
-            type="number"
-            step="0.01"
-            value={formData.average_market_value}
-            onChange={(e) => handleChange('average_market_value', e.target.value)}
-            placeholder="Estimated market value (used for inventory valuation)"
-            className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-          />
-          <p className="text-xs mt-1" style={{ color: 'rgba(180,140,75,0.5)' }}>
-            Used to calculate total inventory value. Individual unit prices can be set in Inventory Manager.
+        {/* Market Pricing Intelligence */}
+        <div className="bg-[rgba(180,140,75,0.08)] border border-[rgba(180,140,75,0.15)] rounded-lg p-4">
+          <label className="text-sm font-semibold text-[#D4A574] block mb-3">{t('whiskey.pricingBreakdown')}</label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{t('whiskey.retailPrice')}</label>
+              <Input
+                type="number"
+                step="0.01"
+                value={formData.retail_price}
+                onChange={(e) => handleChange('retail_price', e.target.value)}
+                placeholder="0.00"
+                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{t('whiskey.aftermarketPrice')}</label>
+              <Input
+                type="number"
+                step="0.01"
+                value={formData.aftermarket_price}
+                onChange={(e) => handleChange('aftermarket_price', e.target.value)}
+                placeholder="0.00"
+                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{t('whiskey.collectorValue')}</label>
+              <Input
+                type="number"
+                step="0.01"
+                value={formData.collector_value}
+                onChange={(e) => handleChange('collector_value', e.target.value)}
+                placeholder="0.00"
+                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+              />
+            </div>
+          </div>
+          <div className="mt-3">
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t('whiskey.valueConfidence')}</label>
+            <Select value={formData.value_confidence} onValueChange={(value) => handleChange('value_confidence', value)}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="high">{t('whiskey.valueConfidenceHigh')}</SelectItem>
+                <SelectItem value="medium">{t('whiskey.valueConfidenceMedium')}</SelectItem>
+                <SelectItem value="low">{t('whiskey.valueConfidenceLow')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="text-xs mt-2" style={{ color: 'rgba(180,140,75,0.5)' }}>
+            Retail, Aftermarket, and Collector values are independent. Fill in the values you have or can estimate.
           </p>
         </div>
 
