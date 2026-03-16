@@ -332,6 +332,17 @@ Return complete and accurate information based on the blend name or description 
         />
       )}
 
+      <OnlineImageSearchModal
+        isOpen={showOnlineSearch}
+        recordType="blend"
+        recordData={formData}
+        onImageSelected={handleOnlineImageSelected}
+        onClose={() => {
+          setShowOnlineSearch(false);
+          setOnlineSearchType(null);
+        }}
+      />
+
       {/* Logo Browser Dialog */}
       <Dialog open={showLogoBrowser} onOpenChange={setShowLogoBrowser}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
