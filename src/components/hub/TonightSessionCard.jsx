@@ -171,7 +171,10 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
         <label className="text-xs uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.6)' }}>
           Recommendation Mode
         </label>
-        <Select value={mode} onValueChange={(v) => { setMode(v); setRecommendation(null); }}>
+        <Select value={mode} onValueChange={(v) => { 
+          setMode(v); 
+          setRecommendation(null); // Force recompute when mode changes
+        }}>
           <SelectTrigger className="h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
