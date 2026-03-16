@@ -98,8 +98,10 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
       .slice(0, 3);
   }, [pairingEntry]);
 
-  // Filter blends to AI-eligible only
-  const eligibleBlends = useMemo(() => filterAiEligibleItems(blends), [blends]);
+  // Filter blends to AI-eligible only (exclude collection-only blends)
+  const eligibleBlends = useMemo(() => {
+    return filterAiEligibleItems(blends).filter(b => b.ai_excluded !== true);
+  }, [blends]);
 
   const [selectedBlendId, setSelectedBlendId] = useState("");
   const selectedBlend = useMemo(() => eligibleBlends.find((b) => String(b.id) === String(selectedBlendId)) || null, [eligibleBlends, selectedBlendId]);
