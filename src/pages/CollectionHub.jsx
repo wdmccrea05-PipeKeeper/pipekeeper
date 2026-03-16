@@ -9,6 +9,7 @@ import CuratorHub from '@/components/hub/CuratorHub';
 import RecentActivity from '@/components/hub/RecentActivity';
 import QuickLaunch from '@/components/hub/QuickLaunch';
 import TonightSessionCard from '@/components/hub/TonightSessionCard';
+import CollectionStoryCard from '@/components/hub/CollectionStoryCard';
 import CollectionIntelligencePanel from '@/components/hub/CollectionIntelligencePanel';
 import { useTasteProfile } from '@/components/curator/useTasteProfile';
 import {
