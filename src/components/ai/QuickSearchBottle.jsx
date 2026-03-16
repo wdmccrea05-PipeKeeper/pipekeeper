@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useState } from 'react';
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,21 +28,25 @@ export default function QuickSearchBottle({ isOpen, onClose, onBottleAdded }) {
   const deduplicateBottles = (bottles) => {
     if (!bottles || bottles.length === 0) return [];
     
-    // Group by core release (distillery + base name, ignoring proof/year variants)
+    // Normalize bottle names for comparison
+    const normalize = (str) => {
+      return (str || '')
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, ' ')
+        .replace(/\b(barrel proof|cask strength|bp|cs|proof only)\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    };
+
+    // Group by: distillery + normalized name (core release identity)
     const groups = new Map();
     
     bottles.forEach((bottle) => {
-      const distillery = (bottle.distillery || '').toLowerCase().trim();
-      const name = (bottle.name || '').toLowerCase().trim();
+      const distillery = (bottle.distillery || 'unknown').toLowerCase().trim();
+      const normalized = normalize(bottle.name);
       
-      // Strip common proof variants to find core release
-      const baseName = name
-        .replace(/\b(barrel proof|cask strength|proof|bp|cs)\b/gi, '')
-        .replace(/\b(standard release|core release|original)\b/gi, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-      
-      const groupKey = `${distillery}|${baseName}`;
+      const groupKey = `${distillery}|${normalized}`;
       
       if (!groups.has(groupKey)) {
         groups.set(groupKey, []);
@@ -51,29 +54,43 @@ export default function QuickSearchBottle({ isOpen, onClose, onBottleAdded }) {
       groups.get(groupKey).push(bottle);
     });
     
-    // From each group, select the best representative
+    // Select best representative from each group
     const results = [];
     groups.forEach((group) => {
-      // Prioritize standard releases (most complete data, not barrel proof variants)
-      const standard = group.find(b => 
-        !(b.name || '').toLowerCase().includes('barrel proof') &&
-        !(b.name || '').toLowerCase().includes('cask strength')
-      ) || group[0];
+      // Sort group by data completeness
+      const sorted = group.sort((a, b) => {
+        const aScore = [a.name, a.distillery, a.age_years, a.abv, a.region, a.country].filter(v => v !== null && v !== undefined && v !== '').length;
+        const bScore = [b.name, b.distillery, b.age_years, b.abv, b.region, b.country].filter(v => v !== null && v !== undefined && v !== '').length;
+        return bScore - aScore;
+      });
       
-      // Only keep if has sufficient data
-      if (standard.name && standard.distillery && (standard.age_years !== undefined || standard.abv)) {
-        results.push(standard);
+      const best = sorted[0];
+      
+      // Only keep if meets minimum data requirements
+      if (best.name && best.distillery && (best.age_years !== undefined || best.abv)) {
+        // If price data is missing, try to use it from other variants in group
+        const withPrice = sorted.find(b => b.typical_price_usd);
+        if (withPrice && !best.typical_price_usd) {
+          best.typical_price_usd = withPrice.typical_price_usd;
+        }
+        results.push(best);
       }
     });
     
-    // Sort by completeness (prefer bottles with all key fields)
+    // Final sort: by known-ness (age + ABV + description), then price availability
     results.sort((a, b) => {
-      const aComplete = [a.name, a.distillery, a.age_years, a.abv].filter(v => v !== null && v !== undefined && v !== '').length;
-      const bComplete = [b.name, b.distillery, b.age_years, b.abv].filter(v => v !== null && v !== undefined && v !== '').length;
-      return bComplete - aComplete;
+      const aKnown = [a.age_years, a.abv, a.description].filter(v => v !== null && v !== undefined && v !== '').length;
+      const bKnown = [b.age_years, b.abv, b.description].filter(v => v !== null && v !== undefined && v !== '').length;
+      if (aKnown !== bKnown) return bKnown - aKnown;
+      
+      // Tiebreaker: price availability
+      const aPrice = a.typical_price_usd ? 1 : 0;
+      const bPrice = b.typical_price_usd ? 1 : 0;
+      return bPrice - aPrice;
     });
     
-    return results.slice(0, 8);
+    // Return top 5 unique high-quality results
+    return results.slice(0, 5);
   };
 
   const handleSearch = async () => {
@@ -114,7 +131,7 @@ Prioritize well-known, commonly available bottles. Return a JSON object with a "
     });
 
     const deduplicated = deduplicateBottles(result?.bottles || []);
-    setResults(deduplicated.slice(0, 6));
+    setResults(deduplicated);
     setSearching(false);
   };
 
