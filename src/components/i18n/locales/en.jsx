@@ -483,4 +483,15 @@ export default {
     queryRequired: "Please enter a search query",
     searchError: "Failed to search for images. Please try again.",
   },
+
+  mediaLimits: {
+    mainPhotos: "Main Photos",
+    stampingPhotos: "Stamping Photos",
+    labelPhotos: "Label Photos",
+    bottlePhotos: "Bottle Photos",
+    addPhoto: "Add Photo",
+    maximumImagesReached: "Maximum images reached",
+    photosUsed: "{{used}} / {{max}} photos used",
+    noPhotos: "No photos yet",
+  },
 };
