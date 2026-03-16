@@ -333,7 +333,7 @@ export default function WhiskeyInsightsPage() {
 
                   {oldestBottle && (
                     <WhiskeyHighlightCard
-                      title={t('insights.oldestBottle') || 'Oldest Bottle'}
+                      title={t('insights.oldestBottle', 'Oldest Bottle')}
                       value={oldestBottle.name}
                       sub={oldestBottle.purchase_date ? new Date(oldestBottle.purchase_date).getFullYear().toString() : 'Unknown'}
                       accent="#10B981"
@@ -343,7 +343,7 @@ export default function WhiskeyInsightsPage() {
                       cardRef={(el) => { highlightRefs.current.oldest = el; }}
                       onShare={() => handleShareCard('oldest')}
                       onStory={() => setActiveStory({
-                        title: t('insights.oldestBottle') || 'Oldest Bottle',
+                        title: t('insights.oldestBottle', 'Oldest Bottle'),
                         value: oldestBottle.name,
                         sub: oldestBottle.purchase_date ? new Date(oldestBottle.purchase_date).getFullYear().toString() : 'Unknown',
                         accent: '#10B981',
