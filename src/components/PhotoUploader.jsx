@@ -35,14 +35,14 @@ export default function PhotoUploader({
 
   return (
     <div className="w-full">
-      <div className="flex gap-2 w-full">
+      <div className="flex flex-wrap gap-2 w-full">
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={() => fileInputRef.current?.click()}
           disabled={!canAddMore}
-          className="flex-1 bg-stone-700 border-stone-600 text-white hover:bg-stone-800"
+          className="flex-1 min-w-[80px] bg-stone-700 border-stone-600 text-white hover:bg-stone-800"
         >
           <ImageIcon className="w-4 h-4 mr-2" />
           <span className="hidden sm:inline">{t("photos.fromGallery")}</span>
@@ -54,12 +54,26 @@ export default function PhotoUploader({
           size="sm"
           onClick={() => cameraInputRef.current?.click()}
           disabled={!canAddMore}
-          className="flex-1 bg-stone-700 border-stone-600 text-white hover:bg-stone-800"
+          className="flex-1 min-w-[80px] bg-stone-700 border-stone-600 text-white hover:bg-stone-800"
         >
           <Camera className="w-4 h-4 mr-2" />
           <span className="hidden sm:inline">{t("aiIdentifier.takePhoto")}</span>
           <span className="sm:hidden">{t("photos.camera")}</span>
         </Button>
+        {showSearchOption && onSearchOnlineClick && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onSearchOnlineClick}
+            disabled={!canAddMore}
+            className="flex-1 min-w-[80px] bg-stone-700 border-stone-600 text-white hover:bg-stone-800"
+          >
+            <Search className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">{t("onlineImageSearch.searchOnline", "Search Online")}</span>
+            <span className="sm:hidden">{t("onlineImageSearch.search", "Search")}</span>
+          </Button>
+        )}
       </div>
 
       <input
