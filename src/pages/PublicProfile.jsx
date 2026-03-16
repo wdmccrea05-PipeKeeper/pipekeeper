@@ -447,9 +447,12 @@ export default function PublicProfilePage() {
 
         {/* Collection Tabs */}
         <Tabs defaultValue="pipes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className={`grid w-full ${bottles.length > 0 ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="pipes">{t("publicProfile.pipes")} ({pipes.length})</TabsTrigger>
             <TabsTrigger value="tobacco">{t("nav.tobacco")} ({blends.length})</TabsTrigger>
+            {bottles.length > 0 && (
+              <TabsTrigger value="whiskey">{t("publicProfile.whiskey")} ({bottles.length})</TabsTrigger>
+            )}
             <TabsTrigger value="logs">{t("publicProfile.smokingSessions")} ({logs.length})</TabsTrigger>
           </TabsList>
 
