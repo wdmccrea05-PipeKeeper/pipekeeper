@@ -27,39 +27,39 @@ Deno.serve(async (req) => {
                       bottlesList.reduce((sum, b) => sum + (b.average_market_value || b.collector_value || 0), 0);
 
     const favorites = {
-      pipe: pipes.filter(p => p.is_favorite).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0],
-      blend: blends.filter(b => b.is_favorite).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0],
-      bottle: bottles.filter(b => b.favorite).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0],
+      pipe: pipesList.filter(p => p.is_favorite).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0],
+      blend: blendsList.filter(b => b.is_favorite).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0],
+      bottle: bottlesList.filter(b => b.favorite).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0],
     };
 
     // Find most used pipe
     const pipeUsage = {};
-    logs.forEach(log => {
+    logsList.forEach(log => {
       pipeUsage[log.pipe_id] = (pipeUsage[log.pipe_id] || 0) + 1;
     });
-    const mostUsedPipe = pipes.find(p => pipeUsage[p.id] === Math.max(...Object.values(pipeUsage)));
+    const mostUsedPipe = pipesList.find(p => pipeUsage[p.id] === Math.max(...Object.values(pipeUsage), 0));
 
     // Find underused items
-    const avgPipeUsage = logs.length / Math.max(pipes.length, 1);
-    const underusedPipes = pipes.filter(p => (pipeUsage[p.id] || 0) < avgPipeUsage * 0.3);
+    const avgPipeUsage = logsList.length / Math.max(pipesList.length, 1);
+    const underusedPipes = pipesList.filter(p => (pipeUsage[p.id] || 0) < avgPipeUsage * 0.3);
 
     // Flavor patterns
     const blendTypes = {};
-    blends.forEach(b => {
+    blendsList.forEach(b => {
       blendTypes[b.blend_type] = (blendTypes[b.blend_type] || 0) + 1;
     });
     const dominantBlendType = Object.entries(blendTypes).sort((a, b) => b[1] - a[1])[0]?.[0];
 
     const whiskyTypes = {};
-    bottles.forEach(b => {
+    bottlesList.forEach(b => {
       whiskyTypes[b.type] = (whiskyTypes[b.type] || 0) + 1;
     });
     const dominantWhiskyType = Object.entries(whiskyTypes).sort((a, b) => b[1] - a[1])[0]?.[0];
 
     // Calculate pairing patterns
     const pairingPatterns = {};
-    logs.forEach(log => {
-      const blend = blends.find(b => b.id === log.blend_id);
+    logsList.forEach(log => {
+      const blend = blendsList.find(b => b.id === log.blend_id);
       if (blend) {
         const key = blend.blend_type || 'unknown';
         pairingPatterns[key] = (pairingPatterns[key] || 0) + 1;
@@ -68,17 +68,17 @@ Deno.serve(async (req) => {
 
     // Find most valuable item
     const allItems = [
-      ...pipes.map(p => ({ ...p, type: 'pipe', value: p.estimated_value || 0 })),
-      ...blends.map(b => ({ ...b, type: 'blend', value: b.manual_market_value || b.ai_estimated_value || 0 })),
-      ...bottles.map(b => ({ ...b, type: 'bottle', value: b.average_market_value || b.collector_value || 0 })),
+      ...pipesList.map(p => ({ ...p, type: 'pipe', value: p.estimated_value || 0 })),
+      ...blendsList.map(b => ({ ...b, type: 'blend', value: b.manual_market_value || b.ai_estimated_value || 0 })),
+      ...bottlesList.map(b => ({ ...b, type: 'bottle', value: b.average_market_value || b.collector_value || 0 })),
     ];
     const mostValuable = allItems.sort((a, b) => b.value - a.value)[0];
 
     // Generate narrative
     const collectionSize = {
-      pipes: pipes.length,
-      blends: blends.length,
-      bottles: bottles.length,
+      pipes: pipesList.length,
+      blends: blendsList.length,
+      bottles: bottlesList.length,
     };
 
     let narrative = `You've built a thoughtful collection of ${collectionSize.pipes} pipe${collectionSize.pipes !== 1 ? 's' : ''}, ${collectionSize.blends} blend${collectionSize.blends !== 1 ? 's' : ''}, and ${collectionSize.bottles} bottle${collectionSize.bottles !== 1 ? 's' : ''}. `;
