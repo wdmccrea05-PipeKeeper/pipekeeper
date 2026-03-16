@@ -143,6 +143,26 @@ export default function CollectionHub() {
   const comingSoonModules = getComingSoonModules();
 
   // Map module registry to card data with module-specific stats
+  // Compute blend quantity metrics from raw blend data
+  const totalBlendOz = blends.reduce((sum, b) => {
+    const tinOz = Number(b?.tin_total_quantity_oz) || 0;
+    const bulkOz = Number(b?.bulk_total_quantity_oz) || 0;
+    const pouchOz = Number(b?.pouch_total_quantity_oz) || 0;
+    return sum + tinOz + bulkOz + pouchOz;
+  }, 0);
+
+  const totalBlendValue = blends.reduce((sum, b) => {
+    return sum + (Number(b?.manual_market_value) || Number(b?.ai_estimated_value) || 0);
+  }, 0);
+
+  const totalBottleValue = bottles.reduce((sum, b) => {
+    return sum + (Number(b?.estimated_value) || Number(b?.purchase_price) || 0);
+  }, 0);
+
+  // Featured images for card art backgrounds
+  const featuredPipe = pipes.find(p => p?.photos?.length > 0);
+  const featuredBottle = bottles.find(b => b?.photo);
+
   const activeModuleCards = enabledModules.map((module) => {
     const dashboardRoute = module.type === 'pipes' ? 'PipeKeeper' : module.type === 'whiskey' ? 'WhiskeyKeeper' : module.route;
 
@@ -150,13 +170,13 @@ export default function CollectionHub() {
     if (module.type === 'pipes') {
       stats = [
         { label: t('hub.pipes'), value: summary.pipes.count },
-        { label: t('hub.blends'), value: summary.tobacco.count },
-        { label: t('hub.totalValue'), value: summary.pipes.value > 0 ? `$${summary.pipes.value.toLocaleString()}` : '—' },
+        { label: t('hub.blends'), value: `${summary.tobacco.count}${totalBlendOz > 0 ? ` · ${totalBlendOz.toFixed(0)}oz` : ''}` },
+        { label: t('hub.totalValue'), value: summary.pipes.value > 0 || totalBlendValue > 0 ? `$${(summary.pipes.value + totalBlendValue).toLocaleString()}` : '—' },
       ];
     } else if (module.type === 'whiskey') {
       stats = [
         { label: t('hub.bottles'), value: summary.whiskey.count },
-        { label: t('hub.totalValue'), value: summary.whiskey.value > 0 ? `$${summary.whiskey.value.toLocaleString()}` : '—' },
+        { label: t('hub.totalValue'), value: totalBottleValue > 0 ? `$${totalBottleValue.toLocaleString()}` : '—' },
       ];
     }
 
@@ -166,6 +186,7 @@ export default function CollectionHub() {
       itemCount: module.type === 'pipes' ? summary.pipes.count : module.type === 'whiskey' ? summary.whiskey.count : 0,
       stats,
       summary: null,
+      bgImage: module.type === 'pipes' ? featuredPipe?.photos?.[0] : module.type === 'whiskey' ? featuredBottle?.photo : null,
     };
   });
 
