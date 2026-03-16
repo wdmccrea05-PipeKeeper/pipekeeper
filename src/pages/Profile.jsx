@@ -85,6 +85,7 @@ function consolidateProfiles(rows = []) {
     preferred_shapes: pickArray(acc.preferred_shapes, row.preferred_shapes),
     strength_preference: pick(acc.strength_preference, row.strength_preference),
     notes: pick(acc.notes, row.notes),
+    whiskey_preferences: acc.whiskey_preferences || row.whiskey_preferences || null,
   }), {});
 
   return { masterId: master?.id || null, merged };
@@ -793,6 +794,21 @@ export default function ProfilePage() {
                 value={formData.notes}
                 onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
                 rows={4}
+              />
+            </div>
+
+            {/* Whiskey Preferences */}
+            <div className="pt-2 space-y-3">
+              <div className="flex items-center gap-2">
+                <GlassWater className="w-4 h-4 text-amber-600" />
+                <Label className="text-stone-700 font-semibold text-base">Whiskey Preferences</Label>
+              </div>
+              <p className="text-xs text-stone-500">
+                Used by Curator to personalize pairing recommendations and cross-collection insights.
+              </p>
+              <WhiskeyPreferencesSection
+                preferences={formData.whiskey_preferences}
+                onChange={(updated) => setFormData((p) => ({ ...p, whiskey_preferences: updated }))}
               />
             </div>
 
