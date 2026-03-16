@@ -273,8 +273,8 @@ Deno.serve(async (req) => {
 
     // Try selected bottle, fall back if incompatible
     let selectedBottleForPairing = selectedBottle;
-    if (!isGoodPairing(selectedPipe, selectedBlend, selectedBottle)) {
-      selectedBottleForPairing = topBottles.find(b => isGoodPairing(selectedPipe, selectedBlend, b)) || selectedBottle;
+    if (selectedBottle && !isGoodPairing(selectedPipe, selectedBlend, selectedBottle)) {
+      selectedBottleForPairing = scoredBottles.find(b => isGoodPairing(selectedPipe, selectedBlend, b)) || selectedBottle;
     }
 
     // Generate flavor theme
