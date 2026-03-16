@@ -230,6 +230,8 @@ export default {
     notAvailable: "Not available",
     collectorHeld: "Collector-held (sealed)",
     drinkingInventory: "Drinking inventory",
+    collectorView: "Collector View",
+    noPhoto: "No photo",
   },
 
   footer: {
