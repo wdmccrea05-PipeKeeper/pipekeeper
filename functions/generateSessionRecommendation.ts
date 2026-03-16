@@ -211,15 +211,48 @@ Deno.serve(async (req) => {
       .map(b => ({ ...b, score: scoreItem(b, mode, 'bottle', tasteProfile, userProfile) }))
       .sort((a, b) => b.score - a.score);
 
-    // Select top 40% from each category
-    const topPipes = scoredPipes.slice(0, Math.max(1, Math.ceil(pipes.length * 0.4)));
-    const topBlends = scoredBlends.slice(0, Math.max(1, Math.ceil(blends.length * 0.4)));
-    const topBottles = scoredBottles.slice(0, Math.max(1, Math.ceil(bottles.length * 0.4)));
+    // Helper: Check if item was recently recommended
+    function wasRecentlyRecommended(item, itemType, sessionHistory = []) {
+      return sessionHistory.some(h => {
+        if (itemType === 'pipe') return h.pipe_id === item.id;
+        if (itemType === 'blend') return h.blend_id === item.id;
+        if (itemType === 'bottle') return h.whiskey_id === item.id;
+        return false;
+      });
+    }
 
-    // Pick best from each category
-    const selectedPipe = topPipes[0] || pipes[0];
-    const selectedBlend = topBlends[0] || blends[0];
-    const selectedBottle = topBottles.length > 0 ? topBottles[0] : null;
+    // Select items with repetition avoidance
+    // For pipes: pick from top candidates, avoiding recent recommendations
+    let selectedPipe = null;
+    for (const pipe of scoredPipes) {
+      if (!wasRecentlyRecommended(pipe, 'pipe', sessionHistory)) {
+        selectedPipe = pipe;
+        break;
+      }
+    }
+    if (!selectedPipe) selectedPipe = scoredPipes[0] || pipes[0];
+
+    // For blends: pick from top candidates, avoiding recent recommendations
+    let selectedBlend = null;
+    for (const blend of scoredBlends) {
+      if (!wasRecentlyRecommended(blend, 'blend', sessionHistory)) {
+        selectedBlend = blend;
+        break;
+      }
+    }
+    if (!selectedBlend) selectedBlend = scoredBlends[0] || blends[0];
+
+    // For bottles: pick from top candidates, avoiding recent recommendations
+    let selectedBottle = null;
+    if (bottles.length > 0) {
+      for (const bottle of scoredBottles) {
+        if (!wasRecentlyRecommended(bottle, 'bottle', sessionHistory)) {
+          selectedBottle = bottle;
+          break;
+        }
+      }
+      if (!selectedBottle) selectedBottle = scoredBottles[0] || null;
+    }
 
     // Check pairing compatibility
     function isGoodPairing(pipe, blend, bottle) {
