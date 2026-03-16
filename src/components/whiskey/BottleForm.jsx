@@ -243,33 +243,20 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
           </div>
         </div>
 
-        {/* Inventory */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.fillLevel') || 'Fill Level'}</label>
-            <Select value={formData.fill_level} onValueChange={(value) => handleChange('fill_level', value)}>
-              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Full">Full</SelectItem>
-                <SelectItem value="High">High</SelectItem>
-                <SelectItem value="Medium">Medium</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-                <SelectItem value="Empty">Empty</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.bottleCount') || 'Bottle Count'}</label>
-            <Input
-              type="number"
-              min="1"
-              value={formData.bottle_count}
-              onChange={(e) => handleChange('bottle_count', e.target.value)}
-              className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-            />
-          </div>
+        {/* Market Value */}
+        <div>
+          <label className="text-sm text-[#D8C7A6] block mb-2">Market Value per Bottle ($)</label>
+          <Input
+            type="number"
+            step="0.01"
+            value={formData.average_market_value}
+            onChange={(e) => handleChange('average_market_value', e.target.value)}
+            placeholder="Estimated market value (used for inventory valuation)"
+            className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+          />
+          <p className="text-xs mt-1" style={{ color: 'rgba(180,140,75,0.5)' }}>
+            Used to calculate total inventory value. Individual unit prices can be set in Inventory Manager.
+          </p>
         </div>
 
         {/* Rating */}
