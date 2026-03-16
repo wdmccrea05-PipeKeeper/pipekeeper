@@ -173,7 +173,7 @@ export default function CollectionHub() {
     if (module.type === 'pipes') {
       stats = [
         { label: t('hub.pipes'), value: summary.pipes.count },
-        { label: t('hub.blends'), value: `${blendCount}${totalBlendOz > 0 ? ` · ${totalBlendOz.toFixed(0)}oz` : ''}` },
+        { label: t('hub.blends'), value: blendCount, sub: totalBlendOz > 0 ? `${totalBlendOz.toFixed(0)} oz cellared` : undefined },
         { label: t('hub.totalValue'), value: summary.pipes.value > 0 || totalBlendValue > 0 ? `$${(summary.pipes.value + totalBlendValue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—' },
       ];
     } else if (module.type === 'whiskey') {
