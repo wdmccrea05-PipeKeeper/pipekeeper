@@ -81,13 +81,13 @@ export default function CollectionStoryCard() {
           </div>
         </div>
         <button
-          onClick={loadStory}
-          disabled={loading}
-          className="p-2 rounded-lg transition-all hover:bg-white/5 flex-shrink-0"
-          title="Refresh story"
-        >
-          <Sparkles className="w-4 h-4" style={{ color: 'rgba(180,140,75,0.7)' }} />
-        </button>
+           onClick={loadStory}
+           disabled={loading}
+           className="p-2 rounded-lg transition-all hover:bg-white/5 flex-shrink-0"
+           title={t('story.refresh', 'Refresh story')}
+         >
+           <Sparkles className="w-4 h-4 animate-pulse" style={{ color: 'rgba(180,140,75,0.7)' }} />
+         </button>
       </div>
 
       {/* Metrics */}
