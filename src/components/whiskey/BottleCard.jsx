@@ -1,7 +1,8 @@
 import React from 'react';
-import { Star, Shield, Wine, Droplets } from 'lucide-react';
+import { Star, Shield, Wine, Droplets, Edit2, Trash2, Share2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
 
 function InventoryBadges({ bottleId }) {
   const { data: units = [] } = useQuery({
