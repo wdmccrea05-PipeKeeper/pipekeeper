@@ -2,6 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { getRecentCrossModuleActivity, formatActivityDate } from '@/components/keeper-core';
 
+const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
+const WHISKEY_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png";
+
+function ActivityIcon({ module }) {
+  const src = module === 'whiskey' ? WHISKEY_ICON : PIPE_ICON;
+  return (
+    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
+      style={{ background: 'rgba(139,98,57,0.18)', border: '1px solid rgba(212,164,116,0.2)' }}>
+      <img src={src} alt={module} className="w-7 h-7 object-contain" style={{ mixBlendMode: 'screen' }} />
+    </div>
+  );
+}
+
 export default function RecentActivity({ onActivitiesLoaded = null }) {
   const { t } = useTranslation();
   const [activities, setActivities] = useState([]);
@@ -84,7 +97,7 @@ export default function RecentActivity({ onActivitiesLoaded = null }) {
             key={activity.id}
             className="flex items-start gap-3 p-3 bg-[#1a1410]/60 rounded-lg border border-[#8b6239]/15 hover:border-[#8b6239]/30 transition-colors"
           >
-            <div className="text-2xl flex-shrink-0">{activity.icon}</div>
+            <ActivityIcon module={activity.module} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-[#E0D8C8] truncate">{activity.title}</p>
               <p className="text-xs text-[#E0D8C8]/60 truncate">{activity.subtitle}</p>
