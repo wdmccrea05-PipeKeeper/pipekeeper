@@ -616,6 +616,13 @@ Return complete and accurate information based on the blend name or description 
                            reader.readAsDataURL(file);
                          }
                        }}
+                       onSearchOnlineClick={() => {
+                         setOnlineSearchType('logo');
+                         setShowOnlineSearch(true);
+                       }}
+                       showSearchOption={true}
+                       recordType="blend"
+                       recordData={formData}
                        existingPhotos={[]}
                        hideExisting
                      />
