@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import ModuleCard from '@/components/hub/ModuleCard';
 import CombinedSummary from '@/components/hub/CombinedSummary';
 import CuratorHub from '@/components/hub/CuratorHub';
 import RecentActivity from '@/components/hub/RecentActivity';
 import QuickLaunch from '@/components/hub/QuickLaunch';
+import TonightSessionCard from '@/components/hub/TonightSessionCard';
+import CollectionIntelligencePanel from '@/components/hub/CollectionIntelligencePanel';
 import {
   getCollectionHubSummary,
   getEnabledModules,
@@ -63,6 +67,57 @@ export default function CollectionHub() {
       cancelled = true;
     };
   }, [user?.email]);
+
+  const { data: pipes = [] } = useQuery({
+    queryKey: ['hub-pipes', user?.email],
+    queryFn: async () => {
+      const r = await base44.entities.Pipe.filter({ created_by: user?.email });
+      return Array.isArray(r) ? r : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 30000,
+  });
+
+  const { data: blends = [] } = useQuery({
+    queryKey: ['hub-blends', user?.email],
+    queryFn: async () => {
+      const r = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+      return Array.isArray(r) ? r : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 30000,
+  });
+
+  const { data: bottles = [] } = useQuery({
+    queryKey: ['hub-bottles', user?.email],
+    queryFn: async () => {
+      const r = await base44.entities.Bottle.filter({ created_by: user?.email });
+      return Array.isArray(r) ? r : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 30000,
+  });
+
+  const { data: smokingLogs = [] } = useQuery({
+    queryKey: ['hub-smoking-logs', user?.email],
+    queryFn: async () => {
+      const r = await base44.entities.SmokingLog.filter({ created_by: user?.email });
+      return Array.isArray(r) ? r : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 30000,
+  });
+
+  const { data: hubProfile = null } = useQuery({
+    queryKey: ['hub-profile', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return null;
+      const r = await base44.entities.UserProfile.filter({ user_email: user.email });
+      return r?.[0] || null;
+    },
+    enabled: !!user?.email,
+    staleTime: 60000,
+  });
 
   const enabledModules = getEnabledModules();
   const comingSoonModules = getComingSoonModules();
@@ -187,6 +242,23 @@ export default function CollectionHub() {
 
       {/* Quick Launch */}
       <QuickLaunch />
+
+      {/* Tonight's Session */}
+      <TonightSessionCard
+        pipes={pipes}
+        blends={blends}
+        bottles={bottles}
+        profile={hubProfile}
+      />
+
+      {/* Collection Intelligence */}
+      <CollectionIntelligencePanel
+        pipes={pipes}
+        blends={blends}
+        bottles={bottles}
+        logs={smokingLogs}
+        profile={hubProfile}
+      />
 
       {/* Recent Activity */}
       <RecentActivity onActivitiesLoaded={setRecentActivities} />
