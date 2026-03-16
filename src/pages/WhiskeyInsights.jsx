@@ -276,7 +276,7 @@ export default function WhiskeyInsightsPage() {
               {/* Highlight Cards */}
               <div className="space-y-4">
                 <h2 className="text-xl font-bold" style={{ color: '#F5F1E7' }}>
-                  {t('insights.highlights') || 'Collection Highlights'}
+                  {t('insights.highlights', 'Collection Highlights')}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {mostTastedBottle && (
