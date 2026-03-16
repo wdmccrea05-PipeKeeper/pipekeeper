@@ -650,6 +650,58 @@ export default function PublicProfilePage() {
             )}
           </TabsContent>
 
+          <TabsContent value="whiskey" className="space-y-4">
+            <div className="space-y-4">
+              {bottles.map((bottle) => (
+                <Card key={bottle.id} className="bg-white/95 border-stone-200 hover:border-amber-400 transition-colors">
+                  <CardContent className="p-4">
+                    <div className="flex gap-4">
+                      <div
+                        className="w-20 h-24 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => bottle.photo && setExpandedImage(bottle.photo)}
+                      >
+                        {bottle.photo ? (
+                          <img src={bottle.photo} alt={bottle.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <WhiskeyBottleIcon className="w-10 h-12 text-stone-400" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-stone-800 mb-1">{bottle.name}</h3>
+                        {bottle.distillery && <p className="text-sm text-stone-600 mb-2">{bottle.distillery}</p>}
+                        <div className="flex flex-wrap gap-1.5">
+                          {bottle.type && <Badge variant="outline" className="text-xs">{bottle.type}</Badge>}
+                          {bottle.region && <Badge variant="outline" className="text-xs">{bottle.region}</Badge>}
+                          {bottle.age_years && <Badge variant="outline" className="text-xs">{bottle.age_years}yr</Badge>}
+                          {bottle.abv && <Badge variant="outline" className="text-xs">{bottle.abv}%</Badge>}
+                          {!profile.privacy_hide_values && bottle.rating > 0 && (
+                            <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-xs">{bottle.rating}/5</Badge>
+                          )}
+                          {!profile.privacy_hide_values && (bottle.purchase_price || bottle.estimated_value) > 0 && (
+                            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs">
+                              {formatCurrency(bottle.purchase_price || bottle.estimated_value)}
+                            </Badge>
+                          )}
+                        </div>
+                        {bottle.tasting_notes && (
+                          <p className="text-xs text-stone-500 mt-2 line-clamp-2">{bottle.tasting_notes}</p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            {bottles.length === 0 && (
+              <Card className="bg-white/95">
+                <CardContent className="py-12 text-center text-stone-500">
+                  <WhiskeyBottleIcon className="w-16 h-16 mx-auto mb-4 opacity-30" style={{ color: '#92400e' }} />
+                  <p>{t("publicProfile.noBottlesInCollection")}</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
           <TabsContent value="logs" className="space-y-4">
             {logs.map((log) => {
               const bowlCount = log.bowls_used || log.bowls_smoked;
