@@ -195,6 +195,14 @@ export default function WhiskeyPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <WhiskeyExporter />
             <Button
+              onClick={() => setShowQuickSearch(true)}
+              variant="outline"
+              className="text-sm"
+            >
+              <Search className="w-4 h-4 mr-2" />
+              {t('quickActions.quickSearchBottle') || 'Quick Add'}
+            </Button>
+            <Button
               onClick={handleAddBottle}
               className="bg-[#A35C5C] hover:bg-[#8C4A4A]"
             >
