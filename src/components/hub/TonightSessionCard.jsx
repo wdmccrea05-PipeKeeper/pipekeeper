@@ -37,6 +37,7 @@ function setCache(data) {
 }
 
 export default function TonightSessionCard({ pipes = [], blends = [], bottles = [], profile = null, tasteProfile = null }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [recommendation, setRecommendation] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -84,7 +85,7 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
       }
     } catch (e) {
       console.error('Recommendation error:', e);
-      setError('Could not generate recommendation right now.');
+      setError(t('session.errorGenerating', 'Could not generate recommendation right now.'));
     } finally {
       setLoading(false);
     }
