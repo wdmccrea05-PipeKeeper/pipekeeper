@@ -51,8 +51,11 @@ function CommunityPageInner() {
       return foundProfile;
     },
     enabled: !!user?.email,
-    staleTime: 10_000,
+    // Short staleTime so messaging toggle changes appear promptly after visiting Profile
+    staleTime: 5_000,
     gcTime: 60_000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {
