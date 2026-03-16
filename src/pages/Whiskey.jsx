@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Plus, BookOpen, TrendingUp, BarChart3, Share2, Search, Package, Grid3X3, List, ArrowUpDown } from 'lucide-react';
+import { Plus, BookOpen, TrendingUp, BarChart3, Share2, Search, Package, Grid3X3, List, Package2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import ModuleNav from '@/components/modules/ModuleNav';
@@ -16,6 +16,8 @@ import ShareRecordModal from '@/components/share/ShareRecordModal';
 import QuickSearchBottle from '@/components/ai/QuickSearchBottle';
 import InventoryManager from '@/components/whiskey/InventoryManager';
 import InventoryMigrator from '@/components/whiskey/InventoryMigrator';
+import CollectorDisplayCard from '@/components/ui/CollectorDisplayCard';
+import { createPageUrl } from '@/components/utils/createPageUrl';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import WhiskeyExporter from '@/components/export/WhiskeyExporter';
@@ -42,6 +44,7 @@ export default function WhiskeyPage() {
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [inventoryBottle, setInventoryBottle] = useState(null);
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('whiskeyViewMode') || 'grid');
+  const [displayMode, setDisplayMode] = useState(() => localStorage.getItem('whiskeyDisplayMode') === 'collector');
   const [sortBy, setSortBy] = useState(() => localStorage.getItem('whiskeySortBy') || 'date');
 
   React.useEffect(() => {
