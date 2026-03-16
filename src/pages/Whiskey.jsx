@@ -329,7 +329,7 @@ export default function WhiskeyPage() {
       {/* Recent Tastings */}
       {tastingLogs.length > 0 && (
         <div className="space-y-4">
-          <h2 style={{ color: '#F5F1E7' }} className="text-2xl font-bold">Recent Tastings</h2>
+          <h2 style={{ color: '#F5F1E7' }} className="text-2xl font-bold">{t('whiskeykeeper.recentTastings')}</h2>
           <div className="grid grid-cols-1 gap-3">
             {tastingLogs.slice(0, 5).map((log) => (
               <div key={log.id} className="rounded-lg p-4"
