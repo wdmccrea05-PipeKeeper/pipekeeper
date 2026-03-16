@@ -223,7 +223,7 @@ export default function WhiskeyPage() {
       <Sheet open={showForm} onOpenChange={setShowForm}>
         <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle>{editingBottle ? 'Edit Whiskey' : 'Add Whiskey'}</SheetTitle>
+            <SheetTitle>{editingBottle ? t('whiskey.editBottle') : t('whiskey.addBottle')}</SheetTitle>
           </SheetHeader>
           <BottleForm
             bottle={editingBottle}
