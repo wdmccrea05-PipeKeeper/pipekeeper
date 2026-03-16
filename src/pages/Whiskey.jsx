@@ -3,7 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Plus, BookOpen, TrendingUp, BarChart3, Share2, Search } from 'lucide-react';
+import { Plus, BookOpen, TrendingUp, BarChart3, Share2, Search, Package } from 'lucide-react';
+import InventoryMigrator from '@/components/whiskey/InventoryMigrator';
+import InventoryManager from '@/components/whiskey/InventoryManager';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 function WhiskeyBottleIcon({ className, style }) {
   return (
