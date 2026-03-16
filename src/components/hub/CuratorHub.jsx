@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Zap, ArrowRight } from 'lucide-react';
+import { Target, ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import {
   buildCuratorHubContext,
