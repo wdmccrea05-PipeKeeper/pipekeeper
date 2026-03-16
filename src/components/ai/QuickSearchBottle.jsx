@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useState } from 'react';
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Loader2 } from "lucide-react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 function WhiskeyBottleIcon({ className, style }) {
   return (
@@ -15,7 +17,6 @@ function WhiskeyBottleIcon({ className, style }) {
     </svg>
   );
 }
-import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function QuickSearchBottle({ isOpen, onClose, onBottleAdded }) {
   const { t } = useTranslation();
