@@ -64,6 +64,7 @@ import PipeConditionTracker from "@/components/pipes/PipeConditionTracker";
 import MaintenanceLog from "@/components/pipes/MaintenanceLog";
 import CuratorItemNote from "@/components/curator/CuratorItemNote";
 import ShareRecordModal from "@/components/share/ShareRecordModal";
+import ValuationCredibility, { computePipeValuation } from "@/components/valuation/ValuationCredibility";
 
 const PAGE_BG =
   "linear-gradient(180deg, rgba(14,10,8,0.98) 0%, rgba(11,9,8,1) 100%)";
@@ -449,19 +450,7 @@ export default function PipeDetailPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              {pipe.estimated_value ? (
-                <Card style={SUBPANEL_STYLE}>
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <DollarSign className="w-5 h-5 text-amber-400" />
-                    <div>
-                      <p className="text-xs text-[#E0D8C8]/70">{t("pipesExtended.estValue")}</p>
-                      <p className="font-semibold text-amber-100">{formatCurrency(+pipe.estimated_value)}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : null}
-
+            <div className="space-y-3">
               {pipe.purchase_price ? (
                 <Card style={SUBPANEL_STYLE}>
                   <CardContent className="p-4 flex items-center gap-3">
@@ -473,6 +462,7 @@ export default function PipeDetailPage() {
                   </CardContent>
                 </Card>
               ) : null}
+              <ValuationCredibility valuation={computePipeValuation(pipe)} />
             </div>
 
             <div className="flex flex-wrap gap-2">
