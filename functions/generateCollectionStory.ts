@@ -9,16 +9,22 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch collection data
-    const pipes = await base44.entities.Pipe.filter({});
-    const blends = await base44.entities.TobaccoBlend.filter({});
-    const bottles = await base44.entities.Bottle.filter({});
-    const logs = await base44.entities.SmokingLog.filter({});
+    // Fetch collection data (user-scoped)
+    const pipes = await base44.entities.Pipe.filter({ created_by: user.email });
+    const blends = await base44.entities.TobaccoBlend.filter({ created_by: user.email });
+    const bottles = await base44.entities.Bottle.filter({ created_by: user.email });
+    const logs = await base44.entities.SmokingLog.filter({ created_by: user.email });
+
+    // Ensure arrays
+    const pipesList = Array.isArray(pipes) ? pipes : [];
+    const blendsList = Array.isArray(blends) ? blends : [];
+    const bottlesList = Array.isArray(bottles) ? bottles : [];
+    const logsList = Array.isArray(logs) ? logs : [];
 
     // Calculate collection metrics
-    const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0) +
-                      blends.reduce((sum, b) => sum + (b.manual_market_value || b.ai_estimated_value || 0), 0) +
-                      bottles.reduce((sum, b) => sum + (b.average_market_value || b.collector_value || 0), 0);
+    const totalValue = pipesList.reduce((sum, p) => sum + (p.estimated_value || 0), 0) +
+                      blendsList.reduce((sum, b) => sum + (b.manual_market_value || b.ai_estimated_value || 0), 0) +
+                      bottlesList.reduce((sum, b) => sum + (b.average_market_value || b.collector_value || 0), 0);
 
     const favorites = {
       pipe: pipes.filter(p => p.is_favorite).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0],
