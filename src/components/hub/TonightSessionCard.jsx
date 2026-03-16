@@ -186,11 +186,10 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
       {/* Mode Selector */}
       <div className="space-y-2">
         <label className="text-xs uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.6)' }}>
-          Recommendation Mode
+          {t('session.recommendationMode', 'Recommendation Mode')}
         </label>
         <Select value={mode} onValueChange={(v) => { 
-          setMode(v); 
-          setRecommendation(null); // Force recompute when mode changes
+          setMode(v);
         }}>
           <SelectTrigger className="h-8 text-xs">
             <SelectValue />
@@ -199,8 +198,8 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
             {SESSION_MODES.map(m => (
               <SelectItem key={m.value} value={m.value}>
                 <div className="flex flex-col">
-                  <span className="font-medium">{m.label}</span>
-                  <span className="text-xs text-muted-foreground">{m.description}</span>
+                  <span className="font-medium">{t(m.label, m.label)}</span>
+                  <span className="text-xs text-muted-foreground">{t(m.description, m.description)}</span>
                 </div>
               </SelectItem>
             ))}
