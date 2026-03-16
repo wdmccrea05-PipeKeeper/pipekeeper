@@ -111,13 +111,30 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
   };
 
   return (
-    <div
-      className="w-full max-w-2xl rounded-2xl p-6 space-y-6"
-      style={{
-        background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.95), rgba(31, 21, 16, 0.98))',
-        border: '1px solid rgba(180, 140, 75, 0.25)',
-      }}
-    >
+    <>
+      {cropperImage && (
+        <ImageCropper
+          imageUrl={cropperImage}
+          onSave={handleCroppedImage}
+          onCancel={() => setCropperImage(null)}
+        />
+      )}
+
+      <OnlineImageSearchModal
+        isOpen={showOnlineSearch}
+        recordType="bottle"
+        recordData={formData}
+        onImageSelected={handleOnlineImageSelected}
+        onClose={() => setShowOnlineSearch(false)}
+      />
+
+      <div
+        className="w-full max-w-2xl rounded-2xl p-6 space-y-6"
+        style={{
+          background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.95), rgba(31, 21, 16, 0.98))',
+          border: '1px solid rgba(180, 140, 75, 0.25)',
+        }}
+      >
       <div className="flex items-center justify-between">
         <h2 style={{ color: '#F5F1E7' }} className="text-2xl font-bold">
           {bottle ? t('whiskey.editBottle') || 'Edit Bottle' : t('whiskey.addBottle') || 'Add Bottle'}
