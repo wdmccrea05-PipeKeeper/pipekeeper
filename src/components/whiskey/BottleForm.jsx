@@ -67,8 +67,11 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
       age: formData.age ? Number(formData.age) : null,
       abv: formData.abv ? Number(formData.abv) : null,
       purchase_price: formData.purchase_price ? Number(formData.purchase_price) : null,
-      average_market_value: formData.average_market_value ? Number(formData.average_market_value) : null,
+      retail_price: formData.retail_price ? Number(formData.retail_price) : null,
+      aftermarket_price: formData.aftermarket_price ? Number(formData.aftermarket_price) : null,
+      collector_value: formData.collector_value ? Number(formData.collector_value) : null,
       rating: formData.rating ? Number(formData.rating) : null,
+      value_last_updated: formData.retail_price || formData.aftermarket_price || formData.collector_value ? new Date().toISOString() : null,
     };
     
     // Remove empty strings
