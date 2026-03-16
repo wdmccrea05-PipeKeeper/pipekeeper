@@ -438,9 +438,70 @@ export default function WhiskeyInsightsPage() {
               <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
                 {t('insights.reports', 'Export Reports')}
               </h3>
-              <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>
-                {t('insights.reportsComingSoon', 'Report export functionality coming soon')}
-              </p>
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.2)' }}>
+                  <h4 className="font-semibold text-[#F5F1E7] mb-2">Collection Summary</h4>
+                  <p className="text-sm text-[#D8C7A6]/80 mb-3">Export your collection details including bottles, types, and values</p>
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const csv = [
+                          ['Name', 'Type', 'Country', 'Retail Price', 'Rating', 'Open Status'].join(','),
+                          ...bottles.map(b => [
+                            `"${b.name || ''}"`,
+                            b.type || '',
+                            b.country || '',
+                            b.retail_price || 0,
+                            b.rating || '',
+                            inventoryUnits.some(u => u.bottle_id === b.id && u.status === 'open') ? 'Open' : 'Sealed'
+                          ].join(','))
+                        ].join('\n');
+
+                        const link = document.createElement('a');
+                        link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+                        link.download = `collection-summary-${new Date().toISOString().slice(0,10)}.csv`;
+                        link.click();
+                      } catch (e) {
+                        console.error('Export failed:', e);
+                      }
+                    }}
+                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    style={{ background: 'rgba(180,140,75,0.25)', color: '#F5F1E7' }}
+                  >
+                    Export as CSV
+                  </button>
+                </div>
+
+                <div className="p-4 rounded-lg" style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)' }}>
+                  <h4 className="font-semibold text-[#F5F1E7] mb-2">Tasting History</h4>
+                  <p className="text-sm text-[#D8C7A6]/80 mb-3">Export your tasting log with dates and notes</p>
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const csv = [
+                          ['Date', 'Bottle', 'Notes'].join(','),
+                          ...tastingLogs.map(l => [
+                            new Date(l.tasting_date).toLocaleDateString() || '',
+                            `"${l.bottle_name || ''}"`,
+                            `"${(l.notes || '').replace(/"/g, '""')}"`
+                          ].join(','))
+                        ].join('\n');
+
+                        const link = document.createElement('a');
+                        link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+                        link.download = `tasting-log-${new Date().toISOString().slice(0,10)}.csv`;
+                        link.click();
+                      } catch (e) {
+                        console.error('Export failed:', e);
+                      }
+                    }}
+                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    style={{ background: 'rgba(139,92,246,0.25)', color: '#F5F1E7' }}
+                  >
+                    Export as CSV
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
