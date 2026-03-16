@@ -296,7 +296,7 @@ export default function WhiskeyPage() {
             border: '1px solid rgba(180, 140, 75, 0.15)',
           }}
         >
-          <Wine className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(180,140,75,0.5)' }} />
+          <WhiskeyBottleIcon className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(180,140,75,0.5)' }} />
           <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">
             {t('whiskey.noBottlesYet') || 'No bottles yet'}
           </h2>
