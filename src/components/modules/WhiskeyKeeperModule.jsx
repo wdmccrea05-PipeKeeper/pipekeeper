@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Wine, BookOpen, TrendingUp, BarChart3, Plus, Search, Camera, Target } from 'lucide-react';
+import { GlassWater, BookOpen, TrendingUp, BarChart3, Plus, Search, Camera } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency } from '@/components/utils/localeFormatters';
@@ -32,7 +32,7 @@ export default function WhiskeyKeeperModule() {
 
   // Module navigation
   const moduleNav = [
-    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: Wine },
+    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: GlassWater },
     { name: t('nav.tastingNotes') || 'Tastings', path: '/Tastings', icon: BookOpen },
     { name: t('nav.insights') || 'Insights', path: '/WhiskeyInsights', icon: TrendingUp },
     { name: t('nav.analytics') || 'Analytics', path: '/WhiskeyAnalytics', icon: BarChart3 },
@@ -162,7 +162,7 @@ export default function WhiskeyKeeperModule() {
                 boxShadow: '0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)',
               }}
             >
-              <Wine className="w-5 h-5" style={{ color: 'rgba(180, 140, 75, 1)', filter: 'drop-shadow(0 0 4px rgba(180,140,75,0.7))' }} />
+              <GlassWater className="w-5 h-5" style={{ color: 'rgba(180, 140, 75, 1)', filter: 'drop-shadow(0 0 4px rgba(180,140,75,0.7))' }} />
             </div>
             <h1 className="text-4xl font-bold tracking-tight" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
               {t('whiskeykeeper.title') || 'WhiskeyKeeper'}
@@ -274,9 +274,9 @@ export default function WhiskeyKeeperModule() {
 
       {/* Quick Search Modal */}
       <QuickSearchBottle 
-        open={showQuickSearch} 
-        onOpenChange={setShowQuickSearch}
-        onAdd={handleBottleAdded}
+        isOpen={showQuickSearch} 
+        onClose={() => setShowQuickSearch(false)}
+        onBottleAdded={handleBottleAdded}
       />
 
       {/* Bottle Identifier Sheet */}
