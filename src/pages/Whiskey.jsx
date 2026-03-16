@@ -168,6 +168,19 @@ export default function WhiskeyPage() {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <WhiskeyExporter />
+          <Select value={sortBy} onValueChange={(v) => {
+            setSortBy(v);
+            localStorage.setItem('whiskeySortBy', v);
+          }}>
+            <SelectTrigger className="w-32 h-10" style={{ borderColor: 'rgba(180,140,75,0.2)' }}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date">{t('whiskey.newestFirst')}</SelectItem>
+              <SelectItem value="name">{t('whiskey.byName')}</SelectItem>
+              <SelectItem value="rating">{t('whiskey.byRating')}</SelectItem>
+            </SelectContent>
+          </Select>
           <div className="flex gap-2 border rounded-lg" style={{ borderColor: 'rgba(180,140,75,0.2)', background: 'rgba(180,140,75,0.05)' }} role="group">
             <Button
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
