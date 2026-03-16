@@ -129,8 +129,10 @@ Prioritize well-known, commonly available bottles. Return a JSON object with a "
       age: bottle.age_years || null,
       abv: bottle.abv || null,
       bottle_size: '750ml',
-      purchase_price: bottle.typical_price_usd || null,
-      average_market_value: bottle.typical_price_usd || null,
+      purchase_type: 'retail',
+      retail_price: bottle.typical_price_usd || null,
+      value_confidence: 'medium',
+      value_source_summary: bottle.typical_price_usd ? 'Web search retail pricing' : null,
     };
     const created = await base44.entities.Bottle.create(bottleData);
     setAddingId(null);
