@@ -11,7 +11,7 @@ export const KEEPER_MODULES = [
   {
     type: 'pipes',
     titleKey: 'hub.pipekeeper',
-    icon: '🔴',
+    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/27f5c2c92_PKNB.png',
     route: 'Pipes',
     enabled: true,
     contributesToHub: true,
@@ -21,7 +21,7 @@ export const KEEPER_MODULES = [
   {
     type: 'whiskey',
     titleKey: 'hub.whiskeykeeper',
-    icon: '🥃',
+    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png',
     route: 'Whiskey',
     enabled: true,
     contributesToHub: true,
