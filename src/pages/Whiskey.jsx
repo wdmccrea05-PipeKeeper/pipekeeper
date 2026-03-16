@@ -253,28 +253,32 @@ export default function WhiskeyPage() {
       {bottles.length > 0 ? (
         <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
           {filteredBottles.map((bottle) => (
-            <div key={bottle.id} className="space-y-2">
-              <BottleCard bottle={bottle} onClick={() => window.location.href = `/BottleDetail?id=${encodeURIComponent(bottle.id)}`} />
-              <div className="flex gap-2 flex-wrap">
-                <Button onClick={() => setShowTastingLog(bottle)} variant="outline" size="sm" className="flex-1">
-                  <BookOpen className="w-3 h-3 mr-1" />
-                  Log Tasting
-                </Button>
-                <Button onClick={() => setInventoryBottle(bottle)} variant="outline" size="sm" className="flex-1">
-                  <Package className="w-3 h-3 mr-1" />
-                  Inventory
-                </Button>
-                <Button onClick={() => setShareBottle(bottle)} variant="outline" size="sm">
-                  <Share2 className="w-3 h-3" />
-                </Button>
-                <Button
-                  onClick={() => { if (confirm('Delete this whiskey?')) deleteBottleMutation.mutate(bottle.id); }}
-                  variant="outline" size="sm" className="text-red-400 border-red-400/30"
-                >
-                  {t('common.delete') || 'Delete'}
-                </Button>
+            viewMode === 'grid' ? (
+              <div key={bottle.id} className="space-y-2">
+                <BottleCard bottle={bottle} onClick={() => window.location.href = `/BottleDetail?id=${encodeURIComponent(bottle.id)}`} />
+                <div className="flex gap-2 flex-wrap">
+                  <Button onClick={() => setShowTastingLog(bottle)} variant="outline" size="sm" className="flex-1">
+                    <BookOpen className="w-3 h-3 mr-1" />
+                    {t('whiskey.logTasting') || 'Log Tasting'}
+                  </Button>
+                  <Button onClick={() => setInventoryBottle(bottle)} variant="outline" size="sm" className="flex-1">
+                    <Package className="w-3 h-3 mr-1" />
+                    {t('whiskey.inventory') || 'Inventory'}
+                  </Button>
+                  <Button onClick={() => setShareBottle(bottle)} variant="outline" size="sm">
+                    <Share2 className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    onClick={() => { if (confirm(t('common.confirmDelete'))) deleteBottleMutation.mutate(bottle.id); }}
+                    variant="outline" size="sm" className="text-red-400 border-red-400/30"
+                  >
+                    {t('common.delete') || 'Delete'}
+                  </Button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <BottleListItem key={bottle.id} bottle={bottle} onClick={() => window.location.href = `/BottleDetail?id=${encodeURIComponent(bottle.id)}`} />
+            )
           ))}
         </div>
       ) : (
