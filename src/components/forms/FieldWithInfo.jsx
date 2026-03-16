@@ -11,7 +11,7 @@ export default function FieldWithInfo({ label, required, helpText, children }) {
         {helpText && (
           <Popover>
             <PopoverTrigger asChild>
-              <button type="button" className="text-stone-400 hover:text-amber-600 transition-colors">
+              <button type="button" className="text-white hover:text-[#D4A574] transition-colors opacity-80 hover:opacity-100">
                 <HelpCircle className="w-4 h-4" />
               </button>
             </PopoverTrigger>
