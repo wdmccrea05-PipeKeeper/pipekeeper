@@ -321,6 +321,18 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           }}
         />
       )}
+
+      <OnlineImageSearchModal
+        isOpen={showOnlineSearch}
+        recordType="pipe"
+        recordData={formData}
+        onImageSelected={handleOnlineImageSelected}
+        onClose={() => {
+          setShowOnlineSearch(false);
+          setOnlineSearchType(null);
+        }}
+      />
+
       <form onSubmit={handleSubmit} className="space-y-6">
       {/* ===== SECTION: AI Search (new pipes only) ===== */}
       {!pipe && (
