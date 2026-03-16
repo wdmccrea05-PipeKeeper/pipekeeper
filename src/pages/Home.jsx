@@ -1,33 +1,9 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "@/components/i18n/safeTranslation";
-import TutorialSystem from "@/components/onboarding/TutorialSystem.jsx";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { formatCurrency, formatWeight } from "@/components/utils/localeFormatters";
-import { base44 } from "@/api/base44Client";
-import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { calculateCellaredOzFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
-import CollectionIntelligencePanel from "@/components/home/CollectionIntelligencePanel";
-import ProactiveCuratorPanel from "@/components/curator/ProactiveCuratorPanel";
-import QuickActions from "@/components/home/QuickActions";
-import LogSessionModal from "@/components/home/LogSessionModal";
-import IdentifyModal from "@/components/home/IdentifyModal";
-import ModuleNav from "@/components/modules/ModuleNav";
-import { Leaf, Heart, Sparkles, ArrowRight, Crown, BarChart3, Archive, TrendingUp, Wind, BookOpen } from "lucide-react";
-import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
-import { isAppleBuild } from "@/components/utils/appVariant";
-import { PIPE_SILHOUETTE_URL } from "@/components/utils/collectionConstants";
-import { CATEGORY_COLORS } from "@/components/ui/HeroCard";
-import CollectorStory from "@/components/story/CollectorStory";
-import StoryTrigger from "@/components/story/StoryTrigger";
-import { generateStoryCards } from "@/components/story/generateStoryCards";
-import LedgerPanel from "@/components/home/LedgerPanel";
-import DrawerRow from "@/components/home/DrawerRow";
-import CatalogPlate from "@/components/home/CatalogPlate";
-
-const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
 export default function Home() {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { user, hasPaid, hasPremium, hasPro, planLabel } = useCurrentUser();
 
