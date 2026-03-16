@@ -198,17 +198,15 @@ export default function CollectionHub() {
     <div className="space-y-8">
       {/* Hero Section - Match Home Page Canonical Style */}
       <div className="space-y-4">
-        <div className="text-center space-y-2">
-          <h1 
-            className="text-4xl font-bold tracking-tight"
-            style={{ 
-              color: "#F5F1E7",
-              textShadow: "0 2px 4px rgba(0,0,0,0.5)",
-              fontFamily: "'Georgia', serif"
-            }}
-          >
-            {t('hub.title')}
-          </h1>
+        <div className="text-center space-y-4">
+          <div className="flex justify-center mb-6">
+            <img 
+              src="https://media.base44.com/images/public/694956e18d119cc497192525/0cc662018_CollectionKeeperUpdated.png"
+              alt="CollectionKeeper"
+              className="h-48 object-contain"
+              style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.4))' }}
+            />
+          </div>
           <p 
             className="text-base max-w-2xl mx-auto leading-relaxed"
             style={{ color: "rgba(224, 216, 200, 0.75)" }}
