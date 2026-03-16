@@ -6,6 +6,7 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
 import { BookOpen, TrendingUp, BarChart3, Plus, Search, Camera, Wand2 } from 'lucide-react';
+import { createPageUrl } from '@/components/utils/createPageUrl';
 
 function WhiskeyBottleIconSvg({ className, style }) {
   return (
@@ -16,7 +17,6 @@ function WhiskeyBottleIconSvg({ className, style }) {
     </svg>
   );
 }
-import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import ModuleNav from './ModuleNav';
