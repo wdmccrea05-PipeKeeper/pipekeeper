@@ -470,6 +470,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
           </Button>
         </div>
       </form>
-    </div>
+      </div>
+    </>
   );
 }
