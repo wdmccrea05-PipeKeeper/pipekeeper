@@ -102,9 +102,14 @@ export default function ModuleCard({ module, icon, itemCount, summary, action, i
           >
             {stats.length > 0 ? (
               stats.map((stat, i) => (
-                <div key={i} className={cn('flex items-center justify-between', i > 0 && 'pt-1.5 border-t border-[#8b6239]/20')}>
-                  <span className="text-sm" style={{ color: 'rgba(224,216,200,0.65)' }}>{stat.label}</span>
-                  <span className={cn('font-semibold', i === 0 ? 'text-lg' : 'text-sm')} style={{ color: i === 0 ? '#D4A574' : '#E0D8C8' }}>{stat.value}</span>
+                <div key={i} className={cn('flex flex-col gap-1', i > 0 && 'pt-1.5 border-t border-[#8b6239]/20')}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm" style={{ color: 'rgba(224,216,200,0.65)' }}>{stat.label}</span>
+                    <span className={cn('font-semibold', i === 0 ? 'text-lg' : 'text-sm')} style={{ color: i === 0 ? '#D4A574' : '#E0D8C8' }}>{stat.value}</span>
+                  </div>
+                  {stat.sub && (
+                    <span className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>{stat.sub}</span>
+                  )}
                 </div>
               ))
             ) : (
