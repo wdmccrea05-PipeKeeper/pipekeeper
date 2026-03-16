@@ -5,7 +5,7 @@ import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
-export default function ModuleCard({ module, icon, itemCount, summary, action, isComingSoon }) {
+export default function ModuleCard({ module, icon, itemCount, summary, action, isComingSoon, stats = [] }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -46,18 +46,29 @@ export default function ModuleCard({ module, icon, itemCount, summary, action, i
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats — module-specific rows */}
         {!isComingSoon && (
-          <div className="space-y-2 bg-[#1a1410]/60 rounded-lg p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[#E0D8C8]/70">{t('hub.items')}</span>
-              <span className="text-lg font-semibold text-[#D4A574]">{itemCount}</span>
-            </div>
-            {summary && (
-              <div className="flex items-center justify-between pt-2 border-t border-[#8b6239]/20">
-                <span className="text-sm text-[#E0D8C8]/70">{summary.label}</span>
-                <span className="text-sm font-medium text-[#E0D8C8]">{summary.value}</span>
-              </div>
+          <div className="space-y-1.5 bg-[#1a1410]/60 rounded-lg p-3">
+            {stats.length > 0 ? (
+              stats.map((stat, i) => (
+                <div key={i} className={cn('flex items-center justify-between', i > 0 && 'pt-1.5 border-t border-[#8b6239]/20')}>
+                  <span className="text-sm text-[#E0D8C8]/70">{stat.label}</span>
+                  <span className={cn('font-semibold', i === 0 ? 'text-lg text-[#D4A574]' : 'text-sm text-[#E0D8C8]')}>{stat.value}</span>
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#E0D8C8]/70">{t('hub.items')}</span>
+                  <span className="text-lg font-semibold text-[#D4A574]">{itemCount}</span>
+                </div>
+                {summary && (
+                  <div className="flex items-center justify-between pt-1.5 border-t border-[#8b6239]/20">
+                    <span className="text-sm text-[#E0D8C8]/70">{summary.label}</span>
+                    <span className="text-sm font-medium text-[#E0D8C8]">{summary.value}</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
