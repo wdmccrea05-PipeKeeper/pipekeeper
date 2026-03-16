@@ -96,19 +96,21 @@ Return a JSON object with a "bottles" array.`,
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg" style={{
+      <DialogContent className="max-w-lg flex flex-col" style={{
         background: "linear-gradient(145deg, rgba(40,28,20,0.98), rgba(30,20,14,0.99))",
-        border: "1px solid rgba(140,105,65,0.4)"
+        border: "1px solid rgba(140,105,65,0.4)",
+        maxHeight: "85vh",
       }}>
-        <DialogHeader>
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-[#F5F1E7] flex items-center gap-2">
-            <GlassWater className="w-5 h-5 text-amber-400" />
+            <WhiskeyBottleIcon className="w-5 h-5 text-amber-400" style={{ color: '#D4AF37' }} />
             {t("quickSearch.quickSearchAddBottle")}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="flex gap-2">
+        <div className="flex flex-col gap-4 min-h-0 flex-1 overflow-hidden">
+          {/* Search bar — always visible */}
+          <div className="flex gap-2 flex-shrink-0">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 w-4 h-4 text-[#E0D8C8]/50" />
               <Input
@@ -125,69 +127,72 @@ Return a JSON object with a "bottles" array.`,
             </Button>
           </div>
 
-          {!searched && (
-            <p className="text-xs text-center" style={{ color: "rgba(224, 216, 200, 0.5)" }}>
+          {!searched && !searching && (
+            <p className="text-xs text-center flex-shrink-0" style={{ color: "rgba(224, 216, 200, 0.5)" }}>
               {t("quickSearch.bottleExamples")}
             </p>
           )}
 
           {searching && (
-            <div className="text-center py-6">
+            <div className="text-center py-6 flex-shrink-0">
               <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-amber-400" />
               <p className="text-sm" style={{ color: "rgba(224, 216, 200, 0.7)" }}>{t("common.searching")}</p>
             </div>
           )}
 
           {!searching && searched && results.length === 0 && (
-            <div className="text-center py-6 text-[#E0D8C8]/60">
-              <GlassWater className="w-10 h-10 mx-auto mb-2 opacity-30" />
+            <div className="text-center py-6 flex-shrink-0" style={{ color: 'rgba(224,216,200,0.6)' }}>
+              <WhiskeyBottleIcon className="w-10 h-10 mx-auto mb-2 opacity-30" />
               <p className="text-sm">{t("quickSearch.noResults")}</p>
             </div>
           )}
 
-          <div className="space-y-2 max-h-80 overflow-y-auto">
-            {results.map((bottle, i) => (
-              <div
-                key={i}
-                className="p-4 rounded-lg"
-                style={{
-                  background: "linear-gradient(135deg, rgba(52,37,24,0.6), rgba(42,30,18,0.75))",
-                  border: "1px solid rgba(140,105,65,0.25)"
-                }}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-[#F5F1E7] truncate">{bottle.name}</p>
-                    {bottle.distillery && (
-                      <p className="text-sm text-[#E0D8C8]/70">{bottle.distillery}</p>
-                    )}
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {bottle.type && <Badge className="text-xs bg-amber-900/50 text-amber-200 border-amber-700/40">{bottle.type}</Badge>}
-                      {bottle.region && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.region}</Badge>}
-                      {bottle.age_years && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.age_years}yr</Badge>}
-                      {bottle.abv && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.abv}%</Badge>}
-                      {bottle.typical_price_usd && <Badge className="text-xs bg-emerald-900/40 text-emerald-300 border-emerald-700/40">${bottle.typical_price_usd}</Badge>}
+          {/* Scrollable results area */}
+          {results.length > 0 && (
+            <div className="overflow-y-auto flex-1 space-y-2 pr-1" style={{ minHeight: 0 }}>
+              {results.map((bottle, i) => (
+                <div
+                  key={i}
+                  className="p-4 rounded-lg"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(52,37,24,0.6), rgba(42,30,18,0.75))",
+                    border: "1px solid rgba(140,105,65,0.25)"
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-[#F5F1E7] truncate">{bottle.name}</p>
+                      {bottle.distillery && (
+                        <p className="text-sm text-[#E0D8C8]/70">{bottle.distillery}</p>
+                      )}
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {bottle.type && <Badge className="text-xs bg-amber-900/50 text-amber-200 border-amber-700/40">{bottle.type}</Badge>}
+                        {bottle.region && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.region}</Badge>}
+                        {bottle.age_years && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.age_years}yr</Badge>}
+                        {bottle.abv && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.abv}%</Badge>}
+                        {bottle.typical_price_usd && <Badge className="text-xs bg-emerald-900/40 text-emerald-300 border-emerald-700/40">${bottle.typical_price_usd}</Badge>}
+                      </div>
+                      {bottle.description && (
+                        <p className="text-xs text-[#E0D8C8]/50 mt-1 line-clamp-2">{bottle.description}</p>
+                      )}
                     </div>
-                    {bottle.description && (
-                      <p className="text-xs text-[#E0D8C8]/50 mt-1 line-clamp-2">{bottle.description}</p>
-                    )}
+                    <Button
+                      size="sm"
+                      onClick={() => handleAdd(bottle)}
+                      disabled={addingId === bottle.name}
+                      className="shrink-0 mt-1"
+                    >
+                      {addingId === bottle.name ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Plus className="w-3.5 h-3.5" />
+                      )}
+                    </Button>
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleAdd(bottle)}
-                    disabled={addingId === bottle.name}
-                    className="shrink-0"
-                  >
-                    {addingId === bottle.name ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Plus className="w-3.5 h-3.5" />
-                    )}
-                  </Button>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
