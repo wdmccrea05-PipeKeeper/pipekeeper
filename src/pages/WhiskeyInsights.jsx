@@ -281,7 +281,7 @@ export default function WhiskeyInsightsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {mostTastedBottle && (
                     <WhiskeyHighlightCard
-                      title={t('insights.mostTastedBottle') || 'Most Tasted Bottle'}
+                      title={t('insights.mostTastedBottle', 'Most Tasted Bottle')}
                       value={mostTastedBottle.bottle.name}
                       sub={`${mostTastedBottle.count} tastings`}
                       accent="#C87941"
@@ -291,7 +291,7 @@ export default function WhiskeyInsightsPage() {
                       cardRef={(el) => { highlightRefs.current.mostTasted = el; }}
                       onShare={() => handleShareCard('mostTasted')}
                       onStory={() => setActiveStory({
-                        title: t('insights.mostTastedBottle') || 'Most Tasted Bottle',
+                        title: t('insights.mostTastedBottle', 'Most Tasted Bottle'),
                         value: mostTastedBottle.bottle.name,
                         sub: `${mostTastedBottle.count} tastings`,
                         accent: '#C87941',
