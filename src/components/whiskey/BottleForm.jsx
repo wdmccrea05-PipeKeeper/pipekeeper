@@ -173,11 +173,15 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
             />
           </div>
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.distillery') || 'Distillery'}</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">
+              {formData.bottle_type === 'wine' 
+                ? (t('wine.winery') || 'Winery') 
+                : (t('whiskey.distillery') || 'Distillery')}
+            </label>
             <Input
               value={formData.distillery}
               onChange={(e) => handleChange('distillery', e.target.value)}
-              placeholder="Distillery name"
+              placeholder={formData.bottle_type === 'wine' ? 'Winery name' : 'Distillery name'}
               className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
             />
           </div>
