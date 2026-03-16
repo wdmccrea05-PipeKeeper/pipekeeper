@@ -393,7 +393,7 @@ export default function WhiskeyInsightsPage() {
               border: '1px solid rgba(180, 140, 75, 0.15)',
             }}>
               <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-                {t('insights.collectionStats') || 'Collection Statistics'}
+                {t('insights.collectionStats', 'Collection Statistics')}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-lg" style={{ background: 'rgba(180,140,75,0.08)' }}>
