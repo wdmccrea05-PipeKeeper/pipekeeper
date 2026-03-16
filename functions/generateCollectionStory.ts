@@ -97,9 +97,9 @@ Deno.serve(async (req) => {
 
     // Find most valuable item
     const allItems = [
-      ...pipesList.map(p => ({ ...p, type: 'pipe', value: p.estimated_value || 0 })),
-      ...blendsList.map(b => ({ ...b, type: 'blend', value: b.manual_market_value || b.ai_estimated_value || 0 })),
-      ...bottlesList.map(b => ({ ...b, type: 'bottle', value: b.average_market_value || b.collector_value || 0 })),
+      ...pipesList.map(p => ({ ...p, type: 'pipe', value: getPipeValue(p) })),
+      ...blendsList.map(b => ({ ...b, type: 'blend', value: getTobaccoValue(b) })),
+      ...bottlesList.map(b => ({ ...b, type: 'bottle', value: getBottleValue(b) })),
     ];
     const mostValuable = allItems.sort((a, b) => b.value - a.value)[0];
 
