@@ -2,6 +2,7 @@ import React from 'react';
 import { Star, Shield, Wine, Droplets, Edit2, Trash2, Share2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
 
 function InventoryBadges({ bottleId }) {
@@ -46,7 +47,45 @@ function InventoryBadges({ bottleId }) {
 }
 
 export default function BottleCard({ bottle, onClick, onEdit, onDelete, onShare }) {
+  const { t } = useTranslation();
   if (!bottle) return null;
+
+  const getPurchaseTypeBgColor = (type) => {
+    switch (type) {
+      case 'retail':
+        return 'rgba(180,140,75,0.15)';
+      case 'aftermarket':
+        return 'rgba(212,175,55,0.15)';
+      case 'gift':
+        return 'rgba(123,155,91,0.15)';
+      default:
+        return 'rgba(180,140,75,0.15)';
+    }
+  };
+
+  const getPurchaseTypeTextColor = (type) => {
+    switch (type) {
+      case 'retail':
+        return 'rgba(224,216,200,0.8)';
+      case 'aftermarket':
+        return '#D4AF37';
+      case 'gift':
+        return '#7B9B5B';
+      default:
+        return 'rgba(224,216,200,0.8)';
+    }
+  };
+
+  const getPurchaseTypeLabel = (type) => {
+    const typeMap = {
+      retail: t('whiskey.purchaseTypeRetail'),
+      aftermarket: t('whiskey.purchaseTypeAftermarket'),
+      gift: t('whiskey.purchaseTypeGift'),
+      trade: t('whiskey.purchaseTypeTrade'),
+      other: t('whiskey.purchaseTypeOther'),
+    };
+    return typeMap[type] || type;
+  };
 
   const renderStars = (rating) =>
     Array.from({ length: 5 }).map((_, i) => (
@@ -124,6 +163,12 @@ export default function BottleCard({ bottle, onClick, onEdit, onDelete, onShare 
               <span className="px-2 py-1 rounded-full"
                 style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37' }}>
                 {bottle.age}y
+              </span>
+            )}
+            {bottle.purchase_type && bottle.purchase_type !== 'retail' && (
+              <span className="px-2 py-1 rounded-full text-xs"
+                style={{ background: getPurchaseTypeBgColor(bottle.purchase_type), border: '1px solid', borderColor: getPurchaseTypeTextColor(bottle.purchase_type), color: getPurchaseTypeTextColor(bottle.purchase_type), opacity: 0.8 }}>
+                {getPurchaseTypeLabel(bottle.purchase_type)}
               </span>
             )}
           </div>
