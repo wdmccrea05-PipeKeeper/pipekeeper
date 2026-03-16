@@ -196,10 +196,10 @@ export default function WhiskeyInsightsPage() {
             textShadow: '0 2px 6px rgba(0,0,0,0.7)',
           }}
         >
-          {t('whiskeykeeper.insights') || 'Collection Insights'}
+          {t('whiskeykeeper.insightsTitle', 'Collection Insights')}
         </h1>
         <p style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
-          {t('whiskeykeeper.insightsDescription') || 'Analyze your whiskey collection'}
+          {t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')}
         </p>
       </div>
 
