@@ -32,7 +32,7 @@ export default function CuratorHub({ summary = null, recentActivities = [] }) {
     <div className="bg-gradient-to-r from-[#8b6239]/20 to-[#D4A574]/10 border border-[#D4A574]/30 rounded-2xl p-8 flex items-center justify-between gap-6">
       <div className="flex items-start gap-4 flex-1">
         <div className="w-12 h-12 rounded-lg bg-[#D4A574]/20 flex items-center justify-center flex-shrink-0">
-          <Zap className="w-6 h-6 text-[#D4A574]" />
+          <Target className="w-6 h-6 text-[#D4A574]" />
         </div>
         <div>
           <h3 className="text-lg font-semibold text-[#E0D8C8]">
