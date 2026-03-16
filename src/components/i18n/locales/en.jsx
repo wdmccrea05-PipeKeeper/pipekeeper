@@ -55,12 +55,12 @@ export default {
 
   hub: {
     title: "CollectionKeeper",
-    description: "Your unified ecosystem for collecting pipes, whiskey, and more. Manage, explore, and curate across all your collections in one place.",
+    description: "Your unified ecosystem for collecting pipes, whiskey, wine, and more. Manage, explore, and curate across all your collections in one place.",
     yourModules: "Your Collections",
     pipekeeper: "PipeKeeper",
     whiskeykeeper: "WhiskeyKeeper",
     cigarkeeper: "CigarKeeper",
-    coffeekeeper: "CoffeeKeeper",
+    winekeeper: "WineKeeper",
     totalItems: "Total Items",
     totalValue: "Total Value",
     modules: "Active Modules",

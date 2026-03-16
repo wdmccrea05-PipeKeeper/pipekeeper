@@ -33,13 +33,13 @@ export const KEEPER_MODULES = [
     moduleKey: 'cigarkeeper',
   },
   {
-    type: 'coffee',
-    titleKey: 'hub.coffeekeeper',
-    icon: '☕',
+    type: 'wine',
+    titleKey: 'hub.winekeeper',
+    icon: '🍷',
     route: null,
     enabled: false,
-    description: 'Coming soon: Manage your coffee bean collection.',
-    moduleKey: 'coffeekeeper',
+    description: 'Coming soon: Manage your wine cellar and bottle inventory.',
+    moduleKey: 'winekeeper',
   },
 ];
 

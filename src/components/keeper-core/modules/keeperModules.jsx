@@ -39,14 +39,14 @@ export const KEEPER_MODULES = [
     entityNames: ['Cigar', 'CigarSmokingLog'],
   },
   {
-    type: 'coffee',
-    titleKey: 'hub.coffeekeeper',
-    icon: '☕',
+    type: 'wine',
+    titleKey: 'hub.winekeeper',
+    icon: '🍷',
     route: null,
     enabled: false,
     contributesToHub: false,
-    description: 'Coming soon: Manage your coffee bean collection.',
-    entityNames: ['CoffeeBean', 'CoffeeTastingLog'],
+    description: 'Coming soon: Manage your wine cellar and bottle inventory.',
+    entityNames: ['WineBottle', 'WineTastingLog'],
   },
 ];
 
