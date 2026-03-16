@@ -452,10 +452,10 @@ export default function WhiskeyInsightsPage() {
         >
           <TrendingUp className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(180,140,75,0.5)' }} />
           <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">
-            {t('whiskeykeeper.noInsights') || 'No insights yet'}
+            {t('whiskeykeeper.noInsights', 'No insights yet')}
           </h2>
           <p style={{ color: 'rgba(224,216,200,0.6)' }}>
-            {t('whiskeykeeper.addBottlesForInsights') || 'Add bottles to your collection to see insights'}
+            {t('whiskeykeeper.addBottlesForInsights', 'Add bottles to your collection to see insights')}
           </p>
         </div>
       )}
