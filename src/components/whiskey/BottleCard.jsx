@@ -49,6 +49,9 @@ function InventoryBadges({ bottleId }) {
 export default function BottleCard({ bottle, onClick, onEdit, onDelete, onShare }) {
   const { t } = useTranslation();
   if (!bottle) return null;
+  
+  // onClick is no longer used since the card is wrapped in an anchor tag
+  // but kept for backward compatibility
 
   const getPurchaseTypeBgColor = (type) => {
     switch (type) {
@@ -99,7 +102,6 @@ export default function BottleCard({ bottle, onClick, onEdit, onDelete, onShare 
 
   return (
     <div
-      onClick={onClick}
       className="relative rounded-2xl overflow-hidden cursor-pointer group hover:-translate-y-1 transition-transform duration-300"
       style={{
         background: 'linear-gradient(155deg, rgba(38, 26, 18, 0.96), rgba(32, 22, 15, 0.99))',
