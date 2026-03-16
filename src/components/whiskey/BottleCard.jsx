@@ -106,10 +106,10 @@ export default function BottleCard({ bottle, onClick, onEdit, onDelete, onShare 
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
               <h3 className="font-bold text-lg line-clamp-2" style={{ color: '#F5F1E7', textShadow: '0 2px 6px rgba(0,0,0,0.8)' }}>
-                {bottle.name || 'Unnamed Bottle'}
+                {bottle.name}
               </h3>
               <p className="text-xs mt-1" style={{ color: 'rgba(180,140,75,0.85)' }}>
-                {bottle.distillery || 'Unknown Distillery'}
+                {bottle.distillery || bottle.region || bottle.country || '—'}
               </p>
             </div>
           </div>
