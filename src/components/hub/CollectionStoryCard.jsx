@@ -45,7 +45,7 @@ export default function CollectionStoryCard() {
       >
         <Loader className="w-4 h-4 animate-spin" style={{ color: 'rgba(180,140,75,0.6)' }} />
         <span className="text-sm" style={{ color: 'rgba(224,216,200,0.5)' }}>
-          Loading your collection story...
+          {t('story.loading', 'Loading your collection story...')}
         </span>
       </div>
     );
