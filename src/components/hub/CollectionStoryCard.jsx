@@ -177,28 +177,29 @@ export default function CollectionStoryCard() {
       )}
 
       {/* Actions */}
-      <div className="flex gap-2 pt-2">
-        <Button
-          onClick={() => navigate('/CollectionInsightsShare')}
-          size="sm"
-          variant="outline"
-          className="flex-1"
-        >
-          <Share2 className="w-3.5 h-3.5 mr-1.5" />
-          Share Story
-        </Button>
-        <Button
-          onClick={() => navigate('/CollectionHub')}
-          className="flex-1"
-          style={{
-            background: 'linear-gradient(135deg, rgba(139,58,58,0.9), rgba(109,46,46,1))',
-            border: 'none',
-          }}
-        >
-          <BookOpen className="w-3.5 h-3.5 mr-1.5" />
-          Full Story
-        </Button>
-      </div>
+       <div className="flex gap-2 pt-2">
+         <Button
+           onClick={() => navigate('/CollectionInsightsShare', { state: { story } })}
+           size="sm"
+           variant="outline"
+           className="flex-1"
+         >
+           <Share2 className="w-3.5 h-3.5 mr-1.5" />
+           {t('story.share', 'Share Story')}
+         </Button>
+         <Button
+           onClick={loadStory}
+           className="flex-1"
+           style={{
+             background: 'linear-gradient(135deg, rgba(180,140,75,0.9), rgba(140,105,75,1))',
+             border: 'none',
+           }}
+         >
+           <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+           {t('story.regenerate', 'Regenerate')}
+           <ChevronRight className="w-3 h-3 ml-1" />
+         </Button>
+       </div>
     </div>
   );
 }
