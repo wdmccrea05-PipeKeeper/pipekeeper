@@ -5,6 +5,8 @@ import { ChevronDown, BookOpen, CircleHelp, RefreshCw, Sparkles } from "lucide-r
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import DocumentationSearch from "@/components/help/DocumentationSearch";
+import SelfDiagnosticPanel from "@/components/help/SelfDiagnosticPanel";
 
 function TroubleshootingItem({ id, title, children, openItems, setOpenItems }) {
   const open = !!openItems[id];
@@ -76,6 +78,14 @@ export default function TroubleshootingFull() {
                 {t("help.faq", "FAQ")}
               </Button>
             </Link>
+          </div>
+
+          <div className="mt-6 max-w-md mx-auto">
+            <DocumentationSearch />
+          </div>
+
+          <div className="mt-6 max-w-md mx-auto">
+            <SelfDiagnosticPanel />
           </div>
         </div>
 
