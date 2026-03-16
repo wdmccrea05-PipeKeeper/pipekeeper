@@ -19,6 +19,7 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import FieldWithInfo from "@/components/forms/FieldWithInfo";
 import InterchangeableBowls from "@/components/pipes/InterchangeableBowls";
 import PhotoUploader from "@/components/PhotoUploader";
+import OnlineImageSearchModal from "@/components/search/OnlineImageSearchModal";
 import { useMeasurement, imperialToMetric } from "@/components/utils/measurementConversion";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
