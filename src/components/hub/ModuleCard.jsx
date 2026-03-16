@@ -75,7 +75,7 @@ export default function ModuleCard({ module, icon, itemCount, summary, action, i
               }}
             >
               {typeof icon === 'string' && icon.startsWith('http') ? (
-                <img src={icon} alt={module} className="w-11 h-11 object-contain" style={{ mixBlendMode: 'multiply' }} />
+                <img src={icon} alt={module} className="w-full h-full object-cover" style={{ mixBlendMode: 'screen' }} />
               ) : typeof icon === 'function' ? (
                 React.createElement(icon, { className: 'w-6 h-6', style: { color: 'rgba(212,164,116,0.9)' } })
               ) : (
