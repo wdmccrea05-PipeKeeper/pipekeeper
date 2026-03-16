@@ -41,6 +41,16 @@ if (import.meta?.env?.DEV) {
   console.log('[CollectionKeeper] Canonical entitlement system active');
 }
 
+function WhiskeyBottleIcon({ className, style }) {
+  return (
+    <svg className={className} style={style} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9 2h6v3l2 3v11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8l2-3V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M7 13h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M9 2h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 const COLLECTIONKEEPER_LOGO =
   "https://media.base44.com/images/public/694956e18d119cc497192525/6b2ff84c2_CollectionKeeperNB.png";
 const PIPE_ICON =
