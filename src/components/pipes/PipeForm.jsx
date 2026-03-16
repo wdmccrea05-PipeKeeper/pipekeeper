@@ -398,6 +398,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                     console.error('Error reading file:', err);
                   }
                 }}
+                onSearchOnlineClick={() => {
+                  setOnlineSearchType('photo');
+                  setShowOnlineSearch(true);
+                }}
+                showSearchOption={true}
+                recordType="pipe"
+                recordData={formData}
                 existingPhotos={[]}
                 hideExisting
               />
