@@ -297,10 +297,10 @@ export default function WhiskeyPage() {
         <div className="rounded-2xl p-12 text-center"
           style={{ background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.3), rgba(31, 21, 16, 0.3))', border: '1px solid rgba(180, 140, 75, 0.15)' }}>
           <WhiskeyBottleIcon className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(180,140,75,0.5)' }} />
-          <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">No bottles yet</h2>
-          <p style={{ color: 'rgba(224,216,200,0.6)' }} className="mb-6">Start tracking your whiskey collection</p>
+          <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">{t('whiskey.noBottlesYet')}</h2>
+          <p style={{ color: 'rgba(224,216,200,0.6)' }} className="mb-6">{t('whiskey.startTracking')}</p>
           <Button onClick={() => setShowForm(true)} style={{ background: 'linear-gradient(135deg, rgba(163, 92, 92, 1), rgba(140, 74, 74, 1))', color: '#F5F1E7' }}>
-            Add Your First Bottle
+            {t('whiskey.addFirstBottle')}
           </Button>
         </div>
       )}
