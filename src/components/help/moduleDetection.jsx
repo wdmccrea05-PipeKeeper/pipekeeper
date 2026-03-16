@@ -1,36 +1,61 @@
 /**
  * Module Detection System
- * Determines which modules user has access to
- * Powers tutorial selection and feature gating
+ * Determines which modules user has access to based on new module-based entitlements
+ * Supports: founders, premium, pro, mixed modules, bundle states
  */
 
 /**
  * Detect active modules based on user entitlements
- * @param {Object} user - Current user object
- * @param {Object} subscription - Current subscription
+ * @param {Object} user - Current user object with entitlement fields
+ * @param {Object} subscription - Current subscription object
  * @returns {Array} Array of active module names
  */
 export function detectActiveModules(user, subscription) {
-  const modules = ['hub']; // Hub is always available
+  const modules = ['hub']; // Hub is always available to all
 
-  if (!user || !subscription) {
+  if (!user) {
     return modules;
   }
 
-  const tier = subscription?.tier?.toLowerCase() || '';
-  const status = subscription?.status?.toLowerCase() || '';
-
-  // Paid subscription (premium or pro, active or trialing)
-  const isPaid = ['active', 'trialing', 'trial'].includes(status);
-
-  if (isPaid) {
+  // Check for explicit module entitlements on user object (module-based model)
+  // These take precedence over tier-based logic
+  if (user.pipekeeper_enabled || user.has_pipekeeper) {
     modules.push('pipekeeper');
+  }
 
-    // Pro or Bundle adds WhiskeyKeeper
-    if (tier === 'pro') {
-      modules.push('whiskeykeeper');
+  if (user.whiskeykeeper_enabled || user.has_whiskeykeeper) {
+    modules.push('whiskeykeeper');
+  }
+
+  // Founders get both PipeKeeper + WhiskeyKeeper free
+  if (user.isFoundingMember || user.founding_member) {
+    if (!modules.includes('pipekeeper')) modules.push('pipekeeper');
+    if (!modules.includes('whiskeykeeper')) modules.push('whiskeykeeper');
+  }
+
+  // Fallback to subscription tier logic if no explicit module flags
+  // (for backward compatibility with older subscription model)
+  if (subscription && modules.length === 1) {
+    const tier = subscription?.tier?.toLowerCase() || '';
+    const status = subscription?.status?.toLowerCase() || '';
+    const isPaid = ['active', 'trialing', 'trial'].includes(status);
+
+    if (isPaid) {
+      // Premium tier includes PipeKeeper
+      if (tier === 'premium') {
+        modules.push('pipekeeper');
+      }
+      // Pro tier includes PipeKeeper + WhiskeyKeeper
+      else if (tier === 'pro') {
+        modules.push('pipekeeper');
+        modules.push('whiskeykeeper');
+      }
     }
   }
+
+  // Future modules (coming soon, always show in help even if not active yet)
+  // These are shown for awareness and roadmap context
+  // Do not add to active modules until enabled
 
   return modules;
 }
