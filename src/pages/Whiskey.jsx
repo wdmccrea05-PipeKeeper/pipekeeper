@@ -250,10 +250,10 @@ export default function WhiskeyPage() {
 
       {/* Collection Grid */}
       {bottles.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {bottles.map((bottle) => (
+        <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
+          {filteredBottles.map((bottle) => (
             <div key={bottle.id} className="space-y-2">
-              <BottleCard bottle={bottle} onClick={() => { setEditingBottle(bottle); setShowForm(true); }} />
+              <BottleCard bottle={bottle} onClick={() => window.location.href = `/BottleDetail?id=${encodeURIComponent(bottle.id)}`} />
               <div className="flex gap-2 flex-wrap">
                 <Button onClick={() => setShowTastingLog(bottle)} variant="outline" size="sm" className="flex-1">
                   <BookOpen className="w-3 h-3 mr-1" />
