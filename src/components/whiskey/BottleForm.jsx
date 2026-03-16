@@ -38,6 +38,8 @@ export default function BottleForm({ bottle, onSubmit, onCancel }) {
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(bottle?.photo || '');
+  const [cropperImage, setCropperImage] = useState(null);
+  const [showOnlineSearch, setShowOnlineSearch] = useState(false);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
