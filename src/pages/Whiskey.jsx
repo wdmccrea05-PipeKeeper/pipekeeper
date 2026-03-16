@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Plus, BookOpen, TrendingUp, BarChart3, Share2, Search, Package } from 'lucide-react';
+import { Plus, BookOpen, TrendingUp, BarChart3, Share2, Search, Package, Grid3X3, List } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import ModuleNav from '@/components/modules/ModuleNav';
 import BottleCard from '@/components/whiskey/BottleCard';
