@@ -29,8 +29,12 @@ export default function ModuleCard({ module, icon, itemCount, summary, action, i
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             {icon && (
-              <div className="w-12 h-12 rounded-lg bg-[#8b6239]/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl">{icon}</span>
+              <div className="w-12 h-12 rounded-lg bg-[#8b6239]/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {typeof icon === 'string' && icon.startsWith('http') ? (
+                  <img src={icon} alt={module} className="w-full h-full object-contain" />
+                ) : (
+                  <span className="text-2xl">{icon}</span>
+                )}
               </div>
             )}
             <div>
