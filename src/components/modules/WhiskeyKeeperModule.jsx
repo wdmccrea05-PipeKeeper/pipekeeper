@@ -155,6 +155,12 @@ export default function WhiskeyKeeperModule() {
       Icon: TrendingUp,
       label: t('quickActions.insights'),
       onClick: () => navigate('/WhiskeyInsights')
+    },
+    {
+      key: 'aiUpdates',
+      Icon: Wand2,
+      label: t('quickActions.aiUpdates') || 'AI Updates',
+      onClick: () => navigate('/WhiskeyAIUpdates')
     }
   ];
 
@@ -172,7 +178,7 @@ export default function WhiskeyKeeperModule() {
                 boxShadow: '0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)',
               }}
             >
-              <GlassWater className="w-5 h-5" style={{ color: 'rgba(180, 140, 75, 1)', filter: 'drop-shadow(0 0 4px rgba(180,140,75,0.7))' }} />
+              <WhiskeyBottleIconSvg className="w-5 h-5" style={{ color: 'rgba(180, 140, 75, 1)' }} />
             </div>
             <h1 className="text-4xl font-bold tracking-tight" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
               {t('whiskeykeeper.title') || 'WhiskeyKeeper'}
