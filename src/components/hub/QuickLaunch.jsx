@@ -77,7 +77,7 @@ export default function QuickLaunch() {
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
-                <action.icon className="w-5 h-5 mb-2 transition-transform group-hover:scale-110" style={{ color: action.accent }} />
+                <action.icon className="w-5 h-5 mb-2 transition-transform group-hover:scale-110 object-contain" style={{ color: action.accent }} />
                 <p className="text-sm font-semibold text-[#E0D8C8]">{action.label}</p>
               </button>
             ))}
