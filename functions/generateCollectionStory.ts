@@ -1,5 +1,34 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
+/**
+ * Value calculation functions matching unified aggregation layer
+ */
+function getBottleValue(bottle) {
+  return (
+    Number(bottle.collector_value) ||
+    Number(bottle.aftermarket_price) ||
+    Number(bottle.retail_price) ||
+    Number(bottle.purchase_price) ||
+    0
+  );
+}
+
+function getPipeValue(pipe) {
+  return (
+    Number(pipe.estimated_value) ||
+    Number(pipe.purchase_price) ||
+    0
+  );
+}
+
+function getTobaccoValue(blend) {
+  return (
+    Number(blend.manual_market_value) ||
+    Number(blend.ai_estimated_value) ||
+    0
+  );
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -21,10 +50,10 @@ Deno.serve(async (req) => {
     const bottlesList = Array.isArray(bottles) ? bottles : [];
     const logsList = Array.isArray(logs) ? logs : [];
 
-    // Calculate collection metrics
-    const totalValue = pipesList.reduce((sum, p) => sum + (p.estimated_value || 0), 0) +
-                      blendsList.reduce((sum, b) => sum + (b.manual_market_value || b.ai_estimated_value || 0), 0) +
-                      bottlesList.reduce((sum, b) => sum + (b.average_market_value || b.collector_value || 0), 0);
+    // Calculate collection metrics using unified value functions
+    const totalValue = pipesList.reduce((sum, p) => sum + getPipeValue(p), 0) +
+                      blendsList.reduce((sum, b) => sum + getTobaccoValue(b), 0) +
+                      bottlesList.reduce((sum, b) => sum + getBottleValue(b), 0);
 
     const favorites = {
       pipe: pipesList.filter(p => p.is_favorite).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0],
