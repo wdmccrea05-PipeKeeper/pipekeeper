@@ -45,109 +45,62 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
 
   const hasData = pipes.length > 0 || blends.length > 0;
 
-  async function generateRecommendation(force = false) {
+  async function generateRecommendation(forceRefresh = false) {
     if (!hasData) return;
-    if (!force) {
-      const cached = getCached();
-      if (cached) { setRecommendation(cached); return; }
-    }
-
+    
     setLoading(true);
     setError(null);
 
-    // Use taste profile candidates (priority-ordered by rating/favorites/usage)
-    // Fall back to full lists if no taste profile
-    const candidatePipes = tasteProfile?.session_candidates?.pipes || pipes;
-    const candidateBlends = tasteProfile?.session_candidates?.blends || blends;
-    const candidateBottles = tasteProfile?.session_candidates?.bottles || bottles;
-
-    const pipesList = candidatePipes.slice(0, 15).map(p =>
-      `${p.name} (${p.maker || 'unknown'}, ${p.shape || 'unknown shape'}${p.is_favorite ? ', ★ favorite' : ''}${p.rating ? `, ${p.rating}/5` : ''})`
-    ).join('\n');
-
-    const blendsList = candidateBlends.slice(0, 15).map(b =>
-      `${b.name} (${b.manufacturer || 'unknown'}, ${b.blend_type || 'unknown type'}${b.is_favorite ? ', ★ favorite' : ''}${b.rating ? `, rated ${b.rating}/5` : ''})`
-    ).join('\n');
-
-    const bottlesList = candidateBottles.slice(0, 8).map(b =>
-      `${b.name} (${b.distillery || 'unknown'}, ${b.whiskey_type || b.type || 'unknown type'}${b.is_favorite ? ', ★ favorite' : ''}${b.rating ? `, rated ${b.rating}/5` : ''})`
-    ).join('\n');
-
-    // Build learned profile context
-    const learnedContext = tasteProfile ? `
-LEARNED PREFERENCES (from ${tasteProfile.session_count} sessions, ratings, favorites):
-Preferred tobacco styles: ${(tasteProfile.preferred_blend_types || []).join(', ') || 'building...'}
-Preferred whiskey styles: ${(tasteProfile.preferred_whiskey_types || []).join(', ') || 'building...'}
-Most-used pipe shapes: ${(tasteProfile.pipe_shapes || []).join(', ') || 'building...'}
-${tasteProfile.best_rated_blend ? `Highest-rated blend: ${tasteProfile.best_rated_blend.name} (${tasteProfile.best_rated_blend.rating}/5)` : ''}
-${tasteProfile.best_rated_bottle ? `Highest-rated whiskey: ${tasteProfile.best_rated_bottle.name} (${tasteProfile.best_rated_bottle.rating}/5)` : ''}
-${tasteProfile.pairing_patterns?.[0] ? `Most frequent pairing: ${tasteProfile.pairing_patterns[0].blendType} + ${tasteProfile.pairing_patterns[0].pipeShape}` : ''}
-${tasteProfile.has_smoky_combination ? 'Strong affinity: smoky tobacco + peated whiskey' : ''}
-${tasteProfile.has_sweet_combination ? 'Strong affinity: sweet tobacco + bourbon' : ''}
-` : '';
-
-    const whiskyPrefs = profile?.whiskey_preferences;
-    const prefSummary = whiskyPrefs?.types?.length
-      ? `Types: ${whiskyPrefs.types.join(', ')}; Flavors: ${(whiskyPrefs.flavors || []).join(', ')}`
-      : 'No explicit preferences set';
-
-    const tobaccoPrefs = profile?.preferred_blend_types?.length
-      ? `Preferred: ${profile.preferred_blend_types.join(', ')}; Strength: ${profile.strength_preference || 'any'}`
-      : 'No explicit preferences set';
-
-    const prompt = `You are a personal collector advisor. Based on this collector's data, generate a personalized "Tonight's Session" recommendation.
-
-COLLECTION (priority-ordered by favorites, ratings, and usage):
-
-PIPES:
-${pipesList || 'None'}
-
-TOBACCO BLENDS:
-${blendsList || 'None'}
-
-WHISKEY BOTTLES:
-${bottlesList || 'None'}
-${learnedContext}
-EXPLICIT PREFERENCES:
-Tobacco: ${tobaccoPrefs}
-Whiskey: ${prefSummary}
-
-INSTRUCTIONS:
-- Strongly prioritize items marked ★ favorite or with high ratings
-- Use learned pairing patterns to inform the selection
-- If smoky/peated affinity detected, lean into that combination
-- If sweet/bourbon affinity detected, lean into that combination
-- Pick items that genuinely work together
-
-Generate a personalized Tonight's Session with:
-1. pipe — exact name from the list
-2. blend — exact name from the list
-3. whiskey — exact name from the list (omit if none available)
-4. flavor_theme — 2-4 evocative words describing the session character
-5. rationale — 1-2 sentences referencing why THIS specific combination suits this collector
-
-Return JSON: pipe, blend, whiskey, flavor_theme, rationale`;
-
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            pipe: { type: 'string' },
-            blend: { type: 'string' },
-            whiskey: { type: 'string' },
-            flavor_theme: { type: 'string' },
-            rationale: { type: 'string' },
-          },
-        },
+      // Call intelligent recommendation backend
+      const result = await base44.functions.invoke('generateSessionRecommendation', {
+        pipes,
+        blends,
+        bottles,
+        tasteProfile,
+        userProfile: profile,
+        mode,
+        previousPairings: [], // TODO: load from session history
       });
-      setCache(result);
-      setRecommendation(result);
+
+      if (result?.data) {
+        setCache(result.data);
+        setRecommendation(result.data);
+      }
     } catch (e) {
+      console.error('Recommendation error:', e);
       setError('Could not generate recommendation right now.');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function recordSession() {
+    if (!recommendation || !recommendation.pipe_id || !recommendation.blend_id) {
+      toast.error('Invalid session data');
+      return;
+    }
+
+    setSavingSession(true);
+
+    try {
+      await base44.entities.SmokingLog.create({
+        pipe_id: recommendation.pipe_id,
+        pipe_name: recommendation.pipe,
+        blend_id: recommendation.blend_id,
+        blend_name: recommendation.blend,
+        bowls_used: 1,
+        date: new Date().toISOString().split('T')[0],
+        is_break_in: false,
+        notes: `Recommended session (${mode} mode)`,
+      });
+
+      toast.success('Session recorded!');
+    } catch (e) {
+      console.error('Failed to record session:', e);
+      toast.error('Failed to record session');
+    } finally {
+      setSavingSession(false);
     }
   }
 
