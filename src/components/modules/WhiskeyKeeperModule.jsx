@@ -73,30 +73,61 @@ export default function WhiskeyKeeperModule() {
     staleTime: 10000,
   });
 
+  // Value priority function for consistent calculations across all displays
+  const getBottleUnitValue = (bottle) => {
+    return Number(
+      bottle?.collector_value ??
+      bottle?.aftermarket_price ??
+      bottle?.retail_price ??
+      bottle?.average_market_value ??
+      bottle?.purchase_price ??
+      0
+    ) || 0;
+  };
+
+  const getBottleCount = (bottle) => {
+    const explicitCount = Number(bottle?.bottle_count);
+    return Number.isFinite(explicitCount) && explicitCount > 0 ? explicitCount : 1;
+  };
+
+  // Inventory count map for value calculation
+  const inventoryCountByBottleId = useMemo(() => {
+    const map = {};
+    for (const unit of inventoryUnits) {
+      if (!unit?.bottle_id) continue;
+      map[unit.bottle_id] = (map[unit.bottle_id] || 0) + 1;
+    }
+    return map;
+  }, [inventoryUnits]);
+
   // Dual bottle metrics — the canonical distinction
-  const bottleTypes = bottles.length; // Distinct bottle records / unique labels
+  const bottleTypes = bottles.length;
+
   const totalBottles = useMemo(() => {
     if (inventoryUnits.length > 0) return inventoryUnits.length;
-    // Legacy fallback: sum bottle_count fields
-    return bottles.reduce((sum, b) => sum + (Number(b?.bottle_count) || 1), 0);
+    return bottles.reduce((sum, b) => sum + getBottleCount(b), 0);
   }, [bottles, inventoryUnits]);
 
-  const openBottles = useMemo(() =>
-    inventoryUnits.filter(u => u.status === 'open').length,
-  [inventoryUnits]);
+  const openBottles = useMemo(
+    () => inventoryUnits.filter((u) => u.status === 'open').length,
+    [inventoryUnits]
+  );
 
-  const unopenedBottles = useMemo(() =>
-    inventoryUnits.filter(u => u.status === 'reserve' || u.status === 'drinking').length,
-  [inventoryUnits]);
+  const sealedBottles = useMemo(
+    () => inventoryUnits.filter((u) => u.status === 'reserve' || u.status === 'drinking').length,
+    [inventoryUnits]
+  );
 
-  // Calculate metrics — prefer average_market_value * bottle count, fallback to purchase_price
+  // Total value using consistent priority function
   const totalBottleValue = useMemo(() => {
-    return bottles.reduce((sum, b) => {
-      const val = Number(b?.average_market_value) || Number(b?.purchase_price) || 0;
-      const count = Number(b?.bottle_count) || 1;
-      return sum + val * count;
+    return bottles.reduce((sum, bottle) => {
+      const count = inventoryUnits.length > 0
+        ? (inventoryCountByBottleId[bottle.id] || 0)
+        : getBottleCount(bottle);
+
+      return sum + (getBottleUnitValue(bottle) * Math.max(count, 1));
     }, 0);
-  }, [bottles]);
+  }, [bottles, inventoryUnits.length, inventoryCountByBottleId]);
 
   const highestRatedBottle = useMemo(() => {
     const withRating = bottles.filter(b => b?.rating && b.rating > 0);
@@ -105,9 +136,13 @@ export default function WhiskeyKeeperModule() {
   }, [bottles]);
 
   const mostValuableBottle = useMemo(() => {
-    const withValue = bottles.filter(b => (Number(b?.purchase_price) || 0) > 0);
-    if (!withValue.length) return null;
-    return withValue.sort((a, b) => (Number(b.purchase_price) || 0) - (Number(a.purchase_price) || 0))[0] || null;
+    const candidates = bottles
+      .map((bottle) => ({ ...bottle, __unitValue: getBottleUnitValue(bottle) }))
+      .filter((bottle) => bottle.__unitValue > 0);
+
+    if (!candidates.length) return null;
+
+    return candidates.sort((a, b) => b.__unitValue - a.__unitValue)[0] || null;
   }, [bottles]);
 
   const recentTasting = useMemo(() => tastingLogs[0] || null, [tastingLogs]);
