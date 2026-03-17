@@ -1,115 +1,160 @@
-import React from 'react';
-import { Star, Shield, Wine, Droplets } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { formatCurrency } from '@/components/utils/localeFormatters';
+import React, { useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Pencil, Trash2, ExternalLink } from 'lucide-react';
+import { useTranslation } from '@/components/i18n/safeTranslation';
+import {
+  formatCurrency,
+  getBottleDisplayValueLabel,
+  getBottleTotalValue,
+  getBottleUnitValue,
+  getEffectiveBottleCount,
+  getInventoryStatusSummary,
+} from '@/components/utils/whiskeyValueHelpers';
 
-function InventoryBadges({ bottleId }) {
-  const { data: units = [] } = useQuery({
-    queryKey: ['inventory-units', bottleId],
-    queryFn: async () => {
-      const r = await base44.entities.WhiskeyInventoryUnit.filter({ bottle_id: bottleId });
-      return Array.isArray(r) ? r : [];
-    },
-    enabled: !!bottleId,
-    staleTime: 30000,
-  });
-
-  if (!units.length) return null;
-
-  const reserve = units.filter(u => u.status === 'reserve').length;
-  const drinking = units.filter(u => u.status === 'drinking').length;
-  const open = units.filter(u => u.status === 'open').length;
-
+function MiniBadge({ children }) {
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
-      {reserve > 0 && (
-        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs"
-          style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37' }}>
-          <Shield className="w-2.5 h-2.5" />{reserve} reserve
-        </span>
-      )}
-      {drinking > 0 && (
-        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs"
-          style={{ background: 'rgba(123,155,91,0.15)', border: '1px solid rgba(123,155,91,0.3)', color: '#7B9B5B' }}>
-          <Wine className="w-2.5 h-2.5" />{drinking} drinking
-        </span>
-      )}
-      {open > 0 && (
-        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs"
-          style={{ background: 'rgba(163,92,92,0.15)', border: '1px solid rgba(163,92,92,0.3)', color: '#A35C5C' }}>
-          <Droplets className="w-2.5 h-2.5" />{open} open
-        </span>
-      )}
-    </div>
+    <span
+      className="px-2 py-1 rounded-full text-xs font-medium"
+      style={{
+        background: 'rgba(180,140,75,0.18)',
+        border: '1px solid rgba(180,140,75,0.28)',
+        color: 'rgba(245,241,231,0.86)',
+      }}
+    >
+      {children}
+    </span>
   );
 }
 
-export default function BottleListItem({ bottle, onClick }) {
-  if (!bottle) return null;
+export default function BottleListItem({
+  bottle,
+  inventoryUnits = [],
+  inventoryCountByBottleId = {},
+  onEdit,
+  onDelete,
+  onOpen,
+}) {
+  const { t } = useTranslation();
 
-  const renderStars = (rating) =>
-    Array.from({ length: 5 }).map((_, i) => (
-      <Star key={i} className="w-3 h-3"
-        style={{
-          color: i < Math.round(rating || 0) ? '#D4AF37' : 'rgba(180,140,75,0.25)',
-          fill: i < Math.round(rating || 0) ? '#D4AF37' : 'none',
-        }}
-      />
-    ));
+  const hasInventoryUnits = inventoryUnits.length > 0;
+
+  const unitValue = useMemo(() => getBottleUnitValue(bottle), [bottle]);
+  const totalCount = useMemo(
+    () => getEffectiveBottleCount(bottle, inventoryCountByBottleId, hasInventoryUnits),
+    [bottle, inventoryCountByBottleId, hasInventoryUnits]
+  );
+  const totalValue = useMemo(
+    () => getBottleTotalValue(bottle, inventoryCountByBottleId, hasInventoryUnits),
+    [bottle, inventoryCountByBottleId, hasInventoryUnits]
+  );
+  const inventorySummary = useMemo(
+    () => getInventoryStatusSummary(inventoryUnits, bottle?.id),
+    [inventoryUnits, bottle?.id]
+  );
+  const valueLabel = useMemo(() => getBottleDisplayValueLabel(bottle), [bottle]);
 
   return (
     <div
-      className="flex items-center gap-4 p-4 rounded-lg cursor-pointer group hover:bg-opacity-80 transition-all"
+      className="rounded-2xl p-4"
       style={{
-        background: 'linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(32, 22, 15, 0.8))',
-        border: '1px solid rgba(120, 90, 65, 0.2)',
+        background: 'linear-gradient(180deg, rgba(42,31,24,0.98), rgba(25,18,14,0.98))',
+        border: '1px solid rgba(180,140,75,0.14)',
       }}
     >
-      {/* Thumbnail */}
-      <div className="flex-shrink-0 w-20 h-24 rounded-lg overflow-hidden" style={{ background: 'rgba(100,70,45,0.2)' }}>
-        {bottle.photo ? (
-          <img src={bottle.photo} alt={bottle.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center" style={{ color: 'rgba(180,140,75,0.3)' }}>
-            🥃
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-base line-clamp-2" style={{ color: '#F5F1E7' }}>
-              {bottle.name}
-            </h3>
-            <p className="text-sm mt-0.5" style={{ color: 'rgba(180,140,75,0.85)' }}>
-              {bottle.distillery || bottle.region || bottle.country || '—'}
-            </p>
-            <div className="flex items-center gap-2 text-xs mt-2 flex-wrap">
-              {bottle.type && <span style={{ color: 'rgba(224,216,200,0.7)' }}>{bottle.type}</span>}
-              {bottle.age && <span style={{ color: '#D4A574' }}>{bottle.age}y</span>}
-              {bottle.abv && <span style={{ color: 'rgba(224,216,200,0.7)' }}>{bottle.abv}%</span>}
+      <div className="flex flex-col lg:flex-row gap-4 lg:items-center">
+        <div className="w-full lg:w-24 h-28 rounded-xl overflow-hidden bg-black/20 flex-shrink-0">
+          {bottle?.photo ? (
+            <img
+              src={bottle.photo}
+              alt={bottle?.name || 'Bottle'}
+              className="w-full h-full object-contain"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-xs text-[#E0D8C8]/30">
+              {t('whiskey.noPhoto') || 'No photo'}
             </div>
-          </div>
-
-          {/* Rating & Value */}
-          <div className="flex flex-col items-end gap-2">
-            {bottle.rating && (
-              <div className="flex items-center gap-1">
-                {renderStars(bottle.rating)}
-              </div>
-            )}
-            <div style={{ color: '#D4A574', fontWeight: 'bold' }}>
-              {formatCurrency(bottle.average_market_value || bottle.purchase_price || 0)}
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Inventory Badges */}
-        <div className="mt-3">
-          <InventoryBadges bottleId={bottle.id} />
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="text-lg font-bold text-[#F5F1E7] break-words">
+                {bottle?.name || (t('whiskey.untitledBottle') || 'Untitled Bottle')}
+              </h3>
+              <p className="text-sm text-[#E0D8C8]/68 break-words">
+                {[bottle?.distillery, bottle?.region, bottle?.country].filter(Boolean).join(' • ') || (t('whiskey.noOriginInfo') || 'No origin details')}
+              </p>
+            </div>
+
+            <div className="text-left xl:text-right">
+              <div className="text-xs uppercase tracking-wide text-[#D4A574] font-semibold">
+                {valueLabel}
+              </div>
+              <div className="text-lg font-bold text-[#F5F1E7]">
+                {formatCurrency(unitValue)}
+              </div>
+              <div className="text-xs text-[#E0D8C8]/58">
+                {t('whiskey.totalValue') || 'Total'}: {formatCurrency(totalValue)}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {bottle?.type && <MiniBadge>{bottle.type}</MiniBadge>}
+            {bottle?.bottle_type && <MiniBadge>{bottle.bottle_type}</MiniBadge>}
+            {bottle?.bottle_size && <MiniBadge>{bottle.bottle_size}</MiniBadge>}
+            <MiniBadge>{totalCount} total</MiniBadge>
+            {inventorySummary.open > 0 && <MiniBadge>{inventorySummary.open} open</MiniBadge>}
+            {inventorySummary.sealed > 0 && <MiniBadge>{inventorySummary.sealed} sealed</MiniBadge>}
+          </div>
+
+          <p className="text-sm text-[#E0D8C8]/62 break-words">
+            {bottle?.notes
+              ? bottle.notes.slice(0, 180) + (bottle.notes.length > 180 ? '…' : '')
+              : (t('whiskey.noNotesYet') || 'No notes yet')}
+          </p>
+        </div>
+
+        <div className="flex lg:flex-col gap-2 lg:w-[130px] flex-shrink-0">
+          {typeof onOpen === 'function' && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onOpen(bottle)}
+              className="flex-1"
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              {t('common.open') || 'Open'}
+            </Button>
+          )}
+
+          {typeof onEdit === 'function' && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(bottle)}
+              className="flex-1"
+            >
+              <Pencil className="w-4 h-4 mr-2" />
+              {t('common.edit') || 'Edit'}
+            </Button>
+          )}
+
+          {typeof onDelete === 'function' && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onDelete(bottle)}
+              className="flex-1 text-[#F0B4B4]"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              {t('common.delete') || 'Delete'}
+            </Button>
+          )}
         </div>
       </div>
     </div>
