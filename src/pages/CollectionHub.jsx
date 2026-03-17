@@ -246,16 +246,20 @@ export default function CollectionHub() {
           {t("hub.collectionSummary")}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('hub.totalValue')}
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
-              {(summary.pipes.value + totalBlendValue + totalBottleValue) > 0
-                ? `$${(summary.pipes.value + totalBlendValue + totalBottleValue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                : '$0.00'}
-            </p>
-          </div>
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
+            {t('hub.totalValue')}
+          </p>
+          <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
+            {(() => {
+              let val = 0;
+              if (isModuleEnabled('pipes')) val += summary.pipes.value + totalBlendValue;
+              if (isModuleEnabled('whiskey')) val += totalBottleValue;
+              return val > 0 ? `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '$0.00';
+            })()}
+          </p>
+        </div>
+        {isModuleEnabled('pipes') && (
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
               {t('hub.pipes')}
@@ -264,6 +268,8 @@ export default function CollectionHub() {
               {summary.pipes.count}
             </p>
           </div>
+        )}
+        {isModuleEnabled('pipes') && (
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
               {t('hub.blends')}
@@ -275,6 +281,8 @@ export default function CollectionHub() {
               <p className="text-xs" style={{ color: 'rgba(123,155,91,0.7)' }}>{totalBlendOz.toFixed(0)}oz</p>
             )}
           </div>
+        )}
+        {isModuleEnabled('whiskey') && (
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
               {t('hub.whiskey') || 'Whiskey'}
@@ -283,14 +291,15 @@ export default function CollectionHub() {
               {summary.whiskey.count}
             </p>
           </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('hub.activeModules')}
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#A35C5C' }}>
-              {summary.hubContributorCount}
-            </p>
-          </div>
+        )}
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
+            {t('hub.activeModules')}
+          </p>
+          <p className="text-2xl font-bold" style={{ color: '#A35C5C' }}>
+            {activeModuleCards.length}
+          </p>
+        </div>
         </div>
       </div>
 
