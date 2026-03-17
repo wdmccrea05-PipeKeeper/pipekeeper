@@ -169,7 +169,7 @@ export default function CollectionHub() {
   const featuredPipe = pipes.find(p => p?.photos?.length > 0);
   const featuredBottle = bottles.find(b => b?.photo);
 
-  const activeModuleCards = enabledModules.map((module) => {
+  const activeModuleCards = enabledModules.filter(module => isModuleEnabled(module.type)).map((module) => {
     const dashboardRoute = module.type === 'pipes' ? 'PipeKeeper' : module.type === 'whiskey' ? 'WhiskeyKeeper' : module.route;
 
     let stats = [];
