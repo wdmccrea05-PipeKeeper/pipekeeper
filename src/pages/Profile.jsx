@@ -613,7 +613,7 @@ export default function ProfilePage() {
               <div className="flex items-center justify-between">
                 <Label className="font-medium break-words" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.location")}</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-stone-600">{t("profileExtended.showOnProfile")}</span>
+                  <span className="text-sm" style={{ color: 'rgba(224,216,200,0.65)' }}>{t("profileExtended.showOnProfile")}</span>
                   <Switch
                     checked={formData.show_location}
                     onCheckedChange={(v) => setFormData((p) => ({ ...p, show_location: !!v }))}
