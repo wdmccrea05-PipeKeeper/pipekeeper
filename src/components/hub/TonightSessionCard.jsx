@@ -41,6 +41,7 @@ function setCache(data) {
 export default function TonightSessionCard({ pipes = [], blends = [], bottles = [], profile = null, tasteProfile = null }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { moduleStates } = useEnabledKeeperModules();
   const [recommendation, setRecommendation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
