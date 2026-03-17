@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Share2, RotateCcw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import BrandLogo from '@/components/branding/BrandLogo';
 
 const METRIC_COLORS = {
   pipes: '#A35C5C',
