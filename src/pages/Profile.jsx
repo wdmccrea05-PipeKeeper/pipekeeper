@@ -600,7 +600,7 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.bio")}</Label>
+              <Label className="font-medium break-words" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.bio")}</Label>
               <Textarea
                 value={formData.bio}
                 onChange={(e) => setFormData((p) => ({ ...p, bio: e.target.value }))}
