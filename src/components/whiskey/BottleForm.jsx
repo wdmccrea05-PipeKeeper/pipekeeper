@@ -72,11 +72,12 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
       if (result?.file_url) {
         setFormData((prev) => ({ ...prev, photo: result.file_url }));
         setPhotoPreview(result.file_url);
+        setCropperImage(null);
       }
     } catch (error) {
       console.error('Upload error:', error);
-    } finally {
       setCropperImage(null);
+    } finally {
       setUploadingPhoto(false);
     }
   };
