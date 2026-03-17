@@ -25,13 +25,15 @@ function formatValue(v) {
     : `$${Math.round(v).toLocaleString()}`;
 }
 
-function buildNarrative({ pipes, blends, bottles, mostUsedPipe, mostTastedBottle,
+function buildNarrative({ pipes, blends, bottleTypes, totalBottles, mostUsedPipe, mostTastedBottle,
   dominantBlendType, dominantWhiskyType, underusedCount, mostValuable, totalSessions }) {
 
+  // Use bottleTypes for variety/depth language, totalBottles for inventory scale
+  const bottles = bottleTypes; // alias for legacy references below
   const hasPipes = pipes > 0;
   const hasBlends = blends > 0;
-  const hasBottles = bottles > 0;
-  const totalItems = pipes + blends + bottles;
+  const hasBottles = bottleTypes > 0;
+  const totalItems = pipes + blends + bottleTypes;
 
   if (totalItems === 0) {
     return "Your collection is just getting started. Add your first pipe, blend, or bottle to see your story unfold.";
@@ -40,15 +42,20 @@ function buildNarrative({ pipes, blends, bottles, mostUsedPipe, mostTastedBottle
   const parts = [];
 
   // Opening — collection character
+  // Use bottleTypes for variety language, totalBottles for inventory depth
+  const bottleInventoryNote = totalBottles > bottleTypes
+    ? ` (${totalBottles} bottles total across ${bottleTypes} ${bottleTypes === 1 ? 'label' : 'labels'})`
+    : '';
+
   if (hasPipes && hasBlends && hasBottles) {
     const balance = pipes > blends
       ? `a pipe-forward rotation of ${pipes} pipes paired across ${blends} blends`
       : `a well-balanced rotation of ${pipes} pipes and ${blends} blends`;
-    parts.push(`Your collection reflects a thoughtful collector's sensibility — ${balance}, alongside a spirits shelf of ${bottles} carefully chosen ${bottles === 1 ? 'bottle' : 'bottles'}.`);
+    parts.push(`Your collection reflects a thoughtful collector's sensibility — ${balance}, alongside a spirits shelf of ${bottleTypes} carefully chosen ${bottleTypes === 1 ? 'bottle type' : 'bottle types'}${bottleInventoryNote}.`);
   } else if (hasPipes && hasBlends) {
     parts.push(`Your pipe collection shows a focused collector at work — ${pipes} ${pipes === 1 ? 'pipe' : 'pipes'} paired across ${blends} ${blends === 1 ? 'blend' : 'blends'}, building a rotation with clear intention.`);
   } else if (hasBottles) {
-    parts.push(`Your spirits collection stands at ${bottles} ${bottles === 1 ? 'bottle' : 'bottles'} — a curated shelf that reflects considered taste and a collector's eye for quality.`);
+    parts.push(`Your spirits collection spans ${bottleTypes} distinct ${bottleTypes === 1 ? 'bottle type' : 'bottle types'}${bottleInventoryNote} — a curated shelf that reflects considered taste and a collector's eye for quality.`);
   } else if (hasPipes) {
     parts.push(`You're building a focused pipe collection of ${pipes} ${pipes === 1 ? 'pipe' : 'pipes'}. Every collector starts somewhere.`);
   }
