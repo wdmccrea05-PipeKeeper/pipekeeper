@@ -212,6 +212,10 @@ export default function ProfilePage() {
       drinking_style: [],
       cocktails: [],
     },
+    pipekeeper_enabled: true,
+    whiskeykeeper_enabled: true,
+    winekeeper_enabled: false,
+    cigarkeeper_enabled: false,
   });
 
 
