@@ -65,7 +65,7 @@ export async function getCollectionHubSummary(userEmail, moduleStates = null) {
 
     const pipes = pipesEnabled ? agg.pipes : { count: 0, value: 0 };
     const tobacco = pipesEnabled ? agg.tobacco : { count: 0, value: 0 };
-    const whiskey = whiskeyEnabled ? agg.whiskey : { count: 0, value: 0 };
+    const whiskey = whiskeyEnabled ? agg.whiskey : { bottleTypes: 0, totalBottles: 0, count: 0, value: 0, open: 0, unopened: 0, sealed: 0 };
 
     const totalItems = pipes.count + tobacco.count + whiskey.count;
     const totalValue = pipes.value + tobacco.value + whiskey.value;
