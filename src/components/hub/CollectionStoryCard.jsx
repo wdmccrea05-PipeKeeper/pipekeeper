@@ -77,13 +77,15 @@ export default function CollectionStoryCard() {
   const navigate = useNavigate();
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { moduleStates } = useEnabledKeeperModules();
 
-  useEffect(() => { loadStory(); }, []);
+  useEffect(() => { loadStory(); }, [moduleStates]);
 
   async function loadStory() {
     setLoading(true);
     try {
-      const result = await base44.functions.invoke('generateCollectionStory', {});
+      const enabledModules = getAIEligibleModuleIds(moduleStates);
+      const result = await base44.functions.invoke('generateCollectionStory', { enabledModules });
       if (result?.data) setStory(result.data);
     } catch (e) {
       console.error('Story load error:', e);
