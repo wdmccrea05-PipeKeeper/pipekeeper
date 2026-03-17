@@ -660,7 +660,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-stone-700">{t("profileExtended.hideInventory")}</span>
+                <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideInventory")}</span>
                 <Switch
                   checked={formData.privacy_hide_inventory}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
