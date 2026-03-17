@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQueryClient } from "@tanstack/react-query";
+import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
 import { Toaster } from "@/components/ui/sonner";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
