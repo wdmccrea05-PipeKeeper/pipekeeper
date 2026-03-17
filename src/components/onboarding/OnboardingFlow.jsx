@@ -457,7 +457,14 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  {currentStepData.content}
+                  {currentStepData.isModuleStep ? (
+                    <ModuleSelectionStep
+                      selections={moduleSelections}
+                      onChange={setModuleSelections}
+                    />
+                  ) : (
+                    currentStepData.content
+                  )}
                 </motion.div>
               </AnimatePresence>
             </CardContent>
