@@ -15,10 +15,11 @@ const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc4971
 export default function CuratorHub({ summary = null, recentActivities = [] }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { moduleStates } = useEnabledKeeperModules();
 
   const curatorContext = useMemo(() => {
-    return buildCuratorHubContext(summary, recentActivities);
-  }, [summary, recentActivities]);
+    return buildCuratorHubContext(summary, recentActivities, {}, moduleStates);
+  }, [summary, recentActivities, moduleStates]);
 
   const entryText = useMemo(() => {
     return buildCuratorEntryText(curatorContext);
