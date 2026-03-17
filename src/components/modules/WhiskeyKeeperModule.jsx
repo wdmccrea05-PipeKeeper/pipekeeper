@@ -165,21 +165,17 @@ export default function WhiskeyKeeperModule() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div
-              className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-              style={{
-                background: 'linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))',
-                border: '1px solid rgba(120, 90, 65, 0.45)',
-                boxShadow: '0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)',
-              }}
-            >
-              <WhiskeyBottleIconSvg className="w-5 h-5" style={{ color: 'rgba(180, 140, 75, 1)' }} />
-            </div>
+            <img
+              src={WK_LOGO}
+              alt="WhiskeyKeeper"
+              className="w-12 h-12 object-contain flex-shrink-0"
+              style={{ mixBlendMode: 'screen' }}
+            />
             <h1 className="text-4xl font-bold tracking-tight" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
               {t('whiskeykeeper.title') || 'WhiskeyKeeper'}
             </h1>
           </div>
-          <p className="text-base pl-14" style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
+          <p className="text-base pl-15" style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
             {t('whiskeykeeper.description') || 'Track your whiskey collection and tastings'}
           </p>
         </div>
