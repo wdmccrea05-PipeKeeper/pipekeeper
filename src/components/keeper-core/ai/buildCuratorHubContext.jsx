@@ -16,8 +16,18 @@ import { getAIEligibleModules } from '@/components/utils/moduleAccess';
  * @param {Object} userProfile - User profile data (optional)
  * @returns {Object} Curator context object
  */
-export function buildCuratorHubContext(summary = {}, recentActivities = [], userProfile = {}) {
-  const enabledModules = getEnabledModules();
+/**
+ * @param {Object} summary
+ * @param {Array} recentActivities
+ * @param {Object} userProfile
+ * @param {Object|null} moduleStates — from useModuleVisibility / useEnabledKeeperModules.
+ *   If null, falls back to all platform-launched modules (backward compat).
+ */
+export function buildCuratorHubContext(summary = {}, recentActivities = [], userProfile = {}, moduleStates = null) {
+  // Use AI-eligible modules (enabled + platform-launched) for Curator context
+  const enabledModules = moduleStates
+    ? getAIEligibleModules(moduleStates)
+    : getPlatformEnabledModules();
   const activityStats = getActivityStats(recentActivities);
 
   return {
