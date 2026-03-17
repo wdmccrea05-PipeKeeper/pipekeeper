@@ -466,9 +466,9 @@ export default function UserReport() {
                 <YAxis tick={{ fill: '#E0D8C8', fontSize: 12 }} />
                 <Tooltip contentStyle={{ backgroundColor: '#2a1f18', border: '1px solid rgba(139,98,57,0.5)', color: '#F5F1E7' }} />
                 <Legend wrapperStyle={{ color: '#E0D8C8' }} />
-                <Bar dataKey="newUsers" fill="#374151" name={t("userReport.newUsers")} />
-                <Bar dataKey="newPaidSubscribers" fill="#6b7280" name={t("userReport.newPaid")} />
-                <Bar dataKey="newProSubscribers" fill="#9ca3af" name={t("userReport.newPro")} />
+                <Bar dataKey="newUsers" fill="#B48C4B" name={t("userReport.newUsers")} />
+                <Bar dataKey="newPaidSubscribers" fill="#8B6239" name={t("userReport.newPaid")} />
+                <Bar dataKey="newProSubscribers" fill="#A35C5C" name={t("userReport.newPro")} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
