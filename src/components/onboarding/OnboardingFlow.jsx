@@ -101,6 +101,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
         </div>
       )
     },
+    moduleStep,
     {
       title: t("onboarding.preferencesTitle"),
       description: t("onboarding.preferencesDescription"),
