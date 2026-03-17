@@ -32,6 +32,9 @@ export default function CollectionHub() {
   });
   const [recentActivities, setRecentActivities] = useState([]);
 
+  // Module visibility — declared early so useEffect can use moduleStates
+  const { enabledModules, isModuleEnabled, moduleStates } = useEnabledKeeperModules();
+
   useEffect(() => {
     if (!user?.email) return;
 
