@@ -510,54 +510,54 @@ export default function UserReport() {
       {/* Additional Metrics Cards */}
       {adminMetrics && !metricsLoading && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="bg-white/95 border-[#e8d5b7]/30">
+          <Card className="bg-white border-gray-200">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-indigo-600">{t("userReport.premiumUsers")}</CardTitle>
-              <p className="text-xs text-stone-500 mt-1">{t("userReport.postFeb1")}</p>
+              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.premiumUsers")}</CardTitle>
+              <p className="text-xs text-gray-500 mt-1">{t("userReport.postFeb1")}</p>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-indigo-700">{userCounts.premium || 0}</p>
+              <p className="text-3xl font-bold text-black">{userCounts.premium || 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white/95 border-[#e8d5b7]/30">
+          <Card className="bg-white border-gray-200">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-amber-600">{t("userReport.proUsers")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.proUsers")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-amber-700">{userCounts.pro || 0}</p>
+              <p className="text-3xl font-bold text-black">{userCounts.pro || 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white/95 border-[#e8d5b7]/30">
+          <Card className="bg-white border-gray-200">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-rose-600">{t("userReport.onTrial")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.onTrial")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-rose-700">{trialMetrics.currentlyOnTrial || 0}</p>
+              <p className="text-3xl font-bold text-black">{trialMetrics.currentlyOnTrial || 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white/95 border-[#e8d5b7]/30">
+          <Card className="bg-white border-gray-200">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-cyan-600">{t("userReport.activeTrialPremium")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.activeTrialPremium")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-cyan-700">{subscriptionBreakdown.activeOrTrialPremium || 0}</p>
+              <p className="text-3xl font-bold text-black">{subscriptionBreakdown.activeOrTrialPremium || 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white/95 border-[#e8d5b7]/30">
+          <Card className="bg-white border-gray-200">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-orange-600">{t("userReport.activeTrialPro")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.activeTrialPro")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-orange-700">{subscriptionBreakdown.activeOrTrialPro || 0}</p>
+              <p className="text-3xl font-bold text-black">{subscriptionBreakdown.activeOrTrialPro || 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white/95 border-[#e8d5b7]/30">
+          <Card className="bg-white border-gray-200">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-fuchsia-600">{t("userReport.legacyPremium")}</CardTitle>
-              <p className="text-xs text-stone-500 mt-1">{t("userReport.subscribedBeforeFeb1")}</p>
+              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.legacyPremium")}</CardTitle>
+              <p className="text-xs text-gray-500 mt-1">{t("userReport.subscribedBeforeFeb1")}</p>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-fuchsia-700">{userCounts.legacyPremium || 0}</p>
+              <p className="text-3xl font-bold text-black">{userCounts.legacyPremium || 0}</p>
             </CardContent>
           </Card>
         </div>
