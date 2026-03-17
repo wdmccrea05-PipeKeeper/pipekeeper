@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, Share2, RotateCcw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import BrandLogo from '@/components/branding/BrandLogo';
+import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
+import { getAIEligibleModuleIds } from '@/components/utils/moduleAccess';
 
 const METRIC_COLORS = {
   pipes: '#A35C5C',
