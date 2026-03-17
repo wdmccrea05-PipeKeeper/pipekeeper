@@ -28,11 +28,11 @@ export function useEnabledKeeperModules() {
   }, [moduleStates]);
 
   return {
-    enabledModules,         // launched & user-enabled
+    enabledModules,           // launched & user-enabled
     enabledComingSoonModules,
     allEnabledModules,
     isLoading,
     isModuleEnabled,
-    moduleStates,
+    moduleStates,             // raw states object for moduleAccess utilities
   };
 }
