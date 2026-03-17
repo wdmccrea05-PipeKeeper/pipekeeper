@@ -139,7 +139,7 @@ export default function CollectionHub() {
     profile: hubProfile,
   });
 
-  const enabledModules = getEnabledModules();
+  const { enabledModules, isModuleEnabled } = useEnabledKeeperModules();
   const comingSoonModules = getComingSoonModules();
 
   // Map module registry to card data with module-specific stats
