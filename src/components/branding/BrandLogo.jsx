@@ -1,64 +1,92 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { cn } from '@/lib/utils';
 
-/**
- * BrandLogo
- * Uses a clean local transparent logo if available.
- * Falls back to text-only branding instead of showing a broken checkerboard asset.
- *
- * Drop a real transparent file at:
- *   /public/logos/collectionkeeper-transparent.svg
- * or
- *   /public/logos/collectionkeeper-transparent.png
- */
-const PRIMARY_LOGO = '/logos/collectionkeeper-transparent.svg';
-const FALLBACK_LOGO = '/logos/collectionkeeper-transparent.png';
+const LOGO_URL = 'https://media.base44.com/images/public/694956e18d119cc497192525/b9b1fc2c7_CollectionKeeperUpdated.png';
 
+/**
+ * BrandLogo — single source of truth for CollectionKeeper branding.
+ * Uses the official logo PNG. No fallbacks. No placeholders.
+ *
+ * Props:
+ *   compact        — smaller size variant (nav / footer)
+ *   showWordmark   — show "CollectionKeeper" text beside logo
+ *   hoverable      — enable gold lift+glow hover effect (for nav/header use)
+ *   className      — wrapper class
+ *   imageClassName — override image size/class
+ */
 export default function BrandLogo({
   className,
   imageClassName,
   showWordmark = true,
   compact = false,
+  hoverable = false,
 }) {
-  const [imgFailed, setImgFailed] = useState(false);
+  const sizeClass = compact ? 'w-8 h-8' : 'w-12 h-12';
 
-  const logoNode = !imgFailed ? (
+  const logoNode = (
     <img
-      src={PRIMARY_LOGO}
-      onError={(e) => {
-        if (e.currentTarget.src.endsWith('.svg')) {
-          e.currentTarget.src = FALLBACK_LOGO;
-          return;
-        }
-        setImgFailed(true);
-      }}
+      src={LOGO_URL}
       alt="CollectionKeeper"
-      className={cn('object-contain bg-transparent', compact ? 'w-8 h-8' : 'w-12 h-12', imageClassName)}
-      style={{ background: 'transparent', mixBlendMode: 'normal' }}
+      className={cn('object-contain flex-shrink-0', sizeClass, imageClassName)}
+      style={{
+        background: 'transparent',
+        transition: hoverable ? 'filter 0.25s ease, transform 0.25s ease' : undefined,
+      }}
       draggable={false}
     />
-  ) : (
-    <div
-      className={cn(
-        'rounded-lg border flex items-center justify-center text-[#F5F1E7] bg-[rgba(180,140,75,0.12)] border-[rgba(180,140,75,0.25)]',
-        compact ? 'w-8 h-8 text-[10px] font-bold' : 'w-12 h-12 text-xs font-bold'
-      )}
-      aria-label="CollectionKeeper"
-    >
-      CK
-    </div>
   );
 
   if (!showWordmark) {
-    return <div className={className}>{logoNode}</div>;
+    return (
+      <div
+        className={cn('flex items-center', className)}
+        style={hoverable ? { cursor: 'pointer' } : undefined}
+        onMouseEnter={hoverable ? (e) => {
+          const img = e.currentTarget.querySelector('img');
+          if (img) {
+            img.style.transform = 'translateY(-1px)';
+            img.style.filter = 'drop-shadow(0 0 6px rgba(180,140,75,0.45))';
+          }
+        } : undefined}
+        onMouseLeave={hoverable ? (e) => {
+          const img = e.currentTarget.querySelector('img');
+          if (img) {
+            img.style.transform = '';
+            img.style.filter = '';
+          }
+        } : undefined}
+      >
+        {logoNode}
+      </div>
+    );
   }
 
   return (
-    <div className={cn('flex items-center gap-2 min-w-0', className)}>
+    <div
+      className={cn('flex items-center gap-2 min-w-0', className)}
+      onMouseEnter={hoverable ? (e) => {
+        const img = e.currentTarget.querySelector('img');
+        if (img) {
+          img.style.transform = 'translateY(-1px)';
+          img.style.filter = 'drop-shadow(0 0 6px rgba(180,140,75,0.45))';
+        }
+      } : undefined}
+      onMouseLeave={hoverable ? (e) => {
+        const img = e.currentTarget.querySelector('img');
+        if (img) {
+          img.style.transform = '';
+          img.style.filter = '';
+        }
+      } : undefined}
+    >
       {logoNode}
       <span
-        className="font-semibold text-[#F5F1E7] whitespace-nowrap leading-none"
-        style={{ fontFamily: "'Georgia', serif" }}
+        className="font-semibold whitespace-nowrap leading-none truncate"
+        style={{
+          color: '#F5F1E7',
+          fontFamily: "'Georgia', serif",
+          transition: hoverable ? 'text-shadow 0.25s ease' : undefined,
+        }}
       >
         CollectionKeeper
       </span>
