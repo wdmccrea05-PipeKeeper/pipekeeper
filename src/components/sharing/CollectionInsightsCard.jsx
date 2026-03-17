@@ -119,7 +119,7 @@ const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hu
     : 'Collection Insights';
 
   const subtitle = variant === 'whiskey'
-    ? 'A Collector's Snapshot'
+    ? "A Collector's Snapshot"
     : 'My Collection at a Glance';
 
   // Highlight row data
