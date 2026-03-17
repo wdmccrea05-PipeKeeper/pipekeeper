@@ -638,7 +638,7 @@ export default function UserReport() {
         <Collapsible open={showPaidTable} onOpenChange={setShowPaidTable}>
           <Card className="bg-transparent mb-6">
             <CollapsibleTrigger className="w-full">
-              <CardHeader className="cursor-pointer hover:bg-gray-50">
+              <CardHeader className="cursor-pointer hover:bg-[#2a1f18]/40">
                 <CardTitle className="text-[#F5F1E7] flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Crown className="w-5 h-5 text-[#E0D8C8]/70" />
@@ -655,32 +655,32 @@ export default function UserReport() {
                     <thead>
                       <tr className="border-b border-[#8b6239]/30">
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
                           onClick={() => handleSort('full_name')}
                         >
                           {t("userReport.name")} {sortColumn === 'full_name' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
                           onClick={() => handleSort('email')}
                         >
                           {t("userReport.email")} {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
                           onClick={() => handleSort('subscription_status')}
                         >
                           {t("userReport.status")} {sortColumn === 'subscription_status' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8]">{t("userReport.billing")}</th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
                           onClick={() => handleSort('subscription_end')}
                         >
                           {t("userReport.periodEnd")} {sortColumn === 'subscription_end' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
                           onClick={() => handleSort('created_date')}
                         >
                           {t("userReport.joined")} {sortColumn === 'created_date' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -726,7 +726,7 @@ export default function UserReport() {
         <Collapsible open={showFreeTable} onOpenChange={setShowFreeTable}>
           <Card className="bg-transparent">
             <CollapsibleTrigger className="w-full">
-              <CardHeader className="cursor-pointer hover:bg-gray-50">
+              <CardHeader className="cursor-pointer hover:bg-[#2a1f18]/40">
                 <CardTitle className="text-[#F5F1E7] flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <UserX className="w-5 h-5 text-[#E0D8C8]/70" />
@@ -743,25 +743,25 @@ export default function UserReport() {
                     <thead>
                       <tr className="border-b border-[#8b6239]/30">
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
                           onClick={() => handleSort('full_name')}
                         >
                           {t("userReport.name")} {sortColumn === 'full_name' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
                           onClick={() => handleSort('email')}
                         >
                           {t("userReport.email")} {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
                           onClick={() => handleSort('subscription_status')}
                         >
                           {t("userReport.status")} {sortColumn === 'subscription_status' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
                           onClick={() => handleSort('created_date')}
                         >
                           {t("userReport.joined")} {sortColumn === 'created_date' && (sortDirection === 'asc' ? '↑' : '↓')}
