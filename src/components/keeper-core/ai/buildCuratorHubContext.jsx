@@ -5,8 +5,9 @@
  * Builds prompts and data summaries for cross-module AI insights.
  */
 
-import { getEnabledModules } from '../modules/keeperModules';
+import { getEnabledModules as getPlatformEnabledModules } from '../modules/keeperModules';
 import { getActivityStats } from '../activity/recentActivity';
+import { getAIEligibleModules } from '@/components/utils/moduleAccess';
 
 /**
  * Build high-level ecosystem context for the Curator
