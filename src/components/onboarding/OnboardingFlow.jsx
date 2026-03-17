@@ -35,8 +35,24 @@ function safeSetOnboarding(key, value) {
 
 export default function OnboardingFlow({ onComplete, onSkip }) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [moduleSelections, setModuleSelections] = useState({
+    pipekeeper: true,
+    whiskeykeeper: true,
+    winekeeper: false,
+    cigarkeeper: false,
+  });
   const navigate = useNavigate();
-  const {t} = useTranslation()
+  const { t } = useTranslation();
+  const { saveModulePreferences } = useModuleVisibility();
+
+  const moduleStep = {
+    title: 'Choose Your Modules',
+    description: 'Select the collection types you want to use. You can change this anytime in your Profile.',
+    icon: Layers,
+    isModuleStep: true,
+    content: null, // rendered inline below
+  };
+
   const steps = [
     {
       title: t("onboarding.welcomeTitle"),
