@@ -230,6 +230,9 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [mobileOpen]);
 
+  const { user, isLoading: userLoading, error: userError, hasPremium, hasPaid, hasPro, isAdmin, subscription, isLoading: subLoading } = useCurrentUser();
+  const { isModuleEnabled } = useModuleVisibility();
+
   const navItems = useMemo(() => {
     const items = [
       { name: t("nav.hub"), page: "CollectionHub", icon: Home, isIconComponent: true },
@@ -264,9 +267,6 @@ export default function Layout({ children, currentPageName }) {
       ]),
     []
   );
-
-  const { user, isLoading: userLoading, error: userError, hasPremium, hasPaid, hasPro, isAdmin, subscription, isLoading: subLoading } = useCurrentUser();
-  const { isModuleEnabled } = useModuleVisibility();
 
   const adminNavItems = useMemo(() => isAdmin ? [
     { name: t("nav.subscriptionSupport"), page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
