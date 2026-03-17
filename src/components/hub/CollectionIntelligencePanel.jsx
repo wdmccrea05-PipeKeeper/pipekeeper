@@ -87,11 +87,14 @@ export default function CollectionIntelligencePanel({ pipes = [], blends = [], b
     // --- Unopened bottles insight ---
     const unopenedBottles = bottles.filter(b => !b.opened_date && !b.fill_level);
     if (unopenedBottles.length > 0) {
+      const firstUnopened = unopenedBottles[0];
       generated.push({
         icon: PackageOpen,
         label: `${unopenedBottles.length} unopened bottle${unopenedBottles.length > 1 ? 's' : ''} in your collection`,
-        detail: unopenedBottles[0] ? `${unopenedBottles[0].name} is ready to open` : 'Ready for tasting',
+        detail: firstUnopened ? `${firstUnopened.name} is ready to open` : 'Ready for tasting',
         color: '#8BAA7A',
+        bottleId: firstUnopened?.id,
+        isBottleInsight: true,
         prompt: `Which of my unopened whiskey bottles should I open next?`,
       });
     }
