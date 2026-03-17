@@ -1,519 +1,334 @@
-// DEPLOYMENT: 2026-03-12 - Grace Period Implementation
+/**
+ * Stripe webhook handler
+ *
+ * Responsibilities:
+ * - Verify webhook signature
+ * - Upsert local Subscription records from Stripe subscription state
+ * - Keep user-level entitlement hints in sync
+ * - Log integration activity
+ *
+ * Required env vars:
+ * - STRIPE_SECRET_KEY
+ * - STRIPE_WEBHOOK_SECRET
+ */
 
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
+import Stripe from 'npm:stripe@16.10.0';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-const normEmail = (email) => String(email || "").trim().toLowerCase();
-
-// ============================================================================
-// GRACE PERIOD POLICY (centralized constant)
-// ============================================================================
-const GRACE_PERIOD_DAYS = 5;
-
-function isSubscriptionInGracePeriod(subscription) {
-  if (!subscription) return false;
-  const status = String(subscription?.status || "").toLowerCase();
-  if (status !== "past_due" && status !== "incomplete" && status !== "unpaid") return false;
-  const periodEnd = subscription?.current_period_end;
-  if (!periodEnd) return false;
-  try {
-    const endDate = new Date(periodEnd);
-    const graceEnd = new Date(endDate.getTime() + (GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000));
-    return Date.now() <= graceEnd.getTime();
-  } catch {
-    return false;
-  }
+function normEmail(email: unknown): string {
+  return String(email || '').trim().toLowerCase();
 }
 
-function subscriptionGrantsPaidAccess(subscription) {
-  if (!subscription) return false;
-  const status = String(subscription?.status || "").toLowerCase();
-  if (status === "active" || status === "trialing" || status === "trial") return true;
-  if (status === "past_due" || status === "incomplete" || status === "unpaid") {
-    return isSubscriptionInGracePeriod(subscription);
+function unique<T>(arr: T[]): T[] {
+  return [...new Set(arr)];
+}
+
+function splitModulesCsv(csv: unknown): string[] {
+  return unique(
+    String(csv || '')
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean)
+  );
+}
+
+function isIsoFuture(value: unknown): boolean {
+  if (!value) return false;
+  const d = new Date(String(value));
+  return Number.isFinite(d.getTime()) && d.getTime() > Date.now();
+}
+
+function subscriptionGrantsPaidAccess(status: string, currentPeriodEnd?: string | null): boolean {
+  const normalized = String(status || '').toLowerCase();
+  if (normalized === 'active' || normalized === 'trialing') return true;
+  if ((normalized === 'past_due' || normalized === 'incomplete') && currentPeriodEnd && isIsoFuture(currentPeriodEnd)) {
+    return true;
   }
   return false;
 }
 
-const PRICE_ID_PREMIUM_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim();
-const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim();
-const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
-const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
-
-// FIX ISSUE-15: Warn at startup if Pro price IDs are not configured —
-// without them, Pro subscribers silently fall back to "premium" tier.
-if (!PRICE_ID_PRO_MONTHLY || !PRICE_ID_PRO_ANNUAL) {
-  console.error("[stripeWebhook] CRITICAL: STRIPE_PRICE_ID_PRO_MONTHLY / STRIPE_PRICE_ID_PRO_ANNUAL env vars not set — Pro subscribers will be downgraded to Premium!");
+function getStripe() {
+  const apiKey = Deno.env.get('STRIPE_SECRET_KEY');
+  if (!apiKey) throw new Error('Missing STRIPE_SECRET_KEY');
+  return new Stripe(apiKey, { apiVersion: '2024-06-20' });
 }
 
-function json(status, body) {
-  return new Response(JSON.stringify({ ...body, version: "v26-key-refresh" }), {
-    status,
-    headers: { 
-      "content-type": "application/json",
-      "X-PipeKeeper-Webhook-Version": "v26-key-refresh"
-    },
-  });
+function getWebhookSecret() {
+  const secret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+  if (!secret) throw new Error('Missing STRIPE_WEBHOOK_SECRET');
+  return secret;
 }
 
-function normalizeSubscriptionStartDate(startedAt, periodStart, createdAt) {
-  return startedAt || periodStart || createdAt || null;
-}
-
-async function getTier(sub, stripe) {
-  // Priority 1: Subscription metadata.tier (from checkout session)
-  const metadataTier = (sub.metadata?.tier || "").toLowerCase();
-  if (metadataTier === "pro" || metadataTier === "premium") {
-    return metadataTier;
+async function logEvent(base44: any, eventType: string, details: Record<string, unknown>) {
+  try {
+    await base44.asServiceRole.entities.SubscriptionIntegrationEvent.create({
+      event_type: eventType,
+      user_email: normEmail(details.user_email),
+      details,
+    });
+  } catch (err) {
+    console.warn('[stripeWebhook] failed to log integration event:', err);
   }
+}
 
-  // Priority 2: Price lookup_key or nickname
-  const priceId = sub.items?.data?.[0]?.price?.id;
-  if (priceId) {
+async function findUserByMetadataOrEmail(base44: any, metadata: Record<string, string>, email?: string | null) {
+  const userId = String(metadata?.user_id || '').trim();
+  const normalizedEmail = normEmail(email || metadata?.user_email || '');
+
+  if (userId) {
     try {
-      const price = await stripe.prices.retrieve(priceId);
-      
-      const lookupKey = (price.lookup_key || "").toLowerCase();
-      if (lookupKey.includes("pro")) return "pro";
-      if (lookupKey.includes("premium")) return "premium";
-      
-      const nickname = (price.nickname || "").toLowerCase();
-      if (nickname.includes("pro")) return "pro";
-      if (nickname.includes("premium")) return "premium";
-      
-      // Priority 3: Product metadata or name
-      const productId = typeof price.product === "string" ? price.product : price.product?.id;
-      if (productId) {
-        try {
-          const product = await stripe.products.retrieve(productId);
-          
-          const productMetadataTier = (product.metadata?.tier || "").toLowerCase();
-          if (productMetadataTier === "pro" || productMetadataTier === "premium") {
-            return productMetadataTier;
-          }
-          
-          const productName = (product.name || "").toLowerCase();
-          if (productName.includes("pro")) return "pro";
-          if (productName.includes("premium")) return "premium";
-        } catch (err) {
-          console.warn(`[getTier] Failed to retrieve product ${productId}:`, err.message);
-        }
-      }
-    } catch (err) {
-      console.warn(`[getTier] Failed to retrieve price ${priceId}:`, err.message);
-    }
-    
-    // Priority 4: Fallback to env-mapped priceId
-    if (priceId === PRICE_ID_PRO_MONTHLY || priceId === PRICE_ID_PRO_ANNUAL) {
-      return "pro";
-    }
-    if (priceId === PRICE_ID_PREMIUM_MONTHLY || priceId === PRICE_ID_PREMIUM_ANNUAL) {
-      return "premium";
+      const user = await base44.asServiceRole.entities.User.get(userId);
+      if (user) return user;
+    } catch {
+      // ignore
     }
   }
 
-  // Priority 5: Unknown tier — do NOT default to premium (security risk)
-  // Log the error but return null so caller can use fallback logic
-  console.error(`[getTier] CRITICAL: Could not determine tier for subscription ${sub.id}, price ${priceId} - no fallback to premium allowed`);
+  if (normalizedEmail) {
+    try {
+      const rows = await base44.asServiceRole.entities.User.filter({ email: normalizedEmail });
+      if (Array.isArray(rows) && rows.length > 0) return rows[0];
+    } catch {
+      // ignore
+    }
+  }
+
   return null;
 }
 
-Deno.serve(async (req) => {
-  // Quick exit for health checks
-  if (req.method === "GET" || req.method === "OPTIONS") {
-    return new Response("ok", { status: 200 });
-  }
-  
-  if (req.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405 });
-  }
+async function findExistingSubscriptionRow(base44: any, providerSubscriptionId: string) {
+  const byProviderId = await base44.asServiceRole.entities.Subscription.filter({
+    provider_subscription_id: providerSubscriptionId,
+  });
+  if (Array.isArray(byProviderId) && byProviderId.length > 0) return byProviderId[0];
+
+  const byLegacyStripeId = await base44.asServiceRole.entities.Subscription.filter({
+    stripe_subscription_id: providerSubscriptionId,
+  });
+  if (Array.isArray(byLegacyStripeId) && byLegacyStripeId.length > 0) return byLegacyStripeId[0];
+
+  return null;
+}
+
+async function syncUserEntitlements(base44: any, userEmail: string) {
+  const normalizedEmail = normEmail(userEmail);
+  if (!normalizedEmail) return;
+
+  const userRows = await base44.asServiceRole.entities.User.filter({ email: normalizedEmail });
+  const user = Array.isArray(userRows) && userRows.length > 0 ? userRows[0] : null;
+  if (!user) return;
+
+  const subs = await base44.asServiceRole.entities.Subscription.filter({ user_email: normalizedEmail });
+  const activeSubs = (Array.isArray(subs) ? subs : []).filter((sub: any) =>
+    subscriptionGrantsPaidAccess(sub.status, sub.current_period_end)
+  );
+
+  const paidModules = unique(
+    activeSubs.flatMap((sub: any) => splitModulesCsv(sub.modules_csv))
+  );
+
+  const hasPaidAccess = paidModules.length > 0;
+  const hasBundleAccess = activeSubs.some((sub: any) => String(sub.checkout_type || '').startsWith('bundle_'));
+  const bundleSize = hasBundleAccess
+    ? Math.max(
+        0,
+        ...activeSubs
+          .filter((sub: any) => String(sub.checkout_type || '').startsWith('bundle_'))
+          .map((sub: any) => Number(sub.module_count || splitModulesCsv(sub.modules_csv).length || 0))
+      )
+    : 0;
+
+  const updatePayload = {
+    stripe_customer_id:
+      activeSubs.find((s: any) => s.stripe_customer_id)?.stripe_customer_id || user.stripe_customer_id || null,
+    entitlement_tier: hasPaidAccess ? (hasBundleAccess ? `bundle_${bundleSize}` : 'pro') : 'free',
+    paid_modules_csv: paidModules.join(','),
+    has_paid_access: hasPaidAccess,
+    has_bundle_access: hasBundleAccess,
+    updated_date: new Date().toISOString(),
+  };
 
   try {
-    const base44 = createClientFromRequest(req);
-    
-    // Initialize Stripe client from ENV
-    const stripeKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
-    if (!stripeKey || !stripeKey.startsWith("sk_")) {
-      console.error("[stripeWebhook] STRIPE_SECRET_KEY missing or invalid");
-      return json(500, { ok: false, error: "Stripe key not configured" });
-    }
-    
-    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
-    const environment = stripeKey.startsWith("sk_live_") ? "live" : "test";
-    console.log(`[stripeWebhook] Using Stripe key: ${stripeKey.slice(0, 8)}...${stripeKey.slice(-4)} (${environment})`);
-    
-    // Get webhook secret - try ENV first, then RemoteConfig fallback
-    let webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
-    let secretSource = "env";
-    
-    if (!webhookSecret) {
-      try {
-        const secretResult = await base44.functions.invoke('getRemoteConfig', { 
-          key: 'STRIPE_WEBHOOK_SECRET',
-          environment: 'live'
-        });
-        webhookSecret = secretResult?.data?.value || "";
-        secretSource = "remoteconfig";
-      } catch (e) {
-        console.warn("[stripeWebhook] Failed to get webhook secret from RemoteConfig:", e?.message || e);
-      }
-    }
-    
-    if (!webhookSecret) {
-      console.warn("[stripeWebhook] Webhook secret missing from both ENV and RemoteConfig");
-      return json(200, { ok: false, error: "Webhook secret missing; ignoring event" });
-    }
-    
-    console.log(`[stripeWebhook] Using webhook secret from ${secretSource}`);
-
-    const sig = req.headers.get("stripe-signature");
-    const rawBody = await req.text();
-    
-    // Verify signature using Stripe SDK (async for Deno WebCrypto compatibility)
-    let event;
-    try {
-      event = await stripe.webhooks.constructEventAsync(rawBody, sig, webhookSecret);
-      console.log("[webhook] Received event:", event.type, event.id);
-    } catch (err) {
-      console.error("[stripeWebhook] Signature verification failed:", err.message);
-      // Return 400 for signature errors (client issue), not 500
-      return json(400, { ok: false, error: `Signature verification failed: ${err.message}` });
-    }
-
-    // Deduplication: Check if event already processed
-    try {
-      const existing = await base44.asServiceRole.entities.ProcessedStripeEvents?.filter({
-        event_id: event.id
-      });
-      if (existing && existing.length > 0) {
-        return json(200, { ok: true, deduped: true });
-      }
-    } catch (err) {
-      // If ProcessedStripeEvents entity doesn't exist, continue without dedup
-    }
-
-    // Helper functions
-    async function findUserByEmail(email) {
-      const rows = await base44.asServiceRole.entities.User.filter({ email });
-      return rows && rows.length ? rows[0] : null;
-    }
-
-    async function upsertSubscription(payload) {
-      // Try to find by provider_subscription_id first (new way)
-      let existing = null;
-      if (payload.provider_subscription_id) {
-        const byProvider = await base44.asServiceRole.entities.Subscription.filter({
-          provider: 'stripe',
-          provider_subscription_id: payload.provider_subscription_id,
-        });
-        existing = byProvider?.[0];
-      }
-      
-      // Fallback to legacy stripe_subscription_id for backward compatibility
-      if (!existing && payload.stripe_subscription_id) {
-        const byLegacy = await base44.asServiceRole.entities.Subscription.filter({
-          stripe_subscription_id: payload.stripe_subscription_id,
-        });
-        existing = byLegacy?.[0];
-      }
-
-      if (existing) {
-        console.log(`[webhook] Updating existing subscription ${payload.provider_subscription_id} for user_id=${payload.user_id || 'null'} email=${payload.user_email}`);
-        await base44.asServiceRole.entities.Subscription.update(existing.id, payload);
-        return existing.id;
-      } else {
-        console.log(`[webhook] Creating new subscription ${payload.provider_subscription_id} for user_id=${payload.user_id || 'null'} email=${payload.user_email}`);
-        const created = await base44.asServiceRole.entities.Subscription.create(payload);
-        return created?.id;
-      }
-    }
-
-    async function setUserEntitlement(email, fields) {
-      const userRow = await findUserByEmail(email);
-      if (!userRow) return { ok: false, reason: "User not found" };
-
-      // CRITICAL: Never overwrite subscription_provider unless explicitly setting it
-      const updateFields = { ...fields };
-      if (fields.subscription_provider === undefined) {
-        delete updateFields.subscription_provider;
-      }
-
-      // FIX BUG-02: Also write entitlement_tier (highest-priority field for canonical resolver)
-      // and merge data.entitlement_tier for nested-data schema users.
-      // FIX BUG-03: Write entitlement_tier even when subscription_tier is null, using "premium"
-      // as a safe default when subscription_level is "paid" (user just paid).
-      const effectiveTier = fields.subscription_tier || (fields.subscription_level === "paid" ? "premium" : null);
-      if (effectiveTier) {
-        updateFields.entitlement_tier = effectiveTier;
-        // Backfill subscription_tier if it was missing
-        if (!fields.subscription_tier) {
-          updateFields.subscription_tier = effectiveTier;
-        }
-        const existingData = userRow.data || {};
-        updateFields.data = {
-          ...existingData,
-          entitlement_tier: effectiveTier,
-          subscription_tier: effectiveTier,
-          subscription_level: fields.subscription_level || existingData.subscription_level,
-          subscription_status: fields.subscription_status || existingData.subscription_status,
-        };
-      }
-
-      await base44.asServiceRole.entities.User.update(userRow.id, updateFields);
-      return { ok: true };
-    }
-
-    async function ensureUserExists(email, customerId) {
-      let userRow = await findUserByEmail(email);
-      if (!userRow) {
-        userRow = await base44.asServiceRole.entities.User.create({
-          email,
-          full_name: "User from Stripe",
-          role: "user",
-          subscription_level: "paid",
-          subscription_provider: "stripe",
-          stripe_customer_id: customerId || null,
-        });
-      } else if (!userRow.stripe_customer_id && customerId) {
-        // ONLY set stripe_customer_id if empty, never resolve by email
-        await base44.asServiceRole.entities.User.update(userRow.id, {
-          stripe_customer_id: customerId,
-          subscription_provider: "stripe",
-        });
-        userRow.stripe_customer_id = customerId;
-        userRow.subscription_provider = "stripe";
-      }
-      return userRow;
-    }
-
-    // Process event based on type
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object;
-
-        const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
-        const subscriptionId =
-          typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
-
-        const emailRaw =
-          session.metadata?.user_email ||
-          session.customer_details?.email ||
-          session.customer_email ||
-          "";
-
-        const user_email = normEmail(emailRaw);
-        const user_id = session.metadata?.user_id || null;
-        
-        if (!user_email) {
-          console.warn("[stripeWebhook] checkout.session.completed: no user email found, skipping");
-          break;
-        }
-
-        // Ensure user exists before setting entitlement
-        await ensureUserExists(user_email, customerId);
-
-        // FIX BUG-03: Default tierValue to "pro" when tier can't be determined from metadata.
-        // The user just paid, so they should receive at least pro access immediately.
-        const sessionTier = (session.metadata?.tier || "").toLowerCase();
-        const tierValue = sessionTier === "pro" ? "pro" : "pro"; // COLLAPSE: Premium → Pro
-        
-        console.log(`[stripeWebhook] checkout.session.completed for ${user_email}, user_id=${user_id}, tier=${tierValue}`);
-        
-        // Update user entitlements
-        try {
-          const result = await setUserEntitlement(user_email, {
-            subscription_level: "paid",
-            subscription_status: "active",
-            subscription_tier: tierValue,
-            stripe_customer_id: customerId || null,
-            subscription_provider: "stripe",
-          });
-          console.log(`[stripeWebhook] checkout.session.completed entitlement update: ${result.ok ? 'SUCCESS' : 'FAILED'} for ${user_email}`);
-        } catch (err) {
-          console.error("[stripeWebhook] CRITICAL: Failed to set entitlement for checkout.session.completed:", err?.message || err);
-        }
-
-        // The subscription update will come via subscription.created/updated events
-        if (subscriptionId) {
-          console.log(`[webhook] Checkout completed for subscription ${subscriptionId}, will process via subscription.created event`);
-        }
-
-        break;
-      }
-
-      case "customer.subscription.created":
-      case "customer.subscription.updated":
-      case "customer.subscription.deleted": {
-        const sub = event.data.object;
-
-        const customer = sub.customer;
-        const customerId = typeof customer === "string" ? customer : customer?.id;
-
-        let user_email = normEmail(sub.metadata?.user_email || "");
-        let user_id = sub.metadata?.user_id || null;
-
-        // If no email in metadata, fetch customer details from Stripe
-        if (!user_email && customerId) {
-          try {
-            const customerObj = await stripe.customers.retrieve(customerId);
-            user_email = normEmail(customerObj.email || "");
-            console.log(`[webhook] Fetched email from customer ${customerId}: ${user_email}`);
-          } catch (err) {
-            console.error(`[webhook] Failed to fetch customer ${customerId}:`, err.message);
-          }
-        }
-
-        if (!user_email) {
-          console.warn(`[webhook] No user_email found for subscription ${sub.id}, skipping`);
-          break;
-        }
-
-        // For new subscriptions, ensure user exists
-        if (event.type === "customer.subscription.created") {
-          await ensureUserExists(user_email, customerId);
-        }
-
-        const periodStart = sub.current_period_start
-          ? new Date(sub.current_period_start * 1000).toISOString()
-          : null;
-        const periodEnd = sub.current_period_end
-          ? new Date(sub.current_period_end * 1000).toISOString()
-          : null;
-        const createdAt = sub.created
-          ? new Date(sub.created * 1000).toISOString()
-          : null;
-
-        // Find existing by provider_subscription_id or legacy stripe_subscription_id
-        let existing = null;
-        const byProvider = await base44.asServiceRole.entities.Subscription.filter({
-          provider: 'stripe',
-          provider_subscription_id: sub.id,
-        });
-        existing = byProvider?.[0];
-        
-        if (!existing) {
-          const byLegacy = await base44.asServiceRole.entities.Subscription.filter({
-            stripe_subscription_id: sub.id,
-          });
-          existing = byLegacy?.[0];
-        }
-
-        const payload = {
-          user_id: user_id || existing?.user_id || null,
-          user_email,
-          provider: 'stripe',
-          provider_subscription_id: sub.id,
-          stripe_subscription_id: sub.id,
-          stripe_customer_id: customerId || null,
-          status: sub.status,
-          current_period_start: periodStart,
-          current_period_end: periodEnd,
-          cancel_at_period_end: !!sub.cancel_at_period_end,
-          billing_interval: sub.items?.data?.[0]?.price?.recurring?.interval || "year",
-          amount: sub.items?.data?.[0]?.price?.unit_amount
-            ? sub.items.data[0].price.unit_amount / 100
-            : null,
-        };
-
-        // Use centralized grace period logic
-        const reconstructedSub = {
-          status: sub.status,
-          current_period_end: periodEnd,
-        };
-        const isPaid = subscriptionGrantsPaidAccess(reconstructedSub);
-
-        if (!existing?.started_at) {
-          payload.started_at = new Date().toISOString();
-        }
-
-        const subscriptionStartedAt = normalizeSubscriptionStartDate(
-          payload.started_at || existing?.started_at,
-          periodStart,
-          createdAt
-        );
-        payload.subscriptionStartedAt = subscriptionStartedAt;
-
-        const detectedTier = await getTier(sub, stripe);
-        
-        // FIX ISSUE-15: Check subscription metadata for tier hint
-        const metaTier = (sub.metadata?.tier || "").toLowerCase();
-        let resolvedTier;
-        
-        if (metaTier === "pro" || metaTier === "premium") {
-          resolvedTier = metaTier === "premium" ? "pro" : metaTier; // COLLAPSE: Premium → Pro
-        } else if (detectedTier) {
-          resolvedTier = detectedTier === "premium" ? "pro" : detectedTier; // COLLAPSE: Premium → Pro
-        } else if (existing?.tier) {
-          // Keep existing tier if we can't determine new one (but normalize it)
-          resolvedTier = existing.tier === "premium" ? "pro" : existing.tier;
-        } else if (isPaid) {
-          // FIX: Only default to pro if subscription actively grants access
-          resolvedTier = "pro";
-          console.warn(`[webhook] Subscription ${sub.id} tier unknown but isPaid=true, safe default to pro`);
-        } else {
-          // Unknown status and doesn't grant access - don't guess
-          resolvedTier = null;
-          console.error(`[webhook] CRITICAL: Subscription ${sub.id} has unknown tier and isPaid=false, cannot resolve tier`);
-        }
-        
-        payload.tier = resolvedTier;
-        
-        if (!detectedTier && !metaTier && !existing?.tier) {
-          console.warn(`[webhook] Tier resolution chain exhausted for ${sub.id}: detected=${detectedTier}, meta=${metaTier}, existing=${existing?.tier}, resolved=${resolvedTier}`);
-        }
-
-        await upsertSubscription(payload);
-        
-        let userRow = await findUserByEmail(user_email);
-        if (!userRow) {
-          await ensureUserExists(user_email, customerId);
-          userRow = await findUserByEmail(user_email);
-        }
-        
-        console.log(`[stripeWebhook] ${event.type} for ${user_email}, user_id=${user_id}: status=${sub.status}, tier=${payload.tier}`);
-        
-        // Update user entitlements - CRITICAL PATH
-        try {
-          const result = await setUserEntitlement(user_email, {
-            subscription_level: isPaid ? "paid" : "free",
-            subscription_status: sub.status,
-            subscription_tier: payload.tier,
-            stripe_customer_id: customerId || null,
-            subscription_provider: "stripe",
-          });
-          
-          if (result.ok) {
-            console.log(`[stripeWebhook] SUCCESS: Entitlements updated for ${user_email}: level=${isPaid ? "paid" : "free"}, status=${sub.status}, tier=${payload.tier || "null"}, provider=stripe`);
-          } else {
-            console.error(`[stripeWebhook] FAILED: Entitlement update failed for ${user_email}: ${result.reason || 'unknown'}`);
-          }
-        } catch (err) {
-          console.error(`[stripeWebhook] CRITICAL ERROR: Failed to set entitlement for ${event.type}:`, err?.message || err);
-        }
-
-        break;
-      }
-
-      default:
-        // Immediately return 200 for unhandled events
-        break;
-    }
-
-    // Record processed event (deduplication)
-    try {
-      await base44.asServiceRole.entities.ProcessedStripeEvents?.create({
-        event_id: event.id,
-        event_type: event.type,
-        processed_at: new Date().toISOString()
-      });
-    } catch (err) {
-      // Non-fatal
-    }
-
-    return json(200, { ok: true });
+    await base44.asServiceRole.entities.User.update(user.id, updatePayload);
   } catch (err) {
-    console.error("[webhook] Fatal error:", err);
-    return json(500, { ok: false, error: "WEBHOOK_ERROR", message: err?.message || String(err) });
+    console.warn('[stripeWebhook] failed updating user entitlements:', err);
   }
-  
+}
+
+async function upsertSubscriptionFromStripe(base44: any, stripeSub: Stripe.Subscription) {
+  const metadata = (stripeSub.metadata || {}) as Record<string, string>;
+  const customerId =
+    typeof stripeSub.customer === 'string' ? stripeSub.customer : stripeSub.customer?.id || null;
+
+  const customerEmail =
+    metadata.user_email ||
+    null;
+
+  const modules = splitModulesCsv(metadata.modules_csv);
+  const currentPeriodStart = stripeSub.current_period_start
+    ? new Date(stripeSub.current_period_start * 1000).toISOString()
+    : null;
+  const currentPeriodEnd = stripeSub.current_period_end
+    ? new Date(stripeSub.current_period_end * 1000).toISOString()
+    : null;
+
+  const existing = await findExistingSubscriptionRow(base44, stripeSub.id);
+
+  const payload = {
+    provider: 'stripe',
+    provider_subscription_id: stripeSub.id,
+    stripe_subscription_id: stripeSub.id,
+    stripe_customer_id: customerId,
+    user_id: metadata.user_id || existing?.user_id || null,
+    user_email: normEmail(customerEmail || existing?.user_email || ''),
+    status: stripeSub.status,
+    checkout_type: metadata.checkout_type || existing?.checkout_type || null,
+    billing_period: metadata.billing_period || existing?.billing_period || null,
+    modules_csv: modules.join(','),
+    module_count: Number(metadata.module_count || modules.length || 0),
+    product_kind: metadata.product_kind || existing?.product_kind || null,
+    primary_module: metadata.primary_module || existing?.primary_module || null,
+    bundle_name: metadata.bundle_name || existing?.bundle_name || null,
+    cancel_at_period_end: !!stripeSub.cancel_at_period_end,
+    current_period_start: currentPeriodStart,
+    current_period_end: currentPeriodEnd,
+    latest_invoice_id:
+      typeof stripeSub.latest_invoice === 'string'
+        ? stripeSub.latest_invoice
+        : stripeSub.latest_invoice?.id || null,
+    price_id: stripeSub.items?.data?.[0]?.price?.id || existing?.price_id || null,
+    currency: stripeSub.currency || existing?.currency || null,
+    metadata_json: JSON.stringify(metadata),
+    updated_date: new Date().toISOString(),
+  };
+
+  let row;
+  if (existing?.id) {
+    row = await base44.asServiceRole.entities.Subscription.update(existing.id, payload);
+  } else {
+    row = await base44.asServiceRole.entities.Subscription.create({
+      ...payload,
+      created_date: new Date().toISOString(),
+    });
+  }
+
+  if (payload.user_email) {
+    await syncUserEntitlements(base44, payload.user_email);
+  }
+
+  return row;
+}
+
+async function handleCheckoutCompleted(base44: any, stripe: Stripe, session: Stripe.Checkout.Session) {
+  const metadata = (session.metadata || {}) as Record<string, string>;
+  const customerEmail = normEmail(session.customer_details?.email || metadata.user_email || '');
+  const subscriptionId =
+    typeof session.subscription === 'string'
+      ? session.subscription
+      : session.subscription?.id || null;
+
+  await logEvent(base44, 'stripe_checkout_completed', {
+    user_email: customerEmail,
+    checkoutSessionId: session.id,
+    subscriptionId,
+    metadata,
+    mode: session.mode,
+  });
+
+  if (!subscriptionId) return;
+
+  const stripeSub = await stripe.subscriptions.retrieve(subscriptionId, {
+    expand: ['latest_invoice', 'items.data.price'],
+  });
+
+  await upsertSubscriptionFromStripe(base44, stripeSub);
+}
+
+async function handleSubscriptionChanged(base44: any, stripeSub: Stripe.Subscription, eventType: string) {
+  await upsertSubscriptionFromStripe(base44, stripeSub);
+
+  await logEvent(base44, eventType, {
+    user_email: normEmail(stripeSub.metadata?.user_email || ''),
+    subscriptionId: stripeSub.id,
+    status: stripeSub.status,
+    cancel_at_period_end: stripeSub.cancel_at_period_end,
+    current_period_end: stripeSub.current_period_end
+      ? new Date(stripeSub.current_period_end * 1000).toISOString()
+      : null,
+    metadata: stripeSub.metadata || {},
+  });
+}
+
+Deno.serve(async (req) => {
+  try {
+    if (req.method !== 'POST') {
+      return new Response('Method not allowed', { status: 405 });
+    }
+
+    const stripe = getStripe();
+    const webhookSecret = getWebhookSecret();
+    const signature = req.headers.get('stripe-signature');
+
+    if (!signature) {
+      return new Response('Missing stripe-signature header', { status: 400 });
+    }
+
+    const rawBody = await req.text();
+    let event: Stripe.Event;
+
+    try {
+      event = await stripe.webhooks.constructEventAsync(rawBody, signature, webhookSecret);
+    } catch (err) {
+      console.error('[stripeWebhook] signature verification failed:', err);
+      return new Response('Invalid webhook signature', { status: 400 });
+    }
+
+    const base44 = createClientFromRequest(req);
+
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        await handleCheckoutCompleted(base44, stripe, session);
+        break;
+      }
+
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted': {
+        const sub = event.data.object as Stripe.Subscription;
+        await handleSubscriptionChanged(base44, sub, event.type);
+        break;
+      }
+
+      case 'invoice.payment_succeeded':
+      case 'invoice.payment_failed':
+      case 'customer.subscription.trial_will_end': {
+        await logEvent(base44, event.type, {
+          stripe_event_id: event.id,
+          object_id: (event.data.object as any)?.id || null,
+          object_type: (event.data.object as any)?.object || null,
+        });
+        break;
+      }
+
+      default: {
+        await logEvent(base44, 'stripe_webhook_unhandled', {
+          stripe_event_id: event.id,
+          event_type: event.type,
+        });
+        break;
+      }
+    }
+
+    return Response.json({ received: true });
+  } catch (error) {
+    console.error('[stripeWebhook] fatal error:', error);
+    return Response.json(
+      {
+        received: false,
+        error: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
 });
