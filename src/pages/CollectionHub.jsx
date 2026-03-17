@@ -326,11 +326,11 @@ export default function CollectionHub() {
       {/* Quick Launch */}
       <QuickLaunch />
 
-      {/* Tonight's Session */}
+      {/* Tonight's Session — only AI-eligible module data */}
       <TonightSessionCard
-        pipes={pipes}
-        blends={blends}
-        bottles={bottles}
+        pipes={aiCollection.pipes}
+        blends={aiCollection.blends}
+        bottles={aiCollection.bottles}
         profile={hubProfile}
         tasteProfile={tasteProfile}
       />
