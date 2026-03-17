@@ -89,6 +89,17 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       )
     },
     {
+      title: "Choose Your Collection Modules",
+      description: "Select which collection types you want to track. You can change this anytime in Profile settings.",
+      icon: Sparkles,
+      content: (
+        <OnboardingModuleStep
+          initialSelections={moduleSelections}
+          onChange={(sel) => setModuleSelections(sel)}
+        />
+      ),
+    },
+    {
       title: t("onboarding.preferencesTitle"),
       description: t("onboarding.preferencesDescription"),
       icon: Users,
