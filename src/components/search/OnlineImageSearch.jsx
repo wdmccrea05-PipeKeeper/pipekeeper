@@ -120,7 +120,8 @@ export default function OnlineImageSearch({
             limit: 16,
           });
 
-          const urls = dedupeUrls(response?.images || []);
+          const payload = response?.data || response || {};
+          const urls = dedupeUrls(payload?.images || []);
           if (urls.length) {
             found = urls;
             break;
@@ -213,6 +214,26 @@ export default function OnlineImageSearch({
                 />
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {loading && (
+        <div className="flex items-center justify-center p-8 flex-1">
+          <div className="text-center space-y-3">
+            <Loader2 className="w-6 h-6 animate-spin text-[#A35C5C] mx-auto" />
+            <p className="text-sm text-[#E0D8C8]/70">{t("common.searching", "Searching...")}</p>
+          </div>
+        </div>
+      )}
+
+      {!loading && images.length === 0 && !error && (
+        <div className="text-center p-6 rounded-lg bg-[#3a2a20]/30 border border-[#E0D8C8]/10 flex-1 flex items-center justify-center">
+          <div>
+            <Search className="w-8 h-8 text-[#E0D8C8]/40 mx-auto mb-2" />
+            <p className="text-sm text-[#E0D8C8]/60">
+              {t("onlineImageSearch.startSearch", "Enter a search query and click search to find images")}
+            </p>
           </div>
         </div>
       )}
