@@ -12,8 +12,13 @@ export default function AgeGate({ onConfirm }) {
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-[#0d1b2a] to-[#070b10] p-6">
       <Card className="w-full max-w-md border border-white/10 bg-white/5 backdrop-blur-md shadow-xl">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
-            <ShieldAlert className="h-6 w-6 text-white/80" />
+          <img
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+            alt="CollectionKeeper"
+            className="mx-auto mb-1 w-20 h-20 object-contain"
+          />
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
+            <ShieldAlert className="h-5 w-5 text-white/80" />
           </div>
 
           <CardTitle className="text-xl text-white">

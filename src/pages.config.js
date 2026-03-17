@@ -52,6 +52,7 @@ import AdminReports from './pages/AdminReports';
 import AdminSubscriptionRequests from './pages/AdminSubscriptionRequests';
 import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
 import AgeGate from './pages/AgeGate';
+import BottleDetail from './pages/BottleDetail';
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import CollectionHub from './pages/CollectionHub';
 import CollectionInsightsShare from './pages/CollectionInsightsShare';
@@ -61,6 +62,7 @@ import CuratorAnalyticsDashboard from './pages/CuratorAnalyticsDashboard';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
+import HelpCenter from './pages/HelpCenter';
 import Home from './pages/Home';
 import HowTo from './pages/HowTo';
 import Import from './pages/Import';
@@ -83,6 +85,7 @@ import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionSupport from './pages/SubscriptionSupport';
 import Support from './pages/Support';
 import SupportFull from './pages/SupportFull';
+import Tastings from './pages/Tastings';
 import TermsOfService from './pages/TermsOfService';
 import Tobacco from './pages/Tobacco';
 import TobaccoDetail from './pages/TobaccoDetail';
@@ -92,11 +95,11 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import Whiskey from './pages/Whiskey';
+import WhiskeyAIUpdates from './pages/WhiskeyAIUpdates';
+import WhiskeyAnalytics from './pages/WhiskeyAnalytics';
+import WhiskeyInsights from './pages/WhiskeyInsights';
 import WhiskeyKeeper from './pages/WhiskeyKeeper';
 import index from './pages/index';
-import Tastings from './pages/Tastings';
-import WhiskeyInsights from './pages/WhiskeyInsights';
-import WhiskeyAnalytics from './pages/WhiskeyAnalytics';
 import __Layout from './Layout.jsx';
 
 
@@ -106,6 +109,7 @@ export const PAGES = {
     "AdminSubscriptionRequests": AdminSubscriptionRequests,
     "AdminSubscriptionTools": AdminSubscriptionTools,
     "AgeGate": AgeGate,
+    "BottleDetail": BottleDetail,
     "BulkLogoUpload": BulkLogoUpload,
     "CollectionHub": CollectionHub,
     "CollectionInsightsShare": CollectionInsightsShare,
@@ -115,6 +119,7 @@ export const PAGES = {
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
+    "HelpCenter": HelpCenter,
     "Home": Home,
     "HowTo": HowTo,
     "Import": Import,
@@ -137,6 +142,7 @@ export const PAGES = {
     "SubscriptionSupport": SubscriptionSupport,
     "Support": Support,
     "SupportFull": SupportFull,
+    "Tastings": Tastings,
     "TermsOfService": TermsOfService,
     "Tobacco": Tobacco,
     "TobaccoDetail": TobaccoDetail,
@@ -146,11 +152,11 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "Whiskey": Whiskey,
+    "WhiskeyAIUpdates": WhiskeyAIUpdates,
+    "WhiskeyAnalytics": WhiskeyAnalytics,
+    "WhiskeyInsights": WhiskeyInsights,
     "WhiskeyKeeper": WhiskeyKeeper,
     "index": index,
-    "Tastings": Tastings,
-    "WhiskeyInsights": WhiskeyInsights,
-    "WhiskeyAnalytics": WhiskeyAnalytics,
 }
 
 export const pagesConfig = {
