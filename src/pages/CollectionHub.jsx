@@ -248,9 +248,13 @@ export default function CollectionHub() {
               {t('hub.totalValue')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
-              {(summary.pipes.value + totalBlendValue + totalBottleValue) > 0
-                ? `$${(summary.pipes.value + totalBlendValue + totalBottleValue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                : '$0.00'}
+              {(() => {
+                const bottleVal = isModuleEnabled('whiskeykeeper') ? totalBottleValue : 0;
+                const total = summary.pipes.value + totalBlendValue + bottleVal;
+                return total > 0
+                  ? `$${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  : '$0.00';
+              })()}
             </p>
           </div>
           <div className="space-y-2">
