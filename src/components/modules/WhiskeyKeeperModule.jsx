@@ -39,6 +39,7 @@ export default function WhiskeyKeeperModule() {
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showIdentifier, setShowIdentifier] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [showLogTasting, setShowLogTasting] = useState(false);
   const [identifiedBottleData, setIdentifiedBottleData] = useState(null);
 
   // Module navigation
