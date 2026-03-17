@@ -176,23 +176,41 @@ export function WhiskeyAnalyticsTab({ bottles, tastingLogs }) {
         <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
           {t('whiskeykeeper.bottleTypeDistribution', 'Bottle Type Distribution')}
         </h3>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={360}>
           <PieChart>
             <Pie
               data={typeDistribution}
-              cx="50%"
+              cx="38%"
               cy="50%"
+              outerRadius={96}
+              innerRadius={30}
+              paddingAngle={2}
               labelLine={false}
-              label={({ name, value }) => `${name}: ${value}`}
-              outerRadius={80}
-              fill="#8884d8"
               dataKey="value"
             >
               {typeDistribution.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip
+              contentStyle={{
+                background: 'rgba(28,18,10,0.95)',
+                border: '1px solid rgba(180,140,75,0.3)',
+                color: '#F5F1E7',
+              }}
+            />
+            <Legend
+              layout="vertical"
+              align="right"
+              verticalAlign="middle"
+              wrapperStyle={{
+                color: '#E0D8C8',
+                fontSize: 12,
+                lineHeight: '18px',
+                paddingLeft: 12,
+              }}
+              formatter={(value) => <span style={{ color: '#E0D8C8' }}>{value}</span>}
+            />
           </PieChart>
         </ResponsiveContainer>
       </div>
