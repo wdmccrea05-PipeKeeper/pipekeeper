@@ -835,6 +835,23 @@ export default function ProfilePage() {
               />
             </div>
 
+            {/* Whiskey Notes for AI */}
+            <div className="pt-2 space-y-2">
+              <div className="flex items-center gap-2">
+                <GlassWater className="w-4 h-4 text-amber-500" />
+                <Label className="text-stone-700 font-semibold text-base">Whiskey Notes for Recommendations</Label>
+              </div>
+              <p className="text-xs text-stone-500">
+                Add any whiskey preferences, dislikes, pairing notes, collector priorities, or guidance for Curator. For example: "Prefer sweeter bourbons over peated scotch", "Saving rare bottles for special occasions", or "Prefer pairings with Virginia/Perique blends".
+              </p>
+              <Textarea
+                value={formData.whiskey_notes}
+                onChange={(e) => setFormData((p) => ({ ...p, whiskey_notes: e.target.value }))}
+                rows={4}
+                placeholder="e.g. Prefer sweeter bourbons, avoid heavily peated Scotch, saving Pappy for special occasions..."
+              />
+            </div>
+
             {/* Public profile toggle */}
             <div className="flex items-center justify-between">
               <div>
