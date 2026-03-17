@@ -53,6 +53,16 @@ export default function WhiskeyKeeperModule() {
     staleTime: 10000,
   });
 
+  const { data: inventoryUnits = [] } = useQuery({
+    queryKey: ['inventory-units-summary', user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.WhiskeyInventoryUnit.filter({ created_by: user?.email });
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
   const { data: tastingLogs = [] } = useQuery({
     queryKey: ['tasting-logs-summary', user?.email],
     queryFn: async () => {
