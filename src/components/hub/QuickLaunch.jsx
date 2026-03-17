@@ -86,8 +86,8 @@ export default function QuickLaunch() {
           </div>
         </div>
 
-        {/* WhiskeyKeeper Quick Actions */}
-        <div>
+        {/* WhiskeyKeeper Quick Actions — hidden when module is disabled */}
+        {isModuleEnabled('whiskeykeeper') && <div>
           <h3 className="text-xs uppercase tracking-wider mb-3" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
             {t('nav.whiskeykeeper')}
           </h3>
