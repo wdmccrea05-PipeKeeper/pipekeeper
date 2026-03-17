@@ -285,7 +285,7 @@ export default function CollectionHub() {
           {isModuleEnabled('whiskeykeeper') && (
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-                {t('hub.whiskey') || 'Whiskey'}
+                {t('hub.whiskey') || 'Whiskey Bottles'}
               </p>
               <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
                 {summary.whiskey.count}
