@@ -594,8 +594,8 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <Label className="text-stone-700 font-medium break-words">{t("common.email")}</Label>
-                <Input value={user?.email || ""} disabled className="bg-stone-50 text-stone-500 cursor-not-allowed" />
+                <Label className="font-medium break-words" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("common.email")}</Label>
+                <Input value={user?.email || ""} disabled className="opacity-50 cursor-not-allowed" />
               </div>
             </div>
 
