@@ -4,7 +4,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import ModuleCard from '@/components/hub/ModuleCard';
-import CombinedSummary from '@/components/hub/CombinedSummary';
+import BrandLogo from '@/components/branding/BrandLogo';
 import CuratorHub from '@/components/hub/CuratorHub';
 import RecentActivity from '@/components/hub/RecentActivity';
 import QuickLaunch from '@/components/hub/QuickLaunch';
@@ -200,12 +200,23 @@ export default function CollectionHub() {
       <div className="space-y-4">
         <div className="text-center space-y-4">
           <div className="flex justify-center mb-6">
-            <img 
-              src="https://media.base44.com/images/public/694956e18d119cc497192525/0cc662018_CollectionKeeperUpdated.png"
-              alt="CollectionKeeper"
-              className="h-40 object-contain"
-              style={{ mixBlendMode: 'screen', filter: 'drop-shadow(0 4px 12px rgba(180,140,75,0.3))' }}
+            <BrandLogo
+              className="justify-center"
+              imageClassName="h-24 w-24"
+              showWordmark={false}
             />
+          </div>
+          <div className="flex justify-center">
+            <h1
+              className="text-4xl md:text-5xl font-bold tracking-tight"
+              style={{
+                color: '#F5F1E7',
+                textShadow: '0 2px 6px rgba(0,0,0,0.45)',
+                fontFamily: "'Georgia', serif",
+              }}
+            >
+              CollectionKeeper
+            </h1>
           </div>
           <p 
             className="text-base max-w-2xl mx-auto leading-relaxed"
@@ -263,7 +274,7 @@ export default function CollectionHub() {
           </div>
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('hub.whiskey')}
+              {t('hub.whiskey') || 'Whiskey'}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
               {summary.whiskey.count}
