@@ -4,7 +4,6 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import ModuleCard from '@/components/hub/ModuleCard';
-import BrandLogo from '@/components/branding/BrandLogo';
 import CuratorHub from '@/components/hub/CuratorHub';
 import RecentActivity from '@/components/hub/RecentActivity';
 import QuickLaunch from '@/components/hub/QuickLaunch';
