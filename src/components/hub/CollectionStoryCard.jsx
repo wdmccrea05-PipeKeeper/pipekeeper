@@ -161,11 +161,20 @@ export default function CollectionStoryCard() {
 
       <Divider />
 
-      {/* Metrics Grid */}
+      {/* Metrics Grid — use explicit bottle terminology */}
       <div className="grid grid-cols-4 divide-x" style={{ borderColor: 'rgba(180,140,75,0.08)' }}>
         {m.pipes > 0 && <MetricBox value={m.pipes} label="Pipes" color={METRIC_COLORS.pipes} />}
         {m.blends > 0 && <MetricBox value={m.blends} label="Blends" color={METRIC_COLORS.blends} />}
-        {m.bottles > 0 && <MetricBox value={m.bottles} label="Bottles" color={METRIC_COLORS.bottles} />}
+        {(m.bottleTypes ?? m.bottles) > 0 && (
+          <MetricBox
+            value={m.bottleTypes ?? m.bottles}
+            label={m.totalBottles > (m.bottleTypes ?? m.bottles) ? "Btl. Types" : "Bottles"}
+            color={METRIC_COLORS.bottles}
+          />
+        )}
+        {m.totalBottles > (m.bottleTypes ?? m.bottles ?? 0) && (
+          <MetricBox value={m.totalBottles} label="Total Btls" color="#C87941" />
+        )}
         <MetricBox value={valueDisplay} label="Value" color={METRIC_COLORS.value} />
       </div>
 
