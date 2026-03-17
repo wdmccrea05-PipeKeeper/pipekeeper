@@ -653,7 +653,7 @@ export default function UserReport() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-gray-200">
+                      <tr className="border-b border-[#8b6239]/30">
                         <th 
                           className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('full_name')}
@@ -741,7 +741,7 @@ export default function UserReport() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-gray-200">
+                      <tr className="border-b border-[#8b6239]/30">
                         <th 
                           className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('full_name')}
