@@ -30,6 +30,7 @@ function WhiskeyBottleIcon({ className, style }) {
 export default function QuickLaunch() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { isModuleEnabled } = useModuleVisibility();
 
   const pipeActions = [
     { label: t('quickActions.addPipe') || 'Add Pipe', icon: PipeImgIcon, path: '/Pipes', accent: '#D4A574' },
