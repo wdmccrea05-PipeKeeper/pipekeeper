@@ -611,7 +611,7 @@ export default function ProfilePage() {
             {/* Location */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-stone-700 font-medium break-words">{t("profileExtended.location")}</Label>
+                <Label className="font-medium break-words" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.location")}</Label>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-stone-600">{t("profileExtended.showOnProfile")}</span>
                   <Switch
