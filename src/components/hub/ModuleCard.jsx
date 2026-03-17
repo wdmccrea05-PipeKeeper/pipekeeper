@@ -79,7 +79,12 @@ export default function ModuleCard({ module, icon, itemCount, summary, action, i
           {icon && (
             <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
               {typeof icon === 'string' && icon.startsWith('http') ? (
-                <img src={icon} alt={module} className="w-12 h-12 object-contain" />
+                <img
+                  src={icon}
+                  alt={module}
+                  className="w-12 h-12 object-contain"
+                  style={{ mixBlendMode: 'screen' }}
+                />
               ) : typeof icon === 'function' ? (
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
