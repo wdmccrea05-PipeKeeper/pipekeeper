@@ -113,13 +113,43 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch all collection data in parallel
+    // Accept optional module eligibility filter from caller.
+    // If not provided, fall back to fetching user profile to determine enabled modules.
+    let bodyEnabledModules = null;
+    try {
+      const body = await req.json().catch(() => ({}));
+      bodyEnabledModules = body?.enabledModules || null; // e.g. ['pipekeeper', 'whiskeykeeper']
+    } catch {}
+
+    // Determine which modules are AI-eligible
+    // If caller didn't pass enabledModules, check user profile
+    let enabledModules = bodyEnabledModules;
+    if (!enabledModules) {
+      try {
+        const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+        const profile = profiles?.[0] || null;
+        const prefsSet = profile?.module_preferences_set === true;
+        enabledModules = [
+          'pipekeeper', // always include
+          ...(prefsSet
+            ? (profile?.whiskeykeeper_enabled !== false ? ['whiskeykeeper'] : [])
+            : ['whiskeykeeper']), // default on for existing users
+        ];
+      } catch {
+        enabledModules = ['pipekeeper', 'whiskeykeeper'];
+      }
+    }
+
+    const includePipes = enabledModules.includes('pipekeeper');
+    const includeWhiskey = enabledModules.includes('whiskeykeeper');
+
+    // Fetch only AI-eligible module data in parallel
     const [pipes, blends, bottles, logs, tastingLogs] = await Promise.all([
-      base44.entities.Pipe.filter({ created_by: user.email }),
-      base44.entities.TobaccoBlend.filter({ created_by: user.email }),
-      base44.entities.Bottle.filter({ created_by: user.email }),
-      base44.entities.SmokingLog.filter({ created_by: user.email }),
-      base44.entities.TastingLog.filter({ created_by: user.email }),
+      includePipes ? base44.entities.Pipe.filter({ created_by: user.email }) : Promise.resolve([]),
+      includePipes ? base44.entities.TobaccoBlend.filter({ created_by: user.email }) : Promise.resolve([]),
+      includeWhiskey ? base44.entities.Bottle.filter({ created_by: user.email }) : Promise.resolve([]),
+      includePipes ? base44.entities.SmokingLog.filter({ created_by: user.email }) : Promise.resolve([]),
+      includeWhiskey ? base44.entities.TastingLog.filter({ created_by: user.email }) : Promise.resolve([]),
     ]);
 
     const pipesList = Array.isArray(pipes) ? pipes : [];
