@@ -140,8 +140,11 @@ export default function CollectionHub() {
     profile: hubProfile,
   });
 
-  const { enabledModules, isModuleEnabled } = useEnabledKeeperModules();
+  const { enabledModules, isModuleEnabled, moduleStates } = useEnabledKeeperModules();
   const comingSoonModules = getComingSoonModules();
+
+  // AI-eligible collection: only include data from enabled/visible modules
+  const aiCollection = buildAIEligibleCollection(moduleStates, { pipes, blends, bottles });
 
   // Map module registry to card data with module-specific stats
   // Compute blend quantity metrics from raw blend data
