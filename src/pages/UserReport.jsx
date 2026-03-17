@@ -279,13 +279,13 @@ export default function UserReport() {
           }}
         >
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2">
               <UserX className="w-4 h-4" />
               {t("userReport.freeUsers")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-black">{summary.free_users}</p>
+            <p className="text-3xl font-bold text-[#F5F1E7]">{summary.free_users}</p>
           </CardContent>
         </Card>
 
