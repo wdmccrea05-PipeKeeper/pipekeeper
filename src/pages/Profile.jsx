@@ -13,9 +13,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 
-import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, GlassWater } from "lucide-react";
+import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, GlassWater, Layers } from "lucide-react";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 import WhiskeyPreferencesSection from "@/components/profile/WhiskeyPreferencesSection";
+import ModuleVisibilitySettings from "@/components/profile/ModuleVisibilitySettings";
 
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
