@@ -5,8 +5,8 @@ import { Download, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
-const PIPEKEEPER_LOGO = 
-  "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
+const COLLECTIONKEEPER_LOGO = 
+  "https://media.base44.com/images/public/694956e18d119cc497192525/0cc662018_CollectionKeeperUpdated.png";
 
 /**
  * CollectionInsightsCard Component
@@ -31,9 +31,10 @@ const CollectionInsightsCard = forwardRef(({ insights, userProfile }, ref) => {
       {/* Header */}
       <div className="text-center space-y-3">
         <img 
-          src={PIPEKEEPER_LOGO} 
-          alt="PipeKeeper" 
+          src={COLLECTIONKEEPER_LOGO} 
+          alt="CollectionKeeper" 
           className="w-12 h-12 mx-auto object-contain"
+          style={{ mixBlendMode: 'screen' }}
         />
         <h2 
           className="text-2xl font-bold tracking-tight"
@@ -199,7 +200,7 @@ const CollectionInsightsCard = forwardRef(({ insights, userProfile }, ref) => {
         className="text-center text-xs"
         style={{ color: 'rgba(224, 216, 200, 0.5)' }}
       >
-        Tracked with PipeKeeper
+        Tracked with CollectionKeeper
       </div>
     </div>
   );
@@ -242,7 +243,7 @@ export function CollectionInsightsShareModal({
 
       const link = document.createElement('a');
       link.href = canvas.toDataURL('image/png');
-      link.download = `pipekeeper-insights-${Date.now()}.png`;
+      link.download = `collectionkeeper-insights-${Date.now()}.png`;
       link.click();
 
       toast.success('Image downloaded!');
@@ -253,17 +254,17 @@ export function CollectionInsightsShareModal({
   };
 
   const handleCopyText = () => {
-    const text = `My pipe collection stats from PipeKeeper:
+    const text = `My collection stats from CollectionKeeper:
 
 ${insights?.totalPipes || 0} pipes
 ${insights?.totalBlends || 0} tobacco blends
-${insights?.totalBowlsLogged || 0} bowls logged${
+${insights?.totalBowlsLogged || 0} sessions logged${
   insights?.mostUsedPipe ? `\nMost used pipe: ${insights.mostUsedPipe.name}` : ''
 }${
   insights?.mostSmokedBlend ? `\nTop blend: ${insights.mostSmokedBlend.name}` : ''
 }
 
-Tracked with PipeKeeper.`;
+Tracked with CollectionKeeper.`;
 
     navigator.clipboard.writeText(text).then(() => {
       toast.success('Text copied to clipboard!');

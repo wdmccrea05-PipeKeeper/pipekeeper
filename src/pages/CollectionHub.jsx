@@ -203,8 +203,8 @@ export default function CollectionHub() {
             <img 
               src="https://media.base44.com/images/public/694956e18d119cc497192525/0cc662018_CollectionKeeperUpdated.png"
               alt="CollectionKeeper"
-              className="h-48 object-contain"
-              style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.4))' }}
+              className="h-40 object-contain"
+              style={{ mixBlendMode: 'screen', filter: 'drop-shadow(0 4px 12px rgba(180,140,75,0.3))' }}
             />
           </div>
           <p 
@@ -231,7 +231,7 @@ export default function CollectionHub() {
         >
           {t("hub.collectionSummary")}
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
               {t('hub.totalValue')}
@@ -267,14 +267,6 @@ export default function CollectionHub() {
             </p>
             <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
               {summary.whiskey.count}
-            </p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('hub.wine')}
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#A35C6C' }}>
-              0
             </p>
           </div>
           <div className="space-y-2">

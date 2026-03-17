@@ -614,7 +614,7 @@ export default function Layout({ children, currentPageName }) {
                   <BackButton currentPageName={currentPageName} />
                   <Link to={createPageUrl("CollectionHub")} className="flex items-center gap-2 flex-shrink-0">
                     <img src={COLLECTIONKEEPER_LOGO} alt={t("layout.appTitle")} className="w-7 h-7 lg:w-8 lg:h-8 object-contain" />
-                    <span className="font-bold text-lg lg:text-xl text-[#E0D8C8] hidden sm:inline whitespace-normal break-words max-w-[140px]">{t("layout.appTitle")}</span>
+                    <span className="font-bold text-lg lg:text-xl text-[#E0D8C8] hidden sm:inline whitespace-nowrap">{t("layout.appTitle")}</span>
                   </Link>
                 </div>
 
