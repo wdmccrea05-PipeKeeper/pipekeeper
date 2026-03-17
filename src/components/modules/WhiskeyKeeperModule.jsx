@@ -233,27 +233,32 @@ export default function WhiskeyKeeperModule() {
           </div>
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskeykeeper.bottlesInCollection') || 'Bottles'}
+              Bottle Types
             </p>
             <p className="text-2xl font-bold" style={{ color: '#B48C4B' }}>
-              {bottles.length}
+              {bottleTypes}
             </p>
-            <p className="text-xs" style={{ color: 'rgba(180,140,75,0.45)' }}>unique bottles</p>
+            <p className="text-xs" style={{ color: 'rgba(180,140,75,0.45)' }}>distinct labels</p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
+              Total Bottles
+            </p>
+            <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
+              {totalBottles}
+            </p>
+            {inventoryUnits.length > 0 && (openBottles > 0 || unopenedBottles > 0) && (
+              <p className="text-xs" style={{ color: 'rgba(139,115,85,0.65)' }}>
+                {openBottles} open · {unopenedBottles} sealed
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
               {t('whiskeykeeper.tastings') || 'Tastings'}
             </p>
-            <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
-              {tastingLogs.length}
-            </p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskeykeeper.favoriteStyle') || 'Rated'}
-            </p>
             <p className="text-2xl font-bold" style={{ color: '#A35C5C' }}>
-              {bottles.filter(b => b?.rating && Number(b.rating) > 0).length}
+              {tastingLogs.length}
             </p>
           </div>
         </div>
