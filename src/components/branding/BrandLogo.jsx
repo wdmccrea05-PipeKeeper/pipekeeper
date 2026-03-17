@@ -33,7 +33,8 @@ export default function BrandLogo({
         setImgFailed(true);
       }}
       alt="CollectionKeeper"
-      className={cn('object-contain', compact ? 'w-8 h-8' : 'w-12 h-12', imageClassName)}
+      className={cn('object-contain bg-transparent', compact ? 'w-8 h-8' : 'w-12 h-12', imageClassName)}
+      style={{ background: 'transparent', mixBlendMode: 'normal' }}
       draggable={false}
     />
   ) : (
