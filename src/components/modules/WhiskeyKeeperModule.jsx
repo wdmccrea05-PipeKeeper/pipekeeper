@@ -1,393 +1,384 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from '@/components/i18n/safeTranslation';
-import { useCurrentUser } from '@/components/hooks/useCurrentUser';
-import { Button } from '@/components/ui/button';
-import { BookOpen, TrendingUp, BarChart3, Plus, Search, Camera, Wand2 } from 'lucide-react';
-import { createPageUrl } from '@/components/utils/createPageUrl';
-
-const WK_LOGO = "https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { formatCurrency } from '@/components/utils/localeFormatters';
-import ModuleNav from './ModuleNav';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/components/i18n/safeTranslation';
+import BottleCard from '@/components/whiskey/BottleCard';
+import BottleListItem from '@/components/whiskey/BottleListItem';
 import CatalogPlate from '@/components/home/CatalogPlate';
-import ModuleQuickLaunch from './ModuleQuickLaunch';
-import QuickSearchBottle from '@/components/ai/QuickSearchBottle';
-import BottleIdentifier from '@/components/whiskey/BottleIdentifier';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import BottleForm from '@/components/whiskey/BottleForm';
-import LogTastingModal from '@/components/whiskey/LogTastingModal';
+import {
+  Search,
+  Plus,
+  LayoutGrid,
+  List,
+  Package,
+  LockOpen,
+  ShieldCheck,
+  Wine,
+} from 'lucide-react';
+import {
+  buildInventoryCountByBottleId,
+  formatCurrency,
+  getBottleTotalValue,
+  getBottleUnitValue,
+  getEffectiveBottleCount,
+  getInventoryStatusSummary,
+} from '@/components/utils/whiskeyValueHelpers';
 
-const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
+function normalizeText(value) {
+  return String(value || '').trim().toLowerCase();
+}
 
-export default function WhiskeyKeeperModule() {
+function matchesBottleSearch(bottle, query) {
+  const q = normalizeText(query);
+  if (!q) return true;
+
+  const haystack = [
+    bottle?.name,
+    bottle?.distillery,
+    bottle?.region,
+    bottle?.country,
+    bottle?.type,
+    bottle?.bottle_type,
+    bottle?.bottle_size,
+    bottle?.notes,
+  ]
+    .map((v) => String(v || '').toLowerCase())
+    .join(' ');
+
+  return haystack.includes(q);
+}
+
+export default function WhiskeyKeeperModule({
+  onAddBottle,
+  onEditBottle,
+  onOpenBottle,
+  onDeleteBottle,
+}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user } = useCurrentUser();
-  const queryClient = useQueryClient();
-  
-  const [showQuickSearch, setShowQuickSearch] = useState(false);
-  const [showIdentifier, setShowIdentifier] = useState(false);
-  const [showQuickAdd, setShowQuickAdd] = useState(false);
-  const [showLogTasting, setShowLogTasting] = useState(false);
-  const [identifiedBottleData, setIdentifiedBottleData] = useState(null);
 
-  // Module navigation
-  const moduleNav = [
-    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', iconImage: WK_LOGO },
-    { name: t('nav.tastingNotes') || 'Tastings', path: '/Tastings', icon: BookOpen },
-    { name: t('nav.insights') || 'Insights', path: '/WhiskeyInsights', icon: TrendingUp },
-    { name: t('nav.analytics') || 'Analytics', path: '/WhiskeyAnalytics', icon: BarChart3 },
-  ];
+  const [bottles, setBottles] = useState([]);
+  const [inventoryUnits, setInventoryUnits] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState('grid');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch data
-  const { data: bottles = [] } = useQuery({
-    queryKey: ['bottles-summary', user?.email],
-    queryFn: async () => {
-      const result = await base44.entities.Bottle.filter({ created_by: user?.email });
-      return Array.isArray(result) ? result : [];
-    },
-    enabled: !!user?.email,
-    staleTime: 10000,
-  });
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [bottleRows, inventoryRows] = await Promise.all([
+        base44.entities.Bottle?.list?.('-created_date').catch(() => []),
+        base44.entities.BottleInventoryUnit?.list?.('-created_date').catch(() => []),
+      ]);
 
-  const { data: inventoryUnits = [] } = useQuery({
-    queryKey: ['inventory-units-summary', user?.email],
-    queryFn: async () => {
-      const result = await base44.entities.WhiskeyInventoryUnit.filter({ created_by: user?.email });
-      return Array.isArray(result) ? result : [];
-    },
-    enabled: !!user?.email,
-    staleTime: 10000,
-  });
-
-  const { data: tastingLogs = [] } = useQuery({
-    queryKey: ['tasting-logs-summary', user?.email],
-    queryFn: async () => {
-      const result = await base44.entities.TastingLog.filter({ created_by: user?.email }, '-tasting_date', 100);
-      return Array.isArray(result) ? result : [];
-    },
-    enabled: !!user?.email,
-    staleTime: 10000,
-  });
-
-  // Value priority function for consistent calculations across all displays
-  const getBottleUnitValue = (bottle) => {
-    return Number(
-      bottle?.collector_value ??
-      bottle?.aftermarket_price ??
-      bottle?.retail_price ??
-      bottle?.average_market_value ??
-      bottle?.purchase_price ??
-      0
-    ) || 0;
-  };
-
-  const getBottleCount = (bottle) => {
-    const explicitCount = Number(bottle?.bottle_count);
-    return Number.isFinite(explicitCount) && explicitCount > 0 ? explicitCount : 1;
-  };
-
-  // Inventory count map for value calculation
-  const inventoryCountByBottleId = useMemo(() => {
-    const map = {};
-    for (const unit of inventoryUnits) {
-      if (!unit?.bottle_id) continue;
-      map[unit.bottle_id] = (map[unit.bottle_id] || 0) + 1;
+      setBottles(Array.isArray(bottleRows) ? bottleRows : []);
+      setInventoryUnits(Array.isArray(inventoryRows) ? inventoryRows : []);
+    } catch (error) {
+      console.error('[WhiskeyKeeperModule] loadData failed:', error);
+      setBottles([]);
+      setInventoryUnits([]);
+    } finally {
+      setLoading(false);
     }
-    return map;
-  }, [inventoryUnits]);
+  }, []);
 
-  // Dual bottle metrics — the canonical distinction
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const inventoryCountByBottleId = useMemo(
+    () => buildInventoryCountByBottleId(inventoryUnits),
+    [inventoryUnits]
+  );
+
+  const filteredBottles = useMemo(() => {
+    return bottles.filter((bottle) => matchesBottleSearch(bottle, searchQuery));
+  }, [bottles, searchQuery]);
+
   const bottleTypes = bottles.length;
+  const hasInventoryUnits = inventoryUnits.length > 0;
 
   const totalBottles = useMemo(() => {
-    if (inventoryUnits.length > 0) return inventoryUnits.length;
-    return bottles.reduce((sum, b) => sum + getBottleCount(b), 0);
-  }, [bottles, inventoryUnits]);
+    return bottles.reduce((sum, bottle) => {
+      return sum + getEffectiveBottleCount(bottle, inventoryCountByBottleId, hasInventoryUnits);
+    }, 0);
+  }, [bottles, inventoryCountByBottleId, hasInventoryUnits]);
 
-  const openBottles = useMemo(
-    () => inventoryUnits.filter((u) => u.status === 'open').length,
-    [inventoryUnits]
-  );
-
-  const sealedBottles = useMemo(
-    () => inventoryUnits.filter((u) => u.status === 'reserve' || u.status === 'drinking').length,
-    [inventoryUnits]
-  );
-
-  // Total value using consistent priority function
   const totalBottleValue = useMemo(() => {
     return bottles.reduce((sum, bottle) => {
-      const count = inventoryUnits.length > 0
-        ? (inventoryCountByBottleId[bottle.id] || 0)
-        : getBottleCount(bottle);
-
-      return sum + (getBottleUnitValue(bottle) * Math.max(count, 1));
+      return sum + getBottleTotalValue(bottle, inventoryCountByBottleId, hasInventoryUnits);
     }, 0);
-  }, [bottles, inventoryUnits.length, inventoryCountByBottleId]);
+  }, [bottles, inventoryCountByBottleId, hasInventoryUnits]);
 
-  const highestRatedBottle = useMemo(() => {
-    const withRating = bottles.filter(b => b?.rating && b.rating > 0);
-    if (!withRating.length) return null;
-    return withRating.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0))[0] || null;
-  }, [bottles]);
+  const openBottles = useMemo(() => {
+    if (inventoryUnits.length > 0) {
+      return inventoryUnits.filter((u) => String(u?.status || '').toLowerCase() === 'open').length;
+    }
+
+    return bottles.filter((b) => String(b?.status || '').toLowerCase() === 'open').length;
+  }, [inventoryUnits, bottles]);
+
+  const sealedBottles = useMemo(() => {
+    if (inventoryUnits.length > 0) {
+      return inventoryUnits.filter((u) => {
+        const status = String(u?.status || '').toLowerCase();
+        return status === 'reserve' || status === 'drinking';
+      }).length;
+    }
+
+    return Math.max(totalBottles - openBottles, 0);
+  }, [inventoryUnits, bottles, totalBottles, openBottles]);
 
   const mostValuableBottle = useMemo(() => {
     const candidates = bottles
-      .map((bottle) => ({ ...bottle, __unitValue: getBottleUnitValue(bottle) }))
+      .map((bottle) => ({
+        ...bottle,
+        __unitValue: getBottleUnitValue(bottle),
+        __totalValue: getBottleTotalValue(bottle, inventoryCountByBottleId, hasInventoryUnits),
+      }))
       .filter((bottle) => bottle.__unitValue > 0);
 
     if (!candidates.length) return null;
 
-    return candidates.sort((a, b) => b.__unitValue - a.__unitValue)[0] || null;
+    candidates.sort((a, b) => {
+      if (b.__unitValue !== a.__unitValue) return b.__unitValue - a.__unitValue;
+      return b.__totalValue - a.__totalValue;
+    });
+
+    return candidates[0] || null;
+  }, [bottles, inventoryCountByBottleId, hasInventoryUnits]);
+
+  const bottleTypeBreakdown = useMemo(() => {
+    const counts = {};
+    for (const bottle of bottles) {
+      const type = String(bottle?.type || 'Other').trim() || 'Other';
+      counts[type] = (counts[type] || 0) + 1;
+    }
+
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4);
   }, [bottles]);
 
-  const recentTasting = useMemo(() => tastingLogs[0] || null, [tastingLogs]);
-
-  const handleBottleAdded = () => {
-    queryClient.invalidateQueries({ queryKey: ['bottles-summary'] });
-    queryClient.invalidateQueries({ queryKey: ['bottles'] });
+  const handleBottleUpdated = async () => {
+    await loadData();
   };
-
-  const handleBottleIdentified = (bottleData) => {
-    setIdentifiedBottleData(bottleData);
-    setShowIdentifier(false);
-    setShowQuickAdd(true);
-  };
-
-  const handleQuickAddSubmit = async (data) => {
-    try {
-      await base44.entities.Bottle.create(data);
-      setShowQuickAdd(false);
-      setIdentifiedBottleData(null);
-      handleBottleAdded();
-    } catch (err) {
-      console.error('Quick add error:', err);
-      throw err;
-    }
-  };
-
-  const handleQuickAddCancel = () => {
-    setShowQuickAdd(false);
-    setIdentifiedBottleData(null);
-  };
-
-  const quickLaunchActions = [
-    {
-      key: 'addBottle',
-      Icon: Plus,
-      label: t('quickActions.addBottle'),
-      onClick: () => navigate('/Whiskey?action=add')
-    },
-    {
-      key: 'quickSearch',
-      Icon: Search,
-      label: t('quickActions.quickSearchBottle'),
-      onClick: () => setShowQuickSearch(true)
-    },
-    {
-      key: 'identifyBottle',
-      Icon: Camera,
-      label: t('quickActions.identifyBottle'),
-      onClick: () => setShowIdentifier(true)
-    },
-    {
-      key: 'logTasting',
-      Icon: BookOpen,
-      label: t('quickActions.logTasting'),
-      onClick: () => setShowLogTasting(true)
-    },
-    {
-      key: 'curator',
-      iconImage: CURATOR_ICON,
-      label: t('quickActions.collectionCurator'),
-      onClick: () => navigate('/Curator')
-    },
-    {
-      key: 'insights',
-      Icon: TrendingUp,
-      label: t('quickActions.insights'),
-      onClick: () => navigate('/WhiskeyInsights')
-    },
-    {
-      key: 'aiUpdates',
-      Icon: Wand2,
-      label: t('quickActions.aiUpdates') || 'AI Updates',
-      onClick: () => navigate('/WhiskeyAIUpdates')
-    }
-  ];
 
   return (
-    <div className="space-y-8">
-      {/* Hero */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <img
-              src={WK_LOGO}
-              alt="WhiskeyKeeper"
-              className="w-12 h-12 object-contain flex-shrink-0"
-              style={{ mixBlendMode: 'screen' }}
-            />
-            <h1 className="text-4xl font-bold tracking-tight" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
-              {t('whiskeykeeper.title') || 'WhiskeyKeeper'}
+    <div className="space-y-6">
+      <div
+        className="rounded-2xl p-5 md:p-6"
+        style={{
+          background: 'linear-gradient(135deg, rgba(44,30,22,0.98), rgba(27,20,16,0.98))',
+          border: '1px solid rgba(180,140,75,0.16)',
+          boxShadow: '0 12px 40px rgba(0,0,0,0.25)',
+        }}
+      >
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-[#F5F1E7]">
+              {t('whiskey.title') || 'WhiskeyKeeper'}
             </h1>
+            <p className="text-sm mt-1 text-[#E0D8C8]/70">
+              {t('whiskey.subtitle') || 'Track bottles, inventory, value, and tasting notes in one place.'}
+            </p>
           </div>
-          <p className="text-base pl-15" style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
-            {t('whiskeykeeper.description') || 'Track your whiskey collection and tastings'}
-          </p>
+
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              type="button"
+              onClick={onAddBottle}
+              className="bg-[#A35C5C] hover:bg-[#8F4E4E] text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t('whiskey.addBottle') || 'Add Bottle'}
+            </Button>
+          </div>
         </div>
-        <Button onClick={() => navigate('/CollectionHub')} variant="outline" className="text-sm">
-          {t('common.backToHub') || 'Back to Hub'}
-        </Button>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
+          <div
+            className="rounded-xl p-4"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(180,140,75,0.10)' }}
+          >
+            <div className="flex items-center gap-2 text-[#D4A574] text-sm font-semibold">
+              <Wine className="w-4 h-4" />
+              {t('whiskey.bottleTypes') || 'Bottle Types'}
+            </div>
+            <div className="text-3xl font-bold text-[#F5F1E7] mt-2">{bottleTypes}</div>
+            <p className="text-xs mt-1 text-[#E0D8C8]/60">
+              {totalBottles} total bottles
+            </p>
+          </div>
+
+          <div
+            className="rounded-xl p-4"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(180,140,75,0.10)' }}
+          >
+            <div className="flex items-center gap-2 text-[#D4A574] text-sm font-semibold">
+              <Package className="w-4 h-4" />
+              {t('whiskey.inventory') || 'Inventory'}
+            </div>
+            <div className="text-3xl font-bold text-[#F5F1E7] mt-2">{totalBottles}</div>
+            <p className="text-xs mt-1 text-[#E0D8C8]/60">
+              {openBottles} open · {sealedBottles} sealed
+            </p>
+          </div>
+
+          <div
+            className="rounded-xl p-4"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(180,140,75,0.10)' }}
+          >
+            <div className="flex items-center gap-2 text-[#D4A574] text-sm font-semibold">
+              <ShieldCheck className="w-4 h-4" />
+              {t('whiskey.collectionValue') || 'Collection Value'}
+            </div>
+            <div className="text-3xl font-bold text-[#F5F1E7] mt-2">
+              {formatCurrency(totalBottleValue)}
+            </div>
+            <p className="text-xs mt-1 text-[#E0D8C8]/60">
+              {t('whiskey.basedOnBestKnownValues') || 'Based on best known value per bottle'}
+            </p>
+          </div>
+
+          <div
+            className="rounded-xl p-4"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(180,140,75,0.10)' }}
+          >
+            <div className="flex items-center gap-2 text-[#D4A574] text-sm font-semibold">
+              <LockOpen className="w-4 h-4" />
+              {t('whiskey.topBottleType') || 'Top Bottle Type'}
+            </div>
+            <div className="text-2xl font-bold text-[#F5F1E7] mt-2 break-words">
+              {bottleTypeBreakdown[0]?.[0] || (t('common.none') || 'None')}
+            </div>
+            <p className="text-xs mt-1 text-[#E0D8C8]/60">
+              {bottleTypeBreakdown[0]?.[1] || 0} bottles
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Module Navigation - THE REAL INTERNAL NAV */}
-      <ModuleNav items={moduleNav} currentPath={location.pathname} />
-
-      {/* Summary Cards */}
-      <div className="rounded-lg p-5" style={{
-        background: 'linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))',
-        border: '1px solid rgba(120, 90, 65, 0.3)',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)'
-      }}>
-        <h2 className="text-sm uppercase tracking-[0.12em] font-semibold mb-4" style={{ color: 'rgba(180, 140, 75, 0.8)' }}>
-          {t('home.collectionSummary') || 'Collection Summary'}
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskeykeeper.totalValue') || 'Total Value'}
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
-              {formatCurrency(Math.round(totalBottleValue))}
-            </p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              Bottle Types
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#B48C4B' }}>
-              {bottleTypes}
-            </p>
-            <p className="text-xs" style={{ color: 'rgba(180,140,75,0.45)' }}>distinct labels</p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              Total Bottles
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
-              {totalBottles}
-            </p>
-            {inventoryUnits.length > 0 && (openBottles > 0 || sealedBottles > 0) && (
-              <p className="text-xs" style={{ color: 'rgba(139,115,85,0.65)' }}>
-                {openBottles} open · {sealedBottles} sealed
-              </p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskeykeeper.tastings') || 'Tastings'}
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#A35C5C' }}>
-              {tastingLogs.length}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Launch */}
-      <ModuleQuickLaunch actions={quickLaunchActions} />
-
-      {/* Highlights */}
-      {(highestRatedBottle || mostValuableBottle || recentTasting) && (
-        <div>
-          <h2 className="text-sm uppercase tracking-[0.12em] font-semibold mb-4" style={{ color: 'rgba(180, 140, 75, 0.8)' }}>
-            {t('home.highlights') || 'Collection Highlights'}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {highestRatedBottle && (
-              <CatalogPlate
-                title={t('whiskeykeeper.highestRated') || 'Highest Rated'}
-                value={`${highestRatedBottle.rating || 0}/5`}
-                subtitle={highestRatedBottle.name}
-                heroImage={highestRatedBottle.photo}
-                bgImage={highestRatedBottle.photo}
-                accent="#D4AF37"
-                onClick={() => navigate(`/Whiskey?highlight=${encodeURIComponent(highestRatedBottle.id)}`)}
-              />
-            )}
-            {mostValuableBottle && (
-              <CatalogPlate
-                title={t('home.mostValuable') || 'Most Valuable'}
-                value={formatCurrency(mostValuableBottle.__unitValue || 0)}
-                subtitle={mostValuableBottle.name}
-                heroImage={mostValuableBottle.photo}
-                bgImage={mostValuableBottle.photo}
-                accent="#B4824B"
-                onClick={() => navigate(`/Whiskey?highlight=${encodeURIComponent(mostValuableBottle.id)}`)}
-              />
-            )}
-            {recentTasting && (
-              <CatalogPlate
-                title={t('whiskeykeeper.recentTasting') || 'Recent Tasting'}
-                value={recentTasting.bottle_name}
-                subtitle={new Date(recentTasting.tasting_date).toLocaleDateString()}
-                heroImage={null}
-                bgImage={null}
-                accent="#8B6A47"
-                onClick={() => navigate('/Tastings')}
-              />
-            )}
-          </div>
-        </div>
+      {mostValuableBottle && (
+        <CatalogPlate
+          title={t('home.mostValuable') || 'Most Valuable'}
+          value={formatCurrency(mostValuableBottle.__unitValue || 0)}
+          subtitle={mostValuableBottle.name}
+          heroImage={mostValuableBottle.photo}
+          bgImage={mostValuableBottle.photo}
+          accent="#B4824B"
+          onClick={() =>
+            navigate(`/Whiskey?highlight=${encodeURIComponent(mostValuableBottle.id)}`)
+          }
+        />
       )}
 
-      {/* Log Tasting Modal */}
-      <LogTastingModal
-        isOpen={showLogTasting}
-        onClose={() => setShowLogTasting(false)}
-        bottles={bottles}
-        user={user}
-      />
-
-      {/* Quick Search Modal */}
-      <QuickSearchBottle 
-        isOpen={showQuickSearch} 
-        onClose={() => setShowQuickSearch(false)}
-        onBottleAdded={handleBottleAdded}
-      />
-
-      {/* Bottle Identifier Sheet */}
-      <Sheet open={showIdentifier} onOpenChange={setShowIdentifier}>
-        <SheetContent className="overflow-y-auto w-full sm:max-w-2xl">
-          <SheetHeader>
-            <SheetTitle>{t('bottleIdentifier.aiBottleIdentification')}</SheetTitle>
-          </SheetHeader>
-          <div className="mt-6">
-            <BottleIdentifier onBottleIdentified={handleBottleIdentified} />
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Quick Add from Identified Bottle */}
-      <Sheet open={showQuickAdd} onOpenChange={setShowQuickAdd}>
-        <SheetContent className="overflow-y-auto w-full sm:max-w-2xl">
-          <SheetHeader>
-            <SheetTitle>{t('quickActions.quickAddBottle')}</SheetTitle>
-          </SheetHeader>
-          <div className="mt-6">
-            <BottleForm 
-              bottle={identifiedBottleData} 
-              onSubmit={handleQuickAddSubmit}
-              onCancel={handleQuickAddCancel}
+      <div
+        className="rounded-2xl p-4"
+        style={{
+          background: 'linear-gradient(135deg, rgba(44,30,22,0.92), rgba(26,19,15,0.96))',
+          border: '1px solid rgba(180,140,75,0.14)',
+        }}
+      >
+        <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+          <div className="relative w-full lg:max-w-md">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#E0D8C8]/45" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('whiskey.searchPlaceholder') || 'Search bottles, distilleries, notes, region...'}
+              className="pl-9 bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.15)] text-[#F5F1E7]"
             />
           </div>
-        </SheetContent>
-      </Sheet>
+
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              onClick={() => setViewMode('grid')}
+              className={viewMode === 'grid' ? 'bg-[#A35C5C] hover:bg-[#8F4E4E]' : ''}
+            >
+              <LayoutGrid className="w-4 h-4 mr-2" />
+              {t('common.grid') || 'Grid'}
+            </Button>
+            <Button
+              type="button"
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              onClick={() => setViewMode('list')}
+              className={viewMode === 'list' ? 'bg-[#A35C5C] hover:bg-[#8F4E4E]' : ''}
+            >
+              <List className="w-4 h-4 mr-2" />
+              {t('common.list') || 'List'}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {loading ? (
+        <div
+          className="rounded-2xl p-10 text-center"
+          style={{ background: 'rgba(44,30,22,0.75)', border: '1px solid rgba(180,140,75,0.12)' }}
+        >
+          <p className="text-[#E0D8C8]/70">{t('common.loading') || 'Loading...'}</p>
+        </div>
+      ) : filteredBottles.length === 0 ? (
+        <div
+          className="rounded-2xl p-10 text-center"
+          style={{ background: 'rgba(44,30,22,0.75)', border: '1px solid rgba(180,140,75,0.12)' }}
+        >
+          <Wine className="w-10 h-10 mx-auto mb-3 text-[#D4A574]/70" />
+          <h3 className="text-lg font-semibold text-[#F5F1E7]">
+            {t('whiskey.noBottlesFound') || 'No bottles found'}
+          </h3>
+          <p className="text-sm mt-1 text-[#E0D8C8]/65">
+            {searchQuery
+              ? (t('whiskey.adjustSearch') || 'Try a different search.')
+              : (t('whiskey.addFirstBottle') || 'Add your first bottle to get started.')}
+          </p>
+          {!searchQuery && (
+            <Button
+              type="button"
+              onClick={onAddBottle}
+              className="mt-4 bg-[#A35C5C] hover:bg-[#8F4E4E] text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t('whiskey.addBottle') || 'Add Bottle'}
+            </Button>
+          )}
+        </div>
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filteredBottles.map((bottle) => (
+            <BottleCard
+              key={bottle.id}
+              bottle={bottle}
+              inventoryUnits={inventoryUnits}
+              inventoryCountByBottleId={inventoryCountByBottleId}
+              onEdit={onEditBottle}
+              onDelete={onDeleteBottle}
+              onOpen={onOpenBottle}
+              onUpdated={handleBottleUpdated}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filteredBottles.map((bottle) => (
+            <BottleListItem
+              key={bottle.id}
+              bottle={bottle}
+              inventoryUnits={inventoryUnits}
+              inventoryCountByBottleId={inventoryCountByBottleId}
+              onEdit={onEditBottle}
+              onDelete={onDeleteBottle}
+              onOpen={onOpenBottle}
+              onUpdated={handleBottleUpdated}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
