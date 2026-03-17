@@ -700,7 +700,7 @@ export default function UserReport() {
                             <td className="py-3 px-4 text-sm text-[#F5F1E7]">{user.full_name || '-'}</td>
                             <td className="py-3 px-4 text-sm text-[#E0D8C8]">{user.email}</td>
                             <td className="py-3 px-4">
-                              <Badge className="bg-gray-100 text-[#F5F1E7] border border-gray-300">{user.subscription_status}</Badge>
+                              <Badge className="bg-[#B48C4B]/20 text-[#F5F1E7] border border-[#B48C4B]/40">{user.subscription_status}</Badge>
                             </td>
                             <td className="py-3 px-4 text-sm text-[#E0D8C8] capitalize">{user.billing_interval || '-'}</td>
                             <td className="py-3 px-4 text-sm text-[#E0D8C8]">
