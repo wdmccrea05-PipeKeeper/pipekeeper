@@ -25,6 +25,7 @@ import QuickSearchBottle from '@/components/ai/QuickSearchBottle';
 import BottleIdentifier from '@/components/whiskey/BottleIdentifier';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import BottleForm from '@/components/whiskey/BottleForm';
+import LogTastingModal from '@/components/whiskey/LogTastingModal';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
