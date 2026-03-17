@@ -272,14 +272,16 @@ export default function CollectionHub() {
               <p className="text-xs" style={{ color: 'rgba(123,155,91,0.7)' }}>{totalBlendOz.toFixed(0)}oz</p>
             )}
           </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('hub.whiskey') || 'Whiskey'}
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
-              {summary.whiskey.count}
-            </p>
-          </div>
+          {isModuleEnabled('whiskeykeeper') && (
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
+                {t('hub.whiskey') || 'Whiskey'}
+              </p>
+              <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
+                {summary.whiskey.count}
+              </p>
+            </div>
+          )}
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
               {t('hub.activeModules')}
