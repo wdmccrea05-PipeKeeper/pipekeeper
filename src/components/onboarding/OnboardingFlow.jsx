@@ -386,7 +386,16 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
 
   const currentStepData = steps[currentStep];
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    // If leaving the module step, save selections
+    if (steps[currentStep]?.isModuleStep) {
+      try {
+        await saveModulePreferences(moduleSelections);
+      } catch (e) {
+        console.warn('[Onboarding] Could not save module preferences:', e);
+      }
+    }
+
     if (currentStep === steps.length - 1) {
       onComplete();
     } else {
