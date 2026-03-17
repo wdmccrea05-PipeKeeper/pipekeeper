@@ -409,9 +409,16 @@ export default function WhiskeyInsightsPage() {
                   <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{tastingPerWeek} per week</p>
                 </div>
                 <div className="p-4 rounded-lg" style={{ background: 'rgba(16,185,129,0.08)' }}>
-                  <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Unique Types</p>
+                  <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Whiskey Styles</p>
                   <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>
-                    {[...new Set(bottles.map(b => b.type))].length}
+                    {[...new Set(bottles.map(b => b.type).filter(Boolean))].length}
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg" style={{ background: 'rgba(200,121,65,0.08)' }}>
+                  <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Bottle Types</p>
+                  <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{bottleTypes}</p>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.45)' }}>
+                    {totalBottles > bottleTypes ? `${totalBottles} total bottles` : 'distinct labels'}
                   </p>
                 </div>
                 <div className="p-4 rounded-lg" style={{ background: 'rgba(59,130,246,0.08)' }}>
