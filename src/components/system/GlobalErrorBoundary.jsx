@@ -66,8 +66,13 @@ class GlobalErrorBoundary extends React.Component {
         <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] flex items-center justify-center p-6">
           <div className="max-w-md w-full bg-[#1A2B3A] rounded-2xl p-8 border border-[#A35C5C]/30 shadow-2xl">
             <div className="flex flex-col items-center text-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center">
-                <AlertCircle className="w-8 h-8 text-red-500" />
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+                alt="CollectionKeeper"
+                className="w-16 h-16 object-contain"
+              />
+              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center -mt-2">
+                <AlertCircle className="w-6 h-6 text-red-500" />
               </div>
               
               <div>
