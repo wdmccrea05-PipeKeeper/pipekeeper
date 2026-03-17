@@ -8,6 +8,7 @@ import {
   prepareCuratorNavigationState,
   buildCuratorEntryText,
 } from '@/components/keeper-core';
+import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
