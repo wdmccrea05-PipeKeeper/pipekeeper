@@ -1,70 +1,124 @@
-/**
- * Module Registry — Dynamic module definitions for CollectionKeeper ecosystem
- * Add new modules here without changing entitlement/pricing logic
- */
+import {
+  PipeIcon,
+  Wine,
+  Cigarette,
+  Coffee,
+  Package,
+} from 'lucide-react';
 
-export const MODULES = {
-  PIPEKEEPER: 'pipekeeper',
-  WHISKEYKEEPER: 'whiskeykeeper',
-  CIGARKEEPER: 'cigarkeeper',
-  WINEKEEPER: 'winekeeper',
+const MODULES = {
+  pipe: {
+    key: 'pipe',
+    displayName: 'PipeKeeper',
+    shortName: 'Pipes',
+    singularName: 'Pipe',
+    route: '/Pipes',
+    accent: '#8B7355',
+    accentSoft: 'rgba(139,115,85,0.18)',
+    border: 'rgba(139,115,85,0.28)',
+    icon: PipeIcon,
+    collectionLabel: 'Pipe Collection',
+    itemLabel: 'Pipe',
+    itemLabelPlural: 'Pipes',
+  },
+
+  whiskey: {
+    key: 'whiskey',
+    displayName: 'WhiskeyKeeper',
+    shortName: 'Whiskey',
+    singularName: 'Bottle',
+    route: '/Whiskey',
+    accent: '#A35C5C',
+    accentSoft: 'rgba(163,92,92,0.18)',
+    border: 'rgba(163,92,92,0.30)',
+    icon: Wine,
+    collectionLabel: 'Bottle Collection',
+    itemLabel: 'Bottle',
+    itemLabelPlural: 'Bottles',
+  },
+
+  cigar: {
+    key: 'cigar',
+    displayName: 'CigarKeeper',
+    shortName: 'Cigars',
+    singularName: 'Cigar',
+    route: '/Cigars',
+    accent: '#8C6B3F',
+    accentSoft: 'rgba(140,107,63,0.18)',
+    border: 'rgba(140,107,63,0.30)',
+    icon: Cigarette,
+    collectionLabel: 'Cigar Collection',
+    itemLabel: 'Cigar',
+    itemLabelPlural: 'Cigars',
+  },
+
+  coffee: {
+    key: 'coffee',
+    displayName: 'CoffeeKeeper',
+    shortName: 'Coffee',
+    singularName: 'Coffee',
+    route: '/Coffee',
+    accent: '#7A5C46',
+    accentSoft: 'rgba(122,92,70,0.18)',
+    border: 'rgba(122,92,70,0.28)',
+    icon: Coffee,
+    collectionLabel: 'Coffee Collection',
+    itemLabel: 'Coffee',
+    itemLabelPlural: 'Coffees',
+  },
 };
 
-export const MODULE_LIST = [
-  MODULES.PIPEKEEPER,
-  MODULES.WHISKEYKEEPER,
-  MODULES.CIGARKEEPER,
-  MODULES.WINEKEEPER,
-];
-
-export const MODULE_DISPLAY_NAMES = {
-  [MODULES.PIPEKEEPER]: 'PipeKeeper',
-  [MODULES.WHISKEYKEEPER]: 'WhiskeyKeeper',
-  [MODULES.CIGARKEEPER]: 'CigarKeeper',
-  [MODULES.WINEKEEPER]: 'WineKeeper',
-};
-
-export const MODULE_I18N_KEYS = {
-  [MODULES.PIPEKEEPER]: 'modules.pipekeeper',
-  [MODULES.WHISKEYKEEPER]: 'modules.whiskeykeeper',
-  [MODULES.CIGARKEEPER]: 'modules.cigarkeeper',
-  [MODULES.WINEKEEPER]: 'modules.winekeeper',
-};
-
-/**
- * Get current active modules (those available in the app)
- * Use this to support partial ecosystem launches
- */
-export function getActiveModules() {
-  // For now, all 4 modules are active
-  // In the future, filter based on feature flags or remote config
-  return MODULE_LIST;
+export function getModuleConfig(moduleKey) {
+  const key = String(moduleKey || '').trim().toLowerCase();
+  return MODULES[key] || {
+    key: key || 'unknown',
+    displayName: 'CollectionKeeper',
+    shortName: 'Collection',
+    singularName: 'Item',
+    route: '/',
+    accent: '#8B7355',
+    accentSoft: 'rgba(139,115,85,0.18)',
+    border: 'rgba(139,115,85,0.28)',
+    icon: Package,
+    collectionLabel: 'Collection',
+    itemLabel: 'Item',
+    itemLabelPlural: 'Items',
+  };
 }
 
-/**
- * Check if a module is currently enabled
- */
-export function isModuleActive(module) {
-  return getActiveModules().includes(module);
+export function getModuleDisplayName(moduleKey) {
+  return getModuleConfig(moduleKey).displayName;
 }
 
-/**
- * Get display name for a module
- */
-export function getModuleDisplayName(module) {
-  return MODULE_DISPLAY_NAMES[module] || module;
+export function getModuleShortName(moduleKey) {
+  return getModuleConfig(moduleKey).shortName;
 }
 
-/**
- * Get i18n key for a module
- */
-export function getModuleI18nKey(module) {
-  return MODULE_I18N_KEYS[module] || `modules.${module}`;
+export function getModuleSingularName(moduleKey) {
+  return getModuleConfig(moduleKey).singularName;
 }
 
-/**
- * Get all currently active module display names
- */
-export function getActiveModuleDisplayNames() {
-  return getActiveModules().map(m => getModuleDisplayName(m));
+export function getModuleRoute(moduleKey) {
+  return getModuleConfig(moduleKey).route;
+}
+
+export function getModuleAccent(moduleKey) {
+  return getModuleConfig(moduleKey).accent;
+}
+
+export function getModuleIcon(moduleKey) {
+  return getModuleConfig(moduleKey).icon;
+}
+
+export function getAllModuleConfigs() {
+  return Object.values(MODULES);
+}
+
+export function normalizeModuleKey(moduleKey) {
+  const key = String(moduleKey || '').trim().toLowerCase();
+  return MODULES[key] ? key : null;
+}
+
+export function isKnownModule(moduleKey) {
+  return !!normalizeModuleKey(moduleKey);
 }
