@@ -231,7 +231,8 @@ Deno.serve(async (req) => {
     const narrative = buildNarrative({
       pipes: pipesList.length,
       blends: blendsList.length,
-      bottles: bottlesList.length,
+      bottleTypes,
+      totalBottles,
       mostUsedPipe,
       mostTastedBottle,
       dominantBlendType,
@@ -247,7 +248,10 @@ Deno.serve(async (req) => {
         totalValue: Math.round(totalValue),
         pipes: pipesList.length,
         blends: blendsList.length,
-        bottles: bottlesList.length,
+        // Explicit dual metrics — consumers should use these, not the legacy 'bottles' field
+        bottleTypes,     // distinct bottle records / unique labels
+        totalBottles,    // actual physical bottle inventory count
+        bottles: bottleTypes, // legacy alias — equals bottleTypes
         totalSessions: logsList.length,
       },
       highlights: {
