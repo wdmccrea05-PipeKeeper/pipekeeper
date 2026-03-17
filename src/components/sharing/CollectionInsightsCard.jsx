@@ -134,16 +134,25 @@ const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hu
             </div>
           ) : null}
 
-          {variant === 'hub' && summary?.highlights?.mostValuedBottle ? (
-            <div>
-              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: 'rgba(180,140,75,0.8)' }}>
-                Collection Highlight
+          {variant === 'hub' && summary?.highlights?.mostValuedBottle ? (() => {
+            const bottle = summary.highlights.mostValuedBottle;
+            const typeLabel =
+              bottle?.category === 'wine'
+                ? 'Top Wine'
+                : bottle?.category === 'whiskey'
+                ? 'Top Whiskey'
+                : 'Collection Highlight';
+            return (
+              <div>
+                <div className="text-xs uppercase tracking-wider mb-1" style={{ color: 'rgba(180,140,75,0.8)' }}>
+                  {typeLabel}
+                </div>
+                <div className="font-semibold text-sm" style={{ color: '#F5F1E7' }}>
+                  {bottle.name}
+                </div>
               </div>
-              <div className="font-semibold text-sm" style={{ color: '#F5F1E7' }}>
-                {summary.highlights.mostValuedBottle.name}
-              </div>
-            </div>
-          ) : null}
+            );
+          })() : null}
         </div>
 
         <div className="text-center text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>
