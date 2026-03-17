@@ -282,9 +282,9 @@ export default function WhiskeyKeeperModule() {
             <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
               {totalBottles}
             </p>
-            {inventoryUnits.length > 0 && (openBottles > 0 || unopenedBottles > 0) && (
+            {inventoryUnits.length > 0 && (openBottles > 0 || sealedBottles > 0) && (
               <p className="text-xs" style={{ color: 'rgba(139,115,85,0.65)' }}>
-                {openBottles} open · {unopenedBottles} sealed
+                {openBottles} open · {sealedBottles} sealed
               </p>
             )}
           </div>
