@@ -587,7 +587,7 @@ export default function ProfilePage() {
             {/* Basic */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-stone-700 font-medium break-words">{t("profileExtended.displayName")}</Label>
+                <Label className="font-medium break-words" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.displayName")}</Label>
                 <Input
                   value={formData.display_name}
                   onChange={(e) => setFormData((p) => ({ ...p, display_name: e.target.value }))}
