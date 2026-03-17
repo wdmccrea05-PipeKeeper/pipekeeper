@@ -59,15 +59,17 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
 
     try {
       // Call intelligent recommendation backend
+      const enabledModules = getAIEligibleModuleIds(moduleStates);
       const result = await base44.functions.invoke('generateSessionRecommendation', {
         pipes,
         blends,
-        bottles,
+        bottles,   // already filtered by Hub via buildAIEligibleCollection
         tasteProfile,
         userProfile: profile,
         mode,
         previousPairings: [],
         sessionHistory, // Pass recent recommendations to avoid repetition
+        enabledModules, // Server-side safety net
       });
 
       if (result?.data) {
