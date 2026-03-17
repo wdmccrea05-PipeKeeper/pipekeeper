@@ -227,6 +227,7 @@ export async function aggregateCollection(userEmail) {
           id: mostValuedBottle.id,
           name: mostValuedBottle.name,
           value: getBottleValue(mostValuedBottle),
+          category: mostValuedBottle.type?.toLowerCase().includes('wine') ? 'wine' : 'whiskey',
         } : null,
         oldestBottle,
         oldestPipe,
