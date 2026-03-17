@@ -16,6 +16,7 @@ import {
   getEnabledModules,
   getComingSoonModules,
 } from '@/components/keeper-core';
+import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 
 export default function CollectionHub() {
   const { t } = useTranslation();
