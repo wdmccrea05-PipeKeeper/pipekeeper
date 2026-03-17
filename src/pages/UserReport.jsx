@@ -461,11 +461,11 @@ export default function UserReport() {
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={growthLastEightWeeks}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="week" tick={{ fill: '#374151', fontSize: 12 }} />
-                <YAxis tick={{ fill: '#374151', fontSize: 12 }} />
-                <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #d1d5db', color: '#111' }} />
-                <Legend wrapperStyle={{ color: '#374151' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(139,98,57,0.3)" />
+                <XAxis dataKey="week" tick={{ fill: '#E0D8C8', fontSize: 12 }} />
+                <YAxis tick={{ fill: '#E0D8C8', fontSize: 12 }} />
+                <Tooltip contentStyle={{ backgroundColor: '#2a1f18', border: '1px solid rgba(139,98,57,0.5)', color: '#F5F1E7' }} />
+                <Legend wrapperStyle={{ color: '#E0D8C8' }} />
                 <Bar dataKey="newUsers" fill="#374151" name={t("userReport.newUsers")} />
                 <Bar dataKey="newPaidSubscribers" fill="#6b7280" name={t("userReport.newPaid")} />
                 <Bar dataKey="newProSubscribers" fill="#9ca3af" name={t("userReport.newPro")} />
