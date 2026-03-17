@@ -7,6 +7,7 @@
 
 import { aggregateCollection } from '../aggregation/collectionAggregation';
 import { getHubContributorModules } from '../modules/keeperModules';
+import { isModuleAIEligible } from '@/components/utils/moduleAccess';
 
 /**
  * Get summary for a single module (legacy - delegates to unified layer)
