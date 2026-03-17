@@ -227,8 +227,8 @@ export default function UserReport() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card 
-          className={`bg-white border-gray-200 cursor-pointer transition-all hover:shadow-lg ${
-            viewFilter === 'all' ? 'ring-2 ring-gray-800' : ''
+          className={`cursor-pointer transition-all hover:shadow-lg ${
+            viewFilter === 'all' ? 'ring-2 ring-[#B48C4B]' : ''
           }`}
           onClick={() => {
             setViewFilter('all');
