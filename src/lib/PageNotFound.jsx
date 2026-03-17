@@ -55,8 +55,8 @@ export default function PageNotFound({}) {
                                     <div className="w-2 h-2 rounded-full bg-orange-400"></div>
                                 </div>
                                 <div className="text-left space-y-1">
-                                    <p className="text-sm font-medium text-slate-700">{t("error.adminNote")}</p>
-                                    <p className="text-sm text-slate-600 leading-relaxed overflow-wrap break-words">
+                                    <p className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.9)' }}>{t("error.adminNote")}</p>
+                                        <p className="text-sm leading-relaxed overflow-wrap break-words" style={{ color: 'rgba(224,216,200,0.65)' }}>
                                         {t("error.adminNoteDescription")}
                                     </p>
                                 </div>
