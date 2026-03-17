@@ -1,109 +1,177 @@
 /**
- * MODULE ACCESS CONTROL
- * Defines the module subscription architecture for CollectionKeeper.
+ * moduleAccess — centralized module access utilities for CollectionKeeper.
  *
- * Pricing model:
- * - $29.99/year per individual module
- * - $79.99/year bundle (when 3+ modules are available)
+ * Separates four distinct concepts:
  *
- * Access rules:
- * - Pro / Premium subscribers: all modules unlocked
- * - Free users: limited to read-only preview
- * - Admin users: all modules always unlocked
+ *   A. Module EXISTS      — the platform supports it (has a route + launched)
+ *   B. Module ENABLED     — the user has it visible/active in preferences
+ *   C. Module PAID        — the user has Pro/paid access for that module
+ *   D. Module AI-ELIGIBLE — enabled AND can contribute to AI/stories/pairings/insights
+ *
+ * These are intentionally separate. A paid-but-hidden module is still paid,
+ * but must not appear in UI, AI, stories, or Hub aggregation.
+ * A free-but-enabled module DOES participate in AI and cross-module logic.
+ *
+ * Single source of truth — import from here, not from scattered local checks.
  */
 
-export const MODULES = {
-  PIPEKEEPER: 'pipekeeper',
-  WHISKEYKEEPER: 'whiskeykeeper',
-  CIGARKEEPER: 'cigarkeeper', // future
-};
+import { KEEPER_MODULES } from '@/components/hub/keeperModuleRegistry';
+import { deriveModuleStates, LAUNCHED_MODULES } from '@/components/hooks/useModuleVisibility';
 
-// Modules currently available in the platform
-export const ENABLED_MODULES = [MODULES.PIPEKEEPER, MODULES.WHISKEYKEEPER];
-
-// Modules planned but not yet released
-export const COMING_SOON_MODULES = [MODULES.CIGARKEEPER];
-
-// Per-module pricing
-export const MODULE_PRICE_ANNUAL = 29.99;
-export const BUNDLE_PRICE_ANNUAL = 79.99;
-export const BUNDLE_MODULE_THRESHOLD = 3; // bundle kicks in when this many modules exist
+// ─── A. Module EXISTS ────────────────────────────────────────────────────────
 
 /**
- * Determines if a user has access to a specific module.
- *
- * Current policy: All paid users (Pro/Premium) have access to all enabled modules.
- * Future: individual module subscriptions will be checked here.
- *
- * @param {string} moduleName - One of MODULES.*
- * @param {object} user - Current user object
- * @param {object} subscription - Current subscription object
- * @returns {boolean}
+ * Returns true if the platform has launched this module (has a route).
  */
-export function hasModuleAccess(moduleName, user, subscription) {
-  // Admins always have full access
-  if (user?.role === 'admin') return true;
-
-  // Coming-soon modules are never accessible
-  if (COMING_SOON_MODULES.includes(moduleName)) return false;
-
-  // Non-enabled modules are not accessible
-  if (!ENABLED_MODULES.includes(moduleName)) return false;
-
-  // Check paid access via canonical entitlement resolver
-  // Import lazily to avoid circular deps
-  const entitlementTier = getEntitlementTierSync(user, subscription);
-  return entitlementTier !== 'free';
+export function moduleExists(moduleId) {
+  const m = KEEPER_MODULES.find(k => k.moduleKey === moduleId);
+  return !!m?.enabled; // enabled=true means platform-launched
 }
 
 /**
- * Inline sync tier resolver (avoids circular import with premiumAccess.js)
+ * All platform-launched module IDs.
  */
-function getEntitlementTierSync(user, subscription) {
-  if (user?.role === 'admin') return 'pro';
+export function getLaunchedModuleIds() {
+  return LAUNCHED_MODULES;
+}
 
-  const normTier = (raw) => {
-    const t = String(raw || '').trim().toLowerCase();
-    if (t === 'pro' || t === 'premium' || t === 'paid') return 'pro';
-    return 'free';
-  };
+// ─── B. Module ENABLED (user preference) ────────────────────────────────────
 
-  // User-level entitlement (most authoritative)
-  const fromUser =
-    user?.entitlement_tier ??
-    user?.subscription_tier ??
-    user?.plan;
-  if (normTier(fromUser) !== 'free') return normTier(fromUser);
-
-  // Subscription-level
-  if (subscription?.status === 'active' || subscription?.status === 'trialing') {
-    const fromSub = subscription?.tier ?? subscription?.plan;
-    if (normTier(fromSub) !== 'free') return normTier(fromSub);
-  }
-
-  return 'free';
+/**
+ * Returns true if the user has this module visible/active.
+ * Reads from a derived module states object (from deriveModuleStates).
+ *
+ * @param {string} moduleId
+ * @param {object} moduleStates — from deriveModuleStates(profile) or useModuleVisibility
+ */
+export function isModuleEnabled(moduleId, moduleStates) {
+  if (!moduleStates) return true; // safe default if states not yet loaded
+  return moduleStates[moduleId] !== false;
 }
 
 /**
- * Returns a module lock state object for UI rendering.
+ * Returns array of enabled module IDs.
  */
-export function getModuleLockState(moduleName, user, subscription) {
-  const accessible = hasModuleAccess(moduleName, user, subscription);
-  const isComingSoon = COMING_SOON_MODULES.includes(moduleName);
+export function getEnabledModuleIds(moduleStates) {
+  if (!moduleStates) return [...LAUNCHED_MODULES];
+  return Object.keys(moduleStates).filter(k => moduleStates[k] === true);
+}
 
+/**
+ * Returns array of enabled module registry objects.
+ */
+export function getEnabledModules(moduleStates) {
+  return KEEPER_MODULES.filter(m => m.enabled && isModuleEnabled(m.moduleKey, moduleStates));
+}
+
+// ─── C. Module PAID ──────────────────────────────────────────────────────────
+
+/**
+ * PipeKeeper is always included (core module).
+ * WhiskeyKeeper is available free (basic) or paid (full features).
+ * In practice, "paid" means the user has premium/pro entitlement.
+ *
+ * For now, this is a pass-through — entitlement is handled by useCurrentUser.
+ * This utility exists to make the concept explicit and allow future per-module pricing.
+ *
+ * @param {string} moduleId
+ * @param {object} entitlements — { hasPaid, hasPro, hasPremium }
+ */
+export function isModulePaid(moduleId, entitlements) {
+  if (!entitlements) return false;
+  const { hasPaid, hasPro, hasPremium } = entitlements;
+  // All launched modules are accessible free; paid = premium/pro unlocks advanced features
+  // PipeKeeper core is always free; whiskey is also accessible free (basic)
+  return !!(hasPaid || hasPro || hasPremium);
+}
+
+/**
+ * Returns IDs of modules the user has paid access for.
+ */
+export function getPaidModuleIds(entitlements) {
+  if (!entitlements || !(entitlements.hasPaid || entitlements.hasPro || entitlements.hasPremium)) return [];
+  return getLaunchedModuleIds(); // All modules share the same subscription tier currently
+}
+
+// ─── D. Module AI-ELIGIBLE ───────────────────────────────────────────────────
+
+/**
+ * A module is AI-eligible if:
+ *   - The platform has launched it
+ *   - The user has it enabled (visible/active)
+ *   - NOT locked/hidden
+ *
+ * NOTE: Free modules CAN be AI-eligible. The rule is enablement, not payment.
+ *
+ * @param {string} moduleId
+ * @param {object} moduleStates — from deriveModuleStates(profile) or useModuleVisibility
+ */
+export function isModuleAIEligible(moduleId, moduleStates) {
+  return moduleExists(moduleId) && isModuleEnabled(moduleId, moduleStates);
+}
+
+/**
+ * Returns array of AI-eligible module IDs (enabled + platform-launched).
+ * These are the modules that can contribute to:
+ *   - Curator context
+ *   - Tonight's Session
+ *   - Collection Story
+ *   - Hub aggregation totals
+ *   - Share cards
+ *   - Cross-module recommendations
+ */
+export function getAIEligibleModuleIds(moduleStates) {
+  return getLaunchedModuleIds().filter(id => isModuleAIEligible(id, moduleStates));
+}
+
+/**
+ * Returns array of AI-eligible module registry objects.
+ */
+export function getAIEligibleModules(moduleStates) {
+  return KEEPER_MODULES.filter(m => m.enabled && isModuleAIEligible(m.moduleKey, moduleStates));
+}
+
+// ─── VISIBILITY (combined check) ─────────────────────────────────────────────
+
+/**
+ * A module is visible if it exists AND is enabled by the user.
+ * This is the guard used for routing and UI rendering.
+ */
+export function isModuleVisible(moduleId, moduleStates) {
+  return moduleExists(moduleId) && isModuleEnabled(moduleId, moduleStates);
+}
+
+// ─── DATA FILTERING HELPERS ───────────────────────────────────────────────────
+
+/**
+ * Filter a data set based on whether a module is AI-eligible.
+ * Returns the original array if the module is eligible, empty array if not.
+ *
+ * Usage:
+ *   const eligibleBottles = filterByModuleEligibility('whiskeykeeper', moduleStates, bottles);
+ */
+export function filterByModuleEligibility(moduleId, moduleStates, data) {
+  if (!isModuleAIEligible(moduleId, moduleStates)) return [];
+  return Array.isArray(data) ? data : [];
+}
+
+/**
+ * Build a module-filtered collection context for AI/story/recommendations.
+ * Returns { pipes, blends, bottles } with non-eligible data zeroed out.
+ *
+ * @param {object} moduleStates
+ * @param {object} collections — { pipes, blends, bottles }
+ */
+export function buildAIEligibleCollection(moduleStates, collections) {
+  const { pipes = [], blends = [], bottles = [] } = collections;
   return {
-    isLocked: !accessible && !isComingSoon,
-    isComingSoon,
-    isAccessible: accessible,
-    upgradeMessage: `Unlock ${getModuleDisplayName(moduleName)} — Subscribe for $${MODULE_PRICE_ANNUAL}/year`,
+    pipes: isModuleAIEligible('pipekeeper', moduleStates) ? pipes : [],
+    blends: isModuleAIEligible('pipekeeper', moduleStates) ? blends : [], // blends belong to pipekeeper
+    bottles: isModuleAIEligible('whiskeykeeper', moduleStates) ? bottles : [],
   };
 }
 
-export function getModuleDisplayName(moduleName) {
-  const names = {
-    [MODULES.PIPEKEEPER]: 'PipeKeeper',
-    [MODULES.WHISKEYKEEPER]: 'WhiskeyKeeper',
-    [MODULES.CIGARKEEPER]: 'CigarKeeper',
-  };
-  return names[moduleName] || moduleName;
-}
+/**
+ * Derive module states from a raw profile object (re-export for convenience).
+ */
+export { deriveModuleStates };
