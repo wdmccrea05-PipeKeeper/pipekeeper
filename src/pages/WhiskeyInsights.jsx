@@ -54,8 +54,12 @@ export default function WhiskeyInsightsPage() {
     enabled: !!user?.email,
   });
 
-  // Compute insights metrics
-  const totalBottles = useMemo(() => bottles.length, [bottles]);
+  // Canonical dual bottle metrics
+  const bottleTypes = useMemo(() => bottles.length, [bottles]); // distinct labels
+  const totalBottles = useMemo(() => {
+    if (inventoryUnits.length > 0) return inventoryUnits.length;
+    return bottles.reduce((sum, b) => sum + (Number(b.bottle_count) || 1), 0);
+  }, [bottles, inventoryUnits]);
   const openBottles = useMemo(() => inventoryUnits.filter(u => u.status === 'open').length, [inventoryUnits]);
   const sealedBottles = useMemo(() => inventoryUnits.filter(u => u.status === 'reserve' || u.status === 'drinking').length, [inventoryUnits]);
   const totalTastings = useMemo(() => tastingLogs.length, [tastingLogs]);
