@@ -289,27 +289,27 @@ export default function UserReport() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-gray-200">
+        <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
               {t("userReport.paidPercentage")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-black">{summary.paid_percentage}%</p>
+            <p className="text-3xl font-bold text-[#F5F1E7]">{summary.paid_percentage}%</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-gray-200">
+        <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2">
               <UserPlus className="w-4 h-4" />
               {t("userReport.new7Days")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-black">{metricsLoading ? '...' : trialMetrics.newSignupsLast7d || 0}</p>
+            <p className="text-3xl font-bold text-[#F5F1E7]">{metricsLoading ? '...' : trialMetrics.newSignupsLast7d || 0}</p>
           </CardContent>
         </Card>
 
