@@ -411,38 +411,38 @@ export default function UserReport() {
 
       {/* Trials Panel */}
       {adminMetrics && !metricsLoading && (
-        <Card className="bg-white/95 border-[#e8d5b7]/30 mb-6">
+        <Card className="bg-white border-gray-200 mb-6">
           <CardHeader className="pb-3">
-            <CardTitle className="text-stone-800 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-orange-600" />
+            <CardTitle className="text-black flex items-center gap-2">
+              <Clock className="w-5 h-5 text-gray-600" />
               {t("userReport.trialMetrics")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              <div className="p-3 bg-orange-50 rounded-lg border border-orange-100">
-                <p className="text-xs text-orange-600 font-medium truncate">{t("userReport.currentlyOnTrial")}</p>
-                <p className="text-2xl font-bold text-orange-800">{trialMetrics.currentlyOnTrial || 0}</p>
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.currentlyOnTrial")}</p>
+                <p className="text-2xl font-bold text-black">{trialMetrics.currentlyOnTrial || 0}</p>
               </div>
-              <div className="p-3 bg-red-50 rounded-lg border border-red-100">
-                <p className="text-xs text-red-600 font-medium truncate">{t("userReport.endingIn3Days")}</p>
-                <p className="text-2xl font-bold text-red-800">{trialMetrics.endingIn3Days || 0}</p>
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.endingIn3Days")}</p>
+                <p className="text-2xl font-bold text-black">{trialMetrics.endingIn3Days || 0}</p>
               </div>
-              <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
-                <p className="text-xs text-yellow-600 font-medium truncate">{t("userReport.endingIn7Days")}</p>
-                <p className="text-2xl font-bold text-yellow-800">{trialMetrics.endingIn7Days || 0}</p>
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.endingIn7Days")}</p>
+                <p className="text-2xl font-bold text-black">{trialMetrics.endingIn7Days || 0}</p>
               </div>
-              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                <p className="text-xs text-blue-600 font-medium truncate">{t("userReport.avgDaysRemaining")}</p>
-                <p className="text-2xl font-bold text-blue-800">{trialMetrics.avgDaysRemaining || 0}</p>
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.avgDaysRemaining")}</p>
+                <p className="text-2xl font-bold text-black">{trialMetrics.avgDaysRemaining || 0}</p>
               </div>
-              <div className="p-3 bg-green-50 rounded-lg border border-green-100">
-                <p className="text-xs text-green-600 font-medium truncate">{t("userReport.converted30d")}</p>
-                <p className="text-2xl font-bold text-green-800">{trialMetrics.convertedLast30d || 0}</p>
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.converted30d")}</p>
+                <p className="text-2xl font-bold text-black">{trialMetrics.convertedLast30d || 0}</p>
               </div>
-              <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
-                <p className="text-xs text-rose-600 font-medium truncate">{t("userReport.dropoffs30d")}</p>
-                <p className="text-2xl font-bold text-rose-800">{trialMetrics.dropoffLast30d || 0}</p>
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.dropoffs30d")}</p>
+                <p className="text-2xl font-bold text-black">{trialMetrics.dropoffLast30d || 0}</p>
               </div>
             </div>
           </CardContent>
