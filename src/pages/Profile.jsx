@@ -87,6 +87,11 @@ function consolidateProfiles(rows = []) {
     strength_preference: pick(acc.strength_preference, row.strength_preference),
     notes: pick(acc.notes, row.notes),
     whiskey_preferences: acc.whiskey_preferences || row.whiskey_preferences || null,
+    pipekeeper_enabled: pickBool(acc.pipekeeper_enabled, row.pipekeeper_enabled),
+    whiskeykeeper_enabled: pickBool(acc.whiskeykeeper_enabled, row.whiskeykeeper_enabled),
+    winekeeper_enabled: pickBool(acc.winekeeper_enabled, row.winekeeper_enabled),
+    cigarkeeper_enabled: pickBool(acc.cigarkeeper_enabled, row.cigarkeeper_enabled),
+    module_preferences_set: pickBool(acc.module_preferences_set, row.module_preferences_set),
   }), {});
 
   return { masterId: master?.id || null, merged };
