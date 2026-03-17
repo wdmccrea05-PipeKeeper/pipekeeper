@@ -40,8 +40,8 @@ export default function CollectionHub() {
     (async () => {
       try {
         setLoading(true);
-        // Uses Keeper Core service for user-scoped aggregation
-        const collectionSummary = await getCollectionHubSummary(user.email);
+        // Pass moduleStates so hidden modules are excluded from Hub totals
+        const collectionSummary = await getCollectionHubSummary(user.email, moduleStates || null);
 
         if (!cancelled) {
           setSummary(collectionSummary);
