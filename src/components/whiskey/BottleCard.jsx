@@ -5,6 +5,33 @@ import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
 
+function ValueBadge({ bottle }) {
+  const value =
+    Number(
+      bottle?.collector_value ??
+      bottle?.aftermarket_price ??
+      bottle?.retail_price ??
+      bottle?.average_market_value ??
+      bottle?.purchase_price ??
+      0
+    ) || 0;
+
+  if (!value) return null;
+
+  return (
+    <span
+      className="px-2 py-1 rounded-full text-xs font-semibold"
+      style={{
+        background: 'rgba(46,125,92,0.18)',
+        border: '1px solid rgba(46,125,92,0.35)',
+        color: '#7ED6A7',
+      }}
+    >
+      ${value.toFixed(0)}
+    </span>
+  );
+}
+
 function InventoryBadges({ bottleId }) {
   const { data: units = [] } = useQuery({
     queryKey: ['inventory-units', bottleId],
