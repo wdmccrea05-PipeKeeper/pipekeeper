@@ -232,15 +232,15 @@ export default function Layout({ children, currentPageName }) {
 
   const navItems = useMemo(() => [
     { name: t("nav.hub"), page: "CollectionHub", icon: Home, isIconComponent: true },
-    { name: t("nav.pipekeeper"), page: "PipeKeeper", icon: PIPE_ICON, isIconComponent: false },
-    { name: t("nav.whiskeykeeper"), page: "WhiskeyKeeper", icon: WhiskeyBottleIcon, isIconComponent: true },
+    ...(isModuleEnabled('pipes') ? [{ name: t("nav.pipekeeper"), page: "PipeKeeper", icon: PIPE_ICON, isIconComponent: false }] : []),
+    ...(isModuleEnabled('whiskey') ? [{ name: t("nav.whiskeykeeper"), page: "WhiskeyKeeper", icon: WhiskeyBottleIcon, isIconComponent: true }] : []),
     { name: t("nav.curator"), page: "Curator", icon: Target, isIconComponent: true },
     ...(FEATURES.community
       ? [{ name: t("nav.community"), page: "Community", icon: Users, isIconComponent: true, isPremium: true }]
       : []),
     { name: t("nav.profile"), page: "Profile", icon: User, isIconComponent: true },
     { name: t("nav.help"), page: "HelpCenter", icon: HelpCircle, isIconComponent: true },
-  ], [lang]);
+  ], [lang, isModuleEnabled]);
 
   const PUBLIC_PAGES = useMemo(
     () =>
