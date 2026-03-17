@@ -151,12 +151,13 @@ Deno.serve(async (req) => {
     const includeWhiskey = enabledModules.includes('whiskeykeeper');
 
     // Fetch only AI-eligible module data in parallel
-    const [pipes, blends, bottles, logs, tastingLogs] = await Promise.all([
+    const [pipes, blends, bottles, logs, tastingLogs, inventoryUnits] = await Promise.all([
       includePipes ? base44.entities.Pipe.filter({ created_by: user.email }, '-created_date', 500) : Promise.resolve([]),
       includePipes ? base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-created_date', 500) : Promise.resolve([]),
       includeWhiskey ? base44.entities.Bottle.filter({ created_by: user.email }, '-created_date', 500) : Promise.resolve([]),
       includePipes ? base44.entities.SmokingLog.filter({ created_by: user.email }, '-date', 500) : Promise.resolve([]),
       includeWhiskey ? base44.entities.TastingLog.filter({ created_by: user.email }, '-tasting_date', 500) : Promise.resolve([]),
+      includeWhiskey ? base44.entities.WhiskeyInventoryUnit.filter({ created_by: user.email }) : Promise.resolve([]),
     ]);
 
     const pipesList = Array.isArray(pipes) ? pipes : [];
