@@ -143,15 +143,7 @@ const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hu
         {/* Header */}
         <div className="px-8 pt-8 pb-6 text-center space-y-4">
           <div className="flex justify-center">
-            <div
-              className="p-2.5 rounded-xl"
-              style={{
-                background: 'rgba(180,140,75,0.10)',
-                border: '1px solid rgba(180,140,75,0.25)',
-              }}
-            >
-              <BrandLogo showWordmark={false} compact imageClassName="w-10 h-10" />
-            </div>
+            <BrandLogo showWordmark={false} imageClassName="w-14 h-14" />
           </div>
           <div>
             <h2
