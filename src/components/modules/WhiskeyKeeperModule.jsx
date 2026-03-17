@@ -36,7 +36,7 @@ export default function WhiskeyKeeperModule() {
 
   // Module navigation
   const moduleNav = [
-    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: WhiskeyBottleIconSvg },
+    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', iconImage: WK_LOGO },
     { name: t('nav.tastingNotes') || 'Tastings', path: '/Tastings', icon: BookOpen },
     { name: t('nav.insights') || 'Insights', path: '/WhiskeyInsights', icon: TrendingUp },
     { name: t('nav.analytics') || 'Analytics', path: '/WhiskeyAnalytics', icon: BarChart3 },
