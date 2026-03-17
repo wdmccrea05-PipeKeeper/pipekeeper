@@ -16,7 +16,9 @@ export default function ModuleNav({ items, currentPath }) {
       {items.map((item) => {
         const isActive = currentPath === item.path;
         const Icon = item.icon;
-        const isImageIcon = typeof item.icon === 'string';
+        // Support both item.iconImage (explicit URL) and item.icon (string URL or component)
+        const iconUrl = item.iconImage || (typeof item.icon === 'string' ? item.icon : null);
+        const isImageIcon = !!iconUrl;
         return (
           <button
             key={item.path}
@@ -33,18 +35,14 @@ export default function ModuleNav({ items, currentPath }) {
           >
             {isImageIcon ? (
               <img
-                src={Icon}
+                src={iconUrl}
                 alt={item.name}
                 className="w-4 h-4 object-contain"
-                style={{
-                  filter: isActive
-                    ? "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.95)"
-                    : "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.85) opacity(0.7)",
-                }}
+                style={{ mixBlendMode: 'screen', opacity: isActive ? 1 : 0.7 }}
               />
-            ) : (
+            ) : Icon ? (
               <Icon className="w-4 h-4" />
-            )}
+            ) : null}
             {item.name}
           </button>
         );
