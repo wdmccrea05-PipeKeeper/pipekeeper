@@ -87,7 +87,15 @@ const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hu
       >
         <div className="text-center space-y-3">
           <div className="flex justify-center">
-            <BrandLogo compact showWordmark={false} imageClassName="w-12 h-12" />
+            <div
+              className="p-2 rounded-xl"
+              style={{
+                background: 'rgba(180,140,75,0.10)',
+                border: '1px solid rgba(180,140,75,0.25)',
+              }}
+            >
+              <BrandLogo showWordmark={false} compact imageClassName="w-10 h-10" />
+            </div>
           </div>
           <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#F5F1E7' }}>
             {variant === 'whiskey' ? 'Whiskey Insights' : variant === 'pipekeeper' ? 'PipeKeeper Insights' : 'Collection Insights'}
