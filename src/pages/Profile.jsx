@@ -515,7 +515,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex gap-2">
-                <Button variant="outline" onClick={handleLogout} className="text-stone-700 hover:text-stone-900">
+                <Button variant="outline" onClick={handleLogout}>
                   <LogOut className="w-4 h-4 mr-2" />
                   {t("profile.logout")}
                 </Button>
