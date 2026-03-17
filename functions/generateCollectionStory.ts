@@ -147,7 +147,7 @@ Deno.serve(async (req) => {
     const [pipes, blends, bottles, logs, tastingLogs] = await Promise.all([
       includePipes ? base44.entities.Pipe.filter({ created_by: user.email }) : Promise.resolve([]),
       includePipes ? base44.entities.TobaccoBlend.filter({ created_by: user.email }) : Promise.resolve([]),
-      includeWhiskey ? base44.entities.Bottle.filter({ created_by: user.email }) : Promise.resolve([]),
+      includeWhiskey ? base44.entities.Bottle.filter({ created_by: user.email }, '-created_date', 500) : Promise.resolve([]),
       includePipes ? base44.entities.SmokingLog.filter({ created_by: user.email }) : Promise.resolve([]),
       includeWhiskey ? base44.entities.TastingLog.filter({ created_by: user.email }) : Promise.resolve([]),
     ]);
