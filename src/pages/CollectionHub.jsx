@@ -13,9 +13,9 @@ import CollectionIntelligencePanel from '@/components/hub/CollectionIntelligence
 import { useTasteProfile } from '@/components/curator/useTasteProfile';
 import {
   getCollectionHubSummary,
-  getEnabledModules,
   getComingSoonModules,
 } from '@/components/keeper-core';
+import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
 
 export default function CollectionHub() {
   const { t } = useTranslation();
