@@ -253,7 +253,13 @@ export default function CollectionIntelligencePanel({ pipes = [], blends = [], b
             label={insight.label}
             detail={insight.detail}
             color={insight.color}
-            onClick={() => navigate('/Curator?prompt=' + encodeURIComponent(insight.prompt))}
+            onClick={() => {
+              if (insight.isBottleInsight && insight.bottleId) {
+                navigate(`/BottleDetail?bottleId=${insight.bottleId}`);
+              } else {
+                navigate('/Curator?prompt=' + encodeURIComponent(insight.prompt));
+              }
+            }}
           />
         ))}
       </div>
