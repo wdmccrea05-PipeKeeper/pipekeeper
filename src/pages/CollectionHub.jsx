@@ -341,11 +341,11 @@ export default function CollectionHub() {
       {/* Curator Section (with ecosystem context) */}
       <CuratorHub summary={summary} recentActivities={recentActivities} />
 
-      {/* Collection Intelligence */}
+      {/* Collection Intelligence — only AI-eligible module data */}
       <CollectionIntelligencePanel
-        pipes={pipes}
-        blends={blends}
-        bottles={bottles}
+        pipes={aiCollection.pipes}
+        blends={aiCollection.blends}
+        bottles={aiCollection.bottles}
         logs={smokingLogs}
         profile={hubProfile}
         tasteProfile={tasteProfile}
