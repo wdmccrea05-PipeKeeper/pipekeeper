@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Leaf, BookOpen, TrendingUp } from 'lucide-react';
+import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 
 const PIPE_ICON_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
