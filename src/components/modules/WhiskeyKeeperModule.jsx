@@ -73,6 +73,22 @@ export default function WhiskeyKeeperModule() {
     staleTime: 10000,
   });
 
+  // Dual bottle metrics — the canonical distinction
+  const bottleTypes = bottles.length; // Distinct bottle records / unique labels
+  const totalBottles = useMemo(() => {
+    if (inventoryUnits.length > 0) return inventoryUnits.length;
+    // Legacy fallback: sum bottle_count fields
+    return bottles.reduce((sum, b) => sum + (Number(b?.bottle_count) || 1), 0);
+  }, [bottles, inventoryUnits]);
+
+  const openBottles = useMemo(() =>
+    inventoryUnits.filter(u => u.status === 'open').length,
+  [inventoryUnits]);
+
+  const unopenedBottles = useMemo(() =>
+    inventoryUnits.filter(u => u.status === 'reserve' || u.status === 'drinking').length,
+  [inventoryUnits]);
+
   // Calculate metrics — prefer average_market_value * bottle count, fallback to purchase_price
   const totalBottleValue = useMemo(() => {
     return bottles.reduce((sum, b) => {
