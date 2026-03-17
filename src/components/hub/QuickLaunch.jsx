@@ -117,7 +117,7 @@ export default function QuickLaunch() {
               </button>
             ))}
           </div>
-        </div>
+        </div>}
       </div>
     </div>
   );
