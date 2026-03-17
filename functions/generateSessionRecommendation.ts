@@ -18,7 +18,14 @@ Deno.serve(async (req) => {
       mode = 'balanced',
       previousPairings = [],
       sessionHistory = [], // Track last N recommendations to avoid repetition
+      enabledModules = null, // Optional: ['pipekeeper', 'whiskeykeeper'] etc.
     } = await req.json();
+
+    // Apply module eligibility filter — hidden modules must not contribute to recommendations
+    // The caller (TonightSessionCard) already filters, but this is a server-side safety net
+    const resolvedEnabledModules = enabledModules || ['pipekeeper', 'whiskeykeeper'];
+    const includeWhiskey = resolvedEnabledModules.includes('whiskeykeeper');
+    const eligibleBottles = includeWhiskey ? bottles : [];
 
     // Score items based on mode with distinct weighting strategies
     function scoreItem(item, mode, itemType, tasteProfile, userProfile, sessionHistory = []) {
