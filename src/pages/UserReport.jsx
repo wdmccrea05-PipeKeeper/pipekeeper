@@ -316,7 +316,7 @@ export default function UserReport() {
         {/* Platform Cards */}
         {adminMetrics?.platformBreakdown && !metricsLoading && (
           <>
-            <Card className="bg-white border-gray-200">
+            <Card className="bg-transparent">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.apple")}</CardTitle>
               </CardHeader>
@@ -334,7 +334,7 @@ export default function UserReport() {
               </CardContent>
             </Card>
 
-            <Card className="bg-white border-gray-200">
+            <Card className="bg-transparent">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.android")}</CardTitle>
               </CardHeader>
@@ -352,7 +352,7 @@ export default function UserReport() {
               </CardContent>
             </Card>
 
-            <Card className="bg-white border-gray-200">
+            <Card className="bg-transparent">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.web")}</CardTitle>
               </CardHeader>
@@ -370,7 +370,7 @@ export default function UserReport() {
               </CardContent>
             </Card>
 
-            <Card className="bg-white border-gray-200">
+            <Card className="bg-transparent">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.iOS")}</CardTitle>
               </CardHeader>
@@ -388,7 +388,7 @@ export default function UserReport() {
               </CardContent>
             </Card>
 
-            <Card className="bg-white border-gray-200">
+            <Card className="bg-transparent">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.unknown")}</CardTitle>
               </CardHeader>
@@ -411,7 +411,7 @@ export default function UserReport() {
 
       {/* Trials Panel */}
       {adminMetrics && !metricsLoading && (
-        <Card className="bg-white border-gray-200 mb-6">
+        <Card className="bg-transparent mb-6">
           <CardHeader className="pb-3">
             <CardTitle className="text-black flex items-center gap-2">
               <Clock className="w-5 h-5 text-gray-600" />
@@ -451,7 +451,7 @@ export default function UserReport() {
 
       {/* Growth Chart */}
       {growthLastEightWeeks.length > 0 && !metricsLoading && (
-        <Card className="bg-white border-gray-200 mb-6">
+        <Card className="bg-transparent mb-6">
           <CardHeader className="pb-3">
             <CardTitle className="text-black flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-gray-600" />
@@ -477,7 +477,7 @@ export default function UserReport() {
 
       {/* Churn Panel */}
       {adminMetrics?.churnMetrics && !metricsLoading && (
-        <Card className="bg-white border-gray-200 mb-6">
+        <Card className="bg-transparent mb-6">
           <CardHeader className="pb-3">
             <CardTitle className="text-black flex items-center gap-2">
               <TrendingDown className="w-5 h-5 text-gray-600" />
@@ -510,7 +510,7 @@ export default function UserReport() {
       {/* Additional Metrics Cards */}
       {adminMetrics && !metricsLoading && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="bg-white border-gray-200">
+          <Card className="bg-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.premiumUsers")}</CardTitle>
               <p className="text-xs text-gray-500 mt-1">{t("userReport.postFeb1")}</p>
@@ -519,7 +519,7 @@ export default function UserReport() {
               <p className="text-3xl font-bold text-black">{userCounts.premium || 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white border-gray-200">
+          <Card className="bg-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.proUsers")}</CardTitle>
             </CardHeader>
@@ -527,7 +527,7 @@ export default function UserReport() {
               <p className="text-3xl font-bold text-black">{userCounts.pro || 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white border-gray-200">
+          <Card className="bg-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.onTrial")}</CardTitle>
             </CardHeader>
@@ -535,7 +535,7 @@ export default function UserReport() {
               <p className="text-3xl font-bold text-black">{trialMetrics.currentlyOnTrial || 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white border-gray-200">
+          <Card className="bg-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.activeTrialPremium")}</CardTitle>
             </CardHeader>
@@ -543,7 +543,7 @@ export default function UserReport() {
               <p className="text-3xl font-bold text-black">{subscriptionBreakdown.activeOrTrialPremium || 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white border-gray-200">
+          <Card className="bg-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.activeTrialPro")}</CardTitle>
             </CardHeader>
@@ -551,7 +551,7 @@ export default function UserReport() {
               <p className="text-3xl font-bold text-black">{subscriptionBreakdown.activeOrTrialPro || 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white border-gray-200">
+          <Card className="bg-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.legacyPremium")}</CardTitle>
               <p className="text-xs text-gray-500 mt-1">{t("userReport.subscribedBeforeFeb1")}</p>
@@ -566,7 +566,7 @@ export default function UserReport() {
       {/* Usage Metrics */}
       {adminMetrics?.usageMetrics && !metricsLoading && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="bg-white border-gray-200">
+          <Card className="bg-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.avgPipesPerUser")}</CardTitle>
             </CardHeader>
@@ -587,7 +587,7 @@ export default function UserReport() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white border-gray-200">
+          <Card className="bg-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.avgTobaccosPerUser")}</CardTitle>
             </CardHeader>
@@ -608,7 +608,7 @@ export default function UserReport() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white border-gray-200">
+          <Card className="bg-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.communityEngagement")}</CardTitle>
             </CardHeader>
@@ -636,7 +636,7 @@ export default function UserReport() {
       {/* Paid Users Table */}
       {(viewFilter === 'all' || viewFilter === 'paid') && (
         <Collapsible open={showPaidTable} onOpenChange={setShowPaidTable}>
-          <Card className="bg-white border-gray-200 mb-6">
+          <Card className="bg-transparent mb-6">
             <CollapsibleTrigger className="w-full">
               <CardHeader className="cursor-pointer hover:bg-gray-50">
                 <CardTitle className="text-black flex items-center justify-between">
@@ -724,7 +724,7 @@ export default function UserReport() {
       {/* Free Users Table */}
       {(viewFilter === 'all' || viewFilter === 'free') && (
         <Collapsible open={showFreeTable} onOpenChange={setShowFreeTable}>
-          <Card className="bg-white border-gray-200">
+          <Card className="bg-transparent">
             <CollapsibleTrigger className="w-full">
               <CardHeader className="cursor-pointer hover:bg-gray-50">
                 <CardTitle className="text-black flex items-center justify-between">
