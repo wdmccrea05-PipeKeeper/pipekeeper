@@ -237,13 +237,13 @@ export default function UserReport() {
           }}
         >
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2">
               <Users className="w-4 h-4" />
               {t("userReport.totalUsers")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-black">{summary.total_users}</p>
+            <p className="text-3xl font-bold text-[#F5F1E7]">{summary.total_users}</p>
           </CardContent>
         </Card>
 
