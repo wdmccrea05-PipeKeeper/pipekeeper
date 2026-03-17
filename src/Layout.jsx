@@ -258,6 +258,7 @@ export default function Layout({ children, currentPageName }) {
   );
 
   const { user, isLoading: userLoading, error: userError, hasPremium, hasPaid, hasPro, isAdmin, subscription, isLoading: subLoading } = useCurrentUser();
+  const { isModuleEnabled } = useModuleVisibility();
 
   const adminNavItems = useMemo(() => isAdmin ? [
     { name: t("nav.subscriptionSupport"), page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
