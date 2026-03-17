@@ -285,11 +285,16 @@ export default function CollectionHub() {
           {isModuleEnabled('whiskeykeeper') && (
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-                {t('hub.whiskey') || 'Whiskey Bottles'}
+                {t('hub.whiskeyTypes') || 'Bottle Types'}
               </p>
               <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
-                {summary.whiskey.count}
+                {summary.whiskey.bottleTypes ?? summary.whiskey.count}
               </p>
+              {(summary.whiskey.totalBottles ?? 0) > (summary.whiskey.bottleTypes ?? summary.whiskey.count) && (
+                <p className="text-xs" style={{ color: 'rgba(139,115,85,0.65)' }}>
+                  {summary.whiskey.totalBottles} total bottles
+                </p>
+              )}
             </div>
           )}
           <div className="space-y-2">
