@@ -863,6 +863,26 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
+        {/* Module Visibility */}
+        <Card className="border-stone-200 bg-gradient-to-br from-stone-50 to-white">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-stone-500 to-stone-600 flex items-center justify-center">
+                <Layers className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-stone-800">Active Modules</CardTitle>
+                <CardDescription className="text-stone-600">
+                  Control which collection modules are visible. Your data is never deleted when a module is hidden.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ModuleVisibilitySettings />
+          </CardContent>
+        </Card>
+
         <SubscriptionBackupModeModal
           isOpen={showBackupModal}
           onClose={() => setShowBackupModal(false)}
