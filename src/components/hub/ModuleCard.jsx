@@ -98,7 +98,9 @@ export default function ModuleCard({ module, icon, itemCount, summary, action, i
           <div>
             <h3 className="text-lg font-semibold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{module}</h3>
             {isComingSoon && (
-              <p className="text-xs font-medium mt-1" style={{ color: '#D4A574' }}>{t('hub.comingSoonLabel')}</p>
+              <p className="text-xs font-medium mt-1" style={{ color: 'rgba(180,140,75,0.7)', letterSpacing: '0.08em' }}>
+                Launching Soon
+              </p>
             )}
           </div>
         </div>
