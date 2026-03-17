@@ -513,7 +513,7 @@ export default function UserReport() {
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.premiumUsers")}</CardTitle>
-              <p className="text-xs text-gray-500 mt-1">{t("userReport.postFeb1")}</p>
+              <p className="text-xs text-[#E0D8C8]/50 mt-1">{t("userReport.postFeb1")}</p>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-black">{userCounts.premium || 0}</p>
@@ -554,7 +554,7 @@ export default function UserReport() {
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.legacyPremium")}</CardTitle>
-              <p className="text-xs text-gray-500 mt-1">{t("userReport.subscribedBeforeFeb1")}</p>
+              <p className="text-xs text-[#E0D8C8]/50 mt-1">{t("userReport.subscribedBeforeFeb1")}</p>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-black">{userCounts.legacyPremium || 0}</p>
@@ -614,7 +614,7 @@ export default function UserReport() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-black">{usageMetrics.communityEngagement || 0}%</p>
-              <p className="text-xs text-gray-500 mt-1">{t("userReport.usersWithComments")}</p>
+              <p className="text-xs text-[#E0D8C8]/50 mt-1">{t("userReport.usersWithComments")}</p>
             </CardContent>
           </Card>
         </div>
@@ -690,7 +690,7 @@ export default function UserReport() {
                     <tbody>
                       {filteredData.paid.length === 0 ? (
                         <tr>
-                          <td colSpan="6" className="text-center py-8 text-gray-500">
+                          <td colSpan="6" className="text-center py-8 text-[#E0D8C8]/50">
                             {searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noPaidUsersFound")}
                           </td>
                         </tr>
@@ -771,7 +771,7 @@ export default function UserReport() {
                     <tbody>
                       {filteredData.free.length === 0 ? (
                         <tr>
-                          <td colSpan="4" className="text-center py-8 text-gray-500">
+                          <td colSpan="4" className="text-center py-8 text-[#E0D8C8]/50">
                             {searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noFreeUsersFound")}
                           </td>
                         </tr>
