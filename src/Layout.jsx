@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import GlobalErrorBoundary from "@/components/system/GlobalErrorBoundary";
-import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown, Settings, Shield, FileText, Target } from "lucide-react";
+import { Home, Menu, X, User, HelpCircle, Users, Crown, Settings, Shield, FileText, Target } from "lucide-react";
+import BrandLogo from "@/components/branding/BrandLogo";
 import GlobalSearchTrigger from "@/components/search/GlobalSearchTrigger";
 import BackButton from "@/components/navigation/BackButton";
 import { Button } from "@/components/ui/button";
@@ -12,13 +13,11 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQueryClient } from "@tanstack/react-query";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
 import { Toaster } from "@/components/ui/sonner";
-import { isCompanionApp, isIOSCompanion } from "@/components/utils/companion";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
 import { warnIfLooksLikeKey } from "@/components/utils/i18nDiagnostics";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
-import { PK_THEME } from "@/components/utils/pkTheme";
 import FoundingMemberPopup from "@/components/subscription/FoundingMemberPopup";
 import WhatsNewPopup from "@/components/onboarding/WhatsNewPopup";
 import EntitlementDebug from "@/components/debug/EntitlementDebug";
@@ -51,8 +50,6 @@ function WhiskeyBottleIcon({ className, style }) {
   );
 }
 
-const COLLECTIONKEEPER_LOGO =
-  "https://media.base44.com/images/public/694956e18d119cc497192525/55d4f00f3_CollectionKeeperUpdated.png";
 const PIPE_ICON =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
@@ -177,7 +174,7 @@ async function tryStripeSync() {
 
   for (const fn of candidates) {
     try {
-      const params = isIOSCompanion?.() ? { platform: "ios" } : {};
+      const params = {};
       const res = await base44.functions.invoke(fn, params);
       return { ok: true, fn, res };
     } catch (e) {
@@ -613,8 +610,9 @@ export default function Layout({ children, currentPageName }) {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <BackButton currentPageName={currentPageName} />
                   <Link to={createPageUrl("CollectionHub")} className="flex items-center gap-2 flex-shrink-0">
-                    <img src={COLLECTIONKEEPER_LOGO} alt={t("layout.appTitle")} className="w-7 h-7 lg:w-8 lg:h-8 object-contain" />
-                    <span className="font-bold text-lg lg:text-xl text-[#E0D8C8] hidden sm:inline whitespace-nowrap">{t("layout.appTitle")}</span>
+                    <div className="min-w-0 flex items-center">
+                      <BrandLogo compact className="min-w-0" imageClassName="w-7 h-7" />
+                    </div>
                   </Link>
                 </div>
 
@@ -678,8 +676,7 @@ export default function Layout({ children, currentPageName }) {
               <div className="flex items-center gap-2">
                 <BackButton currentPageName={currentPageName} />
                 <Link to={createPageUrl("CollectionHub")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                  <img src={COLLECTIONKEEPER_LOGO} alt={t("layout.appTitle")} className="w-7 h-7 object-contain" style={{ mixBlendMode: 'screen' }} />
-                  <span className="font-bold text-lg text-[#E0D8C8]">{t("layout.appTitle")}</span>
+                  <BrandLogo compact className="min-w-0" imageClassName="w-7 h-7" />
                 </Link>
               </div>
 
@@ -775,7 +772,7 @@ export default function Layout({ children, currentPageName }) {
             <div className="max-w-7xl mx-auto px-6 py-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                    <img src={COLLECTIONKEEPER_LOGO} alt={t("layout.appTitle")} className="w-5 h-5 object-contain" style={{ mixBlendMode: 'screen' }} />
+                    <BrandLogo compact showWordmark={false} imageClassName="w-5 h-5" />
                     <span className="text-sm text-[#E0D8C8]/70">{t("footer.copyright")}</span>
                   </div>
                 <div className="flex gap-6">
@@ -837,8 +834,12 @@ export default function Layout({ children, currentPageName }) {
             </div>
           )}
 
-          <EntitlementDebug />
-          <PermissionDebugPanel />
+          {import.meta.env.DEV ? (
+            <>
+              <EntitlementDebug />
+              <PermissionDebugPanel />
+            </>
+          ) : null}
 
           <FeatureQuickAccess isOpen={showQuickAccess} onClose={() => setShowQuickAccess(false)} />
 
