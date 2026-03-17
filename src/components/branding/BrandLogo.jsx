@@ -29,7 +29,7 @@ export default function BrandLogo({
       alt="CollectionKeeper"
       className={cn('object-contain flex-shrink-0', sizeClass, imageClassName)}
       style={{
-        background: 'transparent',
+        mixBlendMode: 'screen',
         transition: hoverable ? 'filter 0.25s ease, transform 0.25s ease' : undefined,
       }}
       draggable={false}
