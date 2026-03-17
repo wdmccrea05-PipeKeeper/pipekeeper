@@ -242,21 +242,23 @@ export default function WhiskeyInsightsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <StatusCard
                   icon={Wine}
-                  label={t('insights.totalBottles', 'Total Bottles')}
-                  value={totalBottles}
+                  label="Bottle Types"
+                  value={bottleTypes}
+                  sub="Distinct labels"
                   accent={CATEGORY_COLORS.pipe}
+                />
+                <StatusCard
+                  icon={Trophy}
+                  label="Total Bottles"
+                  value={totalBottles}
+                  sub={inventoryUnits.length > 0 ? `${openBottles} open · ${sealedBottles} sealed` : 'physical inventory'}
+                  accent="#C87941"
                 />
                 <StatusCard
                   icon={Zap}
                   label={t('insights.openBottles', 'Open Bottles')}
                   value={openBottles}
                   accent="#EF4444"
-                />
-                <StatusCard
-                  icon={Trophy}
-                  label={t('insights.sealedBottles', 'Sealed Bottles')}
-                  value={sealedBottles}
-                  accent="#10B981"
                 />
                 <StatusCard
                   icon={Star}
