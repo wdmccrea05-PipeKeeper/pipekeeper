@@ -323,7 +323,7 @@ export default function WhiskeyKeeperModule() {
             {mostValuableBottle && (
               <CatalogPlate
                 title={t('home.mostValuable') || 'Most Valuable'}
-                value={formatCurrency(mostValuableBottle.purchase_price)}
+                value={formatCurrency(mostValuableBottle.__unitValue || 0)}
                 subtitle={mostValuableBottle.name}
                 heroImage={mostValuableBottle.photo}
                 bgImage={mostValuableBottle.photo}
