@@ -648,10 +648,10 @@ export default function ProfilePage() {
 
             {/* Privacy */}
             <div className="space-y-3">
-              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.privacy")}</Label>
+              <Label className="font-medium break-words" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.privacy")}</Label>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-stone-700">{t("profileExtended.hideValues")}</span>
+                <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideValues")}</span>
                 <Switch
                   checked={formData.privacy_hide_values}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
