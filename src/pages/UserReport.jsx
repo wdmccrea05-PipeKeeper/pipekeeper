@@ -566,55 +566,55 @@ export default function UserReport() {
       {/* Usage Metrics */}
       {adminMetrics?.usageMetrics && !metricsLoading && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="bg-white/95 border-[#e8d5b7]/30">
+          <Card className="bg-white border-gray-200">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-indigo-600">{t("userReport.avgPipesPerUser")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.avgPipesPerUser")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">{t("userReport.free")}</span>
-                  <span className="font-bold text-stone-800">{usageAvgPipes.free || 0}</span>
+                  <span className="text-gray-600">{t("userReport.free")}</span>
+                  <span className="font-bold text-black">{usageAvgPipes.free || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">{t("userReport.premium")}</span>
-                  <span className="font-bold text-stone-800">{usageAvgPipes.premium || 0}</span>
+                  <span className="text-gray-600">{t("userReport.premium")}</span>
+                  <span className="font-bold text-black">{usageAvgPipes.premium || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">{t("userReport.pro")}</span>
-                  <span className="font-bold text-stone-800">{usageAvgPipes.pro || 0}</span>
+                  <span className="text-gray-600">{t("userReport.pro")}</span>
+                  <span className="font-bold text-black">{usageAvgPipes.pro || 0}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white/95 border-[#e8d5b7]/30">
+          <Card className="bg-white border-gray-200">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-amber-600">{t("userReport.avgTobaccosPerUser")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.avgTobaccosPerUser")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">{t("userReport.free")}</span>
-                  <span className="font-bold text-stone-800">{usageAvgTobaccos.free || 0}</span>
+                  <span className="text-gray-600">{t("userReport.free")}</span>
+                  <span className="font-bold text-black">{usageAvgTobaccos.free || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">{t("userReport.premium")}</span>
-                  <span className="font-bold text-stone-800">{usageAvgTobaccos.premium || 0}</span>
+                  <span className="text-gray-600">{t("userReport.premium")}</span>
+                  <span className="font-bold text-black">{usageAvgTobaccos.premium || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">{t("userReport.pro")}</span>
-                  <span className="font-bold text-stone-800">{usageAvgTobaccos.pro || 0}</span>
+                  <span className="text-gray-600">{t("userReport.pro")}</span>
+                  <span className="font-bold text-black">{usageAvgTobaccos.pro || 0}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white/95 border-[#e8d5b7]/30">
+          <Card className="bg-white border-gray-200">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-cyan-600">{t("userReport.communityEngagement")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.communityEngagement")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-cyan-700">{usageMetrics.communityEngagement || 0}%</p>
-              <p className="text-xs text-stone-500 mt-1">{t("userReport.usersWithComments")}</p>
+              <p className="text-3xl font-bold text-black">{usageMetrics.communityEngagement || 0}%</p>
+              <p className="text-xs text-gray-500 mt-1">{t("userReport.usersWithComments")}</p>
             </CardContent>
           </Card>
         </div>
