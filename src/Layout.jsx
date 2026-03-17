@@ -676,7 +676,7 @@ export default function Layout({ children, currentPageName }) {
               <div className="flex items-center gap-2">
                 <BackButton currentPageName={currentPageName} />
                 <Link to={createPageUrl("CollectionHub")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                  <BrandLogo compact className="min-w-0" imageClassName="w-7 h-7" />
+                  <BrandLogo compact hoverable className="min-w-0" imageClassName="w-7 h-7" />
                 </Link>
               </div>
 
