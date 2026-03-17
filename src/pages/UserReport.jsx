@@ -323,11 +323,11 @@ export default function UserReport() {
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.paid")}:</span>
+                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
                     <span className="font-bold text-black">{platformBreakdown.apple?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.free")}:</span>
+                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
                     <span className="font-bold text-black">{platformBreakdown.apple?.free || 0}</span>
                   </div>
                 </div>
@@ -341,11 +341,11 @@ export default function UserReport() {
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.paid")}:</span>
+                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
                     <span className="font-bold text-black">{platformBreakdown.android?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.free")}:</span>
+                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
                     <span className="font-bold text-black">{platformBreakdown.android?.free || 0}</span>
                   </div>
                 </div>
@@ -359,11 +359,11 @@ export default function UserReport() {
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.paid")}:</span>
+                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
                     <span className="font-bold text-black">{platformBreakdown.web?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.free")}:</span>
+                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
                     <span className="font-bold text-black">{platformBreakdown.web?.free || 0}</span>
                   </div>
                 </div>
@@ -377,11 +377,11 @@ export default function UserReport() {
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.paid")}:</span>
+                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
                     <span className="font-bold text-black">{platformBreakdown.ios?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.free")}:</span>
+                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
                     <span className="font-bold text-black">{platformBreakdown.ios?.free || 0}</span>
                   </div>
                 </div>
@@ -395,11 +395,11 @@ export default function UserReport() {
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.paid")}:</span>
+                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
                     <span className="font-bold text-black">{platformBreakdown.unknown?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">{t("userReport.free")}:</span>
+                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
                     <span className="font-bold text-black">{platformBreakdown.unknown?.free || 0}</span>
                   </div>
                 </div>
@@ -414,34 +414,34 @@ export default function UserReport() {
         <Card className="bg-transparent mb-6">
           <CardHeader className="pb-3">
             <CardTitle className="text-black flex items-center gap-2">
-              <Clock className="w-5 h-5 text-gray-600" />
+              <Clock className="w-5 h-5 text-[#E0D8C8]/70" />
               {t("userReport.trialMetrics")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.currentlyOnTrial")}</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.currentlyOnTrial")}</p>
                 <p className="text-2xl font-bold text-black">{trialMetrics.currentlyOnTrial || 0}</p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.endingIn3Days")}</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.endingIn3Days")}</p>
                 <p className="text-2xl font-bold text-black">{trialMetrics.endingIn3Days || 0}</p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.endingIn7Days")}</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.endingIn7Days")}</p>
                 <p className="text-2xl font-bold text-black">{trialMetrics.endingIn7Days || 0}</p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.avgDaysRemaining")}</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.avgDaysRemaining")}</p>
                 <p className="text-2xl font-bold text-black">{trialMetrics.avgDaysRemaining || 0}</p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.converted30d")}</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.converted30d")}</p>
                 <p className="text-2xl font-bold text-black">{trialMetrics.convertedLast30d || 0}</p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.dropoffs30d")}</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.dropoffs30d")}</p>
                 <p className="text-2xl font-bold text-black">{trialMetrics.dropoffLast30d || 0}</p>
               </div>
             </div>
@@ -454,7 +454,7 @@ export default function UserReport() {
         <Card className="bg-transparent mb-6">
           <CardHeader className="pb-3">
             <CardTitle className="text-black flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-gray-600" />
+              <TrendingUp className="w-5 h-5 text-[#E0D8C8]/70" />
               {t("userReport.weeklyGrowth")}
             </CardTitle>
           </CardHeader>
@@ -480,26 +480,26 @@ export default function UserReport() {
         <Card className="bg-transparent mb-6">
           <CardHeader className="pb-3">
             <CardTitle className="text-black flex items-center gap-2">
-              <TrendingDown className="w-5 h-5 text-gray-600" />
+              <TrendingDown className="w-5 h-5 text-[#E0D8C8]/70" />
               {t("userReport.churnDowngrades")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.premiumChurnRate")}</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.premiumChurnRate")}</p>
                 <p className="text-2xl font-bold text-black">{churnMetrics.premiumChurn30d || 0}%</p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.proChurnRate")}</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.proChurnRate")}</p>
                 <p className="text-2xl font-bold text-black">{churnMetrics.proChurn30d || 0}%</p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.proToPremium")}</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.proToPremium")}</p>
                 <p className="text-2xl font-bold text-black">{churnMetrics.proToPremiumDowngrade || 0}</p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.premiumToFree")}</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.premiumToFree")}</p>
                 <p className="text-2xl font-bold text-black">{churnMetrics.premiumToFreeDowngrade || 0}</p>
               </div>
             </div>
@@ -512,7 +512,7 @@ export default function UserReport() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.premiumUsers")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.premiumUsers")}</CardTitle>
               <p className="text-xs text-gray-500 mt-1">{t("userReport.postFeb1")}</p>
             </CardHeader>
             <CardContent>
@@ -521,7 +521,7 @@ export default function UserReport() {
           </Card>
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.proUsers")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.proUsers")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-black">{userCounts.pro || 0}</p>
@@ -529,7 +529,7 @@ export default function UserReport() {
           </Card>
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.onTrial")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.onTrial")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-black">{trialMetrics.currentlyOnTrial || 0}</p>
@@ -537,7 +537,7 @@ export default function UserReport() {
           </Card>
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.activeTrialPremium")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.activeTrialPremium")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-black">{subscriptionBreakdown.activeOrTrialPremium || 0}</p>
@@ -545,7 +545,7 @@ export default function UserReport() {
           </Card>
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.activeTrialPro")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.activeTrialPro")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-black">{subscriptionBreakdown.activeOrTrialPro || 0}</p>
@@ -553,7 +553,7 @@ export default function UserReport() {
           </Card>
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.legacyPremium")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.legacyPremium")}</CardTitle>
               <p className="text-xs text-gray-500 mt-1">{t("userReport.subscribedBeforeFeb1")}</p>
             </CardHeader>
             <CardContent>
@@ -568,20 +568,20 @@ export default function UserReport() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.avgPipesPerUser")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.avgPipesPerUser")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">{t("userReport.free")}</span>
+                  <span className="text-[#E0D8C8]/70">{t("userReport.free")}</span>
                   <span className="font-bold text-black">{usageAvgPipes.free || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">{t("userReport.premium")}</span>
+                  <span className="text-[#E0D8C8]/70">{t("userReport.premium")}</span>
                   <span className="font-bold text-black">{usageAvgPipes.premium || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">{t("userReport.pro")}</span>
+                  <span className="text-[#E0D8C8]/70">{t("userReport.pro")}</span>
                   <span className="font-bold text-black">{usageAvgPipes.pro || 0}</span>
                 </div>
               </div>
@@ -589,20 +589,20 @@ export default function UserReport() {
           </Card>
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.avgTobaccosPerUser")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.avgTobaccosPerUser")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">{t("userReport.free")}</span>
+                  <span className="text-[#E0D8C8]/70">{t("userReport.free")}</span>
                   <span className="font-bold text-black">{usageAvgTobaccos.free || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">{t("userReport.premium")}</span>
+                  <span className="text-[#E0D8C8]/70">{t("userReport.premium")}</span>
                   <span className="font-bold text-black">{usageAvgTobaccos.premium || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">{t("userReport.pro")}</span>
+                  <span className="text-[#E0D8C8]/70">{t("userReport.pro")}</span>
                   <span className="font-bold text-black">{usageAvgTobaccos.pro || 0}</span>
                 </div>
               </div>
@@ -610,7 +610,7 @@ export default function UserReport() {
           </Card>
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">{t("userReport.communityEngagement")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.communityEngagement")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-black">{usageMetrics.communityEngagement || 0}%</p>
@@ -641,7 +641,7 @@ export default function UserReport() {
               <CardHeader className="cursor-pointer hover:bg-gray-50">
                 <CardTitle className="text-black flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Crown className="w-5 h-5 text-gray-600" />
+                    <Crown className="w-5 h-5 text-[#E0D8C8]/70" />
                     {t("userReport.paidUsersCount", { count: filteredData.paid.length })}
                   </div>
                   {showPaidTable ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -729,7 +729,7 @@ export default function UserReport() {
               <CardHeader className="cursor-pointer hover:bg-gray-50">
                 <CardTitle className="text-black flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <UserX className="w-5 h-5 text-gray-600" />
+                    <UserX className="w-5 h-5 text-[#E0D8C8]/70" />
                     {t("userReport.freeUsersCount", { count: filteredData.free.length })}
                   </div>
                   {showFreeTable ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
