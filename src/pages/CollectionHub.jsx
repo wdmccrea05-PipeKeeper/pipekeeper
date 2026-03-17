@@ -199,24 +199,24 @@ export default function CollectionHub() {
       <div className="space-y-4">
         <div className="text-center space-y-4">
           <div className="text-center space-y-3">
-            <div
-              className="inline-flex px-4 py-2 rounded-xl"
+            <div className="flex justify-center">
+              <img
+                src="https://media.base44.com/images/public/694956e18d119cc497192525/b9b1fc2c7_CollectionKeeperUpdated.png"
+                alt="CollectionKeeper"
+                className="w-24 h-24 object-contain"
+                draggable={false}
+              />
+            </div>
+            <h1
+              className="text-3xl md:text-4xl font-bold"
               style={{
-                background: 'rgba(180,140,75,0.10)',
-                border: '1px solid rgba(180,140,75,0.25)',
+                color: '#F5F1E7',
+                fontFamily: "'Georgia', serif",
+                textShadow: '0 2px 6px rgba(0,0,0,0.45)',
               }}
             >
-              <span
-                className="text-4xl md:text-5xl font-bold"
-                style={{
-                  color: '#F5F1E7',
-                  fontFamily: "'Georgia', serif",
-                  textShadow: '0 2px 6px rgba(0,0,0,0.45)',
-                }}
-              >
-                CollectionKeeper
-              </span>
-            </div>
+              CollectionKeeper
+            </h1>
           </div>
           <p 
             className="text-base max-w-2xl mx-auto leading-relaxed"
