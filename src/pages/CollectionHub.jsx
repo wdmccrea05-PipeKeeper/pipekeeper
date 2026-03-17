@@ -199,24 +199,25 @@ export default function CollectionHub() {
       {/* Hero Section - Match Home Page Canonical Style */}
       <div className="space-y-4">
         <div className="text-center space-y-4">
-          <div className="flex justify-center mb-6">
-            <BrandLogo
-              className="justify-center"
-              imageClassName="h-24 w-24"
-              showWordmark={false}
-            />
-          </div>
-          <div className="flex justify-center">
-            <h1
-              className="text-4xl md:text-5xl font-bold tracking-tight"
+          <div className="text-center space-y-3">
+            <div
+              className="inline-flex px-4 py-2 rounded-xl"
               style={{
-                color: '#F5F1E7',
-                textShadow: '0 2px 6px rgba(0,0,0,0.45)',
-                fontFamily: "'Georgia', serif",
+                background: 'rgba(180,140,75,0.10)',
+                border: '1px solid rgba(180,140,75,0.25)',
               }}
             >
-              CollectionKeeper
-            </h1>
+              <span
+                className="text-4xl md:text-5xl font-bold"
+                style={{
+                  color: '#F5F1E7',
+                  fontFamily: "'Georgia', serif",
+                  textShadow: '0 2px 6px rgba(0,0,0,0.45)',
+                }}
+              >
+                CollectionKeeper
+              </span>
+            </div>
           </div>
           <p 
             className="text-base max-w-2xl mx-auto leading-relaxed"
