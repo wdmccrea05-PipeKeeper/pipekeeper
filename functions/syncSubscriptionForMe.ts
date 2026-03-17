@@ -1,323 +1,201 @@
-// functions/syncSubscriptionForMe.js
-// Client-side "post-checkout sync" fail-safe
-// Non-admin version that syncs ONLY the logged-in user's subscription
-// Returns instantly with updated subscription data
+/**
+ * Sync subscription state for the authenticated user.
+ *
+ * Use this:
+ * - after successful checkout redirect
+ * - after login
+ * - from a "Restore Purchases / Refresh Access" button
+ */
 
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, stripeKeyErrorResponse, safeStripeError } from "./_utils/stripe.ts";
+import Stripe from 'npm:stripe@16.10.0';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-function normEmail(v) {
-  return String(v || "").trim().toLowerCase();
+function normEmail(email: unknown): string {
+  return String(email || '').trim().toLowerCase();
 }
 
-function isoFromUnixSeconds(sec) {
-  if (!sec) return null;
-  const ms = Number(sec) * 1000;
-  if (!Number.isFinite(ms)) return null;
-  return new Date(ms).toISOString();
+function unique<T>(arr: T[]): T[] {
+  return [...new Set(arr)];
 }
 
-// ============================================================================
-// GRACE PERIOD POLICY (centralized constant)
-// ============================================================================
-const GRACE_PERIOD_DAYS = 5;
-
-function isSubscriptionInGracePeriod(subscription) {
-  if (!subscription) return false;
-  const status = String(subscription?.status || "").toLowerCase();
-  if (status !== "past_due" && status !== "incomplete" && status !== "unpaid") return false;
-  const periodEnd = subscription?.current_period_end;
-  if (!periodEnd) return false;
-  try {
-    const endDate = new Date(periodEnd);
-    const graceEnd = new Date(endDate.getTime() + (GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000));
-    return Date.now() <= graceEnd.getTime();
-  } catch {
-    return false;
-  }
+function splitModulesCsv(csv: unknown): string[] {
+  return unique(
+    String(csv || '')
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean)
+  );
 }
 
-function subscriptionGrantsPaidAccess(subscription) {
-  if (!subscription) return false;
-  const status = String(subscription?.status || "").toLowerCase();
-  if (status === "active" || status === "trialing" || status === "trial") return true;
-  if (status === "past_due" || status === "incomplete" || status === "unpaid") {
-    return isSubscriptionInGracePeriod(subscription);
+function isIsoFuture(value: unknown): boolean {
+  if (!value) return false;
+  const d = new Date(String(value));
+  return Number.isFinite(d.getTime()) && d.getTime() > Date.now();
+}
+
+function grantsPaidAccess(status: string, currentPeriodEnd?: string | null): boolean {
+  const s = String(status || '').toLowerCase();
+  if (s === 'active' || s === 'trialing') return true;
+  if ((s === 'past_due' || s === 'incomplete') && currentPeriodEnd && isIsoFuture(currentPeriodEnd)) {
+    return true;
   }
   return false;
 }
 
-function pickBestSubscription(subs) {
-  if (!Array.isArray(subs) || subs.length === 0) return null;
+function getStripe() {
+  const apiKey = Deno.env.get('STRIPE_SECRET_KEY');
+  if (!apiKey) throw new Error('Missing STRIPE_SECRET_KEY');
+  return new Stripe(apiKey, { apiVersion: '2024-06-20' });
+}
 
-  const rank = (s) => {
-    const st = (s?.status || "").toLowerCase();
-    if (st === "active") return 3;
-    if (st === "trialing") return 2;
-    return 1;
+async function findUserEntity(base44: any, email: string) {
+  const rows = await base44.asServiceRole.entities.User.filter({ email });
+  return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+}
+
+async function findLocalSubscriptions(base44: any, email: string) {
+  const rows = await base44.asServiceRole.entities.Subscription.filter({ user_email: email });
+  return Array.isArray(rows) ? rows : [];
+}
+
+async function updateUserEntitlements(base44: any, user: any, subs: any[]) {
+  const activeSubs = subs.filter((sub) => grantsPaidAccess(sub.status, sub.current_period_end));
+  const paidModules = unique(activeSubs.flatMap((sub) => splitModulesCsv(sub.modules_csv)));
+  const hasBundle = activeSubs.some((sub) => String(sub.checkout_type || '').startsWith('bundle_'));
+  const bundleSize = hasBundle
+    ? Math.max(
+        0,
+        ...activeSubs
+          .filter((sub) => String(sub.checkout_type || '').startsWith('bundle_'))
+          .map((sub) => Number(sub.module_count || splitModulesCsv(sub.modules_csv).length || 0))
+      )
+    : 0;
+
+  await base44.asServiceRole.entities.User.update(user.id, {
+    stripe_customer_id:
+      activeSubs.find((s) => s.stripe_customer_id)?.stripe_customer_id || user.stripe_customer_id || null,
+    paid_modules_csv: paidModules.join(','),
+    has_paid_access: paidModules.length > 0,
+    has_bundle_access: hasBundle,
+    entitlement_tier: paidModules.length > 0 ? (hasBundle ? `bundle_${bundleSize}` : 'pro') : 'free',
+    updated_date: new Date().toISOString(),
+  });
+
+  return {
+    paidModules,
+    entitlementTier: paidModules.length > 0 ? (hasBundle ? `bundle_${bundleSize}` : 'pro') : 'free',
+    hasPaidAccess: paidModules.length > 0,
+    hasBundleAccess: hasBundle,
   };
-
-  return [...subs].sort((a, b) => {
-    const ra = rank(a);
-    const rb = rank(b);
-    if (rb !== ra) return rb - ra;
-
-    const ea = Number(a?.current_period_end || 0);
-    const eb = Number(b?.current_period_end || 0);
-    return eb - ea;
-  })[0];
 }
 
 Deno.serve(async (req) => {
   try {
+    if (req.method !== 'POST') {
+      return Response.json({ success: false, error: 'Method not allowed' }, { status: 405 });
+    }
+
     const base44 = createClientFromRequest(req);
-    const authUser = await base44.auth.me();
+    const stripe = getStripe();
+    const me = await base44.auth.me();
 
-    if (!authUser?.email) {
-      return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    if (!me?.email) {
+      return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    let stripe;
-    try {
-      stripe = getStripeClient();
-    } catch (e) {
-      return Response.json(stripeKeyErrorResponse(e), { status: 500 });
+    const email = normEmail(me.email);
+    const user = await findUserEntity(base44, email);
+
+    if (!user) {
+      return Response.json({ success: false, error: 'User entity not found' }, { status: 404 });
     }
 
-    const targetEmail = normEmail(authUser.email);
+    let localSubs = await findLocalSubscriptions(base44, email);
+    let stripeCustomerId = user.stripe_customer_id || localSubs.find((s: any) => s.stripe_customer_id)?.stripe_customer_id || null;
 
-    let customerId = authUser?.stripe_customer_id || null;
-
-    if (customerId) {
-      try {
-        await stripe.customers.retrieve(customerId);
-      } catch {
-        customerId = null;
-      }
+    if (!stripeCustomerId) {
+      const customers = await stripe.customers.list({ email, limit: 10 });
+      const matched = customers.data.find((c) => normEmail(c.email) === email) || null;
+      stripeCustomerId = matched?.id || null;
     }
 
-    if (!customerId) {
-      try {
-        const customers = await stripe.customers.list({ email: targetEmail, limit: 1 });
-        customerId = customers.data?.[0]?.id || null;
-      } catch (e) {
-        return Response.json({
-          ok: false,
-          error: "STRIPE_CALL_FAILED",
-          message: safeStripeError(e)
-        }, { status: 500 });
-      }
-    }
-
-    if (!customerId) {
-      // FIX ISSUE-12: syncSubscriptionForMe is Stripe-only; Apple users need a local DB fallback.
-      // Check for an active local Apple subscription and re-apply entitlements if found.
-      const localSubs = await base44.asServiceRole.entities.Subscription.filter({
-        user_id: authUser.id,
-        provider: "apple",
+    if (stripeCustomerId) {
+      const stripeSubs = await stripe.subscriptions.list({
+        customer: stripeCustomerId,
+        status: 'all',
+        limit: 100,
+        expand: ['data.items.data.price'],
       });
-      const activeSub = (localSubs || []).find(s => {
-        if (s.status !== "active") return false;
-        if (s.current_period_end && new Date(s.current_period_end) < new Date()) return false;
-        return true;
-      });
-      if (activeSub) {
-        const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
-        if (users?.length) {
-          // FIX BUG-06: Set subscription_provider to "apple" so resolver recognizes Apple subscriptions
-          await base44.asServiceRole.entities.User.update(users[0].id, {
-            subscription_level: "paid",
-            subscription_tier: activeSub.tier || "premium",
-            subscription_status: "active",
-            subscription_provider: "apple",
-            entitlement_tier: activeSub.tier || "premium",
-            data: {
-              ...(users[0].data || {}),
-              entitlement_tier: activeSub.tier || "premium",
-              subscription_tier: activeSub.tier || "premium",
-              subscription_level: "paid",
-              subscription_status: "active",
-              subscription_provider: "apple",
-            },
+
+      for (const stripeSub of stripeSubs.data) {
+        const existing =
+          localSubs.find((s: any) => s.provider_subscription_id === stripeSub.id || s.stripe_subscription_id === stripeSub.id) || null;
+
+        const metadata = stripeSub.metadata || {};
+        const currentPeriodStart = stripeSub.current_period_start
+          ? new Date(stripeSub.current_period_start * 1000).toISOString()
+          : null;
+        const currentPeriodEnd = stripeSub.current_period_end
+          ? new Date(stripeSub.current_period_end * 1000).toISOString()
+          : null;
+        const modulesCsv = String(metadata.modules_csv || existing?.modules_csv || '');
+
+        const payload = {
+          provider: 'stripe',
+          provider_subscription_id: stripeSub.id,
+          stripe_subscription_id: stripeSub.id,
+          stripe_customer_id: stripeCustomerId,
+          user_id: existing?.user_id || me.id || null,
+          user_email: email,
+          status: stripeSub.status,
+          checkout_type: metadata.checkout_type || existing?.checkout_type || null,
+          billing_period: metadata.billing_period || existing?.billing_period || null,
+          modules_csv: modulesCsv,
+          module_count: Number(metadata.module_count || splitModulesCsv(modulesCsv).length || 0),
+          product_kind: metadata.product_kind || existing?.product_kind || null,
+          primary_module: metadata.primary_module || existing?.primary_module || null,
+          bundle_name: metadata.bundle_name || existing?.bundle_name || null,
+          cancel_at_period_end: !!stripeSub.cancel_at_period_end,
+          current_period_start: currentPeriodStart,
+          current_period_end: currentPeriodEnd,
+          latest_invoice_id:
+            typeof stripeSub.latest_invoice === 'string'
+              ? stripeSub.latest_invoice
+              : stripeSub.latest_invoice?.id || null,
+          price_id: stripeSub.items?.data?.[0]?.price?.id || existing?.price_id || null,
+          currency: stripeSub.currency || existing?.currency || null,
+          metadata_json: JSON.stringify(metadata),
+          updated_date: new Date().toISOString(),
+        };
+
+        if (existing?.id) {
+          await base44.asServiceRole.entities.Subscription.update(existing.id, payload);
+        } else {
+          await base44.asServiceRole.entities.Subscription.create({
+            ...payload,
+            created_date: new Date().toISOString(),
           });
         }
-        return Response.json({ ok: true, found: true, provider: "apple", synced: true });
-      }
-      return Response.json({
-        ok: true,
-        found: false,
-        reason: "No Stripe customer or Apple subscription found",
-        email: targetEmail,
-      });
-    }
-
-    let list;
-    try {
-      list = await stripe.subscriptions.list({
-        customer: customerId,
-        status: "all",
-        limit: 25,
-        expand: ["data.customer", "data.items.data.price"],
-      });
-    } catch (e) {
-      return Response.json({
-        ok: false,
-        error: "STRIPE_CALL_FAILED",
-        message: safeStripeError(e)
-      }, { status: 500 });
-    }
-
-    const best = pickBestSubscription(list?.data || []);
-    if (!best) {
-      return Response.json({
-        ok: true,
-        found: false,
-        reason: "No subscriptions found",
-        email: targetEmail,
-        stripe_customer_id: customerId,
-      });
-    }
-
-    const customerObj = best.customer;
-    const customerEmail =
-      customerObj && typeof customerObj === "object" ? normEmail(customerObj.email) : "";
-    const subEmail = normEmail(best?.metadata?.user_email);
-    const user_email = subEmail || customerEmail || targetEmail;
-
-    const periodEnd = isoFromUnixSeconds(best.current_period_end);
-    const periodStart = isoFromUnixSeconds(best.current_period_start);
-
-    const billingInterval =
-      best.items?.data?.[0]?.price?.recurring?.interval ||
-      best.items?.data?.[0]?.plan?.interval ||
-      "year";
-
-    const unitAmount = best.items?.data?.[0]?.price?.unit_amount;
-    const amount = Number.isFinite(unitAmount) ? unitAmount / 100 : null;
-
-    const PRICE_ID_PRO_MONTHLY = Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY");
-    const PRICE_ID_PRO_ANNUAL = Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL");
-    const priceId = best.items?.data?.[0]?.price?.id;
-
-    // FIX BUG-04: Compute subTier BEFORE building payload so it can be included in the Subscription entity
-    const subTier = (priceId === PRICE_ID_PRO_MONTHLY || priceId === PRICE_ID_PRO_ANNUAL)
-      ? "pro"
-      : "premium";
-
-    const payload = {
-      user_email,
-      status: best.status,
-      stripe_subscription_id: best.id,
-      // FIX BUG-11: Include provider fields so upsertSubscription can find/match this row
-      provider: "stripe",
-      provider_subscription_id: best.id,
-      stripe_customer_id: typeof customerObj === "string" ? customerObj : customerObj?.id || customerId,
-      current_period_start: periodStart,
-      current_period_end: periodEnd,
-      cancel_at_period_end: !!best.cancel_at_period_end,
-      billing_interval: billingInterval,
-      amount,
-      // FIX BUG-04: Write tier to the Subscription entity row
-      tier: subTier,
-    };
-
-    const existingSubs = await base44.asServiceRole.entities.Subscription.filter({
-      stripe_subscription_id: best.id,
-    });
-
-    let subscriptionRowId = null;
-    if (existingSubs?.length) {
-      subscriptionRowId = existingSubs[0].id;
-      await base44.asServiceRole.entities.Subscription.update(subscriptionRowId, payload);
-    } else {
-      const created = await base44.asServiceRole.entities.Subscription.create(payload);
-      subscriptionRowId = created?.id || null;
-    }
-
-    // Use centralized grace period logic (inlined above)
-    const reconstructedSub = {
-      status: best.status,
-      current_period_end: periodEnd,
-      tier: subTier,
-    };
-    const isPaid = subscriptionGrantsPaidAccess(reconstructedSub);
-
-    // CANONICAL founding member cutoff — matches frontend constant
-    const FOUNDING_CUTOFF = new Date("2026-02-01T00:00:00.000Z");
-    const trialEnd = isoFromUnixSeconds(best.trial_end);
-    const startedAt = periodStart || (trialEnd ? new Date(trialEnd).toISOString() : null);
-    
-    let isFoundingMember = false;
-    let foundingMemberSince = null;
-    
-    if (isPaid && startedAt) {
-      const subDate = new Date(startedAt);
-      if (subDate < FOUNDING_CUTOFF) {
-        isFoundingMember = true;
-        foundingMemberSince = startedAt;
       }
     }
 
-    const users = await base44.asServiceRole.entities.User.filter({ email: user_email });
-
-    let updatedUser = false;
-    if (users?.length) {
-      const userRec = users[0];
-      // FIX BUG-04: subTier is now computed before payload assembly above.
-      // FIX BUG-02: Only overwrite entitlement/subscription tier fields when isPaid is true.
-      // When isPaid is false (e.g. Stripe temporarily unreachable), preserve the user's existing tier.
-      const userUpdate = {
-        subscription_level: isPaid ? "paid" : (userRec.subscription_level || "free"),
-        subscription_status: best.status,
-        stripe_customer_id: customerId,
-        // FIX BUG-02: Conditionally write tier fields — never downgrade an active paid user
-        ...(isPaid ? {
-          subscription_tier: subTier,
-          entitlement_tier: subTier,
-          data: {
-            ...(userRec.data || {}),
-            entitlement_tier: subTier,
-            subscription_tier: subTier,
-            subscription_level: "paid",
-            subscription_status: best.status,
-          },
-        } : {
-          data: {
-            ...(userRec.data || {}),
-            subscription_status: best.status,
-          },
-        }),
-      };
-      
-      if (isFoundingMember && !userRec.isFoundingMember) {
-        userUpdate.isFoundingMember = true;
-        userUpdate.foundingMemberSince = foundingMemberSince;
-      }
-      
-      await base44.asServiceRole.entities.User.update(userRec.id, userUpdate);
-      updatedUser = true;
-    }
+    localSubs = await findLocalSubscriptions(base44, email);
+    const entitlementState = await updateUserEntitlements(base44, user, localSubs);
 
     return Response.json({
-      ok: true,
-      found: true,
-      synced: true,
-      email: user_email,
-      stripe_customer_id: customerId,
-      stripe_subscription_id: best.id,
-      status: best.status,
-      current_period_end: periodEnd,
-      isPaid,
-      subscriptionRowId,
-      updatedUser,
-      message: "Subscription synced successfully",
+      success: true,
+      stripeCustomerId: stripeCustomerId || null,
+      subscriptionCount: localSubs.length,
+      ...entitlementState,
     });
   } catch (error) {
-    console.error("[syncSubscriptionForMe] error:", error);
-    return Response.json({
-      ok: false,
-      error: "FUNCTION_ERROR",
-      message: safeStripeError(error)
-    }, { status: 500 });
+    console.error('[syncSubscriptionForMe] fatal error:', error);
+    return Response.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
   }
 });
