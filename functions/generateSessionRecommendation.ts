@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
       return ((dayThreshold - daysSince) / dayThreshold) * maxPenalty;
     }
 
-    // Score all items
+    // Score all items — using eligibility-filtered data
     const scoredPipes = pipes
       .map(p => ({ ...p, score: scoreItem(p, mode, 'pipe', tasteProfile, userProfile) }))
       .sort((a, b) => b.score - a.score);
@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
       .map(b => ({ ...b, score: scoreItem(b, mode, 'blend', tasteProfile, userProfile) }))
       .sort((a, b) => b.score - a.score);
 
-    const scoredBottles = bottles
+    const scoredBottles = eligibleBottles
       .map(b => ({ ...b, score: scoreItem(b, mode, 'bottle', tasteProfile, userProfile) }))
       .sort((a, b) => b.score - a.score);
 
