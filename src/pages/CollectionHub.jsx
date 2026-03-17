@@ -16,6 +16,7 @@ import {
   getComingSoonModules,
 } from '@/components/keeper-core';
 import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
+import { buildAIEligibleCollection } from '@/components/utils/moduleAccess';
 
 export default function CollectionHub() {
   const { t } = useTranslation();
