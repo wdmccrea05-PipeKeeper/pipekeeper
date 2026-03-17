@@ -410,30 +410,30 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
         {/* Subscription Status / Management */}
-        <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
+        <Card>
           <CardContent className="p-6">
             <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
-                  <Crown className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, rgba(180,140,75,0.3), rgba(140,100,60,0.4))', border: '1px solid rgba(180,140,75,0.4)' }}>
+                  <Crown className="w-6 h-6" style={{ color: '#D4A574' }} />
                 </div>
                 <div>
                   {hasPaid ? (
                     <>
-                      <div className="font-semibold text-amber-900">
+                      <div className="font-semibold" style={{ color: '#F5F1E7' }}>
                         {t("profile.proActive")}
                       </div>
-                      <div className="text-sm text-amber-700">{t("profile.fullAccess")}</div>
+                      <div className="text-sm" style={{ color: 'rgba(224,216,200,0.65)' }}>{t("profile.fullAccess")}</div>
                     </>
                   ) : isTrial ? (
                     <>
-                      <div className="font-semibold text-amber-900">{t("profile.freeTrialActive")}</div>
-                      <div className="text-sm text-amber-700">{t("profile.sevenDaysFree")}</div>
+                      <div className="font-semibold" style={{ color: '#F5F1E7' }}>{t("profile.freeTrialActive")}</div>
+                      <div className="text-sm" style={{ color: 'rgba(224,216,200,0.65)' }}>{t("profile.sevenDaysFree")}</div>
                     </>
                   ) : (
                     <>
-                      <div className="font-semibold text-stone-800">{t("profile.freeAccount")}</div>
-                      <div className="text-sm text-stone-600">{t("profile.limitedFeatures")}</div>
+                      <div className="font-semibold" style={{ color: '#F5F1E7' }}>{t("profile.freeAccount")}</div>
+                      <div className="text-sm" style={{ color: 'rgba(224,216,200,0.55)' }}>{t("profile.limitedFeatures")}</div>
                     </>
                   )}
                 </div>
