@@ -1,7 +1,69 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
+function dedupeUrls(urls: string[] = []) {
+  const seen = new Set<string>();
+  const out: string[] = [];
+
+  for (const url of urls) {
+    const clean = String(url || '').trim();
+    if (!clean || seen.has(clean)) continue;
+    if (!clean.startsWith('http')) continue;
+    if (clean.includes('placeholder')) continue;
+    seen.add(clean);
+    out.push(clean);
+  }
+
+  return out;
+}
+
+function getFallbackImages(recordType: string) {
+  const fallbacks: Record<string, string[]> = {
+    pipe: [
+      'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=800&q=80',
+      'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80',
+      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80',
+    ],
+    blend: [
+      'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=800&q=80',
+      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80',
+      'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80',
+    ],
+    bottle: [
+      'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=800&q=80',
+      'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80',
+      'https://images.unsplash.com/photo-1575650772417-e6b418b0d5f6?w=800&q=80',
+    ],
+  };
+
+  return fallbacks[recordType] || fallbacks.bottle;
+}
+
+function buildSearchQuery(query: string, recordType: string) {
+  const base = String(query || '').trim();
+
+  if (recordType === 'pipe') return `${base} tobacco pipe product photo`;
+  if (recordType === 'blend') return `${base} tobacco tin label`;
+  if (recordType === 'bottle') return `${base} whiskey bottle product photo front label`;
+
+  return base;
+}
+
+function pickCandidateUrls(item: any): string[] {
+  return [
+    item?.contentUrl,
+    item?.thumbnailUrl,
+    item?.hostPageDisplayUrl,
+  ]
+    .map((v) => String(v || '').trim())
+    .filter(Boolean);
+}
+
 Deno.serve(async (req) => {
   try {
+    if (req.method !== 'POST') {
+      return Response.json({ error: 'Method not allowed' }, { status: 405 });
+    }
+
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
@@ -9,88 +71,78 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { query, recordType, limit = 12 } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const query = String(body?.query || '').trim();
+    const recordType = String(body?.recordType || 'bottle').trim().toLowerCase();
+    const limit = Math.min(Math.max(Number(body?.limit || 12), 1), 24);
 
-    if (!query || query.trim().length === 0) {
+    if (!query) {
       return Response.json({ error: 'Query required' }, { status: 400 });
     }
 
-    // Use Bing Image Search API for fast, reliable product image results
-    // Format query with record type hints for better relevance
-    let searchQuery = query.trim();
-    if (recordType === 'pipe') {
-      searchQuery += ' tobacco pipe product photo';
-    } else if (recordType === 'blend') {
-      searchQuery += ' tobacco tin label';
-    } else if (recordType === 'bottle') {
-      searchQuery += ' whiskey bottle product photo';
+    const bingKey = Deno.env.get('BING_SEARCH_KEY');
+    if (!bingKey) {
+      return Response.json({
+        images: getFallbackImages(recordType).slice(0, limit),
+        count: Math.min(getFallbackImages(recordType).length, limit),
+        source: 'fallback_no_key',
+      });
     }
 
-    // Fetch images from Bing
+    const searchQuery = buildSearchQuery(query, recordType);
+
     const bingResponse = await fetch(
-      `https://api.bing.microsoft.com/v7.0/images/search?q=${encodeURIComponent(searchQuery)}&count=${Math.min(limit, 50)}&imageType=Photo&mkt=en-US`,
+      `https://api.bing.microsoft.com/v7.0/images/search?q=${encodeURIComponent(searchQuery)}&count=${limit * 2}&imageType=Photo&mkt=en-US&safeSearch=Moderate`,
       {
         method: 'GET',
         headers: {
-          'Ocp-Apim-Subscription-Key': Deno.env.get('BING_SEARCH_KEY') || '',
+          'Ocp-Apim-Subscription-Key': bingKey,
         },
       }
     );
 
     if (!bingResponse.ok) {
-      // Fallback: return curated fallback images if API fails
+      const text = await bingResponse.text().catch(() => '');
+      console.error('[searchProductImages] Bing error:', bingResponse.status, text);
+
       return Response.json({
-        images: getFallbackImages(recordType),
-        source: 'fallback'
+        images: getFallbackImages(recordType).slice(0, limit),
+        count: Math.min(getFallbackImages(recordType).length, limit),
+        source: 'fallback_bing_error',
       });
     }
 
     const data = await bingResponse.json();
-    const images = (data.value || [])
-      .filter(img => {
-        // Filter for reasonable image dimensions (exclude very small thumbnails)
-        return img.width > 150 && img.height > 150;
-      })
-      .slice(0, limit)
-      .map(img => img.contentUrl)
-      .filter(url => {
-        // Filter out obvious placeholder/bad URLs
-        return url && url.startsWith('http') && !url.includes('placeholder');
-      });
+    const rawItems = Array.isArray(data?.value) ? data.value : [];
+
+    const imageUrls = dedupeUrls(
+      rawItems
+        .filter((img: any) => {
+          const width = Number(img?.width || 0);
+          const height = Number(img?.height || 0);
+          return width >= 200 && height >= 200;
+        })
+        .flatMap((img: any) => pickCandidateUrls(img))
+    ).slice(0, limit);
+
+    const finalImages = imageUrls.length
+      ? imageUrls
+      : getFallbackImages(recordType).slice(0, limit);
 
     return Response.json({
-      images: images.length > 0 ? images : getFallbackImages(recordType),
-      count: images.length,
-      source: images.length > 0 ? 'bing' : 'fallback',
+      images: finalImages,
+      count: finalImages.length,
+      source: imageUrls.length ? 'bing' : 'fallback_empty',
+      query: searchQuery,
     });
   } catch (error) {
-    console.error('Image search error:', error);
+    console.error('[searchProductImages] fatal error:', error);
+
     return Response.json(
-      { error: error.message || 'Failed to search images' },
+      {
+        error: error instanceof Error ? error.message : 'Failed to search images',
+      },
       { status: 500 }
     );
   }
 });
-
-// Fallback curated images when API is unavailable
-function getFallbackImages(recordType) {
-  const fallbacks = {
-    pipe: [
-      'https://images.unsplash.com/photo-1599888868898-cb6a6f0d0b6d?w=400&q=80', // tobacco pipes
-      'https://images.unsplash.com/photo-1610738313506-9c7ab8117e48?w=400&q=80',
-      'https://images.unsplash.com/photo-1599888868858-9b6f5edb2d5b?w=400&q=80',
-    ],
-    blend: [
-      'https://images.unsplash.com/photo-1599888868858-9b6f5edb2d5b?w=400&q=80', // tobacco tins
-      'https://images.unsplash.com/photo-1599888869093-cf5e6c10a13a?w=400&q=80',
-      'https://images.unsplash.com/photo-1599888868858-9b6f5edb2d5b?w=400&q=80',
-    ],
-    bottle: [
-      'https://images.unsplash.com/photo-1608403849541-bef2e6f1f1ba?w=400&q=80', // whiskey bottles
-      'https://images.unsplash.com/photo-1608403849541-bef2e6f1f1ba?w=400&q=80',
-      'https://images.unsplash.com/photo-1608403849541-bef2e6f1f1ba?w=400&q=80',
-    ],
-  };
-  
-  return fallbacks[recordType] || fallbacks.pipe;
-}
