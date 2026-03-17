@@ -184,7 +184,7 @@ export default function CollectionHub() {
       ];
     } else if (module.type === 'whiskey') {
       stats = [
-        { label: t('hub.bottles'), value: summary.whiskey.count },
+        { label: t('hub.bottles') || 'Whiskey Bottles', value: summary.whiskey.count },
         { label: t('hub.totalValue'), value: totalBottleValue > 0 ? `$${totalBottleValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—' },
       ];
     }
