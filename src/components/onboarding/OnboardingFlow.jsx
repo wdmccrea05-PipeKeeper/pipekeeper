@@ -11,8 +11,6 @@ import {
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import OnboardingModuleStep from './OnboardingModuleStep';
-import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/d2be37fcd_IMG_4833.jpeg';
 
 // Safe localStorage wrapper for onboarding state
@@ -35,11 +33,8 @@ function safeSetOnboarding(key, value) {
 
 export default function OnboardingFlow({ onComplete, onSkip }) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [moduleSelections, setModuleSelections] = useState({ pipes: true, whiskey: true });
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  const { setModulesEnabled } = useEnabledModules();
-
+  const {t} = useTranslation()
   const steps = [
     {
       title: t("onboarding.welcomeTitle"),
@@ -87,17 +82,6 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
           </div>
         </div>
       )
-    },
-    {
-      title: "Choose Your Collection Modules",
-      description: "Select which collection types you want to track. You can change this anytime in Profile settings.",
-      icon: Sparkles,
-      content: (
-        <OnboardingModuleStep
-          initialSelections={moduleSelections}
-          onChange={(sel) => setModuleSelections(sel)}
-        />
-      ),
     },
     {
       title: t("onboarding.preferencesTitle"),
@@ -383,14 +367,8 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
 
   const currentStepData = steps[currentStep];
 
-  const handleNext = async () => {
+  const handleNext = () => {
     if (currentStep === steps.length - 1) {
-      // Persist module selections before completing onboarding
-      try {
-        await setModulesEnabled(moduleSelections);
-      } catch (e) {
-        // Non-fatal — defaults are sensible
-      }
       onComplete();
     } else {
       setCurrentStep(currentStep + 1);

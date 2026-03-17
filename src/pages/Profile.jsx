@@ -13,10 +13,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 
-import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, GlassWater, Layers } from "lucide-react";
+import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, GlassWater } from "lucide-react";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 import WhiskeyPreferencesSection from "@/components/profile/WhiskeyPreferencesSection";
-import ModuleVisibilitySettings from "@/components/modules/ModuleVisibilitySettings";
 
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -860,26 +859,6 @@ export default function ProfilePage() {
                 </Button>
               ) : null}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Module Visibility */}
-        <Card className="border-amber-200/50 bg-gradient-to-br from-amber-50/80 to-white">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
-                <Layers className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-lg text-amber-900">Active Modules</CardTitle>
-                <CardDescription className="text-stone-600 text-sm">
-                  Show or hide collection modules. Your data is always preserved.
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ModuleVisibilitySettings />
           </CardContent>
         </Card>
 
