@@ -1,17 +1,28 @@
-// platform/index.js
-// CollectionKeeper Platform — main export barrel.
-//
-// Import platform services from this entry point to keep import paths stable
-// as the platform grows. PipeKeeper-specific code is kept in src/components/
-// and src/pages/; this directory contains only reusable platform-level services.
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import translations from './translations complete';
 
-export * from "./moduleTypes.js";
-export * from "./itemModel.js";
-export * from "./aiEligibility.js";
-export * from "./valuation.js";
-export * from "./reporting.js";
-export * from "./dashboard.js";
-export * from "./entitlements.js";
-export * from "./collectionCuratorAI.js";
-export { getAdapter, normalizeItemForPlatform, getItemUsageProfile, isItemAiEligibleViaAdapter } from "./moduleAdapters/index.js";
-export { pipeAdapter, tobaccoAdapter } from "./moduleAdapters/pipeAdapter.js";
+const DEFAULT_LANGUAGE = 'en';
+
+if (!i18n.isInitialized) {
+  i18n
+    .use(initReactI18next)
+    .init({
+      resources: translations,
+      lng: DEFAULT_LANGUAGE,
+      fallbackLng: DEFAULT_LANGUAGE,
+      interpolation: {
+        escapeValue: false,
+      },
+      returnNull: false,
+      returnEmptyString: false,
+      react: {
+        useSuspense: false,
+      },
+    })
+    .catch((err) => {
+      console.error('[i18n] initialization failed:', err);
+    });
+}
+
+export default i18n;
