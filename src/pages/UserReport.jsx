@@ -269,8 +269,8 @@ export default function UserReport() {
         </Card>
 
         <Card 
-          className={`bg-white border-gray-200 cursor-pointer transition-all hover:shadow-lg ${
-            viewFilter === 'free' ? 'ring-2 ring-gray-800' : ''
+          className={`cursor-pointer transition-all hover:shadow-lg ${
+            viewFilter === 'free' ? 'ring-2 ring-[#B48C4B]' : ''
           }`}
           onClick={() => {
             setViewFilter('free');
