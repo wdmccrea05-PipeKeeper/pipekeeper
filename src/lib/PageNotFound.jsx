@@ -22,13 +22,19 @@ export default function PageNotFound({}) {
     });
     
     return (
-        <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
+        <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'linear-gradient(135deg, #0f0b08 0%, #1a1410 50%, #0f0b08 100%)' }}>
             <div className="max-w-md w-full">
                 <div className="text-center space-y-6">
+                    {/* Logo */}
+                    <img
+                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+                        alt="CollectionKeeper"
+                        className="w-20 h-20 mx-auto object-contain"
+                    />
                     {/* 404 Error Code */}
                     <div className="space-y-2">
-                         <h1 className="text-7xl font-light text-slate-300">404</h1>
-                         <div className="h-0.5 w-16 bg-slate-200 mx-auto"></div>
+                         <h1 className="text-7xl font-light" style={{ color: 'rgba(224,216,200,0.3)' }}>404</h1>
+                         <div className="h-0.5 w-16 mx-auto" style={{ background: 'rgba(180,140,75,0.3)' }}></div>
                      </div>
 
                      {/* Main Message */}
