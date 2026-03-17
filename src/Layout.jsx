@@ -611,7 +611,7 @@ export default function Layout({ children, currentPageName }) {
                   <BackButton currentPageName={currentPageName} />
                   <Link to={createPageUrl("CollectionHub")} className="flex items-center gap-2 flex-shrink-0">
                     <div className="min-w-0 flex items-center">
-                      <BrandLogo compact className="min-w-0" imageClassName="w-7 h-7" />
+                      <BrandLogo compact hoverable className="min-w-0" imageClassName="w-7 h-7" />
                     </div>
                   </Link>
                 </div>
