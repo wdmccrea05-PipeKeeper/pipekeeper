@@ -39,10 +39,10 @@ export default function PageNotFound({}) {
 
                      {/* Main Message */}
                      <div className="space-y-3">
-                         <h2 className="text-2xl font-medium text-slate-800 overflow-wrap break-words">
+                         <h2 className="text-2xl font-medium overflow-wrap break-words" style={{ color: '#E0D8C8' }}>
                              {t("error.pageNotFound")}
                          </h2>
-                         <p className="text-slate-600 leading-relaxed overflow-wrap break-words">
+                         <p className="leading-relaxed overflow-wrap break-words" style={{ color: 'rgba(224,216,200,0.65)' }}>
                              {t("error.pageNotFoundDescription")} <span className="font-medium text-slate-700">"{pageName}"</span> {t("error.pageNotFoundSuffix")}
                          </p>
                      </div>
