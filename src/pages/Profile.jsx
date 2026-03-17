@@ -501,15 +501,15 @@ export default function ProfilePage() {
         </Card>
 
         {/* Profile */}
-        <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
+        <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, rgba(100,70,45,0.4), rgba(80,55,35,0.5))', border: '1px solid rgba(120,90,65,0.45)' }}>
+                <User className="w-6 h-6" style={{ color: '#D4A574' }} />
               </div>
               <div className="flex-1">
-                <CardTitle className="text-2xl text-violet-900">{t("profile.smokingProfile")}</CardTitle>
-                <CardDescription className="text-stone-700">
+                <CardTitle className="text-2xl" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{t("profile.smokingProfile")}</CardTitle>
+                <CardDescription style={{ color: 'rgba(224,216,200,0.6)' }}>
                   {t("profile.personalizeAIRecommendations")}
                 </CardDescription>
               </div>
