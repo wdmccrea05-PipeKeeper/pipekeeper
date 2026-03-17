@@ -227,8 +227,8 @@ export default function UserReport() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card 
-          className={`bg-white/95 border-[#e8d5b7]/30 cursor-pointer transition-all hover:shadow-lg ${
-            viewFilter === 'all' ? 'ring-2 ring-[#8b3a3a]' : ''
+          className={`bg-white border-gray-200 cursor-pointer transition-all hover:shadow-lg ${
+            viewFilter === 'all' ? 'ring-2 ring-gray-800' : ''
           }`}
           onClick={() => {
             setViewFilter('all');
@@ -237,19 +237,19 @@ export default function UserReport() {
           }}
         >
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-stone-600 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
               <Users className="w-4 h-4" />
               {t("userReport.totalUsers")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-stone-800">{summary.total_users}</p>
+            <p className="text-3xl font-bold text-black">{summary.total_users}</p>
           </CardContent>
         </Card>
 
         <Card 
-          className={`bg-white/95 border-[#e8d5b7]/30 cursor-pointer transition-all hover:shadow-lg ${
-            viewFilter === 'paid' ? 'ring-2 ring-emerald-500' : ''
+          className={`bg-white border-gray-200 cursor-pointer transition-all hover:shadow-lg ${
+            viewFilter === 'paid' ? 'ring-2 ring-gray-800' : ''
           }`}
           onClick={() => {
             setViewFilter('paid');
@@ -258,19 +258,19 @@ export default function UserReport() {
           }}
         >
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-emerald-600 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
               <Crown className="w-4 h-4" />
               {t("userReport.paidUsers")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-emerald-700">{summary.paid_users}</p>
+            <p className="text-3xl font-bold text-black">{summary.paid_users}</p>
           </CardContent>
         </Card>
 
         <Card 
-          className={`bg-white/95 border-[#e8d5b7]/30 cursor-pointer transition-all hover:shadow-lg ${
-            viewFilter === 'free' ? 'ring-2 ring-stone-500' : ''
+          className={`bg-white border-gray-200 cursor-pointer transition-all hover:shadow-lg ${
+            viewFilter === 'free' ? 'ring-2 ring-gray-800' : ''
           }`}
           onClick={() => {
             setViewFilter('free');
@@ -279,128 +279,128 @@ export default function UserReport() {
           }}
         >
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-stone-600 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
               <UserX className="w-4 h-4" />
               {t("userReport.freeUsers")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-stone-700">{summary.free_users}</p>
+            <p className="text-3xl font-bold text-black">{summary.free_users}</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-white/95 border-[#e8d5b7]/30">
+        <Card className="bg-white border-gray-200">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-blue-600 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
               {t("userReport.paidPercentage")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-blue-700">{summary.paid_percentage}%</p>
+            <p className="text-3xl font-bold text-black">{summary.paid_percentage}%</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-white/95 border-[#e8d5b7]/30">
+        <Card className="bg-white border-gray-200">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-purple-600 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
               <UserPlus className="w-4 h-4" />
               {t("userReport.new7Days")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-purple-700">{metricsLoading ? '...' : trialMetrics.newSignupsLast7d || 0}</p>
+            <p className="text-3xl font-bold text-black">{metricsLoading ? '...' : trialMetrics.newSignupsLast7d || 0}</p>
           </CardContent>
         </Card>
 
         {/* Platform Cards */}
         {adminMetrics?.platformBreakdown && !metricsLoading && (
           <>
-            <Card className="bg-white/95 border-gray-200">
+            <Card className="bg-white border-gray-200">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.apple")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-emerald-600">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-emerald-700">{platformBreakdown.apple?.paid || 0}</span>
+                    <span className="text-gray-600">{t("userReport.paid")}:</span>
+                    <span className="font-bold text-black">{platformBreakdown.apple?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">{t("userReport.free")}:</span>
-                    <span className="font-bold text-gray-700">{platformBreakdown.apple?.free || 0}</span>
+                    <span className="font-bold text-black">{platformBreakdown.apple?.free || 0}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/95 border-green-200">
+            <Card className="bg-white border-gray-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-green-700">{t("userReport.android")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.android")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-emerald-600">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-emerald-700">{platformBreakdown.android?.paid || 0}</span>
+                    <span className="text-gray-600">{t("userReport.paid")}:</span>
+                    <span className="font-bold text-black">{platformBreakdown.android?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">{t("userReport.free")}:</span>
-                    <span className="font-bold text-gray-700">{platformBreakdown.android?.free || 0}</span>
+                    <span className="font-bold text-black">{platformBreakdown.android?.free || 0}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/95 border-blue-200">
+            <Card className="bg-white border-gray-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-blue-700">{t("userReport.web")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.web")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-emerald-600">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-emerald-700">{platformBreakdown.web?.paid || 0}</span>
+                    <span className="text-gray-600">{t("userReport.paid")}:</span>
+                    <span className="font-bold text-black">{platformBreakdown.web?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">{t("userReport.free")}:</span>
-                    <span className="font-bold text-gray-700">{platformBreakdown.web?.free || 0}</span>
+                    <span className="font-bold text-black">{platformBreakdown.web?.free || 0}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/95 border-purple-200">
+            <Card className="bg-white border-gray-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-purple-700">{t("userReport.iOS")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.iOS")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-emerald-600">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-emerald-700">{platformBreakdown.ios?.paid || 0}</span>
+                    <span className="text-gray-600">{t("userReport.paid")}:</span>
+                    <span className="font-bold text-black">{platformBreakdown.ios?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">{t("userReport.free")}:</span>
-                    <span className="font-bold text-gray-700">{platformBreakdown.ios?.free || 0}</span>
+                    <span className="font-bold text-black">{platformBreakdown.ios?.free || 0}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/95 border-amber-200">
+            <Card className="bg-white border-gray-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-amber-700">{t("userReport.unknown")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.unknown")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-emerald-600">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-emerald-700">{platformBreakdown.unknown?.paid || 0}</span>
+                    <span className="text-gray-600">{t("userReport.paid")}:</span>
+                    <span className="font-bold text-black">{platformBreakdown.unknown?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">{t("userReport.free")}:</span>
-                    <span className="font-bold text-gray-700">{platformBreakdown.unknown?.free || 0}</span>
+                    <span className="font-bold text-black">{platformBreakdown.unknown?.free || 0}</span>
                   </div>
                 </div>
               </CardContent>
