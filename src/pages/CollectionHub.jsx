@@ -143,7 +143,6 @@ export default function CollectionHub() {
     profile: hubProfile,
   });
 
-  const { enabledModules, isModuleEnabled, moduleStates } = useEnabledKeeperModules();
   const comingSoonModules = getComingSoonModules();
 
   // AI-eligible collection: only include data from enabled/visible modules
