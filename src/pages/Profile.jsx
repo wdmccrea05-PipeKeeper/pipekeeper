@@ -264,6 +264,10 @@ export default function ProfilePage() {
       strength_preference: source.strength_preference || "No Preference",
       notes: source.notes || "",
       whiskey_preferences: source.whiskey_preferences || { types: [], flavors: [], drinking_style: [], cocktails: [] },
+      pipekeeper_enabled: source.pipekeeper_enabled !== false,
+      whiskeykeeper_enabled: source.whiskeykeeper_enabled !== false,
+      winekeeper_enabled: source.winekeeper_enabled === true,
+      cigarkeeper_enabled: source.cigarkeeper_enabled === true,
     }));
   }, [profile, profileId, user]);
 
