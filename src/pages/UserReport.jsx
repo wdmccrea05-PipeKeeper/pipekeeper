@@ -451,24 +451,24 @@ export default function UserReport() {
 
       {/* Growth Chart */}
       {growthLastEightWeeks.length > 0 && !metricsLoading && (
-        <Card className="bg-white/95 border-[#e8d5b7]/30 mb-6">
+        <Card className="bg-white border-gray-200 mb-6">
           <CardHeader className="pb-3">
-            <CardTitle className="text-stone-800 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
+            <CardTitle className="text-black flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-gray-600" />
               {t("userReport.weeklyGrowth")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={growthLastEightWeeks}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e8d5b7/20" />
-                <XAxis dataKey="week" tick={{ fill: '#5a5a5a', fontSize: 12 }} />
-                <YAxis tick={{ fill: '#5a5a5a', fontSize: 12 }} />
-                <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #ddd' }} />
-                <Legend />
-                <Bar dataKey="newUsers" fill="#3b82f6" name={t("userReport.newUsers")} />
-                <Bar dataKey="newPaidSubscribers" fill="#10b981" name={t("userReport.newPaid")} />
-                <Bar dataKey="newProSubscribers" fill="#f59e0b" name={t("userReport.newPro")} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="week" tick={{ fill: '#374151', fontSize: 12 }} />
+                <YAxis tick={{ fill: '#374151', fontSize: 12 }} />
+                <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #d1d5db', color: '#111' }} />
+                <Legend wrapperStyle={{ color: '#374151' }} />
+                <Bar dataKey="newUsers" fill="#374151" name={t("userReport.newUsers")} />
+                <Bar dataKey="newPaidSubscribers" fill="#6b7280" name={t("userReport.newPaid")} />
+                <Bar dataKey="newProSubscribers" fill="#9ca3af" name={t("userReport.newPro")} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
