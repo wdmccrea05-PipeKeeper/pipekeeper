@@ -636,12 +636,12 @@ export default function UserReport() {
       {/* Paid Users Table */}
       {(viewFilter === 'all' || viewFilter === 'paid') && (
         <Collapsible open={showPaidTable} onOpenChange={setShowPaidTable}>
-          <Card className="bg-white/95 border-[#e8d5b7]/30 mb-6">
+          <Card className="bg-white border-gray-200 mb-6">
             <CollapsibleTrigger className="w-full">
-              <CardHeader className="cursor-pointer hover:bg-stone-50">
-                <CardTitle className="text-stone-800 flex items-center justify-between">
+              <CardHeader className="cursor-pointer hover:bg-gray-50">
+                <CardTitle className="text-black flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Crown className="w-5 h-5 text-amber-600" />
+                    <Crown className="w-5 h-5 text-gray-600" />
                     {t("userReport.paidUsersCount", { count: filteredData.paid.length })}
                   </div>
                   {showPaidTable ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -653,34 +653,34 @@ export default function UserReport() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-stone-200">
+                      <tr className="border-b border-gray-200">
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('full_name')}
                         >
                           {t("userReport.name")} {sortColumn === 'full_name' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('email')}
                         >
                           {t("userReport.email")} {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('subscription_status')}
                         >
                           {t("userReport.status")} {sortColumn === 'subscription_status' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-stone-700">{t("userReport.billing")}</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t("userReport.billing")}</th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('subscription_end')}
                         >
                           {t("userReport.periodEnd")} {sortColumn === 'subscription_end' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('created_date')}
                         >
                           {t("userReport.joined")} {sortColumn === 'created_date' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -690,23 +690,23 @@ export default function UserReport() {
                     <tbody>
                       {filteredData.paid.length === 0 ? (
                         <tr>
-                          <td colSpan="6" className="text-center py-8 text-stone-500">
+                          <td colSpan="6" className="text-center py-8 text-gray-500">
                             {searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noPaidUsersFound")}
                           </td>
                         </tr>
                       ) : (
                         filteredData.paid.map((user) => (
-                          <tr key={user.email} className="border-b border-stone-100 hover:bg-stone-50">
-                            <td className="py-3 px-4 text-sm text-stone-800">{user.full_name || '-'}</td>
-                            <td className="py-3 px-4 text-sm text-stone-600">{user.email}</td>
+                          <tr key={user.email} className="border-b border-gray-100 hover:bg-gray-50">
+                            <td className="py-3 px-4 text-sm text-black">{user.full_name || '-'}</td>
+                            <td className="py-3 px-4 text-sm text-gray-700">{user.email}</td>
                             <td className="py-3 px-4">
-                              <Badge className="bg-emerald-100 text-emerald-800">{user.subscription_status}</Badge>
+                              <Badge className="bg-gray-100 text-black border border-gray-300">{user.subscription_status}</Badge>
                             </td>
-                            <td className="py-3 px-4 text-sm text-stone-600 capitalize">{user.billing_interval || '-'}</td>
-                            <td className="py-3 px-4 text-sm text-stone-600">
+                            <td className="py-3 px-4 text-sm text-gray-700 capitalize">{user.billing_interval || '-'}</td>
+                            <td className="py-3 px-4 text-sm text-gray-700">
                               {user.subscription_end ? new Date(user.subscription_end).toLocaleDateString() : '-'}
                             </td>
-                            <td className="py-3 px-4 text-sm text-stone-600">
+                            <td className="py-3 px-4 text-sm text-gray-700">
                               {new Date(user.created_date).toLocaleDateString()}
                             </td>
                           </tr>
@@ -724,12 +724,12 @@ export default function UserReport() {
       {/* Free Users Table */}
       {(viewFilter === 'all' || viewFilter === 'free') && (
         <Collapsible open={showFreeTable} onOpenChange={setShowFreeTable}>
-          <Card className="bg-white/95 border-[#e8d5b7]/30">
+          <Card className="bg-white border-gray-200">
             <CollapsibleTrigger className="w-full">
-              <CardHeader className="cursor-pointer hover:bg-stone-50">
-                <CardTitle className="text-stone-800 flex items-center justify-between">
+              <CardHeader className="cursor-pointer hover:bg-gray-50">
+                <CardTitle className="text-black flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <UserX className="w-5 h-5 text-stone-600" />
+                    <UserX className="w-5 h-5 text-gray-600" />
                     {t("userReport.freeUsersCount", { count: filteredData.free.length })}
                   </div>
                   {showFreeTable ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -741,27 +741,27 @@ export default function UserReport() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-stone-200">
+                      <tr className="border-b border-gray-200">
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('full_name')}
                         >
                           {t("userReport.name")} {sortColumn === 'full_name' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('email')}
                         >
                           {t("userReport.email")} {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('subscription_status')}
                         >
                           {t("userReport.status")} {sortColumn === 'subscription_status' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-stone-700 cursor-pointer hover:bg-stone-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('created_date')}
                         >
                           {t("userReport.joined")} {sortColumn === 'created_date' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -771,21 +771,21 @@ export default function UserReport() {
                     <tbody>
                       {filteredData.free.length === 0 ? (
                         <tr>
-                          <td colSpan="4" className="text-center py-8 text-stone-500">
+                          <td colSpan="4" className="text-center py-8 text-gray-500">
                             {searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noFreeUsersFound")}
                           </td>
                         </tr>
                       ) : (
                         filteredData.free.map((user) => (
-                          <tr key={user.email} className="border-b border-stone-100 hover:bg-stone-50">
-                            <td className="py-3 px-4 text-sm text-stone-800">{user.full_name || '-'}</td>
-                            <td className="py-3 px-4 text-sm text-stone-600">{user.email}</td>
+                          <tr key={user.email} className="border-b border-gray-100 hover:bg-gray-50">
+                            <td className="py-3 px-4 text-sm text-black">{user.full_name || '-'}</td>
+                            <td className="py-3 px-4 text-sm text-gray-700">{user.email}</td>
                             <td className="py-3 px-4">
-                              <Badge variant="outline" className="text-stone-600">
+                              <Badge variant="outline" className="text-black border-gray-400">
                                 {user.subscription_status}
                               </Badge>
                             </td>
-                            <td className="py-3 px-4 text-sm text-stone-600">
+                            <td className="py-3 px-4 text-sm text-gray-700">
                               {new Date(user.created_date).toLocaleDateString()}
                             </td>
                           </tr>
