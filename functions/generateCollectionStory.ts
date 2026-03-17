@@ -165,6 +165,13 @@ Deno.serve(async (req) => {
     const bottlesList = Array.isArray(bottles) ? bottles : [];
     const logsList = Array.isArray(logs) ? logs : [];
     const tastingLogsList = Array.isArray(tastingLogs) ? tastingLogs : [];
+    const inventoryUnitsList = Array.isArray(inventoryUnits) ? inventoryUnits : [];
+
+    // Dual bottle metrics
+    const bottleTypes = bottlesList.length; // distinct labels
+    const totalBottles = inventoryUnitsList.length > 0
+      ? inventoryUnitsList.length
+      : bottlesList.reduce((s, b) => s + (Number(b.bottle_count) || 1), 0);
 
     // Value totals
     const totalValue =
