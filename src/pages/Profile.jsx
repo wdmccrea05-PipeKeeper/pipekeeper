@@ -903,15 +903,15 @@ export default function ProfilePage() {
         </Card>
 
         {/* Module Visibility */}
-        <Card className="border-stone-200 bg-gradient-to-br from-stone-50 to-white">
+        <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-stone-500 to-stone-600 flex items-center justify-center">
-                <Layers className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, rgba(80,60,40,0.4), rgba(60,45,30,0.5))', border: '1px solid rgba(120,90,65,0.35)' }}>
+                <Layers className="w-6 h-6" style={{ color: '#D4A574' }} />
               </div>
               <div>
-                <CardTitle className="text-xl text-stone-800">Active Modules</CardTitle>
-                <CardDescription className="text-stone-600">
+                <CardTitle className="text-xl" style={{ color: '#F5F1E7' }}>Active Modules</CardTitle>
+                <CardDescription style={{ color: 'rgba(224,216,200,0.55)' }}>
                   Control which collection modules are visible. Your data is never deleted when a module is hidden.
                 </CardDescription>
               </div>
