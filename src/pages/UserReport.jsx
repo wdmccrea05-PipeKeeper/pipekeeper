@@ -781,7 +781,7 @@ export default function UserReport() {
                             <td className="py-3 px-4 text-sm text-[#F5F1E7]">{user.full_name || '-'}</td>
                             <td className="py-3 px-4 text-sm text-[#E0D8C8]">{user.email}</td>
                             <td className="py-3 px-4">
-                              <Badge variant="outline" className="text-[#F5F1E7] border-gray-400">
+                              <Badge variant="outline" className="text-[#E0D8C8]/70 border-[#8b6239]/40">
                                 {user.subscription_status}
                               </Badge>
                             </td>
