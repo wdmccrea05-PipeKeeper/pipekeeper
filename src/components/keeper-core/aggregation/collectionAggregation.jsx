@@ -107,11 +107,10 @@ export async function aggregateCollection(userEmail) {
     };
 
     // === WHISKEY MODULE ===
-     // Count inventory units (physical bottles), not Bottle records (which may have multiple units)
-     const whiskeyBottles = inventoryUnitsList.length > 0 
-       ? inventoryUnitsList 
-       : bottlesList;
-     const bottlesCount = whiskeyBottles.length;
+     // CANONICAL: count = number of Bottle records (one per unique bottle title/entry).
+     // This matches the count shown in WhiskeyKeeperModule and all hub surfaces.
+     // WhiskeyInventoryUnit is for multi-bottle tracking only and should NOT affect the primary count.
+     const bottlesCount = bottlesList.length;
      const bottlesValue = bottlesList.reduce((sum, b) => sum + getBottleValue(b), 0);
      const openBottles = inventoryUnitsList.filter(u => u.status === 'open').length;
      const sealedBottles = inventoryUnitsList.filter(u => u.status === 'reserve' || u.status === 'drinking').length;
