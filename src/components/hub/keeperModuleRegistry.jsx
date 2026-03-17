@@ -1,7 +1,10 @@
 /**
- * Central module registry for CollectionKeeper ecosystem
- * Defines all available modules (active and coming soon)
- * Used to drive Hub UI, module cards, and future extensibility
+ * Central module registry for CollectionKeeper ecosystem.
+ * Defines all available modules (active and coming soon).
+ * Used to drive Hub UI, module cards, navigation, and extensibility.
+ *
+ * To get user-visibility-filtered modules, use useEnabledKeeperModules() hook
+ * from components/hooks/useEnabledKeeperModules.js
  */
 
 export const KEEPER_MODULES = [
@@ -44,28 +47,36 @@ export const KEEPER_MODULES = [
 ];
 
 /**
- * Get enabled modules (active modules)
+ * Get all modules that are platform-launched (have a route + enabled=true).
+ * Does NOT filter by user preferences. Use useEnabledKeeperModules() for that.
  */
 export function getEnabledModules() {
   return KEEPER_MODULES.filter(m => m.enabled);
 }
 
 /**
- * Get coming soon modules
+ * Get coming soon modules.
  */
 export function getComingSoonModules() {
   return KEEPER_MODULES.filter(m => !m.enabled);
 }
 
 /**
- * Get module by type
+ * Get module by type.
  */
 export function getModuleByType(type) {
   return KEEPER_MODULES.find(m => m.type === type);
 }
 
 /**
- * Get count of enabled modules
+ * Get module by moduleKey.
+ */
+export function getModuleByKey(key) {
+  return KEEPER_MODULES.find(m => m.moduleKey === key);
+}
+
+/**
+ * Get count of platform-enabled modules.
  */
 export function getEnabledModuleCount() {
   return getEnabledModules().length;
