@@ -31,7 +31,7 @@ export default function OnlineImageSearchModal({
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-2xl max-h-[80vh] rounded-2xl overflow-y-auto"
+        className="relative w-full max-w-2xl max-h-[85vh] rounded-2xl overflow-hidden flex flex-col"
         style={{
           background: 'linear-gradient(180deg, rgba(28,20,14,0.98), rgba(20,15,11,0.99))',
           border: '1px solid rgba(224,216,200,0.15)',
