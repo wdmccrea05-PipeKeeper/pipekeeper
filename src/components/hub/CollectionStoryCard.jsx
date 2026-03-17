@@ -243,14 +243,13 @@ export default function CollectionStoryCard() {
 
       {/* Footer */}
       <div
-        className="px-6 py-3 text-center text-xs border-t"
-        style={{
-          color: 'rgba(224,216,200,0.3)',
-          borderColor: 'rgba(180,140,75,0.1)',
-          letterSpacing: '0.06em',
-        }}
+        className="px-6 py-3 flex items-center justify-center gap-2 border-t"
+        style={{ borderColor: 'rgba(180,140,75,0.1)' }}
       >
-        Tracked with CollectionKeeper
+        <BrandLogo compact showWordmark={false} imageClassName="w-5 h-5" />
+        <span className="text-xs" style={{ color: 'rgba(224,216,200,0.3)', letterSpacing: '0.06em' }}>
+          Tracked with CollectionKeeper
+        </span>
       </div>
     </div>
   );
