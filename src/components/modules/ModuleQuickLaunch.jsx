@@ -64,7 +64,8 @@ export default function ModuleQuickLaunch({ actions = [] }) {
                 <img
                   src={iconImage}
                   alt=""
-                  className="w-full h-full object-cover"
+                  className="w-7 h-7 object-contain"
+                  style={{ mixBlendMode: 'screen' }}
                   aria-hidden="true"
                 />
               ) : Icon ? (
