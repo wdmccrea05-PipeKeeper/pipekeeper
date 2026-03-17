@@ -454,12 +454,14 @@ export default function WhiskeyInsightsPage() {
               <div className="space-y-4">
                 <div className="p-4 rounded-lg" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.2)' }}>
                   <h4 className="font-semibold text-[#F5F1E7] mb-2">Collection Summary</h4>
-                  <p className="text-sm text-[#D8C7A6]/80 mb-3">Export your collection details including bottles, types, and values</p>
+                  <p className="text-sm text-[#D8C7A6]/80 mb-3">
+                    Export your collection — {bottleTypes} bottle type{bottleTypes !== 1 ? 's' : ''}, {totalBottles} total bottle{totalBottles !== 1 ? 's' : ''}
+                  </p>
                   <button 
                     onClick={async () => {
                       try {
                         const csv = [
-                          ['Name', 'Type', 'Country', 'Retail Price', 'Rating', 'Open Status'].join(','),
+                          ['Bottle Type (Name)', 'Whiskey Style', 'Country', 'Retail Price', 'Rating', 'Inventory Units', 'Open Units', 'Sealed Units'].join(','),
                           ...bottles.map(b => [
                             `"${b.name || ''}"`,
                             b.type || '',
