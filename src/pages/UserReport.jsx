@@ -318,7 +318,7 @@ export default function UserReport() {
           <>
             <Card className="bg-transparent">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.apple")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.apple")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
@@ -336,7 +336,7 @@ export default function UserReport() {
 
             <Card className="bg-transparent">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.android")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.android")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
@@ -354,7 +354,7 @@ export default function UserReport() {
 
             <Card className="bg-transparent">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.web")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.web")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
@@ -372,7 +372,7 @@ export default function UserReport() {
 
             <Card className="bg-transparent">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.iOS")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.iOS")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
@@ -390,7 +390,7 @@ export default function UserReport() {
 
             <Card className="bg-transparent">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-700">{t("userReport.unknown")}</CardTitle>
+                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.unknown")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
@@ -655,32 +655,32 @@ export default function UserReport() {
                     <thead>
                       <tr className="border-b border-gray-200">
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('full_name')}
                         >
                           {t("userReport.name")} {sortColumn === 'full_name' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('email')}
                         >
                           {t("userReport.email")} {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('subscription_status')}
                         >
                           {t("userReport.status")} {sortColumn === 'subscription_status' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t("userReport.billing")}</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8]">{t("userReport.billing")}</th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('subscription_end')}
                         >
                           {t("userReport.periodEnd")} {sortColumn === 'subscription_end' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('created_date')}
                         >
                           {t("userReport.joined")} {sortColumn === 'created_date' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -698,15 +698,15 @@ export default function UserReport() {
                         filteredData.paid.map((user) => (
                           <tr key={user.email} className="border-b border-gray-100 hover:bg-gray-50">
                             <td className="py-3 px-4 text-sm text-black">{user.full_name || '-'}</td>
-                            <td className="py-3 px-4 text-sm text-gray-700">{user.email}</td>
+                            <td className="py-3 px-4 text-sm text-[#E0D8C8]">{user.email}</td>
                             <td className="py-3 px-4">
                               <Badge className="bg-gray-100 text-black border border-gray-300">{user.subscription_status}</Badge>
                             </td>
-                            <td className="py-3 px-4 text-sm text-gray-700 capitalize">{user.billing_interval || '-'}</td>
-                            <td className="py-3 px-4 text-sm text-gray-700">
+                            <td className="py-3 px-4 text-sm text-[#E0D8C8] capitalize">{user.billing_interval || '-'}</td>
+                            <td className="py-3 px-4 text-sm text-[#E0D8C8]">
                               {user.subscription_end ? new Date(user.subscription_end).toLocaleDateString() : '-'}
                             </td>
-                            <td className="py-3 px-4 text-sm text-gray-700">
+                            <td className="py-3 px-4 text-sm text-[#E0D8C8]">
                               {new Date(user.created_date).toLocaleDateString()}
                             </td>
                           </tr>
@@ -743,25 +743,25 @@ export default function UserReport() {
                     <thead>
                       <tr className="border-b border-gray-200">
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('full_name')}
                         >
                           {t("userReport.name")} {sortColumn === 'full_name' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('email')}
                         >
                           {t("userReport.email")} {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('subscription_status')}
                         >
                           {t("userReport.status")} {sortColumn === 'subscription_status' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                         <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50"
+                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-gray-50"
                           onClick={() => handleSort('created_date')}
                         >
                           {t("userReport.joined")} {sortColumn === 'created_date' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -779,13 +779,13 @@ export default function UserReport() {
                         filteredData.free.map((user) => (
                           <tr key={user.email} className="border-b border-gray-100 hover:bg-gray-50">
                             <td className="py-3 px-4 text-sm text-black">{user.full_name || '-'}</td>
-                            <td className="py-3 px-4 text-sm text-gray-700">{user.email}</td>
+                            <td className="py-3 px-4 text-sm text-[#E0D8C8]">{user.email}</td>
                             <td className="py-3 px-4">
                               <Badge variant="outline" className="text-black border-gray-400">
                                 {user.subscription_status}
                               </Badge>
                             </td>
-                            <td className="py-3 px-4 text-sm text-gray-700">
+                            <td className="py-3 px-4 text-sm text-[#E0D8C8]">
                               {new Date(user.created_date).toLocaleDateString()}
                             </td>
                           </tr>
