@@ -212,21 +212,22 @@ export default function WhiskeyKeeperModule() {
             <p className="text-2xl font-bold" style={{ color: '#B48C4B' }}>
               {bottles.length}
             </p>
+            <p className="text-xs" style={{ color: 'rgba(180,140,75,0.45)' }}>unique bottles</p>
           </div>
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskeykeeper.unopened') || 'Unopened'}
+              {t('whiskeykeeper.tastings') || 'Tastings'}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#8B7355' }}>
-              {bottles.filter(b => !b?.opened_date).length}
+              {tastingLogs.length}
             </p>
           </div>
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskeykeeper.openBottles') || 'Open'}
+              {t('whiskeykeeper.favoriteStyle') || 'Rated'}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#A35C5C' }}>
-              {bottles.filter(b => b?.fill_level && b.fill_level !== 'Empty').length}
+              {bottles.filter(b => b?.rating && Number(b.rating) > 0).length}
             </p>
           </div>
         </div>
