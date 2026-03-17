@@ -1,45 +1,212 @@
 /**
- * Create a checkout session for module/bundle purchase
- * Handles individual modules, bundles, and founders offer
+ * Create Stripe checkout sessions for module and bundle purchases.
+ *
+ * Goals:
+ * - Be explicit and deterministic about what the user is buying
+ * - Stamp metadata on both the Checkout Session and resulting Subscription
+ * - Support single-module and bundle purchases
+ * - Support monthly and annual billing
+ * - Support upgrade flows with safe metadata markers
+ *
+ * Expected input:
+ * {
+ *   type: 'single' | 'bundle_2' | 'bundle_3' | 'bundle_4',
+ *   modules: string[],
+ *   billingPeriod: 'monthly' | 'annual' | 'yearly',
+ *   successUrl: string,
+ *   cancelUrl: string
+ * }
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { getStripeClient, safeStripeError } from './_utils/stripe.ts';
 
-const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY');
+type CheckoutType = 'single' | 'bundle_2' | 'bundle_3' | 'bundle_4';
+type BillingPeriod = 'monthly' | 'annual';
 
-// Price ID mappings from secrets
-const PRICE_IDS = {
-  'pipekeeper_monthly': Deno.env.get('STRIPE_PRICE_PIPEKEEPER_MONTHLY'),
-  'pipekeeper_annual': Deno.env.get('STRIPE_PRICE_PIPEKEEPER_ANNUAL'),
-  'whiskeykeeper_monthly': Deno.env.get('STRIPE_PRICE_WHISKEYKEEPER_MONTHLY'),
-  'whiskeykeeper_annual': Deno.env.get('STRIPE_PRICE_WHISKEYKEEPER_ANNUAL'),
-  'cigarkeeper_monthly': Deno.env.get('STRIPE_PRICE_CIGARKEEPER_MONTHLY'),
-  'cigarkeeper_annual': Deno.env.get('STRIPE_PRICE_CIGARKEEPER_ANNUAL'),
-  'winekeeper_monthly': Deno.env.get('STRIPE_PRICE_WINEKEEPER_MONTHLY'),
-  'winekeeper_annual': Deno.env.get('STRIPE_PRICE_WINEKEEPER_ANNUAL'),
-  'bundle_3_monthly': Deno.env.get('STRIPE_PRICE_BUNDLE3_MONTHLY'),
-  'bundle_3_annual': Deno.env.get('STRIPE_PRICE_BUNDLE3_ANNUAL'),
-  'bundle_4_monthly': Deno.env.get('STRIPE_PRICE_BUNDLE4_MONTHLY'),
-  'bundle_4_annual': Deno.env.get('STRIPE_PRICE_BUNDLE4_ANNUAL'),
-  'founders': Deno.env.get('STRIPE_PRICE_FOUNDERS'),
+const ALLOWED_MODULES = ['pipe', 'whiskey', 'cigar', 'coffee'] as const;
+
+const PRICE_IDS: Record<CheckoutType, Record<BillingPeriod, string | undefined>> = {
+  single: {
+    monthly: Deno.env.get('STRIPE_PRICE_SINGLE_MONTHLY'),
+    annual: Deno.env.get('STRIPE_PRICE_SINGLE_ANNUAL'),
+  },
+  bundle_2: {
+    monthly: Deno.env.get('STRIPE_PRICE_BUNDLE_2_MONTHLY'),
+    annual: Deno.env.get('STRIPE_PRICE_BUNDLE_2_ANNUAL'),
+  },
+  bundle_3: {
+    monthly: Deno.env.get('STRIPE_PRICE_BUNDLE_3_MONTHLY'),
+    annual: Deno.env.get('STRIPE_PRICE_BUNDLE_3_ANNUAL'),
+  },
+  bundle_4: {
+    monthly: Deno.env.get('STRIPE_PRICE_BUNDLE_4_MONTHLY'),
+    annual: Deno.env.get('STRIPE_PRICE_BUNDLE_4_ANNUAL'),
+  },
 };
 
-const APP_URL = Deno.env.get('APP_URL') || 'https://collectionkeeper.app';
-
-/**
- * Map module to price ID
- */
-function getModulePriceId(module, billingPeriod) {
-  const key = `${module}_${billingPeriod}`;
-  return PRICE_IDS[key];
+function normEmail(email: unknown): string {
+  return String(email || '').trim().toLowerCase();
 }
 
-/**
- * Map bundle type to price ID
- */
-function getBundlePriceId(bundleType, billingPeriod) {
-  const key = `${bundleType}_${billingPeriod}`;
-  return PRICE_IDS[key];
+function normalizeBillingPeriod(value: unknown): BillingPeriod | null {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw === 'monthly') return 'monthly';
+  if (raw === 'annual' || raw === 'yearly') return 'annual';
+  return null;
+}
+
+function unique<T>(arr: T[]): T[] {
+  return [...new Set(arr)];
+}
+
+function normalizeModules(modules: unknown): string[] {
+  if (!Array.isArray(modules)) return [];
+  return unique(
+    modules
+      .map((m) => String(m || '').trim().toLowerCase())
+      .filter(Boolean)
+      .filter((m) => ALLOWED_MODULES.includes(m as any))
+  );
+}
+
+function inferTypeFromModules(modules: string[]): CheckoutType | null {
+  if (modules.length === 1) return 'single';
+  if (modules.length === 2) return 'bundle_2';
+  if (modules.length === 3) return 'bundle_3';
+  if (modules.length === 4) return 'bundle_4';
+  return null;
+}
+
+function normalizeType(inputType: unknown, modules: string[]): CheckoutType | null {
+  const raw = String(inputType || '').trim().toLowerCase();
+
+  if (raw === 'single') return modules.length === 1 ? 'single' : null;
+  if (raw === 'bundle_2') return modules.length === 2 ? 'bundle_2' : null;
+  if (raw === 'bundle_3') return modules.length === 3 ? 'bundle_3' : null;
+  if (raw === 'bundle_4') return modules.length === 4 ? 'bundle_4' : null;
+
+  return inferTypeFromModules(modules);
+}
+
+function getModuleDescriptor(type: CheckoutType, modules: string[]) {
+  if (type === 'single') {
+    return {
+      productKind: 'single_module',
+      primaryModule: modules[0] || '',
+      moduleCount: '1',
+      bundleName: '',
+    };
+  }
+
+  return {
+    productKind: 'bundle',
+    primaryModule: '',
+    moduleCount: String(modules.length),
+    bundleName: type,
+  };
+}
+
+function getBaseUrl(url: string): string {
+  const parsed = new URL(url);
+  return `${parsed.protocol}//${parsed.host}`;
+}
+
+function assertSafeRedirectUrl(successUrl: string, cancelUrl: string) {
+  const success = new URL(successUrl);
+  const cancel = new URL(cancelUrl);
+
+  if (!['http:', 'https:'].includes(success.protocol) || !['http:', 'https:'].includes(cancel.protocol)) {
+    throw new Error('Invalid redirect URL protocol.');
+  }
+
+  const successBase = getBaseUrl(successUrl);
+  const cancelBase = getBaseUrl(cancelUrl);
+
+  if (successBase !== cancelBase) {
+    throw new Error('Success and cancel URLs must share the same origin.');
+  }
+}
+
+async function findOrCreateStripeCustomer(base44: any, stripe: any, user: any) {
+  const email = normEmail(user?.email);
+  if (!email) {
+    throw new Error('User email is required.');
+  }
+
+  if (user?.stripe_customer_id) {
+    return {
+      stripeCustomerId: String(user.stripe_customer_id),
+      source: 'user_record',
+    };
+  }
+
+  const candidates: any[] = [];
+
+  try {
+    const subsByUserId = user?.id
+      ? await base44.asServiceRole.entities.Subscription.filter({ user_id: user.id })
+      : [];
+    if (Array.isArray(subsByUserId)) candidates.push(...subsByUserId);
+  } catch (err) {
+    console.warn('[createModuleCheckoutSession] Subscription lookup by user_id failed:', err);
+  }
+
+  try {
+    const subsByEmail = await base44.asServiceRole.entities.Subscription.filter({ user_email: email });
+    if (Array.isArray(subsByEmail)) candidates.push(...subsByEmail);
+  } catch (err) {
+    console.warn('[createModuleCheckoutSession] Subscription lookup by email failed:', err);
+  }
+
+  const customerIdFromSub =
+    candidates.find((s) => s?.stripe_customer_id)?.stripe_customer_id ||
+    candidates.find((s) => s?.customer_id)?.customer_id ||
+    null;
+
+  if (customerIdFromSub) {
+    return {
+      stripeCustomerId: String(customerIdFromSub),
+      source: 'subscription_row',
+    };
+  }
+
+  const existing = await stripe.customers.list({
+    email,
+    limit: 10,
+  });
+
+  const matchedCustomer = existing?.data?.find((c: any) => normEmail(c.email) === email) || null;
+
+  if (matchedCustomer?.id) {
+    return {
+      stripeCustomerId: String(matchedCustomer.id),
+      source: 'stripe_lookup',
+    };
+  }
+
+  const created = await stripe.customers.create({
+    email,
+    metadata: {
+      user_id: String(user?.id || ''),
+      auth_user_id: String(user?.auth_user_id || ''),
+      email,
+      app: 'collectionkeeper',
+    },
+  });
+
+  return {
+    stripeCustomerId: String(created.id),
+    source: 'stripe_created',
+  };
+}
+
+async function logCheckoutEvent(base44: any, payload: Record<string, unknown>) {
+  try {
+    await base44.asServiceRole.entities.SubscriptionIntegrationEvent.create(payload);
+  } catch (err) {
+    console.warn('[createModuleCheckoutSession] Failed to log event:', err);
+  }
 }
 
 Deno.serve(async (req) => {
@@ -49,136 +216,147 @@ Deno.serve(async (req) => {
     }
 
     const base44 = createClientFromRequest(req);
+    const stripe = await getStripeClient(req);
     const user = await base44.auth.me();
 
     if (!user?.email) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const payload = await req.json();
-    const { type, modules, billingPeriod = 'monthly', successUrl, cancelUrl } = payload;
+    const body = await req.json().catch(() => ({}));
 
-    if (!type || !modules || !Array.isArray(modules) || modules.length === 0) {
-      return Response.json({ error: 'Invalid parameters' }, { status: 400 });
+    const modules = normalizeModules(body?.modules);
+    const billingPeriod = normalizeBillingPeriod(body?.billingPeriod);
+    const type = normalizeType(body?.type, modules);
+    const successUrl = String(body?.successUrl || '').trim();
+    const cancelUrl = String(body?.cancelUrl || '').trim();
+
+    if (!modules.length) {
+      return Response.json({ error: 'At least one valid module is required.' }, { status: 400 });
     }
 
-    // Get or create Stripe customer
-    let customerId = user.stripe_customer_id;
+    if (!billingPeriod) {
+      return Response.json({ error: 'Invalid billing period.' }, { status: 400 });
+    }
 
-    if (!customerId) {
-      const customerRes = await fetch('https://api.stripe.com/v1/customers', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${STRIPE_SECRET_KEY}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
+    if (!type) {
+      return Response.json({ error: 'Invalid checkout type for selected modules.' }, { status: 400 });
+    }
+
+    if (!successUrl || !cancelUrl) {
+      return Response.json({ error: 'Missing redirect URLs.' }, { status: 400 });
+    }
+
+    assertSafeRedirectUrl(successUrl, cancelUrl);
+
+    const moduleDescriptor = getModuleDescriptor(type, modules);
+    const priceId = PRICE_IDS[type]?.[billingPeriod];
+
+    if (!priceId) {
+      return Response.json(
+        {
+          error: `Missing Stripe price configuration for ${type} / ${billingPeriod}.`,
         },
-        body: new URLSearchParams({
-          email: user.email,
-          metadata: {
-            user_id: user.id || user.auth_user_id,
-            user_email: user.email,
-          },
-        }),
-      });
-
-      if (!customerRes.ok) {
-        console.error('Failed to create Stripe customer:', await customerRes.text());
-        return Response.json({ error: 'Failed to create customer' }, { status: 500 });
-      }
-
-      const customer = await customerRes.json();
-      customerId = customer.id;
-
-      // Store customer ID on user
-      try {
-        await base44.auth.updateMe({ stripe_customer_id: customerId });
-      } catch (err) {
-        console.warn('Failed to store stripe_customer_id:', err?.message);
-      }
+        { status: 500 }
+      );
     }
 
-    // Build line items based on type
-    let lineItems = [];
+    const { stripeCustomerId, source: customerSource } = await findOrCreateStripeCustomer(
+      base44,
+      stripe,
+      user
+    );
 
-    if (type === 'single') {
-      // Individual module purchase
-      const module = modules[0];
-      const priceId = getModulePriceId(module, billingPeriod);
+    const userId = String(user?.id || '');
+    const authUserId = String(user?.auth_user_id || '');
+    const email = normEmail(user.email);
+    const modulesCsv = modules.join(',');
+    const requestId = crypto.randomUUID();
+    const isUpgradeIntent = type.startsWith('bundle') ? 'true' : 'false';
 
-      if (!priceId) {
-        return Response.json(
-          { error: `No price configured for ${module} ${billingPeriod}` },
-          { status: 400 }
-        );
-      }
+    const metadata: Record<string, string> = {
+      app: 'collectionkeeper',
+      request_id: requestId,
+      user_id: userId,
+      auth_user_id: authUserId,
+      user_email: email,
+      checkout_type: type,
+      billing_period: billingPeriod,
+      modules_csv: modulesCsv,
+      product_kind: moduleDescriptor.productKind,
+      primary_module: moduleDescriptor.primaryModule,
+      module_count: moduleDescriptor.moduleCount,
+      bundle_name: moduleDescriptor.bundleName,
+      upgrade_intent: isUpgradeIntent,
+      initiated_from: 'module_upgrade_flow',
+    };
 
-      lineItems.push({ price: priceId, quantity: 1 });
-    } else if (type === 'bundle_3' || type === 'bundle_4') {
-      // Bundle purchase
-      const priceId = getBundlePriceId(type, billingPeriod);
-
-      if (!priceId) {
-        return Response.json(
-          { error: `No price configured for ${type} ${billingPeriod}` },
-          { status: 400 }
-        );
-      }
-
-      lineItems.push({ price: priceId, quantity: 1 });
-    } else if (type === 'founders') {
-      // Founders offer (one-time)
-      const priceId = PRICE_IDS.founders;
-
-      if (!priceId) {
-        return Response.json({ error: 'Founders offer not configured' }, { status: 400 });
-      }
-
-      lineItems.push({ price: priceId, quantity: 1 });
-    } else {
-      return Response.json({ error: 'Invalid plan type' }, { status: 400 });
-    }
-
-    // Create checkout session
-    const checkoutUrl = successUrl || `${APP_URL}/SubscriptionSuccess`;
-    const checkoutCancelUrl = cancelUrl || `${APP_URL}/Subscription`;
-
-    const sessionRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${STRIPE_SECRET_KEY}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        customer: customerId,
-        payment_method_types: 'card',
-        line_items: JSON.stringify(lineItems),
-        mode: type === 'founders' ? 'payment' : 'subscription',
-        success_url: checkoutUrl,
-        cancel_url: checkoutCancelUrl,
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer: stripeCustomerId,
+      success_url: successUrl.includes('?')
+        ? `${successUrl}&session_id={CHECKOUT_SESSION_ID}`
+        : `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl,
+      allow_promotion_codes: true,
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      metadata,
+      subscription_data: {
         metadata: {
-          user_id: user.id || user.auth_user_id,
-          user_email: user.email,
-          purchase_type: type,
-          modules: modules.join(','),
-          billing_period: billingPeriod,
+          ...metadata,
+          source: 'createModuleCheckoutSession',
         },
-      }),
+      },
+      customer_update: {
+        address: 'auto',
+        name: 'auto',
+      },
     });
 
-    if (!sessionRes.ok) {
-      const error = await sessionRes.text();
-      console.error('Stripe session creation failed:', error);
-      return Response.json({ error: 'Checkout session creation failed' }, { status: 500 });
-    }
-
-    const session = await sessionRes.json();
+    await logCheckoutEvent(base44, {
+      user_email: email,
+      event_type: 'checkout_session_created',
+      details: {
+        requestId,
+        stripeCustomerId,
+        customerSource,
+        checkoutSessionId: session.id,
+        checkoutType: type,
+        billingPeriod,
+        modules,
+        priceId,
+        successUrl,
+        cancelUrl,
+        createdAt: new Date().toISOString(),
+      },
+    });
 
     return Response.json({
-      sessionId: session.id,
+      success: true,
       url: session.url,
+      sessionId: session.id,
+      stripeCustomerId,
+      checkoutType: type,
+      billingPeriod,
+      modules,
     });
   } catch (error) {
-    console.error('[createModuleCheckoutSession]', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[createModuleCheckoutSession] fatal error:', error);
+
+    const message =
+      error instanceof Error ? error.message : safeStripeError(error);
+
+    return Response.json(
+      {
+        success: false,
+        error: message,
+      },
+      { status: 500 }
+    );
   }
 });
