@@ -107,18 +107,50 @@ export async function aggregateCollection(userEmail) {
     };
 
     // === WHISKEY MODULE ===
-     // CANONICAL: count = number of Bottle records (one per unique bottle title/entry).
-     // This matches the count shown in WhiskeyKeeperModule and all hub surfaces.
-     // WhiskeyInventoryUnit is for multi-bottle tracking only and should NOT affect the primary count.
-     const bottlesCount = bottlesList.length;
+     //
+     // TWO DISTINCT METRICS — must never be conflated:
+     //
+     //  bottleTypes  = number of distinct Bottle records (unique labels / products)
+     //  totalBottles = actual physical bottle inventory count
+     //
+     // If inventory units exist, totalBottles = sum of all WhiskeyInventoryUnit records for this user.
+     // If no inventory units exist (legacy / simple users), fall back to sum of bottle_count fields on Bottle records.
+     // bottleTypes always = bottlesList.length regardless of inventory depth.
+
+     const bottleTypes = bottlesList.length; // Distinct bottle records / unique labels
+
+     // Total physical bottles: prefer WhiskeyInventoryUnit records (accurate per-unit tracking)
+     // Fall back to legacy bottle_count field on Bottle records for users who haven't migrated
+     let totalBottles;
+     if (inventoryUnitsList.length > 0) {
+       totalBottles = inventoryUnitsList.length;
+     } else {
+       // Legacy fallback: sum bottle_count fields (default 1 per record)
+       totalBottles = bottlesList.reduce((sum, b) => sum + (Number(b.bottle_count) || 1), 0);
+     }
+
      const bottlesValue = bottlesList.reduce((sum, b) => sum + getBottleValue(b), 0);
-     const openBottles = inventoryUnitsList.filter(u => u.status === 'open').length;
-     const sealedBottles = inventoryUnitsList.filter(u => u.status === 'reserve' || u.status === 'drinking').length;
+
+     // Open/unopened counts based on actual inventory units (not record count)
+     // If no inventory units, treat each bottle record as 1 unopened unit (conservative default)
+     const openBottles = inventoryUnitsList.length > 0
+       ? inventoryUnitsList.filter(u => u.status === 'open').length
+       : 0;
+     const unopenedBottles = inventoryUnitsList.length > 0
+       ? inventoryUnitsList.filter(u => u.status === 'reserve' || u.status === 'drinking').length
+       : totalBottles; // All bottles are "unopened" if no unit tracking
+
      const whiskeyStats = {
-       count: bottlesCount,
+       // Canonical dual metrics — use these everywhere, never use just "count" for whiskey
+       bottleTypes,    // Distinct bottle records / unique labels
+       totalBottles,   // Actual physical bottle inventory count
+       // Legacy alias — kept for backward compatibility but refers to bottleTypes
+       count: bottleTypes,
        value: bottlesValue,
        open: openBottles,
-       sealed: sealedBottles,
+       unopened: unopenedBottles,
+       // Legacy alias
+       sealed: unopenedBottles,
        favorite: bottlesList.filter(b => b.favorite).length,
        rated: bottlesList.filter(b => b.rating).length,
        avgRating: bottlesList.filter(b => b.rating).length > 0
