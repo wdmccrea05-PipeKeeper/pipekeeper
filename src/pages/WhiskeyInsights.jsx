@@ -462,14 +462,22 @@ export default function WhiskeyInsightsPage() {
                       try {
                         const csv = [
                           ['Bottle Type (Name)', 'Whiskey Style', 'Country', 'Retail Price', 'Rating', 'Inventory Units', 'Open Units', 'Sealed Units'].join(','),
-                          ...bottles.map(b => [
-                            `"${b.name || ''}"`,
-                            b.type || '',
-                            b.country || '',
-                            b.retail_price || 0,
-                            b.rating || '',
-                            inventoryUnits.some(u => u.bottle_id === b.id && u.status === 'open') ? 'Open' : 'Sealed'
-                          ].join(','))
+                          ...bottles.map(b => {
+                           const units = inventoryUnits.filter(u => u.bottle_id === b.id);
+                           const openUnits = units.filter(u => u.status === 'open').length;
+                           const sealedUnits = units.filter(u => u.status === 'reserve' || u.status === 'drinking').length;
+                           const totalUnits = units.length > 0 ? units.length : (Number(b.bottle_count) || 1);
+                           return [
+                             `"${b.name || ''}"`,
+                             b.type || '',
+                             b.country || '',
+                             b.retail_price || 0,
+                             b.rating || '',
+                             totalUnits,
+                             openUnits,
+                             sealedUnits,
+                           ].join(',');
+                          })
                         ].join('\n');
 
                         const link = document.createElement('a');
