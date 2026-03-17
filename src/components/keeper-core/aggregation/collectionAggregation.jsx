@@ -287,7 +287,7 @@ export function getEmptyAggregation() {
   return {
     pipes: { count: 0, value: 0, favorite: 0, rated: 0, avgRating: 0 },
     tobacco: { count: 0, value: 0, favorite: 0, rated: 0, avgRating: 0, open: 0, cellared: 0 },
-    whiskey: { count: 0, value: 0, open: 0, sealed: 0, favorite: 0, rated: 0, avgRating: 0, tastings: 0 },
+    whiskey: { bottleTypes: 0, totalBottles: 0, count: 0, value: 0, open: 0, unopened: 0, sealed: 0, favorite: 0, rated: 0, avgRating: 0, tastings: 0 },
     total: { items: 0, value: 0, sessions: 0, tastings: 0 },
     highlights: {
       mostUsedPipe: null,
