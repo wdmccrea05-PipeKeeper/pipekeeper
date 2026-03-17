@@ -1,218 +1,257 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Share2, BookOpen, Loader, ChevronRight } from 'lucide-react';
+import { Sparkles, Share2, RotateCcw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { useTranslation } from '@/components/i18n/safeTranslation';
+
+const METRIC_COLORS = {
+  pipes: '#A35C5C',
+  blends: '#5A7C5A',
+  bottles: '#C87941',
+  value: '#10B981',
+};
+
+function MetricBox({ value, label, color }) {
+  return (
+    <div className="flex flex-col items-center gap-1 py-4 px-2">
+      <span
+        className="text-3xl sm:text-4xl font-bold tabular-nums leading-none"
+        style={{
+          color,
+          textShadow: `0 0 18px ${color}44`,
+          fontFamily: "'Georgia', serif",
+        }}
+      >
+        {value}
+      </span>
+      <span
+        className="text-xs uppercase tracking-widest font-medium"
+        style={{ color: 'rgba(224,216,200,0.5)', letterSpacing: '0.1em' }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function HighlightRow({ label, value, sub }) {
+  if (!value) return null;
+  return (
+    <div className="flex items-start justify-between gap-4 py-3">
+      <span
+        className="text-xs uppercase tracking-widest flex-shrink-0 pt-0.5"
+        style={{ color: 'rgba(180,140,75,0.65)', letterSpacing: '0.1em' }}
+      >
+        {label}
+      </span>
+      <div className="text-right min-w-0">
+        <div
+          className="text-sm font-semibold truncate"
+          style={{ color: '#F5F1E7' }}
+        >
+          {value}
+        </div>
+        {sub && (
+          <div className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
+            {sub}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Divider() {
+  return (
+    <div
+      className="w-full h-px my-2"
+      style={{ background: 'linear-gradient(to right, transparent, rgba(180,140,75,0.2), transparent)' }}
+    />
+  );
+}
 
 export default function CollectionStoryCard() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    loadStory();
-  }, []);
+  useEffect(() => { loadStory(); }, []);
 
   async function loadStory() {
     setLoading(true);
-    setError(null);
-
     try {
       const result = await base44.functions.invoke('generateCollectionStory', {});
-      if (result?.data) {
-        setStory(result.data);
-      }
+      if (result?.data) setStory(result.data);
     } catch (e) {
       console.error('Story load error:', e);
-      setError(t('story.loadError', 'Could not load collection story'));
     } finally {
       setLoading(false);
     }
   }
 
-  if (loading || !story) {
+  if (loading) {
     return (
       <div
-        className="rounded-2xl p-6 border backdrop-blur-sm flex items-center justify-center gap-3"
+        className="rounded-2xl p-8 flex flex-col items-center justify-center gap-3"
         style={{
-          background: 'linear-gradient(145deg, rgba(50,35,25,0.6), rgba(30,20,15,0.8))',
-          border: '1px solid rgba(120,90,65,0.25)',
-          minHeight: '200px',
+          background: 'linear-gradient(145deg, rgba(42,30,20,0.85), rgba(28,18,12,0.95))',
+          border: '1px solid rgba(180,140,75,0.18)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+          minHeight: '260px',
         }}
       >
-        <Loader className="w-4 h-4 animate-spin" style={{ color: 'rgba(180,140,75,0.6)' }} />
-        <span className="text-sm" style={{ color: 'rgba(224,216,200,0.5)' }}>
-          {t('story.loading', 'Loading your collection story...')}
+        <Sparkles className="w-5 h-5 animate-pulse" style={{ color: 'rgba(180,140,75,0.6)' }} />
+        <span className="text-sm" style={{ color: 'rgba(224,216,200,0.45)' }}>
+          Composing your collection story…
         </span>
       </div>
     );
   }
 
+  if (!story) return null;
+
+  const h = story.highlights || {};
+  const m = story.metrics || {};
+
+  const valueDisplay = m.totalValue >= 1000
+    ? `$${(m.totalValue / 1000).toFixed(1)}k`
+    : `$${m.totalValue || 0}`;
+
+  const hasHighlights = h.mostUsedPipe || h.favoriteBlend || h.mostTastedBottle || h.mostValuableItem;
+
   return (
     <div
-      className="rounded-2xl p-6 border backdrop-blur-sm overflow-hidden"
+      className="rounded-2xl overflow-hidden"
       style={{
-        background: 'linear-gradient(145deg, rgba(50,35,25,0.6), rgba(30,20,15,0.8))',
-        border: '1px solid rgba(120,90,65,0.25)',
+        background: 'linear-gradient(145deg, rgba(42,30,20,0.92), rgba(28,18,12,0.97))',
+        border: '1px solid rgba(180,140,75,0.22)',
+        boxShadow: '0 6px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,75,0.08)',
       }}
     >
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{
-              background: 'linear-gradient(135deg, rgba(180,140,75,0.25), rgba(140,105,50,0.35))',
-              border: '1px solid rgba(180,140,75,0.4)',
-            }}
+      <div className="px-6 pt-6 pb-4 flex items-center justify-between">
+        <div>
+          <p
+            className="text-xs uppercase tracking-widest mb-1"
+            style={{ color: 'rgba(180,140,75,0.6)', letterSpacing: '0.12em' }}
           >
-            <BookOpen className="w-5 h-5" style={{ color: 'rgba(180,140,75,1)' }} />
-          </div>
-          <div>
-            <h3 className="text-base font-bold" style={{ color: '#F5F1E7', fontFamily: 'Georgia, serif' }}>
-              {t('story.title', 'Your Collection Story')}
-            </h3>
-            <p className="text-xs" style={{ color: 'rgba(224,216,200,0.55)' }}>
-              {t('story.subtitle', "A narrative of your collector's journey")}
-            </p>
-          </div>
+            Collection Story
+          </p>
+          <h3
+            className="text-xl font-bold"
+            style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+          >
+            Your Collector's Snapshot
+          </h3>
         </div>
         <button
-           onClick={loadStory}
-           disabled={loading}
-           className="p-2 rounded-lg transition-all hover:bg-white/5 flex-shrink-0"
-           title={t('story.refresh', 'Refresh story')}
-         >
-           <Sparkles className="w-4 h-4 animate-pulse" style={{ color: 'rgba(180,140,75,0.7)' }} />
-         </button>
+          onClick={loadStory}
+          disabled={loading}
+          className="p-2 rounded-lg transition-all hover:bg-white/5"
+          title="Regenerate story"
+        >
+          <RotateCcw className="w-4 h-4" style={{ color: 'rgba(180,140,75,0.55)' }} />
+        </button>
       </div>
 
-      {/* Metrics */}
-      <div className="grid grid-cols-4 gap-3 mb-4">
-        <div className="text-center p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.2)' }}>
-          <div className="text-lg font-bold" style={{ color: '#D4AF37' }}>
-            {story.metrics.pipes}
-          </div>
-          <div className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            Pipes
-          </div>
-          </div>
-          <div className="text-center p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.2)' }}>
-          <div className="text-lg font-bold" style={{ color: '#D4AF37' }}>
-            {story.metrics.blends}
-          </div>
-          <div className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            Blends
-          </div>
-          </div>
-          <div className="text-center p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.2)' }}>
-          <div className="text-lg font-bold" style={{ color: '#D4AF37' }}>
-            {story.metrics.bottles}
-          </div>
-          <div className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            Bottles
-          </div>
-          </div>
-          <div className="text-center p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.2)' }}>
-          <div className="text-lg font-bold" style={{ color: '#D4AF37' }}>
-            ${(story.metrics.totalValue / 1000).toFixed(1)}k
-          </div>
-          <div className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            Value
-          </div>
-          </div>
+      <Divider />
+
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-4 divide-x" style={{ borderColor: 'rgba(180,140,75,0.08)' }}>
+        {m.pipes > 0 && <MetricBox value={m.pipes} label="Pipes" color={METRIC_COLORS.pipes} />}
+        {m.blends > 0 && <MetricBox value={m.blends} label="Blends" color={METRIC_COLORS.blends} />}
+        {m.bottles > 0 && <MetricBox value={m.bottles} label="Bottles" color={METRIC_COLORS.bottles} />}
+        <MetricBox value={valueDisplay} label="Value" color={METRIC_COLORS.value} />
       </div>
+
+      <Divider />
 
       {/* Narrative */}
-      <p className="text-sm leading-relaxed mb-4" style={{ color: 'rgba(224,216,200,0.8)' }}>
-        {story.narrative}
-      </p>
+      <div className="px-6 py-5">
+        <p
+          className="text-sm leading-relaxed"
+          style={{ color: 'rgba(224,216,200,0.78)', fontStyle: 'italic' }}
+        >
+          {story.narrative}
+        </p>
+      </div>
 
       {/* Highlights */}
-       {(story.highlights.mostUsedPipe || story.highlights.favoriteBlend || story.highlights.mostTastedBottle || story.highlights.mostValuableItem) && (
-         <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4 text-xs">
-           {story.highlights.mostUsedPipe && (
-             <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
-               <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
-                 Most Used Pipe
-               </div>
-               <div style={{ color: '#F5F1E7' }} className="truncate">
-                 {story.highlights.mostUsedPipe.name}
-               </div>
-               <div style={{ color: 'rgba(224,216,200,0.5)' }}>
-                 {story.highlights.mostUsedPipe.uses} sessions
-               </div>
-             </div>
-           )}
-           {story.highlights.favoriteBlend && (
-             <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
-               <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
-                 Top Blend
-               </div>
-               <div style={{ color: '#F5F1E7' }} className="truncate">
-                 {story.highlights.favoriteBlend.name}
-               </div>
-               <div style={{ color: 'rgba(224,216,200,0.5)' }}>
-                 ★ {story.highlights.favoriteBlend.rating}/5
-               </div>
-             </div>
-           )}
-           {story.highlights.mostTastedBottle && (
-             <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
-               <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
-                 Most Tasted
-               </div>
-               <div style={{ color: '#F5F1E7' }} className="truncate">
-                 {story.highlights.mostTastedBottle.name}
-               </div>
-               <div style={{ color: 'rgba(224,216,200,0.5)' }}>
-                 {story.highlights.mostTastedBottle.tastings} tastings
-               </div>
-             </div>
-           )}
-           {story.highlights.mostValuableItem && (
-             <div className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', borderLeft: '2px solid rgba(180,140,75,0.4)' }}>
-               <div style={{ color: 'rgba(180,140,75,0.8)' }} className="font-semibold mb-1">
-                 Crown Jewel
-               </div>
-               <div style={{ color: '#F5F1E7' }} className="truncate">
-                 {story.highlights.mostValuableItem.name}
-               </div>
-               <div style={{ color: 'rgba(224,216,200,0.5)' }}>
-                 ${Math.round(story.highlights.mostValuableItem.value)}
-               </div>
-             </div>
-           )}
-         </div>
-       )}
+      {hasHighlights && (
+        <>
+          <Divider />
+          <div className="px-6 pb-2">
+            {h.mostUsedPipe && (
+              <HighlightRow
+                label="Most Used Pipe"
+                value={h.mostUsedPipe.name}
+                sub={h.mostUsedPipe.uses > 0 ? `${h.mostUsedPipe.uses} sessions` : null}
+              />
+            )}
+            {h.favoriteBlend && (
+              <HighlightRow
+                label="Top Blend"
+                value={h.favoriteBlend.name}
+                sub={h.favoriteBlend.rating ? `★ ${h.favoriteBlend.rating} / 5` : null}
+              />
+            )}
+            {h.mostTastedBottle && (
+              <HighlightRow
+                label="Most Tasted"
+                value={h.mostTastedBottle.name}
+                sub={h.mostTastedBottle.tastings > 0 ? `${h.mostTastedBottle.tastings} tastings` : null}
+              />
+            )}
+            {h.mostValuableItem && (
+              <HighlightRow
+                label="Crown Jewel"
+                value={h.mostValuableItem.name}
+                sub={h.mostValuableItem.value > 0 ? `$${h.mostValuableItem.value.toLocaleString()}` : null}
+              />
+            )}
+          </div>
+        </>
+      )}
+
+      <Divider />
 
       {/* Actions */}
-       <div className="flex gap-2 pt-2">
-         <Button
-           onClick={() => navigate('/CollectionInsightsShare', { state: { story } })}
-           size="sm"
-           variant="outline"
-           className="flex-1"
-         >
-           <Share2 className="w-3.5 h-3.5 mr-1.5" />
-           Share Story
-         </Button>
-         <Button
-           onClick={loadStory}
-           className="flex-1"
-           style={{
-             background: 'linear-gradient(135deg, rgba(180,140,75,0.9), rgba(140,105,75,1))',
-             border: 'none',
-           }}
-         >
-           <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-           Regenerate
-           <ChevronRight className="w-3 h-3 ml-1" />
-         </Button>
-       </div>
+      <div className="px-6 pb-6 pt-4 flex gap-3">
+        <Button
+          onClick={() => navigate('/CollectionInsightsShare', { state: { story } })}
+          size="sm"
+          variant="outline"
+          className="flex-1"
+        >
+          <Share2 className="w-3.5 h-3.5 mr-1.5" />
+          Share
+        </Button>
+        <Button
+          onClick={loadStory}
+          size="sm"
+          className="flex-1"
+          style={{
+            background: 'linear-gradient(135deg, rgba(180,140,75,0.85), rgba(140,100,60,0.95))',
+            border: '1px solid rgba(180,140,75,0.4)',
+            color: '#F5F1E7',
+          }}
+        >
+          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+          Regenerate
+        </Button>
+      </div>
+
+      {/* Footer */}
+      <div
+        className="px-6 py-3 text-center text-xs border-t"
+        style={{
+          color: 'rgba(224,216,200,0.3)',
+          borderColor: 'rgba(180,140,75,0.1)',
+          letterSpacing: '0.06em',
+        }}
+      >
+        Tracked with CollectionKeeper
+      </div>
     </div>
   );
 }
