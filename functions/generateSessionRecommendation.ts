@@ -251,7 +251,7 @@ Deno.serve(async (req) => {
 
     // For bottles: pick from top candidates, avoiding recent recommendations
     let selectedBottle = null;
-    if (bottles.length > 0) {
+    if (eligibleBottles.length > 0) {
       for (const bottle of scoredBottles) {
         if (!wasRecentlyRecommended(bottle, 'bottle', sessionHistory)) {
           selectedBottle = bottle;
