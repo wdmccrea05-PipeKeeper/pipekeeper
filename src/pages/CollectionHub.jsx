@@ -183,12 +183,13 @@ export default function CollectionHub() {
         { label: t('hub.totalValue'), value: summary.pipes.value > 0 || totalBlendValue > 0 ? `$${(summary.pipes.value + totalBlendValue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—' },
       ];
     } else if (module.type === 'whiskey') {
-      const wBottleTypes = summary.whiskey.bottleTypes ?? summary.whiskey.count;
-      const wTotalBottles = summary.whiskey.totalBottles ?? wBottleTypes;
+      const wBottleTypes = summary.whiskey?.bottleTypes ?? summary.whiskey?.count ?? 0;
+      const wTotalBottles = summary.whiskey?.totalBottles ?? wBottleTypes ?? 0;
+      const wValue = isModuleEnabled('whiskeykeeper') ? totalBottleValue : 0;
       stats = [
         { label: 'Bottle Types', value: wBottleTypes },
         ...(wTotalBottles > wBottleTypes ? [{ label: 'Total Bottles', value: wTotalBottles }] : []),
-        { label: t('hub.totalValue'), value: totalBottleValue > 0 ? `$${totalBottleValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—' },
+        { label: t('hub.totalValue'), value: wValue > 0 ? `$${wValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—' },
       ];
     }
 
