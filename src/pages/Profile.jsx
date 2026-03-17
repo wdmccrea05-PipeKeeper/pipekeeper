@@ -211,6 +211,9 @@ export default function ProfilePage() {
     preferred_shapes: [],
     strength_preference: "No Preference",
     notes: "",
+    whiskey_notes: "",
+    wine_notes: "",
+    cigar_notes: "",
     whiskey_preferences: {
       types: [],
       flavors: [],

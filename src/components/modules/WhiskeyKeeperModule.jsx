@@ -7,15 +7,7 @@ import { Button } from '@/components/ui/button';
 import { BookOpen, TrendingUp, BarChart3, Plus, Search, Camera, Wand2 } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 
-function WhiskeyBottleIconSvg({ className, style }) {
-  return (
-    <svg className={className} style={style} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M9 2h6v3l2 3v11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8l2-3V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-      <path d="M7 13h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M9 2h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-  );
-}
+const WK_LOGO = "https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png";
 import { base44 } from '@/api/base44Client';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import ModuleNav from './ModuleNav';
