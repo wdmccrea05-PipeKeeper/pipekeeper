@@ -6,11 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, ArrowLeft, Check, X, Sparkles, 
-  Camera, Search, Star, Users, ChevronRight, Leaf, HelpCircle
+  Camera, Search, Star, Users, ChevronRight, Leaf, HelpCircle, Layers
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import ModuleSelectionStep from './ModuleSelectionStep';
+import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/d2be37fcd_IMG_4833.jpeg';
 
 // Safe localStorage wrapper for onboarding state
