@@ -477,30 +477,30 @@ export default function UserReport() {
 
       {/* Churn Panel */}
       {adminMetrics?.churnMetrics && !metricsLoading && (
-        <Card className="bg-white/95 border-[#e8d5b7]/30 mb-6">
+        <Card className="bg-white border-gray-200 mb-6">
           <CardHeader className="pb-3">
-            <CardTitle className="text-stone-800 flex items-center gap-2">
-              <TrendingDown className="w-5 h-5 text-red-600" />
+            <CardTitle className="text-black flex items-center gap-2">
+              <TrendingDown className="w-5 h-5 text-gray-600" />
               {t("userReport.churnDowngrades")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-3 bg-red-50 rounded-lg border border-red-100">
-                <p className="text-xs text-red-600 font-medium truncate">{t("userReport.premiumChurnRate")}</p>
-                <p className="text-2xl font-bold text-red-800">{churnMetrics.premiumChurn30d || 0}%</p>
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.premiumChurnRate")}</p>
+                <p className="text-2xl font-bold text-black">{churnMetrics.premiumChurn30d || 0}%</p>
               </div>
-              <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
-                <p className="text-xs text-rose-600 font-medium truncate">{t("userReport.proChurnRate")}</p>
-                <p className="text-2xl font-bold text-rose-800">{churnMetrics.proChurn30d || 0}%</p>
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.proChurnRate")}</p>
+                <p className="text-2xl font-bold text-black">{churnMetrics.proChurn30d || 0}%</p>
               </div>
-              <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
-                <p className="text-xs text-purple-600 font-medium truncate">{t("userReport.proToPremium")}</p>
-                <p className="text-2xl font-bold text-purple-800">{churnMetrics.proToPremiumDowngrade || 0}</p>
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.proToPremium")}</p>
+                <p className="text-2xl font-bold text-black">{churnMetrics.proToPremiumDowngrade || 0}</p>
               </div>
-              <div className="p-3 bg-pink-50 rounded-lg border border-pink-100">
-                <p className="text-xs text-pink-600 font-medium truncate">{t("userReport.premiumToFree")}</p>
-                <p className="text-2xl font-bold text-pink-800">{churnMetrics.premiumToFreeDowngrade || 0}</p>
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-xs text-gray-600 font-medium truncate">{t("userReport.premiumToFree")}</p>
+                <p className="text-2xl font-bold text-black">{churnMetrics.premiumToFreeDowngrade || 0}</p>
               </div>
             </div>
           </CardContent>
