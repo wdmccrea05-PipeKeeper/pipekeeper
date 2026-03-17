@@ -420,27 +420,27 @@ export default function UserReport() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                 <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.currentlyOnTrial")}</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{trialMetrics.currentlyOnTrial || 0}</p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                 <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.endingIn3Days")}</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{trialMetrics.endingIn3Days || 0}</p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                 <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.endingIn7Days")}</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{trialMetrics.endingIn7Days || 0}</p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                 <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.avgDaysRemaining")}</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{trialMetrics.avgDaysRemaining || 0}</p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                 <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.converted30d")}</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{trialMetrics.convertedLast30d || 0}</p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                 <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.dropoffs30d")}</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{trialMetrics.dropoffLast30d || 0}</p>
               </div>
@@ -486,19 +486,19 @@ export default function UserReport() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                 <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.premiumChurnRate")}</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{churnMetrics.premiumChurn30d || 0}%</p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                 <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.proChurnRate")}</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{churnMetrics.proChurn30d || 0}%</p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                 <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.proToPremium")}</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{churnMetrics.proToPremiumDowngrade || 0}</p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                 <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.premiumToFree")}</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{churnMetrics.premiumToFreeDowngrade || 0}</p>
               </div>
