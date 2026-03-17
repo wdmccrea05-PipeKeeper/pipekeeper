@@ -201,9 +201,11 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
               <Input
                 value={formData.distillery}
                 onChange={(e) => handleChange('distillery', e.target.value)}
-                placeholder={formData.bottle_type === 'wine'
-                  ? (t('wine.wineryPlaceholder') || 'Winery name')
-                  : (t('whiskey.distilleryPlaceholder') || 'Distillery name')}
+                placeholder={
+                  formData.bottle_type === 'wine'
+                    ? (t('wine.wineryPlaceholder') || 'Winery name')
+                    : (t('whiskey.distilleryPlaceholder') || 'Distillery name')
+                }
                 className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
               />
             </div>
