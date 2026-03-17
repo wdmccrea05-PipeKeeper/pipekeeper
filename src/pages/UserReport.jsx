@@ -696,7 +696,7 @@ export default function UserReport() {
                         </tr>
                       ) : (
                         filteredData.paid.map((user) => (
-                          <tr key={user.email} className="border-b border-gray-100 hover:bg-gray-50">
+                          <tr key={user.email} className="border-b border-[#8b6239]/20 hover:bg-[#2a1f18]/40">
                             <td className="py-3 px-4 text-sm text-[#F5F1E7]">{user.full_name || '-'}</td>
                             <td className="py-3 px-4 text-sm text-[#E0D8C8]">{user.email}</td>
                             <td className="py-3 px-4">
@@ -777,7 +777,7 @@ export default function UserReport() {
                         </tr>
                       ) : (
                         filteredData.free.map((user) => (
-                          <tr key={user.email} className="border-b border-gray-100 hover:bg-gray-50">
+                          <tr key={user.email} className="border-b border-[#8b6239]/20 hover:bg-[#2a1f18]/40">
                             <td className="py-3 px-4 text-sm text-[#F5F1E7]">{user.full_name || '-'}</td>
                             <td className="py-3 px-4 text-sm text-[#E0D8C8]">{user.email}</td>
                             <td className="py-3 px-4">
