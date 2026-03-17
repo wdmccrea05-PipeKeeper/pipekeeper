@@ -35,8 +35,11 @@ function safeSetOnboarding(key, value) {
 
 export default function OnboardingFlow({ onComplete, onSkip }) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [moduleSelections, setModuleSelections] = useState({ pipes: true, whiskey: true });
   const navigate = useNavigate();
-  const {t} = useTranslation()
+  const { t } = useTranslation();
+  const { setModulesEnabled } = useEnabledModules();
+
   const steps = [
     {
       title: t("onboarding.welcomeTitle"),
