@@ -383,8 +383,14 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
 
   const currentStepData = steps[currentStep];
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep === steps.length - 1) {
+      // Persist module selections before completing onboarding
+      try {
+        await setModulesEnabled(moduleSelections);
+      } catch (e) {
+        // Non-fatal — defaults are sensible
+      }
       onComplete();
     } else {
       setCurrentStep(currentStep + 1);
