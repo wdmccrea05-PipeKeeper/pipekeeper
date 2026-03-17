@@ -131,6 +131,8 @@ export default function CollectionHub() {
     staleTime: 60000,
   });
 
+  const { isModuleEnabled } = useEnabledModules();
+
   const tasteProfile = useTasteProfile({
     pipes,
     blends,
