@@ -10,6 +10,7 @@ import BackButton from "@/components/navigation/BackButton";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useEnabledModules } from "@/components/hooks/useEnabledModules";
 import { useQueryClient } from "@tanstack/react-query";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
 import { Toaster } from "@/components/ui/sonner";
