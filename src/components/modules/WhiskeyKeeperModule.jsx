@@ -145,7 +145,7 @@ export default function WhiskeyKeeperModule() {
       key: 'logTasting',
       Icon: BookOpen,
       label: t('quickActions.logTasting'),
-      onClick: () => navigate('/Tastings')
+      onClick: () => setShowLogTasting(true)
     },
     {
       key: 'curator',
