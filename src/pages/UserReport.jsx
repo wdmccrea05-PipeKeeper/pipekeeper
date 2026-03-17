@@ -628,7 +628,7 @@ export default function UserReport() {
             placeholder={t("userReport.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white"
+            className="pl-10"
           />
         </div>
       </div>
