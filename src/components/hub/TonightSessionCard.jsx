@@ -6,6 +6,8 @@ import { Sparkles, Moon, RefreshCw, ChevronRight, Brain, Save } from 'lucide-rea
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
+import { getAIEligibleModuleIds } from '@/components/utils/moduleAccess';
 
 const CACHE_KEY = 'ck_tonight_session';
 const CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours
