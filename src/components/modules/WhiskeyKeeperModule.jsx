@@ -291,6 +291,14 @@ export default function WhiskeyKeeperModule() {
         </div>
       )}
 
+      {/* Log Tasting Modal */}
+      <LogTastingModal
+        isOpen={showLogTasting}
+        onClose={() => setShowLogTasting(false)}
+        bottles={bottles}
+        user={user}
+      />
+
       {/* Quick Search Modal */}
       <QuickSearchBottle 
         isOpen={showQuickSearch} 
