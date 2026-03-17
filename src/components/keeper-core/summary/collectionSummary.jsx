@@ -41,9 +41,10 @@ export async function getModuleSummary(moduleType, userEmail) {
 /**
  * Get combined collection summary for Hub (legacy - delegates to unified layer)
  * @param {string} userEmail - Current user's email for scoping
+ * @param {Object|null} moduleStates - from useModuleVisibility. If provided, excludes hidden modules from totals.
  * @returns {Promise<Object>} Combined summary with per-module and total data
  */
-export async function getCollectionHubSummary(userEmail) {
+export async function getCollectionHubSummary(userEmail, moduleStates = null) {
   if (!userEmail) {
     return {
       pipes: { count: 0, value: 0 },
@@ -57,15 +58,27 @@ export async function getCollectionHubSummary(userEmail) {
 
   try {
     const agg = await aggregateCollection(userEmail);
-    const contributorModules = getHubContributorModules();
+
+    // Apply module visibility filter if moduleStates provided
+    const pipesEnabled = moduleStates ? isModuleAIEligible('pipekeeper', moduleStates) : true;
+    const whiskeyEnabled = moduleStates ? isModuleAIEligible('whiskeykeeper', moduleStates) : true;
+
+    const pipes = pipesEnabled ? agg.pipes : { count: 0, value: 0 };
+    const tobacco = pipesEnabled ? agg.tobacco : { count: 0, value: 0 };
+    const whiskey = whiskeyEnabled ? agg.whiskey : { count: 0, value: 0 };
+
+    const totalItems = pipes.count + tobacco.count + whiskey.count;
+    const totalValue = pipes.value + tobacco.value + whiskey.value;
+
+    const enabledCount = (pipesEnabled ? 1 : 0) + (whiskeyEnabled ? 1 : 0);
 
     return {
-      pipes: agg.pipes,
-      tobacco: agg.tobacco,
-      whiskey: agg.whiskey,
-      total: agg.total,
-      enabledModuleCount: contributorModules.length,
-      hubContributorCount: contributorModules.length,
+      pipes,
+      tobacco,
+      whiskey,
+      total: { items: totalItems, value: totalValue },
+      enabledModuleCount: enabledCount,
+      hubContributorCount: enabledCount,
     };
   } catch (error) {
     console.warn('[collectionSummary] Error fetching hub summary:', error?.message);
