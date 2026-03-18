@@ -1,6 +1,9 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { getModuleAsset, getAssetImageStyle } from "@/components/branding/moduleAssets";
+import {
+  getModuleAsset,
+  getAssetImageStyle,
+} from "@/components/branding/moduleAssets";
 
 export default function BrandLogo({
   className,
@@ -41,7 +44,6 @@ export default function BrandLogo({
         style={{
           color: "#F5F1E7",
           fontFamily: "'Georgia', serif",
-          letterSpacing: "-0.01em",
         }}
       >
         CollectionKeeper
