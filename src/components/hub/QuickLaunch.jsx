@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Leaf, BookOpen, TrendingUp, Search, FlaskConical } from "lucide-react";
-import { MODULE_ICONS } from "@/components/branding/moduleAssets";
+
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
