@@ -184,7 +184,7 @@ export default function QuickLaunch() {
         </h2>
 
         <div>
-          <SectionTitle icon={PipeQuickIcon} label={t("nav.pipekeeper", "PipeKeeper")} />
+          <SectionTitle icon={MODULE_ICONS.pipekeeper} label={t("nav.pipekeeper", "PipeKeeper")} />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {pipeActions.map((action) => (
               <ActionCard
