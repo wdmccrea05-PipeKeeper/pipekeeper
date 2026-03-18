@@ -130,6 +130,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
       if (cleanedData[key] === '') cleanedData[key] = null;
     });
 
+    console.log('Submitting bottle data:', cleanedData);
     onSubmit(cleanedData);
   };
 
