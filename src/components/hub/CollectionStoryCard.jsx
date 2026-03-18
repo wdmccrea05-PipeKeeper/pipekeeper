@@ -89,7 +89,8 @@ export default function CollectionStoryCard() {
       const result = await base44.functions.invoke('generateCollectionStory', { enabledModules });
       if (result?.data) setStory(result.data);
     } catch (e) {
-      console.error('Story load error:', e);
+      console.warn('[CollectionStoryCard] Story generation unavailable:', e?.message);
+      // Silently fail - story is optional
     } finally {
       setLoading(false);
     }
