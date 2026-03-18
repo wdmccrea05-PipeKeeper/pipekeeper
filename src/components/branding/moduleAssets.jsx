@@ -1,14 +1,12 @@
-const COLLECTIONKEEPER_LOGO_SRC = "/branding/collectionkeeper-main-logo.png?v=1";
-
 export const MODULE_ASSETS = {
   collectionkeeper: {
-    src: COLLECTIONKEEPER_LOGO_SRC,
+    src: "https://media.base44.com/images/public/694956e18d119cc497192525/3beff1ddd_collectionkeeper-main-logo.png",
     label: "CollectionKeeper",
   },
 
-  // Backward compatibility alias
+  // backward compatibility alias
   collectionKeeper: {
-    src: COLLECTIONKEEPER_LOGO_SRC,
+    src: "https://media.base44.com/images/public/694956e18d119cc497192525/3beff1ddd_collectionkeeper-main-logo.png",
     label: "CollectionKeeper",
   },
 
