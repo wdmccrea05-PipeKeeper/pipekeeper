@@ -152,6 +152,7 @@ export default function QuickLaunch() {
       path: "/BottleForm",
       accent: "#D4A574",
     },
+
     {
       label: t("quickActions.quickSearchBottle", "Quick Search Bottle"),
       icon: Search,
