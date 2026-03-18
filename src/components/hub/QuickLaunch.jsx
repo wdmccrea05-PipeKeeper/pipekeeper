@@ -127,7 +127,7 @@ export default function QuickLaunch() {
     },
     {
       label: t("quickActions.addBlend", "Add Blend"),
-      icon: Plus,
+      icon: Leaf,
       path: "/TobaccoForm",
       accent: "#7C9A6D",
     },
