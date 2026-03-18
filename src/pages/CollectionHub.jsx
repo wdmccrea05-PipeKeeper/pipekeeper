@@ -15,6 +15,7 @@ import TonightSessionCard from "@/components/hub/TonightSessionCard";
 import CollectionStoryCard from "@/components/hub/CollectionStoryCard";
 import CuratorHub from "@/components/hub/CuratorHub";
 import CollectionIntelligencePanel from "@/components/hub/CollectionIntelligencePanel";
+import CollectionIntelligenceHighlights from "@/components/hub/CollectionIntelligenceHighlights";
 import RecentActivity from "@/components/hub/RecentActivity";
 
 function money(value) {
@@ -374,6 +375,12 @@ export default function CollectionHub() {
 
       <CollectionStoryCard />
       <CuratorHub summary={summary} recentActivities={recentActivities} />
+
+      <CollectionIntelligenceHighlights
+        pipes={aiCollection.pipes}
+        blends={aiCollection.blends}
+        bottles={aiCollection.bottles}
+      />
 
       <CollectionIntelligencePanel
         pipes={aiCollection.pipes}
