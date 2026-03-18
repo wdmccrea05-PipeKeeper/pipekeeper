@@ -25,9 +25,10 @@ export default function HighlightCard({
       style={{
         border: '1px solid rgba(180,140,75,0.25)',
         boxShadow: '0 12px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)',
-        background: backgroundImage ? `url(${backgroundImage}) center/cover` : 'linear-gradient(135deg, rgba(60,40,25,0.9), rgba(40,25,15,0.95))',
+        backgroundImage: backgroundImage ? `url('${backgroundImage}')` : 'linear-gradient(135deg, rgba(60,40,25,0.9), rgba(40,25,15,0.95))',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
       }}
     >
       {/* Hero Spotlight Gradient */}
