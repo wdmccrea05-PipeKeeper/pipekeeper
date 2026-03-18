@@ -133,38 +133,46 @@ export default function CollectionStoryCard() {
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: 'linear-gradient(145deg, rgba(42,30,20,0.92), rgba(28,18,12,0.97))',
-        border: '1px solid rgba(180,140,75,0.22)',
-        boxShadow: '0 6px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,75,0.08)',
+        background: 'linear-gradient(155deg, rgba(38, 26, 18, 0.96), rgba(32, 22, 15, 0.99))',
+        border: '1px solid rgba(120, 90, 65, 0.42)',
+        boxShadow: '0 5px 20px rgba(0,0,0,0.75), inset 0 1px 0 rgba(180,140,100,0.14)',
       }}
     >
-      <div className="px-6 pt-6 pb-4 flex items-center justify-between">
+      <div
+        className="absolute inset-0 top-0 left-0 right-0 h-[2px] rounded-t-2xl"
+        style={{
+          background: 'linear-gradient(90deg, rgba(180,140,75,0) 0%, rgba(180,140,75,0.8) 50%, rgba(180,140,75,0) 100%)',
+          boxShadow: '0 0 8px rgba(180,140,75,0.5)',
+        }}
+      />
+
+      <div className="px-6 pt-6 pb-4 flex items-center justify-between relative z-10">
         <div>
           <p
-            className="text-xs uppercase tracking-widest mb-1"
-            style={{ color: 'rgba(180,140,75,0.6)', letterSpacing: '0.12em' }}
+            className="text-xs uppercase tracking-[0.12em] font-bold mb-1"
+            style={{ color: 'rgba(180,140,75,0.7)' }}
           >
             {t('hub.collectionStory', 'Collection Story')}
           </p>
-          <h3 className="text-xl font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+          <h3 className="text-2xl sm:text-3xl font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
             {t('hub.collectorSnapshot', "Your Collector's Snapshot")}
           </h3>
         </div>
         <button
           onClick={loadStory}
           disabled={loading}
-          className="p-2 rounded-lg transition-all hover:bg-white/5"
+          className="p-2 rounded-lg transition-all opacity-60 hover:opacity-100"
           title={t('hub.regenerateStory', 'Regenerate story')}
         >
-          <RotateCcw className="w-4 h-4" style={{ color: 'rgba(180,140,75,0.55)' }} />
+          <RotateCcw className="w-4 h-4" style={{ color: 'rgba(180,140,75,0.8)' }} />
         </button>
       </div>
 
       <Divider />
 
-      <div className="grid grid-cols-4 divide-x" style={{ borderColor: 'rgba(180,140,75,0.08)' }}>
-        {m.pipes > 0 && <MetricBox value={m.pipes} label={t('hub.pipes')} color={METRIC_COLORS.pipes} />}
-        {m.blends > 0 && <MetricBox value={m.blends} label={t('hub.blends')} color={METRIC_COLORS.blends} />}
+      <div className="grid gap-0" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(0, 1fr))', borderColor: 'rgba(120, 90, 65, 0.2)' }}>
+        {m.pipes > 0 && <MetricBox value={m.pipes} label={t('hub.pipes', 'Pipes')} color={METRIC_COLORS.pipes} />}
+        {m.blends > 0 && <MetricBox value={m.blends} label={t('hub.blends', 'Blends')} color={METRIC_COLORS.blends} />}
         {bottleTypes > 0 && (
           <MetricBox
             value={bottleTypes}
@@ -177,7 +185,7 @@ export default function CollectionStoryCard() {
           />
         )}
         {totalBottles > bottleTypes && (
-          <MetricBox value={totalBottles} label={t('hub.totalBottlesShort', 'Total Btls')} color="#C87941" />
+          <MetricBox value={totalBottles} label={t('hub.totalBottlesShort', 'Total Btls')} color={METRIC_COLORS.totalBottles} />
         )}
         <MetricBox value={valueDisplay} label={t('hub.totalValueShort', 'Value')} color={METRIC_COLORS.value} />
       </div>
