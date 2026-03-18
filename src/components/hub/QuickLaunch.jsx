@@ -5,12 +5,48 @@ import {
   BookOpen,
   TrendingUp,
   Search,
-  PackagePlus,
-  FlaskConical,
-  Flame,
 } from "lucide-react";
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+
+function PipeQuickIcon({ className, style }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      style={style}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 14c0-2.2 1.8-4 4-4h3.5c1.4 0 2.5 1.1 2.5 2.5V13c0 1.7 1.3 3 3 3h3" />
+      <path d="M6 8h3.5c1.4 0 2.5 1.1 2.5 2.5V12H6a2 2 0 0 1 0-4Z" />
+    </svg>
+  );
+}
+
+function BottleQuickIcon({ className, style }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      style={style}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M10 3h4" />
+      <path d="M11 3v4l-3 5.5A4.5 4.5 0 0 0 11.9 19h.2A4.5 4.5 0 0 0 16 12.5L13 7V3" />
+      <path d="M9.5 12h5" />
+    </svg>
+  );
+}
 
 function SectionTitle({ icon: Icon, label }) {
   return (
@@ -42,7 +78,7 @@ function ActionCard({ action, navigate }) {
         border: "1px solid rgba(180, 140, 75, 0.15)",
       }}
     >
-      <div className="w-5 h-5 mb-2 flex items-center justify-center">
+      <div className="w-5 h-5 mb-2 flex items-center justify-center text-current">
         <Icon
           className="w-5 h-5 transition-transform group-hover:scale-110"
           style={{ color: action.accent }}
@@ -61,7 +97,7 @@ export default function QuickLaunch() {
   const pipeActions = [
     {
       label: t("quickActions.addPipe", "Add Pipe"),
-      icon: Flame,
+      icon: PipeQuickIcon,
       path: "/PipeForm",
       accent: "#D4A574",
     },
@@ -88,7 +124,7 @@ export default function QuickLaunch() {
   const whiskeyActions = [
     {
       label: t("quickActions.addBottle", "Add Bottle"),
-      icon: PackagePlus,
+      icon: BottleQuickIcon,
       path: "/BottleForm",
       accent: "#D4A574",
     },
@@ -123,7 +159,7 @@ export default function QuickLaunch() {
         </h2>
 
         <div>
-          <SectionTitle icon={Flame} label={t("nav.pipekeeper", "PipeKeeper")} />
+          <SectionTitle icon={PipeQuickIcon} label={t("nav.pipekeeper", "PipeKeeper")} />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {pipeActions.map((action) => (
               <ActionCard
@@ -138,7 +174,7 @@ export default function QuickLaunch() {
         {isModuleEnabled("whiskeykeeper") ? (
           <div>
             <SectionTitle
-              icon={FlaskConical}
+              icon={BottleQuickIcon}
               label={t("nav.whiskeykeeper", "WhiskeyKeeper")}
             />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
