@@ -35,6 +35,7 @@ export default {
     list: "List",
     error: "Error",
     none: "None",
+    share: "Share",
   },
   
   notifications: {
