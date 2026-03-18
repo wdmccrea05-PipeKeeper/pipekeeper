@@ -46,6 +46,7 @@ export function getAssetImageStyle(moduleId, size = "regular") {
   return {
     backgroundColor: "transparent",
     objectFit: "contain",
+    mixBlendMode: "normal",
     filter: shadow,
   };
 }
