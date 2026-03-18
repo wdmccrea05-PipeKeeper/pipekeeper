@@ -89,8 +89,8 @@ export async function getRecentCrossModuleActivity(userEmail = null, options = {
  * @param {Date} date - Date to format
  * @returns {string} Human-readable relative date
  */
-export function formatActivityDate(date) {
-  if (!date) return 'unknown';
+export function formatActivityDate(date, t = null) {
+  if (!date) return t ? t('hub.unknownDate', 'Unknown') : 'Unknown';
 
   const now = new Date();
   const diffMs = now - date;
@@ -98,7 +98,7 @@ export function formatActivityDate(date) {
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffMins = Math.floor(diffMs / (1000 * 60));
 
-  if (diffMins < 1) return 'just now';
+  if (diffMins < 1) return t ? t('hub.justNow', 'Just now') : 'Just now';
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
