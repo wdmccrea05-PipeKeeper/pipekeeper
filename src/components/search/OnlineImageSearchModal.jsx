@@ -1,63 +1,60 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import OnlineImageSearch from './OnlineImageSearch';
-import { useTranslation } from "@/components/i18n/safeTranslation";
+import OnlineImageSearch from '@/components/search/OnlineImageSearch';
 
 export default function OnlineImageSearchModal({
   isOpen,
-  recordType,
-  recordData,
+  onClose,
   onImageSelected,
-  onClose
+  recordType = 'bottle',
+  recordData = {},
+  title = 'Search Online Photos',
 }) {
-  const { t } = useTranslation();
-
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 p-4"
+      onClick={onClose}
+    >
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      <div
-        className="relative w-full max-w-3xl max-h-[88vh] rounded-2xl flex flex-col"
+        className="w-full max-w-4xl max-h-[85vh] rounded-2xl overflow-hidden flex flex-col"
         style={{
-          background: 'linear-gradient(180deg, rgba(28,20,14,0.98), rgba(20,15,11,0.99))',
-          border: '1px solid rgba(224,216,200,0.15)',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(224,216,200,0.1)',
+          background:
+            'linear-gradient(135deg, rgba(42, 31, 24, 0.98), rgba(24, 17, 12, 0.99))',
+          border: '1px solid rgba(180,140,75,0.25)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="sticky top-0 z-10 flex items-center justify-between p-6 border-b border-[#E0D8C8]/10 flex-shrink-0"
-          style={{
-            background: 'linear-gradient(to bottom, rgba(35,25,18,0.95), rgba(28,20,14,0.9))',
-          }}
+          className="shrink-0 px-5 py-4 flex items-center justify-between border-b"
+          style={{ borderColor: 'rgba(180,140,75,0.14)' }}
         >
           <div>
-            <h2 className="text-xl font-bold text-[#F5F1E7]">
-              {t("onlineImageSearch.title", "Search Online Images")}
-            </h2>
-            <p className="text-sm text-[#E0D8C8]/70 mt-1">
-              {t("onlineImageSearch.subtitle", "Find product images to add to your record")}
+            <h3 className="text-lg font-semibold text-[#F5F1E7]">{title}</h3>
+            <p className="text-xs mt-1 text-[#D8C7A6]/70">
+              Search and select a photo to use for this record.
             </p>
           </div>
+
           <button
             type="button"
             onClick={onClose}
-            className="p-2 hover:bg-white/5 rounded-lg transition-colors text-[#E0D8C8]/70 hover:text-[#E0D8C8] flex-shrink-0"
+            className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-colors"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-hidden flex flex-col p-6">
+        <div className="flex-1 min-h-0 overflow-hidden">
           <OnlineImageSearch
             recordType={recordType}
             recordData={recordData}
-            onImageSelected={onImageSelected}
+            onImageSelected={(url) => {
+              onImageSelected?.(url);
+            }}
             onClose={onClose}
           />
         </div>
