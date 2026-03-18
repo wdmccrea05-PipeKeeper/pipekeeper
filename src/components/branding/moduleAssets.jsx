@@ -1,6 +1,6 @@
 export const MODULE_ASSETS = {
   collectionKeeper: {
-    src: "https://media.base44.com/images/public/694956e18d119cc497192525/e9b1ad0a0_image.png",
+    src: "https://media.base44.com/images/public/694956e18d119cc497192525/74f23f573_CollectionKeeperUpdated-removebg-preview.png",
     label: "CollectionKeeper",
   },
   pipekeeper: {
