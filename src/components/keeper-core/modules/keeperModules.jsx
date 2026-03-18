@@ -31,7 +31,7 @@ export const KEEPER_MODULES = [
   {
     type: 'cigars',
     titleKey: 'hub.cigarkeeper',
-    icon: '🔘',
+    icon: '/branding/cigarkeeper-logo.png?v=3',
     route: null,
     enabled: false,
     contributesToHub: false,
@@ -41,7 +41,7 @@ export const KEEPER_MODULES = [
   {
     type: 'wine',
     titleKey: 'hub.winekeeper',
-    icon: '🍷',
+    icon: '/branding/winekeeper-logo.png?v=3',
     route: null,
     enabled: false,
     contributesToHub: false,
