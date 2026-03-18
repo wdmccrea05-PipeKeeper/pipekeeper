@@ -61,7 +61,7 @@ export default function QuickLaunch() {
   const pipeActions = [
     {
       label: t("quickActions.addPipe", "Add Pipe"),
-      icon: Pipe,
+      icon: Flame,
       path: "/PipeForm",
       accent: "#D4A574",
     },
@@ -123,7 +123,7 @@ export default function QuickLaunch() {
         </h2>
 
         <div>
-          <SectionTitle icon={Pipe} label={t("nav.pipekeeper", "PipeKeeper")} />
+          <SectionTitle icon={Flame} label={t("nav.pipekeeper", "PipeKeeper")} />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {pipeActions.map((action) => (
               <ActionCard
