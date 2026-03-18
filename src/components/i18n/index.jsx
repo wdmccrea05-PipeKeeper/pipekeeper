@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { normalizeLng } from './normalizeLng.js';
 import en from './locales/en.jsx';
 import es from './locales/es.jsx';
 import fr from './locales/fr.jsx';
@@ -12,10 +13,6 @@ import zhHans from './locales/zh-Hans.jsx';
 import { homeTranslations } from './homeContent.jsx';
 import { insightsTranslations } from './insightsContent.jsx';
 import enCollectionIntelligence from './locales/en.collectionIntelligence.jsx';
-
-// Documentation files — split out to keep main locale files under the size limit
-// Each docs file contains: howTo (steps), troubleshooting (full Q&A), faqExtended,
-// verificationHelp, supportFull, inviteFull, appleSupport, termsOfService, privacyPolicy
 import enDocs from './locales/en.docs.jsx';
 import esDocs from './locales/es.docs.jsx';
 import frDocs from './locales/fr.docs.jsx';
@@ -26,12 +23,8 @@ import nlDocs from './locales/nl.docs.jsx';
 import plDocs from './locales/pl.docs.jsx';
 import jaDocs from './locales/ja.docs.jsx';
 import zhHansDocs from './locales/zh-Hans.docs.jsx';
-
-// Supplementary files for languages that exceeded the main file size limit
 import deEnums from './locales/de.enums.jsx';
 import frEnums from './locales/fr.enums.jsx';
-
-// UI overflow files — namespaces from root translations.js not yet in main locale files
 import enUI from './locales/en.ui.jsx';
 import esUI from './locales/es.ui.jsx';
 import frUI from './locales/fr.ui.jsx';
@@ -43,201 +36,149 @@ import plUI from './locales/pl.ui.jsx';
 import jaUI from './locales/ja.ui.jsx';
 import zhHansUI from './locales/zh-Hans.ui.jsx';
 
+const CRITICAL_FALLBACKS = {
+  common: { back: 'Back', search: 'Search', share: 'Share', loading: 'Loading...' },
+  nav: {
+    hub: 'Hub', pipekeeper: 'PipeKeeper', whiskeykeeper: 'WhiskeyKeeper', curator: 'Curator',
+    community: 'Community', profile: 'Profile', help: 'Help', faq: 'FAQ', support: 'Support', insights: 'Insights',
+  },
+  footer: { copyright: '© 2026 CollectionKeeper. All rights reserved.' },
+  search: {
+    trigger: 'Search...', openAria: 'Open search', commandInputPlaceholder: 'Search...',
+    noResultsFound: 'No results found', noResultsMessage: 'Try another search term.',
+    sectionQuickActions: 'Quick Actions', sectionPipes: 'Pipes', sectionTobacco: 'Tobacco',
+    actionViewStats: 'View Insights', actionExportData: 'Export Data', actionAddPipe: 'Add Pipe', actionAddBlend: 'Add Blend',
+  },
+  hub: {
+    title: 'CollectionKeeper',
+    description: 'Your unified ecosystem for collecting pipes, whiskey, wine, and more. Manage, explore, and curate across all your collections in one place.',
+    collectionSummary: 'Collection Overview', totalValue: 'Total Value', pipes: 'Pipes', blends: 'Blends',
+    bottleTypes: 'Bottle Types', totalBottles: 'Total Bottles', activeModules: 'Active Modules', yourModules: 'Your Collections',
+    pipekeeper: 'PipeKeeper', whiskeykeeper: 'WhiskeyKeeper', cigarkeeper: 'CigarKeeper', winekeeper: 'WineKeeper',
+    openModule: 'Open Module', quickLaunch: 'Quick Launch', comingSoon: 'Expanding Soon',
+    expandingEcosystem: 'Expanding your CollectionKeeper ecosystem soon.', recentActivity: 'Recent Activity',
+    noRecentActivity: 'No recent activity yet. Start by adding to your collections!', loading: 'Loading ecosystem data...',
+    curatorTitle: 'Collection Curator', curatorDescription: 'Get AI-powered insights, recommendations, and guidance across your entire collection.',
+    curatorAction: 'Open Curator', bottleTypesShort: 'Btl. Types', totalBottlesShort: 'Total Btls', totalValueShort: 'Value',
+    collectionStory: 'Collection Story', collectorSnapshot: "Your Collector's Snapshot", storyLoading: 'Composing your collection story…',
+    regenerateStory: 'Regenerate story', regenerate: 'Regenerate', trackedWithCollectionKeeper: 'Tracked with CollectionKeeper',
+    mostUsedPipe: 'Most Used Pipe', topBlend: 'Top Blend', mostTasted: 'Most Tasted', crownJewel: 'Crown Jewel',
+    sessions: 'sessions', tastings: 'tastings', justNow: 'Just now', unknownDate: 'Unknown', tastingLogged: 'Tasting logged',
+  },
+  quickActions: {
+    addPipe: 'Add Pipe', addBlend: 'Add Blend', logSession: 'Log Session', addBottle: 'Add Bottle',
+    quickSearchBottle: 'Quick Search Bottle', logTasting: 'Log Tasting',
+  },
+};
+
+const rawLocales = { en, es, fr, de, it, 'pt-BR': ptBR, nl, pl, ja, 'zh-Hans': zhHans };
 const docsLocales = {
-  en: { ...enDocs, ...enUI },
-  es: { ...esDocs, ...esUI },
-  fr: { ...frDocs, ...frEnums, ...frUI },
-  de: { ...deDocs, ...deEnums, ...deUI },
-  it: { ...itDocs, ...itUI },
-  'pt-BR': { ...ptBRDocs, ...ptBRUI },
-  nl: { ...nlDocs, ...nlUI },
-  pl: { ...plDocs, ...plUI },
-  ja: { ...jaDocs, ...jaUI },
-  'zh-Hans': { ...zhHansDocs, ...zhHansUI },
+  en: { ...enDocs, ...enUI }, es: { ...esDocs, ...esUI }, fr: { ...frDocs, ...frEnums, ...frUI },
+  de: { ...deDocs, ...deEnums, ...deUI }, it: { ...itDocs, ...itUI }, 'pt-BR': { ...ptBRDocs, ...ptBRUI },
+  nl: { ...nlDocs, ...nlUI }, pl: { ...plDocs, ...plUI }, ja: { ...jaDocs, ...jaUI }, 'zh-Hans': { ...zhHansDocs, ...zhHansUI },
 };
 
-// Deep merge: source keys overwrite target only when target is missing the key
+function isPlainObject(v) { return !!v && typeof v === 'object' && !Array.isArray(v); }
 function deepMerge(target, source) {
-  if (!source || typeof source !== 'object') return target;
-  const result = { ...target };
+  const out = isPlainObject(target) ? { ...target } : {};
+  if (!isPlainObject(source)) return out;
   for (const key of Object.keys(source)) {
-    if (
-      source[key] &&
-      typeof source[key] === 'object' &&
-      !Array.isArray(source[key]) &&
-      result[key] &&
-      typeof result[key] === 'object'
-    ) {
-      result[key] = deepMerge(result[key], source[key]);
-    } else if (!(key in result)) {
-      // Only add keys that don't already exist in locale file (locale file wins)
-      result[key] = source[key];
-    }
+    const src = source[key];
+    if (isPlainObject(src) && isPlainObject(out[key])) out[key] = deepMerge(out[key], src);
+    else if (!(key in out)) out[key] = src;
   }
-  return result;
+  return out;
 }
-
-const rawLocales = {
-  en,
-  es,
-  fr,
-  de,
-  it,
-  'pt-BR': ptBR,
-  nl,
-  pl,
-  ja,
-  'zh-Hans': zhHans,
-};
-
-// Merge homeContent + insights + collectionIntelligence + docs translations into each language pack
-// Priority: locale file wins > homeContent > insights > collectionIntelligence > docs (English fallback handles missing keys)
-export const translations = Object.fromEntries(
-  Object.entries(rawLocales).map(([lang, pack]) => {
-    const withHome = deepMerge(pack, (homeTranslations[lang] || {}));
-    const withInsights = deepMerge(withHome, (insightsTranslations[lang] || {}));
-    const withIntelligence = lang === 'en' 
-      ? deepMerge(withInsights, { collectionIntelligence: enCollectionIntelligence })
-      : withInsights;
-    const withDocs = deepMerge(withIntelligence, (docsLocales[lang] || {}));
-    return [lang, withDocs];
-  })
-);
-
 function getNestedValue(obj, path) {
   if (!obj || !path) return undefined;
-  const parts = String(path).split('.');
-  let current = obj;
-  for (const part of parts) {
-    if (current && typeof current === 'object' && part in current) {
-      current = current[part];
-    } else {
-      return undefined;
-    }
-  }
-  return current;
+  return String(path).split('.').reduce((acc, part) => (acc && typeof acc === 'object' && part in acc ? acc[part] : undefined), obj);
 }
-
 function interpolate(str, vars) {
-  if (!str || typeof str !== 'string') return str;
-  if (!vars) return str;
-  return str.replace(/\{([^}]+)\}/g, (_, key) => {
-    return vars[key] !== undefined ? String(vars[key]) : `{${key}}`;
+  if (typeof str !== 'string' || !vars || typeof vars !== 'object') return str;
+  return str.replace(/\{\{?([^{}]+)\}?\}/g, (_, key) => {
+    const k = String(key).trim();
+    return vars[k] !== undefined ? String(vars[k]) : `{${k}}`;
   });
 }
 
-// Read lang from localStorage reactively with a storage event listener
-// so language changes propagate to already-mounted components without a full reload.
+export const translations = Object.fromEntries(Object.entries(rawLocales).map(([lang, pack]) => {
+  const withCriticals = deepMerge(pack, CRITICAL_FALLBACKS);
+  const withHome = deepMerge(withCriticals, homeTranslations[lang] || {});
+  const withInsights = deepMerge(withHome, insightsTranslations[lang] || {});
+  const withIntel = lang === 'en' ? deepMerge(withInsights, { collectionIntelligence: enCollectionIntelligence }) : withInsights;
+  const withDocs = deepMerge(withIntel, docsLocales[lang] || {});
+  return [lang, withDocs];
+}));
+
+function readLanguage(languageOverride = null) {
+  if (languageOverride) return normalizeLng(languageOverride);
+  try {
+    if (typeof window === 'undefined') return 'en';
+    const raw = window.localStorage.getItem('pk_lang') || window.localStorage.getItem('i18nextLng') || document.documentElement.lang || navigator.language || 'en';
+    return normalizeLng(raw);
+  } catch {
+    return 'en';
+  }
+}
+function persistNormalizedLanguage(code) {
+  try {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('pk_lang', code);
+    document.documentElement.lang = code;
+    window.dispatchEvent(new CustomEvent('pk:language-changed', { detail: code }));
+  } catch {}
+}
 function useLang(languageOverride = null) {
-  const [lang, setLang] = useState(() => {
-    if (languageOverride) return languageOverride;
-    try {
-      return typeof window !== 'undefined'
-        ? (window.localStorage.getItem('pk_lang') || 'en')
-        : 'en';
-    } catch {
-      return 'en';
-    }
-  });
-
+  const [lang, setLang] = useState(() => readLanguage(languageOverride));
   useEffect(() => {
-    if (languageOverride) return; // override takes precedence
-    const handler = () => {
-      try {
-        setLang(window.localStorage.getItem('pk_lang') || 'en');
-      } catch {
-        setLang('en');
-      }
-    };
-    window.addEventListener('storage', handler);
-    return () => window.removeEventListener('storage', handler);
+    const normalized = readLanguage(languageOverride);
+    setLang(normalized);
+    persistNormalizedLanguage(normalized);
   }, [languageOverride]);
-
-  return languageOverride || lang;
+  useEffect(() => {
+    if (languageOverride) return undefined;
+    const sync = () => setLang(readLanguage(null));
+    window.addEventListener('storage', sync);
+    window.addEventListener('pk:language-changed', sync);
+    return () => {
+      window.removeEventListener('storage', sync);
+      window.removeEventListener('pk:language-changed', sync);
+    };
+  }, [languageOverride]);
+  return lang;
+}
+function createTranslator(lang) {
+  const translationPack = translations[lang] || translations.en || CRITICAL_FALLBACKS;
+  return (key, varsOrFallback = {}) => {
+    const isOptions = isPlainObject(varsOrFallback);
+    const vars = isOptions ? varsOrFallback : {};
+    const fallback = typeof varsOrFallback === 'string'
+      ? varsOrFallback
+      : isOptions && typeof varsOrFallback.defaultValue === 'string'
+        ? varsOrFallback.defaultValue
+        : undefined;
+    const returnObjects = isOptions && varsOrFallback.returnObjects === true;
+    let value = getNestedValue(translationPack, key);
+    if (value === undefined) value = getNestedValue(translations.en, key);
+    if (value === undefined) value = getNestedValue(CRITICAL_FALLBACKS, key);
+    if (value === undefined) value = fallback !== undefined ? fallback : key;
+    if (returnObjects) return value;
+    if (typeof value === 'string') return interpolate(value, vars);
+    return value == null ? '' : String(value);
+  };
 }
 
 export function useTranslation(languageOverride = null) {
   const lang = useLang(languageOverride);
-  const translationPack = translations[lang] || translations.en || {};
-
-  const t = (key, varsOrFallback = {}) => {
-    const isOptions =
-      typeof varsOrFallback === 'object' &&
-      varsOrFallback !== null &&
-      !Array.isArray(varsOrFallback);
-    const vars = isOptions ? varsOrFallback : {};
-    const fallbackStr =
-      typeof varsOrFallback === 'string'
-        ? varsOrFallback
-        : isOptions && typeof varsOrFallback.defaultValue === 'string'
-        ? varsOrFallback.defaultValue
-        : undefined;
-    const returnObjects = isOptions && varsOrFallback.returnObjects === true;
-
-    const value = getNestedValue(translationPack, key);
-    if (value === undefined) {
-      const fallback = getNestedValue(translations.en, key);
-      if (fallback !== undefined) {
-        if (returnObjects) return fallback;
-        if (typeof fallback === 'string') return interpolate(fallback, vars);
-        return String(fallback);
-      }
-      return fallbackStr !== undefined ? fallbackStr : key;
-    }
-    if (returnObjects) return value;
-    if (typeof value === 'string') return interpolate(value, vars);
-    return String(value);
-  };
-
+  const t = useMemo(() => createTranslator(lang), [lang]);
   return { t, lang };
 }
-
 export function translate(key, varsOrFallback = {}, language = 'en') {
-  const isOptions =
-    typeof varsOrFallback === 'object' &&
-    varsOrFallback !== null &&
-    !Array.isArray(varsOrFallback);
-  const vars = isOptions ? varsOrFallback : {};
-  const fallbackStr =
-    typeof varsOrFallback === 'string'
-      ? varsOrFallback
-      : isOptions && typeof varsOrFallback.defaultValue === 'string'
-      ? varsOrFallback.defaultValue
-      : undefined;
-  const returnObjects = isOptions && varsOrFallback.returnObjects === true;
-  const pack = translations[language] || translations.en || {};
-  const value = getNestedValue(pack, key);
-  if (value === undefined) {
-    const fallback = getNestedValue(translations.en, key);
-    if (fallback !== undefined) {
-      if (returnObjects) return fallback;
-      if (typeof fallback === 'string') return interpolate(fallback, vars);
-      return String(fallback);
-    }
-    return fallbackStr !== undefined ? fallbackStr : key;
-  }
-  if (returnObjects) return value;
-  if (typeof value === 'string') {
-    return interpolate(value, vars);
-  }
-  return String(value);
+  return createTranslator(normalizeLng(language || 'en'))(key, varsOrFallback);
 }
-
 export const SUPPORTED_LANGS = [
-  { code: 'en', label: 'English' },
-  { code: 'es', label: 'Español' },
-  { code: 'fr', label: 'Français' },
-  { code: 'de', label: 'Deutsch' },
-  { code: 'it', label: 'Italiano' },
-  { code: 'pt-BR', label: 'Português (BR)' },
-  { code: 'nl', label: 'Nederlands' },
-  { code: 'pl', label: 'Polski' },
-  { code: 'ja', label: '日本語' },
-  { code: 'zh-Hans', label: '中文 (简体)' },
+  { code: 'en', label: 'English' }, { code: 'es', label: 'Español' }, { code: 'fr', label: 'Français' },
+  { code: 'de', label: 'Deutsch' }, { code: 'it', label: 'Italiano' }, { code: 'pt-BR', label: 'Português (BR)' },
+  { code: 'nl', label: 'Nederlands' }, { code: 'pl', label: 'Polski' }, { code: 'ja', label: '日本語' }, { code: 'zh-Hans', label: '中文 (简体)' },
 ];
-
-export default {
-  useTranslation,
-  translate,
-  SUPPORTED_LANGS,
-};
+export default { useTranslation, translate, SUPPORTED_LANGS };
