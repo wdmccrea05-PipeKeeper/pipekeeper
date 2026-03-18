@@ -75,9 +75,9 @@ class GlobalErrorBoundary extends React.Component {
               </div>
               
               <div>
-                <h1 className="text-2xl font-bold text-[#E0D8C8] mb-2">{translate('error.somethingWentWrong')}</h1>
+                <h1 className="text-2xl font-bold text-[#E0D8C8] mb-2">Something went wrong</h1>
                 <p className="text-[#E0D8C8]/70 text-sm">
-                  {translate('error.unexpectedErrorRefresh')}
+                  An unexpected error occurred. Please refresh the page.
                 </p>
               </div>
               
