@@ -41,29 +41,7 @@ function MetricBox({ value, label, color }) {
   );
 }
 
-function HighlightRow({ label, value, sub }) {
-  if (!value) return null;
-  return (
-    <div className="flex items-start justify-between gap-4 py-3">
-      <span
-        className="text-xs uppercase tracking-widest flex-shrink-0 pt-0.5"
-        style={{ color: 'rgba(180,140,75,0.65)', letterSpacing: '0.1em' }}
-      >
-        {label}
-      </span>
-      <div className="text-right min-w-0">
-        <div className="text-sm font-semibold truncate" style={{ color: '#F5F1E7' }}>
-          {value}
-        </div>
-        {sub && (
-          <div className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
-            {sub}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+
 
 function Divider() {
   return (
