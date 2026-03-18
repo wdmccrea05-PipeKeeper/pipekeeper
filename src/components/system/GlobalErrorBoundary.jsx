@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
-import { translate } from '@/components/i18n/safeTranslation';
 
 class GlobalErrorBoundary extends React.Component {
   constructor(props) {
