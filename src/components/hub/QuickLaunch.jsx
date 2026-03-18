@@ -11,23 +11,7 @@ import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-function PipeQuickIcon({ className, style }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      style={style}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M3 12c0-1.657 1.343-3 3-3h2v-2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h2c1.657 0 3 1.343 3 3v1h-1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1v1c0 1.657-1.343 3-3 3h-2v2a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-2H6c-1.657 0-3-1.343-3-3v-1h1a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H3v-1z" />
-    </svg>
-  );
-}
+// Using branded pipe icon for consistency
 
 function BottleQuickIcon({ className, style }) {
   return (
