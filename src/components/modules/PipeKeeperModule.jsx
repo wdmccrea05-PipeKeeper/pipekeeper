@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Wind, Leaf, BookOpen, TrendingUp, Plus, Search, Camera, Target } from 'lucide-react';
+import { Leaf, BookOpen, TrendingUp, Plus, Search, Camera, Target } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency, formatWeight } from '@/components/utils/localeFormatters';
@@ -14,7 +14,6 @@ import CatalogPlate from '@/components/home/CatalogPlate';
 import ModuleQuickLaunch from './ModuleQuickLaunch';
 import QuickSearchPipe from '@/components/ai/QuickSearchPipe';
 
-const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
 export default function PipeKeeperModule() {
@@ -141,16 +140,16 @@ export default function PipeKeeperModule() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div
-              className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+            <img
+              src="/branding/pipekeeper-logo.png?v=1"
+              alt="PipeKeeper"
+              className="w-11 h-11 object-contain"
               style={{
-                background: 'linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))',
-                border: '1px solid rgba(120, 90, 65, 0.45)',
-                boxShadow: '0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)',
+                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.28))',
+                backgroundColor: 'transparent',
               }}
-            >
-              <Wind className="w-5 h-5" style={{ color: 'rgba(180, 140, 75, 1)', filter: 'drop-shadow(0 0 4px rgba(180,140,75,0.7))' }} />
-            </div>
+              draggable={false}
+            />
             <h1 className="text-4xl font-bold tracking-tight" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
               {t('pipekeeper.title') || 'PipeKeeper'}
             </h1>
