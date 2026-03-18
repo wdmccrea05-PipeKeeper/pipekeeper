@@ -114,7 +114,7 @@ class GlobalErrorBoundary extends React.Component {
                   }}
                   className="flex-1"
                 >
-                  {translate('error.tryAgain', 'Try Again')}
+                  Try Again
                 </Button>
                 <Button
                   onClick={() => {
