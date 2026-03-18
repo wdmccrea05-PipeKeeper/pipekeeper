@@ -5,7 +5,9 @@ import {
   BookOpen,
   TrendingUp,
   Search,
+  Leaf,
 } from "lucide-react";
+import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
