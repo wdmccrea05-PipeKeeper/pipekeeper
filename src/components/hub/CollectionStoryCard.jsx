@@ -191,6 +191,7 @@ export default function CollectionStoryCard() {
                   title={t('hub.mostUsedPipe', 'Most Used Pipe')}
                   value={h.mostUsedPipe.name}
                   subtitle={h.mostUsedPipe.uses > 0 ? `${h.mostUsedPipe.uses} ${t('hub.sessions', 'sessions')}` : null}
+                  backgroundImage={h.mostUsedPipe.photos?.[0]}
                   module="PIPEKEEPER"
                 />
               )}
@@ -200,6 +201,7 @@ export default function CollectionStoryCard() {
                   title={t('hub.topBlend', 'Top Blend')}
                   value={h.favoriteBlend.name}
                   subtitle={h.favoriteBlend.rating ? `★ ${h.favoriteBlend.rating} / 5` : null}
+                  backgroundImage={h.favoriteBlend.photos?.[0]}
                   module="PIPEKEEPER"
                 />
               )}
@@ -213,6 +215,7 @@ export default function CollectionStoryCard() {
                       ? `${h.mostTastedBottle.tastings} ${t('hub.tastings', 'tastings')}`
                       : null
                   }
+                  backgroundImage={h.mostTastedBottle.photos?.[0]}
                   module="WHISKEYKEEPER"
                 />
               )}
@@ -226,6 +229,7 @@ export default function CollectionStoryCard() {
                       ? `$${h.mostValuableItem.value.toLocaleString()}`
                       : null
                   }
+                  backgroundImage={h.mostValuableItem.photos?.[0]}
                   module="COLLECTION"
                 />
               )}
