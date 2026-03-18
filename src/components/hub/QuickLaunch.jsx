@@ -80,6 +80,7 @@ function SectionTitle({ icon, label }) {
 
 function ActionCard({ action, navigate }) {
   const Icon = action.icon;
+  const isImageIcon = typeof Icon === "string";
 
   return (
     <button
@@ -91,11 +92,21 @@ function ActionCard({ action, navigate }) {
         border: "1px solid rgba(180, 140, 75, 0.15)",
       }}
     >
-      <div className="w-5 h-5 mb-2 flex items-center justify-center text-current">
-        <Icon
-          className="w-5 h-5 transition-transform group-hover:scale-110"
-          style={{ color: action.accent }}
-        />
+      <div className="w-5 h-5 mb-2 flex items-center justify-center">
+        {isImageIcon ? (
+          <img
+            src={Icon}
+            alt={action.label}
+            className="w-5 h-5 object-contain transition-transform group-hover:scale-110"
+            style={{ mixBlendMode: "screen" }}
+            draggable={false}
+          />
+        ) : (
+          <Icon
+            className="w-5 h-5 transition-transform group-hover:scale-110"
+            style={{ color: action.accent }}
+          />
+        )}
       </div>
       <p className="text-sm font-semibold text-[#E0D8C8]">{action.label}</p>
     </button>
