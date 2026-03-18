@@ -1,39 +1,37 @@
-const COLLECTIONKEEPER_LOGO_SRC = "/branding/collectionkeeper-main-logo.png?v=1";
-
 export const MODULE_ASSETS = {
   collectionkeeper: {
-    src: COLLECTIONKEEPER_LOGO_SRC,
+    src: "/branding/collectionkeeper-main-logo.png?v=1",
     label: "CollectionKeeper",
   },
 
-  // Backward compatibility alias
+  // backward compatibility alias
   collectionKeeper: {
-    src: COLLECTIONKEEPER_LOGO_SRC,
+    src: "/branding/collectionkeeper-main-logo.png?v=1",
     label: "CollectionKeeper",
   },
 
   pipekeeper: {
-    src: "https://media.base44.com/images/public/694956e18d119cc497192525/27f5c2c92_PKNB.png",
+    src: "/branding/pipekeeper-logo.png?v=1",
     label: "PipeKeeper",
   },
 
   whiskeykeeper: {
-    src: "https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png",
+    src: "/branding/whiskeykeeper-logo.png?v=1",
     label: "WhiskeyKeeper",
   },
 
   winekeeper: {
-    src: "https://media.base44.com/images/public/694956e18d119cc497192525/ef580a0c9_WineKNB.png",
+    src: "/branding/winekeeper-logo.png?v=1",
     label: "WineKeeper",
   },
 
   cigarkeeper: {
-    src: "https://media.base44.com/images/public/694956e18d119cc497192525/c26fb6746_CigarKNB.png",
+    src: "/branding/cigarkeeper-logo.png?v=1",
     label: "CigarKeeper",
   },
 
   curator: {
-    src: "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png",
+    src: "/branding/curator-logo.png?v=1",
     label: "Collection Curator",
   },
 };
