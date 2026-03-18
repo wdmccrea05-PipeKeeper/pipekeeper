@@ -1,5 +1,5 @@
 const COLLECTIONKEEPER_LOGO_SRC =
-  "https://media.base44.com/images/public/694956e18d119cc497192525/fe9a093f7_image.png";
+  "https://media.base44.com/images/public/694956e18d119cc497192525/4e21d398a_CollectionKeeperUpdated-removebg-preview.png";
 
 export const MODULE_ASSETS = {
   collectionkeeper: {
