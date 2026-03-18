@@ -32,12 +32,12 @@ function NavItem({ item, currentPageName }) {
           style={getAssetImageStyle(item.assetKey, "small")}
           draggable={false}
         />
-      ) : (
+      ) : item.icon ? (
         <item.icon
           className="w-4 h-4 flex-shrink-0"
           style={{ color: active ? "#D4A574" : "rgba(180,140,75,0.78)" }}
         />
-      )}
+      ) : null}
       <span>{item.label}</span>
     </Link>
   );
