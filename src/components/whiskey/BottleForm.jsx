@@ -120,6 +120,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
       aftermarket_price: toNumberOrNull(formData.aftermarket_price),
       collector_value: toNumberOrNull(formData.collector_value),
       rating: toNumberOrNull(formData.rating),
+      photo: formData.photo || null,
       value_last_updated:
         formData.retail_price || formData.aftermarket_price || formData.collector_value
           ? new Date().toISOString()
@@ -130,7 +131,6 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
       if (cleanedData[key] === '') cleanedData[key] = null;
     });
 
-    console.log('Submitting bottle data:', cleanedData);
     onSubmit(cleanedData);
   };
 
