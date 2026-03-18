@@ -1,49 +1,73 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/components/utils/createPageUrl";
+import { cn } from "@/lib/utils";
+import { useTranslation } from "@/components/i18n/safeTranslation";
+import { Home, User, HelpCircle, Target, Users } from "lucide-react";
+import { MODULE_ICONS, getAssetImageStyle } from "@/components/branding/moduleAssets";
 
-export default function ModuleNav({ items, currentPath }) {
-  const navigate = useNavigate();
+function NavItem({ item, currentPageName }) {
+  const active = currentPageName === item.page;
 
   return (
-    <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2" style={{ borderBottom: '1px solid rgba(180, 140, 75, 0.2)', paddingBottom: '0.5rem' }}>
-      {items.map((item) => {
-        const isActive = currentPath === item.path;
-        const Icon = item.icon;
-        const iconUrl = item.iconImage || (typeof item.icon === 'string' ? item.icon : null);
-        const isImageIcon = !!iconUrl;
+    <Link
+      to={createPageUrl(item.page)}
+      className={cn(
+        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+        active ? "bg-[#6b4a2d]/55" : "hover:bg-white/5"
+      )}
+      style={{
+        color: active ? "#F5F1E7" : "rgba(224,216,200,0.78)",
+        border: active ? "1px solid rgba(180,140,75,0.35)" : "1px solid transparent",
+      }}
+    >
+      {item.image ? (
+        <img
+          src={item.image}
+          alt={item.label}
+          className="w-4 h-4 object-contain bg-transparent flex-shrink-0"
+          style={getAssetImageStyle(item.assetKey, "small")}
+          draggable={false}
+        />
+      ) : (
+        <item.icon
+          className="w-4 h-4 flex-shrink-0"
+          style={{ color: active ? "#D4A574" : "rgba(180,140,75,0.78)" }}
+        />
+      )}
+      <span>{item.label}</span>
+    </Link>
+  );
+}
 
-        return (
-          <button
-            key={item.path}
-            onClick={() => navigate(item.path)}
-            className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap shrink-0',
-              isActive
-                ? 'bg-[rgba(180,140,75,0.15)] text-[#D4A574] border border-[rgba(180,140,75,0.3)]'
-                : 'text-[#E0D8C8]/70 hover:text-[#E0D8C8] hover:bg-[rgba(180,140,75,0.08)]'
-            )}
-            style={isActive ? { boxShadow: '0 2px 4px rgba(180,140,75,0.15), inset 0 1px 0 rgba(180,140,100,0.1)' } : undefined}
-          >
-            {isImageIcon ? (
-              <img
-                src={iconUrl}
-                alt={item.name}
-                className="w-4 h-4 object-contain bg-transparent"
-                style={{
-                  backgroundColor: 'transparent',
-                  opacity: isActive ? 1 : 0.8,
-                  filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.25))',
-                }}
-                draggable={false}
-              />
-            ) : Icon ? (
-              <Icon className="w-4 h-4" />
-            ) : null}
-            {item.name}
-          </button>
-        );
-      })}
+export default function ModuleNav({ currentPageName }) {
+  const { t } = useTranslation();
+
+  const items = [
+    { page: "CollectionHub", label: t("nav.hub", "Hub"), icon: Home },
+    {
+      page: "PipeKeeper",
+      label: t("nav.pipekeeper", "PipeKeeper"),
+      image: MODULE_ICONS.pipekeeper,
+      assetKey: "pipekeeper",
+    },
+    {
+      page: "WhiskeyKeeper",
+      label: t("nav.whiskeykeeper", "WhiskeyKeeper"),
+      image: MODULE_ICONS.whiskeykeeper,
+      assetKey: "whiskeykeeper",
+    },
+    { page: "Curator", label: t("nav.curator", "Curator"), icon: Target },
+    { page: "Community", label: t("nav.community", "Community"), icon: Users },
+    { page: "Profile", label: t("nav.profile", "Profile"), icon: User },
+    { page: "HelpCenter", label: t("nav.help", "Help"), icon: HelpCircle },
+  ];
+
+  return (
+    <div className="flex items-center gap-1 overflow-x-auto">
+      {items.map((item) => (
+        <NavItem key={item.page} item={item} currentPageName={currentPageName} />
+      ))}
     </div>
   );
 }
