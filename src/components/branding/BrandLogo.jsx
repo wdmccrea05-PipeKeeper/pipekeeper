@@ -3,17 +3,6 @@ import { cn } from '@/lib/utils';
 
 const LOGO_URL = 'https://media.base44.com/images/public/694956e18d119cc497192525/b9b1fc2c7_CollectionKeeperUpdated.png';
 
-/**
- * BrandLogo — single source of truth for CollectionKeeper branding.
- * Uses the official logo PNG. No fallbacks. No placeholders.
- *
- * Props:
- *   compact        — smaller size variant (nav / footer)
- *   showWordmark   — show "CollectionKeeper" text beside logo
- *   hoverable      — enable gold lift+glow hover effect (for nav/header use)
- *   className      — wrapper class
- *   imageClassName — override image size/class
- */
 export default function BrandLogo({
   className,
   imageClassName,
@@ -27,34 +16,48 @@ export default function BrandLogo({
     <img
       src={LOGO_URL}
       alt="CollectionKeeper"
-      className={cn('object-contain flex-shrink-0', sizeClass, imageClassName)}
+      className={cn(
+        'object-contain flex-shrink-0 bg-transparent select-none',
+        sizeClass,
+        imageClassName
+      )}
       style={{
-        mixBlendMode: 'screen',
+        backgroundColor: 'transparent',
+        filter: hoverable ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))' : 'none',
         transition: hoverable ? 'filter 0.25s ease, transform 0.25s ease' : undefined,
       }}
       draggable={false}
     />
   );
 
+  const handleEnter = hoverable
+    ? (e) => {
+        const img = e.currentTarget.querySelector('img');
+        if (img) {
+          img.style.transform = 'translateY(-1px)';
+          img.style.filter =
+            'drop-shadow(0 4px 10px rgba(0,0,0,0.35)) drop-shadow(0 0 8px rgba(180,140,75,0.28))';
+        }
+      }
+    : undefined;
+
+  const handleLeave = hoverable
+    ? (e) => {
+        const img = e.currentTarget.querySelector('img');
+        if (img) {
+          img.style.transform = '';
+          img.style.filter = 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))';
+        }
+      }
+    : undefined;
+
   if (!showWordmark) {
     return (
       <div
-        className={cn('flex items-center', className)}
+        className={cn('flex items-center bg-transparent', className)}
         style={hoverable ? { cursor: 'pointer' } : undefined}
-        onMouseEnter={hoverable ? (e) => {
-          const img = e.currentTarget.querySelector('img');
-          if (img) {
-            img.style.transform = 'translateY(-1px)';
-            img.style.filter = 'drop-shadow(0 0 6px rgba(180,140,75,0.45))';
-          }
-        } : undefined}
-        onMouseLeave={hoverable ? (e) => {
-          const img = e.currentTarget.querySelector('img');
-          if (img) {
-            img.style.transform = '';
-            img.style.filter = '';
-          }
-        } : undefined}
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
       >
         {logoNode}
       </div>
@@ -63,21 +66,9 @@ export default function BrandLogo({
 
   return (
     <div
-      className={cn('flex items-center gap-2 min-w-0', className)}
-      onMouseEnter={hoverable ? (e) => {
-        const img = e.currentTarget.querySelector('img');
-        if (img) {
-          img.style.transform = 'translateY(-1px)';
-          img.style.filter = 'drop-shadow(0 0 6px rgba(180,140,75,0.45))';
-        }
-      } : undefined}
-      onMouseLeave={hoverable ? (e) => {
-        const img = e.currentTarget.querySelector('img');
-        if (img) {
-          img.style.transform = '';
-          img.style.filter = '';
-        }
-      } : undefined}
+      className={cn('flex items-center gap-2 min-w-0 bg-transparent', className)}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
     >
       {logoNode}
       <span
@@ -85,7 +76,6 @@ export default function BrandLogo({
         style={{
           color: '#F5F1E7',
           fontFamily: "'Georgia', serif",
-          transition: hoverable ? 'text-shadow 0.25s ease' : undefined,
         }}
       >
         CollectionKeeper
