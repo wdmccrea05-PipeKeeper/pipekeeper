@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { Home, Leaf, TrendingUp } from "lucide-react";
+import { Leaf, TrendingUp } from "lucide-react";
 import {
   MODULE_ICONS,
   getAssetImageStyle,
@@ -48,7 +48,7 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
 
   const items = [
     { page: "PipeKeeper", label: t("nav.pipekeeper", "PipeKeeper"), image: MODULE_ICONS.pipekeeper, assetKey: "pipekeeper" },
-    { page: "Pipes", label: t("pipes.title", "Pipes"), icon: Home },
+    { page: "Pipes", label: t("pipes.title", "Pipes"), image: "https://media.base44.com/images/public/694956e18d119cc497192525/46669d680_image.png" },
     { page: "Tobacco", label: t("tobacco.title", "Tobacco"), icon: Leaf },
     { page: "Insights", label: t("nav.insights", "Insights"), icon: TrendingUp },
   ];
