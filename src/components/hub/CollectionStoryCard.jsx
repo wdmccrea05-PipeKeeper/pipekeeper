@@ -159,6 +159,14 @@ function StoryHighlightCard({ title, label, photo, onClick }) {
   );
 }
 
+function resolveItemPhoto(item) {
+  if (!item) return null;
+  if (Array.isArray(item.photos) && item.photos.length > 0) return item.photos[0];
+  if (item.logo) return item.logo;
+  if (item.photo) return item.photo;
+  return null;
+}
+
 function Divider() {
   return (
     <div
@@ -171,7 +179,7 @@ function Divider() {
   );
 }
 
-export default function CollectionStoryCard() {
+export default function CollectionStoryCard({ pipes = [], blends = [], bottles = [] }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [story, setStory] = useState(null);
@@ -203,6 +211,11 @@ export default function CollectionStoryCard() {
       setLoading(false);
     }
   }
+
+  // Fallback highlights from collection data if story doesn't provide them
+  const fallbackMostUsedPipe = pipes.find((p) => Array.isArray(p?.photos) && p.photos.length > 0) || pipes[0];
+  const fallbackFavoriteBlend = blends.find((b) => b?.is_favorite) || blends[0];
+  const fallbackMostTastedBottle = bottles.find((b) => b?.photo) || bottles[0];
 
   if (loading) {
     return (
@@ -458,42 +471,46 @@ export default function CollectionStoryCard() {
         </p>
       </div>
 
-      {hasHighlights && (
+      {/* Highlights Section - either from story or fallback collection data */}
+      {(hasHighlights || fallbackMostUsedPipe || fallbackFavoriteBlend || fallbackMostTastedBottle) && (
         <>
           <Divider />
           <div className="px-6 pb-6 pt-6 relative z-10">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {h.mostUsedPipe && (
+              {(h.mostUsedPipe || fallbackMostUsedPipe) && (
                 <StoryHighlightCard
                   label={t('hub.mostUsedPipe', 'Most Used Pipe')}
-                  title={h.mostUsedPipe.name}
-                  photo={getHighlightPhoto(h.mostUsedPipe)}
+                  title={(h.mostUsedPipe || fallbackMostUsedPipe).name}
+                  photo={getHighlightPhoto(h.mostUsedPipe) || resolveItemPhoto(fallbackMostUsedPipe)}
                   onClick={() => {
-                    const route = getHighlightRoute(h.mostUsedPipe);
+                    const item = h.mostUsedPipe || fallbackMostUsedPipe;
+                    const route = getHighlightRoute(item);
                     if (route) navigate(route);
                   }}
                 />
               )}
 
-              {h.favoriteBlend && (
+              {(h.favoriteBlend || fallbackFavoriteBlend) && (
                 <StoryHighlightCard
                   label={t('hub.topBlend', 'Top Blend')}
-                  title={h.favoriteBlend.name}
-                  photo={getHighlightPhoto(h.favoriteBlend)}
+                  title={(h.favoriteBlend || fallbackFavoriteBlend).name}
+                  photo={getHighlightPhoto(h.favoriteBlend) || resolveItemPhoto(fallbackFavoriteBlend)}
                   onClick={() => {
-                    const route = getHighlightRoute(h.favoriteBlend);
+                    const item = h.favoriteBlend || fallbackFavoriteBlend;
+                    const route = getHighlightRoute(item);
                     if (route) navigate(route);
                   }}
                 />
               )}
 
-              {h.mostTastedBottle && (
+              {(h.mostTastedBottle || fallbackMostTastedBottle) && (
                 <StoryHighlightCard
                   label={t('hub.mostTasted', 'Most Tasted')}
-                  title={h.mostTastedBottle.name}
-                  photo={getHighlightPhoto(h.mostTastedBottle)}
+                  title={(h.mostTastedBottle || fallbackMostTastedBottle).name}
+                  photo={getHighlightPhoto(h.mostTastedBottle) || resolveItemPhoto(fallbackMostTastedBottle)}
                   onClick={() => {
-                    const route = getHighlightRoute(h.mostTastedBottle);
+                    const item = h.mostTastedBottle || fallbackMostTastedBottle;
+                    const route = getHighlightRoute(item);
                     if (route) navigate(route);
                   }}
                 />
