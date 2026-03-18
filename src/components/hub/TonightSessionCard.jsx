@@ -193,19 +193,26 @@ export default function TonightSessionCard({ pipes = [], blends = [], bottles = 
         <label className="text-xs uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.6)' }}>
           {t('session.recommendationMode', 'Recommendation Mode')}
         </label>
-        <Select value={mode} onValueChange={(v) => { 
-          setMode(v);
-        }}>
-          <SelectTrigger className="h-8 text-xs">
-            <SelectValue />
+        <Select value={mode} onValueChange={setMode}>
+          <SelectTrigger
+            className="w-full"
+            style={{
+              background: 'rgba(20, 14, 10, 0.55)',
+              border: '1px solid rgba(120,90,65,0.35)',
+              color: '#F5F1E7',
+            }}
+          >
+            <SelectValue>
+              {t(
+                SESSION_MODES.find((m) => m.value === mode)?.label || 'session.modes.balanced',
+                'Balanced'
+              )}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {SESSION_MODES.map(m => (
-              <SelectItem key={m.value} value={m.value}>
-                <div className="flex flex-col">
-                  <span className="font-medium">{t(m.label, m.label)}</span>
-                  <span className="text-xs text-muted-foreground">{t(m.description, m.description)}</span>
-                </div>
+            {SESSION_MODES.map((sessionMode) => (
+              <SelectItem key={sessionMode.value} value={sessionMode.value}>
+                {t(sessionMode.label, sessionMode.value)}
               </SelectItem>
             ))}
           </SelectContent>
