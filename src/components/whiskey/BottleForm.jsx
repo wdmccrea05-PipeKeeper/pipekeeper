@@ -48,7 +48,8 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
   );
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState(bottle?.photo || '');
+  const savedPhoto = bottle?.photo || bottle?.image || bottle?.image_url || '';
+  const [photoPreview, setPhotoPreview] = useState(savedPhoto);
   const [cropperImage, setCropperImage] = useState(null);
   const [showOnlineSearch, setShowOnlineSearch] = useState(false);
 
@@ -96,9 +97,12 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
       const file = new File([blob], 'bottle-photo.jpg', { type: 'image/jpeg' });
 
       const result = await base44.integrations.Core.UploadFile({ file });
-      if (result?.file_url) {
-        setFormData((prev) => ({ ...prev, photo: result.file_url }));
-        setPhotoPreview(result.file_url);
+      const uploadedUrl = result?.file_url || result?.url || result?.publicUrl;
+      if (uploadedUrl) {
+        setFormData((prev) => ({ ...prev, photo: uploadedUrl }));
+        setPhotoPreview(uploadedUrl);
+      } else {
+        console.error('Upload returned no URL:', result);
       }
     } catch (error) {
       console.error('Upload error:', error);
@@ -120,7 +124,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
       aftermarket_price: toNumberOrNull(formData.aftermarket_price),
       collector_value: toNumberOrNull(formData.collector_value),
       rating: toNumberOrNull(formData.rating),
-      photo: formData.photo || null,
+      photo: formData.photo || bottle?.photo || null,
       value_last_updated:
         formData.retail_price || formData.aftermarket_price || formData.collector_value
           ? new Date().toISOString()

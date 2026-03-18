@@ -148,14 +148,14 @@ export default function BottleDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Image */}
         <div className="lg:col-span-1">
-          {bottle.photo ? (
-            <img src={bottle.photo} alt={bottle.name} className="w-full rounded-2xl" />
-          ) : (
-            <div className="w-full aspect-square rounded-2xl flex items-center justify-center" 
-              style={{ background: 'linear-gradient(135deg, rgba(100, 70, 45, 0.3), rgba(80, 55, 35, 0.3))' }}>
-              <WhiskeyBottleIcon className="w-16 h-16" style={{ color: 'rgba(180,140,75,0.3)' }} />
-            </div>
-          )}
+          {bottle.photo || bottle.image || bottle.image_url ? (
+              <img src={bottle.photo || bottle.image || bottle.image_url} alt={bottle.name} className="w-full rounded-2xl" />
+            ) : (
+              <div className="w-full aspect-square rounded-2xl flex items-center justify-center" 
+                style={{ background: 'linear-gradient(135deg, rgba(100, 70, 45, 0.3), rgba(80, 55, 35, 0.3))' }}>
+                <WhiskeyBottleIcon className="w-16 h-16" style={{ color: 'rgba(180,140,75,0.3)' }} />
+              </div>
+            )}
         </div>
 
         {/* Right: Details */}
