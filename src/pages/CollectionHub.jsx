@@ -205,7 +205,12 @@ export default function CollectionHub() {
     return {
       ...module,
       route: dashboardRoute,
-      itemCount: module.type === 'pipes' ? summary.pipes.count : module.type === 'whiskey' ? summary.whiskey.count : 0,
+      itemCount:
+        module.type === 'pipes'
+          ? summary.pipes.count
+          : module.type === 'whiskey'
+            ? (summary.whiskey?.bottleTypes ?? summary.whiskey?.count ?? 0)
+            : 0,
       stats,
       summary: null,
       bgImage: module.type === 'pipes' ? featuredPipe?.photos?.[0] : module.type === 'whiskey' ? featuredBottle?.photo : null,
