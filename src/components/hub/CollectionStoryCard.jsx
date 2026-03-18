@@ -204,7 +204,7 @@ export default function CollectionStoryCard() {
       {hasHighlights && (
         <>
           <Divider />
-          <div className="px-6 pb-2">
+          <div className="px-6 pb-6 pt-2 space-y-3 relative z-10">
             {h.mostUsedPipe && (
               <HighlightRow
                 label={t('hub.mostUsedPipe', 'Most Used Pipe')}
