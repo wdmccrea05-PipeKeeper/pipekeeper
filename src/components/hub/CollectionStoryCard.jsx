@@ -183,43 +183,53 @@ export default function CollectionStoryCard() {
       {hasHighlights && (
         <>
           <Divider />
-          <div className="px-6 pb-6 pt-2 space-y-3 relative z-10">
-            {h.mostUsedPipe && (
-              <HighlightRow
-                label={t('hub.mostUsedPipe', 'Most Used Pipe')}
-                value={h.mostUsedPipe.name}
-                sub={h.mostUsedPipe.uses > 0 ? `${h.mostUsedPipe.uses} ${t('hub.sessions', 'sessions')}` : null}
-              />
-            )}
-            {h.favoriteBlend && (
-              <HighlightRow
-                label={t('hub.topBlend', 'Top Blend')}
-                value={h.favoriteBlend.name}
-                sub={h.favoriteBlend.rating ? `★ ${h.favoriteBlend.rating} / 5` : null}
-              />
-            )}
-            {h.mostTastedBottle && (
-              <HighlightRow
-                label={t('hub.mostTasted', 'Most Tasted')}
-                value={h.mostTastedBottle.name}
-                sub={
-                  h.mostTastedBottle.tastings > 0
-                    ? `${h.mostTastedBottle.tastings} ${t('hub.tastings', 'tastings')}`
-                    : null
-                }
-              />
-            )}
-            {h.mostValuableItem && (
-              <HighlightRow
-                label={t('hub.crownJewel', 'Crown Jewel')}
-                value={h.mostValuableItem.name}
-                sub={
-                  h.mostValuableItem.value > 0
-                    ? `$${h.mostValuableItem.value.toLocaleString()}`
-                    : null
-                }
-              />
-            )}
+          <div className="px-6 pb-6 pt-4 relative z-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {h.mostUsedPipe && (
+                <HighlightCard
+                  icon="pipe"
+                  title={t('hub.mostUsedPipe', 'Most Used Pipe')}
+                  value={h.mostUsedPipe.name}
+                  subtitle={h.mostUsedPipe.uses > 0 ? `${h.mostUsedPipe.uses} ${t('hub.sessions', 'sessions')}` : null}
+                  module="PIPEKEEPER"
+                />
+              )}
+              {h.favoriteBlend && (
+                <HighlightCard
+                  icon="blend"
+                  title={t('hub.topBlend', 'Top Blend')}
+                  value={h.favoriteBlend.name}
+                  subtitle={h.favoriteBlend.rating ? `★ ${h.favoriteBlend.rating} / 5` : null}
+                  module="PIPEKEEPER"
+                />
+              )}
+              {h.mostTastedBottle && (
+                <HighlightCard
+                  icon="bottle"
+                  title={t('hub.mostTasted', 'Most Tasted')}
+                  value={h.mostTastedBottle.name}
+                  subtitle={
+                    h.mostTastedBottle.tastings > 0
+                      ? `${h.mostTastedBottle.tastings} ${t('hub.tastings', 'tastings')}`
+                      : null
+                  }
+                  module="WHISKEYKEEPER"
+                />
+              )}
+              {h.mostValuableItem && (
+                <HighlightCard
+                  icon="value"
+                  title={t('hub.crownJewel', 'Crown Jewel')}
+                  value={h.mostValuableItem.name}
+                  subtitle={
+                    h.mostValuableItem.value > 0
+                      ? `$${h.mostValuableItem.value.toLocaleString()}`
+                      : null
+                  }
+                  module="COLLECTION"
+                />
+              )}
+            </div>
           </div>
         </>
       )}
