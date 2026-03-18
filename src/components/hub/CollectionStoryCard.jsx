@@ -60,21 +60,6 @@ function getHighlightRoute(highlight) {
   return null;
 }
 
-async function safeGet(entityApi, id) {
-  if (!entityApi || !id) return null;
-
-  try {
-    return await entityApi.get(id);
-  } catch {
-    try {
-      const found = await entityApi.filter({ id });
-      return found?.[0] || null;
-    } catch {
-      return null;
-    }
-  }
-}
-
 async function enrichStoryHighlights(story) {
   // Backend now returns highlights with full photo fields
   // This function is kept for backward compatibility but is essentially a pass-through
