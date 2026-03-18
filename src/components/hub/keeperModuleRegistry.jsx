@@ -1,83 +1,13 @@
-/**
- * Central module registry for CollectionKeeper ecosystem.
- * Defines all available modules (active and coming soon).
- * Used to drive Hub UI, module cards, navigation, and extensibility.
- *
- * To get user-visibility-filtered modules, use useEnabledKeeperModules() hook
- * from components/hooks/useEnabledKeeperModules.js
- */
+import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 
 export const KEEPER_MODULES = [
-  {
-    type: 'pipes',
-    titleKey: 'hub.pipekeeper',
-    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/27f5c2c92_PKNB.png',
-    route: 'Pipes',
-    enabled: true,
-    description: 'Manage your pipe collection with detailed specifications and smoking logs.',
-    moduleKey: 'pipekeeper',
-  },
-  {
-    type: 'whiskey',
-    titleKey: 'hub.whiskeykeeper',
-    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png',
-    route: 'Whiskey',
-    enabled: true,
-    description: 'Track your whiskey collection with tasting notes and region analysis.',
-    moduleKey: 'whiskeykeeper',
-  },
-  {
-    type: 'cigars',
-    titleKey: 'hub.cigarkeeper',
-    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/c26fb6746_CigarKNB.png',
-    route: null,
-    enabled: false,
-    description: 'Coming soon: Curate and track your cigar collection.',
-    moduleKey: 'cigarkeeper',
-  },
-  {
-    type: 'wine',
-    titleKey: 'hub.winekeeper',
-    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/ef580a0c9_WineKNB.png',
-    route: null,
-    enabled: false,
-    description: 'Coming soon: Manage your wine cellar and bottle inventory.',
-    moduleKey: 'winekeeper',
-  },
+  { type: 'pipes', titleKey: 'hub.pipekeeper', icon: MODULE_ICONS.pipekeeper, route: 'Pipes', enabled: true, description: 'Manage your pipe collection with detailed specifications and smoking logs.', moduleKey: 'pipekeeper' },
+  { type: 'whiskey', titleKey: 'hub.whiskeykeeper', icon: MODULE_ICONS.whiskeykeeper, route: 'WhiskeyKeeper', enabled: true, description: 'Track your whiskey collection with tasting notes and region analysis.', moduleKey: 'whiskeykeeper' },
+  { type: 'cigars', titleKey: 'hub.cigarkeeper', icon: MODULE_ICONS.cigarkeeper, route: null, enabled: false, description: 'Coming soon: Curate and track your cigar collection.', moduleKey: 'cigarkeeper' },
+  { type: 'wine', titleKey: 'hub.winekeeper', icon: MODULE_ICONS.winekeeper, route: null, enabled: false, description: 'Coming soon: Manage your wine cellar and bottle inventory.', moduleKey: 'winekeeper' },
 ];
-
-/**
- * Get all modules that are platform-launched (have a route + enabled=true).
- * Does NOT filter by user preferences. Use useEnabledKeeperModules() for that.
- */
-export function getEnabledModules() {
-  return KEEPER_MODULES.filter(m => m.enabled);
-}
-
-/**
- * Get coming soon modules.
- */
-export function getComingSoonModules() {
-  return KEEPER_MODULES.filter(m => !m.enabled);
-}
-
-/**
- * Get module by type.
- */
-export function getModuleByType(type) {
-  return KEEPER_MODULES.find(m => m.type === type);
-}
-
-/**
- * Get module by moduleKey.
- */
-export function getModuleByKey(key) {
-  return KEEPER_MODULES.find(m => m.moduleKey === key);
-}
-
-/**
- * Get count of platform-enabled modules.
- */
-export function getEnabledModuleCount() {
-  return getEnabledModules().length;
-}
+export function getEnabledModules() { return KEEPER_MODULES.filter((m) => m.enabled); }
+export function getComingSoonModules() { return KEEPER_MODULES.filter((m) => !m.enabled); }
+export function getModuleByType(type) { return KEEPER_MODULES.find((m) => m.type === type); }
+export function getModuleByKey(key) { return KEEPER_MODULES.find((m) => m.moduleKey === key); }
+export function getEnabledModuleCount() { return getEnabledModules().length; }
