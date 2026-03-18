@@ -3,10 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Plus, BookOpen, TrendingUp, BarChart3, Share2, Search, Package, Grid3X3, List, Package2 } from 'lucide-react';
+import { Plus, BookOpen, TrendingUp, Search, Package, Grid3X3, List, Package2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import ModuleNav from '@/components/modules/ModuleNav';
+import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import BottleCard from '@/components/whiskey/BottleCard';
 import BottleListItem from '@/components/whiskey/BottleListItem';
 import BottleForm from '@/components/whiskey/BottleForm';
@@ -54,13 +54,6 @@ export default function WhiskeyPage() {
       window.history.replaceState({}, '', '/Whiskey');
     }
   }, []);
-
-  const moduleNavItems = [
-    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: WhiskeyBottleIcon },
-    { name: t('nav.tastingNotes') || 'Tastings', path: '/Tastings', icon: BookOpen },
-    { name: t('nav.insights') || 'Insights', path: '/WhiskeyInsights', icon: TrendingUp },
-    { name: t('nav.analytics') || 'Analytics', path: '/WhiskeyAnalytics', icon: BarChart3 },
-  ];
 
   const { data: bottles = [] } = useQuery({
     queryKey: ['bottles', user?.email, sortBy],
@@ -146,20 +139,22 @@ export default function WhiskeyPage() {
     <div className="space-y-6">
       <InventoryMigrator />
 
-      <ModuleNav items={moduleNavItems} currentPath="/Whiskey" />
+      <WhiskeyKeeperModuleNav currentPageName="Whiskey" />
 
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+            <img
+              src="/branding/bottle-icon.png?v=3"
+              alt="Bottles"
+              className="w-11 h-11 object-contain bg-transparent"
               style={{
-                background: 'linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))',
-                border: '1px solid rgba(120, 90, 65, 0.45)',
-                boxShadow: '0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)',
-              }}>
-              <WhiskeyBottleIcon className="w-5 h-5" style={{ color: 'rgba(180, 140, 75, 1)' }} />
-            </div>
+                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.28))',
+                backgroundColor: 'transparent',
+              }}
+              draggable={false}
+            />
             <h1 className="text-4xl font-bold tracking-tight"
               style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
               WhiskeyKeeper
@@ -228,7 +223,12 @@ export default function WhiskeyPage() {
             {t('quickActions.quickSearchBottle') || 'Quick Add'}
           </Button>
           <Button onClick={() => { setEditingBottle(null); setShowForm(true); }} className="bg-[#A35C5C] hover:bg-[#8C4A4A]">
-            <Plus className="w-4 h-4 mr-2" />
+            <img
+              src="/branding/bottle-icon.png?v=3"
+              alt=""
+              className="w-4 h-4 mr-2 object-contain"
+              style={{ backgroundColor: 'transparent' }}
+            />
             {t('whiskey.addBottle') || 'Add Bottle'}
           </Button>
         </div>

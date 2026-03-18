@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { Home, Wine, TrendingUp } from "lucide-react";
+import { Home, TrendingUp } from "lucide-react";
 import {
   MODULE_ICONS,
   getAssetImageStyle,
@@ -47,8 +47,8 @@ export default function WhiskeyKeeperModuleNav({ currentPageName }) {
   const { t } = useTranslation();
 
   const items = [
-    { page: "WhiskeyKeeper", label: t("nav.whiskeykeeper", "WhiskeyKeeper"), image: MODULE_ICONS.whiskeykeeper, assetKey: "whiskeykeeper" },
-    { page: "Whiskey", label: t("whiskey.bottles", "Bottles"), icon: Wine },
+    { page: "WhiskeyKeeper", label: t("nav.whiskeykeeper", "WhiskeyKeeper"), image: "/branding/whiskeykeeper-logo.png?v=3", assetKey: "whiskeykeeper" },
+    { page: "Whiskey", label: t("whiskey.bottles", "Bottles"), image: "/branding/bottle-icon.png?v=3", assetKey: "bottleicon" },
     { page: "Tastings", label: t("whiskey.tastings", "Tastings"), icon: Home },
     { page: "WhiskeyInsights", label: t("nav.insights", "Insights"), icon: TrendingUp },
   ];
