@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { getRecentCrossModuleActivity, formatActivityDate } from '@/components/keeper-core';
-
-const PIPE_ICON = 'https://media.base44.com/images/public/694956e18d119cc497192525/27f5c2c92_PKNB.png';
-const WHISKEY_ICON = 'https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png';
+import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 
 function ActivityIcon({ module }) {
-  const src = module === 'whiskey' ? WHISKEY_ICON : PIPE_ICON;
+  const src = module === 'whiskey' ? MODULE_ICONS.whiskeykeeper : MODULE_ICONS.pipekeeper;
 
   return (
     <div
