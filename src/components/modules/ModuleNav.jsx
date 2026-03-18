@@ -1,12 +1,12 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 export default function ModuleNav({ items, currentPath }) {
   const navigate = useNavigate();
-  
+
   return (
-    <div 
+    <div
       className="flex items-center gap-2 mb-6 overflow-x-auto pb-2"
       style={{
         borderBottom: '1px solid rgba(180, 140, 75, 0.2)',
@@ -16,9 +16,9 @@ export default function ModuleNav({ items, currentPath }) {
       {items.map((item) => {
         const isActive = currentPath === item.path;
         const Icon = item.icon;
-        // Support both item.iconImage (explicit URL) and item.icon (string URL or component)
         const iconUrl = item.iconImage || (typeof item.icon === 'string' ? item.icon : null);
         const isImageIcon = !!iconUrl;
+
         return (
           <button
             key={item.path}
@@ -29,9 +29,7 @@ export default function ModuleNav({ items, currentPath }) {
                 ? 'bg-[rgba(180,140,75,0.15)] text-[#D4A574] border border-[rgba(180,140,75,0.3)]'
                 : 'text-[#E0D8C8]/70 hover:text-[#E0D8C8] hover:bg-[rgba(180,140,75,0.08)]'
             )}
-            style={isActive ? {
-              boxShadow: '0 2px 4px rgba(180,140,75,0.15), inset 0 1px 0 rgba(180,140,100,0.1)',
-            } : {}}
+            style={isActive ? { boxShadow: '0 2px 4px rgba(180,140,75,0.15), inset 0 1px 0 rgba(180,140,100,0.1)' } : {}}
           >
             {isImageIcon ? (
               <img
@@ -41,7 +39,9 @@ export default function ModuleNav({ items, currentPath }) {
                 style={{
                   backgroundColor: 'transparent',
                   opacity: isActive ? 1 : 0.78,
-                  filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.25))',
+                  filter: isActive
+                    ? 'drop-shadow(0 1px 3px rgba(0,0,0,0.25))'
+                    : 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))',
                 }}
                 draggable={false}
               />
