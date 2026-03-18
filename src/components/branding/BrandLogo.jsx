@@ -29,6 +29,7 @@ export default function BrandLogo({
         border: "none",
         outline: "none",
         boxShadow: "none",
+        mixBlendMode: "multiply",
         filter: compact ? "drop-shadow(0 1px 2px rgba(0,0,0,0.2))" : "drop-shadow(0 2px 6px rgba(0,0,0,0.28))",
       }}
       draggable={false}
