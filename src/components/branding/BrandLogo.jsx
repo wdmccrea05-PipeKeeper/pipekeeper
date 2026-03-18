@@ -23,8 +23,8 @@ export default function BrandLogo({
       )}
       style={{
         backgroundColor: 'transparent',
-        filter: hoverable ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))' : 'none',
-        transition: hoverable ? 'filter 0.25s ease, transform 0.25s ease' : undefined,
+        filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))',
+        transition: 'filter 0.25s ease, transform 0.25s ease',
       }}
       draggable={false}
     />

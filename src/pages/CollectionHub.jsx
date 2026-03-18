@@ -188,7 +188,7 @@ export default function CollectionHub() {
       const wTotalBottles = summary.whiskey?.totalBottles ?? wBottleTypes ?? 0;
       const wValue = isModuleEnabled('whiskeykeeper') ? totalBottleValue : 0;
       stats = [
-        { label: t('hub.bottleTypes', 'Bottle Types'), value: wBottleTypes },
+        { label: t('hub.bottleTypes'), value: wBottleTypes },
         ...(wTotalBottles > wBottleTypes
           ? [{ label: t('hub.totalBottles', 'Total Bottles'), value: wTotalBottles }]
           : []),

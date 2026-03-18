@@ -37,8 +37,13 @@ export default function ModuleNav({ items, currentPath }) {
               <img
                 src={iconUrl}
                 alt={item.name}
-                className="w-4 h-4 object-contain"
-                style={{ mixBlendMode: 'screen', opacity: isActive ? 1 : 0.7 }}
+                className="w-4 h-4 object-contain bg-transparent"
+                style={{
+                  backgroundColor: 'transparent',
+                  opacity: isActive ? 1 : 0.78,
+                  filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.25))',
+                }}
+                draggable={false}
               />
             ) : Icon ? (
               <Icon className="w-4 h-4" />
