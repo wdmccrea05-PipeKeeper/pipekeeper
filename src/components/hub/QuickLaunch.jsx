@@ -168,8 +168,8 @@ export default function QuickLaunch() {
         </div>
 
         {isModuleEnabled("whiskeykeeper") ? (
-          <div>
-            <SectionTitle icon={FlaskConical} label={t("nav.whiskeykeeper", "WhiskeyKeeper")} />
+           <div>
+             <SectionTitle label={t("nav.whiskeykeeper", "WhiskeyKeeper")} />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {whiskeyActions.map((action) => (
                 <ActionCard
