@@ -37,10 +37,7 @@ function PipeQuickIcon({ className, style }) {
   );
 }
 
-function SectionTitle({ icon, label }) {
-  const isString = typeof icon === "string";
-  const IconComponent = !isString ? icon : null;
-  
+function SectionTitle({ label }) {
   return (
     <div className="flex items-center gap-2 mb-3">
       <h3
@@ -158,7 +155,7 @@ export default function QuickLaunch() {
         </h2>
 
         <div>
-          <SectionTitle icon={MODULE_ICONS.pipeicon} label={t("nav.pipekeeper", "PipeKeeper")} />
+          <SectionTitle label={t("nav.pipekeeper", "PipeKeeper")} />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {pipeActions.map((action) => (
               <ActionCard
