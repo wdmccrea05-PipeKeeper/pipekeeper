@@ -40,35 +40,39 @@ function StoryHighlightCard({ title, label, photo, onClick }) {
       }}
     >
       {/* Background image or fallback gradient */}
-      {photo ? (
-        <img
-          src={photo}
-          alt={title}
-          className="absolute inset-0 w-full h-full object-cover"
-          onError={(e) => {
-            e.target.style.display = 'none';
+      {photo && (
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url('${photo}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            zIndex: 0,
           }}
         />
-      ) : null}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: !photo
-            ? 'linear-gradient(135deg, rgba(60,40,25,0.9), rgba(40,25,15,0.95))'
-            : undefined,
-        }}
-      />
+      )}
+      {!photo && (
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(135deg, rgba(60,40,25,0.9), rgba(40,25,15,0.95))',
+            zIndex: 0,
+          }}
+        />
+      )}
 
       {/* Overlay */}
       <div
         className="absolute inset-0"
         style={{
           background: 'radial-gradient(circle at 30% 20%, rgba(180,140,100,0.25) 0%, transparent 40%), radial-gradient(circle at 100% 100%, rgba(0,0,0,0.5) 0%, transparent 50%)',
+          zIndex: 1,
         }}
       />
 
       {/* Content */}
-      <div className="absolute inset-0 flex flex-col justify-between p-5 z-10">
+      <div className="absolute inset-0 flex flex-col justify-between p-5 z-20">
         <div>
           <p
             className="text-xs uppercase tracking-wider font-bold"
@@ -92,7 +96,7 @@ function StoryHighlightCard({ title, label, photo, onClick }) {
 
       {/* Hover effect */}
       <div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
         style={{
           background: 'radial-gradient(circle at center, rgba(180,140,75,0.15) 0%, transparent 70%)',
         }}
