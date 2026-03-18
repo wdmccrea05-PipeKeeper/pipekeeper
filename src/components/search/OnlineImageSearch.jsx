@@ -1,244 +1,323 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { Search, Loader2, AlertCircle } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { base44 } from "@/api/base44Client";
-import { useTranslation } from "@/components/i18n/safeTranslation";
+import React, { useEffect, useMemo, useState } from 'react';
+import { Search, Check, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
 
-const SEARCH_CACHE = new Map();
+function buildBottleQuery(recordData = {}) {
+  const parts = [
+    recordData?.name,
+    recordData?.distillery,
+    recordData?.type,
+    recordData?.region,
+    recordData?.country,
+    recordData?.bottle_type === 'wine' ? 'wine bottle' : 'whiskey bottle',
+  ]
+    .filter((v) => typeof v === 'string' && v.trim())
+    .map((v) => v.trim());
 
-function normalizeQuery(q = '') {
-  return String(q).trim().replace(/\s+/g, ' ');
+  return parts.join(' ').trim();
 }
 
-function dedupeUrls(items = []) {
-  const seen = new Set();
-  const out = [];
-  for (const url of items) {
-    const key = String(url || '').trim();
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    out.push(key);
-  }
-  return out;
+function normalizeResultImage(item) {
+  if (!item) return null;
+
+  const candidates = [
+    item.image,
+    item.image_url,
+    item.url,
+    item.thumbnail,
+    item.thumbnail_url,
+    item.src,
+    item.original,
+    item.original_url,
+    item.full,
+    item.full_url,
+    item.media_url,
+    item.preview_url,
+    item?.image?.url,
+    item?.thumbnail?.url,
+    item?.urls?.regular,
+    item?.urls?.small,
+    item?.urls?.thumb,
+    item?.urls?.full,
+  ].filter((v) => typeof v === 'string' && v.trim());
+
+  return candidates[0] || null;
 }
 
-function generateSearchQuery(type, data) {
-  if (!data) return '';
+function normalizeResults(raw) {
+  if (!raw) return [];
 
-  if (type === 'pipe') {
-    const parts = [data.maker, data.name].filter(Boolean);
-    return parts.length ? `${parts.join(' ')} pipe` : 'tobacco pipe';
-  }
+  const arrayCandidate =
+    (Array.isArray(raw) && raw) ||
+    raw.results ||
+    raw.images ||
+    raw.items ||
+    raw.data ||
+    raw.output ||
+    [];
 
-  if (type === 'blend') {
-    const parts = [data.manufacturer, data.name].filter(Boolean);
-    return parts.length ? `${parts.join(' ')} tin label` : 'tobacco tin label';
-  }
+  if (!Array.isArray(arrayCandidate)) return [];
 
-  if (type === 'bottle') {
-    const parts = [data.distillery, data.name, data.type].filter(Boolean);
-    return parts.length ? `${parts.join(' ')} bottle` : 'whiskey bottle';
-  }
+  return arrayCandidate
+    .map((item, index) => {
+      const imageUrl = normalizeResultImage(item);
+      if (!imageUrl) return null;
 
-  return '';
+      return {
+        id:
+          item.id ||
+          item.image_id ||
+          item.url ||
+          item.image ||
+          item.thumbnail ||
+          `result-${index}`,
+        imageUrl,
+        thumbUrl:
+          item.thumbnail ||
+          item.thumbnail_url ||
+          item?.urls?.thumb ||
+          item?.urls?.small ||
+          imageUrl,
+        title:
+          item.title ||
+          item.name ||
+          item.alt ||
+          item.description ||
+          `Image ${index + 1}`,
+        source:
+          item.source ||
+          item.provider ||
+          item.domain ||
+          item.site ||
+          '',
+      };
+    })
+    .filter(Boolean);
 }
 
-function buildFallbackQueries(query, recordType) {
-  const q = normalizeQuery(query);
-  if (!q) return [];
+function ResultCard({ result, selected, onSelect }) {
+  const [imageFailed, setImageFailed] = useState(false);
 
-  const queries = [q];
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(result.imageUrl)}
+      className="relative rounded-xl overflow-hidden text-left transition-all duration-200"
+      style={{
+        background: 'rgba(255,255,255,0.03)',
+        border: selected
+          ? '2px solid rgba(180,140,75,0.9)'
+          : '1px solid rgba(180,140,75,0.18)',
+        boxShadow: selected ? '0 0 0 1px rgba(180,140,75,0.2)' : 'none',
+      }}
+    >
+      <div className="aspect-[4/3] w-full bg-black/20 flex items-center justify-center overflow-hidden">
+        {!imageFailed ? (
+          <img
+            src={result.thumbUrl || result.imageUrl}
+            alt={result.title}
+            className="w-full h-full object-contain bg-black/10"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-[#D8C7A6]/60">
+            <ImageIcon className="w-8 h-8" />
+            <span className="text-xs">Preview unavailable</span>
+          </div>
+        )}
+      </div>
 
-  if (recordType === 'bottle') {
-    queries.push(`${q} whiskey bottle`);
-    queries.push(`${q} bourbon bottle`);
-    queries.push(`${q} scotch bottle`);
-    queries.push(`${q} front label`);
-  }
+      <div className="p-3 min-h-[72px]">
+        <p className="text-sm font-medium text-[#F5F1E7] line-clamp-2">{result.title}</p>
+        {result.source ? (
+          <p className="text-xs mt-1 text-[#D8C7A6]/60 truncate">{result.source}</p>
+        ) : null}
+      </div>
 
-  if (recordType === 'pipe') {
-    queries.push(`${q} tobacco pipe`);
-    queries.push(`${q} pipe catalog`);
-  }
-
-  if (recordType === 'blend') {
-    queries.push(`${q} tobacco tin`);
-    queries.push(`${q} tin art`);
-    queries.push(`${q} tobacco label`);
-  }
-
-  return dedupeUrls(queries);
+      {selected ? (
+        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#B48C4B] flex items-center justify-center text-[#1b130d]">
+          <Check className="w-4 h-4" />
+        </div>
+      ) : null}
+    </button>
+  );
 }
 
 export default function OnlineImageSearch({
-  recordType,
-  recordData,
+  recordType = 'bottle',
+  recordData = {},
   onImageSelected,
-  onClose
+  onClose,
 }) {
-  const { t } = useTranslation();
+  const initialQuery = useMemo(() => {
+    if (recordType === 'bottle') return buildBottleQuery(recordData);
+    return '';
+  }, [recordType, recordData]);
 
-  const initialQuery = useMemo(
-    () => generateSearchQuery(recordType, recordData),
-    [recordType, recordData]
-  );
-
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
-  const [images, setImages] = useState([]);
+  const [query, setQuery] = useState(initialQuery);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [results, setResults] = useState([]);
+  const [selectedUrl, setSelectedUrl] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSearch = useCallback(async (e) => {
-    e?.preventDefault?.();
+  useEffect(() => {
+    if (initialQuery) {
+      runSearch(initialQuery);
+    }
+  }, [initialQuery]);
 
-    const query = normalizeQuery(searchQuery);
-    if (!query) {
-      setError(t("onlineImageSearch.queryRequired", "Please enter a search query"));
+  async function runSearch(forcedQuery = query) {
+    const q = (forcedQuery || '').trim();
+    if (!q) {
+      setResults([]);
+      setError('');
       return;
     }
 
     setLoading(true);
-    setError(null);
+    setError('');
 
     try {
-      const cacheKey = `${recordType}:${query.toLowerCase()}`;
-      if (SEARCH_CACHE.has(cacheKey)) {
-        setImages(SEARCH_CACHE.get(cacheKey));
-        setLoading(false);
-        return;
+      let raw = null;
+
+      // Preferred provider path
+      try {
+        raw = await base44.functions.invoke('searchRecordImages', {
+          query: q,
+          recordType,
+          recordData,
+        });
+      } catch (firstError) {
+        // fallback provider path
+        raw = await base44.functions.invoke('searchImages', {
+          query: q,
+          recordType,
+          recordData,
+        });
       }
 
-      const fallbackQueries = buildFallbackQueries(query, recordType);
-      let found = [];
+      const normalized = normalizeResults(raw?.data || raw);
+      setResults(normalized);
 
-      for (const candidate of fallbackQueries) {
-        try {
-          const response = await base44.functions.invoke('searchProductImages', {
-            query: candidate,
-            recordType,
-            limit: 16,
-          });
-
-          const payload = response?.data || response || {};
-          const urls = dedupeUrls(payload?.images || []);
-          if (urls.length) {
-            found = urls;
-            break;
-          }
-        } catch (err) {
-          console.error('Image search candidate failed:', candidate, err);
-        }
+      if (!normalized.length) {
+        setError('No image results found for that search.');
       }
-
-      if (!found.length) {
-        setImages([]);
-        setError(t("onlineImageSearch.noResults", "No images found. Try a more specific brand and product name."));
-        return;
-      }
-
-      SEARCH_CACHE.set(cacheKey, found);
-      setImages(found);
     } catch (err) {
-      console.error('Search error:', err);
-      setError(t("onlineImageSearch.searchError", "Failed to search for images. Please try again."));
+      console.error('[OnlineImageSearch] search failed:', err);
+      setResults([]);
+      setError('Search failed. Please try a different query.');
     } finally {
       setLoading(false);
     }
-  }, [recordType, searchQuery, t]);
+  }
 
-  const handleSelectImage = useCallback((imageUrl) => {
-    onImageSelected(imageUrl);
-    onClose();
-  }, [onImageSelected, onClose]);
+  function handleSelect(url) {
+    setSelectedUrl(url);
+  }
+
+  function handleUseSelected() {
+    if (!selectedUrl) return;
+    onImageSelected?.(selectedUrl);
+    onClose?.();
+  }
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <form onSubmit={handleSearch} className="space-y-2 flex-shrink-0 mb-4">
-        <label className="block text-sm font-medium text-[#E0D8C8]">
-          {t("onlineImageSearch.searchQuery", "Search Query")}
-        </label>
+    <div className="h-full min-h-0 flex flex-col">
+      <div className="shrink-0 px-5 py-4 border-b" style={{ borderColor: 'rgba(180,140,75,0.14)' }}>
+        <div className="flex gap-3">
+          <div className="flex-1 min-w-0">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search bottle image"
+              className="w-full rounded-xl px-4 py-3 bg-[rgba(255,255,255,0.04)] text-[#F5F1E7] border border-[rgba(180,140,75,0.18)] outline-none"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  runSearch();
+                }
+              }}
+            />
+          </div>
 
-        <div className="flex gap-2">
-          <Input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t("onlineImageSearch.enterQuery", "Enter search query...")}
-            disabled={loading}
-            className="flex-1"
-          />
           <Button
-            type="submit"
-            disabled={loading || !normalizeQuery(searchQuery)}
-            className="bg-[#A35C5C] hover:bg-[#8F4E4E] text-white flex-shrink-0"
+            type="button"
+            onClick={() => runSearch()}
+            style={{
+              background: 'linear-gradient(135deg, rgba(163, 92, 92, 1), rgba(140, 74, 74, 1))',
+              color: '#F5F1E7',
+            }}
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           </Button>
         </div>
 
-        <p className="text-xs text-[#E0D8C8]/60">
-          {t("onlineImageSearch.tip", "Tip: include distillery, bottle name, and type for better results")}
-        </p>
-      </form>
+        <div className="mt-3 flex items-center justify-between gap-4">
+          <p className="text-xs text-[#D8C7A6]/65">
+            {loading
+              ? 'Searching online images...'
+              : results.length > 0
+                ? `${results.length} result${results.length === 1 ? '' : 's'}`
+                : 'Results'}
+          </p>
 
-      {error && (
-        <div className="flex items-start gap-3 p-3 rounded-lg bg-[#E05D5D]/20 border border-[#E05D5D]/40 flex-shrink-0 mb-3">
-          <AlertCircle className="w-5 h-5 text-[#E05D5D] flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-[#E0D8C8]">{error}</p>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={!selectedUrl}
+              onClick={handleUseSelected}
+              style={{
+                background: selectedUrl
+                  ? 'linear-gradient(135deg, rgba(163, 92, 92, 1), rgba(140, 74, 74, 1))'
+                  : 'rgba(255,255,255,0.08)',
+                color: '#F5F1E7',
+              }}
+            >
+              Use Selected
+            </Button>
+          </div>
         </div>
-      )}
+      </div>
 
-      {!!images.length && (
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <div className="space-y-2 pb-2">
-            <p className="text-sm text-[#E0D8C8]/70 sticky top-0 bg-inherit py-2">
-              {t("onlineImageSearch.selectImage", "Select an image to edit and use")}
-            </p>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {images.map((imageUrl, idx) => (
-                <button
-                  key={`${imageUrl}-${idx}`}
-                  type="button"
-                  className="relative aspect-[3/4] rounded-lg overflow-hidden border-2 border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 bg-black/20 transition-colors"
-                  onClick={() => handleSelectImage(imageUrl)}
-                >
-                  <img
-                    src={imageUrl}
-                    alt={`Result ${idx + 1}`}
-                    className="w-full h-full object-contain bg-black/10"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                </button>
-              ))}
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5">
+        {loading ? (
+          <div className="h-full min-h-[240px] flex items-center justify-center text-[#D8C7A6]/70">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Searching...</span>
             </div>
           </div>
-        </div>
-      )}
-
-      {loading && (
-        <div className="flex items-center justify-center flex-1">
-          <div className="text-center space-y-3">
-            <Loader2 className="w-6 h-6 animate-spin text-[#A35C5C] mx-auto" />
-            <p className="text-sm text-[#E0D8C8]/70">{t("common.searching", "Searching...")}</p>
+        ) : error ? (
+          <div className="h-full min-h-[220px] flex items-center justify-center">
+            <div className="text-center text-[#D8C7A6]/70 max-w-md">
+              <ImageIcon className="w-8 h-8 mx-auto mb-3 opacity-70" />
+              <p className="text-sm">{error}</p>
+            </div>
           </div>
-        </div>
-      )}
-
-      {!loading && images.length === 0 && !error && (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center p-6 rounded-lg bg-[#3a2a20]/30 border border-[#E0D8C8]/10">
-            <Search className="w-8 h-8 text-[#E0D8C8]/40 mx-auto mb-2" />
-            <p className="text-sm text-[#E0D8C8]/60">
-              {t("onlineImageSearch.startSearch", "Enter a search query and click search to find images")}
-            </p>
+        ) : results.length === 0 ? (
+          <div className="h-full min-h-[220px] flex items-center justify-center">
+            <div className="text-center text-[#D8C7A6]/70 max-w-md">
+              <ImageIcon className="w-8 h-8 mx-auto mb-3 opacity-70" />
+              <p className="text-sm">Search for a bottle image to see results here.</p>
+            </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+            {results.map((result) => (
+              <ResultCard
+                key={result.id}
+                result={result}
+                selected={selectedUrl === result.imageUrl}
+                onSelect={handleSelect}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
