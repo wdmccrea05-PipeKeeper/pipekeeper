@@ -13,7 +13,6 @@
 
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import { translate } from '@/components/i18n/safeTranslation';
 
 const RUNTIME_GUARD_ENABLED = true;
 const MAX_ITEMS_PER_PAGE = 1000;
