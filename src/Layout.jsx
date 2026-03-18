@@ -3,9 +3,24 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import GlobalErrorBoundary from "@/components/system/GlobalErrorBoundary";
-import { Home, Menu, X, User, HelpCircle, Users, Crown, Settings, Shield, FileText, Target } from "lucide-react";
+import {
+  Home,
+  Menu,
+  X,
+  User,
+  HelpCircle,
+  Users,
+  Crown,
+  Settings,
+  Shield,
+  FileText,
+  Target,
+} from "lucide-react";
 import BrandLogo from "@/components/branding/BrandLogo";
-import { MODULE_ICONS } from "@/components/branding/moduleAssets";
+import {
+  MODULE_ICONS,
+  getModuleIconSrc,
+} from "@/components/branding/moduleAssets";
 import GlobalSearchTrigger from "@/components/search/GlobalSearchTrigger";
 import BackButton from "@/components/navigation/BackButton";
 import { Button } from "@/components/ui/button";
@@ -16,7 +31,6 @@ import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
 import { Toaster } from "@/components/ui/sonner";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
-import { warnIfLooksLikeKey } from "@/components/utils/i18nDiagnostics";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
@@ -24,7 +38,6 @@ import FoundingMemberPopup from "@/components/subscription/FoundingMemberPopup";
 import WhatsNewPopup from "@/components/onboarding/WhatsNewPopup";
 import EntitlementDebug from "@/components/debug/EntitlementDebug";
 import PermissionDebugPanel from "@/components/debug/PermissionDebugPanel";
-
 import {
   isIOSWebView,
   openAppleSubscriptions,
@@ -37,78 +50,10 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 
-// Dev mode verification console output
-if (import.meta?.env?.DEV) {
-  console.log('[CollectionKeeper] Canonical entitlement system active');
-}
-
-const PIPE_ICON = MODULE_ICONS.pipekeeper;
-const WHISKEY_ICON = MODULE_ICONS.whiskeykeeper;
-
-
-function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false, isNav = false }) {
-  const isActive = currentPage === item.page;
-
-  return (
-    <Link
-      to={createPageUrl(item.page)}
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-1 font-medium transition-all duration-200 flex-shrink-0 whitespace-nowrap",
-        isNav ? "px-2 sm:px-3 py-2 text-xs" : "px-3 py-2.5 text-sm",
-        isMobile && "text-[#E0D8C8]"
-      )}
-      style={{
-        WebkitTapHighlightColor: "transparent",
-        borderRadius: "0.375rem",
-        ...(isActive ? {
-          background: "linear-gradient(135deg, rgba(100, 70, 45, 0.7), rgba(80, 55, 35, 0.8))",
-          border: "1px solid rgba(120, 90, 65, 0.5)",
-          color: "#F5F1E7",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.15)",
-        } : isMobile ? {
-          color: "#E0D8C8"
-        } : {
-          color: "rgba(224, 216, 200, 0.7)",
-        })
-      }}
-      aria-current={isActive ? "page" : undefined}
-      role="link"
-      title={item.name}
-    >
-      {item.isIconComponent ? (
-        <item.icon 
-          className="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0" 
-          style={{
-            color: isActive 
-              ? "rgba(180, 140, 75, 1)" 
-              : isMobile 
-              ? "rgba(224, 216, 200, 0.8)"
-              : "rgba(180, 140, 75, 0.7)"
-          }}
-        />
-      ) : (
-        <img
-          src={item.icon}
-          alt={item.name}
-          className="w-4 sm:w-5 h-4 sm:h-5 object-contain flex-shrink-0 bg-transparent"
-          style={{
-            backgroundColor: 'transparent',
-            opacity: isMobile ? 0.92 : isActive ? 1 : 0.78,
-            filter: isActive
-              ? 'drop-shadow(0 1px 3px rgba(0,0,0,0.25))'
-              : 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))',
-          }}
-          draggable={false}
-        />
-      )}
-
-      <span className={cn("truncate hidden sm:inline text-xs sm:text-sm", isMobile ? "inline" : "")}>{item.name}</span>
-
-      {item.isPremium && !hasPaidAccess && <Crown className="w-2.5 sm:w-3 h-2.5 sm:h-3 flex-shrink-0" style={{ color: "#D4AF37" }} />}
-    </Link>
-  );
-}
+const PIPE_ICON =
+  getModuleIconSrc?.("pipekeeper") || MODULE_ICONS?.pipekeeper || "";
+const WHISKEY_ICON =
+  getModuleIconSrc?.("whiskeykeeper") || MODULE_ICONS?.whiskeykeeper || "";
 
 const AGE_GATE_KEY = "ck_age_confirmed";
 const SUB_PROMPT_KEY = "ck_subscribe_prompt_last_shown";
@@ -168,21 +113,115 @@ async function tryStripeSync() {
 
   for (const fn of candidates) {
     try {
-      const params = {};
-      const res = await base44.functions.invoke(fn, params);
+      const res = await base44.functions.invoke(fn, {});
       return { ok: true, fn, res };
-    } catch (e) {
-      // keep trying next name
+    } catch {
+      // try next
     }
   }
 
   return { ok: false };
 }
 
+function safeLabel(t, key, fallback) {
+  const value = t(key, fallback);
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function NavLink({
+  item,
+  currentPage,
+  onClick,
+  hasPaidAccess,
+  isMobile = false,
+  isNav = false,
+}) {
+  const isActive = currentPage === item.page;
+
+  return (
+    <Link
+      to={createPageUrl(item.page)}
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-1 font-medium transition-all duration-200 flex-shrink-0 whitespace-nowrap",
+        isNav ? "px-2 sm:px-3 py-2 text-xs" : "px-3 py-2.5 text-sm",
+        isMobile && "text-[#E0D8C8]"
+      )}
+      style={{
+        WebkitTapHighlightColor: "transparent",
+        borderRadius: "0.375rem",
+        ...(isActive
+          ? {
+              background:
+                "linear-gradient(135deg, rgba(100, 70, 45, 0.7), rgba(80, 55, 35, 0.8))",
+              border: "1px solid rgba(120, 90, 65, 0.5)",
+              color: "#F5F1E7",
+              boxShadow:
+                "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.15)",
+            }
+          : isMobile
+            ? {
+                color: "#E0D8C8",
+              }
+            : {
+                color: "rgba(224, 216, 200, 0.7)",
+              }),
+      }}
+      aria-current={isActive ? "page" : undefined}
+      title={item.name}
+    >
+      {item.isIconComponent ? (
+        <item.icon
+          className="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0"
+          style={{
+            color: isActive
+              ? "rgba(180, 140, 75, 1)"
+              : isMobile
+                ? "rgba(224, 216, 200, 0.8)"
+                : "rgba(180, 140, 75, 0.7)",
+          }}
+        />
+      ) : (
+        <img
+          src={item.icon}
+          alt={item.name}
+          className="w-4 sm:w-5 h-4 sm:h-5 object-contain flex-shrink-0 bg-transparent"
+          style={{
+            backgroundColor: "transparent",
+            opacity: isMobile ? 0.92 : isActive ? 1 : 0.78,
+            filter: isActive
+              ? "drop-shadow(0 1px 3px rgba(0,0,0,0.25))"
+              : "drop-shadow(0 1px 2px rgba(0,0,0,0.2))",
+          }}
+          draggable={false}
+        />
+      )}
+
+      <span
+        className={cn(
+          "truncate hidden sm:inline text-xs sm:text-sm",
+          isMobile ? "inline" : ""
+        )}
+      >
+        {item.name}
+      </span>
+
+      {item.isPremium && !hasPaidAccess ? (
+        <Crown
+          className="w-2.5 sm:w-3 h-2.5 sm:h-3 flex-shrink-0"
+          style={{ color: "#D4AF37" }}
+        />
+      ) : null}
+    </Link>
+  );
+}
+
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(() => {
-    if (typeof window !== "undefined") return localStorage.getItem(AGE_GATE_KEY) === "true";
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(AGE_GATE_KEY) === "true";
+    }
     return false;
   });
   const [showSubscribePrompt, setShowSubscribePrompt] = useState(false);
@@ -197,54 +236,76 @@ export default function Layout({ children, currentPageName }) {
   const ios = useMemo(() => isIOSWebView(), []);
   const { t, lang } = useTranslation();
 
-  // Debug logging for language state
-  useEffect(() => {
-    if (import.meta?.env?.DEV) {
-      console.log("[LANG_DEBUG]", {
-        pk_lang: localStorage.getItem("pk_lang"),
-        i18nextLng: localStorage.getItem("i18nextLng"),
-        htmlLang: document.documentElement.lang,
-      });
-    }
-  }, []);
+  const {
+    user,
+    isLoading: userLoading,
+    error: userError,
+    hasPaid,
+    isAdmin,
+    subscription,
+  } = useCurrentUser();
 
-  // Handle Android back button: only intercept to close mobile menu.
-  // Do NOT call e.preventDefault() unconditionally — that blocks native
-  // Android gesture navigation and breaks browser history.
-  useEffect(() => {
-    const handlePopState = () => {
-      // Close mobile menu if open — don't block the back navigation itself
-      if (mobileOpen) {
-        setMobileOpen(false);
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [mobileOpen]);
-
-  const { user, isLoading: userLoading, error: userError, hasPremium, hasPaid, hasPro, isAdmin, subscription, isLoading: subLoading } = useCurrentUser();
   const { isModuleEnabled } = useModuleVisibility();
 
   const navItems = useMemo(() => {
     const items = [
-      { name: t("nav.hub"), page: "CollectionHub", icon: Home, isIconComponent: true },
-      { name: t("nav.pipekeeper"), page: "PipeKeeper", icon: PIPE_ICON, isIconComponent: false },
+      {
+        name: safeLabel(t, "nav.hub", "Hub"),
+        page: "CollectionHub",
+        icon: Home,
+        isIconComponent: true,
+      },
+      {
+        name: safeLabel(t, "nav.pipekeeper", "PipeKeeper"),
+        page: "PipeKeeper",
+        icon: PIPE_ICON,
+        isIconComponent: false,
+      },
     ];
-    // Only show WhiskeyKeeper if user has it enabled
-    if (isModuleEnabled('whiskeykeeper')) {
-      items.push({ name: t("nav.whiskeykeeper"), page: "WhiskeyKeeper", icon: WHISKEY_ICON, isIconComponent: false });
+
+    if (isModuleEnabled("whiskeykeeper")) {
+      items.push({
+        name: safeLabel(t, "nav.whiskeykeeper", "WhiskeyKeeper"),
+        page: "WhiskeyKeeper",
+        icon: WHISKEY_ICON,
+        isIconComponent: false,
+      });
     }
-    items.push({ name: t("nav.curator"), page: "Curator", icon: Target, isIconComponent: true });
+
+    items.push({
+      name: safeLabel(t, "nav.curator", "Curator"),
+      page: "Curator",
+      icon: Target,
+      isIconComponent: true,
+    });
+
     if (FEATURES.community) {
-      items.push({ name: t("nav.community"), page: "Community", icon: Users, isIconComponent: true, isPremium: true });
+      items.push({
+        name: safeLabel(t, "nav.community", "Community"),
+        page: "Community",
+        icon: Users,
+        isIconComponent: true,
+        isPremium: true,
+      });
     }
+
     items.push(
-      { name: t("nav.profile"), page: "Profile", icon: User, isIconComponent: true },
-      { name: t("nav.help"), page: "HelpCenter", icon: HelpCircle, isIconComponent: true },
+      {
+        name: safeLabel(t, "nav.profile", "Profile"),
+        page: "Profile",
+        icon: User,
+        isIconComponent: true,
+      },
+      {
+        name: safeLabel(t, "nav.help", "Help"),
+        page: "HelpCenter",
+        icon: HelpCircle,
+        isIconComponent: true,
+      }
     );
+
     return items;
-  }, [lang, isModuleEnabled]);
+  }, [t, lang, isModuleEnabled]);
 
   const PUBLIC_PAGES = useMemo(
     () =>
@@ -261,29 +322,60 @@ export default function Layout({ children, currentPageName }) {
     []
   );
 
-  const adminNavItems = useMemo(() => isAdmin ? [
-    { name: t("nav.subscriptionSupport"), page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
-    { name: t("nav.userReport"), page: "UserReport", icon: Users, isIconComponent: true },
-    { name: t("nav.contentModeration"), page: "AdminReports", icon: Shield, isIconComponent: true },
-    { name: t("nav.eventsLog"), page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
-    { name: "Curator Analytics", page: "CuratorAnalyticsDashboard", icon: Target, isIconComponent: true },
-  ] : [], [isAdmin, lang]);
+  const adminNavItems = useMemo(
+    () =>
+      isAdmin
+        ? [
+            {
+              name: safeLabel(
+                t,
+                "nav.subscriptionSupport",
+                "Subscription Support"
+              ),
+              page: "SubscriptionSupport",
+              icon: Settings,
+              isIconComponent: true,
+            },
+            {
+              name: safeLabel(t, "nav.userReport", "User Report"),
+              page: "UserReport",
+              icon: Users,
+              isIconComponent: true,
+            },
+            {
+              name: safeLabel(
+                t,
+                "nav.contentModeration",
+                "Content Moderation"
+              ),
+              page: "AdminReports",
+              icon: Shield,
+              isIconComponent: true,
+            },
+            {
+              name: safeLabel(t, "nav.eventsLog", "Events Log"),
+              page: "SubscriptionEventsLog",
+              icon: FileText,
+              isIconComponent: true,
+            },
+            {
+              name: "Curator Analytics",
+              page: "CuratorAnalyticsDashboard",
+              icon: Target,
+              isIconComponent: true,
+            },
+          ]
+        : [],
+    [isAdmin, t, lang]
+  );
 
-  // Block render until subscription is loaded (prevents Apple fallback race)
-  const subscriptionReady = !userLoading && (subscription || true);
-
-  // Anti-regression: Check nav labels for key leaks & prevent placeholders (dev-only)
   useEffect(() => {
-    if (import.meta?.env?.DEV && navItems.length > 0) {
-      const PLACEHOLDER_PATTERNS = /^(Title|Subtitle|Page Title|Page Subtitle|Optional|Info|Description|Label)$/i;
-      navItems.forEach(item => {
-        if (PLACEHOLDER_PATTERNS.test(item.name)) {
-          console.error('[i18n] Placeholder text rendered —', item.name, '— fix required');
-        }
-        warnIfLooksLikeKey(item.name, `Nav: ${item.page}`);
-      });
-    }
-  }, [navItems]);
+    const handlePopState = () => {
+      if (mobileOpen) setMobileOpen(false);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [mobileOpen]);
 
   const showIAPToast = (msg) => {
     setIapToast(msg);
@@ -299,12 +391,13 @@ export default function Layout({ children, currentPageName }) {
         });
         setTimeout(() => window.location.reload(), 100);
       }
-      // Listen for entitlement sync triggers from other tabs
+
       if (e.key === "pk_force_entitlement_refresh") {
         queryClient.invalidateQueries({ queryKey: ["current-user"] });
         queryClient.invalidateQueries({ queryKey: ["subscription"] });
       }
     };
+
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [queryClient]);
@@ -331,7 +424,7 @@ export default function Layout({ children, currentPageName }) {
           await queryClient.refetchQueries({ queryKey: ["subscription"] });
         }
       } catch (e) {
-        console.warn("[Layout] Auto Stripe sync failed (non-fatal):", e?.message || e);
+        console.warn("[Layout] Auto Stripe sync failed:", e?.message || e);
       } finally {
         if (!cancelled) setSyncing(false);
       }
@@ -351,13 +444,18 @@ export default function Layout({ children, currentPageName }) {
 
     (async () => {
       try {
-        const { ensureFoundingMemberStatus } = await import("@/components/utils/foundingMemberBackfill");
+        const { ensureFoundingMemberStatus } = await import(
+          "@/components/utils/foundingMemberBackfill"
+        );
         const updated = await ensureFoundingMemberStatus(user, subscription);
         if (updated) {
           await queryClient.invalidateQueries({ queryKey: ["current-user"] });
         }
       } catch (e) {
-        console.warn("[Layout] Founding member backfill failed (non-fatal):", e?.message || e);
+        console.warn(
+          "[Layout] Founding member backfill failed:",
+          e?.message || e
+        );
       }
     })();
   }, [userLoading, user, subscription, hasPaid, queryClient]);
@@ -365,11 +463,9 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     if (!ios) return undefined;
 
-    nativeDebugPing("Layout mounted (bridge ok)");
+    nativeDebugPing("Layout mounted");
     requestNativeSubscriptionStatus();
 
-    // After a purchase, many iOS wrappers only emit status when the app becomes active again.
-    // Request status whenever the webview becomes visible/focused to reduce missed syncs.
     const refreshStatus = () => {
       try {
         requestNativeSubscriptionStatus();
@@ -386,27 +482,27 @@ export default function Layout({ children, currentPageName }) {
     document.addEventListener("visibilitychange", onVisibilityChange);
 
     const cleanup = registerNativeSubscriptionListener(async (payload) => {
-      if (import.meta?.env?.DEV) console.log("[Layout] Native subscription payload:", payload);
       const active = !!payload.active;
       setSubActive(active);
 
       try {
-        const result = await base44.functions.invoke('syncAppleSubscriptionForMe', payload);
+        const result = await base44.functions.invoke(
+          "syncAppleSubscriptionForMe",
+          payload
+        );
 
-        if (result.data?.code === 'ALREADY_LINKED') {
-          showIAPToast(t('layout.iapAlreadyLinked'));
+        if (result?.data?.code === "ALREADY_LINKED") {
+          showIAPToast(safeLabel(t, "layout.iapAlreadyLinked", "Already linked"));
           return;
         }
 
         await queryClient.invalidateQueries({ queryKey: ["current-user"] });
-        const userId = user?.id;
-        const email = (user?.email || "").trim().toLowerCase();
-        if (userId || email) {
-          await queryClient.invalidateQueries({ queryKey: ["subscription", userId, email] });
-        }
+        await queryClient.invalidateQueries({ queryKey: ["subscription"] });
       } catch (e) {
         console.error("[Layout] Apple subscription sync failed:", e);
-        showIAPToast(t('layout.iapSyncFailed'));
+        showIAPToast(
+          safeLabel(t, "layout.iapSyncFailed", "Subscription sync failed")
+        );
       }
     });
 
@@ -415,18 +511,21 @@ export default function Layout({ children, currentPageName }) {
       document.removeEventListener("visibilitychange", onVisibilityChange);
       cleanup?.();
     };
-  }, [ios, queryClient, user?.id, user?.email]);
+  }, [ios, queryClient, t]);
 
   useEffect(() => {
     if (!ios) return undefined;
 
     const getClickableText = (evtTarget) => {
       try {
-        const path = typeof evtTarget?.composedPath === "function" ? evtTarget.composedPath() : [];
+        const path =
+          typeof evtTarget?.composedPath === "function"
+            ? evtTarget.composedPath()
+            : [];
         const candidates = [];
 
         let el = evtTarget;
-        for (let i = 0; i < 8 && el; i++) {
+        for (let i = 0; i < 8 && el; i += 1) {
           candidates.push(el);
           el = el.parentElement;
         }
@@ -439,6 +538,7 @@ export default function Layout({ children, currentPageName }) {
           const text = (c?.innerText || c?.textContent || "").trim();
           if (text && text.length <= 60) return text;
         }
+
         return "";
       } catch {
         return "";
@@ -473,21 +573,44 @@ export default function Layout({ children, currentPageName }) {
       if (shouldManage(text)) {
         e.preventDefault();
         e.stopPropagation();
-        showIAPToast(t('layout.iapOpeningSubscriptions'));
+        showIAPToast(
+          safeLabel(
+            t,
+            "layout.iapOpeningSubscriptions",
+            "Opening subscriptions…"
+          )
+        );
         nativeDebugPing(`Intercepted manage (${phaseLabel})`);
         const ok = openAppleSubscriptions();
-        if (!ok) showIAPToast(t('layout.iapBridgeUnavailableSubs'));
+        if (!ok) {
+          showIAPToast(
+            safeLabel(
+              t,
+              "layout.iapBridgeUnavailableSubs",
+              "Unable to open subscriptions"
+            )
+          );
+        }
         return;
       }
 
       if (shouldUpgrade(text)) {
         e.preventDefault();
         e.stopPropagation();
-        showIAPToast(t('layout.iapOpeningUpgrade'));
+        showIAPToast(
+          safeLabel(t, "layout.iapOpeningUpgrade", "Opening upgrade…")
+        );
         nativeDebugPing(`Intercepted upgrade (${phaseLabel})`);
         const ok = openNativePaywall();
-        if (!ok) showIAPToast(t('layout.iapBridgeUnavailableUpgrade'));
-        return;
+        if (!ok) {
+          showIAPToast(
+            safeLabel(
+              t,
+              "layout.iapBridgeUnavailableUpgrade",
+              "Unable to open upgrade"
+            )
+          );
+        }
       }
     };
 
@@ -504,7 +627,7 @@ export default function Layout({ children, currentPageName }) {
       document.removeEventListener("touchend", onTouchEnd, true);
       document.removeEventListener("click", onClick, true);
     };
-  }, [ios]);
+  }, [ios, t]);
 
   useEffect(() => {
     if (userLoading) return;
@@ -524,7 +647,10 @@ export default function Layout({ children, currentPageName }) {
     if (user?.foundingMemberAcknowledged) return;
 
     const foundingCutoff = new Date("2026-02-01T00:00:00.000Z");
-    const startedAt = subscription?.subscriptionStartedAt || subscription?.started_at || subscription?.current_period_start;
+    const startedAt =
+      subscription?.subscriptionStartedAt ||
+      subscription?.started_at ||
+      subscription?.current_period_start;
 
     if (!startedAt) return;
 
@@ -549,12 +675,15 @@ export default function Layout({ children, currentPageName }) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center p-4">
         <div className="text-center">
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
-            alt={t("layout.appTitle")}
-            className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
+          <BrandLogo
+            compact={false}
+            showWordmark={false}
+            className="justify-center"
+            imageClassName="w-24 h-24 mx-auto mb-4 animate-pulse"
           />
-          <p className="text-[#e8d5b7]">{t("common.loading")}</p>
+          <p className="text-[#e8d5b7]">
+            {safeLabel(t, "common.loading", "Loading…")}
+          </p>
         </div>
       </div>
     );
@@ -564,85 +693,98 @@ export default function Layout({ children, currentPageName }) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center p-4">
         <div className="text-center">
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
-            alt={t("layout.appTitle")}
-            className="w-32 h-32 mx-auto mb-4 object-contain"
+          <BrandLogo
+            compact={false}
+            showWordmark={false}
+            className="justify-center"
+            imageClassName="w-24 h-24 mx-auto mb-4"
           />
-          <p className="text-[#e8d5b7] text-lg font-semibold mb-6">{t("auth.loginPrompt")}</p>
-          <Button onClick={() => base44.auth.redirectToLogin()}>{t("auth.login")}</Button>
+          <p className="text-[#e8d5b7] text-lg font-semibold mb-6">
+            {safeLabel(t, "auth.loginPrompt", "Please log in to continue")}
+          </p>
+          <Button onClick={() => base44.auth.redirectToLogin()}>
+            {safeLabel(t, "auth.login", "Log In")}
+          </Button>
         </div>
-      </div>
-    );
-  }
-
-  // Block render until subscription is ready (prevents provider mis-detection)
-  if (!subscriptionReady) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-[#e8d5b7] rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
     <GlobalErrorBoundary>
-        <DocumentTitle title={t("layout.appTitle")} />
-        <Toaster position="top-center" />
-        <MeasurementProvider>
-        <div className="dark min-h-screen flex flex-col" style={{ 
-          colorScheme: 'dark',
-          background: 'linear-gradient(135deg, #2e2620 0%, #3a2f26 50%, #2e2620 100%), radial-gradient(circle at 30% 20%, rgba(180,140,100,0.3), transparent 40%), radial-gradient(circle at 80% 70%, rgba(140,110,80,0.35), transparent 50%)'
-        }}>
-          <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b overflow-x-hidden shadow-[0_3px_12px_rgba(0,0,0,0.65),inset_0_-1px_0_rgba(180,140,75,0.12)]" style={{ 
-            paddingTop: 'var(--safe-area-top)',
-            background: 'linear-gradient(to bottom, rgba(28, 20, 14, 0.97), rgba(24, 16, 12, 0.99))',
-            borderBottomColor: 'rgba(120, 90, 65, 0.35)',
-            backgroundImage: `
-              repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 4px,
-                rgba(80, 60, 40, 0.025) 4px,
-                rgba(80, 60, 40, 0.025) 5px
-              )
-            `
-          }}>
+      <DocumentTitle title={safeLabel(t, "layout.appTitle", "CollectionKeeper")} />
+      <Toaster position="top-center" />
+      <MeasurementProvider>
+        <div
+          className="dark min-h-screen flex flex-col"
+          style={{
+            colorScheme: "dark",
+            background:
+              "linear-gradient(135deg, #2e2620 0%, #3a2f26 50%, #2e2620 100%), radial-gradient(circle at 30% 20%, rgba(180,140,100,0.3), transparent 40%), radial-gradient(circle at 80% 70%, rgba(140,110,80,0.35), transparent 50%)",
+          }}
+        >
+          <nav
+            className="hidden md:flex fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b overflow-x-hidden shadow-[0_3px_12px_rgba(0,0,0,0.65),inset_0_-1px_0_rgba(180,140,75,0.12)]"
+            style={{
+              paddingTop: "var(--safe-area-top)",
+              background:
+                "linear-gradient(to bottom, rgba(28, 20, 14, 0.97), rgba(24, 16, 12, 0.99))",
+              borderBottomColor: "rgba(120, 90, 65, 0.35)",
+              backgroundImage: `
+                repeating-linear-gradient(
+                  90deg,
+                  transparent,
+                  transparent 4px,
+                  rgba(80, 60, 40, 0.025) 4px,
+                  rgba(80, 60, 40, 0.025) 5px
+                )
+              `,
+            }}
+          >
             <div className="w-full">
               <div className="flex items-center justify-between h-16 gap-2 px-3 lg:px-6">
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <BackButton currentPageName={currentPageName} />
-                  <Link to={createPageUrl("CollectionHub")} className="flex items-center gap-2 flex-shrink-0">
+                  <Link
+                    to={createPageUrl("CollectionHub")}
+                    className="flex items-center gap-2 flex-shrink-0"
+                  >
                     <div className="min-w-0 flex items-center">
-                      <BrandLogo compact hoverable className="min-w-0" imageClassName="w-7 h-7" />
+                      <BrandLogo
+                        compact
+                        hoverable
+                        className="min-w-0"
+                        imageClassName="w-7 h-7"
+                      />
                     </div>
                   </Link>
                 </div>
 
                 <div className="flex items-center gap-1 flex-1 justify-start min-w-0 overflow-x-auto overflow-y-hidden scrollbar-hide px-2">
-                   {navItems.map((item) => (
-                     <NavLink
-                       key={item.page}
-                       item={item}
-                       currentPage={currentPageName}
-                       hasPaidAccess={hasPaid}
-                       isNav={true}
-                     />
-                   ))}
-                   {adminNavItems.length > 0 && (
-                     <>
-                       <div className="h-6 w-px bg-[#E0D8C8]/20 mx-2" />
-                       {adminNavItems.map((item) => (
-                         <NavLink
-                           key={item.page}
-                           item={item}
-                           currentPage={currentPageName}
-                           hasPaidAccess={hasPaid}
-                         />
-                       ))}
-                     </>
-                   )}
-                 </div>
+                  {navItems.map((item) => (
+                    <NavLink
+                      key={item.page}
+                      item={item}
+                      currentPage={currentPageName}
+                      hasPaidAccess={hasPaid}
+                      isNav
+                    />
+                  ))}
+
+                  {adminNavItems.length > 0 ? (
+                    <>
+                      <div className="h-6 w-px bg-[#E0D8C8]/20 mx-2" />
+                      {adminNavItems.map((item) => (
+                        <NavLink
+                          key={item.page}
+                          item={item}
+                          currentPage={currentPageName}
+                          hasPaidAccess={hasPaid}
+                        />
+                      ))}
+                    </>
+                  ) : null}
+                </div>
 
                 <div className="flex items-center gap-1 lg:gap-3 flex-shrink-0">
                   <LanguageSwitcher />
@@ -651,35 +793,50 @@ export default function Layout({ children, currentPageName }) {
                     onClick={() => setShowQuickAccess(true)}
                     className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-colors text-xs lg:text-sm font-medium px-1.5 lg:px-3 py-1.5 rounded-lg hover:bg-white/5 overflow-hidden text-ellipsis whitespace-nowrap hidden lg:block"
                   >
-                    {t("nav.quickAccess")}
+                    {safeLabel(t, "nav.quickAccess", "Quick Access")}
                   </button>
                   {syncing ? (
-                    <span className="text-xs text-[#E0D8C8]/70 whitespace-nowrap hidden lg:inline">{t("nav.syncing")}</span>
+                    <span className="text-xs text-[#E0D8C8]/70 whitespace-nowrap hidden lg:inline">
+                      {safeLabel(t, "nav.syncing", "Syncing…")}
+                    </span>
                   ) : null}
                 </div>
               </div>
             </div>
           </nav>
 
-          <nav className="md:hidden fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b shadow-[0_3px_12px_rgba(0,0,0,0.65),inset_0_-1px_0_rgba(180,140,75,0.12)]" style={{ 
-            paddingTop: 'env(safe-area-inset-top, 0px)',
-            background: 'linear-gradient(to bottom, rgba(28, 20, 14, 0.97), rgba(24, 16, 12, 0.99))',
-            borderBottomColor: 'rgba(120, 90, 65, 0.35)',
-            backgroundImage: `
-              repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 4px,
-                rgba(80, 60, 40, 0.025) 4px,
-                rgba(80, 60, 40, 0.025) 5px
-              )
-            `
-          }}>
+          <nav
+            className="md:hidden fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b shadow-[0_3px_12px_rgba(0,0,0,0.65),inset_0_-1px_0_rgba(180,140,75,0.12)]"
+            style={{
+              paddingTop: "env(safe-area-inset-top, 0px)",
+              background:
+                "linear-gradient(to bottom, rgba(28, 20, 14, 0.97), rgba(24, 16, 12, 0.99))",
+              borderBottomColor: "rgba(120, 90, 65, 0.35)",
+              backgroundImage: `
+                repeating-linear-gradient(
+                  90deg,
+                  transparent,
+                  transparent 4px,
+                  rgba(80, 60, 40, 0.025) 4px,
+                  rgba(80, 60, 40, 0.025) 5px
+                )
+              `,
+            }}
+          >
             <div className="flex items-center justify-between h-16 px-4">
               <div className="flex items-center gap-2">
                 <BackButton currentPageName={currentPageName} />
-                <Link to={createPageUrl("CollectionHub")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                  <BrandLogo compact hoverable className="min-w-0" imageClassName="w-7 h-7" />
+                <Link
+                  to={createPageUrl("CollectionHub")}
+                  className="flex items-center gap-2"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <BrandLogo
+                    compact
+                    hoverable
+                    className="min-w-0"
+                    imageClassName="w-7 h-7"
+                  />
                 </Link>
               </div>
 
@@ -690,9 +847,13 @@ export default function Layout({ children, currentPageName }) {
                 }}
                 className="text-[#E0D8C8] p-2 -mr-2 hover:bg-[#A35C5C]/20 rounded-lg active:scale-95 transition-all duration-200"
                 style={{ WebkitTapHighlightColor: "transparent" }}
-                aria-label={t("layout.toggleMenu")}
+                aria-label={safeLabel(t, "layout.toggleMenu", "Toggle menu")}
               >
-                {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {mobileOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
               </button>
             </div>
           </nav>
@@ -703,7 +864,7 @@ export default function Layout({ children, currentPageName }) {
               mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
             )}
             onClick={() => setMobileOpen(false)}
-            style={{ top: 'calc(56px + var(--safe-area-top))' }}
+            style={{ top: "calc(56px + var(--safe-area-top))" }}
           />
 
           <div
@@ -711,11 +872,12 @@ export default function Layout({ children, currentPageName }) {
               "md:hidden fixed right-0 w-64 z-50 shadow-xl overflow-y-auto transition-transform duration-200",
               mobileOpen ? "translate-x-0" : "translate-x-full"
             )}
-            style={{ 
-              background: "linear-gradient(145deg, rgba(30,22,16,0.98), rgba(22,15,10,0.98))",
+            style={{
+              background:
+                "linear-gradient(145deg, rgba(30,22,16,0.98), rgba(22,15,10,0.98))",
               borderLeft: "1px solid rgba(140,105,65,0.25)",
-              top: 'calc(4rem + env(safe-area-inset-top, 0px))',
-              height: 'calc(100vh - 4rem - env(safe-area-inset-top, 0px))'
+              top: "calc(4rem + env(safe-area-inset-top, 0px))",
+              height: "calc(100vh - 4rem - env(safe-area-inset-top, 0px))",
             }}
           >
             <div className="flex flex-col gap-2 p-4">
@@ -726,14 +888,16 @@ export default function Layout({ children, currentPageName }) {
                   currentPage={currentPageName}
                   onClick={() => setMobileOpen(false)}
                   hasPaidAccess={hasPaid}
-                  isMobile={true}
+                  isMobile
                 />
               ))}
-              
-              {adminNavItems.length > 0 && (
+
+              {adminNavItems.length > 0 ? (
                 <>
                   <div className="h-px bg-[#8b6239]/25 my-2" />
-                  <p className="text-xs text-[#8b6239]/70 px-2 mb-1 uppercase tracking-wider">{t("layout.admin")}</p>
+                  <p className="text-xs text-[#8b6239]/70 px-2 mb-1 uppercase tracking-wider">
+                    {safeLabel(t, "layout.admin", "Admin")}
+                  </p>
                   {adminNavItems.map((item) => (
                     <NavLink
                       key={item.page}
@@ -741,55 +905,85 @@ export default function Layout({ children, currentPageName }) {
                       currentPage={currentPageName}
                       onClick={() => setMobileOpen(false)}
                       hasPaidAccess={hasPaid}
-                      isMobile={true}
+                      isMobile
                     />
                   ))}
                 </>
-              )}
-              
+              ) : null}
+
               <div className="mt-4 pt-4 border-t border-[#8b6239]/25">
                 <LanguageSwitcher />
               </div>
             </div>
           </div>
 
-          <main className="flex-1 pb-20 md:pt-16" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top, 0px))' }}>
+          <main
+            className="flex-1 pb-20 md:pt-16"
+            style={{ paddingTop: "calc(4rem + env(safe-area-inset-top, 0px))" }}
+          >
             <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
               {children}
             </div>
           </main>
 
-          <footer className="border-t mt-auto shadow-[0_-3px_12px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(180,140,75,0.1)]" style={{
-            background: 'linear-gradient(to top, rgba(20, 14, 10, 0.99), rgba(26, 18, 13, 0.96))',
-            borderTopColor: 'rgba(120, 90, 65, 0.3)',
-            backgroundImage: `
-              repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 4px,
-                rgba(80, 60, 40, 0.02) 4px,
-                rgba(80, 60, 40, 0.02) 5px
-              )
-            `
-          }}>
+          <footer
+            className="border-t mt-auto shadow-[0_-3px_12px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(180,140,75,0.1)]"
+            style={{
+              background:
+                "linear-gradient(to top, rgba(20, 14, 10, 0.99), rgba(26, 18, 13, 0.96))",
+              borderTopColor: "rgba(120, 90, 65, 0.3)",
+              backgroundImage: `
+                repeating-linear-gradient(
+                  90deg,
+                  transparent,
+                  transparent 4px,
+                  rgba(80, 60, 40, 0.02) 4px,
+                  rgba(80, 60, 40, 0.02) 5px
+                )
+              `,
+            }}
+          >
             <div className="max-w-7xl mx-auto px-6 py-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                    <BrandLogo compact showWordmark={false} imageClassName="w-5 h-5" />
-                    <span className="text-sm text-[#E0D8C8]/70">{t("footer.copyright")}</span>
-                  </div>
+                  <BrandLogo
+                    compact
+                    showWordmark={false}
+                    imageClassName="w-5 h-5"
+                  />
+                  <span className="text-sm text-[#E0D8C8]/70">
+                    {safeLabel(
+                      t,
+                      "footer.copyright",
+                      "© 2026 CollectionKeeper"
+                    )}
+                  </span>
+                </div>
+
                 <div className="flex gap-6">
-                  <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    {t("nav.faq")}
+                  <a
+                    href={createPageUrl("FAQ")}
+                    className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis"
+                  >
+                    {safeLabel(t, "nav.faq", "FAQ")}
                   </a>
-                  <a href={createPageUrl("Support")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    {t("nav.support")}
+                  <a
+                    href={createPageUrl("Support")}
+                    className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis"
+                  >
+                    {safeLabel(t, "nav.support", "Support")}
                   </a>
-                  <a href={createPageUrl("TermsOfService")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    {t("nav.terms")}
+                  <a
+                    href={createPageUrl("TermsOfService")}
+                    className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis"
+                  >
+                    {safeLabel(t, "nav.terms", "Terms")}
                   </a>
-                  <a href={createPageUrl("PrivacyPolicy")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    {t("nav.privacy")}
+                  <a
+                    href={createPageUrl("PrivacyPolicy")}
+                    className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis"
+                  >
+                    {safeLabel(t, "nav.privacy", "Privacy")}
                   </a>
                 </div>
               </div>
@@ -797,7 +991,6 @@ export default function Layout({ children, currentPageName }) {
           </footer>
 
           <TermsGate user={user} />
-
           <WhatsNewPopup user={user} />
 
           <FoundingMemberPopup
@@ -805,24 +998,48 @@ export default function Layout({ children, currentPageName }) {
             onClose={async () => {
               setShowFoundingMemberPopup(false);
               try {
-                await base44.auth.updateMe({ foundingMemberAcknowledged: true });
-                await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+                await base44.auth.updateMe({
+                  foundingMemberAcknowledged: true,
+                });
+                await queryClient.invalidateQueries({
+                  queryKey: ["current-user"],
+                });
               } catch (err) {
-                console.error("Failed to update founding member status:", err);
+                console.error(
+                  "Failed to update founding member status:",
+                  err
+                );
               }
             }}
           />
 
-          {showSubscribePrompt && (
+          {showSubscribePrompt ? (
             <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
               <div className="w-full max-w-lg rounded-2xl bg-gradient-to-br from-[#2a1f18] to-[#1f1510] border border-[#A35C5C]/60 shadow-2xl p-6">
-                <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">{t("subscription.trialEndedTitle")}</h3>
+                <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">
+                  {safeLabel(
+                    t,
+                    "subscription.trialEndedTitle",
+                    "Your trial has ended"
+                  )}
+                </h3>
                 <p className="text-[#E0D8C8]/80 mb-5">
-                  {t("subscription.trialEndedBody")}
+                  {safeLabel(
+                    t,
+                    "subscription.trialEndedBody",
+                    "Continue free or subscribe to unlock Pro features."
+                  )}
                 </p>
                 <div className="flex gap-3 justify-end">
-                  <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
-                    {t("subscription.continueFree")}
+                  <Button
+                    variant="secondary"
+                    onClick={() => setShowSubscribePrompt(false)}
+                  >
+                    {safeLabel(
+                      t,
+                      "subscription.continueFree",
+                      "Continue Free"
+                    )}
                   </Button>
                   <Button
                     onClick={() => {
@@ -830,12 +1047,12 @@ export default function Layout({ children, currentPageName }) {
                       navigate(createPageUrl("Subscription"));
                     }}
                   >
-                    {t("subscription.subscribe")}
+                    {safeLabel(t, "subscription.subscribe", "Subscribe")}
                   </Button>
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
 
           {import.meta.env.DEV ? (
             <>
@@ -844,9 +1061,12 @@ export default function Layout({ children, currentPageName }) {
             </>
           ) : null}
 
-          <FeatureQuickAccess isOpen={showQuickAccess} onClose={() => setShowQuickAccess(false)} />
+          <FeatureQuickAccess
+            isOpen={showQuickAccess}
+            onClose={() => setShowQuickAccess(false)}
+          />
 
-          {iapToast && (
+          {iapToast ? (
             <div
               style={{
                 position: "fixed",
@@ -865,9 +1085,9 @@ export default function Layout({ children, currentPageName }) {
             >
               {iapToast}
             </div>
-          )}
+          ) : null}
 
-          {ios && (
+          {ios ? (
             <div
               style={{
                 position: "fixed",
@@ -881,11 +1101,14 @@ export default function Layout({ children, currentPageName }) {
                 pointerEvents: "none",
               }}
             >
-              Bridge: ✅ | {subActive ? `Pro ✅` : t('subscription.free')}
+              Bridge: ✅ |{" "}
+              {subActive
+                ? "Pro ✅"
+                : safeLabel(t, "subscription.free", "Free")}
             </div>
-          )}
-          </div>
-          </MeasurementProvider>
-          </GlobalErrorBoundary>
-          );
-          }
+          ) : null}
+        </div>
+      </MeasurementProvider>
+    </GlobalErrorBoundary>
+  );
+}
