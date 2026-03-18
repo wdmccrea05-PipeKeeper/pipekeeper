@@ -20,6 +20,7 @@ import WhiskeyKeeper from '@/pages/WhiskeyKeeper';
 import WhiskeyAIUpdates from '@/pages/WhiskeyAIUpdates';
 import BottleDetail from '@/pages/BottleDetail';
 import HelpCenter from '@/pages/HelpCenter';
+import BottleForm from '@/components/whiskey/BottleForm';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -94,6 +95,20 @@ const AuthenticatedApp = () => {
       <Route path="/BottleDetail" element={
         <LayoutWrapper currentPageName="BottleDetail">
           <BottleDetail />
+        </LayoutWrapper>
+      } />
+      <Route path="/BottleForm" element={
+        <LayoutWrapper currentPageName="BottleForm">
+          <div className="max-w-2xl mx-auto px-4 py-8">
+            <BottleForm
+              bottle={null}
+              onSubmit={async (data) => {
+                await window.base44?.entities?.Bottle?.create(data);
+                window.location.href = '/Whiskey';
+              }}
+              onCancel={() => window.history.back()}
+            />
+          </div>
         </LayoutWrapper>
       } />
       <Route path="/HelpCenter" element={
