@@ -1,17 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Plus,
-  BookOpen,
-  TrendingUp,
-  Search,
-  Leaf,
-} from "lucide-react";
+import { Plus, BookOpen, TrendingUp, Search, FlaskConical } from "lucide-react";
 import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-
-// Using branded pipe icon for consistency
 
 function BottleQuickIcon({ className, style }) {
   return (
@@ -33,6 +25,18 @@ function BottleQuickIcon({ className, style }) {
   );
 }
 
+function PipeQuickIcon({ className, style }) {
+  return (
+    <img
+      src={MODULE_ICONS.pipeicon}
+      alt="Pipe"
+      className={className}
+      style={{ ...style, objectFit: "contain", backgroundColor: "transparent" }}
+      draggable={false}
+    />
+  );
+}
+
 function SectionTitle({ icon, label }) {
   const isString = typeof icon === "string";
   return (
@@ -41,8 +45,8 @@ function SectionTitle({ icon, label }) {
         <img
           src={icon}
           alt={label}
-          className="w-4 h-4 object-contain"
-          style={{ mixBlendMode: "normal" }}
+          className="w-4 h-4 object-contain bg-transparent"
+          style={{ backgroundColor: "transparent" }}
           draggable={false}
         />
       ) : (
@@ -80,8 +84,8 @@ function ActionCard({ action, navigate }) {
           <img
             src={Icon}
             alt={action.label}
-            className="w-5 h-5 object-contain transition-transform group-hover:scale-110"
-            style={{ mixBlendMode: "normal" }}
+            className="w-5 h-5 object-contain transition-transform group-hover:scale-110 bg-transparent"
+            style={{ backgroundColor: "transparent" }}
             draggable={false}
           />
         ) : (
@@ -104,13 +108,13 @@ export default function QuickLaunch() {
   const pipeActions = [
     {
       label: t("quickActions.addPipe", "Add Pipe"),
-      icon: "https://media.base44.com/images/public/694956e18d119cc497192525/0d1d94319_image.png",
+      icon: MODULE_ICONS.pipeicon,
       path: "/PipeForm",
       accent: "#D4A574",
     },
     {
       label: t("quickActions.addBlend", "Add Blend"),
-      icon: Leaf,
+      icon: Plus,
       path: "/TobaccoForm",
       accent: "#7C9A6D",
     },
@@ -135,7 +139,6 @@ export default function QuickLaunch() {
       path: "/BottleForm",
       accent: "#D4A574",
     },
-
     {
       label: t("quickActions.quickSearchBottle", "Quick Search Bottle"),
       icon: Search,
@@ -167,7 +170,7 @@ export default function QuickLaunch() {
         </h2>
 
         <div>
-          <SectionTitle icon={MODULE_ICONS.pipekeeper} label={t("nav.pipekeeper", "PipeKeeper")} />
+          <SectionTitle icon={MODULE_ICONS.pipeicon} label={t("nav.pipekeeper", "PipeKeeper")} />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {pipeActions.map((action) => (
               <ActionCard
@@ -181,10 +184,7 @@ export default function QuickLaunch() {
 
         {isModuleEnabled("whiskeykeeper") ? (
           <div>
-            <SectionTitle
-              icon={MODULE_ICONS.whiskeykeeper}
-              label={t("nav.whiskeykeeper", "WhiskeyKeeper")}
-            />
+            <SectionTitle icon={FlaskConical} label={t("nav.whiskeykeeper", "WhiskeyKeeper")} />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {whiskeyActions.map((action) => (
                 <ActionCard

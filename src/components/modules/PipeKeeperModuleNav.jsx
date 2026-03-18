@@ -29,7 +29,7 @@ function NavItem({ item, currentPageName }) {
           src={item.image}
           alt={item.label}
           className="w-4 h-4 object-contain bg-transparent flex-shrink-0"
-          style={getAssetImageStyle(item.assetKey, "small")}
+          style={getAssetImageStyle(item.assetKey || "pipeicon", "small")}
           draggable={false}
         />
       ) : item.icon ? (
@@ -48,7 +48,7 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
 
   const items = [
     { page: "PipeKeeper", label: t("nav.pipekeeper", "PipeKeeper"), image: MODULE_ICONS.pipekeeper, assetKey: "pipekeeper" },
-    { page: "Pipes", label: t("pipes.title", "Pipes"), image: "https://media.base44.com/images/public/694956e18d119cc497192525/46669d680_image.png" },
+    { page: "Pipes", label: t("pipes.title", "Pipes"), image: MODULE_ICONS.pipeicon, assetKey: "pipeicon" },
     { page: "Tobacco", label: t("tobacco.title", "Tobacco"), icon: Leaf },
     { page: "Insights", label: t("nav.insights", "Insights"), icon: TrendingUp },
   ];
