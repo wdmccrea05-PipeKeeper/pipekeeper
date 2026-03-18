@@ -3,13 +3,13 @@ import { scopedEntities } from "@/components/api/scopedEntities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Grid3X3, List, Sparkles, Edit3, Leaf, Package2, Wind, BookOpen, TrendingUp } from "lucide-react";
+import { Plus, Search, Grid3X3, List, Sparkles, Edit3, Leaf, Package2 } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import ModuleNav from "@/components/modules/ModuleNav";
+import PipeKeeperModuleNav from "@/components/modules/PipeKeeperModuleNav";
 import TobaccoCard from "@/components/tobacco/TobaccoCard";
 import TobaccoListItem from "@/components/tobacco/TobaccoListItem";
 import TobaccoForm from "@/components/tobacco/TobaccoForm";
@@ -102,13 +102,6 @@ export default function TobaccoPage() {
       window.history.replaceState({}, '', '/Tobacco');
     }
   }, []);
-
-  const moduleNavItems = [
-    { name: t('nav.pipes') || 'Pipes', path: '/Pipes', icon: Wind },
-    { name: t('nav.tobacco') || 'Tobacco', path: '/Tobacco', icon: Leaf },
-    { name: t('nav.smokingLog') || 'Sessions', path: '/Home', icon: BookOpen },
-    { name: t('nav.insights') || 'Insights', path: '/Insights', icon: TrendingUp },
-  ];
 
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ['blends', user?.email, sortBy],
@@ -268,7 +261,7 @@ export default function TobaccoPage() {
 
   return (
     <div className="space-y-6">
-      <ModuleNav items={moduleNavItems} currentPath="/Tobacco" />
+      <PipeKeeperModuleNav currentPageName="Tobacco" />
       
       <div className="max-w-7xl mx-auto">
         <CellarDriftAlert blends={blends} user={user} />
