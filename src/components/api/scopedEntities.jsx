@@ -28,7 +28,7 @@ function assertScoped(entityName, operation, hasScope) {
     if (import.meta.env?.DEV) {
       throw new Error(error);
     } else {
-      toast.error(translate('common.dataFetchError'));
+      toast.error('Data fetch error. Please try again.');
       return true; // Signal to return empty
     }
   }
