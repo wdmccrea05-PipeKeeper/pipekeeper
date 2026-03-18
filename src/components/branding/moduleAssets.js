@@ -1,24 +1,38 @@
+const COLLECTIONKEEPER_LOGO_SRC =
+  "https://media.base44.com/images/public/694956e18d119cc497192525/a2fc9caaa_image.png";
+
 export const MODULE_ASSETS = {
-  collectionKeeper: {
-    src: "https://media.base44.com/images/public/694956e18d119cc497192525/b9b1fc2c7_CollectionKeeperUpdated.png",
+  collectionkeeper: {
+    src: COLLECTIONKEEPER_LOGO_SRC,
     label: "CollectionKeeper",
   },
+
+  // Backward-compat alias
+  collectionKeeper: {
+    src: COLLECTIONKEEPER_LOGO_SRC,
+    label: "CollectionKeeper",
+  },
+
   pipekeeper: {
     src: "https://media.base44.com/images/public/694956e18d119cc497192525/27f5c2c92_PKNB.png",
     label: "PipeKeeper",
   },
+
   whiskeykeeper: {
     src: "https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png",
     label: "WhiskeyKeeper",
   },
+
   winekeeper: {
     src: "https://media.base44.com/images/public/694956e18d119cc497192525/ef580a0c9_WineKNB.png",
     label: "WineKeeper",
   },
+
   cigarkeeper: {
     src: "https://media.base44.com/images/public/694956e18d119cc497192525/c26fb6746_CigarKNB.png",
     label: "CigarKeeper",
   },
+
   curator: {
     src: "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png",
     label: "Collection Curator",
@@ -30,7 +44,7 @@ export const MODULE_ICONS = Object.fromEntries(
 );
 
 export function getModuleAsset(moduleId) {
-  return MODULE_ASSETS[moduleId] || MODULE_ASSETS.collectionKeeper;
+  return MODULE_ASSETS[moduleId] || MODULE_ASSETS.collectionkeeper;
 }
 
 export function getModuleIcon(moduleId) {
@@ -44,8 +58,12 @@ export function getAssetImageStyle(moduleId, size = "regular") {
       : "drop-shadow(0 2px 6px rgba(0,0,0,0.28))";
 
   return {
+    background: "transparent",
     backgroundColor: "transparent",
     objectFit: "contain",
     filter: shadow,
+    border: "none",
+    outline: "none",
+    boxShadow: "none",
   };
 }
