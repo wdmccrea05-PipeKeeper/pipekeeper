@@ -4,7 +4,10 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { Home, User, HelpCircle, Target, Users } from "lucide-react";
-import { MODULE_ICONS, getAssetImageStyle } from "@/components/branding/moduleAssets";
+import {
+  MODULE_ICONS,
+  getAssetImageStyle,
+} from "@/components/branding/moduleAssets";
 
 function NavItem({ item, currentPageName }) {
   const active = currentPageName === item.page;
