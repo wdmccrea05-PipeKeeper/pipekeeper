@@ -159,14 +159,6 @@ function StoryHighlightCard({ title, label, photo, onClick }) {
   );
 }
 
-function resolveItemPhoto(item) {
-  if (!item) return null;
-  if (Array.isArray(item.photos) && item.photos.length > 0) return item.photos[0];
-  if (item.logo) return item.logo;
-  if (item.photo) return item.photo;
-  return null;
-}
-
 function Divider() {
   return (
     <div
