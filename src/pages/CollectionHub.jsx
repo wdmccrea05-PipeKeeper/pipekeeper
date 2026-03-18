@@ -15,6 +15,7 @@ import {
   getCollectionHubSummary,
   getComingSoonModules,
 } from '@/components/keeper-core';
+import BrandLogo from '@/components/branding/BrandLogo';
 import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
 import { buildAIEligibleCollection } from '@/components/utils/moduleAccess';
 
