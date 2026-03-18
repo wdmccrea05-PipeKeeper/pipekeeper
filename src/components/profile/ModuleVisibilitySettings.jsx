@@ -14,7 +14,8 @@ function PipeIcon({ className }) {
     <img
       src="https://media.base44.com/images/public/694956e18d119cc497192525/27f5c2c92_PKNB.png"
       alt="PipeKeeper"
-      className={className || 'w-7 h-7 object-contain'}
+      className={className || 'w-7 h-7 object-contain bg-transparent'}
+      style={{ backgroundColor: 'transparent' }}
     />
   );
 }
@@ -24,7 +25,8 @@ function WhiskeyIcon({ className }) {
     <img
       src="https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png"
       alt="WhiskeyKeeper"
-      className={className || 'w-7 h-7 object-contain'}
+      className={className || 'w-7 h-7 object-contain bg-transparent'}
+      style={{ backgroundColor: 'transparent' }}
     />
   );
 }
@@ -34,7 +36,8 @@ function WineIcon2({ className }) {
     <img
       src="https://media.base44.com/images/public/694956e18d119cc497192525/ef580a0c9_WineKNB.png"
       alt="WineKeeper"
-      className={className || 'w-7 h-7 object-contain'}
+      className={className || 'w-7 h-7 object-contain bg-transparent'}
+      style={{ backgroundColor: 'transparent' }}
     />
   );
 }
@@ -44,7 +47,8 @@ function CigarIcon({ className }) {
     <img
       src="https://media.base44.com/images/public/694956e18d119cc497192525/c26fb6746_CigarKNB.png"
       alt="CigarKeeper"
-      className={className || 'w-7 h-7 object-contain'}
+      className={className || 'w-7 h-7 object-contain bg-transparent'}
+      style={{ backgroundColor: 'transparent' }}
     />
   );
 }
