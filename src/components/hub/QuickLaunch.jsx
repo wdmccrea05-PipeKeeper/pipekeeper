@@ -4,6 +4,7 @@ import { Leaf, BookOpen, TrendingUp, Search, FlaskConical } from "lucide-react";
 
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 
 function BottleQuickIcon({ className, style }) {
   return (
