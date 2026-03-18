@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, BookOpen, TrendingUp, Search, FlaskConical } from "lucide-react";
+import { Leaf, BookOpen, TrendingUp, Search, FlaskConical } from "lucide-react";
 import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -110,13 +110,13 @@ export default function QuickLaunch() {
   const pipeActions = [
     {
       label: t("quickActions.addPipe", "Add Pipe"),
-      icon: MODULE_ICONS.pipeicon,
+      icon: "/branding/pipe-icon.png?v=3",
       path: "/PipeForm",
       accent: "#D4A574",
     },
     {
       label: t("quickActions.addBlend", "Add Blend"),
-      icon: Plus,
+      icon: Leaf,
       path: "/TobaccoForm",
       accent: "#7C9A6D",
     },
