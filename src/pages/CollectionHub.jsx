@@ -188,9 +188,17 @@ export default function CollectionHub() {
       const wTotalBottles = summary.whiskey?.totalBottles ?? wBottleTypes ?? 0;
       const wValue = isModuleEnabled('whiskeykeeper') ? totalBottleValue : 0;
       stats = [
-        { label: 'Bottle Types', value: wBottleTypes },
-        ...(wTotalBottles > wBottleTypes ? [{ label: 'Total Bottles', value: wTotalBottles }] : []),
-        { label: t('hub.totalValue'), value: wValue > 0 ? `$${wValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—' },
+        { label: t('hub.bottleTypes', 'Bottle Types'), value: wBottleTypes },
+        ...(wTotalBottles > wBottleTypes
+          ? [{ label: t('hub.totalBottles', 'Total Bottles'), value: wTotalBottles }]
+          : []),
+        {
+          label: t('hub.totalValue'),
+          value:
+            wValue > 0
+              ? `$${wValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              : '—',
+        },
       ];
     }
 
