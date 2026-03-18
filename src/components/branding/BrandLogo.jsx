@@ -4,13 +4,7 @@ import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 
 const LOGO_URL = MODULE_ICONS.collectionKeeper;
 
-export default function BrandLogo({
-  className,
-  imageClassName,
-  showWordmark = true,
-  compact = false,
-  hoverable = false,
-}) {
+export default function BrandLogo({ className, imageClassName, showWordmark = true, compact = false }) {
   const sizeClass = compact ? 'w-8 h-8' : 'w-12 h-12';
 
   const logoNode = (
@@ -21,52 +15,19 @@ export default function BrandLogo({
       style={{
         backgroundColor: 'transparent',
         filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))',
-        transition: 'filter 0.25s ease, transform 0.25s ease',
       }}
       draggable={false}
     />
   );
 
-  const handleEnter = hoverable
-    ? (e) => {
-        const img = e.currentTarget.querySelector('img');
-        if (img) {
-          img.style.transform = 'translateY(-1px)';
-          img.style.filter = 'drop-shadow(0 4px 10px rgba(0,0,0,0.35)) drop-shadow(0 0 8px rgba(180,140,75,0.28))';
-        }
-      }
-    : undefined;
-
-  const handleLeave = hoverable
-    ? (e) => {
-        const img = e.currentTarget.querySelector('img');
-        if (img) {
-          img.style.transform = '';
-          img.style.filter = 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))';
-        }
-      }
-    : undefined;
-
   if (!showWordmark) {
-    return (
-      <div
-        className={cn('flex items-center bg-transparent', className)}
-        style={hoverable ? { cursor: 'pointer' } : undefined}
-        onMouseEnter={handleEnter}
-        onMouseLeave={handleLeave}
-      >
-        {logoNode}
-      </div>
-    );
+    return <div className={cn('flex items-center justify-center bg-transparent', className)}>{logoNode}</div>;
   }
 
   return (
-    <div className={cn('flex items-center gap-2 min-w-0 bg-transparent', className)} onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+    <div className={cn('flex items-center gap-2 min-w-0 bg-transparent', className)}>
       {logoNode}
-      <span
-        className="font-semibold whitespace-nowrap leading-none truncate"
-        style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
-      >
+      <span className="font-semibold whitespace-nowrap leading-none truncate" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
         CollectionKeeper
       </span>
     </div>
