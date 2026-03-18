@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, Share2, RotateCcw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import BrandLogo from '@/components/branding/BrandLogo';
-import HighlightCard from '@/components/hub/HighlightCard';
+
 import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
 import { getAIEligibleModuleIds } from '@/components/utils/moduleAccess';
 import { useTranslation } from '@/components/i18n/safeTranslation';
@@ -16,6 +16,84 @@ const METRIC_COLORS = {
   totalBottles: '#C87941',
   value: '#10B981',
 };
+
+/**
+ * Helper to resolve the best photo URL for an item record.
+ * Priority: photos[0] > logo > photo > null
+ */
+function resolveItemPhoto(item) {
+  if (!item) return null;
+  if (Array.isArray(item.photos) && item.photos.length > 0) return item.photos[0];
+  if (item.logo) return item.logo;
+  if (item.photo) return item.photo;
+  return null;
+}
+
+function StoryHighlightCard({ title, label, photo, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="relative rounded-2xl overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-2xl aspect-[3/2]"
+      style={{
+        border: '1px solid rgba(180,140,75,0.25)',
+        boxShadow: '0 12px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)',
+      }}
+    >
+      {/* Background image or fallback gradient */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: photo ? `url('${photo}')` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          background: !photo
+            ? 'linear-gradient(135deg, rgba(60,40,25,0.9), rgba(40,25,15,0.95))'
+            : undefined,
+        }}
+      />
+
+      {/* Overlay */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: 'radial-gradient(circle at 30% 20%, rgba(180,140,100,0.25) 0%, transparent 40%), radial-gradient(circle at 100% 100%, rgba(0,0,0,0.5) 0%, transparent 50%)',
+        }}
+      />
+
+      {/* Content */}
+      <div className="absolute inset-0 flex flex-col justify-between p-5 z-10">
+        <div>
+          <p
+            className="text-xs uppercase tracking-wider font-bold"
+            style={{ color: 'rgba(180,140,75,0.8)' }}
+          >
+            {label}
+          </p>
+        </div>
+        <div>
+          <p
+            className="text-sm md:text-base font-bold line-clamp-2"
+            style={{
+              color: '#F5F1E7',
+              textShadow: '0 2px 8px rgba(0,0,0,0.7)',
+            }}
+          >
+            {title}
+          </p>
+        </div>
+      </div>
+
+      {/* Hover effect */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        style={{
+          background: 'radial-gradient(circle at center, rgba(180,140,75,0.15) 0%, transparent 70%)',
+        }}
+      />
+    </button>
+  );
+}
 
 function MetricBox({ value, label, color }) {
   return (
@@ -184,53 +262,29 @@ export default function CollectionStoryCard() {
         <>
           <Divider />
           <div className="px-6 pb-6 pt-6 relative z-10">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {h.mostUsedPipe && (
-                <HighlightCard
-                  icon="pipe"
-                  title={t('hub.mostUsedPipe', 'Most Used Pipe')}
-                  value={h.mostUsedPipe.name}
-                  subtitle={h.mostUsedPipe.uses > 0 ? `${h.mostUsedPipe.uses} ${t('hub.sessions', 'sessions')}` : null}
-                  backgroundImage={h.mostUsedPipe.photos?.[0]}
-                  module="PIPEKEEPER"
+                <StoryHighlightCard
+                  label={t('hub.mostUsedPipe', 'Most Used Pipe')}
+                  title={h.mostUsedPipe.name}
+                  photo={resolveItemPhoto(h.mostUsedPipe)}
+                  onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(h.mostUsedPipe.id)}`)}
                 />
               )}
               {h.favoriteBlend && (
-                <HighlightCard
-                  icon="blend"
-                  title={t('hub.topBlend', 'Top Blend')}
-                  value={h.favoriteBlend.name}
-                  subtitle={h.favoriteBlend.rating ? `★ ${h.favoriteBlend.rating} / 5` : null}
-                  backgroundImage={h.favoriteBlend.photos?.[0]}
-                  module="PIPEKEEPER"
+                <StoryHighlightCard
+                  label={t('hub.topBlend', 'Top Blend')}
+                  title={h.favoriteBlend.name}
+                  photo={resolveItemPhoto(h.favoriteBlend)}
+                  onClick={() => navigate(`/TobaccoDetail?id=${encodeURIComponent(h.favoriteBlend.id)}`)}
                 />
               )}
               {h.mostTastedBottle && (
-                <HighlightCard
-                  icon="bottle"
-                  title={t('hub.mostTasted', 'Most Tasted')}
-                  value={h.mostTastedBottle.name}
-                  subtitle={
-                    h.mostTastedBottle.tastings > 0
-                      ? `${h.mostTastedBottle.tastings} ${t('hub.tastings', 'tastings')}`
-                      : null
-                  }
-                  backgroundImage={h.mostTastedBottle.photos?.[0]}
-                  module="WHISKEYKEEPER"
-                />
-              )}
-              {h.mostValuableItem && (
-                <HighlightCard
-                  icon="value"
-                  title={t('hub.crownJewel', 'Crown Jewel')}
-                  value={h.mostValuableItem.name}
-                  subtitle={
-                    h.mostValuableItem.value > 0
-                      ? `$${h.mostValuableItem.value.toLocaleString()}`
-                      : null
-                  }
-                  backgroundImage={h.mostValuableItem.photos?.[0]}
-                  module="COLLECTION"
+                <StoryHighlightCard
+                  label={t('hub.mostTasted', 'Most Tasted')}
+                  title={h.mostTastedBottle.name}
+                  photo={resolveItemPhoto(h.mostTastedBottle)}
+                  onClick={() => navigate(`/BottleDetail?bottleId=${encodeURIComponent(h.mostTastedBottle.id)}`)}
                 />
               )}
             </div>
