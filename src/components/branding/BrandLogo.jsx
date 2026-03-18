@@ -23,7 +23,7 @@ export default function BrandLogo({
         sizeClass,
         imageClassName
       )}
-      style={{ ...getAssetImageStyle("collectionKeeper", compact ? "small" : "regular"), mixBlendMode: "screen", background: "transparent" }}
+      style={{ ...getAssetImageStyle("collectionKeeper", compact ? "small" : "regular"), mixBlendMode: "screen" }}
       draggable={false}
     />
   );
