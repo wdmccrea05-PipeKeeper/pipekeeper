@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import GlobalErrorBoundary from "@/components/system/GlobalErrorBoundary";
 import { Home, Menu, X, User, HelpCircle, Users, Crown, Settings, Shield, FileText, Target } from "lucide-react";
 import BrandLogo from "@/components/branding/BrandLogo";
+import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 import GlobalSearchTrigger from "@/components/search/GlobalSearchTrigger";
 import BackButton from "@/components/navigation/BackButton";
 import { Button } from "@/components/ui/button";
@@ -41,18 +42,9 @@ if (import.meta?.env?.DEV) {
   console.log('[CollectionKeeper] Canonical entitlement system active');
 }
 
-function WhiskeyBottleIcon({ className, style }) {
-  return (
-    <svg className={className} style={style} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M9 2h6v3l2 3v11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8l2-3V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-      <path d="M7 13h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M9 2h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-  );
-}
+const PIPE_ICON = MODULE_ICONS.pipekeeper;
+const WHISKEY_ICON = MODULE_ICONS.whiskeykeeper;
 
-const PIPE_ICON =
-  "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
 function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false, isNav = false }) {
   const isActive = currentPage === item.page;
@@ -99,14 +91,15 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false, 
         <img
           src={item.icon}
           alt={item.name}
-          className="w-4 sm:w-5 h-4 sm:h-5 object-contain flex-shrink-0"
+          className="w-4 sm:w-5 h-4 sm:h-5 object-contain flex-shrink-0 bg-transparent"
           style={{
-            filter: isMobile
-              ? "brightness(0) invert(1)"
-              : isActive
-              ? "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.95)"
-              : "brightness(0) invert(1) sepia(0.6) saturate(2) hue-rotate(20deg) brightness(0.85) opacity(0.7)",
+            backgroundColor: 'transparent',
+            opacity: isMobile ? 0.92 : isActive ? 1 : 0.78,
+            filter: isActive
+              ? 'drop-shadow(0 1px 3px rgba(0,0,0,0.25))'
+              : 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))',
           }}
+          draggable={false}
         />
       )}
 
@@ -240,7 +233,7 @@ export default function Layout({ children, currentPageName }) {
     ];
     // Only show WhiskeyKeeper if user has it enabled
     if (isModuleEnabled('whiskeykeeper')) {
-      items.push({ name: t("nav.whiskeykeeper"), page: "WhiskeyKeeper", icon: WhiskeyBottleIcon, isIconComponent: true });
+      items.push({ name: t("nav.whiskeykeeper"), page: "WhiskeyKeeper", icon: WHISKEY_ICON, isIconComponent: false });
     }
     items.push({ name: t("nav.curator"), page: "Curator", icon: Target, isIconComponent: true });
     if (FEATURES.community) {
