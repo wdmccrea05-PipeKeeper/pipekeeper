@@ -104,7 +104,7 @@ export default function QuickLaunch() {
   const pipeActions = [
     {
       label: t("quickActions.addPipe", "Add Pipe"),
-      icon: PipeQuickIcon,
+      icon: "https://media.base44.com/images/public/694956e18d119cc497192525/0d1d94319_image.png",
       path: "/PipeForm",
       accent: "#D4A574",
     },
