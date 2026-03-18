@@ -153,8 +153,8 @@ export default function OnlineImageSearch({
   }, [onImageSelected, onClose]);
 
   return (
-    <div className="w-full h-full flex flex-col space-y-3">
-      <form onSubmit={handleSearch} className="space-y-2 flex-shrink-0">
+    <div className="w-full h-full flex flex-col">
+      <form onSubmit={handleSearch} className="space-y-2 flex-shrink-0 mb-4">
         <label className="block text-sm font-medium text-[#E0D8C8]">
           {t("onlineImageSearch.searchQuery", "Search Query")}
         </label>
@@ -171,7 +171,7 @@ export default function OnlineImageSearch({
           <Button
             type="submit"
             disabled={loading || !normalizeQuery(searchQuery)}
-            className="bg-[#A35C5C] hover:bg-[#8F4E4E] text-white"
+            className="bg-[#A35C5C] hover:bg-[#8F4E4E] text-white flex-shrink-0"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           </Button>
@@ -183,43 +183,45 @@ export default function OnlineImageSearch({
       </form>
 
       {error && (
-        <div className="flex items-start gap-3 p-3 rounded-lg bg-[#E05D5D]/20 border border-[#E05D5D]/40">
+        <div className="flex items-start gap-3 p-3 rounded-lg bg-[#E05D5D]/20 border border-[#E05D5D]/40 flex-shrink-0 mb-3">
           <AlertCircle className="w-5 h-5 text-[#E05D5D] flex-shrink-0 mt-0.5" />
           <p className="text-sm text-[#E0D8C8]">{error}</p>
         </div>
       )}
 
       {!!images.length && (
-        <div className="space-y-2 flex-1 min-h-0 overflow-y-auto">
-          <p className="text-sm text-[#E0D8C8]/70">
-            {t("onlineImageSearch.selectImage", "Select an image to edit and use")}
-          </p>
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="space-y-2 pb-2">
+            <p className="text-sm text-[#E0D8C8]/70 sticky top-0 bg-inherit py-2">
+              {t("onlineImageSearch.selectImage", "Select an image to edit and use")}
+            </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pb-2">
-            {images.map((imageUrl, idx) => (
-              <button
-                key={`${imageUrl}-${idx}`}
-                type="button"
-                className="relative aspect-[3/4] rounded-lg overflow-hidden border-2 border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 bg-black/20"
-                onClick={() => handleSelectImage(imageUrl)}
-              >
-                <img
-                  src={imageUrl}
-                  alt={`Result ${idx + 1}`}
-                  className="w-full h-full object-contain bg-black/10"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              </button>
-            ))}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {images.map((imageUrl, idx) => (
+                <button
+                  key={`${imageUrl}-${idx}`}
+                  type="button"
+                  className="relative aspect-[3/4] rounded-lg overflow-hidden border-2 border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 bg-black/20 transition-colors"
+                  onClick={() => handleSelectImage(imageUrl)}
+                >
+                  <img
+                    src={imageUrl}
+                    alt={`Result ${idx + 1}`}
+                    className="w-full h-full object-contain bg-black/10"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
       {loading && (
-        <div className="flex items-center justify-center p-8 flex-1">
+        <div className="flex items-center justify-center flex-1">
           <div className="text-center space-y-3">
             <Loader2 className="w-6 h-6 animate-spin text-[#A35C5C] mx-auto" />
             <p className="text-sm text-[#E0D8C8]/70">{t("common.searching", "Searching...")}</p>
@@ -228,8 +230,8 @@ export default function OnlineImageSearch({
       )}
 
       {!loading && images.length === 0 && !error && (
-        <div className="text-center p-6 rounded-lg bg-[#3a2a20]/30 border border-[#E0D8C8]/10 flex-1 flex items-center justify-center">
-          <div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center p-6 rounded-lg bg-[#3a2a20]/30 border border-[#E0D8C8]/10">
             <Search className="w-8 h-8 text-[#E0D8C8]/40 mx-auto mb-2" />
             <p className="text-sm text-[#E0D8C8]/60">
               {t("onlineImageSearch.startSearch", "Enter a search query and click search to find images")}

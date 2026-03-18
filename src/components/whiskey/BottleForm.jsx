@@ -85,8 +85,11 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
   };
 
   const handleOnlineImageSelected = (imageUrl) => {
-    setCropperImage(imageUrl);
+    // Commit directly to formData.photo for online search results
+    setFormData((prev) => ({ ...prev, photo: imageUrl }));
+    setPhotoPreview(imageUrl);
     setShowOnlineSearch(false);
+    // Skip cropper for online search—use image directly
   };
 
   const handleCroppedImage = async (croppedDataUrl) => {

@@ -22,7 +22,7 @@ export default function OnlineImageSearchModal({
       />
 
       <div
-        className="relative w-full max-w-3xl max-h-[88vh] rounded-2xl overflow-hidden flex flex-col"
+        className="relative w-full max-w-3xl max-h-[88vh] rounded-2xl flex flex-col"
         style={{
           background: 'linear-gradient(180deg, rgba(28,20,14,0.98), rgba(20,15,11,0.99))',
           border: '1px solid rgba(224,216,200,0.15)',
@@ -31,7 +31,7 @@ export default function OnlineImageSearchModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="sticky top-0 z-10 flex items-center justify-between p-6 border-b border-[#E0D8C8]/10"
+          className="sticky top-0 z-10 flex items-center justify-between p-6 border-b border-[#E0D8C8]/10 flex-shrink-0"
           style={{
             background: 'linear-gradient(to bottom, rgba(35,25,18,0.95), rgba(28,20,14,0.9))',
           }}
@@ -47,13 +47,13 @@ export default function OnlineImageSearchModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 hover:bg-white/5 rounded-lg transition-colors text-[#E0D8C8]/70 hover:text-[#E0D8C8]"
+            className="p-2 hover:bg-white/5 rounded-lg transition-colors text-[#E0D8C8]/70 hover:text-[#E0D8C8] flex-shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 overflow-hidden flex-1 min-h-0">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col p-6">
           <OnlineImageSearch
             recordType={recordType}
             recordData={recordData}
