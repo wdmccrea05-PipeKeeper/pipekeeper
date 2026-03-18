@@ -93,13 +93,7 @@ export default function ModuleCard({
             typeof icon === "string" ? (
               <ModuleImageIcon src={icon} alt={module} />
             ) : typeof icon === "function" ? (
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
-                style={{
-                  background: "rgba(139,98,57,0.2)",
-                  border: "1px solid rgba(212,164,116,0.2)",
-                }}
-              >
+              <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
                 {React.createElement(icon, {
                   className: "w-6 h-6",
                   style: { color: "rgba(212,164,116,0.9)" },
