@@ -19,7 +19,7 @@ import {
 import BrandLogo from "@/components/branding/BrandLogo";
 import {
   MODULE_ICONS,
-  getModuleIconSrc,
+  getModuleIcon as getModuleIconSrc,
 } from "@/components/branding/moduleAssets";
 import GlobalSearchTrigger from "@/components/search/GlobalSearchTrigger";
 import BackButton from "@/components/navigation/BackButton";
