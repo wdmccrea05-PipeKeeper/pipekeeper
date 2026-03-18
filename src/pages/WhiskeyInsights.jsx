@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import ModuleNav from '@/components/modules/ModuleNav';
+import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import { WhiskeyAnalyticsTab } from '@/components/whiskey/WhiskeyInsightsAnalytics';
 import { WhiskeyHighlightCard, WhiskeyStoryCardModal, captureAndShareWhiskeyCard } from '@/components/whiskey/WhiskeyHighlightCard';
 import { Wine, BookOpen, TrendingUp, BarChart3, Award, Trophy, Star, Zap } from 'lucide-react';
@@ -19,13 +19,6 @@ export default function WhiskeyInsightsPage() {
   const [activeStory, setActiveStory] = useState(null);
   const highlightRefs = useRef({});
   const storyRef = useRef(null);
-
-  const moduleNavItems = [
-    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: Wine },
-    { name: t('nav.tastingNotes') || 'Tastings', path: '/Tastings', icon: BookOpen },
-    { name: t('nav.insights') || 'Insights', path: '/WhiskeyInsights', icon: TrendingUp },
-    { name: t('nav.analytics') || 'Analytics', path: '/WhiskeyAnalytics', icon: BarChart3 },
-  ];
 
   const { data: bottles = [] } = useQuery({
     queryKey: ['bottles', user?.email],
@@ -180,7 +173,7 @@ export default function WhiskeyInsightsPage() {
 
   return (
     <div className="space-y-6">
-      <ModuleNav items={moduleNavItems} currentPath="/WhiskeyInsights" />
+      <WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" />
 
       {activeStory && (
         <WhiskeyStoryCardModal
