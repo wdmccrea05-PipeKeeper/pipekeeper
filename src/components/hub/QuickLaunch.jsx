@@ -199,7 +199,7 @@ export default function QuickLaunch() {
         {isModuleEnabled("whiskeykeeper") ? (
           <div>
             <SectionTitle
-              icon={BottleQuickIcon}
+              icon={MODULE_ICONS.whiskeykeeper}
               label={t("nav.whiskeykeeper", "WhiskeyKeeper")}
             />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
