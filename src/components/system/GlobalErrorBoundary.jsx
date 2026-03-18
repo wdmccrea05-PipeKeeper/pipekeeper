@@ -126,7 +126,7 @@ class GlobalErrorBoundary extends React.Component {
                   }}
                   className="flex-1"
                 >
-                  {translate('error.reloadPage', 'Reload Page')}
+                  Reload Page
                 </Button>
               </div>
             </div>
