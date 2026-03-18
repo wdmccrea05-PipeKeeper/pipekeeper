@@ -50,13 +50,24 @@ function BottleQuickIcon({ className, style }) {
   );
 }
 
-function SectionTitle({ icon: Icon, label }) {
+function SectionTitle({ icon, label }) {
+  const isString = typeof icon === "string";
   return (
     <div className="flex items-center gap-2 mb-3">
-      <Icon
-        className="w-4 h-4"
-        style={{ color: "rgba(180, 140, 75, 0.85)" }}
-      />
+      {isString ? (
+        <img
+          src={icon}
+          alt={label}
+          className="w-4 h-4 object-contain"
+          style={{ mixBlendMode: "screen" }}
+          draggable={false}
+        />
+      ) : (
+        React.createElement(icon, {
+          className: "w-4 h-4",
+          style: { color: "rgba(180, 140, 75, 0.85)" },
+        })
+      )}
       <h3
         className="text-xs uppercase tracking-wider"
         style={{ color: "rgba(180, 140, 75, 0.6)" }}
