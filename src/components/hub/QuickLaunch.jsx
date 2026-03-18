@@ -39,6 +39,8 @@ function PipeQuickIcon({ className, style }) {
 
 function SectionTitle({ icon, label }) {
   const isString = typeof icon === "string";
+  const IconComponent = !isString ? icon : null;
+  
   return (
     <div className="flex items-center gap-2 mb-3">
       {isString ? (
@@ -49,12 +51,12 @@ function SectionTitle({ icon, label }) {
           style={{ backgroundColor: "transparent" }}
           draggable={false}
         />
-      ) : (
-        React.createElement(icon, {
-          className: "w-4 h-4",
-          style: { color: "rgba(180, 140, 75, 0.85)" },
-        })
-      )}
+      ) : IconComponent ? (
+        <IconComponent
+          className="w-4 h-4"
+          style={{ color: "rgba(180, 140, 75, 0.85)" }}
+        />
+      ) : null}
       <h3
         className="text-xs uppercase tracking-wider"
         style={{ color: "rgba(180, 140, 75, 0.6)" }}
@@ -88,12 +90,12 @@ function ActionCard({ action, navigate }) {
             style={{ backgroundColor: "transparent" }}
             draggable={false}
           />
-        ) : (
+        ) : Icon ? (
           <Icon
             className="w-5 h-5 transition-transform group-hover:scale-110"
             style={{ color: action.accent }}
           />
-        )}
+        ) : null}
       </div>
       <p className="text-sm font-semibold text-[#E0D8C8]">{action.label}</p>
     </button>
