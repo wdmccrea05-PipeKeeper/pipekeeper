@@ -45,7 +45,8 @@ export default function CuratorHub({ summary = null, recentActivities = [] }) {
       <div
         className="absolute inset-0 opacity-5"
         style={{
-          backgroundImage: "radial-gradient(circle at 80% 50%, rgba(212,164,116,0.4) 0%, transparent 60%)",
+          backgroundImage:
+            "radial-gradient(circle at 80% 50%, rgba(212,164,116,0.4) 0%, transparent 60%)",
           pointerEvents: "none",
         }}
       />
@@ -61,7 +62,7 @@ export default function CuratorHub({ summary = null, recentActivities = [] }) {
           <img
             src={curatorAsset.src}
             alt={t("hub.curatorTitle", "Collection Curator")}
-            className="w-12 h-12 object-contain bg-transparent"
+            className="w-10 h-10 object-contain bg-transparent"
             style={getAssetImageStyle("curator")}
             draggable={false}
           />
@@ -71,14 +72,20 @@ export default function CuratorHub({ summary = null, recentActivities = [] }) {
           <h3 className="text-lg font-semibold" style={{ color: "#F5F1E7" }}>
             {t("hub.curatorTitle", "Collection Curator")}
           </h3>
-          <p className="text-sm mt-1" style={{ color: "rgba(224, 216, 200, 0.7)" }}>
+          <p
+            className="text-sm mt-1"
+            style={{ color: "rgba(224, 216, 200, 0.7)" }}
+          >
             {t(
               "hub.curatorDescription",
               "Get AI-powered insights, recommendations, and guidance across your entire collection."
             )}
           </p>
           {entryText ? (
-            <p className="text-xs mt-2" style={{ color: "rgba(212, 164, 116, 0.85)" }}>
+            <p
+              className="text-xs mt-2"
+              style={{ color: "rgba(212, 164, 116, 0.85)" }}
+            >
               {entryText}
             </p>
           ) : null}
