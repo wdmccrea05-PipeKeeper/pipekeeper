@@ -124,15 +124,30 @@ export default function WhiskeyInsightsPage() {
 
   const mostTastedBottle = useMemo(() => {
     if (!tastingLogs.length) return null;
+
     const tasted = {};
-    tastingLogs.forEach(log => {
-      if (log.bottle_name) {
-        tasted[log.bottle_name] = (tasted[log.bottle_name] || 0) + 1;
-      }
+    tastingLogs.forEach((log) => {
+      const rawName = typeof log?.bottle_name === 'string' ? log.bottle_name.trim() : '';
+      if (!rawName) return;
+      tasted[rawName] = (tasted[rawName] || 0) + 1;
     });
-    const topName = Object.entries(tasted).sort((a, b) => b[1] - a[1])[0]?.[0];
-    if (!topName) return null;
-    return { bottle: bottles.find(b => b.name === topName), count: tasted[topName] };
+
+    const topEntry = Object.entries(tasted).sort((a, b) => b[1] - a[1])[0];
+    if (!topEntry) return null;
+
+    const [topName, count] = topEntry;
+
+    const matchedBottle =
+      bottles.find((b) => b?.id && tastingLogs.some((l) => l?.bottle_id === b.id && (l?.bottle_name || '').trim() === topName)) ||
+      bottles.find((b) => (b?.name || '').trim().toLowerCase() === topName.toLowerCase()) ||
+      null;
+
+    return {
+      name: matchedBottle?.name || topName,
+      bottle: matchedBottle,
+      count,
+      photo: matchedBottle?.photo || null,
+    };
   }, [tastingLogs, bottles]);
 
   const tastingPerWeek = useMemo(() => {
@@ -283,21 +298,21 @@ export default function WhiskeyInsightsPage() {
                   {mostTastedBottle && (
                     <WhiskeyHighlightCard
                       title={t('insights.mostTastedBottle', 'Most Tasted Bottle')}
-                      value={mostTastedBottle.bottle.name}
+                      value={mostTastedBottle.name}
                       sub={`${mostTastedBottle.count} tastings`}
                       accent="#C87941"
                       icon={Star}
                       patternIndex={0}
-                      heroImage={mostTastedBottle.bottle.photo}
+                      heroImage={mostTastedBottle.photo}
                       cardRef={(el) => { highlightRefs.current.mostTasted = el; }}
                       onShare={() => handleShareCard('mostTasted')}
                       onStory={() => setActiveStory({
                         title: t('insights.mostTastedBottle', 'Most Tasted Bottle'),
-                        value: mostTastedBottle.bottle.name,
+                        value: mostTastedBottle.name,
                         sub: `${mostTastedBottle.count} tastings`,
                         accent: '#C87941',
                         icon: Star,
-                        heroImage: mostTastedBottle.bottle.photo,
+                        heroImage: mostTastedBottle.photo,
                       })}
                     />
                   )}
@@ -336,7 +351,11 @@ export default function WhiskeyInsightsPage() {
                     <WhiskeyHighlightCard
                       title={t('insights.oldestBottle', 'Oldest Bottle')}
                       value={oldestBottle.name}
-                      sub={oldestBottle.purchase_date ? new Date(oldestBottle.purchase_date).getFullYear().toString() : 'Unknown'}
+                      sub={
+                        oldestBottle.purchase_date && !Number.isNaN(new Date(oldestBottle.purchase_date).getTime())
+                          ? new Date(oldestBottle.purchase_date).getFullYear().toString()
+                          : 'Unknown'
+                      }
                       accent="#10B981"
                       icon={Zap}
                       patternIndex={2}
@@ -346,7 +365,9 @@ export default function WhiskeyInsightsPage() {
                       onStory={() => setActiveStory({
                         title: t('insights.oldestBottle', 'Oldest Bottle'),
                         value: oldestBottle.name,
-                        sub: oldestBottle.purchase_date ? new Date(oldestBottle.purchase_date).getFullYear().toString() : 'Unknown',
+                        sub: oldestBottle.purchase_date && !Number.isNaN(new Date(oldestBottle.purchase_date).getTime())
+                          ? new Date(oldestBottle.purchase_date).getFullYear().toString()
+                          : 'Unknown',
                         accent: '#10B981',
                         icon: Zap,
                         heroImage: oldestBottle.photo,
@@ -376,7 +397,10 @@ export default function WhiskeyInsightsPage() {
                     }}>
                       <p style={{ color: '#F5F1E7' }}>{log.bottle_name}</p>
                       <p className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                        {new Date(log.tasting_date).toLocaleDateString()} - {log.notes}
+                        {log.tasting_date && !Number.isNaN(new Date(log.tasting_date).getTime())
+                          ? new Date(log.tasting_date).toLocaleDateString()
+                          : 'Unknown date'}{' '}
+                        - {log.notes || ''}
                       </p>
                     </div>
                   ))}
@@ -497,7 +521,9 @@ export default function WhiskeyInsightsPage() {
                         const csv = [
                           ['Date', 'Bottle', 'Notes'].join(','),
                           ...tastingLogs.map(l => [
-                            new Date(l.tasting_date).toLocaleDateString() || '',
+                            l.tasting_date && !Number.isNaN(new Date(l.tasting_date).getTime())
+                              ? new Date(l.tasting_date).toLocaleDateString()
+                              : '',
                             `"${l.bottle_name || ''}"`,
                             `"${(l.notes || '').replace(/"/g, '""')}"`
                           ].join(','))
