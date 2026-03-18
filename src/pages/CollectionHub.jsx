@@ -211,11 +211,11 @@ export default function CollectionHub() {
         <div className="text-center space-y-4">
           <div className="text-center space-y-3">
             <div className="flex justify-center">
-              <img
-                src="https://media.base44.com/images/public/694956e18d119cc497192525/b9b1fc2c7_CollectionKeeperUpdated.png"
-                alt="CollectionKeeper"
-                className="w-24 h-24 object-contain"
-                draggable={false}
+              <BrandLogo
+                compact={false}
+                showWordmark={false}
+                className="justify-center"
+                imageClassName="w-24 h-24"
               />
             </div>
             <h1
