@@ -206,7 +206,7 @@ export default function OnlineImageSearch({
                 <img
                   src={imageUrl}
                   alt={`Result ${idx + 1}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain bg-black/10"
                   loading="lazy"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';

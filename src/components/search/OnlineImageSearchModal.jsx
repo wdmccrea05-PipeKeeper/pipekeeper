@@ -53,7 +53,7 @@ export default function OnlineImageSearchModal({
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1 min-h-0">
+        <div className="p-6 overflow-hidden flex-1 min-h-0">
           <OnlineImageSearch
             recordType={recordType}
             recordData={recordData}

@@ -32,7 +32,7 @@ export default function PhotoUploader({
     if (previewClassName) return previewClassName;
     return isBottle
       ? 'w-20 h-28 object-contain rounded border bg-black/20'
-      : 'w-20 h-20 object-cover rounded border';
+      : 'w-20 h-20 object-contain rounded border bg-black/10';
   }, [isBottle, previewClassName]);
 
   const handleFileSelect = (e, source) => {
@@ -117,7 +117,7 @@ export default function PhotoUploader({
         <div className="flex flex-wrap gap-2 mt-3">
           {existingPhotos.map((url, idx) => (
             <div key={`${url}-${idx}`} className="relative">
-              <img src={url} alt="" className={previewSizingClass} />
+              <img src={url} alt="" className={previewSizingClass} style={{ backgroundColor: 'transparent' }} />
             </div>
           ))}
         </div>

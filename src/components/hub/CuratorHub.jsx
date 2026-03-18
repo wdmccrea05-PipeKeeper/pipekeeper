@@ -56,7 +56,16 @@ export default function CuratorHub({ summary = null, recentActivities = [] }) {
             border: '1px solid rgba(212, 164, 116, 0.25)',
           }}
         >
-          <img src={CURATOR_ICON} alt="Collection Curator" className="w-12 h-12 object-contain" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
+          <img
+            src={CURATOR_ICON}
+            alt={t('hub.curatorTitle', 'Collection Curator')}
+            className="w-12 h-12 object-contain bg-transparent"
+            style={{
+              backgroundColor: 'transparent',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+            }}
+            draggable={false}
+          />
         </div>
         <div>
           <h3 className="text-lg font-semibold" style={{ color: '#F5F1E7' }}>
