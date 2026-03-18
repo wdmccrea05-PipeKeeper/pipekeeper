@@ -165,7 +165,7 @@ export default function PipeKeeperModule() {
       </div>
 
       {/* Module Navigation - THE REAL INTERNAL NAV */}
-      <ModuleNav items={moduleNav} currentPath={location.pathname} />
+      <PipeKeeperModuleNav currentPageName="PipeKeeper" />
 
       {/* Summary Cards */}
       <div className="rounded-lg p-5" style={{
