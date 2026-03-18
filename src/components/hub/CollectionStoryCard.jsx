@@ -247,8 +247,13 @@ export default function CollectionStoryCard() {
 
       <Divider />
 
-      <div className="px-6 pb-6 pt-4 flex gap-3">
-        <Button onClick={() => navigate('/CollectionInsightsShare', { state: { story } })} size="sm" variant="outline" className="flex-1">
+      <div className="px-6 pb-6 pt-4 flex gap-3 relative z-10">
+        <Button 
+          onClick={() => navigate('/CollectionInsightsShare', { state: { story } })} 
+          size="sm" 
+          variant="outline" 
+          className="flex-1"
+        >
           <Share2 className="w-3.5 h-3.5 mr-1.5" />
           {t('common.share', 'Share')}
         </Button>
@@ -257,9 +262,10 @@ export default function CollectionStoryCard() {
           size="sm"
           className="flex-1"
           style={{
-            background: 'linear-gradient(135deg, rgba(180,140,75,0.85), rgba(140,100,60,0.95))',
-            border: '1px solid rgba(180,140,75,0.4)',
-            color: '#F5F1E7',
+            background: 'linear-gradient(135deg, rgba(180,140,75,1) 0%, rgba(160,120,65,1) 100%)',
+            border: '1px solid rgba(140,105,60,0.8)',
+            color: 'rgba(28,18,10,1)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)',
           }}
         >
           <Sparkles className="w-3.5 h-3.5 mr-1.5" />
@@ -268,11 +274,11 @@ export default function CollectionStoryCard() {
       </div>
 
       <div
-        className="px-6 py-3 flex items-center justify-center gap-2 border-t"
-        style={{ borderColor: 'rgba(180,140,75,0.12)' }}
+        className="px-6 py-3 flex items-center justify-center gap-2 border-t relative z-10"
+        style={{ borderColor: 'rgba(120,90,65,0.25)' }}
       >
         <BrandLogo compact showWordmark={false} imageClassName="w-5 h-5" />
-        <span className="text-xs" style={{ color: 'rgba(224,216,200,0.45)' }}>
+        <span className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>
           {t('hub.trackedWithCollectionKeeper', 'Tracked with CollectionKeeper')}
         </span>
       </div>
