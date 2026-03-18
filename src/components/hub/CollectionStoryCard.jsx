@@ -206,7 +206,31 @@ export default function CollectionStoryCard() {
     );
   }
 
-  if (!story) return null;
+  if (!story) {
+    return (
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{
+          background: 'linear-gradient(155deg, rgba(38, 26, 18, 0.96), rgba(32, 22, 15, 0.99))',
+          border: '1px solid rgba(120, 90, 65, 0.42)',
+          boxShadow: '0 5px 20px rgba(0,0,0,0.75), inset 0 1px 0 rgba(180,140,100,0.14)',
+        }}
+      >
+        <div className="px-6 pt-6 pb-4 relative z-10">
+          <p className="text-xs uppercase tracking-[0.12em] font-bold mb-1" style={{ color: 'rgba(180,140,75,0.7)' }}>
+            {t('hub.collectionStory', 'Collection Story')}
+          </p>
+          <h3 className="text-2xl sm:text-3xl font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+            {t('hub.collectorSnapshot', "Your Collector's Snapshot")}
+          </h3>
+        </div>
+        <Divider />
+        <div className="px-6 py-6 text-center" style={{ color: 'rgba(224,216,200,0.6)' }}>
+          <p className="text-sm">{t('hub.storyUnavailable', 'Story unavailable. Try again later.')}</p>
+        </div>
+      </div>
+    );
+  }
 
   const h = story.highlights || {};
   const m = story.metrics || {};
