@@ -7,8 +7,7 @@ import {
   Search,
   PackagePlus,
   FlaskConical,
-  Wine,
-  Pipe,
+  Flame,
 } from "lucide-react";
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
