@@ -82,6 +82,12 @@
     @apply border-border outline-ring/50;
   }
 
+  img {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+  }
+
   body {
     @apply bg-background text-foreground;
     overflow-wrap: break-word;
