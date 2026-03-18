@@ -26,13 +26,7 @@ export default function PipeKeeperModule() {
   
   const [showQuickSearch, setShowQuickSearch] = useState(false);
 
-  // Module navigation
-  const moduleNav = [
-    { name: t('nav.pipes') || 'Pipes', path: '/Pipes', icon: Wind },
-    { name: t('nav.tobacco') || 'Tobacco', path: '/Tobacco', icon: Leaf },
-    { name: t('nav.smokingLog') || 'Sessions', path: '/Sessions', icon: BookOpen },
-    { name: t('nav.insights') || 'Insights', path: '/Insights', icon: TrendingUp },
-  ];
+
 
   // Fetch data
   const { data: pipes = [] } = useQuery({
