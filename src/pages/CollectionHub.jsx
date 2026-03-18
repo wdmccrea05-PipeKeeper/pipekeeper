@@ -288,16 +288,9 @@ export default function CollectionHub() {
         </div>
       </div>
 
-      <div
-        className="rounded-lg p-5"
-        style={{
-          background: "linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))",
-          border: "1px solid rgba(120, 90, 65, 0.3)",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)",
-        }}
-      >
+      <div className="space-y-4">
         <h2
-          className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
+          className="text-sm uppercase tracking-[0.12em] font-semibold"
           style={{ color: "rgba(180, 140, 75, 0.8)" }}
         >
           {t("hub.collectionSummary", "Collection Overview")}
