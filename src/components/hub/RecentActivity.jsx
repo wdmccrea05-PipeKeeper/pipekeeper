@@ -2,15 +2,30 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { getRecentCrossModuleActivity, formatActivityDate } from '@/components/keeper-core';
 
-const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
-const WHISKEY_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png";
+const PIPE_ICON = 'https://media.base44.com/images/public/694956e18d119cc497192525/27f5c2c92_PKNB.png';
+const WHISKEY_ICON = 'https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png';
 
 function ActivityIcon({ module }) {
   const src = module === 'whiskey' ? WHISKEY_ICON : PIPE_ICON;
+
   return (
-    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
-      style={{ background: 'rgba(139,98,57,0.18)', border: '1px solid rgba(212,164,116,0.2)' }}>
-      <img src={src} alt={module} className="w-7 h-7 object-contain" style={{ mixBlendMode: 'screen' }} />
+    <div
+      className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden bg-transparent"
+      style={{
+        background: 'rgba(139,98,57,0.12)',
+        border: '1px solid rgba(212,164,116,0.16)',
+      }}
+    >
+      <img
+        src={src}
+        alt={module}
+        className="w-7 h-7 object-contain bg-transparent"
+        style={{
+          backgroundColor: 'transparent',
+          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))',
+        }}
+        draggable={false}
+      />
     </div>
   );
 }
@@ -26,37 +41,27 @@ export default function RecentActivity({ onActivitiesLoaded = null }) {
     (async () => {
       try {
         setLoading(true);
-        // Get current user email for scoping
         const { base44 } = await import('@/api/base44Client');
         const user = await base44.auth.me();
-        
+
         if (!user?.email) {
-          console.warn('[RecentActivity] No authenticated user');
           setActivities([]);
           return;
         }
 
-        // Fetch user-scoped activity
         const recentActivities = await getRecentCrossModuleActivity(user.email);
         if (!cancelled) {
           setActivities(recentActivities);
-          // Notify parent of loaded activities (for Curator context)
-          if (onActivitiesLoaded) {
-            onActivitiesLoaded(recentActivities);
-          }
+          if (onActivitiesLoaded) onActivitiesLoaded(recentActivities);
         }
       } catch (error) {
         console.warn('[RecentActivity] Error loading activities:', error);
         if (!cancelled) {
           setActivities([]);
-          if (onActivitiesLoaded) {
-            onActivitiesLoaded([]);
-          }
+          if (onActivitiesLoaded) onActivitiesLoaded([]);
         }
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     })();
 
@@ -101,7 +106,7 @@ export default function RecentActivity({ onActivitiesLoaded = null }) {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-[#E0D8C8] truncate">{activity.title}</p>
               <p className="text-xs text-[#E0D8C8]/60 truncate">{activity.subtitle}</p>
-              <p className="text-xs text-[#8b6239] mt-1">{formatActivityDate(activity.date)}</p>
+              <p className="text-xs text-[#8b6239] mt-1">{formatActivityDate(activity.date, t)}</p>
             </div>
           </div>
         ))}
