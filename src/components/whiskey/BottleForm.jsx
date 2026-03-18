@@ -9,6 +9,7 @@ import { base44 } from '@/api/base44Client';
 import ImageCropper from '@/components/pipes/ImageCropper';
 import OnlineImageSearchModal from '@/components/search/OnlineImageSearchModal';
 import PhotoUploader from '@/components/PhotoUploader';
+import { toast } from 'sonner';
 
 const DEFAULT_FORM = (defaultBottleType = 'whiskey') => ({
   bottle_type: defaultBottleType,
@@ -40,16 +41,28 @@ function toNumberOrNull(value) {
   return Number.isFinite(n) ? n : null;
 }
 
-export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleType = 'whiskey' }) {
+function getExistingPhoto(record) {
+  return record?.photo || record?.image || record?.image_url || '';
+}
+
+export default function BottleForm({
+  bottle,
+  onSubmit,
+  onCancel,
+  defaultBottleType = 'whiskey',
+}) {
   const { t } = useTranslation();
 
-  const [formData, setFormData] = useState(
-    bottle ? { ...DEFAULT_FORM(defaultBottleType), ...bottle } : DEFAULT_FORM(defaultBottleType)
-  );
+  const existingPhoto = getExistingPhoto(bottle);
+
+  const [formData, setFormData] = useState(() => ({
+    ...DEFAULT_FORM(defaultBottleType),
+    ...(bottle || {}),
+    photo: getExistingPhoto(bottle),
+  }));
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const savedPhoto = bottle?.photo || bottle?.image || bottle?.image_url || '';
-  const [photoPreview, setPhotoPreview] = useState(savedPhoto);
+  const [photoPreview, setPhotoPreview] = useState(existingPhoto || '');
   const [cropperImage, setCropperImage] = useState(null);
   const [showOnlineSearch, setShowOnlineSearch] = useState(false);
 
@@ -69,6 +82,15 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const commitPhoto = (url) => {
+    const cleanUrl = typeof url === 'string' ? url.trim() : '';
+    setFormData((prev) => ({
+      ...prev,
+      photo: cleanUrl,
+    }));
+    setPhotoPreview(cleanUrl || '');
+  };
+
   const handlePhotoFilesSelected = async (files) => {
     const file = Array.isArray(files) ? files[0] : null;
     if (!file) return;
@@ -81,34 +103,39 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error reading file:', error);
+      toast.error(t('photos.readError', 'Could not read selected photo.'));
     }
   };
 
   const handleOnlineImageSelected = (imageUrl) => {
-    // Commit directly to formData.photo for online search results
-    setFormData((prev) => ({ ...prev, photo: imageUrl }));
-    setPhotoPreview(imageUrl);
+    commitPhoto(imageUrl);
     setShowOnlineSearch(false);
-    // Skip cropper for online search—use image directly
+    toast.success(t('photos.selected', 'Photo selected.'));
   };
 
   const handleCroppedImage = async (croppedDataUrl) => {
     setUploadingPhoto(true);
+
     try {
       const response = await fetch(croppedDataUrl);
       const blob = await response.blob();
       const file = new File([blob], 'bottle-photo.jpg', { type: 'image/jpeg' });
 
       const result = await base44.integrations.Core.UploadFile({ file });
-      const uploadedUrl = result?.file_url || result?.url || result?.publicUrl;
-      if (uploadedUrl) {
-        setFormData((prev) => ({ ...prev, photo: uploadedUrl }));
-        setPhotoPreview(uploadedUrl);
-      } else {
+      const uploadedUrl =
+        result?.file_url || result?.url || result?.publicUrl || result?.photo || '';
+
+      if (!uploadedUrl) {
         console.error('Upload returned no URL:', result);
+        toast.error(t('photos.uploadFailed', 'Photo upload failed.'));
+        return;
       }
+
+      commitPhoto(uploadedUrl);
+      toast.success(t('photos.uploaded', 'Photo uploaded.'));
     } catch (error) {
       console.error('Upload error:', error);
+      toast.error(t('photos.uploadFailed', 'Photo upload failed.'));
     } finally {
       setCropperImage(null);
       setUploadingPhoto(false);
@@ -118,8 +145,11 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    const preservedPhoto = formData.photo || existingPhoto || '';
+
     const cleanedData = {
       ...formData,
+      photo: preservedPhoto || null,
       age: toNumberOrNull(formData.age),
       abv: toNumberOrNull(formData.abv),
       purchase_price: toNumberOrNull(formData.purchase_price),
@@ -127,7 +157,6 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
       aftermarket_price: toNumberOrNull(formData.aftermarket_price),
       collector_value: toNumberOrNull(formData.collector_value),
       rating: toNumberOrNull(formData.rating),
-      photo: formData.photo || bottle?.photo || null,
       value_last_updated:
         formData.retail_price || formData.aftermarket_price || formData.collector_value
           ? new Date().toISOString()
@@ -168,51 +197,69 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
       >
         <div className="flex items-center justify-between">
           <h2 style={{ color: '#F5F1E7' }} className="text-2xl font-bold">
-            {bottle ? t('whiskey.editBottle') || 'Edit Bottle' : t('whiskey.addBottle') || 'Add Bottle'}
+            {bottle
+              ? t('whiskey.editBottle', 'Edit Bottle')
+              : t('whiskey.addBottle', 'Add Bottle')}
           </h2>
-          <button type="button" onClick={onCancel} className="text-[#E0D8C8]/70 hover:text-[#E0D8C8]">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-[#E0D8C8]/70 hover:text-[#E0D8C8]"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.bottleType') || 'Bottle Type'} *</label>
-            <Select value={formData.bottle_type} onValueChange={(value) => handleChange('bottle_type', value)}>
+            <label className="text-sm text-[#D8C7A6] block mb-2">
+              {t('whiskey.bottleType', 'Bottle Type')} *
+            </label>
+            <Select
+              value={formData.bottle_type}
+              onValueChange={(value) => handleChange('bottle_type', value)}
+            >
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="whiskey">{t('whiskey.whiskeyBottle') || 'Whiskey Bottle'}</SelectItem>
-                <SelectItem value="wine">{t('whiskey.wineBottle') || 'Wine Bottle'}</SelectItem>
+                <SelectItem value="whiskey">
+                  {t('whiskey.whiskeyBottle', 'Whiskey Bottle')}
+                </SelectItem>
+                <SelectItem value="wine">
+                  {t('whiskey.wineBottle', 'Wine Bottle')}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.name') || 'Name'} *</label>
+              <label className="text-sm text-[#D8C7A6] block mb-2">
+                {t('whiskey.name', 'Name')} *
+              </label>
               <Input
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                placeholder={t('whiskey.bottleNamePlaceholder') || 'Bottle name'}
+                placeholder={t('whiskey.bottleNamePlaceholder', 'Bottle name')}
                 required
                 className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
               />
             </div>
+
             <div className="min-w-0">
               <label className="text-sm text-[#D8C7A6] block mb-2">
                 {formData.bottle_type === 'wine'
-                  ? (t('wine.winery') || 'Winery')
-                  : (t('whiskey.distillery') || 'Distillery')}
+                  ? t('wine.winery', 'Winery')
+                  : t('whiskey.distillery', 'Distillery')}
               </label>
               <Input
                 value={formData.distillery}
                 onChange={(e) => handleChange('distillery', e.target.value)}
                 placeholder={
                   formData.bottle_type === 'wine'
-                    ? (t('wine.wineryPlaceholder') || 'Winery name')
-                    : (t('whiskey.distilleryPlaceholder') || 'Distillery name')
+                    ? t('wine.wineryPlaceholder', 'Winery name')
+                    : t('whiskey.distilleryPlaceholder', 'Distillery name')
                 }
                 className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
               />
@@ -221,235 +268,51 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.region') || 'Region'}</label>
+              <label className="text-sm text-[#D8C7A6] block mb-2">
+                {t('whiskey.region', 'Region')}
+              </label>
               <Input
                 value={formData.region}
                 onChange={(e) => handleChange('region', e.target.value)}
-                placeholder={t('whiskey.regionPlaceholder') || 'e.g., Islay, Speyside'}
+                placeholder={t('whiskey.regionPlaceholder', 'e.g., Islay, Speyside')}
                 className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
               />
             </div>
+
             <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.country') || 'Country'}</label>
+              <label className="text-sm text-[#D8C7A6] block mb-2">
+                {t('whiskey.country', 'Country')}
+              </label>
               <Input
                 value={formData.country}
                 onChange={(e) => handleChange('country', e.target.value)}
-                placeholder={t('whiskey.countryPlaceholder') || 'e.g., Scotland, USA'}
+                placeholder={t('whiskey.countryPlaceholder', 'e.g., Scotland, USA')}
                 className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.type') || 'Type'}</label>
-              <Select value={formData.type || 'Other'} onValueChange={(value) => handleChange('type', value)}>
-                <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Single Malt">Single Malt</SelectItem>
-                  <SelectItem value="Blended Malt">Blended Malt</SelectItem>
-                  <SelectItem value="Single Grain">Single Grain</SelectItem>
-                  <SelectItem value="Blended Grain">Blended Grain</SelectItem>
-                  <SelectItem value="Blended Whiskey">Blended Whiskey</SelectItem>
-                  <SelectItem value="Bourbon">Bourbon</SelectItem>
-                  <SelectItem value="Rye">Rye</SelectItem>
-                  <SelectItem value="Tennessee Whiskey">Tennessee Whiskey</SelectItem>
-                  <SelectItem value="Irish Whiskey">Irish Whiskey</SelectItem>
-                  <SelectItem value="Scotch Whisky">Scotch Whisky</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.age') || 'Age (years)'}</label>
-              <Input
-                type="number"
-                value={formData.age ?? ''}
-                onChange={(e) => handleChange('age', e.target.value)}
-                placeholder="12"
-                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.abv') || 'ABV (%)'}</label>
-              <Input
-                type="number"
-                value={formData.abv ?? ''}
-                onChange={(e) => handleChange('abv', e.target.value)}
-                placeholder="46"
-                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-              />
-            </div>
-            <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.bottleSize') || 'Bottle Size'}</label>
-              <Select value={formData.bottle_size || '750ml'} onValueChange={(value) => handleChange('bottle_size', value)}>
-                <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="50ml">50ml</SelectItem>
-                  <SelectItem value="200ml">200ml</SelectItem>
-                  <SelectItem value="375ml">375ml</SelectItem>
-                  <SelectItem value="700ml">700ml</SelectItem>
-                  <SelectItem value="750ml">750ml</SelectItem>
-                  <SelectItem value="1L">1L</SelectItem>
-                  <SelectItem value="1.75L">1.75L</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.purchaseType') || 'Purchase Type'} *</label>
-              <Select value={formData.purchase_type || 'retail'} onValueChange={(value) => handleChange('purchase_type', value)}>
-                <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="retail">{t('whiskey.purchaseTypeRetail') || 'Retail'}</SelectItem>
-                  <SelectItem value="aftermarket">{t('whiskey.purchaseTypeAftermarket') || 'Aftermarket'}</SelectItem>
-                  <SelectItem value="gift">{t('whiskey.purchaseTypeGift') || 'Gift'}</SelectItem>
-                  <SelectItem value="trade">{t('whiskey.purchaseTypeTrade') || 'Trade'}</SelectItem>
-                  <SelectItem value="other">{t('whiskey.purchaseTypeOther') || 'Other'}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.purchasePrice') || 'Amount Paid ($)'}</label>
-              <Input
-                type="number"
-                step="0.01"
-                value={formData.purchase_price ?? ''}
-                onChange={(e) => handleChange('purchase_price', e.target.value)}
-                placeholder="0.00"
-                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.purchaseLocation') || 'Purchase Location'}</label>
-              <Input
-                value={formData.purchase_location || ''}
-                onChange={(e) => handleChange('purchase_location', e.target.value)}
-                placeholder={t('whiskey.purchaseLocationPlaceholder') || 'Store, auction, distillery, etc.'}
-                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-              />
-            </div>
-            <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.purchaseDate') || 'Purchase Date'}</label>
-              <Input
-                type="date"
-                value={formData.purchase_date || ''}
-                onChange={(e) => handleChange('purchase_date', e.target.value)}
-                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-              />
-            </div>
-          </div>
-
-          <div className="bg-[rgba(180,140,75,0.08)] border border-[rgba(180,140,75,0.15)] rounded-lg p-4">
-            <label className="text-sm font-semibold text-[#D4A574] block mb-3">
-              {t('whiskey.pricingBreakdown') || 'Pricing Breakdown'}
+          <div>
+            <label className="text-sm text-[#D8C7A6] block mb-2">
+              {t('whiskey.photo', 'Bottle Photo')}
             </label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="min-w-0">
-                <label className="text-xs text-[#D8C7A6] block mb-1">{t('whiskey.retailPrice') || 'Retail Price'}</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.retail_price ?? ''}
-                  onChange={(e) => handleChange('retail_price', e.target.value)}
-                  placeholder="0.00"
-                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-                />
-              </div>
-              <div className="min-w-0">
-                <label className="text-xs text-[#D8C7A6] block mb-1">{t('whiskey.aftermarketPrice') || 'Aftermarket Price'}</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.aftermarket_price ?? ''}
-                  onChange={(e) => handleChange('aftermarket_price', e.target.value)}
-                  placeholder="0.00"
-                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-                />
-              </div>
-              <div className="min-w-0">
-                <label className="text-xs text-[#D8C7A6] block mb-1">{t('whiskey.collectorValue') || 'Collector Value'}</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.collector_value ?? ''}
-                  onChange={(e) => handleChange('collector_value', e.target.value)}
-                  placeholder="0.00"
-                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-                />
-              </div>
-            </div>
 
-            <div className="mt-3">
-              <label className="text-xs text-[#D8C7A6] block mb-1">{t('whiskey.valueConfidence') || 'Value Confidence'}</label>
-              <Select value={formData.value_confidence || 'medium'} onValueChange={(value) => handleChange('value_confidence', value)}>
-                <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="high">{t('whiskey.valueConfidenceHigh') || 'High'}</SelectItem>
-                  <SelectItem value="medium">{t('whiskey.valueConfidenceMedium') || 'Medium'}</SelectItem>
-                  <SelectItem value="low">{t('whiskey.valueConfidenceLow') || 'Low'}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <p className="text-xs mt-2" style={{ color: 'rgba(180,140,75,0.5)' }}>
-              {t('whiskey.valueBreakdownHelp') || 'Retail, aftermarket, and collector values are separate. Use the best values you have.'}
-            </p>
-          </div>
-
-          <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.rating') || 'Rating (1-5)'}</label>
-            <Input
-              type="number"
-              step="0.5"
-              min="0"
-              max="5"
-              value={formData.rating ?? ''}
-              onChange={(e) => handleChange('rating', e.target.value)}
-              placeholder="5.0"
-              className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.photo') || 'Bottle Photo'}</label>
-
-            {photoPreview && (
+            {photoPreview ? (
               <div className="relative w-full h-72 sm:h-80 rounded-xl overflow-hidden border border-[rgba(180,140,75,0.2)] mb-3 bg-black/20">
                 <img
                   src={photoPreview}
-                  alt={t('whiskey.photoPreview') || 'Bottle preview'}
+                  alt={t('whiskey.photoPreview', 'Bottle preview')}
                   className="w-full h-full object-contain"
                 />
                 <button
                   type="button"
-                  onClick={() => {
-                    setPhotoPreview('');
-                    handleChange('photo', '');
-                  }}
+                  onClick={() => commitPhoto('')}
                   className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-md"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
-            )}
+            ) : null}
 
             <PhotoUploader
               onPhotosSelected={handlePhotoFilesSelected}
@@ -461,26 +324,31 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
               recordData={bottleSearchContext}
             />
 
-            {uploadingPhoto && (
+            {uploadingPhoto ? (
               <p className="text-xs mt-2 text-[#D8C7A6]">
-                {t('photos.processing') || 'Processing photo...'}
+                {t('photos.processing', 'Processing photo...')}
               </p>
-            )}
+            ) : null}
           </div>
 
           <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">{t('whiskey.tastingNotes') || 'Tasting Notes'}</label>
+            <label className="text-sm text-[#D8C7A6] block mb-2">
+              {t('whiskey.tastingNotes', 'Tasting Notes')}
+            </label>
             <Textarea
               value={formData.notes || ''}
               onChange={(e) => handleChange('notes', e.target.value)}
-              placeholder={t('whiskey.notesPlaceholder') || 'Describe the flavor profile, aromas, finish, or collector notes.'}
+              placeholder={t(
+                'whiskey.notesPlaceholder',
+                'Describe the flavor profile, aromas, finish, or collector notes.'
+              )}
               className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] h-24"
             />
           </div>
 
           <div className="flex gap-3 justify-end pt-4">
             <Button type="button" variant="outline" onClick={onCancel}>
-              {t('common.cancel') || 'Cancel'}
+              {t('common.cancel', 'Cancel')}
             </Button>
             <Button
               type="submit"
@@ -489,7 +357,7 @@ export default function BottleForm({ bottle, onSubmit, onCancel, defaultBottleTy
                 color: '#F5F1E7',
               }}
             >
-              {bottle ? (t('whiskey.updateBottle') || 'Update Bottle') : (t('whiskey.addBottle') || 'Add Bottle')}
+              {bottle ? t('common.save', 'Save') : t('common.create', 'Create')}
             </Button>
           </div>
         </form>
