@@ -47,8 +47,8 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
   const { t } = useTranslation();
 
   const items = [
-    { page: "PipeKeeper", label: t("nav.pipekeeper", "PipeKeeper"), image: MODULE_ICONS.pipekeeper, assetKey: "pipekeeper" },
-    { page: "Pipes", label: t("pipes.title", "Pipes"), image: MODULE_ICONS.pipeicon, assetKey: "pipeicon" },
+    { page: "PipeKeeper", label: t("nav.pipekeeper", "PipeKeeper"), image: "/branding/pipekeeper-logo.png?v=3", assetKey: "pipekeeper" },
+    { page: "Pipes", label: t("pipes.title", "Pipes"), image: "/branding/pipe-icon.png?v=3", assetKey: "pipeicon" },
     { page: "Tobacco", label: t("tobacco.title", "Tobacco"), icon: Leaf },
     { page: "Insights", label: t("nav.insights", "Insights"), icon: TrendingUp },
   ];
