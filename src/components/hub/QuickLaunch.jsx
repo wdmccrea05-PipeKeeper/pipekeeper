@@ -19,13 +19,12 @@ function PipeQuickIcon({ className, style }) {
       style={style}
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M4 14c0-2.2 1.8-4 4-4h3.5c1.4 0 2.5 1.1 2.5 2.5V13c0 1.7 1.3 3 3 3h3" />
-      <path d="M6 8h3.5c1.4 0 2.5 1.1 2.5 2.5V12H6a2 2 0 0 1 0-4Z" />
+      <path d="M3 12c0-1.657 1.343-3 3-3h2v-2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h2c1.657 0 3 1.343 3 3v1h-1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1v1c0 1.657-1.343 3-3 3h-2v2a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-2H6c-1.657 0-3-1.343-3-3v-1h1a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H3v-1z" />
     </svg>
   );
 }
