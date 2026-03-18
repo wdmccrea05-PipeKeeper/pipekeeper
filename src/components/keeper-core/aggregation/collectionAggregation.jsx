@@ -224,7 +224,7 @@ export async function aggregateCollection(userEmail) {
       : null;
 
     // === TOTALS ===
-    const totalItems = pipesCount + tobaccosCount + bottlesCount;
+    const totalItems = pipesCount + tobaccosCount + bottlesList.length;
     const totalValue = pipesValue + tobaccosValue + bottlesValue;
 
     return {

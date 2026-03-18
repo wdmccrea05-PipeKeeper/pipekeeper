@@ -266,7 +266,7 @@ Deno.serve(async (req) => {
     ] = await Promise.all([
       base44.entities.CollectorIntelligenceProfile?.filter?.({ user_email: me.email }).catch(() => []),
       base44.entities.Pipe?.list?.('-updated_date').catch(() => []),
-      base44.entities.Blend?.list?.('-updated_date').catch(() => []),
+      base44.entities.TobaccoBlend?.list?.('-updated_date').catch(() => []),
       base44.entities.Bottle?.list?.('-updated_date').catch(() => []),
     ]);
 
