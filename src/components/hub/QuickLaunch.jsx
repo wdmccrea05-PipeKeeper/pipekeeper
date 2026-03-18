@@ -1,26 +1,25 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, BookOpen, TrendingUp, Search } from "lucide-react";
+import {
+  Plus,
+  BookOpen,
+  TrendingUp,
+  Search,
+  PackagePlus,
+  FlaskConical,
+  Wine,
+  Pipe,
+} from "lucide-react";
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { getModuleAsset, getAssetImageStyle } from "@/components/branding/moduleAssets";
 
-function ModuleBadge({ moduleId, alt }) {
-  return (
-    <img
-      src={getModuleAsset(moduleId).src}
-      alt={alt}
-      className="w-5 h-5 object-contain bg-transparent"
-      style={getAssetImageStyle(moduleId, "small")}
-      draggable={false}
-    />
-  );
-}
-
-function SectionTitle({ moduleId, label }) {
+function SectionTitle({ icon: Icon, label }) {
   return (
     <div className="flex items-center gap-2 mb-3">
-      <ModuleBadge moduleId={moduleId} alt={label} />
+      <Icon
+        className="w-4 h-4"
+        style={{ color: "rgba(180, 140, 75, 0.85)" }}
+      />
       <h3
         className="text-xs uppercase tracking-wider"
         style={{ color: "rgba(180, 140, 75, 0.6)" }}
@@ -32,30 +31,24 @@ function SectionTitle({ moduleId, label }) {
 }
 
 function ActionCard({ action, navigate }) {
-  const renderIcon = () => {
-    if (action.moduleIcon) {
-      return <ModuleBadge moduleId={action.moduleIcon} alt={action.label} />;
-    }
-
-    const Icon = action.icon;
-    return (
-      <Icon
-        className="w-5 h-5 transition-transform group-hover:scale-110"
-        style={{ color: action.accent }}
-      />
-    );
-  };
+  const Icon = action.icon;
 
   return (
     <button
       onClick={() => navigate(action.path)}
       className="group p-4 rounded-xl text-left transition-all duration-300"
       style={{
-        background: "linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.7))",
+        background:
+          "linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.7))",
         border: "1px solid rgba(180, 140, 75, 0.15)",
       }}
     >
-      <div className="w-5 h-5 mb-2 flex items-center justify-center">{renderIcon()}</div>
+      <div className="w-5 h-5 mb-2 flex items-center justify-center">
+        <Icon
+          className="w-5 h-5 transition-transform group-hover:scale-110"
+          style={{ color: action.accent }}
+        />
+      </div>
       <p className="text-sm font-semibold text-[#E0D8C8]">{action.label}</p>
     </button>
   );
@@ -69,8 +62,9 @@ export default function QuickLaunch() {
   const pipeActions = [
     {
       label: t("quickActions.addPipe", "Add Pipe"),
-      moduleIcon: "pipekeeper",
+      icon: Pipe,
       path: "/PipeForm",
+      accent: "#D4A574",
     },
     {
       label: t("quickActions.addBlend", "Add Blend"),
@@ -95,8 +89,9 @@ export default function QuickLaunch() {
   const whiskeyActions = [
     {
       label: t("quickActions.addBottle", "Add Bottle"),
-      moduleIcon: "whiskeykeeper",
+      icon: PackagePlus,
       path: "/BottleForm",
+      accent: "#D4A574",
     },
     {
       label: t("quickActions.quickSearchBottle", "Quick Search Bottle"),
@@ -129,7 +124,7 @@ export default function QuickLaunch() {
         </h2>
 
         <div>
-          <SectionTitle moduleId="pipekeeper" label={t("nav.pipekeeper", "PipeKeeper")} />
+          <SectionTitle icon={Pipe} label={t("nav.pipekeeper", "PipeKeeper")} />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {pipeActions.map((action) => (
               <ActionCard
@@ -144,7 +139,7 @@ export default function QuickLaunch() {
         {isModuleEnabled("whiskeykeeper") ? (
           <div>
             <SectionTitle
-              moduleId="whiskeykeeper"
+              icon={FlaskConical}
               label={t("nav.whiskeykeeper", "WhiskeyKeeper")}
             />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
