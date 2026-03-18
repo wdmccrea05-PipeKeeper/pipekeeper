@@ -59,7 +59,7 @@ function SectionTitle({ icon, label }) {
           src={icon}
           alt={label}
           className="w-4 h-4 object-contain"
-          style={{ mixBlendMode: "screen" }}
+          style={{ mixBlendMode: "normal" }}
           draggable={false}
         />
       ) : (
