@@ -9,7 +9,7 @@ import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency, formatWeight } from '@/components/utils/localeFormatters';
 import { calculateCellaredOzFromLogs } from '@/components/utils/tobaccoQuantityHelpers';
-import ModuleNav from './ModuleNav';
+import PipeKeeperModuleNav from './PipeKeeperModuleNav';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import ModuleQuickLaunch from './ModuleQuickLaunch';
 import QuickSearchPipe from '@/components/ai/QuickSearchPipe';
