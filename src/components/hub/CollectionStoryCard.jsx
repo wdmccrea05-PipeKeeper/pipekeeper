@@ -23,13 +23,56 @@ const METRIC_COLORS = {
  */
 function resolveItemPhoto(item) {
   if (!item) return null;
-  if (Array.isArray(item.photos) && item.photos.length > 0) return item.photos[0];
-  if (item.logo) return item.logo;
-  if (item.photo) return item.photo;
+  
+  // Try photos array
+  if (Array.isArray(item.photos) && item.photos.length > 0 && item.photos[0]) {
+    const photo = item.photos[0];
+    return typeof photo === 'string' ? photo : null;
+  }
+  
+  // Try logo field
+  if (item.logo && typeof item.logo === 'string') {
+    return item.logo;
+  }
+  
+  // Try photo field
+  if (item.photo && typeof item.photo === 'string') {
+    return item.photo;
+  }
+  
   return null;
 }
 
 function StoryHighlightCard({ title, label, photo, onClick }) {
+  const [imageLoaded, setImageLoaded] = React.useState(false);
+  
+  React.useEffect(() => {
+    if (!photo) {
+      setImageLoaded(false);
+      return;
+    }
+    
+    // Preload image to verify it loads
+    const img = new Image();
+    img.onload = () => setImageLoaded(true);
+    img.onerror = () => {
+      console.warn('[StoryHighlightCard] Failed to load photo:', photo);
+      setImageLoaded(false);
+    };
+    img.src = photo;
+  }, [photo]);
+
+  const backgroundStyle = imageLoaded && photo
+    ? {
+        backgroundImage: `url("${photo}")`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }
+    : {
+        background: 'linear-gradient(135deg, rgba(60,40,25,0.9), rgba(40,25,15,0.95))',
+      };
+
   return (
     <button
       onClick={onClick}
@@ -39,54 +82,33 @@ function StoryHighlightCard({ title, label, photo, onClick }) {
         boxShadow: '0 12px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)',
       }}
     >
-      {/* Background image or fallback gradient */}
-      {photo && (
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url('${photo}')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            zIndex: 0,
-          }}
-        />
-      )}
-      {!photo && (
-        <div
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(135deg, rgba(60,40,25,0.9), rgba(40,25,15,0.95))',
-            zIndex: 0,
-          }}
-        />
-      )}
+      {/* Background with image or gradient */}
+      <div className="absolute inset-0" style={backgroundStyle} />
 
-      {/* Overlay */}
+      {/* Dark overlay for readability */}
       <div
         className="absolute inset-0"
         style={{
-          background: 'radial-gradient(circle at 30% 20%, rgba(180,140,100,0.25) 0%, transparent 40%), radial-gradient(circle at 100% 100%, rgba(0,0,0,0.5) 0%, transparent 50%)',
-          zIndex: 1,
+          background: 'radial-gradient(circle at 30% 20%, rgba(180,140,100,0.25) 0%, transparent 40%), radial-gradient(circle at 100% 100%, rgba(0,0,0,0.6) 0%, transparent 50%)',
         }}
       />
 
       {/* Content */}
-      <div className="absolute inset-0 flex flex-col justify-between p-5 z-20">
+      <div className="absolute inset-0 flex flex-col justify-between p-5">
         <div>
           <p
             className="text-xs uppercase tracking-wider font-bold"
-            style={{ color: 'rgba(180,140,75,0.8)' }}
+            style={{ color: 'rgba(180,140,75,0.85)' }}
           >
             {label}
           </p>
         </div>
         <div>
           <p
-            className="text-sm md:text-base font-bold line-clamp-2"
+            className="text-sm md:text-base font-bold line-clamp-3"
             style={{
               color: '#F5F1E7',
-              textShadow: '0 2px 8px rgba(0,0,0,0.7)',
+              textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 0 16px rgba(0,0,0,0.6)',
             }}
           >
             {title}
@@ -94,11 +116,11 @@ function StoryHighlightCard({ title, label, photo, onClick }) {
         </div>
       </div>
 
-      {/* Hover effect */}
+      {/* Hover glow */}
       <div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle at center, rgba(180,140,75,0.15) 0%, transparent 70%)',
+          background: 'radial-gradient(circle at center, rgba(180,140,75,0.2) 0%, transparent 70%)',
         }}
       />
     </button>
