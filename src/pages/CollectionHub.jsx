@@ -190,7 +190,7 @@ export default function CollectionHub() {
       stats = [
         { label: t('hub.bottleTypes'), value: wBottleTypes },
         ...(wTotalBottles > wBottleTypes
-          ? [{ label: t('hub.totalBottles', 'Total Bottles'), value: wTotalBottles }]
+          ? [{ label: t('hub.totalBottles'), value: wTotalBottles }]
           : []),
         {
           label: t('hub.totalValue'),
