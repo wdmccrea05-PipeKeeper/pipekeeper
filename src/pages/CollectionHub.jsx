@@ -243,6 +243,7 @@ export default function CollectionHub() {
           : module.type === "whiskey"
             ? featuredBottle?.photo
             : null,
+      module: module,
     };
   });
 
