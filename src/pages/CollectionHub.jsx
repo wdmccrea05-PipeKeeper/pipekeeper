@@ -26,7 +26,14 @@ function money(value) {
 
 function SummaryStat({ label, value, sub, color = "#D4A574" }) {
   return (
-    <div className="space-y-2">
+    <div
+      className="rounded-xl p-4 space-y-2"
+      style={{
+        background: "linear-gradient(135deg, rgba(42, 30, 22, 0.6), rgba(32, 22, 15, 0.8))",
+        border: "1px solid rgba(120, 90, 65, 0.25)",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)",
+      }}
+    >
       <p
         className="text-xs uppercase tracking-wider"
         style={{ color: "rgba(180, 140, 75, 0.6)" }}
