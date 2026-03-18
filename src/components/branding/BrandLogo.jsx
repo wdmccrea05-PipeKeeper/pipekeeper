@@ -38,7 +38,11 @@ export default function BrandLogo({
       {logoNode}
       <span
         className="font-semibold whitespace-nowrap leading-none truncate"
-        style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}
+        style={{
+          color: "#F5F1E7",
+          fontFamily: "'Georgia', serif",
+          letterSpacing: "-0.01em",
+        }}
       >
         CollectionKeeper
       </span>
