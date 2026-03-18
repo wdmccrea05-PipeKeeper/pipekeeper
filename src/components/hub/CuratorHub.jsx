@@ -9,7 +9,10 @@ import {
   buildCuratorEntryText,
 } from "@/components/keeper-core";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
-import { getModuleAsset, getAssetImageStyle } from "@/components/branding/moduleAssets";
+import {
+  getModuleAsset,
+  getAssetImageStyle,
+} from "@/components/branding/moduleAssets";
 
 export default function CuratorHub({ summary = null, recentActivities = [] }) {
   const navigate = useNavigate();
