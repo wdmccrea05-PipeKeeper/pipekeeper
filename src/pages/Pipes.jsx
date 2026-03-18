@@ -5,13 +5,13 @@ import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Grid3X3, List, Sparkles, Package2, Package, Wind, Leaf, BookOpen, TrendingUp } from "lucide-react";
+import { Plus, Search, Grid3X3, List, Sparkles, Package2, Package, Leaf, BookOpen, TrendingUp } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import ModuleNav from "@/components/modules/ModuleNav";
+import PipeKeeperModuleNav from "@/components/modules/PipeKeeperModuleNav";
 import PipeCard from "@/components/pipes/PipeCard";
 import PipeListItem from "@/components/pipes/PipeListItem";
 import PipeForm from "@/components/pipes/PipeForm";
@@ -63,13 +63,6 @@ export default function PipesPage() {
       window.history.replaceState({}, '', '/Pipes');
     }
   }, []);
-
-  const moduleNavItems = [
-    { name: t('nav.pipes') || 'Pipes', path: '/Pipes', icon: "/branding/pipe-icon.png?v=3", isImage: true },
-    { name: t('nav.tobacco') || 'Tobacco', path: '/Tobacco', icon: Leaf },
-    { name: t('nav.smokingLog') || 'Sessions', path: '/Home', icon: BookOpen },
-    { name: t('nav.insights') || 'Insights', path: '/Insights', icon: TrendingUp },
-  ];
 
   const { data: pipes = [], isLoading } = useQuery({
     queryKey: ['pipes', user?.email, sortBy],
@@ -191,7 +184,7 @@ export default function PipesPage() {
 
   return (
     <div className="space-y-6">
-      <ModuleNav items={moduleNavItems} currentPath="/Pipes" />
+      <PipeKeeperModuleNav currentPageName="Pipes" />
       
       <div className="max-w-7xl mx-auto">
         {/* Header */}
