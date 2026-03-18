@@ -9,28 +9,30 @@ import { getAIEligibleModuleIds } from '@/components/utils/moduleAccess';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const METRIC_COLORS = {
-  pipes: '#A35C5C',
-  blends: '#5A7C5A',
+  pipes: '#C87941',
+  blends: '#4A9C6A',
   bottles: '#C87941',
+  totalBottles: '#C87941',
   value: '#10B981',
 };
 
 function MetricBox({ value, label, color }) {
   return (
-    <div className="flex flex-col items-center gap-1 py-4 px-2">
+    <div className="flex flex-col items-center gap-1.5 py-4 px-2">
       <span
-        className="text-3xl sm:text-4xl font-bold tabular-nums leading-none"
+        className="text-3xl sm:text-4xl font-extrabold tabular-nums leading-none"
         style={{
           color,
-          textShadow: `0 0 18px ${color}44`,
+          textShadow: `0 0 16px ${color}50`,
           fontFamily: "'Georgia', serif",
+          WebkitTextStroke: '0.3px rgba(255,255,255,0.08)',
         }}
       >
         {value}
       </span>
       <span
-        className="text-xs uppercase tracking-widest font-medium"
-        style={{ color: 'rgba(224,216,200,0.5)', letterSpacing: '0.1em' }}
+        className="text-xs uppercase tracking-[0.1em] font-bold"
+        style={{ color: 'rgba(180,140,75,0.75)' }}
       >
         {label}
       </span>
