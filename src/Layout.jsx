@@ -188,6 +188,7 @@ function NavLink({
           className="w-4 sm:w-5 h-4 sm:h-5 object-contain flex-shrink-0 bg-transparent"
           style={{
             backgroundColor: "transparent",
+            mixBlendMode: "normal",
             opacity: isMobile ? 0.92 : isActive ? 1 : 0.78,
             filter: isActive
               ? "drop-shadow(0 1px 3px rgba(0,0,0,0.25))"

@@ -98,7 +98,7 @@ function ActionCard({ action, navigate }) {
             src={Icon}
             alt={action.label}
             className="w-5 h-5 object-contain transition-transform group-hover:scale-110"
-            style={{ mixBlendMode: "screen" }}
+            style={{ mixBlendMode: "normal" }}
             draggable={false}
           />
         ) : (
