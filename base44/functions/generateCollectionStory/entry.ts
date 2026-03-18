@@ -256,22 +256,92 @@ Deno.serve(async (req) => {
       },
       highlights: {
         mostUsedPipe: mostUsedPipe
-          ? { name: mostUsedPipe.name, id: mostUsedPipe.id, uses: pipeUsage[mostUsedPipe.id] || 0 }
+          ? {
+              id: mostUsedPipe.id,
+              name: mostUsedPipe.name,
+              recordType: 'pipe',
+              photos: mostUsedPipe.photos || [],
+              photo: mostUsedPipe.photo,
+              image: mostUsedPipe.image,
+              image_url: mostUsedPipe.image_url,
+              thumbnail: mostUsedPipe.thumbnail,
+              uses: pipeUsage[mostUsedPipe.id] || 0,
+            }
           : null,
         favoritePipe: favorites.pipe
-          ? { name: favorites.pipe.name, id: favorites.pipe.id, rating: favorites.pipe.rating }
+          ? {
+              id: favorites.pipe.id,
+              name: favorites.pipe.name,
+              recordType: 'pipe',
+              photos: favorites.pipe.photos || [],
+              photo: favorites.pipe.photo,
+              image: favorites.pipe.image,
+              image_url: favorites.pipe.image_url,
+              thumbnail: favorites.pipe.thumbnail,
+              rating: favorites.pipe.rating,
+            }
           : null,
         favoriteBlend: favorites.blend
-          ? { name: favorites.blend.name, id: favorites.blend.id, rating: favorites.blend.rating }
+          ? {
+              id: favorites.blend.id,
+              name: favorites.blend.name,
+              recordType: 'blend',
+              photos: favorites.blend.photos || [],
+              photo: favorites.blend.photo,
+              logo: favorites.blend.logo,
+              image: favorites.blend.image,
+              image_url: favorites.blend.image_url,
+              thumbnail: favorites.blend.thumbnail,
+              rating: favorites.blend.rating,
+            }
           : null,
         favoriteBottle: favorites.bottle
-          ? { name: favorites.bottle.name, id: favorites.bottle.id, rating: favorites.bottle.rating }
+          ? {
+              id: favorites.bottle.id,
+              name: favorites.bottle.name,
+              recordType: 'bottle',
+              photo: favorites.bottle.photo,
+              image: favorites.bottle.image,
+              image_url: favorites.bottle.image_url,
+              thumbnail: favorites.bottle.thumbnail,
+              rating: favorites.bottle.rating,
+            }
           : null,
         mostTastedBottle: mostTastedBottle
-          ? { name: mostTastedBottle.name, id: mostTastedBottle.id, tastings: bottleUsage[mostTastedBottle.name] || 0 }
+          ? {
+              id: mostTastedBottle.id,
+              name: mostTastedBottle.name,
+              recordType: 'bottle',
+              photo: mostTastedBottle.photo,
+              image: mostTastedBottle.image,
+              image_url: mostTastedBottle.image_url,
+              thumbnail: mostTastedBottle.thumbnail,
+              tastings: bottleUsage[mostTastedBottle.name] || 0,
+            }
           : null,
         mostValuableItem: mostValuable
-          ? { name: mostValuable.name, id: mostValuable.id, type: mostValuable.type, value: Math.round(mostValuable.value) }
+          ? (() => {
+              let fullRecord = null;
+              if (mostValuable.type === 'pipe') {
+                fullRecord = pipesList.find(p => p.id === mostValuable.id);
+              } else if (mostValuable.type === 'blend') {
+                fullRecord = blendsList.find(b => b.id === mostValuable.id);
+              } else if (mostValuable.type === 'bottle') {
+                fullRecord = bottlesList.find(b => b.id === mostValuable.id);
+              }
+              return fullRecord ? {
+                id: mostValuable.id,
+                name: mostValuable.name,
+                recordType: mostValuable.type,
+                photos: fullRecord.photos || [],
+                photo: fullRecord.photo || fullRecord.logo,
+                logo: fullRecord.logo,
+                image: fullRecord.image,
+                image_url: fullRecord.image_url,
+                thumbnail: fullRecord.thumbnail,
+                value: Math.round(mostValuable.value),
+              } : null;
+            })()
           : null,
         underusedCount: underusedPipes.length,
         dominantBlendType,
