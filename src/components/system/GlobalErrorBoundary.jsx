@@ -84,9 +84,9 @@ class GlobalErrorBoundary extends React.Component {
               {isI18nError && (
                 <div className="w-full p-3 bg-amber-900/20 border border-amber-600/30 rounded text-left">
                   <p className="text-xs text-amber-400">
-                    {translate("errorBoundary.translationErrorDetected")} <br/>
-                    {translate("errorBoundary.language")} {this.state.diagnostics?.language || 'unknown'}<br/>
-                    {translate("errorBoundary.route")} {this.state.diagnostics?.route || 'unknown'}
+                    Translation error detected. <br/>
+                    Language: {this.state.diagnostics?.language || 'unknown'}<br/>
+                    Route: {this.state.diagnostics?.route || 'unknown'}
                   </p>
                 </div>
               )}
