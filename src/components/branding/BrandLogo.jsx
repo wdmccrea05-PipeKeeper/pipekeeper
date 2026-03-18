@@ -11,32 +11,10 @@ export default function BrandLogo({
   showWordmark = true,
   compact = false,
 }) {
-  const [failed, setFailed] = useState(false);
-
   const asset = getModuleAsset("collectionkeeper");
   const sizeClass = compact ? "w-8 h-8" : "w-12 h-12";
 
-  const logoNode = failed ? (
-    <div
-      className={cn(
-        "flex items-center justify-center rounded-md flex-shrink-0",
-        sizeClass,
-        imageClassName
-      )}
-      style={{
-        background: "linear-gradient(135deg, rgba(180,140,75,0.22), rgba(120,90,55,0.28))",
-        border: "1px solid rgba(180,140,75,0.35)",
-        color: "#F5E7C8",
-        fontFamily: "'Georgia', serif",
-        fontWeight: 700,
-        letterSpacing: "-0.01em",
-      }}
-      aria-label="CollectionKeeper"
-      title="CollectionKeeper"
-    >
-      CK
-    </div>
-  ) : (
+  const logoNode = (
     <img
       src={asset.src}
       alt="CollectionKeeper"
@@ -47,7 +25,6 @@ export default function BrandLogo({
       )}
       style={getAssetImageStyle("collectionkeeper", compact ? "small" : "regular")}
       draggable={false}
-      onError={() => setFailed(true)}
     />
   );
 
