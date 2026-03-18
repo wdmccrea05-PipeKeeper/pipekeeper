@@ -40,13 +40,19 @@ function StoryHighlightCard({ title, label, photo, onClick }) {
       }}
     >
       {/* Background image or fallback gradient */}
+      {photo ? (
+        <img
+          src={photo}
+          alt={title}
+          className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => {
+            e.target.style.display = 'none';
+          }}
+        />
+      ) : null}
       <div
         className="absolute inset-0"
         style={{
-          backgroundImage: photo ? `url('${photo}')` : undefined,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
           background: !photo
             ? 'linear-gradient(135deg, rgba(60,40,25,0.9), rgba(40,25,15,0.95))'
             : undefined,
@@ -227,24 +233,37 @@ export default function CollectionStoryCard() {
 
       <Divider />
 
-      <div className="grid gap-0" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(0, 1fr))', borderColor: 'rgba(120, 90, 65, 0.2)' }}>
-        {m.pipes > 0 && <MetricBox value={m.pipes} label={t('hub.pipes', 'Pipes')} color={METRIC_COLORS.pipes} />}
-        {m.blends > 0 && <MetricBox value={m.blends} label={t('hub.blends', 'Blends')} color={METRIC_COLORS.blends} />}
-        {bottleTypes > 0 && (
-          <MetricBox
-            value={bottleTypes}
-            label={
-              totalBottles > bottleTypes
-                ? t('hub.bottleTypesShort', 'Btl. Types')
-                : t('hub.bottles', 'Bottles')
-            }
-            color={METRIC_COLORS.bottles}
-          />
-        )}
-        {totalBottles > bottleTypes && (
-          <MetricBox value={totalBottles} label={t('hub.totalBottlesShort', 'Total Btls')} color={METRIC_COLORS.totalBottles} />
-        )}
-        <MetricBox value={valueDisplay} label={t('hub.totalValueShort', 'Value')} color={METRIC_COLORS.value} />
+      <div className="px-6 py-6 relative z-10">
+        <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
+          {m.pipes > 0 && (
+            <div className="rounded-xl p-4" style={{ background: 'rgba(200, 121, 65, 0.12)', border: '1px solid rgba(200, 121, 65, 0.25)' }}>
+              <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>{t('hub.pipes', 'Pipes')}</p>
+              <p className="text-2xl font-bold mt-2" style={{ color: '#C87941' }}>{m.pipes}</p>
+            </div>
+          )}
+          {m.blends > 0 && (
+            <div className="rounded-xl p-4" style={{ background: 'rgba(74, 156, 106, 0.12)', border: '1px solid rgba(74, 156, 106, 0.25)' }}>
+              <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>{t('hub.blends', 'Blends')}</p>
+              <p className="text-2xl font-bold mt-2" style={{ color: '#4A9C6A' }}>{m.blends}</p>
+            </div>
+          )}
+          {bottleTypes > 0 && (
+            <div className="rounded-xl p-4" style={{ background: 'rgba(200, 121, 65, 0.12)', border: '1px solid rgba(200, 121, 65, 0.25)' }}>
+              <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>{totalBottles > bottleTypes ? t('hub.bottleTypesShort', 'Btl. Types') : t('hub.bottles', 'Bottles')}</p>
+              <p className="text-2xl font-bold mt-2" style={{ color: '#C87941' }}>{bottleTypes}</p>
+            </div>
+          )}
+          {totalBottles > bottleTypes && (
+            <div className="rounded-xl p-4" style={{ background: 'rgba(200, 121, 65, 0.12)', border: '1px solid rgba(200, 121, 65, 0.25)' }}>
+              <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>{t('hub.totalBottlesShort', 'Total Btls')}</p>
+              <p className="text-2xl font-bold mt-2" style={{ color: '#C87941' }}>{totalBottles}</p>
+            </div>
+          )}
+          <div className="rounded-xl p-4" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>{t('hub.totalValueShort', 'Value')}</p>
+            <p className="text-2xl font-bold mt-2" style={{ color: '#10B981' }}>{valueDisplay}</p>
+          </div>
+        </div>
       </div>
 
       <Divider />
@@ -287,10 +306,18 @@ export default function CollectionStoryCard() {
                   onClick={() => navigate(`/BottleDetail?bottleId=${encodeURIComponent(h.mostTastedBottle.id)}`)}
                 />
               )}
-            </div>
-          </div>
-        </>
-      )}
+              {h.mostValuableItem && (
+                <StoryHighlightCard
+                  label={t('hub.crownJewel', 'Crown Jewel')}
+                  title={h.mostValuableItem.name}
+                  photo={resolveItemPhoto(h.mostValuableItem)}
+                  onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(h.mostValuableItem.id)}`)}
+                />
+              )}
+              </div>
+              </div>
+              </>
+              )}
 
       <Divider />
 
