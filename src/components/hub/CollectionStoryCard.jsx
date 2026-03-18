@@ -192,8 +192,11 @@ export default function CollectionStoryCard() {
 
       <Divider />
 
-      <div className="px-6 py-5">
-        <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.78)', fontStyle: 'italic' }}>
+      <div className="px-6 py-6 relative z-10">
+        <p 
+          className="text-sm leading-relaxed" 
+          style={{ color: 'rgba(224,216,200,0.78)' }}
+        >
           {story.narrative}
         </p>
       </div>
