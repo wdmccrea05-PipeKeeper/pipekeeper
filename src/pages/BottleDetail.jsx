@@ -71,13 +71,15 @@ function InfoRow({ icon: Icon, label, value }) {
 }
 
 export default function BottleDetail() {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+   const { t } = useTranslation();
+   const navigate = useNavigate();
+   const [searchParams] = useSearchParams();
 
-  const [bottle, setBottle] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+   const [bottle, setBottle] = useState(null);
+   const [loading, setLoading] = useState(true);
+   const [error, setError] = useState('');
+   const [showTastingLog, setShowTastingLog] = useState(false);
+   const [tastingLogs, setTastingLogs] = useState([]);
 
   const bottleId = useMemo(() => {
     const raw = searchParams.get('id') || searchParams.get('bottleId') || '';
