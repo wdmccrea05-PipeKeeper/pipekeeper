@@ -1,7 +1,27 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Moon, RefreshCw, ChevronRight, Brain, Save, Wine, Pipette, FlaskConical } from "lucide-react";
+import { Sparkles, Moon, RefreshCw, ChevronRight, Brain, Save, Wine, Leaf } from "lucide-react";
+import PipeIcon from '@/components/icons/PipeIcon';
+
+function PipeBlendIcon({ className = 'w-4 h-4' }) {
+  return (
+    <span className={`inline-flex items-center ${className}`}>
+      <PipeIcon className="w-4 h-4" />
+      <Leaf className="w-3 h-3 -ml-1" />
+    </span>
+  );
+}
+
+function PipeBlendWhiskeyIcon({ className = 'w-4 h-4' }) {
+  return (
+    <span className={`inline-flex items-center ${className}`}>
+      <PipeIcon className="w-4 h-4" />
+      <Leaf className="w-3 h-3 -ml-1" />
+      <Wine className="w-3 h-3 -ml-0.5" />
+    </span>
+  );
+}
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
