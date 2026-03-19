@@ -96,21 +96,17 @@ export default function WhiskeyInsightsPage() {
       : 0;
   }, [bottles]);
 
+  // Canonical single-bottle value: collector_value > aftermarket_price > retail_price > purchase_price
+  const getBottleValue = (b) =>
+    Number(b.collector_value) ||
+    Number(b.aftermarket_price) ||
+    Number(b.retail_price) ||
+    Number(b.purchase_price) ||
+    0;
+
   const mostValuedBottle = useMemo(() => {
     if (!bottles.length) return null;
-    return bottles.reduce((max, b) => {
-      const val = Math.max(
-        Number(b.retail_price) || 0,
-        Number(b.aftermarket_price) || 0,
-        Number(b.collector_value) || 0
-      );
-      const maxVal = Math.max(
-        Number(max.retail_price) || 0,
-        Number(max.aftermarket_price) || 0,
-        Number(max.collector_value) || 0
-      );
-      return val > maxVal ? b : max;
-    });
+    return [...bottles].sort((a, b) => getBottleValue(b) - getBottleValue(a))[0];
   }, [bottles]);
 
   const oldestBottle = useMemo(() => {
@@ -321,11 +317,7 @@ export default function WhiskeyInsightsPage() {
                     <WhiskeyHighlightCard
                       title={t('insights.mostValuedBottle', 'Most Valued Bottle')}
                       value={mostValuedBottle.name}
-                      sub={formatCurrency(Math.max(
-                        Number(mostValuedBottle.retail_price) || 0,
-                        Number(mostValuedBottle.aftermarket_price) || 0,
-                        Number(mostValuedBottle.collector_value) || 0
-                      ))}
+                      sub={formatCurrency(getBottleValue(mostValuedBottle))}
                       accent="#C0392B"
                       icon={Trophy}
                       patternIndex={1}
@@ -335,11 +327,7 @@ export default function WhiskeyInsightsPage() {
                       onStory={() => setActiveStory({
                         title: t('insights.mostValuedBottle', 'Most Valued Bottle'),
                         value: mostValuedBottle.name,
-                        sub: formatCurrency(Math.max(
-                          Number(mostValuedBottle.retail_price) || 0,
-                          Number(mostValuedBottle.aftermarket_price) || 0,
-                          Number(mostValuedBottle.collector_value) || 0
-                        )),
+                        sub: formatCurrency(getBottleValue(mostValuedBottle)),
                         accent: '#C0392B',
                         icon: Trophy,
                         heroImage: mostValuedBottle.photo,
