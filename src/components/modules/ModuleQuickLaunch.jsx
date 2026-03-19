@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import PipeIcon from '@/components/icons/PipeIcon';
 
 export default function ModuleQuickLaunch({ actions = [] }) {
   const { t } = useTranslation();
@@ -39,7 +40,9 @@ export default function ModuleQuickLaunch({ actions = [] }) {
                 <img src={iconImage} alt="" className="w-7 h-7 object-contain bg-transparent" style={{ backgroundColor: 'transparent', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.25))' }} aria-hidden="true" draggable={false} />
               ) : Icon ? (
                 <Icon className="w-4 h-4" style={{ color: 'rgba(180, 140, 75, 0.95)' }} aria-hidden="true" />
-              ) : null}
+              ) : (
+                <PipeIcon className="w-5 h-5" color="rgba(180, 140, 75, 0.95)" />
+              )}
             </div>
             <span className="text-xs font-semibold leading-tight text-center" style={{ color: '#F5F1E7', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{label}</span>
           </button>
