@@ -50,7 +50,7 @@ export default function WhiskeyPage() {
   const [displayMode, setDisplayMode] = useState(() => localStorage.getItem('whiskeyDisplayMode') === 'collector');
   const [sortBy, setSortBy] = useState(() => localStorage.getItem('whiskeySortBy') || 'date');
 
-  React.useEffect(() => {
+  useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('action') === 'add') {
       setShowForm(true);
