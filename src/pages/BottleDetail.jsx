@@ -130,6 +130,35 @@ export default function BottleDetail() {
     };
   }, [bottleId, t]);
 
+  const canonicalValue = useMemo(() => {
+    if (!bottle) return 0;
+    return (
+      Number(bottle.collector_value) ||
+      Number(bottle.aftermarket_price) ||
+      Number(bottle.retail_price) ||
+      Number(bottle.purchase_price) ||
+      0
+    );
+  }, [bottle]);
+
+  const valuationSource = useMemo(() => {
+    if (!bottle) return null;
+    if (Number(bottle.collector_value) > 0) return { label: 'Collector Value', field: 'collector_value', confidence: 'high' };
+    if (Number(bottle.aftermarket_price) > 0) return { label: 'Aftermarket Price', field: 'aftermarket_price', confidence: 'medium' };
+    if (Number(bottle.retail_price) > 0) return { label: 'Retail Price', field: 'retail_price', confidence: 'medium' };
+    if (Number(bottle.purchase_price) > 0) return { label: 'Purchase Price', field: 'purchase_price', confidence: 'low' };
+    return null;
+  }, [bottle]);
+
+  const gain = useMemo(() => {
+    if (!bottle || !canonicalValue || !bottle.purchase_price) return null;
+    const pp = Number(bottle.purchase_price);
+    if (!pp || pp <= 0) return null;
+    const delta = canonicalValue - pp;
+    const pct = ((delta / pp) * 100).toFixed(1);
+    return { delta, pct };
+  }, [bottle, canonicalValue]);
+
   const displayPhoto = getBottlePhoto(bottle);
 
   if (loading) {
