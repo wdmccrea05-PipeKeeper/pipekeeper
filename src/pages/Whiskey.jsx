@@ -3,14 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Plus, BookOpen, TrendingUp, Search, Package, Grid3X3, List, Package2 } from 'lucide-react';
+import { Plus, BookOpen, TrendingUp, Search, Package, Grid3X3, List, Package2, Pencil } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import BottleCard from '@/components/whiskey/BottleCard';
 import BottleListItem from '@/components/whiskey/BottleListItem';
 import BottleForm from '@/components/whiskey/BottleForm';
-import TastingLogForm from '@/components/whiskey/TastingLog';
+import LogTastingModal from '@/components/whiskey/LogTastingModal';
 import BottleInsights from '@/components/whiskey/BottleInsights';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
 import QuickSearchBottle from '@/components/ai/QuickSearchBottle';
@@ -40,6 +40,7 @@ export default function WhiskeyPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingBottle, setEditingBottle] = useState(null);
   const [showTastingLog, setShowTastingLog] = useState(null);
+  const [editingTastingLog, setEditingTastingLog] = useState(null);
   const [shareBottle, setShareBottle] = useState(null);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [inventoryBottle, setInventoryBottle] = useState(null);
@@ -125,6 +126,11 @@ export default function WhiskeyPage() {
       setShowTastingLog(null);
       toast.success('Tasting logged!');
     },
+  });
+
+  const deleteTastingLogMutation = useMutation({
+    mutationFn: (id) => base44.entities.TastingLog.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasting-logs'] }),
   });
 
   const handleSaveBottle = (data) => {
@@ -260,16 +266,22 @@ export default function WhiskeyPage() {
         </SheetContent>
       </Sheet>
 
-      {/* Tasting Log Modal */}
-      {showTastingLog && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <TastingLogForm
-            bottle={showTastingLog}
-            onSubmit={(data) => createTastingLogMutation.mutate(data)}
-            onCancel={() => setShowTastingLog(null)}
-          />
-        </div>
-      )}
+      {/* Tasting Log Modal (create) */}
+      <LogTastingModal
+        isOpen={!!showTastingLog}
+        onClose={() => setShowTastingLog(null)}
+        bottles={showTastingLog ? [showTastingLog] : bottles}
+        user={user}
+      />
+
+      {/* Tasting Log Modal (edit) */}
+      <LogTastingModal
+        isOpen={!!editingTastingLog}
+        onClose={() => setEditingTastingLog(null)}
+        bottles={bottles}
+        user={user}
+        editLog={editingTastingLog}
+      />
 
       {/* Insights */}
       {bottles.length > 0 && (
@@ -402,6 +414,16 @@ export default function WhiskeyPage() {
                   )}
                 </div>
                 {log.notes && <p style={{ color: 'rgba(224,216,200,0.7)' }} className="text-sm mt-2">{log.notes}</p>}
+                <div className="mt-3 flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditingTastingLog(log)}
+                  >
+                    <Pencil className="w-3 h-3 mr-1" />
+                    Edit
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
