@@ -1,9 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Edit, Star, MapPin, Calendar, DollarSign, Tag, FlaskConical, TrendingUp, Sparkles, BarChart2 } from 'lucide-react';
+import { ArrowLeft, Edit, Star, MapPin, Calendar, DollarSign, Tag, FlaskConical, TrendingUp, Sparkles, BarChart2, BookOpen, Trash2, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import LogTastingModal from '@/components/whiskey/LogTastingModal';
+import { toast } from 'sonner';
 
 function getBottlePhoto(bottle) {
   if (!bottle) return null;
