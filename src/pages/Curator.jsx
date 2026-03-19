@@ -5,6 +5,9 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import CuratorWorkspace from "@/components/curator/CuratorWorkspace";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
+import { Wine, Sparkles } from "lucide-react";
+import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
