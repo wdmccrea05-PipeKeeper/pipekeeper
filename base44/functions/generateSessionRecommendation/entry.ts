@@ -324,11 +324,11 @@ Deno.serve(async (req) => {
     const recommendations = [];
 
     if (shouldInclude('pipe')) {
-      recommendations.push(buildPipeRecommendation(pipeSummaries, blendSummaries, profile));
+      recommendations.push(buildPipeRecommendation(pipeSummaries, blendSummaries, profile, mode));
     }
 
     if (shouldInclude('whiskey')) {
-      recommendations.push(buildWhiskeyRecommendation(bottleSummaries, profile));
+      recommendations.push(buildWhiskeyRecommendation(bottleSummaries, profile, mode));
     }
 
     if (
@@ -337,7 +337,7 @@ Deno.serve(async (req) => {
         (requestedModules.includes('pipe') && requestedModules.includes('whiskey')))
     ) {
       recommendations.unshift(
-        buildCombinedRecommendation(pipeSummaries, blendSummaries, bottleSummaries, profile)
+        buildCombinedRecommendation(pipeSummaries, blendSummaries, bottleSummaries, profile, mode)
       );
     }
 
