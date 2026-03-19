@@ -168,11 +168,8 @@ export default function CollectionHub() {
     0
   );
 
-  const totalBottleValue = bottles.reduce((sum, bottle) => {
-    const unitValue = Number(bottle?.average_market_value) || Number(bottle?.purchase_price) || 0;
-    const bottleCount = Number(bottle?.bottle_count) || 1;
-    return sum + unitValue * bottleCount;
-  }, 0);
+  // FIXED: use canonical value resolver — same priority as WhiskeyKeeper/WhiskeyInsights
+  const totalBottleValue = useMemo(() => sumBottleCollectionValue(bottles), [bottles]);
 
   const whiskeyBottleTypes = summary.whiskey?.bottleTypes ?? summary.whiskey?.count ?? 0;
   const whiskeyTotalBottles = summary.whiskey?.totalBottles ?? whiskeyBottleTypes;
