@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, TrendingUp, RotateCcw, PackageOpen, Leaf, Sparkles } from 'lucide-react';
+import { AlertTriangle, TrendingUp, RotateCcw, PackageOpen, Leaf, Sparkles, GlassWater, BookOpen } from 'lucide-react';
+import { MODULE_ICONS } from '@/components/branding/moduleAssets';
+
+function PipeInsightIcon({ color }) {
+  return (
+    <img
+      src={MODULE_ICONS.pipeicon}
+      alt="Pipe"
+      className="w-4 h-4 object-contain"
+      style={{ backgroundColor: 'transparent', opacity: 0.9 }}
+      draggable={false}
+    />
+  );
+}
 
 function InsightChip({ icon: Icon, label, detail, onClick, color = '#D4A574' }) {
   return (
@@ -41,7 +54,8 @@ export default function CollectionIntelligencePanel({ pipes = [], blends = [], b
       const unusedPipes = pipes.filter(p => !usedPipeIds.has(p.id));
       if (unusedPipes.length > 0) {
         generated.push({
-          icon: RotateCcw,
+          icon: null,
+          isPipeIcon: true,
           label: `${unusedPipes.length} pipe${unusedPipes.length > 1 ? 's' : ''} haven't been smoked yet`,
           detail: 'Consider adding them to your rotation',
           color: '#D4A574',
@@ -57,7 +71,8 @@ export default function CollectionIntelligencePanel({ pipes = [], blends = [], b
         const underused = pipes.filter(p => !recentlyUsedIds.has(p.id));
         if (underused.length >= 2) {
           generated.push({
-            icon: RotateCcw,
+            icon: null,
+            isPipeIcon: true,
             label: `${underused.length} pipes unused in the last 90 days`,
             detail: 'Rotating them may improve flavor separation',
             color: '#D4A574',
@@ -75,7 +90,8 @@ export default function CollectionIntelligencePanel({ pipes = [], blends = [], b
       const topPipe = pipes.find(p => p.id === topPipeId?.[0]);
       if (topPipe && topPipeId[1] > logs.length * 0.4) {
         generated.push({
-          icon: AlertTriangle,
+          icon: null,
+          isPipeIcon: true,
           label: `${topPipe.name} dominates your sessions`,
           detail: 'Rotating more pipes may preserve distinct flavor profiles',
           color: '#C09060',
@@ -89,7 +105,7 @@ export default function CollectionIntelligencePanel({ pipes = [], blends = [], b
     if (unopenedBottles.length > 0) {
       const firstUnopened = unopenedBottles[0];
       generated.push({
-        icon: PackageOpen,
+        icon: GlassWater,
         label: `${unopenedBottles.length} unopened bottle${unopenedBottles.length > 1 ? 's' : ''} in your collection`,
         detail: firstUnopened ? `${firstUnopened.name} is ready to open` : 'Ready for tasting',
         color: '#8BAA7A',
