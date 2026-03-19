@@ -640,5 +640,6 @@ export default function WhiskeyInsightsPage() {
         </div>
       )}
     </div>
+    </LockedModuleGuard>
   );
 }
