@@ -164,16 +164,31 @@ function buildPipeRecommendation(pipes: any[], blends: any[], profile: any, mode
   };
 }
 
-function buildWhiskeyRecommendation(bottles: any[], profile: any) {
+function buildWhiskeyRecommendation(bottles: any[], profile: any, mode = 'balanced') {
   const favorites = bottles.filter((b) => b.favorite);
   const highlyRated = bottles.filter((b) => b.rating >= 4);
   const valuable = [...bottles].sort((a, b) => b.collectorValue - a.collectorValue);
+  const nonFavorites = bottles.filter((b) => !b.favorite);
 
-  const chosenBottle =
-    pickRandom(favorites) ||
-    pickRandom(highlyRated) ||
-    valuable[0] ||
-    pickRandom(bottles);
+  let chosenBottle: any = null;
+
+  if (mode === 'favorites') {
+    chosenBottle = pickRandom(favorites) || pickRandom(highlyRated) || pickRandom(bottles);
+  } else if (mode === 'exploration') {
+    chosenBottle = pickRandom(nonFavorites.length > 0 ? nonFavorites : bottles);
+  } else if (mode === 'rotation') {
+    const idx = (Date.now() >> 10) % Math.max(1, bottles.length);
+    chosenBottle = bottles[idx] || pickRandom(bottles);
+  } else if (mode === 'relaxed') {
+    chosenBottle = pickRandom(favorites) || bottles[0] || null;
+  } else {
+    // balanced
+    chosenBottle =
+      pickRandom(favorites) ||
+      pickRandom(highlyRated) ||
+      valuable[0] ||
+      pickRandom(bottles);
+  }
 
   if (!chosenBottle) {
     return {
