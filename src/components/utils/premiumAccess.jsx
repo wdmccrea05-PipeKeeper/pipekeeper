@@ -26,7 +26,7 @@ const normalizeTier = (raw) => {
   if (!t) return "free";
 
   if (t === "pro") return "pro";
-  if (t === "premium") return "pro"; // Collapse Premium → Pro
+  if (t === "premium") return "premium"; // Preserve semantic distinction
 
   // Explicit legacy synonyms only — no substring matching
   if (t === "paid" || t === "plus" || t === "subscriber" || t === "subscribed") return "pro";
@@ -86,17 +86,17 @@ export function getEntitlementTier(user, subscription) {
 
 export function hasPaidAccess(user, subscription) {
   const tier = getEntitlementTier(user, subscription);
-  return tier === "pro"; // Premium collapses to Pro
+  return tier === "pro" || tier === "premium"; // Both tiers grant paid access
 }
 
 export function hasPremiumAccess(user, subscription) {
-  // Premium includes Pro
-  return hasPaidAccess(user, subscription);
+  const tier = getEntitlementTier(user, subscription);
+  return tier === "premium" || tier === "pro";
 }
 
 export function hasProAccess(user, subscription) {
   const tier = getEntitlementTier(user, subscription);
-  return tier === "pro";
+  return tier === "pro" || tier === "premium";
 }
 
 // Trial should NEVER be required to grant paid access.
@@ -128,10 +128,11 @@ export function isTrialingAccess(user, subscription) {
   return userTrial || subTrial;
 }
 
-// Optional labeling helper
+// Optional labeling helper - preserve Premium/Pro semantic distinction in UI
 export function getPlanLabel(user, subscription) {
   const tier = getEntitlementTier(user, subscription);
-  if (tier === "pro") return "Pro"; // Premium collapses to Pro
+  if (tier === "pro") return "Pro";
+  if (tier === "premium") return "Premium";
   return "Free";
 }
 
