@@ -11,12 +11,13 @@ export const MODULE_ASSETS = {
   },
 
   pipekeeper: {
-    src: "/branding/pipekeeper-logo.png?v=2",
+    // Inline SVG pipe silhouette — no external dependency, no black background
+    src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D4A574' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='5.5' cy='10' rx='2' ry='1.5'/%3E%3Cpath d='M3.5 10v4c0 1.1.9 2 2 2s2-.9 2-2v-4'/%3E%3Cpath d='M7.5 12h6'/%3E%3Cpath d='M13.5 12c1 0 2 .5 3 1.5s1.5 2.5 2 3.5'/%3E%3Ccircle cx='18.5' cy='17' r='0.8' fill='%23D4A574'/%3E%3C/svg%3E",
     label: "PipeKeeper",
   },
 
   pipeicon: {
-    src: "/branding/pipekeeper-logo.png?v=2",
+    src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D4A574' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='5.5' cy='10' rx='2' ry='1.5'/%3E%3Cpath d='M3.5 10v4c0 1.1.9 2 2 2s2-.9 2-2v-4'/%3E%3Cpath d='M7.5 12h6'/%3E%3Cpath d='M13.5 12c1 0 2 .5 3 1.5s1.5 2.5 2 3.5'/%3E%3Ccircle cx='18.5' cy='17' r='0.8' fill='%23D4A574'/%3E%3C/svg%3E",
     label: "Pipe Icon",
   },
 
