@@ -85,26 +85,26 @@ export default function BottleCard({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, rgba(44,31,22,0.96), rgba(26,18,13,0.98))',
-        border: '1px solid rgba(180,140,75,0.18)',
-        boxShadow: '0 10px 28px rgba(0,0,0,0.34)',
+        background: 'linear-gradient(135deg, rgba(50,35,24,0.98), rgba(32,22,16,1))',
+        border: '1px solid rgba(180,140,75,0.22)',
+        boxShadow: '0 10px 28px rgba(0,0,0,0.42)',
       }}
     >
-      <div className="relative h-40 bg-black/10">
-        {photo ? (
-          <img
-            src={photo}
-            alt={bottle?.name || 'Bottle'}
-            className="w-full h-40 object-contain bg-black/10"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-            <svg viewBox="0 0 24 24" className="w-10 h-10 opacity-30" fill="none" stroke="rgba(224,216,200,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M10 3h4" /><path d="M11 3v4l-3 5.5A4.5 4.5 0 0 0 11.9 19h.2A4.5 4.5 0 0 0 16 12.5L13 7V3" /><path d="M9.5 12h5" />
-            </svg>
-            <span className="text-xs text-[#E0D8C8]/45 font-medium">{t('whiskey.noPhoto') || 'No photo'}</span>
-          </div>
-        )}
+      <div className="relative h-48 bg-gradient-to-b from-[#3a2818] to-[#2a1810]">
+         {photo ? (
+           <img
+             src={photo}
+             alt={bottle?.name || 'Bottle'}
+             className="w-full h-48 object-contain"
+           />
+         ) : (
+           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+             <svg viewBox="0 0 24 24" className="w-12 h-12 opacity-40" fill="none" stroke="rgba(224,216,200,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+               <path d="M10 3h4" /><path d="M11 3v4l-3 5.5A4.5 4.5 0 0 0 11.9 19h.2A4.5 4.5 0 0 0 16 12.5L13 7V3" /><path d="M9.5 12h5" />
+             </svg>
+             <span className="text-xs text-[#E0D8C8]/55 font-medium">{t('whiskey.noPhoto') || 'No photo'}</span>
+           </div>
+         )}
 
         <div className="absolute top-3 left-3 flex flex-wrap gap-2 max-w-[85%]">
           {bottle?.type && <Badge>{bottle.type}</Badge>}
@@ -113,17 +113,17 @@ export default function BottleCard({
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
-        <div className="min-w-0">
-          <h3 className="text-lg font-bold text-[#F5F1E7] leading-snug break-words">
-            {bottle?.name || (t('whiskey.untitledBottle') || 'Untitled Bottle')}
-          </h3>
-          <p className="text-sm text-[#E0D8C8]/85 break-words mt-1.5">
-            {[bottle?.distillery, bottle?.region, bottle?.country].filter(Boolean).join(' • ') || (t('whiskey.noOriginInfo') || 'No origin details')}
-          </p>
-        </div>
+      <div className="p-5 space-y-5">
+         <div className="min-w-0">
+           <h3 className="text-lg font-bold text-[#F5F1E7] leading-snug break-words">
+             {bottle?.name || (t('whiskey.untitledBottle') || 'Untitled Bottle')}
+           </h3>
+           <p className="text-sm text-[#D8C7A6] break-words mt-1.5">
+             {[bottle?.distillery, bottle?.region, bottle?.country].filter(Boolean).join(' • ') || (t('whiskey.noOriginInfo') || 'No origin details')}
+           </p>
+         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+         <div className="grid grid-cols-2 gap-4">
           <div
             className="rounded-xl p-3"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(180,140,75,0.10)' }}
