@@ -21,6 +21,7 @@ import WhiskeyAIUpdates from '@/pages/WhiskeyAIUpdates';
 import BottleDetail from '@/pages/BottleDetail';
 import BottleFormPage from '@/pages/BottleFormPage';
 import HelpCenter from '@/pages/HelpCenter';
+import Tutorials from '@/pages/Tutorials';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
