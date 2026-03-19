@@ -550,12 +550,11 @@ export default function TonightSessionCard({
 
               <Button
                 onClick={() =>
-                  navigate(
-                    "/Curator?prompt=" +
-                      encodeURIComponent(
-                        `Tell me more about tonight's session: ${current.pipe || ""}${current.blend ? ` with ${current.blend}` : ""}${current.whiskey ? ` and ${current.whiskey}` : ""}`
-                      )
-                  )
+                  navigate("/Curator", {
+                    state: {
+                      seedPrompt: `Tell me more about tonight's session: ${current.pipe || ""}${current.blend ? ` with ${current.blend}` : ""}${current.whiskey ? ` and ${current.whiskey}` : ""}`,
+                    },
+                  })
                 }
                 size="sm"
                 className="flex-1 min-w-0"
