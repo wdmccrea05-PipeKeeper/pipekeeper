@@ -423,7 +423,7 @@ export default function WhiskeyInsightsPage() {
                           : 'Unknown'
                       }
                       accent="#10B981"
-                      icon={Zap}
+                      icon={Calendar}
                       patternIndex={2}
                       heroImage={oldestBottle.photo}
                       cardRef={(el) => { highlightRefs.current.oldest = el; }}
@@ -435,7 +435,7 @@ export default function WhiskeyInsightsPage() {
                           ? new Date(oldestBottle.purchase_date).getFullYear().toString()
                           : 'Unknown',
                         accent: '#10B981',
-                        icon: Zap,
+                        icon: Calendar,
                         heroImage: oldestBottle.photo,
                       })}
                     />
