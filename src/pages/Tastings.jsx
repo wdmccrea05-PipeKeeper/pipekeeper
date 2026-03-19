@@ -3,8 +3,11 @@ import { BookOpen, PlusCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import LogTastingModal from '@/components/whiskey/LogTastingModal';
+import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function Tastings() {
+  const { t } = useTranslation();
   const [tastings, setTastings] = useState([]);
   const [bottles, setBottles] = useState([]);
   const [selectedBottle, setSelectedBottle] = useState(null);
@@ -37,14 +40,17 @@ export default function Tastings() {
 
   return (
     <>
-      <div className="p-6 space-y-6 text-[#F5F1E7]">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold" style={{ fontFamily: "'Georgia', serif" }}>
-              Tasting Notes
-            </h1>
-            <p className="text-[#D8C7A6]/78 mt-2">{tastings.length} tastings logged</p>
-          </div>
+      <div className="space-y-6">
+        <WhiskeyKeeperModuleNav currentPageName="Tastings" />
+        
+        <div className="p-6 space-y-6 text-[#F5F1E7]">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-bold" style={{ fontFamily: "'Georgia', serif" }}>
+                {t('whiskey.tastings', 'Tasting Notes')}
+              </h1>
+              <p className="text-[#D8C7A6]/78 mt-2">{tastings.length} {t('whiskey.tastingsLogged', 'tastings logged')}</p>
+            </div>
 
           <Button
             onClick={() => {
@@ -62,7 +68,7 @@ export default function Tastings() {
           </Button>
         </div>
 
-        {tastings.length === 0 ? (
+          {tastings.length === 0 ? (
           <div
             className="rounded-2xl p-10 text-center"
             style={{
@@ -112,20 +118,24 @@ export default function Tastings() {
             ))}
           </div>
         )}
+        </div>
       </div>
 
       {showModal ? (
         <LogTastingModal
           bottle={selectedBottle}
+          bottles={bottles}
           editLog={editingTasting}
           onClose={() => {
             setShowModal(false);
             setEditingTasting(null);
+            setSelectedBottle(null);
           }}
           onSaved={async () => {
             await loadData();
             setShowModal(false);
             setEditingTasting(null);
+            setSelectedBottle(null);
           }}
         />
       ) : null}
