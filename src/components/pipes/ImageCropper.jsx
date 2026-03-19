@@ -436,7 +436,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
           </p>
         </DialogHeader>
         
-        <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 min-h-0">
+        <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 min-h-0 pb-2">
           {/* Preview Reference Frame */}
           <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-3 sm:p-4">
             <div className="flex items-center gap-2 mb-2">
@@ -607,7 +607,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
           </div>
         </div>
 
-        <DialogFooter className="flex-shrink-0 border-t mt-4 pt-4 gap-2">
+        <DialogFooter className="flex-shrink-0 border-t mt-2 pt-3 gap-2 sticky bottom-0 bg-background z-10">
           <Button variant="outline" onClick={onCancel}>
             <X className="w-4 h-4 mr-2" />
             {t("forms.cancel")}
