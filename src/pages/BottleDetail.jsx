@@ -715,12 +715,10 @@ export default function BottleDetail() {
             ))}
           </div>
           </div>
-          )}
-          </div>
 
           {/* Modals */}
           <LogTastingModal isOpen={showTastingLog} onClose={() => setShowTastingLog(false)} bottles={bottle ? [bottle] : []} user={user} />
           {editingTastingLog && <LogTastingModal isOpen={!!editingTastingLog} onClose={() => setEditingTastingLog(null)} bottles={[bottle]} user={user} editLog={editingTastingLog} />}
-        </div>
-      );
-    }
+          </div>
+          );
+          }
