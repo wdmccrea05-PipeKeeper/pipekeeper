@@ -666,8 +666,60 @@ export default function BottleDetail() {
               </Button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-}
+          </div>
+          )}
+
+          {/* Tasting History */}
+          {tastingLogs.length > 0 && (
+          <div
+          className="rounded-2xl overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, rgba(38,28,16,0.97), rgba(28,20,12,0.99))',
+            border: '1px solid rgba(180,140,75,0.22)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+          }}
+          >
+          <div className="px-6 pt-5 pb-4 border-b flex items-center gap-3" style={{ borderColor: 'rgba(180,140,75,0.1)' }}>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(180,140,75,0.12)', border: '1px solid rgba(180,140,75,0.22)' }}>
+              <BookOpen className="w-4 h-4" style={{ color: 'rgba(180,140,75,0.9)' }} />
+            </div>
+            <h3 className="text-base font-bold" style={{ color: '#F5F1E7' }}>
+              {t('whiskey.tastingHistory', 'Tasting History')}
+            </h3>
+          </div>
+          <div className="divide-y" style={{ borderColor: 'rgba(180,140,75,0.08)' }}>
+            {tastingLogs.map((log) => (
+              <div key={log.id} className="px-6 py-4 group hover:bg-white/[0.02] transition-colors">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p style={{ color: '#F5F1E7' }} className="font-semibold text-sm">
+                      {new Date(log.tasting_date).toLocaleDateString()}
+                    </p>
+                    {log.rating && (
+                      <p style={{ color: 'rgba(212,175,55,0.9)' }} className="text-sm font-semibold mt-1">
+                        ★ {Number(log.rating).toFixed(1)}/5
+                      </p>
+                    )}
+                    {log.notes && <p style={{ color: 'rgba(224,216,200,0.65)' }} className="text-xs mt-2 line-clamp-2">{log.notes}</p>}
+                  </div>
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingTastingLog(log)}>
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" style={{ color: '#D45C5C' }} onClick={() => deleteTastingMutation.mutate(log.id)}>
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          </div>
+          )}
+          </div>
+
+          {/* Modals */}
+          <LogTastingModal isOpen={showTastingLog} onClose={() => setShowTastingLog(false)} bottles={bottle ? [bottle] : []} user={user} />
+          {editingTastingLog && <LogTastingModal isOpen={!!editingTastingLog} onClose={() => setEditingTastingLog(null)} bottles={[bottle]} user={user} editLog={editingTastingLog} />}
+          );
+          }
