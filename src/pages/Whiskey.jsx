@@ -190,36 +190,35 @@ export default function WhiskeyPage() {
           {/* Gold accent top line */}
           <div className="h-[2px] w-full" style={{ background: 'linear-gradient(90deg, rgba(180,140,75,0) 0%, rgba(180,140,75,0.8) 50%, rgba(180,140,75,0) 100%)' }} />
 
-          <div className="p-6 sm:p-8">
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-              {/* Left: Title + stats */}
-              <div className="space-y-5 flex-1 min-w-0">
-                <div className="flex items-start gap-4 flex-wrap">
-                  <div className="flex-shrink-0">
-                    <img
-                      src={MODULE_ICONS.whiskeykeeper}
-                      alt="WhiskeyKeeper"
-                      className="w-12 h-12 object-contain"
-                      style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))', backgroundColor: 'transparent' }}
-                      draggable={false}
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h1
-                      className="text-3xl sm:text-4xl font-bold tracking-tight break-words"
-                      style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.6)' }}
-                    >
-                      {t('whiskeykeeper.title', 'WhiskeyKeeper')}
-                    </h1>
-                    <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.65)' }}>
-                      {t('whiskeykeeper.description', 'Track bottles, inventory, value, and tasting notes')}
-                    </p>
-                  </div>
+          <div className="p-4 sm:p-6 md:p-8">
+            <div className="flex flex-col gap-5">
+              {/* Title + Icon */}
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="flex-shrink-0 pt-0.5">
+                  <img
+                    src={MODULE_ICONS.whiskeykeeper}
+                    alt="WhiskeyKeeper"
+                    className="w-10 sm:w-12 h-10 sm:h-12 object-contain"
+                    style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))', backgroundColor: 'transparent' }}
+                    draggable={false}
+                  />
                 </div>
+                <div className="min-w-0 flex-1">
+                  <h1
+                    className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight"
+                    style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.6)' }}
+                  >
+                    {t('whiskeykeeper.title', 'WhiskeyKeeper')}
+                  </h1>
+                  <p className="text-xs sm:text-sm mt-1 text-balance" style={{ color: 'rgba(224,216,200,0.65)' }}>
+                    {t('whiskeykeeper.description', 'Track bottles, inventory, value, and tasting notes')}
+                  </p>
+                </div>
+              </div>
 
                 {/* Stats row */}
                 {bottles.length > 0 && (
-                  <div className="flex gap-3 flex-wrap">
+                  <div className="grid grid-cols-2 sm:flex sm:gap-3 sm:flex-wrap gap-2">
                     <StatBadge icon={GlassWater} label={t('hub.bottles', 'Bottles')} value={stats.count} accent="#D4A574" />
                     <StatBadge icon={BookOpen} label={t('whiskey.tastings', 'Tastings')} value={stats.tastingCount} accent="#C87941" />
                     {stats.avgRating && (
@@ -235,27 +234,27 @@ export default function WhiskeyPage() {
                     )}
                   </div>
                 )}
-              </div>
+                </div>
 
-              {/* Right: Action buttons */}
-              <div className="flex flex-wrap gap-2 items-start">
-                <WhiskeyExporter />
-                <Button onClick={() => setShowQuickSearch(true)} variant="outline" size="sm" className="text-sm">
-                  <Search className="w-4 h-4 mr-1.5" />
-                  {t('quickActions.quickSearchBottle', 'Quick Add')}
-                </Button>
-                <Button
-                  onClick={() => { setEditingBottle(null); setShowForm(true); }}
-                  size="sm"
-                  style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))', color: '#F5F1E7', border: '1px solid rgba(163,92,92,0.5)' }}
-                >
-                  <Plus className="w-4 h-4 mr-1.5" />
-                  {t('whiskey.addBottle', 'Add Bottle')}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+                {/* Right: Action buttons */}
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <WhiskeyExporter />
+                  <Button onClick={() => setShowQuickSearch(true)} variant="outline" size="sm" className="text-xs sm:text-sm whitespace-nowrap">
+                    <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
+                    {t('quickActions.quickSearchBottle', 'Quick Add')}
+                  </Button>
+                  <Button
+                    onClick={() => { setEditingBottle(null); setShowForm(true); }}
+                    size="sm"
+                    className="text-xs sm:text-sm whitespace-nowrap"
+                    style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))', color: '#F5F1E7', border: '1px solid rgba(163,92,92,0.5)' }}
+                  >
+                    <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
+                    {t('whiskey.addBottle', 'Add Bottle')}
+                  </Button>
+                </div>
+                </div>
+                </div>
 
         {/* Toolbar */}
         {bottles.length > 0 && (
