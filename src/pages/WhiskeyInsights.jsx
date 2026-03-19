@@ -1,5 +1,4 @@
 import React, { useState, useRef, useMemo, useCallback } from 'react';
-import React, { useState, useMemo, useCallback, useRef } from 'react';
 import jsPDF from 'jspdf';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import { useQuery } from '@tanstack/react-query';
