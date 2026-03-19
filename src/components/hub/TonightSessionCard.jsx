@@ -466,15 +466,8 @@ export default function TonightSessionCard({
                     color: selected ? "rgba(240,200,185,1)" : "rgba(224,216,200,0.55)",
                   }}
                 >
-                  {opt.isPipeIcon ? (
-                    <img
-                      src={MODULE_ICONS.pipeicon}
-                      alt="pipe"
-                      className="w-3 h-3 object-contain"
-                      style={{ backgroundColor: "transparent" }}
-                    />
-                  ) : opt.icon ? (
-                    <opt.icon className="w-3 h-3" />
+                  {opt.IconComponent ? (
+                    <opt.IconComponent className="w-3 h-3" />
                   ) : null}
                   {opt.label}
                 </button>
