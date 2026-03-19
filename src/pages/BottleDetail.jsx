@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Edit, Star, MapPin, Calendar, DollarSign, Tag } from 'lucide-react';
+import { ArrowLeft, Edit, Star, MapPin, Calendar, DollarSign, Tag, FlaskConical } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
@@ -299,6 +299,34 @@ export default function BottleDetail() {
                 }
               />
             </div>
+
+            {bottle.flavor_notes && (
+              <div
+                className="rounded-xl p-5"
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(180,140,75,0.14)',
+                }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <FlaskConical className="w-4 h-4" style={{ color: 'rgba(180,140,75,0.75)' }} />
+                  <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(180,140,75,0.72)' }}>
+                    Flavor Notes
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {bottle.flavor_notes.split(',').map((note, i) => note.trim() && (
+                    <span
+                      key={i}
+                      className="px-3 py-1 rounded-full text-xs font-medium"
+                      style={{ background: 'rgba(180,140,75,0.14)', border: '1px solid rgba(180,140,75,0.24)', color: 'rgba(212,180,110,1)' }}
+                    >
+                      {note.trim()}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {(bottle.notes || bottle.rating || bottle.age || bottle.abv) && (
               <div
