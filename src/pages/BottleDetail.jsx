@@ -138,6 +138,34 @@ export default function BottleDetail() {
     };
   }, [bottleId, t]);
 
+  const { data: tastingLogs = [] } = useQuery({
+    queryKey: ['tasting-logs-bottle', bottleId],
+    queryFn: async () => {
+      if (!bottleId) return [];
+      const result = await base44.entities.TastingLog.filter({ bottle_id: bottleId }, '-tasting_date');
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!bottleId,
+    staleTime: 10000,
+  });
+
+  const deleteTastingMutation = useMutation({
+    mutationFn: (id) => base44.entities.TastingLog.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasting-logs-bottle', bottleId] });
+      toast.success(t('whiskey.tastingDeleted', 'Tasting deleted'));
+    },
+  });
+
+  const updateTastingMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.TastingLog.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasting-logs-bottle', bottleId] });
+      setEditingTastingLog(null);
+      toast.success(t('whiskey.tastingUpdated', 'Tasting updated'));
+    },
+  });
+
   const canonicalValue = useMemo(() => {
     if (!bottle) return 0;
     return (
