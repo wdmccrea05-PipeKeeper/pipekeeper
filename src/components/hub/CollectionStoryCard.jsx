@@ -20,10 +20,11 @@ function resolveItemPhoto(item) {
   if (!item) return null;
 
   const candidates = [
+    item._photoResolved,
     ...(Array.isArray(item.photos) ? item.photos : []),
     item.heroImage,
-    item.logo,
     item.photo,
+    item.logo,
     item.image,
     item.image_url,
     item.thumbnail,
