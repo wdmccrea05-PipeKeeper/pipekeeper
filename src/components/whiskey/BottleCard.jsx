@@ -170,7 +170,7 @@ export default function BottleCard({
           <div className="text-xl font-bold text-[#F5F1E7] mt-1">
             {formatCurrency(totalValue)}
           </div>
-          <p className="text-xs mt-1 text-[#E0D8C8]/60 break-words">
+          <p className="text-sm text-[#E0D8C8]/78 break-words mt-1">
             {bottle?.notes
               ? bottle.notes.slice(0, 120) + (bottle.notes.length > 120 ? '…' : '')
               : (t('whiskey.noNotesYet') || 'No notes yet')}
