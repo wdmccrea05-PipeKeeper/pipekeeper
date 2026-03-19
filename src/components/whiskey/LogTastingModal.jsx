@@ -44,9 +44,11 @@ function RatingSelector({ value, onChange }) {
 
 export default function LogTastingModal({
   bottle,
+  bottles = [],
   editLog = null,
   onClose,
   onSaved,
+  isOpen = true,
 }) {
   const isEdit = Boolean(editLog);
 
@@ -73,12 +75,14 @@ export default function LogTastingModal({
   const [error, setError] = useState('');
 
   useEffect(() => {
-    setForm((prev) => ({
-      ...prev,
-      bottle_id: bottle?.id || prev.bottle_id,
-      bottle_name: bottle?.name || prev.bottle_name,
-    }));
-  }, [bottle]);
+    if (bottle) {
+      setForm((prev) => ({
+        ...prev,
+        bottle_id: bottle.id || prev.bottle_id,
+        bottle_name: bottle.name || prev.bottle_name,
+      }));
+    }
+  }, [bottle?.id]);
 
   function updateField(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -157,6 +161,32 @@ export default function LogTastingModal({
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5 space-y-5">
+          {bottles.length > 0 && (
+            <div>
+              <label className="text-sm font-medium text-[#E0D8C8] block mb-2">
+                Bottle
+              </label>
+              <select
+                value={form.bottle_id}
+                onChange={(e) => {
+                  const selected = bottles.find((b) => b.id === e.target.value);
+                  updateField('bottle_id', e.target.value);
+                  updateField('bottle_name', selected?.name || '');
+                }}
+                className="w-full rounded-lg px-3 py-2 bg-[rgba(255,255,255,0.05)] border border-[rgba(180,140,75,0.18)] text-[#F5F1E7]"
+              >
+                <option value="" className="bg-[#1A120D]">
+                  Select a bottle...
+                </option>
+                {bottles.map((b) => (
+                  <option key={b.id} value={b.id} className="bg-[#1A120D]">
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-[#E0D8C8] block mb-2">
