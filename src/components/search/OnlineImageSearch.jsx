@@ -62,31 +62,30 @@ function emptyHintForType(recordType) {
 }
 
 function normalizeResultImage(item) {
-  if (!item) return null;
+   if (!item) return null;
 
-  const candidates = [
-    item.image,
-    item.image_url,
-    item.url,
-    item.thumbnail,
-    item.thumbnail_url,
-    item.src,
-    item.original,
-    item.original_url,
-    item.full,
-    item.full_url,
-    item.media_url,
-    item.preview_url,
-    item?.image?.url,
-    item?.thumbnail?.url,
-    item?.urls?.regular,
-    item?.urls?.small,
-    item?.urls?.thumb,
-    item?.urls?.full,
-  ].filter((v) => typeof v === 'string' && v.trim());
+   const candidates = [
+     item?.urls?.regular,
+     item?.urls?.full,
+     item?.image?.url,
+     item.image,
+     item.image_url,
+     item.full_url,
+     item.original_url,
+     item.media_url,
+     item.src,
+     item.url,
+     item.original,
+     item.full,
+     item.preview_url,
+     item.thumbnail_url,
+     item.thumbnail,
+     item?.urls?.small,
+     item?.urls?.thumb,
+   ].filter((v) => typeof v === 'string' && v.trim());
 
-  return candidates[0] || null;
-}
+   return candidates[0] || null;
+ }
 
 function normalizeResults(raw) {
   if (!raw) return [];
