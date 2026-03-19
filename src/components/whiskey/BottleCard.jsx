@@ -115,10 +115,10 @@ export default function BottleCard({
 
       <div className="p-4 space-y-4">
         <div className="min-w-0">
-          <h3 className="text-xl font-bold text-[#F5F1E7] leading-tight break-words">
+          <h3 className="text-lg font-bold text-[#F5F1E7] leading-snug break-words">
             {bottle?.name || (t('whiskey.untitledBottle') || 'Untitled Bottle')}
           </h3>
-          <p className="text-sm text-[#D8C7A6]/88 break-words mt-1">
+          <p className="text-sm text-[#E0D8C8]/85 break-words mt-1.5">
             {[bottle?.distillery, bottle?.region, bottle?.country].filter(Boolean).join(' • ') || (t('whiskey.noOriginInfo') || 'No origin details')}
           </p>
         </div>
