@@ -50,13 +50,11 @@ function getHighlightRoute(highlight) {
   const id = highlight.id || highlight?._record?.id;
   const recordType = highlight.recordType || highlight?._recordType || highlight.type;
 
-  if (!id) return null;
+  if (!id || !recordType) return null;
 
   if (recordType === 'pipe') return `/PipeDetail?id=${encodeURIComponent(id)}`;
-  if (recordType === 'blend') return `/TobaccoDetail?id=${encodeURIComponent(id)}`;
-  if (recordType === 'bottle' || recordType === 'whiskey') {
-    return `/BottleDetail?id=${encodeURIComponent(id)}`;
-  }
+  if (recordType === 'blend' || recordType === 'tobacco') return `/TobaccoDetail?id=${encodeURIComponent(id)}`;
+  if (recordType === 'bottle' || recordType === 'whiskey') return `/BottleDetail?id=${encodeURIComponent(id)}`;
 
   return null;
 }
