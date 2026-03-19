@@ -91,27 +91,27 @@ const SCOPE_OPTIONS = [
   { value: "whiskeykeeper", label: "WhiskeyKeeper", icon: Wine, isPipeIcon: false },
 ];
 
-function ScopeChip({ value, label, selected, onClick, isPipeIcon, icon: Icon }) {
-  return (
-    <button
-      type="button"
-      onClick={() => onClick(value)}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
-      style={{
-        background: selected ? "rgba(163,92,92,0.2)" : "rgba(255,255,255,0.04)",
-        border: selected ? "1px solid rgba(163,92,92,0.55)" : "1px solid rgba(120,90,65,0.25)",
-        color: selected ? "rgba(240,200,185,1)" : "rgba(224,216,200,0.55)",
-      }}
-    >
-      {isPipeIcon ? (
-        <img src={MODULE_ICONS.pipeicon} alt="pipe" className="w-3 h-3 object-contain" style={{ backgroundColor: "transparent" }} />
-      ) : Icon ? (
-        <Icon className="w-3 h-3" />
-      ) : null}
-      {label}
-    </button>
-  );
-}
+function ScopeChip({ value, label, selected, onClick, isPipeIcon, icon: IconComponent }) {
+   return (
+     <button
+       type="button"
+       onClick={() => onClick(value)}
+       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+       style={{
+         background: selected ? "rgba(163,92,92,0.2)" : "rgba(255,255,255,0.04)",
+         border: selected ? "1px solid rgba(163,92,92,0.55)" : "1px solid rgba(120,90,65,0.25)",
+         color: selected ? "rgba(240,200,185,1)" : "rgba(224,216,200,0.55)",
+       }}
+     >
+       {isPipeIcon ? (
+         <PipeIcon className="w-3 h-3" color={selected ? "rgba(240,200,185,1)" : "rgba(224,216,200,0.55)"} />
+       ) : IconComponent ? (
+         <IconComponent className="w-3 h-3" />
+       ) : null}
+       {label}
+     </button>
+   );
+ }
 
 export default function Curator() {
   const { user } = useCurrentUser();
