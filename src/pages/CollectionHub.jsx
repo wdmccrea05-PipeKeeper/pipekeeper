@@ -17,6 +17,14 @@ import CollectionIntelligencePanel from "@/components/hub/CollectionIntelligence
 
 import RecentActivity from "@/components/hub/RecentActivity";
 
+function sumBottleCollectionValue(bottles) {
+  if (!Array.isArray(bottles)) return 0;
+  return bottles.reduce((sum, b) => {
+    const v = Number(b?.collector_value) || Number(b?.aftermarket_price) || Number(b?.retail_price) || Number(b?.purchase_price) || 0;
+    return sum + v;
+  }, 0);
+}
+
 function money(value) {
   return `$${Number(value || 0).toLocaleString(undefined, {
     minimumFractionDigits: 2,
