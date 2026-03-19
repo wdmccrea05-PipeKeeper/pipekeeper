@@ -1,56 +1,51 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
-type ModuleKey = 'pipe' | 'whiskey' | 'cigar' | 'coffee';
-
-function unique<T>(arr: T[]): T[] {
+function unique(arr) {
   return [...new Set(arr)];
 }
 
-function normalizeText(value: unknown): string {
+function normalizeText(value) {
   return String(value || '').trim();
 }
 
-function normalizeLower(value: unknown): string {
+function normalizeLower(value) {
   return normalizeText(value).toLowerCase();
 }
 
-function safeNumber(value: unknown, fallback = 0): number {
+function safeNumber(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
 }
 
-function pickRandom<T>(items: T[]): T | null {
+function pickRandom(items) {
   if (!Array.isArray(items) || items.length === 0) return null;
   return items[Math.floor(Math.random() * items.length)] ?? null;
 }
 
-function summarizePipe(pipe: any) {
+function summarizePipe(pipe) {
   return {
     id: pipe?.id || '',
     name: normalizeText(pipe?.name || pipe?.shape || 'Unnamed Pipe'),
     maker: normalizeText(pipe?.maker),
     shape: normalizeText(pipe?.shape),
-    material: normalizeText(pipe?.material),
-    favorite: !!pipe?.favorite,
+    favorite: !!(pipe?.is_favorite || pipe?.favorite),
     notes: normalizeText(pipe?.notes),
-    lastSmoked: pipe?.last_smoked_date || null,
   };
 }
 
-function summarizeBlend(blend: any) {
+function summarizeBlend(blend) {
   return {
     id: blend?.id || '',
     name: normalizeText(blend?.name || 'Unnamed Blend'),
     manufacturer: normalizeText(blend?.manufacturer),
     genre: normalizeText(blend?.genre || blend?.blend_type),
-    favorite: !!blend?.favorite,
+    favorite: !!(blend?.is_favorite || blend?.favorite),
     notes: normalizeText(blend?.notes),
     quantity: safeNumber(blend?.quantity, 0),
-    cellarStatus: normalizeText(blend?.cellar_status),
   };
 }
 
-function summarizeBottle(bottle: any) {
+function summarizeBottle(bottle) {
   return {
     id: bottle?.id || '',
     name: normalizeText(bottle?.name || 'Unnamed Bottle'),
@@ -58,7 +53,7 @@ function summarizeBottle(bottle: any) {
     type: normalizeText(bottle?.type || bottle?.bottle_type),
     region: normalizeText(bottle?.region),
     country: normalizeText(bottle?.country),
-    favorite: !!bottle?.favorite,
+    favorite: !!(bottle?.favorite),
     notes: normalizeText(bottle?.notes),
     rating: safeNumber(bottle?.rating, 0),
     collectorValue: safeNumber(
@@ -72,30 +67,27 @@ function summarizeBottle(bottle: any) {
   };
 }
 
-function buildPipeRecommendation(pipes: any[], blends: any[], profile: any, mode = 'balanced') {
+function buildPipeRecommendation(pipes, blends, profile, mode = 'balanced') {
   const favoritePipes = pipes.filter((p) => p.favorite);
   const favoriteBlends = blends.filter((b) => b.favorite);
 
-  let chosenPipe: any = null;
-  let chosenBlend: any = null;
+  let chosenPipe = null;
+  let chosenBlend = null;
 
   if (mode === 'favorites') {
     chosenPipe = pickRandom(favoritePipes) || pickRandom(pipes);
     chosenBlend = pickRandom(favoriteBlends) || pickRandom(blends);
   } else if (mode === 'exploration') {
-    // Pick less-used or non-favorite items
     const nonFavPipes = pipes.filter((p) => !p.favorite);
     const nonFavBlends = blends.filter((b) => !b.favorite);
     chosenPipe = pickRandom(nonFavPipes.length > 0 ? nonFavPipes : pipes);
     chosenBlend = pickRandom(nonFavBlends.length > 0 ? nonFavBlends : blends);
   } else if (mode === 'rotation') {
-    // Rotate through collection using session index seeding
     const idx = Date.now() % Math.max(1, pipes.length);
     chosenPipe = pipes[idx] || pickRandom(pipes);
-    const bidx = Date.now() % Math.max(1, blends.length);
+    const bidx = (Date.now() + 7) % Math.max(1, blends.length);
     chosenBlend = blends[bidx] || pickRandom(blends);
   } else if (mode === 'relaxed') {
-    // Prefer familiar comfortable picks
     chosenPipe = pickRandom(favoritePipes) || pipes[0] || null;
     chosenBlend = pickRandom(favoriteBlends) || blends[0] || null;
   } else {
@@ -111,32 +103,20 @@ function buildPipeRecommendation(pipes: any[], blends: any[], profile: any, mode
       summary: 'Add pipes and blends to receive tailored pipe session recommendations.',
       confidence: 'low',
       selections: [],
-      reasoning: [
-        'No pipe or blend inventory was available.',
-      ],
+      reasoning: ['No pipe or blend inventory was available.'],
     };
   }
-
-  const notes = [
-    profile?.notes,
-    profile?.pipe_notes,
-    profile?.preferred_shapes,
-    profile?.preferred_blends,
-  ]
-    .map(normalizeText)
-    .filter(Boolean);
 
   const reasoning = [
     chosenPipe ? `Selected pipe: ${chosenPipe.name}${chosenPipe.maker ? ` by ${chosenPipe.maker}` : ''}` : null,
     chosenBlend ? `Selected blend: ${chosenBlend.name}${chosenBlend.manufacturer ? ` by ${chosenBlend.manufacturer}` : ''}` : null,
-    notes.length ? 'Included collector notes and pipe-specific preferences in the recommendation.' : null,
   ].filter(Boolean);
 
   const summaryParts = [];
   if (chosenPipe) summaryParts.push(`Reach for ${chosenPipe.name}`);
   if (chosenBlend) summaryParts.push(`pair it with ${chosenBlend.name}`);
   const summary = summaryParts.length
-    ? `${summaryParts.join(' and ')} for tonight’s session.`
+    ? `${summaryParts.join(' and ')} for tonight's session.`
     : 'Use one of your favorite pipe pieces tonight.';
 
   return {
@@ -145,32 +125,20 @@ function buildPipeRecommendation(pipes: any[], blends: any[], profile: any, mode
     summary,
     confidence: chosenPipe && chosenBlend ? 'high' : 'medium',
     selections: [
-      chosenPipe
-        ? {
-            type: 'pipe',
-            id: chosenPipe.id,
-            name: chosenPipe.name,
-          }
-        : null,
-      chosenBlend
-        ? {
-            type: 'blend',
-            id: chosenBlend.id,
-            name: chosenBlend.name,
-          }
-        : null,
+      chosenPipe ? { type: 'pipe', id: chosenPipe.id, name: chosenPipe.name } : null,
+      chosenBlend ? { type: 'blend', id: chosenBlend.id, name: chosenBlend.name } : null,
     ].filter(Boolean),
     reasoning,
   };
 }
 
-function buildWhiskeyRecommendation(bottles: any[], profile: any, mode = 'balanced') {
+function buildWhiskeyRecommendation(bottles, profile, mode = 'balanced') {
   const favorites = bottles.filter((b) => b.favorite);
   const highlyRated = bottles.filter((b) => b.rating >= 4);
   const valuable = [...bottles].sort((a, b) => b.collectorValue - a.collectorValue);
   const nonFavorites = bottles.filter((b) => !b.favorite);
 
-  let chosenBottle: any = null;
+  let chosenBottle = null;
 
   if (mode === 'favorites') {
     chosenBottle = pickRandom(favorites) || pickRandom(highlyRated) || pickRandom(bottles);
@@ -201,40 +169,25 @@ function buildWhiskeyRecommendation(bottles: any[], profile: any, mode = 'balanc
     };
   }
 
-  const notes = [
-    profile?.notes,
-    profile?.whiskey_notes,
-    profile?.wine_notes,
-    profile?.preferred_regions,
-    profile?.preferred_styles,
-  ]
-    .map(normalizeText)
-    .filter(Boolean);
-
   const reasoning = [
     `Selected bottle: ${chosenBottle.name}${chosenBottle.distillery ? ` from ${chosenBottle.distillery}` : ''}`,
     chosenBottle.rating >= 4 ? 'Bottle has a strong saved rating.' : null,
-    chosenBottle.collectorValue > 0 ? 'Bottle has known value data and appears meaningful in the collection.' : null,
-    notes.length ? 'Included collector notes and whiskey-specific preferences in the recommendation.' : null,
+    chosenBottle.collectorValue > 0 ? 'Bottle has known value data.' : null,
   ].filter(Boolean);
 
   return {
     module: 'whiskey',
     title: 'Whiskey session suggestion',
-    summary: `Pour ${chosenBottle.name}${chosenBottle.type ? `, a ${chosenBottle.type}` : ''}, for tonight’s session.`,
+    summary: `Pour ${chosenBottle.name}${chosenBottle.type ? `, a ${chosenBottle.type}` : ''}, for tonight's session.`,
     confidence: chosenBottle.favorite || chosenBottle.rating >= 4 ? 'high' : 'medium',
     selections: [
-      {
-        type: 'bottle',
-        id: chosenBottle.id,
-        name: chosenBottle.name,
-      },
+      { type: 'bottle', id: chosenBottle.id, name: chosenBottle.name },
     ],
     reasoning,
   };
 }
 
-function buildCombinedRecommendation(pipes: any[], blends: any[], bottles: any[], profile: any, mode = 'balanced') {
+function buildCombinedRecommendation(pipes, blends, bottles, profile, mode = 'balanced') {
   const pipeRec = buildPipeRecommendation(pipes, blends, profile, mode);
   const whiskeyRec = buildWhiskeyRecommendation(bottles, profile, mode);
 
@@ -252,9 +205,9 @@ function buildCombinedRecommendation(pipes: any[], blends: any[], bottles: any[]
   const selections = [...(pipeRec.selections || []), ...(whiskeyRec.selections || [])];
   const reasoning = unique([...(pipeRec.reasoning || []), ...(whiskeyRec.reasoning || [])]);
 
-  const pipeName = pipeRec.selections?.find((s: any) => s.type === 'pipe')?.name;
-  const blendName = pipeRec.selections?.find((s: any) => s.type === 'blend')?.name;
-  const bottleName = whiskeyRec.selections?.find((s: any) => s.type === 'bottle')?.name;
+  const pipeName = pipeRec.selections?.find((s) => s.type === 'pipe')?.name;
+  const blendName = pipeRec.selections?.find((s) => s.type === 'blend')?.name;
+  const bottleName = whiskeyRec.selections?.find((s) => s.type === 'bottle')?.name;
 
   const summaryParts = [];
   if (pipeName) summaryParts.push(pipeName);
@@ -262,7 +215,7 @@ function buildCombinedRecommendation(pipes: any[], blends: any[], bottles: any[]
   if (bottleName) summaryParts.push(bottleName);
 
   const summary = summaryParts.length >= 2
-    ? `Tonight’s combination: ${summaryParts.join(' + ')}.`
+    ? `Tonight's combination: ${summaryParts.join(' + ')}.`
     : pipeRec.confidence !== 'low'
       ? pipeRec.summary
       : whiskeyRec.summary;
@@ -295,17 +248,12 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const requestedModules = Array.isArray(body?.modules)
-      ? unique(body.modules.map((m: unknown) => normalizeLower(m)).filter(Boolean))
+      ? unique(body.modules.map((m) => normalizeLower(m)).filter(Boolean))
       : [];
     const includeCombined = body?.includeCombined !== false;
     const mode = normalizeLower(body?.mode) || 'balanced';
 
-    const [
-      profileRows,
-      pipes,
-      blends,
-      bottles,
-    ] = await Promise.all([
+    const [profileRows, pipes, blends, bottles] = await Promise.all([
       base44.entities.CollectorIntelligenceProfile?.filter?.({ user_email: me.email }).catch(() => []),
       base44.entities.Pipe?.filter?.({ created_by: me.email }, '-updated_date', 500).catch(() => []),
       base44.entities.TobaccoBlend?.filter?.({ created_by: me.email }, '-updated_date', 500).catch(() => []),
@@ -318,7 +266,7 @@ Deno.serve(async (req) => {
     const blendSummaries = (Array.isArray(blends) ? blends : []).map(summarizeBlend);
     const bottleSummaries = (Array.isArray(bottles) ? bottles : []).map(summarizeBottle);
 
-    const shouldInclude = (module: ModuleKey) =>
+    const shouldInclude = (module) =>
       requestedModules.length === 0 || requestedModules.includes(module);
 
     const recommendations = [];
@@ -348,21 +296,12 @@ Deno.serve(async (req) => {
         pipes: pipeSummaries.length,
         blends: blendSummaries.length,
         bottles: bottleSummaries.length,
-        usedProfileNotes: !!(
-          normalizeText(profile?.notes) ||
-          normalizeText(profile?.pipe_notes) ||
-          normalizeText(profile?.whiskey_notes) ||
-          normalizeText(profile?.wine_notes)
-        ),
       },
     });
   } catch (error) {
     console.error('[generateSessionRecommendation] fatal error:', error);
     return Response.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      },
+      { success: false, error: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
