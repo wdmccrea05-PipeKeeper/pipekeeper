@@ -358,8 +358,8 @@ export default function WhiskeyPage() {
                         ) : null}
                         onClick={() => {}}
                         fallbackIcon={
-                          <div style={{ color: 'rgba(180,140,75,0.3)' }} className="text-center">
-                            <Wine className="w-12 h-12 mx-auto mb-2 opacity-40" />
+                           <div style={{ color: 'rgba(180,140,75,0.3)' }} className="text-center">
+                             <GlassWater className="w-12 h-12 mx-auto mb-2 opacity-40" />
                             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180,140,75,0.4)' }}>{t('whiskey.noPhoto', 'No photo')}</p>
                           </div>
                         }
