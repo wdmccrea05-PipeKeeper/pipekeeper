@@ -241,22 +241,28 @@ export default function BottleDetail() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
-        <Button variant="outline" onClick={() => navigate(-1)}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          {t('common.back', 'Back')}
-        </Button>
+         <Button variant="outline" onClick={() => navigate(-1)}>
+           <ArrowLeft className="w-4 h-4 mr-2" />
+           {t('common.back', 'Back')}
+         </Button>
 
-        <Button
-          onClick={() => navigate(`/BottleForm?id=${encodeURIComponent(bottle.id)}`)}
-          style={{
-            background: 'linear-gradient(135deg, rgba(163, 92, 92, 1), rgba(140, 74, 74, 1))',
-            color: '#F5F1E7',
-          }}
-        >
-          <Edit className="w-4 h-4 mr-2" />
-          {t('common.edit', 'Edit')}
-        </Button>
-      </div>
+         <div className="flex gap-2 flex-wrap">
+           <Button variant="outline" onClick={() => setShowTastingLog(true)}>
+             <BookOpen className="w-4 h-4 mr-2" />
+             {t('whiskey.recordTasting', 'Record Tasting')}
+           </Button>
+           <Button
+             onClick={() => navigate(`/BottleForm?id=${encodeURIComponent(bottle.id)}`)}
+             style={{
+               background: 'linear-gradient(135deg, rgba(163, 92, 92, 1), rgba(140, 74, 74, 1))',
+               color: '#F5F1E7',
+             }}
+           >
+             <Edit className="w-4 h-4 mr-2" />
+             {t('common.edit', 'Edit')}
+           </Button>
+         </div>
+       </div>
 
       <div
         className="rounded-2xl overflow-hidden"
