@@ -7,7 +7,14 @@ import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModu
 import { useTasteProfile } from "@/components/curator/useTasteProfile";
 import { buildAIEligibleCollection } from "@/components/utils/moduleAccess";
 import { getCollectionHubSummary, getComingSoonModules } from "@/components/keeper-core";
-import { sumBottleCollectionValue } from "@/components/utils/whiskeyValueHelpers";
+// Inline canonical bottle value sum (avoids stale module cache issues)
+function sumBottleCollectionValue(bottles) {
+  if (!Array.isArray(bottles)) return 0;
+  return bottles.reduce((sum, b) => {
+    const v = Number(b?.collector_value) || Number(b?.aftermarket_price) || Number(b?.retail_price) || Number(b?.purchase_price) || 0;
+    return sum + v;
+  }, 0);
+}
 
 import BrandLogo from "@/components/branding/BrandLogo";
 import ModuleCard from "@/components/hub/ModuleCard";
