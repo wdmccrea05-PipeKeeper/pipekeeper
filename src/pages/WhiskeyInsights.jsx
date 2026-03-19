@@ -587,35 +587,69 @@ export default function WhiskeyInsightsPage() {
                     </div>
 
                 <div className="p-4 rounded-lg" style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)' }}>
-                  <h4 className="font-semibold text-[#F5F1E7] mb-2">Tasting History</h4>
-                  <p className="text-sm text-[#D8C7A6]/80 mb-3">Export your tasting log with dates and notes</p>
-                  <button 
-                    onClick={async () => {
-                      try {
-                        const csv = [
-                          ['Date', 'Bottle', 'Notes'].join(','),
-                          ...tastingLogs.map(l => [
-                            l.tasting_date && !Number.isNaN(new Date(l.tasting_date).getTime())
-                              ? new Date(l.tasting_date).toLocaleDateString()
-                              : '',
-                            `"${l.bottle_name || ''}"`,
-                            `"${(l.notes || '').replace(/"/g, '""')}"`
-                          ].join(','))
-                        ].join('\n');
+                 <h4 className="font-semibold text-[#F5F1E7] mb-2">Tasting History</h4>
+                 <p className="text-sm text-[#D8C7A6]/80 mb-3">Export your tasting log with dates and notes</p>
+                 <div className="flex gap-2 flex-wrap">
+                 <button
+                   onClick={() => {
+                     const doc = new jsPDF();
+                     let y = 18;
+                     doc.setFontSize(16);
+                     doc.text('WhiskeyKeeper Tasting History', 14, y);
+                     y += 10;
+                     doc.setFontSize(10);
+                     tastingLogs.forEach((log, index) => {
+                       const title = log?.bottle_name || 'Untitled tasting';
+                       const date = log?.tasting_date
+                         ? new Date(log.tasting_date).toLocaleDateString()
+                         : 'Unknown date';
+                       const rating =
+                         log?.rating !== null && log?.rating !== undefined && log?.rating !== ''
+                           ? `Rating: ${log.rating}`
+                           : 'Rating: —';
+                       const notes = (log?.notes || '').trim() || 'No notes';
+                       const block = [`${index + 1}. ${title}`, `Date: ${date}`, rating, `Notes: ${notes}`, ''];
+                       block.forEach((line) => {
+                         if (y > 275) { doc.addPage(); y = 18; }
+                         doc.text(line, 14, y);
+                         y += 6;
+                       });
+                     });
+                     doc.save('whiskeykeeper-tasting-history.pdf');
+                   }}
+                   className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                   style={{ background: 'rgba(163,92,92,0.3)', color: '#F5F1E7', border: '1px solid rgba(163,92,92,0.4)' }}
+                 >
+                   Export as PDF
+                 </button>
+                 <button 
+                   onClick={async () => {
+                     try {
+                       const csv = [
+                         ['Date', 'Bottle', 'Notes'].join(','),
+                         ...tastingLogs.map(l => [
+                           l.tasting_date && !Number.isNaN(new Date(l.tasting_date).getTime())
+                             ? new Date(l.tasting_date).toLocaleDateString()
+                             : '',
+                           `"${l.bottle_name || ''}"`,
+                           `"${(l.notes || '').replace(/"/g, '""')}"`
+                         ].join(','))
+                       ].join('\n');
 
-                        const link = document.createElement('a');
-                        link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-                        link.download = `tasting-log-${new Date().toISOString().slice(0,10)}.csv`;
-                        link.click();
-                      } catch (e) {
-                        console.error('Export failed:', e);
-                      }
-                    }}
-                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                    style={{ background: 'rgba(139,92,246,0.25)', color: '#F5F1E7' }}
-                  >
-                    Export as CSV
-                  </button>
+                       const link = document.createElement('a');
+                       link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+                       link.download = `tasting-log-${new Date().toISOString().slice(0,10)}.csv`;
+                       link.click();
+                     } catch (e) {
+                       console.error('Export failed:', e);
+                     }
+                   }}
+                   className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                   style={{ background: 'rgba(139,92,246,0.25)', color: '#F5F1E7' }}
+                 >
+                   Export as CSV
+                 </button>
+                 </div>
                 </div>
               </div>
             </div>
