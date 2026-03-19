@@ -221,23 +221,22 @@ export default function TonightSessionCard({
         enabledModules,
       });
 
-      const serverRec = result?.data;
-      const usable =
-        serverRec && (serverRec.pipe || serverRec.blend || serverRec.whiskey)
-          ? serverRec
-          : fallbackRecommendation;
+      const serverData = result?.data;
+      // Backend returns {recommendations: [...]} - map to {pipe, blend, whiskey} format
+      const serverRec = mapServerRecommendation(serverData, mode, moduleScope);
+      const usable = serverRec || fallbackRecommendation;
 
       setRecommendation(usable || null);
       if (usable) setCached(mode, moduleScope, usable);
 
-      if (serverRec) {
+      if (usable) {
         setSessionHistory((prev) =>
           [
             {
-              pipe_id: serverRec.pipe_id,
-              blend_id: serverRec.blend_id,
-              whiskey_id: serverRec.whiskey_id,
-              mode: serverRec.mode || mode,
+              pipe_id: usable.pipe_id,
+              blend_id: usable.blend_id,
+              whiskey_id: usable.whiskey_id,
+              mode,
               timestamp: Date.now(),
             },
             ...prev,
