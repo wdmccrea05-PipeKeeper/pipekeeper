@@ -85,12 +85,12 @@ export default function BottleCard({
         boxShadow: '0 10px 28px rgba(0,0,0,0.34)',
       }}
     >
-      <div className="relative h-72 bg-black/20">
+      <div className="relative h-40 bg-black/10">
         {photo ? (
           <img
             src={photo}
             alt={bottle?.name || 'Bottle'}
-            className="w-full h-full object-contain"
+            className="w-full h-40 object-contain bg-black/10"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
