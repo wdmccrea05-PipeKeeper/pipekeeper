@@ -324,11 +324,26 @@ export default function TonightSessionCard({
     }
   }
 
-  // Re-generate when mode or scope changes
+  // Re-generate when mode or scope changes — always force-refresh on explicit user selection change
+  // We track an "initialized" ref to only use cache on the very first load (not on user-driven changes)
+  const initializedRef = React.useRef(false);
+  const prevModeRef = React.useRef(mode);
+  const prevScopeRef = React.useRef(moduleScope);
+
   useEffect(() => {
     if (!hasData) return;
+    const modeChanged = prevModeRef.current !== mode;
+    const scopeChanged = prevScopeRef.current !== moduleScope;
+    prevModeRef.current = mode;
+    prevScopeRef.current = moduleScope;
+
+    // Force refresh when user explicitly changes mode or scope
+    // Only use cache on first-ever load
+    const forceRefresh = initializedRef.current && (modeChanged || scopeChanged);
+    initializedRef.current = true;
+
     setRecommendation(null);
-    generateRecommendation(false);
+    generateRecommendation(forceRefresh);
   }, [hasData, mode, moduleScope, pipes.length, blends.length, bottles.length]);
 
   if (!hasData) return null;
