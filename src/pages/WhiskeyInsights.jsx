@@ -84,13 +84,8 @@ export default function WhiskeyInsightsPage() {
     };
   }, [bottles]);
 
-  const totalValue = useMemo(() => {
-    return Math.max(
-      collectionValue.retail,
-      collectionValue.aftermarket,
-      collectionValue.collector
-    );
-  }, [collectionValue]);
+  // FIXED: sum per-bottle canonical values, not Math.max across aggregates
+  const totalValue = useMemo(() => sumBottleCollectionValue(bottles), [bottles]);
 
   const averageRating = useMemo(() => {
     const rated = bottles.filter(b => b.rating);
@@ -265,6 +260,7 @@ export default function WhiskeyInsightsPage() {
   };
 
   return (
+    <LockedModuleGuard moduleKey="whiskeykeeper">
     <div className="space-y-6">
       <WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" />
 
