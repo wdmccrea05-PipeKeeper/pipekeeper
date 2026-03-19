@@ -307,9 +307,9 @@ Deno.serve(async (req) => {
       bottles,
     ] = await Promise.all([
       base44.entities.CollectorIntelligenceProfile?.filter?.({ user_email: me.email }).catch(() => []),
-      base44.entities.Pipe?.list?.('-updated_date').catch(() => []),
-      base44.entities.TobaccoBlend?.list?.('-updated_date').catch(() => []),
-      base44.entities.Bottle?.list?.('-updated_date').catch(() => []),
+      base44.entities.Pipe?.filter?.({ created_by: me.email }, '-updated_date', 500).catch(() => []),
+      base44.entities.TobaccoBlend?.filter?.({ created_by: me.email }, '-updated_date', 500).catch(() => []),
+      base44.entities.Bottle?.filter?.({ created_by: me.email }, '-updated_date', 500).catch(() => []),
     ]);
 
     const profile = Array.isArray(profileRows) && profileRows.length > 0 ? profileRows[0] : {};
