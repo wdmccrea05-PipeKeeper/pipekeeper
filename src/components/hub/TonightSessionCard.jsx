@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Moon, RefreshCw, ChevronRight, Brain, Save, Wine, Pipette, FlaskConical } from "lucide-react";
