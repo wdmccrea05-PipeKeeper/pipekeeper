@@ -211,18 +211,28 @@ export default function CollectionStoryCard({ pipes = [], blends = [], bottles =
   }
 
   // Fallback highlights from collection data if story doesn't provide them
-  // Attach recordType so routing works correctly
+  // Attach recordType so routing works correctly, and enrich with all photo fields
   const fallbackMostUsedPipe = (() => {
-    const p = pipes.find((p) => Array.isArray(p?.photos) && p.photos.length > 0) || pipes[0];
-    return p ? { ...p, recordType: 'pipe' } : null;
+    const p = pipes.find((p) => Array.isArray(p?.photos) && p.photos.length > 0)
+      || pipes.find((p) => p?.photo)
+      || pipes[0];
+    if (!p) return null;
+    return { ...p, recordType: 'pipe', _photoResolved: p.photos?.[0] || p.photo || p.image || p.image_url || null };
   })();
   const fallbackFavoriteBlend = (() => {
-    const b = blends.find((b) => b?.is_favorite) || blends[0];
-    return b ? { ...b, recordType: 'blend' } : null;
+    const b = blends.find((b) => b?.is_favorite && (b.photo || b.logo || (Array.isArray(b.photos) && b.photos.length > 0)))
+      || blends.find((b) => b?.is_favorite)
+      || blends.find((b) => b?.photo || b?.logo)
+      || blends[0];
+    if (!b) return null;
+    return { ...b, recordType: 'blend', _photoResolved: b.photos?.[0] || b.photo || b.logo || b.image || b.image_url || null };
   })();
   const fallbackMostTastedBottle = (() => {
-    const b = bottles.find((b) => b?.photo) || bottles[0];
-    return b ? { ...b, recordType: 'bottle' } : null;
+    const b = bottles.find((b) => b?.photo || b?.image || b?.image_url)
+      || bottles.find((b) => b?.favorite)
+      || bottles[0];
+    if (!b) return null;
+    return { ...b, recordType: 'bottle', _photoResolved: b.photos?.[0] || b.photo || b.image || b.image_url || null };
   })();
 
   if (loading) {
