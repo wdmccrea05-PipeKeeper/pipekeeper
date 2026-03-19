@@ -341,7 +341,7 @@ export default function WhiskeyPage() {
               {filteredBottles.map((bottle) => {
                 if (displayMode && viewMode === 'grid') {
                   return (
-                    <a key={bottle.id} href={createPageUrl(`BottleDetail?id=${encodeURIComponent(bottle.id)}`)}>
+                    <Link key={bottle.id} to={`/BottleDetail?id=${encodeURIComponent(bottle.id)}`}>
                       <CollectorDisplayCard
                         image={bottle.photo || bottle.image || bottle.image_url}
                         title={bottle.name}
@@ -362,15 +362,15 @@ export default function WhiskeyPage() {
                             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180,140,75,0.4)' }}>{t('whiskey.noPhoto', 'No photo')}</p>
                           </div>
                         }
-                      />
-                    </a>
-                  );
-                } else if (viewMode === 'grid') {
-                  return (
-                    <div key={bottle.id} className="space-y-2">
-                      <a href={createPageUrl(`BottleDetail?id=${encodeURIComponent(bottle.id)}`)}>
+                        />
+                        </Link>
+                        );
+                        } else if (viewMode === 'grid') {
+                        return (
+                        <div key={bottle.id} className="space-y-2">
+                        <Link to={`/BottleDetail?id=${encodeURIComponent(bottle.id)}`}>
                         <BottleCard bottle={bottle} onClick={() => {}} />
-                      </a>
+                        </Link>
                       <div className="flex gap-2 flex-wrap">
                         <Button onClick={() => setShowTastingLog(bottle)} variant="outline" size="sm" className="flex-1">
                           <BookOpen className="w-3 h-3 mr-1" />
@@ -384,10 +384,10 @@ export default function WhiskeyPage() {
                     </div>
                   );
                 } else {
-                  return (
-                    <a key={bottle.id} href={createPageUrl(`BottleDetail?id=${encodeURIComponent(bottle.id)}`)}>
+                   return (
+                    <Link key={bottle.id} to={`/BottleDetail?id=${encodeURIComponent(bottle.id)}`}>
                       <BottleListItem bottle={bottle} onClick={() => {}} />
-                    </a>
+                    </Link>
                   );
                 }
               })}
