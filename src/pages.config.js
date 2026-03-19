@@ -155,7 +155,6 @@ export const PAGES = {
     "WhiskeyAnalytics": WhiskeyAnalytics,
     "WhiskeyInsights": WhiskeyInsights,
     "WhiskeyKeeper": WhiskeyKeeper,
-    "index": index,
 }
 
 export const pagesConfig = {
