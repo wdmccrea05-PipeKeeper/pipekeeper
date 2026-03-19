@@ -43,18 +43,31 @@ function CommunityPageInner() {
   const { user, isLoading: userLoading, hasPaid } = useCurrentUser();
 
   const { data: userProfile, isLoading: profileLoading, isFetching: profileFetching } = useQuery({
+    // Key must match Profile page so cache is shared and invalidated together
     queryKey: ['user-profile', user?.id, user?.email],
     queryFn: async () => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
-      const foundProfile = profiles[0] || null;
+      const byEmail = await base44.entities.UserProfile.filter({ user_email: user?.email }).catch(() => []);
+      const byCreated = await base44.entities.UserProfile.filter({ created_by: user?.email }).catch(() => []);
+      // Deduplicate and pick most recently updated
+      const seen = new Set();
+      const all = [...byEmail, ...byCreated].filter(r => {
+        if (!r?.id || seen.has(r.id)) return false;
+        seen.add(r.id);
+        return true;
+      });
+      const sorted = all.sort((a, b) => {
+        const ad = Date.parse(a?.updated_date || a?.created_date || '') || 0;
+        const bd = Date.parse(b?.updated_date || b?.created_date || '') || 0;
+        return bd - ad;
+      });
+      const foundProfile = sorted[0] || null;
       setProfile(foundProfile);
       return foundProfile;
     },
     enabled: !!user?.email,
-    // Short staleTime so messaging toggle changes appear promptly after visiting Profile
-    staleTime: 5_000,
+    staleTime: 0,       // always refetch — messaging toggle must reflect latest saved state
     gcTime: 60_000,
-    refetchOnMount: true,
+    refetchOnMount: 'always',
     refetchOnWindowFocus: true,
   });
 
