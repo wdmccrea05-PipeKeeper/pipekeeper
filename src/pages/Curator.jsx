@@ -134,6 +134,11 @@ export default function Curator() {
     return location?.state?.scope || "all";
   });
 
+  // Force message clear and context update when scope changes
+  const handleScopeChange = useCallback((newScope) => {
+    setCuratorScope(newScope);
+  }, []);
+
   const { data: pipes = [] } = useQuery({
     queryKey: ["pipes", user?.email],
     queryFn: async () => {
