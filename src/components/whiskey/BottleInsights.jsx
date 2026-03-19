@@ -83,24 +83,24 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
   }, [bottles, tastingLogs]);
 
   const StatCard = ({ icon: Icon, label, value, accent = '#A35C5C' }) => (
-    <div
-      className="rounded-xl p-4"
-      style={{
-        background: `rgba(163, 92, 92, 0.1)`,
-        border: `1px solid ${accent}30`,
-      }}
-    >
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className="w-4 h-4" style={{ color: accent }} />
-        <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(224,216,200,0.6)' }}>
-          {label}
-        </p>
-      </div>
-      <p style={{ color: '#F5F1E7' }} className="text-2xl font-bold">
-        {value || '—'}
-      </p>
-    </div>
-  );
+     <div
+       className="rounded-xl p-4"
+       style={{
+         background: `rgba(163, 92, 92, 0.1)`,
+         border: `1px solid ${accent}40`,
+       }}
+     >
+       <div className="flex items-center gap-2 mb-2">
+         <Icon className="w-4 h-4" style={{ color: accent }} />
+         <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(224,216,200,0.8)' }}>
+           {label}
+         </p>
+       </div>
+       <p style={{ color: '#F5F1E7' }} className="text-2xl font-bold">
+         {value || '—'}
+       </p>
+     </div>
+   );
 
   return (
     <div className="space-y-6">
