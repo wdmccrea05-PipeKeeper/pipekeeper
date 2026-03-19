@@ -22,15 +22,25 @@ export default function TastingsPage() {
    const [editNotes, setEditNotes] = useState('');
    const [showTastingLog, setShowTastingLog] = useState(false);
 
-  const { data: tastingLogs = [] } = useQuery({
-    queryKey: ['tasting-logs', user?.email],
-    queryFn: async () => {
-      const result = await base44.entities.TastingLog.filter({ created_by: user?.email }, '-tasting_date', 100);
-      return Array.isArray(result) ? result : [];
-    },
-    enabled: !!user?.email,
-    staleTime: 10000,
-  });
+  const { data: bottles = [] } = useQuery({
+     queryKey: ['bottles', user?.email],
+     queryFn: async () => {
+       const result = await base44.entities.Bottle.filter({ created_by: user?.email });
+       return Array.isArray(result) ? result : [];
+     },
+     enabled: !!user?.email,
+     staleTime: 10000,
+   });
+
+   const { data: tastingLogs = [] } = useQuery({
+     queryKey: ['tasting-logs', user?.email],
+     queryFn: async () => {
+       const result = await base44.entities.TastingLog.filter({ created_by: user?.email }, '-tasting_date', 100);
+       return Array.isArray(result) ? result : [];
+     },
+     enabled: !!user?.email,
+     staleTime: 10000,
+   });
 
   const updateTastingMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.TastingLog.update(id, data),
