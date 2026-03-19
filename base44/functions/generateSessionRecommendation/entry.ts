@@ -234,9 +234,9 @@ function buildWhiskeyRecommendation(bottles: any[], profile: any, mode = 'balanc
   };
 }
 
-function buildCombinedRecommendation(pipes: any[], blends: any[], bottles: any[], profile: any) {
-  const pipeRec = buildPipeRecommendation(pipes, blends, profile);
-  const whiskeyRec = buildWhiskeyRecommendation(bottles, profile);
+function buildCombinedRecommendation(pipes: any[], blends: any[], bottles: any[], profile: any, mode = 'balanced') {
+  const pipeRec = buildPipeRecommendation(pipes, blends, profile, mode);
+  const whiskeyRec = buildWhiskeyRecommendation(bottles, profile, mode);
 
   if (pipeRec.confidence === 'low' && whiskeyRec.confidence === 'low') {
     return {
