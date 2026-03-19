@@ -326,9 +326,9 @@ export default function TonightSessionCard({
 
   // Re-generate when mode or scope changes — always force-refresh on explicit user selection change
   // We track an "initialized" ref to only use cache on the very first load (not on user-driven changes)
-  const initializedRef = React.useRef(false);
-  const prevModeRef = React.useRef(mode);
-  const prevScopeRef = React.useRef(moduleScope);
+  const initializedRef = useRef(false);
+  const prevModeRef = useRef(mode);
+  const prevScopeRef = useRef(moduleScope);
 
   useEffect(() => {
     if (!hasData) return;
