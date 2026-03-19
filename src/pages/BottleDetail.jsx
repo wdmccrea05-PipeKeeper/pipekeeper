@@ -419,6 +419,200 @@ export default function BottleDetail() {
           </div>
         </div>
       </div>
+
+      {/* Valuation Intelligence Card */}
+      {canonicalValue > 0 && (
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, rgba(38,28,16,0.97), rgba(28,20,12,0.99))',
+            border: '1px solid rgba(16,185,129,0.25)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+          }}
+        >
+          <div className="px-6 pt-5 pb-4 border-b flex items-center gap-3" style={{ borderColor: 'rgba(16,185,129,0.12)' }}>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.22)' }}>
+              <TrendingUp className="w-4 h-4" style={{ color: '#10B981' }} />
+            </div>
+            <div>
+              <h3 className="text-base font-bold" style={{ color: '#F5F1E7' }}>
+                {t('whiskey.valuationCard', 'Valuation')}
+              </h3>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
+                {t('whiskey.valuationSub', 'Estimated value from your collection data')}
+              </p>
+            </div>
+          </div>
+          <div className="px-6 py-5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="rounded-xl p-4" style={{ background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.15)' }}>
+                <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(16,185,129,0.7)' }}>
+                  {valuationSource?.label || t('whiskey.estimatedValue', 'Estimated Value')}
+                </p>
+                <p className="text-3xl font-bold" style={{ color: '#10B981', fontFamily: "'Georgia', serif" }}>
+                  {formatCurrency(canonicalValue)}
+                </p>
+                {valuationSource && (
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <div
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{ background: valuationSource.confidence === 'high' ? '#10B981' : valuationSource.confidence === 'medium' ? '#F59E0B' : '#6B7280' }}
+                    />
+                    <p className="text-xs capitalize" style={{ color: 'rgba(224,216,200,0.5)' }}>
+                      {valuationSource.confidence} {t('whiskey.confidence', 'confidence')}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {bottle.purchase_price && Number(bottle.purchase_price) > 0 && (
+                <div className="rounded-xl p-4" style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.15)' }}>
+                  <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(180,140,75,0.7)' }}>
+                    {t('whiskey.purchasePrice', 'Purchase Price')}
+                  </p>
+                  <p className="text-2xl font-bold" style={{ color: '#D4A574', fontFamily: "'Georgia', serif" }}>
+                    {formatCurrency(bottle.purchase_price)}
+                  </p>
+                </div>
+              )}
+
+              {gain && (
+                <div
+                  className="rounded-xl p-4"
+                  style={{
+                    background: gain.delta >= 0 ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.07)',
+                    border: `1px solid ${gain.delta >= 0 ? 'rgba(16,185,129,0.18)' : 'rgba(239,68,68,0.18)'}`,
+                  }}
+                >
+                  <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(180,140,75,0.7)' }}>
+                    {t('whiskey.gainLoss', 'Gain / Loss')}
+                  </p>
+                  <p
+                    className="text-2xl font-bold"
+                    style={{ color: gain.delta >= 0 ? '#10B981' : '#EF4444', fontFamily: "'Georgia', serif" }}
+                  >
+                    {gain.delta >= 0 ? '+' : ''}{formatCurrency(gain.delta)}
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.5)' }}>
+                    {gain.pct >= 0 ? '+' : ''}{gain.pct}% vs purchase
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {bottle.value_source_summary && (
+              <p className="text-xs mt-4 leading-relaxed" style={{ color: 'rgba(224,216,200,0.45)' }}>
+                {bottle.value_source_summary}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Pairing & Tasting Intelligence Card */}
+      {(bottle.flavor_notes || bottle.notes || bottle.type) && (
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, rgba(38,24,14,0.97), rgba(28,18,12,0.99))',
+            border: '1px solid rgba(180,140,75,0.22)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+          }}
+        >
+          <div className="px-6 pt-5 pb-4 border-b flex items-center gap-3" style={{ borderColor: 'rgba(180,140,75,0.1)' }}>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(180,140,75,0.12)', border: '1px solid rgba(180,140,75,0.22)' }}>
+              <Sparkles className="w-4 h-4" style={{ color: 'rgba(180,140,75,0.9)' }} />
+            </div>
+            <div>
+              <h3 className="text-base font-bold" style={{ color: '#F5F1E7' }}>
+                {t('whiskey.pairingCard', 'Pairing & Tasting Intelligence')}
+              </h3>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
+                {t('whiskey.pairingSub', 'Flavor context and serving suggestions')}
+              </p>
+            </div>
+          </div>
+          <div className="px-6 py-5 space-y-4">
+            {bottle.type && (
+              <div>
+                <p className="text-xs uppercase tracking-wider mb-2 font-semibold" style={{ color: 'rgba(180,140,75,0.65)' }}>
+                  {t('whiskey.styleProfile', 'Style Profile')}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1.5 rounded-full text-xs font-semibold" style={{ background: 'rgba(180,140,75,0.14)', border: '1px solid rgba(180,140,75,0.24)', color: '#D4A574' }}>
+                    {bottle.type}
+                  </span>
+                  {bottle.region && (
+                    <span className="px-3 py-1.5 rounded-full text-xs font-semibold" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.16)', color: 'rgba(212,180,110,0.8)' }}>
+                      {bottle.region}
+                    </span>
+                  )}
+                  {bottle.country && (
+                    <span className="px-3 py-1.5 rounded-full text-xs font-semibold" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.16)', color: 'rgba(212,180,110,0.8)' }}>
+                      {bottle.country}
+                    </span>
+                  )}
+                  {bottle.age && (
+                    <span className="px-3 py-1.5 rounded-full text-xs font-semibold" style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37' }}>
+                      {bottle.age}yr
+                    </span>
+                  )}
+                  {bottle.abv && (
+                    <span className="px-3 py-1.5 rounded-full text-xs font-semibold" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.16)', color: 'rgba(212,180,110,0.8)' }}>
+                      {bottle.abv}% ABV
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {bottle.flavor_notes && (
+              <div>
+                <p className="text-xs uppercase tracking-wider mb-2 font-semibold" style={{ color: 'rgba(180,140,75,0.65)' }}>
+                  {t('whiskey.flavorNotes', 'Flavor Notes')}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {bottle.flavor_notes.split(',').map((note, i) => note.trim() && (
+                    <span key={i} className="px-3 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.22)', color: 'rgba(196,180,240,0.9)' }}>
+                      {note.trim()}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <p className="text-xs uppercase tracking-wider mb-2 font-semibold" style={{ color: 'rgba(180,140,75,0.65)' }}>
+                {t('whiskey.servingSuggestions', 'Serving Suggestions')}
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { label: 'Neat', desc: 'Full flavour expression at room temperature', accent: '#D4A574' },
+                  { label: 'With Ice', desc: 'Opens lighter notes as it dilutes', accent: '#74A5D4' },
+                  { label: 'With Water', desc: 'A few drops can unlock hidden complexity', accent: '#7AAA68' },
+                ].map((s) => (
+                  <div key={s.label} className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.1)' }}>
+                    <p className="text-xs font-bold mb-1" style={{ color: s.accent }}>{s.label}</p>
+                    <p className="text-xs leading-relaxed" style={{ color: 'rgba(224,216,200,0.58)' }}>{s.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Button
+                onClick={() => navigate(`/Curator?prompt=${encodeURIComponent(`Tell me more about ${bottle.name}${bottle.type ? `, a ${bottle.type}` : ''}. What pairs well with it and when should I open it?`)}`)}
+                size="sm"
+                className="w-full"
+                style={{ background: 'linear-gradient(135deg, rgba(139,58,58,0.85), rgba(109,46,46,1))', border: '1px solid rgba(163,92,92,0.4)', color: '#F5F1E7' }}
+              >
+                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                {t('whiskey.askCurator', 'Ask Curator about this bottle')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
