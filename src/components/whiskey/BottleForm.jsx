@@ -188,15 +188,21 @@ export default function BottleForm({
         onClose={() => setShowOnlineSearch(false)}
       />
 
+      {/* Mobile-safe layout: flex-col so footer stays visible */}
       <div
-        className="w-full max-w-2xl rounded-2xl p-6 space-y-6"
+        className="w-full max-w-2xl rounded-2xl flex flex-col"
         style={{
           background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.95), rgba(31, 21, 16, 0.98))',
           border: '1px solid rgba(180, 140, 75, 0.25)',
+          maxHeight: '90vh',
         }}
       >
-        <div className="flex items-center justify-between">
-          <h2 style={{ color: '#F5F1E7' }} className="text-2xl font-bold">
+        {/* Header — sticky, never scrolls away */}
+        <div
+          className="shrink-0 flex items-center justify-between px-6 py-4 border-b"
+          style={{ borderColor: 'rgba(180,140,75,0.18)' }}
+        >
+          <h2 style={{ color: '#F5F1E7' }} className="text-xl font-bold">
             {bottle
               ? t('whiskey.editBottle', 'Edit Bottle')
               : t('whiskey.addBottle', 'Add Bottle')}
@@ -210,157 +216,165 @@ export default function BottleForm({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">
-              {t('whiskey.bottleType', 'Bottle Type')} *
-            </label>
-            <Select
-              value={formData.bottle_type}
-              onValueChange={(value) => handleChange('bottle_type', value)}
-            >
-              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="whiskey">
-                  {t('whiskey.whiskeyBottle', 'Whiskey Bottle')}
-                </SelectItem>
-                <SelectItem value="wine">
-                  {t('whiskey.wineBottle', 'Wine Bottle')}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="min-w-0">
+        {/* Scrollable body */}
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
+          <form id="bottle-form" onSubmit={handleSubmit} className="space-y-4">
+            <div>
               <label className="text-sm text-[#D8C7A6] block mb-2">
-                {t('whiskey.name', 'Name')} *
+                {t('whiskey.bottleType', 'Bottle Type')} *
               </label>
-              <Input
-                value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
-                placeholder={t('whiskey.bottleNamePlaceholder', 'Bottle name')}
-                required
-                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-              />
+              <Select
+                value={formData.bottle_type}
+                onValueChange={(value) => handleChange('bottle_type', value)}
+              >
+                <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="whiskey">
+                    {t('whiskey.whiskeyBottle', 'Whiskey Bottle')}
+                  </SelectItem>
+                  <SelectItem value="wine">
+                    {t('whiskey.wineBottle', 'Wine Bottle')}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">
-                {formData.bottle_type === 'wine'
-                  ? t('wine.winery', 'Winery')
-                  : t('whiskey.distillery', 'Distillery')}
-              </label>
-              <Input
-                value={formData.distillery}
-                onChange={(e) => handleChange('distillery', e.target.value)}
-                placeholder={
-                  formData.bottle_type === 'wine'
-                    ? t('wine.wineryPlaceholder', 'Winery name')
-                    : t('whiskey.distilleryPlaceholder', 'Distillery name')
-                }
-                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">
-                {t('whiskey.region', 'Region')}
-              </label>
-              <Input
-                value={formData.region}
-                onChange={(e) => handleChange('region', e.target.value)}
-                placeholder={t('whiskey.regionPlaceholder', 'e.g., Islay, Speyside')}
-                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-              />
-            </div>
-
-            <div className="min-w-0">
-              <label className="text-sm text-[#D8C7A6] block mb-2">
-                {t('whiskey.country', 'Country')}
-              </label>
-              <Input
-                value={formData.country}
-                onChange={(e) => handleChange('country', e.target.value)}
-                placeholder={t('whiskey.countryPlaceholder', 'e.g., Scotland, USA')}
-                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">
-              {t('whiskey.photo', 'Bottle Photo')}
-            </label>
-
-            {photoPreview ? (
-              <div className="relative w-full h-72 sm:h-80 rounded-xl overflow-hidden border border-[rgba(180,140,75,0.2)] mb-3 bg-black/20">
-                <img
-                  src={photoPreview}
-                  alt={t('whiskey.photoPreview', 'Bottle preview')}
-                  className="w-full h-full object-contain"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="min-w-0">
+                <label className="text-sm text-[#D8C7A6] block mb-2">
+                  {t('whiskey.name', 'Name')} *
+                </label>
+                <Input
+                  value={formData.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  placeholder={t('whiskey.bottleNamePlaceholder', 'Bottle name')}
+                  required
+                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                 />
-                <button
-                  type="button"
-                  onClick={() => commitPhoto('')}
-                  className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-md"
-                >
-                  <X className="w-4 h-4" />
-                </button>
               </div>
-            ) : null}
 
-            <PhotoUploader
-              onPhotosSelected={handlePhotoFilesSelected}
-              existingPhotos={photoPreview ? [photoPreview] : []}
-              maxPhotos={1}
-              onSearchOnlineClick={() => setShowOnlineSearch(true)}
-              showSearchOption={true}
-              recordType="bottle"
-              recordData={bottleSearchContext}
-            />
+              <div className="min-w-0">
+                <label className="text-sm text-[#D8C7A6] block mb-2">
+                  {formData.bottle_type === 'wine'
+                    ? t('wine.winery', 'Winery')
+                    : t('whiskey.distillery', 'Distillery')}
+                </label>
+                <Input
+                  value={formData.distillery}
+                  onChange={(e) => handleChange('distillery', e.target.value)}
+                  placeholder={
+                    formData.bottle_type === 'wine'
+                      ? t('wine.wineryPlaceholder', 'Winery name')
+                      : t('whiskey.distilleryPlaceholder', 'Distillery name')
+                  }
+                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+                />
+              </div>
+            </div>
 
-            {uploadingPhoto ? (
-              <p className="text-xs mt-2 text-[#D8C7A6]">
-                {t('photos.processing', 'Processing photo...')}
-              </p>
-            ) : null}
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="min-w-0">
+                <label className="text-sm text-[#D8C7A6] block mb-2">
+                  {t('whiskey.region', 'Region')}
+                </label>
+                <Input
+                  value={formData.region}
+                  onChange={(e) => handleChange('region', e.target.value)}
+                  placeholder={t('whiskey.regionPlaceholder', 'e.g., Islay, Speyside')}
+                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+                />
+              </div>
 
-          <div>
-            <label className="text-sm text-[#D8C7A6] block mb-2">
-              {t('whiskey.tastingNotes', 'Tasting Notes')}
-            </label>
-            <Textarea
-              value={formData.notes || ''}
-              onChange={(e) => handleChange('notes', e.target.value)}
-              placeholder={t(
-                'whiskey.notesPlaceholder',
-                'Describe the flavor profile, aromas, finish, or collector notes.'
-              )}
-              className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] h-24"
-            />
-          </div>
+              <div className="min-w-0">
+                <label className="text-sm text-[#D8C7A6] block mb-2">
+                  {t('whiskey.country', 'Country')}
+                </label>
+                <Input
+                  value={formData.country}
+                  onChange={(e) => handleChange('country', e.target.value)}
+                  placeholder={t('whiskey.countryPlaceholder', 'e.g., Scotland, USA')}
+                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+                />
+              </div>
+            </div>
 
-          <div className="flex gap-3 justify-end pt-4">
-            <Button type="button" variant="outline" onClick={onCancel}>
-              {t('common.cancel', 'Cancel')}
-            </Button>
-            <Button
-              type="submit"
-              style={{
-                background: 'linear-gradient(135deg, rgba(163, 92, 92, 1), rgba(140, 74, 74, 1))',
-                color: '#F5F1E7',
-              }}
-            >
-              {bottle ? t('common.save', 'Save') : t('common.create', 'Create')}
-            </Button>
-          </div>
-        </form>
+            <div>
+              <label className="text-sm text-[#D8C7A6] block mb-2">
+                {t('whiskey.photo', 'Bottle Photo')}
+              </label>
+
+              {photoPreview ? (
+                <div className="relative w-full h-64 rounded-xl overflow-hidden border border-[rgba(180,140,75,0.2)] mb-3 bg-black/20">
+                  <img
+                    src={photoPreview}
+                    alt={t('whiskey.photoPreview', 'Bottle preview')}
+                    className="w-full h-full object-contain"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => commitPhoto('')}
+                    className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-md"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : null}
+
+              <PhotoUploader
+                onPhotosSelected={handlePhotoFilesSelected}
+                existingPhotos={photoPreview ? [photoPreview] : []}
+                maxPhotos={1}
+                onSearchOnlineClick={() => setShowOnlineSearch(true)}
+                showSearchOption={true}
+                recordType="bottle"
+                recordData={bottleSearchContext}
+              />
+
+              {uploadingPhoto ? (
+                <p className="text-xs mt-2 text-[#D8C7A6]">
+                  {t('photos.processing', 'Processing photo...')}
+                </p>
+              ) : null}
+            </div>
+
+            <div>
+              <label className="text-sm text-[#D8C7A6] block mb-2">
+                {t('whiskey.tastingNotes', 'Tasting Notes')}
+              </label>
+              <Textarea
+                value={formData.notes || ''}
+                onChange={(e) => handleChange('notes', e.target.value)}
+                placeholder={t(
+                  'whiskey.notesPlaceholder',
+                  'Describe the flavor profile, aromas, finish, or collector notes.'
+                )}
+                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] h-24"
+              />
+            </div>
+          </form>
+        </div>
+
+        {/* Footer — sticky, always visible on mobile */}
+        <div
+          className="shrink-0 flex gap-3 justify-end px-6 py-4 border-t"
+          style={{ borderColor: 'rgba(180,140,75,0.18)' }}
+        >
+          <Button type="button" variant="outline" onClick={onCancel}>
+            {t('common.cancel', 'Cancel')}
+          </Button>
+          <Button
+            type="submit"
+            form="bottle-form"
+            style={{
+              background: 'linear-gradient(135deg, rgba(163, 92, 92, 1), rgba(140, 74, 74, 1))',
+              color: '#F5F1E7',
+            }}
+          >
+            {bottle ? t('common.save', 'Save') : t('common.create', 'Create')}
+          </Button>
+        </div>
       </div>
     </>
   );

@@ -74,7 +74,7 @@ export default function BottleCard({
   );
   const valueLabel = useMemo(() => getBottleDisplayValueLabel(bottle), [bottle]);
 
-  const photo = bottle?.photo || '';
+  const photo = bottle?.photo || bottle?.image || bottle?.image_url || '';
 
   return (
     <div
@@ -93,8 +93,11 @@ export default function BottleCard({
             className="w-full h-full object-contain"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[#E0D8C8]/30 text-sm">
-            {t('whiskey.noPhoto') || 'No photo'}
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+            <svg viewBox="0 0 24 24" className="w-10 h-10 opacity-30" fill="none" stroke="rgba(224,216,200,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M10 3h4" /><path d="M11 3v4l-3 5.5A4.5 4.5 0 0 0 11.9 19h.2A4.5 4.5 0 0 0 16 12.5L13 7V3" /><path d="M9.5 12h5" />
+            </svg>
+            <span className="text-xs text-[#E0D8C8]/45 font-medium">{t('whiskey.noPhoto') || 'No photo'}</span>
           </div>
         )}
 
