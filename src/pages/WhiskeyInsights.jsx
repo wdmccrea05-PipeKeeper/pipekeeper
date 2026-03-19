@@ -1,5 +1,7 @@
 import React, { useState, useRef, useMemo, useCallback } from 'react';
 import jsPDF from 'jspdf';
+import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
+import { sumBottleCollectionValue } from '@/components/utils/whiskeyValueHelpers';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { base44 } from '@/api/base44Client';
