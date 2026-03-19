@@ -321,7 +321,24 @@ export default function CollectionStoryCard() {
       </div>
 
       <div className="px-6 pb-6 pt-2 flex gap-3">
-        <Button variant="outline" className="flex-1">
+        <Button
+          variant="outline"
+          className="flex-1"
+          onClick={() => {
+            const url = window.location.href;
+            if (navigator.share) {
+              navigator.share({
+                title: t('hub.collectorSnapshot', "Your Collector's Snapshot"),
+                text: story?.narrative || '',
+                url,
+              }).catch(() => {
+                navigator.clipboard.writeText(url);
+              });
+            } else {
+              navigator.clipboard.writeText(url);
+            }
+          }}
+        >
           <Share2 className="w-4 h-4 mr-2" />
           {t('common.share', 'Share')}
         </Button>
