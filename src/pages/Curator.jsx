@@ -268,7 +268,7 @@ export default function Curator() {
                   value={opt.value}
                   label={opt.label}
                   selected={curatorScope === opt.value}
-                  onClick={setCuratorScope}
+                  onClick={handleScopeChange}
                   isPipeIcon={opt.isPipeIcon}
                   icon={opt.icon}
                 />
