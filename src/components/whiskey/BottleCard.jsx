@@ -125,24 +125,24 @@ export default function BottleCard({
 
          <div className="grid grid-cols-2 gap-4">
           <div
-            className="rounded-xl p-3"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(180,140,75,0.10)' }}
+           className="rounded-xl p-3.5"
+           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(180,140,75,0.15)' }}
           >
-            <div className="flex items-center gap-2 text-[#D4A574] text-xs font-semibold uppercase tracking-wide">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              {valueLabel}
-            </div>
-            <div className="text-xl font-bold text-[#F5F1E7] mt-1">
-              {formatCurrency(unitValue)}
-            </div>
-            <p className="text-xs mt-1 text-[#E0D8C8]/58">
-              {t('whiskey.perBottle') || 'Per bottle'}
-            </p>
+           <div className="flex items-center gap-2 text-[#D4A574] text-xs font-semibold uppercase tracking-wide">
+             <ShieldCheck className="w-3.5 h-3.5" />
+             {valueLabel}
+           </div>
+           <div className="text-xl font-bold text-[#F5F1E7] mt-1">
+             {formatCurrency(unitValue)}
+           </div>
+           <p className="text-xs mt-1 text-[#D8C7A6]">
+             {t('whiskey.perBottle') || 'Per bottle'}
+           </p>
           </div>
 
-          <div
-            className="rounded-xl p-3"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(180,140,75,0.10)' }}
+           <div
+           className="rounded-xl p-3.5"
+           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(180,140,75,0.15)' }}
           >
             <div className="flex items-center gap-2 text-[#D4A574] text-xs font-semibold uppercase tracking-wide">
               <Package className="w-3.5 h-3.5" />
@@ -151,7 +151,7 @@ export default function BottleCard({
             <div className="text-xl font-bold text-[#F5F1E7] mt-1">
               {totalCount}
             </div>
-            <p className="text-xs mt-1 text-[#E0D8C8]/58">
+            <p className="text-xs mt-1 text-[#D8C7A6]">
               {t('whiskey.totalBottles') || 'Total bottles'}
             </p>
           </div>
@@ -166,8 +166,8 @@ export default function BottleCard({
         </div>
 
         <div
-          className="rounded-xl p-3"
-          style={{ background: 'rgba(163,92,92,0.08)', border: '1px solid rgba(163,92,92,0.15)' }}
+          className="rounded-xl p-3.5"
+          style={{ background: 'rgba(163,92,92,0.12)', border: '1px solid rgba(163,92,92,0.20)' }}
         >
           <div className="text-xs font-semibold uppercase tracking-wide text-[#D4A574]">
             {t('whiskey.totalPositionValue') || 'Total Position Value'}
@@ -175,7 +175,7 @@ export default function BottleCard({
           <div className="text-xl font-bold text-[#F5F1E7] mt-1">
             {formatCurrency(totalValue)}
           </div>
-          <p className="text-sm text-[#E0D8C8]/78 break-words mt-1">
+          <p className="text-sm text-[#D8C7A6] break-words mt-1">
             {bottle?.notes
               ? bottle.notes.slice(0, 120) + (bottle.notes.length > 120 ? '…' : '')
               : (t('whiskey.noNotesYet') || 'No notes yet')}
