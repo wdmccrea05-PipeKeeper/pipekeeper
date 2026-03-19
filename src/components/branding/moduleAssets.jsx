@@ -11,7 +11,7 @@ export const MODULE_ASSETS = {
   },
 
   pipekeeper: {
-    src: "/branding/pipekeeper-logo.png?v=1",
+    src: "https://media.base44.com/images/public/694956e18d119cc497192525/989c13942_generated_image.png",
     label: "PipeKeeper",
   },
 
