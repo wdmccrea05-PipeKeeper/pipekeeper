@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react'; // fixed
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Edit, Star, MapPin, Calendar, DollarSign, Tag, FlaskConical, TrendingUp, Sparkles, BarChart2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
