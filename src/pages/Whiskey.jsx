@@ -315,8 +315,29 @@ export default function WhiskeyPage() {
         </Sheet>
 
         {/* Tasting Log Modals */}
-        <LogTastingModal isOpen={!!showTastingLog} onClose={() => setShowTastingLog(null)} bottles={showTastingLog ? [showTastingLog] : bottles} user={user} />
-        <LogTastingModal isOpen={!!editingTastingLog} onClose={() => setEditingTastingLog(null)} bottles={bottles} user={user} editLog={editingTastingLog} />
+        {showTastingLog && (
+          <LogTastingModal
+            bottle={showTastingLog}
+            bottles={bottles}
+            onClose={() => setShowTastingLog(null)}
+            onSaved={() => {
+              queryClient.invalidateQueries({ queryKey: ['tasting-logs'] });
+              setShowTastingLog(null);
+            }}
+          />
+        )}
+        {editingTastingLog && (
+          <LogTastingModal
+            bottle={editingTastingLog.bottle_id ? bottles.find(b => b.id === editingTastingLog.bottle_id) : null}
+            bottles={bottles}
+            editLog={editingTastingLog}
+            onClose={() => setEditingTastingLog(null)}
+            onSaved={() => {
+              queryClient.invalidateQueries({ queryKey: ['tasting-logs'] });
+              setEditingTastingLog(null);
+            }}
+          />
+        )}
 
         {/* Insights */}
         {bottles.length > 0 && (
