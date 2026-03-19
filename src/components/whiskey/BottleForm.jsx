@@ -30,6 +30,7 @@ const DEFAULT_FORM = (defaultBottleType = 'whiskey') => ({
   collector_value: '',
   value_confidence: 'medium',
   notes: '',
+  flavor_notes: '',
   rating: '',
   favorite: false,
   photo: '',
@@ -340,6 +341,21 @@ export default function BottleForm({
             </div>
 
             <div>
+              <label className="text-sm text-[#D8C7A6] block mb-2">
+                {t('whiskey.flavorNotes', 'Flavor Notes')}
+              </label>
+              <input
+                value={formData.flavor_notes || ''}
+                onChange={(e) => handleChange('flavor_notes', e.target.value)}
+                placeholder={t('whiskey.flavorNotesPlaceholder', 'e.g. Vanilla, caramel, smoke, dried fruit, oak…')}
+                className="w-full rounded-xl px-4 py-3 bg-[rgba(255,255,255,0.05)] border border-[rgba(180,140,75,0.2)] text-[#F5F1E7] outline-none"
+              />
+              <p className="text-xs mt-1" style={{ color: 'rgba(224,200,160,0.5)' }}>
+                Comma-separated tasting descriptors used for AI recommendations.
+              </p>
+              </div>
+
+              <div>
               <label className="text-sm text-[#D8C7A6] block mb-2">
                 {t('whiskey.tastingNotes', 'Tasting Notes')}
               </label>
