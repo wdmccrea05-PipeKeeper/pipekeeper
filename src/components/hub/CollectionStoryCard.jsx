@@ -137,14 +137,20 @@ function StoryHighlightCard({ title, label, photo, onClick }) {
 
         <div>
           <p
-            className="text-sm md:text-base font-bold line-clamp-3"
-            style={{
-              color: '#F5F1E7',
-              textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 0 16px rgba(0,0,0,0.6)',
-            }}
-          >
-            {title}
-          </p>
+              className="text-sm md:text-base font-bold"
+              style={{
+                color: '#F5F1E7',
+                textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 0 16px rgba(0,0,0,0.6)',
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                wordBreak: 'break-word',
+                hyphens: 'auto',
+              }}
+            >
+              {title}
+            </p>
         </div>
       </div>
 
