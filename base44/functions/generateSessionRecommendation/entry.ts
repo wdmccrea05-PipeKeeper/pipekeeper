@@ -298,6 +298,7 @@ Deno.serve(async (req) => {
       ? unique(body.modules.map((m: unknown) => normalizeLower(m)).filter(Boolean))
       : [];
     const includeCombined = body?.includeCombined !== false;
+    const mode = normalizeLower(body?.mode) || 'balanced';
 
     const [
       profileRows,
