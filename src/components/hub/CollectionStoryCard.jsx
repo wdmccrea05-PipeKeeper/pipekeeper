@@ -473,7 +473,7 @@ export default function CollectionStoryCard({ pipes = [], blends = [], bottles =
       <div className="px-6 py-6 relative z-10">
         <p
           className="text-sm leading-relaxed"
-          style={{ color: 'rgba(224,216,200,0.78)' }}
+          style={{ color: 'rgba(224,216,200,0.78)', wordBreak: 'break-word', overflowWrap: 'anywhere' }}
         >
           {story.narrative}
         </p>
