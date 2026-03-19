@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,46 +9,67 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
-export default function LogTastingModal({ isOpen, onClose, bottles = [], user }) {
+const EMPTY_FORM = {
+  bottle_id: '',
+  bottle_name: '',
+  tasting_date: new Date().toISOString().split('T')[0],
+  rating: '',
+  pairing: '',
+  notes: '',
+};
+
+export default function LogTastingModal({ isOpen, onClose, bottles = [], user, editLog = null }) {
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
-    bottle_id: '',
-    bottle_name: '',
-    tasting_date: new Date().toISOString().split('T')[0],
-    rating: '',
-    pairing: '',
-    notes: '',
-  });
+  const isEditing = !!editLog;
+
+  const [formData, setFormData] = useState(EMPTY_FORM);
+
+  // Hydrate form when editing
+  useEffect(() => {
+    if (editLog) {
+      setFormData({
+        bottle_id: editLog.bottle_id || '',
+        bottle_name: editLog.bottle_name || '',
+        tasting_date: editLog.tasting_date
+          ? editLog.tasting_date.slice(0, 10)
+          : new Date().toISOString().split('T')[0],
+        rating: editLog.rating != null ? String(editLog.rating) : '',
+        pairing: editLog.pairing || '',
+        notes: editLog.notes || '',
+      });
+    } else {
+      setFormData(EMPTY_FORM);
+    }
+  }, [editLog, isOpen]);
 
   const sortedBottles = [...bottles].sort((a, b) =>
     String(a?.name || '').localeCompare(String(b?.name || ''), undefined, { sensitivity: 'base' })
   );
 
-  const createLogMutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: (data) => base44.entities.TastingLog.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasting-logs'] });
       queryClient.invalidateQueries({ queryKey: ['tasting-logs-summary'] });
-      setFormData({
-        bottle_id: '',
-        bottle_name: '',
-        tasting_date: new Date().toISOString().split('T')[0],
-        rating: '',
-        pairing: '',
-        notes: '',
-      });
+      setFormData(EMPTY_FORM);
       onClose();
       toast.success('Tasting logged');
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.TastingLog.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasting-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['tasting-logs-summary'] });
+      onClose();
+      toast.success('Tasting updated');
+    },
+  });
+
   const handleBottleChange = (id) => {
     const bottle = bottles.find((b) => b.id === id);
-    setFormData((prev) => ({
-      ...prev,
-      bottle_id: id,
-      bottle_name: bottle?.name || '',
-    }));
+    setFormData((prev) => ({ ...prev, bottle_id: id, bottle_name: bottle?.name || '' }));
   };
 
   const handleSubmit = (e) => {
@@ -57,22 +78,29 @@ export default function LogTastingModal({ isOpen, onClose, bottles = [], user })
       toast.error('Please select a bottle');
       return;
     }
-    createLogMutation.mutate({
+    const payload = {
       bottle_id: formData.bottle_id,
       bottle_name: formData.bottle_name,
       tasting_date: new Date(`${formData.tasting_date}T00:00:00`).toISOString(),
       rating: formData.rating ? Number(formData.rating) : null,
       pairing: formData.pairing || null,
       notes: formData.notes || null,
-      created_by: user?.email,
-    });
+    };
+
+    if (isEditing) {
+      updateMutation.mutate({ id: editLog.id, data: payload });
+    } else {
+      createMutation.mutate({ ...payload, created_by: user?.email });
+    }
   };
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <SheetContent className="overflow-y-auto">
         <SheetHeader className="mb-6">
-          <SheetTitle>Log Tasting</SheetTitle>
+          <SheetTitle>{isEditing ? 'Edit Tasting' : 'Log Tasting'}</SheetTitle>
         </SheetHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -137,12 +165,8 @@ export default function LogTastingModal({ isOpen, onClose, bottles = [], user })
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={!formData.bottle_id || createLogMutation.isPending}
-              className="flex-1"
-            >
-              Log Tasting
+            <Button type="submit" disabled={!formData.bottle_id || isPending} className="flex-1">
+              {isEditing ? 'Save Changes' : 'Log Tasting'}
             </Button>
           </div>
         </form>
