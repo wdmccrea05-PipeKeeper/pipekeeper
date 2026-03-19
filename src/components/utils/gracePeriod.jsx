@@ -29,9 +29,15 @@ export function isSubscriptionInGracePeriod(subscription) {
   
   try {
     const endDate = new Date(periodEnd);
+    // Validate date parsed correctly
+    if (Number.isNaN(endDate.getTime())) {
+      console.warn('[gracePeriod] invalid current_period_end date:', periodEnd);
+      return false;
+    }
     const graceEnd = new Date(endDate.getTime() + (GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000));
     return Date.now() <= graceEnd.getTime();
-  } catch {
+  } catch (e) {
+    console.warn('[gracePeriod] date calculation failed:', e?.message);
     return false;
   }
 }
@@ -83,6 +89,10 @@ export function getGraceStatus(subscription) {
   
   try {
     const endDate = new Date(periodEnd);
+    if (Number.isNaN(endDate.getTime())) {
+      console.warn('[gracePeriod] invalid current_period_end date:', periodEnd);
+      return { inGrace: false, daysRemaining: 0, gracePeriodExpired: true };
+    }
     const graceEnd = new Date(endDate.getTime() + (GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000));
     const now = Date.now();
     
@@ -94,7 +104,8 @@ export function getGraceStatus(subscription) {
     const daysRemaining = Math.ceil(msRemaining / (24 * 60 * 60 * 1000));
     
     return { inGrace: true, daysRemaining, gracePeriodExpired: false };
-  } catch {
+  } catch (e) {
+    console.warn('[gracePeriod] date calculation failed:', e?.message);
     return { inGrace: false, daysRemaining: 0, gracePeriodExpired: true };
   }
 }
