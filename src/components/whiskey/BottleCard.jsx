@@ -80,9 +80,9 @@ export default function BottleCard({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: 'linear-gradient(180deg, rgba(42,31,24,0.98), rgba(25,18,14,0.98))',
-        border: '1px solid rgba(180,140,75,0.14)',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.24)',
+        background: 'linear-gradient(135deg, rgba(44,31,22,0.96), rgba(26,18,13,0.98))',
+        border: '1px solid rgba(180,140,75,0.18)',
+        boxShadow: '0 10px 28px rgba(0,0,0,0.34)',
       }}
     >
       <div className="relative h-72 bg-black/20">
