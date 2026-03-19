@@ -64,6 +64,47 @@ function pickBest(items, fieldCandidates = []) {
   })[0];
 }
 
+function mapServerRecommendation(serverData, mode, moduleScope) {
+  if (!serverData) return null;
+
+  // Backend returns either direct {pipe, blend, whiskey} or {recommendations: [...]}
+  if (serverData.pipe || serverData.blend || serverData.whiskey) return serverData;
+
+  const recs = Array.isArray(serverData.recommendations) ? serverData.recommendations : [];
+  if (recs.length === 0) return null;
+
+  // Pick the best recommendation based on scope
+  let rec = null;
+  if (moduleScope === 'pipe_blend_whiskey') {
+    rec = recs.find((r) => r.module === 'combined') || recs[0];
+  } else if (moduleScope === 'whiskey') {
+    rec = recs.find((r) => r.module === 'whiskey') || recs[0];
+  } else {
+    rec = recs.find((r) => r.module === 'pipe') || recs[0];
+  }
+
+  if (!rec) return null;
+
+  // Extract pipe, blend, bottle from selections array
+  const pipeSelection = rec.selections?.find((s) => s.type === 'pipe');
+  const blendSelection = rec.selections?.find((s) => s.type === 'blend');
+  const bottleSelection = rec.selections?.find((s) => s.type === 'bottle');
+
+  return {
+    pipe: pipeSelection?.name || null,
+    pipe_id: pipeSelection?.id || null,
+    blend: blendSelection?.name || null,
+    blend_id: blendSelection?.id || null,
+    whiskey: bottleSelection?.name || null,
+    whiskey_id: bottleSelection?.id || null,
+    flavor_theme: rec.title || null,
+    rationale: rec.summary || null,
+    learning_context: rec.reasoning?.join(' ') || null,
+    mode_bias: mode,
+    confidence: rec.confidence || 'medium',
+  };
+}
+
 function buildFallback({ pipes, blends, bottles, mode, moduleScope }) {
   const includePipe = moduleScope !== "whiskey";
   const includeWhiskey = moduleScope !== "pipe_blend";
