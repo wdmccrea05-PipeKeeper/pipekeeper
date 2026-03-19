@@ -8,17 +8,24 @@ export default function OnlineImageSearchModal({
   onImageSelected,
   recordType = 'bottle',
   recordData = {},
-  title = 'Search Online Photos',
+  title,
 }) {
   if (!isOpen) return null;
 
+  const resolvedTitle = title || (
+    recordType === 'pipe' ? 'Search Pipe Photos' :
+    recordType === 'tobacco' || recordType === 'blend' ? 'Search Tobacco Photos' :
+    'Search Bottle Photos'
+  );
+
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 p-4"
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 p-2 sm:p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-4xl max-h-[85vh] rounded-2xl overflow-hidden flex flex-col"
+        className="w-full max-w-4xl rounded-2xl overflow-hidden flex flex-col"
+        style={{ maxHeight: 'min(85vh, 680px)' }}
         style={{
           background:
             'linear-gradient(135deg, rgba(42, 31, 24, 0.98), rgba(24, 17, 12, 0.99))',
@@ -32,7 +39,7 @@ export default function OnlineImageSearchModal({
           style={{ borderColor: 'rgba(180,140,75,0.14)' }}
         >
           <div>
-            <h3 className="text-lg font-semibold text-[#F5F1E7]">{title}</h3>
+            <h3 className="text-lg font-semibold text-[#F5F1E7]">{resolvedTitle}</h3>
             <p className="text-xs mt-1 text-[#D8C7A6]/70">
               Search and select a photo to use for this record.
             </p>
