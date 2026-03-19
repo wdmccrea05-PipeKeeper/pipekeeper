@@ -108,6 +108,11 @@ const AuthenticatedApp = () => {
           <HelpCenter />
         </LayoutWrapper>
       } />
+      <Route path="/Tutorials" element={
+        <LayoutWrapper currentPageName="Tutorials">
+          <Tutorials />
+        </LayoutWrapper>
+      } />
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
           <MainPage />
