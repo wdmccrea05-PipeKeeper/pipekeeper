@@ -16,7 +16,7 @@ export const MODULE_ASSETS = {
   },
 
   pipeicon: {
-    src: "/branding/pipe-icon.png?v=3",
+    src: "https://media.base44.com/images/public/694956e18d119cc497192525/989c13942_generated_image.png",
     label: "Pipe Icon",
   },
 
