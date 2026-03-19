@@ -74,7 +74,12 @@ export default function BottleCard({
   );
   const valueLabel = useMemo(() => getBottleDisplayValueLabel(bottle), [bottle]);
 
-  const photo = bottle?.photo || bottle?.image || bottle?.image_url || '';
+  const photo = (() => {
+    const b = bottle;
+    if (!b) return '';
+    const photos = Array.isArray(b.photos) ? b.photos : [];
+    return photos[0] || b.photo || b.image || b.image_url || '';
+  })();
 
   return (
     <div
