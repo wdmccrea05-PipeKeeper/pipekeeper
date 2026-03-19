@@ -15,6 +15,14 @@ import { toast } from 'sonner';
 import { differenceInCalendarDays, parseISO, subDays, isWithinInterval } from 'date-fns';
 import { StatusCard, CATEGORY_COLORS } from '@/components/ui/HeroCard';
 
+function sumBottleCollectionValue(bottles) {
+  if (!Array.isArray(bottles)) return 0;
+  return bottles.reduce((sum, b) => {
+    const v = Number(b?.collector_value) || Number(b?.aftermarket_price) || Number(b?.retail_price) || Number(b?.purchase_price) || 0;
+    return sum + v;
+  }, 0);
+}
+
 export default function WhiskeyInsightsPage() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
