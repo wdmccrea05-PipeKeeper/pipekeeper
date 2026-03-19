@@ -6,12 +6,15 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function getBottlePhoto(bottle) {
+  if (!bottle) return null;
+  // Check photos array first, then singular fields
+  if (Array.isArray(bottle.photos) && bottle.photos.length > 0) return bottle.photos[0];
   return (
-    bottle?.photo ||
-    bottle?.image ||
-    bottle?.image_url ||
-    bottle?.thumbnail ||
-    bottle?.thumbnail_url ||
+    bottle.photo ||
+    bottle.image ||
+    bottle.image_url ||
+    bottle.thumbnail ||
+    bottle.thumbnail_url ||
     null
   );
 }
