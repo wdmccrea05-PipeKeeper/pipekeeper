@@ -76,15 +76,7 @@ export default function WhiskeyInsightsPage() {
     [tastingLogs, oneWeekAgo, now]
   );
 
-  const collectionValue = useMemo(() => {
-    return {
-      retail: bottles.reduce((sum, b) => sum + (Number(b.retail_price) || 0), 0),
-      aftermarket: bottles.reduce((sum, b) => sum + (Number(b.aftermarket_price) || 0), 0),
-      collector: bottles.reduce((sum, b) => sum + (Number(b.collector_value) || 0), 0),
-    };
-  }, [bottles]);
-
-  // FIXED: sum per-bottle canonical values, not Math.max across aggregates
+  // FIXED: sum per-bottle canonical values using canonical priority
   const totalValue = useMemo(() => sumBottleCollectionValue(bottles), [bottles]);
 
   const averageRating = useMemo(() => {
