@@ -193,10 +193,7 @@ export default function OnlineImageSearch({
   onImageSelected,
   onClose,
 }) {
-  const initialQuery = useMemo(() => {
-    if (recordType === 'bottle') return buildBottleQuery(recordData);
-    return '';
-  }, [recordType, recordData]);
+  const initialQuery = useMemo(() => buildQueryForType(recordType, recordData), [recordType, recordData]);
 
   const [query, setQuery] = useState(initialQuery);
   const [loading, setLoading] = useState(false);
@@ -273,7 +270,7 @@ export default function OnlineImageSearch({
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search bottle image"
+              placeholder={placeholderForType(recordType)}
               className="w-full rounded-xl px-4 py-3 bg-[rgba(255,255,255,0.04)] text-[#F5F1E7] border border-[rgba(180,140,75,0.18)] outline-none"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -345,7 +342,7 @@ export default function OnlineImageSearch({
           <div className="h-full min-h-[220px] flex items-center justify-center">
             <div className="text-center text-[#D8C7A6]/70 max-w-md">
               <ImageIcon className="w-8 h-8 mx-auto mb-3 opacity-70" />
-              <p className="text-sm">Search for a bottle image to see results here.</p>
+              <p className="text-sm">{emptyHintForType(recordType)}</p>
             </div>
           </div>
         ) : (
