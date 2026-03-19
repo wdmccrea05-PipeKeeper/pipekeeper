@@ -211,7 +211,7 @@ export default function WhiskeyInsightsPage() {
         doc.text(String(b.name || '').slice(0, 28), colX[0], y);
         doc.text(String(b.type || '').slice(0, 18), colX[1], y);
         doc.text(String(b.country || '').slice(0, 14), colX[2], y);
-        doc.text(val > 0 ? `$${val}` : '—', colX[3], y);
+        doc.text(val > 0 ? formatCurrency(val) : '—', colX[3], y);
         doc.text(b.rating ? String(b.rating) : '—', colX[4], y);
         y += 8;
       });
