@@ -205,9 +205,19 @@ export default function CollectionStoryCard({ pipes = [], blends = [], bottles =
   }
 
   // Fallback highlights from collection data if story doesn't provide them
-  const fallbackMostUsedPipe = pipes.find((p) => Array.isArray(p?.photos) && p.photos.length > 0) || pipes[0];
-  const fallbackFavoriteBlend = blends.find((b) => b?.is_favorite) || blends[0];
-  const fallbackMostTastedBottle = bottles.find((b) => b?.photo) || bottles[0];
+  // Attach recordType so routing works correctly
+  const fallbackMostUsedPipe = (() => {
+    const p = pipes.find((p) => Array.isArray(p?.photos) && p.photos.length > 0) || pipes[0];
+    return p ? { ...p, recordType: 'pipe' } : null;
+  })();
+  const fallbackFavoriteBlend = (() => {
+    const b = blends.find((b) => b?.is_favorite) || blends[0];
+    return b ? { ...b, recordType: 'blend' } : null;
+  })();
+  const fallbackMostTastedBottle = (() => {
+    const b = bottles.find((b) => b?.photo) || bottles[0];
+    return b ? { ...b, recordType: 'bottle' } : null;
+  })();
 
   if (loading) {
     return (
