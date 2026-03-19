@@ -27,7 +27,6 @@ import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
 import { getAIEligibleModuleIds } from "@/components/utils/moduleAccess";
-import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 
 const SESSION_MODES = [
   { value: "balanced", label: "Balanced" },
