@@ -240,26 +240,28 @@ export default function TonightSessionCard({
       }
     }
 
+    // Clear current recommendation so loading state is visible on refresh
+    if (forceRefresh) setRecommendation(null);
     setLoading(true);
 
-    // Filter data based on moduleScope
-    const includePipes = moduleScope !== "whiskey" ? pipes : [];
-    const includeBlends = moduleScope !== "whiskey" ? blends : [];
-    const includeBottles = moduleScope !== "pipe_blend" ? bottles : [];
+    // Map scope to modules array expected by backend
+    const modulesForScope =
+      moduleScope === 'pipe_blend_whiskey' ? ['pipe', 'whiskey'] :
+      moduleScope === 'whiskey' ? ['whiskey'] :
+      ['pipe'];
 
     try {
       const enabledModules = getAIEligibleModuleIds(moduleStates);
       const result = await base44.functions.invoke("generateSessionRecommendation", {
-        pipes: includePipes,
-        blends: includeBlends,
-        bottles: includeBottles,
-        tasteProfile,
-        userProfile: profile,
+        modules: modulesForScope,
         mode,
         moduleScope,
-        previousPairings: [],
-        sessionHistory,
+        includeCombined: moduleScope === 'pipe_blend_whiskey',
+        sessionHistory: sessionHistory.map((h) => ({ ...h, mode })),
         enabledModules,
+        forceRefresh,
+        tasteProfile,
+        userProfile: profile,
       });
 
       const serverData = result?.data;
