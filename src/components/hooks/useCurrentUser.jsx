@@ -217,8 +217,12 @@ export function useCurrentUser() {
       } finally {
         if (!cancelled) {
           sessionStorage.setItem(sessionKey, String(Date.now()));
-          // Invalidate and refetch subscription cache to pick up sync results
-          await queryClient.invalidateQueries({ queryKey: ["subscription"] });
+          // Invalidate subscription cache with exact key to pick up sync results
+          // Use exact:true to avoid invalidating other cache entries
+          await queryClient.invalidateQueries({ 
+            queryKey: ["subscription", userId || email],
+            exact: true 
+          });
           await Promise.all([refetchUser(), refetchSubscription()]);
         }
       }
