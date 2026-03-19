@@ -99,7 +99,6 @@ import WhiskeyAIUpdates from './pages/WhiskeyAIUpdates';
 import WhiskeyAnalytics from './pages/WhiskeyAnalytics';
 import WhiskeyInsights from './pages/WhiskeyInsights';
 import WhiskeyKeeper from './pages/WhiskeyKeeper';
-import index from './pages/index';
 import __Layout from './Layout.jsx';
 
 
