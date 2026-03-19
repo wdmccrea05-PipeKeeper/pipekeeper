@@ -603,7 +603,18 @@ export default function BottleDetail() {
 
             <div className="pt-2">
               <Button
-                onClick={() => navigate(`/Curator?prompt=${encodeURIComponent(`Tell me more about ${bottle.name}${bottle.type ? `, a ${bottle.type}` : ''}. What pairs well with it and when should I open it?`)}`)}
+                onClick={() => navigate('/Curator', {
+                  state: {
+                    seedPrompt: `Help me understand this bottle and how to enjoy it: ${bottle.name}${bottle.distillery ? ` by ${bottle.distillery}` : ''}. Give me tasting guidance, serving suggestions, what stands out about it, and what in my collection pairs well with it.`,
+                    scope: 'whiskeykeeper',
+                    selectedModules: ['whiskeykeeper'],
+                    sourceRecord: {
+                      id: bottle.id,
+                      type: 'bottle',
+                      name: bottle.name,
+                    },
+                  },
+                })}
                 size="sm"
                 className="w-full"
                 style={{ background: 'linear-gradient(135deg, rgba(139,58,58,0.85), rgba(109,46,46,1))', border: '1px solid rgba(163,92,92,0.4)', color: '#F5F1E7' }}
