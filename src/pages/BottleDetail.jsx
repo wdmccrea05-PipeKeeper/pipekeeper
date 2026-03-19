@@ -95,6 +95,7 @@ export default function BottleDetail() {
 
   const [bottle, setBottle] = useState(null);
   const [tastings, setTastings] = useState([]);
+  const [allBottles, setAllBottles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingTasting, setEditingTasting] = useState(null);
   const [showTastingModal, setShowTastingModal] = useState(false);
@@ -128,11 +129,21 @@ export default function BottleDetail() {
     }
   }
 
+  async function loadAllBottles() {
+    try {
+      const rows = await base44.entities.Bottle.list?.('-created_date') || [];
+      setAllBottles(rows);
+    } catch (e) {
+      console.error('[BottleDetail] failed to load bottles', e);
+      setAllBottles([]);
+    }
+  }
+
   useEffect(() => {
     let mounted = true;
     (async () => {
       setLoading(true);
-      await Promise.all([loadBottle(), loadTastings()]);
+      await Promise.all([loadBottle(), loadTastings(), loadAllBottles()]);
       if (mounted) setLoading(false);
     })();
     return () => {
@@ -416,6 +427,7 @@ export default function BottleDetail() {
       {showTastingModal ? (
         <LogTastingModal
           bottle={bottle}
+          bottles={allBottles}
           editLog={editingTasting}
           onClose={() => {
             setEditingTasting(null);
