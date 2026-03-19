@@ -112,15 +112,33 @@ export function isTrialingAccess(user, subscription) {
   const subStatus = String(subscription?.status || "").toLowerCase();
   let subTrial = subStatus === "trialing" || !!subscription?.is_trialing;
   
-  // FIX: Validate subscription trial hasn't expired
+  // FIX: Validate subscription trial hasn't expired and dates are consistent
   if (subTrial && subscription?.trial_end) {
     try {
       const trialEnd = new Date(subscription.trial_end);
-      if (Date.now() > trialEnd.getTime()) {
-        subTrial = false; // Trial is expired
+      // Validate trial_end is a valid date
+      if (Number.isNaN(trialEnd.getTime())) {
+        console.warn('[premiumAccess] invalid trial_end date:', subscription.trial_end);
+        subTrial = false;
+      } else if (Date.now() > trialEnd.getTime()) {
+        // Trial is expired
+        subTrial = false;
       }
-    } catch {
-      // If we can't parse trial_end, assume it's invalid
+      
+      // Also validate trial_start if present
+      if (subTrial && subscription?.trial_start) {
+        const trialStart = new Date(subscription.trial_start);
+        if (Number.isNaN(trialStart.getTime())) {
+          console.warn('[premiumAccess] invalid trial_start date:', subscription.trial_start);
+          subTrial = false;
+        } else if (trialStart >= trialEnd) {
+          // Start must be before end
+          console.warn('[premiumAccess] trial_start >= trial_end');
+          subTrial = false;
+        }
+      }
+    } catch (e) {
+      console.warn('[premiumAccess] trial validation error:', e?.message);
       subTrial = false;
     }
   }
