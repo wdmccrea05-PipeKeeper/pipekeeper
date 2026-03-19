@@ -149,17 +149,17 @@ function StoryCard({ title, label, item, navigate }) {
 
       <div className="relative z-10 h-full p-5 flex flex-col justify-between">
         <p
-          className="text-xs font-semibold uppercase tracking-[0.14em]"
-          style={{ color: 'rgba(205,160,91,0.92)' }}
+          className="text-xs font-bold uppercase tracking-[0.14em]"
+          style={{ color: '#F5F1E7', textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}
         >
           {label}
         </p>
 
         <p
-          className="text-xl sm:text-2xl font-bold leading-tight break-words"
+          className="text-lg sm:text-2xl font-bold leading-snug break-words"
           style={{
             color: '#F5F1E7',
-            textShadow: '0 2px 10px rgba(0,0,0,0.65)',
+            textShadow: '0 3px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.7)',
             fontFamily: "'Georgia', serif",
           }}
         >
