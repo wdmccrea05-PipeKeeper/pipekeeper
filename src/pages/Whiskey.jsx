@@ -191,20 +191,22 @@ export default function WhiskeyPage() {
           <div className="h-[2px] w-full" style={{ background: 'linear-gradient(90deg, rgba(180,140,75,0) 0%, rgba(180,140,75,0.8) 50%, rgba(180,140,75,0) 100%)' }} />
 
           <div className="p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
               {/* Left: Title + stats */}
-              <div className="space-y-5 min-w-0 flex-1">
-                <div className="flex items-center gap-4">
-                  <img
-                    src={MODULE_ICONS.whiskeykeeper}
-                    alt="WhiskeyKeeper"
-                    className="w-12 h-12 object-contain flex-shrink-0"
-                    style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))', backgroundColor: 'transparent' }}
-                    draggable={false}
-                  />
-                  <div>
+              <div className="space-y-5 flex-1 min-w-0">
+                <div className="flex items-start gap-4 flex-wrap">
+                  <div className="flex-shrink-0">
+                    <img
+                      src={MODULE_ICONS.whiskeykeeper}
+                      alt="WhiskeyKeeper"
+                      className="w-12 h-12 object-contain"
+                      style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))', backgroundColor: 'transparent' }}
+                      draggable={false}
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
                     <h1
-                      className="text-3xl sm:text-4xl font-bold tracking-tight"
+                      className="text-3xl sm:text-4xl font-bold tracking-tight break-words"
                       style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.6)' }}
                     >
                       {t('whiskeykeeper.title', 'WhiskeyKeeper')}
