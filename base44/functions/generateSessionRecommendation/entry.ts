@@ -72,11 +72,37 @@ function summarizeBottle(bottle: any) {
   };
 }
 
-function buildPipeRecommendation(pipes: any[], blends: any[], profile: any) {
+function buildPipeRecommendation(pipes: any[], blends: any[], profile: any, mode = 'balanced') {
   const favoritePipes = pipes.filter((p) => p.favorite);
   const favoriteBlends = blends.filter((b) => b.favorite);
-  const chosenPipe = pickRandom(favoritePipes) || pickRandom(pipes);
-  const chosenBlend = pickRandom(favoriteBlends) || pickRandom(blends);
+
+  let chosenPipe: any = null;
+  let chosenBlend: any = null;
+
+  if (mode === 'favorites') {
+    chosenPipe = pickRandom(favoritePipes) || pickRandom(pipes);
+    chosenBlend = pickRandom(favoriteBlends) || pickRandom(blends);
+  } else if (mode === 'exploration') {
+    // Pick less-used or non-favorite items
+    const nonFavPipes = pipes.filter((p) => !p.favorite);
+    const nonFavBlends = blends.filter((b) => !b.favorite);
+    chosenPipe = pickRandom(nonFavPipes.length > 0 ? nonFavPipes : pipes);
+    chosenBlend = pickRandom(nonFavBlends.length > 0 ? nonFavBlends : blends);
+  } else if (mode === 'rotation') {
+    // Rotate through collection using session index seeding
+    const idx = Date.now() % Math.max(1, pipes.length);
+    chosenPipe = pipes[idx] || pickRandom(pipes);
+    const bidx = Date.now() % Math.max(1, blends.length);
+    chosenBlend = blends[bidx] || pickRandom(blends);
+  } else if (mode === 'relaxed') {
+    // Prefer familiar comfortable picks
+    chosenPipe = pickRandom(favoritePipes) || pipes[0] || null;
+    chosenBlend = pickRandom(favoriteBlends) || blends[0] || null;
+  } else {
+    // balanced
+    chosenPipe = pickRandom(favoritePipes.length > 0 ? favoritePipes : pipes);
+    chosenBlend = pickRandom(favoriteBlends.length > 0 ? favoriteBlends : blends);
+  }
 
   if (!chosenPipe && !chosenBlend) {
     return {
