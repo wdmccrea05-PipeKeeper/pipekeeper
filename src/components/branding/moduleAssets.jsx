@@ -11,12 +11,12 @@ export const MODULE_ASSETS = {
   },
 
   pipekeeper: {
-    src: "https://media.base44.com/images/public/694956e18d119cc497192525/989c13942_generated_image.png",
+    src: "https://media.base44.com/images/public/694956e18d119cc497192525/5e46486c0_smoking-pipe-icon-clipart-logo-free-vector.jpg",
     label: "PipeKeeper",
   },
 
   pipeicon: {
-    src: "https://media.base44.com/images/public/694956e18d119cc497192525/989c13942_generated_image.png",
+    src: "https://media.base44.com/images/public/694956e18d119cc497192525/5e46486c0_smoking-pipe-icon-clipart-logo-free-vector.jpg",
     label: "Pipe Icon",
   },
 
