@@ -182,19 +182,19 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
           className="rounded-xl p-4"
           style={{
             background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(180, 140, 75, 0.05))',
-            border: '1px solid rgba(212, 175, 55, 0.2)',
+            border: '1px solid rgba(212, 175, 55, 0.3)',
           }}
         >
           <div className="flex items-center gap-2 mb-2">
             <Trophy className="w-4 h-4" style={{ color: '#D4AF37' }} />
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(224,216,200,0.6)' }}>
+            <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(224,216,200,0.8)' }}>
               Highest Rated
             </p>
           </div>
-          <p style={{ color: '#F5F1E7' }} className="text-lg font-semibold">
+          <p style={{ color: '#F5F1E7' }} className="text-lg font-semibold break-words">
             {insights.highestRated.name}
           </p>
-          <p style={{ color: 'rgba(180,140,75,0.8)' }} className="text-sm">
+          <p style={{ color: 'rgba(200,160,100,0.95)' }} className="text-sm mt-1">
             Rating: {insights.highestRated.rating?.toFixed(1)} / 5
           </p>
         </div>
