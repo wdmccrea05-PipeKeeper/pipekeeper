@@ -9,7 +9,7 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import { WhiskeyAnalyticsTab } from '@/components/whiskey/WhiskeyInsightsAnalytics';
 import { WhiskeyHighlightCard, WhiskeyStoryCardModal, captureAndShareWhiskeyCard } from '@/components/whiskey/WhiskeyHighlightCard';
-import { Wine, BookOpen, TrendingUp, BarChart3, Award, Trophy, Star, Zap } from 'lucide-react';
+import { Wine, BookOpen, TrendingUp, BarChart3, Award, Trophy, Star, Zap, Calendar } from 'lucide-react';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import { toast } from 'sonner';
 import { differenceInCalendarDays, parseISO, subDays, isWithinInterval } from 'date-fns';
@@ -88,7 +88,7 @@ export default function WhiskeyInsightsPage() {
   const totalValue = useMemo(() => sumBottleCollectionValue(bottles), [bottles]);
 
   const averageRating = useMemo(() => {
-    const rated = bottles.filter(b => b.rating);
+    const rated = bottles.filter(b => b.rating != null && b.rating !== '' && Number(b.rating) > 0);
     return rated.length > 0
       ? (rated.reduce((sum, b) => sum + Number(b.rating), 0) / rated.length).toFixed(2)
       : 0;
