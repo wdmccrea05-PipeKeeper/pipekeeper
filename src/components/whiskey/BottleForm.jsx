@@ -151,6 +151,7 @@ export default function BottleForm({
     const cleanedData = {
       ...formData,
       photo: preservedPhoto || null,
+      flavor_notes: formData.flavor_notes || null,
       age: toNumberOrNull(formData.age),
       abv: toNumberOrNull(formData.abv),
       purchase_price: toNumberOrNull(formData.purchase_price),
