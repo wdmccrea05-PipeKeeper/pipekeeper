@@ -157,23 +157,23 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
         </div>
 
         {/* Favorite Distillery */}
-        <div
-          className="rounded-xl p-4"
-          style={{
-            background: 'rgba(100, 80, 60, 0.1)',
-            border: '1px solid rgba(100, 80, 60, 0.2)',
-          }}
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <Trophy className="w-4 h-4" style={{ color: '#C87941' }} />
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(224,216,200,0.6)' }}>
-              Top Distillery
+          <div
+            className="rounded-xl p-4"
+            style={{
+              background: 'rgba(100, 80, 60, 0.1)',
+              border: '1px solid rgba(100, 80, 60, 0.3)',
+            }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <Trophy className="w-4 h-4" style={{ color: '#C87941' }} />
+              <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(224,216,200,0.8)' }}>
+                Top Distillery
+              </p>
+            </div>
+            <p style={{ color: '#F5F1E7' }} className="text-lg font-semibold break-words">
+              {insights.favoriteDistillery || '—'}
             </p>
           </div>
-          <p style={{ color: '#F5F1E7' }} className="text-lg font-semibold truncate">
-            {insights.favoriteDistillery || '—'}
-          </p>
-        </div>
       </div>
 
       {/* Highest Rated */}
