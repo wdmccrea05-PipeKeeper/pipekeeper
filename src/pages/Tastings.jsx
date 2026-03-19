@@ -64,21 +64,27 @@ export default function TastingsPage() {
     <div className="space-y-6">
       <WhiskeyKeeperModuleNav currentPageName="Tastings" />
 
-      <div>
-        <h1
-          className="text-4xl font-bold tracking-tight mb-2"
-          style={{
-            color: '#F5F1E7',
-            fontFamily: "'Georgia', serif",
-            textShadow: '0 2px 6px rgba(0,0,0,0.7)',
-          }}
-        >
-          {t('nav.tastingNotes') || 'Tasting Notes'}
-        </h1>
-        <p style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
-          {tastingLogs.length} {t('whiskeykeeper.tastingsLogged') || 'tastings logged'}
-        </p>
-      </div>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+         <div>
+           <h1
+             className="text-4xl font-bold tracking-tight mb-2"
+             style={{
+               color: '#F5F1E7',
+               fontFamily: "'Georgia', serif",
+               textShadow: '0 2px 6px rgba(0,0,0,0.7)',
+             }}
+           >
+             {t('nav.tastingNotes') || 'Tasting Notes'}
+           </h1>
+           <p style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
+             {tastingLogs.length} {t('whiskeykeeper.tastingsLogged') || 'tastings logged'}
+           </p>
+         </div>
+         <Button onClick={() => setShowTastingLog(true)} style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))', color: '#F5F1E7' }}>
+           <Plus className="w-4 h-4 mr-2" />
+           {t('whiskey.logTasting', 'Log Tasting')}
+         </Button>
+       </div>
 
       {tastingLogs.length > 0 ? (
         <div className="grid grid-cols-1 gap-4">
