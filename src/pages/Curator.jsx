@@ -7,7 +7,7 @@ import CuratorWorkspace from "@/components/curator/CuratorWorkspace";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
-import { Wine, Sparkles } from "lucide-react";
+import { GlassWater, Sparkles } from "lucide-react";
 import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 import PipeIcon from "@/components/icons/PipeIcon";
 
