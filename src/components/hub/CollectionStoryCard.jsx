@@ -325,17 +325,17 @@ export default function CollectionStoryCard() {
           variant="outline"
           className="flex-1"
           onClick={() => {
-            const url = window.location.href;
+            const storyUrl = `${window.location.origin}/CollectionInsightsShare?story=${encodeURIComponent(story.id || '')}`;
             if (navigator.share) {
               navigator.share({
                 title: t('hub.collectorSnapshot', "Your Collector's Snapshot"),
-                text: story?.narrative || '',
-                url,
+                text: story?.narrative || 'Check out my collection on CollectionKeeper!',
+                url: storyUrl,
               }).catch(() => {
-                navigator.clipboard.writeText(url);
+                navigator.clipboard.writeText(storyUrl);
               });
             } else {
-              navigator.clipboard.writeText(url);
+              navigator.clipboard.writeText(storyUrl);
             }
           }}
         >
