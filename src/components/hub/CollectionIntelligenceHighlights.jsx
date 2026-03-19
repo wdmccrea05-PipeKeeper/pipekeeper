@@ -9,8 +9,10 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 function resolveItemPhoto(item) {
   if (!item) return null;
   if (Array.isArray(item.photos) && item.photos.length > 0) return item.photos[0];
-  if (item.logo) return item.logo;
   if (item.photo) return item.photo;
+  if (item.logo) return item.logo;
+  if (item.image) return item.image;
+  if (item.image_url) return item.image_url;
   return null;
 }
 
@@ -123,7 +125,7 @@ export default function CollectionIntelligenceHighlights({ pipes = [], blends = 
             label={t('hub.mostTasted', 'Most Tasted')}
             title={mostTastedBottle.name || '—'}
             photo={resolveItemPhoto(mostTastedBottle)}
-            onClick={() => navigate(`/BottleDetail?bottleId=${encodeURIComponent(mostTastedBottle.id)}`)}
+            onClick={() => navigate(`/BottleDetail?id=${encodeURIComponent(mostTastedBottle.id)}`)}
           />
         )}
       </div>

@@ -110,10 +110,10 @@ export default function BottleCard({
 
       <div className="p-4 space-y-4">
         <div className="min-w-0">
-          <h3 className="text-lg font-bold text-[#F5F1E7] break-words">
+          <h3 className="text-lg font-bold break-words" style={{ color: '#F5F1E7' }}>
             {bottle?.name || (t('whiskey.untitledBottle') || 'Untitled Bottle')}
           </h3>
-          <p className="text-sm text-[#E0D8C8]/68 break-words mt-1">
+          <p className="text-sm break-words mt-1" style={{ color: 'rgba(224,216,200,0.75)' }}>
             {[bottle?.distillery, bottle?.region, bottle?.country].filter(Boolean).join(' • ') || (t('whiskey.noOriginInfo') || 'No origin details')}
           </p>
         </div>
