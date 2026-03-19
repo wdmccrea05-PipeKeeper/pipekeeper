@@ -1,14 +1,7 @@
 import React, { useState, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import jsPDF from 'jspdf';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
-// Inline canonical bottle value sum (avoids stale module cache issues)
-function sumBottleCollectionValue(bottles) {
-  if (!Array.isArray(bottles)) return 0;
-  return bottles.reduce((sum, b) => {
-    const v = Number(b?.collector_value) || Number(b?.aftermarket_price) || Number(b?.retail_price) || Number(b?.purchase_price) || 0;
-    return sum + v;
-  }, 0);
-}
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { base44 } from '@/api/base44Client';
