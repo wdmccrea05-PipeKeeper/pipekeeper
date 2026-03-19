@@ -116,8 +116,23 @@ export default function Curator() {
   const { user } = useCurrentUser();
   const { t } = useTranslation();
   const { isModuleEnabled } = useEnabledKeeperModules();
-  const [launchContext, setLaunchContext] = useState(() => resolveLaunchContext());
-  const [curatorScope, setCuratorScope] = useState("all");
+  const location = useLocation();
+  const [launchContext, setLaunchContext] = useState(() => {
+    // Hydrate from React Router location.state.seedPrompt (e.g. from BottleDetail)
+    const stateSeed = location?.state?.seedPrompt;
+    const stateScope = location?.state?.scope;
+    if (stateSeed) {
+      return {
+        source: "location.state.seedPrompt",
+        initialPrompt: stateSeed,
+        recommendationContext: location.state || null,
+      };
+    }
+    return resolveLaunchContext();
+  });
+  const [curatorScope, setCuratorScope] = useState(() => {
+    return location?.state?.scope || "all";
+  });
 
   const { data: pipes = [] } = useQuery({
     queryKey: ["pipes", user?.email],
