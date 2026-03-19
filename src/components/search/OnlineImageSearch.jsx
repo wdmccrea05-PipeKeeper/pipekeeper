@@ -14,8 +14,51 @@ function buildBottleQuery(recordData = {}) {
   ]
     .filter((v) => typeof v === 'string' && v.trim())
     .map((v) => v.trim());
-
   return parts.join(' ').trim();
+}
+
+function buildPipeQuery(recordData = {}) {
+  const parts = [
+    recordData?.maker,
+    recordData?.name,
+    recordData?.shape,
+    recordData?.finish,
+    recordData?.bowl_material,
+    'pipe',
+  ]
+    .filter((v) => typeof v === 'string' && v.trim())
+    .map((v) => v.trim());
+  return parts.join(' ').trim();
+}
+
+function buildTobaccoQuery(recordData = {}) {
+  const parts = [
+    recordData?.manufacturer,
+    recordData?.name,
+    recordData?.blend_type,
+    'pipe tobacco',
+  ]
+    .filter((v) => typeof v === 'string' && v.trim())
+    .map((v) => v.trim());
+  return parts.join(' ').trim();
+}
+
+function buildQueryForType(recordType, recordData) {
+  if (recordType === 'pipe') return buildPipeQuery(recordData);
+  if (recordType === 'tobacco' || recordType === 'blend') return buildTobaccoQuery(recordData);
+  return buildBottleQuery(recordData);
+}
+
+function placeholderForType(recordType) {
+  if (recordType === 'pipe') return 'Search pipe image…';
+  if (recordType === 'tobacco' || recordType === 'blend') return 'Search tobacco / blend image…';
+  return 'Search bottle image…';
+}
+
+function emptyHintForType(recordType) {
+  if (recordType === 'pipe') return 'Search for a pipe image to see results here.';
+  if (recordType === 'tobacco' || recordType === 'blend') return 'Search for a tobacco or blend image to see results here.';
+  return 'Search for a bottle image to see results here.';
 }
 
 function normalizeResultImage(item) {
