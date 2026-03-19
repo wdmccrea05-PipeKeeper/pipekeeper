@@ -38,9 +38,9 @@ const SESSION_MODES = [
 ];
 
 const MODULE_OPTIONS = [
-  { value: "pipe_blend", label: "Pipe + Blend", icon: null, isPipeIcon: true },
-  { value: "whiskey", label: "Whiskey Only", icon: Wine },
-  { value: "pipe_blend_whiskey", label: "Pipe + Blend + Whiskey", icon: Sparkles },
+  { value: "pipe_blend", label: "Pipe + Blend", IconComponent: PipeBlendIcon },
+  { value: "whiskey", label: "Whiskey Only", IconComponent: ({ className }) => <Wine className={className} /> },
+  { value: "pipe_blend_whiskey", label: "Pipe + Blend + Whiskey", IconComponent: PipeBlendWhiskeyIcon },
 ];
 
 const CACHE_KEY = "ck_tonight_session_v3";
