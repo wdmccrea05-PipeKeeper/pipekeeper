@@ -185,7 +185,6 @@ export default function TastingsPage() {
         </div>
       )}
     </div>
-  );
     </LockedModuleGuard>
   );
 }
