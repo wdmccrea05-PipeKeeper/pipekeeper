@@ -13,12 +13,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
 export default function TastingsPage() {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { user } = useCurrentUser();
-  const queryClient = useQueryClient();
-  const [editingId, setEditingId] = useState(null);
-  const [editNotes, setEditNotes] = useState('');
+   const { t } = useTranslation();
+   const navigate = useNavigate();
+   const { user } = useCurrentUser();
+   const queryClient = useQueryClient();
+   const [editingId, setEditingId] = useState(null);
+   const [editNotes, setEditNotes] = useState('');
+   const [showTastingLog, setShowTastingLog] = useState(false);
 
   const { data: tastingLogs = [] } = useQuery({
     queryKey: ['tasting-logs', user?.email],
