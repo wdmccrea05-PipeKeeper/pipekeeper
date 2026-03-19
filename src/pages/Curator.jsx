@@ -36,40 +36,47 @@ function getUrlPrompt() {
 }
 
 function resolveLaunchContext() {
-  const stored = readStoredCuratorContext();
-  const urlPrompt = getUrlPrompt();
+   const stored = readStoredCuratorContext();
+   const urlPrompt = getUrlPrompt();
 
-  if (!stored && !urlPrompt) {
-    return {
-      source: "none",
-      initialPrompt: "",
-      recommendationContext: null,
-    };
-  }
+   if (!stored && !urlPrompt) {
+     return {
+       source: "none",
+       initialPrompt: "",
+       recommendationContext: null,
+     };
+   }
 
-  const ctx = stored || {};
+   const ctx = stored || {};
 
-  // CRITICAL FIX:
-  // Prefer the clicked recommendation text over the generic mapped prompt.
-  const initialPrompt =
-    String(ctx.originalPrompt || "").trim() ||
-    String(ctx.originalInsight || "").trim() ||
-    String(ctx.whatif_prompt || "").trim() ||
-    String(ctx.prompt || "").trim() ||
-    urlPrompt ||
-    "";
+   // CRITICAL FIX:
+   // Prefer the clicked recommendation text over the generic mapped prompt.
+   const initialPrompt =
+     String(ctx.originalPrompt || "").trim() ||
+     String(ctx.originalInsight || "").trim() ||
+     String(ctx.whatif_prompt || "").trim() ||
+     String(ctx.prompt || "").trim() ||
+     urlPrompt ||
+     "";
 
-  return {
-    source:
-      (ctx.originalPrompt && "stored.originalPrompt") ||
-      (ctx.originalInsight && "stored.originalInsight") ||
-      (ctx.whatif_prompt && "stored.whatif_prompt") ||
-      (ctx.prompt && "stored.prompt") ||
-      (urlPrompt && "url.prompt") ||
-      "none",
-    initialPrompt,
-    recommendationContext: ctx || null,
-  };
+   // Pre-seed context in sessionStorage for instant UI rendering
+   if (initialPrompt) {
+     try {
+       sessionStorage.setItem("pk_curator_seeded_prompt", initialPrompt);
+     } catch {}
+   }
+
+   return {
+     source:
+       (ctx.originalPrompt && "stored.originalPrompt") ||
+       (ctx.originalInsight && "stored.originalInsight") ||
+       (ctx.whatif_prompt && "stored.whatif_prompt") ||
+       (ctx.prompt && "stored.prompt") ||
+       (urlPrompt && "url.prompt") ||
+       "none",
+     initialPrompt,
+     recommendationContext: ctx || null,
+   };
 }
 
 function clearRouteState() {
