@@ -539,11 +539,19 @@ export default function WhiskeyInsightsPage() {
               <div className="space-y-4">
                 <div className="p-4 rounded-lg" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.2)' }}>
                   <h4 className="font-semibold text-[#F5F1E7] mb-2">Collection Summary</h4>
-                  <p className="text-sm text-[#D8C7A6]/80 mb-3">
-                    Export your collection — {bottleTypes} bottle type{bottleTypes !== 1 ? 's' : ''}, {totalBottles} total bottle{totalBottles !== 1 ? 's' : ''}
-                  </p>
-                  <button 
-                    onClick={async () => {
+                   <p className="text-sm text-[#D8C7A6]/80 mb-3">
+                     Export your collection — {bottleTypes} bottle type{bottleTypes !== 1 ? 's' : ''}, {totalBottles} total bottle{totalBottles !== 1 ? 's' : ''}
+                   </p>
+                   <div className="flex gap-2 flex-wrap">
+                   <button
+                     onClick={handleExportPDF}
+                     className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                     style={{ background: 'rgba(163,92,92,0.3)', color: '#F5F1E7', border: '1px solid rgba(163,92,92,0.4)' }}
+                   >
+                     Export as PDF
+                   </button>
+                   <button 
+                     onClick={async () => {
                       try {
                         const csv = [
                           ['Bottle Type (Name)', 'Whiskey Style', 'Country', 'Retail Price', 'Rating', 'Inventory Units', 'Open Units', 'Sealed Units'].join(','),
@@ -575,10 +583,11 @@ export default function WhiskeyInsightsPage() {
                     }}
                     className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                     style={{ background: 'rgba(180,140,75,0.25)', color: '#F5F1E7' }}
-                  >
+                    >
                     Export as CSV
-                  </button>
-                </div>
+                    </button>
+                    </div>
+                    </div>
 
                 <div className="p-4 rounded-lg" style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)' }}>
                   <h4 className="font-semibold text-[#F5F1E7] mb-2">Tasting History</h4>
