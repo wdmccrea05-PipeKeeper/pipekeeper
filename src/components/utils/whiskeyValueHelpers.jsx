@@ -20,7 +20,8 @@ export function getBottleUnitValue(bottle) {
  * Sum canonical unit value across all bottles (no inventory quantity).
  * Use this for collection total value displays.
  */
-export function sumBottleCollectionValue(bottles = []) {
+export function sumBottleCollectionValue(bottles) {
+  if (!Array.isArray(bottles)) return 0;
   return bottles.reduce((sum, b) => sum + getBottleUnitValue(b), 0);
 }
 
@@ -36,10 +37,8 @@ export function getBottleDisplayValueLabel(bottle) {
 export function getBottleCount(bottle) {
   const explicit = toNumber(bottle?.bottle_count, 0);
   if (explicit > 0) return explicit;
-
   const quantity = toNumber(bottle?.quantity, 0);
   if (quantity > 0) return quantity;
-
   return 1;
 }
 
@@ -52,7 +51,8 @@ export function formatCurrency(value) {
   }).format(n);
 }
 
-export function buildInventoryCountByBottleId(inventoryUnits = []) {
+export function buildInventoryCountByBottleId(inventoryUnits) {
+  if (!Array.isArray(inventoryUnits)) return {};
   return inventoryUnits.reduce((acc, unit) => {
     if (!unit?.bottle_id) return acc;
     acc[unit.bottle_id] = (acc[unit.bottle_id] || 0) + 1;
@@ -60,51 +60,31 @@ export function buildInventoryCountByBottleId(inventoryUnits = []) {
   }, {});
 }
 
-export function getEffectiveBottleCount(bottle, inventoryCountByBottleId = {}, hasInventoryUnits = false) {
+export function getEffectiveBottleCount(bottle, inventoryCountByBottleId, hasInventoryUnits) {
   if (hasInventoryUnits) {
     return Math.max(1, toNumber(inventoryCountByBottleId?.[bottle?.id], 0));
   }
   return getBottleCount(bottle);
 }
 
-export function getBottleTotalValue(bottle, inventoryCountByBottleId = {}, hasInventoryUnits = false) {
+export function getBottleTotalValue(bottle, inventoryCountByBottleId, hasInventoryUnits) {
   return getBottleUnitValue(bottle) * getEffectiveBottleCount(bottle, inventoryCountByBottleId, hasInventoryUnits);
 }
 
-export function getInventoryStatusSummary(inventoryUnits = [], bottleId) {
-  const relevant = inventoryUnits.filter((u) => u?.bottle_id === bottleId);
+export function getInventoryStatusSummary(inventoryUnits, bottleId) {
+  const units = Array.isArray(inventoryUnits) ? inventoryUnits : [];
+  const relevant = units.filter((u) => u?.bottle_id === bottleId);
   if (!relevant.length) {
-    return {
-      total: 0,
-      open: 0,
-      sealed: 0,
-      reserve: 0,
-      drinking: 0,
-      archived: 0,
-    };
+    return { total: 0, open: 0, sealed: 0, reserve: 0, drinking: 0, archived: 0 };
   }
 
-  const summary = {
-    total: relevant.length,
-    open: 0,
-    sealed: 0,
-    reserve: 0,
-    drinking: 0,
-    archived: 0,
-  };
+  const summary = { total: relevant.length, open: 0, sealed: 0, reserve: 0, drinking: 0, archived: 0 };
 
   for (const unit of relevant) {
     const status = String(unit?.status || '').toLowerCase();
-
     if (status === 'open') summary.open += 1;
-    if (status === 'reserve') {
-      summary.reserve += 1;
-      summary.sealed += 1;
-    }
-    if (status === 'drinking') {
-      summary.drinking += 1;
-      summary.sealed += 1;
-    }
+    if (status === 'reserve') { summary.reserve += 1; summary.sealed += 1; }
+    if (status === 'drinking') { summary.drinking += 1; summary.sealed += 1; }
     if (status === 'archived') summary.archived += 1;
   }
 
