@@ -11,9 +11,23 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
+    // Paginate to avoid timeouts on large datasets
+    const PAGE = 200;
+    const fetchAll = async (entity) => {
+      const results = [];
+      let skip = 0;
+      while (true) {
+        const page = await entity.list(null, PAGE, skip);
+        results.push(...page);
+        if (page.length < PAGE) break;
+        skip += PAGE;
+      }
+      return results;
+    };
+
     const [allUsers, allSubscriptions] = await Promise.all([
-      base44.asServiceRole.entities.User.list(),
-      base44.asServiceRole.entities.Subscription.list()
+      fetchAll(base44.asServiceRole.entities.User),
+      fetchAll(base44.asServiceRole.entities.Subscription)
     ]);
 
     const subscriptionMap = new Map();
