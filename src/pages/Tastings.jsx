@@ -6,7 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
-import { Wine, BookOpen, TrendingUp, BarChart3, Edit, Trash2, Check, X } from 'lucide-react';
+import { BookOpen, Edit, Trash2, Check, X } from 'lucide-react';
 import { formatDate } from '@/components/utils/localeFormatters';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,13 +19,6 @@ export default function TastingsPage() {
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState(null);
   const [editNotes, setEditNotes] = useState('');
-
-  const moduleNavItems = [
-    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: Wine },
-    { name: t('nav.tastingNotes') || 'Tastings', path: '/Tastings', icon: BookOpen },
-    { name: t('nav.insights') || 'Insights', path: '/WhiskeyInsights', icon: TrendingUp },
-    { name: t('nav.analytics') || 'Analytics', path: '/WhiskeyAnalytics', icon: BarChart3 },
-  ];
 
   const { data: tastingLogs = [] } = useQuery({
     queryKey: ['tasting-logs', user?.email],
@@ -55,6 +48,7 @@ export default function TastingsPage() {
   });
 
   return (
+    <LockedModuleGuard moduleKey="whiskeykeeper">
     <div className="space-y-6">
       <WhiskeyKeeperModuleNav currentPageName="Tastings" />
 
