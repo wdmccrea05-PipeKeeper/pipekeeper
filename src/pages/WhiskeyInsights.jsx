@@ -172,6 +172,85 @@ export default function WhiskeyInsightsPage() {
     }
   };
 
+  const handleExportPDF = useCallback(() => {
+    try {
+      const doc = new jsPDF();
+      const date = new Date().toLocaleDateString();
+
+      doc.setFontSize(20);
+      doc.setTextColor(40, 20, 10);
+      doc.text('WhiskeyKeeper — Collection Report', 20, 22);
+
+      doc.setFontSize(10);
+      doc.setTextColor(100, 80, 60);
+      doc.text(`Generated: ${date}`, 20, 30);
+
+      doc.setFontSize(14);
+      doc.setTextColor(40, 20, 10);
+      doc.text('Collection Summary', 20, 44);
+
+      doc.setFontSize(11);
+      doc.setTextColor(60, 40, 20);
+      doc.text(`Bottle Types: ${bottleTypes}`, 20, 54);
+      doc.text(`Total Bottles: ${totalBottles}`, 20, 62);
+      doc.text(`Open Bottles: ${openBottles}`, 20, 70);
+      doc.text(`Total Tastings: ${totalTastings}`, 20, 78);
+      doc.text(`Collection Value: ${formatCurrency(Math.round(totalValue))}`, 20, 86);
+      doc.text(`Average Rating: ${averageRating}/5`, 20, 94);
+
+      if (mostValuedBottle) {
+        doc.text(`Most Valued: ${mostValuedBottle.name} (${formatCurrency(getBottleValue(mostValuedBottle))})`, 20, 102);
+      }
+
+      // Bottles table
+      doc.setFontSize(14);
+      doc.setTextColor(40, 20, 10);
+      doc.text('Bottles', 20, 118);
+
+      doc.setFontSize(9);
+      doc.setTextColor(60, 40, 20);
+      const headers = ['Name', 'Type', 'Country', 'Value', 'Rating'];
+      const colX = [20, 80, 120, 150, 180];
+      headers.forEach((h, i) => doc.text(h, colX[i], 126));
+      doc.setDrawColor(180, 140, 75);
+      doc.line(20, 128, 190, 128);
+
+      let y = 135;
+      bottles.forEach((b) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        const val = getBottleValue(b);
+        doc.text(String(b.name || '').slice(0, 28), colX[0], y);
+        doc.text(String(b.type || '').slice(0, 18), colX[1], y);
+        doc.text(String(b.country || '').slice(0, 14), colX[2], y);
+        doc.text(val > 0 ? `$${val}` : '—', colX[3], y);
+        doc.text(b.rating ? String(b.rating) : '—', colX[4], y);
+        y += 8;
+      });
+
+      // Tastings
+      if (tastingLogs.length > 0) {
+        if (y > 250) { doc.addPage(); y = 20; }
+        y += 6;
+        doc.setFontSize(14);
+        doc.setTextColor(40, 20, 10);
+        doc.text('Tasting History', 20, y);
+        y += 10;
+        doc.setFontSize(9);
+        doc.setTextColor(60, 40, 20);
+        tastingLogs.slice(0, 30).forEach((l) => {
+          if (y > 275) { doc.addPage(); y = 20; }
+          const dateStr = l.tasting_date ? new Date(l.tasting_date).toLocaleDateString() : '—';
+          doc.text(`${dateStr}  ${String(l.bottle_name || '').slice(0, 35)}${l.rating ? `  ★${l.rating}` : ''}`, 20, y);
+          y += 7;
+        });
+      }
+
+      doc.save(`whiskeykeeper-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+    } catch (err) {
+      console.error('[WhiskeyInsights] PDF export failed:', err);
+    }
+  }, [bottles, tastingLogs, bottleTypes, totalBottles, openBottles, totalTastings, totalValue, averageRating, mostValuedBottle]);
+
   const handleExportStory = async () => {
     const node = storyRef.current;
     if (!node) return;
