@@ -206,10 +206,7 @@ export default function CollectionHub() {
         },
         {
           label: t("hub.totalValue", "Total Value"),
-          value:
-            summary.pipes.value > 0 || totalBlendValue > 0
-              ? money((summary.pipes.value || 0) + totalBlendValue)
-              : "—",
+          value: money((summary.pipes.value || 0) + totalBlendValue),
         },
       ];
     }
@@ -226,7 +223,7 @@ export default function CollectionHub() {
         },
         {
           label: t("hub.totalValue", "Total Value"),
-          value: totalBottleValue > 0 ? money(totalBottleValue) : "—",
+          value: money(totalBottleValue),
         },
       ];
     }
