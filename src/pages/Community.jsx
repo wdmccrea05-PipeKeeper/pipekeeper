@@ -612,7 +612,7 @@ function CommunityPageInner() {
                   {t("common.loading")}
                 </CardContent>
               </Card>
-            ) : !profile?.enable_messaging ? (
+            ) : !userProfile?.enable_messaging ? (
               <Card className="bg-[#1E2F43] border-amber-500/30">
                 <CardContent className="p-4 flex items-start gap-3">
                   <Mail className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
