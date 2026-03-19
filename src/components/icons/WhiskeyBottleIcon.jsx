@@ -1,21 +1,30 @@
-import React from "react";
+import React from 'react';
 
 export default function WhiskeyBottleIcon({
-  className = "w-5 h-5",
-  color = "currentColor",
-  title = "Bottle",
+  className = 'w-5 h-5',
+  color = 'currentColor',
+  title = 'Bottle',
 }) {
   return (
     <svg viewBox="0 0 24 24" className={className} role="img" aria-label={title} fill="none">
-      <path d="M10 3h4" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
       <path
-        d="M11 3v4l-3.2 5.3A4.7 4.7 0 0 0 11.9 19h.2a4.7 4.7 0 0 0 4.1-6.4L13 7V3"
+        d="M9 2h6v2h-6V2Z"
+        fill={color}
+        opacity="0.22"
         stroke={color}
-        strokeWidth="1.8"
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M9.4 12h5.2" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+      <path
+        d="M9 4h6v1.5c0 .828.672 1.5 1.5 1.5h0c.828 0 1.5.672 1.5 1.5v12c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2V8.5c0-.828.672-1.5 1.5-1.5h0c.828 0 1.5-.672 1.5-1.5V4Z"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M10 8h4" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+      <circle cx="12" cy="14" r="1.5" fill={color} opacity="0.4" />
     </svg>
   );
 }
