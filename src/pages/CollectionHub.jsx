@@ -7,6 +7,7 @@ import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModu
 import { useTasteProfile } from "@/components/curator/useTasteProfile";
 import { buildAIEligibleCollection } from "@/components/utils/moduleAccess";
 import { getCollectionHubSummary, getComingSoonModules } from "@/components/keeper-core";
+import { sumBottleCollectionValue } from "@/components/utils/whiskeyValueHelpers";
 
 import BrandLogo from "@/components/branding/BrandLogo";
 import ModuleCard from "@/components/hub/ModuleCard";
