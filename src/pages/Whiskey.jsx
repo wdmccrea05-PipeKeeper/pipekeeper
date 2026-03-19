@@ -403,10 +403,10 @@ export default function WhiskeyPage() {
             }}
           >
             <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-              style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.22)' }}
-            >
-              <Wine className="w-8 h-8" style={{ color: 'rgba(180,140,75,0.5)' }} />
+               className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+               style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.22)' }}
+             >
+               <GlassWater className="w-8 h-8" style={{ color: 'rgba(180,140,75,0.5)' }} />
             </div>
             <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">{t('whiskey.noBottlesYet', 'No bottles yet')}</h2>
             <p style={{ color: 'rgba(224,216,200,0.6)' }} className="mb-6 max-w-sm mx-auto">{t('whiskey.startTracking', 'Start tracking your whiskey collection')}</p>
