@@ -12,6 +12,7 @@ export default function PipeIcon({
       aria-label={title}
       role="img"
       fill="none"
+      xmlns="http://www.w3.org/2000/svg"
     >
       <path
         d="M4 13.5c0-2.2 1.8-4 4-4h3.8c1.2 0 2.2 1 2.2 2.2v.8c0 1.7 1.4 3 3 3H20"
