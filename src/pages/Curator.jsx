@@ -169,6 +169,20 @@ export default function Curator() {
     staleTime: 60000,
   });
 
+  // Filter data based on selected scope
+  const scopedPipes = curatorScope === "whiskeykeeper" ? [] : pipes;
+  const scopedBlends = curatorScope === "whiskeykeeper" ? [] : blends;
+  const scopedBottles = curatorScope === "pipekeeper" ? [] : bottles;
+  const scopedTastingLogs = curatorScope === "pipekeeper" ? [] : tastingLogs;
+
+  // Available scope options based on enabled modules
+  const availableScopes = useMemo(() => {
+    const opts = [SCOPE_OPTIONS[0]]; // always show "all"
+    opts.push(SCOPE_OPTIONS[1]); // pipekeeper always enabled
+    if (isModuleEnabled("whiskeykeeper")) opts.push(SCOPE_OPTIONS[2]);
+    return opts;
+  }, [isModuleEnabled]);
+
   const handlePromptConsumed = () => {
     clearRouteState();
     setLaunchContext({
