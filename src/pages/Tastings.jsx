@@ -202,7 +202,10 @@ export default function TastingsPage() {
           </p>
         </div>
       )}
-    </div>
-    </LockedModuleGuard>
-  );
-}
+
+      {/* Tasting Log Modal */}
+      <LogTastingModal isOpen={showTastingLog} onClose={() => setShowTastingLog(false)} bottles={bottles} user={user} />
+      </div>
+      </LockedModuleGuard>
+      );
+      }
