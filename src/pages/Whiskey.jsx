@@ -220,7 +220,7 @@ export default function WhiskeyPage() {
                 {/* Stats row */}
                 {bottles.length > 0 && (
                   <div className="flex gap-3 flex-wrap">
-                    <StatBadge icon={Wine} label={t('hub.bottles', 'Bottles')} value={stats.count} accent="#D4A574" />
+                    <StatBadge icon={GlassWater} label={t('hub.bottles', 'Bottles')} value={stats.count} accent="#D4A574" />
                     <StatBadge icon={BookOpen} label={t('whiskey.tastings', 'Tastings')} value={stats.tastingCount} accent="#C87941" />
                     {stats.avgRating && (
                       <StatBadge icon={Star} label={t('common.rating', 'Rating')} value={`${stats.avgRating}/5`} accent="#E0C060" />
