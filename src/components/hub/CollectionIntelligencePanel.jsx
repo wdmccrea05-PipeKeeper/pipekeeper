@@ -15,7 +15,7 @@ function PipeInsightIcon({ color }) {
   );
 }
 
-function InsightChip({ icon: Icon, label, detail, onClick, color = '#D4A574' }) {
+function InsightChip({ icon: Icon, isPipeIcon, label, detail, onClick, color = '#D4A574' }) {
   return (
     <button
       onClick={onClick}
@@ -29,7 +29,17 @@ function InsightChip({ icon: Icon, label, detail, onClick, color = '#D4A574' }) 
         className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
         style={{ background: `${color}20`, border: `1px solid ${color}40` }}
       >
-        <Icon className="w-4 h-4" style={{ color }} />
+        {isPipeIcon ? (
+          <img
+            src={MODULE_ICONS.pipeicon}
+            alt="Pipe"
+            className="w-4 h-4 object-contain"
+            style={{ backgroundColor: 'transparent' }}
+            draggable={false}
+          />
+        ) : Icon ? (
+          <Icon className="w-4 h-4" style={{ color }} />
+        ) : null}
       </div>
       <div className="min-w-0">
         <p className="text-sm font-medium leading-snug" style={{ color: '#E0D8C8' }}>{label}</p>
@@ -266,12 +276,13 @@ export default function CollectionIntelligencePanel({ pipes = [], blends = [], b
           <InsightChip
             key={i}
             icon={insight.icon}
+            isPipeIcon={insight.isPipeIcon}
             label={insight.label}
             detail={insight.detail}
             color={insight.color}
             onClick={() => {
               if (insight.isBottleInsight && insight.bottleId) {
-                navigate(`/BottleDetail?bottleId=${insight.bottleId}`);
+                navigate(`/BottleDetail?id=${insight.bottleId}`);
               } else {
                 navigate('/Curator?prompt=' + encodeURIComponent(insight.prompt));
               }
