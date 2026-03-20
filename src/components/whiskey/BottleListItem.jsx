@@ -14,11 +14,11 @@ import {
 function MiniBadge({ children }) {
   return (
     <span
-      className="px-2 py-1 rounded-full text-xs font-medium"
+      className="px-2.5 py-1 rounded-full text-xs font-medium"
       style={{
         background: 'rgba(180,140,75,0.18)',
         border: '1px solid rgba(180,140,75,0.28)',
-        color: 'rgba(245,241,231,0.86)',
+        color: '#F5F1E7',
       }}
     >
       {children}
@@ -53,49 +53,64 @@ export default function BottleListItem({
   );
   const valueLabel = useMemo(() => getBottleDisplayValueLabel(bottle), [bottle]);
 
+  const photo =
+    bottle?.photo ||
+    bottle?.image ||
+    bottle?.image_url ||
+    (Array.isArray(bottle?.photos) ? bottle.photos[0] : '') ||
+    '';
+
   return (
     <div
-      className="rounded-2xl p-4"
+      className="rounded-2xl p-4 md:p-5"
       style={{
-        background: 'linear-gradient(180deg, rgba(42,31,24,0.98), rgba(25,18,14,0.98))',
-        border: '1px solid rgba(180,140,75,0.14)',
+        background: 'linear-gradient(145deg, rgba(58,40,28,0.98), rgba(31,21,16,0.98))',
+        border: '1px solid rgba(180,140,75,0.16)',
+        boxShadow: '0 10px 28px rgba(0,0,0,0.32)',
       }}
     >
       <div className="flex flex-col lg:flex-row gap-4 lg:items-center">
-        <div className="w-full lg:w-24 h-28 rounded-xl overflow-hidden bg-black/20 flex-shrink-0">
-          {bottle?.photo ? (
+        <div
+          className="w-full lg:w-28 h-32 rounded-xl overflow-hidden flex-shrink-0"
+          style={{
+            background: 'linear-gradient(180deg, rgba(35,25,18,0.96), rgba(20,14,10,0.98))',
+            border: '1px solid rgba(180,140,75,0.12)',
+          }}
+        >
+          {photo ? (
             <img
-              src={bottle.photo}
+              src={photo}
               alt={bottle?.name || 'Bottle'}
               className="w-full h-full object-contain"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-xs text-[#E0D8C8]/30">
+            <div className="w-full h-full flex items-center justify-center text-xs text-[#E0D8C8]/45">
               {t('whiskey.noPhoto') || 'No photo'}
             </div>
           )}
         </div>
 
-        <div className="flex-1 min-w-0 space-y-2">
+        <div className="flex-1 min-w-0 space-y-3">
           <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3">
             <div className="min-w-0">
-              <h3 className="text-lg font-bold text-[#F5F1E7] break-words">
+              <h3 className="text-xl font-bold text-[#F5F1E7] break-words leading-tight">
                 {bottle?.name || (t('whiskey.untitledBottle') || 'Untitled Bottle')}
               </h3>
-              <p className="text-sm text-[#E0D8C8]/68 break-words">
-                {[bottle?.distillery, bottle?.region, bottle?.country].filter(Boolean).join(' • ') || (t('whiskey.noOriginInfo') || 'No origin details')}
+              <p className="text-sm text-[#E0D8C8]/82 break-words mt-1">
+                {[bottle?.distillery, bottle?.region, bottle?.country].filter(Boolean).join(' • ') ||
+                  (t('whiskey.noOriginInfo') || 'No origin details')}
               </p>
             </div>
 
-            <div className="text-left xl:text-right">
+            <div className="text-left xl:text-right shrink-0">
               <div className="text-xs uppercase tracking-wide text-[#D4A574] font-semibold">
                 {valueLabel}
               </div>
-              <div className="text-lg font-bold text-[#F5F1E7]">
+              <div className="text-2xl font-bold text-[#F5F1E7] mt-1">
                 {formatCurrency(unitValue)}
               </div>
-              <div className="text-xs text-[#E0D8C8]/58">
-                {t('whiskey.totalValue') || 'Total'}: {formatCurrency(totalValue)}
+              <div className="text-sm text-[#D8C7A6]/72 mt-1">
+                Total: {formatCurrency(totalValue)}
               </div>
             </div>
           </div>
@@ -109,14 +124,14 @@ export default function BottleListItem({
             {inventorySummary.sealed > 0 && <MiniBadge>{inventorySummary.sealed} sealed</MiniBadge>}
           </div>
 
-          <p className="text-sm text-[#E0D8C8]/62 break-words">
+          <p className="text-sm text-[#E0D8C8]/76 break-words leading-relaxed">
             {bottle?.notes
               ? bottle.notes.slice(0, 180) + (bottle.notes.length > 180 ? '…' : '')
               : (t('whiskey.noNotesYet') || 'No notes yet')}
           </p>
         </div>
 
-        <div className="flex lg:flex-col gap-2 lg:w-[130px] flex-shrink-0">
+        <div className="flex lg:flex-col gap-2 lg:w-[132px] flex-shrink-0">
           {typeof onOpen === 'function' && (
             <Button
               type="button"
