@@ -180,6 +180,7 @@ export default function CollectionStoryCard() {
 
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showStoryViewer, setShowStoryViewer] = useState(false);
 
   const enabledModules = useMemo(
     () => getAIEligibleModuleIds(moduleStates),
