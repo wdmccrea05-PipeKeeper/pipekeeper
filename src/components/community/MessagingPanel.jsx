@@ -13,6 +13,18 @@ import { MessageCircle, Send, Trash2, Save, X, Circle, Edit2 } from "lucide-reac
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
+function getModuleTags(profile) {
+  if (!profile) return [];
+  const tags = [];
+  if (profile.pipekeeper_enabled !== false) {
+    tags.push({ label: '🪵 PipeKeeper', bg: 'rgba(120,80,40,0.35)', color: 'rgba(212,165,116,1)' });
+  }
+  if (profile.whiskeykeeper_enabled === true) {
+    tags.push({ label: '🥃 WhiskeyKeeper', bg: 'rgba(90,60,20,0.35)', color: 'rgba(212,190,100,1)' });
+  }
+  return tags;
+}
+
 export default function MessagingPanel({ user, friends, publicProfiles }) {
   const { t } = useTranslation();
   const [selectedFriend, setSelectedFriend] = useState(null);
