@@ -931,6 +931,18 @@ ${englishText}`;
           </div>
         )}
         
+        {/* Action Result Card — shown instead of chat when action completes */}
+        {actionResult && !runningAction && (
+          <div className="mb-4">
+            <CuratorActionResultCard
+              actionResult={actionResult}
+              onApplyItems={handleApplyActionItems}
+              onClarify={handleClarifyAction}
+              loading={applyLoading}
+            />
+          </div>
+        )}
+        
         {messages.length === 0 && !runningAction ? (
           <div className="flex items-center justify-center h-full min-h-[120px]">
             <div className="text-center space-y-3 max-w-md px-4">
