@@ -6,7 +6,7 @@
  */
 
 import { useMemo } from 'react';
-import { KEEPER_MODULES } from '@/components/hub/keeperModuleRegistry';
+import { KEEPER_MODULES } from '@/components/utils/moduleRegistry';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 
 export function useEnabledKeeperModules() {
