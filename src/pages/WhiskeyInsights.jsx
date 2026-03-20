@@ -322,11 +322,11 @@ export default function WhiskeyInsightsPage() {
               {/* Summary Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <StatusCard
-                  icon={Layers}
+                  icon={Wine}
                   label="Bottle Types"
                   value={bottleTypes}
                   sub="Distinct labels"
-                  accent={CATEGORY_COLORS.pipe}
+                  accent="#C87941"
                 />
                 <StatusCard
                   icon={Trophy}
