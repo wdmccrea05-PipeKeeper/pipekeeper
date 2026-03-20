@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQuery } from "@tanstack/react-query";
-import { Send, Sparkles, Zap } from "lucide-react";
+import { Send, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import {
   startCuratorSession,
@@ -21,8 +21,9 @@ import {
 import { validateOwnershipIntegrity } from "@/components/utils/curatorOwnershipGuard";
 import { useTasteProfile, buildTasteProfileContext } from "@/components/curator/useTasteProfile";
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
-import { parseActionResult } from "@/components/curator/actionResultParser";
-import { applyActionChanges, buildClarificationPrompt } from "@/components/curator/actionApplyHandlers";
+import { executeCuratorAction } from "@/components/curator/curatorActionExecutor";
+import { applyAllRecommendations, buildClarificationPrompt } from "@/components/curator/curatorApplyHandlers";
+import CuratorActionStatusBar from "@/components/curator/CuratorActionStatusBar";
 import CuratorActionResultCard from "@/components/curator/CuratorActionResultCard";
 
 const CURATOR_ICON =
