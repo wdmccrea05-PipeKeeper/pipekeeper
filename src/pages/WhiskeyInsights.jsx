@@ -8,7 +8,7 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import { WhiskeyAnalyticsTab } from '@/components/whiskey/WhiskeyInsightsAnalytics';
 import { WhiskeyHighlightCard, WhiskeyStoryCardModal, captureAndShareWhiskeyCard } from '@/components/whiskey/WhiskeyHighlightCard';
-import { Wine, BookOpen, TrendingUp, BarChart3, Award, Trophy, Star, Zap, Calendar } from 'lucide-react';
+import { Layers, BookOpen, TrendingUp, BarChart3, Award, Trophy, Star, Zap, Calendar } from 'lucide-react';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import { toast } from 'sonner';
 import { differenceInCalendarDays, parseISO, subDays, isWithinInterval } from 'date-fns';

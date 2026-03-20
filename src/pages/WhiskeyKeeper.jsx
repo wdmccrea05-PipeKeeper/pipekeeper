@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, TrendingUp, Wine } from 'lucide-react';
+import { Plus, Search, TrendingUp, BookOpen } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency } from '@/components/utils/localeFormatters';
