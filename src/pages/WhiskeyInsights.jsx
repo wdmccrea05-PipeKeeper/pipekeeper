@@ -239,16 +239,7 @@ export default function WhiskeyInsightsPage() {
     }
   }, [bottles, tastingLogs, bottleTypes, totalBottles, openBottles, totalTastings, totalValue, averageRating, mostValuedBottle]);
 
-  const handleExportStory = async () => {
-    const node = storyRef.current;
-    if (!node) return;
-    try {
-      await captureAndShareWhiskeyCard(node, 'whiskeykeeper-story');
-      toast.success('Story exported!');
-    } catch (err) {
-      toast.error('Failed to export story');
-    }
-  };
+
 
   return (
     <LockedModuleGuard moduleKey="whiskeykeeper">
