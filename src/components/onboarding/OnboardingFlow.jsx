@@ -432,11 +432,12 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
     try {
       await selectPlan(selectedPlan, billingPeriod, {
         selectedModules: getSelectedModules(),
-        successUrl: '/CollectionHub',
+        successUrl: '/SubscriptionSuccessFlow?next=/CollectionHub',
         cancelUrl: '/Onboarding',
       });
     } catch (error) {
       console.error('Paywall selection failed:', error);
+      // Error is already shown via toast in usePaywall
     }
   };
 
