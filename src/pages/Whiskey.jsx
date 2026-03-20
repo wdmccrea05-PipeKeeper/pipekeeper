@@ -86,9 +86,28 @@ export default function WhiskeyPage() {
     staleTime: 10000,
   });
 
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: ({ id, favorite }) => base44.entities.Bottle.update(id, { favorite }),
+    onMutate: async ({ id, favorite }) => {
+      await queryClient.cancelQueries({ queryKey: ['bottles', user?.email, sortBy] });
+      const prev = queryClient.getQueryData(['bottles', user?.email, sortBy]);
+      queryClient.setQueryData(['bottles', user?.email, sortBy], (old) =>
+        (old || []).map(b => b?.id === id ? { ...b, favorite } : b)
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, context) => {
+      queryClient.setQueryData(['bottles', user?.email, sortBy], context?.prev);
+    },
+  });
+
   const filteredBottles = (bottles || []).sort((a, b) => {
     if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
     if (sortBy === 'rating') return (Number(b.rating) || 0) - (Number(a.rating) || 0);
+    if (sortBy === 'favorites') {
+      if (a.favorite && !b.favorite) return -1;
+      if (!a.favorite && b.favorite) return 1;
+    }
     return new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime();
   });
 
@@ -269,6 +288,7 @@ export default function WhiskeyPage() {
                   <SelectItem value="date">{t('whiskey.newestFirst', 'Newest')}</SelectItem>
                   <SelectItem value="name">{t('whiskey.byName', 'By Name')}</SelectItem>
                   <SelectItem value="rating">{t('whiskey.byRating', 'By Rating')}</SelectItem>
+                  <SelectItem value="favorites">{t('whiskey.favoritesFirst', 'Favorites First')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
