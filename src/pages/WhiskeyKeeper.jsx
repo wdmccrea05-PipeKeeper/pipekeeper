@@ -18,6 +18,8 @@ import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav'
 import CatalogPlate from '@/components/home/CatalogPlate';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
+import { getWhiskeyHighlights } from '@/components/whiskey/getWhiskeyHighlights';
+import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
