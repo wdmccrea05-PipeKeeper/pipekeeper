@@ -734,7 +734,12 @@ ${englishText}`;
         console.error("Action execution failed:", err);
         if (!cancelled) {
           setRunningAction(null);
-          toast.error(`Action failed: ${err?.message || "Unknown error"}`);
+          // Show structured error panel instead of toast
+          setActionError({
+            title: "Curator action could not be completed",
+            subtitle: "The action response could not be processed.",
+            reason: err?.message || "Unknown error",
+          });
         }
       }
     })();
