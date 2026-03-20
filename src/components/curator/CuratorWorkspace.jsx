@@ -241,6 +241,7 @@ export default function CuratorWorkspace({
   const [initError, setInitError] = useState("");
   const [runningAction, setRunningAction] = useState(null);
   const [actionResult, setActionResult] = useState(null);
+  const [actionError, setActionError] = useState(null);
   const [applyLoading, setApplyLoading] = useState(false);
   const [lastExecutionId, setLastExecutionId] = useState(null);
 
