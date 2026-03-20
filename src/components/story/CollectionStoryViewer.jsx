@@ -154,9 +154,9 @@ function CollectionStorySlide({ card }) {
                   color: '#F5F1E7',
                   fontFamily: "'Georgia', serif",
                   textShadow: '0 3px 14px rgba(0,0,0,0.9), 0 1px 4px rgba(0,0,0,0.7)',
-                  wordBreak: 'keep-all',
-                  overflowWrap: 'normal',
-                  hyphens: 'none',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'anywhere',
+                  hyphens: 'auto',
                 }}
               >
                 {card.value}
