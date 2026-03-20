@@ -2,7 +2,7 @@ import React from 'react';
 import { HeritageCard } from "@/components/ui/HeritageCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Star, Package } from "lucide-react";
+import { Heart, Star, Package, Pencil } from "lucide-react";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { getAgingRecommendation } from "@/components/utils/agingRecommendation";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -23,7 +23,7 @@ const BLEND_COLORS = {
   "Cavendish": "bg-amber-800 text-amber-100 border-amber-700/60",
 };
 
-export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
+export default function TobaccoListItem({ blend, onClick, onToggleFavorite, onEdit }) {
   const { t } = useTranslation();
   const colorClass = BLEND_COLORS[blend.blend_type] || "bg-slate-700 text-slate-100 border-slate-600/60";
   const agingRec = getAgingRecommendation(blend);
@@ -153,6 +153,17 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
               <p className="text-xs text-[#E0D8C8]/60 truncate">
                 {t("tobaccoExtended.flavors")}: {blend.flavor_notes.slice(0, 5).join(', ')}
               </p>
+            )}
+            {typeof onEdit === 'function' && (
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(blend); }}
+                className="mt-2 flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all"
+                style={{ background: 'rgba(212,165,116,0.1)', border: '1px solid rgba(212,165,116,0.2)', color: '#D4A574' }}
+              >
+                <Pencil className="w-3 h-3" />
+                Edit
+              </button>
             )}
           </div>
         </div>
