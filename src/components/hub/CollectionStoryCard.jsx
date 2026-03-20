@@ -325,18 +325,28 @@ export default function CollectionStoryCard() {
         <Button
           variant="outline"
           className="flex-1"
-          onClick={() => {
-            const storyUrl = `${window.location.origin}/CollectionInsightsShare?story=${encodeURIComponent(story.id || '')}`;
-            if (navigator.share) {
-              navigator.share({
-                title: t('hub.collectorSnapshot', "Your Collector's Snapshot"),
-                text: story?.narrative || 'Check out my collection on CollectionKeeper!',
-                url: storyUrl,
-              }).catch(() => {
-                navigator.clipboard.writeText(storyUrl);
-              });
-            } else {
-              navigator.clipboard.writeText(storyUrl);
+          onClick={async () => {
+            const storyUrl = `${window.location.origin}/CollectionInsightsShare`;
+            try {
+              if (navigator.share) {
+                await navigator.share({
+                  title: t('hub.collectorSnapshot', "Your Collector's Snapshot"),
+                  text: story?.narrative?.slice(0, 200) || 'Check out my collection on CollectionKeeper!',
+                  url: storyUrl,
+                });
+              } else {
+                await navigator.clipboard.writeText(storyUrl);
+                toast.success('Share link copied to clipboard!');
+              }
+            } catch (err) {
+              if (err?.name !== 'AbortError') {
+                try {
+                  await navigator.clipboard.writeText(storyUrl);
+                  toast.success('Share link copied to clipboard!');
+                } catch {
+                  toast.error('Could not copy link.');
+                }
+              }
             }
           }}
         >
