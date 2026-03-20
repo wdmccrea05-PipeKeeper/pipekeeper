@@ -56,6 +56,7 @@ function StatBadge({ icon: Icon, label, value, accent = '#D4A574' }) {
 export default function WhiskeyPage() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
+  const { hideValues, hideCollectionCounts } = useProfilePrivacy();
   const queryClient = useQueryClient();
 
   const [showForm, setShowForm] = useState(false);
