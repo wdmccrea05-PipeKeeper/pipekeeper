@@ -713,7 +713,7 @@ ${englishText}`;
         executedActionIdRef.current = execId;
         
         // Execute silently (don't add user message)
-        const ok = await sendMessage(actionPrompt, launchContext?.recommendationContext || null, true);
+        const ok = await sendMessage(actionPrompt, launchContext?.recommendationContext || null, true, launchContext);
 
         if (ok) {
           setRunningAction(null);
