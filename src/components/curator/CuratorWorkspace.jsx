@@ -758,36 +758,48 @@ ${englishText}`;
   };
 
   const handleApplyActionItems = async (groups, selectedItemIds) => {
-    if (!actionResult) return;
+    if (!actionResult || !user?.email) return;
     
     setApplyLoading(true);
     try {
-      const results = await applyActionChanges(actionResult.actionId, groups);
+      const results = await applyAllRecommendations(groups, user);
       
-      // Clear action result after successful apply
-      setActionResult(null);
+      // Invalidate affected entity caches
+      const queryClient = require("@tanstack/react-query").useQueryClient?.();
+      if (queryClient) {
+        queryClient.invalidateQueries({ queryKey: ["pipes"] });
+        queryClient.invalidateQueries({ queryKey: ["blends"] });
+        queryClient.invalidateQueries({ queryKey: ["bottles"] });
+      }
       
-      toast.success(`Applied ${results.success || Object.values(results).reduce((s, r) => s + r.success, 0)} changes to your collection`);
+      const successCount = results.total.success;
+      if (successCount > 0) {
+        toast.success(`Applied ${successCount} change${successCount !== 1 ? 's' : ''} to your collection`);
+        setActionResult(null);
+      }
+      
+      if (results.total.failed > 0) {
+        toast.error(`${results.total.failed} change${results.total.failed !== 1 ? 's' : ''} failed`);
+      }
     } catch (err) {
       console.error('Apply failed:', err);
+      toast.error("Failed to apply changes");
     } finally {
       setApplyLoading(false);
     }
   };
 
-  const handleClarifyAction = async (clarificationContext) => {
+  const handleClarifyAction = (clarificationContext) => {
     if (!actionResult) return;
     
-    // Build a clean clarification prompt
+    // Build clean clarification prompt (no system text)
     const clarifyPrompt = buildClarificationPrompt(clarificationContext);
     
-    // Open curator chat with clarification
+    // Set input and close card
     setInput(clarifyPrompt);
-    
-    // Close action result card
     setActionResult(null);
     
-    // Focus on input
+    // Focus input
     setTimeout(() => {
       document.querySelector('input[placeholder*="Ask Curator"]')?.focus();
     }, 100);
