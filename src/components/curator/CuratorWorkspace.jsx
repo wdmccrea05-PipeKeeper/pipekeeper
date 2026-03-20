@@ -725,6 +725,7 @@ ${englishText}`;
 
         if (!cancelled) {
           setActionResult(result.result);
+          setActionError(null); // Clear any previous errors
           setRunningAction(null);
           if (onPromptConsumed) {
             onPromptConsumed();
