@@ -257,31 +257,35 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
   return (
     <>
-      <Card className="bg-white/95 border-[#e8d5b7]/30">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-stone-800 flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 text-blue-600" />
-              {t("messaging.instantMessaging")}
-            </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowInbox(true)}
-              className="relative"
-            >
-              {t("messaging.inbox")}
-              {inboxMessages.length > 0 && (
-                <Badge className="absolute -top-2 -right-2 bg-rose-600 text-white text-xs px-1.5">
-                  {inboxMessages.length}
-                </Badge>
-              )}
-            </Button>
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{
+          background: 'linear-gradient(145deg, rgba(52,37,24,0.88), rgba(42,30,20,0.95))',
+          border: '1px solid rgba(120,90,65,0.32)',
+        }}
+      >
+        <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(120,90,65,0.25)' }}>
+          <div className="flex items-center gap-2">
+            <MessageCircle className="w-5 h-5" style={{ color: 'rgba(180,140,75,0.9)' }} />
+            <span className="font-semibold text-[#F5F1E7]">{t("messaging.instantMessaging", "Messages")}</span>
           </div>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-96">
-            <div className="space-y-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowInbox(true)}
+            className="relative border-[rgba(120,90,65,0.35)] text-[#E0D8C8] hover:bg-[rgba(255,255,255,0.06)]"
+          >
+            {t("messaging.inbox", "Inbox")}
+            {inboxMessages.length > 0 && (
+              <Badge className="absolute -top-2 -right-2 bg-rose-600 text-white text-xs px-1.5">
+                {inboxMessages.length}
+              </Badge>
+            )}
+          </Button>
+        </div>
+        <div className="p-3">
+          <ScrollArea className="h-80">
+            <div className="space-y-1.5">
               {friendsWithMessaging.map((friendship) => {
                 const friendEmail = friendship.requester_email === userEmail 
                   ? friendship.recipient_email 
@@ -289,40 +293,52 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                 const profile = publicProfiles.find(p => p.user_email === friendEmail);
                 const online = isOnline(friendEmail);
                 const unread = getUnreadCount(friendEmail);
+                const modules = getModuleTags(profile);
                 
                 return (
                   <button
                     key={friendship.id}
                     onClick={() => setSelectedFriend(friendEmail)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all ${
-                      selectedFriend === friendEmail 
-                        ? 'bg-blue-50 border-blue-300' 
-                        : 'hover:bg-stone-50 border-stone-200'
-                    }`}
+                    className="w-full flex items-center gap-3 p-3 rounded-lg transition-all text-left"
+                    style={{
+                      background: selectedFriend === friendEmail
+                        ? 'rgba(163,92,92,0.18)'
+                        : 'rgba(255,255,255,0.04)',
+                      border: selectedFriend === friendEmail
+                        ? '1px solid rgba(163,92,92,0.4)'
+                        : '1px solid rgba(120,90,65,0.2)',
+                    }}
                   >
-                    <div className="relative">
+                    <div className="relative flex-shrink-0">
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={profile?.avatar_url} />
-                        <AvatarFallback className="bg-amber-200 text-amber-800">
+                        <AvatarFallback className="bg-[#A35C5C] text-[#F5F1E7] text-sm font-semibold">
                           {profile?.display_name?.[0] || friendEmail?.[0]?.toUpperCase() || '?'}
                         </AvatarFallback>
                       </Avatar>
                       <Circle 
                         className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 ${
-                          online ? 'text-emerald-500 fill-emerald-500' : 'text-stone-400 fill-stone-400'
+                          online ? 'text-emerald-400 fill-emerald-400' : 'text-[#E0D8C8]/30 fill-[#E0D8C8]/30'
                         }`} 
                       />
                     </div>
-                    <div className="flex-1 text-left min-w-0">
-                      <p className="font-medium text-stone-800 truncate">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-[#F5F1E7] truncate text-sm">
                         {profile?.display_name || friendEmail}
                       </p>
-                      <p className="text-xs text-stone-500">
-                        {online ? t("messaging.online") : t("messaging.offline")}
-                      </p>
+                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        <p className="text-xs" style={{ color: online ? 'rgba(52,211,153,0.9)' : 'rgba(224,216,200,0.45)' }}>
+                          {online ? t("messaging.online", "Online") : t("messaging.offline", "Offline")}
+                        </p>
+                        {modules.map(m => (
+                          <span key={m.label} className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: m.bg, color: m.color }}>
+                            {m.label}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                     {unread > 0 && (
-                      <Badge className="bg-rose-600 text-white">
+                      <Badge className="bg-rose-600 text-white flex-shrink-0">
                         {unread}
                       </Badge>
                     )}
@@ -331,8 +347,8 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
               })}
             </div>
           </ScrollArea>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Chat Sheet */}
       <Sheet open={!!selectedFriend} onOpenChange={() => setSelectedFriend(null)}>
@@ -342,22 +358,22 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
               <div className="relative">
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={publicProfiles.find(p => p.user_email === selectedFriend)?.avatar_url} />
-                  <AvatarFallback className="bg-amber-200 text-amber-800">
+                  <AvatarFallback className="bg-[#A35C5C] text-[#F5F1E7] font-semibold">
                     {publicProfiles.find(p => p.user_email === selectedFriend)?.display_name?.[0] || selectedFriend?.[0]?.toUpperCase() || '?'}
                   </AvatarFallback>
                 </Avatar>
                 <Circle 
                   className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 ${
-                    isOnline(selectedFriend) ? 'text-emerald-500 fill-emerald-500' : 'text-stone-400 fill-stone-400'
+                    isOnline(selectedFriend) ? 'text-emerald-400 fill-emerald-400' : 'text-[#E0D8C8]/30 fill-[#E0D8C8]/30'
                   }`} 
                 />
               </div>
               <div>
-                <p className="font-semibold">
+                <p className="font-semibold text-[#F5F1E7]">
                   {publicProfiles.find(p => p.user_email === selectedFriend)?.display_name || selectedFriend}
                 </p>
-                <p className="text-xs text-stone-500 font-normal">
-                  {isOnline(selectedFriend) ? t("messaging.online") : t("messaging.offline")}
+                <p className="text-xs font-normal" style={{ color: isOnline(selectedFriend) ? 'rgba(52,211,153,0.9)' : 'rgba(224,216,200,0.45)' }}>
+                  {isOnline(selectedFriend) ? t("messaging.online", "Online") : t("messaging.offline", "Offline")}
                 </p>
               </div>
             </SheetTitle>
@@ -501,51 +517,50 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
       <Sheet open={showInbox} onOpenChange={setShowInbox}>
         <SheetContent className="w-full sm:max-w-lg" style={{ paddingTop: 'calc(1rem + var(--safe-area-top))' }}>
           <SheetHeader>
-            <SheetTitle>{t("messaging.messageInbox")}</SheetTitle>
-            <SheetDescription className="sr-only">{t("messaging.inboxDescription")}</SheetDescription>
+            <SheetTitle className="text-[#F5F1E7]">{t("messaging.messageInbox", "Message Inbox")}</SheetTitle>
+            <SheetDescription className="sr-only">{t("messaging.inboxDescription", "Your messages")}</SheetDescription>
           </SheetHeader>
           <ScrollArea className="h-full mt-6">
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold text-stone-800 mb-2">{t("messaging.unreadMessages")} ({inboxMessages.length})</h3>
+                <h3 className="font-semibold text-[#F5F1E7] mb-2">{t("messaging.unreadMessages", "Unread")} ({inboxMessages.length})</h3>
                 {inboxMessages.length === 0 ? (
-                  <p className="text-sm text-stone-500 py-4">{t("messaging.noUnread")}</p>
+                  <p className="text-sm text-[#E0D8C8]/60 py-4">{t("messaging.noUnread", "No unread messages")}</p>
                 ) : (
                   <div className="space-y-2">
                     {inboxMessages.map((message) => {
                       const profile = publicProfiles.find(p => p.user_email === message.sender_email);
                       return (
-                        <Card key={message.id} className="bg-blue-50 border-blue-200">
-                          <CardContent className="p-3">
-                            <div className="flex items-start gap-3">
-                              <Avatar className="w-8 h-8">
-                                <AvatarImage src={profile?.avatar_url} />
-                                <AvatarFallback className="bg-amber-200 text-amber-800 text-xs">
-                                  {profile?.display_name?.[0] || message.sender_email?.[0]?.toUpperCase() || '?'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm text-stone-800">
-                                  {profile?.display_name || message.sender_email}
-                                </p>
-                                <p className="text-sm text-stone-700 break-words">{message.content}</p>
-                                <p className="text-xs text-stone-500 mt-1">
-                                  {new Date(message.created_date).toLocaleString()}
-                                </p>
-                              </div>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => {
-                                  setShowInbox(false);
-                                  setSelectedFriend(message.sender_email);
-                                }}
-                              >
-                                {t("messaging.reply")}
-                              </Button>
+                        <div key={message.id} className="rounded-lg p-3" style={{ background: 'rgba(163,92,92,0.1)', border: '1px solid rgba(163,92,92,0.25)' }}>
+                          <div className="flex items-start gap-3">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage src={profile?.avatar_url} />
+                              <AvatarFallback className="bg-[#A35C5C] text-[#F5F1E7] text-xs font-semibold">
+                                {profile?.display_name?.[0] || message.sender_email?.[0]?.toUpperCase() || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm text-[#F5F1E7]">
+                                {profile?.display_name || message.sender_email}
+                              </p>
+                              <p className="text-sm text-[#E0D8C8] break-words mt-0.5">{message.content}</p>
+                              <p className="text-xs text-[#E0D8C8]/50 mt-1">
+                                {new Date(message.created_date).toLocaleString()}
+                              </p>
                             </div>
-                          </CardContent>
-                        </Card>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-[rgba(120,90,65,0.35)] text-[#E0D8C8] hover:bg-[rgba(255,255,255,0.06)] flex-shrink-0"
+                              onClick={() => {
+                                setShowInbox(false);
+                                setSelectedFriend(message.sender_email);
+                              }}
+                            >
+                              {t("messaging.reply", "Reply")}
+                            </Button>
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
@@ -553,32 +568,31 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
               </div>
 
               <div>
-                <h3 className="font-semibold text-stone-800 mb-2">{t("messaging.savedMessages")} ({savedMessages.length})</h3>
+                <h3 className="font-semibold text-[#F5F1E7] mb-2">{t("messaging.savedMessages", "Saved")} ({savedMessages.length})</h3>
                 {savedMessages.length === 0 ? (
-                  <p className="text-sm text-stone-500 py-4">{t("messaging.noSaved")}</p>
+                  <p className="text-sm text-[#E0D8C8]/60 py-4">{t("messaging.noSaved", "No saved messages")}</p>
                 ) : (
                   <div className="space-y-2">
                     {savedMessages.map((message) => {
                       const profile = publicProfiles.find(p => p.user_email === message.sender_email);
                       return (
-                        <Card key={message.id} className="border-stone-200">
-                          <CardContent className="p-3">
-                            <div className="flex items-start gap-3">
-                              <Avatar className="w-8 h-8">
-                                <AvatarImage src={profile?.avatar_url} />
-                                <AvatarFallback className="bg-amber-200 text-amber-800 text-xs">
-                                  {profile?.display_name?.[0] || message.sender_email?.[0]?.toUpperCase() || '?'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm text-stone-800">
-                                  {profile?.display_name || message.sender_email}
-                                </p>
-                                <p className="text-sm text-stone-700 break-words">{message.content}</p>
-                                <p className="text-xs text-stone-500 mt-1">
-                                  {new Date(message.created_date).toLocaleString()}
-                                </p>
-                              </div>
+                        <div key={message.id} className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(120,90,65,0.22)' }}>
+                          <div className="flex items-start gap-3">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage src={profile?.avatar_url} />
+                              <AvatarFallback className="bg-[#A35C5C] text-[#F5F1E7] text-xs font-semibold">
+                                {profile?.display_name?.[0] || message.sender_email?.[0]?.toUpperCase() || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm text-[#F5F1E7]">
+                                {profile?.display_name || message.sender_email}
+                              </p>
+                              <p className="text-sm text-[#E0D8C8] break-words mt-0.5">{message.content}</p>
+                              <p className="text-xs text-[#E0D8C8]/50 mt-1">
+                                {new Date(message.created_date).toLocaleString()}
+                              </p>
+                            </div>
                               <div className="flex gap-1">
                                 <Button
                                   size="sm"
