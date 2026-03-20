@@ -208,17 +208,17 @@ function StoryCardLayout({ icon: Icon, title, value, descriptor, accent }) {
         </p>
 
         <h2
-          className="font-bold leading-tight break-words max-w-full"
-          style={{ 
-            fontSize: value && String(value).length > 20 ? 'clamp(2rem, 9vw, 3.5rem)' : 'clamp(2.5rem, 10vw, 5rem)',
-            color: '#E0D8C8',
-            wordBreak: 'normal',
-            overflowWrap: 'break-word',
-            hyphens: 'auto'
-          }}
-        >
-          {value}
-        </h2>
+           className="font-bold leading-tight break-words max-w-full"
+           style={{ 
+             fontSize: value && String(value).length > 20 ? 'clamp(2rem, 9vw, 3.5rem)' : 'clamp(2.5rem, 10vw, 5rem)',
+             color: '#E0D8C8',
+             wordBreak: 'normal',
+             overflowWrap: 'break-word',
+             hyphens: 'none'
+           }}
+         >
+           {value}
+         </h2>
 
         <p
           className="text-sm px-2"
