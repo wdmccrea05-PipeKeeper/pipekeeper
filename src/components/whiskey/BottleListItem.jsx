@@ -99,7 +99,7 @@ export default function BottleListItem({
               <h3 className="text-xl font-bold text-[#F5F1E7] break-words leading-tight">
                 {bottle?.name || (t('whiskey.untitledBottle') || 'Untitled Bottle')}
               </h3>
-              <p className="text-sm text-[#E0D8C8]/82 break-words mt-1">
+              <p className="text-sm text-[#E0D8C8] break-words mt-1">
                 {[bottle?.distillery, bottle?.region, bottle?.country].filter(Boolean).join(' • ') ||
                   (t('whiskey.noOriginInfo') || 'No origin details')}
               </p>
@@ -112,7 +112,7 @@ export default function BottleListItem({
               <div className="text-2xl font-bold text-[#F5F1E7] mt-1">
                 {formatCurrency(unitValue)}
               </div>
-              <div className="text-sm text-[#D8C7A6]/72 mt-1">
+              <div className="text-sm text-[#D8C7A6] mt-1">
                 Total: {formatCurrency(totalValue)}
               </div>
             </div>
@@ -127,14 +127,14 @@ export default function BottleListItem({
             {inventorySummary.sealed > 0 && <MiniBadge>{inventorySummary.sealed} sealed</MiniBadge>}
           </div>
 
-          <p className="text-sm text-[#E0D8C8]/76 break-words leading-relaxed">
+          <p className="text-sm text-[#E0D8C8]/90 break-words leading-relaxed">
             {bottle?.notes
               ? bottle.notes.slice(0, 180) + (bottle.notes.length > 180 ? '…' : '')
               : (t('whiskey.noNotesYet') || 'No notes yet')}
           </p>
         </div>
 
-        <div className="flex lg:flex-col gap-2 lg:w-[132px] flex-shrink-0">
+        <div className="flex lg:flex-col gap-2 lg:w-[132px] flex-shrink-0" onClick={(e) => e.stopPropagation()}>
           {typeof onToggleFavorite === 'function' && (
             <button
               type="button"
