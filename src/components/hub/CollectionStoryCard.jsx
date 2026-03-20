@@ -324,7 +324,23 @@ export default function CollectionStoryCard() {
         ) : null}
       </div>
 
-      <div className="px-6 pb-6 pt-2 flex gap-3">
+      {showStoryViewer && story && (
+        <CollectionStoryViewer
+          cards={generateCollectionStoryCards(story)}
+          onClose={() => setShowStoryViewer(false)}
+        />
+      )}
+
+      <div className="px-6 pb-6 pt-2 flex gap-3 flex-wrap">
+        <Button
+          variant="outline"
+          className="flex-1"
+          onClick={() => setShowStoryViewer(true)}
+        >
+          <BookOpen className="w-4 h-4 mr-2" />
+          {t('hub.viewStory', 'Story')}
+        </Button>
+
         <Button
           variant="outline"
           className="flex-1"
