@@ -257,14 +257,7 @@ export default function WhiskeyInsightsPage() {
     <div className="space-y-6">
       <WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" />
 
-      {activeStory && (
-        <WhiskeyStoryCardModal
-          {...activeStory}
-          storyRef={storyRef}
-          onClose={() => setActiveStory(null)}
-          onExport={handleExportStory}
-        />
-      )}
+
 
       <div>
         <h1
