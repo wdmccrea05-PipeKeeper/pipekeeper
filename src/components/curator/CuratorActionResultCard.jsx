@@ -1,8 +1,14 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle2, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
-import { useTranslation } from '@/components/i18n/safeTranslation';
+/**
+ * Curator Action Result Card
+ * 
+ * Complete recommendation card with groups, items, and controls
+ * NOT a chat bubble — a decision panel
+ */
+
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
+import CuratorRecommendationGroup from "./CuratorRecommendationGroup";
 
 export default function CuratorActionResultCard({
   actionResult,
@@ -10,237 +16,184 @@ export default function CuratorActionResultCard({
   onClarify,
   loading = false,
 }) {
-  const { t } = useTranslation();
-  const [expandedGroups, setExpandedGroups] = useState(new Set());
-  const [selectedItems, setSelectedItems] = useState(new Set());
+  const [appliedItemIds, setAppliedItemIds] = useState(new Set());
+  const [applyError, setApplyError] = useState(null);
 
-  if (!actionResult || !actionResult.groups || actionResult.groups.length === 0) {
+  if (!actionResult) {
     return null;
   }
 
-  const toggleGroup = (groupIdx) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(groupIdx)) {
-        next.delete(groupIdx);
-      } else {
-        next.add(groupIdx);
-      }
-      return next;
-    });
+  const handleAcceptItem = async (item) => {
+    if (!onApplyItems) return;
+
+    try {
+      setApplyError(null);
+      await onApplyItems(
+        [{ groupKey: "single", items: [item] }],
+        new Set([item.id])
+      );
+      setAppliedItemIds((prev) => new Set([...prev, item.id]));
+    } catch (err) {
+      console.error("Failed to apply item:", err);
+      setApplyError(err?.message || "Failed to apply change");
+    }
   };
 
-  const toggleItemSelection = (itemId) => {
-    setSelectedItems((prev) => {
-      const next = new Set(prev);
-      if (next.has(itemId)) {
-        next.delete(itemId);
-      } else {
-        next.add(itemId);
-      }
-      return next;
-    });
+  const handleClarifyItem = (item) => {
+    if (!onClarify) return;
+
+    const clarificationContext = {
+      itemName: item.itemName,
+      itemType: item.type,
+      issue: item.issue,
+      recommendation: item.recommendation,
+      proposedChange: item.proposedChange,
+    };
+
+    onClarify(clarificationContext);
   };
 
-  const handleApplyAll = () => {
-    const allItemIds = actionResult.groups.flatMap((g) =>
-      g.items.map((item) => item.id)
-    );
-    onApplyItems(actionResult.groups, allItemIds);
+  const handleApplyAllInGroup = async (group, items) => {
+    if (!onApplyItems) return;
+
+    try {
+      setApplyError(null);
+      await onApplyItems(
+        [{ ...group, items }],
+        new Set(items.map((i) => i.id))
+      );
+      const newApplied = new Set(appliedItemIds);
+      items.forEach((i) => newApplied.add(i.id));
+      setAppliedItemIds(newApplied);
+    } catch (err) {
+      console.error("Failed to apply group:", err);
+      setApplyError(err?.message || "Failed to apply changes");
+    }
   };
 
-  const handleApplySelected = () => {
-    if (selectedItems.size === 0) return;
-    
-    const relevantGroups = actionResult.groups.map((group) => ({
-      ...group,
-      items: group.items.filter((item) => selectedItems.has(item.id)),
-    })).filter((g) => g.items.length > 0);
-    
-    onApplyItems(relevantGroups, Array.from(selectedItems));
-  };
-
-  const handleClarify = () => {
-    const selectedItemDetails = [];
-    actionResult.groups.forEach((group) => {
-      group.items.forEach((item) => {
-        if (selectedItems.size === 0 || selectedItems.has(item.id)) {
-          selectedItemDetails.push({
-            itemName: item.itemName,
-            issue: item.issue,
-            recommendation: item.recommendation,
-          });
-        }
-      });
-    });
-    
-    onClarify({
-      actionId: actionResult.actionId,
-      title: actionResult.title,
-      selectedItems: selectedItemDetails.length > 0 ? selectedItemDetails : null,
-    });
-  };
-
-  const totalItems = actionResult.groups.reduce((sum, g) => sum + g.items.length, 0);
-  const selectAllChecked = selectedItems.size === totalItems && totalItems > 0;
+  const allGroups = actionResult.groups || [];
+  const totalItems = allGroups.reduce((s, g) => s + (g.items?.length || 0), 0);
 
   return (
-    <Card className="border border-[#8b6239]/25 rounded-2xl overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-[#2a1f18] to-[#1f1510] border-b border-[#8b6239]/20">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <CardTitle className="text-xl text-[#E0D8C8] mb-2">
+    <div
+      className="rounded-xl overflow-hidden shadow-lg mb-4"
+      style={{
+        background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+        border: "1px solid rgba(140,105,65,0.35)",
+        boxShadow: "0 10px 28px rgba(0,0,0,0.6)",
+      }}
+    >
+      {/* Header */}
+      <div
+        className="px-6 py-5 border-b"
+        style={{
+          borderColor: "rgba(140,105,65,0.2)",
+          background: "rgba(20,14,10,0.4)",
+        }}
+      >
+        <div className="space-y-3">
+          <div>
+            <h2
+              className="text-xl font-bold mb-2"
+              style={{ color: "#F5F1E7", fontFamily: "Georgia, serif" }}
+            >
               {actionResult.title}
-            </CardTitle>
-            <p className="text-sm text-[#E0D8C8]/70">
+            </h2>
+            <p className="text-sm" style={{ color: "rgba(224,216,200,0.7)" }}>
               {actionResult.summary}
             </p>
           </div>
-          <div className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[#8b6239]/15 border border-[#8b6239]/25">
-            <span className="text-xs font-semibold text-[#D4A574]">
-              {totalItems} {totalItems === 1 ? 'item' : 'items'}
+
+          {/* Stats row */}
+          <div className="flex items-center gap-4 text-xs pt-2">
+            <span style={{ color: "rgba(212,165,116,1)" }}>
+              {allGroups.length} group{allGroups.length !== 1 ? "s" : ""}
             </span>
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="p-0">
-        {/* Selection controls */}
-        {totalItems > 1 && (
-          <div className="px-6 py-3 border-b border-[#8b6239]/15 flex items-center gap-2 bg-[#1a1410]/50">
-            <input
-              type="checkbox"
-              checked={selectAllChecked}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  const allIds = actionResult.groups.flatMap((g) =>
-                    g.items.map((item) => item.id)
-                  );
-                  setSelectedItems(new Set(allIds));
-                } else {
-                  setSelectedItems(new Set());
-                }
-              }}
-              className="w-4 h-4 rounded cursor-pointer"
-            />
-            <label className="text-sm text-[#E0D8C8]/70 cursor-pointer flex-1">
-              {selectAllChecked ? 'Deselect all' : 'Select all'}
-            </label>
-          </div>
-        )}
-
-        {/* Groups */}
-        <div className="space-y-0">
-          {actionResult.groups.map((group, groupIdx) => {
-            const isExpanded = expandedGroups.has(groupIdx);
-            return (
-              <div key={groupIdx} className="border-b border-[#8b6239]/10 last:border-b-0">
-                {/* Group header */}
-                <button
-                  onClick={() => toggleGroup(groupIdx)}
-                  className="w-full px-6 py-3 flex items-center justify-between hover:bg-[#2a1f18]/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3 flex-1 text-left">
-                    <span className="text-sm font-semibold text-[#D4A574]">
-                      {group.groupTitle}
-                    </span>
-                    <span className="text-xs text-[#E0D8C8]/50">
-                      ({group.items.length})
-                    </span>
-                  </div>
-                  {isExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-[#8b6239]/60" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-[#8b6239]/60" />
-                  )}
-                </button>
-
-                {/* Group items */}
-                {isExpanded && (
-                  <div className="bg-[#15100c]/30 px-6 py-3 space-y-3 border-t border-[#8b6239]/10">
-                    {group.items.map((item, itemIdx) => (
-                      <div
-                        key={item.id}
-                        className="rounded-lg border border-[#8b6239]/20 bg-[#1a1410]/40 p-3"
-                      >
-                        <div className="flex items-start gap-3">
-                          {/* Selection checkbox */}
-                          {totalItems > 1 && (
-                            <input
-                              type="checkbox"
-                              checked={selectedItems.has(item.id)}
-                              onChange={() => toggleItemSelection(item.id)}
-                              className="w-4 h-4 mt-1 rounded cursor-pointer flex-shrink-0"
-                            />
-                          )}
-
-                          {/* Item details */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline gap-2 mb-1">
-                              <h4 className="font-semibold text-[#E0D8C8]">
-                                {item.itemName}
-                              </h4>
-                              <span className="text-xs text-[#E0D8C8]/50">
-                                {Math.round(item.confidence * 100)}% confidence
-                              </span>
-                            </div>
-
-                            <p className="text-sm text-[#E0D8C8]/70 mb-2">
-                              <strong>Issue:</strong> {item.issue}
-                            </p>
-
-                            <p className="text-sm text-[#D4A574]">
-                              <strong>Recommendation:</strong> {item.recommendation}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Action buttons */}
-        <div className="px-6 py-4 border-t border-[#8b6239]/15 bg-[#1a1410]/50 flex flex-col sm:flex-row gap-2 sm:gap-3">
-          {/* Apply buttons */}
-          <div className="flex gap-2 flex-1">
-            <Button
-              onClick={handleApplyAll}
-              disabled={loading}
-              className="flex-1 bg-[#8b6239]/40 hover:bg-[#8b6239]/50 text-[#D4A574] border border-[#8b6239]/40"
-            >
-              <CheckCircle2 className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Apply All</span>
-              <span className="sm:hidden">Apply All ({totalItems})</span>
-            </Button>
-
-            {selectedItems.size > 0 && selectedItems.size < totalItems && (
-              <Button
-                onClick={handleApplySelected}
-                disabled={loading}
-                className="flex-1 bg-[#8b6239]/60 hover:bg-[#8b6239]/70 text-[#F5F1E7] border border-[#8b6239]/60"
-              >
-                <CheckCircle2 className="w-4 h-4 mr-2" />
-                Apply ({selectedItems.size})
-              </Button>
+            <span style={{ color: "rgba(212,165,116,1)" }}>
+              {totalItems} recommendation{totalItems !== 1 ? "s" : ""}
+            </span>
+            {appliedItemIds.size > 0 && (
+              <span style={{ color: "rgba(46,125,92,1)" }}>
+                ✓ {appliedItemIds.size} applied
+              </span>
             )}
           </div>
 
-          {/* Clarify button */}
-          <Button
-            onClick={handleClarify}
-            disabled={loading}
-            variant="outline"
-            className="flex-1 border-[#8b6239]/40 text-[#D4A574] hover:bg-[#8b6239]/10"
-          >
-            <MessageSquare className="w-4 h-4 mr-2" />
-            Clarify
-          </Button>
+          {/* Error display */}
+          {applyError && (
+            <div
+              className="rounded-lg px-3 py-2.5 text-xs flex items-start gap-2"
+              style={{
+                background: "rgba(139,58,58,0.2)",
+                border: "1px solid rgba(139,58,58,0.3)",
+                color: "#F5D4D4",
+              }}
+            >
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <p>{applyError}</p>
+            </div>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Groups */}
+      <div className="px-6 py-4">
+        {allGroups.length === 0 ? (
+          <div className="text-center py-8">
+            <CheckCircle2
+              className="w-12 h-12 mx-auto mb-3 opacity-50"
+              style={{ color: "rgba(46,125,92,0.4)" }}
+            />
+            <p className="text-sm" style={{ color: "rgba(224,216,200,0.5)" }}>
+              No recommendations at this time.
+            </p>
+          </div>
+        ) : (
+          allGroups.map((group) => (
+            <CuratorRecommendationGroup
+              key={group.groupKey}
+              group={group}
+              onAcceptItem={handleAcceptItem}
+              onClarifyItem={handleClarifyItem}
+              onApplyAllInGroup={handleApplyAllInGroup}
+              isLoading={loading}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Footer controls */}
+      {allGroups.length > 0 && (
+        <div
+          className="px-6 py-4 border-t flex gap-3 justify-end"
+          style={{
+            borderColor: "rgba(140,105,65,0.2)",
+            background: "rgba(20,14,10,0.2)",
+          }}
+        >
+          <Button
+            onClick={() => window.location.reload()}
+            variant="outline"
+            disabled={loading}
+            className="text-xs"
+          >
+            Cancel
+          </Button>
+          {/* Main apply button — applies all recommendations */}
+          {totalItems > 0 && (
+            <Button
+              disabled={loading || appliedItemIds.size === totalItems}
+              className="text-xs"
+              style={{
+                background: "linear-gradient(135deg, rgba(46,125,92,0.9), rgba(38,100,73,1))",
+                border: "1px solid rgba(46,125,92,0.4)",
+              }}
+            >
+              {appliedItemIds.size === totalItems ? "✓ All Applied" : `Apply All (${totalItems})`}
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
