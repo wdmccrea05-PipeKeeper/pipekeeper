@@ -8,11 +8,13 @@ import {
   Sparkles,
   GlassWater,
   CalendarDays,
+  Share2,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import LogTastingModal from '@/components/whiskey/LogTastingModal';
 import InlinePhotoEditor from '@/components/shared/InlinePhotoEditor';
+import ShareRecordModal from '@/components/share/ShareRecordModal';
 import {
   formatCurrency,
   resolveBottleTotalValue,
@@ -100,6 +102,7 @@ export default function BottleDetail() {
   const [loading, setLoading] = useState(true);
   const [editingTasting, setEditingTasting] = useState(null);
   const [showTastingModal, setShowTastingModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   async function loadBottle() {
     if (!bottleId) {
@@ -190,16 +193,25 @@ export default function BottleDetail() {
             Back
           </Button>
 
-          <Button
-            onClick={() => navigate(`/BottleForm?id=${encodeURIComponent(bottle.id)}`)}
-            style={{
-              background: 'linear-gradient(135deg, rgba(201,110,110,1), rgba(168,84,84,1))',
-              color: '#fff',
-            }}
-          >
-            <Pencil className="w-4 h-4 mr-2" />
-            Edit
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowShareModal(true)}
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Share
+            </Button>
+            <Button
+              onClick={() => navigate(`/BottleForm?id=${encodeURIComponent(bottle.id)}`)}
+              style={{
+                background: 'linear-gradient(135deg, rgba(201,110,110,1), rgba(168,84,84,1))',
+                color: '#fff',
+              }}
+            >
+              <Pencil className="w-4 h-4 mr-2" />
+              Edit
+            </Button>
+          </div>
         </div>
 
         <div
@@ -453,6 +465,13 @@ export default function BottleDetail() {
           }}
         />
       ) : null}
+
+      <ShareRecordModal
+        isOpen={showShareModal}
+        onOpenChange={setShowShareModal}
+        moduleType="bottle"
+        record={bottle}
+      />
     </>
   );
 }
