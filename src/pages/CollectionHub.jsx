@@ -281,10 +281,6 @@ export default function CollectionHub() {
   const totalDisplayedValue =
     (summary.pipes.value || 0) + totalBlendValue + (isModuleEnabled("whiskeykeeper") ? totalBottleValue : 0);
 
-  // Privacy-masked display helpers
-  const displayValue = (val) => (hideValues || hideHomeValues) ? "—" : val;
-  const displayCount = (val) => hideCollectionCounts ? "—" : val;
-
   return (
     <div className="space-y-8">
       <div className="space-y-4">
