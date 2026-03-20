@@ -240,9 +240,9 @@ export default function CuratorWorkspace({
   const [initializing, setInitializing] = useState(false);
   const [initError, setInitError] = useState("");
   const [runningAction, setRunningAction] = useState(null);
-  const [actionExecutionId, setActionExecutionId] = useState(null);
   const [actionResult, setActionResult] = useState(null);
   const [applyLoading, setApplyLoading] = useState(false);
+  const [lastExecutionId, setLastExecutionId] = useState(null);
 
   const messagesEndRef = useRef(null);
   const threadInitPromiseRef = useRef(null);
