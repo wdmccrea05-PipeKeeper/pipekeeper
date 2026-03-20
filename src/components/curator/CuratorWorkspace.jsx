@@ -967,47 +967,18 @@ ${englishText}`;
         
         {/* Action Error Panel */}
         {actionError && !runningAction && (
-          <div
-            className="mb-4 rounded-xl p-6 border"
-            style={{
-              background: "rgba(139,58,58,0.15)",
-              borderColor: "rgba(139,58,58,0.35)",
+          <CuratorActionErrorCard
+            error={actionError}
+            onRetry={() => {
+              setActionError(null);
+              setLastExecutionId(null);
             }}
-          >
-            <h3 className="text-base font-semibold mb-1" style={{ color: "#F5D4D4" }}>
-              {actionError.title}
-            </h3>
-            <p className="text-sm mb-3" style={{ color: "rgba(245,212,212,0.8)" }}>
-              {actionError.subtitle}
-            </p>
-            {actionError.reason && (
-              <p className="text-xs mb-4" style={{ color: "rgba(245,212,212,0.7)" }}>
-                {actionError.reason}
-              </p>
-            )}
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setActionError(null)}
-              >
-                Close
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  setActionError(null);
-                  setLastExecutionId(null);
-                }}
-                style={{
-                  background: "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))",
-                  border: "none",
-                }}
-              >
-                Retry
-              </Button>
-            </div>
-          </div>
+            onAskCurator={() => {
+              setActionError(null);
+              setInput("I need help understanding this. Can you explain in more detail?");
+              document.querySelector('input[placeholder*="Ask Curator"]')?.focus();
+            }}
+          />
         )}
         
         {/* Action Result Card — shown instead of chat when action completes */}
