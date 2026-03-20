@@ -752,6 +752,42 @@ ${englishText}`;
     sendMessage(prompt);
   };
 
+  const handleApplyActionItems = async (groups, selectedItemIds) => {
+    if (!actionResult) return;
+    
+    setApplyLoading(true);
+    try {
+      const results = await applyActionChanges(actionResult.actionId, groups);
+      
+      // Clear action result after successful apply
+      setActionResult(null);
+      
+      toast.success(`Applied ${results.success || Object.values(results).reduce((s, r) => s + r.success, 0)} changes to your collection`);
+    } catch (err) {
+      console.error('Apply failed:', err);
+    } finally {
+      setApplyLoading(false);
+    }
+  };
+
+  const handleClarifyAction = async (clarificationContext) => {
+    if (!actionResult) return;
+    
+    // Build a clean clarification prompt
+    const clarifyPrompt = buildClarificationPrompt(clarificationContext);
+    
+    // Open curator chat with clarification
+    setInput(clarifyPrompt);
+    
+    // Close action result card
+    setActionResult(null);
+    
+    // Focus on input
+    setTimeout(() => {
+      document.querySelector('input[placeholder*="Ask Curator"]')?.focus();
+    }, 100);
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
       e.preventDefault();
