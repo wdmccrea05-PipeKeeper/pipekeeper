@@ -13,6 +13,7 @@ import PipeKeeperModuleNav from './PipeKeeperModuleNav';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import ModuleQuickLaunch from './ModuleQuickLaunch';
 import QuickSearchPipe from '@/components/ai/QuickSearchPipe';
+import { useProfilePrivacy } from '@/components/hooks/useProfilePrivacy';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
@@ -21,6 +22,7 @@ export default function PipeKeeperModule() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useCurrentUser();
+  const { hideValues, hideCollectionCounts } = useProfilePrivacy();
   const queryClient = useQueryClient();
   
   const [showQuickSearch, setShowQuickSearch] = useState(false);
@@ -181,7 +183,7 @@ export default function PipeKeeperModule() {
               {t('home.totalValue') || 'Total Value'}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
-              {formatCurrency(Math.round(totalPipeValue))}
+              {hideValues ? '—' : formatCurrency(Math.round(totalPipeValue))}
             </p>
           </div>
           <div className="space-y-2">
@@ -189,7 +191,7 @@ export default function PipeKeeperModule() {
               {t('home.pipesInCollection') || 'Pipes'}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#B48C4B' }}>
-              {pipes.length}
+              {hideCollectionCounts ? '—' : pipes.length}
             </p>
           </div>
           <div className="space-y-2">
@@ -197,7 +199,7 @@ export default function PipeKeeperModule() {
               {t('home.tobaccoBlends') || 'Blends'}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#5A7C5A' }}>
-              {blends.length}
+              {hideCollectionCounts ? '—' : blends.length}
             </p>
           </div>
           <div className="space-y-2">
