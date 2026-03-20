@@ -14,9 +14,8 @@
 import { useMemo } from "react";
 import { buildAccessSummary } from "@/components/access";
 import { useCurrentUser } from "./useCurrentUser";
-import type { AccessSummary } from "@/components/access";
 
-export function useAccessSummary(): AccessSummary | null {
+export function useAccessSummary() {
   const { user, subscription, isLoading } = useCurrentUser();
 
   const access = useMemo(() => {
