@@ -27,6 +27,11 @@ import {
   buildOptimizationContext,
   buildExpertTobacconistContext,
 } from './expertTobacconistHelpers';
+import {
+  analyzeBottlePreferences,
+  buildBottleAdditionContext,
+  createActionExecutionContext,
+} from './actionExecutionHelpers';
 
 export const CURATOR_ACTIONS = [
   {
@@ -38,27 +43,33 @@ export const CURATOR_ACTIONS = [
     sourceExpert: 'expert_tobacconist',
     visibility: (ctx) => true, // Always visible
     buildPrompt: (ctx) => {
-      const { pipes = [], blends = [], smokingLogs = [] } = ctx;
+      const { pipes = [], blends = [], smokingLogs = [], bottles = [], tastingLogs = [] } = ctx;
       const expertContext = buildExpertTobacconistContext(blends, smokingLogs);
       const tobaccoOptContext = buildOptimizationContext(blends, smokingLogs);
+      const bottleAdditionContext = buildBottleAdditionContext(bottles, tastingLogs);
 
-      return `You are analyzing this collector's pipe and tobacco collection for optimization.
+      return `You are analyzing this collector's multi-module collection for optimization.
 
-  ${expertContext}
+    ${expertContext}
 
-  ${tobaccoOptContext ? `\nTOBACCO OPTIMIZATION:\n${tobaccoOptContext}` : ''}
+    ${tobaccoOptContext ? `\nTOBACCO OPTIMIZATION:\n${tobaccoOptContext}` : ''}
 
-  Provide comprehensive optimization recommendations:
+    ${bottleAdditionContext ? `\n${bottleAdditionContext}` : ''}
 
-  1. **Collection Health Assessment** — Current balance, strengths, and vulnerabilities
-  2. **Top 3 Optimization Opportunities** — Specific, actionable improvements with expected impact
-  3. **Tobacco Strategies** — Cellar depth, rotation balance, aging potential
-  4. **Pipe-Tobacco Synergies** — How to better leverage pipe-blend pairings
-  5. **Acquisition Strategy** — What fills gaps or strengthens specializations
-  6. **Priority Ranking** — Which changes have the biggest positive impact
-  7. **What to Preserve** — Strengths to maintain and build upon
+    Provide comprehensive optimization recommendations:
 
-  Be specific and practical, not generic.`;
+    1. **Collection Health Assessment** — Current balance, strengths, and vulnerabilities (across all modules)
+    2. **Top 3 Optimization Opportunities** — Specific, actionable improvements with expected impact
+    3. **Tobacco Strategies** — Cellar depth, rotation balance, aging potential
+    4. **Pipe-Tobacco Synergies** — How to better leverage pipe-blend pairings
+    ${bottles.length > 0 ? `5. **Whiskey Addition Strategy** — Bottles that complement your current collection based on demonstrated preferences
+    6. **Cross-Module Pairing** — How whiskey, pipes, and tobacco work together for the ideal session
+    7. **Acquisition Priority** — Next purchases that would have the highest impact (pipes, blends, bottles)
+    8. **What to Preserve** — Strengths to maintain and build upon` : `5. **Acquisition Strategy** — What fills gaps or strengthens specializations
+    6. **Priority Ranking** — Which changes have the biggest positive impact
+    7. **What to Preserve** — Strengths to maintain and build upon`}
+
+    Be specific and practical, not generic. Ground recommendations in actual collection data.`;
     },
     buildContext: (ctx) => ({
       type: 'optimize_collection',
@@ -256,18 +267,11 @@ export function getVisibleActions(context) {
 
 /**
  * Build launch context from an action
+ * NEW: Includes execution metadata for silent action handling
  */
 export function buildActionLaunchContext(action, collectionContext) {
   try {
-    const prompt = action.buildPrompt(collectionContext);
-    const context = action.buildContext(collectionContext);
-
-    return {
-      initialPrompt: prompt,
-      sourceAction: action.id,
-      sourceExpert: action.sourceExpert,
-      recommendationContext: context,
-    };
+    return createActionExecutionContext(action, collectionContext);
   } catch (e) {
     console.error(`Failed to build launch context for action ${action.id}:`, e);
     return null;
