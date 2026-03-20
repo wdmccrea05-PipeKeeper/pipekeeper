@@ -427,9 +427,12 @@ export default function WhiskeyPage() {
                   );
                 } else {
                    return (
-                    <Link key={bottle.id} to={`/BottleDetail?id=${encodeURIComponent(bottle.id)}`}>
-                      <BottleListItem bottle={bottle} onClick={() => {}} />
-                    </Link>
+                    <BottleListItem
+                      key={bottle.id}
+                      bottle={bottle}
+                      onClick={() => window.location.href = `/BottleDetail?id=${encodeURIComponent(bottle.id)}`}
+                      onToggleFavorite={(b) => toggleFavoriteMutation.mutate({ id: b.id, favorite: !b.favorite })}
+                    />
                   );
                 }
               })}
