@@ -8,6 +8,10 @@ import {
   handlePostPurchase,
 } from './subscriptionHandler';
 
+/**
+ * Hook for paywall logic and plan selection
+ * Manages user experience for subscription checkout and post-purchase
+ */
 export function usePaywall() {
   const navigate = useNavigate();
   const access = useAccessSummary();
@@ -21,16 +25,7 @@ export function usePaywall() {
    * Shows user-facing errors and logs for debugging
    */
   const selectPlan = useCallback(
-    async (
-      selectedPlan: 'single' | 'three' | 'four',
-      billingPeriod: 'monthly' | 'annual' = selectedBillingPeriod,
-      options?: {
-        selectedModules?: string[];
-        baseModule?: string;
-        successUrl?: string;
-        cancelUrl?: string;
-      }
-    ) => {
+    async (selectedPlan, billingPeriod = selectedBillingPeriod, options) => {
       try {
         setIsLoading(true);
         setError(null);
@@ -80,7 +75,7 @@ export function usePaywall() {
    * Shows user-facing errors if sync fails
    */
   const completePayment = useCallback(
-    async (targetUrl: string = '/CollectionHub') => {
+    async (targetUrl = '/CollectionHub') => {
       try {
         setIsLoading(true);
         setError(null);
@@ -113,10 +108,7 @@ export function usePaywall() {
    * Determine which paywall to show
    */
   const getPaywallType = useCallback(
-    (context?: {
-      selectedModules?: string[];
-      lockedModule?: string;
-    }): 'module' | 'multi' | 'expansion' => {
+    (context) => {
       const selectedCount = context?.selectedModules?.length || 0;
 
       // Multi-module paywall (onboarding with 2+ modules selected)
@@ -145,3 +137,5 @@ export function usePaywall() {
     setSelectedBillingPeriod,
   };
 }
+
+export default usePaywall;
