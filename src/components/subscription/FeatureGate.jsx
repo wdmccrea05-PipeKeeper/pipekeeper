@@ -4,52 +4,45 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import UpgradePrompt from "./UpgradePrompt";
 
 /**
- * FeatureGate - Conditional rendering based on entitlements
- * 
- * @param {string} feature - Feature key to check (e.g., 'AI_IDENTIFY', 'EXPORT_REPORTS')
- * @param {ReactNode} children - Content to render if user has access
- * @param {string} featureName - Display name for upgrade prompt
- * @param {string} description - Description for upgrade prompt
- * @param {string} requiredTier - Minimum tier required ('premium' or 'pro')
+ * FeatureGate — conditional rendering based on Pro entitlement.
+ *
+ * Rules:
+ *   - While loading (tier === null), render nothing — never show upgrade prompt to loading users.
+ *   - Pro users always see children.
+ *   - Free users see UpgradePrompt.
+ *   - "premium" requiredTier is treated as "pro" (no premium tier exists).
+ *
+ * @param {string}    feature      - Feature key to check via canUse()
+ * @param {ReactNode} children     - Content to show if access granted
+ * @param {string}    featureName  - Display name for upgrade prompt
+ * @param {string}    description  - Description for upgrade prompt
+ * @param {string}    requiredTier - 'pro' (default). 'premium' also treated as 'pro'.
  */
-export default function FeatureGate({ 
-  feature, 
-  children, 
-  featureName, 
+export default function FeatureGate({
+  feature,
+  children,
+  featureName,
   description,
-  requiredTier = "premium"
+  requiredTier = "pro",
 }) {
   const entitlements = useEntitlements();
   const { t } = useTranslation();
 
-  // Check if user has access to this feature
-  if (feature && !entitlements.canUse(feature)) {
-    return (
-      <UpgradePrompt 
-        featureName={featureName || t(requiredTier === 'pro' ? 'featureGate.proFeature' : 'featureGate.premiumFeature')}
-        description={description || t(requiredTier === 'pro' ? 'featureGate.requiresProTier' : 'featureGate.requiresPremiumTier')}
-      />
-    );
+  // While loading — render nothing (no flicker of upgrade wall for paid users)
+  if (entitlements.tier === null) return null;
+
+  const upgradePrompt = (
+    <UpgradePrompt
+      featureName={featureName || t("featureGate.proFeature", "Pro Feature")}
+      description={description || t("featureGate.requiresProTier", "Upgrade to Pro to unlock this feature.")}
+    />
+  );
+
+  // Feature key check
+  if (feature) {
+    return entitlements.canUse(feature) ? <>{children}</> : upgradePrompt;
   }
 
-  // Check tier if specified (for simple tier gating without feature key)
-  if (!feature && requiredTier && entitlements) {
-    // FIX BUG-05: Legacy premium users (isLegacyPremium) get all pro features (grandfathered)
-    // Safely handle null entitlements object — fail closed to premium/pro gate
-    const hasAccess = requiredTier === "premium" 
-      ? (entitlements.tier !== "free" && entitlements.tier !== undefined) || entitlements.isFreeGrandfathered
-      : entitlements.tier === "pro" || entitlements.isLegacyPremium; // legacy gets pro features
-
-    if (!hasAccess) {
-      return (
-        <UpgradePrompt 
-          featureName={featureName || t(requiredTier === 'pro' ? 'featureGate.proFeature' : 'featureGate.premiumFeature')}
-          description={description || t(requiredTier === 'pro' ? 'featureGate.requiresProTier' : 'featureGate.requiresPremiumTier')}
-        />
-      );
-    }
-  }
-
-  // User has access - render children
-  return <>{children}</>;
+  // Tier check (pro or premium both require hasPro)
+  return entitlements.hasPro ? <>{children}</> : upgradePrompt;
 }
