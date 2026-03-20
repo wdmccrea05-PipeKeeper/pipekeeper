@@ -410,9 +410,13 @@ export default function WhiskeyPage() {
                         } else if (viewMode === 'grid') {
                         return (
                         <div key={bottle.id} className="space-y-2">
-                        <Link to={`/BottleDetail?id=${encodeURIComponent(bottle.id)}`}>
-                        <BottleCard bottle={bottle} onClick={() => {}} onToggleFavorite={(b, ev) => { ev?.preventDefault?.(); toggleFavoriteMutation.mutate({ id: b.id, favorite: !b.favorite }); }} />
-                        </Link>
+                        <BottleCard
+                          bottle={bottle}
+                          onClick={() => window.location.href = `/BottleDetail?id=${encodeURIComponent(bottle.id)}`}
+                          onToggleFavorite={(b, ev) => { ev?.preventDefault?.(); toggleFavoriteMutation.mutate({ id: b.id, favorite: !b.favorite }); }}
+                          onEdit={(b) => { setEditingBottle(b); setShowForm(true); }}
+                          onDelete={(b) => deleteBottleMutation.mutate(b.id)}
+                        />
                       <div className="flex gap-2 flex-wrap">
                         <Button onClick={() => setShowTastingLog(bottle)} variant="outline" size="sm" className="flex-1">
                           <BookOpen className="w-3 h-3 mr-1" />
@@ -427,13 +431,15 @@ export default function WhiskeyPage() {
                   );
                 } else {
                    return (
-                    <BottleListItem
-                      key={bottle.id}
-                      bottle={bottle}
-                      onClick={() => window.location.href = `/BottleDetail?id=${encodeURIComponent(bottle.id)}`}
-                      onToggleFavorite={(b) => toggleFavoriteMutation.mutate({ id: b.id, favorite: !b.favorite })}
-                    />
-                  );
+                   <BottleListItem
+                    key={bottle.id}
+                    bottle={bottle}
+                    onClick={() => window.location.href = `/BottleDetail?id=${encodeURIComponent(bottle.id)}`}
+                    onToggleFavorite={(b) => toggleFavoriteMutation.mutate({ id: b.id, favorite: !b.favorite })}
+                    onEdit={(b) => { setEditingBottle(b); setShowForm(true); }}
+                    onDelete={(b) => deleteBottleMutation.mutate(b.id)}
+                   />
+                   );
                 }
               })}
             </div>
