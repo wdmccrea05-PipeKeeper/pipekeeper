@@ -417,7 +417,7 @@ export default function CollectionHub() {
       </div>
 
       {/* Collection Highlights */}
-      {(mostSmokedPipe || favoritePipe || favoriteBlend || favoriteBottle) && (
+      {(mostSmokedPipe || favoritePipe || favoriteBlend || favoriteBottle || mostValuedBottle) && (
         <div className="space-y-4">
           <h2
             className="text-sm uppercase tracking-[0.12em] font-semibold"
@@ -457,6 +457,17 @@ export default function CollectionHub() {
                 bgImage={favoriteBottle.photo || favoriteBottle.photos?.[0]}
                 accent="#C88A4A"
                 onClick={() => window.location.href = createPageUrl(`BottleDetail?id=${encodeURIComponent(favoriteBottle.id)}`)}
+              />
+            )}
+            {!favoriteBottle && mostValuedBottle && (
+              <CatalogPlate
+                title={t("hub.mostValuable", "Most Valuable")}
+                value={mostValuedBottle.name}
+                subtitle={mostValuedBottle.distillery}
+                heroImage={mostValuedBottle.photo || mostValuedBottle.photos?.[0]}
+                bgImage={mostValuedBottle.photo || mostValuedBottle.photos?.[0]}
+                accent="#B4824B"
+                onClick={() => window.location.href = createPageUrl(`BottleDetail?id=${encodeURIComponent(mostValuedBottle.id)}`)}
               />
             )}
             {!mostSmokedPipe && favoritePipe && (
