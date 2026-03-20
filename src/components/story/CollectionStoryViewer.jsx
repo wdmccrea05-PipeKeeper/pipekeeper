@@ -113,9 +113,9 @@ function CollectionStorySlide({ card }) {
                     : 'clamp(2.4rem, 8vw, 3.8rem)',
                 color: '#F5F1E7',
                 fontFamily: "'Georgia', serif",
-                wordBreak: 'keep-all',
-                overflowWrap: 'normal',
-                hyphens: 'none',
+                wordBreak: 'break-word',
+                overflowWrap: 'anywhere',
+                hyphens: 'auto',
                 whiteSpace: 'normal',
               }}
             >
