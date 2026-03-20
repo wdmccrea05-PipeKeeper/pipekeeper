@@ -222,6 +222,10 @@ export default function Curator() {
     });
   };
 
+  const handleExpertAction = useCallback((actionLaunchContext) => {
+    setLaunchContext(actionLaunchContext);
+  }, []);
+
   const subtitle = useMemo(() => {
     const ctx = launchContext?.recommendationContext;
 
