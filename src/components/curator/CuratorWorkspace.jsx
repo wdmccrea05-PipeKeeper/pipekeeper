@@ -552,25 +552,13 @@ ${englishText}`;
           // For actions, do NOT add user message (silent execution)
           // Parse response and set as action result card
           if (isActionExecution) {
-            // Parse the AI response into structured action output
-            const actionId = launchContext?.sourceAction || 'unknown';
-            const parsed = parseActionResult(actionId, translatedResponse, {
-              pipes,
-              blends,
-              bottles,
-            });
-            
-            // Store action result for rendering as card
-            setActionResult(parsed);
-            
-            // Still add to messages for context, but mark as action source
             return [
               ...withoutLocal,
               {
                 id: `action-result-${Date.now()}`,
                 role: "assistant",
                 content: translatedResponse,
-                meta: { source: 'action_execution', actionId },
+                meta: { source: 'action_execution', actionId: actionLaunchContext?.sourceAction },
               },
             ];
           } else {
@@ -586,6 +574,17 @@ ${englishText}`;
             ];
           }
         });
+        
+        // Parse action result after message is added
+        if (isActionExecution && actionLaunchContext) {
+          const actionId = actionLaunchContext.sourceAction || 'unknown';
+          const parsed = parseActionResult(actionId, translatedResponse, {
+            pipes,
+            blends,
+            bottles,
+          });
+          setActionResult(parsed);
+        }
 
         // CRITICAL HARDENING: Persist messages to CuratorMessage
         if (sessionId) {
