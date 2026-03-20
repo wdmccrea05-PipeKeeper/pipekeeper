@@ -3,7 +3,7 @@
  * Determines user's current state and recommends next upgrade path
  */
 
-import { MODULES, getActiveModules } from './moduleRegistry';
+import { MODULES, getActiveModules, KEEPER_MODULES } from './moduleRegistry';
 import { hasModuleProAccess, getModulesWithProAccess } from './moduleEntitlements';
 import { detectBundleTier, getUpgradeSuggestion } from './bundlePricingEngine';
 

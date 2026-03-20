@@ -3,7 +3,7 @@
  * Supports 1/2/3/4 module combinations with automatic bundle detection
  */
 
-import { MODULE_LIST, MODULES } from './moduleRegistry';
+import { MODULE_LIST, MODULES, getActiveModules } from './moduleRegistry';
 
 /**
  * Pricing Configuration
