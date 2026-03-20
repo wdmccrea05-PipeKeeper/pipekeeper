@@ -9,7 +9,7 @@
  */
 
 import { base44 } from "@/api/base44Client";
-import { curatorActionResultNormalizer } from "./curatorActionResultNormalizer";
+import { normalizeCuratorActionResult } from "./normalizeCuratorActionResult";
 import {
   translateToEnglish,
   translateFromEnglish,
@@ -162,7 +162,7 @@ export async function executeCuratorAction({
       };
     }
 
-    const normalizedResult = curatorActionResultNormalizer(rawResult, {
+    const normalizedResult = normalizeCuratorActionResult(rawResult, {
       actionId,
       executionId,
       collectionContext,
