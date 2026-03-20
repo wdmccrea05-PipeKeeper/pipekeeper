@@ -17,18 +17,9 @@
  *   }
  */
 
-export type ModuleKey = "pipekeeper" | "whiskeykeeper" | "cigarkeeper" | "winekeeper";
-export type SubscriptionStatus = "inactive" | "trialing" | "active" | "past_due" | "canceled" | "grace_period";
-
-export interface AccessSummary {
-  tier: "free" | "pro";
-  status: SubscriptionStatus;
-  billingPeriod: "monthly" | "annual" | null;
-  provider: "stripe" | "apple" | "manual" | null;
-  activeModules: ModuleKey[];
-  planKey: string | null;
-  isFoundingMember: boolean;
-}
+// ModuleKey: "pipekeeper" | "whiskeykeeper" | "cigarkeeper" | "winekeeper"
+// SubscriptionStatus: "inactive" | "trialing" | "active" | "past_due" | "canceled" | "grace_period"
+// AccessSummary: { tier, status, billingPeriod, provider, activeModules, planKey, isFoundingMember }
 
 /**
  * Stripe product → module mapping.
@@ -66,7 +57,7 @@ const STRIPE_PRODUCT_MAP: Record<string, { modules: ModuleKey[]; billingPeriod: 
  *   3. If pro: map Stripe product to modules
  *   4. If founding member: unlock all modules
  */
-export function buildAccessSummary(user: any, subscription: any): AccessSummary {
+export function buildAccessSummary(user, subscription) {
   // Determine tier
   const tier = resolveTier(user, subscription);
 
@@ -112,7 +103,7 @@ export function buildAccessSummary(user: any, subscription: any): AccessSummary 
  * Resolve tier from user and subscription data.
  * Returns "free" or "pro" only.
  */
-function resolveTier(user: any, subscription: any): "free" | "pro" {
+function resolveTier(user, subscription) {
   // Admin is always pro
   if (user?.role === "admin" || user?.is_admin === true) return "pro";
 
@@ -131,7 +122,7 @@ function resolveTier(user: any, subscription: any): "free" | "pro" {
 /**
  * Resolve provider from user and subscription.
  */
-function resolveProvider(user: any, subscription: any): "stripe" | "apple" | "manual" | null {
+function resolveProvider(user, subscription) {
   const userProvider = user?.subscription_provider;
   if (userProvider === "stripe" || userProvider === "apple") return userProvider;
 
@@ -144,7 +135,7 @@ function resolveProvider(user: any, subscription: any): "stripe" | "apple" | "ma
 /**
  * Resolve subscription status.
  */
-function resolveStatus(subscription: any): SubscriptionStatus {
+function resolveStatus(subscription) {
   if (!subscription) return "inactive";
 
   const status = String(subscription?.status || "").toLowerCase();
@@ -159,11 +150,7 @@ function resolveStatus(subscription: any): SubscriptionStatus {
  * Map subscription product/plan to module access.
  * Returns { modules, planKey, billingPeriod }
  */
-function mapSubscriptionToModules(subscription: any): {
-  modules: ModuleKey[];
-  planKey: string | null;
-  billingPeriod: "monthly" | "annual" | null;
-} {
+function mapSubscriptionToModules(subscription) {
   // Try to get plan from multiple fields
   const planKey = subscription?.plan_key || subscription?.planKey || subscription?.plan || subscription?.product_id || null;
 
@@ -197,7 +184,7 @@ function mapSubscriptionToModules(subscription: any): {
 /**
  * Normalize tier string to "free" or "pro".
  */
-function normalizeTier(tier: string): "free" | "pro" {
+function normalizeTier(tier) {
   const t = String(tier || "").toLowerCase();
   if (t === "pro") return "pro";
   if (t === "premium") return "pro"; // Legacy
@@ -210,7 +197,7 @@ function normalizeTier(tier: string): "free" | "pro" {
  * Check if subscription grants paid access.
  * Considers status (active, trialing, grace period).
  */
-function subscriptionGrantsPaidAccess(subscription: any): boolean {
+function subscriptionGrantsPaidAccess(subscription) {
   if (!subscription) return false;
 
   const status = String(subscription?.status || "").toLowerCase();
@@ -226,6 +213,6 @@ function subscriptionGrantsPaidAccess(subscription: any): boolean {
 /**
  * Validate module key.
  */
-function isValidModuleKey(key: any): key is ModuleKey {
+function isValidModuleKey(key) {
   return ["pipekeeper", "whiskeykeeper", "cigarkeeper", "winekeeper"].includes(key);
 }
