@@ -12,6 +12,7 @@ import {
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import LogTastingModal from '@/components/whiskey/LogTastingModal';
+import InlinePhotoEditor from '@/components/shared/InlinePhotoEditor';
 import {
   formatCurrency,
   resolveBottleTotalValue,

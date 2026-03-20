@@ -64,6 +64,7 @@ import PipeConditionTracker from "@/components/pipes/PipeConditionTracker";
 import MaintenanceLog from "@/components/pipes/MaintenanceLog";
 import CuratorItemNote from "@/components/curator/CuratorItemNote";
 import ShareRecordModal from "@/components/share/ShareRecordModal";
+import InlinePhotoEditor from "@/components/shared/InlinePhotoEditor";
 import ValuationCredibility, { computePipeValuation } from "@/components/valuation/ValuationCredibility";
 
 const PAGE_BG =
