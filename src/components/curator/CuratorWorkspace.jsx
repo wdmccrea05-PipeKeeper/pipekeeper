@@ -23,8 +23,11 @@ import { useTasteProfile, buildTasteProfileContext } from "@/components/curator/
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 import { executeCuratorAction } from "@/components/curator/curatorActionExecutor";
 import { applyAllRecommendations, buildClarificationPrompt } from "@/components/curator/curatorActionApply";
+import { normalizeCuratorActionResult } from "@/components/curator/curatorActionResultNormalizer";
+import { parseCuratorActionResponse } from "@/components/curator/parseCuratorActionResponse";
 import CuratorActionStatusBar from "@/components/curator/CuratorActionStatusBar";
 import CuratorActionResultCard from "@/components/curator/CuratorActionResultCard";
+import CuratorActionErrorCard from "@/components/curator/CuratorActionErrorCard";
 
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
