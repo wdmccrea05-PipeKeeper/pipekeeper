@@ -177,10 +177,15 @@ Finished preference: ${profile.finished_preference}`;
 
 /**
  * Generate action execution metadata with unique id and status
+ * 
+ * CRITICAL: Do NOT include initialPrompt for silent actions.
+ * The executor will rebuild the prompt internally from action.buildPrompt().
+ * This prevents prompt leakage into chat.
  */
 export function createActionExecutionContext(action, collectionContext) {
   const executionId = `${action.id}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   
+  // Build prompt for executor (not for display)
   const prompt = action.buildPrompt(collectionContext);
   const context = action.buildContext(collectionContext);
 
@@ -202,7 +207,8 @@ export function createActionExecutionContext(action, collectionContext) {
 
   return {
     executionId,
-    initialPrompt: prompt,
+    // CRITICALLY: Store prompt in executor-only field, NOT initialPrompt
+    _internalPrompt: prompt, // Private field: used only by executeCuratorAction
     sourceAction: action.id,
     sourceExpert: action.sourceExpert,
     recommendationContext: context,
