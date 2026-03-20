@@ -1001,13 +1001,6 @@ export default function Insights() {
   const [activeStory, setActiveStory] = useState(null);
   const [showFullStory, setShowFullStory] = useState(false);
 
-  const moduleNavItems = [
-    { name: t('nav.pipes') || 'Pipes', path: '/Pipes', icon: Wind },
-    { name: t('nav.tobacco') || 'Tobacco', path: '/Tobacco', icon: Leaf },
-    { name: t('nav.smokingLog') || 'Sessions', path: '/Home', icon: BookOpen },
-    { name: t('nav.insights') || 'Insights', path: '/Insights', icon: TrendingUp },
-  ];
-
   const { data: pipes = [] } = useQuery({
     queryKey: ["pipes", user?.email],
     queryFn: async () => {
@@ -1219,7 +1212,7 @@ export default function Insights() {
 
   return (
     <div className="space-y-6">
-      <ModuleNav items={moduleNavItems} currentPath="/Insights" />
+      <PipeKeeperModuleNav currentPageName="Insights" />
       
       <div className="space-y-10">
       {activeStory && (
