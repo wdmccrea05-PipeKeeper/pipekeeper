@@ -70,24 +70,9 @@ export default function WhiskeyKeeper() {
     }, 0);
   }, [bottles, inventoryCountByBottleId, hasInventoryUnits]);
 
-  const mostValuableBottle = useMemo(() => {
-    const candidates = bottles
-      .map((bottle) => ({
-        ...bottle,
-        __unitValue: getBottleUnitValue(bottle),
-        __totalValue: getBottleTotalValue(bottle, inventoryCountByBottleId, hasInventoryUnits),
-      }))
-      .filter((bottle) => bottle.__unitValue > 0);
-
-    if (!candidates.length) return null;
-
-    candidates.sort((a, b) => {
-      if (b.__unitValue !== a.__unitValue) return b.__unitValue - a.__unitValue;
-      return b.__totalValue - a.__totalValue;
-    });
-
-    return candidates[0] || null;
-  }, [bottles, inventoryCountByBottleId, hasInventoryUnits]);
+  const highlights = useMemo(() => {
+    return getWhiskeyHighlights(bottles, inventoryUnits);
+  }, [bottles, inventoryUnits]);
 
   const quickLaunchActions = [
     {
