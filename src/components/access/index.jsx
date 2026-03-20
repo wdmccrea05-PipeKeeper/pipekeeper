@@ -49,7 +49,6 @@
  */
 
 export { buildAccessSummary } from "./accessSummary";
-export type { AccessSummary, ModuleKey, SubscriptionStatus } from "./accessSummary";
 
 export {
   hasPaidAccess,
