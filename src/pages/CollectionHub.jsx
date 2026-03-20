@@ -16,12 +16,25 @@ import CuratorHub from "@/components/hub/CuratorHub";
 import CollectionIntelligencePanel from "@/components/hub/CollectionIntelligencePanel";
 
 import RecentActivity from "@/components/hub/RecentActivity";
+import { useProfilePrivacy } from "@/components/hooks/useProfilePrivacy";
 
 function sumBottleCollectionValue(bottles) {
   if (!Array.isArray(bottles)) return 0;
   return bottles.reduce((sum, b) => {
+    // Priority chain: manual > ai > retail > purchase
     const v = Number(b?.collector_value) || Number(b?.aftermarket_price) || Number(b?.retail_price) || Number(b?.purchase_price) || 0;
     return sum + v;
+  }, 0);
+}
+
+function sumTobaccoCollectionValue(blends) {
+  if (!Array.isArray(blends)) return 0;
+  return blends.reduce((sum, b) => {
+    // Priority chain: manual > ai (per oz * total oz)
+    const totalOz = (Number(b?.tin_total_quantity_oz) || 0) + (Number(b?.bulk_total_quantity_oz) || 0) + (Number(b?.pouch_total_quantity_oz) || 0);
+    const perOz = Number(b?.manual_market_value) || Number(b?.ai_estimated_value) || 0;
+    // manual_market_value and ai_estimated_value are total values, not per-oz
+    return sum + perOz;
   }, 0);
 }
 
@@ -63,6 +76,7 @@ function SummaryStat({ label, value, sub, color = "#D4A574" }) {
 export default function CollectionHub() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
+  const { hideValues, hideCollectionCounts, hideHomeValues } = useProfilePrivacy();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({
     pipes: { count: 0, value: 0 },
