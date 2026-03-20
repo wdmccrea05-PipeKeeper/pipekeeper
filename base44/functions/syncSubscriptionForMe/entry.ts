@@ -71,21 +71,26 @@ async function updateUserEntitlements(base44: any, user: any, subs: any[]) {
       )
     : 0;
 
+  const hasPaidAccess = activeSubs.length > 0;
+  // Always use "pro" — no "premium" tier in the system
+  const entitlementTier = hasPaidAccess ? 'pro' : 'free';
+  const resolvedModules = hasPaidAccess
+    ? (paidModules.length > 0 ? paidModules : ['pipekeeper', 'whiskeykeeper'])
+    : [];
+
   await base44.asServiceRole.entities.User.update(user.id, {
     stripe_customer_id:
       activeSubs.find((s) => s.stripe_customer_id)?.stripe_customer_id || user.stripe_customer_id || null,
-    paid_modules_csv: paidModules.join(','),
-    has_paid_access: paidModules.length > 0,
-    has_bundle_access: hasBundle,
-    entitlement_tier: paidModules.length > 0 ? (hasBundle ? `bundle_${bundleSize}` : 'pro') : 'free',
+    entitlement_tier: entitlementTier,
+    paid_modules_csv: resolvedModules.join(','),
+    has_paid_access: hasPaidAccess,
     updated_date: new Date().toISOString(),
   });
 
   return {
-    paidModules,
-    entitlementTier: paidModules.length > 0 ? (hasBundle ? `bundle_${bundleSize}` : 'pro') : 'free',
-    hasPaidAccess: paidModules.length > 0,
-    hasBundleAccess: hasBundle,
+    paidModules: resolvedModules,
+    entitlementTier,
+    hasPaidAccess,
   };
 }
 
