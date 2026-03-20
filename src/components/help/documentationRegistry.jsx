@@ -1,402 +1,484 @@
 /**
- * Documentation Registry
- * Centralized, modular documentation system
- * Scales with new modules (CigarKeeper, WineKeeper, etc.)
+ * Help Knowledge Base — canonical source used by Search, AI Help, and Tutorials.
+ * Every article has: id, title, module, category, summary, body, keywords, questions, synonyms, relatedArticles
  */
 
-const DOCUMENTATION = {
-  // Hub Documentation
-  hub: {
-    tutorials: [
-      {
-        id: 'hub-overview',
-        title: 'Hub Overview',
-        description: 'Learn about the collection hub and how modules connect',
-        sections: [
-          {
-            heading: 'What is the Hub?',
-            content: 'The Hub is your central dashboard where all collection modules connect. It shows your collection overview, active modules, recent activity, and cross-module insights.'
-          },
-          {
-            heading: 'Collection Overview',
-            content: 'See at-a-glance statistics: total items, collection value, recent activity, and collection health across all modules.'
-          },
-          {
-            heading: 'Module Cards',
-            content: 'Each active module (PipeKeeper, WhiskeyKeeper, etc.) displays a card with quick stats and quick-launch buttons to jump into that module.'
-          },
-          {
-            heading: 'Quick Launch',
-            content: 'Use Quick Launch buttons to quickly add a new pipe, blend, bottle, or start a session without navigating module screens.'
-          },
-          {
-            heading: 'Collection Curator',
-            content: 'The Curator AI provides proactive insights about your collection, recommendations for new items, and collection optimization ideas.'
-          },
-          {
-            heading: "Tonight's Session",
-            content: 'Get AI-powered pairing recommendations for your next smoking session, including pipe, tobacco, and whiskey pairings.'
-          },
-          {
-            heading: 'Collection Story',
-            content: 'View automatically generated highlights about your collection, such as acquisition trends, favorite items, and collection milestones.'
-          },
-          {
-            heading: 'Cross-Module Insights',
-            content: 'See how your pipes, tobacco, and whiskey collections relate to each other through advanced pairing and compatibility analysis.'
-          }
-        ]
-      }
+export const HELP_ARTICLES = [
+  // ─── HUB ────────────────────────────────────────────────────────────────────
+  {
+    id: 'hub-overview',
+    title: 'Hub Overview',
+    module: 'hub',
+    category: 'getting-started',
+    summary: 'The Hub is your central dashboard where all collection modules connect.',
+    body: 'The Hub shows your collection overview, active modules, recent activity, and cross-module insights. Each active module (PipeKeeper, WhiskeyKeeper) displays a card with quick stats and quick-launch buttons. Use Quick Launch to quickly add a new pipe, blend, bottle, or start a session without navigating. The Curator AI provides proactive insights about your collection. Cross-Module Insights show how your pipes, tobacco, and whiskey relate to each other.',
+    keywords: ['hub', 'dashboard', 'home', 'overview', 'modules', 'collection', 'start', 'main screen'],
+    questions: [
+      'what is the hub',
+      'how do i get started',
+      'what does the home screen show',
+      'where do i begin',
+      'what is the main page',
     ],
-    troubleshooting: [
-      {
-        id: 'hub-loading-slow',
-        title: 'Hub is loading slowly',
-        solution: 'The Hub collects data from multiple modules. This is normal on first load. Refresh the page if it takes more than 10 seconds.'
-      },
-      {
-        id: 'hub-cards-missing',
-        title: 'Module cards are missing',
-        solution: 'Cards only appear for modules you have access to. Upgrade your subscription to unlock additional modules.'
-      }
+    synonyms: ['home', 'main page', 'dashboard', 'landing page'],
+    relatedArticles: ['curator-overview', 'tonights-session', 'collection-insights'],
+  },
+  {
+    id: 'collection-insights',
+    title: 'Collection Insights',
+    module: 'hub',
+    category: 'features',
+    summary: 'Collection Insights shows analytics and highlights across your entire collection.',
+    body: 'Collection Insights aggregates data from all your active modules to give you a unified view of your collecting habits. See total item counts, collection value, recent activity, favourite items, and trends. The intelligence panel highlights milestones such as newest acquisition, most-used pipe, and top-rated whiskey. Insights update automatically as you add or edit items.',
+    keywords: ['insights', 'analytics', 'statistics', 'value', 'totals', 'trends', 'highlights', 'intelligence'],
+    questions: [
+      'how do i see collection insights',
+      'where are my analytics',
+      'how do i see my collection value',
+      'what are collection highlights',
+      'how do i view stats',
     ],
-    features: [
-      {
-        id: 'collection-overview',
-        title: 'Collection Overview',
-        description: 'Unified statistics across all modules',
-        keywords: ['stats', 'totals', 'value', 'collection']
-      }
-    ]
+    synonyms: ['analytics', 'stats', 'collection summary', 'collection highlights'],
+    relatedArticles: ['hub-overview', 'curator-overview'],
   },
 
-  // PipeKeeper Documentation
-  pipekeeper: {
-    tutorials: [
-      {
-        id: 'pipekeeper-getting-started',
-        title: 'PipeKeeper Getting Started',
-        description: 'Master the basics of managing your pipe collection',
-        sections: [
-          {
-            heading: 'Adding Your First Pipe',
-            content: 'Go to PipeKeeper and click "Add Pipe". Fill in basic info like maker, shape, and material. You can add detailed specs and photos later.'
-          },
-          {
-            heading: 'Recording Pipe Details',
-            content: 'After creating a pipe, click to open its detail page. Add measurements, condition notes, purchase history, maintenance logs, and photos.'
-          },
-          {
-            heading: 'Managing Tobacco Blends',
-            content: 'Add your tobacco collection separately. Each blend records manufacturer, type, strength, and inventory (tins, bulk, pouches).'
-          },
-          {
-            heading: 'Logging Smoking Sessions',
-            content: 'Record each session you smoke. Log the pipe used, blend smoked, date, and any notes. This history powers your insights and pairing recommendations.'
-          },
-          {
-            heading: 'AI Pairings & Optimization',
-            content: 'PipeKeeper generates AI-powered pipe-tobacco pairings based on your collection, ratings, and smoking history. Regenerate pairings anytime your collection changes.'
-          },
-          {
-            heading: 'Insights & Analytics',
-            content: 'View your smoking trends, favorite pipes and blends, collection value, and detailed analytics about your collecting habits.'
-          },
-          {
-            heading: 'Collection Valuation',
-            content: 'Estimate the value of your pipe collection. Manual estimates, AI market analysis, and collector value tracking all available.'
-          }
-        ]
-      }
+  // ─── CURATOR ────────────────────────────────────────────────────────────────
+  {
+    id: 'curator-overview',
+    title: 'Using the Curator',
+    module: 'curator',
+    category: 'getting-started',
+    summary: 'The Curator is an AI advisor that gives you personalised advice about your collection.',
+    body: 'The Curator is your AI collection advisor. Navigate to the Curator page from the top navigation. Type a question or request in the chat input and press Send. The Curator knows your collection — your pipes, tobacco blends, bottles, session history, and preferences — and answers questions specific to your data. You can ask for pairing suggestions, collection gap analysis, value estimates, acquisition recommendations, and more. Each session is saved so you can refer back to previous conversations. The Curator can also proactively surface insights on the Hub without you asking.',
+    keywords: ['curator', 'ai', 'advisor', 'chat', 'intelligence', 'recommendations', 'proactive', 'ask', 'insights'],
+    questions: [
+      'how do i use the curator',
+      'what is the curator',
+      'how do i chat with the ai',
+      'how do i get ai recommendations',
+      'how do i ask the curator a question',
+      'what can the curator do',
+      'how do i use ai help',
+      'curator not working',
+      'how do i get collection advice',
     ],
-    troubleshooting: [
-      {
-        id: 'pk-pipe-not-saving',
-        title: 'Pipe information is not saving',
-        solution: 'Check your internet connection. Ensure you clicked the Save button and wait for confirmation. Try refreshing the page.'
-      },
-      {
-        id: 'pk-pairings-outdated',
-        title: 'Pairings show "out of date" status',
-        solution: 'This means your AI pairings were generated before your latest collection changes. Go to Pairings and click "Regenerate Pairings" to update them.'
-      },
-      {
-        id: 'pk-images-not-loading',
-        title: 'Pipe photos are not displaying',
-        solution: 'Check file size (max 5MB per image). Try uploading again or using a different image format (JPG/PNG).'
-      }
-    ],
-    features: [
-      {
-        id: 'pipe-specialization',
-        title: 'Pipe Specialization',
-        description: 'Designate pipes for specific blends',
-        keywords: ['specialization', 'focus', 'blends', 'pairing']
-      },
-      {
-        id: 'break-in-schedule',
-        title: 'Break-In Schedule',
-        description: 'Track pipe break-in progress',
-        keywords: ['break-in', 'new pipe', 'schedule']
-      },
-      {
-        id: 'ai-pairings',
-        title: 'AI Pairings',
-        description: 'AI-generated pipe & tobacco pairings',
-        keywords: ['pairing', 'ai', 'recommendation', 'match']
-      }
-    ]
+    synonyms: ['ai advisor', 'collection curator', 'curator ai', 'ai chat', 'ai assistant', 'intelligent advisor'],
+    relatedArticles: ['hub-overview', 'tonights-session', 'pipekeeper-ai-pairings'],
   },
 
-  // WhiskeyKeeper Documentation
-  whiskeykeeper: {
-    tutorials: [
-      {
-        id: 'whiskeykeeper-getting-started',
-        title: 'WhiskeyKeeper Getting Started',
-        description: 'Build and manage your whiskey collection',
-        sections: [
-          {
-            heading: 'Adding Your First Bottle',
-            content: 'Go to WhiskeyKeeper and click "Add Bottle". Use Quick Search to find bottles in the library, or manually add details like type, region, ABV, and price.'
-          },
-          {
-            heading: 'Bottle Types',
-            content: 'Record each bottle as Sealed (collector only), Drinking (unopened for consumption), Open (currently being consumed), or Reserve (special collection items).'
-          },
-          {
-            heading: 'Bottle Pricing',
-            content: 'Track multiple prices: retail price (standard MSRP), aftermarket price (auction/secondary market), and collector value (sealed bottles for collectors).'
-          },
-          {
-            heading: 'Inventory Management',
-            content: 'For bottles with multiple units, track quantities for each status type. Open bottles track fill levels (Full, High, Medium, Low, Almost Empty).'
-          },
-          {
-            heading: 'Logging Tastings',
-            content: 'Record your tasting sessions with notes, ratings, and tasting dates. Build a complete history of your whiskey experiences.'
-          },
-          {
-            heading: 'Whiskey Insights',
-            content: 'View analytics including bottle type distribution, country distribution, collection value breakdown, tasting trends, and collection growth over time.'
-          },
-          {
-            heading: 'Collection Views',
-            content: 'Switch between List view (detailed info), Gallery view (visual thumbnails), and Collector view (premium visual layout).'
-          }
-        ]
-      }
+  // ─── TONIGHT'S SESSION ──────────────────────────────────────────────────────
+  {
+    id: 'tonights-session',
+    title: "Tonight's Session",
+    module: 'hub',
+    category: 'features',
+    summary: "Tonight's Session gives you AI-powered pairing recommendations for your next smoking session.",
+    body: "Tonight's Session is found on the Hub. It analyses your pipes, tobacco blends, and whiskey bottles to suggest the ideal combination for your next session. The AI considers your smoking history, current inventory, and preferences. You can accept a suggested session, ask for alternatives, or customise the pairing yourself. Completing a session automatically logs it in your smoking history.",
+    keywords: ['tonight', 'session', 'pairing', 'recommendation', 'evening', 'smoke', 'combination', 'pipe tobacco whiskey'],
+    questions: [
+      'how do i use tonights session',
+      'what is tonights session',
+      'how do i get session recommendations',
+      'how do i plan a smoking session',
+      'how do i pair pipe and tobacco',
+      'how do i get pairing suggestions',
     ],
-    troubleshooting: [
-      {
-        id: 'wk-bottle-not-found',
-        title: 'Bottle not found in Quick Search',
-        solution: 'The library may not have this bottle. Try searching by producer/distillery name. You can add it manually with details you know.'
-      },
-      {
-        id: 'wk-pricing-confusion',
-        title: 'I\'m confused about the three price fields',
-        solution: 'Retail = MSRP, Aftermarket = auction/resale price, Collector = sealed bottle value for collectors. Use whichever applies to your bottle.'
-      },
-      {
-        id: 'wk-inventory-error',
-        title: 'Inventory quantities don\'t match',
-        solution: 'Check that sealed + open + reserve bottles = total. Use the inventory manager to adjust quantities if needed.'
-      }
-    ],
-    features: [
-      {
-        id: 'quick-search',
-        title: 'Quick Search',
-        description: 'AI-powered bottle library search',
-        keywords: ['search', 'library', 'ai', 'bottle lookup']
-      },
-      {
-        id: 'collection-valuation',
-        title: 'Collection Valuation',
-        description: 'Track collection value across pricing types',
-        keywords: ['value', 'price', 'worth', 'collector']
-      },
-      {
-        id: 'tasting-log',
-        title: 'Tasting Log',
-        description: 'Track whiskey tastings and ratings',
-        keywords: ['tasting', 'log', 'notes', 'rating']
-      }
-    ]
+    synonyms: ["tonight's session", 'session planner', 'evening pairing', 'session engine'],
+    relatedArticles: ['curator-overview', 'pipekeeper-ai-pairings', 'log-smoking-session'],
   },
 
-  // Bundle Documentation
-  bundle: {
-    tutorials: [
-      {
-        id: 'bundle-overview',
-        title: 'Bundle Overview',
-        description: 'Master cross-module collecting with the Bundle subscription',
-        sections: [
-          {
-            heading: 'What is the Bundle?',
-            content: 'The Bundle combines PipeKeeper, WhiskeyKeeper, and advanced AI features into one subscription. Manage your complete collector lifestyle.'
-          },
-          {
-            heading: 'Unified Collection Dashboard',
-            content: 'The Hub displays stats and insights from all modules simultaneously. See your pipes, tobacco, and whiskey in one place.'
-          },
-          {
-            heading: 'Cross-Module Pairings',
-            content: 'Get recommendations that combine pipes, tobacco, and whiskey together. Tonight\'s Session pairs all three for the perfect smoking experience.'
-          },
-          {
-            heading: 'Collection Story',
-            content: 'Get AI-generated narratives about your collection that tell stories across modules—favorite pipe-tobacco-whiskey combinations, collecting patterns, and milestones.'
-          },
-          {
-            heading: 'Advanced Curator AI',
-            content: 'The Curator provides expert recommendations across your entire collection, identifying gaps, suggesting new acquisitions, and optimizing your collection holistically.'
-          },
-          {
-            heading: 'Advanced Analytics',
-            content: 'Compare value, usage, and trends across modules. See correlations between pipe preferences and whiskey types.'
-          },
-          {
-            heading: 'Premium Features',
-            content: 'Access all Pro features for each module including advanced valuation, AI identification, and extended analytics history.'
-          }
-        ]
-      }
+  // ─── PIPEKEEPER ─────────────────────────────────────────────────────────────
+  {
+    id: 'pipekeeper-overview',
+    title: 'PipeKeeper Overview',
+    module: 'pipekeeper',
+    category: 'getting-started',
+    summary: 'PipeKeeper helps you manage your pipe collection, tobacco cellar, and smoking history.',
+    body: 'PipeKeeper has three main sections: Pipes, Tobacco, and Insights. In Pipes, you track each pipe you own with maker, shape, material, condition, measurements, photos, and value. In Tobacco, you manage your cellar of blends with type, strength, inventory, and cellar/aging data. The Insights page shows your smoking trends, favourite combinations, collection value, and AI pairings.',
+    keywords: ['pipekeeper', 'pipes', 'tobacco', 'cellar', 'collection', 'overview', 'getting started'],
+    questions: [
+      'what is pipekeeper',
+      'how do i use pipekeeper',
+      'how do i start pipekeeper',
+      'what can i track in pipekeeper',
     ],
-    troubleshooting: [
-      {
-        id: 'bundle-why-expensive',
-        title: 'Why is the Bundle more expensive than separate modules?',
-        solution: 'The Bundle includes all modules plus advanced AI features and is priced with a 20% discount vs buying modules separately.'
-      },
-      {
-        id: 'bundle-downgrade',
-        title: 'Can I downgrade from Bundle to a single module?',
-        solution: 'Yes, you can manage your subscription in Settings. Data from unused modules stays safe in case you resubscribe.'
-      }
-    ]
-  }
+    synonyms: ['pipe module', 'pipe tracker', 'pipe collection manager'],
+    relatedArticles: ['add-pipe', 'log-smoking-session', 'pipekeeper-ai-pairings'],
+  },
+  {
+    id: 'add-pipe',
+    title: 'Adding a Pipe',
+    module: 'pipekeeper',
+    category: 'how-to',
+    summary: 'Add a new pipe to your collection in a few simple steps.',
+    body: 'Go to PipeKeeper and click "Add Pipe" (or the + button). Fill in the basic details: name, maker, shape, and material. Optionally add measurements (length, bowl depth, weight), condition, purchase date and price, and photos. Click Save. You can always edit the pipe later by clicking on it and selecting Edit. For estate pipes, use the AI Identifier to help identify maker and shape from a photo.',
+    keywords: ['add pipe', 'new pipe', 'create pipe', 'pipe entry', 'how to add', 'record pipe'],
+    questions: [
+      'how do i add a pipe',
+      'how do i record a new pipe',
+      'how do i enter a pipe',
+      'how do i create a pipe record',
+      'where do i add pipes',
+    ],
+    synonyms: ['new pipe', 'create pipe', 'log pipe'],
+    relatedArticles: ['pipekeeper-overview', 'log-smoking-session', 'break-in-schedule'],
+  },
+  {
+    id: 'log-smoking-session',
+    title: 'Logging a Smoking Session',
+    module: 'pipekeeper',
+    category: 'how-to',
+    summary: 'Record each smoking session to build your history and improve AI recommendations.',
+    body: 'From PipeKeeper, go to the Tobacco or Pipes tab and click "Log Session", or use Quick Launch from the Hub. Select the pipe you used, the tobacco blend you smoked, the date, and optionally add notes about the session. The number of bowls is recorded. Your session history powers the Insights page and improves Tonight\'s Session recommendations. You can view all sessions in the Insights tab under Smoking Log.',
+    keywords: ['log session', 'smoking session', 'record session', 'session log', 'bowl', 'smoke', 'history', 'log smoke'],
+    questions: [
+      'how do i log a smoking session',
+      'how do i record a session',
+      'how do i add to my smoking history',
+      'how do i track my smoking',
+      'where is the session log',
+      'how do i log a bowl',
+    ],
+    synonyms: ['smoking log', 'session record', 'pipe session', 'bowl log'],
+    relatedArticles: ['pipekeeper-overview', 'tonights-session', 'add-pipe'],
+  },
+  {
+    id: 'pipekeeper-ai-pairings',
+    title: 'AI Pipe & Tobacco Pairings',
+    module: 'pipekeeper',
+    category: 'features',
+    summary: 'AI-generated pairing recommendations between your pipes and tobacco blends.',
+    body: 'PipeKeeper generates AI-powered pipe-tobacco pairings based on your collection, ratings, and smoking history. Navigate to Insights > Pairings to see current pairings. If pairings show "out of date", click Regenerate Pairings. The AI considers bowl size, pipe shape, tobacco strength, blend type, and your personal history. You can also assign a Specialization to a pipe — designating it for specific blend types — which improves pairing accuracy.',
+    keywords: ['pairings', 'ai pairings', 'pairing recommendations', 'match', 'tobacco pipe match', 'specialization'],
+    questions: [
+      'how do ai pairings work',
+      'how do i generate pairings',
+      'how do i match pipes to tobacco',
+      'pairings are outdated',
+      'how do i regenerate pairings',
+    ],
+    synonyms: ['pipe tobacco pairing', 'ai recommendations', 'pairing matrix'],
+    relatedArticles: ['tonights-session', 'curator-overview', 'log-smoking-session'],
+  },
+  {
+    id: 'break-in-schedule',
+    title: 'Break-In Schedule',
+    module: 'pipekeeper',
+    category: 'features',
+    summary: 'Track and manage the break-in process for new pipes.',
+    body: 'New briar pipes benefit from a break-in period where you smoke partial bowls to gradually build a cake. In PipeKeeper, open a pipe\'s detail page and click "Break-In Schedule". The AI generates a recommended schedule based on the pipe\'s material and bowl size. Each session you complete can be marked off. The schedule tracks your progress and can be regenerated if you update your pipe\'s details.',
+    keywords: ['break in', 'break-in', 'new pipe', 'cake', 'schedule', 'briar', 'season'],
+    questions: [
+      'how do i break in a new pipe',
+      'what is a break-in schedule',
+      'how do i season a pipe',
+      'how do i build a cake',
+    ],
+    synonyms: ['seasoning', 'cake building', 'pipe break-in'],
+    relatedArticles: ['add-pipe', 'pipekeeper-overview'],
+  },
+
+  // ─── WHISKEYKEEPER ──────────────────────────────────────────────────────────
+  {
+    id: 'whiskeykeeper-overview',
+    title: 'WhiskeyKeeper Overview',
+    module: 'whiskeykeeper',
+    category: 'getting-started',
+    summary: 'WhiskeyKeeper helps you build, manage, and track your whiskey bottle collection.',
+    body: 'WhiskeyKeeper has three views: List, Gallery, and Collector. Add bottles, track inventory (sealed, open, reserve), record purchase prices, retail prices, aftermarket prices, and collector values. Log tasting notes for each bottle. The Insights tab shows analytics including bottle type distribution, country of origin, collection value, and tasting trends.',
+    keywords: ['whiskeykeeper', 'whiskey', 'bottles', 'collection', 'overview', 'getting started'],
+    questions: [
+      'what is whiskeykeeper',
+      'how do i use whiskeykeeper',
+      'how do i start whiskeykeeper',
+      'what can i do in whiskeykeeper',
+    ],
+    synonyms: ['whiskey module', 'bottle tracker', 'whiskey collection manager'],
+    relatedArticles: ['add-bottle', 'log-tasting', 'whiskey-inventory'],
+  },
+  {
+    id: 'add-bottle',
+    title: 'Adding a Whiskey Bottle',
+    module: 'whiskeykeeper',
+    category: 'how-to',
+    summary: 'Add a new whiskey bottle to your collection using Quick Search or manual entry.',
+    body: 'Go to WhiskeyKeeper and click "Add Bottle". Use Quick Search to find the bottle in the library — type the distillery or whiskey name and select from results. If not found, add it manually: fill in name, type (Scotch, Bourbon, etc.), region, ABV, age statement, and pricing. Set the initial inventory: how many units you own, which are sealed vs open. Add photos and tasting notes. Click Save.',
+    keywords: ['add bottle', 'new bottle', 'create bottle', 'quick search', 'bottle entry', 'record bottle', 'whiskey entry'],
+    questions: [
+      'how do i add a bottle',
+      'how do i add a whiskey',
+      'how do i record a new bottle',
+      'how do i enter a bottle',
+      'how do i use quick search for bottles',
+      'bottle not found in library',
+    ],
+    synonyms: ['new bottle', 'log bottle', 'add whiskey'],
+    relatedArticles: ['whiskeykeeper-overview', 'log-tasting', 'whiskey-pricing'],
+  },
+  {
+    id: 'log-tasting',
+    title: 'Logging a Tasting',
+    module: 'whiskeykeeper',
+    category: 'how-to',
+    summary: 'Record tasting notes and ratings for your whiskey bottles.',
+    body: 'Open a bottle\'s detail page and click "Log Tasting". Select the date of the tasting, the serving method (neat, rocks, water, cocktail), and write your tasting notes. Give the bottle a rating from 1 to 5. You can add descriptive flavour tags (e.g. vanilla, peat, sherry). Tastings are saved in the bottle\'s history and contribute to your Insights analytics. To view all tastings, go to the Tastings page in WhiskeyKeeper.',
+    keywords: ['log tasting', 'tasting notes', 'rating', 'review', 'note', 'taste', 'score', 'flavour'],
+    questions: [
+      'how do i log a tasting',
+      'how do i record tasting notes',
+      'how do i rate a whiskey',
+      'how do i add tasting notes',
+      'where do i write notes about a whiskey',
+      'how do i review a bottle',
+    ],
+    synonyms: ['tasting log', 'whiskey notes', 'tasting record', 'bottle review'],
+    relatedArticles: ['whiskeykeeper-overview', 'add-bottle', 'whiskey-inventory'],
+  },
+  {
+    id: 'whiskey-inventory',
+    title: 'Managing Whiskey Inventory',
+    module: 'whiskeykeeper',
+    category: 'how-to',
+    summary: 'Track multiple units per bottle including sealed, open, and reserve statuses.',
+    body: 'For each bottle you can track multiple inventory units. Each unit has a status: Sealed (unopened), Drinking (open for consumption), or Reserve. Open bottles also track fill level (Full, High, Medium, Low, Almost Empty). To manage inventory, open a bottle\'s detail page and click "Manage Inventory". Add units as you acquire more of the same bottle. Update fill levels as you consume a bottle. The collection value is calculated from your inventory units.',
+    keywords: ['inventory', 'units', 'sealed', 'open', 'reserve', 'fill level', 'quantities', 'stock'],
+    questions: [
+      'how do i track multiple bottles',
+      'how do i manage inventory',
+      'what is sealed vs open',
+      'how do i update fill level',
+      'how do i track how many bottles i have',
+    ],
+    synonyms: ['bottle inventory', 'stock tracking', 'bottle units'],
+    relatedArticles: ['add-bottle', 'whiskey-pricing', 'whiskeykeeper-overview'],
+  },
+  {
+    id: 'whiskey-pricing',
+    title: 'Whiskey Pricing & Valuation',
+    module: 'whiskeykeeper',
+    category: 'features',
+    summary: 'Track retail, aftermarket, and collector values for your whiskey bottles.',
+    body: 'WhiskeyKeeper tracks three price types per bottle. Retail Price: the standard MSRP or shop price. Aftermarket Price: what the bottle sells for at auction or on the secondary market. Collector Value: the estimated value for sealed collector bottles. Your total collection value is calculated from these prices multiplied by your inventory units. You can use AI Value Lookup to get an AI estimate of current market prices.',
+    keywords: ['price', 'value', 'valuation', 'retail', 'aftermarket', 'collector', 'worth', 'market price'],
+    questions: [
+      'how do i track bottle value',
+      'what is the difference between retail and aftermarket price',
+      'how do i value my whiskey collection',
+      'how do i get an ai price estimate',
+    ],
+    synonyms: ['bottle value', 'collection value', 'pricing', 'market value'],
+    relatedArticles: ['add-bottle', 'whiskey-inventory', 'whiskeykeeper-overview'],
+  },
+
+  // ─── SHARING ────────────────────────────────────────────────────────────────
+  {
+    id: 'sharing-stories',
+    title: 'Sharing Collection Stories & Cards',
+    module: 'hub',
+    category: 'features',
+    summary: 'Share your collection highlights and stories with friends or on social media.',
+    body: 'CollectionKeeper lets you create shareable cards and stories from your collection data. From any item detail page, click the Share button to generate a visual card showing the item\'s details, rating, and photos. From the Hub, the Collection Story feature generates a narrative highlight reel of your collection. Share links work for anyone — recipients do not need an account to view shared cards. Public profiles let your friends follow your collection if you enable them in Settings.',
+    keywords: ['share', 'story', 'card', 'social', 'public', 'link', 'sharing', 'post', 'community'],
+    questions: [
+      'how do i share my collection',
+      'how do i share a bottle',
+      'how do i share a pipe',
+      'how do i create a share card',
+      'how do i make my collection public',
+      'how do i share a story',
+    ],
+    synonyms: ['share card', 'collection story', 'social sharing', 'public link'],
+    relatedArticles: ['hub-overview', 'collection-insights'],
+  },
+
+  // ─── SEARCH ─────────────────────────────────────────────────────────────────
+  {
+    id: 'global-search',
+    title: 'Search & Quick Search',
+    module: 'hub',
+    category: 'features',
+    summary: 'Find pipes, bottles, and blends instantly using the global search.',
+    body: 'Use the search icon in the top navigation bar to open Global Search. Type the name of any pipe, tobacco blend, or whiskey bottle to find it instantly. Quick Search is also available when adding a new item — it searches an online library of bottles and pipes to pre-fill details for you. In WhiskeyKeeper, click "Add Bottle" then use the Quick Search field to find a bottle from the database. In PipeKeeper, the Pipe Identifier uses AI to identify a pipe from a photo.',
+    keywords: ['search', 'quick search', 'find', 'lookup', 'global search', 'filter', 'locate'],
+    questions: [
+      'how do i search for a bottle',
+      'how do i find a pipe',
+      'how do i use quick search',
+      'how do i search my collection',
+      'where is the search bar',
+    ],
+    synonyms: ['quick search', 'find item', 'lookup', 'bottle search'],
+    relatedArticles: ['add-bottle', 'add-pipe'],
+  },
+];
+
+// ─── TOPIC SHORTCUTS ──────────────────────────────────────────────────────────
+// Maps common intent phrases to article IDs for instant resolution
+export const TOPIC_SHORTCUTS = {
+  'curator': 'curator-overview',
+  'how do i use curator': 'curator-overview',
+  'ai advisor': 'curator-overview',
+  'log tasting': 'log-tasting',
+  'tasting notes': 'log-tasting',
+  'add pipe': 'add-pipe',
+  'new pipe': 'add-pipe',
+  'tonights session': 'tonights-session',
+  "tonight's session": 'tonights-session',
+  'session planner': 'tonights-session',
+  'collection insights': 'collection-insights',
+  'analytics': 'collection-insights',
+  'add bottle': 'add-bottle',
+  'new bottle': 'add-bottle',
+  'log session': 'log-smoking-session',
+  'smoking session': 'log-smoking-session',
+  'share': 'sharing-stories',
+  'quick search': 'global-search',
 };
 
+// ─── NORMALISE QUERY ──────────────────────────────────────────────────────────
+function normalise(text) {
+  return (text || '')
+    .toLowerCase()
+    .replace(/[''`]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    // remove common stop words that add noise
+    .replace(/\b(how|do|i|the|a|an|to|in|use|can|my|for|is|what|where|are|does)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Naive plural/singular normalisation (remove trailing s)
+function stem(word) {
+  return word.replace(/(?:ing|tion|s)$/, '');
+}
+
+// ─── SEARCH ───────────────────────────────────────────────────────────────────
 /**
- * Get documentation by module
+ * Search the help KB.  Returns scored results, best first.
  */
+export function searchHelpArticles(rawQuery) {
+  if (!rawQuery || rawQuery.trim().length < 2) return [];
+
+  const q = normalise(rawQuery);
+  const qWords = q.split(' ').filter(Boolean).map(stem);
+
+  // Check topic shortcut first
+  const shortcutKey = Object.keys(TOPIC_SHORTCUTS).find(k => {
+    const nk = normalise(k);
+    return q.includes(nk) || nk.includes(q);
+  });
+
+  const results = HELP_ARTICLES.map(article => {
+    let score = 0;
+
+    const fields = [
+      { text: article.title, weight: 10 },
+      { text: article.summary, weight: 6 },
+      { text: article.body, weight: 3 },
+      { text: article.keywords.join(' '), weight: 5 },
+      { text: article.questions.join(' '), weight: 8 },
+      { text: article.synonyms.join(' '), weight: 7 },
+      { text: article.module, weight: 4 },
+      { text: article.category, weight: 2 },
+    ];
+
+    // Check shortcut boost
+    if (shortcutKey && TOPIC_SHORTCUTS[shortcutKey] === article.id) {
+      score += 100;
+    }
+
+    for (const { text, weight } of fields) {
+      const normalText = normalise(text);
+      // Full query match
+      if (normalText.includes(q)) score += weight * 3;
+      // Individual word matches
+      for (const word of qWords) {
+        if (word.length < 2) continue;
+        if (normalText.includes(word)) score += weight;
+        // Stem match
+        const stemmedText = normalText.split(' ').map(stem).join(' ');
+        if (stemmedText.includes(word)) score += Math.floor(weight / 2);
+      }
+    }
+
+    return { article, score };
+  });
+
+  return results
+    .filter(r => r.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(r => r.article);
+}
+
+/**
+ * Get a specific article by id
+ */
+export function getArticleById(id) {
+  return HELP_ARTICLES.find(a => a.id === id) || null;
+}
+
+/**
+ * Get all articles for a module
+ */
+export function getArticlesByModule(module) {
+  return HELP_ARTICLES.filter(a => a.module === module);
+}
+
+/**
+ * Build a rich context string for AI Help from top matching articles
+ */
+export function buildAiContext(query, maxArticles = 4) {
+  const articles = searchHelpArticles(query).slice(0, maxArticles);
+  if (articles.length === 0) return { context: '', articles: [] };
+
+  const context = articles.map(a =>
+    `## ${a.title} (${a.module})\n${a.summary}\n${a.body}`
+  ).join('\n\n---\n\n');
+
+  return { context, articles };
+}
+
+// ─── LEGACY COMPAT ────────────────────────────────────────────────────────────
+// Keep old API surface so existing imports don't break
+
+const DOCUMENTATION = {
+  hub: { tutorials: [], troubleshooting: [], features: [] },
+  pipekeeper: { tutorials: [], troubleshooting: [], features: [] },
+  whiskeykeeper: { tutorials: [], troubleshooting: [], features: [] },
+  bundle: { tutorials: [], troubleshooting: [] },
+};
+
 export function getModuleDocumentation(moduleName) {
   return DOCUMENTATION[moduleName] || null;
 }
 
-/**
- * Get all modules with documentation
- */
 export function getAllDocumentedModules() {
   return Object.keys(DOCUMENTATION);
 }
 
-/**
- * Search documentation across all modules
- */
 export function searchDocumentation(query) {
-  const q = query.toLowerCase();
-  const results = [];
-
-  Object.entries(DOCUMENTATION).forEach(([moduleName, docs]) => {
-    // Search tutorials
-    if (docs.tutorials) {
-      docs.tutorials.forEach((tutorial) => {
-        if (tutorial.title.toLowerCase().includes(q) || tutorial.description.toLowerCase().includes(q)) {
-          results.push({
-            type: 'tutorial',
-            module: moduleName,
-            id: tutorial.id,
-            title: tutorial.title,
-            preview: tutorial.description,
-            relevance: 'high'
-          });
-        }
-        // Search sections within tutorials
-        tutorial.sections.forEach((section) => {
-          if (section.heading.toLowerCase().includes(q) || section.content.toLowerCase().includes(q)) {
-            results.push({
-              type: 'tutorial-section',
-              module: moduleName,
-              tutorialId: tutorial.id,
-              title: section.heading,
-              preview: section.content.substring(0, 100) + '...',
-              relevance: 'medium'
-            });
-          }
-        });
-      });
-    }
-
-    // Search troubleshooting
-    if (docs.troubleshooting) {
-      docs.troubleshooting.forEach((item) => {
-        if (item.title.toLowerCase().includes(q) || item.solution.toLowerCase().includes(q)) {
-          results.push({
-            type: 'troubleshooting',
-            module: moduleName,
-            id: item.id,
-            title: item.title,
-            preview: item.solution.substring(0, 100) + '...',
-            relevance: 'high'
-          });
-        }
-      });
-    }
-
-    // Search features
-    if (docs.features) {
-      docs.features.forEach((feature) => {
-        const keywordMatch = feature.keywords.some(kw => kw.includes(q));
-        if (feature.title.toLowerCase().includes(q) || feature.description.toLowerCase().includes(q) || keywordMatch) {
-          results.push({
-            type: 'feature',
-            module: moduleName,
-            id: feature.id,
-            title: feature.title,
-            preview: feature.description,
-            relevance: keywordMatch ? 'medium' : 'high'
-          });
-        }
-      });
-    }
-  });
-
-  // Sort by relevance
-  return results.sort((a, b) => {
-    const relevanceScore = { high: 3, medium: 2, low: 1 };
-    return (relevanceScore[b.relevance] || 0) - (relevanceScore[a.relevance] || 0);
-  });
+  return searchHelpArticles(query).map(a => ({
+    type: 'article',
+    module: a.module,
+    id: a.id,
+    tutorialId: a.id,
+    title: a.title,
+    preview: a.summary,
+    relevance: 'high',
+  }));
 }
 
-/**
- * Get contextual help for a screen
- */
 export function getContextualHelp(screenName) {
-  const contextMap = {
-    'pairings': {
-      module: 'pipekeeper',
-      tutorials: ['ai-pairings'],
-      troubleshooting: ['pk-pairings-outdated']
-    },
-    'bottle-editor': {
-      module: 'whiskeykeeper',
-      tutorials: ['wk-bottle-not-found']
-    },
-    'hub': {
-      module: 'hub',
-      tutorials: ['hub-overview']
-    },
-    'sessions': {
-      module: 'pipekeeper',
-      tutorials: ['pipekeeper-getting-started']
-    }
+  const map = {
+    'pairings': 'pipekeeper-ai-pairings',
+    'hub': 'hub-overview',
+    'sessions': 'log-smoking-session',
+    'curator': 'curator-overview',
   };
-
-  return contextMap[screenName] || null;
+  const id = map[screenName];
+  return id ? { article: getArticleById(id) } : null;
 }
 
 export default DOCUMENTATION;
