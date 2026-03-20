@@ -12,7 +12,7 @@ import {
 } from "@/components/utils/tobaccoQuantityHelpers";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 import { isAppleBuild } from "@/components/utils/appVariant";
-import ModuleNav from "@/components/modules/ModuleNav";
+import PipeKeeperModuleNav from "@/components/modules/PipeKeeperModuleNav";
 import {
   BarChart3,
   Flame,
