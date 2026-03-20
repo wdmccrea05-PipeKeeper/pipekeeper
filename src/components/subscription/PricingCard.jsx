@@ -11,8 +11,8 @@ export default function PricingCard({
   highlighted = false,
   onSelect,
   isSelected = false,
+  billingPeriod = 'monthly',
 }) {
-  const [billingPeriod, setBillingPeriod] = useState('monthly');
 
   // Defensive null checks for prices
   if (!priceMonthly || !priceAnnual) {
@@ -110,43 +110,7 @@ export default function PricingCard({
         )}
       </div>
 
-      {/* Billing Toggle */}
-      {priceMonthly && priceAnnual && (
-        <div className="flex gap-1 mb-4 bg-black/30 rounded-lg p-1 w-full">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setBillingPeriod('monthly');
-            }}
-            className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition-all ${
-              billingPeriod === 'monthly'
-                ? 'text-white'
-                : 'text-slate-400 hover:text-slate-300'
-            }`}
-            style={{
-              background: billingPeriod === 'monthly' ? 'rgba(180,140,75,0.3)' : 'transparent',
-            }}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setBillingPeriod('annual');
-            }}
-            className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition-all ${
-              billingPeriod === 'annual'
-                ? 'text-white'
-                : 'text-slate-400 hover:text-slate-300'
-            }`}
-            style={{
-              background: billingPeriod === 'annual' ? 'rgba(180,140,75,0.3)' : 'transparent',
-            }}
-          >
-            Annual
-          </button>
-        </div>
-      )}
+      {/* Billing period controlled by parent PaywallModal */}
 
       {/* CTA Button */}
       <Button
