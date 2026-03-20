@@ -86,12 +86,19 @@ function normalizeGroup(group, idx, collectionContext) {
 
 function normalizeItems(items, collectionContext) {
   if (!Array.isArray(items)) {
+    console.warn("[normalizer] Items is not an array:", typeof items);
     return [];
   }
 
-  return items
+  const normalized = items
     .map((item, idx) => normalizeItem(item, idx, collectionContext))
     .filter((i) => i !== null);
+
+  if (items.length > 0 && normalized.length === 0) {
+    console.warn(`[normalizer] All ${items.length} items were filtered out during normalization`);
+  }
+
+  return normalized;
 }
 
 function normalizeItem(item, idx, collectionContext) {
