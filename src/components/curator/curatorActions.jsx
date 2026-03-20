@@ -20,6 +20,13 @@
  */
 
 import { Sparkles, Ruler, Droplet, Tags, Target } from 'lucide-react';
+import {
+  getTobaccoReclassificationCandidates,
+  buildReclassificationCandidatesContext,
+  buildSpecializationContext,
+  buildOptimizationContext,
+  buildExpertTobacconistContext,
+} from './expertTobacconistHelpers';
 
 export const CURATOR_ACTIONS = [
   {
