@@ -15,6 +15,13 @@ import {
 } from '@/components/utils/whiskeyValueHelpers';
 
 /**
+ * Get photo from bottle (check both photo and photos array)
+ */
+function getBottlePhoto(bottle) {
+  return bottle?.photo || bottle?.photos?.[0] || null;
+}
+
+/**
  * Main highlight generator
  * @param {Array} bottles - Array of bottle records
  * @param {Array} inventoryUnits - Array of inventory units
@@ -101,7 +108,7 @@ function findMostValuable(bottles, inventoryCountByBottleId, hasInventoryUnits) 
     value: formatCurrency(bottle.__unitValue),
     subtitle: bottle.name,
     accent: '#B4824B',
-    photo: bottle.photo,
+    photo: getBottlePhoto(bottle),
     bottleId: bottle.id,
   };
 }
@@ -122,7 +129,7 @@ function findHighestRated(bottles) {
     value: `${bottle.rating.toFixed(1)} / 5`,
     subtitle: bottle.name,
     accent: '#D4A574',
-    photo: bottle.photo,
+    photo: getBottlePhoto(bottle),
     bottleId: bottle.id,
   };
 }
@@ -143,7 +150,7 @@ function findOldest(bottles) {
     value: `${bottle.age} Years`,
     subtitle: bottle.name,
     accent: '#9B7B5F',
-    photo: bottle.photo,
+    photo: getBottlePhoto(bottle),
     bottleId: bottle.id,
   };
 }
@@ -172,7 +179,7 @@ function findRecentAcquisition(bottles) {
     value: timeLabel,
     subtitle: bottle.name,
     accent: '#C9A876',
-    photo: bottle.photo,
+    photo: getBottlePhoto(bottle),
     bottleId: bottle.id,
   };
 }
@@ -193,7 +200,7 @@ function findHighestProof(bottles) {
     value: `${bottle.abv}% ABV`,
     subtitle: bottle.name,
     accent: '#A67C52',
-    photo: bottle.photo,
+    photo: getBottlePhoto(bottle),
     bottleId: bottle.id,
   };
 }
@@ -211,7 +218,7 @@ function findFavorite(bottles) {
     value: '★',
     subtitle: favorite.name,
     accent: '#D4AF37',
-    photo: favorite.photo,
+    photo: getBottlePhoto(favorite),
     bottleId: favorite.id,
   };
 }
