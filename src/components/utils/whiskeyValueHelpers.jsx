@@ -56,7 +56,9 @@ export function buildInventoryCountByBottleId(inventoryUnits) {
   if (!Array.isArray(inventoryUnits)) return {};
   return inventoryUnits.reduce((acc, unit) => {
     if (!unit?.bottle_id) return acc;
-    acc[unit.bottle_id] = (acc[unit.bottle_id] || 0) + 1;
+    // If unit has a quantity field, use it; otherwise count as 1
+    const quantity = toNumber(unit?.quantity, 1);
+    acc[unit.bottle_id] = (acc[unit.bottle_id] || 0) + quantity;
     return acc;
   }, {});
 }
