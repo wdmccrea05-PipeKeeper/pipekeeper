@@ -2,7 +2,7 @@ import React from 'react';
 import { HeritageCard } from "@/components/ui/HeritageCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Star, Leaf } from "lucide-react";
+import { Heart, Star, Leaf, Pencil } from "lucide-react";
 import { motion } from "framer-motion";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { getAgingRecommendation } from "@/components/utils/agingRecommendation";
@@ -63,7 +63,18 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite, onEdit }
         >
           {/* Absolute positioned overlays */}
           {/* Floating controls */}
-          <div className="absolute top-3 right-3 z-30">
+          <div className="absolute top-3 right-3 z-30 flex gap-1">
+            {typeof onEdit === 'function' && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-full shadow-lg"
+                style={{ background: "rgba(20, 14, 10, 0.85)", border: "1px solid rgba(120, 90, 65, 0.3)" }}
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(blend); }}
+              >
+                <Pencil className="w-3.5 h-3.5 text-[#D4A574]" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"

@@ -2,7 +2,7 @@ import React from 'react';
 import { HeritageCard } from "@/components/ui/HeritageCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Calendar, MapPin, DollarSign } from "lucide-react";
+import { Heart, Calendar, MapPin, DollarSign, Pencil } from "lucide-react";
 import PipeShapeIcon from "./PipeShapeIcon";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
@@ -95,6 +95,17 @@ export default function PipeListItem({ pipe, onClick, onToggleFavorite, onEdit }
                   <Calendar className="w-3 h-3" />
                   {pipe.year_made}
                 </div>
+              )}
+              {typeof onEdit === 'function' && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(pipe); }}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg transition-all"
+                  style={{ background: 'rgba(212,165,116,0.1)', border: '1px solid rgba(212,165,116,0.2)', color: '#D4A574' }}
+                >
+                  <Pencil className="w-3 h-3" />
+                  Edit
+                </button>
               )}
             </div>
           </div>
