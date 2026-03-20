@@ -697,35 +697,38 @@ ${englishText}`;
 
   return (
     <div
-      className="rounded-xl overflow-hidden shadow-2xl"
+      className="rounded-xl overflow-hidden shadow-2xl flex flex-col"
       style={{
         background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
         border: "1px solid rgba(140,105,65,0.35)",
         boxShadow: "0 10px 28px rgba(0,0,0,0.6)",
+        /* On mobile fill available viewport height; on larger screens cap at 80vh */
+        height: "clamp(480px, 75vh, 820px)",
       }}
     >
+      {/* Header — fixed height, does not scroll */}
       <div
-        className="px-6 py-5 border-b"
+        className="px-4 sm:px-6 py-4 border-b flex-shrink-0"
         style={{ borderColor: "rgba(140,105,65,0.2)", background: "rgba(20,14,10,0.4)" }}
       >
-        <div className="space-y-4">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0">
               <img
                 src={CURATOR_ICON}
                 alt={t("curator.workspaceTitle", { defaultValue: "Curator" })}
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <h2
-                className="text-xl font-bold mb-1"
+                className="text-lg sm:text-xl font-bold mb-0.5 leading-tight"
                 style={{ color: "#F5F1E7", fontFamily: "Georgia, serif" }}
               >
                 {t("curator.workspaceTitle", { defaultValue: "Curator" })}
               </h2>
               <p
-                className="text-sm leading-relaxed"
+                className="text-xs sm:text-sm leading-relaxed"
                 style={{ color: "rgba(224,216,200,0.7)" }}
               >
                 {t("curator.workspaceSubtitle", {
@@ -738,7 +741,7 @@ ${englishText}`;
 
           {initError ? (
             <div
-              className="rounded-lg px-4 py-3 text-sm"
+              className="rounded-lg px-3 py-2.5 text-sm"
               style={{
                 background: "rgba(139,58,58,0.18)",
                 border: "1px solid rgba(139,58,58,0.35)",
@@ -748,7 +751,7 @@ ${englishText}`;
               <div className="font-semibold mb-1">
                 {t("curator.initError", { defaultValue: "Failed to start Curator" })}
               </div>
-              <div className="opacity-90 break-words">{initError}</div>
+              <div className="opacity-90 break-words text-xs">{initError}</div>
             </div>
           ) : null}
 
@@ -766,11 +769,12 @@ ${englishText}`;
                     key={idx}
                     onClick={() => handleQuickPrompt(prompt)}
                     disabled={sending || initializing}
-                    className="text-xs px-3 py-1.5 rounded-lg border transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="text-xs px-3 py-1.5 rounded-lg border transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
                       color: "rgba(180,140,75,1)",
                       borderColor: "rgba(140,105,65,0.3)",
                       background: "rgba(100,70,45,0.15)",
+                      WebkitTapHighlightColor: "transparent",
                     }}
                   >
                     {prompt}
@@ -782,18 +786,14 @@ ${englishText}`;
         </div>
       </div>
 
+      {/* Messages — scrollable flex-1 area */}
       <div
-        className="px-6 py-4"
-        style={{
-          minHeight: "300px",
-          maxHeight: "500px",
-          overflowY: "auto",
-          background: "rgba(15,10,8,0.3)",
-        }}
+        className="flex-1 overflow-y-auto px-4 sm:px-6 py-4"
+        style={{ background: "rgba(15,10,8,0.3)", overscrollBehavior: "contain" }}
       >
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full min-h-[200px]">
-            <div className="text-center space-y-3 max-w-md">
+          <div className="flex items-center justify-center h-full min-h-[120px]">
+            <div className="text-center space-y-3 max-w-md px-4">
               <Sparkles
                 className="w-10 h-10 mx-auto"
                 style={{ color: "rgba(180,140,75,0.4)" }}
@@ -844,14 +844,15 @@ ${englishText}`;
         )}
       </div>
 
+      {/* Input bar — always pinned to bottom, never clipped */}
       <div
-        className="px-6 py-4 border-t"
+        className="px-4 sm:px-6 py-3 sm:py-4 border-t flex-shrink-0"
         style={{
           borderColor: "rgba(140,105,65,0.2)",
           background: "rgba(20,14,10,0.4)",
         }}
       >
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -860,7 +861,7 @@ ${englishText}`;
               defaultValue: "Ask Curator about your collection…",
             })}
             disabled={sending || initializing}
-            className="flex-1 bg-white/5 border-white/10 text-[#E0D8C8] placeholder:text-[#E0D8C8]/40"
+            className="flex-1 bg-white/5 border-white/10 text-[#E0D8C8] placeholder:text-[#E0D8C8]/40 text-sm"
           />
           <Button
             onClick={() => sendMessage(null)}
@@ -868,23 +869,24 @@ ${englishText}`;
             style={{
               background: "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))",
               border: "none",
+              flexShrink: 0,
             }}
-            className="hover:opacity-90"
+            className="hover:opacity-90 active:opacity-80 px-3 sm:px-4"
           >
             {sending ? (
-              <span className="animate-pulse">
+              <span className="animate-pulse text-xs sm:text-sm whitespace-nowrap">
                 {t("common.sending", { defaultValue: "Sending…" })}
               </span>
             ) : (
               <>
-                <Send className="w-4 h-4 mr-2" />
-                {t("common.send", { defaultValue: "Send" })}
+                <Send className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">{t("common.send", { defaultValue: "Send" })}</span>
               </>
             )}
           </Button>
         </div>
 
-        <p className="text-xs mt-2" style={{ color: "rgba(224,216,200,0.4)" }}>
+        <p className="text-xs mt-1.5 hidden sm:block" style={{ color: "rgba(224,216,200,0.4)" }}>
           {t("curator.pressEnter", {
             defaultValue: "Press Enter to send. Cmd/Ctrl+Enter also works.",
           })}
