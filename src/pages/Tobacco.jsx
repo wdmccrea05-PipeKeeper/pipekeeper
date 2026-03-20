@@ -586,13 +586,23 @@ export default function TobaccoPage() {
                       )}
                     </div>
                   ) : (
-                    <a href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
+                    <>
                       {viewMode === 'grid' ? (
-                        <TobaccoCard blend={blend} onClick={() => {}} onToggleFavorite={handleToggleFavorite} />
+                        <TobaccoCard
+                          blend={blend}
+                          onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}
+                          onToggleFavorite={handleToggleFavorite}
+                          onEdit={(b) => { setEditingBlend(b); setShowForm(true); }}
+                        />
                       ) : (
-                        <TobaccoListItem blend={blend} onClick={() => {}} onToggleFavorite={handleToggleFavorite} />
+                        <TobaccoListItem
+                          blend={blend}
+                          onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}
+                          onToggleFavorite={handleToggleFavorite}
+                          onEdit={(b) => { setEditingBlend(b); setShowForm(true); }}
+                        />
                       )}
-                    </a>
+                    </>
                   )}
                 </motion.div>
               ))}

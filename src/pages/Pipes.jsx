@@ -462,13 +462,21 @@ export default function PipesPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                 >
-                  <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
-                    {viewMode === 'grid' ? (
-                      <PipeCard pipe={pipe} onClick={() => {}} onToggleFavorite={handleToggleFavorite} />
-                    ) : (
-                      <PipeListItem pipe={pipe} onClick={() => {}} onToggleFavorite={handleToggleFavorite} />
-                    )}
-                  </a>
+                  {viewMode === 'grid' ? (
+                    <PipeCard
+                      pipe={pipe}
+                      onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}
+                      onToggleFavorite={handleToggleFavorite}
+                      onEdit={handleEdit}
+                    />
+                  ) : (
+                    <PipeListItem
+                      pipe={pipe}
+                      onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}
+                      onToggleFavorite={handleToggleFavorite}
+                      onEdit={handleEdit}
+                    />
+                  )}
                 </motion.div>
               ))}
             </AnimatePresence>
