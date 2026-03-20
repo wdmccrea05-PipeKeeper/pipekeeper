@@ -241,12 +241,12 @@ export default function WhiskeyPage() {
                 {/* Stats row */}
                 {bottles.length > 0 && (
                   <div className="grid grid-cols-2 sm:flex sm:gap-3 sm:flex-wrap gap-2">
-                    <StatBadge icon={GlassWater} label={t('hub.bottles', 'Bottles')} value={stats.count} accent="#D4A574" />
+                    {!hideCollectionCounts && <StatBadge icon={GlassWater} label={t('hub.bottles', 'Bottles')} value={stats.count} accent="#D4A574" />}
                     <StatBadge icon={BookOpen} label={t('whiskey.tastings', 'Tastings')} value={stats.tastingCount} accent="#C87941" />
                     {stats.avgRating && (
                       <StatBadge icon={Star} label={t('common.rating', 'Rating')} value={`${stats.avgRating}/5`} accent="#E0C060" />
                     )}
-                    {stats.totalValue > 0 && (
+                    {!hideValues && stats.totalValue > 0 && (
                       <StatBadge
                         icon={DollarSign}
                         label={t('hub.totalValue', 'Value')}
