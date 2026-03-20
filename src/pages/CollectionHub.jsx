@@ -208,7 +208,7 @@ export default function CollectionHub() {
   const featuredPipe = pipes.find((p) => Array.isArray(p?.photos) && p.photos.length > 0);
   const featuredBottle = bottles.find((b) => b?.photo);
 
-  // Privacy-masked display helpers — must be declared before use in activeModuleCards map
+  // Privacy-masked display helpers (declared before activeModuleCards map)
   const displayValue = (val) => (hideValues || hideHomeValues) ? "—" : val;
   const displayCount = (val) => hideCollectionCounts ? "—" : val;
 
