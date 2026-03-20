@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Pencil } from 'lucide-react';
+import { ArrowLeft, Pencil, Share2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import InlinePhotoEditor from '@/components/shared/InlinePhotoEditor';
 import PipeShapeIcon from '@/components/pipes/PipeShapeIcon';
+import ShareRecordModal from '@/components/share/ShareRecordModal';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function DetailStat({ label, value, icon: Icon }) {
@@ -32,6 +33,7 @@ export default function PipeDetail() {
   
   const [pipe, setPipe] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -74,10 +76,16 @@ export default function PipeDetail() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <Button onClick={() => navigate(`/PipeKeeper?edit=${encodeURIComponent(pipe.id)}`)} style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))', color: '#fff' }}>
-          <Pencil className="w-4 h-4 mr-2" />
-          Edit
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowShareModal(true)}>
+            <Share2 className="w-4 h-4 mr-2" />
+            Share
+          </Button>
+          <Button onClick={() => navigate(`/PipeKeeper?edit=${encodeURIComponent(pipe.id)}`)} style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))', color: '#fff' }}>
+            <Pencil className="w-4 h-4 mr-2" />
+            Edit
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(145deg, rgba(38,26,18,0.98), rgba(25,17,12,1))', border: '1px solid rgba(180,140,75,0.18)', boxShadow: '0 14px 40px rgba(0,0,0,0.4)' }}>
