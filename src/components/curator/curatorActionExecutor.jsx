@@ -133,12 +133,30 @@ export async function executeCuratorAction({
     });
 
     // Parse + normalize response
-    const rawResult = typeof aiResponse?.data === "string"
-      ? JSON.parse(aiResponse.data)
-      : aiResponse?.data;
+    // When response_json_schema is provided, InvokeLLM returns the parsed object directly
+    let rawResult = aiResponse?.data;
 
-    if (!rawResult) {
-      throw new Error("AI returned empty response");
+    // Handle string response (for older API versions or edge cases)
+    if (typeof rawResult === "string") {
+      try {
+        rawResult = JSON.parse(rawResult);
+      } catch (parseErr) {
+        // If it looks like wrapped text, extract JSON from it
+        const jsonMatch = rawResult.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            rawResult = JSON.parse(jsonMatch[0]);
+          } catch {
+            throw new Error(`Failed to parse AI response: ${parseErr.message}`);
+          }
+        } else {
+          throw new Error(`AI response is not valid JSON: ${rawResult.slice(0, 200)}`);
+        }
+      }
+    }
+
+    if (!rawResult || typeof rawResult !== "object") {
+      throw new Error("AI returned invalid response format");
     }
 
     const normalizedResult = curatorActionResultNormalizer(rawResult, {
