@@ -39,46 +39,21 @@ Deno.serve(async (req) => {
     
     if (existingUsers && existingUsers.length > 0) {
       const existing = existingUsers[0];
-      console.log('[ensureUserRecord] User exists, reconciling entitlements...');
-      
-      // Ensure entitlement fields exist in user.data
-      const hasEntitlementFields = existing.data?.entitlement_tier || 
-                                     existing.data?.subscription_tier || 
-                                     existing.data?.subscription_status;
-      
-      if (!hasEntitlementFields) {
-        console.log('[ensureUserRecord] Adding missing entitlement fields to existing user');
-        // NEVER overwrite existing paid tier — only set 'free' if truly unset
-        const existingTier = existing.entitlement_tier || existing.data?.entitlement_tier || null;
-        await base44.asServiceRole.entities.User.update(existing.id, {
-          data: {
-            ...existing.data,
-            entitlement_tier: existingTier || 'free',
-            subscription_tier: existingTier || 'free',
-            subscription_status: existing.subscription_status || existing.data?.subscription_status || 'free',
-            platform: platformFromBody,
-            last_login: new Date().toISOString()
-          }
-        });
+      console.log('[ensureUserRecord] User exists, updating last_login...');
+
+      // Only set entitlement_tier if not already set — never downgrade
+      const existingTier = existing.entitlement_tier || null;
+      const patch = { last_login: new Date().toISOString() };
+      if (!existingTier) {
+        patch.entitlement_tier = 'free';
       }
-      
-      // Just update last login - simplified to avoid 502 errors
-      const cleanData = { ...(existing.data || {}) };
-      delete cleanData.data;
-      
-      await base44.asServiceRole.entities.User.update(existing.id, {
-        data: {
-          ...cleanData,
-          last_login: new Date().toISOString()
-        }
-      });
-      
-      // Re-fetch user to get updated entitlements
-      const updatedUsers = await base44.asServiceRole.entities.User.filter({ email: emailLower });
+
+      // Single update — no double-write
+      await base44.asServiceRole.entities.User.update(existing.id, patch);
       
       return Response.json({ 
         ok: true, 
-        user: updatedUsers?.[0] || existing,
+        user: { ...existing, ...patch },
         user_id: userId, 
         reconciled: true 
       });
@@ -89,13 +64,9 @@ Deno.serve(async (req) => {
     const newUser = await base44.asServiceRole.entities.User.create({
       email: emailLower,
       full_name: authUser.full_name || authUser.name || null,
-      data: {
-        entitlement_tier: 'free',
-        subscription_tier: 'free',
-        subscription_status: 'free',
-        platform: platformFromBody || 'web',
-        last_login: new Date().toISOString()
-      },
+      entitlement_tier: 'free',
+      has_paid_access: false,
+      last_login: new Date().toISOString(),
       role: authUser.role || 'user'
     });
 
