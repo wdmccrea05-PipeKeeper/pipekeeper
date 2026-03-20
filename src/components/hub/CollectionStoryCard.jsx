@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, RotateCcw, Share2, Check } from 'lucide-react';
+import { Sparkles, RotateCcw, Share2, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -8,6 +8,8 @@ import BrandLogo from '@/components/branding/BrandLogo';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
 import { getAIEligibleModuleIds } from '@/components/utils/moduleAccess';
+import CollectionStoryViewer from '@/components/story/CollectionStoryViewer';
+import { generateCollectionStoryCards } from '@/components/story/generateCollectionStoryCards';
 
 function resolvePhoto(record, recordType) {
   if (!record) return null;
