@@ -283,7 +283,7 @@ export default function Curator() {
             </div>
           </div>
         )}
-        <CardContent className="pt-6" key={`curator-${curatorScope}`}>
+        <CardContent className="p-0 sm:p-2" key={`curator-${curatorScope}`}>
           <CuratorWorkspace
             pipes={scopedPipes}
             blends={scopedBlends}
