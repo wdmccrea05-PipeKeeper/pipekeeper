@@ -4,25 +4,11 @@
  * Fails loudly on missing env vars or invalid plans
  */
 
-export type PlanType = 'single' | 'three_bundle' | 'four_bundle' | 'founders';
-export type BillingPeriod = 'monthly' | 'annual';
-export type ModuleKey = 'pipekeeper' | 'whiskeykeeper' | 'cigarkeeper' | 'winekeeper';
-
-export interface StripePlan {
-  planKey: string;
-  type: PlanType;
-  modules: ModuleKey[];
-  billingPeriod: BillingPeriod;
-  priceId: string | null;
-  displayPrice: string;
-  displayPeriod: string;
-  isAvailable: boolean;
-  unavailableReason?: string;
-}
-
-export interface StripeConfig {
-  [planKey: string]: StripePlan;
-}
+// PlanType: 'single' | 'three_bundle' | 'four_bundle' | 'founders'
+// BillingPeriod: 'monthly' | 'annual'
+// ModuleKey: 'pipekeeper' | 'whiskeykeeper' | 'cigarkeeper' | 'winekeeper'
+// StripePlan: { planKey, type, modules, billingPeriod, priceId, displayPrice, displayPeriod, isAvailable, unavailableReason }
+// StripeConfig: { [planKey: string]: StripePlan }
 
 /**
  * Build Stripe config from environment
@@ -207,12 +193,12 @@ export function buildStripeConfig(): StripeConfig {
 }
 
 // Singleton instance
-let configInstance: StripeConfig | null = null;
+let configInstance = null;
 
 /**
  * Get global Stripe config
  */
-export function getStripeConfig(): StripeConfig {
+export function getStripeConfig() {
   if (!configInstance) {
     configInstance = buildStripeConfig();
   }
@@ -222,7 +208,7 @@ export function getStripeConfig(): StripeConfig {
 /**
  * Get specific plan, throw if not found or unavailable
  */
-export function getRequiredStripePlan(planKey: string): StripePlan {
+export function getRequiredStripePlan(planKey) {
   const config = getStripeConfig();
   const plan = config[planKey];
 
@@ -248,7 +234,7 @@ export function getRequiredStripePlan(planKey: string): StripePlan {
 /**
  * Validate entire config on startup
  */
-export function validateStripeConfig(): { valid: boolean; errors: string[] } {
+export function validateStripeConfig() {
   const config = getStripeConfig();
   const errors: string[] = [];
 

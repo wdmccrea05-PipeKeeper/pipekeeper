@@ -16,8 +16,8 @@ export function usePaywall() {
   const navigate = useNavigate();
   const access = useAccessSummary();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedBillingPeriod, setSelectedBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
+  const [error, setError] = useState(null);
+  const [selectedBillingPeriod, setSelectedBillingPeriod] = useState('monthly');
 
   /**
    * Handle paywall plan selection
