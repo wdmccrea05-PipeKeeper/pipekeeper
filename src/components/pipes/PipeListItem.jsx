@@ -7,7 +7,7 @@ import PipeShapeIcon from "./PipeShapeIcon";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
 
-export default function PipeListItem({ pipe, onClick, onToggleFavorite }) {
+export default function PipeListItem({ pipe, onClick, onToggleFavorite, onEdit }) {
   const { t } = useTranslation();
   const mainPhoto = pipe.photos?.[0];
   

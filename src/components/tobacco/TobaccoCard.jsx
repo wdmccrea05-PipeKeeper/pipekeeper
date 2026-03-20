@@ -25,7 +25,7 @@ const BLEND_COLORS = {
   "Cavendish": "bg-amber-800 text-amber-100 border-amber-700/60",
 };
 
-export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
+export default function TobaccoCard({ blend, onClick, onToggleFavorite, onEdit }) {
   const { t } = useTranslation();
   const colorClass = BLEND_COLORS[blend.blend_type] || "bg-slate-700 text-slate-100 border-slate-600/60";
   const agingRec = getAgingRecommendation(blend);

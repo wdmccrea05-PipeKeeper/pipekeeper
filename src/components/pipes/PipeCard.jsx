@@ -9,7 +9,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
 import LuxuryObjectFrame from "@/components/ui/LuxuryObjectFrame";
 
-export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
+export default function PipeCard({ pipe, onClick, onToggleFavorite, onEdit }) {
   const { t } = useTranslation();
   const mainPhoto = pipe.photos?.[0];
   
