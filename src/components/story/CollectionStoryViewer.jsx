@@ -101,17 +101,22 @@ function CollectionStorySlide({ card }) {
             )}
 
             <h2
-              className="font-bold leading-tight break-words text-center"
+              className="font-bold leading-tight text-center w-full"
               style={{
                 fontSize:
-                  String(card.value).length > 20
-                    ? 'clamp(1.8rem, 8vw, 3rem)'
-                    : 'clamp(2.4rem, 10vw, 4.5rem)',
+                  String(card.value).length > 30
+                    ? 'clamp(1.4rem, 5vw, 2rem)'
+                    : String(card.value).length > 20
+                    ? 'clamp(1.6rem, 5.5vw, 2.4rem)'
+                    : String(card.value).length > 12
+                    ? 'clamp(2rem, 7vw, 3rem)'
+                    : 'clamp(2.4rem, 8vw, 3.8rem)',
                 color: '#F5F1E7',
                 fontFamily: "'Georgia', serif",
-                wordBreak: 'normal',
-                overflowWrap: 'break-word',
-                hyphens: 'auto',
+                wordBreak: 'keep-all',
+                overflowWrap: 'normal',
+                hyphens: 'none',
+                whiteSpace: 'normal',
               }}
             >
               {card.value}
