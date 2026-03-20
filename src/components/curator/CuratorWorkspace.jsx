@@ -939,13 +939,9 @@ ${englishText}`;
         className="flex-1 overflow-y-auto px-4 sm:px-6 py-4"
         style={{ background: "rgba(15,10,8,0.3)", overscrollBehavior: "contain" }}
       >
+        {/* Status bar during action execution */}
         {runningAction && (
-          <div className="mb-4 flex items-center gap-2 px-3 py-2.5 rounded-lg" style={{ background: "rgba(180,140,75,0.1)", border: "1px solid rgba(180,140,75,0.2)" }}>
-            <Zap className="w-4 h-4 animate-pulse" style={{ color: "rgba(212,165,116,1)" }} />
-            <span className="text-sm" style={{ color: "rgba(212,165,116,1)" }}>
-              {runningAction}
-            </span>
-          </div>
+          <CuratorActionStatusBar actionLabel={runningAction} isRunning={true} />
         )}
         
         {/* Action Result Card — shown instead of chat when action completes */}
