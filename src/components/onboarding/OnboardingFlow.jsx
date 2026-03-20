@@ -13,6 +13,8 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import ModuleSelectionStep from './ModuleSelectionStep';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
+import PaywallModal from '@/components/subscription/PaywallModal';
+import { usePaywall } from '@/components/subscription/usePaywall';
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/d2be37fcd_IMG_4833.jpeg';
 
 // Safe localStorage wrapper for onboarding state
@@ -41,9 +43,12 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
     winekeeper: false,
     cigarkeeper: false,
   });
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [paywallStep, setPaywallStep] = useState(null); // Where to continue after paywall
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { saveModulePreferences } = useModuleVisibility();
+  const { selectPlan, isLoading } = usePaywall();
 
   const moduleStep = {
     title: 'Choose Your Modules',
@@ -391,6 +396,14 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
     if (steps[currentStep]?.isModuleStep) {
       try {
         await saveModulePreferences(moduleSelections);
+        
+        // Check if 2+ modules selected -> show paywall
+        const selectedCount = Object.values(moduleSelections).filter(Boolean).length;
+        if (selectedCount >= 2) {
+          setShowPaywall(true);
+          setPaywallStep(currentStep + 1);
+          return;
+        }
       } catch (e) {
         console.warn('[Onboarding] Could not save module preferences:', e);
       }
@@ -408,6 +421,46 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       setCurrentStep(currentStep - 1);
     }
   };
+
+  const getSelectedModules = () => {
+    return Object.entries(moduleSelections)
+      .filter(([, selected]) => selected)
+      .map(([key]) => key);
+  };
+
+  const handlePaywallSelect = async (selectedPlan, billingPeriod) => {
+    try {
+      await selectPlan(selectedPlan, billingPeriod, {
+        selectedModules: getSelectedModules(),
+        successUrl: '/CollectionHub',
+        cancelUrl: '/Onboarding',
+      });
+    } catch (error) {
+      console.error('Paywall selection failed:', error);
+    }
+  };
+
+  const handlePaywallClose = () => {
+    setShowPaywall(false);
+    // Continue onboarding with free tier
+    if (paywallStep !== null) {
+      setCurrentStep(paywallStep);
+      setPaywallStep(null);
+    }
+  };
+
+  // Show paywall if triggered
+  if (showPaywall) {
+    return (
+      <PaywallModal
+        type="multi"
+        selectedModules={getSelectedModules()}
+        onClose={handlePaywallClose}
+        onSelectPlan={handlePaywallSelect}
+        isLoading={isLoading}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-stone-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
