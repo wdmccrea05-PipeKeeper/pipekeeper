@@ -204,7 +204,7 @@ export default function CollectionHub() {
   const totalBottleValue = useMemo(() => sumBottleCollectionValue(bottles), [bottles]);
 
   const whiskeyBottleTypes = summary.whiskey?.bottleTypes ?? summary.whiskey?.count ?? 0;
-  const whiskeyTotalBottles = summary.whiskey?.totalBottles ?? whiskeyBottleTypes;
+  const whiskeyTotalBottles = summary.whiskey?.totalBottles ?? 0;
 
   const featuredPipe = pipes.find((p) => Array.isArray(p?.photos) && p.photos.length > 0);
   const featuredBottle = bottles.find((b) => b?.photo);
