@@ -35,25 +35,35 @@ export const CURATOR_ACTIONS = [
     description: 'Analyze collection balance, redundancy, and gaps',
     icon: Sparkles,
     modules: ['pipe', 'tobacco'],
-    sourceExpert: 'curator_core',
+    sourceExpert: 'expert_tobacconist',
     visibility: (ctx) => true, // Always visible
     buildPrompt: (ctx) => {
-      const { pipes = [], blends = [] } = ctx;
-      return `Analyze my collection for optimization opportunities.
+      const { pipes = [], blends = [], smokingLogs = [] } = ctx;
+      const expertContext = buildExpertTobacconistContext(blends, smokingLogs);
+      const tobaccoOptContext = buildOptimizationContext(blends, smokingLogs);
 
-Consider:
-- Collection balance (redundancy, gaps, specialization)
-- Usage patterns and rotation effectiveness
-- Cellar health and aging potential
-- Next best improvements or acquisitions
-- Underused or redundant items
+      return `You are analyzing this collector's pipe and tobacco collection for optimization.
 
-Provide specific, actionable recommendations.`;
+  ${expertContext}
+
+  ${tobaccoOptContext ? `\nTOBACCO OPTIMIZATION:\n${tobaccoOptContext}` : ''}
+
+  Provide comprehensive optimization recommendations:
+
+  1. **Collection Health Assessment** — Current balance, strengths, and vulnerabilities
+  2. **Top 3 Optimization Opportunities** — Specific, actionable improvements with expected impact
+  3. **Tobacco Strategies** — Cellar depth, rotation balance, aging potential
+  4. **Pipe-Tobacco Synergies** — How to better leverage pipe-blend pairings
+  5. **Acquisition Strategy** — What fills gaps or strengthens specializations
+  6. **Priority Ranking** — Which changes have the biggest positive impact
+  7. **What to Preserve** — Strengths to maintain and build upon
+
+  Be specific and practical, not generic.`;
     },
     buildContext: (ctx) => ({
       type: 'optimize_collection',
       dataRequirement: ['pipes', 'blends', 'logs'],
-      sourceExpert: 'curator_core',
+      sourceExpert: 'expert_tobacconist',
     }),
     eventName: 'curator_action_optimize_collection',
   },
@@ -67,16 +77,27 @@ Provide specific, actionable recommendations.`;
     sourceExpert: 'expert_tobacconist',
     visibility: (ctx) => true, // Always visible
     buildPrompt: (ctx) => {
-      const { pipes = [], blends = [], logs = [] } = ctx;
-      return `Based on my collection patterns, what specialization directions would strengthen my collection?
+      const { pipes = [], blends = [], smokingLogs = [] } = ctx;
+      const specContext = buildSpecializationContext(blends, smokingLogs);
+      const expertContext = buildExpertTobacconistContext(blends, smokingLogs);
 
-Analyze:
-- Existing specialization patterns (blend types, pipe shapes, etc.)
-- Usage logs for signals about natural preferences
-- Gaps that could become new specializations
-- Cross-module synergies (e.g., specific blends with specific pipes)
+      return `You are analyzing this collector's specialization patterns and opportunities.
 
-Suggest 2-3 realistic specialization directions that align with observed patterns.`;
+  ${expertContext}
+
+  ${specContext}
+
+  Provide detailed specialization recommendations:
+
+  1. **Current Specialization Pattern** — Specialist, focused, balanced, or generalist?
+  2. **Strongest Focus Areas** — Which current specializations are working well and why?
+  3. **Underexplored Opportunities** — Which families/styles would create natural next specializations?
+  4. **Deepening vs. Diversifying** — Should they deepen existing strengths or diversify?
+  5. **Specific Recommendations** — Name 2-3 specific specializations with concrete next acquisitions
+  6. **Why It Matters** — How specialization improves both collection coherence and smoking enjoyment
+  7. **Implementation Priority** — Which to pursue first and why?
+
+  Ground recommendations in actual collection data and usage patterns, not generic preferences.`;
     },
     buildContext: (ctx) => ({
       type: 'recommend_specializations',
@@ -169,7 +190,7 @@ For each bottle, identify:
   {
     id: 'reclassify_tobacco_blends',
     label: 'Reclassify Tobacco Blends',
-    description: 'Normalize and improve tobacco blend classifications',
+    description: 'Identify and normalize tobacco blend classifications',
     icon: Tags,
     modules: ['tobacco'],
     sourceExpert: 'expert_tobacconist',
@@ -178,32 +199,41 @@ For each bottle, identify:
       return blends.length > 0;
     },
     buildPrompt: (ctx) => {
-      const { blends = [] } = ctx;
-      const misclassifiedBlends = blends.filter(
-        b => !b.blend_type || b.blend_type === 'Other'
-      );
+      const { blends = [], smokingLogs = [] } = ctx;
+      const candidates = getTobaccoReclassificationCandidates(blends);
+      const candidatesContext = buildReclassificationCandidatesContext(blends);
+      const expertContext = buildExpertTobacconistContext(blends, smokingLogs);
 
-      if (misclassifiedBlends.length === 0) {
-        return 'All tobacco blends in my collection are properly classified. What can I do to improve classification accuracy for better recommendations and cellar organization?';
+      if (candidates.length === 0) {
+        return `All tobacco blends in my collection are properly classified.
+
+  ${expertContext}
+
+  How can I improve classification accuracy and metadata quality for even better recommendations and cellar organization? What additional information would strengthen analytics?`;
       }
 
-      return `Help me reclassify tobacco blends for better organization and recommendations.
+      return `You are the Expert Tobacconist, reviewing this collection's tobacco blend classifications.
 
-Blends needing classification:
-${misclassifiedBlends.slice(0, 15).map(b => 
-  `- ${b.name} (${b.manufacturer || 'unknown'}${b.flavor_notes ? `, notes: ${b.flavor_notes.join(', ')}` : ''})`
-).join('\n')}
+  ${expertContext}
 
-For each blend, suggest:
-1. Correct blend type classification (English, Virginia, Balkan, etc.)
-2. Confidence level for the classification
-3. Why the classification matters for pairing and cellar organization
-4. Any notable characteristics that affect recommendations`;
+  CLASSIFICATION CANDIDATES:
+  ${candidatesContext}
+
+  For each candidate that needs classification:
+  1. **Suggest Canonical Value** — What is the correct blend family (from standard taxonomy)?
+  2. **Explain Current Issue** — Why is current classification problematic?
+  3. **Normalization Mapping** — If user entered a variant (e.g., "va/per" vs "Virginia/Perique"), provide the normalized canonical value
+  4. **Confidence Level** — high/medium/low based on available information
+  5. **Impact on Recommendations** — How will correct classification improve AI pairing and optimization?
+  6. **Next Action** — Reclassify immediately, request more metadata, or accept current state?
+
+  Prioritize recommendations by impact on collection analytics and recommendation quality.`;
     },
     buildContext: (ctx) => ({
       type: 'reclassify_tobacco_blends',
       dataRequirement: ['blends'],
       sourceExpert: 'expert_tobacconist',
+      candidates: getTobaccoReclassificationCandidates(ctx.blends || []),
     }),
     eventName: 'curator_action_reclassify_tobacco_blends',
   },
