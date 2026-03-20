@@ -118,29 +118,48 @@ export async function executeCuratorAction({
 
     // Parse + normalize response
     // When response_json_schema is provided, InvokeLLM returns the parsed object directly
-    let rawResult = aiResponse?.data;
+    let rawResult = aiResponse?.data || aiResponse;
 
     // Handle string response (for older API versions or edge cases)
     if (typeof rawResult === "string") {
+      console.log("[executeCuratorAction] AI returned string, parsing JSON...");
       try {
         rawResult = JSON.parse(rawResult);
       } catch (parseErr) {
         // If it looks like wrapped text, extract JSON from it
+        console.log("[executeCuratorAction] Direct parse failed, extracting JSON...");
         const jsonMatch = rawResult.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           try {
             rawResult = JSON.parse(jsonMatch[0]);
-          } catch {
+            console.log("[executeCuratorAction] Extracted JSON successfully");
+          } catch (extractErr) {
+            console.error("[executeCuratorAction] Failed to parse extracted JSON:", extractErr);
             throw new Error(`Failed to parse AI response: ${parseErr.message}`);
           }
         } else {
+          console.error("[executeCuratorAction] No JSON found in response:", rawResult.slice(0, 200));
           throw new Error(`AI response is not valid JSON: ${rawResult.slice(0, 200)}`);
         }
       }
     }
 
+    // Validate result is an object with required structure
     if (!rawResult || typeof rawResult !== "object") {
-      throw new Error("AI returned invalid response format");
+      console.error("[executeCuratorAction] Invalid result type:", typeof rawResult, rawResult);
+      throw new Error("AI returned invalid response format — expected JSON object");
+    }
+
+    // Validate required top-level fields
+    if (!rawResult.actionId && !rawResult.title && !rawResult.groups) {
+      console.warn("[executeCuratorAction] Missing required JSON fields, attempting fallback...");
+      // Try to salvage response by treating it as a general recommendation
+      rawResult = {
+        actionId: actionId,
+        title: "Collection Insights",
+        summary: typeof rawResult === "string" ? rawResult : JSON.stringify(rawResult).slice(0, 500),
+        groups: [],
+      };
     }
 
     const normalizedResult = curatorActionResultNormalizer(rawResult, {
