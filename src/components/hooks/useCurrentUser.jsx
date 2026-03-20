@@ -6,7 +6,7 @@ import {
   hasPremiumAccess, 
   isTrialingAccess, 
   getPlanLabel,
-  isFoundingMember 
+  isFoundingMember
 } from "@/components/utils/premiumAccess";
 import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 import { useEffect } from "react";
