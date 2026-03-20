@@ -109,7 +109,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   });
 
   const markAsReadMutation = useMutation({
-    mutationFn: (messageId) => safeUpdate('Message', messageId, { is_read: true }, userEmail),
+    mutationFn: (messageId) => base44.entities.Message.update(messageId, { is_read: true }),
   });
 
   const toggleSaveMutation = useMutation({
@@ -170,7 +170,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     (async () => {
       try {
         await Promise.all(
-          unreadMessages.map((m) => safeUpdate('Message', m.id, { is_read: true }, userEmail))
+          unreadMessages.map((m) => base44.entities.Message.update(m.id, { is_read: true }))
         );
         if (!cancelled) {
           queryClient.invalidateQueries({ queryKey: ['messages', userEmail] });
@@ -470,7 +470,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
           <div className="border-t p-4">
             <div className="flex gap-2">
               <Input
-                placeholder={t("messaging.typeMessage")}
+                placeholder={t("messaging.typeMessage", "Type a message…")}
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
@@ -490,7 +490,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
               </p>
             ) : !isOnline(selectedFriend) && (
               <p className="text-xs text-emerald-600 mt-2">
-                {t("messaging.offlineNote")}
+                {t("messaging.offlineNote", "This user is offline. They'll see your message when they return.")}
               </p>
             )}
           </div>
