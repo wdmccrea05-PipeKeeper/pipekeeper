@@ -125,14 +125,21 @@ Deno.serve(async (req) => {
     }
 
     if (stripeCustomerId) {
-      const stripeSubs = await stripe.subscriptions.list({
-        customer: stripeCustomerId,
-        status: 'all',
-        limit: 100,
-        expand: ['data.items.data.price'],
-      });
+      let stripeSubs;
+      try {
+        stripeSubs = await stripe.subscriptions.list({
+          customer: stripeCustomerId,
+          status: 'all',
+          limit: 100,
+          expand: ['data.items.data.price'],
+        });
+      } catch (stripeErr) {
+        // Stale/invalid customer ID — skip Stripe lookup, use local subs only
+        console.warn('[syncSubscriptionForMe] Stripe customer lookup failed (stale ID?):', stripeErr?.message);
+        stripeSubs = { data: [] };
+      }
 
-      for (const stripeSub of stripeSubs.data) {
+      for (const stripeSub of (stripeSubs?.data || [])) {
         const existing =
           localSubs.find((s: any) => s.provider_subscription_id === stripeSub.id || s.stripe_subscription_id === stripeSub.id) || null;
 
