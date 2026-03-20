@@ -212,13 +212,16 @@ Deno.serve(async (req) => {
     });
     const dominantWhiskyType = Object.entries(whiskyTypes).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
 
-    // Most tasted bottle
+    // Most tasted bottle — key by bottle_id (primary), fallback to name for legacy logs
     const bottleUsage = {};
     tastingLogsList.forEach(log => {
-      if (log.bottle_name) bottleUsage[log.bottle_name] = (bottleUsage[log.bottle_name] || 0) + 1;
+      const key = log.bottle_id || log.bottle_name;
+      if (key) bottleUsage[key] = (bottleUsage[key] || 0) + 1;
     });
     const maxBottleUses = Math.max(...Object.values(bottleUsage), 0);
-    const mostTastedBottle = maxBottleUses > 0 ? bottlesList.find(b => bottleUsage[b.name] === maxBottleUses) : null;
+    const mostTastedBottle = maxBottleUses > 0
+      ? bottlesList.find(b => (bottleUsage[b.id] || bottleUsage[b.name] || 0) === maxBottleUses)
+      : null;
 
     // Most valuable item across all collections
     const allItems = [
@@ -248,11 +251,12 @@ Deno.serve(async (req) => {
         totalValue: Math.round(totalValue),
         pipes: pipesList.length,
         blends: blendsList.length,
-        // Explicit dual metrics — consumers should use these, not the legacy 'bottles' field
         bottleTypes,     // distinct bottle records / unique labels
         totalBottles,    // actual physical bottle inventory count
-        bottles: bottleTypes, // legacy alias — equals bottleTypes
-        totalSessions: logsList.length,
+        bottles: bottleTypes, // legacy alias
+        sessions: logsList.length,      // used by generateCollectionStoryCards
+        totalSessions: logsList.length, // legacy alias
+        tastings: tastingLogsList.length,
       },
       highlights: {
         mostUsedPipe: mostUsedPipe
