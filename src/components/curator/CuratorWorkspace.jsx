@@ -643,6 +643,7 @@ ${englishText}`;
   );
 
   // STARTUP ROUTED PROMPTS (one-time only, messages.length === 0)
+  // SKIP for silent_action mode — actions use executionId-based trigger instead
   useEffect(() => {
     const startupPrompt = String(resolvedLaunchContext?.initialPrompt || "").trim();
 
@@ -651,7 +652,10 @@ ${englishText}`;
     if (sending || initializing) return;
     if (startupConsumedRef.current) return;
     if (messages.length > 0) return; // One-time startup only
-    if (resolvedLaunchContext?.executionMode === 'silent_action') return; // Don't use startup path for actions
+    if (resolvedLaunchContext?.executionMode === 'silent_action') {
+      // Silent actions are handled by executionId-based effect above — skip this path
+      return;
+    }
 
     let cancelled = false;
 
@@ -662,6 +666,7 @@ ${englishText}`;
         if (cancelled || startupConsumedRef.current) return;
 
         startupConsumedRef.current = true;
+        console.log("[CuratorWorkspace] Sending startup routed prompt");
         const ok = await sendMessage(startupPrompt, resolvedLaunchContext?.recommendationContext || null, false);
 
         if (ok && onPromptConsumed) {
