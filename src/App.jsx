@@ -14,6 +14,7 @@ import CollectionInsightsShare from '@/pages/CollectionInsightsShare';
 import Whiskey from '@/pages/Whiskey.jsx';
 import Curator from '@/pages/Curator';
 import Subscription from '@/pages/Subscription';
+import SubscriptionSuccessFlow from '@/pages/SubscriptionSuccessFlow';
 import CollectionHub from '@/pages/CollectionHub';
 import PipeKeeper from '@/pages/PipeKeeper';
 import WhiskeyKeeper from '@/pages/WhiskeyKeeper';
@@ -72,6 +73,9 @@ const AuthenticatedApp = () => {
         <LayoutWrapper currentPageName="Subscription">
           <Subscription />
         </LayoutWrapper>
+      } />
+      <Route path="/SubscriptionSuccessFlow" element={
+        <SubscriptionSuccessFlow />
       } />
       <Route path="/CollectionHub" element={
         <LayoutWrapper currentPageName="CollectionHub">
