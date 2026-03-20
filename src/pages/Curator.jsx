@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import CuratorWorkspace from "@/components/curator/CuratorWorkspace";
+import CuratorActionBar from "@/components/curator/CuratorActionBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
