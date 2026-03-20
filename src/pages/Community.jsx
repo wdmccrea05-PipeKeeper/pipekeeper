@@ -687,6 +687,9 @@ function CommunityPageInner() {
                       ? friendship.recipient_email 
                       : friendship.requester_email;
                     const profile = publicProfiles.find(p => p.user_email === friendEmail);
+                    const moduleTags = [];
+                    if (profile?.pipekeeper_enabled !== false) moduleTags.push({ label: '🪵 PipeKeeper', bg: 'rgba(120,80,40,0.35)', color: 'rgba(212,165,116,1)' });
+                    if (profile?.whiskeykeeper_enabled === true) moduleTags.push({ label: '🥃 WhiskeyKeeper', bg: 'rgba(90,60,20,0.35)', color: 'rgba(212,190,100,1)' });
                     return (
                       <div 
                         key={friendship.id}
@@ -695,8 +698,8 @@ function CommunityPageInner() {
                          background: "linear-gradient(145deg, rgba(45, 32, 22, 0.65), rgba(35, 24, 16, 0.78))",
                          border: "1px solid rgba(120, 90, 65, 0.25)",
                          boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
-                        }}
-                        >
+                         }}
+                         >
                         <div>
                           <div className="flex items-center gap-3">
                             <Avatar className="w-12 h-12 flex-shrink-0">
@@ -711,8 +714,15 @@ function CommunityPageInner() {
                                   {profile?.display_name || friendEmail}
                                 </h3>
                               </a>
+                              {moduleTags.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {moduleTags.map(m => (
+                                    <span key={m.label} className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: m.bg, color: m.color }}>{m.label}</span>
+                                  ))}
+                                </div>
+                              )}
                               {profile?.bio && (
-                                <p className="text-sm text-[#E0D8C8]/70 line-clamp-1">{profile.bio}</p>
+                                <p className="text-sm text-[#E0D8C8]/70 line-clamp-1 mt-1">{profile.bio}</p>
                               )}
                               {profile?.show_location && (profile?.city || profile?.state_province || profile?.country) && (
                                 <p className="text-xs text-[#E0D8C8]/60 mt-1 truncate">
