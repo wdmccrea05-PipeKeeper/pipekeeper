@@ -10,12 +10,7 @@ export const PLAN_CONFIG = getStripeConfig();
  * Returns plan key and resolved modules
  * Throws if plan is unavailable or invalid
  */
-export function getPlanFromSelection(
-  selectedPlan: 'single' | 'three' | 'four',
-  billingPeriod: 'monthly' | 'annual',
-  selectedModules: string[] = [],
-  baseModule?: string
-): { planKey: string; modules: string[] } {
+export function getPlanFromSelection(selectedPlan, billingPeriod, selectedModules = [], baseModule) {
   if (selectedPlan === 'single') {
     const module = baseModule || selectedModules[0];
     if (!module) {
@@ -73,12 +68,7 @@ export function getPlanFromSelection(
  * Initiate Stripe checkout
  * Validates plan before attempting checkout
  */
-export async function initiateCheckout(
-  planKey: string,
-  selectedModules: string[] = [],
-  successUrl: string = '/',
-  cancelUrl: string = '/'
-) {
+export async function initiateCheckout(planKey, selectedModules = [], successUrl = '/', cancelUrl = '/') {
   try {
     // Validate plan exists and has price ID before calling backend
     const plan = getRequiredStripePlan(planKey);
@@ -138,7 +128,7 @@ export async function handlePostPurchase() {
 /**
  * Map Stripe product to modules for entitlement system
  */
-export function getModulesFromPlanKey(planKey: string, metadata?: any): string[] {
+export function getModulesFromPlanKey(planKey, metadata) {
   if (planKey.includes('founders')) {
     return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
   }
