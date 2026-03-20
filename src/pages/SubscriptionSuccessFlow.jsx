@@ -1,235 +1,180 @@
 /**
- * Post-Purchase Success Flow
- * Handles Stripe checkout completion:
- * 1. Shows loading state while syncing subscription
- * 2. Calls syncSubscriptionForMe to rebuild access
- * 3. Shows success UI with confirmed access
- * 4. Routes to correct destination
+ * Subscription Success Flow
+ * Post-purchase explicit sync and confirmation
+ * 3-phase: loading → success → error
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { usePaywall } from '@/components/subscription/usePaywall';
-import { useAccessSummary } from '@/components/hooks/useAccessSummary';
+import { CheckCircle2, AlertCircle, Loader } from 'lucide-react';
 
 export default function SubscriptionSuccessFlow() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { completePayment, isLoading } = usePaywall();
-  const access = useAccessSummary();
-  
-  const [status, setStatus] = useState('syncing'); // syncing | success | error
-  const [retryCount, setRetryCount] = useState(0);
-  const maxRetries = 3;
+  const queryClient = useQueryClient();
+
+  const [phase, setPhase] = useState('loading'); // loading | success | error
+  const [error, setError] = useState(null);
+  const [accessSummary, setAccessSummary] = useState(null);
 
   const targetUrl = searchParams.get('next') || '/CollectionHub';
 
   useEffect(() => {
     let mounted = true;
 
-    const executePostPurchase = async () => {
+    async function syncAndConfirm() {
       try {
-        setStatus('syncing');
-        
-        // Sync subscription and rebuild access
-        await completePayment(targetUrl);
-        
-        if (mounted) {
-          setStatus('success');
-        }
-      } catch (error) {
-        console.error('[SubscriptionSuccessFlow] Post-purchase failed:', error);
-        
-        if (mounted) {
-          if (retryCount < maxRetries) {
-            setStatus('error');
-          } else {
-            setStatus('error');
-          }
-        }
-      }
-    };
+        // Call sync function
+        const response = await base44.functions.invoke('syncSubscriptionForMe', {});
 
-    executePostPurchase();
+        if (!mounted) return;
+
+        // Check response
+        if (response?.data?.status === 'no_subscription') {
+          setError('Subscription not found. This may take a moment. Please try again.');
+          setPhase('error');
+          return;
+        }
+
+        if (response?.data?.error) {
+          setError(response.data.error);
+          setPhase('error');
+          return;
+        }
+
+        // Success
+        setAccessSummary(response?.data);
+        
+        // Rebuild access queries
+        await queryClient.invalidateQueries({ queryKey: ['current-user'] });
+        await queryClient.invalidateQueries({ queryKey: ['subscription'] });
+
+        setPhase('success');
+      } catch (err) {
+        if (!mounted) return;
+        const msg = err instanceof Error ? err.message : 'Subscription activation failed';
+        setError(msg);
+        setPhase('error');
+        console.error('[SubscriptionSuccessFlow] Sync failed:', err);
+      }
+    }
+
+    syncAndConfirm();
 
     return () => {
       mounted = false;
     };
-  }, [completePayment, targetUrl, retryCount]);
+  }, [queryClient]);
 
-  const handleRetry = () => {
-    setRetryCount(c => c + 1);
-  };
-
-  const handleContinue = () => {
-    navigate(targetUrl);
-  };
-
-  // Syncing state
-  if (status === 'syncing' || isLoading) {
+  if (phase === 'loading') {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        style={{ background: 'rgba(0, 0, 0, 0.7)' }}
-      >
-        <div
-          className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl p-8 text-center"
-          style={{
-            background: 'linear-gradient(135deg, rgba(20, 20, 22, 0.95), rgba(28, 20, 16, 0.95))',
-            border: '1px solid rgba(120, 90, 65, 0.3)',
-          }}
-        >
-          <div className="flex justify-center mb-6">
-            <Loader2
-              className="w-12 h-12 animate-spin"
-              style={{ color: '#D4A574' }}
-            />
-          </div>
-          
-          <h2
-            className="text-2xl font-bold mb-3"
-            style={{ color: '#F5F1E7' }}
-          >
-            Activating Your Subscription
-          </h2>
-          
-          <p
-            className="text-sm mb-6"
-            style={{ color: 'rgba(224, 216, 200, 0.75)' }}
-          >
-            Just a moment while we set up your new collections...
-          </p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
+        <div className="text-center">
+          <Loader className="w-12 h-12 animate-spin mx-auto mb-4" style={{ color: '#D4A574' }} />
+          <p style={{ color: '#E0D8C8' }}>Activating your subscription...</p>
         </div>
       </div>
     );
   }
 
-  // Success state
-  if (status === 'success') {
+  if (phase === 'error') {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        style={{ background: 'rgba(0, 0, 0, 0.7)' }}
-      >
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] p-4">
         <div
-          className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl p-8 text-center"
+          className="max-w-md w-full rounded-2xl p-8 text-center shadow-2xl"
           style={{
             background: 'linear-gradient(135deg, rgba(20, 20, 22, 0.95), rgba(28, 20, 16, 0.95))',
-            border: '1px solid rgba(120, 90, 65, 0.3)',
+            border: '1px solid rgba(212, 165, 116, 0.3)',
           }}
         >
-          <div className="flex justify-center mb-6">
-            <CheckCircle2
-              className="w-16 h-16"
-              style={{ color: '#A0D5A0', filter: 'drop-shadow(0 0 12px rgba(160, 213, 160, 0.3))' }}
-            />
-          </div>
-
-          <h2
-            className="text-2xl font-bold mb-3"
-            style={{ color: '#F5F1E7' }}
-          >
-            You're All Set!
+          <AlertCircle className="w-16 h-16 mx-auto mb-4" style={{ color: '#D45C5C' }} />
+          <h2 style={{ color: '#F5F1E7' }} className="text-2xl font-bold mb-2">
+            Activation Taking Longer
           </h2>
-
-          <p
-            className="text-sm mb-2"
-            style={{ color: 'rgba(224, 216, 200, 0.75)' }}
-          >
-            Your subscription is active and your new modules are unlocked.
+          <p style={{ color: '#E0D8C8', marginBottom: '24px' }} className="text-sm mb-6">
+            {error || 'Please try again or contact support if the issue persists.'}
           </p>
-          
-          {access?.activeModules && access.activeModules.length > 0 && (
-            <p
-              className="text-xs mb-6 px-3 py-2 rounded-lg"
-              style={{ color: 'rgba(160, 213, 160, 0.9)', background: 'rgba(46, 125, 92, 0.2)' }}
-            >
-              You now have access to: {access.activeModules.map(m => 
-                m.charAt(0).toUpperCase() + m.slice(1)
-              ).join(', ')}
-            </p>
-          )}
-
-          <Button
-            onClick={handleContinue}
-            className="w-full font-medium"
-            style={{
-              background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))',
-              color: '#F5F1E7',
-            }}
-          >
-            Explore Your Collections
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (status === 'error') {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        style={{ background: 'rgba(0, 0, 0, 0.7)' }}
-      >
-        <div
-          className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl p-8 text-center"
-          style={{
-            background: 'linear-gradient(135deg, rgba(20, 20, 22, 0.95), rgba(28, 20, 16, 0.95))',
-            border: '1px solid rgba(120, 90, 65, 0.3)',
-          }}
-        >
-          <div className="flex justify-center mb-6">
-            <AlertCircle
-              className="w-12 h-12"
-              style={{ color: '#D45C5C' }}
-            />
-          </div>
-
-          <h2
-            className="text-2xl font-bold mb-3"
-            style={{ color: '#F5F1E7' }}
-          >
-            Activation in Progress
-          </h2>
-
-          <p
-            className="text-sm mb-6"
-            style={{ color: 'rgba(224, 216, 200, 0.75)' }}
-          >
-            Your subscription is processing. This may take a moment to appear in your account.
-          </p>
-
           <div className="flex gap-3">
             <Button
-              onClick={handleRetry}
-              disabled={retryCount >= maxRetries}
-              variant="outline"
+              variant="secondary"
+              onClick={() => {
+                setPhase('loading');
+                window.location.reload();
+              }}
               className="flex-1"
             >
-              {retryCount >= maxRetries ? 'Max Retries' : 'Retry'}
+              Retry
             </Button>
             <Button
-              onClick={handleContinue}
+              onClick={() => navigate(targetUrl)}
               className="flex-1"
-              style={{
-                background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))',
-                color: '#F5F1E7',
-              }}
             >
-              Continue
+              Continue Anyway
             </Button>
           </div>
-
-          <p
-            className="text-xs mt-4"
-            style={{ color: 'rgba(224, 216, 200, 0.5)' }}
-          >
-            If your subscription doesn't activate, please contact support.
-          </p>
         </div>
       </div>
     );
   }
 
-  return null;
+  // Success
+  const modules = accessSummary?.activeModules || [];
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] p-4">
+      <div
+        className="max-w-md w-full rounded-2xl p-8 text-center shadow-2xl"
+        style={{
+          background: 'linear-gradient(135deg, rgba(20, 20, 22, 0.95), rgba(28, 20, 16, 0.95))',
+          border: '1px solid rgba(180, 140, 75, 0.3)',
+        }}
+      >
+        <CheckCircle2 className="w-16 h-16 mx-auto mb-4" style={{ color: '#2e7d5c' }} />
+        
+        <h1 style={{ color: '#F5F1E7' }} className="text-3xl font-bold mb-2">
+          Welcome!
+        </h1>
+        
+        <p style={{ color: '#E0D8C8' }} className="text-sm mb-6">
+          Your subscription is now active.
+        </p>
+
+        {modules.length > 0 && (
+          <div className="mb-8">
+            <p style={{ color: '#8b6239' }} className="text-xs font-semibold uppercase tracking-wider mb-3">
+              You Now Have Access To
+            </p>
+            <div className="space-y-2">
+              {modules.map((m) => (
+                <div
+                  key={m}
+                  className="px-3 py-2 rounded-lg text-sm font-medium"
+                  style={{
+                    background: 'rgba(180, 140, 75, 0.15)',
+                    color: '#D4A574',
+                  }}
+                >
+                  {m.charAt(0).toUpperCase() + m.slice(1).replace('keeper', ' Keeper')}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <Button
+          onClick={() => navigate(targetUrl)}
+          className="w-full"
+          style={{
+            background: 'linear-gradient(135deg, #a35c5c, #8f4e4e)',
+            color: '#F5F1E7',
+          }}
+        >
+          Explore Collections
+        </Button>
+      </div>
+    </div>
+  );
 }
