@@ -854,39 +854,12 @@ ${englishText}`;
         height: "clamp(480px, 75vh, 820px)",
       }}
     >
-      {/* Header — fixed height, does not scroll */}
+      {/* Header — only show errors and quick prompts */}
       <div
-        className="px-4 sm:px-6 py-4 border-b flex-shrink-0"
+        className="px-4 sm:px-6 py-3 border-b flex-shrink-0"
         style={{ borderColor: "rgba(140,105,65,0.2)", background: "rgba(20,14,10,0.4)" }}
       >
         <div className="space-y-3">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0">
-              <img
-                src={CURATOR_ICON}
-                alt={t("curator.workspaceTitle", { defaultValue: "Curator" })}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h2
-                className="text-lg sm:text-xl font-bold mb-0.5 leading-tight"
-                style={{ color: "#F5F1E7", fontFamily: "Georgia, serif" }}
-              >
-                {t("curator.workspaceTitle", { defaultValue: "Curator" })}
-              </h2>
-              <p
-                className="text-xs sm:text-sm leading-relaxed"
-                style={{ color: "rgba(224,216,200,0.7)" }}
-              >
-                {t("curator.workspaceSubtitle", {
-                  defaultValue:
-                    "Ask questions, follow up on recommendations, and get collection-specific guidance.",
-                })}
-              </p>
-            </div>
-          </div>
-
           {initError ? (
             <div
               className="rounded-lg px-3 py-2.5 text-sm"
