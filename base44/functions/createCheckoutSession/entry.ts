@@ -1,6 +1,8 @@
 /**
  * Create Stripe checkout session for module-based subscription
  * Handles single module, 3-module bundle, 4-module bundle, and founders plans
+ * 
+ * Validates all price IDs before attempting checkout creation
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
@@ -30,6 +32,20 @@ const PLAN_TO_STRIPE_PRICE = {
   'founders_bundle_annual': Deno.env.get('VITE_STRIPE_FOUNDERS_ANNUAL'),
 };
 
+/**
+ * Validate price ID exists for plan
+ */
+function validatePlanPriceId(planKey) {
+  const priceId = PLAN_TO_STRIPE_PRICE[planKey];
+  if (!priceId) {
+    const error = new Error(`Stripe price ID not configured for plan: ${planKey}`);
+    error.code = 'MISSING_PRICE_ID';
+    error.planKey = planKey;
+    throw error;
+  }
+  return priceId;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -44,9 +60,28 @@ Deno.serve(async (req) => {
 
     const { planKey, selectedModules, successUrl, cancelUrl } = await req.json();
 
-    if (!planKey || !PLAN_TO_STRIPE_PRICE[planKey]) {
+    if (!planKey) {
       return Response.json(
-        { error: 'Invalid plan key' },
+        { error: 'Plan key is required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate price ID exists for this plan
+    let priceId;
+    try {
+      priceId = validatePlanPriceId(planKey);
+    } catch (err) {
+      console.error('[Checkout] Validation error:', err);
+      return Response.json(
+        { 
+          error: `Checkout not available for this plan. Please select a different option.`,
+          code: 'MISSING_PRICE_ID',
+          details: {
+            planKey,
+            missingEnvVar: `VITE_STRIPE_${planKey.toUpperCase()}`,
+          }
+        },
         { status: 400 }
       );
     }
@@ -73,6 +108,7 @@ Deno.serve(async (req) => {
     // Create checkout session with metadata for 3-module bundles
     const metadata = {};
     if (planKey.includes('three_module') && selectedModules && Array.isArray(selectedModules)) {
+      // Preserve exact module selection as JSON string for later parsing
       metadata.activeModules = JSON.stringify(selectedModules.slice(0, 3));
       metadata.planType = 'three_module_bundle';
     } else if (planKey.includes('four_module')) {
@@ -90,7 +126,7 @@ Deno.serve(async (req) => {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: PLAN_TO_STRIPE_PRICE[planKey],
+          price: priceId,
           quantity: 1,
         },
       ],
@@ -106,9 +142,11 @@ Deno.serve(async (req) => {
     return Response.json({
       sessionUrl: session.url,
       sessionId: session.id,
+      planKey,
+      priceId,
     });
   } catch (error) {
-    console.error('Checkout creation failed:', error);
+    console.error('[Checkout] Error creating session:', error);
     return Response.json(
       { error: error.message || 'Failed to create checkout session' },
       { status: 500 }
