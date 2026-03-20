@@ -19,7 +19,7 @@
  * }
  */
 
-import { Wand2, Sparkles, Ruler, Droplet, Tags } from 'lucide-react';
+import { Sparkles, Ruler, Droplet, Tags, Target } from 'lucide-react';
 
 export const CURATOR_ACTIONS = [
   {
