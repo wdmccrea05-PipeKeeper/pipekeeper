@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+const parseActionResult = () => null; // TODO: implement if needed
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import {
   translateToEnglish,
