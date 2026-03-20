@@ -36,7 +36,9 @@ export async function getModuleSummary(moduleType, userEmail) {
       case 'bottles': {
         const bottles = await base44.entities.Bottle.filter({ created_by: userEmail });
         const count = bottles?.length || 0;
-        const totalValue = bottles?.reduce((sum, b) => sum + (b.purchase_price || 0), 0) || 0;
+        // Use same priority chain as everywhere else in the app
+        const totalValue = bottles?.reduce((sum, b) =>
+          sum + (Number(b.collector_value) || Number(b.aftermarket_price) || Number(b.retail_price) || Number(b.purchase_price) || 0), 0) || 0;
         return { count, value: totalValue };
       }
 

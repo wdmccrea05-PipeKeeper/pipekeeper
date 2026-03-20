@@ -38,15 +38,27 @@ function getPipeValue(pipe) {
 }
 
 /**
- * Get the best available value for a tobacco blend
- * Priority: manual_market_value > ai_estimated_value > 0
+ * Get total tobacco value: value per oz × total oz across all container types.
+ * Falls back to manual/ai flat value if quantity data is missing.
  */
 function getTobaccoValue(blend) {
-  return (
+  const perOz =
     Number(blend.manual_market_value) ||
     Number(blend.ai_estimated_value) ||
-    0
-  );
+    0;
+
+  if (perOz > 0) {
+    const totalOz =
+      Number(blend.tin_total_quantity_oz) ||
+      Number(blend.bulk_total_quantity_oz) ||
+      Number(blend.pouch_total_quantity_oz) ||
+      0;
+    // If we have quantity data, return per-oz * total-oz; otherwise return flat value
+    if (totalOz > 0) return perOz * totalOz;
+    return perOz; // flat value fallback
+  }
+
+  return 0;
 }
 
 /**
@@ -167,11 +179,11 @@ export async function aggregateCollection(userEmail) {
       }
     });
 
+    // Key by bottle_id (primary) with bottle_name as fallback for legacy logs
     const bottleUsageMap = {};
     tastingLogsList.forEach(log => {
-      if (log.bottle_name) {
-        bottleUsageMap[log.bottle_name] = (bottleUsageMap[log.bottle_name] || 0) + 1;
-      }
+      const key = log.bottle_id || log.bottle_name;
+      if (key) bottleUsageMap[key] = (bottleUsageMap[key] || 0) + 1;
     });
 
     // === HIGHLIGHTS ===
@@ -185,8 +197,8 @@ export async function aggregateCollection(userEmail) {
 
     const mostTastedBottle = bottlesList.length > 0
       ? bottlesList.reduce((max, b) => {
-          const bUses = bottleUsageMap[b.name] || 0;
-          const maxUses = bottleUsageMap[max.name] || 0;
+          const bUses = bottleUsageMap[b.id] || bottleUsageMap[b.name] || 0;
+          const maxUses = bottleUsageMap[max.id] || bottleUsageMap[max.name] || 0;
           return bUses > maxUses ? b : max;
         })
       : null;
