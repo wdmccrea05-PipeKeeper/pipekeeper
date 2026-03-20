@@ -150,8 +150,8 @@ export default function WhiskeyKeeper() {
           </Button>
         </div>
 
-        {/* Module Navigation */}
-        <WhiskeyKeeperModuleNav currentPageName="WhiskeyKeeper" />
+        {/* Module Navigation - landing has no active tab */}
+        <WhiskeyKeeperModuleNav currentPageName={null} />
 
         {/* Summary Cards */}
         <div className="rounded-lg p-5" style={{

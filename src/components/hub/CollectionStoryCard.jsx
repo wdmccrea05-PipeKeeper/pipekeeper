@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, RotateCcw, Share2 } from 'lucide-react';
+import { Sparkles, RotateCcw, Share2, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import BrandLogo from '@/components/branding/BrandLogo';

@@ -163,8 +163,8 @@ export default function PipeKeeperModule() {
         </Button>
       </div>
 
-      {/* Module Navigation - THE REAL INTERNAL NAV */}
-      <PipeKeeperModuleNav currentPageName="PipeKeeper" />
+      {/* Module Navigation - landing has no active tab */}
+      <PipeKeeperModuleNav currentPageName={null} />
 
       {/* Summary Cards */}
       <div className="rounded-lg p-5" style={{
