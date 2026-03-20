@@ -690,45 +690,51 @@ ${englishText}`;
     messages.length,
   ]);
 
-  // EXPERT ACTION EXECUTION (can run multiple times, keyed by executionId)
+  // EXPERT ACTION EXECUTION (independent of chat, keyed by executionId)
   useEffect(() => {
-    const actionPrompt = String(launchContext?.initialPrompt || "").trim();
     const execId = launchContext?.executionId;
+    const actionId = launchContext?.sourceAction;
 
-    if (!actionPrompt || !execId) return;
-    if (launchContext?.executionMode !== 'silent_action') return; // Only for actions
+    if (!execId || !actionId) return;
+    if (launchContext?.executionMode !== 'silent_action') return;
     if (!user?.id) return;
-    if (sending || initializing) return;
-    if (executedActionIdRef.current === execId) return; // Already ran this action
+    if (lastExecutionId === execId) return; // Already ran this execution
 
     let cancelled = false;
 
     (async () => {
       try {
-        setRunningAction(launchContext?.displayLabel || 'Running expert workflow');
-        
-        await ensureThread();
+        setRunningAction(launchContext?.displayLabel || 'Running expert analysis…');
+        setLastExecutionId(execId);
+        setActionResult(null);
 
-        if (cancelled || executedActionIdRef.current === execId) return;
+        const result = await executeCuratorAction({
+          actionId,
+          executionId: execId,
+          displayLabel: launchContext?.displayLabel,
+          userPrompt: launchContext?.initialPrompt || "Analyze and recommend optimizations",
+          collectionContext: {
+            pipes,
+            blends,
+            bottles,
+          },
+          user,
+          launchContext,
+        });
 
-        executedActionIdRef.current = execId;
-        
-        // Execute silently (don't add user message)
-        const ok = await sendMessage(actionPrompt, launchContext?.recommendationContext || null, true, launchContext);
-
-        if (ok) {
+        if (!cancelled) {
+          setActionResult(result.result);
           setRunningAction(null);
           if (onPromptConsumed) {
             onPromptConsumed();
           }
-        } else {
-          executedActionIdRef.current = null;
-          setRunningAction(null);
         }
-      } catch (e) {
-        console.error("Curator action execution failed:", e);
-        executedActionIdRef.current = null;
-        setRunningAction(null);
+      } catch (err) {
+        console.error("Action execution failed:", err);
+        if (!cancelled) {
+          setRunningAction(null);
+          toast.error(`Action failed: ${err?.message || "Unknown error"}`);
+        }
       }
     })();
 
@@ -737,13 +743,12 @@ ${englishText}`;
     };
   }, [
     launchContext?.executionId,
-    launchContext?.initialPrompt,
+    launchContext?.sourceAction,
     launchContext?.executionMode,
     user?.id,
-    sending,
-    initializing,
-    ensureThread,
-    sendMessage,
+    pipes.length,
+    blends.length,
+    bottles.length,
     onPromptConsumed,
   ]);
 
