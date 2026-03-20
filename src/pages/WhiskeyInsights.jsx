@@ -358,21 +358,9 @@ export default function WhiskeyInsightsPage() {
                     <WhiskeyHighlightCard
                       title={t('insights.mostValuedBottle', 'Most Valued Bottle')}
                       value={mostValuedBottle.name}
-                      sub={formatCurrency(getBottleValue(mostValuedBottle))}
+                      subtitle={formatCurrency(getBottleValue(mostValuedBottle))}
                       accent="#C0392B"
-                      icon={Trophy}
-                      patternIndex={1}
-                      heroImage={mostValuedBottle.photo}
-                      cardRef={(el) => { highlightRefs.current.mostValued = el; }}
-                      onShare={() => handleShareCard('mostValued')}
-                      onStory={() => setActiveStory({
-                        title: t('insights.mostValuedBottle', 'Most Valued Bottle'),
-                        value: mostValuedBottle.name,
-                        sub: formatCurrency(getBottleValue(mostValuedBottle)),
-                        accent: '#C0392B',
-                        icon: Trophy,
-                        heroImage: mostValuedBottle.photo,
-                      })}
+                      photo={mostValuedBottle.photo}
                     />
                   )}
 
