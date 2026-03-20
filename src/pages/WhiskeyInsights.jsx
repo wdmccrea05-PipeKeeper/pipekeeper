@@ -26,9 +26,7 @@ export default function WhiskeyInsightsPage() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
   const [activeTab, setActiveTab] = useState('summary');
-  const [activeStory, setActiveStory] = useState(null);
   const highlightRefs = useRef({});
-  const storyRef = useRef(null);
 
   const { data: bottles = [] } = useQuery({
     queryKey: ['bottles', user?.email],
