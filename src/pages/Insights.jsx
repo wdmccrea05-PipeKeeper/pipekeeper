@@ -27,8 +27,6 @@ import {
   Clock,
   X,
   Sparkles,
-  Wind,
-  BookOpen,
 } from "lucide-react";
 import {
   differenceInCalendarDays,
