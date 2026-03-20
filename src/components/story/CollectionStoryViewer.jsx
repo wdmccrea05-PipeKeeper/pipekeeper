@@ -101,7 +101,7 @@ function CollectionStorySlide({ card }) {
             )}
 
             <h2
-               className="font-bold leading-tight text-center w-full"
+               className="font-bold leading-tight text-center w-full overflow-hidden"
                style={{
                  fontSize:
                    String(card.value).length > 30
@@ -114,9 +114,11 @@ function CollectionStorySlide({ card }) {
                  color: '#F5F1E7',
                  fontFamily: "'Georgia', serif",
                  wordBreak: 'break-word',
-                 overflowWrap: 'anywhere',
+                 overflowWrap: 'break-word',
                  hyphens: 'none',
                  whiteSpace: 'normal',
+                 maxWidth: '100%',
+                 paddingX: '1rem',
                }}
              >
                {card.value}
@@ -143,7 +145,7 @@ function CollectionStorySlide({ card }) {
             </div>
             <div className="mt-auto pb-10 px-6">
               <h2
-                 className="font-bold leading-snug"
+                 className="font-bold leading-snug overflow-hidden"
                  style={{
                    fontSize:
                      String(card.value).length > 30
@@ -155,8 +157,10 @@ function CollectionStorySlide({ card }) {
                    fontFamily: "'Georgia', serif",
                    textShadow: '0 3px 14px rgba(0,0,0,0.9), 0 1px 4px rgba(0,0,0,0.7)',
                    wordBreak: 'break-word',
-                   overflowWrap: 'anywhere',
+                   overflowWrap: 'break-word',
                    hyphens: 'none',
+                   maxWidth: '100%',
+                   paddingX: '1rem',
                  }}
                >
                  {card.value}
