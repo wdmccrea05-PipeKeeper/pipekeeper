@@ -16,24 +16,8 @@ import {
   getCurrentLocale,
 } from "@/components/utils/aiTranslation";
 
-// Curator system prompt — enforces JSON-only output
-const CURATOR_SYSTEM_PROMPT = `You are Curator, a structured collection analysis engine.
-
-YOU MUST RETURN ONLY VALID JSON.
-
-RULES:
-- NO explanations outside JSON
-- NO markdown
-- NO conversational text
-- ONLY JSON matching the schema
-
-Your job:
-1. Analyze the collection
-2. Produce structured recommendation groups
-3. Include actionable proposed changes
-4. Include confidence levels
-
-Every recommendation must be actionable and include a proposed_change.`;
+// System prompt — enforces JSON-only structured output (no explanatory text)
+const CURATOR_SYSTEM_PROMPT = `You are a collection analysis engine. Return ONLY valid JSON. No explanations, markdown, or text outside JSON.`;
 
 /**
  * Execute a curator action independently
