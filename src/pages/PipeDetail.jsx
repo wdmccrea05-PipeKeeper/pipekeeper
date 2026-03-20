@@ -417,6 +417,18 @@ export default function PipeDetailPage() {
                 ))}
               </div>
             )}
+            <InlinePhotoEditor
+              photos={pipe.photos || []}
+              maxPhotos={5}
+              label="Photos"
+              onUpdate={(updatedPhotos) => {
+                updateMutation.mutate({ photos: updatedPhotos });
+                queryClient.setQueryData(["pipe", pipeId, user?.email], (old) => ({
+                  ...(old || {}),
+                  photos: updatedPhotos,
+                }));
+              }}
+            />
           </div>
 
           <div className="space-y-6">

@@ -211,19 +211,31 @@ export default function BottleDetail() {
           }}
         >
           <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr]">
-            <div className="p-6 flex items-center justify-center border-r border-[rgba(180,140,75,0.12)]">
+            <div className="p-6 flex flex-col items-center gap-4 border-r border-[rgba(180,140,75,0.12)]">
               {photo ? (
                 <img
                   src={photo}
                   alt={bottle.name}
-                  className="max-h-[520px] w-full object-contain"
+                  className="max-h-[440px] w-full object-contain"
                   style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.45))' }}
                 />
               ) : (
-                <div className="w-full h-[360px] rounded-2xl flex items-center justify-center bg-[rgba(255,255,255,0.03)] text-[#D8C7A6]/55 border border-[rgba(180,140,75,0.14)]">
+                <div className="w-full h-[280px] rounded-2xl flex items-center justify-center bg-[rgba(255,255,255,0.03)] text-[#D8C7A6]/55 border border-[rgba(180,140,75,0.14)]">
                   No photo
                 </div>
               )}
+              <InlinePhotoEditor
+                photos={bottle.photos || (bottle.photo ? [bottle.photo] : [])}
+                maxPhotos={2}
+                label="Photos"
+                onUpdate={async (updatedPhotos) => {
+                  await base44.entities.Bottle.update(bottle.id, {
+                    photos: updatedPhotos,
+                    photo: updatedPhotos[0] || null,
+                  });
+                  setBottle((prev) => ({ ...prev, photos: updatedPhotos, photo: updatedPhotos[0] || null }));
+                }}
+              />
             </div>
 
             <div className="p-6 md:p-8 space-y-6">
