@@ -209,6 +209,19 @@ export default function CollectionHub() {
   const featuredPipe = pipes.find((p) => Array.isArray(p?.photos) && p.photos.length > 0);
   const featuredBottle = bottles.find((b) => b?.photo);
 
+  // Highlight cards
+  const mostSmokedPipe = useMemo(() => {
+    if (!smokingLogs.length || !pipes.length) return null;
+    const counts = {};
+    smokingLogs.forEach((log) => { counts[log.pipe_id] = (counts[log.pipe_id] || 0) + (log.bowls_used || 1); });
+    const topId = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+    return pipes.find((p) => p.id === topId) || null;
+  }, [pipes, smokingLogs]);
+
+  const favoritePipe = useMemo(() => pipes.find((p) => p?.is_favorite) || null, [pipes]);
+  const favoriteBlend = useMemo(() => blends.find((b) => b?.is_favorite) || null, [blends]);
+  const favoriteBottle = useMemo(() => bottles.find((b) => b?.favorite) || null, [bottles]);
+
   // Privacy-masked display helpers (declared before activeModuleCards map)
   const displayValue = (val) => (hideValues || hideHomeValues) ? "—" : val;
   const displayCount = (val) => hideCollectionCounts ? "—" : val;
