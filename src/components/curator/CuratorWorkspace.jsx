@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQuery } from "@tanstack/react-query";
-import { Send, Sparkles } from "lucide-react";
+import { Send, Sparkles, Zap } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import {
   startCuratorSession,
@@ -869,7 +869,16 @@ ${englishText}`;
         className="flex-1 overflow-y-auto px-4 sm:px-6 py-4"
         style={{ background: "rgba(15,10,8,0.3)", overscrollBehavior: "contain" }}
       >
-        {messages.length === 0 ? (
+        {runningAction && (
+          <div className="mb-4 flex items-center gap-2 px-3 py-2.5 rounded-lg" style={{ background: "rgba(180,140,75,0.1)", border: "1px solid rgba(180,140,75,0.2)" }}>
+            <Zap className="w-4 h-4 animate-pulse" style={{ color: "rgba(212,165,116,1)" }} />
+            <span className="text-sm" style={{ color: "rgba(212,165,116,1)" }}>
+              {runningAction}
+            </span>
+          </div>
+        )}
+        
+        {messages.length === 0 && !runningAction ? (
           <div className="flex items-center justify-center h-full min-h-[120px]">
             <div className="text-center space-y-3 max-w-md px-4">
               <Sparkles
@@ -886,7 +895,7 @@ ${englishText}`;
               </p>
             </div>
           </div>
-        ) : (
+        ) : messages.length > 0 ? (
           <>
             {messages.map((msg) => (
               <MessageBubble key={msg.id} message={msg} />
@@ -919,7 +928,7 @@ ${englishText}`;
 
             <div ref={messagesEndRef} />
           </>
-        )}
+        ) : null}
       </div>
 
       {/* Input bar — always pinned to bottom, never clipped */}
