@@ -51,6 +51,7 @@ export default function BottleCard({
   onEdit,
   onDelete,
   onOpen,
+  onToggleFavorite,
 }) {
   const { t } = useTranslation();
 

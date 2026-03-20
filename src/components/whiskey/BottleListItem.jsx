@@ -33,6 +33,7 @@ export default function BottleListItem({
   onEdit,
   onDelete,
   onOpen,
+  onToggleFavorite,
 }) {
   const { t } = useTranslation();
 
