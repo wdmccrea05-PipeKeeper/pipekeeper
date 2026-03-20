@@ -221,6 +221,15 @@ export default function CollectionHub() {
   const favoritePipe = useMemo(() => pipes.find((p) => p?.is_favorite) || null, [pipes]);
   const favoriteBlend = useMemo(() => blends.find((b) => b?.is_favorite) || null, [blends]);
   const favoriteBottle = useMemo(() => bottles.find((b) => b?.favorite) || null, [bottles]);
+  
+  const mostValuedBottle = useMemo(() => {
+    if (!bottles.length) return null;
+    return [...bottles].sort((a, b) => {
+      const aVal = Number(a.collector_value) || Number(a.aftermarket_price) || Number(a.retail_price) || Number(a.purchase_price) || 0;
+      const bVal = Number(b.collector_value) || Number(b.aftermarket_price) || Number(b.retail_price) || Number(b.purchase_price) || 0;
+      return bVal - aVal;
+    })[0] || null;
+  }, [bottles]);
 
   // Privacy-masked display helpers (declared before activeModuleCards map)
   const displayValue = (val) => (hideValues || hideHomeValues) ? "—" : val;
