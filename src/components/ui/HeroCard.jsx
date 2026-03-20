@@ -301,24 +301,29 @@ export function StatusCard({
          </span>
        </div>
 
-      <div className="relative w-full">
+      <div className="relative w-full min-w-0">
          <div
-           className="text-2xl sm:text-3xl font-bold leading-snug tracking-tight break-words"
+           className="font-bold leading-snug tracking-tight"
            style={{ 
              color: "#F5F1E7", 
              textShadow: `0 2px 6px rgba(0,0,0,0.75)`,
              fontFamily: "'Georgia', serif",
-             whiteSpace: "normal",
-             overflow: "break-word"
+             fontSize: "clamp(1.25rem, 2.8vw, 1.875rem)",
+             whiteSpace: "nowrap",
+             overflow: "hidden",
+             textOverflow: "ellipsis",
+             fontVariantNumeric: "tabular-nums",
            }}
+           title={typeof value === 'string' ? value : undefined}
          >
            {value}
          </div>
          {sub && (
-           <div className="text-xs mt-1.5 font-medium break-words" style={{ 
+           <div className="text-xs mt-1.5 font-medium" style={{ 
              color: `rgba(180, 140, 75, 0.75)`,
-             whiteSpace: "normal",
-             overflow: "break-word"
+             whiteSpace: "nowrap",
+             overflow: "hidden",
+             textOverflow: "ellipsis",
            }}>
              {sub}
            </div>
