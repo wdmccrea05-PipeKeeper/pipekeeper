@@ -21,6 +21,9 @@ import {
 import { validateOwnershipIntegrity } from "@/components/utils/curatorOwnershipGuard";
 import { useTasteProfile, buildTasteProfileContext } from "@/components/curator/useTasteProfile";
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
+import { parseActionResult } from "@/components/curator/actionResultParser";
+import { applyActionChanges, buildClarificationPrompt } from "@/components/curator/actionApplyHandlers";
+import CuratorActionResultCard from "@/components/curator/CuratorActionResultCard";
 
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
