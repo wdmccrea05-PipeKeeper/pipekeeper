@@ -118,10 +118,20 @@ Deno.serve(async (req) => {
     let localSubs = await findLocalSubscriptions(base44, email);
     let stripeCustomerId = user.stripe_customer_id || localSubs.find((s: any) => s.stripe_customer_id)?.stripe_customer_id || null;
 
-    if (!stripeCustomerId) {
-      const customers = await stripe.customers.list({ email, limit: 10 });
-      const matched = customers.data.find((c) => normEmail(c.email) === email) || null;
-      stripeCustomerId = matched?.id || null;
+    // Validate customer ID format — skip Stripe API if it looks like a test/stub ID
+    const isValidStripeCustomerId = (id: string | null) => {
+      return !!id && id.startsWith('cus_') && !id.startsWith('test_');
+    };
+
+    if (!isValidStripeCustomerId(stripeCustomerId)) {
+      // Try to find by email in Stripe
+      try {
+        const customers = await stripe.customers.list({ email, limit: 5 });
+        const matched = customers.data.find((c: any) => normEmail(c.email) === email) || null;
+        stripeCustomerId = matched?.id || null;
+      } catch {
+        stripeCustomerId = null;
+      }
     }
 
     if (stripeCustomerId) {
