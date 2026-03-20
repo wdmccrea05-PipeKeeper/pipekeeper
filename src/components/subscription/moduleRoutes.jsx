@@ -3,23 +3,21 @@
  * Single source of truth for module-to-route conversions
  */
 
-import { ModuleKey } from './stripeConfig';
-
-const MODULE_ROUTE_MAP: Record<ModuleKey, string> = {
+const MODULE_ROUTE_MAP = {
   pipekeeper: '/PipeKeeper',
   whiskeykeeper: '/WhiskeyKeeper',
   cigarkeeper: '/CigarKeeper',
-  winekeeper: '/Whiskey', // WineKeeper may share WhiskeyKeeper route or have dedicated route
+  winekeeper: '/Whiskey',
 };
 
 /**
  * Get success route for a module
  */
-export function getModuleSuccessRoute(moduleKey: ModuleKey): string {
+export function getModuleSuccessRoute(moduleKey) {
   const route = MODULE_ROUTE_MAP[moduleKey];
   if (!route) {
     console.error(`[ModuleRoutes] Unknown module: ${moduleKey}`);
-    return '/CollectionHub'; // Safe fallback
+    return '/CollectionHub';
   }
   return route;
 }
@@ -27,6 +25,6 @@ export function getModuleSuccessRoute(moduleKey: ModuleKey): string {
 /**
  * Check if a route is a module route
  */
-export function isModuleRoute(path: string): boolean {
+export function isModuleRoute(path) {
   return Object.values(MODULE_ROUTE_MAP).includes(path);
 }
