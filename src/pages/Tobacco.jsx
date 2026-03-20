@@ -31,32 +31,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { formatWeight } from "@/components/utils/localeFormatters";
 
-const BLEND_TYPES = [
-  "American",
-  "Aromatic",
-  "Balkan",
-  "Burley",
-  "Burley-based",
-  "Cavendish",
-  "Codger Blend",
-  "Dark Fired Kentucky",
-  "English",
-  "English Aromatic",
-  "English Balkan",
-  "Full English/Oriental",
-  "Kentucky",
-  "Lakeland",
-  "Latakia Blend",
-  "Navy Flake",
-  "Oriental/Turkish",
-  "Other",
-  "Perique",
-  "Shag",
-  "Virginia",
-  "Virginia/Burley",
-  "Virginia/Oriental",
-  "Virginia/Perique"
-];
+import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 const STRENGTHS = ["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
 const SORT_OPTIONS = [
   { value: "-created_date", label: "tobaccoPage.recentlyAdded" },

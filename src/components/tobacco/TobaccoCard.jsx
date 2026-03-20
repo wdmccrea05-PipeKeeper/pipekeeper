@@ -3,6 +3,7 @@ import { HeritageCard } from "@/components/ui/HeritageCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Star, Leaf, Pencil } from "lucide-react";
+import { BLEND_TYPE_COLORS } from "@/components/tobacco/tobaccoConstants";
 import { motion } from "framer-motion";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { getAgingRecommendation } from "@/components/utils/agingRecommendation";
@@ -10,24 +11,11 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatWeight } from "@/components/utils/localeFormatters";
 import LuxuryObjectFrame from "@/components/ui/LuxuryObjectFrame";
 
-const BLEND_COLORS = {
-  "Virginia": "bg-yellow-600 text-yellow-100 border-yellow-500/60",
-  "Virginia/Perique": "bg-orange-700 text-orange-100 border-orange-600/60",
-  "English": "bg-slate-700 text-slate-100 border-slate-600/60",
-  "Balkan": "bg-slate-600 text-slate-100 border-slate-500/60",
-  "Aromatic": "bg-purple-700 text-purple-100 border-purple-600/60",
-  "Burley": "bg-amber-700 text-amber-100 border-amber-600/60",
-  "Virginia/Burley": "bg-yellow-700 text-yellow-100 border-yellow-600/60",
-  "Latakia Blend": "bg-slate-800 text-slate-100 border-slate-700/60",
-  "Oriental/Turkish": "bg-rose-700 text-rose-100 border-rose-600/60",
-  "Navy Flake": "bg-blue-700 text-blue-100 border-blue-600/60",
-  "Dark Fired": "bg-slate-600 text-slate-100 border-slate-500/60",
-  "Cavendish": "bg-amber-800 text-amber-100 border-amber-700/60",
-};
+
 
 export default function TobaccoCard({ blend, onClick, onToggleFavorite, onEdit }) {
   const { t } = useTranslation();
-  const colorClass = BLEND_COLORS[blend.blend_type] || "bg-slate-700 text-slate-100 border-slate-600/60";
+  const colorClass = BLEND_TYPE_COLORS[blend.blend_type] || "bg-slate-700 text-slate-100 border-slate-600/60";
   const agingRec = getAgingRecommendation(blend);
   
   const agingColorClass = agingRec 

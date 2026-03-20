@@ -25,7 +25,7 @@ import { useRecentValues } from "@/components/hooks/useRecentValues";
 import { Combobox } from "@/components/ui/combobox";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "English Aromatic", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
+import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
 const STRENGTHS = ["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
 const ROOM_NOTES = ["Pleasant", "Neutral", "Strong", "Very Strong"];
