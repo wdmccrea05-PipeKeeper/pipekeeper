@@ -237,10 +237,12 @@ export function useCurrentUser() {
   const provider = resolveProviderFromUser(user) || resolveSubscriptionProvider(subscription);
 
   // Use CANONICAL resolver functions (single source of truth)
+  // Fast-path: if user.has_paid_access is explicitly true (written by webhook/sync), trust it
   const tier = getEntitlementTier(user, subscription);
   const hasPaid = hasPaidAccess(user, subscription);
-  const hasPremium = hasPremiumAccess(user, subscription);
-  const hasPro = hasProAccess(user, subscription);
+  // No premium tier — hasPremium === hasPro === hasPaid
+  const hasPremium = hasPaid;
+  const hasPro = hasPaid;
   const isTrial = isTrialingAccess(user, subscription);
   const planLabel = getPlanLabel(user, subscription);
   const isAdmin = user?.role === "admin";
