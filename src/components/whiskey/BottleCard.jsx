@@ -103,11 +103,30 @@ export default function BottleCard({
           </div>
         )}
 
-        <div className="absolute top-3 left-3 flex flex-wrap gap-2 max-w-[88%]">
+        <div className="absolute top-3 left-3 flex flex-wrap gap-2 max-w-[80%]">
           {bottle?.type && <Badge>{bottle.type}</Badge>}
           {bottle?.bottle_type && <Badge tone="blue">{bottle.bottle_type}</Badge>}
           {bottle?.bottle_size && <Badge>{bottle.bottle_size}</Badge>}
         </div>
+
+        {typeof onToggleFavorite === 'function' && (
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite(bottle, e); }}
+            className="absolute top-3 right-3 p-1.5 rounded-full transition-all"
+            style={{
+              background: bottle?.favorite ? 'rgba(163,92,92,0.85)' : 'rgba(0,0,0,0.4)',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+            aria-label={bottle?.favorite ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            <Heart
+              className="w-4 h-4"
+              style={{ color: bottle?.favorite ? '#fff' : 'rgba(255,255,255,0.55)' }}
+              fill={bottle?.favorite ? 'currentColor' : 'none'}
+            />
+          </button>
+        )}
       </div>
 
       <div className="p-5 space-y-5">
