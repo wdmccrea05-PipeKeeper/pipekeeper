@@ -115,66 +115,89 @@ export async function applyBottleAddition(item, user) {
 
 /**
  * Apply all recommendations by type
+ * Compatible with both old CuratorActionResultCard and new structured results
  */
 export async function applyAllRecommendations(groups, user) {
-  const results = {
-    total: { success: 0, failed: 0 },
-    byType: {},
+  const allResults = {
+    pipes: { success: 0, failed: 0, errors: [] },
+    tobacco: { success: 0, failed: 0, errors: [] },
+    bottles: { success: 0, failed: 0, errors: [] },
+    total: { success: 0, failed: 0, errors: [] },
   };
 
-  for (const group of groups) {
-    for (const item of group.items || []) {
-      const changeType = item.proposedChange?.type;
-      if (!changeType) {
-        results.total.failed++;
-        continue;
+  // Collect items by type
+  const itemsByType = {
+    pipe: [],
+    tobacco: [],
+    bottle: [],
+  };
+
+  (groups || []).forEach((group) => {
+    (group.items || []).forEach((item) => {
+      if (itemsByType[item.type]) {
+        itemsByType[item.type].push(item);
       }
+    });
+  });
 
-      try {
-        let result;
-
-        switch (changeType) {
-          case "pipe_specialization":
-            result = await applyPipeSpecialization(item, user);
-            break;
-          case "tobacco_classification":
-            result = await applyTobaccoReclassification(item, user);
-            break;
-          case "bottle_update":
-          case "bottle_field_update":
-            result = await applyBottleFieldUpdate(item, user);
-            break;
-          case "pipe_measurement":
-          case "pipe_measurement_update":
-            result = await applyPipeMeasurementUpdate(item, user);
-            break;
-          case "bottle_addition":
-          case "bottle_addition_suggestion":
-            result = await applyBottleAddition(item, user);
-            break;
-          default:
-            console.warn(`Unknown change type: ${changeType}`);
-            results.total.failed++;
-            continue;
-        }
-
-        if (result.success) {
-          results.total.success++;
-          if (!results.byType[changeType]) {
-            results.byType[changeType] = [];
-          }
-          results.byType[changeType].push(result);
-        } else {
-          results.total.failed++;
-        }
-      } catch (err) {
-        console.error(`Failed to apply ${changeType}:`, err);
-        results.total.failed++;
+  // Apply pipe specializations
+  for (const item of itemsByType.pipe) {
+    try {
+      const result = await applyPipeSpecialization(item, user);
+      if (result.success) {
+        allResults.pipes.success++;
+        allResults.total.success++;
+      } else {
+        allResults.pipes.failed++;
+        allResults.total.failed++;
       }
+    } catch (err) {
+      console.error(`Failed to apply pipe specialization:`, err);
+      allResults.pipes.failed++;
+      allResults.total.failed++;
+      allResults.total.errors.push({ itemName: item.itemName, error: err?.message });
     }
   }
 
-  return results;
+  // Apply tobacco reclassifications
+  for (const item of itemsByType.tobacco) {
+    try {
+      const result = await applyTobaccoReclassification(item, user);
+      if (result.success) {
+        allResults.tobacco.success++;
+        allResults.total.success++;
+      } else {
+        allResults.tobacco.failed++;
+        allResults.total.failed++;
+      }
+    } catch (err) {
+      console.error(`Failed to apply tobacco reclassification:`, err);
+      allResults.tobacco.failed++;
+      allResults.total.failed++;
+      allResults.total.errors.push({ itemName: item.itemName, error: err?.message });
+    }
+  }
+
+  // Apply bottle updates
+  for (const item of itemsByType.bottle) {
+    try {
+      const result = await applyBottleFieldUpdate(item, user);
+      if (result.success) {
+        allResults.bottles.success++;
+        allResults.total.success++;
+      } else {
+        allResults.bottles.failed++;
+        allResults.total.failed++;
+      }
+    } catch (err) {
+      console.error(`Failed to apply bottle update:`, err);
+      allResults.bottles.failed++;
+      allResults.total.failed++;
+      allResults.total.errors.push({ itemName: item.itemName, error: err?.message });
+    }
+  }
+
+  return allResults;
 }
 
 /**
