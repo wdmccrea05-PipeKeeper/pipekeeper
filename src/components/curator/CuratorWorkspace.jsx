@@ -375,7 +375,7 @@ export default function CuratorWorkspace({
   }, [threadId]);
 
   const sendMessage = useCallback(
-    async (textOverride = null, contextOverride = null, isActionExecution = false) => {
+    async (textOverride = null, contextOverride = null, isActionExecution = false, actionLaunchContext = null) => {
       const text = String(textOverride ?? input).trim();
       if (!text || sending) return false;
 
