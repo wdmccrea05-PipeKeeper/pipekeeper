@@ -451,21 +451,41 @@ ${prefContext}`;
 
         const activeContext = contextOverride || resolvedContextRef.current?.recommendationContext;
 
-        if (
-          messages.length === 0 &&
-          activeContext &&
-          (activeContext.originalTitle ||
+        if (messages.length === 0 && activeContext) {
+          // Build authoritative app-provided selection context.
+          // If specific record IDs were passed, treat them as canonical — do NOT
+          // challenge whether they exist or ask the user to confirm them.
+          const hasAuthoritative =
+            activeContext.pipeId || activeContext.blendId || activeContext.bottleId ||
+            activeContext.pipe_id || activeContext.blend_id || activeContext.bottle_id;
+
+          if (hasAuthoritative) {
+            const selectedPipeName = activeContext.pipeName || activeContext.pipe_name || '';
+            const selectedBlendName = activeContext.blendName || activeContext.blend_name || '';
+            const selectedBottleName = activeContext.bottleName || activeContext.bottle_name || '';
+
+            contextMessage += `
+
+AUTHORITATIVE APP SELECTION (treat these as confirmed, do NOT question their existence):
+${selectedPipeName ? `- Selected Pipe: "${selectedPipeName}" (ID confirmed by app)` : ''}
+${selectedBlendName ? `- Selected Tobacco: "${selectedBlendName}" (ID confirmed by app)` : ''}
+${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}" (ID confirmed by app)` : ''}
+
+INSTRUCTION: These items were explicitly selected by the user in the app. Do NOT ask if they exist or challenge the selection. Treat them as the starting point and give direct, confident advice.`;
+          } else if (
+            activeContext.originalTitle ||
             activeContext.originalInsight ||
             activeContext.module ||
-            activeContext.category)
-        ) {
-          contextMessage += `
+            activeContext.category
+          ) {
+            contextMessage += `
 
 ORIGINAL RECOMMENDATION CONTEXT:
 Title: ${activeContext.originalTitle || "N/A"}
 Insight: ${activeContext.originalInsight || "N/A"}
 Module: ${activeContext.module || "general"}
 Category: ${activeContext.category || "general"}`;
+          }
         }
 
         if (tasteProfileContext) {
