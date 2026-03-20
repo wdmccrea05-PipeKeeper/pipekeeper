@@ -353,7 +353,7 @@ export default function CollectionHub() {
         <div className={`grid gap-4 ${isModuleEnabled("whiskeykeeper") ? "grid-cols-2 md:grid-cols-6" : "grid-cols-2 md:grid-cols-4"}`}>
           <SummaryStat
             label={t("hub.totalValue", "Total Value")}
-            value={money(totalDisplayedValue)}
+            value={displayValue(money(totalDisplayedValue))}
             color="#D4A574"
           />
           <SummaryStat
