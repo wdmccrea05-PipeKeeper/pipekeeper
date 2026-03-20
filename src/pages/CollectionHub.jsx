@@ -143,8 +143,19 @@ export default function CollectionHub() {
   const { data: hubProfile = null } = useQuery({
     queryKey: ["hub-profile", user?.email],
     queryFn: async () => {
-      const result = await base44.entities.UserProfile.filter({ user_email: user?.email });
-      return result?.[0] || null;
+      const userId = user?.id || user?.auth_user_id;
+      const email = user?.email;
+      let records = [];
+      if (userId) {
+        try { records.push(...(await base44.entities.UserProfile.filter({ user_id: userId }))); } catch {}
+      }
+      if (email) {
+        try { records.push(...(await base44.entities.UserProfile.filter({ user_email: email }))); } catch {}
+      }
+      if (!records.length) return null;
+      const seen = new Set();
+      const unique = records.filter(r => { if (seen.has(r.id)) return false; seen.add(r.id); return true; });
+      return unique.sort((a, b) => (Date.parse(b?.updated_date || '') || 0) - (Date.parse(a?.updated_date || '') || 0))[0] || null;
     },
     enabled: !!user?.email,
     staleTime: 60000,
