@@ -1,181 +1,172 @@
-// src/components/utils/premiumAccess.jsx
-
 /**
- * CANONICAL ENTITLEMENT RESOLVER
- * Single source of truth for Premium/Pro access across the app.
+ * CANONICAL ENTITLEMENT RESOLVER — SINGLE SOURCE OF TRUTH
  *
- * Why: Paid users can be marked paid via multiple sources:
- * - user.entitlement_tier (preferred, server-authoritative)
- * - user.subscription_tier / subscription_level (legacy)
- * - Subscription entity tier (Stripe/Apple/manual)
+ * Only 2 tiers exist: "free" | "pro"
+ * All legacy "premium" users are mapped to "pro" immediately.
  *
- * We must NEVER block paid access just because Subscription entity fetch fails
- * or because a component used an old variable name.
- * 
- * Grace Period Policy:
- * Failed payments (past_due, incomplete, unpaid) receive a 5-day grace period
- * after current_period_end before paid access is suspended.
+ * Contract:
+ *   getEntitlementTier(user, subscription) → "free" | "pro"
+ *   hasPro(user, subscription) → boolean
+ *   isFree(user, subscription) → boolean
+ *
+ * Usage rules:
+ *   - Import ONLY from this file for entitlement decisions
+ *   - Do NOT import from resolveEntitlementTier or entitlements (both deleted)
+ *   - Do NOT use "premium" anywhere in runtime logic
  */
 
 import { subscriptionGrantsPaidAccess } from "./gracePeriod";
 
-// FIX ISSUE-21: Replace overly broad substring matching with exact matching plus an explicit
-// allowlist of known synonyms to prevent arbitrary strings from being promoted to paid tiers.
 const normalizeTier = (raw) => {
   const t = String(raw || "").trim().toLowerCase();
   if (!t) return "free";
-
+  // pro tier
   if (t === "pro") return "pro";
-  if (t === "premium") return "premium"; // Preserve semantic distinction
-
-  // Explicit legacy synonyms only — no substring matching
+  // legacy "premium" always maps to pro
+  if (t === "premium") return "pro";
+  // other legacy synonyms → pro
   if (t === "paid" || t === "plus" || t === "subscriber" || t === "subscribed") return "pro";
-
+  // bundle tiers (bundle_N) → pro
+  if (t.startsWith("bundle_")) return "pro";
   return "free";
 };
 
+/**
+ * Canonical tier resolver. Returns "free" or "pro" only.
+ */
 export function getEntitlementTier(user, subscription) {
-  // Admin override - admins get Pro tier
+  // Admin always pro
   const role = (user?.role || "").toLowerCase();
-  if (role === "admin" || role === "owner" || user?.is_admin === true) {
-    return "pro";
-  }
+  if (role === "admin" || role === "owner" || user?.is_admin === true) return "pro";
 
-  // 1) Server authoritative / canonical (most important)
-  // Check BOTH top-level and nested data blob — server writes to data blob first
-  const fromUserEntitlement =
-    user?.data?.entitlement_tier ??
+  // 1. Server-written top-level field (preferred — set by webhook + syncSubscriptionForMe)
+  const topLevel =
     user?.entitlement_tier ??
     user?.entitlementTier ??
     user?.entitlement ??
     user?.tier;
 
-  const t1 = normalizeTier(fromUserEntitlement);
+  const t1 = normalizeTier(topLevel);
   if (t1 !== "free") return t1;
 
-  // 2) Legacy user fields
-  const fromUserLegacy =
+  // 2. Nested data blob (written by ensureUserRecord — legacy)
+  const dataTier =
+    user?.data?.entitlement_tier ??
+    user?.data?.subscription_tier;
+
+  const t2 = normalizeTier(dataTier);
+  if (t2 !== "free") return t2;
+
+  // 3. Legacy subscription_tier / plan fields on user
+  const legacyUser =
     user?.subscription_tier ??
     user?.subscriptionTier ??
     user?.subscriptionLevel ??
     user?.plan ??
     user?.plan_level;
 
-  const t2 = normalizeTier(fromUserLegacy);
-  if (t2 !== "free") return t2;
+  const t3 = normalizeTier(legacyUser);
+  if (t3 !== "free") return t3;
 
-  // 3) Subscription entity / provider-derived
-  if (subscription) {
-    // Use grace period helper to determine if subscription grants access
-    const grantsAccess = subscriptionGrantsPaidAccess(subscription);
-    
-    if (grantsAccess) {
-      const fromSub =
-        subscription?.tier ??
-        subscription?.subscription_tier ??
-        subscription?.plan ??
-        subscription?.plan_level;
+  // 4. Subscription entity (with grace period)
+  if (subscription && subscriptionGrantsPaidAccess(subscription)) {
+    const fromSub =
+      subscription?.tier ??
+      subscription?.subscription_tier ??
+      subscription?.plan;
 
-      const t3 = normalizeTier(fromSub);
-      if (t3 !== "free") return t3;
-    }
+    const t4 = normalizeTier(fromSub);
+    // Even if sub tier field is empty, if subscriptionGrantsPaidAccess returned true → pro
+    if (t4 !== "free") return t4;
+    return "pro";
   }
 
   return "free";
 }
 
+/** True if user has Pro access. */
 export function hasPaidAccess(user, subscription) {
-  const tier = getEntitlementTier(user, subscription);
-  return tier === "pro" || tier === "premium"; // Both tiers grant paid access
+  return getEntitlementTier(user, subscription) === "pro";
 }
 
-export function hasPremiumAccess(user, subscription) {
-  const tier = getEntitlementTier(user, subscription);
-  return tier === "premium" || tier === "pro";
-}
+/** Alias for hasPaidAccess. */
+export const hasPro = hasPaidAccess;
 
+/** True if user has Pro access (same as hasPaidAccess — no premium tier exists). */
 export function hasProAccess(user, subscription) {
-  const tier = getEntitlementTier(user, subscription);
-  return tier === "pro" || tier === "premium";
+  return getEntitlementTier(user, subscription) === "pro";
 }
 
-// Trial should NEVER be required to grant paid access.
-// Trial is informational and can be used for UX prompts only.
-// FIX: Validate trial end date — if trial is past, do not treat as active trial
+/** Alias kept for backward compat. Premium no longer exists; maps to pro. */
+export function hasPremiumAccess(user, subscription) {
+  return getEntitlementTier(user, subscription) === "pro";
+}
+
+/** True if user is free tier. */
+export function isFree(user, subscription) {
+  return getEntitlementTier(user, subscription) === "free";
+}
+
+/** Trial status — informational only. NEVER blocks paid access. */
 export function isTrialingAccess(user, subscription) {
-  const userTrial =
-    !!user?.trial_active ||
-    !!user?.is_trialing ||
-    !!user?.trialing ||
-    !!user?.trial;
-
   const subStatus = String(subscription?.status || "").toLowerCase();
-  let subTrial = subStatus === "trialing" || !!subscription?.is_trialing;
-  
-  // FIX: Validate subscription trial hasn't expired and dates are consistent
-  if (subTrial && subscription?.trial_end) {
-    try {
-      const trialEnd = new Date(subscription.trial_end);
-      // Validate trial_end is a valid date
-      if (Number.isNaN(trialEnd.getTime())) {
-        console.warn('[premiumAccess] invalid trial_end date:', subscription.trial_end);
-        subTrial = false;
-      } else if (Date.now() > trialEnd.getTime()) {
-        // Trial is expired
-        subTrial = false;
-      }
-      
-      // Also validate trial_start if present
-      if (subTrial && subscription?.trial_start) {
-        const trialStart = new Date(subscription.trial_start);
-        if (Number.isNaN(trialStart.getTime())) {
-          console.warn('[premiumAccess] invalid trial_start date:', subscription.trial_start);
-          subTrial = false;
-        } else if (trialStart >= trialEnd) {
-          // Start must be before end
-          console.warn('[premiumAccess] trial_start >= trial_end');
-          subTrial = false;
-        }
-      }
-    } catch (e) {
-      console.warn('[premiumAccess] trial validation error:', e?.message);
-      subTrial = false;
-    }
-  }
-
-  return userTrial || subTrial;
+  if (subStatus === "trialing") return true;
+  return !!user?.trial_active || !!user?.is_trialing || !!user?.trialing;
 }
 
-// Optional labeling helper - preserve Premium/Pro semantic distinction in UI
+/** Human-readable plan label. */
 export function getPlanLabel(user, subscription) {
-  const tier = getEntitlementTier(user, subscription);
-  if (tier === "pro") return "Pro";
-  if (tier === "premium") return "Premium";
-  return "Free";
+  return getEntitlementTier(user, subscription) === "pro" ? "Pro" : "Free";
 }
 
 export function isFoundingMember(user = null) {
   return user?.isFoundingMember === true;
 }
 
-// CANONICAL founding member / legacy premium cutoff
-// Users who became paid subscribers BEFORE this date get grandfathered access to Pro features
 export const FOUNDING_MEMBER_CUTOFF = new Date("2026-02-01T00:00:00.000Z");
 
-export function isLegacyPremium(subscription = null) {
-  if (!subscription) return false;
-  
-  const tier = (subscription.tier || "").toLowerCase();
-  if (tier === "pro") return false; // Pro is never legacy
-  
-  // Use normalized subscriptionStartedAt, fall back to started_at
-  const startDate = subscription.subscriptionStartedAt || subscription.started_at;
-  if (!startDate) return false;
-  
-  try {
-    const start = new Date(startDate);
-    return start < FOUNDING_MEMBER_CUTOFF;
-  } catch {
-    return false;
-  }
+/** Legacy function — kept for backward compat but always returns false (no premium tier). */
+export function isLegacyPremium() {
+  return false;
+}
+
+/**
+ * Build the canonical entitlements object used throughout the app.
+ * This replaces the old buildEntitlements() from entitlements.js.
+ */
+export function buildCanonicalEntitlements(user, subscription) {
+  const tier = getEntitlementTier(user, subscription);
+  const isPro = tier === "pro";
+
+  const limits = isPro
+    ? { pipes: Infinity, tobaccos: Infinity, bottles: Infinity, photosPerItem: Infinity, smokingLogs: Infinity }
+    : { pipes: 10, tobaccos: 10, bottles: 10, photosPerItem: 3, smokingLogs: 100 };
+
+  /**
+   * Feature availability — all features unlocked for Pro.
+   * Free tier: no advanced features.
+   */
+  const canUse = (featureKey) => {
+    if (isPro) return true;
+    // Free tier gets these basic features
+    const FREE_FEATURES = [
+      "SMOKING_LOG",
+      "CELLAR_LOG",
+      "SHARE_CARDS",
+    ];
+    return FREE_FEATURES.includes(featureKey);
+  };
+
+  return {
+    tier,
+    hasPro: isPro,
+    isFree: !isPro,
+    paidModules: isPro ? ["pipekeeper", "whiskeykeeper"] : [],
+    limits,
+    canUse,
+    // Legacy compat fields
+    isLegacyPremium: false,
+    isFreeGrandfathered: !!user?.isFreeGrandfathered,
+    isOnTrial: isTrialingAccess(user, subscription),
+  };
 }
