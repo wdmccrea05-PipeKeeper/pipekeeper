@@ -1,265 +1,117 @@
-// DEPLOYMENT: 2026-02-02T03:55:00Z - No imports
+/**
+ * Create Stripe checkout session for module-based subscription
+ * Handles single module, 3-module bundle, 4-module bundle, and founders plans
+ */
 
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import Stripe from 'npm:stripe@13.11.0';
 
-import Stripe from "npm:stripe@17.5.0";
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
-// Inline Stripe client getter to avoid import issues
-function getStripeClient() {
-  const key = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
-  if (!key || !key.startsWith("sk_")) {
-    throw new Error("STRIPE_SECRET_KEY missing or invalid");
-  }
-  
-  const stripe = new Stripe(key, { apiVersion: "2024-06-20" });
-  const environment = key.startsWith("sk_live_") ? "live" : "test";
-  const masked = `${key.slice(0, 8)}...${key.slice(-4)}`;
-  
-  return { stripe, meta: { environment, masked } };
-}
+// Plan to Stripe product mapping
+const PLAN_TO_STRIPE_PRICE = {
+  // Single module plans
+  'pipekeeper_pro_monthly': Deno.env.get('VITE_STRIPE_PIPEKEEPER_MONTHLY'),
+  'pipekeeper_pro_annual': Deno.env.get('VITE_STRIPE_PIPEKEEPER_ANNUAL'),
+  'whiskeykeeper_pro_monthly': Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_MONTHLY'),
+  'whiskeykeeper_pro_annual': Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_ANNUAL'),
+  'cigarkeeper_pro_monthly': Deno.env.get('VITE_STRIPE_CIGARKEEPER_MONTHLY'),
+  'cigarkeeper_pro_annual': Deno.env.get('VITE_STRIPE_CIGARKEEPER_ANNUAL'),
+  'winekeeper_pro_monthly': Deno.env.get('VITE_STRIPE_WINEKEEPER_MONTHLY'),
+  'winekeeper_pro_annual': Deno.env.get('VITE_STRIPE_WINEKEEPER_ANNUAL'),
 
-const normEmail = (email) => String(email || "").trim().toLowerCase();
+  // Bundle plans
+  'three_module_bundle_monthly': Deno.env.get('VITE_STRIPE_THREE_BUNDLE_MONTHLY'),
+  'three_module_bundle_annual': Deno.env.get('VITE_STRIPE_THREE_BUNDLE_ANNUAL'),
+  'four_module_bundle_monthly': Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_MONTHLY'),
+  'four_module_bundle_annual': Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_ANNUAL'),
 
-// ---- Config ----
-const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
-
-// Price ID mapping (tier + interval -> Stripe Price ID)
-const PRICE_MAP = {
-  premium: {
-    monthly: (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim(),
-    annual: (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim(),
-  },
-  pro: {
-    monthly: (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim(),
-    annual: (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim(),
-  }
+  // Founders plan
+  'founders_bundle_annual': Deno.env.get('VITE_STRIPE_FOUNDERS_ANNUAL'),
 };
 
-const ALLOWED_PRICE_IDS = (Deno.env.get("ALLOWED_PRICE_IDS") || "")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
-
-// ---- Helpers ----
-function getPlatform(req) {
-  try {
-    const url = new URL(req.url);
-    const platform = (url.searchParams.get("platform") || "").toLowerCase();
-    return platform === "ios" ? "ios_companion" : "web_android";
-  } catch {
-    return "web_android";
-  }
-}
-
-function safeOrigin(req) {
-  const origin = req.headers.get("origin");
-  if (origin && origin.startsWith("http")) return origin;
-  return APP_URL;
-}
-
-async function safePersistCustomerId(base44, email, customerId) {
-  if (!email || !customerId) return;
-
-  try {
-    const authApi = base44?.asServiceRole?.auth;
-    if (authApi && typeof authApi.updateUser === "function") {
-      await authApi.updateUser(email, { stripe_customer_id: customerId });
-      return;
-    }
-  } catch (e) {
-    console.warn("[createCheckoutSession] persist auth stripe_customer_id failed:", e?.message || e);
-  }
-
-  // Optional fallback if you have a UserProfile entity
-  try {
-    const UserProfile = base44?.asServiceRole?.entities?.UserProfile;
-    if (UserProfile) {
-      const rows = await UserProfile.filter({ email });
-      if (rows?.length) {
-        await UserProfile.update(rows[0].id, { stripe_customer_id: customerId });
-      }
-    }
-  } catch (e) {
-    console.warn("[createCheckoutSession] persist UserProfile stripe_customer_id failed:", e?.message || e);
-  }
-}
-
-function getPriceIdFromTierAndInterval(tier, interval) {
-  const normalizedTier = String(tier || "").toLowerCase();
-  const normalizedInterval = String(interval || "").toLowerCase();
-  
-  // Normalize interval variants
-  let intervalKey = normalizedInterval;
-  if (normalizedInterval === "month" || normalizedInterval === "monthly") {
-    intervalKey = "monthly";
-  } else if (normalizedInterval === "year" || normalizedInterval === "yearly") {
-    intervalKey = "annual";
-  }
-  
-  const priceId = PRICE_MAP[normalizedTier]?.[intervalKey];
-  return priceId || "";
-}
-
-function isAllowedPriceId(priceId) {
-  if (!priceId) return false;
-  
-  // Check against all valid price IDs in the map (always required)
-  const validPriceIds = [
-    PRICE_MAP.premium.monthly,
-    PRICE_MAP.premium.annual,
-    PRICE_MAP.pro.monthly,
-    PRICE_MAP.pro.annual,
-  ].filter(Boolean);
-  
-  // Add ALLOWED_PRICE_IDS if configured
-  if (ALLOWED_PRICE_IDS.length) {
-    return ALLOWED_PRICE_IDS.includes(priceId) || validPriceIds.includes(priceId);
-  }
-  
-  return validPriceIds.includes(priceId);
-}
-
-// ---- Handler ----
 Deno.serve(async (req) => {
   try {
-    const platform = getPlatform(req);
-
-    // Apple compliance: block Stripe checkout inside iOS companion
-    if (platform === "ios_companion") {
-      return Response.json({ error: "Not available in iOS companion app." }, { status: 403 });
-    }
-
     const base44 = createClientFromRequest(req);
-    
-    // Use ENV-only Stripe client
-    const { stripe, meta } = getStripeClient();
-    console.log(`[createCheckoutSession] env=${meta.environment} key=${meta.masked}`);
     const user = await base44.auth.me();
 
     if (!user?.email) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return Response.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const emailLower = normEmail(user.email);
-    const userId = user.id;
-    const origin = safeOrigin(req);
+    const { planKey, selectedModules, successUrl, cancelUrl } = await req.json();
 
-    const body = await req.json().catch(() => ({}));
-    
-    // Primary path: tier + interval
-    const tier = body?.tier;
-    const interval = body?.interval;
-    
-    // Legacy path: priceId (for backward compatibility)
-    const legacyPriceId = (body?.priceId || "").trim();
-    
-    let priceId = "";
-    
-    // Prefer tier + interval approach
-    if (tier && interval) {
-      // BLOCK: Premium is no longer publicly purchasable — remap to Pro
-      const normalizedTier = String(tier).toLowerCase() === "premium" ? "pro" : tier;
-      priceId = getPriceIdFromTierAndInterval(normalizedTier, interval);
-      
-      if (!priceId) {
-        return Response.json(
-          { error: `Invalid tier/interval combination: ${tier}/${interval}. Supported: pro + monthly/annual.` },
-          { status: 400 }
-        );
-      }
-    } else if (legacyPriceId) {
-      // Backward compatibility: validate priceId against allowlist
-      if (!isAllowedPriceId(legacyPriceId)) {
-        return Response.json(
-          { error: "Invalid priceId. Please use tier and interval parameters instead." },
-          { status: 400 }
-        );
-      }
-      priceId = legacyPriceId;
+    if (!planKey || !PLAN_TO_STRIPE_PRICE[planKey]) {
+      return Response.json(
+        { error: 'Invalid plan key' },
+        { status: 400 }
+      );
+    }
+
+    // Get or create Stripe customer
+    let customerId;
+    const existingCustomers = await stripe.customers.list({
+      email: user.email,
+      limit: 1,
+    });
+
+    if (existingCustomers.data.length > 0) {
+      customerId = existingCustomers.data[0].id;
     } else {
-      return Response.json(
-        { error: "Missing required parameters: tier + interval (or legacy priceId)." },
-        { status: 400 }
-      );
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: {
+          userId: user.id || user.auth_user_id,
+        },
+      });
+      customerId = customer.id;
     }
 
-    if (!priceId) {
-      return Response.json(
-        { error: "Failed to determine price. Please check tier and interval." },
-        { status: 400 }
-      );
+    // Create checkout session with metadata for 3-module bundles
+    const metadata = {};
+    if (planKey.includes('three_module') && selectedModules && Array.isArray(selectedModules)) {
+      metadata.activeModules = JSON.stringify(selectedModules.slice(0, 3));
+      metadata.planType = 'three_module_bundle';
+    } else if (planKey.includes('four_module')) {
+      metadata.planType = 'four_module_bundle';
+    } else if (planKey.includes('founders')) {
+      metadata.planType = 'founders';
+    } else {
+      // Single module
+      metadata.planType = 'single_module';
+      metadata.module = selectedModules?.[0] || 'pipekeeper';
     }
-
-    // Customer resolution - use normalized email
-    let customerId = user.stripe_customer_id || null;
-
-    if (!customerId) {
-      const existing = await stripe.customers.list({ email: emailLower, limit: 1 });
-      customerId = existing.data?.[0]?.id || null;
-    }
-
-    if (!customerId) {
-      const created = await stripe.customers.create({ email: emailLower });
-      customerId = created.id;
-    }
-
-    if (!user.stripe_customer_id) {
-      await safePersistCustomerId(base44, emailLower, customerId);
-    }
-
-    // Normalize tier and interval for metadata
-    const normalizedTier = String(tier || "pro").toLowerCase() === "premium" ? "pro" : String(tier || "pro").toLowerCase();
-    const normalizedInterval = String(interval || "").toLowerCase();
-    let intervalKey = normalizedInterval;
-    if (normalizedInterval === "month" || normalizedInterval === "monthly") {
-      intervalKey = "monthly";
-    } else if (normalizedInterval === "year" || normalizedInterval === "yearly" || normalizedInterval === "annual") {
-      intervalKey = "annual";
-    }
-
-    // All active modules are included with any pro subscription
-    const modulesCsv = "pipekeeper,whiskeykeeper";
 
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
       customer: customerId,
-      line_items: [{ price: priceId, quantity: 1 }],
-      allow_promotion_codes: true,
-      success_url: `${origin}/Subscription?success=1`,
-      cancel_url: `${origin}/Subscription?canceled=1`,
-      metadata: {
-        user_email: emailLower,
-        user_id: userId,
-        platform: platform,
-        tier: normalizedTier,
-        interval: intervalKey,
-        modules_csv: modulesCsv,
-        module_count: "2",
-      },
-      subscription_data: {
-        metadata: {
-          user_email: emailLower,
-          user_id: userId,
-          platform: platform,
-          tier: normalizedTier,
-          interval: intervalKey,
-          modules_csv: modulesCsv,
-          module_count: "2",
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: PLAN_TO_STRIPE_PRICE[planKey],
+          quantity: 1,
         },
+      ],
+      mode: 'subscription',
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata,
+      customer_update: {
+        address: 'auto',
       },
     });
 
-    return Response.json({ ok: true, url: session.url });
-  } catch (error) {
-    const msg = error?.message || String(error);
-    console.error("[createCheckoutSession] Fallback triggered:", msg);
-    
-    // Return 200 with fallback flag so frontend knows to use direct links
     return Response.json({
-      ok: false,
-      fallback: true,
-      error: "CHECKOUT_UNAVAILABLE",
-      message: "Using backup checkout method"
+      sessionUrl: session.url,
+      sessionId: session.id,
     });
+  } catch (error) {
+    console.error('Checkout creation failed:', error);
+    return Response.json(
+      { error: error.message || 'Failed to create checkout session' },
+      { status: 500 }
+    );
   }
 });

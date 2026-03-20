@@ -1,223 +1,154 @@
 /**
- * Sync subscription state for the authenticated user.
- *
- * Use this:
- * - after successful checkout redirect
- * - after login
- * - from a "Restore Purchases / Refresh Access" button
+ * Sync user's Stripe subscription to database
+ * Called after successful purchase to rebuild access summary
  */
 
-import Stripe from 'npm:stripe@16.10.0';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import Stripe from 'npm:stripe@13.11.0';
 
-function normEmail(email: unknown): string {
-  return String(email || '').trim().toLowerCase();
-}
-
-function unique<T>(arr: T[]): T[] {
-  return [...new Set(arr)];
-}
-
-function splitModulesCsv(csv: unknown): string[] {
-  return unique(
-    String(csv || '')
-      .split(',')
-      .map((s) => s.trim().toLowerCase())
-      .filter(Boolean)
-  );
-}
-
-function isIsoFuture(value: unknown): boolean {
-  if (!value) return false;
-  const d = new Date(String(value));
-  return Number.isFinite(d.getTime()) && d.getTime() > Date.now();
-}
-
-function grantsPaidAccess(status: string, currentPeriodEnd?: string | null): boolean {
-  const s = String(status || '').toLowerCase();
-  if (s === 'active' || s === 'trialing') return true;
-  if ((s === 'past_due' || s === 'incomplete') && currentPeriodEnd && isIsoFuture(currentPeriodEnd)) {
-    return true;
-  }
-  return false;
-}
-
-function getStripe() {
-  const apiKey = Deno.env.get('STRIPE_SECRET_KEY');
-  if (!apiKey) throw new Error('Missing STRIPE_SECRET_KEY');
-  return new Stripe(apiKey, { apiVersion: '2024-06-20' });
-}
-
-async function findUserEntity(base44: any, email: string) {
-  const rows = await base44.asServiceRole.entities.User.filter({ email });
-  return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
-}
-
-async function findLocalSubscriptions(base44: any, email: string) {
-  const rows = await base44.asServiceRole.entities.Subscription.filter({ user_email: email });
-  return Array.isArray(rows) ? rows : [];
-}
-
-async function updateUserEntitlements(base44: any, user: any, subs: any[]) {
-  const activeSubs = subs.filter((sub) => grantsPaidAccess(sub.status, sub.current_period_end));
-  const paidModules = unique(activeSubs.flatMap((sub) => splitModulesCsv(sub.modules_csv)));
-  const hasBundle = activeSubs.some((sub) => String(sub.checkout_type || '').startsWith('bundle_'));
-  const bundleSize = hasBundle
-    ? Math.max(
-        0,
-        ...activeSubs
-          .filter((sub) => String(sub.checkout_type || '').startsWith('bundle_'))
-          .map((sub) => Number(sub.module_count || splitModulesCsv(sub.modules_csv).length || 0))
-      )
-    : 0;
-
-  const hasPaidAccess = activeSubs.length > 0;
-  // Always use "pro" — no "premium" tier in the system
-  const entitlementTier = hasPaidAccess ? 'pro' : 'free';
-  const resolvedModules = hasPaidAccess
-    ? (paidModules.length > 0 ? paidModules : ['pipekeeper', 'whiskeykeeper'])
-    : [];
-
-  await base44.asServiceRole.entities.User.update(user.id, {
-    stripe_customer_id:
-      activeSubs.find((s) => s.stripe_customer_id)?.stripe_customer_id || user.stripe_customer_id || null,
-    entitlement_tier: entitlementTier,
-    paid_modules_csv: resolvedModules.join(','),
-    has_paid_access: hasPaidAccess,
-    updated_date: new Date().toISOString(),
-  });
-
-  return {
-    paidModules: resolvedModules,
-    entitlementTier,
-    hasPaidAccess,
-  };
-}
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
 Deno.serve(async (req) => {
   try {
-    if (req.method !== 'POST') {
-      return Response.json({ success: false, error: 'Method not allowed' }, { status: 405 });
-    }
-
     const base44 = createClientFromRequest(req);
-    const stripe = getStripe();
-    const me = await base44.auth.me();
+    const user = await base44.auth.me();
 
-    if (!me?.email) {
-      return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    if (!user?.email) {
+      return Response.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const email = normEmail(me.email);
-    const user = await findUserEntity(base44, email);
+    // Find Stripe customer
+    const customers = await stripe.customers.list({
+      email: user.email,
+      limit: 1,
+    });
 
-    if (!user) {
-      return Response.json({ success: false, error: 'User entity not found' }, { status: 404 });
+    if (customers.data.length === 0) {
+      return Response.json({
+        status: 'no_customer',
+        message: 'No Stripe customer found',
+      });
     }
 
-    let localSubs = await findLocalSubscriptions(base44, email);
-    let stripeCustomerId = user.stripe_customer_id || localSubs.find((s: any) => s.stripe_customer_id)?.stripe_customer_id || null;
+    const customerId = customers.data[0].id;
 
-    // Validate customer ID format — skip Stripe API if it looks like a test/stub ID
-    const isValidStripeCustomerId = (id: string | null) => {
-      return !!id && id.startsWith('cus_') && !id.startsWith('test_');
+    // Get active subscriptions
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: 'active',
+      limit: 100,
+    });
+
+    if (subscriptions.data.length === 0) {
+      return Response.json({
+        status: 'no_subscription',
+        message: 'No active subscriptions',
+      });
+    }
+
+    // Use most recent subscription
+    const subscription = subscriptions.data.sort((a, b) =>
+      (b.created || 0) - (a.created || 0)
+    )[0];
+
+    if (!subscription) {
+      return Response.json({ error: 'No subscription found' }, { status: 404 });
+    }
+
+    // Get plan details from Stripe
+    const item = subscription.items.data[0];
+    if (!item?.price) {
+      return Response.json({ error: 'Invalid subscription item' }, { status: 400 });
+    }
+
+    // Map price to plan key (simplified - you'll need full mapping)
+    const priceId = item.price.id;
+    let planKey = determinePlanKeyFromPrice(priceId);
+
+    // Update user subscription record in database
+    const email = user.email.toLowerCase();
+    let existingSub = null;
+
+    try {
+      const subs = await base44.asServiceRole.entities.Subscription.filter({
+        user_email: email,
+      });
+      existingSub = subs?.[0];
+    } catch {
+      // No subscription record yet
+    }
+
+    const subscriptionData = {
+      user_id: user.id || user.auth_user_id,
+      user_email: email,
+      provider: 'stripe',
+      provider_subscription_id: subscription.id,
+      stripe_customer_id: customerId,
+      stripe_subscription_id: subscription.id,
+      status: mapStripeStatus(subscription.status),
+      tier: extractTierFromPlanKey(planKey),
+      planKey,
+      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      billing_interval: item.price.recurring?.interval || 'month',
     };
 
-    if (!isValidStripeCustomerId(stripeCustomerId)) {
-      // Try to find by email in Stripe
-      try {
-        const customers = await stripe.customers.list({ email, limit: 5 });
-        const matched = customers.data.find((c: any) => normEmail(c.email) === email) || null;
-        stripeCustomerId = matched?.id || null;
-      } catch {
-        stripeCustomerId = null;
-      }
+    // Add metadata for 3-module bundles
+    if (subscription.metadata?.activeModules) {
+      subscriptionData.metadata = {
+        activeModules: JSON.parse(subscription.metadata.activeModules),
+      };
     }
 
-    if (stripeCustomerId) {
-      let stripeSubs;
-      try {
-        stripeSubs = await stripe.subscriptions.list({
-          customer: stripeCustomerId,
-          status: 'all',
-          limit: 100,
-          expand: ['data.items.data.price'],
-        });
-      } catch (stripeErr) {
-        // Stale/invalid customer ID — skip Stripe lookup, use local subs only
-        console.warn('[syncSubscriptionForMe] Stripe customer lookup failed (stale ID?):', stripeErr?.message);
-        stripeSubs = { data: [] };
-      }
-
-      for (const stripeSub of (stripeSubs?.data || [])) {
-        const existing =
-          localSubs.find((s: any) => s.provider_subscription_id === stripeSub.id || s.stripe_subscription_id === stripeSub.id) || null;
-
-        const metadata = stripeSub.metadata || {};
-        const currentPeriodStart = stripeSub.current_period_start
-          ? new Date(stripeSub.current_period_start * 1000).toISOString()
-          : null;
-        const currentPeriodEnd = stripeSub.current_period_end
-          ? new Date(stripeSub.current_period_end * 1000).toISOString()
-          : null;
-        const modulesCsv = String(metadata.modules_csv || existing?.modules_csv || '');
-
-        const payload = {
-          provider: 'stripe',
-          provider_subscription_id: stripeSub.id,
-          stripe_subscription_id: stripeSub.id,
-          stripe_customer_id: stripeCustomerId,
-          user_id: existing?.user_id || me.id || null,
-          user_email: email,
-          status: stripeSub.status,
-          checkout_type: metadata.checkout_type || existing?.checkout_type || null,
-          billing_period: metadata.billing_period || existing?.billing_period || null,
-          modules_csv: modulesCsv,
-          module_count: Number(metadata.module_count || splitModulesCsv(modulesCsv).length || 0),
-          product_kind: metadata.product_kind || existing?.product_kind || null,
-          primary_module: metadata.primary_module || existing?.primary_module || null,
-          bundle_name: metadata.bundle_name || existing?.bundle_name || null,
-          cancel_at_period_end: !!stripeSub.cancel_at_period_end,
-          current_period_start: currentPeriodStart,
-          current_period_end: currentPeriodEnd,
-          latest_invoice_id:
-            typeof stripeSub.latest_invoice === 'string'
-              ? stripeSub.latest_invoice
-              : stripeSub.latest_invoice?.id || null,
-          price_id: stripeSub.items?.data?.[0]?.price?.id || existing?.price_id || null,
-          currency: stripeSub.currency || existing?.currency || null,
-          metadata_json: JSON.stringify(metadata),
-          updated_date: new Date().toISOString(),
-        };
-
-        if (existing?.id) {
-          await base44.asServiceRole.entities.Subscription.update(existing.id, payload);
-        } else {
-          await base44.asServiceRole.entities.Subscription.create({
-            ...payload,
-            created_date: new Date().toISOString(),
-          });
-        }
-      }
+    // Create or update subscription
+    if (existingSub?.id) {
+      await base44.asServiceRole.entities.Subscription.update(existingSub.id, subscriptionData);
+    } else {
+      await base44.asServiceRole.entities.Subscription.create(subscriptionData);
     }
 
-    localSubs = await findLocalSubscriptions(base44, email);
-    const entitlementState = await updateUserEntitlements(base44, user, localSubs);
-
+    // Return success
     return Response.json({
-      success: true,
-      stripeCustomerId: stripeCustomerId || null,
-      subscriptionCount: localSubs.length,
-      ...entitlementState,
+      status: 'synced',
+      planKey,
+      tier: extractTierFromPlanKey(planKey),
+      currentPeriodEnd: subscriptionData.current_period_end,
     });
   } catch (error) {
-    console.error('[syncSubscriptionForMe] fatal error:', error);
+    console.error('Subscription sync failed:', error);
     return Response.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      },
+      { error: error.message || 'Failed to sync subscription' },
       { status: 500 }
     );
   }
 });
+
+function mapStripeStatus(status) {
+  switch (status) {
+    case 'active': return 'active';
+    case 'trialing': return 'trialing';
+    case 'past_due': return 'past_due';
+    case 'canceled': return 'canceled';
+    default: return 'inactive';
+  }
+}
+
+function determinePlanKeyFromPrice(priceId) {
+  // Map Stripe price IDs to plan keys
+  // You'll need to add all your price IDs here
+  const priceMap = {
+    // Add your price ID mappings like:
+    // 'price_xyz...': 'pipekeeper_pro_monthly',
+  };
+  return priceMap[priceId] || 'unknown';
+}
+
+function extractTierFromPlanKey(planKey) {
+  if (planKey.includes('founder')) return 'pro';
+  if (planKey.includes('module')) return 'pro';
+  if (planKey.includes('pro')) return 'pro';
+  return 'free';
+}
