@@ -15,7 +15,7 @@
  * Single source of truth — import from here, not from scattered local checks.
  */
 
-import { KEEPER_MODULES } from '@/components/hub/keeperModuleRegistry';
+import { KEEPER_MODULES, MODULES } from '@/components/utils/moduleRegistry';
 import { deriveModuleStates, LAUNCHED_MODULES } from '@/components/hooks/useModuleVisibility';
 
 // ─── A. Module EXISTS ────────────────────────────────────────────────────────
