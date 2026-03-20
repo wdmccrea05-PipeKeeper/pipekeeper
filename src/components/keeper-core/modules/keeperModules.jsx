@@ -1,93 +1,25 @@
 /**
- * Keeper Core — Module Registry
- * 
- * Central definition of all CollectionKeeper modules (active and future).
- * Single source of truth for module configuration across the ecosystem.
- * 
- * Do not modify this file directly — update via admin or feature gate.
+ * SHIM — re-exports from canonical moduleRegistry.
+ * Do not add module definitions here.
  */
+import {
+  KEEPER_MODULES as _KEEPER_MODULES,
+  getEnabledModules,
+  getComingSoonModules,
+  getModuleByType,
+} from '@/components/utils/moduleRegistry';
 
-export const KEEPER_MODULES = [
-  {
-    type: 'pipes',
-    titleKey: 'hub.pipekeeper',
-    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/27f5c2c92_PKNB.png',
-    route: 'Pipes',
-    enabled: true,
-    contributesToHub: true,
-    description: 'Manage your pipe collection with detailed specifications and smoking logs.',
-    entityNames: ['Pipe', 'SmokingLog', 'TobaccoBlend'],
-  },
-  {
-    type: 'whiskey',
-    titleKey: 'hub.whiskeykeeper',
-    icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png',
-    route: 'Whiskey',
-    enabled: true,
-    contributesToHub: true,
-    description: 'Track your whiskey collection with tasting notes and region analysis.',
-    entityNames: ['Bottle', 'TastingLog'],
-  },
-  {
-    type: 'cigars',
-    titleKey: 'hub.cigarkeeper',
-    icon: '/branding/cigarkeeper-logo.png?v=3',
-    route: null,
-    enabled: false,
-    contributesToHub: false,
-    description: 'Coming soon: Curate and track your cigar collection.',
-    entityNames: ['Cigar', 'CigarSmokingLog'],
-  },
-  {
-    type: 'wine',
-    titleKey: 'hub.winekeeper',
-    icon: '/branding/winekeeper-logo.png?v=3',
-    route: null,
-    enabled: false,
-    contributesToHub: false,
-    description: 'Coming soon: Manage your wine cellar and bottle inventory.',
-    entityNames: ['WineBottle', 'WineTastingLog'],
-  },
-];
+export const KEEPER_MODULES = _KEEPER_MODULES;
+export { getEnabledModules, getComingSoonModules, getModuleByType };
 
-/**
- * Get all enabled modules
- */
-export function getEnabledModules() {
-  return KEEPER_MODULES.filter(m => m.enabled);
-}
-
-/**
- * Get all coming soon modules
- */
-export function getComingSoonModules() {
-  return KEEPER_MODULES.filter(m => !m.enabled);
-}
-
-/**
- * Get modules that contribute to Hub summary
- */
 export function getHubContributorModules() {
-  return KEEPER_MODULES.filter(m => m.contributesToHub && m.enabled);
+  return _KEEPER_MODULES.filter(m => m.enabled);
 }
 
-/**
- * Get module by type
- */
-export function getModuleByType(type) {
-  return KEEPER_MODULES.find(m => m.type === type);
-}
-
-/**
- * Get count of enabled modules
- */
 export function getEnabledModuleCount() {
   return getEnabledModules().length;
 }
 
-/**
- * Get count of modules contributing to Hub
- */
 export function getHubContributorCount() {
   return getHubContributorModules().length;
 }
