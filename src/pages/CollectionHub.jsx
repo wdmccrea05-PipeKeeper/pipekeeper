@@ -319,18 +319,18 @@ export default function CollectionHub() {
         <div className={`grid gap-4 ${isModuleEnabled("whiskeykeeper") ? "grid-cols-2 md:grid-cols-6" : "grid-cols-2 md:grid-cols-4"}`}>
           <SummaryStat
             label={t("hub.totalValue", "Total Value")}
-            value={money(totalDisplayedValue)}
+            value={displayValue(money(totalDisplayedValue))}
             color="#D4A574"
           />
           <SummaryStat
             label={t("hub.pipes", "Pipes")}
-            value={summary.pipes.count}
+            value={displayCount(summary.pipes.count)}
             color="#B48C4B"
           />
           <SummaryStat
             label={t("hub.blends", "Blends")}
-            value={blendCount}
-            sub={totalBlendOz > 0 ? `${totalBlendOz.toFixed(0)}oz` : undefined}
+            value={displayCount(blendCount)}
+            sub={!hideCollectionCounts && totalBlendOz > 0 ? `${totalBlendOz.toFixed(0)}oz` : undefined}
             color="#7B9B5B"
           />
 
@@ -338,12 +338,12 @@ export default function CollectionHub() {
             <>
               <SummaryStat
                 label={t("hub.bottleTypes", "Bottle Types")}
-                value={whiskeyBottleTypes}
+                value={displayCount(whiskeyBottleTypes)}
                 color="#C88A4A"
               />
               <SummaryStat
                 label={t("hub.totalBottles", "Total Bottles")}
-                value={whiskeyTotalBottles}
+                value={displayCount(whiskeyTotalBottles)}
                 color="#D99A56"
               />
             </>
