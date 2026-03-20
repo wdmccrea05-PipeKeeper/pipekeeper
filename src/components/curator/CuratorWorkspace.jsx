@@ -692,6 +692,7 @@ ${englishText}`;
   ]);
 
   // EXPERT ACTION EXECUTION (independent of chat, keyed by executionId)
+  // NEVER checks messages.length — only uses executionId to avoid duplicate runs
   useEffect(() => {
     const execId = launchContext?.executionId;
     const actionId = launchContext?.sourceAction;
@@ -699,15 +700,20 @@ ${englishText}`;
     if (!execId || !actionId) return;
     if (launchContext?.executionMode !== 'silent_action') return;
     if (!user?.id) return;
-    if (lastExecutionId === execId) return; // Already ran this execution
+    if (lastExecutionId === execId) {
+      console.log(`[CuratorWorkspace] Execution ${execId} already ran, skipping`);
+      return; // Already ran this execution — ONLY check by executionId
+    }
 
     let cancelled = false;
 
     (async () => {
       try {
+        console.log(`[CuratorWorkspace] Starting action execution: ${execId}`);
         setRunningAction(launchContext?.displayLabel || 'Running expert analysis…');
-        setLastExecutionId(execId);
+        setLastExecutionId(execId); // Mark as started immediately to prevent re-run
         setActionResult(null);
+        setActionError(null);
 
         const result = await executeCuratorAction({
           actionId,
@@ -724,18 +730,18 @@ ${englishText}`;
         });
 
         if (!cancelled) {
+          console.log(`[CuratorWorkspace] Action completed: ${execId}`);
           setActionResult(result.result);
-          setActionError(null); // Clear any previous errors
+          setActionError(null);
           setRunningAction(null);
           if (onPromptConsumed) {
             onPromptConsumed();
           }
         }
       } catch (err) {
-        console.error("Action execution failed:", err);
+        console.error(`[CuratorWorkspace] Action execution failed: ${execId}`, err);
         if (!cancelled) {
           setRunningAction(null);
-          // Show structured error panel instead of toast
           setActionError({
             title: "Curator action could not be completed",
             subtitle: "The action response could not be processed.",
@@ -757,6 +763,7 @@ ${englishText}`;
     blends.length,
     bottles.length,
     onPromptConsumed,
+    lastExecutionId,
   ]);
 
   const handleQuickPrompt = (prompt) => {
