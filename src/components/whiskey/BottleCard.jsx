@@ -52,6 +52,7 @@ export default function BottleCard({
   onDelete,
   onOpen,
   onToggleFavorite,
+  onClick,
 }) {
   const { t } = useTranslation();
 
@@ -81,7 +82,8 @@ export default function BottleCard({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden cursor-pointer transition-all hover:border-[rgba(180,140,75,0.42)] hover:-translate-y-0.5"
+      onClick={onClick}
       style={{
         background: 'linear-gradient(135deg, rgba(58,40,28,0.98), rgba(31,21,16,1))',
         border: '1px solid rgba(180,140,75,0.22)',
@@ -134,7 +136,7 @@ export default function BottleCard({
           <h3 className="text-xl font-bold text-[#F5F1E7] leading-tight break-words">
             {bottle?.name || (t('whiskey.untitledBottle') || 'Untitled Bottle')}
           </h3>
-          <p className="text-sm text-[#E0D8C8]/80 break-words mt-1.5 leading-relaxed">
+          <p className="text-sm text-[#E0D8C8] break-words mt-1.5 leading-relaxed">
             {[bottle?.distillery, bottle?.region, bottle?.country].filter(Boolean).join(' • ') ||
               (t('whiskey.noOriginInfo') || 'No origin details')}
           </p>
@@ -199,7 +201,7 @@ export default function BottleCard({
           </p>
         </div>
 
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
           {typeof onOpen === 'function' && (
             <Button type="button" variant="outline" size="sm" onClick={() => onOpen(bottle)}>
               <ExternalLink className="w-4 h-4 mr-2" />
