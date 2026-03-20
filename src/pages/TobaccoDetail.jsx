@@ -165,6 +165,13 @@ export default function TobaccoDetail() {
           </div>
         </div>
       </div>
+
+      <ShareRecordModal
+        isOpen={showShareModal}
+        onOpenChange={setShowShareModal}
+        moduleType="tobacco"
+        record={blend}
+      />
     </div>
   );
 }

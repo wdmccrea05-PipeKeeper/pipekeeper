@@ -152,6 +152,13 @@ export default function PipeDetail() {
           </div>
         </div>
       </div>
+
+      <ShareRecordModal
+        isOpen={showShareModal}
+        onOpenChange={setShowShareModal}
+        moduleType="pipe"
+        record={pipe}
+      />
     </div>
   );
 }
