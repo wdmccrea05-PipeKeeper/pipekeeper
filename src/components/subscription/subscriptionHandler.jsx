@@ -1,86 +1,14 @@
 import { base44 } from '@/api/base44Client';
+import { getStripeConfig, getRequiredStripePlan } from './stripeConfig';
+import { toast } from 'sonner';
 
-/**
- * Subscription handler for module-based paywall system
- * Integrates with Stripe checkout and canonical access system
- */
-
-export const PLAN_CONFIG = {
-  // Single module plans
-  pipekeeper_pro_monthly: {
-    type: 'single',
-    modules: ['pipekeeper'],
-    priceId: process.env.VITE_STRIPE_PIPEKEEPER_MONTHLY,
-    displayPrice: '$2.99',
-    displayPeriod: '/month',
-  },
-  pipekeeper_pro_annual: {
-    type: 'single',
-    modules: ['pipekeeper'],
-    priceId: process.env.VITE_STRIPE_PIPEKEEPER_ANNUAL,
-    displayPrice: '$29.99',
-    displayPeriod: '/year',
-  },
-  whiskeykeeper_pro_monthly: {
-    type: 'single',
-    modules: ['whiskeykeeper'],
-    priceId: process.env.VITE_STRIPE_WHISKEYKEEPER_MONTHLY,
-    displayPrice: '$2.99',
-    displayPeriod: '/month',
-  },
-  whiskeykeeper_pro_annual: {
-    type: 'single',
-    modules: ['whiskeykeeper'],
-    priceId: process.env.VITE_STRIPE_WHISKEYKEEPER_ANNUAL,
-    displayPrice: '$29.99',
-    displayPeriod: '/year',
-  },
-
-  // 3-module bundle
-  three_module_bundle_monthly: {
-    type: 'three_bundle',
-    modules: [], // Will be set from selectedModules
-    priceId: process.env.VITE_STRIPE_THREE_BUNDLE_MONTHLY,
-    displayPrice: '$7.99',
-    displayPeriod: '/month',
-  },
-  three_module_bundle_annual: {
-    type: 'three_bundle',
-    modules: [], // Will be set from selectedModules
-    priceId: process.env.VITE_STRIPE_THREE_BUNDLE_ANNUAL,
-    displayPrice: '$79.99',
-    displayPeriod: '/year',
-  },
-
-  // 4-module bundle
-  four_module_bundle_monthly: {
-    type: 'four_bundle',
-    modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
-    priceId: process.env.VITE_STRIPE_FOUR_BUNDLE_MONTHLY,
-    displayPrice: '$8.99',
-    displayPeriod: '/month',
-  },
-  four_module_bundle_annual: {
-    type: 'four_bundle',
-    modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
-    priceId: process.env.VITE_STRIPE_FOUR_BUNDLE_ANNUAL,
-    displayPrice: '$89.99',
-    displayPeriod: '/year',
-  },
-
-  // Founders bundle
-  founders_bundle_annual: {
-    type: 'founders',
-    modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
-    priceId: process.env.VITE_STRIPE_FOUNDERS_ANNUAL,
-    displayPrice: '$49.99',
-    displayPeriod: '/year',
-  },
-};
+// Export config getter for compatibility
+export const PLAN_CONFIG = getStripeConfig();
 
 /**
  * Map user selection to Stripe product
  * Returns plan key and resolved modules
+ * Throws if plan is unavailable or invalid
  */
 export function getPlanFromSelection(
   selectedPlan: 'single' | 'three' | 'four',
@@ -90,34 +18,60 @@ export function getPlanFromSelection(
 ): { planKey: string; modules: string[] } {
   if (selectedPlan === 'single') {
     const module = baseModule || selectedModules[0];
+    if (!module) {
+      throw new Error('No module specified for single plan');
+    }
     const planKey = `${module}_pro_${billingPeriod}`;
+    
+    // Validate plan is available
+    try {
+      getRequiredStripePlan(planKey);
+    } catch (err) {
+      throw new Error(`Cannot select plan: ${err instanceof Error ? err.message : 'Plan unavailable'}`);
+    }
+    
     return { planKey, modules: [module] };
   }
 
   if (selectedPlan === 'three') {
     const planKey = `three_module_bundle_${billingPeriod}`;
-    // For 3-module: use selectedModules if provided, else use first 3 available
-    const modules = selectedModules.length >= 3
+    
+    // Validate plan is available
+    try {
+      getRequiredStripePlan(planKey);
+    } catch (err) {
+      throw new Error(`Cannot select plan: ${err instanceof Error ? err.message : 'Plan unavailable'}`);
+    }
+
+    // For 3-module: use selectedModules if provided
+    const modules = selectedModules.length >= 1
       ? selectedModules.slice(0, 3)
-      : selectedModules.length > 0
-        ? selectedModules
-        : ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+      : ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
     return { planKey, modules };
   }
 
   if (selectedPlan === 'four') {
     const planKey = `four_module_bundle_${billingPeriod}`;
+    
+    // Validate plan is available
+    try {
+      getRequiredStripePlan(planKey);
+    } catch (err) {
+      throw new Error(`Cannot select plan: ${err instanceof Error ? err.message : 'Plan unavailable'}`);
+    }
+    
     return {
       planKey,
       modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
     };
   }
 
-  return { planKey: '', modules: [] };
+  throw new Error('Invalid plan selection');
 }
 
 /**
  * Initiate Stripe checkout
+ * Validates plan before attempting checkout
  */
 export async function initiateCheckout(
   planKey: string,
@@ -126,6 +80,15 @@ export async function initiateCheckout(
   cancelUrl: string = '/'
 ) {
   try {
+    // Validate plan exists and has price ID before calling backend
+    const plan = getRequiredStripePlan(planKey);
+    
+    if (!plan.priceId) {
+      throw new Error(
+        `Checkout not available for this plan. Please try a different option or contact support.`
+      );
+    }
+
     const response = await base44.functions.invoke('createCheckoutSession', {
       planKey,
       selectedModules,
@@ -136,26 +99,39 @@ export async function initiateCheckout(
     if (response?.data?.sessionUrl) {
       window.location.href = response.data.sessionUrl;
     } else {
-      throw new Error('No checkout URL returned');
+      const errorMsg = response?.data?.error || 'Could not start checkout';
+      throw new Error(errorMsg);
     }
   } catch (error) {
-    console.error('Checkout failed:', error);
-    throw error;
+    const message = error instanceof Error ? error.message : 'Checkout failed';
+    console.error('[Checkout] Error:', message, error);
+    throw new Error(message);
   }
 }
 
 /**
  * Handle post-purchase actions
  * Called when user returns from Stripe after successful payment
+ * Syncs subscription and rebuilds access summary
  */
 export async function handlePostPurchase() {
   try {
-    // Rebuild access summary to reflect new subscription
     const response = await base44.functions.invoke('syncSubscriptionForMe', {});
+    
+    if (response?.data?.status === 'no_subscription') {
+      console.warn('[PostPurchase] No subscription found after checkout');
+      throw new Error('Subscription not found. This may take a moment to process.');
+    }
+    
+    if (response?.data?.error) {
+      throw new Error(response.data.error);
+    }
+
     return response?.data || {};
   } catch (error) {
-    console.error('Post-purchase sync failed:', error);
-    throw error;
+    const message = error instanceof Error ? error.message : 'Failed to activate subscription';
+    console.error('[PostPurchase] Sync failed:', message, error);
+    throw new Error(message);
   }
 }
 
