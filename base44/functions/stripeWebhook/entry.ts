@@ -141,10 +141,10 @@ async function syncUserEntitlements(base44: any, userEmail: string) {
   const updatePayload = {
     stripe_customer_id:
       activeSubs.find((s: any) => s.stripe_customer_id)?.stripe_customer_id || user.stripe_customer_id || null,
-    entitlement_tier: hasPaidAccess ? (hasBundleAccess ? `bundle_${bundleSize}` : 'pro') : 'free',
-    paid_modules_csv: paidModules.join(','),
+    // Always use "pro" as the entitlement tier — no "premium" in the system
+    entitlement_tier: hasPaidAccess ? 'pro' : 'free',
+    paid_modules_csv: hasPaidAccess ? (paidModules.length > 0 ? paidModules.join(',') : 'pipekeeper,whiskeykeeper') : '',
     has_paid_access: hasPaidAccess,
-    has_bundle_access: hasBundleAccess,
     updated_date: new Date().toISOString(),
   };
 
