@@ -348,21 +348,9 @@ export default function WhiskeyInsightsPage() {
                     <WhiskeyHighlightCard
                       title={t('insights.mostTastedBottle', 'Most Tasted Bottle')}
                       value={mostTastedBottle.name}
-                      sub={`${mostTastedBottle.count} tastings`}
+                      subtitle={`${mostTastedBottle.count} tastings`}
                       accent="#C87941"
-                      icon={Star}
-                      patternIndex={0}
-                      heroImage={mostTastedBottle.photo}
-                      cardRef={(el) => { highlightRefs.current.mostTasted = el; }}
-                      onShare={() => handleShareCard('mostTasted')}
-                      onStory={() => setActiveStory({
-                        title: t('insights.mostTastedBottle', 'Most Tasted Bottle'),
-                        value: mostTastedBottle.name,
-                        sub: `${mostTastedBottle.count} tastings`,
-                        accent: '#C87941',
-                        icon: Star,
-                        heroImage: mostTastedBottle.photo,
-                      })}
+                      photo={mostTastedBottle.photo}
                     />
                   )}
 
