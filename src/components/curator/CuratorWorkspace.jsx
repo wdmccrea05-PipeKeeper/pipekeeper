@@ -712,7 +712,7 @@ ${englishText}`;
           actionId,
           executionId: execId,
           displayLabel: launchContext?.displayLabel,
-          userPrompt: launchContext?.initialPrompt || "Analyze and recommend optimizations",
+          userPrompt: launchContext?._internalPrompt || "Analyze and recommend optimizations",
           collectionContext: {
             pipes,
             blends,
