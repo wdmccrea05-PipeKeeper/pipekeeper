@@ -253,7 +253,7 @@ export default function TobaccoDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div className="space-y-6">
             <InlinePhotoEditor
-              photos={blend.photos || (blend.logo ? [blend.logo] : blend.photo ? [blend.photo] : [])}
+              photos={(blend.photos?.length ? blend.photos : blend.logo ? [blend.logo] : blend.photo ? [blend.photo] : [])}
               maxPhotos={2}
               label="Photos"
               onUpdate={(updatedPhotos) => {
