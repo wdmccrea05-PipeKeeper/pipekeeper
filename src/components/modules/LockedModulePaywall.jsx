@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PaywallModal from '@/components/subscription/PaywallModal';
 import { usePaywall } from '@/components/subscription/usePaywall';
+import { getModuleSuccessRoute } from '@/components/subscription/moduleRoutes';
 
 /**
  * Locked module paywall overlay
@@ -16,9 +17,10 @@ export default function LockedModulePaywall({
 
   const handleSelectPlan = async (selectedPlan, billingPeriod) => {
     try {
+      const successRoute = getModuleSuccessRoute(moduleKey);
       await selectPlan(selectedPlan, billingPeriod, {
         baseModule: moduleKey,
-        successUrl: `/${moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1)}`,
+        successUrl: successRoute,
       });
     } catch (error) {
       console.error('Plan selection failed:', error);
