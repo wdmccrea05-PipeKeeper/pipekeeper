@@ -14,13 +14,34 @@ export default function PricingCard({
 }) {
   const [billingPeriod, setBillingPeriod] = useState('monthly');
 
+  // Defensive null checks for prices
+  if (!priceMonthly || !priceAnnual) {
+    return (
+      <div className="relative rounded-xl p-5 opacity-50 cursor-not-allowed"
+        style={{
+          background: 'rgba(20, 20, 22, 0.5)',
+          border: '1px solid rgba(120, 90, 65, 0.15)',
+        }}
+      >
+        <h3 className="text-base font-bold mb-3" style={{ color: '#F5F1E7' }}>
+          {title}
+        </h3>
+        <p className="text-sm" style={{ color: 'rgba(224, 216, 200, 0.5)' }}>
+          Not available
+        </p>
+      </div>
+    );
+  }
+
   const displayPrice = billingPeriod === 'monthly' ? priceMonthly : priceAnnual;
   const displayPeriod = billingPeriod === 'monthly' ? '/month' : '/year';
 
-  // Calculate annual savings
-  const annualMonthly = (priceMonthly * 12).toFixed(2);
-  const savings = billingPeriod === 'annual' && priceAnnual < annualMonthly
-    ? ((annualMonthly - priceAnnual) / annualMonthly * 100).toFixed(0)
+  // Calculate annual savings (with null safety)
+  const monthlyNum = parseFloat(priceMonthly) || 0;
+  const annualNum = parseFloat(priceAnnual) || 0;
+  const annualMonthly = (monthlyNum * 12).toFixed(2);
+  const savings = billingPeriod === 'annual' && annualNum > 0 && annualNum < parseFloat(annualMonthly)
+    ? ((parseFloat(annualMonthly) - annualNum) / parseFloat(annualMonthly) * 100).toFixed(0)
     : null;
 
   return (
@@ -134,12 +155,14 @@ export default function PricingCard({
           onSelect?.(billingPeriod);
         }}
         className="w-full font-medium text-sm"
+        disabled={!priceMonthly || !priceAnnual}
         style={{
-          background: highlighted
+          background: highlighted && (priceMonthly && priceAnnual)
             ? 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))'
             : 'rgba(100, 70, 45, 0.6)',
           color: '#F5F1E7',
           border: '1px solid rgba(180, 140, 75, 0.3)',
+          opacity: priceMonthly && priceAnnual ? 1 : 0.5,
         }}
       >
         {cta}
