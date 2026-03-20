@@ -23,6 +23,8 @@ import BottleDetail from '@/pages/BottleDetail';
 import BottleFormPage from '@/pages/BottleFormPage';
 import HelpCenter from '@/pages/HelpCenter';
 import Tutorials from '@/pages/Tutorials';
+import PipeDetail from '@/pages/PipeDetail';
+import TobaccoDetail from '@/pages/TobaccoDetail';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -115,6 +117,16 @@ const AuthenticatedApp = () => {
       <Route path="/Tutorials" element={
         <LayoutWrapper currentPageName="Tutorials">
           <Tutorials />
+        </LayoutWrapper>
+      } />
+      <Route path="/PipeDetail" element={
+        <LayoutWrapper currentPageName="PipeDetail">
+          <PipeDetail />
+        </LayoutWrapper>
+      } />
+      <Route path="/TobaccoDetail" element={
+        <LayoutWrapper currentPageName="TobaccoDetail">
+          <TobaccoDetail />
         </LayoutWrapper>
       } />
       <Route path="/" element={
