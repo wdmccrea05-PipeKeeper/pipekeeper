@@ -222,16 +222,16 @@ export default function CollectionHub() {
       stats = [
         {
           label: t("hub.pipes", "Pipes"),
-          value: summary.pipes.count,
+          value: displayCount(summary.pipes.count),
         },
         {
           label: t("hub.blends", "Blends"),
-          value: blendCount,
-          sub: totalBlendOz > 0 ? `${totalBlendOz.toFixed(0)} oz cellared` : undefined,
+          value: displayCount(blendCount),
+          sub: !hideCollectionCounts && totalBlendOz > 0 ? `${totalBlendOz.toFixed(0)} oz cellared` : undefined,
         },
         {
           label: t("hub.totalValue", "Total Value"),
-          value: money((summary.pipes.value || 0) + totalBlendValue),
+          value: displayValue(money((summary.pipes.value || 0) + totalBlendValue)),
         },
       ];
     }
@@ -240,15 +240,15 @@ export default function CollectionHub() {
       stats = [
         {
           label: t("hub.bottleTypes", "Bottle Types"),
-          value: whiskeyBottleTypes,
+          value: displayCount(whiskeyBottleTypes),
         },
         {
           label: t("hub.totalBottles", "Total Bottles"),
-          value: whiskeyTotalBottles,
+          value: displayCount(whiskeyTotalBottles),
         },
         {
           label: t("hub.totalValue", "Total Value"),
-          value: money(totalBottleValue),
+          value: displayValue(money(totalBottleValue)),
         },
       ];
     }
