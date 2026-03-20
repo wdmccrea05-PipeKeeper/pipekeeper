@@ -14,9 +14,10 @@ import TonightSessionCard from "@/components/hub/TonightSessionCard";
 import CollectionStoryCard from "@/components/hub/CollectionStoryCard";
 import CuratorHub from "@/components/hub/CuratorHub";
 import CollectionIntelligencePanel from "@/components/hub/CollectionIntelligencePanel";
-
+import CatalogPlate from "@/components/home/CatalogPlate";
 import RecentActivity from "@/components/hub/RecentActivity";
 import { useProfilePrivacy } from "@/components/hooks/useProfilePrivacy";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 function sumBottleCollectionValue(bottles) {
   if (!Array.isArray(bottles)) return 0;
