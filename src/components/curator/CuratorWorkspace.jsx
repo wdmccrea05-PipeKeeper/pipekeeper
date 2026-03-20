@@ -637,7 +637,7 @@ ${englishText}`;
         setSending(false);
       }
     },
-    [input, sending, ensureThread, t, pipes, blends, bottles, tastingLogs, userProfile, tasteProfile, messages.length, sessionId, messages]
+    [input, sending, ensureThread, t, pipes, blends, bottles, tastingLogs, userProfile, tasteProfile, messages.length, sessionId, messages, launchContext]
   );
 
   // STARTUP ROUTED PROMPTS (one-time only, messages.length === 0)
