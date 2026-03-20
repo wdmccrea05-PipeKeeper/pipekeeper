@@ -411,7 +411,7 @@ export default function WhiskeyPage() {
                         return (
                         <div key={bottle.id} className="space-y-2">
                         <Link to={`/BottleDetail?id=${encodeURIComponent(bottle.id)}`}>
-                        <BottleCard bottle={bottle} onClick={() => {}} onToggleFavorite={(b) => { e?.preventDefault?.(); toggleFavoriteMutation.mutate({ id: b.id, favorite: !b.favorite }); }} />
+                        <BottleCard bottle={bottle} onClick={() => {}} onToggleFavorite={(b, ev) => { ev?.preventDefault?.(); toggleFavoriteMutation.mutate({ id: b.id, favorite: !b.favorite }); }} />
                         </Link>
                       <div className="flex gap-2 flex-wrap">
                         <Button onClick={() => setShowTastingLog(bottle)} variant="outline" size="sm" className="flex-1">
