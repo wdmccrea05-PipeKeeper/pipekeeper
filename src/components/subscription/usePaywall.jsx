@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAccessSummary } from '@/components/hooks/useAccessSummary';
+import { toast } from 'sonner';
 import {
   getPlanFromSelection,
   initiateCheckout,
@@ -12,15 +13,17 @@ export function usePaywall() {
   const access = useAccessSummary();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBillingPeriod, setSelectedBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
   /**
    * Handle paywall plan selection
    * Routes to Stripe checkout
+   * Shows user-facing errors and logs for debugging
    */
   const selectPlan = useCallback(
     async (
       selectedPlan: 'single' | 'three' | 'four',
-      billingPeriod: 'monthly' | 'annual',
+      billingPeriod: 'monthly' | 'annual' = selectedBillingPeriod,
       options?: {
         selectedModules?: string[];
         baseModule?: string;
@@ -31,6 +34,7 @@ export function usePaywall() {
       try {
         setIsLoading(true);
         setError(null);
+        setSelectedBillingPeriod(billingPeriod);
 
         const { planKey, modules } = getPlanFromSelection(
           selectedPlan,
@@ -53,17 +57,27 @@ export function usePaywall() {
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Checkout failed';
         setError(message);
-        console.error('Plan selection error:', err);
+        
+        // Show user-facing toast error
+        toast.error(message || 'We couldn\'t start checkout. Please try again.');
+        
+        // Log detailed error for debugging
+        console.error('[usePaywall] selectPlan failed:', {
+          error: err,
+          billingPeriod,
+          selectedPlan,
+        });
       } finally {
         setIsLoading(false);
       }
     },
-    []
+    [selectedBillingPeriod]
   );
 
   /**
    * Handle post-purchase completion
-   * Updates entitlements and navigates
+   * Updates entitlements, shows status, and navigates
+   * Shows user-facing errors if sync fails
    */
   const completePayment = useCallback(
     async (targetUrl: string = '/CollectionHub') => {
@@ -74,12 +88,20 @@ export function usePaywall() {
         // Sync subscription and rebuild access
         await handlePostPurchase();
 
-        // Navigate to target
+        // Success
+        toast.success('Subscription activated!');
         navigate(targetUrl);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Payment completion failed';
+        const message = err instanceof Error ? err.message : 'Failed to activate subscription';
         setError(message);
-        console.error('Post-purchase error:', err);
+        
+        // Show error to user with retry option
+        toast.error(message || 'Subscription activation is taking longer than expected. Retrying...');
+        
+        console.error('[usePaywall] completePayment failed:', {
+          error: err,
+          targetUrl,
+        });
       } finally {
         setIsLoading(false);
       }
@@ -119,5 +141,7 @@ export function usePaywall() {
     isLoading,
     error,
     currentModules: access?.activeModules || [],
+    selectedBillingPeriod,
+    setSelectedBillingPeriod,
   };
 }
