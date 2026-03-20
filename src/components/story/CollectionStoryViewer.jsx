@@ -143,17 +143,20 @@ function CollectionStorySlide({ card }) {
             </div>
             <div className="mt-auto pb-10 px-6">
               <h2
-                className="font-bold leading-snug break-words"
+                className="font-bold leading-snug"
                 style={{
                   fontSize:
-                    String(card.value).length > 25
-                      ? 'clamp(1.5rem, 6vw, 2.2rem)'
-                      : 'clamp(2rem, 8vw, 3rem)',
+                    String(card.value).length > 30
+                      ? 'clamp(1.3rem, 4.5vw, 1.8rem)'
+                      : String(card.value).length > 20
+                      ? 'clamp(1.6rem, 5.5vw, 2.2rem)'
+                      : 'clamp(2rem, 7vw, 2.8rem)',
                   color: '#F5F1E7',
                   fontFamily: "'Georgia', serif",
                   textShadow: '0 3px 14px rgba(0,0,0,0.9), 0 1px 4px rgba(0,0,0,0.7)',
-                  wordBreak: 'normal',
-                  overflowWrap: 'break-word',
+                  wordBreak: 'keep-all',
+                  overflowWrap: 'normal',
+                  hyphens: 'none',
                 }}
               >
                 {card.value}
