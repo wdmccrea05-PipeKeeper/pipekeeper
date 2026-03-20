@@ -17,7 +17,7 @@ import {
 } from "@/components/utils/aiTranslation";
 
 // System prompt — enforces JSON-only structured output (no explanatory text)
-const CURATOR_SYSTEM_PROMPT = `You are a collection analysis engine. Return ONLY valid JSON. No explanations, markdown, or text outside JSON.`;
+const CURATOR_SYSTEM_PROMPT = `You are a collection analysis expert. Return ONLY valid JSON. No explanations, markdown, code blocks, or text outside JSON. All results must be inside groups[].items[].`;
 
 /**
  * Execute a curator action independently
@@ -335,7 +335,39 @@ ${bottlesList || "None"}
 USER REQUEST:
 ${userPrompt}
 
-Return ONLY valid JSON matching the required schema.`;
+REQUIRED OUTPUT FORMAT:
+{
+  "actionId": "${context.pipes ? "optimize_collection" : "collection_analysis"}",
+  "title": "string",
+  "summary": "string",
+  "status": "completed",
+  "executionId": "string",
+  "groups": [
+    {
+      "groupKey": "string",
+      "groupTitle": "string",
+      "priority": "high|medium|low|info",
+      "itemCount": number,
+      "items": [
+        {
+          "id": "string",
+          "type": "pipe|tobacco|bottle|collection",
+          "itemId": "string or null",
+          "itemName": "string",
+          "issue": "string",
+          "recommendation": "string",
+          "proposedChange": {
+            "type": "string",
+            "payload": {}
+          },
+          "confidence": "high|medium|low"
+        }
+      ]
+    }
+  ]
+}
+
+Return ONLY valid JSON matching this format. No additional text.`;
 }
 
 /**
