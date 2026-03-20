@@ -289,18 +289,31 @@ export default function Curator() {
           </div>
         )}
         <CardContent className="p-0 sm:p-2" key={`curator-${curatorScope}`}>
-          <CuratorWorkspace
-            pipes={scopedPipes}
-            blends={scopedBlends}
-            bottles={scopedBottles}
-            tastingLogs={scopedTastingLogs}
-            userProfile={userProfile}
-            launchContext={launchContext}
-            preFilledPrompt={launchContext?.initialPrompt || ""}
-            routedContext={launchContext?.recommendationContext || null}
-            onPromptConsumed={handlePromptConsumed}
-            curatorScope={curatorScope}
-          />
+          <div className="space-y-4 sm:space-y-5">
+            {/* Expert Action Buttons */}
+            <CuratorActionBar
+              pipes={scopedPipes}
+              blends={scopedBlends}
+              bottles={scopedBottles}
+              tastingLogs={scopedTastingLogs}
+              userProfile={userProfile}
+              onActionSelect={handleExpertAction}
+            />
+
+            {/* Main Workspace */}
+            <CuratorWorkspace
+              pipes={scopedPipes}
+              blends={scopedBlends}
+              bottles={scopedBottles}
+              tastingLogs={scopedTastingLogs}
+              userProfile={userProfile}
+              launchContext={launchContext}
+              preFilledPrompt={launchContext?.initialPrompt || ""}
+              routedContext={launchContext?.recommendationContext || null}
+              onPromptConsumed={handlePromptConsumed}
+              curatorScope={curatorScope}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>
