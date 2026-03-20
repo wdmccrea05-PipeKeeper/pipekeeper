@@ -235,11 +235,14 @@ export default function CuratorWorkspace({
   const [sending, setSending] = useState(false);
   const [initializing, setInitializing] = useState(false);
   const [initError, setInitError] = useState("");
+  const [runningAction, setRunningAction] = useState(null);
+  const [actionExecutionId, setActionExecutionId] = useState(null);
 
   const messagesEndRef = useRef(null);
   const threadInitPromiseRef = useRef(null);
   const sessionStartedRef = useRef(false);
   const startupConsumedRef = useRef(false);
+  const executedActionIdRef = useRef(null);
 
   const resolvedLaunchContext = useMemo(
     () => resolveWorkspaceLaunchContext(launchContext, preFilledPrompt, routedContext),
@@ -367,7 +370,7 @@ export default function CuratorWorkspace({
   }, [threadId]);
 
   const sendMessage = useCallback(
-    async (textOverride = null, contextOverride = null) => {
+    async (textOverride = null, contextOverride = null, isActionExecution = false) => {
       const text = String(textOverride ?? input).trim();
       if (!text || sending) return false;
 
@@ -376,9 +379,13 @@ export default function CuratorWorkspace({
 
       const locale = getCurrentLocale();
       const optimisticId = `local-${Date.now()}`;
+      
+      // Only add optimistic user message if NOT a silent action
       const optimistic = { id: optimisticId, role: "user", content: text, meta: {} };
 
-      setMessages((prev) => [...prev, optimistic]);
+      if (!isActionExecution) {
+        setMessages((prev) => [...prev, optimistic]);
+      }
 
       if (!textOverride) {
         setInput("");
@@ -535,17 +542,32 @@ ${englishText}`;
         const assistantMsgIndex = messages.filter((m) => m.role === "assistant").length;
 
         setMessages((prev) => {
-          const withoutLocal = prev.filter((m) => m.id !== optimisticId);
-          return [
-            ...withoutLocal,
-            { id: `user-${Date.now()}`, role: "user", content: text, meta: {} },
-            {
-              id: `assistant-${Date.now()}`,
-              role: "assistant",
-              content: translatedResponse,
-              meta: {},
-            },
-          ];
+          const withoutLocal = isActionExecution ? prev : prev.filter((m) => m.id !== optimisticId);
+          
+          // For actions, do NOT add user message (silent execution)
+          // For normal chat, add both user and assistant
+          if (isActionExecution) {
+            return [
+              ...withoutLocal,
+              {
+                id: `assistant-${Date.now()}`,
+                role: "assistant",
+                content: translatedResponse,
+                meta: { source: 'action_execution' },
+              },
+            ];
+          } else {
+            return [
+              ...withoutLocal,
+              { id: `user-${Date.now()}`, role: "user", content: text, meta: {} },
+              {
+                id: `assistant-${Date.now()}`,
+                role: "assistant",
+                content: translatedResponse,
+                meta: {},
+              },
+            ];
+          }
         });
 
         // CRITICAL HARDENING: Persist messages to CuratorMessage
@@ -599,9 +621,10 @@ ${englishText}`;
         setSending(false);
       }
     },
-    [input, sending, ensureThread, t, pipes, blends, bottles, tastingLogs, userProfile, tasteProfile, messages.length, sessionId]
+    [input, sending, ensureThread, t, pipes, blends, bottles, tastingLogs, userProfile, tasteProfile, messages.length, sessionId, messages]
   );
 
+  // STARTUP ROUTED PROMPTS (one-time only, messages.length === 0)
   useEffect(() => {
     const startupPrompt = String(resolvedLaunchContext?.initialPrompt || "").trim();
 
@@ -609,21 +632,19 @@ ${englishText}`;
     if (!user?.id) return;
     if (sending || initializing) return;
     if (startupConsumedRef.current) return;
-    if (messages.length > 0) return;
+    if (messages.length > 0) return; // One-time startup only
+    if (resolvedLaunchContext?.executionMode === 'silent_action') return; // Don't use startup path for actions
 
     let cancelled = false;
 
     (async () => {
       try {
-        console.log("[Curator startup] source=", resolvedLaunchContext?.source || "unknown");
-        console.log("[Curator startup] initialPrompt=", startupPrompt);
-
         await ensureThread();
 
         if (cancelled || startupConsumedRef.current) return;
 
         startupConsumedRef.current = true;
-        const ok = await sendMessage(startupPrompt, resolvedLaunchContext?.recommendationContext || null);
+        const ok = await sendMessage(startupPrompt, resolvedLaunchContext?.recommendationContext || null, false);
 
         if (ok && onPromptConsumed) {
           onPromptConsumed();
@@ -650,6 +671,63 @@ ${englishText}`;
     sendMessage,
     onPromptConsumed,
     messages.length,
+  ]);
+
+  // EXPERT ACTION EXECUTION (can run multiple times, keyed by executionId)
+  useEffect(() => {
+    const actionPrompt = String(launchContext?.initialPrompt || "").trim();
+    const execId = launchContext?.executionId;
+
+    if (!actionPrompt || !execId) return;
+    if (launchContext?.executionMode !== 'silent_action') return; // Only for actions
+    if (!user?.id) return;
+    if (sending || initializing) return;
+    if (executedActionIdRef.current === execId) return; // Already ran this action
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setRunningAction(launchContext?.displayLabel || 'Running expert workflow');
+        
+        await ensureThread();
+
+        if (cancelled || executedActionIdRef.current === execId) return;
+
+        executedActionIdRef.current = execId;
+        
+        // Execute silently (don't add user message)
+        const ok = await sendMessage(actionPrompt, launchContext?.recommendationContext || null, true);
+
+        if (ok) {
+          setRunningAction(null);
+          if (onPromptConsumed) {
+            onPromptConsumed();
+          }
+        } else {
+          executedActionIdRef.current = null;
+          setRunningAction(null);
+        }
+      } catch (e) {
+        console.error("Curator action execution failed:", e);
+        executedActionIdRef.current = null;
+        setRunningAction(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    launchContext?.executionId,
+    launchContext?.initialPrompt,
+    launchContext?.executionMode,
+    user?.id,
+    sending,
+    initializing,
+    ensureThread,
+    sendMessage,
+    onPromptConsumed,
   ]);
 
   const handleQuickPrompt = (prompt) => {
