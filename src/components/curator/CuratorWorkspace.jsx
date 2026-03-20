@@ -739,7 +739,32 @@ ${englishText}`;
 
         if (!cancelled) {
           console.log(`[CuratorWorkspace] Action completed: ${execId}`);
-          setActionResult(result.result);
+          
+          // Parse and normalize the action result
+          try {
+            const parsed = typeof result.result === "string" 
+              ? parseCuratorActionResponse(result.result)
+              : result.result;
+            
+            const normalized = normalizeCuratorActionResult(parsed, {
+              actionId: actionId,
+              executionId: execId,
+              title: launchContext?.displayLabel || "Curator Analysis"
+            });
+            
+            setActionResult(normalized);
+          } catch (normErr) {
+            console.error(`[CuratorWorkspace] Result normalization failed: ${execId}`, normErr);
+            setActionError({
+              title: "Curator action could not be completed",
+              message: normErr?.message || "The response could not be processed into actionable insights.",
+              error: normErr?.message || "Normalization failed"
+            });
+            setActionResult(null);
+            setRunningAction(null);
+            return;
+          }
+          
           setActionError(null);
           setRunningAction(null);
           if (onPromptConsumed) {
@@ -752,9 +777,10 @@ ${englishText}`;
           setRunningAction(null);
           setActionError({
             title: "Curator action could not be completed",
-            subtitle: "The action response could not be processed.",
-            reason: err?.message || "Unknown error",
+            message: err?.message || "The action response could not be processed.",
+            error: err?.message || "Unknown error"
           });
+          setActionResult(null);
         }
       }
     })();
