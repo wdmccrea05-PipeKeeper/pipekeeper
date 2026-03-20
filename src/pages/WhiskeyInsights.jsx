@@ -368,27 +368,13 @@ export default function WhiskeyInsightsPage() {
                     <WhiskeyHighlightCard
                       title={t('insights.oldestBottle', 'Oldest Bottle')}
                       value={oldestBottle.name}
-                      sub={
+                      subtitle={
                         oldestBottle.purchase_date && !Number.isNaN(new Date(oldestBottle.purchase_date).getTime())
                           ? new Date(oldestBottle.purchase_date).getFullYear().toString()
                           : 'Unknown'
                       }
                       accent="#10B981"
-                      icon={Calendar}
-                      patternIndex={2}
-                      heroImage={oldestBottle.photo}
-                      cardRef={(el) => { highlightRefs.current.oldest = el; }}
-                      onShare={() => handleShareCard('oldest')}
-                      onStory={() => setActiveStory({
-                        title: t('insights.oldestBottle', 'Oldest Bottle'),
-                        value: oldestBottle.name,
-                        sub: oldestBottle.purchase_date && !Number.isNaN(new Date(oldestBottle.purchase_date).getTime())
-                          ? new Date(oldestBottle.purchase_date).getFullYear().toString()
-                          : 'Unknown',
-                        accent: '#10B981',
-                        icon: Calendar,
-                        heroImage: oldestBottle.photo,
-                      })}
+                      photo={oldestBottle.photo}
                     />
                   )}
                 </div>
