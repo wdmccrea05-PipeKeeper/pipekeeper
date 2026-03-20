@@ -64,9 +64,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid subscription item' }, { status: 400 });
     }
 
-    // Map price to plan key (simplified - you'll need full mapping)
+    // Map price to plan key
     const priceId = item.price.id;
     let planKey = determinePlanKeyFromPrice(priceId);
+    
+    if (!planKey) {
+      console.error('[SyncSubscription] Unknown price ID:', priceId);
+      return Response.json(
+        { error: 'Could not identify subscription plan' },
+        { status: 400 }
+      );
+    }
 
     // Update user subscription record in database
     const email = user.email.toLowerCase();
@@ -96,11 +104,24 @@ Deno.serve(async (req) => {
       billing_interval: item.price.recurring?.interval || 'month',
     };
 
-    // Add metadata for 3-module bundles
+    // Add metadata for 3-module bundles (with defensive parsing)
     if (subscription.metadata?.activeModules) {
-      subscriptionData.metadata = {
-        activeModules: JSON.parse(subscription.metadata.activeModules),
-      };
+      try {
+        const activeModulesData = subscription.metadata.activeModules;
+        // Handle both array and string formats
+        const modules = typeof activeModulesData === 'string' 
+          ? JSON.parse(activeModulesData)
+          : activeModulesData;
+        
+        if (Array.isArray(modules)) {
+          subscriptionData.metadata = {
+            activeModules: modules.slice(0, 3), // Ensure max 3 modules
+          };
+        }
+      } catch (parseErr) {
+        console.warn('[SyncSubscription] Failed to parse activeModules metadata:', parseErr);
+        // Continue without metadata if parsing fails
+      }
     }
 
     // Create or update subscription
@@ -138,12 +159,27 @@ function mapStripeStatus(status) {
 
 function determinePlanKeyFromPrice(priceId) {
   // Map Stripe price IDs to plan keys
-  // You'll need to add all your price IDs here
+  // This must match the price IDs in your Stripe dashboard
   const priceMap = {
-    // Add your price ID mappings like:
-    // 'price_xyz...': 'pipekeeper_pro_monthly',
+    // Single module plans - add your actual Stripe price IDs
+    [Deno.env.get('VITE_STRIPE_PIPEKEEPER_MONTHLY')]: 'pipekeeper_pro_monthly',
+    [Deno.env.get('VITE_STRIPE_PIPEKEEPER_ANNUAL')]: 'pipekeeper_pro_annual',
+    [Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_MONTHLY')]: 'whiskeykeeper_pro_monthly',
+    [Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_ANNUAL')]: 'whiskeykeeper_pro_annual',
+    [Deno.env.get('VITE_STRIPE_CIGARKEEPER_MONTHLY')]: 'cigarkeeper_pro_monthly',
+    [Deno.env.get('VITE_STRIPE_CIGARKEEPER_ANNUAL')]: 'cigarkeeper_pro_annual',
+    [Deno.env.get('VITE_STRIPE_WINEKEEPER_MONTHLY')]: 'winekeeper_pro_monthly',
+    [Deno.env.get('VITE_STRIPE_WINEKEEPER_ANNUAL')]: 'winekeeper_pro_annual',
+    
+    // Bundle plans
+    [Deno.env.get('VITE_STRIPE_THREE_BUNDLE_MONTHLY')]: 'three_module_bundle_monthly',
+    [Deno.env.get('VITE_STRIPE_THREE_BUNDLE_ANNUAL')]: 'three_module_bundle_annual',
+    [Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_MONTHLY')]: 'four_module_bundle_monthly',
+    [Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_ANNUAL')]: 'four_module_bundle_annual',
+    [Deno.env.get('VITE_STRIPE_FOUNDERS_ANNUAL')]: 'founders_bundle_annual',
   };
-  return priceMap[priceId] || 'unknown';
+  
+  return priceMap[priceId] || null;
 }
 
 function extractTierFromPlanKey(planKey) {
