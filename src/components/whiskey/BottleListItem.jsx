@@ -133,6 +133,25 @@ export default function BottleListItem({
         </div>
 
         <div className="flex lg:flex-col gap-2 lg:w-[132px] flex-shrink-0">
+          {typeof onToggleFavorite === 'function' && (
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite(bottle, e); }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all flex-1"
+              style={{
+                background: bottle?.favorite ? 'rgba(163,92,92,0.18)' : 'rgba(255,255,255,0.04)',
+                border: bottle?.favorite ? '1px solid rgba(163,92,92,0.45)' : '1px solid rgba(180,140,75,0.18)',
+                color: bottle?.favorite ? '#F0B4B4' : 'rgba(224,216,200,0.6)',
+              }}
+              aria-label={bottle?.favorite ? 'Remove from favorites' : 'Add to favorites'}
+            >
+              <Heart
+                className="w-4 h-4"
+                fill={bottle?.favorite ? 'currentColor' : 'none'}
+              />
+              {bottle?.favorite ? 'Favorited' : 'Favorite'}
+            </button>
+          )}
           {typeof onOpen === 'function' && (
             <Button
               type="button"
