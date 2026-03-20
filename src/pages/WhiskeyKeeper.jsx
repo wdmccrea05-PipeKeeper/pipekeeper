@@ -181,20 +181,28 @@ export default function WhiskeyKeeper() {
         <ModuleQuickLaunch actions={quickLaunchActions} />
 
         {/* Highlights */}
-        {mostValuableBottle && (
+        {highlights.length > 0 && (
           <div>
             <h2 className="text-sm uppercase tracking-[0.12em] font-semibold mb-4" style={{ color: 'rgba(180, 140, 75, 0.8)' }}>
               {t('home.highlights', 'Collection Highlights')}
             </h2>
-            <CatalogPlate
-              title={t('home.mostValuable', 'Most Valuable')}
-              value={formatCurrency(mostValuableBottle.__unitValue || 0)}
-              subtitle={mostValuableBottle.name}
-              heroImage={mostValuableBottle.photo}
-              bgImage={mostValuableBottle.photo}
-              accent="#B4824B"
-              onClick={() => navigate(`/Whiskey?highlight=${encodeURIComponent(mostValuableBottle.id)}`)}
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {highlights.map((highlight) => (
+                <WhiskeyHighlightCard
+                  key={highlight.key}
+                  title={highlight.title}
+                  value={highlight.value}
+                  subtitle={highlight.subtitle}
+                  accent={highlight.accent}
+                  photo={highlight.photo}
+                  onClick={() => {
+                    if (highlight.bottleId) {
+                      navigate(`/Whiskey?highlight=${encodeURIComponent(highlight.bottleId)}`);
+                    }
+                  }}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
