@@ -217,6 +217,9 @@ Deno.serve(async (req) => {
       intervalKey = "annual";
     }
 
+    // All active modules are included with any pro subscription
+    const modulesCsv = "pipekeeper,whiskeykeeper";
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: customerId,
@@ -230,6 +233,8 @@ Deno.serve(async (req) => {
         platform: platform,
         tier: normalizedTier,
         interval: intervalKey,
+        modules_csv: modulesCsv,
+        module_count: "2",
       },
       subscription_data: {
         metadata: {
@@ -238,6 +243,8 @@ Deno.serve(async (req) => {
           platform: platform,
           tier: normalizedTier,
           interval: intervalKey,
+          modules_csv: modulesCsv,
+          module_count: "2",
         },
       },
     });
