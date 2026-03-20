@@ -225,7 +225,7 @@ export default function BottleDetail() {
                 </div>
               )}
               <InlinePhotoEditor
-                photos={bottle.photos || (bottle.photo ? [bottle.photo] : [])}
+                photos={(bottle.photos?.length ? bottle.photos : bottle.photo ? [bottle.photo] : [])}
                 maxPhotos={2}
                 label="Photos"
                 onUpdate={async (updatedPhotos) => {
