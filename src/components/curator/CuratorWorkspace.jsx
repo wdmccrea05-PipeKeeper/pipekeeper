@@ -550,15 +550,27 @@ ${englishText}`;
           const withoutLocal = isActionExecution ? prev : prev.filter((m) => m.id !== optimisticId);
           
           // For actions, do NOT add user message (silent execution)
-          // For normal chat, add both user and assistant
+          // Parse response and set as action result card
           if (isActionExecution) {
+            // Parse the AI response into structured action output
+            const actionId = launchContext?.sourceAction || 'unknown';
+            const parsed = parseActionResult(actionId, translatedResponse, {
+              pipes,
+              blends,
+              bottles,
+            });
+            
+            // Store action result for rendering as card
+            setActionResult(parsed);
+            
+            // Still add to messages for context, but mark as action source
             return [
               ...withoutLocal,
               {
-                id: `assistant-${Date.now()}`,
+                id: `action-result-${Date.now()}`,
                 role: "assistant",
                 content: translatedResponse,
-                meta: { source: 'action_execution' },
+                meta: { source: 'action_execution', actionId },
               },
             ];
           } else {
