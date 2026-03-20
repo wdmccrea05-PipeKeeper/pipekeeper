@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { ChevronRight, BookOpen } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { detectActiveModules } from './moduleDetection';
@@ -86,7 +86,7 @@ export default function TutorialSelector({ user, subscription }) {
   const activeModules = useMemo(() => detectActiveModules(user, subscription), [user, subscription]);
 
   // Listen for navigation events from search/AI
-  React.useEffect(() => {
+  useEffect(() => {
     const handler = (e) => {
       const { id } = e.detail || {};
       if (id) {
