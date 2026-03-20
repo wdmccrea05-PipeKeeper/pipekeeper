@@ -10,6 +10,7 @@
 
 export function curatorActionResultNormalizer(rawResult, context) {
   if (!rawResult || typeof rawResult !== "object") {
+    console.error("[normalizer] Invalid result type:", typeof rawResult);
     throw new Error("Invalid action result: not an object");
   }
 
@@ -25,14 +26,15 @@ export function curatorActionResultNormalizer(rawResult, context) {
     groups: normalizeGroups(rawResult.groups || [], collectionContext),
   };
 
-  // Ensure at least one group
+  // Ensure at least one group (fallback if AI returned no recommendations)
   if (!result.groups || result.groups.length === 0) {
+    console.log("[normalizer] No groups returned, using fallback response");
     result.groups = [
       {
         groupKey: "no_recommendations",
         groupTitle: "All Set",
         priority: "info",
-        itemCount: 0,
+        itemCount: 1,
         items: [
           {
             id: "info_001",
