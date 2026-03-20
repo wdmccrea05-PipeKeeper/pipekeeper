@@ -25,11 +25,10 @@ export function usePaywall() {
    * Shows user-facing errors and logs for debugging
    */
   const selectPlan = useCallback(
-    async (selectedPlan, billingPeriod = selectedBillingPeriod, options) => {
+    async (selectedPlan, billingPeriod = selectedBillingPeriod, options = {}) => {
       try {
         setIsLoading(true);
         setError(null);
-        setSelectedBillingPeriod(billingPeriod);
 
         const { planKey, modules } = getPlanFromSelection(
           selectedPlan,
@@ -42,12 +41,15 @@ export function usePaywall() {
           throw new Error('Invalid plan selection');
         }
 
-        // Initiate Stripe checkout
+        // Initiate Stripe checkout with success URL preserved
+        const successUrl = options?.successUrl || `/SubscriptionSuccessFlow?next=${options?.successUrl || '/CollectionHub'}`;
+        const cancelUrl = options?.cancelUrl || '/';
+        
         await initiateCheckout(
           planKey,
           modules,
-          options?.successUrl || '/CollectionHub',
-          options?.cancelUrl || '/'
+          successUrl,
+          cancelUrl
         );
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Checkout failed';
@@ -61,6 +63,7 @@ export function usePaywall() {
           error: err,
           billingPeriod,
           selectedPlan,
+          options,
         });
       } finally {
         setIsLoading(false);
