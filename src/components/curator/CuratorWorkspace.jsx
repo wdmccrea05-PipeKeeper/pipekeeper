@@ -20,6 +20,7 @@ import {
 } from "@/components/utils/curatorEventLogger";
 import { validateOwnershipIntegrity } from "@/components/utils/curatorOwnershipGuard";
 import { useTasteProfile, buildTasteProfileContext } from "@/components/curator/useTasteProfile";
+import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
@@ -434,7 +435,12 @@ Cocktail preferences: ${(whiskyPrefs?.cocktails || []).join(", ") || "any"}` : "
         // Build adaptive taste profile context
         const tasteProfileContext = buildTasteProfileContext(tasteProfile);
 
-        let contextMessage = `USER COLLECTION:
+        const blendTypesList = BLEND_TYPES.join(", ");
+
+        let contextMessage = `TOBACCO BLEND TYPE VOCABULARY (always use these exact terms when referring to blend types):
+${blendTypesList}
+
+USER COLLECTION:
 
 PIPES (${pipes.length} total):
 ${pipesList || "None yet"}
