@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, ExternalLink, Package, LockOpen, ShieldCheck } from 'lucide-react';
+import { Pencil, Trash2, ExternalLink, Package, ShieldCheck } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import {
   formatCurrency,
@@ -16,12 +16,12 @@ function Badge({ children, tone = 'default' }) {
     default: {
       background: 'rgba(180,140,75,0.18)',
       border: '1px solid rgba(180,140,75,0.28)',
-      color: 'rgba(245,241,231,0.86)',
+      color: '#F5F1E7',
     },
     green: {
       background: 'rgba(46,125,92,0.18)',
       border: '1px solid rgba(46,125,92,0.35)',
-      color: '#7ED6A7',
+      color: '#9BE0B7',
     },
     red: {
       background: 'rgba(163,92,92,0.18)',
@@ -31,17 +31,14 @@ function Badge({ children, tone = 'default' }) {
     blue: {
       background: 'rgba(79,120,180,0.18)',
       border: '1px solid rgba(79,120,180,0.30)',
-      color: '#AFCBFF',
+      color: '#C5D9FF',
     },
   };
 
   const style = tones[tone] || tones.default;
 
   return (
-    <span
-      className="px-2 py-1 rounded-full text-xs font-medium"
-      style={style}
-    >
+    <span className="px-2 py-1 rounded-full text-xs font-medium" style={style}>
       {children}
     </span>
   );
@@ -74,39 +71,38 @@ export default function BottleCard({
   );
   const valueLabel = useMemo(() => getBottleDisplayValueLabel(bottle), [bottle]);
 
-  const photo = (() => {
-    const b = bottle;
-    if (!b) return '';
-    const photos = Array.isArray(b.photos) ? b.photos : [];
-    return photos[0] || b.photo || b.image || b.image_url || '';
-  })();
+  const photo =
+    (Array.isArray(bottle?.photos) ? bottle.photos[0] : '') ||
+    bottle?.photo ||
+    bottle?.image ||
+    bottle?.image_url ||
+    '';
 
   return (
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, rgba(50,35,24,0.98), rgba(32,22,16,1))',
+        background: 'linear-gradient(135deg, rgba(58,40,28,0.98), rgba(31,21,16,1))',
         border: '1px solid rgba(180,140,75,0.22)',
         boxShadow: '0 10px 28px rgba(0,0,0,0.42)',
       }}
     >
-      <div className="relative h-48 bg-gradient-to-b from-[#3a2818] to-[#2a1810]">
-         {photo ? (
-           <img
-             src={photo}
-             alt={bottle?.name || 'Bottle'}
-             className="w-full h-48 object-contain"
-           />
-         ) : (
-           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-             <svg viewBox="0 0 24 24" className="w-12 h-12 opacity-40" fill="none" stroke="rgba(224,216,200,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-               <path d="M10 3h4" /><path d="M11 3v4l-3 5.5A4.5 4.5 0 0 0 11.9 19h.2A4.5 4.5 0 0 0 16 12.5L13 7V3" /><path d="M9.5 12h5" />
-             </svg>
-             <span className="text-xs text-[#E0D8C8]/55 font-medium">{t('whiskey.noPhoto') || 'No photo'}</span>
-           </div>
-         )}
+      <div className="relative h-48 bg-gradient-to-b from-[#3d2a1d] to-[#24160f]">
+        {photo ? (
+          <img
+            src={photo}
+            alt={bottle?.name || 'Bottle'}
+            className="w-full h-48 object-contain"
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+            <span className="text-sm text-[#E0D8C8]/48 font-medium">
+              {t('whiskey.noPhoto') || 'No photo'}
+            </span>
+          </div>
+        )}
 
-        <div className="absolute top-3 left-3 flex flex-wrap gap-2 max-w-[85%]">
+        <div className="absolute top-3 left-3 flex flex-wrap gap-2 max-w-[88%]">
           {bottle?.type && <Badge>{bottle.type}</Badge>}
           {bottle?.bottle_type && <Badge tone="blue">{bottle.bottle_type}</Badge>}
           {bottle?.bottle_size && <Badge>{bottle.bottle_size}</Badge>}
@@ -114,45 +110,46 @@ export default function BottleCard({
       </div>
 
       <div className="p-5 space-y-5">
-         <div className="min-w-0">
-           <h3 className="text-lg font-bold text-[#F5F1E7] leading-snug break-words">
-             {bottle?.name || (t('whiskey.untitledBottle') || 'Untitled Bottle')}
-           </h3>
-           <p className="text-sm text-[#D8C7A6] break-words mt-1.5">
-             {[bottle?.distillery, bottle?.region, bottle?.country].filter(Boolean).join(' • ') || (t('whiskey.noOriginInfo') || 'No origin details')}
-           </p>
-         </div>
+        <div className="min-w-0">
+          <h3 className="text-xl font-bold text-[#F5F1E7] leading-tight break-words">
+            {bottle?.name || (t('whiskey.untitledBottle') || 'Untitled Bottle')}
+          </h3>
+          <p className="text-sm text-[#E0D8C8]/80 break-words mt-1.5 leading-relaxed">
+            {[bottle?.distillery, bottle?.region, bottle?.country].filter(Boolean).join(' • ') ||
+              (t('whiskey.noOriginInfo') || 'No origin details')}
+          </p>
+        </div>
 
-         <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div
-           className="rounded-xl p-3.5"
-           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(180,140,75,0.15)' }}
+            className="rounded-xl p-3.5"
+            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(180,140,75,0.15)' }}
           >
-           <div className="flex items-center gap-2 text-[#D4A574] text-xs font-semibold uppercase tracking-wide">
-             <ShieldCheck className="w-3.5 h-3.5" />
-             {valueLabel}
-           </div>
-           <div className="text-xl font-bold text-[#F5F1E7] mt-1">
-             {formatCurrency(unitValue)}
-           </div>
-           <p className="text-xs mt-1 text-[#D8C7A6]">
-             {t('whiskey.perBottle') || 'Per bottle'}
-           </p>
+            <div className="flex items-center gap-2 text-[#D4A574] text-xs font-semibold uppercase tracking-wide">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              {valueLabel}
+            </div>
+            <div className="text-xl font-bold text-[#F5F1E7] mt-1">
+              {formatCurrency(unitValue)}
+            </div>
+            <p className="text-xs mt-1 text-[#D8C7A6]/76">
+              Per bottle
+            </p>
           </div>
 
-           <div
-           className="rounded-xl p-3.5"
-           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(180,140,75,0.15)' }}
+          <div
+            className="rounded-xl p-3.5"
+            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(180,140,75,0.15)' }}
           >
             <div className="flex items-center gap-2 text-[#D4A574] text-xs font-semibold uppercase tracking-wide">
               <Package className="w-3.5 h-3.5" />
-              {t('whiskey.inventory') || 'Inventory'}
+              Inventory
             </div>
             <div className="text-xl font-bold text-[#F5F1E7] mt-1">
               {totalCount}
             </div>
-            <p className="text-xs mt-1 text-[#D8C7A6]">
-              {t('whiskey.totalBottles') || 'Total bottles'}
+            <p className="text-xs mt-1 text-[#D8C7A6]/76">
+              Total bottles
             </p>
           </div>
         </div>
@@ -160,22 +157,22 @@ export default function BottleCard({
         <div className="flex flex-wrap gap-2">
           {inventorySummary.open > 0 && <Badge tone="red">{inventorySummary.open} open</Badge>}
           {inventorySummary.sealed > 0 && <Badge tone="green">{inventorySummary.sealed} sealed</Badge>}
-          {inventorySummary.reserve > 0 && <Badge tone="default">{inventorySummary.reserve} reserve</Badge>}
+          {inventorySummary.reserve > 0 && <Badge>{inventorySummary.reserve} reserve</Badge>}
           {inventorySummary.drinking > 0 && <Badge tone="blue">{inventorySummary.drinking} drinking</Badge>}
           {!hasInventoryUnits && totalCount > 0 && <Badge tone="green">{totalCount} counted</Badge>}
         </div>
 
         <div
           className="rounded-xl p-3.5"
-          style={{ background: 'rgba(163,92,92,0.12)', border: '1px solid rgba(163,92,92,0.20)' }}
+          style={{ background: 'rgba(163,92,92,0.10)', border: '1px solid rgba(163,92,92,0.18)' }}
         >
           <div className="text-xs font-semibold uppercase tracking-wide text-[#D4A574]">
-            {t('whiskey.totalPositionValue') || 'Total Position Value'}
+            Total Position Value
           </div>
           <div className="text-xl font-bold text-[#F5F1E7] mt-1">
             {formatCurrency(totalValue)}
           </div>
-          <p className="text-sm text-[#D8C7A6] break-words mt-1">
+          <p className="text-sm text-[#E0D8C8]/76 break-words mt-2 leading-relaxed">
             {bottle?.notes
               ? bottle.notes.slice(0, 120) + (bottle.notes.length > 120 ? '…' : '')
               : (t('whiskey.noNotesYet') || 'No notes yet')}
@@ -184,26 +181,16 @@ export default function BottleCard({
 
         <div className="flex gap-2 flex-wrap">
           {typeof onOpen === 'function' && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onOpen(bottle)}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={() => onOpen(bottle)}>
               <ExternalLink className="w-4 h-4 mr-2" />
-              {t('common.open') || 'Open'}
+              Open
             </Button>
           )}
 
           {typeof onEdit === 'function' && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(bottle)}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={() => onEdit(bottle)}>
               <Pencil className="w-4 h-4 mr-2" />
-              {t('common.edit') || 'Edit'}
+              Edit
             </Button>
           )}
 
@@ -216,7 +203,7 @@ export default function BottleCard({
               className="text-[#F0B4B4]"
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              {t('common.delete') || 'Delete'}
+              Delete
             </Button>
           )}
         </div>
