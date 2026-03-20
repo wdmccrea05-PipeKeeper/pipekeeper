@@ -628,16 +628,15 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          </ScrollArea>
+                              </div>
+                              </div>
+                              );
+                              })}
+                              </div>
+                              )}
+                              </div>
+                              </div>
+                              </ScrollArea>
         </SheetContent>
       </Sheet>
     </>
