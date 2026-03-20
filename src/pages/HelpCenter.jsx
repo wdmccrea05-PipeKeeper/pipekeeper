@@ -113,12 +113,10 @@ export default function HelpCenter() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="max-w-2xl">
-                  <DocumentationSearch />
-                  <p className="text-sm text-[#D7C9B2]/60 mt-4">
-                    {t('help.searchTip', 'Search across tutorials, troubleshooting articles, and feature documentation')}
-                  </p>
-                </div>
+                <DocumentationSearch fullPage />
+                <p className="text-xs text-[#D7C9B2]/50 mt-3">
+                  {t('help.searchTip', 'Search across tutorials, features, and how-to guides')}
+                </p>
               </CardContent>
             </Card>
           </TabsContent>
