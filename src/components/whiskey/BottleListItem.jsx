@@ -34,6 +34,7 @@ export default function BottleListItem({
   onDelete,
   onOpen,
   onToggleFavorite,
+  onClick,
 }) {
   const { t } = useTranslation();
 
@@ -63,7 +64,8 @@ export default function BottleListItem({
 
   return (
     <div
-      className="rounded-2xl p-4 md:p-5"
+      className="rounded-2xl p-4 md:p-5 cursor-pointer transition-all hover:border-[rgba(180,140,75,0.35)] hover:-translate-y-0.5"
+      onClick={onClick}
       style={{
         background: 'linear-gradient(145deg, rgba(58,40,28,0.98), rgba(31,21,16,0.98))',
         border: '1px solid rgba(180,140,75,0.16)',
