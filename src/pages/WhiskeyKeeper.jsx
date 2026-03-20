@@ -102,7 +102,7 @@ export default function WhiskeyKeeper() {
     },
     {
       key: 'logTasting',
-      Icon: Wine,
+      Icon: BookOpen,
       label: t('quickActions.logTasting', 'Log Tasting'),
       onClick: () => navigate('/Tastings')
     },
