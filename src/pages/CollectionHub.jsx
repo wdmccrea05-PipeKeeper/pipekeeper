@@ -407,6 +407,64 @@ export default function CollectionHub() {
         </div>
       </div>
 
+      {/* Collection Highlights */}
+      {(mostSmokedPipe || favoritePipe || favoriteBlend || favoriteBottle) && (
+        <div className="space-y-4">
+          <h2
+            className="text-sm uppercase tracking-[0.12em] font-semibold"
+            style={{ color: "rgba(180, 140, 75, 0.8)" }}
+          >
+            {t("hub.highlights", "Collection Highlights")}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {mostSmokedPipe && (
+              <CatalogPlate
+                title={t("home.mostSmoked", "Most Smoked")}
+                value={mostSmokedPipe.name}
+                subtitle={mostSmokedPipe.maker}
+                heroImage={mostSmokedPipe.photos?.[0]}
+                bgImage={mostSmokedPipe.photos?.[0]}
+                accent="#C87941"
+                onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(mostSmokedPipe.id)}`)}
+              />
+            )}
+            {favoriteBlend && (
+              <CatalogPlate
+                title={t("home.favoriteBlend", "Favorite Blend")}
+                value={favoriteBlend.name}
+                subtitle={favoriteBlend.manufacturer}
+                heroImage={favoriteBlend.logo || favoriteBlend.photos?.[0]}
+                bgImage={favoriteBlend.logo || favoriteBlend.photos?.[0]}
+                accent="#5A7C5A"
+                onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(favoriteBlend.id)}`)}
+              />
+            )}
+            {favoriteBottle && (
+              <CatalogPlate
+                title={t("hub.favoriteBottle", "Favorite Bottle")}
+                value={favoriteBottle.name}
+                subtitle={favoriteBottle.distillery}
+                heroImage={favoriteBottle.photo || favoriteBottle.photos?.[0]}
+                bgImage={favoriteBottle.photo || favoriteBottle.photos?.[0]}
+                accent="#C88A4A"
+                onClick={() => window.location.href = createPageUrl(`BottleDetail?id=${encodeURIComponent(favoriteBottle.id)}`)}
+              />
+            )}
+            {!mostSmokedPipe && favoritePipe && (
+              <CatalogPlate
+                title={t("home.favoritePipe", "Favorite Pipe")}
+                value={favoritePipe.name}
+                subtitle={favoritePipe.maker}
+                heroImage={favoritePipe.photos?.[0]}
+                bgImage={favoritePipe.photos?.[0]}
+                accent="#B48C4B"
+                onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(favoritePipe.id)}`)}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
       <QuickLaunch />
 
       <TonightSessionCard
