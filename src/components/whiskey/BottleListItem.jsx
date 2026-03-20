@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, ExternalLink } from 'lucide-react';
+import { Pencil, Trash2, ExternalLink, Heart } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import {
   formatCurrency,
