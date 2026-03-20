@@ -234,7 +234,7 @@ export default function PipeKeeperModule() {
                 onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(mostSmokedPipe.id)}`)}
               />
             )}
-            {mostValuablePipe && (
+            {mostValuablePipe && !hideValues && (
               <CatalogPlate
                 title={t('home.mostValuable') || 'Most Valuable'}
                 value={formatCurrency(mostValuablePipe.estimated_value)}
