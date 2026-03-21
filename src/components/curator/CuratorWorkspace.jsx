@@ -852,19 +852,53 @@ ${englishText}`;
   };
 
   const handleClarifyAction = (clarificationContext) => {
+    // Dismiss all — just clear result
+    if (clarificationContext?.dismiss) {
+      setActionResult(null);
+      return;
+    }
+    // Refine all — open chat with a broad refine prompt
+    if (clarificationContext?.refineAll) {
+      setActionResult(null);
+      setInput("Can you refine these recommendations? I'd like to see different or more specific suggestions.");
+      setTimeout(() => document.querySelector('input[placeholder*="Ask Curator"]')?.focus(), 100);
+      return;
+    }
+
     if (!actionResult) return;
-    
-    // Build clean clarification prompt (no system text)
     const clarifyPrompt = buildClarificationPrompt(clarificationContext);
-    
-    // Set input and close card
     setInput(clarifyPrompt);
     setActionResult(null);
-    
-    // Focus input
-    setTimeout(() => {
-      document.querySelector('input[placeholder*="Ask Curator"]')?.focus();
-    }, 100);
+    setTimeout(() => document.querySelector('input[placeholder*="Ask Curator"]')?.focus(), 100);
+  };
+
+  const handleRegenerateAction = (mode = 'standard') => {
+    // Re-trigger the same action with a new executionId and the selected regenerate mode
+    const currentActionId = launchContext?.sourceAction;
+    if (!currentActionId) return;
+
+    setActionResult(null);
+    setActionError(null);
+    setLastExecutionId(null); // Reset so the effect re-runs with a new execution
+
+    // Build a new executionId to force re-execution
+    const newExecutionId = `${currentActionId}_regen_${Date.now()}`;
+
+    // Signal parent to re-launch with new context (if handler provided)
+    if (launchContext && typeof window !== 'undefined') {
+      // Patch launchContext via a custom event — workspace will pick it up
+      window.__curatorRegenContext = {
+        ...launchContext,
+        executionId: newExecutionId,
+        regenerateMode: mode,
+        displayLabel: mode === 'broaden'
+          ? 'Broadening analysis…'
+          : mode === 'narrow'
+          ? 'Finding best matches…'
+          : 'Regenerating analysis…',
+      };
+      window.dispatchEvent(new CustomEvent('curator_regen', { detail: { mode, executionId: newExecutionId } }));
+    }
   };
 
   const handleKeyDown = (e) => {
