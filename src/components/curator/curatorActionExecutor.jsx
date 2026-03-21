@@ -212,9 +212,16 @@ export async function executeCuratorAction({
       }));
     }
 
-    // Attach coverage metadata to result for debugging
+    // --- Coverage Audit (post-AI) ---
+    const postAudit = buildCoverageAudit(collectionContext, rawResult);
+
+    // Validate compression didn't lose any candidates
+    validateCompressionCoverage(safeCtx, postAudit);
+
+    // Attach coverage metadata to result for debugging/display
     rawResult._coverage = safeCtx.candidateStats;
     rawResult._contextMode = safeCtx.mode;
+    rawResult._audit = postAudit;
 
     const normalizedResult = normalizeCuratorActionResult(rawResult, {
       actionId,
