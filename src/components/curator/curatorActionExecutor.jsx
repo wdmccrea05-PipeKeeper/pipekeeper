@@ -367,6 +367,8 @@ Return: missing metadata by priority, valuation gaps, tasting note opportunities
 ${actionInstructions}
 
 ${collectionBlock}
+${noveltyAddendum}
+${broadenAddendum}
 
 USER REQUEST:
 ${userPrompt}
