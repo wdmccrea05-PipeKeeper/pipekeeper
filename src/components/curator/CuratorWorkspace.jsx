@@ -878,7 +878,7 @@ ${englishText}`;
 
   const handleRegenerateAction = (mode = 'standard') => {
     // Re-trigger the same action with a new executionId and the selected regenerate mode
-    const currentActionId = launchContext?.sourceAction;
+    const currentActionId = launchContextRef.current?.sourceAction;
     if (!currentActionId) return;
 
     setActionResult(null);
