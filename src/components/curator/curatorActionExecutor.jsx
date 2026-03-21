@@ -15,6 +15,11 @@ import {
   translateFromEnglish,
   getCurrentLocale,
 } from "@/components/utils/aiTranslation";
+import {
+  buildSafeCollectionContext,
+  buildPromptBlock,
+  validateCandidateIds,
+} from "./collectionContextBudget";
 
 // System prompt — enforces JSON-only structured output (no explanatory text)
 const CURATOR_SYSTEM_PROMPT = `You are a collection analysis expert. Return ONLY valid JSON. No explanations, markdown, code blocks, or text outside JSON. All results must be inside groups[].items[].`;
