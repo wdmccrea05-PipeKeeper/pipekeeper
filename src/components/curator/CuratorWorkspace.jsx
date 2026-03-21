@@ -1092,6 +1092,7 @@ ${englishText}`;
               actionResult={actionResult}
               onApplyItems={handleApplyActionItems}
               onClarify={handleClarifyAction}
+              onRegenerate={handleRegenerateAction}
               loading={applyLoading}
             />
           </div>
