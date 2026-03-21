@@ -154,6 +154,7 @@ export default function CuratorRecommendationGroup({
               <CuratorRecommendationRow
                 key={item.id}
                 item={item}
+                workflowId={workflowId}
                 onAccept={onAcceptItem}
                 onClarify={onClarifyItem}
                 isSelected={selectedItemIds.has(item.id)}
