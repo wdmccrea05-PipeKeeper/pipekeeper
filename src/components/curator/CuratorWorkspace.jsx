@@ -265,6 +265,12 @@ export default function CuratorWorkspace({
     resolvedContextRef.current = resolvedLaunchContext;
   }, [resolvedLaunchContext]);
 
+  // Keep a live ref to launchContext so regenerate always sees the current action
+  const launchContextRef = useRef(launchContext);
+  useEffect(() => {
+    launchContextRef.current = launchContext;
+  }, [launchContext]);
+
   const { data: logs = [] } = useQuery({
     queryKey: ["smokingLogs", user?.email],
     queryFn: async () => {
