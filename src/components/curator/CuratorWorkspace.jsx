@@ -889,10 +889,10 @@ ${englishText}`;
     const newExecutionId = `${currentActionId}_regen_${Date.now()}`;
 
     // Signal parent to re-launch with new context (if handler provided)
-    if (launchContext && typeof window !== 'undefined') {
+    if (launchContextRef.current && typeof window !== 'undefined') {
       // Patch launchContext via a custom event — workspace will pick it up
       window.__curatorRegenContext = {
-        ...launchContext,
+        ...launchContextRef.current,
         executionId: newExecutionId,
         regenerateMode: mode,
         displayLabel: mode === 'broaden'
