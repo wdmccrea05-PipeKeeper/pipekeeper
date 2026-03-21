@@ -74,6 +74,10 @@ function buildCanonicalResult(data, { actionId, executionId }) {
     status: data.status || "completed",
     executionId,
     groups: normalizeGroups(data.groups || []),
+    // Preserve coverage audit metadata if present (attached by executor)
+    _audit: data._audit || undefined,
+    _coverage: data._coverage || undefined,
+    _contextMode: data._contextMode || undefined,
   };
 }
 
