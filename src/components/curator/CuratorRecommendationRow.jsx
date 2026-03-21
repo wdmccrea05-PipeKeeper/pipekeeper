@@ -18,6 +18,7 @@ const CONFIDENCE_COLORS = {
 
 export default function CuratorRecommendationRow({
   item,
+  workflowId,
   onAccept,
   onClarify,
   onDismiss,
