@@ -234,6 +234,7 @@ export default function CuratorWorkspace({
 }) {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
+  const queryClient = useQueryClient();
 
   const [threadId, setThreadId] = useState(null);
   const [sessionId, setSessionId] = useState(null);
