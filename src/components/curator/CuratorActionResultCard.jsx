@@ -174,6 +174,7 @@ export default function CuratorActionResultCard({
             <CuratorRecommendationGroup
               key={group.groupKey}
               group={group}
+              workflowId={actionResult.actionId}
               onAcceptItem={handleAcceptItem}
               onClarifyItem={handleClarifyItem}
               onApplyAllInGroup={handleApplyAllInGroup}
