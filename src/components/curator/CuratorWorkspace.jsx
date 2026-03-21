@@ -738,6 +738,8 @@ ${englishText}`;
             pipes,
             blends,
             bottles,
+            smokingLogs: logs,
+            tastingLogs,
           },
           user,
           launchContext,
