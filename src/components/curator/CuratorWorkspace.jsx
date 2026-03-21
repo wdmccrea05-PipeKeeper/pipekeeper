@@ -424,18 +424,24 @@ export default function CuratorWorkspace({
           )
           .join("\n");
 
+        // Build compressed bottle context — no hard truncation
+        // For chat context we show up to 50 in compact form, with stats for larger collections
+        const bottleCount = bottles.length;
+        const bottleDisplayLimit = bottleCount <= 30 ? bottleCount : 50;
         const bottlesList = bottles
-          .slice(0, 20)
+          .slice(0, bottleDisplayLimit)
           .map(
             (b) =>
-              `- ${b.name || "Unnamed Bottle"} (${b.distillery || "unknown"}, ${b.whiskey_type || b.type || "unknown type"}${b.age_years ? `, ${b.age_years}yr` : ""}${b.abv ? `, ${b.abv}% ABV` : ""}${b.rating ? `, rated ${b.rating}/5` : ""})`
+              `- ${b.name || "Unnamed Bottle"} (${b.distillery || "unknown"}, ${b.whiskey_type || b.type || "unknown type"}${b.age ? `, ${b.age}yr` : ""}${b.abv ? `, ${b.abv}% ABV` : ""}${b.rating ? `, rated ${b.rating}/5` : ""})`
           )
-          .join("\n");
+          .join("\n") + (bottleCount > bottleDisplayLimit ? `\n... and ${bottleCount - bottleDisplayLimit} more bottles` : "");
 
+        // Tasting notes — show recent 20, summarize if more
+        const tastingDisplayLimit = Math.min(20, tastingLogs.length);
         const tastingsList = tastingLogs
-          .slice(0, 10)
+          .slice(0, tastingDisplayLimit)
           .map((t) => `- ${t.bottle_name || "Unknown bottle"}: ${(t.flavor_notes || []).join(", ") || "no notes"}${t.rating ? `, ${t.rating}/5` : ""}`)
-          .join("\n");
+          .join("\n") + (tastingLogs.length > tastingDisplayLimit ? `\n... and ${tastingLogs.length - tastingDisplayLimit} more tastings` : "");
 
         const whiskyPrefs = userProfile?.whiskey_preferences;
         const prefContext = userProfile ? `
