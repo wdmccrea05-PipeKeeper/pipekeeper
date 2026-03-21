@@ -56,6 +56,8 @@ export async function executeCuratorAction({
         pipes_count: collectionContext.pipes?.length || 0,
         blends_count: collectionContext.blends?.length || 0,
         bottles_count: collectionContext.bottles?.length || 0,
+        smoking_logs_count: (collectionContext.smokingLogs || collectionContext.logs || []).length,
+        tasting_logs_count: (collectionContext.tastingLogs || []).length,
       },
     });
   } catch (err) {
