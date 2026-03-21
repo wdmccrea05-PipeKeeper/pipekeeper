@@ -252,97 +252,71 @@ export async function executeCuratorAction({
 }
 
 /**
- * Build the full prompt for AI with collection context
+ * Build the full prompt for AI with safe, budget-aware collection context.
+ * No silent truncation — all items are accounted for via the budget manager.
  */
 function buildCuratorPrompt(actionId, userPrompt, context) {
-  const pipesList = (context.pipes || [])
-    .map((p) => `- ${p.name || "Unknown"} (${p.maker || "unknown"}, ${p.shape || "unknown"})`)
-    .join("\n");
+  // Build safe context (handles small/standard/large/huge modes automatically)
+  const safeCtx = buildSafeCollectionContext({
+    pipes: context.pipes || [],
+    blends: context.blends || [],
+    bottles: context.bottles || [],
+    smokingLogs: context.smokingLogs || context.logs || [],
+    tastingLogs: context.tastingLogs || [],
+    userProfile: context.userProfile || null,
+  });
 
-  const blendsList = (context.blends || [])
-    .map((b) => `- ${b.name || "Unknown"} (${b.manufacturer || "unknown"}, ${b.blend_type || "unknown"})`)
-    .join("\n");
+  const collectionBlock = buildPromptBlock(safeCtx);
 
-  const bottlesList = (context.bottles || [])
-    .slice(0, 20)
-    .map((b) => `- ${b.name || "Unknown"} (${b.distillery || "unknown"}, ${b.whiskey_type || "unknown"})`)
-    .join("\n");
-
-  let actionSpecificInstructions = "";
-
-  if (actionId === "optimize_collection") {
-    actionSpecificInstructions = `
-TASK: Analyze collection for optimization opportunities
-
+  const ACTION_INSTRUCTIONS = {
+    optimize_collection: `TASK: Analyze collection for optimization opportunities.
+Use the statistics above to identify specific issues. Reference actual item names from the lists.
 Return:
-1. Structural imbalances (gaps, redundancies, weaknesses)
-2. Item-level actions (reclassifications, updates, specializations)
-3. Bottle addition opportunities (based on user whiskey preferences)
+1. Structural imbalances (gaps, redundancies, weaknesses) — cite actual counts from stats
+2. Item-level actions (reclassifications, specializations, updates)
+3. Rotation/usage improvements based on neglected/never-used counts
+4. Acquisition opportunities if relevant
+Each recommendation must include: current issue, proposed change, reasoning, confidence.`,
 
-Be specific. Each recommendation must include:
-- Current issue
-- Proposed change
-- Why (reasoning)
-- Confidence level`;
-  } else if (actionId === "recommend_specializations") {
-    actionSpecificInstructions = `
-TASK: Recommend pipe specializations based on collection analysis
-
+    recommend_specializations: `TASK: Recommend pipe specializations based on collection analysis.
+Use the pipe stats (unfocused count, shape distribution) to ground recommendations.
 Return:
-1. Current specialization assessment
-2. Target specialization strategy
-3. Specific pipe reclassifications with focus areas
+1. Current specialization pattern assessment
+2. Top 3 specialization opportunities with specific pipe names
+3. Which tobacco types align with each recommended specialization
+4. Priority ordering with reasoning`,
 
-Each pipe recommendation must include what tobacco types it should be designated for.`;
-  } else if (actionId === "reclassify_tobacco") {
-    actionSpecificInstructions = `
-TASK: Identify tobacco classification issues
+    reclassify_tobacco: `TASK: Identify tobacco classification issues.
+Review the blends list for missing or inconsistent blend_type values.
+Return recommendations for: missing classifications, inconsistent labels, misclassified blends.
+Use only canonical types: Virginia, Va/Per, English, Balkan, Aromatic, Burley, Oriental, Cavendish`,
 
-Return recommendations for:
-1. Missing classifications
-2. Inconsistent labels
-3. Misclassified blends
+    update_pipe_measurements: `TASK: Identify pipes with missing or inconsistent measurements.
+Return: pipes needing measurements, priority order for updates, measurement best practices.`,
 
-Use only these canonical types: Virginia, Va/Per, English, Balkan, Aromatic, Burley, Oriental, Cavendish`;
-  } else if (actionId === "update_pipe_measurements") {
-    actionSpecificInstructions = `
-TASK: Identify pipes with missing or inconsistent measurements
+    update_bottle_data: `TASK: Identify whiskey bottle data gaps.
+Use the bottle stats (untasted count, type distribution) to prioritize.
+Return: missing metadata by priority, valuation gaps, tasting note opportunities.`,
+  };
 
-Return:
-1. Pipes with missing length/weight
-2. Pipes with inconsistent dimensions
-3. Measurement estimation recommendations`;
-  } else if (actionId === "update_bottle_data") {
-    actionSpecificInstructions = `
-TASK: Identify bottle data gaps
-
-Return:
-1. Missing metadata (proof, age, bottling info)
-2. Valuation gaps
-3. Tasting note opportunities`;
-  }
+  const actionInstructions = ACTION_INSTRUCTIONS[actionId] || `TASK: Analyze the collection and provide actionable recommendations based on the data above.`;
 
   return `${CURATOR_SYSTEM_PROMPT}
 
-${actionSpecificInstructions}
+${actionInstructions}
 
-COLLECTION DATA:
-
-PIPES (${context.pipes?.length || 0} total):
-${pipesList || "None"}
-
-TOBACCOS (${context.blends?.length || 0} total):
-${blendsList || "None"}
-
-WHISKEY BOTTLES (${context.bottles?.length || 0} total):
-${bottlesList || "None"}
+${collectionBlock}
 
 USER REQUEST:
 ${userPrompt}
 
+IMPORTANT: Base ALL factual claims on the statistics provided above. Do not invent numbers.
+When referencing items, use names from the lists above.
+When itemId is available from the list, include it in the JSON.
+
 REQUIRED OUTPUT FORMAT:
 {
-  "actionId": "${context.pipes ? "optimize_collection" : "collection_analysis"}",
+  "actionId": "${actionId}",
   "title": "string",
   "summary": "string",
   "status": "completed",
@@ -361,10 +335,7 @@ REQUIRED OUTPUT FORMAT:
           "itemName": "string",
           "issue": "string",
           "recommendation": "string",
-          "proposedChange": {
-            "type": "string",
-            "payload": {}
-          },
+          "proposedChange": { "type": "string", "payload": {} },
           "confidence": "high|medium|low"
         }
       ]
@@ -372,7 +343,7 @@ REQUIRED OUTPUT FORMAT:
   ]
 }
 
-Return ONLY valid JSON matching this format. No additional text.`;
+Return ONLY valid JSON. No additional text.`;
 }
 
 /**
