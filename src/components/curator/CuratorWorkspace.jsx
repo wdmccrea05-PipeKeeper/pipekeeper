@@ -407,23 +407,29 @@ export default function CuratorWorkspace({
         const englishText = await translateToEnglish(text, locale);
         const conversation = await base44.agents.getConversation(ensuredThreadId);
 
+        // Smart pipe list — show up to 100, note if more
+        const pipeDisplayLimit = Math.min(100, pipes.length);
         const pipesList = pipes
+          .slice(0, pipeDisplayLimit)
           .map(
             (p) =>
               `- ${p.name || "Unnamed Pipe"} (${p.maker || "unknown maker"}, ${p.shape || "unknown shape"}${
                 p.focus?.length ? `, focus: ${p.focus.join(", ")}` : ""
               })`
           )
-          .join("\n");
+          .join("\n") + (pipes.length > pipeDisplayLimit ? `\n... and ${pipes.length - pipeDisplayLimit} more pipes` : "");
 
+        // Smart blend list — show up to 100, note if more
+        const blendDisplayLimit = Math.min(100, blends.length);
         const blendsList = blends
+          .slice(0, blendDisplayLimit)
           .map(
             (b) =>
               `- ${b.name || "Unnamed Blend"} (${b.manufacturer || "unknown"}, ${
                 b.blend_type || "unknown type"
               }${b.strength ? `, ${b.strength}` : ""})`
           )
-          .join("\n");
+          .join("\n") + (blends.length > blendDisplayLimit ? `\n... and ${blends.length - blendDisplayLimit} more blends` : "");
 
         // Build compressed bottle context — no hard truncation
         // For chat context we show up to 50 in compact form, with stats for larger collections
