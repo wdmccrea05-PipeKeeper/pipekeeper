@@ -229,6 +229,10 @@ export async function executeCuratorAction({
       collectionContext,
     });
 
+    // Record recommendations shown (for anti-repetition)
+    const allRecs = (normalizedResult.groups || []).flatMap(g => g.items || []);
+    recordRecommendationsShown(actionId, allRecs);
+
     // Translate result back to user's locale
     const translatedResult = await translateActionResult(normalizedResult, locale);
 
