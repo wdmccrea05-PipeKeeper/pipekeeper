@@ -19,6 +19,7 @@ const PRIORITY_STYLES = {
 
 export default function CuratorRecommendationGroup({
   group,
+  workflowId,
   onAcceptItem,
   onClarifyItem,
   onApplyAllInGroup,
