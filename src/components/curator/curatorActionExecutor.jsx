@@ -78,8 +78,15 @@ export async function executeCuratorAction({
     // Build English prompt (translate user prompt if needed)
     const englishPrompt = await translateToEnglish(userPrompt, locale);
 
+    // --- Coverage Audit (pre-AI) ---
+    const preAudit = buildCoverageAudit(collectionContext);
+
     // Build full AI prompt with collection context
-    const fullPrompt = buildCuratorPrompt(actionId, englishPrompt, collectionContext);
+    const isBroaden = launchContext?.regenerateMode === 'broaden';
+    const fullPrompt = buildCuratorPrompt(actionId, englishPrompt, collectionContext, {
+      noveltyAddendum: buildNoveltyPromptAddendum(actionId, collectionContext),
+      broadenAddendum: isBroaden ? buildBroadenPromptAddendum(actionId, collectionContext) : '',
+    });
 
     // Call AI with JSON schema enforcement
     const aiResponse = await base44.integrations.Core.InvokeLLM({
