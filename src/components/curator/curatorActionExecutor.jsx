@@ -20,6 +20,15 @@ import {
   buildPromptBlock,
   validateCandidateIds,
 } from "./collectionContextBudget";
+import {
+  buildCoverageAudit,
+  validateCompressionCoverage,
+} from "./curatorCoverageAudit";
+import {
+  buildNoveltyPromptAddendum,
+  buildBroadenPromptAddendum,
+  recordRecommendationsShown,
+} from "./curatorRecommendationHistory";
 
 // System prompt — enforces JSON-only structured output (no explanatory text)
 const CURATOR_SYSTEM_PROMPT = `You are a collection analysis expert. Return ONLY valid JSON. No explanations, markdown, code blocks, or text outside JSON. All results must be inside groups[].items[].`;
