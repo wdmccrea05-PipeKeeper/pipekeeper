@@ -315,7 +315,8 @@ export async function executeCuratorAction({
  * Build the full prompt for AI with safe, budget-aware collection context.
  * No silent truncation — all items are accounted for via the budget manager.
  */
-function buildCuratorPrompt(actionId, userPrompt, context) {
+function buildCuratorPrompt(actionId, userPrompt, context, options = {}) {
+  const { noveltyAddendum = '', broadenAddendum = '' } = options;
   // Build safe context (handles small/standard/large/huge modes automatically)
   const safeCtx = buildSafeCollectionContext({
     pipes: context.pipes || [],
