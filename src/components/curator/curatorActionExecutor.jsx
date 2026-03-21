@@ -167,6 +167,37 @@ export async function executeCuratorAction({
       };
     }
 
+    // Build safe context for post-AI validation
+    const safeCtx = buildSafeCollectionContext({
+      pipes: collectionContext.pipes || [],
+      blends: collectionContext.blends || [],
+      bottles: collectionContext.bottles || [],
+      smokingLogs: collectionContext.smokingLogs || collectionContext.logs || [],
+      tastingLogs: collectionContext.tastingLogs || [],
+    });
+
+    // Validate AI-returned item IDs against the actual eligible candidate pool
+    // This prevents hallucinated IDs from reaching the UI
+    if (rawResult.groups) {
+      rawResult.groups = rawResult.groups.map(group => ({
+        ...group,
+        items: (group.items || []).map(item => {
+          if (item.itemId) {
+            const isValid = validateCandidateIds([item.itemId], safeCtx).length > 0;
+            if (!isValid) {
+              // Keep the recommendation but clear the invalid itemId so apply actions don't break
+              return { ...item, itemId: null, _idValidationFailed: true };
+            }
+          }
+          return item;
+        }),
+      }));
+    }
+
+    // Attach coverage metadata to result for debugging
+    rawResult._coverage = safeCtx.candidateStats;
+    rawResult._contextMode = safeCtx.mode;
+
     const normalizedResult = normalizeCuratorActionResult(rawResult, {
       actionId,
       executionId,
