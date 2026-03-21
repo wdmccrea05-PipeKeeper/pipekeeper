@@ -901,6 +901,62 @@ ${englishText}`;
     }
   };
 
+  // Listen for regenerate events triggered by handleRegenerateAction
+  useEffect(() => {
+    const handler = async (e) => {
+      const regenCtx = window.__curatorRegenContext;
+      if (!regenCtx || !user?.id) return;
+      window.__curatorRegenContext = null;
+
+      const { executionId: newExecId, sourceAction, regenerateMode, displayLabel } = regenCtx;
+
+      try {
+        setRunningAction(displayLabel || 'Regenerating…');
+        setLastExecutionId(newExecId);
+        setActionResult(null);
+        setActionError(null);
+
+        const result = await executeCuratorAction({
+          actionId: sourceAction,
+          executionId: newExecId,
+          displayLabel,
+          userPrompt: regenCtx._internalPrompt || "Analyze and recommend optimizations",
+          collectionContext: {
+            pipes,
+            blends,
+            bottles,
+            smokingLogs: logs,
+            tastingLogs,
+          },
+          user,
+          launchContext: { ...regenCtx, regenerateMode },
+        });
+
+        const parsed = typeof result.result === "string"
+          ? parseCuratorActionResponse(result.result)
+          : result.result;
+        const normalized = normalizeCuratorActionResult(parsed, {
+          actionId: sourceAction,
+          executionId: newExecId,
+          title: displayLabel,
+        });
+        setActionResult(normalized);
+        setActionError(null);
+        setRunningAction(null);
+      } catch (err) {
+        setRunningAction(null);
+        setActionError({
+          title: "Regeneration failed",
+          message: err?.message || "Could not complete the analysis.",
+          error: err?.message,
+        });
+      }
+    };
+
+    window.addEventListener('curator_regen', handler);
+    return () => window.removeEventListener('curator_regen', handler);
+  }, [user?.id, pipes, blends, bottles, logs, tastingLogs]);
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
       e.preventDefault();
