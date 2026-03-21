@@ -828,12 +828,9 @@ ${englishText}`;
       const results = await applyAllRecommendations(groups, user);
       
       // Invalidate affected entity caches
-      const queryClient = require("@tanstack/react-query").useQueryClient?.();
-      if (queryClient) {
-        queryClient.invalidateQueries({ queryKey: ["pipes"] });
-        queryClient.invalidateQueries({ queryKey: ["blends"] });
-        queryClient.invalidateQueries({ queryKey: ["bottles"] });
-      }
+      queryClient.invalidateQueries({ queryKey: ["pipes"] });
+      queryClient.invalidateQueries({ queryKey: ["blends"] });
+      queryClient.invalidateQueries({ queryKey: ["bottles"] });
       
       const successCount = results.total.success;
       if (successCount > 0) {
