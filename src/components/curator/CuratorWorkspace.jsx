@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import {
   translateToEnglish,
