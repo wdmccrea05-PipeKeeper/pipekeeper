@@ -1,5 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.21";
-import { getStripeClient } from "./_utils/stripe.ts";
+import Stripe from "npm:stripe@17.5.0";
 
 const APP_URL = (Deno.env.get("APP_URL") || "https://pipekeeper.app").trim();
 
