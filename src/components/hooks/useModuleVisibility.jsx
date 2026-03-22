@@ -39,9 +39,10 @@ export function deriveModuleStates(profile) {
     pipekeeper: prefsSet
       ? (profile?.pipekeeper_enabled !== false)
       : true, // always default pipe on
-    whiskeykeeper: prefsSet
-      ? (profile?.whiskeykeeper_enabled !== false)
-      : true, // default whiskey on for existing users
+    // WhiskeyKeeper: gated off in pipekeeper_stable release regardless of user prefs
+    whiskeykeeper: WHISKEYKEEPER_BLOCKED
+      ? false
+      : (prefsSet ? (profile?.whiskeykeeper_enabled !== false) : true),
     winekeeper: prefsSet
       ? (profile?.winekeeper_enabled === true)
       : false,
