@@ -214,7 +214,7 @@ export default function Curator() {
   const availableScopes = useMemo(() => {
     const opts = [SCOPE_OPTIONS[0]]; // always show "all"
     opts.push(SCOPE_OPTIONS[1]); // pipekeeper always enabled
-    if (isModuleEnabled("whiskeykeeper")) opts.push(SCOPE_OPTIONS[2]);
+    if (!isWhiskeyBlocked() && isModuleEnabled("whiskeykeeper")) opts.push(SCOPE_OPTIONS[2]);
     return opts;
   }, [isModuleEnabled]);
 
