@@ -117,19 +117,28 @@ export default function ShareRecordModal({
           notes: validatedConfig.include_notes ? record?.notes : undefined,
           estimated_value: validatedConfig.include_value ? record?.estimated_value : undefined,
         }
-      : {
-          ...record,
-          photo: validatedConfig.include_photos ? record?.photo : undefined,
-          logo: validatedConfig.include_photos ? record?.logo : undefined,
-          notes: validatedConfig.include_notes ? record?.notes : undefined,
-          flavor_notes: validatedConfig.include_notes ? record?.flavor_notes : undefined,
-          estimated_value: validatedConfig.include_value
-            ? record?.manual_market_value || record?.ai_estimated_value
-            : undefined,
-          total_quantity_oz: validatedConfig.include_inventory
-            ? (record?.tin_total_quantity_oz || 0) + (record?.bulk_total_quantity_oz || 0) + (record?.pouch_total_quantity_oz || 0)
-            : undefined,
-        };
+      : moduleType === "whiskey"
+        ? {
+            ...record,
+            photo: validatedConfig.include_photos ? record?.photo : undefined,
+            notes: validatedConfig.include_notes ? record?.notes : undefined,
+            estimated_value: validatedConfig.include_value
+              ? record?.collector_value || record?.aftermarket_price || record?.retail_price || record?.purchase_price
+              : undefined,
+          }
+        : {
+            ...record,
+            photo: validatedConfig.include_photos ? record?.photo : undefined,
+            logo: validatedConfig.include_photos ? record?.logo : undefined,
+            notes: validatedConfig.include_notes ? record?.notes : undefined,
+            flavor_notes: validatedConfig.include_notes ? record?.flavor_notes : undefined,
+            estimated_value: validatedConfig.include_value
+              ? record?.manual_market_value || record?.ai_estimated_value
+              : undefined,
+            total_quantity_oz: validatedConfig.include_inventory
+              ? (record?.tin_total_quantity_oz || 0) + (record?.bulk_total_quantity_oz || 0) + (record?.pouch_total_quantity_oz || 0)
+              : undefined,
+          };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
