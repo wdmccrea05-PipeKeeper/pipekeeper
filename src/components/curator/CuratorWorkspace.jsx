@@ -414,60 +414,17 @@ export default function CuratorWorkspace({
         const englishText = await translateToEnglish(text, locale);
         const conversation = await base44.agents.getConversation(ensuredThreadId);
 
-        // Smart pipe list — show up to 100, note if more
-        const pipeDisplayLimit = Math.min(100, pipes.length);
-        const pipesList = pipes
-          .slice(0, pipeDisplayLimit)
-          .map(
-            (p) =>
-              `- ${p.name || "Unnamed Pipe"} (${p.maker || "unknown maker"}, ${p.shape || "unknown shape"}${
-                p.focus?.length ? `, focus: ${p.focus.join(", ")}` : ""
-              })`
-          )
-          .join("\n") + (pipes.length > pipeDisplayLimit ? `\n... and ${pipes.length - pipeDisplayLimit} more pipes` : "");
-
-        // Smart blend list — show up to 100, note if more
-        const blendDisplayLimit = Math.min(100, blends.length);
-        const blendsList = blends
-          .slice(0, blendDisplayLimit)
-          .map(
-            (b) =>
-              `- ${b.name || "Unnamed Blend"} (${b.manufacturer || "unknown"}, ${
-                b.blend_type || "unknown type"
-              }${b.strength ? `, ${b.strength}` : ""})`
-          )
-          .join("\n") + (blends.length > blendDisplayLimit ? `\n... and ${blends.length - blendDisplayLimit} more blends` : "");
-
-        // Build compressed bottle context — no hard truncation
-        // For chat context we show up to 50 in compact form, with stats for larger collections
-        const bottleCount = bottles.length;
-        const bottleDisplayLimit = bottleCount <= 30 ? bottleCount : 50;
-        const bottlesList = bottles
-          .slice(0, bottleDisplayLimit)
-          .map(
-            (b) =>
-              `- ${b.name || "Unnamed Bottle"} (${b.distillery || "unknown"}, ${b.whiskey_type || b.type || "unknown type"}${b.age ? `, ${b.age}yr` : ""}${b.abv ? `, ${b.abv}% ABV` : ""}${b.rating ? `, rated ${b.rating}/5` : ""})`
-          )
-          .join("\n") + (bottleCount > bottleDisplayLimit ? `\n... and ${bottleCount - bottleDisplayLimit} more bottles` : "");
-
-        // Tasting notes — show recent 20, summarize if more
-        const tastingDisplayLimit = Math.min(20, tastingLogs.length);
-        const tastingsList = tastingLogs
-          .slice(0, tastingDisplayLimit)
-          .map((t) => `- ${t.bottle_name || "Unknown bottle"}: ${(t.flavor_notes || []).join(", ") || "no notes"}${t.rating ? `, ${t.rating}/5` : ""}`)
-          .join("\n") + (tastingLogs.length > tastingDisplayLimit ? `\n... and ${tastingLogs.length - tastingDisplayLimit} more tastings` : "");
-
-        const whiskyPrefs = userProfile?.whiskey_preferences;
-        const prefContext = userProfile ? `
-USER PREFERENCES:
-Tobacco strength: ${userProfile.strength_preference || "any"}
-Preferred blend types: ${(userProfile.preferred_blend_types || []).join(", ") || "any"}
-Preferred pipe shapes: ${(userProfile.preferred_shapes || []).join(", ") || "any"}
-Pipe size preference: ${userProfile.pipe_size_preference || "any"}
-Whiskey types: ${(whiskyPrefs?.types || []).join(", ") || "any"}
-Whiskey flavors: ${(whiskyPrefs?.flavors || []).join(", ") || "any"}
-Drinking style: ${(whiskyPrefs?.drinking_style || []).join(", ") || "any"}
-Cocktail preferences: ${(whiskyPrefs?.cocktails || []).join(", ") || "any"}` : "";
+        // Use the shared safe collection context budget system (same as action executor).
+        // This handles large collections gracefully without silent hard truncation.
+        const safeCtx = buildSafeCollectionContext({
+          pipes,
+          blends,
+          bottles,
+          smokingLogs: logs,
+          tastingLogs,
+          userProfile,
+        });
+        const collectionBlock = buildPromptBlock(safeCtx);
 
         // Build adaptive taste profile context
         const tasteProfileContext = buildTasteProfileContext(tasteProfile);
@@ -477,20 +434,7 @@ Cocktail preferences: ${(whiskyPrefs?.cocktails || []).join(", ") || "any"}` : "
         let contextMessage = `TOBACCO BLEND TYPE VOCABULARY (always use these exact terms when referring to blend types):
 ${blendTypesList}
 
-USER COLLECTION:
-
-PIPES (${pipes.length} total):
-${pipesList || "None yet"}
-
-TOBACCOS (${blends.length} total):
-${blendsList || "None yet"}
-
-WHISKEY BOTTLES (${bottles.length} total):
-${bottlesList || "None yet"}
-
-RECENT TASTINGS (${tastingLogs.length} total):
-${tastingsList || "None yet"}
-${prefContext}`;
+${collectionBlock}`;
 
         const activeContext = contextOverride || resolvedContextRef.current?.recommendationContext;
 
