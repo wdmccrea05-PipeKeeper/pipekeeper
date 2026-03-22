@@ -10,11 +10,7 @@
  */
 
 import { base44 } from '@/api/base44Client';
-import { RELEASE_MODE, isAdminWhiskeyUnlocked } from '@/components/utils/releaseConfig';
-
-function isWhiskeyBlocked() {
-  return RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
-}
+import { shouldFetchModuleData } from '@/components/utils/moduleReleaseState';
 
 /**
  * Get the best available value for a bottle
