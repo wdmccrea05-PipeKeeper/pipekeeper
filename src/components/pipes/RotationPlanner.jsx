@@ -35,7 +35,10 @@ export default function RotationPlanner({ user }) {
      return log.bowls_used || log.bowls_smoked || 1;
    };
 
-   const pipeRotation = (pipes || []).map(pipe => {
+   // ISSUE-1: Exclude collection-only (ai_excluded) pipes from all rotation/usage analytics
+   const activePipes = (pipes || []).filter(p => !p.ai_excluded);
+
+   const pipeRotation = activePipes.map(pipe => {
      try {
        const pipeLogs = (logs || []).filter(log => log && log.pipe_id === pipe.id);
        const lastLog = pipeLogs[0]; // Already sorted by -date

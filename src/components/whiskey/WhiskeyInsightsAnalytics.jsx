@@ -33,10 +33,27 @@ export function getBottleTypeDistribution(bottles) {
   return Object.entries(types).map(([name, value]) => ({ name, value }));
 }
 
+/**
+ * Normalize country variants to canonical names.
+ * Handles: USA / U.S.A. / United States / United States of America / US → "United States"
+ */
+export function normalizeCountry(country) {
+  if (!country) return 'Unknown';
+  const c = country.trim();
+  const upper = c.toUpperCase().replace(/[\s.]/g, '');
+  if (upper === 'USA' || upper === 'US' || c === 'United States' || c === 'United States of America') {
+    return 'United States';
+  }
+  if (upper === 'UK' || c === 'United Kingdom' || c === 'Great Britain') {
+    return 'United Kingdom';
+  }
+  return c;
+}
+
 export function getCountryDistribution(bottles) {
   const countries = {};
   bottles.forEach((b) => {
-    const country = b.country || 'Unknown';
+    const country = normalizeCountry(b.country);
     countries[country] = (countries[country] || 0) + 1;
   });
   return Object.entries(countries)
@@ -45,11 +62,35 @@ export function getCountryDistribution(bottles) {
     .slice(0, 8);
 }
 
+/**
+ * Auto-compute aftermarket and collector values when explicit fields are absent.
+ * - aftermarket: use aftermarket_price if present; else estimate as retail_price * 1.2 for bottles > 12yr age
+ * - collector: use collector_value if present; else use best available price signal
+ * This ensures values never show $0 when data exists.
+ */
+function computeBottleAftermarket(b) {
+  if (Number(b.aftermarket_price) > 0) return Number(b.aftermarket_price);
+  // Heuristic: aged or limited bottles trade above retail
+  const retail = Number(b.retail_price) || 0;
+  const age = Number(b.age) || 0;
+  const isLimited = b.production_status === 'Limited Edition' || b.production_status === 'Discontinued' || b.production_status === 'Vintage';
+  if (retail > 0 && (age >= 12 || isLimited)) return Math.round(retail * 1.25);
+  if (retail > 0) return retail;
+  return Number(b.purchase_price) || 0;
+}
+
+function computeBottleCollector(b) {
+  if (Number(b.collector_value) > 0) return Number(b.collector_value);
+  const aftermarket = computeBottleAftermarket(b);
+  if (aftermarket > 0) return aftermarket;
+  return Number(b.retail_price) || Number(b.purchase_price) || 0;
+}
+
 export function getCollectionValue(bottles) {
   return {
-    retail: bottles.reduce((sum, b) => sum + (Number(b.retail_price) || 0), 0),
-    aftermarket: bottles.reduce((sum, b) => sum + (Number(b.aftermarket_price) || 0), 0),
-    collector: bottles.reduce((sum, b) => sum + (Number(b.collector_value) || 0), 0),
+    retail: bottles.reduce((sum, b) => sum + (Number(b.retail_price) || Number(b.purchase_price) || 0), 0),
+    aftermarket: bottles.reduce((sum, b) => sum + computeBottleAftermarket(b), 0),
+    collector: bottles.reduce((sum, b) => sum + computeBottleCollector(b), 0),
   };
 }
 
