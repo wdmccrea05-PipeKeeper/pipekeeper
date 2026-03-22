@@ -10,6 +10,11 @@
  */
 
 import { base44 } from '@/api/base44Client';
+import { RELEASE_MODE, isAdminWhiskeyUnlocked } from '@/components/utils/releaseConfig';
+
+function isWhiskeyBlocked() {
+  return RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
+}
 
 /**
  * Get the best available value for a bottle
@@ -73,14 +78,17 @@ export async function aggregateCollection(userEmail) {
   }
 
   try {
-    // Fetch all data in parallel
+    // Fetch all data in parallel.
+    // When WhiskeyKeeper is blocked in this release, bottle/tasting fetches are
+    // skipped entirely so whiskey data never appears in story cards or summaries.
+    const whiskeyBlocked = isWhiskeyBlocked();
     const [pipes, tobaccos, bottles, smokingLogs, tastingLogs, inventoryUnits] = await Promise.all([
       base44.entities.Pipe.filter({ created_by: userEmail }).catch(() => []),
       base44.entities.TobaccoBlend.filter({ created_by: userEmail }).catch(() => []),
-      base44.entities.Bottle.filter({ created_by: userEmail }).catch(() => []),
+      whiskeyBlocked ? Promise.resolve([]) : base44.entities.Bottle.filter({ created_by: userEmail }).catch(() => []),
       base44.entities.SmokingLog.filter({ created_by: userEmail }, '-date', 1000).catch(() => []),
-      base44.entities.TastingLog.filter({ created_by: userEmail }, '-tasting_date', 1000).catch(() => []),
-      base44.entities.WhiskeyInventoryUnit.filter({ created_by: userEmail }).catch(() => []),
+      whiskeyBlocked ? Promise.resolve([]) : base44.entities.TastingLog.filter({ created_by: userEmail }, '-tasting_date', 1000).catch(() => []),
+      whiskeyBlocked ? Promise.resolve([]) : base44.entities.WhiskeyInventoryUnit.filter({ created_by: userEmail }).catch(() => []),
     ]);
 
     const pipesList = Array.isArray(pipes) ? pipes : [];
