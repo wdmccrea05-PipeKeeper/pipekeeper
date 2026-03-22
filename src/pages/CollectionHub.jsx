@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { WHISKEYKEEPER_BLOCKED } from "@/components/utils/releaseConfig";
+import { isAdminWhiskeyUnlocked, RELEASE_MODE } from "@/components/utils/releaseConfig";
+const WHISKEYKEEPER_BLOCKED = RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useTranslation } from "@/components/i18n/safeTranslation";
