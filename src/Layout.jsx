@@ -309,7 +309,7 @@ export default function Layout({ children, currentPageName }) {
     );
 
     return items;
-  }, [t, lang, isModuleEnabled]);
+  }, [t, lang, user]);
 
   const PUBLIC_PAGES = useMemo(
     () =>
