@@ -150,10 +150,10 @@ export function getRatingTrends(bottles) {
   const rated = bottles.filter((b) => b.rating);
   if (!rated.length) return [];
 
-  // Average rating by country (top 8)
+  // Average rating by country (top 8) — use normalized country names
   const byCountry = {};
   rated.forEach((b) => {
-    const country = b.country || 'Unknown';
+    const country = normalizeCountry(b.country);
     if (!byCountry[country]) byCountry[country] = [];
     byCountry[country].push(Number(b.rating));
   });
@@ -195,6 +195,15 @@ export function getCollectionGrowth(bottles) {
 }
 
 const COLORS = ['#C87941', '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#06B6D4', '#EC4899'];
+
+// Shared readable chart styles for dark background
+const CHART_TICK = { fill: '#E0D8C8', fontSize: 12 };
+const CHART_TICK_SM = { fill: '#E0D8C8', fontSize: 11 };
+const CHART_TOOLTIP = {
+  contentStyle: { background: 'rgba(28,18,10,0.97)', border: '1px solid rgba(180,140,75,0.3)', color: '#F5F1E7' },
+  labelStyle: { color: '#F5F1E7', fontWeight: 600 },
+  itemStyle: { color: '#E0D8C8' },
+};
 
 export function WhiskeyAnalyticsTab({ bottles, tastingLogs }) {
   const { t } = useTranslation();
