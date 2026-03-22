@@ -332,16 +332,7 @@ Return complete and accurate information based on the blend name or description 
         />
       )}
 
-      <OnlineImageSearchModal
-        isOpen={showOnlineSearch}
-        recordType="blend"
-        recordData={formData}
-        onImageSelected={handleOnlineImageSelected}
-        onClose={() => {
-          setShowOnlineSearch(false);
-          setOnlineSearchType(null);
-        }}
-      />
+      {/* OnlineImageSearchModal hidden for this release */}
 
       {/* Logo Browser Dialog */}
       <Dialog open={showLogoBrowser} onOpenChange={setShowLogoBrowser}>
@@ -551,11 +542,7 @@ Return complete and accurate information based on the blend name or description 
                            reader.readAsDataURL(file);
                          }
                        }}
-                       onSearchOnlineClick={() => {
-                         setOnlineSearchType('photo');
-                         setShowOnlineSearch(true);
-                       }}
-                       showSearchOption={true}
+                       showSearchOption={false}
                        recordType="blend"
                        recordData={formData}
                        existingPhotos={[]}
@@ -616,11 +603,7 @@ Return complete and accurate information based on the blend name or description 
                            reader.readAsDataURL(file);
                          }
                        }}
-                       onSearchOnlineClick={() => {
-                         setOnlineSearchType('logo');
-                         setShowOnlineSearch(true);
-                       }}
-                       showSearchOption={true}
+                       showSearchOption={false}
                        recordType="blend"
                        recordData={formData}
                        existingPhotos={[]}
