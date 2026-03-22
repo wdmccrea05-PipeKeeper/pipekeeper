@@ -179,7 +179,7 @@ export default function Curator() {
       const result = await base44.entities.Bottle.filter({ created_by: user?.email });
       return Array.isArray(result) ? result : [];
     },
-    enabled: !!user?.email,
+    enabled: !!user?.email && !isWhiskeyBlocked(),
     staleTime: 10000,
   });
 
@@ -189,7 +189,7 @@ export default function Curator() {
       const result = await base44.entities.TastingLog.filter({ created_by: user?.email }, '-tasting_date', 50);
       return Array.isArray(result) ? result : [];
     },
-    enabled: !!user?.email,
+    enabled: !!user?.email && !isWhiskeyBlocked(),
     staleTime: 10000,
   });
 
