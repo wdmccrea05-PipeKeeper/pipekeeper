@@ -39,6 +39,7 @@ import WhatsNewPopup from "@/components/onboarding/WhatsNewPopup";
 import EntitlementDebug from "@/components/debug/EntitlementDebug";
 import PermissionDebugPanel from "@/components/debug/PermissionDebugPanel";
 import AdminWhiskeyUnlock from "@/components/debug/AdminWhiskeyUnlock";
+import ModuleReleaseDebug from "@/components/debug/ModuleReleaseDebug";
 import {
   isIOSWebView,
   openAppleSubscriptions,
