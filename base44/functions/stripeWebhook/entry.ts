@@ -252,7 +252,7 @@ async function handleCheckoutCompleted(base44: any, stripe: Stripe, session: Str
 }
 
 async function handleSubscriptionChanged(base44: any, stripeSub: Stripe.Subscription, eventType: string) {
-  await upsertSubscriptionFromStripe(base44, stripeSub);
+  await upsertSubscriptionFromStripe(base44, stripeSub, {}, null);
 
   await logEvent(base44, eventType, {
     user_email: normEmail(stripeSub.metadata?.user_email || ''),
