@@ -9,7 +9,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
-import { WHISKEYKEEPER_BLOCKED } from '@/components/utils/releaseConfig';
+import { isAdminWhiskeyUnlocked, RELEASE_MODE } from '@/components/utils/releaseConfig';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { EyeOff, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
