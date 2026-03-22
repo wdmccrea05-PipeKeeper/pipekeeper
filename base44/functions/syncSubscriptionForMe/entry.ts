@@ -76,20 +76,30 @@ Deno.serve(async (req) => {
 
     const customerId = customers.data[0].id;
 
-    // HOTFIX: Query both active AND trialing subscriptions
-    const [activeResult, trialingResult] = await Promise.all([
-      stripe.subscriptions.list({ customer: customerId, status: 'active', limit: 10 }),
-      stripe.subscriptions.list({ customer: customerId, status: 'trialing', limit: 10 }),
-    ]);
+    // Fetch all subscriptions and pick best by status priority
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: 'all',
+      limit: 100,
+    });
 
-    const allSubs = [...(activeResult.data || []), ...(trialingResult.data || [])];
+    const eligibleStatuses = new Set(['active', 'trialing', 'past_due', 'incomplete']);
+    const candidateSubs = (subscriptions.data || []).filter((s) =>
+      eligibleStatuses.has(String(s.status || '').toLowerCase())
+    );
 
-    if (allSubs.length === 0) {
-      return Response.json({ status: 'no_subscription', message: 'No active or trialing subscriptions' });
+    if (candidateSubs.length === 0) {
+      return Response.json({ status: 'no_subscription', message: 'No qualifying subscription found' });
     }
 
-    // Use most recent subscription
-    const subscription = allSubs.sort((a, b) => (b.created || 0) - (a.created || 0))[0];
+    const statusRank = { active: 4, trialing: 3, past_due: 2, incomplete: 1 };
+
+    const subscription = candidateSubs.sort((a, b) => {
+      const ar = statusRank[String(a.status || '').toLowerCase()] || 0;
+      const br = statusRank[String(b.status || '').toLowerCase()] || 0;
+      if (br !== ar) return br - ar;
+      return (b.created || 0) - (a.created || 0);
+    })[0];
 
     const item = subscription.items.data[0];
     if (!item?.price) {
@@ -139,19 +149,25 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.Subscription.create(subscriptionData);
     }
 
-    // HOTFIX: Also update User entity entitlement fields directly.
-    // This is what the frontend reads first (useCurrentUser → getEntitlementTier).
-    // Without this, users get "free" access until the next webhook fires.
+    // Update User entity entitlement fields — what the frontend reads first.
+    const normalizedStatus = String(subscription.status || '').toLowerCase();
+    const hasPaidAccess = ['active', 'trialing', 'past_due', 'incomplete'].includes(normalizedStatus);
+
+    const metadataModules = String(subscription.metadata?.modules_csv || '')
+      .split(',')
+      .map((m) => m.trim().toLowerCase())
+      .filter(Boolean);
+
+    const paidModules = metadataModules.length ? metadataModules : modulesFromPlanKey(planKey);
+
     try {
-      const userRows = await base44.asServiceRole.entities.User.filter({ email });
-      const userRow = Array.isArray(userRows) && userRows.length > 0 ? userRows[0] : null;
-      if (userRow?.id) {
-        await base44.asServiceRole.entities.User.update(userRow.id, {
-          entitlement_tier: 'pro',
-          has_paid_access: true,
-          stripe_customer_id: customerId,
-        });
-      }
+      await base44.asServiceRole.entities.User.update(userId, {
+        stripe_customer_id: customerId,
+        entitlement_tier: hasPaidAccess ? 'pro' : 'free',
+        has_paid_access: hasPaidAccess,
+        paid_modules_csv: hasPaidAccess ? paidModules.join(',') : '',
+        updated_date: new Date().toISOString(),
+      });
     } catch (err) {
       console.warn('[syncSubscriptionForMe] Failed to update user entitlement fields:', err?.message);
       // Non-blocking — subscription record is still created/updated
