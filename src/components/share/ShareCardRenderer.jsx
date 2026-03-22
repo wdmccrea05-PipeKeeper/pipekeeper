@@ -45,6 +45,37 @@ export const PipeShareCard = React.forwardRef(({ pipe }, ref) => {
   );
 });
 
+export const WhiskeyShareCard = React.forwardRef(({ bottle }, ref) => {
+  const { t } = useTranslation();
+  const photo = bottle?.photo || bottle?.image || bottle?.image_url;
+  return (
+    <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
+      <div className="flex items-center justify-between mb-6">
+        <img src={LOGO} alt="CollectionKeeper" className="h-6 object-contain" />
+        <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(180, 140, 75, 0.7)" }}>{t("share.collectorCard", { defaultValue: "Collector Card" })}</span>
+      </div>
+      {photo ? <div className="mb-6 -mx-8 -mt-2 -mb-4 relative h-64 overflow-hidden rounded-t-lg bg-black/10"><img src={photo} alt={bottle?.name} className="w-full h-full object-contain p-4" /></div> : null}
+      <div className="space-y-4">
+        <div className="border-b border-[rgba(180,140,75,0.15)] pb-4">
+          <h2 className="text-2xl font-bold mb-1" style={{ color: "#FFFFFF", overflowWrap: "anywhere", lineHeight: 1.1 }}>{bottle?.name}</h2>
+          {bottle?.distillery ? <p className="text-sm font-semibold" style={{ color: "rgba(224,216,200,0.8)", overflowWrap: "anywhere" }}>{bottle.distillery}</p> : null}
+        </div>
+        <div className="grid grid-cols-2 gap-3 text-xs">
+          <Meta label={t("whiskey.type", { defaultValue: "Type" })} value={bottle?.type} />
+          <Meta label={t("whiskey.region", { defaultValue: "Region" })} value={bottle?.region} />
+          <Meta label={t("whiskey.age", { defaultValue: "Age" })} value={bottle?.age ? `${bottle.age} yr` : null} />
+          <Meta label={t("whiskey.abv", { defaultValue: "ABV" })} value={bottle?.abv ? `${bottle.abv}%` : null} />
+          <Meta label={t("whiskey.vintage", { defaultValue: "Vintage" })} value={bottle?.vintage} />
+          <Meta label={t("whiskey.country", { defaultValue: "Country" })} value={bottle?.country} />
+          {bottle?.estimated_value ? <Meta label={t("share.value", { defaultValue: "Value" })} value={formatCurrency(bottle.estimated_value)} /> : null}
+          {bottle?.rating ? <Meta label={t("common.rating", { defaultValue: "Rating" })} value={`${bottle.rating}/5`} /> : null}
+        </div>
+        {bottle?.notes ? <div className="border-t border-[rgba(180,140,75,0.15)] pt-4"><p style={{ color: "rgba(224,216,200,0.8)", fontSize: 13, lineHeight: 1.5, overflowWrap: "anywhere" }}>{String(bottle.notes).slice(0, 150)}</p></div> : null}
+      </div>
+    </div>
+  );
+});
+
 export const TobaccoShareCard = React.forwardRef(({ tobacco }, ref) => {
   const { t } = useTranslation();
   const photo = tobacco?.photo || tobacco?.logo || tobacco?.tin_image || tobacco?.brand_logo;
