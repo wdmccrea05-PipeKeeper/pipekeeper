@@ -86,8 +86,8 @@ Deno.serve(async (req: Request) => {
 
       if (customerId) {
         try {
-          const { getStripeClient } = await import("./_utils/stripe.ts");
-          const stripe = getStripeClient();
+          const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
+          const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
           
           const session = await stripe.billingPortal.sessions.create({
             customer: customerId,
