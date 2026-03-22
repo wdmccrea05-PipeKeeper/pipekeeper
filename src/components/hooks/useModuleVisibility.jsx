@@ -37,20 +37,22 @@ export const MODULE_FIELDS = {
 export function deriveModuleStates(profile) {
   const prefsSet = profile?.module_preferences_set === true;
 
+  // For each module: if blocked in release → always false regardless of user prefs.
+  // If launched: respect user prefs (default on for existing users).
+  // If internal: false for now (LockedModuleGuard handles the internal-tester check).
   return {
-    pipekeeper: prefsSet
-      ? (profile?.pipekeeper_enabled !== false)
-      : true, // always default pipe on
-    // WhiskeyKeeper: gated off in pipekeeper_stable release unless admin has unlocked it
-    whiskeykeeper: isWhiskeyBlocked()
+    pipekeeper: isModuleBlocked('pipekeeper')
+      ? false
+      : (prefsSet ? (profile?.pipekeeper_enabled !== false) : true),
+    whiskeykeeper: isModuleBlocked('whiskeykeeper')
       ? false
       : (prefsSet ? (profile?.whiskeykeeper_enabled !== false) : true),
-    winekeeper: prefsSet
-      ? (profile?.winekeeper_enabled === true)
-      : false,
-    cigarkeeper: prefsSet
-      ? (profile?.cigarkeeper_enabled === true)
-      : false,
+    winekeeper: isModuleBlocked('winekeeper')
+      ? false
+      : (prefsSet ? (profile?.winekeeper_enabled === true) : false),
+    cigarkeeper: isModuleBlocked('cigarkeeper')
+      ? false
+      : (prefsSet ? (profile?.cigarkeeper_enabled === true) : false),
   };
 }
 
