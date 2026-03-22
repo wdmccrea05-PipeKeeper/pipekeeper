@@ -78,39 +78,62 @@ Deno.serve(async (req) => {
     const email = normEmail(user.email);
     const userId = user.id || user.auth_user_id;
 
-    // Find Stripe customer
-    const customers = await stripe.customers.list({ email, limit: 1 });
+    // Find ALL real Stripe customers for this email (not just limit:1).
+    // Fake/test records (test_cus_*) are deprioritized.
+    const customers = await stripe.customers.list({ email, limit: 20 });
 
     if (customers.data.length === 0) {
       return Response.json({ status: 'no_customer', message: 'No Stripe customer found' });
     }
 
-    const customerId = customers.data[0].id;
-
-    // Fetch all subscriptions and pick best by status priority
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: 'all',
-      limit: 100,
-    });
+    // Filter to real customers only (prefer cus_* over test_cus_*)
+    const realCustomers = customers.data.filter((c) => c.id && c.id.startsWith('cus_'));
+    const allCustomers = realCustomers.length > 0 ? realCustomers : customers.data;
 
     const eligibleStatuses = new Set(['active', 'trialing', 'past_due', 'incomplete']);
-    const candidateSubs = (subscriptions.data || []).filter((s) =>
-      eligibleStatuses.has(String(s.status || '').toLowerCase())
-    );
+    const statusRank = { active: 4, trialing: 3, past_due: 2, incomplete: 1 };
 
-    if (candidateSubs.length === 0) {
+    // Fetch subscriptions for each customer and find the best qualifying one
+    let bestSubscription = null;
+    let bestCustomerId = null;
+
+    for (const customer of allCustomers) {
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: 'all',
+        limit: 20,
+      });
+
+      const candidates = (subscriptions.data || []).filter((s) =>
+        eligibleStatuses.has(String(s.status || '').toLowerCase())
+      );
+
+      if (candidates.length === 0) continue;
+
+      const best = candidates.sort((a, b) => {
+        const ar = statusRank[String(a.status || '').toLowerCase()] || 0;
+        const br = statusRank[String(b.status || '').toLowerCase()] || 0;
+        if (br !== ar) return br - ar;
+        return (b.created || 0) - (a.created || 0);
+      })[0];
+
+      const bestRank = statusRank[String(best.status || '').toLowerCase()] || 0;
+      const currentBestRank = bestSubscription
+        ? (statusRank[String(bestSubscription.status || '').toLowerCase()] || 0)
+        : -1;
+
+      if (bestRank > currentBestRank) {
+        bestSubscription = best;
+        bestCustomerId = customer.id;
+      }
+    }
+
+    if (!bestSubscription) {
       return Response.json({ status: 'no_subscription', message: 'No qualifying subscription found' });
     }
 
-    const statusRank = { active: 4, trialing: 3, past_due: 2, incomplete: 1 };
-
-    const subscription = candidateSubs.sort((a, b) => {
-      const ar = statusRank[String(a.status || '').toLowerCase()] || 0;
-      const br = statusRank[String(b.status || '').toLowerCase()] || 0;
-      if (br !== ar) return br - ar;
-      return (b.created || 0) - (a.created || 0);
-    })[0];
+    const subscription = bestSubscription;
+    const customerId = bestCustomerId;
 
     const item = subscription.items.data[0];
     if (!item?.price) {
