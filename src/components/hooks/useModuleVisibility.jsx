@@ -13,7 +13,12 @@ import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { safeUpdate } from '@/components/utils/safeUpdate';
-import { WHISKEYKEEPER_BLOCKED } from '@/components/utils/releaseConfig';
+import { isAdminWhiskeyUnlocked, RELEASE_MODE } from '@/components/utils/releaseConfig';
+
+// Evaluate at hook call time (not module load time) so admin override takes effect after reload
+function isWhiskeyBlocked() {
+  return RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
+}
 
 const normEmail = (e) => String(e || '').trim().toLowerCase();
 
