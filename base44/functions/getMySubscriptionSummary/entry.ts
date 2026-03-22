@@ -81,11 +81,16 @@ Deno.serve(async (req: Request) => {
     
     // Only initialize Stripe if there are Stripe subscriptions AND a customer ID
     if (provider === "stripe") {
-      // Prefer real Stripe customer IDs (cus_) over test/fake ones (test_cus_)
-      const realSubWithCustomer = stripeSubs.find((s) => s.stripe_customer_id && s.stripe_customer_id.startsWith("cus_"));
+      // Pick customer ID from the primarySub first (most authoritative),
+      // then from any active stripe sub with a real cus_* ID,
+      // then fall back to user record or any sub.
+      const primaryCustomerId = primarySub?.stripe_customer_id;
+      const realSubWithCustomer = stripeSubs.find((s) => s.stripe_customer_id?.startsWith("cus_"));
       const anySubWithCustomer = stripeSubs.find((s) => s.stripe_customer_id);
-      const customerId = realSubWithCustomer?.stripe_customer_id
-        || me.stripe_customer_id
+      const customerId = (primaryCustomerId?.startsWith("cus_") ? primaryCustomerId : null)
+        || (me.stripe_customer_id?.startsWith("cus_") ? me.stripe_customer_id : null)
+        || realSubWithCustomer?.stripe_customer_id
+        || primaryCustomerId
         || anySubWithCustomer?.stripe_customer_id
         || null;
 
