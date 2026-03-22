@@ -29,7 +29,7 @@ export default function WhiskeyHighlightCard({
         boxShadow: `0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)`,
       }}
     >
-      {/* Background blur if photo exists */}
+      {/* Background photo if exists */}
       {photo && (
         <div
           className='absolute inset-0 pointer-events-none'
@@ -37,8 +37,9 @@ export default function WhiskeyHighlightCard({
             backgroundImage: `url(${photo})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            filter: 'blur(16px) brightness(0.15) saturate(0.5)',
-            opacity: 0.6,
+            filter: 'blur(6px) brightness(0.35) saturate(0.7)',
+            opacity: 1,
+            transform: 'scale(1.05)',
           }}
         />
       )}
@@ -47,7 +48,9 @@ export default function WhiskeyHighlightCard({
       <div
         className='absolute inset-0 pointer-events-none'
         style={{
-          background: `linear-gradient(135deg, rgba(32,22,15,0.96) 0%, rgba(32,22,15,0.85) 100%)`,
+          background: photo
+            ? `linear-gradient(135deg, rgba(22,14,8,0.78) 0%, rgba(22,14,8,0.65) 100%)`
+            : `linear-gradient(135deg, rgba(32,22,15,0.96) 0%, rgba(32,22,15,0.85) 100%)`,
         }}
       />
 
