@@ -6,8 +6,10 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import ModuleNav from '@/components/modules/ModuleNav';
 import { Wine, BookOpen, TrendingUp, BarChart3 } from 'lucide-react';
 import { formatCurrency } from '@/components/utils/localeFormatters';
+import { RELEASE_MODE, isAdminWhiskeyUnlocked } from '@/components/utils/releaseConfig';
+import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 
-export default function WhiskeyAnalyticsPage() {
+function WhiskeyAnalyticsInner() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
 
@@ -134,5 +136,13 @@ export default function WhiskeyAnalyticsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function WhiskeyAnalyticsPage() {
+  return (
+    <LockedModuleGuard moduleKey="whiskeykeeper">
+      <WhiskeyAnalyticsInner />
+    </LockedModuleGuard>
   );
 }

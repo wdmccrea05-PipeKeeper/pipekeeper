@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import LogTastingModal from '@/components/whiskey/LogTastingModal';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 
-export default function Tastings() {
+function TastingsInner() {
   const { t } = useTranslation();
   const [tastings, setTastings] = useState([]);
   const [bottles, setBottles] = useState([]);
@@ -140,5 +141,13 @@ export default function Tastings() {
         />
       ) : null}
     </>
+  );
+}
+
+export default function Tastings() {
+  return (
+    <LockedModuleGuard moduleKey="whiskeykeeper">
+      <TastingsInner />
+    </LockedModuleGuard>
   );
 }
