@@ -13,17 +13,14 @@ import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { safeUpdate } from '@/components/utils/safeUpdate';
-import { isAdminWhiskeyUnlocked, RELEASE_MODE } from '@/components/utils/releaseConfig';
-
-// Evaluate at hook call time (not module load time) so admin override takes effect after reload
-function isWhiskeyBlocked() {
-  return RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
-}
+import { isModuleBlocked, isModuleLaunched, shouldShowModuleInNav } from '@/components/utils/moduleReleaseState';
 
 const normEmail = (e) => String(e || '').trim().toLowerCase();
 
-/** Modules that are actually launched (route exists). */
-export const LAUNCHED_MODULES = ['pipekeeper', 'whiskeykeeper'];
+/** Modules that are actually launched in the current release. */
+export const LAUNCHED_MODULES = Object.entries(
+  (await import('@/components/utils/moduleReleaseState')).MODULE_RELEASE_STATES
+).filter(([, state]) => state === 'launched').map(([key]) => key);
 
 /** All possible module IDs and their profile field names. */
 export const MODULE_FIELDS = {
