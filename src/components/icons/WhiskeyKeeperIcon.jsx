@@ -6,12 +6,12 @@
  */
 import React from 'react';
 
-export default function WhiskeyKeeperIcon({ className = '', color = 'currentColor', size = 16, style = {} }) {
+export default function WhiskeyKeeperIcon({ className = '', color = 'currentColor', size, style = {} }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
+      width={size ?? (className ? undefined : 16)}
+      height={size ?? (className ? undefined : 16)}
       viewBox="0 0 24 24"
       fill="none"
       stroke={color}
