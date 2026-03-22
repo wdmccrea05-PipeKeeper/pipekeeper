@@ -1,8 +1,10 @@
 /**
  * Create Stripe checkout session for module-based subscription
- * Handles single module, 3-module bundle, 4-module bundle, and founders plans
  * 
- * Validates all price IDs before attempting checkout creation
+ * HOTFIX: Canonical metadata is now written onto BOTH the checkout session
+ * AND the Stripe Subscription object (via subscription_data.metadata) so
+ * that the webhook can reliably sync the user on every subscription event,
+ * even before a checkout.session.completed fires.
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
@@ -10,9 +12,7 @@ import Stripe from 'npm:stripe@13.11.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
-// Plan to Stripe product mapping
 const PLAN_TO_STRIPE_PRICE = {
-  // Single module plans
   'pipekeeper_pro_monthly': Deno.env.get('VITE_STRIPE_PIPEKEEPER_MONTHLY'),
   'pipekeeper_pro_annual': Deno.env.get('VITE_STRIPE_PIPEKEEPER_ANNUAL'),
   'whiskeykeeper_pro_monthly': Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_MONTHLY'),
@@ -21,29 +21,75 @@ const PLAN_TO_STRIPE_PRICE = {
   'cigarkeeper_pro_annual': Deno.env.get('VITE_STRIPE_CIGARKEEPER_ANNUAL'),
   'winekeeper_pro_monthly': Deno.env.get('VITE_STRIPE_WINEKEEPER_MONTHLY'),
   'winekeeper_pro_annual': Deno.env.get('VITE_STRIPE_WINEKEEPER_ANNUAL'),
-
-  // Bundle plans
   'three_module_bundle_monthly': Deno.env.get('VITE_STRIPE_THREE_BUNDLE_MONTHLY'),
   'three_module_bundle_annual': Deno.env.get('VITE_STRIPE_THREE_BUNDLE_ANNUAL'),
   'four_module_bundle_monthly': Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_MONTHLY'),
   'four_module_bundle_annual': Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_ANNUAL'),
-
-  // Founders plan
   'founders_bundle_annual': Deno.env.get('VITE_STRIPE_FOUNDERS_ANNUAL'),
 };
 
 /**
- * Validate price ID exists for plan
+ * Build canonical metadata that is written to BOTH the checkout session
+ * and the Stripe Subscription via subscription_data.metadata.
+ * This ensures the webhook always has email + user_id regardless of
+ * which event fires first.
  */
-function validatePlanPriceId(planKey) {
-  const priceId = PLAN_TO_STRIPE_PRICE[planKey];
-  if (!priceId) {
-    const error = new Error(`Stripe price ID not configured for plan: ${planKey}`);
-    error.code = 'MISSING_PRICE_ID';
-    error.planKey = planKey;
-    throw error;
+function buildCheckoutMetadata(planKey, selectedModules = [], user) {
+  const normalizedModules = Array.isArray(selectedModules)
+    ? selectedModules.map((m) => String(m || '').trim().toLowerCase()).filter(Boolean)
+    : [];
+
+  const billingPeriod = planKey.includes('annual') ? 'annual' : 'monthly';
+
+  let checkoutType = 'single_module';
+  let productKind = 'module';
+  let primaryModule = normalizedModules[0] || 'pipekeeper';
+  let bundleName = '';
+  let moduleCount = 1;
+  let modulesCsv = primaryModule;
+
+  if (planKey.includes('three_module')) {
+    checkoutType = 'bundle_3';
+    productKind = 'bundle';
+    bundleName = 'three_module_bundle';
+    moduleCount = Math.min(normalizedModules.length || 3, 3);
+    modulesCsv = normalizedModules.slice(0, 3).join(',') || 'pipekeeper';
+    primaryModule = normalizedModules[0] || 'pipekeeper';
+  } else if (planKey.includes('four_module')) {
+    checkoutType = 'bundle_4';
+    productKind = 'bundle';
+    bundleName = 'four_module_bundle';
+    moduleCount = 4;
+    modulesCsv = normalizedModules.length
+      ? normalizedModules.slice(0, 4).join(',')
+      : 'pipekeeper,whiskeykeeper,cigarkeeper,winekeeper';
+    primaryModule = normalizedModules[0] || 'pipekeeper';
+  } else if (planKey.includes('founders')) {
+    checkoutType = 'bundle_4';
+    productKind = 'founders';
+    bundleName = 'founders_bundle';
+    moduleCount = 4;
+    modulesCsv = 'pipekeeper,whiskeykeeper,cigarkeeper,winekeeper';
+    primaryModule = 'pipekeeper';
+  } else {
+    checkoutType = 'single_module';
+    productKind = 'module';
+    moduleCount = 1;
+    modulesCsv = primaryModule;
   }
-  return priceId;
+
+  return {
+    user_email: String(user?.email || '').trim().toLowerCase(),
+    user_id: String(user?.id || user?.auth_user_id || '').trim(),
+    plan_key: planKey,
+    billing_period: billingPeriod,
+    checkout_type: checkoutType,
+    product_kind: productKind,
+    primary_module: primaryModule,
+    bundle_name: bundleName,
+    module_count: String(moduleCount),
+    modules_csv: modulesCsv,
+  };
 }
 
 Deno.serve(async (req) => {
@@ -52,35 +98,22 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
 
     if (!user?.email) {
-      return Response.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { planKey, selectedModules, successUrl, cancelUrl } = await req.json();
 
     if (!planKey) {
-      return Response.json(
-        { error: 'Plan key is required' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Plan key is required' }, { status: 400 });
     }
 
-    // Validate price ID exists for this plan
-    let priceId;
-    try {
-      priceId = validatePlanPriceId(planKey);
-    } catch (err) {
-      console.error('[Checkout] Validation error:', err);
+    const priceId = PLAN_TO_STRIPE_PRICE[planKey];
+    if (!priceId) {
       return Response.json(
-        { 
-          error: `Checkout not available for this plan. Please select a different option.`,
+        {
+          error: 'Checkout not available for this plan. Please select a different option.',
           code: 'MISSING_PRICE_ID',
-          details: {
-            planKey,
-            missingEnvVar: `VITE_STRIPE_${planKey.toUpperCase()}`,
-          }
+          details: { planKey },
         },
         { status: 400 }
       );
@@ -88,10 +121,7 @@ Deno.serve(async (req) => {
 
     // Get or create Stripe customer
     let customerId;
-    const existingCustomers = await stripe.customers.list({
-      email: user.email,
-      limit: 1,
-    });
+    const existingCustomers = await stripe.customers.list({ email: user.email, limit: 1 });
 
     if (existingCustomers.data.length > 0) {
       customerId = existingCustomers.data[0].id;
@@ -99,44 +129,32 @@ Deno.serve(async (req) => {
       const customer = await stripe.customers.create({
         email: user.email,
         metadata: {
-          userId: user.id || user.auth_user_id,
+          user_id: String(user?.id || user?.auth_user_id || ''),
+          user_email: String(user?.email || '').trim().toLowerCase(),
         },
       });
       customerId = customer.id;
     }
 
-    // Create checkout session with metadata for 3-module bundles
-    const metadata = {};
-    if (planKey.includes('three_module') && selectedModules && Array.isArray(selectedModules)) {
-      // Preserve exact module selection as JSON string for later parsing
-      metadata.activeModules = JSON.stringify(selectedModules.slice(0, 3));
-      metadata.planType = 'three_module_bundle';
-    } else if (planKey.includes('four_module')) {
-      metadata.planType = 'four_module_bundle';
-    } else if (planKey.includes('founders')) {
-      metadata.planType = 'founders';
-    } else {
-      // Single module
-      metadata.planType = 'single_module';
-      metadata.module = selectedModules?.[0] || 'pipekeeper';
-    }
+    // Build canonical metadata — same object goes on session AND subscription
+    const metadata = buildCheckoutMetadata(planKey, selectedModules || [], user);
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       success_url: successUrl,
       cancel_url: cancelUrl,
+      // Metadata on the session itself (for checkout.session.completed)
       metadata,
-      customer_update: {
-        address: 'auto',
+      // HOTFIX: Also write metadata onto the subscription so that
+      // customer.subscription.* events carry user identity without
+      // depending solely on the checkout session event.
+      subscription_data: {
+        metadata,
       },
+      customer_update: { address: 'auto' },
     });
 
     return Response.json({
