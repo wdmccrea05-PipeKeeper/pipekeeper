@@ -460,5 +460,6 @@ Only update bottles where the correct type is clearly different from "Other". Re
         </div>
       )}
     </div>
+    </LockedModuleGuard>
   );
 }
