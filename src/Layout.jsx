@@ -1064,6 +1064,7 @@ export default function Layout({ children, currentPageName }) {
               <PermissionDebugPanel />
             </>
           ) : null}
+          {isAdmin ? <ModuleReleaseDebug user={user} /> : null}
 
           <FeatureQuickAccess
             isOpen={showQuickAccess}
