@@ -789,6 +789,7 @@ export default function Layout({ children, currentPageName }) {
                 </div>
 
                 <div className="flex items-center gap-1 lg:gap-3 flex-shrink-0">
+                  {isAdmin ? <AdminWhiskeyUnlock /> : null}
                   <LanguageSwitcher />
                   <GlobalSearchTrigger />
                   <button
