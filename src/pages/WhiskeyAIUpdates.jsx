@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
