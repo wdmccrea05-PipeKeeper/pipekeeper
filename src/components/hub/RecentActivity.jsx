@@ -56,8 +56,11 @@ export default function RecentActivity({ onActivitiesLoaded = null }) {
         const recentActivities = await getRecentCrossModuleActivity(user.email);
 
         if (!cancelled) {
-          setActivities(recentActivities);
-          if (onActivitiesLoaded) onActivitiesLoaded(recentActivities);
+          const filtered = isWhiskeyBlocked()
+            ? recentActivities.filter(a => a.module !== 'whiskey')
+            : recentActivities;
+          setActivities(filtered);
+          if (onActivitiesLoaded) onActivitiesLoaded(filtered);
         }
       } catch (error) {
         console.warn("[RecentActivity] Error loading activities:", error);
