@@ -28,6 +28,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import WhiskeyExporter from '@/components/export/WhiskeyExporter';
 import { getBottleUnitValue } from '@/components/utils/whiskeyValueHelpers';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
+import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { useProfilePrivacy } from '@/components/hooks/useProfilePrivacy';
 
 function StatBadge({ icon: Icon, label, value, accent = '#D4A574' }) {

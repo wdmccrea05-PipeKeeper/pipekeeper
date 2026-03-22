@@ -824,7 +824,7 @@ export default function ProfilePage() {
             {/* Whiskey Preferences */}
             <div className="pt-2 space-y-3">
               <div className="flex items-center gap-2">
-                <GlassWater className="w-4 h-4 text-amber-600" />
+                <WhiskeyKeeperIcon size={16} color="rgb(217,119,6)" />
                 <Label className="text-stone-700 font-semibold text-base">Whiskey Preferences</Label>
               </div>
               <p className="text-xs text-stone-500">

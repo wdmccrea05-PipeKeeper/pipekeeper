@@ -102,7 +102,7 @@ function clearRouteState() {
 const SCOPE_OPTIONS = [
   { value: "all", label: "All Modules", icon: Sparkles, isPipeIcon: false },
   { value: "pipekeeper", label: "PipeKeeper", isPipeIcon: true },
-  { value: "whiskeykeeper", label: "WhiskeyKeeper", icon: GlassWater, isPipeIcon: false },
+  { value: "whiskeykeeper", label: "WhiskeyKeeper", icon: WhiskeyKeeperIcon, isPipeIcon: false },
 ];
 
 function ScopeChip({ value, label, selected, onClick, isPipeIcon, icon: IconComponent }) {
