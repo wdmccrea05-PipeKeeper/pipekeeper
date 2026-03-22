@@ -23,4 +23,4 @@ export {
   shouldFetchModuleData,
   shouldExposeModuleInCurator,
   MODULE_RELEASE_STATES,
-} from './moduleReleaseState.js';
+} from './moduleReleaseState';
