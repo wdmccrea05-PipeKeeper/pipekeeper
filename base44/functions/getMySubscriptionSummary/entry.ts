@@ -80,15 +80,20 @@ Deno.serve(async (req: Request) => {
     let warning = null;
     
     // Only initialize Stripe if there are Stripe subscriptions AND a customer ID
-    if (provider === "stripe" && stripeSubs.length > 0) {
+    if (provider === "stripe") {
+      // Prefer customer ID from subscription records, fall back to user record
       const subWithCustomer = stripeSubs.find((s) => s.stripe_customer_id);
-      const customerId = subWithCustomer?.stripe_customer_id;
+      const customerId = subWithCustomer?.stripe_customer_id || me.stripe_customer_id || null;
+
+      console.log(`[getMySubscriptionSummary] stripeSubs=${stripeSubs.length}, customerId=${customerId}, allSubs=${allSubs.length}`);
 
       if (customerId) {
         try {
           const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
+          if (!stripeKey || !stripeKey.startsWith("sk_")) {
+            throw new Error("STRIPE_SECRET_KEY not configured");
+          }
           const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
-          
           const session = await stripe.billingPortal.sessions.create({
             customer: customerId,
             return_url: APP_URL,
@@ -98,6 +103,9 @@ Deno.serve(async (req: Request) => {
           console.warn("[getMySubscriptionSummary] Failed to create portal session:", e.message);
           warning = "Unable to generate management URL. Please contact support.";
         }
+      } else {
+        console.warn("[getMySubscriptionSummary] No stripe_customer_id found on subs or user record");
+        warning = "No Stripe customer ID found. Please contact support.";
       }
     }
 
