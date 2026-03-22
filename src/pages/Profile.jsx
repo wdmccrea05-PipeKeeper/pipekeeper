@@ -13,7 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 
-import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, GlassWater, Layers } from "lucide-react";
+import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, Layers } from "lucide-react";
+import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 import WhiskeyPreferencesSection from "@/components/profile/WhiskeyPreferencesSection";
 import ModuleVisibilitySettings from "@/components/profile/ModuleVisibilitySettings";
