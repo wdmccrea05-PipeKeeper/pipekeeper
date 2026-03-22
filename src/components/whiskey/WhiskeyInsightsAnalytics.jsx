@@ -276,12 +276,9 @@ export function WhiskeyAnalyticsTab({ bottles, tastingLogs }) {
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={countryDistribution}>
             <CartesianGrid stroke="rgba(180,140,75,0.15)" />
-            <XAxis dataKey="name" tick={{ fill: 'rgba(224,216,200,0.7)', fontSize: 12 }} />
-            <YAxis tick={{ fill: 'rgba(224,216,200,0.7)', fontSize: 12 }} />
-            <Tooltip 
-              contentStyle={{ background: 'rgba(28,18,10,0.95)', border: '1px solid rgba(180,140,75,0.3)' }}
-              labelStyle={{ color: '#F5F1E7' }}
-            />
+            <XAxis dataKey="name" tick={CHART_TICK} />
+            <YAxis tick={CHART_TICK} />
+            <Tooltip {...CHART_TOOLTIP} />
             <Bar dataKey="value" fill="#C87941" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
