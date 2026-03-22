@@ -25,6 +25,7 @@ import { executeCuratorAction } from "@/components/curator/curatorActionExecutor
 import { applyAllRecommendations, buildClarificationPrompt } from "@/components/curator/curatorActionApply";
 import { normalizeCuratorActionResult } from "@/components/curator/normalizeCuratorActionResult";
 import { parseCuratorActionResponse } from "@/components/curator/parseCuratorActionResponse";
+import { buildSafeCollectionContext, buildPromptBlock } from "@/components/curator/collectionContextBudget";
 import CuratorActionStatusBar from "@/components/curator/CuratorActionStatusBar";
 import CuratorActionResultCard from "@/components/curator/CuratorActionResultCard";
 import CuratorActionErrorCard from "@/components/curator/CuratorActionErrorCard";
@@ -600,14 +601,20 @@ ${englishText}`;
         });
         
         // Parse action result after message is added
+        // NOTE: chat-path action execution is legacy — primary path is executeCuratorAction.
+        // parseCuratorActionResponse is the correct import (not parseActionResult which doesn't exist).
         if (isActionExecution && actionLaunchContext) {
-          const actionId = actionLaunchContext.sourceAction || 'unknown';
-          const parsed = parseActionResult(actionId, translatedResponse, {
-            pipes,
-            blends,
-            bottles,
-          });
-          setActionResult(parsed);
+          try {
+            const parsed = parseCuratorActionResponse(translatedResponse);
+            const normalized = normalizeCuratorActionResult(parsed, {
+              actionId: actionLaunchContext.sourceAction || 'unknown',
+              executionId: actionLaunchContext.executionId || `chat_${Date.now()}`,
+              title: actionLaunchContext.displayLabel || 'Curator Analysis',
+            });
+            setActionResult(normalized);
+          } catch (parseErr) {
+            console.warn('[CuratorWorkspace] Chat-path action parse failed (non-fatal):', parseErr?.message);
+          }
         }
 
         // CRITICAL HARDENING: Persist messages to CuratorMessage
