@@ -321,6 +321,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
   ];
 
   return (
+    <LockedModuleGuard moduleKey="whiskeykeeper">
     <div className="space-y-8">
       <ModuleNav items={moduleNav} currentPath={location.pathname} />
 
