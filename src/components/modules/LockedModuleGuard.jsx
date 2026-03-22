@@ -34,6 +34,26 @@ export default function LockedModuleGuard({ moduleKey, children }) {
     );
   }
 
+  // Release gate: WhiskeyKeeper blocked in pipekeeper_stable release — fail closed, no broken UI
+  const isReleaseBlocked = moduleKey === 'whiskeykeeper' && WHISKEYKEEPER_BLOCKED;
+
+  if (isReleaseBlocked) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center p-6">
+        <div className="text-center space-y-4 max-w-sm">
+          <p className="text-[#E0D8C8]/60 text-sm">This module is not available in this release.</p>
+          <Button
+            variant="ghost"
+            onClick={() => navigate(createPageUrl('CollectionHub'))}
+            className="text-[#E0D8C8]/60 hover:text-[#E0D8C8]"
+          >
+            Back to Hub
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!isModuleEnabled(moduleKey)) {
     const label = MODULE_LABELS[moduleKey] || moduleKey;
     return (
