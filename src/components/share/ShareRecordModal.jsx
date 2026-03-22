@@ -13,7 +13,7 @@ import {
   generatePublicShareUrl,
 } from "./shareUtils";
 import { getDefaultShareConfig, validateShareConfig } from "./shareFieldSelectors";
-import { PipeShareCard, TobaccoShareCard } from "./ShareCardRenderer";
+import { PipeShareCard, TobaccoShareCard, WhiskeyShareCard } from "./ShareCardRenderer";
 
 export default function ShareRecordModal({
   isOpen,
