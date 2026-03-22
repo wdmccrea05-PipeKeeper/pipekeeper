@@ -38,6 +38,7 @@ import FoundingMemberPopup from "@/components/subscription/FoundingMemberPopup";
 import WhatsNewPopup from "@/components/onboarding/WhatsNewPopup";
 import EntitlementDebug from "@/components/debug/EntitlementDebug";
 import PermissionDebugPanel from "@/components/debug/PermissionDebugPanel";
+import AdminWhiskeyUnlock from "@/components/debug/AdminWhiskeyUnlock";
 import {
   isIOSWebView,
   openAppleSubscriptions,
