@@ -6,27 +6,40 @@ export default function PipeIcon({
   title = "Pipe",
 }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} role="img" aria-label={title} fill="none">
+    <svg viewBox="0 0 64 64" className={className} role="img" aria-label={title} fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Bowl */}
       <path
-        d="M4 13.5c0-2.2 1.8-4 4-4h3.8c1.2 0 2.2 1 2.2 2.2v.8c0 1.7 1.4 3 3 3H20"
+        d="M14 10 C14 10 10 10 10 18 L10 30 C10 30 10 36 16 36 L26 36 C26 36 30 36 30 30 L30 18 C30 18 30 10 26 10 Z"
         stroke={color}
-        strokeWidth="1.8"
+        strokeWidth="2.8"
         strokeLinecap="round"
         strokeLinejoin="round"
-      />
-      <path
-        d="M6.2 7.5h3.6c1.8 0 3.2 1.4 3.2 3.2v1.1H6.2c-1.8 0-3.2-1.4-3.2-3.2S4.4 7.5 6.2 7.5Z"
         fill={color}
-        opacity="0.22"
+        fillOpacity="0.12"
       />
+      {/* Shank connecting bowl to stem */}
       <path
-        d="M6.2 7.5h3.6c1.8 0 3.2 1.4 3.2 3.2v1.1H6.2c-1.8 0-3.2-1.4-3.2-3.2S4.4 7.5 6.2 7.5Z"
+        d="M26 28 C32 28 36 30 36 34"
         stroke={color}
-        strokeWidth="1.8"
+        strokeWidth="2.8"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M18.7 15.5h1.8" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+      {/* Stem — long horizontal */}
+      <path
+        d="M36 34 Q44 34 54 32"
+        stroke={color}
+        strokeWidth="2.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Mouthpiece tip */}
+      <path
+        d="M54 32 L58 31"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
