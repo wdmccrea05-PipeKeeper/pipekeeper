@@ -1,4 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { isAdminWhiskeyUnlocked, RELEASE_MODE } from "@/components/utils/releaseConfig";
+
+function isWhiskeyBlocked() {
+  return RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
+}
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { getRecentCrossModuleActivity, formatActivityDate } from "@/components/keeper-core";
 import {
