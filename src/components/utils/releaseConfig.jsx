@@ -12,10 +12,33 @@
  *   1. Change RELEASE_MODE to 'full'
  *   2. Ensure WhiskeyKeeper subscription/entitlement flows are validated
  *   3. QA all paywall and upgrade paths for WhiskeyKeeper
+ *
+ * ADMIN OVERRIDE: Admins can bypass the release gate via localStorage flag
+ * 'ck_admin_unlock_whiskeykeeper' = 'true' to test/troubleshoot WhiskeyKeeper.
  */
 
 export const RELEASE_MODE = 'pipekeeper_stable';
 // export const RELEASE_MODE = 'full'; // uncomment when WhiskeyKeeper is release-ready
+
+const ADMIN_OVERRIDE_KEY = 'ck_admin_unlock_whiskeykeeper';
+
+export function isAdminWhiskeyUnlocked() {
+  try {
+    return localStorage.getItem(ADMIN_OVERRIDE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function setAdminWhiskeyUnlock(enabled) {
+  try {
+    if (enabled) {
+      localStorage.setItem(ADMIN_OVERRIDE_KEY, 'true');
+    } else {
+      localStorage.removeItem(ADMIN_OVERRIDE_KEY);
+    }
+  } catch {}
+}
 
 /**
  * Returns true if the given module is allowed in the current release.
@@ -28,20 +51,20 @@ export function isModuleAllowedInRelease(moduleKey) {
 
   if (RELEASE_MODE === 'full') return true;
 
+  // Admin override: allow WhiskeyKeeper for testing
+  if (key === 'whiskeykeeper' && isAdminWhiskeyUnlocked()) return true;
+
   if (RELEASE_MODE === 'pipekeeper_stable') {
-    // Only these modules are in the stable release
     const ALLOWED = new Set(['pipekeeper', 'cigarkeeper', 'winekeeper']);
-    // cigar/wine remain in registry as "coming soon" — allowed means not crash-blocked
-    // whiskeykeeper is deterministically excluded
     return ALLOWED.has(key) || key === 'pipekeeper';
   }
 
-  // Unknown release mode — fail closed
   return key === 'pipekeeper';
 }
 
 /**
  * True if WhiskeyKeeper is blocked in the current release.
- * Use this for nav guards, hub card rendering, and route guards.
+ * Respects admin override.
  */
-export const WHISKEYKEEPER_BLOCKED = RELEASE_MODE === 'pipekeeper_stable';
+export const WHISKEYKEEPER_BLOCKED =
+  RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
