@@ -267,7 +267,7 @@ export default function Layout({ children, currentPageName }) {
       },
     ];
 
-    if (isModuleEnabled("whiskeykeeper")) {
+    if (shouldShowModuleInNav("whiskeykeeper", user)) {
       items.push({
         name: safeLabel(t, "nav.whiskeykeeper", "WhiskeyKeeper"),
         page: "WhiskeyKeeper",
