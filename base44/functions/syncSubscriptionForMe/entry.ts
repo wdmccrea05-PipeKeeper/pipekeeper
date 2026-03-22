@@ -36,6 +36,17 @@ function extractTierFromPlanKey(planKey) {
   return 'pro'; // fail open for paid subscriptions
 }
 
+function modulesFromPlanKey(planKey) {
+  const key = String(planKey || '').toLowerCase();
+  if (key.startsWith('pipekeeper_')) return ['pipekeeper'];
+  if (key.startsWith('whiskeykeeper_')) return ['whiskeykeeper'];
+  if (key.startsWith('cigarkeeper_')) return ['cigarkeeper'];
+  if (key.startsWith('winekeeper_')) return ['winekeeper'];
+  if (key.includes('three_module')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+  if (key.includes('four_module') || key.includes('founders')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+  return ['pipekeeper'];
+}
+
 function determinePlanKeyFromPrice(priceId) {
   const priceMap = {
     [Deno.env.get('VITE_STRIPE_PIPEKEEPER_MONTHLY')]: 'pipekeeper_pro_monthly',
