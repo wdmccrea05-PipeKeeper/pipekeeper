@@ -172,7 +172,7 @@ For each pipe, suggest:
     sourceExpert: 'expert_whiskey_advisor',
     visibility: (ctx) => {
       const { bottles = [] } = ctx;
-      return bottles.length > 0;
+      return !isWhiskeyBlocked() && bottles.length > 0;
     },
     buildPrompt: (ctx) => {
       const { bottles = [] } = ctx;
