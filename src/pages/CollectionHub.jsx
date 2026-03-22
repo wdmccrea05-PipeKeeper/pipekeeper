@@ -131,7 +131,8 @@ export default function CollectionHub() {
   const { data: bottles = [] } = useQuery({
     queryKey: ["hub-bottles", user?.email],
     queryFn: async () => (await base44.entities.Bottle.filter({ created_by: user?.email })) || [],
-    enabled: !!user?.email,
+    // Don't fetch bottle data when WhiskeyKeeper is blocked in this release
+    enabled: !!user?.email && !WHISKEYKEEPER_BLOCKED,
     staleTime: 30000,
   });
 
