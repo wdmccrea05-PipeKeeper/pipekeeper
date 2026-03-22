@@ -155,14 +155,21 @@ async function syncUserEntitlements(base44: any, userEmail: string) {
   }
 }
 
-async function upsertSubscriptionFromStripe(base44: any, stripeSub: Stripe.Subscription) {
-  const metadata = (stripeSub.metadata || {}) as Record<string, string>;
+async function upsertSubscriptionFromStripe(
+  base44: any,
+  stripeSub: Stripe.Subscription,
+  metadataOverride: Record<string, string> = {},
+  fallbackEmail: string | null = null
+) {
+  const metadata = {
+    ...((stripeSub.metadata || {}) as Record<string, string>),
+    ...(metadataOverride || {}),
+  } as Record<string, string>;
+
   const customerId =
     typeof stripeSub.customer === 'string' ? stripeSub.customer : stripeSub.customer?.id || null;
 
-  const customerEmail =
-    metadata.user_email ||
-    null;
+  const customerEmail = normEmail(metadata.user_email || fallbackEmail || '');
 
   const modules = splitModulesCsv(metadata.modules_csv);
   const currentPeriodStart = stripeSub.current_period_start
