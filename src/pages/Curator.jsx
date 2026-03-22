@@ -9,6 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
 import { GlassWater, Sparkles } from "lucide-react";
+import { isAdminWhiskeyUnlocked, RELEASE_MODE } from "@/components/utils/releaseConfig";
+
+function isWhiskeyBlocked() {
+  return RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
+}
 import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 import PipeIcon from "@/components/icons/PipeIcon";
 
