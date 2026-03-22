@@ -167,6 +167,7 @@ export default function ShareRecordModal({
             <div className="space-y-4 max-h-[60vh] overflow-y-auto pb-4">
               {moduleType === "pipe" ? <PipeShareCard ref={cardRef} pipe={recordForPreview} userProfile={userProfile} /> : null}
               {moduleType === "tobacco" ? <TobaccoShareCard ref={cardRef} tobacco={recordForPreview} userProfile={userProfile} /> : null}
+              {moduleType === "whiskey" ? <WhiskeyShareCard ref={cardRef} bottle={recordForPreview} userProfile={userProfile} /> : null}
             </div>
           ) : (
             <div className="space-y-4">
