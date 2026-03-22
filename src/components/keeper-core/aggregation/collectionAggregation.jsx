@@ -74,17 +74,20 @@ export async function aggregateCollection(userEmail) {
   }
 
   try {
-    // Fetch all data in parallel.
-    // When WhiskeyKeeper is blocked in this release, bottle/tasting fetches are
-    // skipped entirely so whiskey data never appears in story cards or summaries.
-    const whiskeyBlocked = isWhiskeyBlocked();
+    // Fetch only data for modules allowed by the canonical release state.
+    // Blocked modules never issue queries — no data leaks into stories, summaries, or reports.
+    // Pass null as user since aggregation runs without a full user object here;
+    // shouldFetchModuleData falls back to release-state only (blocked = false always).
+    const fetchWhiskey = shouldFetchModuleData('whiskeykeeper', null);
+    const fetchPipe = shouldFetchModuleData('pipekeeper', null);
+
     const [pipes, tobaccos, bottles, smokingLogs, tastingLogs, inventoryUnits] = await Promise.all([
-      base44.entities.Pipe.filter({ created_by: userEmail }).catch(() => []),
-      base44.entities.TobaccoBlend.filter({ created_by: userEmail }).catch(() => []),
-      whiskeyBlocked ? Promise.resolve([]) : base44.entities.Bottle.filter({ created_by: userEmail }).catch(() => []),
-      base44.entities.SmokingLog.filter({ created_by: userEmail }, '-date', 1000).catch(() => []),
-      whiskeyBlocked ? Promise.resolve([]) : base44.entities.TastingLog.filter({ created_by: userEmail }, '-tasting_date', 1000).catch(() => []),
-      whiskeyBlocked ? Promise.resolve([]) : base44.entities.WhiskeyInventoryUnit.filter({ created_by: userEmail }).catch(() => []),
+      fetchPipe ? base44.entities.Pipe.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
+      fetchPipe ? base44.entities.TobaccoBlend.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
+      fetchWhiskey ? base44.entities.Bottle.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
+      fetchPipe ? base44.entities.SmokingLog.filter({ created_by: userEmail }, '-date', 1000).catch(() => []) : Promise.resolve([]),
+      fetchWhiskey ? base44.entities.TastingLog.filter({ created_by: userEmail }, '-tasting_date', 1000).catch(() => []) : Promise.resolve([]),
+      fetchWhiskey ? base44.entities.WhiskeyInventoryUnit.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
     ]);
 
     const pipesList = Array.isArray(pipes) ? pipes : [];
