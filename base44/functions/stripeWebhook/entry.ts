@@ -248,7 +248,7 @@ async function handleCheckoutCompleted(base44: any, stripe: Stripe, session: Str
     expand: ['latest_invoice', 'items.data.price'],
   });
 
-  await upsertSubscriptionFromStripe(base44, stripeSub);
+  await upsertSubscriptionFromStripe(base44, stripeSub, metadata, customerEmail || null);
 }
 
 async function handleSubscriptionChanged(base44: any, stripeSub: Stripe.Subscription, eventType: string) {
