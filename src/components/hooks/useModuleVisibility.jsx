@@ -13,14 +13,14 @@ import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { safeUpdate } from '@/components/utils/safeUpdate';
-import { isModuleBlocked, isModuleLaunched, shouldShowModuleInNav } from '@/components/utils/moduleReleaseState';
+import { isModuleBlocked, MODULE_RELEASE_STATES } from '@/components/utils/moduleReleaseState';
 
 const normEmail = (e) => String(e || '').trim().toLowerCase();
 
 /** Modules that are actually launched in the current release. */
-export const LAUNCHED_MODULES = Object.entries(
-  (await import('@/components/utils/moduleReleaseState')).MODULE_RELEASE_STATES
-).filter(([, state]) => state === 'launched').map(([key]) => key);
+export const LAUNCHED_MODULES = Object.entries(MODULE_RELEASE_STATES)
+  .filter(([, state]) => state === 'launched')
+  .map(([key]) => key);
 
 /** All possible module IDs and their profile field names. */
 export const MODULE_FIELDS = {
