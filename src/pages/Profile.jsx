@@ -839,7 +839,7 @@ export default function ProfilePage() {
             {/* Whiskey Notes for AI */}
             <div className="pt-2 space-y-2">
               <div className="flex items-center gap-2">
-                <GlassWater className="w-4 h-4 text-amber-500" />
+                <WhiskeyKeeperIcon size={16} color="rgb(245,158,11)" />
                 <Label className="text-stone-700 font-semibold text-base">Whiskey Notes for Recommendations</Label>
               </div>
               <p className="text-xs text-stone-500">

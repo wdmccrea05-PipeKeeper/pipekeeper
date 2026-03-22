@@ -242,7 +242,7 @@ export default function WhiskeyPage() {
                 {/* Stats row */}
                 {bottles.length > 0 && (
                   <div className="grid grid-cols-2 sm:flex sm:gap-3 sm:flex-wrap gap-2">
-                    {!hideCollectionCounts && <StatBadge icon={GlassWater} label={t('hub.bottles', 'Bottles')} value={stats.count} accent="#D4A574" />}
+                    {!hideCollectionCounts && <StatBadge icon={WhiskeyKeeperIcon} label={t('hub.bottles', 'Bottles')} value={stats.count} accent="#D4A574" />}
                     <StatBadge icon={BookOpen} label={t('whiskey.tastings', 'Tastings')} value={stats.tastingCount} accent="#C87941" />
                     {stats.avgRating && (
                       <StatBadge icon={Star} label={t('common.rating', 'Rating')} value={`${stats.avgRating}/5`} accent="#E0C060" />
@@ -403,7 +403,7 @@ export default function WhiskeyPage() {
                         onClick={() => {}}
                         fallbackIcon={
                            <div style={{ color: 'rgba(180,140,75,0.3)' }} className="text-center">
-                             <GlassWater className="w-12 h-12 mx-auto mb-2 opacity-40" />
+                             <WhiskeyKeeperIcon size={48} color="rgba(180,140,75,0.3)" className="mx-auto mb-2" />
                             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180,140,75,0.4)' }}>{t('whiskey.noPhoto', 'No photo')}</p>
                           </div>
                         }
@@ -459,7 +459,7 @@ export default function WhiskeyPage() {
                className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
                style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.22)' }}
              >
-               <GlassWater className="w-8 h-8" style={{ color: 'rgba(180,140,75,0.5)' }} />
+               <WhiskeyKeeperIcon size={32} color="rgba(180,140,75,0.5)" />
             </div>
             <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">{t('whiskey.noBottlesYet', 'No bottles yet')}</h2>
             <p style={{ color: 'rgba(224,216,200,0.6)' }} className="mb-6 max-w-sm mx-auto">{t('whiskey.startTracking', 'Start tracking your whiskey collection')}</p>
