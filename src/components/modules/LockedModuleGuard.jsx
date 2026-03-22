@@ -1,31 +1,37 @@
 /**
- * LockedModuleGuard — wraps a module page and redirects if the module is hidden.
+ * LockedModuleGuard — enforces module release state at the route level.
  *
- * Usage:
- *   <LockedModuleGuard moduleKey="whiskeykeeper">
- *     <WhiskeyKeeperContent />
- *   </LockedModuleGuard>
+ * Checks the canonical MODULE_RELEASE_STATES table. Blocked modules
+ * show a clean "not available" message. Internal modules redirect
+ * non-internal users. User-hidden modules offer a settings link.
  */
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
-import { isAdminWhiskeyUnlocked, RELEASE_MODE } from '@/components/utils/releaseConfig';
+import {
+  isModuleBlocked,
+  isModuleInternal,
+  isInternalModuleTester,
+} from '@/components/utils/moduleReleaseState';
 import { createPageUrl } from '@/components/utils/createPageUrl';
-import { EyeOff, Settings } from 'lucide-react';
+import { EyeOff, Settings, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 
 const MODULE_LABELS = {
-  pipekeeper: 'PipeKeeper',
+  pipekeeper:    'PipeKeeper',
   whiskeykeeper: 'WhiskeyKeeper',
-  winekeeper: 'WineKeeper',
-  cigarkeeper: 'CigarKeeper',
+  winekeeper:    'WineKeeper',
+  cigarkeeper:   'CigarKeeper',
 };
 
 export default function LockedModuleGuard({ moduleKey, children }) {
-  const { isModuleEnabled, isLoading } = useModuleVisibility();
+  const { isModuleEnabled, isLoading: visibilityLoading } = useModuleVisibility();
+  const { user, isLoading: userLoading } = useCurrentUser();
   const navigate = useNavigate();
 
-  // While loading, render nothing (prevents flash)
+  const isLoading = visibilityLoading || userLoading;
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -34,17 +40,18 @@ export default function LockedModuleGuard({ moduleKey, children }) {
     );
   }
 
-  // Release gate: WhiskeyKeeper blocked in pipekeeper_stable release — fail closed, no broken UI
-  // Admin override (localStorage flag) allows bypassing for testing
-  const isReleaseBlocked = moduleKey === 'whiskeykeeper'
-    && RELEASE_MODE === 'pipekeeper_stable'
-    && !isAdminWhiskeyUnlocked();
+  const key = String(moduleKey || '').toLowerCase();
+  const label = MODULE_LABELS[key] || moduleKey;
 
-  if (isReleaseBlocked) {
+  // 1. Blocked — no access for anyone in production
+  if (isModuleBlocked(key)) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6">
         <div className="text-center space-y-4 max-w-sm">
-          <p className="text-[#E0D8C8]/60 text-sm">This module is not available in this release.</p>
+          <Lock className="w-8 h-8 mx-auto" style={{ color: 'rgba(224,216,200,0.3)' }} />
+          <p className="text-[#E0D8C8]/50 text-sm">
+            {label} is not available in this release.
+          </p>
           <Button
             variant="ghost"
             onClick={() => navigate(createPageUrl('CollectionHub'))}
@@ -57,8 +64,29 @@ export default function LockedModuleGuard({ moduleKey, children }) {
     );
   }
 
-  if (!isModuleEnabled(moduleKey)) {
-    const label = MODULE_LABELS[moduleKey] || moduleKey;
+  // 2. Internal — only for internal testers
+  if (isModuleInternal(key) && !isInternalModuleTester(user)) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center p-6">
+        <div className="text-center space-y-4 max-w-sm">
+          <Lock className="w-8 h-8 mx-auto" style={{ color: 'rgba(224,216,200,0.3)' }} />
+          <p className="text-[#E0D8C8]/50 text-sm">
+            {label} is not yet available.
+          </p>
+          <Button
+            variant="ghost"
+            onClick={() => navigate(createPageUrl('CollectionHub'))}
+            className="text-[#E0D8C8]/60 hover:text-[#E0D8C8]"
+          >
+            Back to Hub
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. User has hidden this module in their preferences (launched modules only)
+  if (!isModuleEnabled(key)) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <div
