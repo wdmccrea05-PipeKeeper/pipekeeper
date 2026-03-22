@@ -12,6 +12,8 @@ import PublicSharedRecord from '@/pages/PublicSharedRecord';
 import CuratorAnalyticsDashboard from '@/pages/CuratorAnalyticsDashboard';
 import CollectionInsightsShare from '@/pages/CollectionInsightsShare';
 import Whiskey from '@/pages/Whiskey.jsx';
+import WhiskeyAnalytics from '@/pages/WhiskeyAnalytics';
+import Tastings from '@/pages/Tastings';
 import Curator from '@/pages/Curator';
 import Subscription from '@/pages/Subscription';
 import SubscriptionSuccessFlow from '@/pages/SubscriptionSuccessFlow';
@@ -64,6 +66,16 @@ const AuthenticatedApp = () => {
       <Route path="/Whiskey" element={
         <LayoutWrapper currentPageName="Whiskey">
           <Whiskey />
+        </LayoutWrapper>
+      } />
+      <Route path="/WhiskeyAnalytics" element={
+        <LayoutWrapper currentPageName="WhiskeyAnalytics">
+          <WhiskeyAnalytics />
+        </LayoutWrapper>
+      } />
+      <Route path="/Tastings" element={
+        <LayoutWrapper currentPageName="Tastings">
+          <Tastings />
         </LayoutWrapper>
       } />
       <Route path="/Curator" element={
