@@ -353,7 +353,7 @@ export default function CollectionHub() {
           {t("hub.collectionSummary", "Collection Overview")}
         </h2>
 
-        <div className={`grid gap-4 ${isModuleEnabled("whiskeykeeper") ? "grid-cols-2 md:grid-cols-6" : "grid-cols-2 md:grid-cols-4"}`}>
+        <div className={`grid gap-4 ${!WHISKEYKEEPER_BLOCKED && isModuleEnabled("whiskeykeeper") ? "grid-cols-2 md:grid-cols-6" : "grid-cols-2 md:grid-cols-4"}`}>
           <SummaryStat
             label={t("hub.totalValue", "Total Value")}
             value={displayValue(money(totalDisplayedValue))}
@@ -371,7 +371,7 @@ export default function CollectionHub() {
             color="#7B9B5B"
           />
 
-          {isModuleEnabled("whiskeykeeper") ? (
+          {!WHISKEYKEEPER_BLOCKED && isModuleEnabled("whiskeykeeper") ? (
             <>
               <SummaryStat
                 label={t("hub.bottleTypes", "Bottle Types")}
