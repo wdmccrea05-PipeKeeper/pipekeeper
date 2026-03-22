@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { Camera, Image as ImageIcon, Search } from "lucide-react";
+import { Camera, Image as ImageIcon } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 function acceptSingleOrMany(files, maxPhotos) {
@@ -78,20 +78,7 @@ export default function PhotoUploader({
           <span className="sm:hidden">{t("photos.camera") || 'Camera'}</span>
         </Button>
 
-        {showSearchOption && typeof onSearchOnlineClick === 'function' && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onSearchOnlineClick}
-            disabled={!canAddMore}
-            className={`flex-1 min-w-[100px] bg-stone-700 border-stone-600 text-white hover:bg-stone-800 ${buttonClassName}`}
-          >
-            <Search className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">{t("onlineImageSearch.searchOnline", "Search Online")}</span>
-            <span className="sm:hidden">{t("onlineImageSearch.search", "Search")}</span>
-          </Button>
-        )}
+        {/* Online photo search hidden for this release — unreliable */}
       </div>
 
       <input
