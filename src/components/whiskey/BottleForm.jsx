@@ -182,13 +182,7 @@ export default function BottleForm({
         />
       )}
 
-      <OnlineImageSearchModal
-        isOpen={showOnlineSearch}
-        recordType="bottle"
-        recordData={bottleSearchContext}
-        onImageSelected={handleOnlineImageSelected}
-        onClose={() => setShowOnlineSearch(false)}
-      />
+      {/* OnlineImageSearchModal hidden for this release */}
 
       {/* Mobile-safe layout: flex-col so footer stays visible */}
       <div
@@ -604,8 +598,7 @@ export default function BottleForm({
                   onPhotosSelected={handlePhotoFilesSelected}
                   existingPhotos={photoPreview ? [photoPreview] : []}
                   maxPhotos={1}
-                  onSearchOnlineClick={() => setShowOnlineSearch(true)}
-                  showSearchOption={true}
+                  showSearchOption={false}
                   recordType="bottle"
                   recordData={bottleSearchContext}
                 />

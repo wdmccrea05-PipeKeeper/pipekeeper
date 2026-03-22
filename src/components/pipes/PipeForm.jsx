@@ -322,16 +322,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         />
       )}
 
-      <OnlineImageSearchModal
-        isOpen={showOnlineSearch}
-        recordType="pipe"
-        recordData={formData}
-        onImageSelected={handleOnlineImageSelected}
-        onClose={() => {
-          setShowOnlineSearch(false);
-          setOnlineSearchType(null);
-        }}
-      />
+      {/* OnlineImageSearchModal hidden for this release */}
 
       <form onSubmit={handleSubmit} className="space-y-6">
       {/* ===== SECTION: AI Search (new pipes only) ===== */}
@@ -410,22 +401,18 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                     console.error('Error reading file:', err);
                   }
                 }}
-                onSearchOnlineClick={() => {
-                  setOnlineSearchType('photo');
-                  setShowOnlineSearch(true);
-                }}
-                showSearchOption={true}
+                showSearchOption={false}
                 recordType="pipe"
                 recordData={formData}
                 existingPhotos={[]}
                 hideExisting
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                />
+                </div>
+                </div>
+                </CardContent>
+                </Card>
 
-      {/* ===== SECTION: Stamping Photos ===== */}
+                {/* ===== SECTION: Stamping Photos ===== */}
       {/* Stamping Photos */}
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
@@ -471,16 +458,12 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                     console.error('Error reading file:', err);
                   }
                 }}
-                onSearchOnlineClick={() => {
-                  setOnlineSearchType('stamping');
-                  setShowOnlineSearch(true);
-                }}
-                showSearchOption={true}
+                showSearchOption={false}
                 recordType="pipe"
                 recordData={formData}
                 existingPhotos={[]}
                 hideExisting
-              />
+                />
             </div>
           </div>
         </CardContent>
