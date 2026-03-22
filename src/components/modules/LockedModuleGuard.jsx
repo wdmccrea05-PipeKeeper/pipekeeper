@@ -35,7 +35,10 @@ export default function LockedModuleGuard({ moduleKey, children }) {
   }
 
   // Release gate: WhiskeyKeeper blocked in pipekeeper_stable release — fail closed, no broken UI
-  const isReleaseBlocked = moduleKey === 'whiskeykeeper' && WHISKEYKEEPER_BLOCKED;
+  // Admin override (localStorage flag) allows bypassing for testing
+  const isReleaseBlocked = moduleKey === 'whiskeykeeper'
+    && RELEASE_MODE === 'pipekeeper_stable'
+    && !isAdminWhiskeyUnlocked();
 
   if (isReleaseBlocked) {
     return (
