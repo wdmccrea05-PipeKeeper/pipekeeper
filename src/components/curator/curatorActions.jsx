@@ -20,6 +20,11 @@
  */
 
 import { Sparkles, Ruler, Droplet, Tags, Target } from 'lucide-react';
+import { isAdminWhiskeyUnlocked, RELEASE_MODE } from '@/components/utils/releaseConfig';
+
+function isWhiskeyBlocked() {
+  return RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
+}
 import {
   getTobaccoReclassificationCandidates,
   buildReclassificationCandidatesContext,
