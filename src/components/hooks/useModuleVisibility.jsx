@@ -13,6 +13,7 @@ import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { safeUpdate } from '@/components/utils/safeUpdate';
+import { WHISKEYKEEPER_BLOCKED } from '@/components/utils/releaseConfig';
 
 const normEmail = (e) => String(e || '').trim().toLowerCase();
 
