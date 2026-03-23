@@ -1,132 +1,59 @@
-import React, { useEffect, useState } from "react";
-import { shouldFetchModuleData } from "@/components/utils/moduleReleaseState";
-import { useTranslation } from "@/components/i18n/safeTranslation";
-import { getRecentCrossModuleActivity, formatActivityDate } from "@/components/keeper-core";
-import {
-  MODULE_ICONS,
-  getAssetImageStyle,
-} from "@/components/branding/moduleAssets";
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Activity, ChevronRight } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { createPageUrl } from '@/components/utils/createPageUrl';
 
-function ActivityIcon({ module }) {
-  const src = module === "whiskey" ? MODULE_ICONS.whiskeykeeper : MODULE_ICONS.pipekeeper;
-  const assetKey = module === "whiskey" ? "whiskeykeeper" : "pipekeeper";
-
-  return (
-    <div
-      className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden bg-transparent"
-      style={{
-        background: "rgba(139,98,57,0.12)",
-        border: "1px solid rgba(212,164,116,0.16)",
-      }}
-    >
-      <img
-        src={src}
-        alt={module}
-        className="w-7 h-7 object-contain bg-transparent"
-        style={getAssetImageStyle(assetKey, "small")}
-        draggable={false}
-      />
-    </div>
-  );
+function formatDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString();
 }
 
-export default function RecentActivity({ onActivitiesLoaded = null }) {
-  const { t } = useTranslation();
-  const [activities, setActivities] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function RecentActivity({ onSelect }) {
+  const { user } = useCurrentUser();
 
-  useEffect(() => {
-    let cancelled = false;
+  const { data: smokeLogs = [] } = useQuery({
+    queryKey: ['hub-recent-activity', user?.email],
+    enabled: !!user?.email,
+    staleTime: 2 * 60 * 1000,
+    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user.email }, '-date', 5).catch(() => []),
+  });
 
-    (async () => {
-      try {
-        setLoading(true);
-        const { base44 } = await import("@/api/base44Client");
-        const user = await base44.auth.me();
-
-        if (!user?.email) {
-          setActivities([]);
-          return;
-        }
-
-        const recentActivities = await getRecentCrossModuleActivity(user.email);
-
-        if (!cancelled) {
-          const filtered = shouldFetchModuleData('whiskeykeeper', user)
-            ? recentActivities
-            : recentActivities.filter(a => a.module !== 'whiskey');
-          setActivities(filtered);
-          if (onActivitiesLoaded) onActivitiesLoaded(filtered);
-        }
-      } catch (error) {
-        console.warn("[RecentActivity] Error loading activities:", error);
-        if (!cancelled) {
-          setActivities([]);
-          if (onActivitiesLoaded) onActivitiesLoaded([]);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [onActivitiesLoaded]);
-
-  const title = t("hub.recentActivity", "Recent Activity");
-
-  if (loading) {
-    return (
-      <div className="bg-gradient-to-br from-[#3a2f26]/60 to-[#2a2020]/60 border border-[#8b6239]/30 rounded-2xl p-6">
-        <h3 className="text-lg font-semibold text-[#E0D8C8] mb-4">{title}</h3>
-        <div className="text-center py-8">
-          <p className="text-sm text-[#E0D8C8]/60">
-            {t("hub.loading", "Loading ecosystem data...")}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (activities.length === 0) {
-    return (
-      <div className="bg-gradient-to-br from-[#3a2f26]/60 to-[#2a2020]/60 border border-[#8b6239]/30 rounded-2xl p-6">
-        <h3 className="text-lg font-semibold text-[#E0D8C8] mb-4">{title}</h3>
-        <div className="text-center py-8">
-          <p className="text-sm text-[#E0D8C8]/60">
-            {t("hub.noRecentActivity", "No recent activity yet. Start by adding to your collections!")}
-          </p>
-        </div>
-      </div>
-    );
-  }
+  if (!smokeLogs.length) return null;
 
   return (
-    <div className="bg-gradient-to-br from-[#3a2f26]/60 to-[#2a2020]/60 border border-[#8b6239]/30 rounded-2xl p-6">
-      <h3 className="text-lg font-semibold text-[#E0D8C8] mb-4">{title}</h3>
-
-      <div className="space-y-3">
-        {activities.map((activity) => (
+    <div className="space-y-3">
+      {smokeLogs.map((log) => (
+        <button
+          key={log.id}
+          type="button"
+          onClick={() => onSelect?.(log)}
+          className="w-full rounded-[22px] p-4 flex items-center gap-4 text-left"
+          style={{
+            background: 'linear-gradient(145deg, rgba(40,28,18,0.92), rgba(24,17,11,0.98))',
+            border: '1px solid rgba(180,140,75,0.18)',
+          }}
+        >
           <div
-            key={activity.id}
-            className="flex items-start gap-3 p-3 bg-[#1a1410]/60 rounded-lg border border-[#8b6239]/15 hover:border-[#8b6239]/30 transition-colors"
+            className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ background: 'rgba(180,140,75,0.14)', border: '1px solid rgba(180,140,75,0.24)' }}
           >
-            <ActivityIcon module={activity.module} />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[#E0D8C8] truncate">
-                {activity.title}
-              </p>
-              <p className="text-xs text-[#E0D8C8]/60 truncate">
-                {activity.subtitle || t("hub.tastingLogged", "Tasting logged")}
-              </p>
-              <p className="text-xs text-[#8b6239] mt-1">
-                {formatActivityDate(activity.date, t)}
-              </p>
-            </div>
+            <Activity className="w-5 h-5" style={{ color: '#D4A574' }} />
           </div>
-        ))}
-      </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-lg font-bold truncate" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+              {log.blend_name || 'Recent session'}
+            </p>
+            <p className="text-sm mt-1 truncate" style={{ color: 'rgba(224,216,200,0.7)' }}>
+              {log.pipe_name ? `In ${log.pipe_name}` : 'Pipe session'}{log.date ? ` • ${formatDate(log.date)}` : ''}
+            </p>
+          </div>
+          <ChevronRight className="w-4 h-4 shrink-0" style={{ color: '#D4A574' }} />
+        </button>
+      ))}
     </div>
   );
 }
