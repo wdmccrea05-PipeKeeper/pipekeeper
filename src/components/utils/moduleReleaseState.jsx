@@ -126,6 +126,11 @@ export function canUserAccessModule(moduleKey, user, hasEntitlement = true) {
 export function shouldShowModuleInNav(moduleKey, user) {
   const key = String(moduleKey || '').trim().toLowerCase();
   const state = getModuleReleaseState(key);
+
+  // Check local override for admin/internal testers
+  const localOverride = getLocalOverride(key);
+  if (localOverride && isInternalModuleTester(user)) return true;
+
   if (state === 'blocked') return false;
   if (state === 'internal') return isInternalModuleTester(user);
   return true; // launched: show always (entitlement gates content, not nav entry)
@@ -138,6 +143,11 @@ export function shouldShowModuleInNav(moduleKey, user) {
 export function shouldFetchModuleData(moduleKey, user) {
   const key = String(moduleKey || '').trim().toLowerCase();
   const state = getModuleReleaseState(key);
+
+  // Check local override for admin/internal testers
+  const localOverride = getLocalOverride(key);
+  if (localOverride && isInternalModuleTester(user)) return true;
+
   if (state === 'blocked') return false;
   if (state === 'internal') return isInternalModuleTester(user);
   return true;
@@ -192,8 +202,10 @@ export function setAdminWhiskeyUnlock(enabled) {
   try {
     if (enabled) {
       localStorage.setItem('ck_admin_unlock_whiskeykeeper', 'true');
+      localStorage.setItem(`${LOCAL_OVERRIDE_PREFIX}whiskeykeeper`, 'launched');
     } else {
       localStorage.removeItem('ck_admin_unlock_whiskeykeeper');
+      localStorage.removeItem(`${LOCAL_OVERRIDE_PREFIX}whiskeykeeper`);
     }
   } catch {}
 }
