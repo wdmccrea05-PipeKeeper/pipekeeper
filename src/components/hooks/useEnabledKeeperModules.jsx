@@ -1,38 +1,84 @@
 /**
- * useEnabledKeeperModules — returns KEEPER_MODULES filtered by user visibility preferences.
+ * useEnabledKeeperModules — canonical launched vs expanding-soon module buckets.
  *
- * This is the hook all Hub, nav, story, and recommendation surfaces should use
- * to get the list of modules a user has enabled.
+ * This hook is what Hub, nav, quick launch, and marketing surfaces should use.
+ * It separates:
+ * - modules the current user can actually open now
+ * - modules intentionally shown as "Expanding Soon"
+ *
+ * RULES:
+ * - release state overrides entitlement and profile preferences
+ * - internal modules are visible/openable only to internal testers
+ * - blocked modules are never openable
+ * - non-launched modules should never appear in enabledModules
  */
 
 import { useMemo } from 'react';
 import { KEEPER_MODULES } from '@/components/utils/moduleRegistry';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import {
+  getEffectiveModuleReleaseState,
+  isInternalModuleTester,
+} from '@/components/utils/moduleReleaseState';
+
+function isAccessibleLaunchState(moduleKey, user) {
+  const state = getEffectiveModuleReleaseState(moduleKey, user);
+  if (state === 'launched') return true;
+  if (state === 'internal') return isInternalModuleTester(user);
+  return false;
+}
+
+function shouldShowAsExpandingSoon(moduleKey, user) {
+  const state = getEffectiveModuleReleaseState(moduleKey, user);
+
+  if (state === 'blocked') return true;
+  if (state === 'internal') return !isInternalModuleTester(user);
+
+  return false;
+}
 
 export function useEnabledKeeperModules() {
-  const { moduleStates, isLoading, isModuleEnabled } = useModuleVisibility();
+  const visibility = useModuleVisibility();
+  const { moduleStates, isLoading, isModuleEnabled } = visibility;
+  const { user } = useCurrentUser();
 
-  /** Platform-launched modules the user has enabled */
+  /** Modules the current user can actually open now. */
   const enabledModules = useMemo(() => {
-    return KEEPER_MODULES.filter(m => m.enabled && isModuleEnabled(m.moduleKey));
-  }, [moduleStates]);
+    return KEEPER_MODULES.filter((m) => {
+      if (!isAccessibleLaunchState(m.moduleKey, user)) return false;
+      return isModuleEnabled(m.moduleKey);
+    });
+  }, [moduleStates, isModuleEnabled, user]);
 
-  /** Coming-soon modules the user has enabled (for future use) */
-  const enabledComingSoonModules = useMemo(() => {
-    return KEEPER_MODULES.filter(m => !m.enabled && isModuleEnabled(m.moduleKey));
-  }, [moduleStates]);
+  /** Modules intentionally shown as future/locked marketing cards. */
+  const expandingSoonModules = useMemo(() => {
+    return KEEPER_MODULES.filter((m) => shouldShowAsExpandingSoon(m.moduleKey, user));
+  }, [user, moduleStates]);
 
-  /** All modules (launched + coming soon) the user has enabled */
-  const allEnabledModules = useMemo(() => {
-    return KEEPER_MODULES.filter(m => isModuleEnabled(m.moduleKey));
-  }, [moduleStates]);
+  /** Internal-only modules the current user can preview. */
+  const internalPreviewModules = useMemo(() => {
+    return KEEPER_MODULES.filter((m) => {
+      const state = getEffectiveModuleReleaseState(m.moduleKey, user);
+      return state === 'internal' && isInternalModuleTester(user) && isModuleEnabled(m.moduleKey);
+    });
+  }, [user, moduleStates, isModuleEnabled]);
+
+  /** All modules visible anywhere on the hub for this user. */
+  const allVisibleModules = useMemo(() => {
+    const keys = new Set([
+      ...enabledModules.map((m) => m.moduleKey),
+      ...expandingSoonModules.map((m) => m.moduleKey),
+    ]);
+    return KEEPER_MODULES.filter((m) => keys.has(m.moduleKey));
+  }, [enabledModules, expandingSoonModules]);
 
   return {
-    enabledModules,           // launched & user-enabled
-    enabledComingSoonModules,
-    allEnabledModules,
+    ...visibility,
+    enabledModules,
+    expandingSoonModules,
+    internalPreviewModules,
+    allVisibleModules,
     isLoading,
-    isModuleEnabled,
-    moduleStates,             // raw states object for moduleAccess utilities
   };
 }
