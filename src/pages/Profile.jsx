@@ -588,20 +588,20 @@ export default function ProfilePage() {
             {/* Basic */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="font-medium break-words" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.displayName")}</Label>
+                <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.displayName")}</Label>
                 <Input
                   value={formData.display_name}
                   onChange={(e) => setFormData((p) => ({ ...p, display_name: e.target.value }))}
                 />
               </div>
               <div>
-                <Label className="font-medium break-words" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("common.email")}</Label>
-                <Input value={user?.email || ""} disabled className="opacity-50 cursor-not-allowed" />
+               <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("common.email")}</Label>
+               <Input value={user?.email || ""} disabled style={{ color: 'rgba(224,216,200,0.4)', backgroundColor: 'rgba(0,0,0,0.2)' }} className="cursor-not-allowed" />
               </div>
             </div>
 
             <div>
-              <Label className="font-medium break-words" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.bio")}</Label>
+              <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.bio")}</Label>
               <Textarea
                 value={formData.bio}
                 onChange={(e) => setFormData((p) => ({ ...p, bio: e.target.value }))}
@@ -612,7 +612,7 @@ export default function ProfilePage() {
             {/* Location */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="font-medium break-words" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.location")}</Label>
+                <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.location")}</Label>
                 <div className="flex items-center gap-2">
                   <span className="text-sm" style={{ color: 'rgba(224,216,200,0.65)' }}>{t("profileExtended.showOnProfile")}</span>
                   <Switch
@@ -649,9 +649,9 @@ export default function ProfilePage() {
 
             {/* Privacy */}
             <div className="space-y-3">
-              <Label className="font-medium break-words" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.privacy")}</Label>
+             <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.privacy")}</Label>
 
-              <div className="flex items-center justify-between">
+             <div className="flex items-center justify-between">
                 <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideValues")}</span>
                 <Switch
                   checked={formData.privacy_hide_values}
@@ -705,7 +705,7 @@ export default function ProfilePage() {
 
             {/* Preferences */}
              <div className="space-y-3">
-               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.clenchingPreference")}</Label>
+               <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.clenchingPreference")}</Label>
                <div className="flex flex-wrap gap-2">
                  {["Yes", "No", "Sometimes"].map((pref) => {
                    const active = formData.clenching_preference === pref;
@@ -713,7 +713,7 @@ export default function ProfilePage() {
                      <Badge
                        key={pref}
                        onClick={() => setFormData((p) => ({ ...p, clenching_preference: pref }))}
-                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
+                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-stone-800 text-stone-100 border-stone-700"}`}
                      >
                        {pref}
                      </Badge>
@@ -723,7 +723,7 @@ export default function ProfilePage() {
              </div>
 
              <div className="space-y-3">
-               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.smokeDurationPreference")}</Label>
+               <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.smokeDurationPreference")}</Label>
                <div className="flex flex-wrap gap-2">
                  {["Short (15-30 min)", "Medium (30-60 min)", "Long (60+ min)", "No Preference"].map((pref) => {
                    const active = formData.smoke_duration_preference === pref;
@@ -731,7 +731,7 @@ export default function ProfilePage() {
                      <Badge
                        key={pref}
                        onClick={() => setFormData((p) => ({ ...p, smoke_duration_preference: pref }))}
-                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
+                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-stone-800 text-stone-100 border-stone-700"}`}
                      >
                        {pref}
                      </Badge>
@@ -741,7 +741,7 @@ export default function ProfilePage() {
              </div>
 
              <div className="space-y-3">
-               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.pipeSizePreference")}</Label>
+               <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.pipeSizePreference")}</Label>
                <div className="flex flex-wrap gap-2">
                  {["Small", "Medium", "Large", "Extra Large", "No Preference"].map((pref) => {
                    const active = formData.pipe_size_preference === pref;
@@ -749,7 +749,7 @@ export default function ProfilePage() {
                      <Badge
                        key={pref}
                        onClick={() => setFormData((p) => ({ ...p, pipe_size_preference: pref }))}
-                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
+                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-stone-800 text-stone-100 border-stone-700"}`}
                      >
                        {pref}
                      </Badge>
@@ -759,7 +759,7 @@ export default function ProfilePage() {
              </div>
 
              <div className="space-y-3">
-               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.strengthPreference")}</Label>
+               <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.strengthPreference")}</Label>
                <div className="flex flex-wrap gap-2">
                  {["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full", "No Preference"].map((pref) => {
                    const active = formData.strength_preference === pref;
@@ -767,7 +767,7 @@ export default function ProfilePage() {
                      <Badge
                        key={pref}
                        onClick={() => setFormData((p) => ({ ...p, strength_preference: pref }))}
-                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
+                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-stone-800 text-stone-100 border-stone-700"}`}
                      >
                        {pref}
                      </Badge>
@@ -777,7 +777,7 @@ export default function ProfilePage() {
              </div>
 
              <div className="space-y-3">
-               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.preferredBlendTypes")}</Label>
+               <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.preferredBlendTypes")}</Label>
               <div className="flex flex-wrap gap-2">
                 {BLEND_TYPES.map((bt) => {
                   const active = formData.preferred_blend_types.includes(bt);
@@ -785,7 +785,7 @@ export default function ProfilePage() {
                     <Badge
                       key={bt}
                       onClick={() => toggleBlendType(bt)}
-                      className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
+                      className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-stone-800 text-stone-100 border-stone-700"}`}
                     >
                       {bt}
                     </Badge>
@@ -795,7 +795,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-3">
-              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.preferredPipeShapes")}</Label>
+              <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.preferredPipeShapes")}</Label>
               <div className="flex flex-wrap gap-2">
                 {PIPE_SHAPES.map((sh) => {
                   const active = formData.preferred_shapes.includes(sh);
@@ -803,7 +803,7 @@ export default function ProfilePage() {
                     <Badge
                       key={sh}
                       onClick={() => toggleShape(sh)}
-                      className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
+                      className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-stone-800 text-stone-100 border-stone-700"}`}
                     >
                       {sh}
                     </Badge>
@@ -813,7 +813,7 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <Label className="text-stone-700 font-medium break-words">{t("common.notes")}</Label>
+              <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("common.notes")}</Label>
               <Textarea
                 value={formData.notes}
                 onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
@@ -825,7 +825,7 @@ export default function ProfilePage() {
             <div className="pt-2 space-y-3">
               <div className="flex items-center gap-2">
                 <WhiskeyKeeperIcon size={16} color="rgb(217,119,6)" />
-                <Label className="text-stone-700 font-semibold text-base">Whiskey Preferences</Label>
+                <Label className="font-semibold text-base" style={{ color: 'rgba(224,216,200,0.85)' }}>Whiskey Preferences</Label>
               </div>
               <p className="text-xs text-stone-500">
                 Used by Curator to personalize pairing recommendations and cross-collection insights.
@@ -840,7 +840,7 @@ export default function ProfilePage() {
             <div className="pt-2 space-y-2">
               <div className="flex items-center gap-2">
                 <WhiskeyKeeperIcon size={16} color="rgb(245,158,11)" />
-                <Label className="text-stone-700 font-semibold text-base">Whiskey Notes for Recommendations</Label>
+                <Label className="font-semibold text-base" style={{ color: 'rgba(224,216,200,0.85)' }}>Whiskey Notes for Recommendations</Label>
               </div>
               <p className="text-xs text-stone-500">
                 Add any whiskey preferences, dislikes, pairing notes, collector priorities, or guidance for Curator. For example: "Prefer sweeter bourbons over peated scotch", "Saving rare bottles for special occasions", or "Prefer pairings with Virginia/Perique blends".
@@ -856,8 +856,8 @@ export default function ProfilePage() {
             {/* Public profile toggle */}
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium text-stone-800">{t("profileExtended.publicCommunityProfile")}</div>
-                <div className="text-sm text-stone-600">{t("profileExtended.allowOthersToView")}</div>
+                <div className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.publicCommunityProfile")}</div>
+                <div className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("profileExtended.allowOthersToView")}</div>
               </div>
               <Switch
                 checked={formData.is_public}
