@@ -7,6 +7,7 @@ import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModu
 import { useTasteProfile } from "@/components/curator/useTasteProfile";
 import { buildAIEligibleCollection } from "@/components/utils/moduleAccess";
 import { getCollectionHubSummary, getComingSoonModules } from "@/components/keeper-core";
+import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 import BrandLogo from "@/components/branding/BrandLogo";
 import ModuleCard from "@/components/hub/ModuleCard";
 import QuickLaunch from "@/components/hub/QuickLaunch";
@@ -513,7 +514,7 @@ export default function CollectionHub() {
 
       <RecentActivity onActivitiesLoaded={setRecentActivities} />
 
-      {comingSoonModules.length > 0 ? (
+      {(comingSoonModules.length > 0 || !isModuleEnabled('whiskeykeeper')) ? (
         <div className="space-y-4">
           <h2
             className="text-sm uppercase tracking-[0.12em] font-semibold"
@@ -523,6 +524,18 @@ export default function CollectionHub() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* WhiskeyKeeper marketing card — shown only when module is not accessible */}
+            {!isModuleEnabled('whiskeykeeper') && (
+              <ModuleCard
+                key="whiskeykeeper-soon"
+                module="WhiskeyKeeper"
+                icon={MODULE_ICONS?.whiskeykeeper}
+                itemCount={0}
+                summary="Expanding your CollectionKeeper ecosystem soon."
+                action={null}
+                isComingSoon
+              />
+            )}
             {comingSoonModules.map((module) => (
               <ModuleCard
                 key={module.type}
