@@ -2,8 +2,23 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
-import { Home, User, HelpCircle, Target, Users } from "lucide-react";
-import { MODULE_ICONS, getAssetImageStyle } from "@/components/branding/moduleAssets";
+import {
+  Home,
+  User,
+  HelpCircle,
+  Target,
+  Users,
+  Shield,
+  ClipboardList,
+  Wrench,
+  FileBarChart2,
+  BarChart3,
+  TestTube2,
+} from "lucide-react";
+import {
+  MODULE_ICONS,
+  getAssetImageStyle,
+} from "@/components/branding/moduleAssets";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
@@ -14,23 +29,31 @@ function NavItem({ item, currentPageName }) {
     <Link
       to={createPageUrl(item.page)}
       className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium",
+        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap",
         active ? "bg-[#6b4a2d]/55" : "hover:bg-white/5"
       )}
       style={{
         color: active ? "#F5F1E7" : "rgba(224,216,200,0.78)",
+        border: active
+          ? "1px solid rgba(180,140,75,0.35)"
+          : "1px solid transparent",
       }}
     >
       {item.image ? (
         <img
           src={item.image}
-          className="w-4 h-4"
-          style={getAssetImageStyle(item.assetKey)}
+          alt={item.label}
+          className="w-4 h-4 object-contain bg-transparent flex-shrink-0"
+          style={getAssetImageStyle(item.assetKey, "small")}
+          draggable={false}
         />
-      ) : (
-        <item.icon className="w-4 h-4" />
-      )}
-      {item.label}
+      ) : item.icon ? (
+        <item.icon
+          className="w-4 h-4 flex-shrink-0"
+          style={{ color: active ? "#D4A574" : "rgba(180,140,75,0.78)" }}
+        />
+      ) : null}
+      <span>{item.label}</span>
     </Link>
   );
 }
@@ -39,12 +62,13 @@ export default function ModuleNav({ currentPageName }) {
   const { enabledModules, isModuleEnabled } = useEnabledKeeperModules();
   const { isAdmin } = useCurrentUser();
 
-  const hasPipe = enabledModules?.some((m) => m.moduleKey === "pipekeeper");
-  const whiskeyEnabled = isModuleEnabled?.("whiskeykeeper");
+  const enabledKeys = new Set((enabledModules || []).map((m) => m.moduleKey));
+  const whiskeyOpenable = isModuleEnabled?.("whiskeykeeper") === true;
 
-  const items = [
+  const primaryItems = [
     { page: "CollectionHub", label: "Hub", icon: Home },
-    ...(hasPipe
+
+    ...(enabledKeys.has("pipekeeper")
       ? [
           {
             page: "PipeKeeper",
@@ -54,7 +78,8 @@ export default function ModuleNav({ currentPageName }) {
           },
         ]
       : []),
-    ...(whiskeyEnabled
+
+    ...(whiskeyOpenable
       ? [
           {
             page: "WhiskeyKeeper",
@@ -64,24 +89,69 @@ export default function ModuleNav({ currentPageName }) {
           },
         ]
       : []),
+
     { page: "Curator", label: "Curator", icon: Target },
     { page: "Community", label: "Community", icon: Users },
     { page: "Profile", label: "Profile", icon: User },
     { page: "HelpCenter", label: "Help", icon: HelpCircle },
   ];
 
+  const adminItems = isAdmin
+    ? [
+        {
+          page: "AdminReports",
+          label: "Admin Reports",
+          icon: Shield,
+        },
+        {
+          page: "AdminSubscriptionRequests",
+          label: "Subscription Requests",
+          icon: ClipboardList,
+        },
+        {
+          page: "AdminSubscriptionTools",
+          label: "Subscription Tools",
+          icon: Wrench,
+        },
+        {
+          page: "UserReport",
+          label: "User Report",
+          icon: FileBarChart2,
+        },
+        {
+          page: "CuratorAnalyticsDashboard",
+          label: "Curator Analytics",
+          icon: BarChart3,
+        },
+        {
+          page: "SubscriptionE2ETest",
+          label: "Sub E2E Test",
+          icon: TestTube2,
+        },
+      ]
+    : [];
+
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-1 overflow-x-auto">
-        {items.map((item) => (
-          <NavItem key={item.page} item={item} currentPageName={currentPageName} />
+      <div className="flex items-center gap-1 overflow-x-auto pb-1">
+        {primaryItems.map((item) => (
+          <NavItem
+            key={item.page}
+            item={item}
+            currentPageName={currentPageName}
+          />
         ))}
       </div>
 
-      {isAdmin && (
-        <div className="flex gap-1 border-t border-white/10 pt-2">
-          <NavItem page="AdminReports" item={{ page: "AdminReports", label: "Admin Reports", icon: Target }} />
-          <NavItem page="SubscriptionTools" item={{ page: "SubscriptionTools", label: "Subscription Tools", icon: Target }} />
+      {adminItems.length > 0 && (
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 border-t border-white/10 pt-2">
+          {adminItems.map((item) => (
+            <NavItem
+              key={item.page}
+              item={item}
+              currentPageName={currentPageName}
+            />
+          ))}
         </div>
       )}
     </div>
