@@ -1,323 +1,215 @@
-import React, { useState } from 'react';
+/**
+ * Subscription Success Flow
+ * Hotfix goals:
+ * - do not treat a non-error sync as sufficient proof of unlock
+ * - explicitly verify current user entitlements and active modules after sync
+ * - prefer deterministic PipeKeeper unlock confirmation in the current release
+ */
+
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
-import PricingCard from './PricingCard';
-import ModuleChips from './ModuleChips';
-import { useTranslation } from '@/components/i18n/safeTranslation';
+import { CheckCircle2, AlertCircle, Loader } from 'lucide-react';
+import { buildAccessSummary } from '@/components/access/accessSummary';
 
-const moduleLabels = {
-  pipekeeper: 'PipeKeeper',
-  whiskeykeeper: 'WhiskeyKeeper',
-  cigarkeeper: 'CigarKeeper',
-  winekeeper: 'WineKeeper',
-};
+function toDisplayName(moduleKey) {
+  if (!moduleKey) return 'Module';
+  return moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1).replace('keeper', ' Keeper');
+}
 
-const moduleDescriptions = {
-  pipekeeper: 'Organize and explore your pipe and tobacco collection',
-  whiskeykeeper: 'Track bottles, inventory, value, and tasting notes',
-  cigarkeeper: 'Coming soon',
-  winekeeper: 'Coming soon',
-};
+export default function SubscriptionSuccessFlow() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const queryClient = useQueryClient();
 
-export default function PaywallModal({
-  type = 'module', // 'module' | 'multi' | 'expansion'
-  selectedModules = [],
-  currentModules = [],
-  lockedModule = null,
-  onClose,
-  onSelectPlan,
-  isLoading = false,
-}) {
-  const { t } = useTranslation();
-  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [phase, setPhase] = useState('loading');
+  const [error, setError] = useState(null);
+  const [accessSummary, setAccessSummary] = useState(null);
 
-  // Determine header based on type
-  const getHeader = () => {
-    switch (type) {
-      case 'module':
-        return {
-          headline: `Unlock ${moduleLabels[lockedModule] || 'Module'}`,
-          subtext: moduleDescriptions[lockedModule] || 'Unlock this powerful collection tool.',
-        };
-      case 'multi':
-        return {
-          headline: 'Build Your Collection System',
-          subtext: 'You've selected multiple collections — unlock them together for the best value.',
-        };
-      case 'expansion':
-        return {
-          headline: 'Expand Your Collection',
-          subtext: 'You're currently tracking:',
-        };
-      default:
-        return { headline: 'Unlock Your Collection', subtext: '' };
+  const targetUrl = searchParams.get('next') || '/CollectionHub';
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function syncAndConfirm() {
+      try {
+        const syncResponse = await base44.functions.invoke('syncSubscriptionForMe', {});
+        if (!mounted) return;
+
+        if (syncResponse?.data?.status === 'no_subscription' || syncResponse?.data?.status === 'no_customer') {
+          setError('Subscription not found yet. Please wait a moment and try again.');
+          setPhase('error');
+          return;
+        }
+
+        if (syncResponse?.data?.error) {
+          setError(syncResponse.data.error);
+          setPhase('error');
+          return;
+        }
+
+        await queryClient.invalidateQueries({ queryKey: ['current-user'] });
+        await queryClient.invalidateQueries({ queryKey: ['subscription'] });
+        await queryClient.refetchQueries({ queryKey: ['current-user'] });
+        await queryClient.refetchQueries({ queryKey: ['subscription'] });
+
+        const [meRes, subRes] = await Promise.all([
+          base44.auth.me(),
+          base44.functions.invoke('getMySubscriptionSummary', {}),
+        ]);
+
+        const me = meRes || null;
+        const subscriptionSummary = subRes?.data || null;
+
+        const pseudoSubscription = subscriptionSummary
+          ? {
+              provider: subscriptionSummary.provider,
+              status: subscriptionSummary.status,
+              tier: subscriptionSummary.tier,
+              current_period_end: subscriptionSummary.expiresAt,
+              plan_key: subscriptionSummary.planKey,
+              modules_csv: subscriptionSummary.modulesCsv,
+              metadata: subscriptionSummary.modulesCsv
+                ? { modules_csv: subscriptionSummary.modulesCsv }
+                : undefined,
+            }
+          : null;
+
+        const rebuiltAccess = buildAccessSummary(me, pseudoSubscription);
+        const unlockedModules = rebuiltAccess?.activeModules || [];
+        const hasPipeKeeper = rebuiltAccess?.tier === 'pro' && unlockedModules.includes('pipekeeper');
+
+        if (!hasPipeKeeper) {
+          setError('Your payment was received, but access is still updating. Please retry once or reopen the app in a moment.');
+          setPhase('error');
+          return;
+        }
+
+        setAccessSummary({
+          ...rebuiltAccess,
+          activeModules: unlockedModules,
+          manageUrl: subscriptionSummary?.manageUrl || null,
+          expiresAt: subscriptionSummary?.expiresAt || null,
+        });
+        setPhase('success');
+      } catch (err) {
+        if (!mounted) return;
+        const msg = err instanceof Error ? err.message : 'Subscription activation failed';
+        setError(msg);
+        setPhase('error');
+        console.error('[SubscriptionSuccessFlow] Sync failed:', err);
+      }
     }
-  };
 
-  const header = getHeader();
+    syncAndConfirm();
+    return () => {
+      mounted = false;
+    };
+  }, [queryClient]);
 
-  // Render content based on type
-  const renderContent = () => {
-    switch (type) {
-      case 'module':
-        return renderModulePaywall();
-      case 'multi':
-        return renderMultiPaywall();
-      case 'expansion':
-        return renderExpansionPaywall();
-      default:
-        return null;
-    }
-  };
-
-  const renderModulePaywall = () => (
-    <div className="space-y-6">
-      {/* Value Props */}
-      <div className="space-y-3">
-        <h3
-          className="text-sm font-semibold uppercase tracking-wider"
-          style={{ color: 'rgba(180, 140, 75, 0.8)' }}
-        >
-          What You'll Get
-        </h3>
-        <ul className="space-y-2">
-          {[
-            'Unlimited collections',
-            'Smart categorization',
-            'Value tracking',
-            'AI-powered insights',
-          ].map((item, idx) => (
-            <li key={idx} className="flex items-start gap-2 text-sm">
-              <span style={{ color: '#D4A574' }} className="mt-1">
-                ✓
-              </span>
-              <span style={{ color: 'rgba(224, 216, 200, 0.8)' }}>{item}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Pricing Cards */}
-      <div className="space-y-3">
-        <h3
-          className="text-sm font-semibold uppercase tracking-wider"
-          style={{ color: 'rgba(180, 140, 75, 0.8)' }}
-        >
-          Choose Your Plan
-        </h3>
-        <div className="grid gap-3">
-          {/* Single Module */}
-          <PricingCard
-            title={`${moduleLabels[lockedModule]} Pro`}
-            priceMonthly="2.99"
-            priceAnnual="29.99"
-            cta={`Unlock ${moduleLabels[lockedModule]}`}
-            highlighted={true}
-            isSelected={selectedPlan === 'single'}
-            onSelect={() => setSelectedPlan('single')}
-          />
-
-          {/* 3-Module Bundle */}
-          <PricingCard
-            title="Unlock 3 Keepers"
-            priceMonthly="7.99"
-            priceAnnual="79.99"
-            badge="Best Value"
-            cta="Expand Your Collection"
-            isSelected={selectedPlan === 'three'}
-            onSelect={() => setSelectedPlan('three')}
-          />
-
-          {/* 4-Module Bundle */}
-          <PricingCard
-            title="Unlock All Keepers"
-            priceMonthly="8.99"
-            priceAnnual="89.99"
-            cta="Go All In"
-            isSelected={selectedPlan === 'four'}
-            onSelect={() => setSelectedPlan('four')}
-          />
+  if (phase === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
+        <div className="text-center">
+          <Loader className="w-12 h-12 animate-spin mx-auto mb-4" style={{ color: '#D4A574' }} />
+          <p style={{ color: '#E0D8C8' }}>Activating your subscription...</p>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
-  const renderMultiPaywall = () => (
-    <div className="space-y-6">
-      {/* Selected Modules */}
-      <div>
-        <h3
-          className="text-sm font-semibold uppercase tracking-wider mb-3"
-          style={{ color: 'rgba(180, 140, 75, 0.8)' }}
+  if (phase === 'error') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] p-4">
+        <div
+          className="max-w-md w-full rounded-2xl p-8 text-center shadow-2xl"
+          style={{
+            background: 'linear-gradient(135deg, rgba(20, 20, 22, 0.95), rgba(28, 20, 16, 0.95))',
+            border: '1px solid rgba(212, 165, 116, 0.3)',
+          }}
         >
-          Your Collections
-        </h3>
-        <ModuleChips modules={selectedModules} />
-      </div>
-
-      {/* Pricing Cards */}
-      <div className="space-y-3">
-        <h3
-          className="text-sm font-semibold uppercase tracking-wider"
-          style={{ color: 'rgba(180, 140, 75, 0.8)' }}
-        >
-          Choose Your Plan
-        </h3>
-        <div className="grid gap-3">
-          {/* 3-Module Bundle */}
-          <PricingCard
-            title="Unlock 3 Keepers"
-            priceMonthly="7.99"
-            priceAnnual="79.99"
-            badge="Best Value"
-            cta="Unlock 3 Keepers"
-            highlighted={true}
-            isSelected={selectedPlan === 'three'}
-            onSelect={() => setSelectedPlan('three')}
-          />
-
-          {/* 4-Module Bundle */}
-          <PricingCard
-            title="Unlock All Keepers"
-            priceMonthly="8.99"
-            priceAnnual="89.99"
-            cta="Unlock Everything"
-            isSelected={selectedPlan === 'four'}
-            onSelect={() => setSelectedPlan('four')}
-          />
-
-          {/* Single Module Option */}
-          <div className="text-center pt-2">
-            <p style={{ color: 'rgba(224, 216, 200, 0.6)' }} className="text-sm">
-              Or start with one Keeper
-            </p>
-            <button
-              onClick={() => setSelectedPlan('single')}
-              style={{ color: '#D4A574' }}
-              className="text-sm font-medium hover:underline mt-1"
+          <AlertCircle className="w-16 h-16 mx-auto mb-4" style={{ color: '#D45C5C' }} />
+          <h2 style={{ color: '#F5F1E7' }} className="text-2xl font-bold mb-2">
+            Activation Taking Longer
+          </h2>
+          <p style={{ color: '#E0D8C8', marginBottom: '24px' }} className="text-sm mb-6">
+            {error || 'Please try again or contact support if the issue persists.'}
+          </p>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setPhase('loading');
+                window.location.reload();
+              }}
+              className="flex-1"
             >
-              Continue with one for $2.99/month
-            </button>
+              Retry
+            </Button>
+            <Button onClick={() => navigate(targetUrl)} className="flex-1">
+              Continue Anyway
+            </Button>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
-  const renderExpansionPaywall = () => (
-    <div className="space-y-6">
-      {/* Current Modules */}
-      <div>
-        <p
-          className="text-sm font-semibold uppercase tracking-wider mb-3"
-          style={{ color: 'rgba(180, 140, 75, 0.8)' }}
-        >
-          Current Collections
-        </p>
-        <ModuleChips modules={currentModules} />
-      </div>
-
-      {/* Pricing Cards */}
-      <div className="space-y-3">
-        <h3
-          className="text-sm font-semibold uppercase tracking-wider"
-          style={{ color: 'rgba(180, 140, 75, 0.8)' }}
-        >
-          Add to Your System
-        </h3>
-        <div className="grid gap-3">
-          {/* Add Single Module */}
-          <PricingCard
-            title={`Add ${moduleLabels[selectedModules[0]] || 'a Keeper'}`}
-            priceMonthly="2.99"
-            priceAnnual="29.99"
-            cta={`Add This Keeper`}
-            isSelected={selectedPlan === 'single'}
-            onSelect={() => setSelectedPlan('single')}
-          />
-
-          {/* Upgrade to 3 */}
-          <PricingCard
-            title="Upgrade to 3 Keepers"
-            priceMonthly="7.99"
-            priceAnnual="79.99"
-            badge="Most Popular"
-            cta="Expand Your Collection"
-            highlighted={true}
-            isSelected={selectedPlan === 'three'}
-            onSelect={() => setSelectedPlan('three')}
-          />
-
-          {/* Upgrade to All */}
-          <PricingCard
-            title="Unlock Everything"
-            priceMonthly="8.99"
-            priceAnnual="89.99"
-            cta="Go All In"
-            isSelected={selectedPlan === 'four'}
-            onSelect={() => setSelectedPlan('four')}
-          />
-        </div>
-      </div>
-    </div>
-  );
+  const modules = accessSummary?.activeModules || [];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0, 0, 0, 0.7)' }}
-      onClick={onClose}
-    >
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] p-4">
       <div
-        className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="max-w-md w-full rounded-2xl p-8 text-center shadow-2xl"
         style={{
           background: 'linear-gradient(135deg, rgba(20, 20, 22, 0.95), rgba(28, 20, 16, 0.95))',
-          border: '1px solid rgba(120, 90, 65, 0.3)',
+          border: '1px solid rgba(180, 140, 75, 0.3)',
         }}
-        onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 transition-all z-10"
-          aria-label="Close"
-        >
-          <X className="w-5 h-5" style={{ color: 'rgba(224, 216, 200, 0.6)' }} />
-        </button>
+        <CheckCircle2 className="w-16 h-16 mx-auto mb-4" style={{ color: '#2e7d5c' }} />
 
-        {/* Content */}
-        <div className="p-6 sm:p-8">
-          {/* Header */}
+        <h1 style={{ color: '#F5F1E7' }} className="text-3xl font-bold mb-2">
+          Welcome!
+        </h1>
+
+        <p style={{ color: '#E0D8C8' }} className="text-sm mb-6">
+          Your subscription is now active and PipeKeeper has been unlocked.
+        </p>
+
+        {modules.length > 0 && (
           <div className="mb-8">
-            <h2
-              className="text-2xl sm:text-3xl font-bold mb-2"
-              style={{ color: '#F5F1E7' }}
-            >
-              {header.headline}
-            </h2>
-            {header.subtext && (
-              <p
-                className="text-sm"
-                style={{ color: 'rgba(224, 216, 200, 0.75)' }}
-              >
-                {header.subtext}
-              </p>
-            )}
-          </div>
-
-          {/* Content */}
-          {renderContent()}
-
-          {/* Footer */}
-          <div
-            className="mt-8 pt-6 border-t text-xs text-center"
-            style={{ borderColor: 'rgba(120, 90, 65, 0.2)', color: 'rgba(224, 216, 200, 0.5)' }}
-          >
-            <p>
-              Cancel anytime. <span className="mx-1">•</span> Secure checkout via Stripe
+            <p style={{ color: '#8b6239' }} className="text-xs font-semibold uppercase tracking-wider mb-3">
+              Active Access
             </p>
+            <div className="space-y-2">
+              {modules.map((m) => (
+                <div
+                  key={m}
+                  className="px-3 py-2 rounded-lg text-sm font-medium"
+                  style={{
+                    background: 'rgba(180, 140, 75, 0.15)',
+                    color: '#D4A574',
+                  }}
+                >
+                  {toDisplayName(m)}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        <Button
+          onClick={() => navigate(targetUrl)}
+          className="w-full"
+          style={{
+            background: 'linear-gradient(135deg, #a35c5c, #8f4e4e)',
+            color: '#F5F1E7',
+          }}
+        >
+          Explore Collections
+        </Button>
       </div>
     </div>
   );
