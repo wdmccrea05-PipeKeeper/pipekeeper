@@ -1,16 +1,9 @@
 /**
  * useEnabledKeeperModules — canonical launched vs expanding-soon module buckets.
  *
- * This hook is what Hub, nav, quick launch, and marketing surfaces should use.
- * It separates:
+ * This hook powers the Hub and launcher surfaces. It separates:
  * - modules the current user can actually open now
  * - modules intentionally shown as "Expanding Soon"
- *
- * RULES:
- * - release state overrides entitlement and profile preferences
- * - internal modules are visible/openable only to internal testers
- * - blocked modules are never openable
- * - non-launched modules should never appear in enabledModules
  */
 
 import { useMemo } from 'react';
@@ -22,19 +15,17 @@ import {
   isInternalModuleTester,
 } from '@/components/utils/moduleReleaseState';
 
-function isAccessibleLaunchState(moduleKey, user) {
+function canOpenModuleNow(moduleKey, user, isModuleEnabled) {
   const state = getEffectiveModuleReleaseState(moduleKey, user);
-  if (state === 'launched') return true;
-  if (state === 'internal') return isInternalModuleTester(user);
-  return false;
+  if (state === 'blocked') return false;
+  if (state === 'internal') return isInternalModuleTester(user) && isModuleEnabled(moduleKey);
+  return isModuleEnabled(moduleKey);
 }
 
-function shouldShowAsExpandingSoon(moduleKey, user) {
+function shouldAppearAsExpandingSoon(moduleKey, user) {
   const state = getEffectiveModuleReleaseState(moduleKey, user);
-
   if (state === 'blocked') return true;
   if (state === 'internal') return !isInternalModuleTester(user);
-
   return false;
 }
 
@@ -43,28 +34,21 @@ export function useEnabledKeeperModules() {
   const { moduleStates, isLoading, isModuleEnabled } = visibility;
   const { user } = useCurrentUser();
 
-  /** Modules the current user can actually open now. */
   const enabledModules = useMemo(() => {
-    return KEEPER_MODULES.filter((m) => {
-      if (!isAccessibleLaunchState(m.moduleKey, user)) return false;
-      return isModuleEnabled(m.moduleKey);
-    });
+    return KEEPER_MODULES.filter((m) => canOpenModuleNow(m.moduleKey, user, isModuleEnabled));
   }, [moduleStates, isModuleEnabled, user]);
 
-  /** Modules intentionally shown as future/locked marketing cards. */
   const expandingSoonModules = useMemo(() => {
-    return KEEPER_MODULES.filter((m) => shouldShowAsExpandingSoon(m.moduleKey, user));
-  }, [user, moduleStates]);
+    return KEEPER_MODULES.filter((m) => shouldAppearAsExpandingSoon(m.moduleKey, user));
+  }, [moduleStates, user]);
 
-  /** Internal-only modules the current user can preview. */
   const internalPreviewModules = useMemo(() => {
     return KEEPER_MODULES.filter((m) => {
       const state = getEffectiveModuleReleaseState(m.moduleKey, user);
       return state === 'internal' && isInternalModuleTester(user) && isModuleEnabled(m.moduleKey);
     });
-  }, [user, moduleStates, isModuleEnabled]);
+  }, [moduleStates, user, isModuleEnabled]);
 
-  /** All modules visible anywhere on the hub for this user. */
   const allVisibleModules = useMemo(() => {
     const keys = new Set([
       ...enabledModules.map((m) => m.moduleKey),
