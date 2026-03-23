@@ -106,9 +106,9 @@ export default function ModuleCard({
             )
           ) : null}
 
-          <div>
+          <div className="min-w-0 flex-1">
             <h3
-              className="text-lg font-semibold"
+              className="text-lg font-semibold break-words"
               style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}
             >
               {module}
