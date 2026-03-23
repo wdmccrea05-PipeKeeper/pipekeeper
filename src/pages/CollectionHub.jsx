@@ -1,483 +1,493 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useCurrentUser } from '@/components/hooks/useCurrentUser';
-import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
-import { shouldShowModuleInNav, isInternalModuleTester } from '@/components/utils/moduleReleaseState';
-import { createPageUrl } from '@/components/utils/createPageUrl';
+import { 
+  ChevronRight,
+  Plus,
+  Leaf,
+  Flame,
+  Layers,
+  Sparkles,
+  Clock3,
+  Activity,
+  Star,
+  TrendingUp,
+} from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { ChevronRight, Clock, Plus, BookOpen, Target, Layers, TrendingUp, Flame, Star, Activity } from 'lucide-react';
+import { createPageUrl } from '@/components/utils/createPageUrl';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import BrandLogo from '@/components/branding/BrandLogo';
-
-const ALL_MODULES = ['pipekeeper', 'whiskeykeeper', 'winekeeper', 'cigarkeeper'];
+import CatalogPlate from '@/components/home/CatalogPlate';
+import { getPipeValue, getTobaccoValue, getBottleValue } from '@/components/keeper-core/value/valueAggregation';
 
 const MODULE_META = {
   pipekeeper: {
-    key: 'pipekeeper',
     label: 'PipeKeeper',
-    description: 'Manage your pipe collection, tobacco cellar, smoking logs, and AI-powered pairings.',
     route: 'PipeKeeper',
-    accent: '#c49a5a',
-    accentBg: 'rgba(139,98,57,0.22)',
-    accentBorder: 'rgba(180,140,75,0.4)',
+    accent: '#C89752',
+    description: 'Manage your pipe collection, tobacco cellar, smoking logs, and AI-powered pairings.',
     tagline: 'Your complete pipe & tobacco platform',
   },
   whiskeykeeper: {
-    key: 'whiskeykeeper',
     label: 'WhiskeyKeeper',
-    description: 'Track your whiskey collection with tasting notes, bottle inventory, and valuations.',
     route: 'WhiskeyKeeper',
-    accent: '#a35c5c',
-    accentBg: 'rgba(163,92,92,0.15)',
-    accentBorder: 'rgba(163,92,92,0.3)',
+    accent: '#B66565',
+    description: 'Track your whiskey collection with tasting notes, bottle inventory, and valuations.',
     tagline: 'Whiskey collection intelligence',
   },
   winekeeper: {
-    key: 'winekeeper',
     label: 'WineKeeper',
-    description: 'Wine cellar management — curate, age, and value your collection.',
     route: null,
-    accent: '#7a5c8b',
-    accentBg: 'rgba(122,92,139,0.12)',
-    accentBorder: 'rgba(122,92,139,0.25)',
-    tagline: 'Wine cellar intelligence',
+    accent: '#8F6BAA',
+    description: 'Wine cellar management — curate, age, and value your collection.',
+    tagline: 'Expanding Soon',
   },
   cigarkeeper: {
-    key: 'cigarkeeper',
     label: 'CigarKeeper',
-    description: 'Cigar humidor curation and collection tracking.',
     route: null,
-    accent: '#5c7a3a',
-    accentBg: 'rgba(92,122,58,0.12)',
-    accentBorder: 'rgba(92,122,58,0.25)',
-    tagline: 'Cigar collection curation',
+    accent: '#7F9156',
+    description: 'Cigar humidor curation and collection tracking.',
+    tagline: 'Expanding Soon',
   },
 };
 
-// ─── Stat Card ──────────────────────────────────────────────────────────────
-function StatCard({ label, value, icon: Icon, accent = '#c49a5a', loading }) {
+function currency(value) {
+  const amount = Number(value) || 0;
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+function sectionTitle(children, muted = false) {
+  return (
+    <h2
+      className="text-xs font-semibold uppercase tracking-[0.18em] px-1"
+      style={{ color: muted ? 'rgba(224,216,200,0.34)' : '#8B6239' }}
+    >
+      {children}
+    </h2>
+  );
+}
+
+function StatCard({ icon: Icon, label, value, sub, accent = '#C89752' }) {
   return (
     <div
-      className="rounded-2xl p-4 flex flex-col gap-2 min-w-0"
+      className="rounded-[22px] p-5 min-h-[132px] flex flex-col justify-between"
       style={{
-        background: 'linear-gradient(145deg, rgba(42,30,20,0.95), rgba(28,20,14,0.98))',
-        border: `1px solid ${accent}28`,
-        boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+        background: 'linear-gradient(145deg, rgba(39,27,18,0.96), rgba(25,17,11,0.98))',
+        border: `1px solid ${accent}40`,
+        boxShadow: '0 10px 26px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)',
       }}
     >
-      <div className="flex items-center gap-2">
-        <div
-          className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: `${accent}22` }}
-        >
-          <Icon className="w-3.5 h-3.5" style={{ color: accent }} />
-        </div>
-        <span className="text-xs font-medium truncate" style={{ color: 'rgba(224,216,200,0.6)' }}>
-          {label}
-        </span>
+      <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: `${accent}26`, border: `1px solid ${accent}55` }}>
+        <Icon className="w-4.5 h-4.5" style={{ color: accent }} />
       </div>
-      <div className="text-2xl font-bold tracking-tight" style={{ color: '#F5F1E7' }}>
-        {loading ? (
-          <div className="h-6 w-12 rounded animate-pulse" style={{ background: 'rgba(255,255,255,0.08)' }} />
-        ) : value}
+      <div>
+        <p className="text-[11px] uppercase tracking-[0.18em] font-semibold mb-2" style={{ color: `${accent}D8` }}>{label}</p>
+        <div className="text-4xl font-bold leading-none" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{value}</div>
+        {sub ? <p className="text-sm mt-2" style={{ color: 'rgba(224,216,200,0.68)' }}>{sub}</p> : null}
       </div>
     </div>
   );
 }
 
-// ─── Openable Module Card ────────────────────────────────────────────────────
-function ActiveModuleCard({ meta, stats, onNavigate }) {
-  const icon = MODULE_ICONS?.[meta.key];
+function ModuleCard({ moduleKey, stats = [], onOpen, openable = true }) {
+  const meta = MODULE_META[moduleKey];
+  const icon = MODULE_ICONS?.[moduleKey];
+
   return (
     <div
-      className="rounded-2xl p-5 flex flex-col gap-4 cursor-pointer transition-all duration-200 hover:scale-[1.01]"
+      className="rounded-[26px] p-6 flex flex-col gap-5"
       style={{
-        background: `linear-gradient(145deg, ${meta.accentBg}, rgba(20,14,10,0.97))`,
-        border: `1px solid ${meta.accentBorder}`,
-        boxShadow: `0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 ${meta.accent}18`,
+        background: `linear-gradient(145deg, ${meta.accent}18, rgba(26,18,12,0.98))`,
+        border: `1px solid ${meta.accent}55`,
+        boxShadow: `0 14px 36px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.05)`,
       }}
-      onClick={onNavigate}
     >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          {icon ? (
-            <div
-              className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: `${meta.accentBg}`, border: `1px solid ${meta.accentBorder}` }}
-            >
-              <img src={icon} alt={meta.label} className="w-7 h-7 object-contain" />
-            </div>
-          ) : (
-            <div className="w-11 h-11 rounded-xl flex-shrink-0" style={{ background: meta.accentBg }} />
-          )}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: `${meta.accent}1E`, border: `1px solid ${meta.accent}44` }}>
+            {icon ? <img src={icon} alt={meta.label} className="w-9 h-9 object-contain" /> : null}
+          </div>
           <div>
-            <h3 className="text-base font-bold" style={{ color: '#F5F1E7' }}>{meta.label}</h3>
-            <p className="text-xs" style={{ color: `${meta.accent}cc` }}>{meta.tagline}</p>
+            <h3 className="text-[32px] leading-none font-bold mb-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{meta.label}</h3>
+            <p className="text-sm" style={{ color: `${meta.accent}E8` }}>{meta.tagline}</p>
           </div>
         </div>
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: `${meta.accent}22`, border: `1px solid ${meta.accent}44` }}
-        >
-          <ChevronRight className="w-4 h-4" style={{ color: meta.accent }} />
+        <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `${meta.accent}22`, border: `1px solid ${meta.accent}44` }}>
+          <ChevronRight className="w-5 h-5" style={{ color: meta.accent }} />
         </div>
       </div>
 
-      <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.65)' }}>
+      <p className="text-lg leading-relaxed" style={{ color: 'rgba(224,216,200,0.82)' }}>
         {meta.description}
       </p>
 
-      {/* Stats row */}
-      {stats && stats.length > 0 && (
-        <div
-          className="flex gap-3 pt-1 border-t"
-          style={{ borderColor: `${meta.accent}20` }}
-        >
-          {stats.map((s, i) => (
-            <div key={i} className="flex flex-col gap-0.5">
-              <span className="text-xs font-bold" style={{ color: '#F5F1E7' }}>{s.value}</span>
-              <span className="text-[11px]" style={{ color: 'rgba(224,216,200,0.5)' }}>{s.label}</span>
+      {stats.length > 0 ? (
+        <div className="grid grid-cols-3 gap-4 pt-4 border-t" style={{ borderColor: `${meta.accent}26` }}>
+          {stats.map((s) => (
+            <div key={s.label}>
+              <div className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{s.value}</div>
+              <div className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.62)' }}>{s.label}</div>
             </div>
           ))}
         </div>
-      )}
+      ) : null}
 
-      <div
-        className="text-xs font-semibold py-2 px-4 rounded-lg text-center transition-all"
+      <button
+        type="button"
+        disabled={!openable}
+        onClick={openable ? onOpen : undefined}
+        className="w-full rounded-2xl py-3 text-sm font-semibold transition-all"
         style={{
-          background: `linear-gradient(135deg, ${meta.accent}33, ${meta.accent}22)`,
-          border: `1px solid ${meta.accent}44`,
-          color: meta.accent,
+          background: openable
+            ? `linear-gradient(135deg, ${meta.accent}42, ${meta.accent}22)`
+            : 'rgba(255,255,255,0.06)',
+          border: openable
+            ? `1px solid ${meta.accent}58`
+            : '1px solid rgba(255,255,255,0.08)',
+          color: openable ? meta.accent : 'rgba(224,216,200,0.45)',
         }}
       >
-        Open {meta.label} →
-      </div>
+        {openable ? `Open ${meta.label} →` : meta.tagline}
+      </button>
     </div>
   );
 }
 
-// ─── Expanding Soon Card ─────────────────────────────────────────────────────
-function ExpandingSoonCard({ meta }) {
-  const icon = MODULE_ICONS?.[meta.key];
+function ExpandingSoonCard({ moduleKey }) {
+  const meta = MODULE_META[moduleKey];
+  const icon = MODULE_ICONS?.[moduleKey];
+
   return (
     <div
-      className="rounded-2xl p-4 flex items-center gap-4"
+      className="rounded-[24px] p-5 flex items-center gap-4"
       style={{
-        background: 'rgba(255,255,255,0.025)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        opacity: 0.72,
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        opacity: 0.82,
       }}
     >
-      <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{ background: `${meta.accentBg}`, border: `1px solid ${meta.accentBorder}` }}
-      >
-        {icon ? (
-          <img src={icon} alt={meta.label} className="w-6 h-6 object-contain opacity-60" />
-        ) : (
-          <div className="w-5 h-5 rounded-full" style={{ background: meta.accent + '44' }} />
-        )}
+      <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${meta.accent}1C`, border: `1px solid ${meta.accent}30` }}>
+        {icon ? <img src={icon} alt={meta.label} className="w-8 h-8 object-contain opacity-70" /> : null}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <h3 className="text-sm font-semibold" style={{ color: 'rgba(224,216,200,0.6)' }}>{meta.label}</h3>
-          <span
-            className="text-[10px] font-medium px-2 py-0.5 rounded-full flex-shrink-0"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: 'rgba(224,216,200,0.45)',
-            }}
-          >
-            Expanding Soon
-          </span>
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <h3 className="text-xl font-bold" style={{ color: 'rgba(245,241,231,0.65)', fontFamily: "'Georgia', serif" }}>{meta.label}</h3>
+          <span className="text-[11px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(224,216,200,0.5)' }}>Expanding Soon</span>
         </div>
-        <p className="text-xs truncate" style={{ color: 'rgba(224,216,200,0.38)' }}>{meta.description}</p>
+        <p className="text-sm" style={{ color: 'rgba(224,216,200,0.42)' }}>{meta.description}</p>
       </div>
-      <Clock className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(224,216,200,0.25)' }} />
+      <Clock3 className="w-4 h-4 shrink-0" style={{ color: 'rgba(224,216,200,0.28)' }} />
     </div>
   );
 }
 
-// ─── Quick Action Button ─────────────────────────────────────────────────────
-function QuickAction({ label, icon: Icon, accent, onClick }) {
+function QuickAction({ icon: Icon, label, accent, onClick }) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className="flex flex-col items-center gap-2 px-4 py-3 rounded-xl transition-all duration-150 active:scale-95 hover:opacity-90 text-center"
+      className="rounded-[18px] p-4 flex flex-col items-start gap-3 min-w-[118px] transition-transform hover:translate-y-[-1px]"
       style={{
-        background: `linear-gradient(145deg, rgba(42,30,20,0.9), rgba(28,20,14,0.95))`,
+        background: 'linear-gradient(145deg, rgba(40,28,18,0.95), rgba(27,19,13,0.98))',
         border: `1px solid ${accent}30`,
-        minWidth: 72,
+        boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
       }}
     >
-      <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center"
-        style={{ background: `${accent}20`, border: `1px solid ${accent}35` }}
-      >
-        <Icon className="w-4.5 h-4.5" style={{ color: accent }} />
+      <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${accent}24`, border: `1px solid ${accent}45` }}>
+        <Icon className="w-5 h-5" style={{ color: accent }} />
       </div>
-      <span className="text-xs font-medium leading-tight" style={{ color: 'rgba(224,216,200,0.75)' }}>
-        {label}
-      </span>
+      <span className="text-sm font-semibold text-left" style={{ color: '#F5F1E7' }}>{label}</span>
     </button>
   );
 }
 
-// ─── Curator Insight Card ────────────────────────────────────────────────────
-function CuratorCard({ onOpen }) {
+function InsightBanner({ title, body, onOpen }) {
   return (
-    <div
-      className="rounded-2xl p-5 flex items-center justify-between gap-4 cursor-pointer transition-all duration-200 hover:opacity-90"
-      style={{
-        background: 'linear-gradient(135deg, rgba(163,92,92,0.12), rgba(28,20,14,0.97))',
-        border: '1px solid rgba(163,92,92,0.28)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-      }}
+    <button
+      type="button"
       onClick={onOpen}
+      className="w-full rounded-[24px] p-6 flex items-center justify-between gap-5 text-left"
+      style={{
+        background: 'linear-gradient(135deg, rgba(163,92,92,0.16), rgba(36,24,17,0.98))',
+        border: '1px solid rgba(163,92,92,0.35)',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
+      }}
     >
       <div className="flex items-center gap-4">
-        <div
-          className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: 'rgba(163,92,92,0.18)', border: '1px solid rgba(163,92,92,0.3)' }}
-        >
-          <Target className="w-6 h-6" style={{ color: '#c46a6a' }} />
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(163,92,92,0.18)', border: '1px solid rgba(163,92,92,0.32)' }}>
+          <Sparkles className="w-6 h-6" style={{ color: '#D47C7C' }} />
         </div>
         <div>
-          <h3 className="text-sm font-bold mb-0.5" style={{ color: '#F5F1E7' }}>AI Curator</h3>
-          <p className="text-xs leading-relaxed" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            Get personalized insights, rotation advice, and collection recommendations.
-          </p>
+          <div className="text-2xl font-bold mb-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{title}</div>
+          <p className="text-base leading-relaxed" style={{ color: 'rgba(224,216,200,0.72)' }}>{body}</p>
         </div>
       </div>
-      <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-        style={{ background: 'rgba(163,92,92,0.18)', border: '1px solid rgba(163,92,92,0.3)' }}
-      >
-        <ChevronRight className="w-4 h-4" style={{ color: '#c46a6a' }} />
+      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(163,92,92,0.22)', border: '1px solid rgba(163,92,92,0.38)' }}>
+        <ChevronRight className="w-5 h-5" style={{ color: '#D47C7C' }} />
       </div>
-    </div>
+    </button>
   );
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
+function RecentSessionCard({ activity, onOpen }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="w-full rounded-[22px] p-5 flex items-center gap-4 text-left"
+      style={{
+        background: 'linear-gradient(145deg, rgba(40,28,18,0.92), rgba(24,17,11,0.98))',
+        border: '1px solid rgba(180,140,75,0.18)',
+      }}
+    >
+      <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(180,140,75,0.14)', border: '1px solid rgba(180,140,75,0.24)' }}>
+        <Activity className="w-5 h-5" style={{ color: '#D4A574' }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-lg font-bold truncate" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{activity.title}</p>
+        <p className="text-sm mt-1 truncate" style={{ color: 'rgba(224,216,200,0.7)' }}>{activity.subtitle}</p>
+      </div>
+      <span className="text-sm shrink-0" style={{ color: '#D4A574' }}>View →</span>
+    </button>
+  );
+}
+
+function getRecentLabel(dateString) {
+  if (!dateString) return '';
+  const dt = new Date(dateString);
+  if (Number.isNaN(dt.getTime())) return '';
+  return dt.toLocaleDateString();
+}
+
 export default function CollectionHub() {
   const navigate = useNavigate();
-  const { user, isAdmin } = useCurrentUser();
-  const { isModuleEnabled, isLoading: moduleLoading } = useModuleVisibility();
+  const { user } = useCurrentUser();
+  const { enabledModules, expandingSoonModules, isModuleEnabled } = useEnabledKeeperModules();
+  const whiskeyOpenable = isModuleEnabled('whiskeykeeper');
 
-  // Fetch pipe count
-  const { data: pipes = [], isLoading: pipesLoading } = useQuery({
-    queryKey: ['hub-pipes'],
-    queryFn: () => base44.entities.Pipe.list('-created_date', 200),
-    staleTime: 3 * 60 * 1000,
+  const { data, isLoading } = useQuery({
+    queryKey: ['collection-hub-dashboard', user?.email, whiskeyOpenable],
+    enabled: !!user?.email,
+    staleTime: 2 * 60 * 1000,
+    queryFn: async () => {
+      const [pipes, blends, smokeLogs, bottles] = await Promise.all([
+        base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 500).catch(() => []),
+        base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-updated_date', 500).catch(() => []),
+        base44.entities.SmokingLog.filter({ created_by: user.email }, '-date', 1000).catch(() => []),
+        whiskeyOpenable
+          ? base44.entities.Bottle.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
+          : Promise.resolve([]),
+      ]);
+      return { pipes, blends, smokeLogs, bottles };
+    },
   });
 
-  // Fetch blend count
-  const { data: blends = [], isLoading: blendsLoading } = useQuery({
-    queryKey: ['hub-blends'],
-    queryFn: () => base44.entities.TobaccoBlend.list('-created_date', 200),
-    staleTime: 3 * 60 * 1000,
-  });
+  const pipes = data?.pipes || [];
+  const blends = data?.blends || [];
+  const smokeLogs = data?.smokeLogs || [];
+  const bottles = data?.bottles || [];
 
-  // Fetch recent smoke logs
-  const { data: smokeLogs = [], isLoading: logsLoading } = useQuery({
-    queryKey: ['hub-smokelogs'],
-    queryFn: () => base44.entities.SmokingLog.list('-date', 5),
-    staleTime: 3 * 60 * 1000,
-  });
+  const metrics = useMemo(() => {
+    const pipeValue = pipes.reduce((sum, pipe) => sum + Number(getPipeValue(pipe) || 0), 0);
+    const tobaccoValue = blends.reduce((sum, blend) => sum + Number(getTobaccoValue(blend) || 0), 0);
+    const whiskeyValue = bottles.reduce((sum, bottle) => sum + Number(getBottleValue(bottle) || 0), 0);
+    const totalValue = pipeValue + tobaccoValue + whiskeyValue;
 
-  const statsLoading = pipesLoading || blendsLoading || logsLoading || moduleLoading;
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const recentSessionsCount = smokeLogs.filter((log) => {
+      const dt = new Date(log.date || log.created_date || 0).getTime();
+      return Number.isFinite(dt) && dt >= weekAgo;
+    }).length;
 
-  // Module bucketing — release-state-aware
-  const { accessible, expandingSoon } = useMemo(() => {
-    const accessible = [];
-    const expandingSoon = [];
+    const logsByPipe = smokeLogs.reduce((acc, log) => {
+      const id = log.pipe_id;
+      if (!id) return acc;
+      acc[id] = (acc[id] || 0) + 1;
+      return acc;
+    }, {});
 
-    for (const key of ALL_MODULES) {
-      const canAccess = shouldShowModuleInNav(key, user) || (isAdmin && isInternalModuleTester(user));
-      const meta = MODULE_META[key];
-      if (!meta) continue;
+    const logsByBlend = smokeLogs.reduce((acc, log) => {
+      const id = log.blend_id;
+      if (!id) return acc;
+      acc[id] = (acc[id] || 0) + 1;
+      return acc;
+    }, {});
 
-      if (canAccess && meta.route) {
-        accessible.push({ meta });
-      } else {
-        expandingSoon.push({ meta });
-      }
-    }
+    const mostSmokedPipe = [...pipes]
+      .map((pipe) => ({ ...pipe, __count: logsByPipe[pipe.id] || Number(pipe.times_smoked) || 0 }))
+      .sort((a, b) => b.__count - a.__count)[0] || null;
 
-    return { accessible, expandingSoon };
-  }, [user, isAdmin, isModuleEnabled]);
+    const favoriteBlend = [...blends]
+      .map((blend) => ({ ...blend, __count: logsByBlend[blend.id] || Number(blend.times_smoked) || 0 }))
+      .sort((a, b) => b.__count - a.__count)[0] || null;
 
-  // Stat helpers
-  const totalPipes = pipes.length;
-  const totalBlends = blends.length;
-  const activeModuleCount = accessible.length;
-  const recentLog = smokeLogs[0];
+    const mostValuablePipe = [...pipes]
+      .sort((a, b) => Number(getPipeValue(b) || 0) - Number(getPipeValue(a) || 0))[0] || null;
 
-  const pipeKeeperStats = [
-    { value: totalPipes, label: 'Pipes' },
-    { value: totalBlends, label: 'Blends' },
-    { value: smokeLogs.length > 0 ? `${smokeLogs.length}` : '—', label: 'Recent Logs' },
+    const recentActivity = smokeLogs.slice(0, 5).map((log) => ({
+      id: log.id,
+      title: log.blend_name || log.blend || 'Recent session',
+      subtitle: `${log.pipe_name ? `In ${log.pipe_name}` : 'Pipe session'}${log.date ? ` • ${getRecentLabel(log.date)}` : ''}`,
+      pipeId: log.pipe_id,
+    }));
+
+    return {
+      totalValue,
+      recentSessionsCount,
+      mostSmokedPipe,
+      favoriteBlend,
+      mostValuablePipe,
+      recentActivity,
+    };
+  }, [pipes, blends, bottles, smokeLogs]);
+
+  const openableModuleKeys = enabledModules.map((m) => m.moduleKey);
+  const expandingKeys = expandingSoonModules.map((m) => m.moduleKey);
+
+  const pipeStats = [
+    { label: 'Pipes', value: pipes.length },
+    { label: 'Blends', value: blends.length },
+    { label: 'Recent Logs', value: smokeLogs.length || '—' },
   ];
 
   return (
-    <div className="max-w-3xl mx-auto py-6 px-4 space-y-8">
-
-      {/* ── SECTION 1: HERO ── */}
-      <div className="flex items-center gap-4 pt-1 pb-2">
-        <BrandLogo
-          compact
-          showWordmark={false}
-          imageClassName="w-12 h-12 flex-shrink-0"
-        />
-        <div>
-          <h1
-            className="text-2xl font-bold tracking-tight"
-            style={{ color: '#F5F1E7', textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}
-          >
-            CollectionKeeper
-          </h1>
-          <p className="text-sm mt-0.5" style={{ color: 'rgba(224,216,200,0.55)' }}>
-            Your premium collector ecosystem
-          </p>
-        </div>
-      </div>
-
-      {/* ── SECTION 2: COLLECTION OVERVIEW ── */}
-      <section className="space-y-3">
-        <h2 className="text-xs font-semibold uppercase tracking-widest px-1" style={{ color: '#8b6239' }}>
-          Collection Overview
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard label="Pipes" value={totalPipes} icon={Layers} accent="#c49a5a" loading={statsLoading} />
-          <StatCard label="Blends" value={totalBlends} icon={BookOpen} accent="#9a8b6a" loading={statsLoading} />
-          <StatCard label="Active Modules" value={activeModuleCount} icon={Star} accent="#a35c5c" loading={moduleLoading} />
-          <StatCard label="Recent Sessions" value={smokeLogs.length > 0 ? smokeLogs.length : '—'} icon={Flame} accent="#7a8b5c" loading={logsLoading} />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+      <section
+        className="rounded-[28px] p-6 sm:p-8"
+        style={{
+          background: 'linear-gradient(145deg, rgba(35,24,16,0.94), rgba(22,15,10,0.98))',
+          border: '1px solid rgba(180,140,75,0.16)',
+          boxShadow: '0 18px 46px rgba(0,0,0,0.36)',
+        }}
+      >
+        <div className="flex items-center gap-5">
+          <BrandLogo compact showWordmark={false} imageClassName="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0" />
+          <div>
+            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+              CollectionKeeper
+            </h1>
+            <p className="text-lg sm:text-xl mt-2 max-w-3xl" style={{ color: 'rgba(224,216,200,0.78)' }}>
+              Your unified ecosystem for tracking, curating, and understanding your collections.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* ── SECTION 3: YOUR COLLECTIONS ── */}
-      {accessible.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-widest px-1" style={{ color: '#8b6239' }}>
-            Your Collections
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {accessible.map(({ meta }) => (
-              <ActiveModuleCard
-                key={meta.key}
-                meta={meta}
-                stats={meta.key === 'pipekeeper' ? pipeKeeperStats : []}
-                onNavigate={() => navigate(createPageUrl(meta.route))}
+      <section className="space-y-4">
+        {sectionTitle('Collection Overview')}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <StatCard icon={TrendingUp} label="Total Value" value={currency(metrics.totalValue)} sub="Across active collections" accent="#C89752" />
+          <StatCard icon={Layers} label="Pipes" value={pipes.length} sub="In collection" accent="#B48C4B" />
+          <StatCard icon={Leaf} label="Blends" value={blends.length} sub="Tracked blends" accent="#6E8A57" />
+          <StatCard icon={Flame} label="Recent Sessions" value={metrics.recentSessionsCount} sub="This week" accent="#B56A5F" />
+        </div>
+      </section>
+
+      {openableModuleKeys.length > 0 && (
+        <section className="space-y-4">
+          {sectionTitle('Your Collections')}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {openableModuleKeys.map((moduleKey) => (
+              <ModuleCard
+                key={moduleKey}
+                moduleKey={moduleKey}
+                stats={moduleKey === 'pipekeeper' ? pipeStats : []}
+                onOpen={() => navigate(createPageUrl(MODULE_META[moduleKey].route))}
               />
             ))}
           </div>
         </section>
       )}
 
-      {/* ── SECTION 4: EXPANDING SOON ── */}
-      {expandingSoon.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-widest px-1" style={{ color: 'rgba(224,216,200,0.28)' }}>
-            Expanding Soon
-          </h2>
-          <div className="flex flex-col gap-2">
-            {expandingSoon.map(({ meta }) => (
-              <ExpandingSoonCard key={meta.key} meta={meta} />
+      {expandingKeys.length > 0 && (
+        <section className="space-y-4">
+          {sectionTitle('Expanding Soon', true)}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {expandingKeys.map((moduleKey) => (
+              <ExpandingSoonCard key={moduleKey} moduleKey={moduleKey} />
             ))}
           </div>
         </section>
       )}
 
-      {/* ── SECTION 5: QUICK ACTIONS ── */}
-      <section className="space-y-3">
-        <h2 className="text-xs font-semibold uppercase tracking-widest px-1" style={{ color: '#8b6239' }}>
-          Quick Actions
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          <QuickAction
-            label="Add Pipe"
-            icon={Plus}
-            accent="#c49a5a"
-            onClick={() => navigate('/PipeKeeper?action=add_pipe')}
-          />
-          <QuickAction
-            label="Add Blend"
-            icon={Plus}
-            accent="#9a8b6a"
-            onClick={() => navigate('/PipeKeeper?action=add_blend')}
-          />
-          <QuickAction
-            label="Log Smoke"
-            icon={Flame}
-            accent="#a35c5c"
-            onClick={() => navigate('/PipeKeeper?action=log_smoke')}
-          />
-          <QuickAction
-            label="View Pipes"
-            icon={Layers}
-            accent="#c49a5a"
-            onClick={() => navigate(createPageUrl('PipeKeeper'))}
-          />
-          <QuickAction
-            label="Open Curator"
-            icon={Target}
-            accent="#c46a6a"
-            onClick={() => navigate(createPageUrl('Curator'))}
-          />
+      <section className="space-y-4">
+        {sectionTitle('Quick Actions')}
+        <div className="flex flex-wrap gap-4">
+          <QuickAction icon={Plus} label="Add Pipe" accent="#C89752" onClick={() => navigate('/PipeKeeper?action=add_pipe')} />
+          <QuickAction icon={Plus} label="Add Blend" accent="#8E7E60" onClick={() => navigate('/PipeKeeper?action=add_blend')} />
+          <QuickAction icon={Flame} label="Log Smoke" accent="#B56A5F" onClick={() => navigate('/PipeKeeper?action=log_smoke')} />
+          <QuickAction icon={Layers} label="View Pipes" accent="#B48C4B" onClick={() => navigate(createPageUrl('PipeKeeper'))} />
+          <QuickAction icon={Sparkles} label="Open Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
         </div>
       </section>
 
-      {/* ── SECTION 6: CURATOR / INSIGHT PANEL ── */}
-      <section className="space-y-3">
-        <h2 className="text-xs font-semibold uppercase tracking-widest px-1" style={{ color: '#8b6239' }}>
-          Collection Intelligence
-        </h2>
-        <CuratorCard onOpen={() => navigate(createPageUrl('Curator'))} />
+      <section className="space-y-4">
+        {sectionTitle('Collection Intelligence')}
+        <InsightBanner
+          title="AI Curator"
+          body="Get personalized insights, rotation advice, and collection recommendations tailored to your actual collection."
+          onOpen={() => navigate(createPageUrl('Curator'))}
+        />
       </section>
 
-      {/* ── SECTION 7: RECENT ACTIVITY ── */}
-      {recentLog && (
-        <section className="space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-widest px-1" style={{ color: '#8b6239' }}>
-            Recent Activity
-          </h2>
-          <div
-            className="rounded-2xl p-4 flex items-center gap-4"
-            style={{
-              background: 'linear-gradient(145deg, rgba(42,30,20,0.8), rgba(28,20,14,0.95))',
-              border: '1px solid rgba(180,140,75,0.18)',
-            }}
-          >
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'rgba(180,140,75,0.12)', border: '1px solid rgba(180,140,75,0.2)' }}
-            >
-              <Activity className="w-5 h-5" style={{ color: 'rgba(180,140,75,0.8)' }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate" style={{ color: '#F5F1E7' }}>
-                {recentLog.blend_name || 'Recent session'}
-              </p>
-              <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(224,216,200,0.5)' }}>
-                {recentLog.pipe_name
-                  ? `In ${recentLog.pipe_name}`
-                  : 'Pipe session logged'}
-                {recentLog.date
-                  ? ` · ${new Date(recentLog.date).toLocaleDateString()}`
-                  : ''}
-              </p>
-            </div>
-            <button
-              className="text-xs flex items-center gap-1 flex-shrink-0"
-              style={{ color: 'rgba(180,140,75,0.7)' }}
-              onClick={() => navigate(createPageUrl('PipeKeeper'))}
-            >
-              View <ChevronRight className="w-3 h-3" />
-            </button>
+      {(metrics.mostSmokedPipe || metrics.favoriteBlend || metrics.mostValuablePipe) && (
+        <section className="space-y-4">
+          {sectionTitle('Top Highlights')}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+            {metrics.mostSmokedPipe ? (
+              <CatalogPlate
+                title="Most Smoked Pipe"
+                value={metrics.mostSmokedPipe.name}
+                subtitle={`${metrics.mostSmokedPipe.__count || 0} bowls`}
+                heroImage={metrics.mostSmokedPipe.photos?.[0]}
+                bgImage={metrics.mostSmokedPipe.photos?.[0]}
+                accent="#C87941"
+                onClick={() => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(metrics.mostSmokedPipe.id)}`))}
+              />
+            ) : null}
+            {metrics.favoriteBlend ? (
+              <CatalogPlate
+                title="Favorite Blend"
+                value={metrics.favoriteBlend.name}
+                subtitle={`${metrics.favoriteBlend.__count || 0} bowls`}
+                heroImage={metrics.favoriteBlend.logo || metrics.favoriteBlend.photo}
+                bgImage={metrics.favoriteBlend.logo || metrics.favoriteBlend.photo}
+                accent="#5A7C5A"
+                onClick={() => navigate(createPageUrl(`TobaccoDetail?id=${encodeURIComponent(metrics.favoriteBlend.id)}`))}
+              />
+            ) : null}
+            {metrics.mostValuablePipe ? (
+              <CatalogPlate
+                title="Most Valuable Pipe"
+                value={metrics.mostValuablePipe.name}
+                subtitle={currency(getPipeValue(metrics.mostValuablePipe))}
+                heroImage={metrics.mostValuablePipe.photos?.[0]}
+                bgImage={metrics.mostValuablePipe.photos?.[0]}
+                accent="#B4824B"
+                onClick={() => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(metrics.mostValuablePipe.id)}`))}
+              />
+            ) : null}
+          </div>
+        </section>
+      )}
+
+      {metrics.recentActivity.length > 0 && (
+        <section className="space-y-4">
+          {sectionTitle('Recent Activity')}
+          <div className="space-y-3">
+            {metrics.recentActivity.map((activity) => (
+              <RecentSessionCard
+                key={activity.id}
+                activity={activity}
+                onOpen={() => navigate(createPageUrl(activity.pipeId ? `PipeDetail?id=${encodeURIComponent(activity.pipeId)}` : 'PipeKeeper'))}
+              />
+            ))}
           </div>
         </section>
       )}
