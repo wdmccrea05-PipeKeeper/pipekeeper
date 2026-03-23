@@ -420,7 +420,7 @@ export default function CollectionHub() {
       </div>
 
       {/* Collection Highlights */}
-      {(mostSmokedPipe || favoritePipe || favoriteBlend || favoriteBottle || mostValuedBottle) && (
+      {(mostSmokedPipe || favoritePipe || favoriteBlend || (isModuleEnabled("whiskeykeeper") && !WHISKEYKEEPER_BLOCKED && (favoriteBottle || mostValuedBottle))) && (
         <div className="space-y-4">
           <h2
             className="text-sm uppercase tracking-[0.12em] font-semibold"
