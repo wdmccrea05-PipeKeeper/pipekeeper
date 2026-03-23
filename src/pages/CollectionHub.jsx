@@ -1,6 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { isAdminWhiskeyUnlocked, RELEASE_MODE } from "@/components/utils/releaseConfig";
-const WHISKEYKEEPER_BLOCKED = RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -132,8 +130,7 @@ export default function CollectionHub() {
   const { data: bottles = [] } = useQuery({
     queryKey: ["hub-bottles", user?.email],
     queryFn: async () => (await base44.entities.Bottle.filter({ created_by: user?.email })) || [],
-    // Don't fetch bottle data when WhiskeyKeeper is blocked in this release
-    enabled: !!user?.email && !WHISKEYKEEPER_BLOCKED,
+    enabled: !!user?.email && isModuleEnabled('whiskeykeeper'),
     staleTime: 30000,
   });
 
@@ -353,7 +350,7 @@ export default function CollectionHub() {
           {t("hub.collectionSummary", "Collection Overview")}
         </h2>
 
-        <div className={`grid gap-4 ${!WHISKEYKEEPER_BLOCKED && isModuleEnabled("whiskeykeeper") ? "grid-cols-2 md:grid-cols-6" : "grid-cols-2 md:grid-cols-4"}`}>
+        <div className={`grid gap-4 ${isModuleEnabled("whiskeykeeper") ? "grid-cols-2 md:grid-cols-6" : "grid-cols-2 md:grid-cols-4"}`}>
           <SummaryStat
             label={t("hub.totalValue", "Total Value")}
             value={displayValue(money(totalDisplayedValue))}
@@ -371,7 +368,7 @@ export default function CollectionHub() {
             color="#7B9B5B"
           />
 
-          {!WHISKEYKEEPER_BLOCKED && isModuleEnabled("whiskeykeeper") ? (
+          {isModuleEnabled("whiskeykeeper") ? (
             <>
               <SummaryStat
                 label={t("hub.bottleTypes", "Bottle Types")}
@@ -420,7 +417,7 @@ export default function CollectionHub() {
       </div>
 
       {/* Collection Highlights */}
-      {(mostSmokedPipe || favoritePipe || favoriteBlend || (isModuleEnabled("whiskeykeeper") && !WHISKEYKEEPER_BLOCKED && (favoriteBottle || mostValuedBottle))) && (
+      {(mostSmokedPipe || favoritePipe || favoriteBlend || (isModuleEnabled("whiskeykeeper") && (favoriteBottle || mostValuedBottle))) && (
         <div className="space-y-4">
           <h2
             className="text-sm uppercase tracking-[0.12em] font-semibold"
@@ -451,7 +448,7 @@ export default function CollectionHub() {
                 onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(favoriteBlend.id)}`)}
               />
             )}
-            {!WHISKEYKEEPER_BLOCKED && isModuleEnabled("whiskeykeeper") && favoriteBottle && (
+            {isModuleEnabled("whiskeykeeper") && favoriteBottle && (
               <CatalogPlate
                 title={t("hub.favoriteBottle", "Favorite Bottle")}
                 value={favoriteBottle.name}
@@ -462,7 +459,7 @@ export default function CollectionHub() {
                 onClick={() => window.location.href = createPageUrl(`BottleDetail?id=${encodeURIComponent(favoriteBottle.id)}`)}
               />
             )}
-            {!WHISKEYKEEPER_BLOCKED && isModuleEnabled("whiskeykeeper") && !favoriteBottle && mostValuedBottle && (
+            {isModuleEnabled("whiskeykeeper") && !favoriteBottle && mostValuedBottle && (
               <CatalogPlate
                 title={t("hub.mostValuable", "Most Valuable")}
                 value={mostValuedBottle.name}
