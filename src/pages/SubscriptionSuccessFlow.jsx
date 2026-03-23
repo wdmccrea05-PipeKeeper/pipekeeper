@@ -2,14 +2,40 @@
  * Subscription Success Flow
  * Post-purchase explicit sync and confirmation
  * 3-phase: loading → success → error
+ *
+ * HARDENED:
+ * - requires syncSubscriptionForMe to return an actual paid-access result
+ * - requires unlocked module list, not just "no error"
+ * - invalidates all access + visibility caches before showing success
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, AlertCircle, Loader } from 'lucide-react';
+
+function formatModuleLabel(moduleKey) {
+  const labels = {
+    pipekeeper: 'PipeKeeper',
+    whiskeykeeper: 'WhiskeyKeeper',
+    cigarkeeper: 'CigarKeeper',
+    winekeeper: 'WineKeeper',
+  };
+  return labels[String(moduleKey || '').toLowerCase()] || String(moduleKey || 'CollectionKeeper');
+}
+
+function deriveModulesFromPlanKey(planKey) {
+  const key = String(planKey || '').toLowerCase();
+  if (key.startsWith('pipekeeper_')) return ['pipekeeper'];
+  if (key.startsWith('whiskeykeeper_')) return ['whiskeykeeper'];
+  if (key.startsWith('cigarkeeper_')) return ['cigarkeeper'];
+  if (key.startsWith('winekeeper_')) return ['winekeeper'];
+  if (key.includes('three_module')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+  if (key.includes('four_module') || key.includes('founders')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+  return [];
+}
 
 export default function SubscriptionSuccessFlow() {
   const navigate = useNavigate();
@@ -27,30 +53,53 @@ export default function SubscriptionSuccessFlow() {
 
     async function syncAndConfirm() {
       try {
-        // Call sync function
         const response = await base44.functions.invoke('syncSubscriptionForMe', {});
+        const data = response?.data || {};
 
         if (!mounted) return;
 
-        // Check response
-        if (response?.data?.status === 'no_subscription') {
-          setError('Subscription not found. This may take a moment. Please try again.');
+        if (data?.error) {
+          throw new Error(data.error);
+        }
+
+        if (data?.status === 'no_customer') {
+          setError('No billing account was found yet. Please wait a moment and try again.');
           setPhase('error');
           return;
         }
 
-        if (response?.data?.error) {
-          setError(response.data.error);
+        if (data?.status === 'no_subscription') {
+          setError('Your purchase has not finished syncing yet. Please try again.');
           setPhase('error');
           return;
         }
 
-        // Success
-        setAccessSummary(response?.data);
-        
-        // Rebuild access queries
-        await queryClient.invalidateQueries({ queryKey: ['current-user'] });
-        await queryClient.invalidateQueries({ queryKey: ['subscription'] });
+        const activeModules = Array.isArray(data?.activeModules) && data.activeModules.length > 0
+          ? data.activeModules
+          : deriveModulesFromPlanKey(data?.planKey);
+
+        const hasPaidAccess = data?.hasPaidAccess === true || data?.tier === 'pro';
+
+        if (!hasPaidAccess || activeModules.length === 0) {
+          setError('Your subscription synced, but module access is not ready yet. Please retry in a moment.');
+          setPhase('error');
+          return;
+        }
+
+        const normalized = {
+          ...data,
+          activeModules,
+          hasPaidAccess: true,
+        };
+
+        setAccessSummary(normalized);
+
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['current-user'] }),
+          queryClient.invalidateQueries({ queryKey: ['subscription'] }),
+          queryClient.invalidateQueries({ queryKey: ['module-visibility-profile'] }),
+          queryClient.invalidateQueries({ queryKey: ['user-profile'] }),
+        ]);
 
         setPhase('success');
       } catch (err) {
@@ -68,6 +117,8 @@ export default function SubscriptionSuccessFlow() {
       mounted = false;
     };
   }, [queryClient]);
+
+  const modules = useMemo(() => accessSummary?.activeModules || [], [accessSummary]);
 
   if (phase === 'loading') {
     return (
@@ -120,9 +171,6 @@ export default function SubscriptionSuccessFlow() {
     );
   }
 
-  // Success
-  const modules = accessSummary?.activeModules || [];
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] p-4">
       <div
@@ -133,11 +181,11 @@ export default function SubscriptionSuccessFlow() {
         }}
       >
         <CheckCircle2 className="w-16 h-16 mx-auto mb-4" style={{ color: '#2e7d5c' }} />
-        
+
         <h1 style={{ color: '#F5F1E7' }} className="text-3xl font-bold mb-2">
           Welcome!
         </h1>
-        
+
         <p style={{ color: '#E0D8C8' }} className="text-sm mb-6">
           Your subscription is now active.
         </p>
@@ -157,7 +205,7 @@ export default function SubscriptionSuccessFlow() {
                     color: '#D4A574',
                   }}
                 >
-                  {m.charAt(0).toUpperCase() + m.slice(1).replace('keeper', ' Keeper')}
+                  {formatModuleLabel(m)}
                 </div>
               ))}
             </div>
