@@ -173,23 +173,38 @@ For each pipe, suggest:
     buildPrompt: (ctx) => {
       const { bottles = [] } = ctx;
       const incompleteBottles = bottles.filter(
-        b => !b.distillery || !b.region || !b.age_years || !b.abv || !b.whiskey_type
+        b => !b.distillery || !b.region || !b.age || !b.abv || !b.type ||
+             !b.retail_price || !b.aftermarket_price || !b.collector_value
       );
 
       if (incompleteBottles.length === 0) {
         return 'All bottle records in my collection are complete. Can you suggest metadata fields that would enhance valuation and recommendation accuracy?';
       }
 
-      return `Help me prioritize bottle record enrichment.
+      const bottleSummaries = incompleteBottles.slice(0, 15).map(b => {
+        const missing = [];
+        if (!b.distillery) missing.push('distillery');
+        if (!b.region) missing.push('region');
+        if (!b.age) missing.push('age');
+        if (!b.abv) missing.push('abv');
+        if (!b.type) missing.push('whiskey type');
+        if (!b.retail_price) missing.push('retail price');
+        if (!b.aftermarket_price) missing.push('aftermarket price');
+        if (!b.collector_value) missing.push('collector value');
+        return `- ${b.name}${b.distillery ? ` (${b.distillery})` : ''} — missing: ${missing.join(', ')}`;
+      }).join('\n');
 
-Bottles with missing data:
-${incompleteBottles.slice(0, 10).map(b => `- ${b.name} (${b.distillery || 'unknown distillery'})`).join('\n')}
+      return `Help me enrich and prioritize missing bottle data for my whiskey collection. For each bottle, research and provide:
 
-For each bottle, identify:
-1. Which missing fields are most critical for analytics and valuation
-2. Priority order for updates
-3. Where to find reliable information
-4. How better metadata improves pairing and recommendations`;
+1. **Core Metadata** — distillery, region, age (years), ABV, whiskey type (e.g. Single Malt, Bourbon, Rye)
+2. **Valuation Data** — current retail price (USD), aftermarket/secondary market price (USD), collector value for sealed bottles (USD)
+3. **Data Sources** — where to find reliable valuation data (auction sites, retailer listings, etc.)
+4. **Priority Order** — which bottles to update first based on collection value impact
+
+Bottles needing enrichment:
+${bottleSummaries}
+
+Be specific with price estimates where possible. Use current market knowledge. For each bottle note your confidence level on pricing (high/medium/low).`;
     },
     buildContext: (ctx) => ({
       type: 'update_bottle_data',
