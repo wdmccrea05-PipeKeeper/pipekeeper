@@ -12,7 +12,7 @@ const variants = {
     "bg-[rgba(255,255,255,0.05)] text-[#CFC7B5] opacity-60 cursor-not-allowed",
 };
 
-export default function Button({
+function Button({
   children,
   className = "",
   variant = "secondary",
@@ -33,3 +33,6 @@ export default function Button({
     </button>
   );
 }
+
+export { Button };
+export default Button;
