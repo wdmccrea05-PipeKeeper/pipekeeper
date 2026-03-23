@@ -24,11 +24,12 @@
 html,
 body,
 #root {
-  min-height: 100%;
+  height: 100%;
   background:
     radial-gradient(circle at top, rgba(180, 140, 75, 0.08), transparent 30%),
     linear-gradient(180deg, var(--ck-bg-2) 0%, var(--ck-bg-1) 42%, var(--ck-bg-0) 100%);
   color: var(--ck-text);
+  overflow: auto;
 }
 
 body {
@@ -43,7 +44,6 @@ body {
     sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
 *,
