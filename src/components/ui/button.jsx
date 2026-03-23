@@ -29,10 +29,11 @@ const buttonVariants = cva(
 );
 
 function Button(props) {
-  const { children, className = "", ...rest } = props;
+  const { children, className = "", variant = "default", size = "default", ...rest } = props;
+  const variantClasses = buttonVariants({ variant, size });
 
   return (
-    <button className={className} {...rest}>
+    <button className={cn(variantClasses, className)} {...rest}>
       {children}
     </button>
   );
