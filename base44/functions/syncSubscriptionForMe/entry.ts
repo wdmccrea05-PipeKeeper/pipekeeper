@@ -1,11 +1,12 @@
 /**
- * Sync user's Stripe subscription to database
- * 
- * HOTFIX: Now also updates User entity entitlement fields so the frontend
- * reads correct access immediately after checkout — not just after the
- * next webhook delivery.
- * 
- * HOTFIX: Now queries active + trialing subscriptions (was active-only).
+ * Sync user's Stripe subscription to database.
+ *
+ * HARDENED:
+ * - evaluates all Stripe customers for the email
+ * - ignores fake test IDs when real cus_* customers exist
+ * - picks the best qualifying subscription across all customers
+ * - updates BOTH Subscription and User records
+ * - returns explicit activeModules + hasPaidAccess for post-checkout verification
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
@@ -13,30 +14,22 @@ import Stripe from 'npm:stripe@13.11.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
-function normEmail(email) {
+function normEmail(email: unknown): string {
   return String(email || '').trim().toLowerCase();
 }
 
-function mapStripeStatus(status) {
+function mapStripeStatus(status: string) {
   switch (status) {
     case 'active': return 'active';
     case 'trialing': return 'trialing';
     case 'past_due': return 'past_due';
+    case 'incomplete': return 'incomplete';
     case 'canceled': return 'canceled';
     default: return 'inactive';
   }
 }
 
-function extractTierFromPlanKey(planKey) {
-  if (!planKey) return 'pro'; // unknown plan but subscription exists → grant pro
-  if (planKey.includes('founder')) return 'pro';
-  if (planKey.includes('module')) return 'pro';
-  if (planKey.includes('bundle')) return 'pro';
-  if (planKey.includes('pro')) return 'pro';
-  return 'pro'; // fail open for paid subscriptions
-}
-
-function modulesFromPlanKey(planKey) {
+function modulesFromPlanKey(planKey: string): string[] {
   const key = String(planKey || '').toLowerCase();
   if (key.startsWith('pipekeeper_')) return ['pipekeeper'];
   if (key.startsWith('whiskeykeeper_')) return ['whiskeykeeper'];
@@ -47,23 +40,59 @@ function modulesFromPlanKey(planKey) {
   return ['pipekeeper'];
 }
 
-function determinePlanKeyFromPrice(priceId) {
-  const priceMap = {
-    [Deno.env.get('VITE_STRIPE_PIPEKEEPER_MONTHLY')]: 'pipekeeper_pro_monthly',
-    [Deno.env.get('VITE_STRIPE_PIPEKEEPER_ANNUAL')]: 'pipekeeper_pro_annual',
-    [Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_MONTHLY')]: 'whiskeykeeper_pro_monthly',
-    [Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_ANNUAL')]: 'whiskeykeeper_pro_annual',
-    [Deno.env.get('VITE_STRIPE_CIGARKEEPER_MONTHLY')]: 'cigarkeeper_pro_monthly',
-    [Deno.env.get('VITE_STRIPE_CIGARKEEPER_ANNUAL')]: 'cigarkeeper_pro_annual',
-    [Deno.env.get('VITE_STRIPE_WINEKEEPER_MONTHLY')]: 'winekeeper_pro_monthly',
-    [Deno.env.get('VITE_STRIPE_WINEKEEPER_ANNUAL')]: 'winekeeper_pro_annual',
-    [Deno.env.get('VITE_STRIPE_THREE_BUNDLE_MONTHLY')]: 'three_module_bundle_monthly',
-    [Deno.env.get('VITE_STRIPE_THREE_BUNDLE_ANNUAL')]: 'three_module_bundle_annual',
-    [Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_MONTHLY')]: 'four_module_bundle_monthly',
-    [Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_ANNUAL')]: 'four_module_bundle_annual',
-    [Deno.env.get('VITE_STRIPE_FOUNDERS_ANNUAL')]: 'founders_bundle_annual',
+function determinePlanKeyFromPrice(priceId: string | null) {
+  const priceMap: Record<string, string> = {
+    [Deno.env.get('VITE_STRIPE_PIPEKEEPER_MONTHLY') || '']: 'pipekeeper_pro_monthly',
+    [Deno.env.get('VITE_STRIPE_PIPEKEEPER_ANNUAL') || '']: 'pipekeeper_pro_annual',
+    [Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_MONTHLY') || '']: 'whiskeykeeper_pro_monthly',
+    [Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_ANNUAL') || '']: 'whiskeykeeper_pro_annual',
+    [Deno.env.get('VITE_STRIPE_CIGARKEEPER_MONTHLY') || '']: 'cigarkeeper_pro_monthly',
+    [Deno.env.get('VITE_STRIPE_CIGARKEEPER_ANNUAL') || '']: 'cigarkeeper_pro_annual',
+    [Deno.env.get('VITE_STRIPE_WINEKEEPER_MONTHLY') || '']: 'winekeeper_pro_monthly',
+    [Deno.env.get('VITE_STRIPE_WINEKEEPER_ANNUAL') || '']: 'winekeeper_pro_annual',
+    [Deno.env.get('VITE_STRIPE_THREE_BUNDLE_MONTHLY') || '']: 'three_module_bundle_monthly',
+    [Deno.env.get('VITE_STRIPE_THREE_BUNDLE_ANNUAL') || '']: 'three_module_bundle_annual',
+    [Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_MONTHLY') || '']: 'four_module_bundle_monthly',
+    [Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_ANNUAL') || '']: 'four_module_bundle_annual',
+    [Deno.env.get('VITE_STRIPE_FOUNDERS_ANNUAL') || '']: 'founders_bundle_annual',
   };
-  return priceMap[priceId] || null;
+  return priceId ? (priceMap[priceId] || null) : null;
+}
+
+function statusRank(status: string): number {
+  const key = String(status || '').toLowerCase();
+  if (key === 'active') return 4;
+  if (key === 'trialing') return 3;
+  if (key === 'past_due') return 2;
+  if (key === 'incomplete') return 1;
+  return 0;
+}
+
+function extractModulesFromMetadata(sub: Stripe.Subscription, planKey: string | null): string[] {
+  const metadataModules = String(sub.metadata?.modules_csv || '')
+    .split(',')
+    .map((m) => m.trim().toLowerCase())
+    .filter(Boolean);
+
+  return metadataModules.length > 0 ? metadataModules : modulesFromPlanKey(planKey || '');
+}
+
+function chooseBestSubscription(candidates: Array<{ customerId: string; subscription: Stripe.Subscription }>) {
+  if (!candidates.length) return null;
+
+  const sorted = [...candidates].sort((a, b) => {
+    const aRank = statusRank(String(a.subscription.status || ''));
+    const bRank = statusRank(String(b.subscription.status || ''));
+    if (bRank !== aRank) return bRank - aRank;
+
+    const aEnd = Number(a.subscription.current_period_end || 0);
+    const bEnd = Number(b.subscription.current_period_end || 0);
+    if (bEnd !== aEnd) return bEnd - aEnd;
+
+    return Number(b.subscription.created || 0) - Number(a.subscription.created || 0);
+  });
+
+  return sorted[0];
 }
 
 Deno.serve(async (req) => {
@@ -78,76 +107,51 @@ Deno.serve(async (req) => {
     const email = normEmail(user.email);
     const userId = user.id || user.auth_user_id;
 
-    // Find ALL real Stripe customers for this email (not just limit:1).
-    // Fake/test records (test_cus_*) are deprioritized.
     const customers = await stripe.customers.list({ email, limit: 20 });
-
-    if (customers.data.length === 0) {
+    if (!customers.data.length) {
       return Response.json({ status: 'no_customer', message: 'No Stripe customer found' });
     }
 
-    // Filter to real customers only (prefer cus_* over test_cus_*)
-    const realCustomers = customers.data.filter((c) => c.id && c.id.startsWith('cus_'));
-    const allCustomers = realCustomers.length > 0 ? realCustomers : customers.data;
+    const realCustomers = customers.data.filter((c) => typeof c.id === 'string' && c.id.startsWith('cus_'));
+    const customerPool = realCustomers.length ? realCustomers : customers.data;
 
-    const eligibleStatuses = new Set(['active', 'trialing', 'past_due', 'incomplete']);
-    const statusRank = { active: 4, trialing: 3, past_due: 2, incomplete: 1 };
+    const qualifyingStatuses = new Set(['active', 'trialing', 'past_due', 'incomplete']);
+    const candidates: Array<{ customerId: string; subscription: Stripe.Subscription }> = [];
 
-    // Fetch subscriptions for each customer and find the best qualifying one
-    let bestSubscription = null;
-    let bestCustomerId = null;
-
-    for (const customer of allCustomers) {
-      const subscriptions = await stripe.subscriptions.list({
+    for (const customer of customerPool) {
+      const subs = await stripe.subscriptions.list({
         customer: customer.id,
         status: 'all',
-        limit: 20,
+        limit: 50,
       });
 
-      const candidates = (subscriptions.data || []).filter((s) =>
-        eligibleStatuses.has(String(s.status || '').toLowerCase())
-      );
-
-      if (candidates.length === 0) continue;
-
-      const best = candidates.sort((a, b) => {
-        const ar = statusRank[String(a.status || '').toLowerCase()] || 0;
-        const br = statusRank[String(b.status || '').toLowerCase()] || 0;
-        if (br !== ar) return br - ar;
-        return (b.created || 0) - (a.created || 0);
-      })[0];
-
-      const bestRank = statusRank[String(best.status || '').toLowerCase()] || 0;
-      const currentBestRank = bestSubscription
-        ? (statusRank[String(bestSubscription.status || '').toLowerCase()] || 0)
-        : -1;
-
-      if (bestRank > currentBestRank) {
-        bestSubscription = best;
-        bestCustomerId = customer.id;
+      for (const sub of subs.data || []) {
+        const normalized = String(sub.status || '').toLowerCase();
+        if (!qualifyingStatuses.has(normalized)) continue;
+        candidates.push({ customerId: customer.id, subscription: sub });
       }
     }
 
-    if (!bestSubscription) {
+    const best = chooseBestSubscription(candidates);
+    if (!best) {
       return Response.json({ status: 'no_subscription', message: 'No qualifying subscription found' });
     }
 
-    const subscription = bestSubscription;
-    const customerId = bestCustomerId;
+    const subscription = best.subscription;
+    const customerId = best.customerId;
+    const item = subscription.items?.data?.[0];
+    const priceId = item?.price?.id || null;
+    const planKey = determinePlanKeyFromPrice(priceId) || 'unknown';
+    const activeModules = extractModulesFromMetadata(subscription, planKey);
+    const normalizedStatus = String(subscription.status || '').toLowerCase();
+    const hasPaidAccess = ['active', 'trialing', 'past_due', 'incomplete'].includes(normalizedStatus);
+    const currentPeriodStart = subscription.current_period_start
+      ? new Date(subscription.current_period_start * 1000).toISOString()
+      : null;
+    const currentPeriodEnd = subscription.current_period_end
+      ? new Date(subscription.current_period_end * 1000).toISOString()
+      : null;
 
-    const item = subscription.items.data[0];
-    if (!item?.price) {
-      return Response.json({ error: 'Invalid subscription item' }, { status: 400 });
-    }
-
-    const priceId = item.price.id;
-    const planKey = determinePlanKeyFromPrice(priceId);
-    const tier = extractTierFromPlanKey(planKey);
-
-    const currentPeriodStart = new Date(subscription.current_period_start * 1000).toISOString();
-    const currentPeriodEnd = new Date(subscription.current_period_end * 1000).toISOString();
-
-    // Build subscription record
     const subscriptionData = {
       user_id: userId,
       user_email: email,
@@ -156,69 +160,66 @@ Deno.serve(async (req) => {
       stripe_customer_id: customerId,
       stripe_subscription_id: subscription.id,
       status: mapStripeStatus(subscription.status),
-      tier,
-      planKey: planKey || 'unknown',
+      tier: hasPaidAccess ? 'pro' : 'free',
+      planKey,
       current_period_start: currentPeriodStart,
       current_period_end: currentPeriodEnd,
-      billing_interval: item.price.recurring?.interval || 'month',
-      // Carry through metadata from subscription if available (set by hotfixed checkout)
-      modules_csv: subscription.metadata?.modules_csv || '',
-      checkout_type: subscription.metadata?.checkout_type || 'single_module',
-      billing_period: subscription.metadata?.billing_period || item.price.recurring?.interval || 'month',
-      primary_module: subscription.metadata?.primary_module || 'pipekeeper',
+      billing_interval: item?.price?.recurring?.interval || 'month',
+      modules_csv: activeModules.join(','),
+      checkout_type: subscription.metadata?.checkout_type || (activeModules.length > 1 ? `bundle_${activeModules.length}` : 'single_module'),
+      billing_period: subscription.metadata?.billing_period || item?.price?.recurring?.interval || 'month',
+      primary_module: subscription.metadata?.primary_module || activeModules[0] || 'pipekeeper',
+      updated_date: new Date().toISOString(),
     };
 
-    // Upsert Subscription entity
     let existingSub = null;
     try {
-      const subs = await base44.asServiceRole.entities.Subscription.filter({ user_email: email });
-      existingSub = subs?.[0] || null;
-    } catch {
-      // No subscription record yet — will create
+      const byProviderId = await base44.asServiceRole.entities.Subscription.filter({
+        provider_subscription_id: subscription.id,
+      });
+      existingSub = byProviderId?.[0] || null;
+    } catch {}
+
+    if (!existingSub) {
+      try {
+        const byEmail = await base44.asServiceRole.entities.Subscription.filter({ user_email: email });
+        existingSub = byEmail?.find((row: any) => row.provider === 'stripe') || byEmail?.[0] || null;
+      } catch {}
     }
 
     if (existingSub?.id) {
       await base44.asServiceRole.entities.Subscription.update(existingSub.id, subscriptionData);
     } else {
-      await base44.asServiceRole.entities.Subscription.create(subscriptionData);
-    }
-
-    // Update User entity entitlement fields — what the frontend reads first.
-    const normalizedStatus = String(subscription.status || '').toLowerCase();
-    const hasPaidAccess = ['active', 'trialing', 'past_due', 'incomplete'].includes(normalizedStatus);
-
-    const metadataModules = String(subscription.metadata?.modules_csv || '')
-      .split(',')
-      .map((m) => m.trim().toLowerCase())
-      .filter(Boolean);
-
-    const paidModules = metadataModules.length ? metadataModules : modulesFromPlanKey(planKey);
-
-    try {
-      await base44.asServiceRole.entities.User.update(userId, {
-        stripe_customer_id: customerId,
-        entitlement_tier: hasPaidAccess ? 'pro' : 'free',
-        has_paid_access: hasPaidAccess,
-        paid_modules_csv: hasPaidAccess ? paidModules.join(',') : '',
-        updated_date: new Date().toISOString(),
+      await base44.asServiceRole.entities.Subscription.create({
+        ...subscriptionData,
+        created_date: new Date().toISOString(),
       });
-    } catch (err) {
-      console.warn('[syncSubscriptionForMe] Failed to update user entitlement fields:', err?.message);
-      // Non-blocking — subscription record is still created/updated
     }
+
+    await base44.asServiceRole.entities.User.update(userId, {
+      stripe_customer_id: customerId,
+      entitlement_tier: hasPaidAccess ? 'pro' : 'free',
+      has_paid_access: hasPaidAccess,
+      paid_modules_csv: hasPaidAccess ? activeModules.join(',') : '',
+      subscription_status: mapStripeStatus(subscription.status),
+      updated_date: new Date().toISOString(),
+    });
 
     return Response.json({
       status: 'synced',
-      planKey: planKey || 'unknown',
-      tier,
+      hasPaidAccess,
+      tier: hasPaidAccess ? 'pro' : 'free',
       subscriptionStatus: subscription.status,
+      planKey,
+      activeModules,
+      stripeCustomerId: customerId,
       currentPeriodEnd,
     });
   } catch (error) {
-    console.error('Subscription sync failed:', error);
+    console.error('[syncSubscriptionForMe] failed:', error);
     return Response.json(
-      { error: error.message || 'Failed to sync subscription' },
-      { status: 500 }
+      { error: error?.message || 'Failed to sync subscription' },
+      { status: 500 },
     );
   }
 });
