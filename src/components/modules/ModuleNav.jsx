@@ -65,7 +65,7 @@ export default function ModuleNav({ currentPageName }) {
   const enabledKeys = new Set((enabledModules || []).map((m) => m.moduleKey));
   const whiskeyOpenable = isModuleEnabled?.("whiskeykeeper") === true;
 
-  const primaryItems = [
+  const items = [
     { page: "CollectionHub", label: "Hub", icon: Home },
 
     ...(enabledKeys.has("pipekeeper")
@@ -94,66 +94,52 @@ export default function ModuleNav({ currentPageName }) {
     { page: "Community", label: "Community", icon: Users },
     { page: "Profile", label: "Profile", icon: User },
     { page: "HelpCenter", label: "Help", icon: HelpCircle },
+
+    ...(isAdmin
+      ? [
+          {
+            page: "AdminReports",
+            label: "Admin Reports",
+            icon: Shield,
+          },
+          {
+            page: "AdminSubscriptionRequests",
+            label: "Subscription Requests",
+            icon: ClipboardList,
+          },
+          {
+            page: "AdminSubscriptionTools",
+            label: "Subscription Tools",
+            icon: Wrench,
+          },
+          {
+            page: "UserReport",
+            label: "User Report",
+            icon: FileBarChart2,
+          },
+          {
+            page: "CuratorAnalyticsDashboard",
+            label: "Curator Analytics",
+            icon: BarChart3,
+          },
+          {
+            page: "SubscriptionE2ETest",
+            label: "Sub E2E Test",
+            icon: TestTube2,
+          },
+        ]
+      : []),
   ];
 
-  const adminItems = isAdmin
-    ? [
-        {
-          page: "AdminReports",
-          label: "Admin Reports",
-          icon: Shield,
-        },
-        {
-          page: "AdminSubscriptionRequests",
-          label: "Subscription Requests",
-          icon: ClipboardList,
-        },
-        {
-          page: "AdminSubscriptionTools",
-          label: "Subscription Tools",
-          icon: Wrench,
-        },
-        {
-          page: "UserReport",
-          label: "User Report",
-          icon: FileBarChart2,
-        },
-        {
-          page: "CuratorAnalyticsDashboard",
-          label: "Curator Analytics",
-          icon: BarChart3,
-        },
-        {
-          page: "SubscriptionE2ETest",
-          label: "Sub E2E Test",
-          icon: TestTube2,
-        },
-      ]
-    : [];
-
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-1 overflow-x-auto pb-1">
-        {primaryItems.map((item) => (
-          <NavItem
-            key={item.page}
-            item={item}
-            currentPageName={currentPageName}
-          />
-        ))}
-      </div>
-
-      {adminItems.length > 0 && (
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 border-t border-white/10 pt-2">
-          {adminItems.map((item) => (
-            <NavItem
-              key={item.page}
-              item={item}
-              currentPageName={currentPageName}
-            />
-          ))}
-        </div>
-      )}
+    <div className="flex items-center gap-1 overflow-x-auto pb-1">
+      {items.map((item) => (
+        <NavItem
+          key={item.page}
+          item={item}
+          currentPageName={currentPageName}
+        />
+      ))}
     </div>
   );
 }
