@@ -34,7 +34,7 @@ function NavItem({ item, currentPageName }) {
         active ? "bg-[#6b4a2d]/55" : "hover:bg-white/5"
       )}
       style={{
-        color: active ? "#F5F1E7" : "rgba(224,216,200,0.78)",
+        color: active ? "#F5F1E7" : "#E0D8C8",
         border: active
           ? "1px solid rgba(180,140,75,0.35)"
           : "1px solid transparent",
@@ -51,7 +51,7 @@ function NavItem({ item, currentPageName }) {
       ) : item.icon ? (
         <item.icon
           className="w-4 h-4 flex-shrink-0"
-          style={{ color: active ? "#D4A574" : "rgba(180,140,75,0.78)" }}
+          style={{ color: active ? "#D4A574" : "#C89752" }}
         />
       ) : null}
       <span>{item.label}</span>
