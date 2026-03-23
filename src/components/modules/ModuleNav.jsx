@@ -29,7 +29,7 @@ function NavItem({ item, currentPageName }) {
     <Link
       to={createPageUrl(item.page)}
       className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap",
+        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
         active ? "bg-[#6b4a2d]/55" : "hover:bg-white/5"
       )}
       style={{
@@ -53,7 +53,7 @@ function NavItem({ item, currentPageName }) {
           style={{ color: active ? "#D4A574" : "rgba(180,140,75,0.78)" }}
         />
       ) : null}
-      <span>{item.label}</span>
+      <span className="line-clamp-1">{item.label}</span>
     </Link>
   );
 }
@@ -132,7 +132,7 @@ export default function ModuleNav({ currentPageName }) {
   ];
 
   return (
-    <div className="flex items-center gap-1 overflow-x-auto pb-1">
+    <div className="flex flex-wrap items-center gap-1 pb-1">
       {items.map((item) => (
         <NavItem
           key={item.page}
