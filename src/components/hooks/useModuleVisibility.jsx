@@ -37,7 +37,11 @@ function moduleDefaultEnabled(moduleKey, prefsSet, profile, user) {
   const effectiveState = getEffectiveModuleReleaseState(moduleKey, user);
 
   if (effectiveState === 'blocked') return false;
-  if (effectiveState === 'internal') return isInternalModuleTester(user);
+  if (effectiveState === 'internal') {
+    // Only show to internal testers, but respect their profile preference if they are one
+    if (!isInternalModuleTester(user)) return false;
+    // For internal testers, check profile preference
+  }
 
   switch (moduleKey) {
     case 'pipekeeper':
