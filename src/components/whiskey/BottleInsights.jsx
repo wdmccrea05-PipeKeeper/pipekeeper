@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Wine, BarChart3, Flame, Trophy, Gauge, MapPin } from 'lucide-react';
+import { BarChart3, Flame, Trophy, Gauge, MapPin } from 'lucide-react';
+import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
@@ -114,7 +115,7 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
               border: '1px solid rgba(120, 90, 65, 0.45)',
             }}
           >
-            <Wine className="w-5 h-5" style={{ color: 'rgba(180, 140, 75, 1)' }} />
+            <WhiskeyKeeperIcon className="w-5 h-5" style={{ color: 'rgba(180, 140, 75, 1)' }} />
           </div>
           <h2
             className="text-2xl font-bold tracking-tight"
@@ -130,7 +131,7 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
 
       {/* Top Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <StatCard icon={Wine} label="Bottles" value={insights.totalBottles} accent="#A35C5C" />
+        <StatCard icon={WhiskeyKeeperIcon} label="Bottles" value={insights.totalBottles} accent="#A35C5C" />
         <StatCard icon={BarChart3} label="Collected" value={insights.totalCollected} accent="#C87941" />
         <StatCard icon={Flame} label="Tastings" value={insights.logsCount} accent="#D4AF37" />
       </div>

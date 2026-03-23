@@ -15,8 +15,8 @@ import {
   Package,
   LockOpen,
   ShieldCheck,
-  Wine,
 } from 'lucide-react';
+import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import {
   buildInventoryCountByBottleId,
   formatCurrency,
@@ -204,7 +204,7 @@ export default function WhiskeyKeeperModule({
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(180,140,75,0.10)' }}
           >
             <div className="flex items-center gap-2 text-[#D4A574] text-sm font-semibold">
-              <Wine className="w-4 h-4" />
+              <WhiskeyKeeperIcon className="w-4 h-4" />
               {t('whiskey.bottleTypes') || 'Bottle Types'}
             </div>
             <div className="text-3xl font-bold text-[#F5F1E7] mt-2">{bottleTypes}</div>
@@ -328,7 +328,7 @@ export default function WhiskeyKeeperModule({
           className="rounded-2xl p-10 text-center"
           style={{ background: 'rgba(44,30,22,0.75)', border: '1px solid rgba(180,140,75,0.12)' }}
         >
-          <Wine className="w-10 h-10 mx-auto mb-3 text-[#D4A574]/70" />
+          <WhiskeyKeeperIcon className="w-10 h-10 mx-auto mb-3 text-[#D4A574]/70" />
           <h3 className="text-lg font-semibold text-[#F5F1E7]">
             {t('whiskey.noBottlesFound') || 'No bottles found'}
           </h3>

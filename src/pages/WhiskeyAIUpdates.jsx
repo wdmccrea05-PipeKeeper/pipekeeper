@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Wand2, Globe, Tags, DollarSign, Beaker, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import ModuleNav from '@/components/modules/ModuleNav';
-import { GlassWater, BookOpen, TrendingUp, BarChart3 } from 'lucide-react';
+import { BookOpen, TrendingUp, BarChart3 } from 'lucide-react';
+import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { useLocation } from 'react-router-dom';
 
 function WhiskeyBottleIcon({ className, style }) {
@@ -36,7 +37,7 @@ export default function WhiskeyAIUpdates() {
   const [enrichResults, setEnrichResults] = useState(null);
 
   const moduleNav = [
-    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: GlassWater },
+    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: WhiskeyKeeperIcon },
     { name: t('nav.tastingNotes') || 'Tastings', path: '/Tastings', icon: BookOpen },
     { name: t('nav.insights') || 'Insights', path: '/WhiskeyInsights', icon: TrendingUp },
     { name: t('nav.analytics') || 'Analytics', path: '/WhiskeyAnalytics', icon: BarChart3 },

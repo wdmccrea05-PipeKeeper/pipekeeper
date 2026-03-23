@@ -6,11 +6,11 @@ import {
   DollarSign,
   Star,
   Sparkles,
-  GlassWater,
   CalendarDays,
   Share2,
   Package,
 } from 'lucide-react';
+import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import LogTastingModal from '@/components/whiskey/LogTastingModal';
@@ -394,7 +394,7 @@ export default function BottleDetail() {
                       })
                     }
                   >
-                    <GlassWater className="w-4 h-4 mr-2" />
+                    <WhiskeyKeeperIcon className="w-4 h-4 mr-2" />
                     Ask Curator about this bottle
                   </Button>
                 </div>

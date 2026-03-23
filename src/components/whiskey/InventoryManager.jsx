@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Shield, Wine, Droplets, X } from 'lucide-react';
+import { Plus, Trash2, Shield, Droplets, X } from 'lucide-react';
+import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { toast } from 'sonner';
 
 const STATUS_CONFIG = {
@@ -22,7 +23,7 @@ const STATUS_CONFIG = {
     color: '#7B9B5B',
     bg: 'rgba(123,155,91,0.12)',
     border: 'rgba(123,155,91,0.3)',
-    Icon: Wine,
+    Icon: WhiskeyKeeperIcon,
     description: 'Unopened — ready for future sessions',
   },
   open: {

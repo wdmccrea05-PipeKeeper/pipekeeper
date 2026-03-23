@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Moon, RefreshCw, ChevronRight, Brain, Save, Wine, Leaf } from "lucide-react";
+import { Sparkles, Moon, RefreshCw, ChevronRight, Brain, Save, Leaf } from "lucide-react";
+import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 import PipeIcon from '@/components/icons/PipeIcon';
 
 function PipeBlendIcon({ className = 'w-4 h-4' }) {
@@ -18,7 +19,7 @@ function PipeBlendWhiskeyIcon({ className = 'w-4 h-4' }) {
     <span className={`inline-flex items-center ${className}`}>
       <PipeIcon className="w-4 h-4" />
       <Leaf className="w-3 h-3 -ml-1" />
-      <Wine className="w-3 h-3 -ml-0.5" />
+      <WhiskeyKeeperIcon className="w-3 h-3 -ml-0.5" />
     </span>
   );
 }
@@ -38,7 +39,7 @@ const SESSION_MODES = [
 
 const MODULE_OPTIONS = [
   { value: "pipe_blend", label: "Pipe + Blend", IconComponent: PipeBlendIcon },
-  { value: "whiskey", label: "Whiskey Only", IconComponent: ({ className }) => <Wine className={className} /> },
+  { value: "whiskey", label: "Whiskey Only", IconComponent: ({ className }) => <WhiskeyKeeperIcon className={className} /> },
   { value: "pipe_blend_whiskey", label: "Pipe + Blend + Whiskey", IconComponent: PipeBlendWhiskeyIcon },
 ];
 

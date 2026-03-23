@@ -8,7 +8,8 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import { WhiskeyAnalyticsTab } from '@/components/whiskey/WhiskeyInsightsAnalytics';
 import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
-import { Wine, BookOpen, TrendingUp, BarChart3, Award, Trophy, Star, Zap, Calendar } from 'lucide-react';
+import { BookOpen, TrendingUp, BarChart3, Award, Trophy, Star, Zap, Calendar } from 'lucide-react';
+import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import { toast } from 'sonner';
 import { differenceInCalendarDays, parseISO, subDays, isWithinInterval } from 'date-fns';
@@ -298,7 +299,7 @@ export default function WhiskeyInsightsPage() {
               {/* Summary Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <StatusCard
-                  icon={Wine}
+                  icon={WhiskeyKeeperIcon}
                   label="Bottle Types"
                   value={bottleTypes}
                   sub="Distinct labels"
