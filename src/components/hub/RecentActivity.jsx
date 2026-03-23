@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Activity, ChevronRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
-import { createPageUrl } from '@/components/utils/createPageUrl';
 
 function formatDate(value) {
   if (!value) return '';
