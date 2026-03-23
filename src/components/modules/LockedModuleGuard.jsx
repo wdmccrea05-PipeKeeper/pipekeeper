@@ -17,6 +17,7 @@ import { createPageUrl } from '@/components/utils/createPageUrl';
 import { EyeOff, Settings, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import BrandLogo from '@/components/branding/BrandLogo';
 
 const MODULE_LABELS = {
   pipekeeper:    'PipeKeeper',
@@ -47,9 +48,21 @@ export default function LockedModuleGuard({ moduleKey, children }) {
   if (isModuleBlocked(key)) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6">
-        <div className="text-center space-y-4 max-w-sm">
-          <Lock className="w-8 h-8 mx-auto" style={{ color: 'rgba(224,216,200,0.3)' }} />
-          <p className="text-[#E0D8C8]/50 text-sm">
+        <div
+          className="max-w-sm w-full rounded-2xl p-8 text-center"
+          style={{
+            background: 'linear-gradient(145deg, rgba(42,30,20,0.96), rgba(28,18,12,0.98))',
+            border: '1px solid rgba(120,90,65,0.35)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+          }}
+        >
+          <BrandLogo compact showWordmark={false} imageClassName="w-10 h-10 mx-auto mb-4 opacity-80" />
+          <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.2)' }}>
+            <Lock className="w-5 h-5" style={{ color: 'rgba(180,140,75,0.6)' }} />
+          </div>
+          <p className="text-xs uppercase tracking-[0.12em] font-bold mb-1" style={{ color: '#B48C4B' }}>CollectionKeeper</p>
+          <h2 className="text-lg font-bold mb-2" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>Not Available</h2>
+          <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.55)' }}>
             {label} is not available in this release.
           </p>
           <Button
@@ -68,9 +81,21 @@ export default function LockedModuleGuard({ moduleKey, children }) {
   if (isModuleInternal(key) && !isInternalModuleTester(user)) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6">
-        <div className="text-center space-y-4 max-w-sm">
-          <Lock className="w-8 h-8 mx-auto" style={{ color: 'rgba(224,216,200,0.3)' }} />
-          <p className="text-[#E0D8C8]/50 text-sm">
+        <div
+          className="max-w-sm w-full rounded-2xl p-8 text-center"
+          style={{
+            background: 'linear-gradient(145deg, rgba(42,30,20,0.96), rgba(28,18,12,0.98))',
+            border: '1px solid rgba(120,90,65,0.35)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+          }}
+        >
+          <BrandLogo compact showWordmark={false} imageClassName="w-10 h-10 mx-auto mb-4 opacity-80" />
+          <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.2)' }}>
+            <Lock className="w-5 h-5" style={{ color: 'rgba(180,140,75,0.6)' }} />
+          </div>
+          <p className="text-xs uppercase tracking-[0.12em] font-bold mb-1" style={{ color: '#B48C4B' }}>CollectionKeeper</p>
+          <h2 className="text-lg font-bold mb-2" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>Coming Soon</h2>
+          <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.55)' }}>
             {label} is not yet available.
           </p>
           <Button
