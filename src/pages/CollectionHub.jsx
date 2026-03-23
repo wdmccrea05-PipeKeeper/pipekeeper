@@ -6,8 +6,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
 import { useTasteProfile } from "@/components/curator/useTasteProfile";
 import { buildAIEligibleCollection } from "@/components/utils/moduleAccess";
-import { getCollectionHubSummary, getComingSoonModules } from "@/components/keeper-core";
-import { MODULE_ICONS } from "@/components/branding/moduleAssets";
+import { getCollectionHubSummary } from "@/components/keeper-core";
 import BrandLogo from "@/components/branding/BrandLogo";
 import ModuleCard from "@/components/hub/ModuleCard";
 import QuickLaunch from "@/components/hub/QuickLaunch";
@@ -90,7 +89,7 @@ export default function CollectionHub() {
   });
   const [recentActivities, setRecentActivities] = useState([]);
 
-  const { enabledModules, isModuleEnabled, moduleStates } = useEnabledKeeperModules();
+  const { enabledModules, expandingSoonModules, isModuleEnabled, moduleStates } = useEnabledKeeperModules();
 
   useEffect(() => {
     if (!user?.email) return;
@@ -185,7 +184,7 @@ export default function CollectionHub() {
     [moduleStates, pipes, blends, bottles]
   );
 
-  const comingSoonModules = getComingSoonModules();
+  const comingSoonModules = expandingSoonModules;
 
   const blendCount = blends.length;
   const totalBlendOz = blends.reduce(
@@ -303,8 +302,10 @@ export default function CollectionHub() {
     };
   });
 
+  const whiskeyOpenable = activeModuleCards.some((m) => m.moduleKey === "whiskeykeeper");
+
   const totalDisplayedValue =
-    (summary.pipes.value || 0) + totalBlendValue + (isModuleEnabled("whiskeykeeper") ? totalBottleValue : 0);
+    (summary.pipes.value || 0) + totalBlendValue + (whiskeyOpenable ? totalBottleValue : 0);
 
   return (
     <div className="space-y-8">
@@ -352,7 +353,7 @@ export default function CollectionHub() {
           {t("hub.collectionSummary", "Collection Overview")}
         </h2>
 
-        <div className={`grid gap-4 ${isModuleEnabled("whiskeykeeper") ? "grid-cols-2 md:grid-cols-6" : "grid-cols-2 md:grid-cols-4"}`}>
+        <div className={`grid gap-4 ${whiskeyOpenable ? "grid-cols-2 md:grid-cols-6" : "grid-cols-2 md:grid-cols-4"}`}>
           <SummaryStat
             label={t("hub.totalValue", "Total Value")}
             value={displayValue(money(totalDisplayedValue))}
@@ -370,7 +371,7 @@ export default function CollectionHub() {
             color="#7B9B5B"
           />
 
-          {isModuleEnabled("whiskeykeeper") ? (
+          {whiskeyOpenable ? (
             <>
               <SummaryStat
                 label={t("hub.bottleTypes", "Bottle Types")}
@@ -387,7 +388,7 @@ export default function CollectionHub() {
 
           <SummaryStat
             label={t("hub.activeModules", "Active Modules")}
-            value={summary.hubContributorCount || activeModuleCards.length}
+            value={activeModuleCards.length}
             color="#A35C5C"
           />
         </div>
@@ -419,7 +420,7 @@ export default function CollectionHub() {
       </div>
 
       {/* Collection Highlights */}
-      {(mostSmokedPipe || favoritePipe || favoriteBlend || (isModuleEnabled("whiskeykeeper") && (favoriteBottle || mostValuedBottle))) && (
+      {(mostSmokedPipe || favoritePipe || favoriteBlend || (whiskeyOpenable && (favoriteBottle || mostValuedBottle))) && (
         <div className="space-y-4">
           <h2
             className="text-sm uppercase tracking-[0.12em] font-semibold"
@@ -450,7 +451,7 @@ export default function CollectionHub() {
                 onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(favoriteBlend.id)}`)}
               />
             )}
-            {isModuleEnabled("whiskeykeeper") && favoriteBottle && (
+            {whiskeyOpenable && favoriteBottle && (
               <CatalogPlate
                 title={t("hub.favoriteBottle", "Favorite Bottle")}
                 value={favoriteBottle.name}
@@ -461,7 +462,7 @@ export default function CollectionHub() {
                 onClick={() => window.location.href = createPageUrl(`BottleDetail?id=${encodeURIComponent(favoriteBottle.id)}`)}
               />
             )}
-            {isModuleEnabled("whiskeykeeper") && !favoriteBottle && mostValuedBottle && (
+            {whiskeyOpenable && !favoriteBottle && mostValuedBottle && (
               <CatalogPlate
                 title={t("hub.mostValuable", "Most Valuable")}
                 value={mostValuedBottle.name}
@@ -515,7 +516,7 @@ export default function CollectionHub() {
 
       <RecentActivity onActivitiesLoaded={setRecentActivities} />
 
-      {(comingSoonModules.length > 0 || !isModuleEnabled('whiskeykeeper')) ? (
+      {comingSoonModules.length > 0 ? (
         <div className="space-y-4">
           <h2
             className="text-sm uppercase tracking-[0.12em] font-semibold"
@@ -525,18 +526,6 @@ export default function CollectionHub() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* WhiskeyKeeper marketing card — shown only when module is not accessible */}
-            {!isModuleEnabled('whiskeykeeper') && (
-              <ModuleCard
-                key="whiskeykeeper-soon"
-                module="WhiskeyKeeper"
-                icon={MODULE_ICONS?.whiskeykeeper}
-                itemCount={0}
-                summary="Expanding your CollectionKeeper ecosystem soon."
-                action={null}
-                isComingSoon
-              />
-            )}
             {comingSoonModules.map((module) => (
               <ModuleCard
                 key={module.type}
