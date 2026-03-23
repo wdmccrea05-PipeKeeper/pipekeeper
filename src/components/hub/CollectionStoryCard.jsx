@@ -312,7 +312,7 @@ export default function CollectionStoryCard() {
           />
         ) : null}
 
-        {h.mostTastedBottle ? (
+        {whiskeyVisible && h.mostTastedBottle ? (
           <StoryCard
             label={t('hub.mostTasted', 'Most Tasted')}
             title={h.mostTastedBottle.name}
@@ -321,7 +321,7 @@ export default function CollectionStoryCard() {
           />
         ) : null}
 
-        {h.mostValuableItem ? (
+        {h.mostValuableItem && (h.mostValuableItem.recordType !== 'bottle' || whiskeyVisible) ? (
           <StoryCard
             label={t('hub.crownJewel', 'Crown Jewel')}
             title={h.mostValuableItem.name}
