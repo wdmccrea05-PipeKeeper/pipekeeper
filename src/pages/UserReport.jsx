@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Loader2, Users, TrendingUp, RefreshCw, Crown, UserX, Search, ChevronDown, ChevronUp, UserPlus, Clock, Zap, TrendingDown } from "lucide-react";
+import { Loader2, Users, TrendingUp, RefreshCw, Crown, UserX, Search, ChevronDown, ChevronUp, UserPlus, Clock, Zap, TrendingDown, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -174,6 +174,45 @@ export default function UserReport() {
 
   const lastUpdated = new Date().toLocaleString();
 
+  function exportCSV() {
+    const rows = [];
+    rows.push(['tier', 'name', 'email', 'subscription_status', 'billing_interval', 'subscription_end', 'joined']);
+
+    (report?.paid_users || []).forEach((u) => {
+      rows.push([
+        'paid',
+        u.full_name || '',
+        u.email || '',
+        u.subscription_status || '',
+        u.billing_interval || '',
+        u.subscription_end ? new Date(u.subscription_end).toLocaleDateString() : '',
+        u.created_date ? new Date(u.created_date).toLocaleDateString() : '',
+      ]);
+    });
+
+    (report?.free_users || []).forEach((u) => {
+      rows.push([
+        'free',
+        u.full_name || '',
+        u.email || '',
+        u.subscription_status || '',
+        '',
+        '',
+        u.created_date ? new Date(u.created_date).toLocaleDateString() : '',
+      ]);
+    });
+
+    const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `users_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exported');
+  }
+
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -205,6 +244,16 @@ export default function UserReport() {
           >
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
             {isSyncing ? t("userReport.syncing") : t("userReport.backfillFromStripe")}
+          </Button>
+
+          <Button
+            onClick={exportCSV}
+            variant="outline"
+            className="w-full gap-2 sm:w-auto"
+            disabled={!report}
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
           </Button>
 
           <Button
