@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function Card(props) {
+function Card(props) {
   const { children, className = "", ...rest } = props;
 
   return (
@@ -46,7 +46,7 @@ export function CardFooter(props) {
   );
 }
 
-export function CardDescription(props) {
+function CardDescription(props) {
   const { children, className = "", ...rest } = props;
   return (
     <p className={className} {...rest}>
@@ -54,3 +54,6 @@ export function CardDescription(props) {
     </p>
   );
 }
+
+export { Card, CardHeader, CardContent, CardTitle, CardFooter, CardDescription };
+export default Card;
