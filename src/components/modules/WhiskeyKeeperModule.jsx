@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/components/i18n/safeTranslation';
@@ -58,6 +59,7 @@ export default function WhiskeyKeeperModule({
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useCurrentUser();
 
   const [bottles, setBottles] = useState([]);
   const [inventoryUnits, setInventoryUnits] = useState([]);
@@ -66,11 +68,12 @@ export default function WhiskeyKeeperModule({
   const [searchQuery, setSearchQuery] = useState('');
 
   const loadData = useCallback(async () => {
+    if (!user?.email) return;
     setLoading(true);
     try {
       const [bottleRows, inventoryRows] = await Promise.all([
-        base44.entities.Bottle?.list?.('-created_date').catch(() => []),
-        base44.entities.BottleInventoryUnit?.list?.('-created_date').catch(() => []),
+        base44.entities.Bottle.filter({ created_by: user.email }, '-created_date').catch(() => []),
+        base44.entities.WhiskeyInventoryUnit.filter({ created_by: user.email }).catch(() => []),
       ]);
 
       setBottles(Array.isArray(bottleRows) ? bottleRows : []);
@@ -82,11 +85,11 @@ export default function WhiskeyKeeperModule({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.email]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (user?.email) loadData();
+  }, [loadData, user?.email]);
 
   const inventoryCountByBottleId = useMemo(
     () => buildInventoryCountByBottleId(inventoryUnits),
