@@ -2,24 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
-import { useTranslation } from "@/components/i18n/safeTranslation";
-import {
-  Home,
-  User,
-  HelpCircle,
-  Target,
-  Users,
-  Shield,
-  FileBarChart2,
-  ClipboardList,
-  Wrench,
-  BarChart3,
-  TestTube2,
-} from "lucide-react";
-import {
-  MODULE_ICONS,
-  getAssetImageStyle,
-} from "@/components/branding/moduleAssets";
+import { Home, User, HelpCircle, Target, Users } from "lucide-react";
+import { MODULE_ICONS, getAssetImageStyle } from "@/components/branding/moduleAssets";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
@@ -30,130 +14,74 @@ function NavItem({ item, currentPageName }) {
     <Link
       to={createPageUrl(item.page)}
       className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap",
+        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium",
         active ? "bg-[#6b4a2d]/55" : "hover:bg-white/5"
       )}
       style={{
-        color: active ? "#F5F1E7" : "#E0D8C8",
-        border: active
-          ? "1px solid rgba(180,140,75,0.35)"
-          : "1px solid transparent",
+        color: active ? "#F5F1E7" : "rgba(224,216,200,0.78)",
       }}
     >
       {item.image ? (
         <img
           src={item.image}
-          alt={item.label}
-          className="w-4 h-4 object-contain bg-transparent flex-shrink-0"
-          style={getAssetImageStyle(item.assetKey, "small")}
-          draggable={false}
+          className="w-4 h-4"
+          style={getAssetImageStyle(item.assetKey)}
         />
-      ) : item.icon ? (
-        <item.icon
-          className="w-4 h-4 flex-shrink-0"
-          style={{ color: active ? "#D4A574" : "#C89752" }}
-        />
-      ) : null}
-      <span>{item.label}</span>
+      ) : (
+        <item.icon className="w-4 h-4" />
+      )}
+      {item.label}
     </Link>
   );
 }
 
 export default function ModuleNav({ currentPageName }) {
-  const { t } = useTranslation();
   const { enabledModules, isModuleEnabled } = useEnabledKeeperModules();
   const { isAdmin } = useCurrentUser();
 
-  const enabledKeys = new Set((enabledModules || []).map((m) => m.moduleKey));
-  const whiskeyOpenable = isModuleEnabled?.("whiskeykeeper") === true;
+  const hasPipe = enabledModules?.some((m) => m.moduleKey === "pipekeeper");
+  const whiskeyEnabled = isModuleEnabled?.("whiskeykeeper");
 
-  const primaryItems = [
-    { page: "CollectionHub", label: t("nav.hub", "Hub"), icon: Home },
-
-    ...(enabledKeys.has("pipekeeper")
+  const items = [
+    { page: "CollectionHub", label: "Hub", icon: Home },
+    ...(hasPipe
       ? [
           {
             page: "PipeKeeper",
-            label: t("nav.pipekeeper", "PipeKeeper"),
+            label: "PipeKeeper",
             image: MODULE_ICONS.pipekeeper,
             assetKey: "pipekeeper",
           },
         ]
       : []),
-
-    ...(whiskeyOpenable
+    ...(whiskeyEnabled
       ? [
           {
             page: "WhiskeyKeeper",
-            label: t("nav.whiskeykeeper", "WhiskeyKeeper"),
+            label: "WhiskeyKeeper",
             image: MODULE_ICONS.whiskeykeeper,
             assetKey: "whiskeykeeper",
           },
         ]
       : []),
-
-    { page: "Curator", label: t("nav.curator", "Curator"), icon: Target },
-    { page: "Community", label: t("nav.community", "Community"), icon: Users },
-    { page: "Profile", label: t("nav.profile", "Profile"), icon: User },
-    { page: "HelpCenter", label: t("nav.help", "Help"), icon: HelpCircle },
+    { page: "Curator", label: "Curator", icon: Target },
+    { page: "Community", label: "Community", icon: Users },
+    { page: "Profile", label: "Profile", icon: User },
+    { page: "HelpCenter", label: "Help", icon: HelpCircle },
   ];
-
-  const adminItems = isAdmin
-    ? [
-        {
-          page: "AdminReports",
-          label: t("nav.adminReports", "Admin Reports"),
-          icon: Shield,
-        },
-        {
-          page: "AdminSubscriptionRequests",
-          label: t("nav.subRequests", "Subscription Requests"),
-          icon: ClipboardList,
-        },
-        {
-          page: "AdminSubscriptionTools",
-          label: t("nav.subTools", "Subscription Tools"),
-          icon: Wrench,
-        },
-        {
-          page: "UserReport",
-          label: t("nav.userReport", "User Report"),
-          icon: FileBarChart2,
-        },
-        {
-          page: "CuratorAnalyticsDashboard",
-          label: t("nav.curatorAnalytics", "Curator Analytics"),
-          icon: BarChart3,
-        },
-        {
-          page: "SubscriptionE2ETest",
-          label: t("nav.e2eTest", "Sub E2E Test"),
-          icon: TestTube2,
-        },
-      ]
-    : [];
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-1 overflow-x-auto pb-1">
-        {primaryItems.map((item) => (
-          <NavItem
-            key={item.page}
-            item={item}
-            currentPageName={currentPageName}
-          />
+      <div className="flex gap-1 overflow-x-auto">
+        {items.map((item) => (
+          <NavItem key={item.page} item={item} currentPageName={currentPageName} />
         ))}
       </div>
 
-      {adminItems.length > 0 && (
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 border-t border-white/10 pt-2">
-          {adminItems.map((item) => (
-            <NavItem
-              key={item.page}
-              item={item}
-              currentPageName={currentPageName}
-            />
-          ))}
+      {isAdmin && (
+        <div className="flex gap-1 border-t border-white/10 pt-2">
+          <NavItem page="AdminReports" item={{ page: "AdminReports", label: "Admin Reports", icon: Target }} />
+          <NavItem page="SubscriptionTools" item={{ page: "SubscriptionTools", label: "Subscription Tools", icon: Target }} />
         </div>
       )}
     </div>
