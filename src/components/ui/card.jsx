@@ -10,7 +10,7 @@ function Card(props) {
   );
 }
 
-export function CardHeader(props) {
+function CardHeader(props) {
   const { children, className = "", ...rest } = props;
   return (
     <div className={className} {...rest}>
@@ -19,7 +19,7 @@ export function CardHeader(props) {
   );
 }
 
-export function CardContent(props) {
+function CardContent(props) {
   const { children, className = "", ...rest } = props;
   return (
     <div className={className} {...rest}>
@@ -28,7 +28,7 @@ export function CardContent(props) {
   );
 }
 
-export function CardTitle(props) {
+function CardTitle(props) {
   const { children, className = "", ...rest } = props;
   return (
     <h3 className={className} {...rest}>
@@ -37,7 +37,7 @@ export function CardTitle(props) {
   );
 }
 
-export function CardFooter(props) {
+function CardFooter(props) {
   const { children, className = "", ...rest } = props;
   return (
     <div className={className} {...rest}>
