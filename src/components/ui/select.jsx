@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function Select(props) {
+function Select(props) {
   const { children, className = "", ...rest } = props;
 
   return (
@@ -86,3 +86,6 @@ export function SelectSeparator(props) {
   const { className = "", ...rest } = props;
   return <div className={className} {...rest} />;
 }
+
+export { Select };
+export default Select;
