@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useTranslation, SUPPORTED_LANGS } from '@/components/i18n/safeTranslation';
 import { normalizeLng } from '@/components/i18n/normalizeLng';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function LanguageSwitcher({ className = '' }) {
   const { t, lang } = useTranslation();
@@ -23,17 +24,17 @@ export default function LanguageSwitcher({ className = '' }) {
   };
 
   return (
-    <select
-      value={current}
-      onChange={(e) => setLang(e.target.value)}
-      className={className || 'h-10 flex items-center bg-[rgba(28,21,16,0.72)] border border-[rgba(140,105,65,0.28)] text-black rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[rgba(163,92,92,0.55)] focus:border-[rgba(163,92,92,0.55)]'}
-      aria-label={t('common.language', 'Language')}
-    >
-      {SUPPORTED_LANGS.map((item) => (
-        <option key={item.code} value={item.code}>
-          {item.label}
-        </option>
-      ))}
-    </select>
+    <Select value={current} onValueChange={setLang}>
+      <SelectTrigger className={className || 'h-9 bg-[rgba(28,21,16,0.85)] text-[#F5F1E7] border border-[rgba(180,140,75,0.35)] rounded-lg px-3 focus:ring-1 focus:ring-[#D4A574] focus:outline-none'}>
+        <SelectValue className="text-[#F5F1E7]" />
+      </SelectTrigger>
+      <SelectContent className="bg-[rgba(28,21,16,0.95)] border-[rgba(180,140,75,0.35)]">
+        {SUPPORTED_LANGS.map((item) => (
+          <SelectItem key={item.code} value={item.code} className="text-[#F5F1E7] focus:bg-[rgba(180,140,75,0.25)]">
+            {item.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
