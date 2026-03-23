@@ -94,7 +94,7 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
 
   return (
     <div
-      className="rounded-[26px] p-6 flex flex-col gap-5"
+      className="rounded-[26px] p-5 sm:p-6 flex flex-col gap-5"
       style={{
         background: `linear-gradient(145deg, ${meta.accent}18, rgba(26,18,12,0.98))`,
         border: `1px solid ${meta.accent}55`,
@@ -102,13 +102,13 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
       }}
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: `${meta.accent}1E`, border: `1px solid ${meta.accent}44` }}>
-            {icon ? <img src={icon} alt={meta.label} className="w-9 h-9 object-contain" /> : null}
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: `${meta.accent}1E`, border: `1px solid ${meta.accent}44` }}>
+            {icon ? <img src={icon} alt={meta.label} className="w-11 h-11 sm:w-12 sm:h-12 object-contain" /> : null}
           </div>
-          <div>
-            <h3 className="text-[32px] leading-none font-bold mb-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{meta.label}</h3>
-            <p className="text-sm" style={{ color: `${meta.accent}E8` }}>{meta.tagline}</p>
+          <div className="min-w-0">
+            <h3 className="text-2xl sm:text-[30px] leading-tight font-bold mb-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{meta.label}</h3>
+            <p className="text-xs sm:text-sm" style={{ color: `${meta.accent}E8` }}>{meta.tagline}</p>
           </div>
         </div>
         <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `${meta.accent}22`, border: `1px solid ${meta.accent}44` }}>
@@ -154,8 +154,8 @@ function ExpandingSoonCard({ moduleKey }) {
       className="rounded-[24px] p-5 flex items-center gap-4"
       style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', opacity: 0.82 }}
     >
-      <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${meta.accent}1C`, border: `1px solid ${meta.accent}30` }}>
-        {icon ? <img src={icon} alt={meta.label} className="w-8 h-8 object-contain opacity-70" /> : null}
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: `${meta.accent}1C`, border: `1px solid ${meta.accent}30` }}>
+        {icon ? <img src={icon} alt={meta.label} className="w-10 h-10 object-contain opacity-70" /> : null}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -291,7 +291,7 @@ export default function CollectionHub() {
   const pipeStats = [
     { label: 'Pipes', value: pipes.length },
     { label: 'Blends', value: blends.length },
-    { label: 'Sessions', value: smokeLogs.length },
+    { label: 'Recent Sessions', value: isLoading ? '—' : metrics.recentSessionsCount },
   ];
 
   const whiskeyStats = [
@@ -307,20 +307,20 @@ export default function CollectionHub() {
 
       {/* Hero */}
       <section
-        className="rounded-[28px] p-6 sm:p-8"
+        className="rounded-[28px] p-5 sm:p-8"
         style={{
           background: 'linear-gradient(145deg, rgba(35,24,16,0.94), rgba(22,15,10,0.98))',
           border: '1px solid rgba(180,140,75,0.16)',
           boxShadow: '0 18px 46px rgba(0,0,0,0.36)',
         }}
       >
-        <div className="flex items-center gap-5">
-          <BrandLogo compact showWordmark={false} imageClassName="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0" />
-          <div>
-            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
+          <BrandLogo compact showWordmark={false} imageClassName="w-14 h-14 sm:w-20 sm:h-20 flex-shrink-0" />
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
               CollectionKeeper
             </h1>
-            <p className="text-lg sm:text-xl mt-2 max-w-3xl" style={{ color: 'rgba(224,216,200,0.78)' }}>
+            <p className="text-sm sm:text-base lg:text-lg mt-1 sm:mt-2" style={{ color: 'rgba(224,216,200,0.78)' }}>
               Your unified ecosystem for tracking, curating, and understanding your collections.
             </p>
           </div>
@@ -379,15 +379,15 @@ export default function CollectionHub() {
         <button
           type="button"
           onClick={() => navigate(createPageUrl('Curator'))}
-          className="w-full rounded-[24px] p-6 flex items-center justify-between gap-5 text-left"
+          className="w-full rounded-[24px] p-5 sm:p-6 flex items-center justify-between gap-4 sm:gap-5 text-left"
           style={{
             background: 'linear-gradient(135deg, rgba(163,92,92,0.16), rgba(36,24,17,0.98))',
             border: '1px solid rgba(163,92,92,0.35)',
             boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
           }}
         >
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(163,92,92,0.18)', border: '1px solid rgba(163,92,92,0.32)' }}>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(163,92,92,0.14)', border: '1px solid rgba(163,92,92,0.30)' }}>
               <Target className="w-7 h-7" style={{ color: '#D47C7C' }} />
             </div>
             <div>
