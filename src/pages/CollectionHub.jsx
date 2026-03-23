@@ -204,8 +204,9 @@ export default function CollectionHub() {
   // FIXED: use canonical value resolver — same priority as WhiskeyKeeper/WhiskeyInsights
   const totalBottleValue = useMemo(() => sumBottleCollectionValue(bottles), [bottles]);
 
-  const whiskeyBottleTypes = summary.whiskey?.bottleTypes ?? summary.whiskey?.count ?? 0;
-  const whiskeyTotalBottles = summary.whiskey?.totalBottles ?? 0;
+  // Fall back to live bottles array when summary hasn't hydrated yet (e.g. admin preview)
+  const whiskeyBottleTypes = summary.whiskey?.bottleTypes || summary.whiskey?.count || new Set(bottles.map(b => b.name)).size || bottles.length;
+  const whiskeyTotalBottles = summary.whiskey?.totalBottles || bottles.reduce((sum, b) => sum + (Number(b?.bottle_count) || 1), 0);
 
   const featuredPipe = pipes.find((p) => Array.isArray(p?.photos) && p.photos.length > 0);
   const featuredBottle = bottles.find((b) => b?.photo);
