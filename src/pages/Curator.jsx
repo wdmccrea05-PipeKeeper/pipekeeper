@@ -10,11 +10,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
 import { Sparkles } from "lucide-react";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
-import { isAdminWhiskeyUnlocked, RELEASE_MODE } from "@/components/utils/releaseConfig";
 
-function isWhiskeyBlocked() {
-  return RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
-}
 import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 import PipeIcon from "@/components/icons/PipeIcon";
 
@@ -180,7 +176,7 @@ export default function Curator() {
       const result = await base44.entities.Bottle.filter({ created_by: user?.email });
       return Array.isArray(result) ? result : [];
     },
-    enabled: !!user?.email && !isWhiskeyBlocked(),
+    enabled: !!user?.email && isModuleEnabled('whiskeykeeper'),
     staleTime: 10000,
   });
 
@@ -190,7 +186,7 @@ export default function Curator() {
       const result = await base44.entities.TastingLog.filter({ created_by: user?.email }, '-tasting_date', 50);
       return Array.isArray(result) ? result : [];
     },
-    enabled: !!user?.email && !isWhiskeyBlocked(),
+    enabled: !!user?.email && isModuleEnabled('whiskeykeeper'),
     staleTime: 10000,
   });
 
@@ -215,7 +211,7 @@ export default function Curator() {
   const availableScopes = useMemo(() => {
     const opts = [SCOPE_OPTIONS[0]]; // always show "all"
     opts.push(SCOPE_OPTIONS[1]); // pipekeeper always enabled
-    if (!isWhiskeyBlocked() && isModuleEnabled("whiskeykeeper")) opts.push(SCOPE_OPTIONS[2]);
+    if (isModuleEnabled("whiskeykeeper")) opts.push(SCOPE_OPTIONS[2]);
     return opts;
   }, [isModuleEnabled]);
 
