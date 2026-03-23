@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { isAdminWhiskeyUnlocked, setAdminWhiskeyUnlock } from '@/components/utils/releaseConfig';
 import { FlaskConical } from 'lucide-react';
 
 export default function AdminWhiskeyUnlock() {
   const [unlocked, setUnlocked] = useState(() => isAdminWhiskeyUnlocked());
+
+  // Sync: if legacy key says unlocked but canonical key isn't set, fix it now
+  useEffect(() => {
+    if (isAdminWhiskeyUnlocked()) {
+      setAdminWhiskeyUnlock(true); // writes both keys
+    }
+  }, []);
 
   const toggle = () => {
     const next = !unlocked;
