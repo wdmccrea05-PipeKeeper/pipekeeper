@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { isAdminWhiskeyUnlocked, RELEASE_MODE } from "@/components/utils/releaseConfig";
-
-function isWhiskeyBlocked() {
-  return RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
-}
+import { shouldFetchModuleData } from "@/components/utils/moduleReleaseState";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { getRecentCrossModuleActivity, formatActivityDate } from "@/components/keeper-core";
 import {
@@ -56,9 +52,9 @@ export default function RecentActivity({ onActivitiesLoaded = null }) {
         const recentActivities = await getRecentCrossModuleActivity(user.email);
 
         if (!cancelled) {
-          const filtered = isWhiskeyBlocked()
-            ? recentActivities.filter(a => a.module !== 'whiskey')
-            : recentActivities;
+          const filtered = shouldFetchModuleData('whiskeykeeper', user)
+            ? recentActivities
+            : recentActivities.filter(a => a.module !== 'whiskey');
           setActivities(filtered);
           if (onActivitiesLoaded) onActivitiesLoaded(filtered);
         }
