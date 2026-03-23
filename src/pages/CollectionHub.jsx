@@ -430,17 +430,7 @@ export default function CollectionHub() {
                 onClick={() => navigate(`/TobaccoDetail?id=${encodeURIComponent(metrics.favoriteBlend.id)}`)}
               />
             )}
-            {metrics.mostValuablePipe && !metrics.mostValuableBottle && (
-              <CatalogPlate
-                title="Most Valuable Pipe"
-                value={metrics.mostValuablePipe.name}
-                subtitle={currency(getPipeValue(metrics.mostValuablePipe))}
-                heroImage={metrics.mostValuablePipe.photos?.[0]}
-                bgImage={metrics.mostValuablePipe.photos?.[0]}
-                accent="#B4824B"
-                onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(metrics.mostValuablePipe.id)}`)}
-              />
-            )}
+            {metrics.mostValuablePipe && (
             {metrics.mostValuableBottle && (
               <CatalogPlate
                 title="Top Whiskey"
@@ -452,6 +442,31 @@ export default function CollectionHub() {
                 onClick={() => navigate(`/BottleDetail?id=${encodeURIComponent(metrics.mostValuableBottle.id)}`)}
               />
             )}
+          </div>
+        </section>
+      )}
+
+      {/* Module Awareness — show whiskey highlights when both active */}
+      {whiskeyOpenable && metrics.mostValuableBottle && (
+        <section className="space-y-4">
+          <SectionTitle>Whiskey Collection</SectionTitle>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <CatalogPlate
+              title="Most Valuable Bottle"
+              value={metrics.mostValuableBottle.name}
+              subtitle={currency(getBottleValue(metrics.mostValuableBottle))}
+              heroImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
+              bgImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
+              accent="#B66565"
+              onClick={() => navigate(`/BottleDetail?id=${encodeURIComponent(metrics.mostValuableBottle.id)}`)}
+            />
+            <CatalogPlate
+              title="Total Whiskey Value"
+              value={currency(bottles.reduce((s, b) => s + Number(getBottleValue(b) || 0), 0))}
+              subtitle={`${bottles.length} bottles`}
+              accent="#A35050"
+              onClick={() => navigate(createPageUrl('WhiskeyKeeper'))}
+            />
           </div>
         </section>
       )}
