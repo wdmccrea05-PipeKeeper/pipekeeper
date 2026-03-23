@@ -127,9 +127,9 @@ export function shouldShowModuleInNav(moduleKey, user) {
   const key = String(moduleKey || '').trim().toLowerCase();
   const state = getModuleReleaseState(key);
 
-  // Check local override for admin/internal testers
+  // Check local override — if set, always show (button is only rendered for admins)
   const localOverride = getLocalOverride(key);
-  if (localOverride && isInternalModuleTester(user)) return true;
+  if (localOverride) return true;
 
   if (state === 'blocked') return false;
   if (state === 'internal') return isInternalModuleTester(user);
@@ -144,9 +144,9 @@ export function shouldFetchModuleData(moduleKey, user) {
   const key = String(moduleKey || '').trim().toLowerCase();
   const state = getModuleReleaseState(key);
 
-  // Check local override for admin/internal testers
+  // Check local override — if set, always fetch
   const localOverride = getLocalOverride(key);
-  if (localOverride && isInternalModuleTester(user)) return true;
+  if (localOverride) return true;
 
   if (state === 'blocked') return false;
   if (state === 'internal') return isInternalModuleTester(user);
