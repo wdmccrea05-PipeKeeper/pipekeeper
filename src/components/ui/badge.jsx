@@ -14,9 +14,9 @@ const badgeVariants = cva(
         outline:
           "border border-[rgba(180,140,75,0.35)] text-[#E0D8C8] bg-transparent",
         success:
-          "border-[#4a9a70] bg-[rgba(46,175,111,0.2)] text-[#7dd8a8]";
+          "border-[#4a9a70] bg-[rgba(46,175,111,0.2)] text-[#7dd8a8]",
         warning:
-          "border-[#d99b3b] bg-[rgba(199,122,43,0.2)] text-[#f0b657]";
+          "border-[#d99b3b] bg-[rgba(199,122,43,0.2)] text-[#f0b657]",
         destructive:
           "border-[#d97070] bg-[rgba(224,93,93,0.2)] text-[#f08888]",
       },
