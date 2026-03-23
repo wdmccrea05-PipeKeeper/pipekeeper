@@ -72,19 +72,19 @@ export default function PipeDetail() {
   return (
     <div className="p-6 md:p-8 space-y-6 text-[#F5F1E7]">
       <div className="flex items-center justify-between gap-3">
-        <Button variant="outline" onClick={() => navigate(-1)}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowShareModal(true)}>
-            <Share2 className="w-4 h-4 mr-2" />
-            Share
-          </Button>
-          <Button onClick={() => navigate(`/PipeKeeper?edit=${encodeURIComponent(pipe.id)}`)} style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))', color: '#fff' }}>
-            <Pencil className="w-4 h-4 mr-2" />
-            Edit
-          </Button>
+         <Button variant="outline" onClick={() => navigate(-1)}>
+           <ArrowLeft className="w-4 h-4 mr-2" />
+           Back
+         </Button>
+         <div className="flex gap-2">
+           <Button onClick={() => setShowShareModal(true)} style={{ background: 'rgba(180, 140, 75, 0.2)', border: '1px solid rgba(180, 140, 75, 0.35)', color: '#F5F1E7' }}>
+             <Share2 className="w-4 h-4 mr-2" />
+             Share
+           </Button>
+           <Button onClick={() => navigate(`/PipeKeeper?edit=${encodeURIComponent(pipe.id)}`)} style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))', color: '#fff' }}>
+             <Pencil className="w-4 h-4 mr-2" />
+             Edit
+           </Button>
         </div>
       </div>
 

@@ -86,7 +86,7 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite, onEdit }) {
         )}
         <div className="p-5 min-w-0">
          <h3 
-           className="font-semibold truncate text-lg leading-snug mb-1.5" 
+           className="font-semibold break-words text-lg leading-snug mb-1.5" 
            style={{ 
              color: "#F5F1E7",
              fontFamily: "'Georgia', serif",
@@ -95,7 +95,7 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite, onEdit }) {
          >
            {pipe.name}
          </h3>
-         <p className="text-sm truncate" style={{ color: "rgba(180, 140, 75, 0.75)" }}>
+         <p className="text-sm break-words" style={{ color: "rgba(200, 180, 160, 0.85)" }}>
            {pipe.maker || t("pipesExtended.unknownMaker")}
          </p>
           <div className="flex flex-wrap gap-1.5 mt-3">
