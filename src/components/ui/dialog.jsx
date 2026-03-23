@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function Dialog(props) {
+function Dialog(props) {
   const { children, className = "", ...rest } = props;
 
   return (
@@ -82,3 +82,6 @@ export function DialogClose(props) {
     </button>
   );
 }
+
+export { Dialog };
+export default Dialog;
