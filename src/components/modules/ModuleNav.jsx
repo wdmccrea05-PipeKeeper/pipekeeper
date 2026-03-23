@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
@@ -59,6 +59,7 @@ function NavItem({ item, currentPageName }) {
 }
 
 export default function ModuleNav({ currentPageName }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { enabledModules, isModuleEnabled } = useEnabledKeeperModules();
   const { isAdmin } = useCurrentUser();
 
@@ -132,14 +133,63 @@ export default function ModuleNav({ currentPageName }) {
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-1 pb-1">
-      {items.map((item) => (
-        <NavItem
-          key={item.page}
-          item={item}
-          currentPageName={currentPageName}
-        />
-      ))}
+    <div className="flex items-center gap-1 pb-1">
+      {/* Desktop nav */}
+      <div className="hidden md:flex flex-wrap items-center gap-1">
+        {items.map((item) => (
+          <NavItem
+            key={item.page}
+            item={item}
+            currentPageName={currentPageName}
+          />
+        ))}
+      </div>
+
+      {/* Mobile dropdown menu */}
+      <div className="md:hidden relative">
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:bg-white/5"
+          style={{ color: "rgba(224,216,200,0.78)" }}
+        >
+          {mobileOpen ? "✕" : "☰"}
+        </button>
+
+        {mobileOpen && (
+          <div className="absolute top-10 left-0 bg-[#1d1511] border border-[rgba(180,140,75,0.35)] rounded-lg shadow-lg z-50 min-w-max max-h-[80vh] overflow-y-auto">
+            {items.map((item) => (
+              <Link
+                key={item.page}
+                to={createPageUrl(item.page)}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all hover:bg-white/5 border-b border-[rgba(180,140,75,0.16)] last:border-b-0 whitespace-nowrap",
+                  currentPageName === item.page && "bg-[#6b4a2d]/55"
+                )}
+                style={{
+                  color: currentPageName === item.page ? "#F5F1E7" : "rgba(224,216,200,0.78)",
+                }}
+              >
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={item.label}
+                    className="w-4 h-4 object-contain bg-transparent flex-shrink-0"
+                    style={getAssetImageStyle(item.assetKey, "small")}
+                    draggable={false}
+                  />
+                ) : item.icon ? (
+                  <item.icon
+                    className="w-4 h-4 flex-shrink-0"
+                    style={{ color: currentPageName === item.page ? "#D4A574" : "rgba(180,140,75,0.78)" }}
+                  />
+                ) : null}
+                <span className="truncate">{item.label}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
