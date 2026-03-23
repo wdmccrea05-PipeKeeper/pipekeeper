@@ -152,7 +152,7 @@ export default function PipeKeeperModule() {
               }}
               draggable={false}
             />
-            <h1 className="text-4xl font-bold tracking-tight" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight whitespace-nowrap sm:whitespace-normal" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
               {t('pipekeeper.title') || 'PipeKeeper'}
             </h1>
           </div>
@@ -160,8 +160,8 @@ export default function PipeKeeperModule() {
             {t('pipekeeper.description') || 'Organize and explore your pipe and tobacco collection'}
           </p>
         </div>
-        <Button onClick={() => navigate('/CollectionHub')} variant="outline" className="text-sm">
-          {t('common.backToHub') || 'Back to Hub'}
+        <Button onClick={() => navigate('/CollectionHub')} variant="ghost" className="text-sm text-[#E0D8C8] hover:bg-white/10">
+           {t('common.backToHub') || 'Back to Hub'}
         </Button>
       </div>
 
