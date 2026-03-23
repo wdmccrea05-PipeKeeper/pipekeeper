@@ -269,14 +269,18 @@ export default function CollectionStoryCard() {
           <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.blends', 'Blends')}</p>
           <p className="text-2xl font-bold mt-2 text-[#4A9C6A]">{m.blends || 0}</p>
         </div>
-        <div className="rounded-xl p-4 border border-[rgba(200,121,65,0.22)] bg-[rgba(200,121,65,0.10)]">
-          <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.bottleTypesShort', 'Btl. Types')}</p>
-          <p className="text-2xl font-bold mt-2 text-[#C87941]">{m.bottleTypes || 0}</p>
-        </div>
-        <div className="rounded-xl p-4 border border-[rgba(200,121,65,0.22)] bg-[rgba(200,121,65,0.10)]">
-          <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.totalBottlesShort', 'Total Btls')}</p>
-          <p className="text-2xl font-bold mt-2 text-[#C87941]">{m.totalBottles || 0}</p>
-        </div>
+        {whiskeyVisible && (
+          <div className="rounded-xl p-4 border border-[rgba(200,121,65,0.22)] bg-[rgba(200,121,65,0.10)]">
+            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.bottleTypesShort', 'Btl. Types')}</p>
+            <p className="text-2xl font-bold mt-2 text-[#C87941]">{m.bottleTypes || 0}</p>
+          </div>
+        )}
+        {whiskeyVisible && (
+          <div className="rounded-xl p-4 border border-[rgba(200,121,65,0.22)] bg-[rgba(200,121,65,0.10)]">
+            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.totalBottlesShort', 'Total Btls')}</p>
+            <p className="text-2xl font-bold mt-2 text-[#C87941]">{m.totalBottles || 0}</p>
+          </div>
+        )}
         <div className="rounded-xl p-4 border border-[rgba(16,185,129,0.22)] bg-[rgba(16,185,129,0.10)]">
           <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.totalValueShort', 'Value')}</p>
           <p className="text-2xl font-bold mt-2 text-[#10B981]">{valueDisplay}</p>
