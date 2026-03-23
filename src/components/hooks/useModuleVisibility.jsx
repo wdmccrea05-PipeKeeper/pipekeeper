@@ -17,6 +17,7 @@ import { safeUpdate } from '@/components/utils/safeUpdate';
 import {
   MODULE_RELEASE_STATES,
   getEffectiveModuleReleaseState,
+  isInternalModuleTester,
 } from '@/components/utils/moduleReleaseState';
 
 const normEmail = (e) => String(e || '').trim().toLowerCase();
@@ -36,7 +37,7 @@ function moduleDefaultEnabled(moduleKey, prefsSet, profile, user) {
   const effectiveState = getEffectiveModuleReleaseState(moduleKey, user);
 
   if (effectiveState === 'blocked') return false;
-  if (effectiveState === 'internal') return true;
+  if (effectiveState === 'internal') return isInternalModuleTester(user);
 
   switch (moduleKey) {
     case 'pipekeeper':
