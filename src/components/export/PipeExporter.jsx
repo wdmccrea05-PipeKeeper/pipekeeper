@@ -250,11 +250,10 @@ export default function PipeExporter() {
         {t("pipesPage.exportCSV")}
       </Button>
       <Button
-        variant="outline"
         size="sm"
         onClick={exportInsurancePDF}
         disabled={loading || pipes.length === 0 || !isPremiumUser}
-        className="text-blue-600 border-blue-300 hover:bg-blue-50"
+        className="bg-[rgba(212,165,116,0.2)] border border-[rgba(212,165,116,0.35)] text-[#E0D8C8] hover:bg-[rgba(212,165,116,0.3)]"
       >
         {!isPremiumUser && <Crown className="w-4 h-4 mr-2 text-amber-500" />}
         <Shield className="w-4 h-4 mr-2" />

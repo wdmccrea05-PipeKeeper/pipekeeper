@@ -273,7 +273,7 @@ export default function TobaccoPage() {
             )}
             <Button 
               onClick={() => setShowQuickSearch(true)}
-              className={PK_THEME.buttonSecondary}
+              className="bg-[rgba(180,140,75,0.15)] border border-[rgba(180,140,75,0.35)] text-[#E0D8C8] hover:bg-[rgba(180,140,75,0.25)]"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               {t("pipesPage.quickSearchAdd")}

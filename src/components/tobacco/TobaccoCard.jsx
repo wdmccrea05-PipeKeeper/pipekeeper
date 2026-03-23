@@ -169,17 +169,17 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite, onEdit }
          <div className="flex items-start justify-between gap-2">
            <div className="flex-1 min-w-0">
              <h3 
-               className="font-semibold truncate text-lg leading-snug mb-1.5" 
-               style={{ 
-                 color: "#F5F1E7",
-                 fontFamily: "'Georgia', serif",
-                 textShadow: "0 1px 2px rgba(0,0,0,0.5)"
-               }}
+              className="font-semibold break-words text-lg leading-snug mb-1.5" 
+              style={{ 
+                color: "#F5F1E7",
+                fontFamily: "'Georgia', serif",
+                textShadow: "0 1px 2px rgba(0,0,0,0.5)"
+              }}
              >
-               {blend.name}
+              {blend.name}
              </h3>
-             <p className="text-sm truncate" style={{ color: "rgba(180, 140, 75, 0.75)" }}>
-               {blend.manufacturer || t("tobaccoExtended.unknownMaker")}
+             <p className="text-sm break-words" style={{ color: "rgba(224, 216, 200, 0.75)" }}>
+              {blend.manufacturer || t("tobaccoExtended.unknownMaker")}
              </p>
             </div>
             {blend.rating && (

@@ -54,8 +54,8 @@ export default function PipeListItem({ pipe, onClick, onToggleFavorite, onEdit }
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-4 mb-2">
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-[#E0D8C8] text-lg truncate">{pipe.name}</h3>
-                <p className="text-sm text-[#E0D8C8]/60">{pipe.maker || t("pipesExtended.unknownMaker")}</p>
+                <h3 className="font-semibold text-[#E0D8C8] text-lg break-words">{pipe.name}</h3>
+                <p className="text-sm text-[#E0D8C8]/75 break-words">{pipe.maker || t("pipesExtended.unknownMaker")}</p>
               </div>
               {pipe.estimated_value && (
                 <div className="text-right shrink-0">

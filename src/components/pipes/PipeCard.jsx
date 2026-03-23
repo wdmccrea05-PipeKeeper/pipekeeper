@@ -95,7 +95,7 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite, onEdit }) {
          >
            {pipe.name}
          </h3>
-         <p className="text-sm break-words" style={{ color: "rgba(200, 180, 160, 0.85)" }}>
+         <p className="text-sm break-words" style={{ color: "rgba(224, 216, 200, 0.75)" }}>
            {pipe.maker || t("pipesExtended.unknownMaker")}
          </p>
           <div className="flex flex-wrap gap-1.5 mt-3">

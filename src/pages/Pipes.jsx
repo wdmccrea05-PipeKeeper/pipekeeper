@@ -203,8 +203,7 @@ export default function PipesPage() {
             <PipeExporter />
             <Button 
               onClick={() => setShowQuickSearch(true)}
-              variant="outline"
-              className="border-[#E0D8C8]/50 text-[#E0D8C8] font-semibold flex-shrink-0"
+              className="bg-[rgba(180,140,75,0.15)] border border-[rgba(180,140,75,0.35)] text-[#E0D8C8] hover:bg-[rgba(180,140,75,0.25)] font-semibold flex-shrink-0"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">{t("pipesPage.quickSearchAdd")}</span>
