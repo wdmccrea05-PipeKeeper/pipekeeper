@@ -142,22 +142,9 @@ export default function Curator() {
     return resolveLaunchContext();
   });
   const [curatorScope, setCuratorScope] = useState(() => {
-    return location?.state?.scope || "all";
-  });
-
-  // Force message clear and context update when scope changes
-  const handleScopeChange = useCallback((newScope) => {
-    setCuratorScope(newScope);
-  }, []);
-
-  const { data: pipes = [] } = useQuery({
-    queryKey: ["pipes", user?.email],
-    queryFn: async () => {
-      const result = await base44.entities.Pipe.filter({ created_by: user?.email });
-      return Array.isArray(result) ? result : [];
-    },
-    enabled: !!user?.email,
-    staleTime: 10000,
+    // Default to pipekeeper if only one module enabled, otherwise "all"
+    const hasMultipleModules = isModuleEnabled("whiskeykeeper");
+    return location?.state?.scope || (hasMultipleModules ? "all" : "pipekeeper");
   });
 
   const { data: blends = [] } = useQuery({
@@ -208,10 +195,16 @@ export default function Curator() {
   const scopedTastingLogs = curatorScope === "pipekeeper" ? [] : tastingLogs;
 
   // Available scope options based on enabled modules
+  // If only PipeKeeper is enabled, skip the "All Modules" option to keep UI clean
   const availableScopes = useMemo(() => {
-    const opts = [SCOPE_OPTIONS[0]]; // always show "all"
-    opts.push(SCOPE_OPTIONS[1]); // pipekeeper always enabled
-    if (isModuleEnabled("whiskeykeeper")) opts.push(SCOPE_OPTIONS[2]);
+    const whiskeyScopeAvailable = isModuleEnabled("whiskeykeeper");
+    if (!whiskeyScopeAvailable) {
+      // Only PipeKeeper enabled - show just PipeKeeper option, default scope to pipekeeper
+      setCuratorScope("pipekeeper");
+      return [SCOPE_OPTIONS[1]];
+    }
+    // Multiple modules: show All, PipeKeeper, and WhiskeyKeeper
+    const opts = [SCOPE_OPTIONS[0], SCOPE_OPTIONS[1], SCOPE_OPTIONS[2]];
     return opts;
   }, [isModuleEnabled]);
 
@@ -275,21 +268,6 @@ export default function Curator() {
             <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(180,140,75,0.6)' }}>
               {t("curator.adviceScope", "Advice Scope")}
             </p>
-            <div className="flex flex-wrap gap-2">
-              {availableScopes.map((opt) => (
-                <ScopeChip
-                  key={opt.value}
-                  value={opt.value}
-                  label={opt.label}
-                  selected={curatorScope === opt.value}
-                  onClick={handleScopeChange}
-                  isPipeIcon={opt.isPipeIcon}
-                  icon={opt.icon}
-                />
-              ))}
-            </div>
-          </div>
-        )}
         <CardContent className="p-0 sm:p-2" key={`curator-${curatorScope}`}>
           <div className="space-y-4 sm:space-y-5">
             {/* Expert Action Buttons */}
