@@ -1,43 +1,35 @@
 import React from "react";
-import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-);
+const variants = {
+  primary:
+    "bg-[#A35C5C] text-white hover:bg-[#8c4c4c]",
+  secondary:
+    "bg-[rgba(40,30,24,0.8)] text-[#F5F1E7] border border-[rgba(180,140,75,0.35)] hover:bg-white/10",
+  ghost:
+    "bg-transparent text-[#E0D8C8] hover:bg-white/10",
+  muted:
+    "bg-[rgba(255,255,255,0.05)] text-[#CFC7B5] opacity-60 cursor-not-allowed",
+};
 
-function Button(props) {
-  const { children, className = "", variant = "default", size = "default", ...rest } = props;
-  const variantClasses = buttonVariants({ variant, size });
-
+export default function Button({
+  children,
+  className = "",
+  variant = "secondary",
+  disabled,
+  ...props
+}) {
   return (
-    <button className={cn(variantClasses, className)} {...rest}>
+    <button
+      className={cn(
+        "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+        variants[disabled ? "muted" : variant],
+        className
+      )}
+      disabled={disabled}
+      {...props}
+    >
       {children}
     </button>
   );
 }
-
-export { Button, buttonVariants };
-export default Button;
