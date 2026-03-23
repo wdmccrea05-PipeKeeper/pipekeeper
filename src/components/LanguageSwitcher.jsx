@@ -26,11 +26,13 @@ export default function LanguageSwitcher({ className = '' }) {
     <select
       value={current}
       onChange={(e) => setLang(e.target.value)}
-      className={className || 'bg-gradient-to-br from-[#3a2a20] to-[#2a1a10] border border-[#8b6239]/30 text-[#E0D8C8] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A574]/50'}
+      className={className || 'bg-[rgba(28,21,16,0.72)] border border-[rgba(140,105,65,0.28)] text-[#E0D8C8] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(163,92,92,0.55)]'}
       aria-label={t('common.language', 'Language')}
     >
       {SUPPORTED_LANGS.map((item) => (
-        <option key={item.code} value={item.code}>{item.label}</option>
+        <option key={item.code} value={item.code}>
+          {item.label}
+        </option>
       ))}
     </select>
   );
