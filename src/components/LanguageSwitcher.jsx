@@ -26,7 +26,7 @@ export default function LanguageSwitcher({ className = '' }) {
     <select
       value={current}
       onChange={(e) => setLang(e.target.value)}
-      className={className || 'bg-[rgba(28,21,16,0.72)] border border-[rgba(140,105,65,0.28)] text-[#E0D8C8] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(163,92,92,0.55)]'}
+      className={className || 'h-10 flex items-center bg-[rgba(28,21,16,0.72)] border border-[rgba(140,105,65,0.28)] text-[#F5F1E7] rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[rgba(163,92,92,0.55)] focus:border-[rgba(163,92,92,0.55)]'}
       aria-label={t('common.language', 'Language')}
     >
       {SUPPORTED_LANGS.map((item) => (
