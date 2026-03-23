@@ -268,6 +268,71 @@ export default function Curator() {
             <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(180,140,75,0.6)' }}>
               {t("curator.adviceScope", "Advice Scope")}
             </p>
+            <div className="flex flex-wrap gap-2">
+              {availableScopes.map((opt) => (
+                <ScopeChip
+                  key={opt.value}
+                  value={opt.value}
+                  label={opt.label}
+                  selected={curatorScope === opt.value}
+                  onClick={handleScopeChange}
+                  isPipeIcon={opt.isPipeIcon}
+                  icon={opt.icon}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <CardContent className="p-0 sm:p-2" key={`curator-${curatorScope}`}>
+          <div className="space-y-4 sm:space-y-5">
+            {/* Expert Action Buttons */}
+            <CuratorActionBar
+              pipes={scopedPipes}
+              blends={scopedBlends}
+              bottles={scopedBottles}
+              tastingLogs={scopedTastingLogs}
+              userProfile={userProfile}
+              onActionSelect={handleExpertAction}
+            />
+
+            {/* Main Workspace */}
+            <CuratorWorkspace
+              pipes={scopedPipes}
+              blends={scopedBlends}
+              bottles={scopedBottles}
+              tastingLogs={scopedTastingLogs}
+              userProfile={userProfile}
+              launchContext={launchContext}
+              preFilledPrompt={launchContext?.initialPrompt || ""}
+              routedContext={launchContext?.recommendationContext || null}
+              onPromptConsumed={handlePromptConsumed}
+              curatorScope={curatorScope}
+            />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+                alt={t("curator.workspaceTitle", { defaultValue: "Curator" })}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-base sm:text-xl text-[#E0D8C8] leading-tight mb-1">
+                {t("curator.workspaceTitle", { defaultValue: "Curator" })}
+              </CardTitle>
+              <p className="text-sm text-[#E0D8C8]/70">{subtitle}</p>
+            </div>
+          </div>
+        </CardHeader>
+
+        {availableScopes.length > 1 && (
+          <div className="px-6 py-3 border-b flex items-center gap-3 flex-wrap" style={{ borderColor: 'rgba(139,98,57,0.2)' }}>
+            <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(180,140,75,0.6)' }}>
+              {t("curator.adviceScope", "Advice Scope")}
+            </p>
         <CardContent className="p-0 sm:p-2" key={`curator-${curatorScope}`}>
           <div className="space-y-4 sm:space-y-5">
             {/* Expert Action Buttons */}
