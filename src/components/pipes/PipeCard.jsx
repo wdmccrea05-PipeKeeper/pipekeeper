@@ -99,7 +99,6 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite, onEdit }) {
           <p className="text-sm break-words line-clamp-1" style={{ color: "rgba(224, 216, 200, 0.75)" }}>
             {pipe.maker || t("pipesExtended.unknownMaker")}
           </p>
-         </div>
           <div className="flex flex-wrap gap-1.5 mt-3">
             {pipe.shape && (
               <Badge 
