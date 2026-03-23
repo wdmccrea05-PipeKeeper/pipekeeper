@@ -10,14 +10,13 @@ import {
   CalendarDays,
   Share2,
   Package,
-  Minus,
-  Plus,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import LogTastingModal from '@/components/whiskey/LogTastingModal';
 import InlinePhotoEditor from '@/components/shared/InlinePhotoEditor';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
+import InventoryManager from '@/components/whiskey/InventoryManager';
 import {
   formatCurrency,
   resolveBottleTotalValue,
@@ -106,8 +105,9 @@ export default function BottleDetail() {
   const [editingTasting, setEditingTasting] = useState(null);
   const [showTastingModal, setShowTastingModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [inventoryCount, setInventoryCount] = useState(null);
-  const [inventorySaving, setInventorySaving] = useState(false);
+  const [showInventoryManager, setShowInventoryManager] = useState(
+    params.get('inventory') === '1'
+  );
 
   async function loadBottle() {
     if (!bottleId) {
@@ -148,19 +148,7 @@ export default function BottleDetail() {
     }
   }
 
-  async function updateInventory(newCount) {
-    const clamped = Math.max(0, newCount);
-    setInventoryCount(clamped);
-    setInventorySaving(true);
-    try {
-      await base44.entities.Bottle.update(bottle.id, { bottle_count: clamped });
-      setBottle((prev) => ({ ...prev, bottle_count: clamped }));
-    } catch (e) {
-      console.error('[BottleDetail] inventory update failed', e);
-    } finally {
-      setInventorySaving(false);
-    }
-  }
+
 
   useEffect(() => {
     let mounted = true;
@@ -175,13 +163,6 @@ export default function BottleDetail() {
   }, [bottleId]);
 
   const photo = useMemo(() => getBottlePhoto(bottle), [bottle]);
-
-  // Sync inventoryCount from loaded bottle
-  useEffect(() => {
-    if (bottle) {
-      setInventoryCount(bottle.bottle_count ?? 1);
-    }
-  }, [bottle?.id]);
 
   const avgRating = useMemo(() => {
     const rated = tastings.filter((t) => t.rating !== null && t.rating !== undefined && t.rating !== '');
@@ -420,46 +401,26 @@ export default function BottleDetail() {
               </div>
 
               {/* Inventory */}
-              <div
-                className="rounded-2xl p-5 flex items-center justify-between gap-4"
-                style={{
-                  background: 'linear-gradient(145deg, rgba(50,35,22,0.7), rgba(28,18,12,0.92))',
-                  border: '1px solid rgba(180,140,75,0.18)',
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <Package className="w-5 h-5 text-[#B48C4B]" />
-                  <div>
-                    <p className="text-sm font-semibold text-[#F5F1E7]">Inventory</p>
-                    <p className="text-xs text-[#D8C7A6]/70 mt-0.5">
-                      {inventoryCount === 1 ? '1 bottle in collection' : `${inventoryCount ?? 0} bottles in collection`}
-                    </p>
+              <div>
+                <button
+                  onClick={() => setShowInventoryManager(v => !v)}
+                  className="w-full rounded-2xl p-5 flex items-center justify-between gap-4 transition-all hover:opacity-90"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(50,35,22,0.7), rgba(28,18,12,0.92))',
+                    border: '1px solid rgba(180,140,75,0.18)',
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <Package className="w-5 h-5 text-[#B48C4B]" />
+                    <p className="text-sm font-semibold text-[#F5F1E7]">Manage Inventory</p>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => updateInventory((inventoryCount ?? 1) - 1)}
-                    disabled={inventorySaving || inventoryCount <= 0}
-                    className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95 disabled:opacity-40"
-                    style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)' }}
-                  >
-                    <Minus className="w-4 h-4 text-[#B48C4B]" />
-                  </button>
-                  <span
-                    className="text-2xl font-bold w-8 text-center"
-                    style={{ color: inventorySaving ? 'rgba(245,241,231,0.5)' : '#F5F1E7' }}
-                  >
-                    {inventoryCount ?? 0}
-                  </span>
-                  <button
-                    onClick={() => updateInventory((inventoryCount ?? 0) + 1)}
-                    disabled={inventorySaving}
-                    className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95 disabled:opacity-40"
-                    style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)' }}
-                  >
-                    <Plus className="w-4 h-4 text-[#B48C4B]" />
-                  </button>
-                </div>
+                  <span className="text-xs text-[#B48C4B]">{showInventoryManager ? 'Close ▲' : 'Open ▼'}</span>
+                </button>
+                {showInventoryManager && (
+                  <div className="mt-3">
+                    <InventoryManager bottle={bottle} onClose={() => setShowInventoryManager(false)} />
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3">
