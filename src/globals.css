@@ -136,7 +136,7 @@ div {
 
   input::placeholder,
   textarea::placeholder {
-    color: rgba(224, 216, 200, 0.42);
+    color: rgba(224, 216, 200, 0.55);
   }
 }
 
@@ -235,8 +235,8 @@ div {
   .ck-input,
   .ck-select,
   .ck-textarea {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(180, 140, 75, 0.18);
+    background: rgba(20, 15, 12, 0.6);
+    border: 1px solid rgba(180, 140, 75, 0.28);
     color: var(--ck-text);
     @apply rounded-xl;
   }
