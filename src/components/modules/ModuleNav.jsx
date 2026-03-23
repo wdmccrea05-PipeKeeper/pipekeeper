@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { Home, User, HelpCircle, Target, Users } from "lucide-react";
+import { Home, User, HelpCircle, Target, Users, Settings } from "lucide-react";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import {
   MODULE_ICONS,
   getAssetImageStyle,
@@ -47,6 +48,7 @@ function NavItem({ item, currentPageName }) {
 export default function ModuleNav({ currentPageName }) {
   const { t } = useTranslation();
   const { enabledModules } = useEnabledKeeperModules();
+  const { isAdmin } = useCurrentUser();
 
   const enabledKeys = new Set(enabledModules.map((m) => m.moduleKey));
 
@@ -66,6 +68,11 @@ export default function ModuleNav({ currentPageName }) {
     { page: "Community", label: t("nav.community", "Community"), icon: Users },
     { page: "Profile", label: t("nav.profile", "Profile"), icon: User },
     { page: "HelpCenter", label: t("nav.help", "Help"), icon: HelpCircle },
+    ...(isAdmin
+      ? [
+          { page: "AdminReports", label: t("nav.admin", "Admin"), icon: Settings },
+        ]
+      : []),
   ];
 
   return (
