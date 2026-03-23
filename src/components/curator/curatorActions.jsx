@@ -162,7 +162,7 @@ For each pipe, suggest:
   {
     id: 'update_bottle_data',
     label: 'Update Bottle Data',
-    description: 'Identify and enrich whiskey bottles with missing metadata',
+    description: 'Identify and enrich whiskey bottles with missing metadata and market valuations',
     icon: Droplet,
     modules: ['whiskey'],
     sourceExpert: 'expert_whiskey_advisor',
