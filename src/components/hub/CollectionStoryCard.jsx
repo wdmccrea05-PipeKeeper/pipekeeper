@@ -9,8 +9,6 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
 import { WHISKEYKEEPER_BLOCKED } from '@/components/utils/moduleReleaseState';
 import { getAIEligibleModuleIds } from '@/components/utils/moduleAccess';
-import { isAdminWhiskeyUnlocked, RELEASE_MODE } from '@/components/utils/releaseConfig';
-const WHISKEYKEEPER_BLOCKED = RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
 import CollectionStoryViewer from '@/components/story/CollectionStoryViewer';
 import { generateCollectionStoryCards } from '@/components/story/generateCollectionStoryCards';
 
@@ -180,7 +178,7 @@ export default function CollectionStoryCard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { moduleStates, isModuleEnabled } = useEnabledKeeperModules();
-  const whiskeyVisible = !WHISKEYKEEPER_BLOCKED && isModuleEnabled('whiskeykeeper');
+  const whiskeyVisible = !WHISKEYKEEPER_BLOCKED && isModuleEnabled('whiskeykeeper'); // gated
 
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
