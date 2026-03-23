@@ -166,6 +166,24 @@ export default function BottleDetail() {
     }
   }
 
+  async function updateInventory(newCount) {
+    const clamped = Math.max(0, newCount);
+    setInventoryCount(clamped);
+    setInventorySaving(true);
+    try {
+      await base44.entities.Bottle.update(bottle.id, { bottle_count: clamped });
+      setBottle((prev) => ({ ...prev, bottle_count: clamped }));
+    } catch (e) {
+      console.error('[BottleDetail] inventory update failed', e);
+    } finally {
+      setInventorySaving(false);
+    }
+  } catch (e) {
+      console.error('[BottleDetail] failed to load bottles', e);
+      setAllBottles([]);
+    }
+  }
+
   useEffect(() => {
     let mounted = true;
     (async () => {
