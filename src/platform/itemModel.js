@@ -191,3 +191,32 @@ export function getIndexedText(item) {
   
   return parts.filter(Boolean).join(' ').toLowerCase();
 }
+import { isValidModuleType } from './moduleTypes.js';
+
+export function normalizeItem(rawItem, moduleTypeOverride = null) {
+  if (!rawItem) return null;
+
+  const preferredModule = rawItem.module_type ?? moduleTypeOverride ?? null;
+  const module_type = isValidModuleType(preferredModule) ? preferredModule : null;
+
+  return {
+    ...rawItem,
+    module_type,
+    favorite: Boolean(rawItem.is_favorite ?? rawItem.favorite),
+    ai_excluded: Boolean(rawItem.ai_excluded),
+    public_visibility: rawItem.public_visibility ?? true,
+    _raw: rawItem,
+  };
+}
+
+export function normalizeItems(items, moduleTypeOverride = null) {
+  if (!Array.isArray(items)) return [];
+  return items.map((item) => normalizeItem(item, moduleTypeOverride)).filter(Boolean);
+}
+
+export function normalizePipeKeeperItems({ pipes = [], blends = [] } = {}) {
+  return [
+    ...normalizeItems(pipes, 'pipe'),
+    ...normalizeItems(blends, 'tobacco'),
+  ];
+}

@@ -10,12 +10,31 @@
 import { base44 } from '@/api/base44Client';
 import { MODULE_REGISTRY } from './moduleRegistry';
 
+
+function getRegistryList() {
+  return Array.isArray(MODULE_REGISTRY) ? MODULE_REGISTRY : Object.values(MODULE_REGISTRY || {});
+}
+
+function getRegistryModule(moduleId) {
+  const list = getRegistryList();
+  return list.find((m) => m?.key === moduleId || m?.moduleKey === moduleId || m?.id === moduleId) || null;
+}
+
+function decorateModuleItem(item, module) {
+  return {
+    ...item,
+    module: module?.key || module?.moduleKey || module?.id,
+    moduleName: module?.displayName || module?.name,
+  };
+}
+
+
 /**
  * Get all items from collection
  */
 export async function getAllCollectionItems(userEmail, filters = {}) {
   try {
-    const modules = Object.values(MODULE_REGISTRY).filter(m => m.status === 'active');
+    const modules = getRegistryList().filter(m => m && m.status === 'active' && m.entityName);
     const allItems = [];
     
     for (const module of modules) {
@@ -25,18 +44,18 @@ export async function getAllCollectionItems(userEmail, filters = {}) {
       
       allItems.push(...(items || []).map(i => ({
         ...i,
-        module: module.id,
-        moduleName: module.name,
+        module: module.key || module.moduleKey || module.id,
+        moduleName: module.displayName || module.name,
       })));
     }
     
     // Apply filters if provided
     if (filters.minRating) {
-      allItems = allItems.filter(i => (i.rating || 0) >= filters.minRating);
+      return allItems.filter(i => (i.rating || 0) >= filters.minRating);
     }
     
     if (filters.favorites) {
-      allItems = allItems.filter(i => i.is_favorite);
+      return allItems.filter(i => i.is_favorite);
     }
     
     return allItems;
@@ -51,7 +70,7 @@ export async function getAllCollectionItems(userEmail, filters = {}) {
  */
 export async function getModuleItems(userEmail, moduleId) {
   try {
-    const module = MODULE_REGISTRY[moduleId];
+    const module = getRegistryModule(moduleId);
     if (!module) throw new Error(`Unknown module: ${moduleId}`);
     
     const items = await base44.entities[module.entityName].filter({
@@ -118,7 +137,7 @@ export async function getTastableItems(userEmail) {
 export async function getFavorites(userEmail, moduleId = null) {
   try {
     if (moduleId) {
-      const module = MODULE_REGISTRY[moduleId];
+      const module = getRegistryModule(moduleId);
       const items = await base44.entities[module.entityName].filter({
         created_by: userEmail,
         is_favorite: true,
@@ -126,8 +145,8 @@ export async function getFavorites(userEmail, moduleId = null) {
       
       return (items || []).map(i => ({
         ...i,
-        module: module.id,
-        moduleName: module.name,
+        module: module.key || module.moduleKey || module.id,
+        moduleName: module.displayName || module.name,
       }));
     }
     
@@ -145,7 +164,7 @@ export async function getFavorites(userEmail, moduleId = null) {
 export async function getUnderusedItems(userEmail, moduleId = null) {
   try {
     if (moduleId) {
-      const module = MODULE_REGISTRY[moduleId];
+      const module = getRegistryModule(moduleId);
       const items = await base44.entities[module.entityName].filter({
         created_by: userEmail,
       });
@@ -154,8 +173,8 @@ export async function getUnderusedItems(userEmail, moduleId = null) {
         !i.rating || i.rating < 2 || !i.is_favorite
       ).map(i => ({
         ...i,
-        module: module.id,
-        moduleName: module.name,
+        module: module.key || module.moduleKey || module.id,
+        moduleName: module.displayName || module.name,
       }));
     }
     
@@ -189,7 +208,7 @@ export async function getCollectionStats(userEmail, moduleId = null) {
     }
     
     // All modules
-    const modules = Object.values(MODULE_REGISTRY).filter(m => m.status === 'active');
+    const modules = getRegistryList().filter(m => m && m.status === 'active' && m.entityName);
     const stats = {};
     let totalValue = 0;
     let totalItems = 0;
@@ -240,7 +259,7 @@ export async function getUserPreferences(userEmail) {
  */
 export async function getItem(itemId, moduleId) {
   try {
-    const module = MODULE_REGISTRY[moduleId];
+    const module = getRegistryModule(moduleId);
     if (!module) throw new Error(`Unknown module: ${moduleId}`);
     
     const items = await base44.entities[module.entityName].filter({

@@ -1,14 +1,11 @@
 /**
- * SHIM — limitChecks.js now delegates to moduleLimits.js (canonical).
- * Kept to prevent import breakage.
+ * CRUD creation limit checks for PipeKeeper release hardening.
  */
 export { getModuleLimits, getModuleLimit, hasReachedLimit, getRemainingBeforeLimit } from './moduleLimits';
-import { hasPaidAccess } from './premiumAccess';
 import { base44 } from "@/api/base44Client";
 
-// Free tier limits (single definition — matches moduleLimits.js)
 export const FREE_TIER_LIMITS = {
-  PIPES: 10,
+  PIPES: 5,
   TOBACCO_BLENDS: 10,
   BOTTLES: 10,
   PHOTOS_PER_ITEM: 3,
@@ -16,21 +13,57 @@ export const FREE_TIER_LIMITS = {
 };
 
 export function shouldApplyTrialRestrictions() {
-  return new Date() >= new Date('2026-02-01T00:00:00Z');
+  return new Date() >= new Date('2026-02-01T00:00:00.000Z');
 }
 
-export async function canCreatePipe(userEmail, hasPaid_arg, _isTrialing) {
-  if (hasPaid_arg) return { canCreate: true, currentCount: 0, limit: null };
-  const pipes = await base44.entities.Pipe.filter({ created_by: userEmail }, null, FREE_TIER_LIMITS.PIPES + 1);
-  const count = pipes?.length || 0;
-  const canCreate = count < FREE_TIER_LIMITS.PIPES;
-  return { canCreate, currentCount: count, limit: FREE_TIER_LIMITS.PIPES, reason: canCreate ? null : 'limits.freePipesExceeded' };
+function buildFailure(reason, count, limit) {
+  return { canCreate: false, currentCount: count, limit, reason };
 }
 
-export async function canCreateTobacco(userEmail, hasPaid_arg, _isTrialing) {
-  if (hasPaid_arg) return { canCreate: true, currentCount: 0, limit: null };
-  const tobaccos = await base44.entities.TobaccoBlend.filter({ created_by: userEmail }, null, FREE_TIER_LIMITS.TOBACCO_BLENDS + 1);
-  const count = tobaccos?.length || 0;
-  const canCreate = count < FREE_TIER_LIMITS.TOBACCO_BLENDS;
-  return { canCreate, currentCount: count, limit: FREE_TIER_LIMITS.TOBACCO_BLENDS, reason: canCreate ? null : 'limits.freeBlendExceeded' };
+async function countExisting(fetcher, limit) {
+  const items = await fetcher();
+  return Array.isArray(items) ? items.length : 0;
+}
+
+export async function canCreatePipe(userEmail, hasPaid, isTrialing = false) {
+  if (hasPaid) return { canCreate: true, currentCount: 0, limit: null, reason: null };
+
+  try {
+    const count = await countExisting(
+      () => base44.entities.Pipe.filter({ created_by: userEmail }, null, FREE_TIER_LIMITS.PIPES + 1),
+      FREE_TIER_LIMITS.PIPES
+    );
+
+    if (count >= FREE_TIER_LIMITS.PIPES) {
+      if (isTrialing && shouldApplyTrialRestrictions()) {
+        return buildFailure('limits.trialPipesExceeded', count, FREE_TIER_LIMITS.PIPES);
+      }
+      return buildFailure('limits.freePipesExceeded', count, FREE_TIER_LIMITS.PIPES);
+    }
+
+    return { canCreate: true, currentCount: count, limit: FREE_TIER_LIMITS.PIPES, reason: null };
+  } catch (error) {
+    console.error('[limitChecks] failed to verify pipe limit', error);
+    return buildFailure('limits.unableToVerify', null, FREE_TIER_LIMITS.PIPES);
+  }
+}
+
+export async function canCreateTobacco(userEmail, hasPaid, _isTrialing = false) {
+  if (hasPaid) return { canCreate: true, currentCount: 0, limit: null, reason: null };
+
+  try {
+    const count = await countExisting(
+      () => base44.entities.TobaccoBlend.filter({ created_by: userEmail }, null, FREE_TIER_LIMITS.TOBACCO_BLENDS + 1),
+      FREE_TIER_LIMITS.TOBACCO_BLENDS
+    );
+
+    if (count >= FREE_TIER_LIMITS.TOBACCO_BLENDS) {
+      return buildFailure('limits.freeBlendExceeded', count, FREE_TIER_LIMITS.TOBACCO_BLENDS);
+    }
+
+    return { canCreate: true, currentCount: count, limit: FREE_TIER_LIMITS.TOBACCO_BLENDS, reason: null };
+  } catch (error) {
+    console.error('[limitChecks] failed to verify tobacco limit', error);
+    return buildFailure('limits.unableToVerify', null, FREE_TIER_LIMITS.TOBACCO_BLENDS);
+  }
 }

@@ -14,7 +14,7 @@
  * Build Stripe config from environment
  * Validates all required price IDs at startup
  */
-export function buildStripeConfig(): StripeConfig {
+export function buildStripeConfig() {
   const requiredPrices = [
     'VITE_STRIPE_PIPEKEEPER_MONTHLY',
     'VITE_STRIPE_PIPEKEEPER_ANNUAL',
@@ -31,7 +31,7 @@ export function buildStripeConfig(): StripeConfig {
     'VITE_STRIPE_FOUNDERS_ANNUAL',
   ];
 
-  const config: StripeConfig = {
+  const config = {
     // Single module plans
     pipekeeper_pro_monthly: {
       planKey: 'pipekeeper_pro_monthly',
@@ -236,7 +236,7 @@ export function getRequiredStripePlan(planKey) {
  */
 export function validateStripeConfig() {
   const config = getStripeConfig();
-  const errors: string[] = [];
+  const errors = [];
 
   for (const [key, plan] of Object.entries(config)) {
     if (!plan.priceId) {
