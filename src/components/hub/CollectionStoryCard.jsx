@@ -178,7 +178,8 @@ function StoryCard({ title, label, item, navigate }) {
 export default function CollectionStoryCard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { moduleStates } = useEnabledKeeperModules();
+  const { moduleStates, isModuleEnabled } = useEnabledKeeperModules();
+  const whiskeyVisible = !WHISKEYKEEPER_BLOCKED && isModuleEnabled('whiskeykeeper');
 
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
