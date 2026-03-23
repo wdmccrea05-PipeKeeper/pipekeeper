@@ -90,6 +90,7 @@ export default function QuickLaunch() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isModuleEnabled } = useModuleVisibility();
+  const whiskeyEnabled = isModuleEnabled('whiskeykeeper');
 
   const pipeActions = [
     {
@@ -168,9 +169,9 @@ export default function QuickLaunch() {
           </div>
         </div>
 
-        {isModuleEnabled("whiskeykeeper") ? (
-           <div>
-             <SectionTitle label={t("nav.whiskeykeeper", "WhiskeyKeeper")} />
+        {whiskeyEnabled && (
+          <div>
+            <SectionTitle label={t("nav.whiskeykeeper", "WhiskeyKeeper")} />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {whiskeyActions.map((action) => (
                 <ActionCard
@@ -181,7 +182,7 @@ export default function QuickLaunch() {
               ))}
             </div>
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

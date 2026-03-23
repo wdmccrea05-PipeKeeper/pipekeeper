@@ -43,7 +43,7 @@ function moduleDefaultEnabled(moduleKey, prefsSet, profile, user) {
     case 'pipekeeper':
       return prefsSet ? profile?.pipekeeper_enabled !== false : true;
     case 'whiskeykeeper':
-      return prefsSet ? profile?.whiskeykeeper_enabled !== false : true;
+      return prefsSet ? profile?.whiskeykeeper_enabled === true : false;
     case 'winekeeper':
       return prefsSet ? profile?.winekeeper_enabled === true : false;
     case 'cigarkeeper':
