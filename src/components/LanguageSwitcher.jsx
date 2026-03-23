@@ -28,9 +28,9 @@ export default function LanguageSwitcher({ className = '' }) {
       <SelectTrigger className={className || 'h-9 bg-[rgba(28,21,16,0.85)] text-[#F5F1E7] border border-[rgba(180,140,75,0.35)] rounded-lg px-3 focus:ring-1 focus:ring-[#D4A574] focus:outline-none'}>
         <SelectValue className="text-[#F5F1E7]" />
       </SelectTrigger>
-      <SelectContent className="bg-[rgba(28,21,16,0.95)] border-[rgba(180,140,75,0.35)]">
+      <SelectContent className="bg-[rgba(28,21,16,0.95)] border border-[rgba(180,140,75,0.35)] rounded-lg shadow-lg z-50">
         {SUPPORTED_LANGS.map((item) => (
-          <SelectItem key={item.code} value={item.code} className="text-[#F5F1E7] focus:bg-[rgba(180,140,75,0.25)]">
+          <SelectItem key={item.code} value={item.code} className="text-[#F5F1E7] hover:bg-[rgba(180,140,75,0.25)] focus:bg-[rgba(180,140,75,0.25)] cursor-pointer">
             {item.label}
           </SelectItem>
         ))}
