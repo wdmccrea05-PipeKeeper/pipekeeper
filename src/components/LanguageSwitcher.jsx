@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useTranslation, SUPPORTED_LANGS } from "@/components/i18n/safeTranslation";
+import { normalizeLng } from "@/components/i18n/normalizeLng";
 import {
   Select,
   SelectTrigger,
@@ -6,29 +8,29 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import { useTranslation } from "@/components/i18n/safeTranslation";
-
-const languages = [
-  { code: "en", label: "English" },
-  { code: "es", label: "Español" },
-  { code: "fr", label: "Français" },
-  { code: "de", label: "Deutsch" },
-  { code: "it", label: "Italiano" },
-  { code: "pt-BR", label: "Português (BR)" },
-  { code: "nl", label: "Nederlands" },
-  { code: "pl", label: "Polski" },
-  { code: "ja", label: "日本語" },
-  { code: "zh-CN", label: "中文 (简体)" },
-];
 
 export default function LanguageSwitcher({ className = "" }) {
-  const { i18n } = useTranslation();
+  const { lang } = useTranslation();
+
+  const current = useMemo(() => {
+    const normalized = normalizeLng(lang || "en");
+    return SUPPORTED_LANGS.some((item) => item.code === normalized) ? normalized : "en";
+  }, [lang]);
+
+  const handleLanguageChange = (code) => {
+    const normalized = normalizeLng(code);
+    try {
+      localStorage.setItem("pk_lang", normalized);
+      document.documentElement.lang = normalized;
+      window.dispatchEvent(new CustomEvent("pk:language-changed", { detail: normalized }));
+      window.location.reload();
+    } catch (error) {
+      console.error("[LanguageSwitcher] Failed to change language:", error);
+    }
+  };
 
   return (
-    <Select
-      value={i18n.language}
-      onValueChange={(value) => i18n.changeLanguage(value)}
-    >
+    <Select value={current} onValueChange={handleLanguageChange}>
       <SelectTrigger
         className={`h-9 min-w-[130px] 
         bg-[rgba(28,21,16,0.9)] 
@@ -43,13 +45,13 @@ export default function LanguageSwitcher({ className = "" }) {
       </SelectTrigger>
 
       <SelectContent>
-        {languages.map((lang) => (
+        {SUPPORTED_LANGS.map((item) => (
           <SelectItem
-            key={lang.code}
-            value={lang.code}
+            key={item.code}
+            value={item.code}
             className="text-[#F5F1E7] hover:bg-white/10"
           >
-            {lang.label}
+            {item.label}
           </SelectItem>
         ))}
       </SelectContent>
