@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import BrandLogo from "@/components/branding/BrandLogo";
 import ModuleNav from "@/components/modules/ModuleNav";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import BackButton from "@/components/navigation/BackButton";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,8 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               <div className="flex items-center gap-2">
+                <LanguageSwitcher className="hidden md:block min-w-[140px]" />
+
                 <Button
                   type="button"
                   variant="ghost"
