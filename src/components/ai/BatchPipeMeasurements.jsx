@@ -97,22 +97,15 @@ export default function BatchPipeMeasurements({ user, onComplete }) {
         setProgress({ current: i + 1, total: eligiblePipes.length, currentPipe: pipe.name });
 
         try {
-          const hasPhotos = (pipe.photos || []).length > 0;
+          const hasPhotos = (pipe?.photos || [])?.length > 0;
           const hasDimensions =
-            pipe.length_mm ||
-            pipe.bowl_height_mm ||
-            pipe.bowl_width_mm ||
-            pipe.bowl_diameter_mm ||
-            pipe.weight_grams;
+            pipe?.length_mm ||
+            pipe?.bowl_height_mm ||
+            pipe?.bowl_width_mm ||
+            pipe?.bowl_diameter_mm ||
+            pipe?.weight_grams;
 
           if (!hasPhotos && !hasDimensions) {
-            batchResults.push({
-              pipeId: pipe.id,
-              pipeName: pipe.name,
-              status: "skipped",
-              message: t('batchPipes.noPhotosOrDimensions'),
-            });
-            continue;
           }
 
           // Build analysis prompt
