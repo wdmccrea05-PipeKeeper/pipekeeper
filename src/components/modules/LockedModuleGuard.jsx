@@ -12,6 +12,7 @@ import {
   isModuleBlocked,
   isModuleInternal,
   isInternalModuleTester,
+  canUserAccessModule,
 } from '@/components/utils/moduleReleaseState';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { EyeOff, Settings, Lock } from 'lucide-react';
@@ -44,8 +45,8 @@ export default function LockedModuleGuard({ moduleKey, children }) {
   const key = String(moduleKey || '').toLowerCase();
   const label = MODULE_LABELS[key] || moduleKey;
 
-  // 1. Blocked — no access for anyone in production
-  if (isModuleBlocked(key)) {
+  // 1. Blocked — no access for anyone in production (unless admin local override)
+  if (isModuleBlocked(key) && !canUserAccessModule(key, user, true)) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6">
         <div
@@ -78,7 +79,7 @@ export default function LockedModuleGuard({ moduleKey, children }) {
   }
 
   // 2. Internal — only for internal testers
-  if (isModuleInternal(key) && !isInternalModuleTester(user)) {
+  if (isModuleInternal(key) && !isInternalModuleTester(user) && !canUserAccessModule(key, user, true)) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6">
         <div
