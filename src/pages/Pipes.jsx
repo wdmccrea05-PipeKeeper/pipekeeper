@@ -203,7 +203,8 @@ export default function PipesPage() {
             <PipeExporter />
             <Button 
               onClick={() => setShowQuickSearch(true)}
-              className="bg-[rgba(180,140,75,0.15)] border border-[rgba(180,140,75,0.35)] text-[#E0D8C8] hover:bg-[rgba(180,140,75,0.25)] font-semibold flex-shrink-0"
+              variant="secondary"
+              className="flex-shrink-0"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">{t("pipesPage.quickSearchAdd")}</span>
@@ -224,7 +225,8 @@ export default function PipesPage() {
                 setEditingPipe(null);
                 setShowForm(true);
               }}
-              className="bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] hover:from-[#8B4A4A] hover:to-[#A35C5C] shadow-md hover:shadow-lg flex-shrink-0"
+              variant="primary"
+              className="flex-shrink-0"
             >
               <Plus className="w-4 h-4 mr-2" />
               {t("pipesPage.addPipe")}
@@ -254,9 +256,9 @@ export default function PipesPage() {
               value={shapeFilter || ALL_SHAPES}
               onValueChange={(v) => setShapeFilter(v === ALL_SHAPES ? '' : v)}
             >
-               <SelectTrigger className={PK_THEME.input} aria-label={t("pipes.shape")}>
-                 <SelectValue placeholder={t("pipes.allShapes")} />
-               </SelectTrigger>
+               <SelectTrigger className="w-full text-[#F5F1E7] bg-[rgba(28,21,16,0.8)] border border-[rgba(180,140,75,0.35)]" aria-label={t("pipes.shape")}>
+                  <SelectValue placeholder={t("pipes.allShapes")} />
+                </SelectTrigger>
                <SelectContent>
                  <SelectItem value={ALL_SHAPES}>{t("pipes.allShapes")}</SelectItem>
                  {SHAPES.map(shape => <SelectItem key={shape} value={shape}>{t(`shapes.${shape}`, shape)}</SelectItem>)}
@@ -266,7 +268,7 @@ export default function PipesPage() {
                value={materialFilter || ALL_MATERIALS}
                onValueChange={(v) => setMaterialFilter(v === ALL_MATERIALS ? '' : v)}
              >
-               <SelectTrigger className={PK_THEME.input} aria-label={t("pipes.material")}>
+               <SelectTrigger className="w-full text-[#F5F1E7] bg-[rgba(28,21,16,0.8)] border border-[rgba(180,140,75,0.35)]" aria-label={t("pipes.material")}>
                  <SelectValue placeholder={t("pipes.allMaterials")} />
                </SelectTrigger>
                <SelectContent>
@@ -275,7 +277,7 @@ export default function PipesPage() {
                </SelectContent>
              </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className={PK_THEME.input} aria-label={t("pipesPage.sortBy")}>
+              <SelectTrigger className="w-full text-[#F5F1E7] bg-[rgba(28,21,16,0.8)] border border-[rgba(180,140,75,0.35)]" aria-label={t("pipesPage.sortBy")}>
                 <SelectValue placeholder={t("pipesPage.sortBy")} />
               </SelectTrigger>
               <SelectContent>

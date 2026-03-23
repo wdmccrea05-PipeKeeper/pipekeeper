@@ -84,20 +84,22 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite, onEdit }) {
             </Badge>
           </div>
         )}
-        <div className="p-5 min-w-0">
-         <h3 
-           className="font-semibold break-words text-lg leading-snug mb-1.5" 
-           style={{ 
-             color: "#F5F1E7",
-             fontFamily: "'Georgia', serif",
-             textShadow: "0 1px 2px rgba(0,0,0,0.5)"
-           }}
-         >
-           {pipe.name}
-         </h3>
-         <p className="text-sm break-words" style={{ color: "rgba(224, 216, 200, 0.75)" }}>
-           {pipe.maker || t("pipesExtended.unknownMaker")}
-         </p>
+        <div className="p-5 flex gap-3 items-start">
+         <div className="flex-1 min-w-0">
+          <h3 
+            className="font-semibold break-words text-lg leading-tight line-clamp-2" 
+            style={{ 
+              color: "#F5F1E7",
+              fontFamily: "'Georgia', serif",
+              textShadow: "0 1px 2px rgba(0,0,0,0.5)"
+            }}
+          >
+            {pipe.name}
+          </h3>
+          <p className="text-sm break-words line-clamp-1" style={{ color: "rgba(224, 216, 200, 0.75)" }}>
+            {pipe.maker || t("pipesExtended.unknownMaker")}
+          </p>
+         </div>
           <div className="flex flex-wrap gap-1.5 mt-3">
             {pipe.shape && (
               <Badge 
@@ -138,6 +140,7 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite, onEdit }) {
                 {t(`sizes.${pipe.chamber_volume}`, pipe.chamber_volume)}
               </Badge>
             )}
+          </div>
           </div>
           </div>
           </HeritageCard>
