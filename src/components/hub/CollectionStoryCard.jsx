@@ -8,6 +8,8 @@ import BrandLogo from '@/components/branding/BrandLogo';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
 import { getAIEligibleModuleIds } from '@/components/utils/moduleAccess';
+import { isAdminWhiskeyUnlocked, RELEASE_MODE } from '@/components/utils/releaseConfig';
+const WHISKEYKEEPER_BLOCKED = RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
 import CollectionStoryViewer from '@/components/story/CollectionStoryViewer';
 import { generateCollectionStoryCards } from '@/components/story/generateCollectionStoryCards';
 
