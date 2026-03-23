@@ -16,6 +16,7 @@
  */
 
 import { subscriptionGrantsPaidAccess } from "./gracePeriod";
+import { isModuleLaunched } from "./moduleReleaseState";
 
 const normalizeTier = (raw) => {
   const t = String(raw || "").trim().toLowerCase();
@@ -161,7 +162,7 @@ export function buildCanonicalEntitlements(user, subscription) {
     tier,
     hasPro: isPro,
     isFree: !isPro,
-    paidModules: isPro ? ["pipekeeper", "whiskeykeeper"] : [],
+    paidModules: isPro ? ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'].filter(isModuleLaunched) : [],
     limits,
     canUse,
     // Legacy compat fields

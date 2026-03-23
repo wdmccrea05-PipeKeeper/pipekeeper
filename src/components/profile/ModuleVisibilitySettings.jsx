@@ -6,6 +6,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
+import { isModuleLaunched } from '@/components/utils/moduleReleaseState';
 
 function ModuleIcon({ src, alt, className }) {
   return <img src={src} alt={alt} className={className || 'w-7 h-7 object-contain bg-transparent'} style={{ backgroundColor: 'transparent', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.2))' }} draggable={false} />;
@@ -17,10 +18,10 @@ export default function ModuleVisibilitySettings() {
   const [saving, setSaving] = useState(null);
 
   const MODULE_CONFIG = [
-    { id: 'pipekeeper', label: t('hub.pipekeeper', 'PipeKeeper'), description: t('pipekeeper.description', 'Pipe collection, tobacco, smoking logs, and pairings.'), icon: MODULE_ICONS.pipekeeper, launched: true, canDisable: false },
-    { id: 'whiskeykeeper', label: t('hub.whiskeykeeper', 'WhiskeyKeeper'), description: t('whiskeykeeper.description', 'Whiskey bottle collection, tasting notes, and inventory.'), icon: MODULE_ICONS.whiskeykeeper, launched: true, canDisable: true, alcoholRelated: true },
-    { id: 'winekeeper', label: t('hub.winekeeper', 'WineKeeper'), description: t('profile.winekeeperDescription', 'Wine cellar management and bottle tracking.'), icon: MODULE_ICONS.winekeeper, launched: false, canDisable: true, alcoholRelated: true },
-    { id: 'cigarkeeper', label: t('hub.cigarkeeper', 'CigarKeeper'), description: t('profile.cigarkeeperDescription', 'Cigar collection curation and tasting.'), icon: MODULE_ICONS.cigarkeeper, launched: false, canDisable: true },
+    { id: 'pipekeeper', label: t('hub.pipekeeper', 'PipeKeeper'), description: t('pipekeeper.description', 'Pipe collection, tobacco, smoking logs, and pairings.'), icon: MODULE_ICONS.pipekeeper, launched: isModuleLaunched('pipekeeper'), canDisable: false },
+    { id: 'whiskeykeeper', label: t('hub.whiskeykeeper', 'WhiskeyKeeper'), description: t('whiskeykeeper.description', 'Whiskey bottle collection, tasting notes, and inventory.'), icon: MODULE_ICONS.whiskeykeeper, launched: isModuleLaunched('whiskeykeeper'), canDisable: true, alcoholRelated: true },
+    { id: 'winekeeper', label: t('hub.winekeeper', 'WineKeeper'), description: t('profile.winekeeperDescription', 'Wine cellar management and bottle tracking.'), icon: MODULE_ICONS.winekeeper, launched: isModuleLaunched('winekeeper'), canDisable: true, alcoholRelated: true },
+    { id: 'cigarkeeper', label: t('hub.cigarkeeper', 'CigarKeeper'), description: t('profile.cigarkeeperDescription', 'Cigar collection curation and tasting.'), icon: MODULE_ICONS.cigarkeeper, launched: isModuleLaunched('cigarkeeper'), canDisable: true },
   ];
 
   async function handleToggle(moduleId, enabled) {

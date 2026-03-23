@@ -22,6 +22,7 @@ import {
   Package,
 } from 'lucide-react';
 import PipeIcon from '@/components/icons/PipeIcon';
+import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 
 // ─── Module key constants ─────────────────────────────────────────────────────
 export const MODULES = {
@@ -66,7 +67,7 @@ export const KEEPER_MODULES = [
     titleKey: 'hub.whiskeykeeper',
     icon: MODULE_ICONS?.whiskeykeeper,
     route: 'WhiskeyKeeper',
-    enabled: true,
+    enabled: false,
     description: 'Track your whiskey collection with tasting notes and bottle inventory.',
     moduleKey: MODULES.WHISKEYKEEPER,
 
@@ -78,12 +79,12 @@ export const KEEPER_MODULES = [
     accent: '#A35C5C',
     accentSoft: 'rgba(163,92,92,0.18)',
     border: 'rgba(163,92,92,0.30)',
-    lucideIcon: Wine,
+    lucideIcon: WhiskeyKeeperIcon,
     collectionLabel: 'Bottle Collection',
     itemLabel: 'Bottle',
     itemLabelPlural: 'Bottles',
     entityName: 'Bottle',
-    status: 'active',
+    status: 'internal',
   },
   {
     type: 'cigars',
