@@ -441,7 +441,7 @@ export default function CollectionHub() {
                 onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(metrics.mostValuablePipe.id)}`)}
               />
             )}
-            {metrics.mostValuableBottle && (
+            {metrics.mostValuableBottle && whiskeyOpenable && (
               <CatalogPlate
                 title="Top Whiskey"
                 value={metrics.mostValuableBottle.name}
@@ -456,20 +456,22 @@ export default function CollectionHub() {
         </section>
       )}
 
-      {/* Module Awareness — show whiskey highlights when both active */}
-      {whiskeyOpenable && metrics.mostValuableBottle && (
+      {/* Whiskey Collection — only show when whiskey enabled AND has data */}
+      {whiskeyOpenable && bottles.length > 0 && (
         <section className="space-y-4">
           <SectionTitle>Whiskey Collection</SectionTitle>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-            <CatalogPlate
-              title="Most Valuable Bottle"
-              value={metrics.mostValuableBottle.name}
-              subtitle={currency(getBottleValue(metrics.mostValuableBottle))}
-              heroImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
-              bgImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
-              accent="#B66565"
-              onClick={() => navigate(`/BottleDetail?id=${encodeURIComponent(metrics.mostValuableBottle.id)}`)}
-            />
+            {metrics.mostValuableBottle && (
+              <CatalogPlate
+                title="Most Valuable Bottle"
+                value={metrics.mostValuableBottle.name}
+                subtitle={currency(getBottleValue(metrics.mostValuableBottle))}
+                heroImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
+                bgImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
+                accent="#B66565"
+                onClick={() => navigate(`/BottleDetail?id=${encodeURIComponent(metrics.mostValuableBottle.id)}`)}
+              />
+            )}
             <CatalogPlate
               title="Total Whiskey Value"
               value={currency(bottles.reduce((s, b) => s + Number(getBottleValue(b) || 0), 0))}
