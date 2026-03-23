@@ -1,7 +1,3 @@
-import * as React from "react";
-import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
-
 /**
  * @deprecated DO NOT USE. Legacy shim kept for backward compat only.
  * Use useCurrentUser() instead: const { hasPaid } = useCurrentUser()
