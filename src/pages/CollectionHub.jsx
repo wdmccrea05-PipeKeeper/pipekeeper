@@ -451,7 +451,7 @@ export default function CollectionHub() {
                 onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(favoriteBlend.id)}`)}
               />
             )}
-            {!WHISKEYKEEPER_BLOCKED && favoriteBottle && (
+            {!WHISKEYKEEPER_BLOCKED && isModuleEnabled("whiskeykeeper") && favoriteBottle && (
               <CatalogPlate
                 title={t("hub.favoriteBottle", "Favorite Bottle")}
                 value={favoriteBottle.name}
@@ -462,7 +462,7 @@ export default function CollectionHub() {
                 onClick={() => window.location.href = createPageUrl(`BottleDetail?id=${encodeURIComponent(favoriteBottle.id)}`)}
               />
             )}
-            {!WHISKEYKEEPER_BLOCKED && !favoriteBottle && mostValuedBottle && (
+            {!WHISKEYKEEPER_BLOCKED && isModuleEnabled("whiskeykeeper") && !favoriteBottle && mostValuedBottle && (
               <CatalogPlate
                 title={t("hub.mostValuable", "Most Valuable")}
                 value={mostValuedBottle.name}
