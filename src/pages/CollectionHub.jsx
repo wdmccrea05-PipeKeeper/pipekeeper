@@ -431,15 +431,15 @@ export default function CollectionHub() {
               />
             )}
             {metrics.mostValuablePipe && (
-             <CatalogPlate
-               title="Most Valuable Pipe"
-               value={metrics.mostValuablePipe.name}
-               subtitle={currency(getPipeValue(metrics.mostValuablePipe))}
-               heroImage={metrics.mostValuablePipe.photos?.[0]}
-               bgImage={metrics.mostValuablePipe.photos?.[0]}
-               accent="#B4824B"
-               onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(metrics.mostValuablePipe.id)}`)}
-             />
+              <CatalogPlate
+                title="Most Valuable Pipe"
+                value={metrics.mostValuablePipe.name}
+                subtitle={currency(getPipeValue(metrics.mostValuablePipe))}
+                heroImage={metrics.mostValuablePipe.photos?.[0]}
+                bgImage={metrics.mostValuablePipe.photos?.[0]}
+                accent="#B4824B"
+                onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(metrics.mostValuablePipe.id)}`)}
+              />
             )}
             {metrics.mostValuableBottle && (
               <CatalogPlate
