@@ -3,7 +3,7 @@
  * Use this for all generic platform-level errors, blocked routes, fallback states.
  */
 import React from 'react';
-import { AlertCircle, Lock, Home } from 'lucide-react';
+import { AlertCircle, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import BrandLogo from '@/components/branding/BrandLogo';
 
