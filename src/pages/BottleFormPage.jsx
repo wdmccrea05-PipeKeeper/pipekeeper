@@ -50,7 +50,7 @@ export default function BottleFormPage() {
         navigate(`/BottleDetail?id=${encodeURIComponent(bottle.id)}`);
       } else {
         const created = await base44.entities.Bottle.create(data);
-        navigate(`/BottleDetail?id=${encodeURIComponent(created.id)}`);
+        navigate(`/BottleDetail?id=${encodeURIComponent(created.id)}&inventory=1`);
       }
     } catch (error) {
       console.error('Save error:', error);
