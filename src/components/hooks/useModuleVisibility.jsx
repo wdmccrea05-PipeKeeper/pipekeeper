@@ -43,7 +43,7 @@ function moduleDefaultEnabled(moduleKey, prefsSet, profile, user) {
     case 'pipekeeper':
       return prefsSet ? profile?.pipekeeper_enabled !== false : true;
     case 'whiskeykeeper':
-      return prefsSet ? profile?.whiskeykeeper_enabled !== false : true;
+      return prefsSet ? profile?.whiskeykeeper_enabled === true : false;
     case 'winekeeper':
       return prefsSet ? profile?.winekeeper_enabled === true : false;
     case 'cigarkeeper':
@@ -148,7 +148,7 @@ export function useModuleVisibility() {
 
     const patch = {
       pipekeeper_enabled: states.pipekeeper !== false,
-      whiskeykeeper_enabled: states.whiskeykeeper !== false,
+      whiskeykeeper_enabled: states.whiskeykeeper === true,
       winekeeper_enabled: states.winekeeper === true,
       cigarkeeper_enabled: states.cigarkeeper === true,
       module_preferences_set: true,
