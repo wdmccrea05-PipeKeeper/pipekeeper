@@ -11,8 +11,8 @@ import {
   Activity,
   TrendingUp,
   Target,
-  Wine,
 } from 'lucide-react';
+import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
@@ -348,8 +348,8 @@ export default function CollectionHub() {
           <QuickAction icon={Layers} label="View Pipes" accent="#B48C4B" onClick={() => navigate(createPageUrl('PipeKeeper'))} />
           {whiskeyOpenable && (
             <>
-              <QuickAction icon={Wine} label="Add Bottle" accent="#B66565" onClick={() => navigate('/BottleForm')} />
-              <QuickAction icon={Wine} label="My Whiskey" accent="#A35050" onClick={() => navigate(createPageUrl('WhiskeyKeeper'))} />
+              <QuickAction icon={WhiskeyKeeperIcon} label="Add Bottle" accent="#B66565" onClick={() => navigate('/BottleForm')} />
+              <QuickAction icon={WhiskeyKeeperIcon} label="My Whiskey" accent="#A35050" onClick={() => navigate(createPageUrl('WhiskeyKeeper'))} />
             </>
           )}
           <QuickAction icon={Target} label="Open Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
