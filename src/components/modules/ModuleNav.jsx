@@ -3,13 +3,25 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { Home, User, HelpCircle, Target, Users, Settings } from "lucide-react";
-import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import {
+  Home,
+  User,
+  HelpCircle,
+  Target,
+  Users,
+  Shield,
+  FileBarChart2,
+  ClipboardList,
+  Wrench,
+  BarChart3,
+  TestTube2,
+} from "lucide-react";
 import {
   MODULE_ICONS,
   getAssetImageStyle,
 } from "@/components/branding/moduleAssets";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 function NavItem({ item, currentPageName }) {
   const active = currentPageName === item.page;
@@ -23,7 +35,9 @@ function NavItem({ item, currentPageName }) {
       )}
       style={{
         color: active ? "#F5F1E7" : "rgba(224,216,200,0.78)",
-        border: active ? "1px solid rgba(180,140,75,0.35)" : "1px solid transparent",
+        border: active
+          ? "1px solid rgba(180,140,75,0.35)"
+          : "1px solid transparent",
       }}
     >
       {item.image ? (
@@ -47,13 +61,15 @@ function NavItem({ item, currentPageName }) {
 
 export default function ModuleNav({ currentPageName }) {
   const { t } = useTranslation();
-  const { enabledModules } = useEnabledKeeperModules();
+  const { enabledModules, isModuleEnabled } = useEnabledKeeperModules();
   const { isAdmin } = useCurrentUser();
 
-  const enabledKeys = new Set(enabledModules.map((m) => m.moduleKey));
+  const enabledKeys = new Set((enabledModules || []).map((m) => m.moduleKey));
+  const whiskeyOpenable = isModuleEnabled?.("whiskeykeeper") === true;
 
-  const items = [
+  const primaryItems = [
     { page: "CollectionHub", label: t("nav.hub", "Hub"), icon: Home },
+
     ...(enabledKeys.has("pipekeeper")
       ? [
           {
@@ -64,22 +80,82 @@ export default function ModuleNav({ currentPageName }) {
           },
         ]
       : []),
+
+    ...(whiskeyOpenable
+      ? [
+          {
+            page: "WhiskeyKeeper",
+            label: t("nav.whiskeykeeper", "WhiskeyKeeper"),
+            image: MODULE_ICONS.whiskeykeeper,
+            assetKey: "whiskeykeeper",
+          },
+        ]
+      : []),
+
     { page: "Curator", label: t("nav.curator", "Curator"), icon: Target },
     { page: "Community", label: t("nav.community", "Community"), icon: Users },
     { page: "Profile", label: t("nav.profile", "Profile"), icon: User },
     { page: "HelpCenter", label: t("nav.help", "Help"), icon: HelpCircle },
-    ...(isAdmin
-      ? [
-          { page: "AdminReports", label: t("nav.admin", "Admin"), icon: Settings },
-        ]
-      : []),
   ];
 
+  const adminItems = isAdmin
+    ? [
+        {
+          page: "AdminReports",
+          label: t("nav.adminReports", "Admin Reports"),
+          icon: Shield,
+        },
+        {
+          page: "AdminSubscriptionRequests",
+          label: t("nav.subRequests", "Subscription Requests"),
+          icon: ClipboardList,
+        },
+        {
+          page: "AdminSubscriptionTools",
+          label: t("nav.subTools", "Subscription Tools"),
+          icon: Wrench,
+        },
+        {
+          page: "UserReport",
+          label: t("nav.userReport", "User Report"),
+          icon: FileBarChart2,
+        },
+        {
+          page: "CuratorAnalyticsDashboard",
+          label: t("nav.curatorAnalytics", "Curator Analytics"),
+          icon: BarChart3,
+        },
+        {
+          page: "SubscriptionE2ETest",
+          label: t("nav.e2eTest", "Sub E2E Test"),
+          icon: TestTube2,
+        },
+      ]
+    : [];
+
   return (
-    <div className="flex items-center gap-1 overflow-x-auto pb-1">
-      {items.map((item) => (
-        <NavItem key={item.page} item={item} currentPageName={currentPageName} />
-      ))}
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-1 overflow-x-auto pb-1">
+        {primaryItems.map((item) => (
+          <NavItem
+            key={item.page}
+            item={item}
+            currentPageName={currentPageName}
+          />
+        ))}
+      </div>
+
+      {adminItems.length > 0 && (
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 border-t border-white/10 pt-2">
+          {adminItems.map((item) => (
+            <NavItem
+              key={item.page}
+              item={item}
+              currentPageName={currentPageName}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
