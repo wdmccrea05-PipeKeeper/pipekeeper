@@ -5,10 +5,12 @@ import { FlaskConical } from 'lucide-react';
 export default function AdminWhiskeyUnlock() {
   const [unlocked, setUnlocked] = useState(() => isAdminWhiskeyUnlocked());
 
-  // Sync: if legacy key says unlocked but canonical key isn't set, fix it now
+  // Sync: if legacy key says unlocked but canonical override key isn't set, fix and reload
   useEffect(() => {
-    if (isAdminWhiskeyUnlocked()) {
+    const LOCAL_OVERRIDE_KEY = 'ck_module_override_whiskeykeeper';
+    if (isAdminWhiskeyUnlocked() && localStorage.getItem(LOCAL_OVERRIDE_KEY) !== 'launched') {
       setAdminWhiskeyUnlock(true); // writes both keys
+      window.location.reload();
     }
   }, []);
 
