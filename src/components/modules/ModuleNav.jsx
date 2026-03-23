@@ -8,6 +8,7 @@ import {
   MODULE_ICONS,
   getAssetImageStyle,
 } from "@/components/branding/moduleAssets";
+import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
 
 function NavItem({ item, currentPageName }) {
   const active = currentPageName === item.page;
@@ -16,7 +17,7 @@ function NavItem({ item, currentPageName }) {
     <Link
       to={createPageUrl(item.page)}
       className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap",
         active ? "bg-[#6b4a2d]/55" : "hover:bg-white/5"
       )}
       style={{
@@ -45,21 +46,22 @@ function NavItem({ item, currentPageName }) {
 
 export default function ModuleNav({ currentPageName }) {
   const { t } = useTranslation();
+  const { enabledModules } = useEnabledKeeperModules();
+
+  const enabledKeys = new Set(enabledModules.map((m) => m.moduleKey));
 
   const items = [
     { page: "CollectionHub", label: t("nav.hub", "Hub"), icon: Home },
-    {
-      page: "PipeKeeper",
-      label: t("nav.pipekeeper", "PipeKeeper"),
-      image: MODULE_ICONS.pipekeeper,
-      assetKey: "pipekeeper",
-    },
-    {
-      page: "WhiskeyKeeper",
-      label: t("nav.whiskeykeeper", "WhiskeyKeeper"),
-      image: MODULE_ICONS.whiskeykeeper,
-      assetKey: "whiskeykeeper",
-    },
+    ...(enabledKeys.has("pipekeeper")
+      ? [
+          {
+            page: "PipeKeeper",
+            label: t("nav.pipekeeper", "PipeKeeper"),
+            image: MODULE_ICONS.pipekeeper,
+            assetKey: "pipekeeper",
+          },
+        ]
+      : []),
     { page: "Curator", label: t("nav.curator", "Curator"), icon: Target },
     { page: "Community", label: t("nav.community", "Community"), icon: Users },
     { page: "Profile", label: t("nav.profile", "Profile"), icon: User },
@@ -67,7 +69,7 @@ export default function ModuleNav({ currentPageName }) {
   ];
 
   return (
-    <div className="flex items-center gap-1 overflow-x-auto">
+    <div className="flex items-center gap-1 overflow-x-auto pb-1">
       {items.map((item) => (
         <NavItem key={item.page} item={item} currentPageName={currentPageName} />
       ))}
