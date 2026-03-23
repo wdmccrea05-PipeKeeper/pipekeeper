@@ -1,15 +1,18 @@
 /**
  * Unified Paywall Modal
- * 3 types: module | multi | expansion
- * Handles plan selection and routing to checkout
+ * Hotfix goals:
+ * - do not advertise blocked/internal modules in production paywalls
+ * - only present plans that are actually launch-aligned for the current release
  */
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { X, Crown } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { X } from 'lucide-react';
 import PricingCard from '@/components/subscription/PricingCard';
 import { usePaywall } from '@/components/subscription/usePaywall';
-import { useTranslation } from '@/components/i18n/safeTranslation';
+import {
+  getModuleReleaseState,
+  isModuleLaunched,
+} from '@/components/utils/moduleReleaseState';
 
 const moduleLabels = {
   pipekeeper: 'PipeKeeper',
@@ -17,6 +20,27 @@ const moduleLabels = {
   cigarkeeper: 'CigarKeeper',
   winekeeper: 'WineKeeper',
 };
+
+const ALL_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+
+function launchedModules() {
+  return ALL_MODULES.filter((m) => isModuleLaunched(m));
+}
+
+function getVisibleOfferConfig(lockedModule) {
+  const launched = launchedModules();
+  const canOfferThree = launched.length >= 3;
+  const canOfferFour = launched.length >= 4;
+  const moduleIsLaunchable = lockedModule ? isModuleLaunched(lockedModule) : true;
+
+  return {
+    launched,
+    canOfferThree,
+    canOfferFour,
+    moduleIsLaunchable,
+    primaryModule: moduleIsLaunchable ? lockedModule || launched[0] || 'pipekeeper' : 'pipekeeper',
+  };
+}
 
 export default function PaywallModal({
   type = 'module',
@@ -27,29 +51,37 @@ export default function PaywallModal({
   isLoading = false,
 }) {
   const { selectPlan } = usePaywall();
-  const { t } = useTranslation();
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [billingPeriod, setBillingPeriod] = useState('monthly');
 
+  const offerConfig = useMemo(() => getVisibleOfferConfig(lockedModule), [lockedModule]);
+
   const getHeader = () => {
+    if (!offerConfig.moduleIsLaunchable) {
+      return {
+        headline: 'PipeKeeper Pro',
+        subtext: 'This release currently unlocks PipeKeeper on the CollectionKeeper platform.',
+      };
+    }
+
     switch (type) {
       case 'module':
         return {
-          headline: `Unlock ${moduleLabels[lockedModule] || 'Module'}`,
+          headline: `Unlock ${moduleLabels[offerConfig.primaryModule] || 'Module'}`,
           subtext: 'Start tracking your collection with smart organization and AI insights.',
         };
       case 'multi':
         return {
-          headline: 'Build Your Collection System',
-          subtext: 'You've selected multiple keepers — unlock them together for the best value.',
+          headline: 'Unlock PipeKeeper',
+          subtext: 'This production release is focused on PipeKeeper while other modules remain hidden.',
         };
       case 'expansion':
         return {
-          headline: 'Expand Your Collection',
+          headline: 'PipeKeeper Pro',
           subtext: `You're currently tracking ${currentModules.length} keeper${currentModules.length !== 1 ? 's' : ''}.`,
         };
       default:
-        return { headline: 'Unlock Your Collection', subtext: '' };
+        return { headline: 'Unlock PipeKeeper', subtext: '' };
     }
   };
 
@@ -59,13 +91,64 @@ export default function PaywallModal({
     setSelectedPlan(plan);
     try {
       await selectPlan(plan, billingPeriod, {
-        selectedModules: type === 'multi' ? selectedModules : [],
-        baseModule: type === 'module' ? lockedModule : null,
+        selectedModules: type === 'multi' ? selectedModules.filter((m) => isModuleLaunched(m)) : [],
+        baseModule: offerConfig.primaryModule,
       });
     } catch (err) {
       console.error('[Paywall] Plan selection failed:', err);
-      // Error already shown via toast in usePaywall
     }
+  };
+
+  const renderPlanCards = () => {
+    const cards = [
+      <PricingCard
+        key="single"
+        title={`${moduleLabels[offerConfig.primaryModule]} Pro`}
+        priceMonthly="2.99"
+        priceAnnual="29.99"
+        cta={`Unlock ${moduleLabels[offerConfig.primaryModule]}`}
+        highlighted
+        isSelected={selectedPlan === 'single'}
+        onSelect={() => handleSelectPlan('single')}
+        isLoading={isLoading && selectedPlan === 'single'}
+        billingPeriod={billingPeriod}
+      />,
+    ];
+
+    if (offerConfig.canOfferThree) {
+      cards.push(
+        <PricingCard
+          key="three"
+          title="Unlock 3 Keepers"
+          priceMonthly="7.99"
+          priceAnnual="79.99"
+          badge="Best Value"
+          cta="Expand Your Collection"
+          isSelected={selectedPlan === 'three'}
+          onSelect={() => handleSelectPlan('three')}
+          isLoading={isLoading && selectedPlan === 'three'}
+          billingPeriod={billingPeriod}
+        />
+      );
+    }
+
+    if (offerConfig.canOfferFour) {
+      cards.push(
+        <PricingCard
+          key="four"
+          title="Unlock Everything"
+          priceMonthly="8.99"
+          priceAnnual="89.99"
+          cta="Unlock All Keepers"
+          isSelected={selectedPlan === 'four'}
+          onSelect={() => handleSelectPlan('four')}
+          isLoading={isLoading && selectedPlan === 'four'}
+          billingPeriod={billingPeriod}
+        />
+      );
+    }
+
+    return cards;
   };
 
   return (
@@ -77,23 +160,20 @@ export default function PaywallModal({
       <div
         className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto"
         style={{
-          background:
-            'linear-gradient(135deg, rgba(20, 20, 22, 0.95), rgba(28, 20, 16, 0.95))',
+          background: 'linear-gradient(135deg, rgba(20, 20, 22, 0.95), rgba(28, 20, 16, 0.95))',
           border: '1px solid rgba(120, 90, 65, 0.3)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 transition-all z-10"
+          aria-label="Close"
         >
           <X className="w-5 h-5" style={{ color: 'rgba(224, 216, 200, 0.6)' }} />
         </button>
 
-        {/* Content */}
         <div className="p-6 sm:p-8">
-          {/* Header */}
           <div className="mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: '#F5F1E7' }}>
               {header.headline}
@@ -103,15 +183,17 @@ export default function PaywallModal({
                 {header.subtext}
               </p>
             )}
+            {!offerConfig.canOfferThree && !offerConfig.canOfferFour && (
+              <p className="text-xs mt-3" style={{ color: 'rgba(212, 165, 116, 0.8)' }}>
+                Additional Keepers are still hidden while they are being prepared for later launch.
+              </p>
+            )}
           </div>
 
-          {/* Billing Toggle */}
           <div className="mb-6 flex gap-2 p-1 rounded-lg" style={{ background: 'rgba(120, 90, 65, 0.1)' }}>
             <button
               onClick={() => setBillingPeriod('monthly')}
-              className={`flex-1 py-2 rounded text-sm font-medium transition-all ${
-                billingPeriod === 'monthly' ? 'font-bold' : ''
-              }`}
+              className={`flex-1 py-2 rounded text-sm font-medium transition-all ${billingPeriod === 'monthly' ? 'font-bold' : ''}`}
               style={{
                 color: billingPeriod === 'monthly' ? '#D4A574' : '#8b6239',
                 background: billingPeriod === 'monthly' ? 'rgba(180, 140, 75, 0.2)' : 'transparent',
@@ -121,9 +203,7 @@ export default function PaywallModal({
             </button>
             <button
               onClick={() => setBillingPeriod('annual')}
-              className={`flex-1 py-2 rounded text-sm font-medium transition-all ${
-                billingPeriod === 'annual' ? 'font-bold' : ''
-              }`}
+              className={`flex-1 py-2 rounded text-sm font-medium transition-all ${billingPeriod === 'annual' ? 'font-bold' : ''}`}
               style={{
                 color: billingPeriod === 'annual' ? '#D4A574' : '#8b6239',
                 background: billingPeriod === 'annual' ? 'rgba(180, 140, 75, 0.2)' : 'transparent',
@@ -133,101 +213,8 @@ export default function PaywallModal({
             </button>
           </div>
 
-          {/* Pricing Cards */}
-          <div className="space-y-3 mb-8">
-            {type === 'module' && (
-              <>
-                <PricingCard
-                  title={`${moduleLabels[lockedModule]} Pro`}
-                  priceMonthly="2.99"
-                  priceAnnual="29.99"
-                  cta={`Unlock ${moduleLabels[lockedModule]}`}
-                  highlighted
-                  isSelected={selectedPlan === 'single'}
-                  onSelect={() => handleSelectPlan('single')}
-                  isLoading={isLoading && selectedPlan === 'single'}
-                  billingPeriod={billingPeriod}
-                />
-                <PricingCard
-                  title="Unlock 3 Keepers"
-                  priceMonthly="7.99"
-                  priceAnnual="79.99"
-                  badge="Best Value"
-                  cta="Expand Your Collection"
-                  isSelected={selectedPlan === 'three'}
-                  onSelect={() => handleSelectPlan('three')}
-                  isLoading={isLoading && selectedPlan === 'three'}
-                  billingPeriod={billingPeriod}
-                />
-              </>
-            )}
+          <div className="space-y-3 mb-8">{renderPlanCards()}</div>
 
-            {type === 'multi' && (
-              <>
-                <PricingCard
-                  title="Unlock 3 Keepers"
-                  priceMonthly="7.99"
-                  priceAnnual="79.99"
-                  badge="Best Value"
-                  cta="Unlock 3 Keepers"
-                  highlighted
-                  isSelected={selectedPlan === 'three'}
-                  onSelect={() => handleSelectPlan('three')}
-                  isLoading={isLoading && selectedPlan === 'three'}
-                  billingPeriod={billingPeriod}
-                />
-                <PricingCard
-                  title="Unlock Everything"
-                  priceMonthly="8.99"
-                  priceAnnual="89.99"
-                  cta="Unlock All Keepers"
-                  isSelected={selectedPlan === 'four'}
-                  onSelect={() => handleSelectPlan('four')}
-                  isLoading={isLoading && selectedPlan === 'four'}
-                  billingPeriod={billingPeriod}
-                />
-              </>
-            )}
-
-            {type === 'expansion' && (
-              <>
-                <PricingCard
-                  title="Add 1 More Keeper"
-                  priceMonthly="2.99"
-                  priceAnnual="29.99"
-                  cta="Add Keeper"
-                  isSelected={selectedPlan === 'single'}
-                  onSelect={() => handleSelectPlan('single')}
-                  isLoading={isLoading && selectedPlan === 'single'}
-                  billingPeriod={billingPeriod}
-                />
-                <PricingCard
-                  title={`Upgrade to 3 Keepers`}
-                  priceMonthly="7.99"
-                  priceAnnual="79.99"
-                  badge="Most Popular"
-                  cta="Upgrade Now"
-                  highlighted
-                  isSelected={selectedPlan === 'three'}
-                  onSelect={() => handleSelectPlan('three')}
-                  isLoading={isLoading && selectedPlan === 'three'}
-                  billingPeriod={billingPeriod}
-                />
-                <PricingCard
-                  title="Unlock Everything"
-                  priceMonthly="8.99"
-                  priceAnnual="89.99"
-                  cta="Go All In"
-                  isSelected={selectedPlan === 'four'}
-                  onSelect={() => handleSelectPlan('four')}
-                  isLoading={isLoading && selectedPlan === 'four'}
-                  billingPeriod={billingPeriod}
-                />
-              </>
-            )}
-          </div>
-
-          {/* Footer */}
           <div
             className="pt-6 border-t text-xs text-center"
             style={{ borderColor: 'rgba(120, 90, 65, 0.2)', color: 'rgba(224, 216, 200, 0.5)' }}
