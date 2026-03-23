@@ -147,6 +147,20 @@ export default function Curator() {
     return location?.state?.scope || (hasMultipleModules ? "all" : "pipekeeper");
   });
 
+  const handleScopeChange = (newScope) => {
+    setCuratorScope(newScope);
+  };
+
+  const { data: pipes = [] } = useQuery({
+    queryKey: ["pipes", user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.Pipe.filter({ created_by: user?.email });
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
   const { data: blends = [] } = useQuery({
     queryKey: ["blends", user?.email],
     queryFn: async () => {
@@ -189,7 +203,7 @@ export default function Curator() {
   });
 
   // Filter data based on selected scope
-  const scopedPipes = curatorScope === "whiskeykeeper" ? [] : pipes;
+  const scopedPipes = curatorScope === "whiskeykeeper" ? [] : (pipes || []);
   const scopedBlends = curatorScope === "whiskeykeeper" ? [] : blends;
   const scopedBottles = curatorScope === "pipekeeper" ? [] : bottles;
   const scopedTastingLogs = curatorScope === "pipekeeper" ? [] : tastingLogs;
