@@ -73,7 +73,7 @@ export default function ModuleVisibilitySettings() {
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {!enabled && <EyeOff className="w-3.5 h-3.5 text-stone-400" />}
-                <Switch checked={enabled} onCheckedChange={(v) => handleToggle(mod.id, v)} disabled={isSaving || mod.canDisable === false || !mod.launched} className="data-[state=checked]:bg-[#A35C5C]" />
+                <Switch checked={enabled} onCheckedChange={(v) => handleToggle(mod.id, v)} disabled={isSaving || mod.canDisable === false} className="data-[state=checked]:bg-[#A35C5C]" />
               </div>
             </div>
           );
