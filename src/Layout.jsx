@@ -36,18 +36,6 @@ import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
 import FoundingMemberPopup from "@/components/subscription/FoundingMemberPopup";
 import WhatsNewPopup from "@/components/onboarding/WhatsNewPopup";
-import EntitlementDebug from "@/components/debug/EntitlementDebug";
-import PermissionDebugPanel from "@/components/debug/PermissionDebugPanel";
-import AdminWhiskeyUnlock from "@/components/debug/AdminWhiskeyUnlock";
-import ModuleReleaseDebug from "@/components/debug/ModuleReleaseDebug";
-import {
-  isIOSWebView,
-  openAppleSubscriptions,
-  openNativePaywall,
-  requestNativeSubscriptionStatus,
-  registerNativeSubscriptionListener,
-  nativeDebugPing,
-} from "@/components/utils/nativeIAPBridge";
 import { shouldShowModuleInNav } from "@/components/utils/moduleReleaseState";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -232,12 +220,10 @@ export default function Layout({ children, currentPageName }) {
   const [syncing, setSyncing] = useState(false);
   const [showFoundingMemberPopup, setShowFoundingMemberPopup] = useState(false);
   const [iapToast, setIapToast] = useState("");
-  const [subActive, setSubActive] = useState(false);
   const [showQuickAccess, setShowQuickAccess] = useState(false);
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const ios = useMemo(() => isIOSWebView(), []);
   const { t, lang } = useTranslation();
 
   const {
@@ -383,8 +369,7 @@ export default function Layout({ children, currentPageName }) {
 
   const showIAPToast = (msg) => {
     setIapToast(msg);
-    clearTimeout(showIAPToast._timer);
-    showIAPToast._timer = setTimeout(() => setIapToast(""), 2600);
+    setTimeout(() => setIapToast(""), 2600);
   };
 
   useEffect(() => {
@@ -422,10 +407,22 @@ export default function Layout({ children, currentPageName }) {
         markStripeSyncRan(user.email);
 
         if (!cancelled && result.ok) {
-        await queryClient.invalidateQueries({ queryKey: ["current-user"], exact: true });
-        await queryClient.invalidateQueries({ queryKey: ["subscription"], exact: true });
-        await queryClient.refetchQueries({ queryKey: ["current-user"], exact: true });
-        await queryClient.refetchQueries({ queryKey: ["subscription"], exact: true });
+          await queryClient.invalidateQueries({
+            queryKey: ["current-user"],
+            exact: true,
+          });
+          await queryClient.invalidateQueries({
+            queryKey: ["subscription"],
+            exact: true,
+          });
+          await queryClient.refetchQueries({
+            queryKey: ["current-user"],
+            exact: true,
+          });
+          await queryClient.refetchQueries({
+            queryKey: ["subscription"],
+            exact: true,
+          });
         }
       } catch (e) {
         console.warn("[Layout] Auto Stripe sync failed:", e?.message || e);
@@ -442,196 +439,28 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
-    if (user?.isFoundingMember) return;
     if (!hasPaid) return;
-    if (!subscription) return;
+    if (user?.foundingMemberAcknowledged) return;
 
     (async () => {
       try {
-        const { ensureFoundingMemberStatus } = await import(
-          "@/components/utils/foundingMemberBackfill"
-        );
-        const updated = await ensureFoundingMemberStatus(user, subscription);
-        if (updated) {
-          await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+        const foundingCutoff = new Date("2026-02-01T00:00:00.000Z");
+        const startedAt =
+          subscription?.subscriptionStartedAt ||
+          subscription?.started_at ||
+          subscription?.current_period_start;
+
+        if (!startedAt) return;
+
+        const subscriptionDate = new Date(startedAt);
+        if (subscriptionDate < foundingCutoff) {
+          setShowFoundingMemberPopup(true);
         }
       } catch (e) {
-        console.warn(
-          "[Layout] Founding member backfill failed:",
-          e?.message || e
-        );
+        console.warn("[Layout] Founding member check failed:", e?.message || e);
       }
     })();
-  }, [userLoading, user, subscription, hasPaid, queryClient]);
-
-  useEffect(() => {
-    if (!ios) return undefined;
-
-    nativeDebugPing("Layout mounted");
-    requestNativeSubscriptionStatus();
-
-    const refreshStatus = () => {
-      try {
-        requestNativeSubscriptionStatus();
-      } catch {
-        // non-fatal
-      }
-    };
-
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") refreshStatus();
-    };
-
-    window.addEventListener("focus", refreshStatus);
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    const cleanup = registerNativeSubscriptionListener(async (payload) => {
-      const active = !!payload.active;
-      setSubActive(active);
-
-      try {
-        const result = await base44.functions.invoke(
-          "syncAppleSubscriptionForMe",
-          payload
-        );
-
-        if (result?.data?.code === "ALREADY_LINKED") {
-          showIAPToast(safeLabel(t, "layout.iapAlreadyLinked", "Already linked"));
-          return;
-        }
-
-        await queryClient.invalidateQueries({ queryKey: ["current-user"] });
-        await queryClient.invalidateQueries({ queryKey: ["subscription"] });
-      } catch (e) {
-        console.error("[Layout] Apple subscription sync failed:", e);
-        showIAPToast(
-          safeLabel(t, "layout.iapSyncFailed", "Subscription sync failed")
-        );
-      }
-    });
-
-    return () => {
-      window.removeEventListener("focus", refreshStatus);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-      cleanup?.();
-    };
-  }, [ios, queryClient, t]);
-
-  useEffect(() => {
-    if (!ios) return undefined;
-
-    const getClickableText = (evtTarget) => {
-      try {
-        const path =
-          typeof evtTarget?.composedPath === "function"
-            ? evtTarget.composedPath()
-            : [];
-        const candidates = [];
-
-        let el = evtTarget;
-        for (let i = 0; i < 8 && el; i += 1) {
-          candidates.push(el);
-          el = el.parentElement;
-        }
-
-        for (const p of path) {
-          if (p && p.nodeType === 1) candidates.push(p);
-        }
-
-        for (const c of candidates) {
-          const text = (c?.innerText || c?.textContent || "").trim();
-          if (text && text.length <= 60) return text;
-        }
-
-        return "";
-      } catch {
-        return "";
-      }
-    };
-
-    const shouldManage = (text) => {
-      const normalized = (text || "").trim().toLowerCase();
-      return (
-        normalized.includes("manage subscription") ||
-        normalized.includes("update subscription") ||
-        normalized.includes("cancel subscription") ||
-        normalized.includes("manage plan") ||
-        normalized.includes("manage billing")
-      );
-    };
-
-    const shouldUpgrade = (text) => {
-      const normalized = (text || "").trim().toLowerCase();
-      return (
-        normalized === "upgrade" ||
-        normalized.includes("upgrade to pro") ||
-        normalized.includes("upgrade (app store)") ||
-        normalized.includes("subscribe") ||
-        normalized.includes("go pro")
-      );
-    };
-
-    const intercept = (e, phaseLabel) => {
-      const text = getClickableText(e.target);
-
-      if (shouldManage(text)) {
-        e.preventDefault();
-        e.stopPropagation();
-        showIAPToast(
-          safeLabel(
-            t,
-            "layout.iapOpeningSubscriptions",
-            "Opening subscriptions…"
-          )
-        );
-        nativeDebugPing(`Intercepted manage (${phaseLabel})`);
-        const ok = openAppleSubscriptions();
-        if (!ok) {
-          showIAPToast(
-            safeLabel(
-              t,
-              "layout.iapBridgeUnavailableSubs",
-              "Unable to open subscriptions"
-            )
-          );
-        }
-        return;
-      }
-
-      if (shouldUpgrade(text)) {
-        e.preventDefault();
-        e.stopPropagation();
-        showIAPToast(
-          safeLabel(t, "layout.iapOpeningUpgrade", "Opening upgrade…")
-        );
-        nativeDebugPing(`Intercepted upgrade (${phaseLabel})`);
-        const ok = openNativePaywall();
-        if (!ok) {
-          showIAPToast(
-            safeLabel(
-              t,
-              "layout.iapBridgeUnavailableUpgrade",
-              "Unable to open upgrade"
-            )
-          );
-        }
-      }
-    };
-
-    const onPointerDown = (e) => intercept(e, "pointerdown");
-    const onTouchEnd = (e) => intercept(e, "touchend");
-    const onClick = (e) => intercept(e, "click");
-
-    document.addEventListener("pointerdown", onPointerDown, true);
-    document.addEventListener("touchend", onTouchEnd, true);
-    document.addEventListener("click", onClick, true);
-
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown, true);
-      document.removeEventListener("touchend", onTouchEnd, true);
-      document.removeEventListener("click", onClick, true);
-    };
-  }, [ios, t]);
+  }, [userLoading, user, hasPaid, subscription]);
 
   useEffect(() => {
     if (userLoading) return;
@@ -643,26 +472,6 @@ export default function Layout({ children, currentPageName }) {
     setShowSubscribePrompt(true);
     markSubscribePromptShown();
   }, [userLoading, user?.email, hasPaid, currentPageName, PUBLIC_PAGES]);
-
-  useEffect(() => {
-    if (userLoading) return;
-    if (!user?.email) return;
-    if (!hasPaid) return;
-    if (user?.foundingMemberAcknowledged) return;
-
-    const foundingCutoff = new Date("2026-02-01T00:00:00.000Z");
-    const startedAt =
-      subscription?.subscriptionStartedAt ||
-      subscription?.started_at ||
-      subscription?.current_period_start;
-
-    if (!startedAt) return;
-
-    const subscriptionDate = new Date(startedAt);
-    if (subscriptionDate < foundingCutoff) {
-      setShowFoundingMemberPopup(true);
-    }
-  }, [userLoading, user, hasPaid, subscription]);
 
   if (!ageConfirmed) {
     return (
@@ -756,7 +565,6 @@ export default function Layout({ children, currentPageName }) {
                     <div className="min-w-0 flex items-center">
                       <BrandLogo
                         compact
-                        hoverable
                         className="min-w-0"
                         imageClassName="w-7 h-7"
                       />
@@ -791,7 +599,6 @@ export default function Layout({ children, currentPageName }) {
                 </div>
 
                 <div className="flex items-center gap-1 lg:gap-3 flex-shrink-0">
-                  {isAdmin ? <AdminWhiskeyUnlock /> : null}
                   <LanguageSwitcher />
                   <GlobalSearchTrigger />
                   <button
@@ -838,7 +645,6 @@ export default function Layout({ children, currentPageName }) {
                 >
                   <BrandLogo
                     compact
-                    hoverable
                     className="min-w-0"
                     imageClassName="w-7 h-7"
                   />
@@ -1059,14 +865,6 @@ export default function Layout({ children, currentPageName }) {
             </div>
           ) : null}
 
-          {import.meta.env.DEV ? (
-            <>
-              <EntitlementDebug />
-              <PermissionDebugPanel />
-            </>
-          ) : null}
-          {isAdmin ? <ModuleReleaseDebug user={user} /> : null}
-
           <FeatureQuickAccess
             isOpen={showQuickAccess}
             onClose={() => setShowQuickAccess(false)}
@@ -1090,27 +888,6 @@ export default function Layout({ children, currentPageName }) {
               }}
             >
               {iapToast}
-            </div>
-          ) : null}
-
-          {ios ? (
-            <div
-              style={{
-                position: "fixed",
-                right: 10,
-                bottom: 10,
-                padding: "6px 10px",
-                borderRadius: 10,
-                background: "rgba(0,0,0,0.18)",
-                fontSize: 12,
-                zIndex: 999999,
-                pointerEvents: "none",
-              }}
-            >
-              Bridge: ✅ |{" "}
-              {subActive
-                ? "Pro ✅"
-                : safeLabel(t, "subscription.free", "Free")}
             </div>
           ) : null}
         </div>
