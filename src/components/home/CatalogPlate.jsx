@@ -142,8 +142,8 @@ export default function CatalogPlate({
         </div>
 
         {/* Main value - editorial typography */}
-        <div
-          className="text-4xl font-bold leading-tight tracking-tight mb-2"
+         <div
+          className="text-4xl font-bold leading-tight tracking-tight mb-2 break-words"
           style={{
             color: "#F5F1E7",
             textShadow: `0 2px 10px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)`,
@@ -156,7 +156,7 @@ export default function CatalogPlate({
         {/* Subtitle */}
         {subtitle && (
           <div
-            className="text-sm font-semibold leading-snug"
+            className="text-sm font-semibold leading-snug break-words"
             style={{ 
               color: `${accent}d5`,
               textShadow: "0 1px 2px rgba(0,0,0,0.6)"

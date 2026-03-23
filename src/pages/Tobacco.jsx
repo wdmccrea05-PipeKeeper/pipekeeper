@@ -34,14 +34,14 @@ import { formatWeight } from "@/components/utils/localeFormatters";
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 const STRENGTHS = ["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
 const SORT_OPTIONS = [
-  { value: "-created_date", label: "tobaccoPage.recentlyAdded" },
-  { value: "favorites", label: "tobaccoPage.favoritesFirst" },
-  { value: "name", label: "tobaccoPage.nameAZ" },
-  { value: "-name", label: "tobaccoPage.nameZA" },
-  { value: "-rating", label: "tobaccoPage.highestRated" },
-  { value: "rating", label: "tobaccoPage.lowestRated" },
-  { value: "cellared_date", label: "tobaccoPage.oldestInCellar" },
-  { value: "-cellared_date", label: "tobaccoPage.newestInCellar" }
+  { value: "-created_date", label: "tobaccoPage.recentlyAdded", i18nKey: true },
+  { value: "favorites", label: "tobaccoPage.favoritesFirst", i18nKey: true },
+  { value: "name", label: "tobaccoPage.nameAZ", i18nKey: true },
+  { value: "-name", label: "tobaccoPage.nameZA", i18nKey: true },
+  { value: "-rating", label: "tobaccoPage.highestRated", i18nKey: true },
+  { value: "rating", label: "tobaccoPage.lowestRated", i18nKey: true },
+  { value: "cellared_date", label: "tobaccoPage.oldestInCellar", i18nKey: true },
+  { value: "-cellared_date", label: "tobaccoPage.newestInCellar", i18nKey: true }
 ];
 
 export default function TobaccoPage() {
@@ -359,7 +359,7 @@ export default function TobaccoPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {SORT_OPTIONS.map(option => <SelectItem key={option.value} value={option.value}>{option.label.startsWith('tobaccoPage.') ? t(option.label) : option.label}</SelectItem>)}
+               {SORT_OPTIONS.map(option => <SelectItem key={option.value} value={option.value}>{option.i18nKey ? t(option.label) : option.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <div className="flex gap-2">
