@@ -1,16 +1,19 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { 
+import {
   ChevronRight,
   Plus,
   Leaf,
   Flame,
   Layers,
-  Sparkles,
   Clock3,
   Activity,
   TrendingUp,
+  Wine,
+  GlassWater,
+  Star,
+  Sparkles,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/components/utils/createPageUrl';
@@ -20,6 +23,8 @@ import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import BrandLogo from '@/components/branding/BrandLogo';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import { getPipeValue, getTobaccoValue, getBottleValue } from '@/components/keeper-core/value/valueAggregation';
+import { getWhiskeyHighlights } from '@/components/whiskey/getWhiskeyHighlights';
+import RecentActivity from '@/components/hub/RecentActivity';
 
 const MODULE_META = {
   pipekeeper: {
@@ -127,7 +132,7 @@ function ModuleCard({ moduleKey, stats = [], onOpen, openable = true }) {
       </p>
 
       {stats.length > 0 ? (
-        <div className="grid grid-cols-3 gap-4 pt-4 border-t" style={{ borderColor: `${meta.accent}26` }}>
+        <div className={`grid gap-4 pt-4 border-t ${stats.length === 3 ? 'grid-cols-3' : 'grid-cols-2 xl:grid-cols-3'}`} style={{ borderColor: `${meta.accent}26` }}>
           {stats.map((s) => (
             <div key={s.label}>
               <div className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{s.value}</div>
@@ -186,7 +191,7 @@ function ExpandingSoonCard({ moduleKey }) {
   );
 }
 
-function QuickAction({ icon: Icon, label, accent, onClick }) {
+function QuickAction({ icon: Icon, image, label, accent, onClick }) {
   return (
     <button
       type="button"
@@ -198,15 +203,15 @@ function QuickAction({ icon: Icon, label, accent, onClick }) {
         boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
       }}
     >
-      <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${accent}24`, border: `1px solid ${accent}45` }}>
-        <Icon className="w-5 h-5" style={{ color: accent }} />
+      <div className="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden" style={{ background: `${accent}24`, border: `1px solid ${accent}45` }}>
+        {image ? <img src={image} alt="" className="w-7 h-7 object-contain" /> : <Icon className="w-5 h-5" style={{ color: accent }} />}
       </div>
       <span className="text-sm font-semibold text-left" style={{ color: '#F5F1E7' }}>{label}</span>
     </button>
   );
 }
 
-function InsightBanner({ title, body, onOpen }) {
+function CuratorBanner({ title, body, onOpen }) {
   return (
     <button
       type="button"
@@ -219,8 +224,8 @@ function InsightBanner({ title, body, onOpen }) {
       }}
     >
       <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(163,92,92,0.18)', border: '1px solid rgba(163,92,92,0.32)' }}>
-          <Sparkles className="w-6 h-6" style={{ color: '#D47C7C' }} />
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden" style={{ background: 'rgba(163,92,92,0.18)', border: '1px solid rgba(163,92,92,0.32)' }}>
+          <img src={MODULE_ICONS.curator} alt="Curator" className="w-9 h-9 object-contain" />
         </div>
         <div>
           <div className="text-2xl font-bold mb-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{title}</div>
@@ -241,6 +246,52 @@ function getRecentLabel(dateString) {
   return dt.toLocaleDateString();
 }
 
+function getPipePhoto(pipe) {
+  return Array.isArray(pipe?.photos) ? pipe.photos[0] : pipe?.photos?.[0] || pipe?.photo || '';
+}
+
+function getBlendPhoto(blend) {
+  return blend?.logo || blend?.photo || blend?.image || '';
+}
+
+function getBottlePhoto(bottle) {
+  return bottle?.photo || (Array.isArray(bottle?.photos) ? bottle.photos[0] : '') || bottle?.image || bottle?.image_url || '';
+}
+
+function getBottleTypesCount(bottles = []) {
+  const set = new Set(
+    bottles
+      .map((b) => b?.type || b?.bottle_type || b?.whiskey_type || b?.style || b?.category)
+      .filter(Boolean)
+      .map((v) => String(v).trim().toLowerCase())
+  );
+  return set.size;
+}
+
+function buildRecentActivity(smokeLogs = [], tastingLogs = []) {
+  const smoke = smokeLogs.map((log) => ({
+    id: `smoke-${log.id}`,
+    type: 'smoke',
+    title: log.blend_name || log.blend || 'Smoking session',
+    subtitle: `${log.pipe_name ? `In ${log.pipe_name}` : 'Pipe session'}${log.date ? ` • ${getRecentLabel(log.date)}` : ''}`,
+    date: log.date || log.created_date,
+    targetUrl: log.pipe_id ? `/PipeDetail?id=${encodeURIComponent(log.pipe_id)}` : createPageUrl('PipeKeeper'),
+  }));
+
+  const tastings = tastingLogs.map((log) => ({
+    id: `taste-${log.id}`,
+    type: 'tasting',
+    title: log.bottle_name || 'Whiskey tasting',
+    subtitle: `${typeof log.rating === 'number' ? `${log.rating.toFixed(1)} / 5` : 'Tasting note'}${log.tasting_date ? ` • ${getRecentLabel(log.tasting_date)}` : ''}`,
+    date: log.tasting_date || log.created_date,
+    targetUrl: log.bottle_id ? `/WhiskeyKeeper?bottle=${encodeURIComponent(log.bottle_id)}` : createPageUrl('WhiskeyKeeper'),
+  }));
+
+  return [...smoke, ...tastings]
+    .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
+    .slice(0, 6);
+}
+
 export default function CollectionHub() {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
@@ -248,19 +299,19 @@ export default function CollectionHub() {
   const whiskeyOpenable = isModuleEnabled('whiskeykeeper');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['collection-hub-dashboard', user?.email, whiskeyOpenable],
+    queryKey: ['collection-hub-dashboard-v2', user?.email, whiskeyOpenable],
     enabled: !!user?.email,
     staleTime: 2 * 60 * 1000,
     queryFn: async () => {
-      const [pipes, blends, smokeLogs, bottles] = await Promise.all([
+      const [pipes, blends, smokeLogs, bottles, tastingLogs, inventoryUnits] = await Promise.all([
         base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 500).catch(() => []),
         base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-updated_date', 500).catch(() => []),
         base44.entities.SmokingLog.filter({ created_by: user.email }, '-date', 1000).catch(() => []),
-        whiskeyOpenable
-          ? base44.entities.Bottle.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
-          : Promise.resolve([]),
+        whiskeyOpenable ? base44.entities.Bottle.filter({ created_by: user.email }, '-updated_date', 500).catch(() => []) : Promise.resolve([]),
+        whiskeyOpenable ? base44.entities.TastingLog.filter({ created_by: user.email }, '-tasting_date', 1000).catch(() => []) : Promise.resolve([]),
+        whiskeyOpenable ? base44.entities.WhiskeyInventoryUnit.filter({ created_by: user.email }).catch(() => []) : Promise.resolve([]),
       ]);
-      return { pipes, blends, smokeLogs, bottles };
+      return { pipes, blends, smokeLogs, bottles, tastingLogs, inventoryUnits };
     },
   });
 
@@ -268,16 +319,22 @@ export default function CollectionHub() {
   const blends = data?.blends || [];
   const smokeLogs = data?.smokeLogs || [];
   const bottles = data?.bottles || [];
+  const tastingLogs = data?.tastingLogs || [];
+  const inventoryUnits = data?.inventoryUnits || [];
 
   const metrics = useMemo(() => {
     const pipeValue = pipes.reduce((sum, pipe) => sum + Number(getPipeValue(pipe) || 0), 0);
     const tobaccoValue = blends.reduce((sum, blend) => sum + Number(getTobaccoValue(blend) || 0), 0);
-    const whiskeyValue = bottles.reduce((sum, bottle) => sum + Number(getBottleValue(bottle) || 0), 0);
+    const whiskeyValue = whiskeyOpenable ? bottles.reduce((sum, bottle) => sum + Number(getBottleValue(bottle) || 0), 0) : 0;
     const totalValue = pipeValue + tobaccoValue + whiskeyValue;
 
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const recentSessionsCount = smokeLogs.filter((log) => {
+    const smokeThisWeek = smokeLogs.filter((log) => {
       const dt = new Date(log.date || log.created_date || 0).getTime();
+      return Number.isFinite(dt) && dt >= weekAgo;
+    }).length;
+    const tastingsThisWeek = tastingLogs.filter((log) => {
+      const dt = new Date(log.tasting_date || log.created_date || 0).getTime();
       return Number.isFinite(dt) && dt >= weekAgo;
     }).length;
 
@@ -306,31 +363,119 @@ export default function CollectionHub() {
     const mostValuablePipe = [...pipes]
       .sort((a, b) => Number(getPipeValue(b) || 0) - Number(getPipeValue(a) || 0))[0] || null;
 
-    const recentActivity = smokeLogs.slice(0, 5).map((log) => ({
-      id: log.id,
-      title: log.blend_name || log.blend || 'Recent session',
-      subtitle: `${log.pipe_name ? `In ${log.pipe_name}` : 'Pipe session'}${log.date ? ` • ${getRecentLabel(log.date)}` : ''}`,
-      pipeId: log.pipe_id,
-    }));
+    const whiskeyHighlights = whiskeyOpenable ? getWhiskeyHighlights(bottles, inventoryUnits) : [];
+    const recentActivity = buildRecentActivity(smokeLogs, whiskeyOpenable ? tastingLogs : []);
 
     return {
       totalValue,
-      recentSessionsCount,
+      pipeValue,
+      tobaccoValue,
+      whiskeyValue,
+      smokeThisWeek,
+      tastingsThisWeek,
+      recentActivityCount: smokeThisWeek + tastingsThisWeek,
       mostSmokedPipe,
       favoriteBlend,
       mostValuablePipe,
+      whiskeyHighlights,
       recentActivity,
+      totalBottles: bottles.reduce((sum, b) => sum + (Number(b.bottle_count) || 1), 0),
+      bottleTypes: getBottleTypesCount(bottles),
+      tastingCount: tastingLogs.length,
     };
-  }, [pipes, blends, bottles, smokeLogs]);
+  }, [pipes, blends, bottles, smokeLogs, tastingLogs, inventoryUnits, whiskeyOpenable]);
 
   const openableModuleKeys = enabledModules.map((m) => m.moduleKey);
-  const expandingKeys = expandingSoonModules.map((m) => m.moduleKey);
+  const expandingKeys = expandingSoonModules.map((m) => m.moduleKey).filter((k) => !openableModuleKeys.includes(k));
 
   const pipeStats = [
     { label: 'Pipes', value: pipes.length },
     { label: 'Blends', value: blends.length },
     { label: 'Recent Logs', value: smokeLogs.length || '—' },
   ];
+
+  const whiskeyStats = [
+    { label: 'Bottle Types', value: metrics.bottleTypes || 0 },
+    { label: 'Total Bottles', value: metrics.totalBottles || 0 },
+    { label: 'Total Value', value: currency(metrics.whiskeyValue) },
+  ];
+
+  const highlightCards = [];
+  if (metrics.mostSmokedPipe) {
+    highlightCards.push(
+      <CatalogPlate
+        key="most-smoked-pipe"
+        title="Most Smoked Pipe"
+        value={metrics.mostSmokedPipe.name}
+        subtitle={`${metrics.mostSmokedPipe.__count || 0} bowls`}
+        heroImage={getPipePhoto(metrics.mostSmokedPipe)}
+        bgImage={getPipePhoto(metrics.mostSmokedPipe)}
+        accent="#C87941"
+        onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(metrics.mostSmokedPipe.id)}`)}
+      />
+    );
+  }
+  if (metrics.favoriteBlend) {
+    highlightCards.push(
+      <CatalogPlate
+        key="favorite-blend"
+        title="Favorite Blend"
+        value={metrics.favoriteBlend.name}
+        subtitle={`${metrics.favoriteBlend.__count || 0} bowls`}
+        heroImage={getBlendPhoto(metrics.favoriteBlend)}
+        bgImage={getBlendPhoto(metrics.favoriteBlend)}
+        accent="#5A7C5A"
+        onClick={() => navigate(`/TobaccoDetail?id=${encodeURIComponent(metrics.favoriteBlend.id)}`)}
+      />
+    );
+  }
+  if (metrics.mostValuablePipe) {
+    highlightCards.push(
+      <CatalogPlate
+        key="most-valuable-pipe"
+        title="Most Valuable Pipe"
+        value={metrics.mostValuablePipe.name}
+        subtitle={currency(getPipeValue(metrics.mostValuablePipe))}
+        heroImage={getPipePhoto(metrics.mostValuablePipe)}
+        bgImage={getPipePhoto(metrics.mostValuablePipe)}
+        accent="#B4824B"
+        onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(metrics.mostValuablePipe.id)}`)}
+      />
+    );
+  }
+
+  if (whiskeyOpenable) {
+    metrics.whiskeyHighlights.slice(0, 2).forEach((h) => {
+      highlightCards.push(
+        <CatalogPlate
+          key={`whiskey-${h.key}`}
+          title={`WhiskeyKeeper • ${h.title}`}
+          value={h.subtitle || h.value}
+          subtitle={h.subtitle && h.value ? h.value : h.subtitle || h.value}
+          heroImage={h.photo || ''}
+          bgImage={h.photo || ''}
+          accent={h.accent || '#B66565'}
+          onClick={() => navigate(h.bottleId ? `/WhiskeyKeeper?bottle=${encodeURIComponent(h.bottleId)}` : createPageUrl('WhiskeyKeeper'))}
+        />
+      );
+    });
+  }
+
+  const quickActions = [
+    { key: 'add-pipe', label: 'Add Pipe', icon: Plus, accent: '#C89752', onClick: () => navigate('/PipeKeeper?action=add_pipe') },
+    { key: 'add-blend', label: 'Add Blend', icon: Plus, accent: '#8E7E60', onClick: () => navigate('/PipeKeeper?action=add_blend') },
+    { key: 'log-smoke', label: 'Log Smoke', icon: Flame, accent: '#B56A5F', onClick: () => navigate('/PipeKeeper?action=log_smoke') },
+    { key: 'view-pipes', label: 'View Pipes', icon: Layers, accent: '#B48C4B', onClick: () => navigate(createPageUrl('PipeKeeper')) },
+  ];
+
+  if (whiskeyOpenable) {
+    quickActions.push(
+      { key: 'add-bottle', label: 'Add Bottle', icon: Wine, accent: '#B66565', onClick: () => navigate(createPageUrl('WhiskeyKeeper')) },
+      { key: 'log-tasting', label: 'Log Tasting', icon: GlassWater, accent: '#C47A6C', onClick: () => navigate(createPageUrl('Tastings')) },
+    );
+  }
+
+  quickActions.push({ key: 'curator', label: 'Open Curator', image: MODULE_ICONS.curator, icon: Sparkles, accent: '#B66565', onClick: () => navigate(createPageUrl('Curator')) });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
@@ -357,11 +502,21 @@ export default function CollectionHub() {
 
       <section className="space-y-4">
         <SectionTitle>Collection Overview</SectionTitle>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <StatCard icon={TrendingUp} label="Total Value" value={isLoading ? '—' : currency(metrics.totalValue)} sub="Across active collections" accent="#C89752" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+          <StatCard icon={TrendingUp} label="Total Value" value={isLoading ? '—' : currency(metrics.totalValue)} sub={whiskeyOpenable ? 'Across open modules' : 'Across active collections'} accent="#C89752" />
           <StatCard icon={Layers} label="Pipes" value={isLoading ? '—' : pipes.length} sub="In collection" accent="#B48C4B" />
           <StatCard icon={Leaf} label="Blends" value={isLoading ? '—' : blends.length} sub="Tracked blends" accent="#6E8A57" />
-          <StatCard icon={Flame} label="Recent Sessions" value={isLoading ? '—' : metrics.recentSessionsCount} sub="This week" accent="#B56A5F" />
+          {whiskeyOpenable ? <StatCard icon={Wine} label="Bottles" value={isLoading ? '—' : metrics.totalBottles} sub={`${metrics.bottleTypes || 0} types`} accent="#B66565" /> : null}
+          <StatCard icon={Activity} label="Recent Activity" value={isLoading ? '—' : metrics.recentActivityCount} sub="This week" accent="#B56A5F" />
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <SectionTitle>Quick Actions</SectionTitle>
+        <div className="flex flex-wrap gap-4">
+          {quickActions.map((action) => (
+            <QuickAction key={action.key} icon={action.icon} image={action.image} label={action.label} accent={action.accent} onClick={action.onClick} />
+          ))}
         </div>
       </section>
 
@@ -373,11 +528,39 @@ export default function CollectionHub() {
               <ModuleCard
                 key={moduleKey}
                 moduleKey={moduleKey}
-                stats={moduleKey === 'pipekeeper' ? pipeStats : []}
+                stats={moduleKey === 'pipekeeper' ? pipeStats : moduleKey === 'whiskeykeeper' ? whiskeyStats : []}
                 onOpen={() => navigate(createPageUrl(MODULE_META[moduleKey].route))}
               />
             ))}
           </div>
+        </section>
+      )}
+
+      <section className="space-y-4">
+        <SectionTitle>Collection Intelligence</SectionTitle>
+        <CuratorBanner
+          title="AI Curator"
+          body="Get personalized insights, rotation advice, and collection recommendations tailored to your actual collection."
+          onOpen={() => navigate(createPageUrl('Curator'))}
+        />
+      </section>
+
+      {highlightCards.length > 0 && (
+        <section className="space-y-4">
+          <SectionTitle>Top Highlights</SectionTitle>
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+            {highlightCards}
+          </div>
+        </section>
+      )}
+
+      {metrics.recentActivity.length > 0 && (
+        <section className="space-y-4">
+          <SectionTitle>Recent Activity</SectionTitle>
+          <RecentActivity
+            items={metrics.recentActivity}
+            onSelect={(item) => navigate(item.targetUrl)}
+          />
         </section>
       )}
 
@@ -387,96 +570,6 @@ export default function CollectionHub() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {expandingKeys.map((moduleKey) => (
               <ExpandingSoonCard key={moduleKey} moduleKey={moduleKey} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section className="space-y-4">
-        <SectionTitle>Quick Actions</SectionTitle>
-        <div className="flex flex-wrap gap-4">
-          <QuickAction icon={Plus} label="Add Pipe" accent="#C89752" onClick={() => navigate('/PipeKeeper?action=add_pipe')} />
-          <QuickAction icon={Plus} label="Add Blend" accent="#8E7E60" onClick={() => navigate('/PipeKeeper?action=add_blend')} />
-          <QuickAction icon={Flame} label="Log Smoke" accent="#B56A5F" onClick={() => navigate('/PipeKeeper?action=log_smoke')} />
-          <QuickAction icon={Layers} label="View Pipes" accent="#B48C4B" onClick={() => navigate(createPageUrl('PipeKeeper'))} />
-          <QuickAction icon={Sparkles} label="Open Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <SectionTitle>Collection Intelligence</SectionTitle>
-        <InsightBanner
-          title="AI Curator"
-          body="Get personalized insights, rotation advice, and collection recommendations tailored to your actual collection."
-          onOpen={() => navigate(createPageUrl('Curator'))}
-        />
-      </section>
-
-      {(metrics.mostSmokedPipe || metrics.favoriteBlend || metrics.mostValuablePipe) && (
-        <section className="space-y-4">
-          <SectionTitle>Top Highlights</SectionTitle>
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-            {metrics.mostSmokedPipe ? (
-              <CatalogPlate
-                title="Most Smoked Pipe"
-                value={metrics.mostSmokedPipe.name}
-                subtitle={`${metrics.mostSmokedPipe.__count || 0} bowls`}
-                heroImage={metrics.mostSmokedPipe.photos?.[0]}
-                bgImage={metrics.mostSmokedPipe.photos?.[0]}
-                accent="#C87941"
-                onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(metrics.mostSmokedPipe.id)}`)}
-              />
-            ) : null}
-            {metrics.favoriteBlend ? (
-              <CatalogPlate
-                title="Favorite Blend"
-                value={metrics.favoriteBlend.name}
-                subtitle={`${metrics.favoriteBlend.__count || 0} bowls`}
-                heroImage={metrics.favoriteBlend.logo || metrics.favoriteBlend.photo}
-                bgImage={metrics.favoriteBlend.logo || metrics.favoriteBlend.photo}
-                accent="#5A7C5A"
-                onClick={() => navigate(`/TobaccoDetail?id=${encodeURIComponent(metrics.favoriteBlend.id)}`)}
-              />
-            ) : null}
-            {metrics.mostValuablePipe ? (
-              <CatalogPlate
-                title="Most Valuable Pipe"
-                value={metrics.mostValuablePipe.name}
-                subtitle={currency(getPipeValue(metrics.mostValuablePipe))}
-                heroImage={metrics.mostValuablePipe.photos?.[0]}
-                bgImage={metrics.mostValuablePipe.photos?.[0]}
-                accent="#B4824B"
-                onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(metrics.mostValuablePipe.id)}`)}
-              />
-            ) : null}
-          </div>
-        </section>
-      )}
-
-      {metrics.recentActivity.length > 0 && (
-        <section className="space-y-4">
-          <SectionTitle>Recent Activity</SectionTitle>
-          <div className="space-y-3">
-            {metrics.recentActivity.map((activity) => (
-              <button
-                key={activity.id}
-                type="button"
-                onClick={() => navigate(activity.pipeId ? `/PipeDetail?id=${encodeURIComponent(activity.pipeId)}` : '/PipeKeeper')}
-                className="w-full rounded-[22px] p-5 flex items-center gap-4 text-left"
-                style={{
-                  background: 'linear-gradient(145deg, rgba(40,28,18,0.92), rgba(24,17,11,0.98))',
-                  border: '1px solid rgba(180,140,75,0.18)',
-                }}
-              >
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(180,140,75,0.14)', border: '1px solid rgba(180,140,75,0.24)' }}>
-                  <Activity className="w-5 h-5" style={{ color: '#D4A574' }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-lg font-bold truncate" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{activity.title}</p>
-                  <p className="text-sm mt-1 truncate" style={{ color: 'rgba(224,216,200,0.7)' }}>{activity.subtitle}</p>
-                </div>
-                <span className="text-sm shrink-0" style={{ color: '#D4A574' }}>View →</span>
-              </button>
             ))}
           </div>
         </section>
