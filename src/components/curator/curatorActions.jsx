@@ -20,11 +20,7 @@
  */
 
 import { Sparkles, Ruler, Droplet, Tags, Target } from 'lucide-react';
-import { isAdminWhiskeyUnlocked, RELEASE_MODE } from '@/components/utils/releaseConfig';
-
-function isWhiskeyBlocked() {
-  return RELEASE_MODE === 'pipekeeper_stable' && !isAdminWhiskeyUnlocked();
-}
+import { isInternalModuleTester } from '@/components/utils/moduleReleaseState';
 import {
   getTobaccoReclassificationCandidates,
   buildReclassificationCandidatesContext,
@@ -172,7 +168,7 @@ For each pipe, suggest:
     sourceExpert: 'expert_whiskey_advisor',
     visibility: (ctx) => {
       const { bottles = [] } = ctx;
-      return !isWhiskeyBlocked() && bottles.length > 0;
+      return bottles.length > 0;
     },
     buildPrompt: (ctx) => {
       const { bottles = [] } = ctx;
