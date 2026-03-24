@@ -332,10 +332,36 @@ export default function CuratorWorkspace({
       pipes,
       blends,
       bottles,
+      smokingLogs: logs,
+      tastingLogs,
       tasteProfile: userProfile,
       activeModule: "curator",
     };
   };
+
+  const buildSafeCollectionContext = ({ pipes, blends, bottles, smokingLogs, tastingLogs, userProfile }) => {
+    return {
+      pipes: pipes || [],
+      blends: blends || [],
+      bottles: bottles || [],
+      smokingLogs: smokingLogs || [],
+      tastingLogs: tastingLogs || [],
+      userProfile: userProfile || null,
+    };
+  };
+
+  const buildPromptBlock = (ctx) => {
+    const parts = [];
+    if (ctx.pipes?.length > 0) {
+      parts.push(`PIPES (${ctx.pipes.length}):\n${ctx.pipes.map(p => `- ${p.name || 'Unnamed'} (${p.shape || 'Unknown shape'})`).join('\n')}`);
+    }
+    if (ctx.blends?.length > 0) {
+      parts.push(`TOBACCO BLENDS (${ctx.blends.length}):\n${ctx.blends.map(b => `- ${b.name || 'Unnamed'} (${b.blend_type || 'Unknown type'})`).join('\n')}`);
+    }
+    if (ctx.bottles?.length > 0) {
+      parts.push(`WHISKEY BOTTLES (${ctx.bottles.length}):\n${ctx.bottles.map(b => `- ${b.name || 'Unnamed'} (${b.type || 'Unknown type'})`).join('\n')}`);
+    }
+    return parts.join('\n\n') || 'No collection data available.';
 
   const logCuratorAuditEvent = async (payload) => {
     try {
