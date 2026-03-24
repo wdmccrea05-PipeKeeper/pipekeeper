@@ -18,23 +18,33 @@ Deno.serve(async (req) => {
     const next90Days = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
     const next365Days = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
 
-    // Count active paid subscribers (Premium + Pro)
+    // Count active paid subscribers (Premium + Pro) - deduplicate by user
     const paidSubs = subscriptions.filter(sub => {
       const status = String(sub.status || '').toLowerCase();
       return status === 'active' || status === 'trialing' || status === 'trial';
     });
 
-    const consolidatedPaidUsers = paidSubs.length;
+    // Count distinct users with active subscriptions (not subscription records)
+    const uniquePaidUsers = new Set();
+    paidSubs.forEach(sub => {
+      const user = sub.user_email || sub.user_id || sub.created_by;
+      if (user) uniquePaidUsers.add(user);
+    });
+    const consolidatedPaidUsers = uniquePaidUsers.size > 0 ? uniquePaidUsers.size : paidSubs.length;
 
-    // Count legacy premium users (subscribed before Feb 1, 2026 AND still actively renewing)
-    // Legacy users are those who had 'premium' tier before the transition to Free/Pro-only model
+    // Count distinct users with legacy premium (subscribed before Feb 1, 2026 AND still actively renewing)
     const legacyDate = new Date('2026-02-01');
-    const legacyPremiumCount = paidSubs.filter(sub => {
+    const legacyPremiumSubs = paidSubs.filter(sub => {
       const startDate = new Date(sub.started_at || sub.created_date || '');
       const tier = String(sub.tier || '').toLowerCase();
-      // Only count if subscribed before transition AND tier indicates legacy premium
       return startDate < legacyDate && tier === 'premium';
-    }).length;
+    });
+    const uniqueLegacyUsers = new Set();
+    legacyPremiumSubs.forEach(sub => {
+      const user = sub.user_email || sub.user_id || sub.created_by;
+      if (user) uniqueLegacyUsers.add(user);
+    });
+    const legacyPremiumCount = uniqueLegacyUsers.size > 0 ? uniqueLegacyUsers.size : legacyPremiumSubs.length;
 
     // New accounts in time periods
     const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
