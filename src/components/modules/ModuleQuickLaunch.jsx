@@ -30,6 +30,8 @@ export default function ModuleQuickLaunch({ actions = [] }) {
             >
               {action.usePipeIcon ? (
                 <PipeIcon className="w-6 h-6" style={{ color: '#D4A574' }} />
+              ) : action.iconImage ? (
+                <img src={action.iconImage} alt={action.label} className="w-6 h-6 object-contain" draggable={false} />
               ) : Icon ? (
                 <Icon className="w-5 h-5" style={{ color: '#D4A574' }} />
               ) : null}
