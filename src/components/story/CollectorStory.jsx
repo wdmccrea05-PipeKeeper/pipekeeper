@@ -291,8 +291,8 @@ function StorySlide({ card, current, total, slideRef }) {
         </div>
 
         <div
-          className="text-[11px] uppercase tracking-[0.22em] font-bold whitespace-nowrap"
-          style={{ color: "rgba(180,140,75,0.86)", fontFamily: "'Georgia', serif" }}
+          className="text-[11px] uppercase tracking-[0.22em] font-bold text-center px-2"
+          style={{ color: "rgba(180,140,75,0.86)", fontFamily: "'Georgia', serif", overflowWrap: "break-word", wordBreak: "break-word" }}
         >
           {title}
         </div>

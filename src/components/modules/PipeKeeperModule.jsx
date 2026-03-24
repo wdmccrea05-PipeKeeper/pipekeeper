@@ -156,7 +156,7 @@ export default function PipeKeeperModule() {
               {t('pipekeeper.title') || 'PipeKeeper'}
             </h1>
           </div>
-          <p className="text-base pl-14" style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
+          <p className="text-base sm:pl-14" style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
             {t('pipekeeper.description') || 'Organize and explore your pipe and tobacco collection'}
           </p>
         </div>
