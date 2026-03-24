@@ -26,10 +26,6 @@ import normalizeCuratorActionResult from "./normalizeCuratorActionResult";
 import curatorActionExecutor from "./curatorActionExecutor";
 import { runCuratorAction } from "./curatorActionService";
 import { applyCuratorRecommendation } from "./curatorApplyHandlers";
-import CuratorActionStatusBar from "@/components/curator/CuratorActionStatusBar";
-import CuratorActionResultCard from "./CuratorActionResultCard";
-import CuratorActionErrorCard from "./CuratorActionErrorCard";
-import EmptyActionResultCard from "./EmptyActionResultCard";
 import { CURATOR_ACTIONS } from "./types/curatorActionTypes";
 
 const CURATOR_ICON =
@@ -37,71 +33,7 @@ const CURATOR_ICON =
 const AGENT_NAME = "expert_tobacconist";
 const ACTION_EXECUTION_TIMEOUT = 8000; // 8 seconds hard timeout for expert actions
 
-/**
- * Build a safe collection context for the curator
- * Sanitizes and prepares collection data for AI processing
- */
-function buildSafeCollectionContext({ pipes, blends, bottles, smokingLogs, tastingLogs, userProfile }) {
-  return {
-    pipes: pipes || [],
-    blends: blends || [],
-    bottles: bottles || [],
-    smokingLogs: smokingLogs || [],
-    tastingLogs: tastingLogs || [],
-    userProfile: userProfile || null,
-  };
-}
 
-/**
- * Build prompt block from collection context
- */
-function buildPromptBlock(ctx) {
-  const parts = [];
-  
-  if (ctx.pipes?.length > 0) {
-    parts.push(`PIPES (${ctx.pipes.length}):\n${ctx.pipes.map(p => `- ${p.name || 'Unnamed'} (${p.shape || 'Unknown shape'})`).join('\n')}`);
-  }
-  
-  if (ctx.blends?.length > 0) {
-    parts.push(`TOBACCO BLENDS (${ctx.blends.length}):\n${ctx.blends.map(b => `- ${b.name || 'Unnamed'} (${b.blend_type || 'Unknown type'})`).join('\n')}`);
-  }
-  
-  if (ctx.bottles?.length > 0) {
-    parts.push(`WHISKEY BOTTLES (${ctx.bottles.length}):\n${ctx.bottles.map(b => `- ${b.name || 'Unnamed'} (${b.type || 'Unknown type'})`).join('\n')}`);
-  }
-  
-  return parts.join('\n\n') || 'No collection data available.';
-}
-
-/**
- * Execute a curator action via backend function
- */
-async function executeCuratorAction({ actionId, executionId, displayLabel, userPrompt, collectionContext, user, launchContext }) {
-  const result = await base44.functions.invoke('upgradesCuratorContext', {
-    action: actionId,
-    executionId,
-    displayLabel,
-    userPrompt,
-    collectionContext,
-    userId: user?.id,
-    userEmail: user?.email,
-    launchContext,
-  });
-  
-  return result?.data || result;
-}
-
-/**
- * Promise wrapper with timeout
- */
-function promiseWithTimeout(promise, ms, timeoutMessage) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(timeoutMessage)), ms)
-    ),
-  ]);
-}
 
 function generateQuickPrompts({ pipes = [], blends = [], logs = [], bottles = [], userProfile = null, t }) {
   const prompts = [];
@@ -316,53 +248,22 @@ export default function CuratorWorkspace({
   const [itemStates, setItemStates] = useState({});
   const [lastActionType, setLastActionType] = useState(null);
   const [followUpSeed, setFollowUpSeed] = useState(null);
-  const [runningAction, setRunningAction] = useState(null);
-  const [actionResult, setActionResult] = useState(null);
-  const [actionError, setActionError] = useState(null);
-  const [applyLoading, setApplyLoading] = useState(false);
-  const [lastExecutionId, setLastExecutionId] = useState(null);
 
   const messagesEndRef = useRef(null);
   const threadInitPromiseRef = useRef(null);
   const sessionStartedRef = useRef(false);
   const startupConsumedRef = useRef(false);
 
-  const buildCuratorContext = () => {
-    return {
-      pipes,
-      blends,
-      bottles,
-      smokingLogs: logs,
-      tastingLogs,
-      tasteProfile: userProfile,
-      activeModule: "curator",
-    };
-  };
-
-  const buildSafeCollectionContext = ({ pipes, blends, bottles, smokingLogs, tastingLogs, userProfile }) => {
-    return {
-      pipes: pipes || [],
-      blends: blends || [],
-      bottles: bottles || [],
-      smokingLogs: smokingLogs || [],
-      tastingLogs: tastingLogs || [],
-      userProfile: userProfile || null,
-    };
-  };
-
-  const buildPromptBlock = (ctx) => {
-    const parts = [];
-    if (ctx.pipes?.length > 0) {
-      parts.push(`PIPES (${ctx.pipes.length}):\n${ctx.pipes.map(p => `- ${p.name || 'Unnamed'} (${p.shape || 'Unknown shape'})`).join('\n')}`);
-    }
-    if (ctx.blends?.length > 0) {
-      parts.push(`TOBACCO BLENDS (${ctx.blends.length}):\n${ctx.blends.map(b => `- ${b.name || 'Unnamed'} (${b.blend_type || 'Unknown type'})`).join('\n')}`);
-    }
-    if (ctx.bottles?.length > 0) {
-      parts.push(`WHISKEY BOTTLES (${ctx.bottles.length}):\n${ctx.bottles.map(b => `- ${b.name || 'Unnamed'} (${b.type || 'Unknown type'})`).join('\n')}`);
-    }
-    return parts.join('\n\n') || 'No collection data available.';
-    };
+  const buildCuratorContext = () => ({
+    pipes: pipes || [],
+    blends: blends || [],
+    bottles: bottles || [],
+    smokingLogs: logs || [],
+    tastingLogs: tastingLogs || [],
+    userProfile: userProfile || null,
+    tasteProfile: tasteProfile || null,
+    activeModule: "curator",
+  });
 
     const logCuratorAuditEvent = async (payload) => {
     try {
@@ -583,10 +484,32 @@ Category: ${activeContext.category || "general"}`;
           contextMessage += `\n\n${tasteProfileContext}`;
         }
 
-        contextMessage += `
+        const activitySummary = `
+        COLLECTION SUMMARY:
+        - Pipes: ${pipes.length}
+        - Blends: ${blends.length}
+        - Bottles: ${bottles.length}
+        - Smoking Logs: ${logs.length}
+        - Tasting Logs: ${tastingLogs.length}
 
-USER QUESTION:
-${englishText}`;
+        INSTRUCTION:
+        Reference the user's actual collection and logs whenever giving advice.
+        Do not answer generically if collection data is available.
+        If data is insufficient for a specific ranking, say exactly what is missing.
+        `;
+
+        contextMessage += activitySummary;
+
+        contextMessage += `
+        You are the in-app curator for a collector app.
+        You must use the provided collection context and activity logs.
+        Do not give generic hobby advice when specific collection data is available.
+        If the user asks for ranking, underuse, frequency, redundancy, specialization, or pairing advice, base it on the provided records and logs.
+        If the logs are insufficient to answer precisely, explain the limitation clearly and answer as specifically as possible from the available records.
+        Do not invent usage statistics that are not present.
+
+        USER QUESTION:
+        ${englishText}`;
 
         await base44.agents.addMessage(conversation, {
           role: "user",
@@ -698,9 +621,6 @@ ${englishText}`;
     if (sending || initializing) return;
     if (startupConsumedRef.current) return;
     if (messages.length > 0) return;
-    if (resolvedLaunchContext?.executionMode === 'silent_action') {
-      return;
-    }
 
     let cancelled = false;
 
@@ -741,110 +661,7 @@ ${englishText}`;
     messages.length,
   ]);
 
-  // EXPERT ACTION EXECUTION — independent path with timeout
-  useEffect(() => {
-    const execId = launchContext?.executionId;
-    const actionId = launchContext?.sourceAction;
 
-    if (!execId || !actionId) return;
-    if (launchContext?.executionMode !== 'silent_action') return;
-    if (!user?.id) return;
-    if (lastExecutionId === execId) {
-      console.log(`[CuratorWorkspace] Execution ${execId} already ran, skipping`);
-      return;
-    }
-
-    let cancelled = false;
-
-    (async () => {
-      try {
-        console.log(`[CuratorWorkspace] Starting action execution: ${execId}`);
-        setRunningAction(launchContext?.displayLabel || 'Running expert analysis…');
-        setLastExecutionId(execId);
-        setActionResult(null);
-        setActionError(null);
-
-        // Wrap with timeout
-        const result = await promiseWithTimeout(
-          executeCuratorAction({
-            actionId,
-            executionId: execId,
-            displayLabel: launchContext?.displayLabel,
-            userPrompt: launchContext?._internalPrompt || "Analyze and recommend optimizations",
-            collectionContext: {
-              pipes,
-              blends,
-              bottles,
-              smokingLogs: logs,
-              tastingLogs,
-            },
-            user,
-            launchContext,
-          }),
-          ACTION_EXECUTION_TIMEOUT,
-          "This recommendation took too long to complete. Please try again."
-        );
-
-        if (!cancelled) {
-          console.log(`[CuratorWorkspace] Action completed: ${execId}`);
-          
-          try {
-            const parsed = typeof result.result === "string" 
-              ? parseCuratorActionResponse(result.result)
-              : result.result;
-            
-            const normalized = normalizeCuratorActionResult(parsed, {
-              actionId: actionId,
-              executionId: execId,
-              title: launchContext?.displayLabel || "Curator Analysis"
-            });
-            
-            setActionResult(normalized);
-            setActionError(null);
-            setRunningAction(null);
-          } catch (normErr) {
-            console.error(`[CuratorWorkspace] Result normalization failed: ${execId}`, normErr);
-            setActionError({
-              title: "Curator action could not be completed",
-              message: normErr?.message || "The response could not be processed into actionable insights.",
-              error: normErr?.message || "Normalization failed"
-            });
-            setActionResult(null);
-            setRunningAction(null);
-          }
-          
-          if (onPromptConsumed) {
-            onPromptConsumed();
-          }
-        }
-      } catch (err) {
-        console.error(`[CuratorWorkspace] Action execution failed: ${execId}`, err);
-        if (!cancelled) {
-          setRunningAction(null);
-          setActionError({
-            title: "Curator action could not be completed",
-            message: err?.message || "The action response could not be processed.",
-            error: err?.message || "Unknown error"
-          });
-          setActionResult(null);
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    launchContext?.executionId,
-    launchContext?.sourceAction,
-    launchContext?.executionMode,
-    user?.id,
-    pipes.length,
-    blends.length,
-    bottles.length,
-    onPromptConsumed,
-    lastExecutionId,
-  ]);
 
   const handleQuickPrompt = (prompt) => {
     setInput(prompt);
@@ -969,113 +786,9 @@ ${englishText}`;
   };
 
   const handleDismissAction = () => {
-    setActionResult(null);
+    setActionRun(null);
     setItemStates({});
   };
-
-  const handleAskFollowUp = () => {
-    setActionResult(null);
-    setItemStates({});
-    setTimeout(() => document.querySelector('input[placeholder*="Ask Curator"]')?.focus(), 100);
-  };
-
-  const handleRegenerateAction = (mode = 'standard') => {
-    const currentActionId = launchContextRef.current?.sourceAction;
-    if (!currentActionId) return;
-
-    setActionResult(null);
-    setActionError(null);
-    setItemStates({});
-    setLastExecutionId(null);
-
-    const newExecutionId = `${currentActionId}_regen_${Date.now()}`;
-
-    if (launchContextRef.current && typeof window !== 'undefined') {
-      window.__curatorRegenContext = {
-        ...launchContextRef.current,
-        executionId: newExecutionId,
-        regenerateMode: mode,
-        displayLabel: mode === 'broaden'
-          ? 'Broadening analysis…'
-          : mode === 'narrow'
-          ? 'Finding best matches…'
-          : 'Regenerating analysis…',
-      };
-      window.dispatchEvent(new CustomEvent('curator_regen', { detail: { mode, executionId: newExecutionId } }));
-    }
-  };
-
-  useEffect(() => {
-    const handler = async (e) => {
-      const regenCtx = window.__curatorRegenContext;
-      if (!regenCtx || !user?.id) return;
-      window.__curatorRegenContext = null;
-
-      const { executionId: newExecId, sourceAction, regenerateMode, displayLabel } = regenCtx;
-
-      try {
-        setRunningAction(displayLabel || 'Regenerating…');
-        setLastExecutionId(newExecId);
-        setActionResult(null);
-        setActionError(null);
-
-        const result = await promiseWithTimeout(
-         executeCuratorAction({
-           actionId: sourceAction,
-           executionId: newExecId,
-           displayLabel,
-           userPrompt: regenCtx._internalPrompt || "Analyze and recommend optimizations",
-           collectionContext: {
-             pipes,
-             blends,
-             bottles,
-             smokingLogs: logs,
-             tastingLogs,
-           },
-           user,
-           launchContext: { ...regenCtx, regenerateMode },
-         }),
-         ACTION_EXECUTION_TIMEOUT,
-         "This recommendation took too long to complete. Please try again."
-        );
-
-        try {
-         const parsed = typeof result.result === "string"
-           ? parseCuratorActionResponse(result.result)
-           : result.result;
-         const normalized = normalizeCuratorActionResult(parsed, {
-           actionId: sourceAction,
-           executionId: newExecId,
-           title: displayLabel,
-         });
-         setActionResult(normalized);
-         setActionError(null);
-         setRunningAction(null);
-        } catch (normErr) {
-         console.error(`[CuratorWorkspace] Regeneration normalization failed: ${newExecId}`, normErr);
-         setRunningAction(null);
-         setActionError({
-           title: "Analysis could not be completed",
-           message: "No actionable results were generated. Try refining your request and try again.",
-           error: normErr?.message || "Normalization failed"
-         });
-         setActionResult(null);
-        }
-        } catch (err) {
-        setRunningAction(null);
-        setActionError({
-         title: "Analysis could not be completed",
-         message: err?.message === "Response timeout"
-           ? "This analysis took too long to complete. Try refining your request."
-           : err?.message || "Could not complete the analysis.",
-         error: err?.message,
-        });
-      }
-    };
-
-    window.addEventListener('curator_regen', handler);
-    return () => window.removeEventListener('curator_regen', handler);
-  }, [user?.id, pipes, blends, bottles, logs, tastingLogs]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
@@ -1188,57 +901,7 @@ ${englishText}`;
           onAskCurator={handleAskCuratorAboutRecommendation}
         />
 
-        {runningAction && (
-          <CuratorActionStatusBar actionLabel={runningAction} isRunning={true} />
-        )}
-        
-        {actionError && !runningAction && (
-          <CuratorActionErrorCard
-            error={typeof actionError === "string" ? actionError : actionError?.message || "Curator could not complete this action."}
-            onRetry={() => {
-              setActionError(null);
-              setItemStates({});
-              setLastExecutionId(null);
-            }}
-            onAskCurator={() => {
-              setActionError(null);
-              setInput("I need help understanding this. Can you explain in more detail?");
-              document.querySelector('input[placeholder*="Ask Curator"]')?.focus();
-            }}
-          />
-        )}
-        
-        {actionResult && !runningAction && !actionError && !actionRun && (
-          <div className="mb-4 space-y-2">
-            {actionResult.items && actionResult.items.length > 0 ? (
-              <>
-                <p style={{ color: "rgba(224,216,200,0.7)" }} className="text-sm mb-3">
-                  {actionResult.summary}
-                </p>
-                {actionResult.items.map((item) => (
-                  <CuratorActionResultCard
-                    key={item.id}
-                    item={item}
-                    isApplying={itemStates[item.id]?.status === "applying"}
-                    isAccepted={itemStates[item.id]?.status === "accepted"}
-                    isRejected={itemStates[item.id]?.status === "rejected"}
-                    onAccept={() => handleAcceptRecommendation(item)}
-                    onReject={() => handleRejectRecommendation(item)}
-                    onAskCurator={() => handleAskCuratorAboutItem(item)}
-                  />
-                ))}
-              </>
-            ) : (
-              <EmptyActionResultCard
-                summary={actionResult.summary}
-                onAskCurator={handleAskFollowUp}
-                onDismiss={handleDismissAction}
-              />
-            )}
-          </div>
-        )}
-        
-        {messages.length === 0 && !runningAction ? (
+        {messages.length === 0 && !actionRun ? (
           <div className="flex items-center justify-center h-full min-h-[120px]">
             <div className="text-center space-y-3 max-w-md px-4">
               <Sparkles
@@ -1287,8 +950,8 @@ ${englishText}`;
             ) : null}
 
             <div ref={messagesEndRef} />
-          </>
-        ) : null}
+            </>
+            ) : null}
       </div>
 
       <div
