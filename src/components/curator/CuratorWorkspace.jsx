@@ -1016,6 +1016,7 @@ ${englishText}`;
             error={actionError}
             onRetry={() => {
               setActionError(null);
+              setItemStates({});
               setLastExecutionId(null);
             }}
             onAskCurator={() => {
@@ -1027,14 +1028,32 @@ ${englishText}`;
         )}
         
         {actionResult && !runningAction && !actionError && (
-          <div className="mb-4">
-            <CuratorActionResultCard
-              actionResult={actionResult}
-              onApplyItems={handleApplyActionItems}
-              onClarify={handleClarifyAction}
-              onRegenerate={handleRegenerateAction}
-              loading={applyLoading}
-            />
+          <div className="mb-4 space-y-2">
+            {actionResult.items && actionResult.items.length > 0 ? (
+              <>
+                <p style={{ color: "rgba(224,216,200,0.7)" }} className="text-sm mb-3">
+                  {actionResult.summary}
+                </p>
+                {actionResult.items.map((item) => (
+                  <CuratorActionResultCard
+                    key={item.id}
+                    item={item}
+                    isApplying={itemStates[item.id]?.status === "applying"}
+                    isAccepted={itemStates[item.id]?.status === "accepted"}
+                    isRejected={itemStates[item.id]?.status === "rejected"}
+                    onAccept={() => handleAcceptRecommendation(item)}
+                    onReject={() => handleRejectRecommendation(item)}
+                    onAskCurator={() => handleAskCuratorAboutItem(item)}
+                  />
+                ))}
+              </>
+            ) : (
+              <EmptyActionResultCard
+                summary={actionResult.summary}
+                onAskCurator={handleAskFollowUp}
+                onDismiss={handleDismissAction}
+              />
+            )}
           </div>
         )}
         
