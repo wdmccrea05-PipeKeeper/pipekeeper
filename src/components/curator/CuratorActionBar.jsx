@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { CURATOR_ACTIONS, getVisibleActions, buildActionLaunchContext } from './curatorActions';
 import { useTranslation } from '@/components/i18n/safeTranslation';
@@ -13,6 +13,7 @@ export default function CuratorActionBar({
   blends = [],
   bottles = [],
   tastingLogs = [],
+  smokingLogs = [],
   userProfile = null,
   onActionSelect = null,
   disabled = false,
@@ -20,8 +21,8 @@ export default function CuratorActionBar({
   const { t } = useTranslation();
 
   const collectionContext = useMemo(
-    () => ({ pipes, blends, bottles, tastingLogs, userProfile }),
-    [pipes, blends, bottles, tastingLogs, userProfile]
+    () => ({ pipes, blends, bottles, tastingLogs, smokingLogs, userProfile }),
+    [pipes, blends, bottles, tastingLogs, smokingLogs, userProfile]
   );
 
   const visibleActions = useMemo(() => {
@@ -38,7 +39,6 @@ export default function CuratorActionBar({
         return;
       }
 
-      // Log the action event
       try {
         await logCuratorEvent({
           eventName: action.eventName,
@@ -49,6 +49,7 @@ export default function CuratorActionBar({
               pipes: pipes.length,
               blends: blends.length,
               bottles: bottles.length,
+              smokingLogs: smokingLogs.length,
             },
           },
         });
@@ -56,10 +57,9 @@ export default function CuratorActionBar({
         console.warn('Failed to log curator action event:', e);
       }
 
-      // Trigger the action in the workspace
       onActionSelect(launchContext);
     },
-    [collectionContext, pipes.length, blends.length, bottles.length, onActionSelect]
+    [collectionContext, pipes.length, blends.length, bottles.length, smokingLogs.length, onActionSelect]
   );
 
   if (visibleActions.length === 0) {
@@ -121,7 +121,6 @@ export default function CuratorActionBar({
                 </div>
               </div>
 
-              {/* Hover indicator */}
               <div
                 className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity"
                 style={{

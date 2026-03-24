@@ -257,31 +257,34 @@ export async function executeCuratorAction({
       }
     }
 
-    // Log recommendations to audit
+    // Log recommendations to audit — fire-and-forget (non-blocking)
+    // This ensures result UI appears immediately, even if persistence fails
     if (actionRun) {
-      try {
-        for (const group of translatedResult.groups || []) {
-          for (const item of group.items || []) {
-            await base44.entities.CuratorRecommendation.create({
-              action_run_id: actionRun.id,
-              execution_id: executionId,
-              recommendation_id: item.id,
-              group_key: group.groupKey,
-              item_type: item.type,
-              item_id: item.itemId,
-              item_name: item.itemName,
-              issue: item.issue,
-              recommendation: item.recommendation,
-              proposed_change: item.proposedChange,
-              confidence: item.confidence,
-              status: "pending",
-            });
+      (async () => {
+        try {
+          for (const group of translatedResult.groups || []) {
+            for (const item of group.items || []) {
+              await base44.entities.CuratorRecommendation.create({
+                action_run_id: actionRun.id,
+                execution_id: executionId,
+                recommendation_id: item.id,
+                group_key: group.groupKey,
+                item_type: item.type,
+                item_id: item.itemId,
+                item_name: item.itemName,
+                issue: item.issue,
+                recommendation: item.recommendation,
+                proposed_change: item.proposedChange,
+                confidence: item.confidence,
+                status: "pending",
+              });
+            }
           }
+        } catch (err) {
+          console.error("Failed to log recommendations (non-fatal):", err);
+          // Non-blocking — persistence failures do not block result UI
         }
-      } catch (err) {
-        console.error("Failed to log recommendations:", err);
-        // Non-blocking — continue
-      }
+      })();
     }
 
     return {

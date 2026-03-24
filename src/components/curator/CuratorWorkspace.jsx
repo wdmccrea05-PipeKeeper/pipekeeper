@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import {
   translateToEnglish,
@@ -33,6 +33,19 @@ import CuratorActionErrorCard from "@/components/curator/CuratorActionErrorCard"
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
 const AGENT_NAME = "expert_tobacconist";
+const ACTION_EXECUTION_TIMEOUT = 120000; // 120 seconds
+
+/**
+ * Promise wrapper with timeout
+ */
+function promiseWithTimeout(promise, ms, timeoutMessage) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(timeoutMessage)), ms)
+    ),
+  ]);
+}
 
 function generateQuickPrompts({ pipes = [], blends = [], logs = [], bottles = [], userProfile = null, t }) {
   const prompts = [];
@@ -205,8 +218,6 @@ function MessageBubble({ message }) {
 function resolveWorkspaceLaunchContext(launchContext, preFilledPrompt, routedContext) {
   const context = launchContext?.recommendationContext || routedContext || null;
 
-  // CRITICAL FIX:
-  // The clicked recommendation text must beat the generic mapped prompt.
   const initialPrompt =
     String(launchContext?.initialPrompt || "").trim() ||
     String(context?.originalPrompt || "").trim() ||
@@ -255,7 +266,6 @@ export default function CuratorWorkspace({
   const threadInitPromiseRef = useRef(null);
   const sessionStartedRef = useRef(false);
   const startupConsumedRef = useRef(false);
-  const executedActionIdRef = useRef(null);
 
   const resolvedLaunchContext = useMemo(
     () => resolveWorkspaceLaunchContext(launchContext, preFilledPrompt, routedContext),
@@ -267,7 +277,6 @@ export default function CuratorWorkspace({
     resolvedContextRef.current = resolvedLaunchContext;
   }, [resolvedLaunchContext]);
 
-  // Keep a live ref to launchContext so regenerate always sees the current action
   const launchContextRef = useRef(launchContext);
   useEffect(() => {
     launchContextRef.current = launchContext;
@@ -283,7 +292,6 @@ export default function CuratorWorkspace({
     staleTime: 30000,
   });
 
-  // Derive adaptive taste profile from all collection signals
   const tasteProfile = useTasteProfile({
     pipes,
     blends,
@@ -389,7 +397,7 @@ export default function CuratorWorkspace({
   }, [threadId]);
 
   const sendMessage = useCallback(
-    async (textOverride = null, contextOverride = null, isActionExecution = false, actionLaunchContext = null) => {
+    async (textOverride = null, contextOverride = null) => {
       const text = String(textOverride ?? input).trim();
       if (!text || sending) return false;
 
@@ -398,13 +406,9 @@ export default function CuratorWorkspace({
 
       const locale = getCurrentLocale();
       const optimisticId = `local-${Date.now()}`;
-      
-      // Only add optimistic user message if NOT a silent action
       const optimistic = { id: optimisticId, role: "user", content: text, meta: {} };
 
-      if (!isActionExecution) {
-        setMessages((prev) => [...prev, optimistic]);
-      }
+      setMessages((prev) => [...prev, optimistic]);
 
       if (!textOverride) {
         setInput("");
@@ -415,8 +419,6 @@ export default function CuratorWorkspace({
         const englishText = await translateToEnglish(text, locale);
         const conversation = await base44.agents.getConversation(ensuredThreadId);
 
-        // Use the shared safe collection context budget system (same as action executor).
-        // This handles large collections gracefully without silent hard truncation.
         const safeCtx = buildSafeCollectionContext({
           pipes,
           blends,
@@ -427,7 +429,6 @@ export default function CuratorWorkspace({
         });
         const collectionBlock = buildPromptBlock(safeCtx);
 
-        // Build adaptive taste profile context
         const tasteProfileContext = buildTasteProfileContext(tasteProfile);
 
         const blendTypesList = BLEND_TYPES.join(", ");
@@ -440,9 +441,6 @@ ${collectionBlock}`;
         const activeContext = contextOverride || resolvedContextRef.current?.recommendationContext;
 
         if (messages.length === 0 && activeContext) {
-          // Build authoritative app-provided selection context.
-          // If specific record IDs were passed, treat them as canonical — do NOT
-          // challenge whether they exist or ask the user to confirm them.
           const hasAuthoritative =
             activeContext.pipeId || activeContext.blendId || activeContext.bottleId ||
             activeContext.pipe_id || activeContext.blend_id || activeContext.bottle_id;
@@ -508,7 +506,6 @@ ${englishText}`;
 
         const assistantResponse = await waitForResponse();
         
-        // CRITICAL HARDENING: Ownership claim guard
         const sanitizedResponse = validateOwnershipIntegrity(assistantResponse, pipes, blends, bottles);
         
         const translatedResponse = await translateFromEnglish(sanitizedResponse, locale);
@@ -517,52 +514,23 @@ ${englishText}`;
         const assistantMsgIndex = messages.filter((m) => m.role === "assistant").length;
 
         setMessages((prev) => {
-          const withoutLocal = isActionExecution ? prev : prev.filter((m) => m.id !== optimisticId);
+          const withoutLocal = prev.filter((m) => m.id !== optimisticId);
           
-          // For actions, do NOT add user message (silent execution)
-          // Parse response and set as action result card
-          if (isActionExecution) {
-            return [
-              ...withoutLocal,
-              {
-                id: `action-result-${Date.now()}`,
-                role: "assistant",
-                content: translatedResponse,
-                meta: { source: 'action_execution', actionId: actionLaunchContext?.sourceAction },
-              },
-            ];
-          } else {
-            return [
-              ...withoutLocal,
-              { id: `user-${Date.now()}`, role: "user", content: text, meta: {} },
-              {
-                id: `assistant-${Date.now()}`,
-                role: "assistant",
-                content: translatedResponse,
-                meta: {},
-              },
-            ];
-          }
+          return [
+            ...withoutLocal,
+            { id: `user-${Date.now()}`, role: "user", content: text, meta: {} },
+            {
+              id: `assistant-${Date.now()}`,
+              role: "assistant",
+              content: translatedResponse,
+              meta: {},
+            },
+          ];
         });
-        
-        // Parse action result after message is added
-        // NOTE: chat-path action execution is legacy — primary path is executeCuratorAction.
-        // parseCuratorActionResponse is the correct import (not parseActionResult which doesn't exist).
-        if (isActionExecution && actionLaunchContext) {
-          try {
-            const parsed = parseCuratorActionResponse(translatedResponse);
-            const normalized = normalizeCuratorActionResult(parsed, {
-              actionId: actionLaunchContext.sourceAction || 'unknown',
-              executionId: actionLaunchContext.executionId || `chat_${Date.now()}`,
-              title: actionLaunchContext.displayLabel || 'Curator Analysis',
-            });
-            setActionResult(normalized);
-          } catch (parseErr) {
-            console.warn('[CuratorWorkspace] Chat-path action parse failed (non-fatal):', parseErr?.message);
-          }
-        }
 
-        // CRITICAL HARDENING: Persist messages to CuratorMessage
+        // CRITICAL: Do NOT add raw response to chat thread for action execution
+        // Actions use separate executeCuratorAction path with result cards
+
         if (sessionId) {
           try {
             await base44.functions.invoke('persistCuratorMessage', {
@@ -616,8 +584,7 @@ ${englishText}`;
     [input, sending, ensureThread, t, pipes, blends, bottles, tastingLogs, userProfile, tasteProfile, messages.length, sessionId, messages, launchContext]
   );
 
-  // STARTUP ROUTED PROMPTS (one-time only, messages.length === 0)
-  // SKIP for silent_action mode — actions use executionId-based trigger instead
+  // STARTUP ROUTED PROMPTS (one-time only)
   useEffect(() => {
     const startupPrompt = String(resolvedLaunchContext?.initialPrompt || "").trim();
 
@@ -625,9 +592,8 @@ ${englishText}`;
     if (!user?.id) return;
     if (sending || initializing) return;
     if (startupConsumedRef.current) return;
-    if (messages.length > 0) return; // One-time startup only
+    if (messages.length > 0) return;
     if (resolvedLaunchContext?.executionMode === 'silent_action') {
-      // Silent actions are handled by executionId-based effect above — skip this path
       return;
     }
 
@@ -641,7 +607,7 @@ ${englishText}`;
 
         startupConsumedRef.current = true;
         console.log("[CuratorWorkspace] Sending startup routed prompt");
-        const ok = await sendMessage(startupPrompt, resolvedLaunchContext?.recommendationContext || null, false);
+        const ok = await sendMessage(startupPrompt, resolvedLaunchContext?.recommendationContext || null);
 
         if (ok && onPromptConsumed) {
           onPromptConsumed();
@@ -670,8 +636,7 @@ ${englishText}`;
     messages.length,
   ]);
 
-  // EXPERT ACTION EXECUTION (independent of chat, keyed by executionId)
-  // NEVER checks messages.length — only uses executionId to avoid duplicate runs
+  // EXPERT ACTION EXECUTION — independent path with timeout
   useEffect(() => {
     const execId = launchContext?.executionId;
     const actionId = launchContext?.sourceAction;
@@ -681,7 +646,7 @@ ${englishText}`;
     if (!user?.id) return;
     if (lastExecutionId === execId) {
       console.log(`[CuratorWorkspace] Execution ${execId} already ran, skipping`);
-      return; // Already ran this execution — ONLY check by executionId
+      return;
     }
 
     let cancelled = false;
@@ -690,30 +655,34 @@ ${englishText}`;
       try {
         console.log(`[CuratorWorkspace] Starting action execution: ${execId}`);
         setRunningAction(launchContext?.displayLabel || 'Running expert analysis…');
-        setLastExecutionId(execId); // Mark as started immediately to prevent re-run
+        setLastExecutionId(execId);
         setActionResult(null);
         setActionError(null);
 
-        const result = await executeCuratorAction({
-          actionId,
-          executionId: execId,
-          displayLabel: launchContext?.displayLabel,
-          userPrompt: launchContext?._internalPrompt || "Analyze and recommend optimizations",
-          collectionContext: {
-            pipes,
-            blends,
-            bottles,
-            smokingLogs: logs,
-            tastingLogs,
-          },
-          user,
-          launchContext,
-        });
+        // Wrap with timeout
+        const result = await promiseWithTimeout(
+          executeCuratorAction({
+            actionId,
+            executionId: execId,
+            displayLabel: launchContext?.displayLabel,
+            userPrompt: launchContext?._internalPrompt || "Analyze and recommend optimizations",
+            collectionContext: {
+              pipes,
+              blends,
+              bottles,
+              smokingLogs: logs,
+              tastingLogs,
+            },
+            user,
+            launchContext,
+          }),
+          ACTION_EXECUTION_TIMEOUT,
+          "This recommendation took too long to complete. Please try again."
+        );
 
         if (!cancelled) {
           console.log(`[CuratorWorkspace] Action completed: ${execId}`);
           
-          // Parse and normalize the action result
           try {
             const parsed = typeof result.result === "string" 
               ? parseCuratorActionResponse(result.result)
@@ -726,6 +695,8 @@ ${englishText}`;
             });
             
             setActionResult(normalized);
+            setActionError(null);
+            setRunningAction(null);
           } catch (normErr) {
             console.error(`[CuratorWorkspace] Result normalization failed: ${execId}`, normErr);
             setActionError({
@@ -735,11 +706,8 @@ ${englishText}`;
             });
             setActionResult(null);
             setRunningAction(null);
-            return;
           }
           
-          setActionError(null);
-          setRunningAction(null);
           if (onPromptConsumed) {
             onPromptConsumed();
           }
@@ -785,7 +753,6 @@ ${englishText}`;
     try {
       const results = await applyAllRecommendations(groups, user);
       
-      // Invalidate affected entity caches
       queryClient.invalidateQueries({ queryKey: ["pipes"] });
       queryClient.invalidateQueries({ queryKey: ["blends"] });
       queryClient.invalidateQueries({ queryKey: ["bottles"] });
@@ -808,12 +775,10 @@ ${englishText}`;
   };
 
   const handleClarifyAction = (clarificationContext) => {
-    // Dismiss all — just clear result
     if (clarificationContext?.dismiss) {
       setActionResult(null);
       return;
     }
-    // Refine all — open chat with a broad refine prompt
     if (clarificationContext?.refineAll) {
       setActionResult(null);
       setInput("Can you refine these recommendations? I'd like to see different or more specific suggestions.");
@@ -822,27 +787,21 @@ ${englishText}`;
     }
 
     if (!actionResult) return;
-    const clarifyPrompt = buildClarificationPrompt(clarificationContext);
-    setInput(clarifyPrompt);
     setActionResult(null);
     setTimeout(() => document.querySelector('input[placeholder*="Ask Curator"]')?.focus(), 100);
   };
 
   const handleRegenerateAction = (mode = 'standard') => {
-    // Re-trigger the same action with a new executionId and the selected regenerate mode
     const currentActionId = launchContextRef.current?.sourceAction;
     if (!currentActionId) return;
 
     setActionResult(null);
     setActionError(null);
-    setLastExecutionId(null); // Reset so the effect re-runs with a new execution
+    setLastExecutionId(null);
 
-    // Build a new executionId to force re-execution
     const newExecutionId = `${currentActionId}_regen_${Date.now()}`;
 
-    // Signal parent to re-launch with new context (if handler provided)
     if (launchContextRef.current && typeof window !== 'undefined') {
-      // Patch launchContext via a custom event — workspace will pick it up
       window.__curatorRegenContext = {
         ...launchContextRef.current,
         executionId: newExecutionId,
@@ -857,7 +816,6 @@ ${englishText}`;
     }
   };
 
-  // Listen for regenerate events triggered by handleRegenerateAction
   useEffect(() => {
     const handler = async (e) => {
       const regenCtx = window.__curatorRegenContext;
@@ -872,21 +830,25 @@ ${englishText}`;
         setActionResult(null);
         setActionError(null);
 
-        const result = await executeCuratorAction({
-          actionId: sourceAction,
-          executionId: newExecId,
-          displayLabel,
-          userPrompt: regenCtx._internalPrompt || "Analyze and recommend optimizations",
-          collectionContext: {
-            pipes,
-            blends,
-            bottles,
-            smokingLogs: logs,
-            tastingLogs,
-          },
-          user,
-          launchContext: { ...regenCtx, regenerateMode },
-        });
+        const result = await promiseWithTimeout(
+          executeCuratorAction({
+            actionId: sourceAction,
+            executionId: newExecId,
+            displayLabel,
+            userPrompt: regenCtx._internalPrompt || "Analyze and recommend optimizations",
+            collectionContext: {
+              pipes,
+              blends,
+              bottles,
+              smokingLogs: logs,
+              tastingLogs,
+            },
+            user,
+            launchContext: { ...regenCtx, regenerateMode },
+          }),
+          ACTION_EXECUTION_TIMEOUT,
+          "This recommendation took too long to complete. Please try again."
+        );
 
         const parsed = typeof result.result === "string"
           ? parseCuratorActionResponse(result.result)
@@ -925,11 +887,9 @@ ${englishText}`;
     }
   };
 
-  // CRITICAL HARDENING: Session lifecycle with visibility-based flush
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden' && sessionId) {
-        // Best-effort close on page hide
         endCuratorSession({
           sessionId,
           resultedInAction: false,
@@ -958,11 +918,9 @@ ${englishText}`;
         background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
         border: "1px solid rgba(140,105,65,0.35)",
         boxShadow: "0 10px 28px rgba(0,0,0,0.6)",
-        /* On mobile fill available viewport height; on larger screens cap at 80vh */
         height: "clamp(480px, 75vh, 820px)",
       }}
     >
-      {/* Header — only show errors and quick prompts */}
       <div
         className="px-4 sm:px-6 py-3 border-b flex-shrink-0"
         style={{ borderColor: "rgba(140,105,65,0.2)", background: "rgba(20,14,10,0.4)" }}
@@ -1015,17 +973,14 @@ ${englishText}`;
         </div>
       </div>
 
-      {/* Messages — scrollable flex-1 area */}
       <div
         className="flex-1 overflow-y-auto px-4 sm:px-6 py-4"
         style={{ background: "rgba(15,10,8,0.3)", overscrollBehavior: "contain" }}
       >
-        {/* Status bar during action execution */}
         {runningAction && (
           <CuratorActionStatusBar actionLabel={runningAction} isRunning={true} />
         )}
         
-        {/* Action Error Panel */}
         {actionError && !runningAction && (
           <CuratorActionErrorCard
             error={actionError}
@@ -1041,7 +996,6 @@ ${englishText}`;
           />
         )}
         
-        {/* Action Result Card — shown instead of chat when action completes */}
         {actionResult && !runningAction && !actionError && (
           <div className="mb-4">
             <CuratorActionResultCard
@@ -1107,7 +1061,6 @@ ${englishText}`;
         ) : null}
       </div>
 
-      {/* Input bar — always pinned to bottom, never clipped */}
       <div
         className="px-4 sm:px-6 py-3 sm:py-4 border-t flex-shrink-0"
         style={{
