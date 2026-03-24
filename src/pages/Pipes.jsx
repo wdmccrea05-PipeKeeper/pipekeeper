@@ -62,7 +62,16 @@ export default function PipesPage() {
       setShowForm(true);
       window.history.replaceState({}, '', '/Pipes');
     }
-  }, []);
+    const editId = urlParams.get('edit');
+    if (editId) {
+      const pipeToEdit = pipes.find(p => p.id === editId);
+      if (pipeToEdit) {
+        setEditingPipe(pipeToEdit);
+        setShowForm(true);
+        window.history.replaceState({}, '', '/Pipes');
+      }
+    }
+  }, [pipes]);
 
   const { data: pipes = [], isLoading } = useQuery({
     queryKey: ['pipes', user?.email, sortBy],

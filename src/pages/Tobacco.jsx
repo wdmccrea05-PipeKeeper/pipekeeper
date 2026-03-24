@@ -76,7 +76,16 @@ export default function TobaccoPage() {
       setShowForm(true);
       window.history.replaceState({}, '', '/Tobacco');
     }
-  }, []);
+    const editId = urlParams.get('edit');
+    if (editId) {
+      const blendToEdit = blends.find(b => b.id === editId);
+      if (blendToEdit) {
+        setEditingBlend(blendToEdit);
+        setShowForm(true);
+        window.history.replaceState({}, '', '/Tobacco');
+      }
+    }
+  }, [blends]);
 
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ['blends', user?.email, sortBy],
