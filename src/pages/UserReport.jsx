@@ -14,6 +14,51 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function UserReport() {
   const { t } = useTranslation();
+  
+  const { data: user, isLoading: isLoadingUser, error: userError } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    retry: false,
+  });
+  const isAdmin = user?.role === 'admin';
+
+  // Early guard: check auth before initializing other queries/state
+  if (isLoadingUser) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-[#8b3a3a]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (userError) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <Card className="border-rose-200 bg-rose-50">
+          <CardContent className="p-6">
+            <p className="text-rose-800">{t("userReport.errorLoadingUser")}: {userError.message}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <Card className="bg-white/95 border-rose-200">
+          <CardContent className="p-6">
+            <p className="text-rose-800 font-semibold">{t("userReport.unauthorized")}</p>
+            <p className="text-rose-700 text-sm mt-2">{t("userReport.adminAccessRequired")}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Now safe to use hooks that depend on isAdmin
   const [viewFilter, setViewFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showPaidTable, setShowPaidTable] = useState(true);
@@ -23,13 +68,6 @@ export default function UserReport() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [newAccountsDateRange, setNewAccountsDateRange] = useState('week');
   const [renewalsDateRange, setRenewalsDateRange] = useState('month');
-
-  const { data: user, isLoading: isLoadingUser, error: userError } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    retry: false,
-  });
-  const isAdmin = user?.role === 'admin';
 
   const { data: report, isLoading, error, refetch } = useQuery({
     queryKey: ['user-report'],
@@ -60,6 +98,33 @@ export default function UserReport() {
     enabled: isAdmin,
     retry: false,
   });
+
+  // useEffect must also be called before early returns
+  useEffect(() => {
+    refetchUserMetrics();
+  }, [renewalsDateRange, newAccountsDateRange, refetchUserMetrics]);
+
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-[#8b3a3a]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <Card className="border-rose-200 bg-rose-50">
+          <CardContent className="p-6">
+            <p className="text-rose-800">{t("userReport.errorLoadingReport")}: {error.message}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const summary = report?.summary || {
     total_users: 0,
@@ -135,6 +200,7 @@ export default function UserReport() {
     return { paid, free };
   }, [report, searchQuery, sortColumn, sortDirection]);
 
+  // Now safe to use conditional returns - all hooks have been called
   if (isLoadingUser) {
     return (
       <div className="max-w-7xl mx-auto p-6">
@@ -202,11 +268,6 @@ export default function UserReport() {
   };
 
   const lastUpdated = new Date().toLocaleString();
-
-  // Refresh metrics when date range dropdowns change
-  useEffect(() => {
-    refetchUserMetrics();
-  }, [renewalsDateRange, newAccountsDateRange, refetchUserMetrics]);
 
   function exportCSV() {
     const rows = [];
