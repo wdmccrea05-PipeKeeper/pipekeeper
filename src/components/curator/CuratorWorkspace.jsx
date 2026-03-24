@@ -198,9 +198,9 @@ function MessageBubble({
               <CuratorActionResultCard
                 key={item.id}
                 item={item}
-                state={{ status: "idle", error: null }}
-                onAccept={() => onAcceptAdvice(item)}
-                onReject={() => onRejectAdvice(item)}
+                state={message?.meta?.itemStates?.[item.id] || { status: "idle", error: null }}
+                onAccept={() => onAcceptAdvice(item, message.id)}
+                onReject={() => onRejectAdvice(item, message.id)}
                 onAskCurator={() => onAskCuratorAboutAdvice(item)}
               />
             ))}
@@ -677,11 +677,30 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
     handleExpertAction(lastActionType);
   };
 
-  const handleAcceptRecommendation = async (item) => {
+  const handleAcceptRecommendation = async (item, messageId = null) => {
     setItemStates((prev) => ({
       ...prev,
       [item.id]: { status: "applying", error: null },
     }));
+
+    if (messageId) {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? {
+                ...msg,
+                meta: {
+                  ...msg.meta,
+                  itemStates: {
+                    ...(msg.meta?.itemStates || {}),
+                    [item.id]: { status: "applying", error: null },
+                  },
+                },
+              }
+            : msg
+        )
+      );
+    }
 
     try {
       await applyCuratorRecommendation(item);
@@ -691,6 +710,25 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         [item.id]: { status: "accepted", error: null },
       }));
 
+      if (messageId) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === messageId
+              ? {
+                  ...msg,
+                  meta: {
+                    ...msg.meta,
+                    itemStates: {
+                      ...(msg.meta?.itemStates || {}),
+                      [item.id]: { status: "accepted", error: null },
+                    },
+                  },
+                }
+              : msg
+          )
+        );
+      }
+
       toast.success("Recommendation applied.");
 
       await Promise.allSettled([
@@ -699,23 +737,63 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         queryClient.invalidateQueries({ queryKey: ["bottles"] }),
       ]);
     } catch (error) {
+      const nextError = error?.message || "Failed to apply recommendation.";
+
       setItemStates((prev) => ({
         ...prev,
         [item.id]: {
           status: "error",
-          error: error?.message || "Failed to apply recommendation.",
+          error: nextError,
         },
       }));
+
+      if (messageId) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === messageId
+              ? {
+                  ...msg,
+                  meta: {
+                    ...msg.meta,
+                    itemStates: {
+                      ...(msg.meta?.itemStates || {}),
+                      [item.id]: { status: "error", error: nextError },
+                    },
+                  },
+                }
+              : msg
+          )
+        );
+      }
 
       toast.error("Failed to apply recommendation.");
     }
   };
 
-  const handleRejectRecommendation = (item) => {
+  const handleRejectRecommendation = (item, messageId = null) => {
     setItemStates((prev) => ({
       ...prev,
       [item.id]: { status: "rejected", error: null },
     }));
+
+    if (messageId) {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? {
+                ...msg,
+                meta: {
+                  ...msg.meta,
+                  itemStates: {
+                    ...(msg.meta?.itemStates || {}),
+                    [item.id]: { status: "rejected", error: null },
+                  },
+                },
+              }
+            : msg
+        )
+      );
+    }
   };
 
   const handleAskCuratorAboutRecommendation = (item) => {
