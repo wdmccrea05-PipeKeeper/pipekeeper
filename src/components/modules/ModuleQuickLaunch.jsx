@@ -1,8 +1,9 @@
 import React from 'react';
+import PipeIcon from '@/components/icons/PipeIcon';
 
 /**
  * ModuleQuickLaunch — renders an array of quick-action buttons.
- * Each action: { key, label, Icon?, iconImage?, onClick }
+ * Each action: { key, label, Icon?, usePipeIcon?, onClick }
  */
 export default function ModuleQuickLaunch({ actions = [] }) {
   if (!actions.length) return null;
@@ -27,14 +28,8 @@ export default function ModuleQuickLaunch({ actions = [] }) {
               className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{ background: 'rgba(180,140,75,0.14)', border: '1px solid rgba(180,140,75,0.28)' }}
             >
-              {action.iconImage ? (
-                <img
-                  src={action.iconImage}
-                  alt={action.label}
-                  className="w-6 h-6 object-contain"
-                  style={{ backgroundColor: 'transparent' }}
-                  draggable={false}
-                />
+              {action.usePipeIcon ? (
+                <PipeIcon className="w-6 h-6" style={{ color: '#D4A574' }} />
               ) : Icon ? (
                 <Icon className="w-5 h-5" style={{ color: '#D4A574' }} />
               ) : null}
