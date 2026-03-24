@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import PipeIcon from '@/components/icons/PipeIcon';
+import CuratorIcon from '@/components/icons/CuratorIcon';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
@@ -356,7 +357,7 @@ export default function CollectionHub() {
               <QuickAction icon={WhiskeyKeeperIcon} label="My Whiskey" accent="#A35050" onClick={() => navigate(createPageUrl('WhiskeyKeeper'))} />
             </>
           )}
-          <QuickAction icon={User} label="Open Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
+          <QuickAction icon={({ className, ...props }) => <CuratorIcon className={className} color="#B66565" {...props} />} label="Open Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
         </div>
       </section>
 
@@ -392,7 +393,7 @@ export default function CollectionHub() {
         >
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(163,92,92,0.14)', border: '1px solid rgba(163,92,92,0.30)' }}>
-              <User className="w-7 h-7" style={{ color: '#D47C7C' }} />
+              <CuratorIcon className="w-7 h-7" color="#D47C7C" />
             </div>
             <div>
               <div className="text-2xl font-bold mb-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>AI Curator</div>
