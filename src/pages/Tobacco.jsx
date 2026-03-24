@@ -514,7 +514,7 @@ export default function TobaccoPage() {
                       onToggleFavorite={() => handleToggleFavorite(blend)}
                       onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}
                       onEdit={() => { setEditingBlend(blend); setShowForm(true); }}
-                      fallbackIcon{
+                      fallbackIcon={
                         <div className="text-[#E0D8C8]/20 text-center">
                           <Leaf className="w-14 h-14 mx-auto mb-2" style={{ color: "rgba(90,124,90,0.25)" }} />
                           <p className="text-xs uppercase tracking-wider" style={{ color: "rgba(180,140,75,0.35)" }}>
