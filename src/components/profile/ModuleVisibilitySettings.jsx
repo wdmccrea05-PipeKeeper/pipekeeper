@@ -54,14 +54,14 @@ export default function ModuleVisibilitySettings() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-1"><Eye className="w-4 h-4 text-amber-600" /><span className="font-semibold text-stone-800 text-base">{t('hub.activeModules', 'Active Modules')}</span></div>
-      <p className="text-xs text-stone-500 mb-3">{t('profile.moduleVisibilityDescription', 'Choose which collection modules appear in your navigation and Hub. Hiding a module never deletes your data — you can re-enable it at any time.')}</p>
+      <div className="flex items-center gap-2 mb-1"><Eye className="w-4 h-4 text-amber-600" /><span className="font-semibold text-stone-100 text-base">{t('hub.activeModules', 'Active Modules')}</span></div>
+      <p className="text-xs text-stone-400 mb-3">{t('profile.moduleVisibilityDescription', 'Choose which collection modules appear in your navigation and Hub. Hiding a module never deletes your data — you can re-enable it at any time.')}</p>
       <div className="space-y-3">
         {MODULE_CONFIG.map((mod) => {
           const enabled = moduleStates[mod.id] !== false;
           const isSaving = saving === mod.id;
           return (
-            <div key={mod.id} className={`flex items-center justify-between gap-4 p-3 rounded-xl border transition-all ${enabled ? 'bg-stone-50 border-stone-200' : 'bg-stone-100/50 border-stone-200/60 opacity-60'}`}>
+            <div key={mod.id} className={`flex items-center justify-between gap-4 p-3 rounded-xl border transition-all ${enabled ? 'bg-stone-800/50 border-stone-700' : 'bg-stone-800/30 border-stone-700/50'}`}>
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <ModuleIcon src={mod.icon} alt={mod.label} className="w-8 h-8 object-contain flex-shrink-0 bg-transparent" />
                 <div className="min-w-0 flex-1">
@@ -72,7 +72,7 @@ export default function ModuleVisibilitySettings() {
                     {mod.alcoholRelated && <Badge className="text-[10px] bg-amber-100 text-amber-700 border-0 px-1.5 py-0">{t('profile.alcoholBadge', 'Alcohol')}</Badge>}
                     {mod.canDisable === false && <Badge className="text-[10px] bg-blue-100 text-blue-700 border-0 px-1.5 py-0">{t('profile.primaryBadge', 'Primary')}</Badge>}
                   </div>
-                  <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{mod.launched ? mod.description : `${mod.description} (${t('hub.comingSoon', 'Coming Soon')})`}</p>
+                  <p className="text-xs text-stone-400 mt-0.5 line-clamp-1">{mod.launched ? mod.description : `${mod.description} (${t('hub.comingSoon', 'Coming Soon')})`}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
@@ -89,7 +89,7 @@ export default function ModuleVisibilitySettings() {
           );
         })}
       </div>
-      <p className="text-xs text-stone-400 mt-2">{t('profile.moduleVisibilityNote', 'Hiding a module removes it from navigation, Hub, and recommendations. Your records remain stored and fully intact.')}</p>
+      <p className="text-xs text-stone-500 mt-2">{t('profile.moduleVisibilityNote', 'Hiding a module removes it from navigation, Hub, and recommendations. Your records remain stored and fully intact.')}</p>
     </div>
     );
     }
