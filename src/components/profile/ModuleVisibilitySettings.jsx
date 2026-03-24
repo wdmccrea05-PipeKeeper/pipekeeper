@@ -86,5 +86,5 @@ export default function ModuleVisibilitySettings() {
       </div>
       <p className="text-xs text-stone-400 mt-2">{t('profile.moduleVisibilityNote', 'Hiding a module removes it from navigation, Hub, and recommendations. Your records remain stored and fully intact.')}</p>
     </div>
-  );
-  }
+    );
+    }
