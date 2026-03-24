@@ -213,11 +213,8 @@ export default function Curator() {
   const availableScopes = useMemo(() => {
     const whiskeyScopeAvailable = isModuleEnabled("whiskeykeeper");
     if (!whiskeyScopeAvailable) {
-      // Only PipeKeeper enabled - show just PipeKeeper option, default scope to pipekeeper
-      setCuratorScope("pipekeeper");
       return [SCOPE_OPTIONS[1]];
     }
-    // Multiple modules: show All, PipeKeeper, and WhiskeyKeeper
     const opts = [SCOPE_OPTIONS[0], SCOPE_OPTIONS[1], SCOPE_OPTIONS[2]];
     return opts;
   }, [isModuleEnabled]);
