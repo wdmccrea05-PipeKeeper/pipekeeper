@@ -1,6 +1,6 @@
 import parseCuratorActionResponse from "./parseCuratorActionResponse";
 
-function getActionPrompt(actionType, context) {
+function buildSharedInstruction(context) {
   const pipes = context?.pipes || [];
   const blends = context?.blends || [];
   const bottles = context?.bottles || [];
@@ -9,24 +9,21 @@ function getActionPrompt(actionType, context) {
   const userProfile = context?.userProfile || null;
   const tasteProfile = context?.tasteProfile || null;
 
-  const contextBlock = JSON.stringify(
-    {
-      pipes,
-      blends,
-      bottles,
-      smokingLogs,
-      tastingLogs,
-      userProfile,
-      tasteProfile,
-    },
-    null,
-    2
-  );
+  return `
+You are the in-app curator for a collector app.
 
-  const sharedRules = `
-Return VALID JSON only.
-Do not return markdown.
-Do not return explanatory prose outside JSON.
+Your job is to review the user's actual collection records and activity logs and return structured, actionable recommendations.
+
+HARD RULES:
+1. Return VALID JSON only.
+2. Do not return markdown.
+3. Do not return prose outside JSON.
+4. Do not explain your chain of thought.
+5. Do not invent records or IDs.
+6. Every recommendation must target a real recordId from the provided data.
+7. Every recommendation must include proposedChanges that can actually be applied.
+8. If there is not enough evidence for an actionable change, do not fake one.
+9. If no actionable changes exist, return an empty items array.
 
 Allowed item.type values:
 - specialization
@@ -60,100 +57,143 @@ Schema:
   ]
 }
 
-Only return actionable items.
-If there are no actionable items, return:
-{
-  "summary": "No actionable recommendations right now.",
-  "items": []
-}
+Collection context:
+${JSON.stringify(
+  {
+    pipes,
+    blends,
+    bottles,
+    smokingLogs,
+    tastingLogs,
+    userProfile,
+    tasteProfile,
+  },
+  null,
+  2
+)}
 `;
+}
 
-  switch (actionType) {
-    case "optimize_collection":
-      return `
-${sharedRules}
+function buildOptimizeCollectionPrompt(context) {
+  return `
+${buildSharedInstruction(context)}
 
-You are the in-app curator for a collector app.
-
-Task:
-Analyze the user's collection and return only actionable optimization recommendations.
+TASK:
+Analyze the user's collection for practical optimization opportunities.
 
 Focus on:
-- underused pipes
-- redundant blends
-- rotation opportunities
-- cellar gaps
-- pairing opportunities
+- underused pipes that should be rotated in
+- redundant blends that overlap too heavily
+- holes in the cellar or rotation
+- pipe/blend mismatches
 - specialization opportunities
+- collection balance strengths and weak points
 
-Each item must include a real recordId from the provided data and a proposedChanges object that could actually be applied.
+OUTPUT REQUIREMENTS:
+- Return only the most actionable 3 to 8 recommendations
+- Every item must be specific and practical
+- Use actual collection and log evidence
+- Proposed changes must be record-level changes, not vague advice
 
-Collection context:
-${contextBlock}
+GOOD examples:
+- update a pipe specialization
+- reclassify a blend family
+- flag a pipe for rotation usage notes
+- normalize a classification field
+
+BAD examples:
+- “consider smoking more Virginias”
+- “your collection is balanced”
+- “maybe buy another pipe”
+unless tied to a concrete actionable record recommendation
 `;
+}
 
-    case "recommend_specializations":
-      return `
-${sharedRules}
+function buildRecommendSpecializationsPrompt(context) {
+  return `
+${buildSharedInstruction(context)}
 
-You are the in-app curator for a collector app.
+TASK:
+Recommend concrete specialization assignments or refinements for the user's existing pipes.
 
-Task:
-Recommend concrete pipe or blend specialization changes based on actual collection and log patterns.
+Use actual evidence such as:
+- smoking frequency
+- blend pairings
+- existing specialization overlap
+- shape/material/role patterns
+- rotation balance
 
-Only return recommendations that can be applied to a record.
-Use type "specialization".
+OUTPUT REQUIREMENTS:
+- item.type must be "specialization"
+- recordType must be "pipe"
+- proposedChanges must contain fields that can be written directly, for example:
+  {
+    "specialization": "Outdoor Rotation"
+  }
 
-Collection context:
-${contextBlock}
+Do NOT return generic strategy text.
+Only return actionable specialization cards for actual pipe records.
 `;
+}
 
-    case "update_pipe_measurements":
-      return `
-${sharedRules}
+function buildUpdatePipeMeasurementsPrompt(context) {
+  return `
+${buildSharedInstruction(context)}
 
-You are the in-app curator for a collector app.
+TASK:
+Find pipe records with missing, clearly incomplete, or weak geometric measurement data and propose practical updates.
 
-Task:
-Find pipes with missing or weak measurement data and return actionable proposed updates.
+OUTPUT REQUIREMENTS:
+- item.type must be "measurement_update"
+- recordType must be "pipe"
+- only suggest fields when there is a reasonable basis
+- proposedChanges may include:
+  - length_mm
+  - bowl_height_mm
+  - bowl_width_mm
+  - bowl_diameter_mm
+  - weight_g
 
-Only return measurable, field-level updates for actual pipe records.
-Use type "measurement_update".
-
-Suggested fields can include:
-- length_mm
-- bowl_height_mm
-- bowl_width_mm
-- bowl_diameter_mm
-- weight_g
-
-Collection context:
-${contextBlock}
+If measurement support is weak, do not invent precise values.
+Prefer fewer, higher-confidence recommendations over guessing.
 `;
+}
 
-    case "reclassify_tobacco_blends":
-      return `
-${sharedRules}
+function buildReclassifyTobaccoBlendsPrompt(context) {
+  return `
+${buildSharedInstruction(context)}
 
-You are the in-app curator for a collector app.
+TASK:
+Review actual tobacco blend records and propose classification normalization or correction.
 
-Task:
-Find tobacco blends that should be reclassified or normalized.
-
-Only return recommendations for actual blend records.
-Use type "reclassification".
-
-Suggested fields can include:
+Focus on:
 - blend_type
 - family
 - subtype
 - components
 - strength
+- normalization consistency across similar blends
 
-Collection context:
-${contextBlock}
+OUTPUT REQUIREMENTS:
+- item.type must be "reclassification"
+- recordType must be "blend"
+- proposedChanges must contain direct field updates
+
+Do not output generic cellar advice.
+Return only field-level actionable recommendations for specific blend records.
 `;
+}
 
+function getActionPrompt(actionType, context) {
+  switch (actionType) {
+    case "optimize_collection":
+      return buildOptimizeCollectionPrompt(context);
+    case "recommend_specializations":
+      return buildRecommendSpecializationsPrompt(context);
+    case "update_pipe_measurements":
+      return buildUpdatePipeMeasurementsPrompt(context);
+    case "reclassify_tobacco_blends":
+      return buildReclassifyTobaccoBlendsPrompt(context);
     default:
       throw new Error(`Unsupported curator action type: ${actionType}`);
   }
