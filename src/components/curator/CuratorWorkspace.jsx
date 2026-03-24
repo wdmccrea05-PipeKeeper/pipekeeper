@@ -717,12 +717,36 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         } catch (e) {
           console.warn('Failed to save session:', e);
         }
-
         setItemStates((prev) => ({
+          ...prev,
+          [item.id]: { status: "accepted", error: null },
+        }));
+        if (messageId) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === messageId
+                ? {
+                    ...msg,
+                    meta: {
+                      ...msg.meta,
+                      itemStates: {
+                        ...(msg.meta?.itemStates || {}),
+                        [item.id]: { status: "accepted", error: null },
+                      },
+                    },
+                  }
+                : msg
+            )
+          );
+        }
+        toast.success("Session saved.");
+        return;
+      }
+      await applyCuratorRecommendation(item);
+      setItemStates((prev) => ({
         ...prev,
         [item.id]: { status: "accepted", error: null },
       }));
-
       if (messageId) {
         setMessages((prev) =>
           prev.map((msg) =>
@@ -741,9 +765,7 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
           )
         );
       }
-
       toast.success("Recommendation applied.");
-
       await Promise.allSettled([
         queryClient.invalidateQueries({ queryKey: ["pipes"] }),
         queryClient.invalidateQueries({ queryKey: ["blends"] }),
@@ -751,15 +773,10 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
       ]);
     } catch (error) {
       const nextError = error?.message || "Failed to apply recommendation.";
-
       setItemStates((prev) => ({
         ...prev,
-        [item.id]: {
-          status: "error",
-          error: nextError,
-        },
+        [item.id]: { status: "error", error: nextError },
       }));
-
       if (messageId) {
         setMessages((prev) =>
           prev.map((msg) =>
@@ -778,7 +795,6 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
           )
         );
       }
-
       toast.error("Failed to apply recommendation.");
     }
   };
