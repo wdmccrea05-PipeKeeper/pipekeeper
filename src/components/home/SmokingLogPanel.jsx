@@ -307,6 +307,9 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   const createLogMutation = useMutation({
     mutationFn: (data) => base44.entities.SmokingLog.create(data),
+    onError: (err) => {
+      toast.error("Failed to save session: " + (err?.message || "Unknown error"));
+    },
     onSuccess: async (createdLog, variables) => {
       // Decrement container if chosen
       if (variables.container_id) {
@@ -584,7 +587,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                   <SelectValue placeholder={t("smokingLog.selectPipe")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {pipes.map(p => {
+                  {(pipes || []).map(p => {
                     const restStatus = pipeRestStatusMap[p.id] || { ready: true, message: '' };
                     return (
                       <SelectItem key={p.id} value={p.id}>
