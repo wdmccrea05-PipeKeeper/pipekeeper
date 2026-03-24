@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,18 +11,16 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-
 export default function UserReport() {
   const { t } = useTranslation();
   
+  // All hooks MUST be called unconditionally at top level
   const { data: user, isLoading: isLoadingUser, error: userError } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
     retry: false,
   });
-  const isAdmin = user?.role === 'admin';
-
-  // Now safe to use hooks that depend on isAdmin
+  
   const [viewFilter, setViewFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showPaidTable, setShowPaidTable] = useState(true);
@@ -32,6 +30,8 @@ export default function UserReport() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [newAccountsDateRange, setNewAccountsDateRange] = useState('week');
   const [renewalsDateRange, setRenewalsDateRange] = useState('month');
+
+  const isAdmin = user?.role === 'admin';
 
   const { data: report, isLoading, error, refetch } = useQuery({
     queryKey: ['user-report'],
@@ -63,66 +63,9 @@ export default function UserReport() {
     retry: false,
   });
 
-  // useEffect must also be called before early returns
   useEffect(() => {
     refetchUserMetrics();
   }, [renewalsDateRange, newAccountsDateRange, refetchUserMetrics]);
-
-  if (isLoading) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-[#8b3a3a]" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <Card className="border-rose-200 bg-rose-50">
-          <CardContent className="p-6">
-            <p className="text-rose-800">{t("userReport.errorLoadingReport")}: {error.message}</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const summary = report?.summary || {
-    total_users: 0,
-    paid_users: 0,
-    free_users: 0,
-    paid_percentage: 0,
-  };
-
-  const trialMetrics = adminMetrics?.trialMetrics || {};
-  const platformBreakdown = adminMetrics?.platformBreakdown || {};
-  const growthLastEightWeeks = adminMetrics?.growthMetrics?.lastEightWeeks || [];
-  const churnMetrics = adminMetrics?.churnMetrics || {};
-  const userCounts = adminMetrics?.userCounts || {};
-  const subscriptionBreakdown = adminMetrics?.subscriptionBreakdown || {};
-  const usageMetrics = adminMetrics?.usageMetrics || {};
-  const usageAvgPipes = usageMetrics?.avgPipesPerUser || {};
-  const usageAvgTobaccos = usageMetrics?.avgTobaccosPerUser || {};
-
-  // Consolidate Premium/Pro into single tier - use calculated metrics if available
-  const consolidatedPaidUsers = userMetrics?.consolidatedPaidUsers || summary.paid_users;
-  const consolidatedPaidPercentage = summary.paid_percentage;
-  const consolidatedUserCount = userMetrics?.consolidatedPaidUsers || ((userCounts.premium || 0) + (userCounts.pro || 0));
-  const consolidatedTrialCount = userMetrics?.activeOrTrialPaidUsers || ((subscriptionBreakdown.activeOrTrialPremium || 0) + (subscriptionBreakdown.activeOrTrialPro || 0));
-  const legacyPremiumCount = userMetrics?.legacyPremiumCount || (userCounts.legacyPremium || 0);
-  const newAccountsData = userMetrics?.newAccounts || { day: 0, week: 0, month: 0, quarter: 0 };
-  const renewalsData = userMetrics?.renewals || { week: { count: 0, totalAmount: 0 }, month: { count: 0, totalAmount: 0 }, quarter: { count: 0, totalAmount: 0 }, year: { count: 0, totalAmount: 0 } };
-  const dailyActiveUsers = userMetrics?.dailyActiveUsers || 0;
-  const weeklyActiveUsers = userMetrics?.weeklyActiveUsers || 0;
-
-  // Consolidate Apple/iOS into single platform
-  const applePlatformBreakdown = {
-    paid: (platformBreakdown.apple?.paid || 0) + (platformBreakdown.ios?.paid || 0),
-    free: (platformBreakdown.apple?.free || 0) + (platformBreakdown.ios?.free || 0)
-  };
 
   const filteredData = useMemo(() => {
     if (!report) return { paid: [], free: [] };
@@ -164,7 +107,7 @@ export default function UserReport() {
     return { paid, free };
   }, [report, searchQuery, sortColumn, sortDirection]);
 
-  // Guarded returns - all hooks called above
+  // Early returns - AFTER all hooks
   if (isLoadingUser) {
     return (
       <div className="max-w-7xl mx-auto p-6">
@@ -221,6 +164,38 @@ export default function UserReport() {
       </div>
     );
   }
+
+  const summary = report?.summary || {
+    total_users: 0,
+    paid_users: 0,
+    free_users: 0,
+    paid_percentage: 0,
+  };
+
+  const trialMetrics = adminMetrics?.trialMetrics || {};
+  const platformBreakdown = adminMetrics?.platformBreakdown || {};
+  const growthLastEightWeeks = adminMetrics?.growthMetrics?.lastEightWeeks || [];
+  const churnMetrics = adminMetrics?.churnMetrics || {};
+  const userCounts = adminMetrics?.userCounts || {};
+  const subscriptionBreakdown = adminMetrics?.subscriptionBreakdown || {};
+  const usageMetrics = adminMetrics?.usageMetrics || {};
+  const usageAvgPipes = usageMetrics?.avgPipesPerUser || {};
+  const usageAvgTobaccos = usageMetrics?.avgTobaccosPerUser || {};
+
+  const consolidatedPaidUsers = userMetrics?.consolidatedPaidUsers || summary.paid_users;
+  const consolidatedPaidPercentage = summary.paid_percentage;
+  const consolidatedUserCount = userMetrics?.consolidatedPaidUsers || ((userCounts.premium || 0) + (userCounts.pro || 0));
+  const consolidatedTrialCount = userMetrics?.activeOrTrialPaidUsers || ((subscriptionBreakdown.activeOrTrialPremium || 0) + (subscriptionBreakdown.activeOrTrialPro || 0));
+  const legacyPremiumCount = userMetrics?.legacyPremiumCount || (userCounts.legacyPremium || 0);
+  const newAccountsData = userMetrics?.newAccounts || { day: 0, week: 0, month: 0, quarter: 0 };
+  const renewalsData = userMetrics?.renewals || { week: { count: 0, totalAmount: 0 }, month: { count: 0, totalAmount: 0 }, quarter: { count: 0, totalAmount: 0 }, year: { count: 0, totalAmount: 0 } };
+  const dailyActiveUsers = userMetrics?.dailyActiveUsers || 0;
+  const weeklyActiveUsers = userMetrics?.weeklyActiveUsers || 0;
+
+  const applePlatformBreakdown = {
+    paid: (platformBreakdown.apple?.paid || 0) + (platformBreakdown.ios?.paid || 0),
+    free: (platformBreakdown.apple?.free || 0) + (platformBreakdown.ios?.free || 0)
+  };
 
   const handleSort = (column) => {
     if (sortColumn === column) {
@@ -332,8 +307,6 @@ export default function UserReport() {
       </div>
       <div className="mb-6" />
 
-
-
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card 
@@ -423,82 +396,81 @@ export default function UserReport() {
           </CardContent>
         </Card>
 
-        {/* Platform Cards - Consolidated Apple/iOS */}
-          {adminMetrics?.platformBreakdown && !metricsLoading && (
-            <>
-              <Card className="bg-transparent">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-[#E0D8C8]">iOS/Apple</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                      <span className="font-bold text-[#F5F1E7]">{applePlatformBreakdown.paid}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                      <span className="font-bold text-[#F5F1E7]">{applePlatformBreakdown.free}</span>
-                    </div>
+        {adminMetrics?.platformBreakdown && !metricsLoading && (
+          <>
+            <Card className="bg-transparent">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-[#E0D8C8]">iOS/Apple</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
+                    <span className="font-bold text-[#F5F1E7]">{applePlatformBreakdown.paid}</span>
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
+                    <span className="font-bold text-[#F5F1E7]">{applePlatformBreakdown.free}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              <Card className="bg-transparent">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.android")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                      <span className="font-bold text-[#F5F1E7]">{platformBreakdown.android?.paid || 0}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                      <span className="font-bold text-[#F5F1E7]">{platformBreakdown.android?.free || 0}</span>
-                    </div>
+            <Card className="bg-transparent">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.android")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
+                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.android?.paid || 0}</span>
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
+                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.android?.free || 0}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              <Card className="bg-transparent">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.web")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                      <span className="font-bold text-[#F5F1E7]">{platformBreakdown.web?.paid || 0}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                      <span className="font-bold text-[#F5F1E7]">{platformBreakdown.web?.free || 0}</span>
-                    </div>
+            <Card className="bg-transparent">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.web")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
+                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.web?.paid || 0}</span>
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
+                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.web?.free || 0}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              <Card className="bg-transparent">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.unknown")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                      <span className="font-bold text-[#F5F1E7]">{platformBreakdown.unknown?.paid || 0}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                      <span className="font-bold text-[#F5F1E7]">{platformBreakdown.unknown?.free || 0}</span>
-                    </div>
+            <Card className="bg-transparent">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.unknown")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
+                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.unknown?.paid || 0}</span>
                   </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
+                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.unknown?.free || 0}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       {/* Trials Panel */}
@@ -539,278 +511,6 @@ export default function UserReport() {
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {/* Growth Chart */}
-      {growthLastEightWeeks.length > 0 && !metricsLoading && (
-        <Card className="bg-transparent mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-[#E0D8C8]/70" />
-              {t("userReport.weeklyGrowth")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={growthLastEightWeeks}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(139,98,57,0.3)" />
-                <XAxis dataKey="week" tick={{ fill: '#E0D8C8', fontSize: 12 }} />
-                <YAxis tick={{ fill: '#E0D8C8', fontSize: 12 }} />
-                <Tooltip contentStyle={{ backgroundColor: '#2a1f18', border: '1px solid rgba(139,98,57,0.5)', color: '#F5F1E7' }} />
-                <Legend wrapperStyle={{ color: '#E0D8C8' }} />
-                <Bar dataKey="newUsers" fill="#B48C4B" name={t("userReport.newUsers")} />
-                <Bar dataKey="newPaidSubscribers" fill="#8B6239" name={t("userReport.newPaid")} />
-                <Bar dataKey="newProSubscribers" fill="#A35C5C" name={t("userReport.newPro")} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Churn Panel - Consolidated */}
-      {adminMetrics?.churnMetrics && !metricsLoading && (
-        <Card className="bg-transparent mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
-              <TrendingDown className="w-5 h-5 text-[#E0D8C8]/70" />
-              {t("userReport.churnDowngrades")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">Paid Churn Rate (30d)</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">{((churnMetrics.premiumChurn30d || 0) + (churnMetrics.proChurn30d || 0)) / 2}%</p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">Premium Churn (30d)</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">{churnMetrics.premiumChurn30d || 0}%</p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">Pro Churn (30d)</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">{churnMetrics.proChurn30d || 0}%</p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">Downgrade to Free</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">{churnMetrics.premiumToFreeDowngrade || 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Consolidated Premium/Pro Metrics */}
-      {adminMetrics && !metricsLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="bg-transparent">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Active Paid Subscribers</CardTitle>
-              <p className="text-xs text-[#E0D8C8]/50 mt-1">Premium + Pro Combined</p>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : consolidatedUserCount}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-transparent">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Legacy Premium</CardTitle>
-              <p className="text-xs text-[#E0D8C8]/50 mt-1">Subscribed before Feb 1, 2026</p>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : legacyPremiumCount}</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* New Tracking Cards */}
-      {adminMetrics && !metricsLoading && (
-        <>
-          {/* Daily/Weekly Activity */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <Card className="bg-transparent">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
-                  <Users className="w-5 h-5 text-[#E0D8C8]/70" />
-                  Average Daily Users/Logins
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : dailyActiveUsers}</p>
-                <p className="text-xs text-[#E0D8C8]/50 mt-2">Last 30 days average</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-transparent">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-[#E0D8C8]/70" />
-                  Average Weekly Users
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : weeklyActiveUsers}</p>
-                <p className="text-xs text-[#E0D8C8]/50 mt-2">Last 4 weeks average</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* New Accounts by Time Period */}
-          <Card className="bg-transparent mb-6">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
-                  <UserPlus className="w-5 h-5 text-[#E0D8C8]/70" />
-                  New Accounts Created
-                </CardTitle>
-                <select
-                  value={newAccountsDateRange}
-                  onChange={(e) => setNewAccountsDateRange(e.target.value)}
-                  className="text-xs bg-[#2a1f18] border border-[#8b6239]/30 text-[#E0D8C8] px-2 py-1 rounded"
-                >
-                  <option value="day">Last 24 Hours</option>
-                  <option value="week">Last 7 Days</option>
-                  <option value="month">Last 30 Days</option>
-                  <option value="quarter">Last 90 Days</option>
-                </select>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                  <p className="text-xs text-[#E0D8C8]/70">24 Hours</p>
-                  <p className="text-2xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : newAccountsData.day}</p>
-                </div>
-                <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                  <p className="text-xs text-[#E0D8C8]/70">7 Days</p>
-                  <p className="text-2xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : newAccountsData.week}</p>
-                </div>
-                <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                  <p className="text-xs text-[#E0D8C8]/70">30 Days</p>
-                  <p className="text-2xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : newAccountsData.month}</p>
-                </div>
-                <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                  <p className="text-xs text-[#E0D8C8]/70">90 Days</p>
-                  <p className="text-2xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : newAccountsData.quarter}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Subscription Renewals */}
-          <Card className="bg-transparent mb-6">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-[#E0D8C8]/70" />
-                  Upcoming Subscription Renewals & Revenue
-                </CardTitle>
-                <select
-                  value={renewalsDateRange}
-                  onChange={(e) => setRenewalsDateRange(e.target.value)}
-                  className="text-xs bg-[#2a1f18] border border-[#8b6239]/30 text-[#E0D8C8] px-2 py-1 rounded"
-                >
-                  <option value="week">Next 7 Days</option>
-                  <option value="month">Next 30 Days</option>
-                  <option value="quarter">Next 90 Days</option>
-                  <option value="year">Next 365 Days</option>
-                </select>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                  <p className="text-xs text-[#E0D8C8]/70">Total Renewals</p>
-                  <p className="text-2xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : renewalsData[renewalsDateRange]?.total || 0}</p>
-                  <p className="text-xs text-[#E0D8C8]/40 mt-1">Monthly: {userMetricsLoading ? '...' : renewalsData[renewalsDateRange]?.monthly || 0} | Annual: {userMetricsLoading ? '...' : renewalsData[renewalsDateRange]?.annual || 0}</p>
-                </div>
-                <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                  <p className="text-xs text-[#E0D8C8]/70">Projected Revenue</p>
-                  <p className="text-2xl font-bold text-[#F5F1E7]">${userMetricsLoading ? '...' : (renewalsData[renewalsDateRange]?.totalAmount || 0).toFixed(2)}</p>
-                  <p className="text-xs text-[#E0D8C8]/40 mt-1">Monthly: ${userMetricsLoading ? '...' : (renewalsData[renewalsDateRange]?.monthlyAmount || 0).toFixed(2)} | Annual: ${userMetricsLoading ? '...' : (renewalsData[renewalsDateRange]?.annualAmount || 0).toFixed(2)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Module Usage Tracking (Placeholder for Future) */}
-          <Card className="bg-transparent mb-6 border-[#8b6239]/20 opacity-75">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-[#E0D8C8] flex items-center gap-2">
-                <Zap className="w-5 h-5" />
-                Module Usage & Revenue (Coming Soon)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-[#E0D8C8]/50 text-sm">Tracking for:</p>
-              <ul className="text-xs text-[#E0D8C8]/40 space-y-1 mt-2">
-                <li>• Modules used per user</li>
-                <li>• Which modules are most popular</li>
-                <li>• Module adoption by tier (Free/Paid)</li>
-                <li>• Recurring revenue per module</li>
-                <li>• Bundle usage and revenue</li>
-              </ul>
-            </CardContent>
-          </Card>
-        </>
-      )}
-
-      {/* Usage Metrics */}
-      {adminMetrics?.usageMetrics && !metricsLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="bg-transparent">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.avgPipesPerUser")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#E0D8C8]/70">{t("userReport.free")}</span>
-                  <span className="font-bold text-[#F5F1E7]">{usageAvgPipes.free || 0}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#E0D8C8]/70">{t("userReport.premium")}</span>
-                  <span className="font-bold text-[#F5F1E7]">{usageAvgPipes.premium || 0}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#E0D8C8]/70">{t("userReport.pro")}</span>
-                  <span className="font-bold text-[#F5F1E7]">{usageAvgPipes.pro || 0}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-transparent">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.avgTobaccosPerUser")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#E0D8C8]/70">{t("userReport.free")}</span>
-                  <span className="font-bold text-[#F5F1E7]">{usageAvgTobaccos.free || 0}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#E0D8C8]/70">{t("userReport.premium")}</span>
-                  <span className="font-bold text-[#F5F1E7]">{usageAvgTobaccos.premium || 0}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#E0D8C8]/70">{t("userReport.pro")}</span>
-                  <span className="font-bold text-[#F5F1E7]">{usageAvgTobaccos.pro || 0}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-transparent">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.communityEngagement")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-[#F5F1E7]">{usageMetrics.communityEngagement || 0}%</p>
-              <p className="text-xs text-[#E0D8C8]/50 mt-1">{t("userReport.usersWithComments")}</p>
-            </CardContent>
-          </Card>
-        </div>
       )}
 
       {/* Search Bar */}
