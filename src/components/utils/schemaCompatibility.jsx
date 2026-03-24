@@ -65,6 +65,9 @@ export function prepareLogData(data) {
     ...data,
     bowls_used: bowls,
     bowls_smoked: bowls, // Keep legacy field in sync
+    // Normalize empty string sentinels back to null for optional fields
+    bowl_variant_id: data.bowl_variant_id || null,
+    bowl_name: data.bowl_name || null,
   };
 }
 
