@@ -41,7 +41,7 @@ const BOWL_GEOMETRY_FACTOR = 0.85; // account for tapered bowl shape
 export default function SmokingLogPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
 
-  const { hasPaid } = useCurrentUser();
+  const { hasPaid, isLoading: userLoading } = useCurrentUser();
   const entitlements = useEntitlements();
 
   const [showAddLog, setShowAddLog] = useState(false);
@@ -484,6 +484,10 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   const breakInBowls = getBreakInBowlsFromLogs(logs);
 
   if (isAppleBuild) return null;
+
+  // While subscription state is still loading, don't flash the upgrade prompt
+  // at paying users whose sync hasn't completed yet.
+  if (userLoading) return null;
 
   if (!hasPaid) {
     return (

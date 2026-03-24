@@ -72,8 +72,12 @@ export const AuthProvider = ({ children }) => {
       if (appParams.token) {
         await checkUserAuth();
       } else {
+        // No token present — user is not logged in. Set auth_required so
+        // AuthenticatedApp redirects to login instead of rendering the shell.
+        if (isDev) console.info('[AuthContext] No token present — redirecting to login');
         setIfMounted(setIsAuthenticated, false);
         setIfMounted(setIsLoadingAuth, false);
+        setIfMounted(setAuthError, { type: 'auth_required', message: 'Authentication required' });
       }
     } catch (appError) {
       const reason = appError?.data?.extra_data?.reason;
