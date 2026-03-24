@@ -21,13 +21,14 @@ const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc4971
 export default function PipeKeeperModule() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const params = new URLSearchParams(window.location.search);
 
   const { user } = useCurrentUser();
   const { hideValues, hideCollectionCounts } = useProfilePrivacy();
   const queryClient = useQueryClient();
   
   const [showQuickSearch, setShowQuickSearch] = useState(false);
-  const [showSmokingLog, setShowSmokingLog] = useState(false);
+  const [showSmokingLog, setShowSmokingLog] = useState(params.get('action') === 'log-smoke');
 
 
 
@@ -99,6 +100,12 @@ export default function PipeKeeperModule() {
     queryClient.invalidateQueries({ queryKey: ['pipes'] });
   };
 
+  // Clear query param when modal closes
+  const handleSmokingLogClose = () => {
+    setShowSmokingLog(false);
+    window.history.replaceState({}, '', window.location.pathname);
+  };
+
   const quickLaunchActions = [
     {
       key: 'addPipe',
@@ -122,7 +129,10 @@ export default function PipeKeeperModule() {
       key: 'logSession',
       Icon: BookOpen,
       label: t('quickActions.logSession'),
-      onClick: () => setShowSmokingLog(true)
+      onClick: () => {
+        setShowSmokingLog(true);
+        window.history.replaceState({}, '', window.location.pathname + '?action=log-smoke');
+      }
     },
     {
       key: 'curator',
@@ -271,12 +281,12 @@ export default function PipeKeeperModule() {
 
       {/* Smoking Log Modal */}
       {showSmokingLog && (
-        <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setShowSmokingLog(false)}>
+        <div className="fixed inset-0 z-50 bg-black/50" onClick={handleSmokingLogClose}>
           <div className="flex items-center justify-center min-h-screen p-4" onClick={(e) => e.stopPropagation()}>
             <div className="bg-[rgba(20,15,12,0.95)] rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 border border-[rgba(180,140,75,0.35)]">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-[#E0D8C8]">{t('smokingLog.logSession')}</h2>
-                <button onClick={() => setShowSmokingLog(false)} className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] text-xl">×</button>
+                <button onClick={handleSmokingLogClose} className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] text-xl">×</button>
               </div>
               <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
             </div>
