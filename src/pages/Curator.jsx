@@ -240,6 +240,7 @@ export default function Curator() {
   };
 
   const handleExpertAction = useCallback((actionLaunchContext) => {
+    console.log("Curator page received actionLaunchContext:", actionLaunchContext);
     setLaunchContext(actionLaunchContext);
   }, []);
 
