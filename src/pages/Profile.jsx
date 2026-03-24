@@ -887,7 +887,7 @@ export default function ProfilePage() {
               <Button
                 variant="outline"
                 onClick={() => navigate(createPageUrl("CollectionInsightsShare"))}
-                className="text-stone-700 border-stone-300 hover:bg-stone-50 hover:text-stone-900"
+                className="text-stone-100 border-stone-500 hover:bg-stone-800 hover:text-stone-50"
               >
                 <Share2 className="w-4 h-4 mr-2" />
                 Share Collection Insights
@@ -895,14 +895,14 @@ export default function ProfilePage() {
 
               {user?.email ? (
                 <Button
-                  variant="outline"
-                  onClick={async () => {
-                    try {
-                      await saveMutation.mutateAsync();
-                      navigate(createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}&preview=true`));
-                    } catch {}
-                  }}
-                  className="text-stone-700 border-stone-300 hover:bg-stone-50 hover:text-stone-900"
+                 variant="outline"
+                 onClick={async () => {
+                   try {
+                     await saveMutation.mutateAsync();
+                     navigate(createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}&preview=true`));
+                   } catch {}
+                 }}
+                 className="text-stone-100 border-stone-500 hover:bg-stone-800 hover:text-stone-50"
                 >
                   {t("profileExtended.previewPublicProfile")}
                 </Button>
