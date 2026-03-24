@@ -207,8 +207,10 @@ export default function TobaccoPage() {
     const matchesSearch = !searchQuery || 
       blend.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       blend.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = !typeFilter || blend.blend_type === typeFilter;
-    const matchesStrength = !strengthFilter || blend.strength === strengthFilter;
+    const activeType = typeFilter === '__none__' ? '' : typeFilter;
+    const activeStrength = strengthFilter === '__none__' ? '' : strengthFilter;
+    const matchesType = !activeType || blend.blend_type === activeType;
+    const matchesStrength = !activeStrength || blend.strength === activeStrength;
     return matchesSearch && matchesType && matchesStrength;
   });
 
