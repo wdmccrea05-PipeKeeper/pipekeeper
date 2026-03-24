@@ -259,11 +259,17 @@ export async function executeCuratorAction({
 
     // Log recommendations to audit — fire-and-forget (non-blocking)
     // This ensures result UI appears immediately, even if persistence fails
+    // Only log items with valid itemId (skip hallucinations that failed ID validation)
     if (actionRun) {
       (async () => {
         try {
           for (const group of translatedResult.groups || []) {
             for (const item of group.items || []) {
+              // Skip recommendations with null/invalid itemId
+              if (!item.itemId) {
+                console.warn(`[CuratorRecommendation] Skipping item without valid itemId: ${item.itemName}`);
+                continue;
+              }
               await base44.entities.CuratorRecommendation.create({
                 action_run_id: actionRun.id,
                 execution_id: executionId,
