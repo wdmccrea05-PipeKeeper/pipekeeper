@@ -50,7 +50,7 @@ export default function ModuleVisibilitySettings() {
     }
   }
 
-  if (isLoading) return null;
+  if (isLoading || userLoading) return null;
 
   return (
     <div className="space-y-4">
