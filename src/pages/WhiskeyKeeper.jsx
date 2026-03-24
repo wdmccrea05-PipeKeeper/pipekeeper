@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, TrendingUp, BookOpen } from 'lucide-react';
+import { Plus, Search, TrendingUp, BookOpen, Glasses, BarChart3, Flame } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency } from '@/components/utils/localeFormatters';
@@ -83,19 +83,19 @@ export default function WhiskeyKeeper() {
     },
     {
       key: 'quickSearch',
-      Icon: Search,
+      Icon: Glasses,
       label: t('quickActions.quickSearchBottle', 'Quick Search'),
       onClick: () => navigate('/Whiskey')
     },
     {
       key: 'logTasting',
-      Icon: BookOpen,
+      Icon: Flame,
       label: t('quickActions.logTasting', 'Log Tasting'),
       onClick: () => navigate('/Tastings')
     },
     {
       key: 'insights',
-      Icon: TrendingUp,
+      Icon: BarChart3,
       label: t('nav.insights', 'Insights'),
       onClick: () => navigate('/WhiskeyInsights')
     },
