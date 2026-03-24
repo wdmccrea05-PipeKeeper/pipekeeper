@@ -143,12 +143,11 @@ export default function CatalogPlate({
 
         {/* Main value - editorial typography */}
          <div
-          className="text-4xl font-bold leading-snug tracking-tight mb-2 break-words"
+          className="text-2xl sm:text-3xl font-bold leading-snug tracking-tight mb-2 line-clamp-2"
           style={{
             color: "#F5F1E7",
             textShadow: `0 2px 10px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95)`,
             fontFamily: "'Georgia', serif",
-            overflow: "hidden"
           }}
         >
           {value ?? "—"}
