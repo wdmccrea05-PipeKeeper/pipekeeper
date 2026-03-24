@@ -23,13 +23,14 @@ import { useTasteProfile, buildTasteProfileContext } from "@/components/curator/
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 import CuratorActionPanel from "./CuratorActionPanel";
 import normalizeCuratorActionResult from "./normalizeCuratorActionResult";
-import { executeCuratorAction } from "./curatorActionExecutor";
+import curatorActionExecutor from "./curatorActionExecutor";
 import { runCuratorAction } from "./curatorActionService";
 import { applyCuratorRecommendation } from "./curatorApplyHandlers";
 import CuratorActionStatusBar from "@/components/curator/CuratorActionStatusBar";
-import CuratorActionResultCard from "@/components/curator/CuratorActionResultCard";
-import CuratorActionErrorCard from "@/components/curator/CuratorActionErrorCard";
-import EmptyActionResultCard from "@/components/curator/EmptyActionResultCard";
+import CuratorActionResultCard from "./CuratorActionResultCard";
+import CuratorActionErrorCard from "./CuratorActionErrorCard";
+import EmptyActionResultCard from "./EmptyActionResultCard";
+import { CURATOR_ACTIONS } from "./types/curatorActionTypes";
 
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
