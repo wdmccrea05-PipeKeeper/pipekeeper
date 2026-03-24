@@ -1113,7 +1113,7 @@ ${englishText}`;
         
         {actionError && !runningAction && (
           <CuratorActionErrorCard
-            error={actionError}
+            error={typeof actionError === "string" ? actionError : actionError?.message || "Curator could not complete this action."}
             onRetry={() => {
               setActionError(null);
               setItemStates({});
