@@ -203,6 +203,11 @@ export default function UserReport() {
 
   const lastUpdated = new Date().toLocaleString();
 
+  // Refresh metrics when date range dropdowns change
+  useEffect(() => {
+    refetchUserMetrics();
+  }, [renewalsDateRange, newAccountsDateRange, refetchUserMetrics]);
+
   function exportCSV() {
     const rows = [];
     rows.push(['tier', 'name', 'email', 'subscription_status', 'billing_interval', 'subscription_end', 'joined']);
