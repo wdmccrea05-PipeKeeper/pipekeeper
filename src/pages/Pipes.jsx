@@ -161,40 +161,45 @@ export default function PipesPage() {
     toggleFavoriteMutation.mutate({ id: pipe.id, is_favorite: !pipe.is_favorite });
   };
 
-  const filteredPipes = (pipes || []).filter(pipe => {
-    if (!pipe) return false;
-    const matchesSearch = !searchQuery || 
-      pipe.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pipe.maker?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesShape = !shapeFilter || pipe.shape === shapeFilter;
-    const matchesMaterial = !materialFilter || pipe.bowl_material === materialFilter;
-    return matchesSearch && matchesShape && matchesMaterial;
-  }).sort((a, b) => {
-    try {
-      if (sortBy === 'favorites') {
-        if (a?.is_favorite && !b?.is_favorite) return -1;
-        if (!a?.is_favorite && b?.is_favorite) return 1;
+  const filteredPipes = React.useMemo(() => {
+    return (pipes || []).filter(pipe => {
+      if (!pipe) return false;
+      const matchesSearch = !searchQuery || 
+        pipe.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        pipe.maker?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesShape = !shapeFilter || pipe.shape === shapeFilter;
+      const matchesMaterial = !materialFilter || pipe.bowl_material === materialFilter;
+      return matchesSearch && matchesShape && matchesMaterial;
+    }).sort((a, b) => {
+      try {
+        if (sortBy === 'favorites') {
+          if (a?.is_favorite && !b?.is_favorite) return -1;
+          if (!a?.is_favorite && b?.is_favorite) return 1;
+          return new Date(b?.created_date || 0).getTime() - new Date(a?.created_date || 0).getTime();
+        }
+        if (sortBy === 'maker') {
+          const makerA = (a?.maker || '').toLowerCase();
+          const makerB = (b?.maker || '').toLowerCase();
+          return makerA.localeCompare(makerB);
+        }
+        if (sortBy === 'name') {
+          const nameA = (a?.name || '').toLowerCase();
+          const nameB = (b?.name || '').toLowerCase();
+          return nameA.localeCompare(nameB);
+        }
+        // Default: date (newest first)
         return new Date(b?.created_date || 0).getTime() - new Date(a?.created_date || 0).getTime();
+      } catch (e) {
+        if (process.env.NODE_ENV !== "production") console.error('Sort error:', e);
+        return 0;
       }
-      if (sortBy === 'maker') {
-        const makerA = (a?.maker || '').toLowerCase();
-        const makerB = (b?.maker || '').toLowerCase();
-        return makerA.localeCompare(makerB);
-      }
-      if (sortBy === 'name') {
-        const nameA = (a?.name || '').toLowerCase();
-        const nameB = (b?.name || '').toLowerCase();
-        return nameA.localeCompare(nameB);
-      }
-      // Default: date (newest first)
-      return new Date(b?.created_date || 0).getTime() - new Date(a?.created_date || 0).getTime();
-    } catch (e) {
-      console.error('Sort error:', e);
-      return 0;
-    }
-  });
+    });
+  }, [pipes, searchQuery, shapeFilter, materialFilter, sortBy]);
 
-  const totalValue = (pipes || []).reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0);
+  const totalValue = React.useMemo(() => 
+    (pipes || []).reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0),
+    [pipes]
+  );
 
   return (
     <div className="space-y-6">
