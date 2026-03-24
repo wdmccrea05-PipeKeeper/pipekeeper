@@ -622,6 +622,40 @@ Category: ${activeContext.category || "general"}`;
     [input, sending, ensureThread, t, pipes, blends, bottles, tastingLogs, userProfile, tasteProfile, messages.length, sessionId, messages, launchContext]
   );
 
+  const handleExpertAction = useCallback(async (actionType) => {
+    setLastActionType(actionType);
+    setItemStates({});
+
+    console.log("Curator expert action context:", buildCuratorContext());
+
+    const requestId =
+      globalThis.crypto?.randomUUID?.() || `${actionType}_${Date.now()}`;
+
+    setActionRun({
+      requestId,
+      actionType,
+      status: "running",
+      summary: "",
+      items: [],
+      error: null,
+      startedAt: Date.now(),
+    });
+
+    const result = await runCuratorAction({
+      actionType,
+      executor: curatorActionExecutor,
+      normalizer: normalizeCuratorActionResult,
+      context: buildCuratorContext(),
+      onAudit: logCuratorAuditEvent,
+    });
+
+    setActionRun(result);
+
+    if (onPromptConsumed) {
+      onPromptConsumed();
+    }
+  }, [logCuratorAuditEvent, onPromptConsumed]);
+
   // ROUTED EXPERT ACTIONS (silent_action execution)
   useEffect(() => {
     const actionType =
@@ -707,40 +741,6 @@ Category: ${activeContext.category || "general"}`;
   const handleQuickPrompt = (prompt) => {
     setInput(prompt);
     sendMessage(prompt);
-  };
-
-  const handleExpertAction = async (actionType) => {
-    setLastActionType(actionType);
-    setItemStates({});
-
-    console.log("Curator expert action context:", buildCuratorContext());
-
-    const requestId =
-      globalThis.crypto?.randomUUID?.() || `${actionType}_${Date.now()}`;
-
-    setActionRun({
-      requestId,
-      actionType,
-      status: "running",
-      summary: "",
-      items: [],
-      error: null,
-      startedAt: Date.now(),
-    });
-
-    const result = await runCuratorAction({
-      actionType,
-      executor: curatorActionExecutor,
-      normalizer: normalizeCuratorActionResult,
-      context: buildCuratorContext(),
-      onAudit: logCuratorAuditEvent,
-    });
-
-    setActionRun(result);
-
-    if (onPromptConsumed) {
-      onPromptConsumed();
-    }
   };
 
   const handleRetryAction = () => {
