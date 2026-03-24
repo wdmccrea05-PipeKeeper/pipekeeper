@@ -191,18 +191,24 @@ export function createActionExecutionContext(action, collectionContext) {
 
   const displayLabels = {
     optimize_collection: 'Optimize Collection',
+    optimize_whiskey_collection: 'Optimize Whiskey Collection',
     recommend_specializations: 'Recommend Specializations',
     update_pipe_measurements: 'Update Pipe Measurements',
     update_bottle_data: 'Update Bottle Data',
     reclassify_tobacco_blends: 'Reclassify Tobacco Blends',
+    session_builder: 'Session Builder',
+    pairing_recommendation: 'Evening Pairings',
   };
 
   const displayStatuses = {
     optimize_collection: 'Reviewing collection balance and gaps…',
+    optimize_whiskey_collection: 'Analyzing whiskey collection balance…',
     recommend_specializations: 'Analyzing specialization patterns…',
     update_pipe_measurements: 'Reviewing pipe measurement gaps…',
     update_bottle_data: 'Checking bottle metadata completeness…',
     reclassify_tobacco_blends: 'Reviewing tobacco classifications…',
+    session_builder: 'Building curated sessions…',
+    pairing_recommendation: 'Finding perfect pairings…',
   };
 
   return {

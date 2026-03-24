@@ -26,7 +26,7 @@ import CuratorActionResultCard from "./CuratorActionResultCard";
 import normalizeCuratorActionResult from "./normalizeCuratorActionResult.jsx";
 import curatorActionExecutor from "./curatorActionExecutor.jsx";
 import { runCuratorAction } from "./curatorActionService.js";
-import { buildCuratorChatSystemPrompt, buildCuratorActivitySummary } from "./chatAdvicePrompting";
+import { buildCuratorChatSystemPrompt, buildCuratorActivitySummary } from "./chatAdvicePrompting.js";
 import { applyCuratorRecommendation } from "./curatorApplyHandlers.js";
 import SavedSessionsPanel from "./SavedSessionsPanel.jsx";
 import { CURATOR_ACTIONS } from "./types/curatorActionTypes.js";
@@ -984,32 +984,7 @@ ${formattedChanges}`,
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {!actionRun && (
-          <div className="mb-4 flex flex-wrap gap-2">
-            <button
-              onClick={() => handleExpertAction('optimize_collection')}
-              className="px-3 py-1.5 text-xs rounded-lg border"
-              style={{
-                color: 'rgba(180,140,75,1)',
-                borderColor: 'rgba(140,105,65,0.3)',
-                background: 'rgba(100,70,45,0.15)',
-              }}
-            >
-              Optimize
-            </button>
-            <button
-              onClick={() => handleExpertAction('session_builder')}
-              className="px-3 py-1.5 text-xs rounded-lg border"
-              style={{
-                color: 'rgba(180,140,75,1)',
-                borderColor: 'rgba(140,105,65,0.3)',
-                background: 'rgba(100,70,45,0.15)',
-              }}
-            >
-              Session Builder
-            </button>
-          </div>
-        )}
+
 
         <CuratorActionPanel
             actionRun={actionRun}

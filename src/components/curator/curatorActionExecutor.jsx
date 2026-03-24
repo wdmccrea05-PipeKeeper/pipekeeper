@@ -252,6 +252,34 @@ STRICT OUTPUT RULES:
 `;
 }
 
+function buildOptimizeWhiskeyCollectionPrompt(context) {
+  return `
+${buildSharedInstruction(context)}
+
+TASK:
+Return only the top 3 highest-confidence whiskey collection optimization recommendations.
+
+Focus on:
+- redundancy across bottle types, regions, age, and proof
+- untasted or neglected bottles
+- high-value bottles missing tasting data
+- obvious balance gaps in the whiskey collection
+
+STRICT OUTPUT RULES:
+- item.type must be one of:
+  - metadata_update
+  - valuation_update
+  - reclassification
+- recordType must be "bottle"
+- Return at most 3 items
+- Each item must target a real existing bottle record
+- Use short, user-facing titles
+- Use human-readable values, not snake_case
+- Do not return general collecting advice
+- Do not return recommendations unless they can be tied to an existing bottle record
+`;
+}
+
 function getActionPrompt(actionType, context) {
   switch (actionType) {
     case "optimize_collection":
@@ -264,6 +292,8 @@ function getActionPrompt(actionType, context) {
       return buildReclassifyTobaccoBlendsPrompt(context);
     case "update_bottle_data":
       return buildUpdateBottleDataPrompt(context);
+    case "optimize_whiskey_collection":
+      return buildOptimizeWhiskeyCollectionPrompt(context);
     case "pairing_recommendation":
     case "session_builder":
       return buildSessionBuilderPrompt(context);

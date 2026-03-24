@@ -27,6 +27,10 @@ async function updateBottle(recordId, changes) {
 }
 
 export async function applyCuratorRecommendation(item) {
+  if (item.type === "pairing_recommendation" || item.type === "session_builder") {
+    return Promise.resolve({ ok: true });
+  }
+
   ensureValidChangeSet(item);
 
   switch (item.type) {
@@ -63,10 +67,6 @@ export async function applyCuratorRecommendation(item) {
         throw new Error("Bottle recommendation is missing a valid bottle target.");
       }
       return updateBottle(item.recordId, item.proposedChanges);
-
-    case "pairing_recommendation":
-    case "session_builder":
-      return Promise.resolve({ ok: true });
 
     default:
       if (item.recordType === "bottle") {
