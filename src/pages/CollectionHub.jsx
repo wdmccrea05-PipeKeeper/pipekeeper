@@ -183,7 +183,7 @@ function QuickAction({ icon: Icon, label, accent, onClick }) {
       }}
     >
       <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${accent}24`, border: `1px solid ${accent}45` }}>
-        <Icon className="w-5 h-5" style={{ color: accent }} />
+        <Icon className="w-5 h-5" color={accent} />
       </div>
       <span className="text-sm font-semibold text-left" style={{ color: '#F5F1E7' }}>{label}</span>
     </button>
