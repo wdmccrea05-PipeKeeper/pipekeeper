@@ -23,12 +23,12 @@ import { useTasteProfile, buildTasteProfileContext } from "@/components/curator/
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 import CuratorActionPanel from "./CuratorActionPanel";
 import CuratorActionResultCard from "./CuratorActionResultCard";
-import normalizeCuratorActionResult from "./normalizeCuratorActionResult.js";
-import curatorActionExecutor from "./curatorActionExecutor.js";
+import normalizeCuratorActionResult from "./normalizeCuratorActionResult.jsx";
+import curatorActionExecutor from "./curatorActionExecutor";
 import { runCuratorAction } from "./curatorActionService.js";
 import { buildCuratorChatSystemPrompt, buildCuratorActivitySummary } from "./chatAdvicePrompting";
-import { applyCuratorRecommendation } from "./curatorApplyHandlers.js";
-import { CURATOR_ACTIONS } from "./types/curatorActionTypes.js";
+import { applyCuratorRecommendation } from "./curatorApplyHandlers";
+import { CURATOR_ACTIONS } from "./types/curatorActionTypes";
 import { buildSafeCollectionContext, buildPromptBlock } from "./collectionContextBudget";
 import extractActionableAdvice from "./extractActionableAdvice";
 
