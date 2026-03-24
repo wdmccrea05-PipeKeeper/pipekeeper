@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Lock } from 'lucide-react';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import { isModuleLaunched } from '@/components/utils/moduleReleaseState';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 
 function ModuleIcon({ src, alt, className }) {
   return <img src={src} alt={alt} className={className || 'w-7 h-7 object-contain bg-transparent'} style={{ backgroundColor: 'transparent', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.2))' }} draggable={false} />;
@@ -15,7 +16,9 @@ function ModuleIcon({ src, alt, className }) {
 export default function ModuleVisibilitySettings() {
   const { t } = useTranslation();
   const { moduleStates, setModuleEnabled, isLoading } = useModuleVisibility();
+  const { user, isLoading: userLoading } = useCurrentUser();
   const [saving, setSaving] = useState(null);
+  const isAdmin = user?.role === 'admin';
 
   const MODULE_CONFIG = [
     { id: 'pipekeeper', label: t('hub.pipekeeper', 'PipeKeeper'), description: t('pipekeeper.description', 'Pipe collection, tobacco, smoking logs, and pairings.'), icon: MODULE_ICONS.pipekeeper, launched: isModuleLaunched('pipekeeper'), canDisable: false },
@@ -65,6 +68,7 @@ export default function ModuleVisibilitySettings() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-stone-800 text-sm">{mod.label}</span>
                     {!mod.launched && <Badge className="text-[10px] bg-stone-200 text-stone-600 border-0 px-1.5 py-0">{t('hub.comingSoon', 'Coming Soon')}</Badge>}
+                    {!mod.launched && isAdmin && <Badge className="text-[10px] bg-purple-100 text-purple-700 border-0 px-1.5 py-0">{t('profile.adminOverride', 'Admin Override')}</Badge>}
                     {mod.alcoholRelated && <Badge className="text-[10px] bg-amber-100 text-amber-700 border-0 px-1.5 py-0">{t('profile.alcoholBadge', 'Alcohol')}</Badge>}
                     {mod.canDisable === false && <Badge className="text-[10px] bg-blue-100 text-blue-700 border-0 px-1.5 py-0">{t('profile.primaryBadge', 'Primary')}</Badge>}
                   </div>
@@ -72,8 +76,9 @@ export default function ModuleVisibilitySettings() {
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                {!enabled && <EyeOff className="w-3.5 h-3.5 text-stone-400" />}
-                <Switch checked={enabled} onCheckedChange={(v) => handleToggle(mod.id, v)} disabled={isSaving || mod.canDisable === false} className="data-[state=checked]:bg-[#A35C5C]" />
+                 {!enabled && <EyeOff className="w-3.5 h-3.5 text-stone-400" />}
+                 {!mod.launched && !isAdmin && <Lock className="w-3.5 h-3.5 text-stone-300" title="Coming Soon" />}
+                 <Switch checked={enabled} onCheckedChange={(v) => handleToggle(mod.id, v)} disabled={isSaving || mod.canDisable === false || (!mod.launched && !isAdmin)} className="data-[state=checked]:bg-[#A35C5C]" />
               </div>
             </div>
           );
