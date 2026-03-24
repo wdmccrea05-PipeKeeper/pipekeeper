@@ -9,7 +9,7 @@
  * - Error callback shows user feedback
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 describe('Smoking session save flow', () => {
   it('form starts with empty pipe and blend (submit disabled)', () => {
@@ -46,8 +46,7 @@ describe('Smoking session save flow', () => {
 
   it('optional bowl_variant_id uses empty string sentinel', () => {
     const formData = { bowl_variant_id: '' };
-    // Empty string is falsy in guards
-    const shouldLookup = formData.bowl_variant_id && true; // hasMultipleBowls
+    const shouldLookup = formData.bowl_variant_id && true;
     expect(shouldLookup).toBeFalsy();
   });
 
@@ -71,8 +70,6 @@ describe('Smoking session save flow', () => {
   });
 
   it('prepareLogData constructs correct shape for create mutation', () => {
-    // Note: The actual prepareLogData function normalizes schema per schemaCompatibility.js
-    // This test verifies the minimal contract: pipe_id, blend_id, date are required
     const formData = {
       pipe_id: 'pipe-1',
       blend_id: 'blend-1',
@@ -84,11 +81,9 @@ describe('Smoking session save flow', () => {
       notes: 'Test note',
     };
 
-    // Validation checks in submit
-    const hasRequiredFields = formData.pipe_id && formData.blend_id;
+    const hasRequiredFields = Boolean(formData.pipe_id && formData.blend_id);
     expect(hasRequiredFields).toBe(true);
 
-    // Form data has all expected shape keys
     expect(Object.keys(formData)).toContain('pipe_id');
     expect(Object.keys(formData)).toContain('blend_id');
     expect(Object.keys(formData)).toContain('date');
@@ -108,7 +103,6 @@ describe('Smoking session save flow', () => {
       notes: '',
     };
 
-    // After successful create, form should be reset
     expect(formReset.pipe_id).toBe('');
     expect(formReset.blend_id).toBe('');
     expect(formReset.notes).toBe('');
@@ -118,8 +112,7 @@ describe('Smoking session save flow', () => {
     const mockToast = vi.fn();
     const error = { message: 'Failed to save session' };
 
-    // Mutation error handler fires toast
-    const errorMsg = "Failed to save session: " + (error?.message || "Unknown error");
+    const errorMsg = 'Failed to save session: ' + (error?.message || 'Unknown error');
     mockToast(errorMsg);
 
     expect(mockToast).toHaveBeenCalledWith(
@@ -129,23 +122,11 @@ describe('Smoking session save flow', () => {
 
   it('submit handler calls createLogMutation.mutate with valid payload', () => {
     const mockMutate = vi.fn();
-    const formData = {
-      pipe_id: 'pipe-1',
-      blend_id: 'blend-1',
-      bowl_variant_id: '',
-      container_id: '',
-      bowls_used: 1,
-      is_break_in: false,
-      date: '2026-03-24',
-      notes: '',
-    };
-
-    // Simulate valid form submission
     const pipe = { id: 'pipe-1', name: 'Pipe' };
     const blend = { id: 'blend-1', name: 'Blend' };
 
     if (pipe && blend) {
-      mockMutate({ /* prepared log data */ });
+      mockMutate({});
     }
 
     expect(mockMutate).toHaveBeenCalled();
@@ -153,18 +134,7 @@ describe('Smoking session save flow', () => {
 
   it('invalid form (missing pipe) does not call mutate', () => {
     const mockMutate = vi.fn();
-    const formData = {
-      pipe_id: '',
-      blend_id: 'blend-1',
-      bowl_variant_id: '',
-      container_id: '',
-      bowls_used: 1,
-      is_break_in: false,
-      date: '2026-03-24',
-      notes: '',
-    };
-
-    const pipe = null; // not found
+    const pipe = null;
     const blend = { id: 'blend-1', name: 'Blend' };
 
     if (pipe && blend) {
@@ -176,19 +146,8 @@ describe('Smoking session save flow', () => {
 
   it('invalid form (missing blend) does not call mutate', () => {
     const mockMutate = vi.fn();
-    const formData = {
-      pipe_id: 'pipe-1',
-      blend_id: '',
-      bowl_variant_id: '',
-      container_id: '',
-      bowls_used: 1,
-      is_break_in: false,
-      date: '2026-03-24',
-      notes: '',
-    };
-
     const pipe = { id: 'pipe-1', name: 'Pipe' };
-    const blend = null; // not found
+    const blend = null;
 
     if (pipe && blend) {
       mockMutate({});
@@ -201,8 +160,8 @@ describe('Smoking session save flow', () => {
     const scenarios = [
       { input: '1', expected: 1 },
       { input: '5', expected: 5 },
-      { input: '', expected: 1 }, // fallback
-      { input: 'invalid', expected: 1 }, // fallback
+      { input: '', expected: 1 },
+      { input: 'invalid', expected: 1 },
     ];
 
     scenarios.forEach(({ input, expected }) => {
