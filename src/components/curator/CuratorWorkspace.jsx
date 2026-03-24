@@ -26,6 +26,10 @@ import normalizeCuratorActionResult from "./normalizeCuratorActionResult";
 import curatorActionExecutor from "./curatorActionExecutor";
 import { runCuratorAction } from "./curatorActionService";
 import { applyCuratorRecommendation } from "./curatorApplyHandlers";
+import CuratorActionStatusBar from "@/components/curator/CuratorActionStatusBar";
+import CuratorActionResultCard from "@/components/curator/CuratorActionResultCard";
+import CuratorActionErrorCard from "@/components/curator/CuratorActionErrorCard";
+import EmptyActionResultCard from "@/components/curator/EmptyActionResultCard";
 
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
