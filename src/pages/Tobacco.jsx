@@ -341,7 +341,7 @@ export default function TobaccoPage() {
               <SelectValue placeholder={t("tobacco.allTypes")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={null}>{t("tobacco.allTypes")}</SelectItem>
+              <SelectItem value="__none__">{t("tobacco.allTypes")}</SelectItem>
               {BLEND_TYPES.map(type => <SelectItem key={type} value={type}>{t(`blendTypes.${type}`, type)}</SelectItem>)}
             </SelectContent>
           </Select>
@@ -350,8 +350,8 @@ export default function TobaccoPage() {
               <SelectValue placeholder={t("tobacco.allStrengths")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={null}>{t("tobacco.allStrengths")}</SelectItem>
-              {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{t(`strengths.${strength}`, strength)}</SelectItem>)}
+              <SelectItem value="__none__">{t("tobacco.allStrengths")}</SelectItem>
+              {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{t(`strengths.${strength}`, strength)}</SelectItem>))
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>

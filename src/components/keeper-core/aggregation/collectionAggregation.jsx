@@ -204,8 +204,10 @@ export async function aggregateCollection(userEmail) {
 
     const mostTastedBottle = bottlesList.length > 0
       ? bottlesList.reduce((max, b) => {
-          const bUses = bottleUsageMap[b.id] || bottleUsageMap[b.name] || 0;
-          const maxUses = bottleUsageMap[max.id] || bottleUsageMap[max.name] || 0;
+          const bKey = b.id || b.name;
+          const maxKey = max.id || max.name;
+          const bUses = bottleUsageMap[bKey] || 0;
+          const maxUses = bottleUsageMap[maxKey] || 0;
           return bUses > maxUses ? b : max;
         })
       : null;
@@ -271,7 +273,7 @@ export async function aggregateCollection(userEmail) {
         mostTastedBottle: mostTastedBottle ? {
           id: mostTastedBottle.id,
           name: mostTastedBottle.name,
-          tastings: bottleUsageMap[mostTastedBottle.name] || 0,
+          tastings: bottleUsageMap[mostTastedBottle.id || mostTastedBottle.name] || 0,
         } : null,
         mostValuedBottle: mostValuedBottle ? {
           id: mostValuedBottle.id,

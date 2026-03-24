@@ -170,9 +170,10 @@ ${additionalContext ? `User provided context:\n${additionalContext}\n\n` : ''}${
         } else {
           toast.error(t('quickPipeIdentifier.failedToIdentify'));
         }
-        responseText = "Failed to receive identification. Please try again.";
+        setLoading(false);
+        return;
       }
-      
+
       // Parse agent response
       const parsePrompt = `Extract pipe details from this expert response into structured data:
 
@@ -256,7 +257,8 @@ Return JSON:
           } else {
             toast.error(t('quickPipeIdentifier.clarificationFailed'));
           }
-          responseText = "Failed to receive clarification response.";
+          setLoading(false);
+          return;
         }
         
         // Parse the response
@@ -365,10 +367,13 @@ Please analyze the impact of adding this pipe:
         console.error('[IMPACT] Response wait failed:', err);
         if (err?.message?.includes('Timed out')) {
           toast.error(t('quickPipeIdentifier.identificationTimedOut'));
+        } else {
+          toast.error(t('quickPipeIdentifier.failedToIdentify'));
         }
-        responseText = "Failed to receive impact analysis.";
+        setAnalyzing(false);
+        return;
       }
-      
+
       // Parse the agent's response to extract structured data
       const parsePrompt = `Extract impact analysis from this expert response:
 
