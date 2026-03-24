@@ -285,6 +285,14 @@ function normalizeItem(item, idx) {
     return null;
   }
 
+  // Filter out items with null itemId (cannot be applied to collection)
+  if (!normalized.itemId) {
+    console.warn(
+      `[normalizer] Item ${normalized.id} (${normalized.itemName}) has no valid itemId, skipping`
+    );
+    return null;
+  }
+
   return normalized;
 }
 
