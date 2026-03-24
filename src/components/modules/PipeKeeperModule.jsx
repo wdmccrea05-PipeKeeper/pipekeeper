@@ -152,7 +152,7 @@ export default function PipeKeeperModule() {
               }}
               draggable={false}
             />
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight whitespace-nowrap sm:whitespace-normal" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
               {t('pipekeeper.title') || 'PipeKeeper'}
             </h1>
           </div>
