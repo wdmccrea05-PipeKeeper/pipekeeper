@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Heart } from "lucide-react";
+import { Heart, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -31,6 +31,7 @@ export default function CollectorDisplayCard({
   isFavorite,
   onToggleFavorite,
   onClick,
+  onEdit,
   fallbackIcon,
   className
 }) {
@@ -102,8 +103,27 @@ export default function CollectorDisplayCard({
           </div>
         )}
 
-        {/* Floating favorite button */}
-        <div className="absolute top-4 right-4 z-30">
+        {/* Floating edit and favorite buttons */}
+        <div className="absolute top-4 right-4 z-30 flex gap-1">
+          {typeof onEdit === 'function' && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full shadow-xl"
+              style={{
+                background: "rgba(18, 12, 8, 0.92)",
+                border: "1px solid rgba(120, 90, 65, 0.35)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.6)"
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onEdit();
+              }}
+            >
+              <Pencil className="w-4 h-4 text-[#D4A574]" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
