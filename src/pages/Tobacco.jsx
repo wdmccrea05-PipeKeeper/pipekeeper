@@ -68,30 +68,6 @@ export default function TobaccoPage() {
 
   const { user, hasPaid, isTrial } = useCurrentUser();
 
-  // Handle URL action parameter
-  React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const action = urlParams.get('action');
-    if (action === 'add') {
-      setShowForm(true);
-      window.history.replaceState({}, '', '/Tobacco');
-    }
-  }, []);
-
-  // Handle URL edit parameter
-  React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const editId = urlParams.get('edit');
-    if (editId && blends?.length > 0) {
-      const blendToEdit = blends.find(b => b.id === editId);
-      if (blendToEdit) {
-        setEditingBlend(blendToEdit);
-        setShowForm(true);
-        window.history.replaceState({}, '', '/Tobacco');
-      }
-    }
-  }, [blends]);
-
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ['blends', user?.email, sortBy],
     queryFn: async () => {
@@ -116,6 +92,30 @@ export default function TobaccoPage() {
     retry: 2,
     staleTime: 10000,
   });
+
+  // Handle URL action parameter
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    if (action === 'add') {
+      setShowForm(true);
+      window.history.replaceState({}, '', '/Tobacco');
+    }
+  }, []);
+
+  // Handle URL edit parameter
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    if (editId && blends?.length > 0) {
+      const blendToEdit = blends.find(b => b.id === editId);
+      if (blendToEdit) {
+        setEditingBlend(blendToEdit);
+        setShowForm(true);
+        window.history.replaceState({}, '', '/Tobacco');
+      }
+    }
+  }, [blends]);
 
   const createMutation = useMutation({
     mutationFn: async (data) => {

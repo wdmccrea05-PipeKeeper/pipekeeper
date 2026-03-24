@@ -54,6 +54,22 @@ export default function PipesPage() {
 
   const { user, hasPaid, isTrial } = useCurrentUser();
 
+  const { data: pipes = [], isLoading } = useQuery({
+    queryKey: ['pipes', user?.email, sortBy],
+    queryFn: async () => {
+      try {
+        const result = await scopedEntities.Pipe.listForUser(user?.email, '-created_date');
+        return Array.isArray(result) ? result : [];
+      } catch (err) {
+        console.error('Pipes load error:', err);
+        return [];
+      }
+    },
+    enabled: !!user?.email,
+    retry: 2,
+    staleTime: 10000,
+  });
+
   // Handle URL action parameter
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -77,22 +93,6 @@ export default function PipesPage() {
       }
     }
   }, [pipes]);
-
-  const { data: pipes = [], isLoading } = useQuery({
-    queryKey: ['pipes', user?.email, sortBy],
-    queryFn: async () => {
-      try {
-        const result = await scopedEntities.Pipe.listForUser(user?.email, '-created_date');
-        return Array.isArray(result) ? result : [];
-      } catch (err) {
-        console.error('Pipes load error:', err);
-        return [];
-      }
-    },
-    enabled: !!user?.email,
-    retry: 2,
-    staleTime: 10000,
-  });
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
