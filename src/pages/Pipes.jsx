@@ -62,6 +62,11 @@ export default function PipesPage() {
       setShowForm(true);
       window.history.replaceState({}, '', '/Pipes');
     }
+  }, []);
+
+  // Handle URL edit parameter
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get('edit');
     if (editId && pipes?.length > 0) {
       const pipeToEdit = pipes.find(p => p.id === editId);

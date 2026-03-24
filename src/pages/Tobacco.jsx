@@ -76,6 +76,11 @@ export default function TobaccoPage() {
       setShowForm(true);
       window.history.replaceState({}, '', '/Tobacco');
     }
+  }, []);
+
+  // Handle URL edit parameter
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get('edit');
     if (editId && blends?.length > 0) {
       const blendToEdit = blends.find(b => b.id === editId);
