@@ -325,6 +325,7 @@ export default function Curator() {
               pipes={scopedPipes}
               blends={scopedBlends}
               bottles={scopedBottles}
+              smokingLogs={scopedSmokingLogs}
               tastingLogs={scopedTastingLogs}
               userProfile={userProfile}
               launchContext={launchContext}

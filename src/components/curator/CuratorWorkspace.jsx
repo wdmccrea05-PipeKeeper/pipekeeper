@@ -220,6 +220,13 @@ function resolveWorkspaceLaunchContext(launchContext, preFilledPrompt, routedCon
     source: launchContext?.source || "workspace_fallback",
     initialPrompt,
     recommendationContext: context,
+    actionType: launchContext?.actionType || null,
+    sourceAction: launchContext?.sourceAction || null,
+    executionMode: launchContext?.executionMode || null,
+    executionId: launchContext?.executionId || null,
+    sourceExpert: launchContext?.sourceExpert || null,
+    displayLabel: launchContext?.displayLabel || null,
+    displayStatus: launchContext?.displayStatus || null,
   };
 }
 
@@ -227,6 +234,7 @@ export default function CuratorWorkspace({
   pipes = [],
   blends = [],
   bottles = [],
+  smokingLogs = [],
   tastingLogs = [],
   userProfile = null,
   preFilledPrompt,
@@ -260,7 +268,7 @@ export default function CuratorWorkspace({
     pipes: pipes || [],
     blends: blends || [],
     bottles: bottles || [],
-    smokingLogs: logs || [],
+    smokingLogs: smokingLogs || logs || [],
     tastingLogs: tastingLogs || [],
     userProfile: userProfile || null,
     tasteProfile: tasteProfile || null,
