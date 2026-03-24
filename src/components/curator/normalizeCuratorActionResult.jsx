@@ -56,7 +56,7 @@ export function normalizeCuratorActionResult(rawResult, context = {}) {
     {
       actionId: actionId || "unknown",
       title: "Analysis Complete",
-      summary: "No optimization opportunities found at this time.",
+      summary: "No actionable recommendations could be generated. All items either lack specific references or had validation issues. Try refining your request or checking collection data.",
       groups: [],
     },
     { actionId, executionId }
