@@ -89,7 +89,7 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
               <SelectValue placeholder={t("smokingLog.selectBowl")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={null}>{t("smokingLog.noSpecificBowl")}</SelectItem>
+              <SelectItem value="">{t("smokingLog.noSpecificBowl")}</SelectItem>
               {selectedPipe.interchangeable_bowls.map((bowl, idx) => {
                 const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
                 return (
