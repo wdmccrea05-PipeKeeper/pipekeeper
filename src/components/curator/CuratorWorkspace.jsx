@@ -38,6 +38,60 @@ const AGENT_NAME = "expert_tobacconist";
 const ACTION_EXECUTION_TIMEOUT = 8000; // 8 seconds hard timeout for expert actions
 
 /**
+ * Build a safe collection context for the curator
+ * Sanitizes and prepares collection data for AI processing
+ */
+function buildSafeCollectionContext({ pipes, blends, bottles, smokingLogs, tastingLogs, userProfile }) {
+  return {
+    pipes: pipes || [],
+    blends: blends || [],
+    bottles: bottles || [],
+    smokingLogs: smokingLogs || [],
+    tastingLogs: tastingLogs || [],
+    userProfile: userProfile || null,
+  };
+}
+
+/**
+ * Build prompt block from collection context
+ */
+function buildPromptBlock(ctx) {
+  const parts = [];
+  
+  if (ctx.pipes?.length > 0) {
+    parts.push(`PIPES (${ctx.pipes.length}):\n${ctx.pipes.map(p => `- ${p.name || 'Unnamed'} (${p.shape || 'Unknown shape'})`).join('\n')}`);
+  }
+  
+  if (ctx.blends?.length > 0) {
+    parts.push(`TOBACCO BLENDS (${ctx.blends.length}):\n${ctx.blends.map(b => `- ${b.name || 'Unnamed'} (${b.blend_type || 'Unknown type'})`).join('\n')}`);
+  }
+  
+  if (ctx.bottles?.length > 0) {
+    parts.push(`WHISKEY BOTTLES (${ctx.bottles.length}):\n${ctx.bottles.map(b => `- ${b.name || 'Unnamed'} (${b.type || 'Unknown type'})`).join('\n')}`);
+  }
+  
+  return parts.join('\n\n') || 'No collection data available.';
+}
+
+/**
+ * Execute a curator action via backend function
+ */
+async function executeCuratorAction({ actionId, executionId, displayLabel, userPrompt, collectionContext, user, launchContext }) {
+  const result = await base44.functions.invoke('upgradesCuratorContext', {
+    action: actionId,
+    executionId,
+    displayLabel,
+    userPrompt,
+    collectionContext,
+    userId: user?.id,
+    userEmail: user?.email,
+    launchContext,
+  });
+  
+  return result?.data || result;
+}
+
+/**
  * Promise wrapper with timeout
  */
 function promiseWithTimeout(promise, ms, timeoutMessage) {
