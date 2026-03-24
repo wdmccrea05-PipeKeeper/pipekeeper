@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
@@ -181,6 +182,16 @@ export default function Curator() {
     staleTime: 10000,
   });
 
+  const { data: smokingLogs = [] } = useQuery({
+    queryKey: ["smoking-logs", user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 50);
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
   const { data: tastingLogs = [] } = useQuery({
     queryKey: ["tasting-logs", user?.email],
     queryFn: async () => {
@@ -207,6 +218,7 @@ export default function Curator() {
   const scopedBlends = curatorScope === "whiskeykeeper" ? [] : blends;
   const scopedBottles = curatorScope === "pipekeeper" ? [] : bottles;
   const scopedTastingLogs = curatorScope === "pipekeeper" ? [] : tastingLogs;
+  const scopedSmokingLogs = curatorScope === "whiskeykeeper" ? [] : smokingLogs;
 
   // Available scope options based on enabled modules
   // If only PipeKeeper is enabled, skip the "All Modules" option to keep UI clean
@@ -303,6 +315,7 @@ export default function Curator() {
               blends={scopedBlends}
               bottles={scopedBottles}
               tastingLogs={scopedTastingLogs}
+              smokingLogs={scopedSmokingLogs}
               userProfile={userProfile}
               onActionSelect={handleExpertAction}
             />
