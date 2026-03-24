@@ -26,7 +26,7 @@ export default async function curatorActionExecutor({
   return parsed;
 }
 
-// Execute the curator model using the LLM integration
+// Execute the curator model by invoking a backend function
 async function runCuratorModel({ actionType, context, requestId }) {
   // Extract the prompt from the context passed by the executor caller
   const prompt = context?.initialPrompt;
@@ -35,15 +35,16 @@ async function runCuratorModel({ actionType, context, requestId }) {
     throw new Error("No prompt found for curator action execution.");
   }
 
-  // Use the base44 LLM integration to invoke the model
-  if (!window?.base44?.integrations?.Core?.InvokeLLM) {
-    throw new Error("Curator LLM integration is unavailable.");
+  // Invoke backend function to call the LLM
+  if (!window?.base44?.functions?.invoke) {
+    throw new Error("Backend function invocation is unavailable.");
   }
 
-  const response = await window.base44.integrations.Core.InvokeLLM({
+  const response = await window.base44.functions.invoke('invokeCuratorLLM', {
     prompt,
-    add_context_from_internet: false, // Expert actions use only collection context
+    actionType,
+    requestId,
   });
 
-  return response;
+  return response?.data;
 }
