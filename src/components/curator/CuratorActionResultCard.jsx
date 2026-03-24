@@ -99,9 +99,6 @@ export default function CuratorActionResultCard({
       setApplyError(err?.message || "Failed to apply changes");
     }
   };
-
-  const allGroups = actionResult.groups || [];
-  const totalItems = allGroups.reduce((s, g) => s + (g.items?.length || 0), 0);
   const audit = actionResult._audit;
   const coverage = actionResult._coverage;
 
