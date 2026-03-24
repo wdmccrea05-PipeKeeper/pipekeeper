@@ -28,6 +28,8 @@ import curatorActionExecutor from "./curatorActionExecutor";
 import { runCuratorAction } from "./curatorActionService.js";
 import { buildCuratorChatSystemPrompt, buildCuratorActivitySummary } from "./chatAdvicePrompting";
 import { applyCuratorRecommendation } from "./curatorApplyHandlers";
+import { saveSessionItem } from "./sessionBuilderStorage";
+import SavedSessionsPanel from "./SavedSessionsPanel";
 import { CURATOR_ACTIONS } from "./types/curatorActionTypes";
 import { buildSafeCollectionContext, buildPromptBlock } from "./collectionContextBudget";
 import extractActionableAdvice from "./extractActionableAdvice";
@@ -708,6 +710,38 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
     }
 
     try {
+      // Non-mutating actions (pairing/session) - save but don't apply
+      if (item.type === "pairing_recommendation" || item.type === "session_builder") {
+        saveSessionItem(item);
+        
+        setItemStates((prev) => ({
+          ...prev,
+          [item.id]: { status: "accepted", error: null },
+        }));
+
+        if (messageId) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === messageId
+                ? {
+                    ...msg,
+                    meta: {
+                      ...msg.meta,
+                      itemStates: {
+                        ...(msg.meta?.itemStates || {}),
+                        [item.id]: { status: "accepted", error: null },
+                      },
+                    },
+                  }
+                : msg
+            )
+          );
+        }
+
+        toast.success("Session saved.");
+        return;
+      }
+
       await applyCuratorRecommendation(item);
 
       setItemStates((prev) => ({
@@ -945,7 +979,7 @@ ${JSON.stringify(item.proposedChanges || {}, null, 2)}
               Optimize
             </button>
             <button
-              onClick={() => handleExpertAction('pairing_recommendation')}
+              onClick={() => handleExpertAction('session_builder')}
               className="px-3 py-1.5 text-xs rounded-lg border"
               style={{
                 color: 'rgba(180,140,75,1)',
@@ -953,7 +987,7 @@ ${JSON.stringify(item.proposedChanges || {}, null, 2)}
                 background: 'rgba(100,70,45,0.15)',
               }}
             >
-              Evening Pairings
+              Session Builder
             </button>
           </div>
         )}
@@ -967,6 +1001,8 @@ ${JSON.stringify(item.proposedChanges || {}, null, 2)}
             onAskCurator={handleAskCuratorAboutRecommendation}
             onDismiss={handleDismissAction}
           />
+
+        <SavedSessionsPanel />
 
         {messages.length === 0 && !actionRun ? (
           <div className="flex items-center justify-center h-full min-h-[120px]">

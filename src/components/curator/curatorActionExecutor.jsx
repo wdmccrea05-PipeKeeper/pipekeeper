@@ -186,40 +186,57 @@ Return only field-level actionable recommendations for specific blend records.
 `;
 }
 
-function buildPairingPrompt(context) {
+function buildSessionBuilderPrompt(context) {
   return `
 ${buildSharedInstruction(context)}
 
 TASK:
-Generate 3 curated session pairings based on the user's collection.
+Generate 3 curated session experiences from the user's actual collection.
 
-Each pairing must include:
+A session may combine:
 - pipe
-- blend
-- whiskey (if available)
-- session theme (mood, balance, discovery, rotation)
+- tobacco blend
+- whiskey bottle
 
-Session types to consider:
-- Relaxed evening
-- Discovery / exploration
-- Rotation balancing
-- Flavor contrast
-- Flavor harmony
+Each session must be built around one of these intents:
+- mood
+- balance
+- rotation
+- discovery
+- contrast
+- harmony
 
 OUTPUT REQUIREMENTS:
-- item.type must be "pairing_recommendation"
+- Return EXACTLY 3 items
+- item.type must be "session_builder"
 - recordType must be "pipe"
 - recordId must reference the pipe used
 - proposedChanges must be {}
+- Use natural language titles
+- Use human-readable text only
+- Do not use snake_case in user-facing text
 
 Each item must include:
-- title (user-friendly)
-- explanation (what the experience is)
-- rationale (why this works)
-- followUpPrompt (optional)
+- title
+- explanation
+- rationale
+- confidence
+- recordType
+- recordId
+- recordName
+- proposedChanges: {}
+- followUpPrompt
 
-Return EXACTLY 3 pairings.
-Focus on EXPERIENCE, not data updates.
+The explanation should include:
+- which pipe
+- which blend
+- which whiskey (if available)
+- why the pairing works
+- what kind of session it creates
+
+If whiskey is unavailable, still generate a pipe + tobacco session.
+
+Return JSON only.
 `;
 }
 
@@ -234,7 +251,9 @@ function getActionPrompt(actionType, context) {
     case "reclassify_tobacco_blends":
       return buildReclassifyTobaccoBlendsPrompt(context);
     case "pairing_recommendation":
-      return buildPairingPrompt(context);
+      return buildSessionBuilderPrompt(context);
+    case "session_builder":
+      return buildSessionBuilderPrompt(context);
     default:
       throw new Error(`Unsupported curator action type: ${actionType}`);
   }

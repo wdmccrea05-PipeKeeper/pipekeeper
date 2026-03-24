@@ -64,6 +64,9 @@ export async function applyCuratorRecommendation(item) {
     case "pairing_recommendation":
       return handlePairingRecommendation(item);
 
+    case "session_builder":
+      return Promise.resolve({ ok: true });
+
     default:
       throw new Error(`Unsupported recommendation type: ${item.type}`);
   }

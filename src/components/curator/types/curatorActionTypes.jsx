@@ -4,6 +4,7 @@ export const CURATOR_ACTIONS = {
   UPDATE_PIPE_MEASUREMENTS: "update_pipe_measurements",
   RECLASSIFY_TOBACCO_BLENDS: "reclassify_tobacco_blends",
   PAIRING_RECOMMENDATION: "pairing_recommendation",
+  SESSION_BUILDER: "session_builder",
 };
 
 export const CURATOR_ITEM_TYPES = {

@@ -49,6 +49,8 @@ export default function CuratorActionResultCard({
   const isAccepted = state?.status === "accepted";
   const isRejected = state?.status === "rejected";
   const isPairing = item.type === "pairing_recommendation";
+  const isSession = item.type === "session_builder";
+  const isNonMutating = isPairing || isSession;
   const proposedEntries = Object.entries(item.proposedChanges || {});
 
   return (
@@ -75,28 +77,28 @@ export default function CuratorActionResultCard({
         ) : null}
       </div>
 
-      {proposedEntries.length > 0 ? (
-        <div className="mt-3 rounded-lg bg-amber-500/5 p-3">
-          <div className="mb-2 text-xs uppercase tracking-wide text-amber-500/70">
-            Proposed Changes
-          </div>
+      {proposedEntries.length > 0 && !isNonMutating ? (
+       <div className="mt-3 rounded-lg bg-amber-500/5 p-3">
+         <div className="mb-2 text-xs uppercase tracking-wide text-amber-500/70">
+           Proposed Changes
+         </div>
 
-          <div className="space-y-2">
-            {proposedEntries.map(([key, value]) => (
-              <div
-                key={key}
-                className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 border-b border-amber-500/10 pb-2 last:border-b-0 last:pb-0"
-              >
-                <div className="text-xs text-amber-50/60">
-                  {humanizeKey(key)}
-                </div>
-                <div className="text-sm text-amber-100 sm:text-right">
-                  {humanizeValue(value)}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+         <div className="space-y-2">
+           {proposedEntries.map(([key, value]) => (
+             <div
+               key={key}
+               className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 border-b border-amber-500/10 pb-2 last:border-b-0 last:pb-0"
+             >
+               <div className="text-xs text-amber-50/60">
+                 {humanizeKey(key)}
+               </div>
+               <div className="text-sm text-amber-100 sm:text-right">
+                 {humanizeValue(value)}
+               </div>
+             </div>
+           ))}
+         </div>
+       </div>
       ) : null}
 
       {state?.error ? (
@@ -117,7 +119,7 @@ export default function CuratorActionResultCard({
             disabled={isApplying}
             className="rounded-lg bg-amber-500 px-3 py-2 text-sm font-medium text-black disabled:opacity-50"
           >
-            {isApplying ? "Applying..." : isPairing ? "Try This Session" : "Accept"}
+            {isApplying ? "Applying..." : isNonMutating ? "Try This Session" : "Accept"}
           </button>
 
           <button
@@ -126,7 +128,7 @@ export default function CuratorActionResultCard({
             disabled={isApplying}
             className="rounded-lg border border-amber-500/30 px-3 py-2 text-sm text-amber-100 disabled:opacity-50"
           >
-            {isPairing ? "Skip" : "Reject"}
+            {isNonMutating ? "Skip" : "Reject"}
           </button>
 
           <button

@@ -13,14 +13,6 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function UserReport() {
   const { t } = useTranslation();
-  
-  // All hooks MUST be called unconditionally at top level
-  const { data: user, isLoading: isLoadingUser, error: userError } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    retry: false,
-  });
-  
   const [viewFilter, setViewFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showPaidTable, setShowPaidTable] = useState(true);
@@ -30,6 +22,13 @@ export default function UserReport() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [newAccountsDateRange, setNewAccountsDateRange] = useState('week');
   const [renewalsDateRange, setRenewalsDateRange] = useState('month');
+  
+  // All hooks MUST be called unconditionally at top level
+  const { data: user, isLoading: isLoadingUser, error: userError } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    retry: false,
+  });
 
   const isAdmin = user?.role === 'admin';
 
