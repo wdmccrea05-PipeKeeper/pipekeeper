@@ -156,7 +156,7 @@ export default function ModuleNav({ currentPageName }) {
         </button>
 
         {mobileOpen && (
-          <div className="absolute top-10 left-0 bg-[#1d1511] border border-[rgba(180,140,75,0.35)] rounded-lg shadow-lg z-50 min-w-max max-h-[80vh] overflow-y-auto">
+          <div className="absolute top-10 left-0 bg-[#1d1511] border border-[rgba(180,140,75,0.35)] rounded-lg shadow-lg z-50 min-w-[200px] max-w-[calc(100vw-2rem)] max-h-[80vh] overflow-y-auto">
             {items.map((item) => (
               <Link
                 key={item.page}

@@ -57,6 +57,7 @@ export default function WhiskeyKeeperModuleNav({ currentPageName }) {
           variant="ghost"
           className="gap-1 text-xs"
           title={t('whiskey.addBottle', 'Add Bottle')}
+          aria-label={t('whiskey.addBottle', 'Add Bottle')}
         >
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">{t('whiskey.addBottle', 'Add Bottle')}</span>
@@ -67,6 +68,7 @@ export default function WhiskeyKeeperModuleNav({ currentPageName }) {
           variant="ghost"
           className="gap-1 text-xs"
           title={t('whiskey.logTasting', 'Log Tasting')}
+          aria-label={t('whiskey.logTasting', 'Log Tasting')}
         >
           <BookOpen className="w-4 h-4" />
           <span className="hidden sm:inline">{t('whiskey.logTasting', 'Log Tasting')}</span>

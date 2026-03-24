@@ -61,6 +61,7 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
           variant="ghost"
           className="gap-1 text-xs"
           title={t('quickActions.addPipe', 'Add Pipe')}
+          aria-label={t('quickActions.addPipe', 'Add Pipe')}
         >
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">{t('quickActions.addPipe', 'Add Pipe')}</span>
@@ -71,6 +72,7 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
           variant="ghost"
           className="gap-1 text-xs"
           title={t('quickActions.addBlend', 'Add Blend')}
+          aria-label={t('quickActions.addBlend', 'Add Blend')}
         >
           <Leaf className="w-4 h-4" />
           <span className="hidden sm:inline">{t('quickActions.addBlend', 'Add Blend')}</span>
