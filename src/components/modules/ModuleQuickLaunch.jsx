@@ -26,7 +26,11 @@ export default function ModuleQuickLaunch({ actions = [] }) {
           >
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: 'rgba(180,140,75,0.14)', border: '1px solid rgba(180,140,75,0.28)' }}
+              style={{
+                background: 'linear-gradient(135deg, rgba(100, 70, 45, 0.5), rgba(80, 55, 35, 0.6))',
+                border: '1px solid rgba(120, 90, 65, 0.45)',
+                boxShadow: '0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)'
+              }}
             >
               {action.usePipeIcon ? (
                 <PipeIcon className="w-6 h-6" style={{ color: '#D4A574' }} />
