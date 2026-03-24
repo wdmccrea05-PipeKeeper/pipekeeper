@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, Shield, Droplets, X } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { toast } from 'sonner';
+import { getBottleUnitValue } from '@/components/utils/whiskeyValueHelpers';
 
 const STATUS_CONFIG = {
   reserve: {
@@ -184,7 +185,7 @@ export default function InventoryManager({ bottle, onClose }) {
     toast.success('Updated');
   };
 
-  const marketValue = bottle.average_market_value || bottle.purchase_price || 0;
+  const marketValue = getBottleUnitValue(bottle);
 
   // Inventory counts
   const reserveCount = units.filter(u => u.status === 'reserve').length;

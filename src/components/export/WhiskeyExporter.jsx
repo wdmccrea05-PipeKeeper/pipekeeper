@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { toast } from 'sonner';
+import { getBottleUnitValue, getBottleDisplayValueLabel } from '@/components/utils/whiskeyValueHelpers';
 
 export default function WhiskeyExporter() {
   const [loading, setLoading] = useState(false);
@@ -120,7 +121,7 @@ export default function WhiskeyExporter() {
       doc.text(`Owner: ${user?.full_name || user?.email || ''}`, pageWidth / 2, 34, { align: 'center' });
 
       // Summary stats
-      const totalValue = bottles.reduce((sum, b) => sum + (Number(b.purchase_price) || 0), 0);
+      const totalValue = bottles.reduce((sum, b) => sum + getBottleUnitValue(b), 0);
       const totalBottles = bottles.reduce((sum, b) => sum + (Number(b.bottle_count) || 1), 0);
       const unopened = bottles.filter(b => !b.opened_date).length;
       const avgRating = bottles.filter(b => b.rating).reduce((s, b, _, a) => s + b.rating / a.length, 0);
@@ -168,9 +169,12 @@ export default function WhiskeyExporter() {
           y += 5;
         }
 
-        if (bottle.purchase_price) {
+        const bottleValue = getBottleUnitValue(bottle);
+        const bottleValueLabel = getBottleDisplayValueLabel(bottle);
+
+        if (bottleValue) {
           doc.setFont(undefined, 'bold');
-          doc.text(`Purchase Price: $${bottle.purchase_price}${bottle.fill_level ? ` | Fill: ${bottle.fill_level}` : ''}`, 25, y);
+          doc.text(`${bottleValueLabel}: $${bottleValue}${bottle.fill_level ? ` | Fill: ${bottle.fill_level}` : ''}`, 25, y);
           doc.setFont(undefined, 'normal');
           y += 5;
         }

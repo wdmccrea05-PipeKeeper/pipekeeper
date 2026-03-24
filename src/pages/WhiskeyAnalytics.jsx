@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
+import { getBottleUnitValue } from '@/components/utils/whiskeyValueHelpers';
 
 function WhiskeyAnalyticsInner() {
   const { t } = useTranslation();
@@ -21,7 +22,7 @@ function WhiskeyAnalyticsInner() {
     enabled: !!user?.email,
   });
 
-  const totalValue = bottles.reduce((sum, b) => sum + (Number(b?.purchase_price) || 0), 0);
+  const totalValue = bottles.reduce((sum, b) => sum + getBottleUnitValue(b), 0);
   const avgRating = bottles.filter(b => b?.rating > 0).reduce((sum, b, _, arr) => sum + (b.rating / arr.length), 0);
   const totalBottles = bottles.length;
   const openBottles = bottles.filter(b => b?.fill_level && b.fill_level !== 'Empty').length;

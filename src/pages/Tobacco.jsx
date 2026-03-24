@@ -48,8 +48,8 @@ export default function TobaccoPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingBlend, setEditingBlend] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
-  const [strengthFilter, setStrengthFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('__none__');
+  const [strengthFilter, setStrengthFilter] = useState('__none__');
   const [sortBy, setSortBy] = useState('-created_date');
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('tobaccoViewMode') || 'grid';
@@ -443,7 +443,15 @@ export default function TobaccoPage() {
             actionLabel={blends.length === 0 ? t("tobaccoPage.addFirstBlend") : null}
             onAction={blends.length === 0 ? () => setShowForm(true) : null}
             secondaryActionLabel={blends.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || typeFilter || strengthFilter ? t("pipesPage.clearFilters") : null}
-            onSecondaryAction={blends.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setTypeFilter(''); setStrengthFilter(''); }}
+            onSecondaryAction={
+  blends.length === 0
+    ? () => setShowQuickSearch(true)
+    : () => {
+        setSearchQuery('');
+        setTypeFilter('__none__');
+        setStrengthFilter('__none__');
+      }
+}
           />
         ) : displayMode && viewMode === 'grid' && !quickEditMode ? (
           <motion.div 
