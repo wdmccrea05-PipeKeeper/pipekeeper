@@ -12,7 +12,6 @@ export function getSavedSessions() {
 
 export function saveSessionItem(item) {
   const existing = getSavedSessions();
-
   const next = [
     {
       id: item.id,
@@ -28,7 +27,6 @@ export function saveSessionItem(item) {
     },
     ...existing.filter((x) => x.id !== item.id),
   ];
-
   localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   return next;
 }

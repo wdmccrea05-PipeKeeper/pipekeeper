@@ -1,18 +1,15 @@
 import React, { useMemo, useState } from "react";
-import { getSavedSessions, removeSavedSessionItem } from "./sessionBuilderStorage";
+import { getSavedSessions, removeSavedSessionItem } from "./sessionBuilderStorage.js";
 
 export default function SavedSessionsPanel() {
   const [refreshKey, setRefreshKey] = useState(0);
-
   const sessions = useMemo(() => getSavedSessions(), [refreshKey]);
 
   if (!sessions.length) {
     return (
       <div className="rounded-xl border border-amber-500/20 bg-black/20 p-4">
         <div className="font-medium text-amber-100">Saved Sessions</div>
-        <div className="mt-1 text-sm text-amber-50/70">
-          No saved sessions yet.
-        </div>
+        <div className="mt-1 text-sm text-amber-50/70">No saved sessions yet.</div>
       </div>
     );
   }
@@ -20,7 +17,6 @@ export default function SavedSessionsPanel() {
   return (
     <div className="rounded-xl border border-amber-500/20 bg-black/20 p-4 space-y-3">
       <div className="font-medium text-amber-100">Saved Sessions</div>
-
       {sessions.map((item) => (
         <div
           key={item.id}
@@ -28,10 +24,9 @@ export default function SavedSessionsPanel() {
         >
           <div className="text-sm font-medium text-amber-100">{item.title}</div>
           <div className="mt-1 text-sm text-amber-50/80">{item.explanation}</div>
-          {item.rationale ? (
+          {item.rationale && (
             <div className="mt-2 text-xs text-amber-50/60">{item.rationale}</div>
-          ) : null}
-
+          )}
           <div className="mt-3 flex justify-end">
             <button
               type="button"
