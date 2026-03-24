@@ -581,14 +581,7 @@ export default function UserReport() {
               <p className="text-3xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : consolidatedUserCount}</p>
             </CardContent>
           </Card>
-          <Card className="bg-transparent">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Active/Trial Paid</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : consolidatedTrialCount}</p>
-            </CardContent>
-          </Card>
+
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Legacy Premium</CardTitle>
