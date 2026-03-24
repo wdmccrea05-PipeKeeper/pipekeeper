@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, Star, Leaf, Pencil } from "lucide-react";
 import { BLEND_TYPE_COLORS } from "@/components/tobacco/tobaccoConstants";
 import { motion } from "framer-motion";
-import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
+
 import { getAgingRecommendation } from "@/components/utils/agingRecommendation";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatWeight } from "@/components/utils/localeFormatters";
