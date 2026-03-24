@@ -1,5 +1,6 @@
 import { Pipe } from "@/entities/Pipe";
 import { Blend } from "@/entities/Blend";
+import { Bottle } from "@/entities/Bottle";
 
 export async function applyCuratorRecommendation(item) {
   switch (item.type) {
@@ -17,6 +18,9 @@ export async function applyCuratorRecommendation(item) {
       }
       if (item.recordType === "pipe") {
         return Pipe.update(item.recordId, item.proposedChanges);
+      }
+      if (item.recordType === "bottle") {
+        return Bottle.update(item.recordId, item.proposedChanges);
       }
       throw new Error("Unsupported reclassification record type.");
 
