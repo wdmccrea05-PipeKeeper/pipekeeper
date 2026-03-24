@@ -710,13 +710,15 @@ export default function ProfilePage() {
                  {["Yes", "No", "Sometimes"].map((pref) => {
                    const active = formData.clenching_preference === pref;
                    return (
-                     <Badge
+                     <Button
                        key={pref}
                        onClick={() => setFormData((p) => ({ ...p, clenching_preference: pref }))}
-                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-stone-800 text-stone-100 border-stone-700"}`}
+                       variant={active ? "default" : "outline"}
+                       size="sm"
+                       className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A]" : "text-stone-400 border-stone-600 hover:bg-stone-800"}
                      >
                        {pref}
-                     </Badge>
+                     </Button>
                    );
                  })}
                </div>
@@ -728,13 +730,15 @@ export default function ProfilePage() {
                  {["Short (15-30 min)", "Medium (30-60 min)", "Long (60+ min)", "No Preference"].map((pref) => {
                    const active = formData.smoke_duration_preference === pref;
                    return (
-                     <Badge
+                     <Button
                        key={pref}
                        onClick={() => setFormData((p) => ({ ...p, smoke_duration_preference: pref }))}
-                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-stone-800 text-stone-100 border-stone-700"}`}
+                       variant={active ? "default" : "outline"}
+                       size="sm"
+                       className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A]" : "text-stone-400 border-stone-600 hover:bg-stone-800"}
                      >
                        {pref}
-                     </Badge>
+                     </Button>
                    );
                  })}
                </div>
@@ -746,13 +750,15 @@ export default function ProfilePage() {
                  {["Small", "Medium", "Large", "Extra Large", "No Preference"].map((pref) => {
                    const active = formData.pipe_size_preference === pref;
                    return (
-                     <Badge
+                     <Button
                        key={pref}
                        onClick={() => setFormData((p) => ({ ...p, pipe_size_preference: pref }))}
-                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-stone-800 text-stone-100 border-stone-700"}`}
+                       variant={active ? "default" : "outline"}
+                       size="sm"
+                       className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A]" : "text-stone-400 border-stone-600 hover:bg-stone-800"}
                      >
                        {pref}
-                     </Badge>
+                     </Button>
                    );
                  })}
                </div>
@@ -764,20 +770,22 @@ export default function ProfilePage() {
                  {["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full", "No Preference"].map((pref) => {
                    const active = formData.strength_preference === pref;
                    return (
-                     <Badge
+                     <Button
                        key={pref}
                        onClick={() => setFormData((p) => ({ ...p, strength_preference: pref }))}
-                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-stone-800 text-stone-100 border-stone-700"}`}
+                       variant={active ? "default" : "outline"}
+                       size="sm"
+                       className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A]" : "text-stone-400 border-stone-600 hover:bg-stone-800"}
                      >
                        {pref}
-                     </Badge>
+                     </Button>
                    );
                  })}
                </div>
              </div>
 
-             <div className="space-y-3">
-               <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.preferredBlendTypes")}</Label>
+            <div className="space-y-3">
+              <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.preferredBlendTypes")}</Label>
               <div className="flex flex-wrap gap-2">
                 {BLEND_TYPES.map((bt) => {
                   const active = formData.preferred_blend_types.includes(bt);
