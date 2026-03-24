@@ -81,7 +81,7 @@ export default function TobaccoDetail() {
             <Share2 className="w-4 h-4 mr-2" />
             Share
           </Button>
-          <Button onClick={() => navigate(-1)} style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))', color: '#fff' }}>
+          <Button onClick={() => navigate(`/Tobacco?edit=${encodeURIComponent(blend.id)}`)} style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))', color: '#fff' }}>
             <Pencil className="w-4 h-4 mr-2" />
             Edit
           </Button>
