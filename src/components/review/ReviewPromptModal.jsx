@@ -10,7 +10,7 @@
  * - "Not Now"            → dismiss cleanly, apply 30-day cooldown
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Star, MessageSquare, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
