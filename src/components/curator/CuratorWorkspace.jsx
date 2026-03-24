@@ -22,7 +22,7 @@ import { validateOwnershipIntegrity } from "@/components/utils/curatorOwnershipG
 import { useTasteProfile, buildTasteProfileContext } from "@/components/curator/useTasteProfile";
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 import { executeCuratorAction } from "@/components/curator/curatorActionExecutor";
-import { applyAllRecommendations, buildClarificationPrompt } from "@/components/curator/curatorActionApply";
+import { applyAllRecommendations } from "@/components/curator/curatorActionApply";
 import { normalizeCuratorActionResult } from "@/components/curator/normalizeCuratorActionResult";
 import { parseCuratorActionResponse } from "@/components/curator/parseCuratorActionResponse";
 import { buildSafeCollectionContext, buildPromptBlock } from "@/components/curator/collectionContextBudget";

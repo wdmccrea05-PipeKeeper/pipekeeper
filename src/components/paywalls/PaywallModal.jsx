@@ -10,7 +10,6 @@ import { X } from 'lucide-react';
 import PricingCard from '@/components/subscription/PricingCard';
 import { usePaywall } from '@/components/subscription/usePaywall';
 import {
-  getModuleReleaseState,
   isModuleLaunched,
 } from '@/components/utils/moduleReleaseState';
 
