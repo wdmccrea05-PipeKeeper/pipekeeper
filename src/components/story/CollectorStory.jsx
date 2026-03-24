@@ -361,6 +361,7 @@ export default function CollectorStory({ isOpen, onClose, storyCards = [] }) {
   const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const slideRef = useRef(null);
+  const touchStartX = useRef(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -396,6 +397,19 @@ export default function CollectorStory({ isOpen, onClose, storyCards = [] }) {
     };
   }, [isOpen, index, onClose, storyCards.length, t]);
 
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const endX = e.changedTouches[0].clientX;
+    const distance = touchStartX.current - endX;
+    touchStartX.current = null;
+    if (distance > 50) setIndex((i) => Math.min(i + 1, storyCards.length - 1));
+    else if (distance < -50) setIndex((i) => Math.max(i - 1, 0));
+  };
+
   if (!isOpen || !storyCards.length) return null;
 
   const current = storyCards[Math.max(0, Math.min(index, storyCards.length - 1))];
@@ -414,30 +428,59 @@ export default function CollectorStory({ isOpen, onClose, storyCards = [] }) {
         <X className="w-5 h-5" />
       </button>
 
-      <div className="relative flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-        <button
-          type="button"
-          onClick={() => setIndex((i) => Math.max(i - 1, 0))}
-          disabled={index === 0}
-          className="w-11 h-11 rounded-full flex items-center justify-center disabled:opacity-30"
-          style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
-          aria-label={t("common.previous", "Previous")}
+      <div className="relative flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex items-center gap-3"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
-          <ChevronLeft className="w-5 h-5 text-white" />
-        </button>
+          <button
+            type="button"
+            onClick={() => setIndex((i) => Math.max(i - 1, 0))}
+            disabled={index === 0}
+            className="w-11 h-11 rounded-full flex items-center justify-center disabled:opacity-30 hidden sm:flex"
+            style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
+            aria-label={t("common.previous", "Previous")}
+          >
+            <ChevronLeft className="w-5 h-5 text-white" />
+          </button>
 
-        <StorySlide card={current} current={index} total={storyCards.length} slideRef={slideRef} />
+          <StorySlide card={current} current={index} total={storyCards.length} slideRef={slideRef} />
 
-        <button
-          type="button"
-          onClick={() => setIndex((i) => Math.min(i + 1, storyCards.length - 1))}
-          disabled={index === storyCards.length - 1}
-          className="w-11 h-11 rounded-full flex items-center justify-center disabled:opacity-30"
-          style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
-          aria-label={t("common.next", "Next")}
-        >
-          <ChevronRight className="w-5 h-5 text-white" />
-        </button>
+          <button
+            type="button"
+            onClick={() => setIndex((i) => Math.min(i + 1, storyCards.length - 1))}
+            disabled={index === storyCards.length - 1}
+            className="w-11 h-11 rounded-full flex items-center justify-center disabled:opacity-30 hidden sm:flex"
+            style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
+            aria-label={t("common.next", "Next")}
+          >
+            <ChevronRight className="w-5 h-5 text-white" />
+          </button>
+        </div>
+
+        {/* Mobile nav buttons below card */}
+        <div className="flex items-center gap-4 sm:hidden">
+          <button
+            type="button"
+            onClick={() => setIndex((i) => Math.max(i - 1, 0))}
+            disabled={index === 0}
+            className="w-11 h-11 rounded-full flex items-center justify-center disabled:opacity-30"
+            style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
+          >
+            <ChevronLeft className="w-5 h-5 text-white" />
+          </button>
+          <span className="text-white/60 text-sm">{index + 1} / {storyCards.length}</span>
+          <button
+            type="button"
+            onClick={() => setIndex((i) => Math.min(i + 1, storyCards.length - 1))}
+            disabled={index === storyCards.length - 1}
+            className="w-11 h-11 rounded-full flex items-center justify-center disabled:opacity-30"
+            style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
+          >
+            <ChevronRight className="w-5 h-5 text-white" />
+          </button>
+        </div>
       </div>
     </div>
   );
