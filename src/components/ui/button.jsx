@@ -1,38 +1,53 @@
-import React from "react";
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-const variants = {
-  primary:
-    "bg-[#A35C5C] text-white hover:bg-[#8c4c4c]",
-  secondary:
-    "bg-[rgba(40,30,24,0.8)] text-[#F5F1E7] border border-[rgba(180,140,75,0.35)] hover:bg-white/10",
-  ghost:
-    "bg-transparent text-[#E0D8C8] hover:bg-white/10",
-  muted:
-    "bg-[rgba(255,255,255,0.05)] text-[#CFC7B5] opacity-60 cursor-not-allowed",
-};
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        default:
+          "bg-[#A35C5C] text-white hover:bg-[#8c4c4c]",
+        primary:
+          "bg-[#A35C5C] text-white hover:bg-[#8c4c4c]",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline:
+          "border border-[rgba(180,140,75,0.35)] bg-transparent text-[#E0D8C8] hover:bg-white/10",
+        secondary:
+          "bg-[rgba(40,30,24,0.8)] text-[#F5F1E7] border border-[rgba(180,140,75,0.25)] hover:bg-white/10",
+        ghost:
+          "bg-transparent text-[#E0D8C8] hover:bg-white/10",
+        link:
+          "text-[#D4A574] underline-offset-4 hover:underline",
+        muted:
+          "bg-[rgba(255,255,255,0.05)] text-[#CFC7B5] opacity-60 cursor-not-allowed",
+      },
+      size: {
+        default: "h-9 px-4 py-2",
+        sm: "h-8 rounded-md px-3 text-xs",
+        lg: "h-10 rounded-md px-8",
+        icon: "h-9 w-9 p-0",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+);
 
-function Button({
-  children,
-  className = "",
-  variant = "secondary",
-  disabled,
-  ...props
-}) {
+function Button({ className, variant, size, asChild = false, ...props }) {
+  const Comp = asChild ? Slot : "button";
   return (
-    <button
-      className={cn(
-        "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-        variants[disabled ? "muted" : variant],
-        className
-      )}
-      disabled={disabled}
+    <Comp
+      className={cn(buttonVariants({ variant, size, className }))}
       {...props}
-    >
-      {children}
-    </button>
+    />
   );
 }
 
-export { Button };
+export { Button, buttonVariants };
 export default Button;
