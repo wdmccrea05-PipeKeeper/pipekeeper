@@ -362,8 +362,9 @@ export default function CuratorWorkspace({
       parts.push(`WHISKEY BOTTLES (${ctx.bottles.length}):\n${ctx.bottles.map(b => `- ${b.name || 'Unnamed'} (${b.type || 'Unknown type'})`).join('\n')}`);
     }
     return parts.join('\n\n') || 'No collection data available.';
+    };
 
-  const logCuratorAuditEvent = async (payload) => {
+    const logCuratorAuditEvent = async (payload) => {
     try {
       await base44.entities.CuratorEvent?.create?.(payload);
     } catch {
