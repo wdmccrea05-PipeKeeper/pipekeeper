@@ -76,15 +76,15 @@ export default function ModuleVisibilitySettings() {
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                 {!enabled && <EyeOff className="w-3.5 h-3.5 text-stone-400" />}
-                 {!mod.launched && !isAdmin && <Lock className="w-3.5 h-3.5 text-stone-300" title="Coming Soon" />}
-                 <Switch checked={enabled} onCheckedChange={(v) => handleToggle(mod.id, v)} disabled={isSaving || mod.canDisable === false || (!mod.launched && !isAdmin)} className="data-[state=checked]:bg-[#A35C5C]" />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      <p className="text-xs text-stone-400 mt-2">{t('profile.moduleVisibilityNote', 'Hiding a module removes it from navigation, Hub, and recommendations. Your records remain stored and fully intact.')}</p>
-    </div>
-  );
-}
+                  {!enabled && <EyeOff className="w-3.5 h-3.5 text-stone-400" />}
+                  {!mod.launched && !isAdmin && <Lock className="w-3.5 h-3.5 text-stone-300" title="Coming Soon" />}
+                  <Switch checked={enabled} onCheckedChange={(v) => handleToggle(mod.id, v)} disabled={isSaving || mod.canDisable === false} className="data-[state=checked]:bg-[#A35C5C]" />
+               </div>
+               );
+               })}
+               </div>
+               </div>
+               <p className="text-xs text-stone-400 mt-2">{t('profile.moduleVisibilityNote', 'Hiding a module removes it from navigation, Hub, and recommendations. Your records remain stored and fully intact.')}</p>
+               </div>
+               );
+               }
