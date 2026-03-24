@@ -32,6 +32,39 @@ export default function CuratorActionResultCard({
 
   if (!actionResult) return null;
 
+  // Safety: ensure groups is an array
+  const allGroups = actionResult.groups || [];
+  const totalItems = allGroups.reduce((s, g) => s + (g.items?.length || 0), 0);
+
+  // If no recommendations after filtering, show message
+  if (allGroups.length === 0) {
+    return (
+      <div
+        className="rounded-xl overflow-hidden shadow-lg mb-4"
+        style={{
+          background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+          border: "1px solid rgba(140,105,65,0.35)",
+          boxShadow: "0 10px 28px rgba(0,0,0,0.6)",
+        }}
+      >
+        <div
+          className="px-6 py-5 border-b"
+          style={{ borderColor: "rgba(140,105,65,0.2)", background: "rgba(20,14,10,0.4)" }}
+        >
+          <h2
+            className="text-xl font-bold mb-2"
+            style={{ color: "#F5F1E7", fontFamily: "Georgia, serif" }}
+          >
+            {actionResult.title}
+          </h2>
+          <p className="text-sm" style={{ color: "rgba(224,216,200,0.7)" }}>
+            {actionResult.summary}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const handleAcceptItem = async (item) => {
     if (!onApplyItems) return;
     try {
