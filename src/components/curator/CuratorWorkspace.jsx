@@ -686,6 +686,12 @@ Category: ${activeContext.category || "general"}`;
       resolvedLaunchContext,
     });
 
+    console.log("Curator routed expert action firing:", {
+      actionType,
+      executionMode,
+      resolvedLaunchContext,
+    });
+
     handledActionRef.current = launchKey;
     handleExpertAction(actionType);
   }, [
