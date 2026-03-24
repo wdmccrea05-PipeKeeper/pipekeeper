@@ -14,8 +14,13 @@ export async function logCuratorEvent({
   metadata = null,
 }) {
   try {
+    const user = await base44.auth.me();
+    if (!user?.email) return { success: false, error: 'No authenticated user' };
+
     await base44.functions.invoke('logCuratorEvent', {
+      user_email: user.email,
       event_type: eventType,
+      timestamp: new Date().toISOString(),
       session_id: sessionId,
       recommendation_id: recommendationId,
       recommendation_context: recommendationContext,
