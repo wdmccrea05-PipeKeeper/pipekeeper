@@ -74,10 +74,10 @@ export function useCurrentUser() {
     initialDataUpdatedAt: authUser ? Date.now() : 0,
     // Keep data fresh for 5 minutes to avoid redundant background refetches.
     staleTime: 5 * 60 * 1000,
-    // Only run query when auth has fully resolved AND user is authenticated.
-    // If auth completes with auth_required error or no user, do NOT fetch user profile.
-    // This prevents half-authenticated requests after invalid/expired/missing token.
-    enabled: !!authUser && !isLoadingAuth && isAuthenticated,
+    // Don't start the query until auth has resolved so the initialData is available.
+    // If auth completes with no user (logged-out state), the queryFn runs and correctly
+    // handles the 401 from base44.auth.me() while AuthenticatedApp redirects to login.
+    enabled: !isLoadingAuth && !!authUser && isAuthenticated,
     retry: 2,
   });
 
