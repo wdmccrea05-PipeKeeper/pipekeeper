@@ -19,9 +19,7 @@ function getModuleTags(profile) {
   if (profile.pipekeeper_enabled !== false) {
     tags.push({ label: '🪵 PipeKeeper', bg: 'rgba(120,80,40,0.35)', color: 'rgba(212,165,116,1)' });
   }
-  if (profile.whiskeykeeper_enabled === true) {
-    tags.push({ label: '🥃 WhiskeyKeeper', bg: 'rgba(90,60,20,0.35)', color: 'rgba(212,190,100,1)' });
-  }
+  // WhiskeyKeeper is a locked module — do not display as a public tag
   return tags;
 }
 
