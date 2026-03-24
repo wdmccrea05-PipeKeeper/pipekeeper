@@ -21,8 +21,8 @@ export default function ModuleVisibilitySettings() {
   const isAdmin = user?.role === 'admin';
 
   const MODULE_CONFIG = [
-    { id: 'pipekeeper', label: t('hub.pipekeeper', 'PipeKeeper'), description: t('pipekeeper.description', 'Pipe collection, tobacco, smoking logs, and pairings.'), icon: MODULE_ICONS.pipekeeper, launched: isModuleLaunched('pipekeeper'), canDisable: false },
-    { id: 'whiskeykeeper', label: t('hub.whiskeykeeper', 'WhiskeyKeeper'), description: t('whiskeykeeper.description', 'Whiskey bottle collection, tasting notes, and inventory.'), icon: MODULE_ICONS.whiskeykeeper, launched: isModuleLaunched('whiskeykeeper'), canDisable: true, alcoholRelated: true },
+    { id: 'pipekeeper', label: t('hub.pipekeeper', 'PipeKeeper'), description: t('pipekeeper.description', 'Pipe collection, tobacco, smoking logs, and pairings.'), icon: MODULE_ICONS.pipekeeper, launched: isModuleLaunched('pipekeeper'), canDisable: false, allowToggle: false },
+    { id: 'whiskeykeeper', label: t('hub.whiskeykeeper', 'WhiskeyKeeper'), description: t('whiskeykeeper.description', 'Whiskey bottle collection, tasting notes, and inventory.'), icon: MODULE_ICONS.whiskeykeeper, launched: isModuleLaunched('whiskeykeeper'), canDisable: true, allowToggle: true, alcoholRelated: true },
     { id: 'winekeeper', label: t('hub.winekeeper', 'WineKeeper'), description: t('profile.winekeeperDescription', 'Wine cellar management and bottle tracking.'), icon: MODULE_ICONS.winekeeper, launched: isModuleLaunched('winekeeper'), canDisable: true, alcoholRelated: true },
     { id: 'cigarkeeper', label: t('hub.cigarkeeper', 'CigarKeeper'), description: t('profile.cigarkeeperDescription', 'Cigar collection curation and tasting.'), icon: MODULE_ICONS.cigarkeeper, launched: isModuleLaunched('cigarkeeper'), canDisable: true },
   ];
@@ -62,11 +62,11 @@ export default function ModuleVisibilitySettings() {
           const isSaving = saving === mod.id;
           return (
             <div key={mod.id} className={`flex items-center justify-between gap-4 p-3 rounded-xl border transition-all ${enabled ? 'bg-stone-50 border-stone-200' : 'bg-stone-100/50 border-stone-200/60 opacity-60'}`}>
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
                 <ModuleIcon src={mod.icon} alt={mod.label} className="w-8 h-8 object-contain flex-shrink-0 bg-transparent" />
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-stone-800 text-sm">{mod.label}</span>
+                    <span className="font-medium text-stone-100 text-sm">{mod.label}</span>
                     {!mod.launched && <Badge className="text-[10px] bg-stone-200 text-stone-600 border-0 px-1.5 py-0">{t('hub.comingSoon', 'Coming Soon')}</Badge>}
                     {!mod.launched && isAdmin && <Badge className="text-[10px] bg-purple-100 text-purple-700 border-0 px-1.5 py-0">{t('profile.adminOverride', 'Admin Override')}</Badge>}
                     {mod.alcoholRelated && <Badge className="text-[10px] bg-amber-100 text-amber-700 border-0 px-1.5 py-0">{t('profile.alcoholBadge', 'Alcohol')}</Badge>}
@@ -75,10 +75,15 @@ export default function ModuleVisibilitySettings() {
                   <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{mod.launched ? mod.description : `${mod.description} (${t('hub.comingSoon', 'Coming Soon')})`}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                {!enabled && <EyeOff className="w-3.5 h-3.5 text-stone-400" />}
-                {!mod.launched && !isAdmin && <Lock className="w-3.5 h-3.5 text-stone-300" title="Coming Soon" />}
-                <Switch checked={enabled} onCheckedChange={(v) => handleToggle(mod.id, v)} disabled={isSaving || mod.canDisable === false} className="data-[state=checked]:bg-[#A35C5C]" />
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {mod.allowToggle && (
+                  <Switch 
+                    checked={enabled} 
+                    onCheckedChange={(v) => handleToggle(mod.id, v)} 
+                    disabled={isSaving || (mod.canDisable === false)}
+                  />
+                )}
+                {!mod.allowToggle && !mod.launched && !isAdmin && <Lock className="w-3.5 h-3.5 text-stone-300" title="Coming Soon" />}
               </div>
             </div>
           );
