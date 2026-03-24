@@ -1,6 +1,9 @@
 import { base44 } from "@/api/base44Client";
 import parseCuratorActionResponse from "./parseCuratorActionResponse";
-import { buildSafeCollectionContext, buildPromptBlock } from "./collectionContextBudget";
+import {
+  buildSafeCollectionContext,
+  buildPromptBlock,
+} from "./collectionContextBudget";
 
 function buildSharedInstruction(context) {
   const safeContext = buildSafeCollectionContext({
@@ -30,6 +33,7 @@ HARD RULES:
 7. Every recommendation must include proposedChanges that can actually be applied.
 8. If there is not enough evidence for an actionable change, do not fake one.
 9. If no actionable changes exist, return an empty items array.
+10. Keep results concise and practical.
 
 Allowed item.type values:
 - specialization
@@ -87,10 +91,12 @@ Focus on:
 - collection balance strengths and weak points
 
 OUTPUT REQUIREMENTS:
-- Return only the most actionable 3 to 6 recommendations
+- Return only the most actionable 3 to 5 recommendations
 - Every item must be specific and practical
 - Use actual collection and log evidence
 - Proposed changes must be record-level changes, not vague advice
+- Titles must be user-facing and natural language
+- Use human-readable text, not snake_case or internal field names
 `;
 }
 
@@ -115,6 +121,11 @@ OUTPUT REQUIREMENTS:
   {
     "specialization": "Outdoor Rotation"
   }
+- Titles must be user-facing and natural language
+- Good example: "Assign Boswell Jumbo to Rich Aromatic Rotation"
+- Bad example: "Specialization for Boswell Jumbo"
+- Use human-readable values in title, explanation, and rationale
+- Do not use snake_case or internal field naming in user-facing text
 
 Only return actionable specialization cards for actual pipe records.
 Do NOT return generic strategy text.
@@ -139,9 +150,12 @@ OUTPUT REQUIREMENTS:
   - bowl_width_mm
   - bowl_diameter_mm
   - weight_g
+- Titles must be user-facing and natural language
+- Use human-readable text, not snake_case or internal field names
 
 If measurement support is weak, do not invent precise values.
 Prefer fewer, higher-confidence recommendations over guessing.
+Return only the most actionable 3 to 5 recommendations.
 `;
 }
 
@@ -164,6 +178,9 @@ OUTPUT REQUIREMENTS:
 - item.type must be "reclassification"
 - recordType must be "blend"
 - proposedChanges must contain direct field updates
+- Return only the most actionable 3 to 5 recommendations
+- Titles must be user-facing and natural language
+- Use human-readable text, not snake_case or internal field names
 
 Return only field-level actionable recommendations for specific blend records.
 `;
