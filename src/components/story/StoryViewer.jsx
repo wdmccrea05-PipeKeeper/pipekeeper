@@ -36,10 +36,11 @@ export default function StoryViewer({ cards, onClose, onShare, user }) {
   };
 
   const handleTouchEnd = (e) => {
-    setTouchEnd(e.changedTouches[0].clientX);
-    if (!touchStart || !touchEnd) return;
+    const endX = e.changedTouches[0].clientX;
+    setTouchEnd(endX);
+    if (!touchStart) return;
 
-    const distance = touchStart - touchEnd;
+    const distance = touchStart - endX;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
