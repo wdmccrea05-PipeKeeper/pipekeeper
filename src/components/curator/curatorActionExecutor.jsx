@@ -11,6 +11,8 @@ export default async function curatorActionExecutor({
     requestId,
   });
 
+  console.log("Curator raw action response:", responseText);
+
   if (!responseText) {
     throw new Error("Curator returned no response.");
   }
