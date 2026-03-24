@@ -769,52 +769,104 @@ ${englishText}`;
     sendMessage(prompt);
   };
 
-  const handleAcceptRecommendation = async (item) => {
-    if (!item?.id || !user?.email) return;
+  const handleExpertAction = async (actionType) => {
+    setLastActionType(actionType);
+    setItemStates({});
 
+    const requestId =
+      globalThis.crypto?.randomUUID?.() || `${actionType}_${Date.now()}`;
+
+    setActionRun({
+      requestId,
+      actionType,
+      status: "running",
+      summary: "",
+      items: [],
+      error: null,
+      startedAt: Date.now(),
+    });
+
+    const result = await runCuratorAction({
+      actionType,
+      executor: curatorActionExecutor,
+      normalizer: normalizeCuratorActionResult,
+      context: buildCuratorContext(),
+      onAudit: logCuratorAuditEvent,
+    });
+
+    setActionRun(result);
+  };
+
+  const handleRetryAction = () => {
+    if (!lastActionType) return;
+    handleExpertAction(lastActionType);
+  };
+
+  const handleAcceptRecommendation = async (item) => {
     setItemStates((prev) => ({
       ...prev,
-      [item.id]: { status: "applying" },
+      [item.id]: { status: "applying", error: null },
     }));
 
     try {
-      await applyRecommendation(item, user);
+      await applyCuratorRecommendation(item);
 
       setItemStates((prev) => ({
         ...prev,
-        [item.id]: { status: "accepted" },
+        [item.id]: { status: "accepted", error: null },
       }));
 
-      queryClient.invalidateQueries({ queryKey: ["pipes"] });
-      queryClient.invalidateQueries({ queryKey: ["blends"] });
-      queryClient.invalidateQueries({ queryKey: ["bottles"] });
+      toast.success("Recommendation applied.");
 
-      toast.success(`Applied: ${item.title}`);
-    } catch (err) {
-      console.error("Accept failed:", err);
+      await Promise.allSettled([
+        queryClient.invalidateQueries({ queryKey: ["pipes"] }),
+        queryClient.invalidateQueries({ queryKey: ["blends"] }),
+        queryClient.invalidateQueries({ queryKey: ["bottles"] }),
+      ]);
+    } catch (error) {
       setItemStates((prev) => ({
         ...prev,
-        [item.id]: { status: "idle", error: err?.message || "Failed to apply" },
+        [item.id]: {
+          status: "error",
+          error: error?.message || "Failed to apply recommendation.",
+        },
       }));
-      toast.error(err?.message || "Failed to apply recommendation");
+
+      toast.error("Failed to apply recommendation.");
     }
   };
 
   const handleRejectRecommendation = (item) => {
-    if (!item?.id) return;
     setItemStates((prev) => ({
       ...prev,
-      [item.id]: { status: "rejected" },
+      [item.id]: { status: "rejected", error: null },
     }));
   };
 
-  const handleAskCuratorAboutItem = (item) => {
-    if (!item) return;
-    setActionResult(null);
-    setInput(
-      `I'd like to understand more about this recommendation: \"${item.title}\". Can you explain in more detail?`
-    );
-    setTimeout(() => document.querySelector('input[placeholder*="Ask Curator"]')?.focus(), 100);
+  const handleAskCuratorAboutRecommendation = (item) => {
+    setFollowUpSeed({
+      recommendationId: item.id,
+      recordId: item.recordId,
+      recordType: item.recordType,
+      title: item.title,
+      followUpPrompt: item.followUpPrompt,
+      proposedChanges: item.proposedChanges,
+    });
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `followup_${item.id}_${Date.now()}`,
+        role: "user",
+        content: item.followUpPrompt,
+        metadata: {
+          source: "curator_action_followup",
+          recommendationId: item.id,
+          recordId: item.recordId,
+          recordType: item.recordType,
+        },
+      },
+    ]);
   };
 
   const handleDismissAction = () => {
