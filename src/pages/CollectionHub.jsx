@@ -10,6 +10,7 @@ import {
   Activity,
   TrendingUp,
   Target,
+  Layers,
 } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import PipeIcon from '@/components/icons/PipeIcon';
