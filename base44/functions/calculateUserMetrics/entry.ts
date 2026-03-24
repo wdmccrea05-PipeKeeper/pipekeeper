@@ -25,13 +25,15 @@ Deno.serve(async (req) => {
     });
 
     const consolidatedPaidUsers = paidSubs.length;
-    const activeOrTrialPaidUsers = paidSubs.length;
 
-    // Count legacy premium users (before Feb 1, 2026)
+    // Count legacy premium users (subscribed before Feb 1, 2026 AND still actively renewing)
+    // Legacy users are those who had 'premium' tier before the transition to Free/Pro-only model
     const legacyDate = new Date('2026-02-01');
     const legacyPremiumCount = paidSubs.filter(sub => {
       const startDate = new Date(sub.started_at || sub.created_date || '');
-      return startDate < legacyDate;
+      const tier = String(sub.tier || '').toLowerCase();
+      // Only count if subscribed before transition AND tier indicates legacy premium
+      return startDate < legacyDate && tier === 'premium';
     }).length;
 
     // New accounts in time periods
@@ -67,8 +69,15 @@ Deno.serve(async (req) => {
     };
 
     const breakdownByBillingInterval = (renewalList) => {
-      const monthly = renewalList.filter(sub => String(sub.billing_interval || '').toLowerCase() === 'month');
-      const annual = renewalList.filter(sub => String(sub.billing_interval || '').toLowerCase() === 'year');
+      // Handle both 'month'/'year' and 'monthly'/'yearly' formats from Stripe
+      const monthly = renewalList.filter(sub => {
+        const interval = String(sub.billing_interval || '').toLowerCase();
+        return interval === 'month' || interval === 'monthly';
+      });
+      const annual = renewalList.filter(sub => {
+        const interval = String(sub.billing_interval || '').toLowerCase();
+        return interval === 'year' || interval === 'yearly';
+      });
       return {
         total: renewalList.length,
         monthly: monthly.length,
@@ -91,14 +100,20 @@ Deno.serve(async (req) => {
     const allProducts = [...modules, ...bundles];
 
     allProducts.forEach(product => {
-      const productSubs = subscriptions.filter(sub => {
-        const tier = String(sub.tier || '').toLowerCase();
-        const status = String(sub.status || '').toLowerCase();
-        return tier === product && (status === 'active' || status === 'trialing' || status === 'trial');
-      });
+    const productSubs = subscriptions.filter(sub => {
+      const tier = String(sub.tier || '').toLowerCase();
+      const status = String(sub.status || '').toLowerCase();
+      return tier === product && (status === 'active' || status === 'trialing' || status === 'trial');
+    });
 
-      const monthly = productSubs.filter(s => String(s.billing_interval || '').toLowerCase() === 'month');
-      const annual = productSubs.filter(s => String(s.billing_interval || '').toLowerCase() === 'year');
+    const monthly = productSubs.filter(s => {
+      const interval = String(s.billing_interval || '').toLowerCase();
+      return interval === 'month' || interval === 'monthly';
+    });
+    const annual = productSubs.filter(s => {
+      const interval = String(s.billing_interval || '').toLowerCase();
+      return interval === 'year' || interval === 'yearly';
+    });
 
       if (productSubs.length > 0) {
         moduleSubscriptions[product] = {
@@ -117,7 +132,6 @@ Deno.serve(async (req) => {
     return Response.json({
       ok: true,
       consolidatedPaidUsers,
-      activeOrTrialPaidUsers,
       legacyPremiumCount,
       newAccounts: {
         day: newAccounts24h,
