@@ -1,6 +1,4 @@
-import { Pipe } from "@/entities/Pipe";
-import { Blend } from "@/entities/Blend";
-import { Bottle } from "@/entities/Bottle";
+import { base44 } from "@/api/base44Client";
 
 function ensureValidChangeSet(item) {
   if (!item?.recordId) {
@@ -16,6 +14,18 @@ function ensureValidChangeSet(item) {
   }
 }
 
+async function updatePipe(recordId, changes) {
+  return base44.entities.Pipe.update(recordId, changes);
+}
+
+async function updateBlend(recordId, changes) {
+  return base44.entities.TobaccoBlend.update(recordId, changes);
+}
+
+async function updateBottle(recordId, changes) {
+  return base44.entities.Bottle.update(recordId, changes);
+}
+
 export async function applyCuratorRecommendation(item) {
   ensureValidChangeSet(item);
 
@@ -26,17 +36,17 @@ export async function applyCuratorRecommendation(item) {
       if (item.recordType !== "pipe") {
         throw new Error("Pipe recommendation is missing a valid pipe target.");
       }
-      return Pipe.update(item.recordId, item.proposedChanges);
+      return updatePipe(item.recordId, item.proposedChanges);
 
     case "reclassification":
       if (item.recordType === "blend") {
-        return Blend.update(item.recordId, item.proposedChanges);
+        return updateBlend(item.recordId, item.proposedChanges);
       }
       if (item.recordType === "pipe") {
-        return Pipe.update(item.recordId, item.proposedChanges);
+        return updatePipe(item.recordId, item.proposedChanges);
       }
       if (item.recordType === "bottle") {
-        return Bottle.update(item.recordId, item.proposedChanges);
+        return updateBottle(item.recordId, item.proposedChanges);
       }
       throw new Error("Unsupported reclassification record type.");
 
@@ -44,7 +54,7 @@ export async function applyCuratorRecommendation(item) {
       if (item.recordType !== "blend") {
         throw new Error("Blend recommendation is missing a valid blend target.");
       }
-      return Blend.update(item.recordId, item.proposedChanges);
+      return updateBlend(item.recordId, item.proposedChanges);
 
     default:
       throw new Error(`Unsupported recommendation type: ${item.type}`);
