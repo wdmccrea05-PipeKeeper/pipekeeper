@@ -870,6 +870,23 @@ ${englishText}`;
     ]);
   };
 
+  const handleAskCuratorAboutItem = (item) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `followup_${item.id}_${Date.now()}`,
+        role: "user",
+        content: item.followUpPrompt || `Explain this recommendation: ${item.title}`,
+        metadata: {
+          source: "curator_action_followup",
+          recommendationId: item.id,
+          recordId: item.recordId,
+          recordType: item.recordType,
+        },
+      },
+    ]);
+  };
+
   const handleDismissAction = () => {
     setActionResult(null);
     setItemStates({});
