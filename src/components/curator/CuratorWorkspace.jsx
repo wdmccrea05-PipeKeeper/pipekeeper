@@ -814,6 +814,7 @@ ${englishText}`;
 
     setActionResult(null);
     setActionError(null);
+    setItemStates({});
     setLastExecutionId(null);
 
     const newExecutionId = `${currentActionId}_regen_${Date.now()}`;
