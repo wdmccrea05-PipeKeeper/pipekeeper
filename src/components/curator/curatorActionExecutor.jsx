@@ -281,6 +281,36 @@ STRICT OUTPUT RULES:
 `;
 }
 
+function buildUpdateBottleDataPrompt(context) {
+  return `
+${buildSharedInstruction(context)}
+
+TASK:
+Identify whiskey bottles with incomplete or missing metadata and return enrichment recommendations.
+
+Allowed fields in proposedChanges:
+- distillery
+- region
+- age
+- abv
+- type (whiskey_type)
+- retail_price
+- aftermarket_price
+- collector_value
+
+STRICT OUTPUT RULES:
+- item.type must be "measurement_update" (reuse for data enrichment)
+- recordType must be "bottle"
+- Return at most 5 items
+- Each item must target a real existing bottle record
+- proposedChanges must only include fields that are clearly incomplete or missing
+- Use short, user-facing titles
+- Use human-readable values, not snake_case
+- Include confidence level in explanation if estimating market values
+- Prioritize bottles with highest collection value impact
+`;
+}
+
 function getActionPrompt(actionType, context) {
   switch (actionType) {
     case "optimize_collection":
@@ -291,6 +321,8 @@ function getActionPrompt(actionType, context) {
       return buildUpdatePipeMeasurementsPrompt(context);
     case "reclassify_tobacco_blends":
       return buildReclassifyTobaccoBlendsPrompt(context);
+    case "update_bottle_data":
+      return buildUpdateBottleDataPrompt(context);
     case "pairing_recommendation":
     case "session_builder":
       return buildSessionBuilderPrompt(context);
