@@ -61,13 +61,19 @@ export function getUsageCharacteristics(pipe) {
  */
 export function prepareLogData(data) {
   const bowls = Number(data.bowls_used || data.bowls_smoked) || 1;
+  const normalizeOptionalId = (value) => {
+    if (value === undefined || value === null || value === "" || value === "__none__") {
+      return null;
+    }
+    return value;
+  };
+
   return {
     ...data,
+    bowl_variant_id: normalizeOptionalId(data.bowl_variant_id),
+    container_id: normalizeOptionalId(data.container_id),
     bowls_used: bowls,
     bowls_smoked: bowls, // Keep legacy field in sync
-    // Normalize empty string sentinels back to null for optional fields
-    bowl_variant_id: data.bowl_variant_id || null,
-    bowl_name: data.bowl_name || null,
   };
 }
 
