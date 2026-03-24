@@ -49,8 +49,8 @@ export const HELP_ARTICLES = [
     module: 'curator',
     category: 'getting-started',
     summary: 'The Curator is an AI advisor that gives you personalised advice about your collection.',
-    body: 'The Curator is your AI collection advisor. Navigate to the Curator page from the top navigation. Type a question or request in the chat input and press Send. The Curator knows your collection — your pipes, tobacco blends, bottles, session history, and preferences — and answers questions specific to your data. You can ask for pairing suggestions, collection gap analysis, value estimates, acquisition recommendations, and more. Each session is saved so you can refer back to previous conversations. The Curator can also proactively surface insights on the Hub without you asking.',
-    keywords: ['curator', 'ai', 'advisor', 'chat', 'intelligence', 'recommendations', 'proactive', 'ask', 'insights'],
+    body: 'The Curator is your AI collection advisor. Navigate to the Curator page from the top navigation. Type a question or request in the chat input and press Send. The Curator knows your collection — your pipes, tobacco blends, bottles, session history, and preferences — and answers questions specific to your data. You can ask for pairing suggestions, collection gap analysis, value estimates, acquisition recommendations, and more. Each session is saved so you can refer back to previous conversations. The Curator can also proactively surface insights on the Hub without you asking. Use Expert Actions to run specialized analytical workflows.',
+    keywords: ['curator', 'ai', 'advisor', 'chat', 'intelligence', 'recommendations', 'proactive', 'ask', 'insights', 'expert actions'],
     questions: [
       'how do i use the curator',
       'what is the curator',
@@ -61,9 +61,63 @@ export const HELP_ARTICLES = [
       'how do i use ai help',
       'curator not working',
       'how do i get collection advice',
+      'what are expert actions',
+      'how do i run a curator action',
     ],
     synonyms: ['ai advisor', 'collection curator', 'curator ai', 'ai chat', 'ai assistant', 'intelligent advisor'],
-    relatedArticles: ['hub-overview', 'tonights-session', 'pipekeeper-ai-pairings'],
+    relatedArticles: ['curator-expert-actions', 'session-builder', 'tonights-session', 'pipekeeper-ai-pairings'],
+  },
+  {
+    id: 'curator-expert-actions',
+    title: 'Curator Expert Actions',
+    module: 'curator',
+    category: 'features',
+    summary: 'Run specialized AI-powered analytical workflows on your collection.',
+    body: 'Expert Actions are specialized Curator workflows that analyze your collection and provide structured recommendations. From the Curator page, click the "Expert Actions" panel to see available actions. Actions include: Optimize Collection (find gaps and redundancies), Recommend Specializations (assign pipes to blend types), Update Measurements (suggest pipe dimension additions), Reclassify Blends (improve tobacco categorization), Session Builder (create curated session experiences), and module-specific optimizations. Click an action to run it. The AI analyzes your data and returns actionable items you can apply with one click.',
+    keywords: ['expert actions', 'curator actions', 'optimization', 'recommendations', 'analytical', 'workflow', 'batch actions'],
+    questions: [
+      'what are expert actions',
+      'how do i run a curator action',
+      'how do i optimize my collection',
+      'how do i get specialization recommendations',
+      'how do i use curator workflows',
+    ],
+    synonyms: ['curator workflows', 'analytical actions', 'recommendation engine', 'batch processing'],
+    relatedArticles: ['curator-overview', 'session-builder', 'pipekeeper-ai-pairings'],
+  },
+  {
+    id: 'session-builder',
+    title: 'Session Builder',
+    module: 'curator',
+    category: 'features',
+    summary: 'Create curated session experiences combining pipes, tobacco, and whiskey.',
+    body: 'Session Builder is a Curator Expert Action that generates 3 distinct session recommendations for your collection. Each session pairs a pipe, a tobacco blend, and optionally a whiskey bottle, with a unique mood or intent: Relaxed Evening, Underused Item Recovery, or Discovery. Session recommendations are saved to your local session library (browser storage) and can be revisited anytime. Click "Save Session" on any recommendation to store it. Access saved sessions from the Curator workspace.',
+    keywords: ['session', 'session builder', 'pairing', 'experience', 'pipe tobacco whiskey', 'mood', 'routine'],
+    questions: [
+      'how do i use session builder',
+      'how do i create a session',
+      'how do i save a session',
+      'what is a session recommendation',
+    ],
+    synonyms: ['session planner', 'experience builder', 'curated session'],
+    relatedArticles: ['tonights-session', 'curator-expert-actions', 'curator-overview'],
+  },
+  {
+    id: 'curator-pairing-recommendations',
+    title: 'AI Pairing Recommendations',
+    module: 'curator',
+    category: 'features',
+    summary: 'Generate AI-powered pairing recommendations across all your collections.',
+    body: 'The Curator provides pairing recommendations that suggest the best combinations of pipes with tobacco blends, and whiskey bottles with sessions. Use the Pairing Recommendation expert action to generate fresh pairings based on your current collection. Recommendations consider blend type, pipe shape, bowl size, tobacco strength, whiskey region and type, and your personal history. Apply recommended pairings directly or use them for inspiration.',
+    keywords: ['pairing', 'recommendation', 'ai pairing', 'match', 'combination', 'curator'],
+    questions: [
+      'how do i get pairing recommendations',
+      'how do i use curator pairings',
+      'how do pipes pair with tobacco',
+      'how do whiskeys pair with sessions',
+    ],
+    synonyms: ['pairing engine', 'ai recommendations', 'combination suggestions'],
+    relatedArticles: ['curator-expert-actions', 'session-builder', 'pipekeeper-ai-pairings'],
   },
 
   // ─── TONIGHT'S SESSION ──────────────────────────────────────────────────────
@@ -73,7 +127,7 @@ export const HELP_ARTICLES = [
     module: 'hub',
     category: 'features',
     summary: "Tonight's Session gives you AI-powered pairing recommendations for your next smoking session.",
-    body: "Tonight's Session is found on the Hub. It analyses your pipes, tobacco blends, and whiskey bottles to suggest the ideal combination for your next session. The AI considers your smoking history, current inventory, and preferences. You can accept a suggested session, ask for alternatives, or customise the pairing yourself. Completing a session automatically logs it in your smoking history.",
+    body: "Tonight's Session is found on the Hub. It analyses your pipes, tobacco blends, and whiskey bottles to suggest the ideal combination for your next session. The AI considers your smoking history, current inventory, and preferences. You can accept a suggested session, ask for alternatives, or customise the pairing yourself. Completing a session automatically logs it in your smoking history. Sessions are powered by the Curator's Session Builder expert action.",
     keywords: ['tonight', 'session', 'pairing', 'recommendation', 'evening', 'smoke', 'combination', 'pipe tobacco whiskey'],
     questions: [
       'how do i use tonights session',
@@ -84,7 +138,7 @@ export const HELP_ARTICLES = [
       'how do i get pairing suggestions',
     ],
     synonyms: ["tonight's session", 'session planner', 'evening pairing', 'session engine'],
-    relatedArticles: ['curator-overview', 'pipekeeper-ai-pairings', 'log-smoking-session'],
+    relatedArticles: ['session-builder', 'curator-expert-actions', 'pipekeeper-ai-pairings', 'log-smoking-session'],
   },
 
   // ─── PIPEKEEPER ─────────────────────────────────────────────────────────────
@@ -258,7 +312,7 @@ export const HELP_ARTICLES = [
     module: 'whiskeykeeper',
     category: 'features',
     summary: 'Track retail, aftermarket, and collector values for your whiskey bottles.',
-    body: 'WhiskeyKeeper tracks three price types per bottle. Retail Price: the standard MSRP or shop price. Aftermarket Price: what the bottle sells for at auction or on the secondary market. Collector Value: the estimated value for sealed collector bottles. Your total collection value is calculated from these prices multiplied by your inventory units. You can use AI Value Lookup to get an AI estimate of current market prices.',
+    body: 'WhiskeyKeeper tracks three price types per bottle. Retail Price: the standard MSRP or shop price. Aftermarket Price: what the bottle sells for at auction or on the secondary market. Collector Value: the estimated value for sealed collector bottles. Your total collection value is calculated from these prices multiplied by your inventory units. You can use AI Value Lookup to get an AI estimate of current market prices. Use the Optimize Whiskey Collection expert action for valuation recommendations.',
     keywords: ['price', 'value', 'valuation', 'retail', 'aftermarket', 'collector', 'worth', 'market price'],
     questions: [
       'how do i track bottle value',
@@ -267,7 +321,23 @@ export const HELP_ARTICLES = [
       'how do i get an ai price estimate',
     ],
     synonyms: ['bottle value', 'collection value', 'pricing', 'market value'],
-    relatedArticles: ['add-bottle', 'whiskey-inventory', 'whiskeykeeper-overview'],
+    relatedArticles: ['add-bottle', 'whiskey-inventory', 'whiskeykeeper-overview', 'whiskey-optimization'],
+  },
+  {
+    id: 'whiskey-optimization',
+    title: 'Optimize Whiskey Collection',
+    module: 'whiskeykeeper',
+    category: 'features',
+    summary: 'Use Curator Expert Actions to analyze and improve your whiskey collection.',
+    body: 'The Optimize Whiskey Collection expert action analyzes your bottles for gaps, redundancies, untasted items, and diversification opportunities. Run this action to get recommendations for balancing your collection by type and origin, identifying bottles to taste, and suggesting acquisition targets. Apply recommended metadata updates with one click to enrich bottle records.',
+    keywords: ['optimization', 'whiskey', 'collection', 'expert action', 'recommendations', 'balance', 'gaps'],
+    questions: [
+      'how do i optimize my whiskey collection',
+      'how do i find gaps in my collection',
+      'how do i improve my whiskey collection',
+    ],
+    synonyms: ['collection optimization', 'whiskey analysis'],
+    relatedArticles: ['whiskeykeeper-overview', 'curator-expert-actions', 'whiskey-pricing'],
   },
 
   // ─── SHARING ────────────────────────────────────────────────────────────────
@@ -318,13 +388,19 @@ export const TOPIC_SHORTCUTS = {
   'curator': 'curator-overview',
   'how do i use curator': 'curator-overview',
   'ai advisor': 'curator-overview',
+  'expert actions': 'curator-expert-actions',
+  'curator actions': 'curator-expert-actions',
+  'session builder': 'session-builder',
+  'curated session': 'session-builder',
+  'optimize collection': 'curator-expert-actions',
+  'whiskey optimization': 'whiskey-optimization',
   'log tasting': 'log-tasting',
   'tasting notes': 'log-tasting',
   'add pipe': 'add-pipe',
   'new pipe': 'add-pipe',
   'tonights session': 'tonights-session',
   "tonight's session": 'tonights-session',
-  'session planner': 'tonights-session',
+  'session planner': 'session-builder',
   'collection insights': 'collection-insights',
   'analytics': 'collection-insights',
   'add bottle': 'add-bottle',
@@ -333,6 +409,8 @@ export const TOPIC_SHORTCUTS = {
   'smoking session': 'log-smoking-session',
   'share': 'sharing-stories',
   'quick search': 'global-search',
+  'pairings': 'curator-pairing-recommendations',
+  'pairing recommendations': 'curator-pairing-recommendations',
 };
 
 // ─── NORMALISE QUERY ──────────────────────────────────────────────────────────
@@ -445,6 +523,7 @@ export function buildAiContext(query, maxArticles = 4) {
 
 const DOCUMENTATION = {
   hub: { tutorials: [], troubleshooting: [], features: [] },
+  curator: { tutorials: [], troubleshooting: [], features: [] },
   pipekeeper: { tutorials: [], troubleshooting: [], features: [] },
   whiskeykeeper: { tutorials: [], troubleshooting: [], features: [] },
   bundle: { tutorials: [], troubleshooting: [] },
@@ -455,7 +534,7 @@ export function getModuleDocumentation(moduleName) {
 }
 
 export function getAllDocumentedModules() {
-  return Object.keys(DOCUMENTATION);
+  return Object.keys(DOCUMENTATION).filter(k => k !== 'bundle');
 }
 
 export function searchDocumentation(query) {
@@ -472,10 +551,12 @@ export function searchDocumentation(query) {
 
 export function getContextualHelp(screenName) {
   const map = {
-    'pairings': 'pipekeeper-ai-pairings',
+    'pairings': 'curator-pairing-recommendations',
     'hub': 'hub-overview',
-    'sessions': 'log-smoking-session',
+    'sessions': 'session-builder',
     'curator': 'curator-overview',
+    'expert-actions': 'curator-expert-actions',
+    'whiskey': 'whiskeykeeper-overview',
   };
   const id = map[screenName];
   return id ? { article: getArticleById(id) } : null;
