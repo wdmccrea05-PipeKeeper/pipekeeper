@@ -240,7 +240,6 @@ export default function Curator() {
   };
 
   const handleExpertAction = useCallback((actionLaunchContext) => {
-    console.log("Curator page received actionLaunchContext:", actionLaunchContext);
     setLaunchContext(actionLaunchContext);
   }, []);
 
@@ -322,18 +321,18 @@ export default function Curator() {
 
             {/* Main Workspace */}
             <CuratorWorkspace
-              pipes={scopedPipes}
-              blends={scopedBlends}
-              bottles={scopedBottles}
-              smokingLogs={scopedSmokingLogs}
-              tastingLogs={scopedTastingLogs}
-              userProfile={userProfile}
-              launchContext={launchContext}
-              preFilledPrompt={launchContext?.initialPrompt || ""}
-              routedContext={launchContext?.recommendationContext || null}
-              onPromptConsumed={handlePromptConsumed}
-              curatorScope={curatorScope}
-            />
+          pipes={scopedPipes}
+          blends={scopedBlends}
+          bottles={scopedBottles}
+          smokingLogs={scopedSmokingLogs}
+          tastingLogs={scopedTastingLogs}
+          userProfile={userProfile}
+          launchContext={launchContext}
+          preFilledPrompt={launchContext?.initialPrompt || ""}
+          routedContext={launchContext?.recommendationContext || null}
+          onPromptConsumed={handlePromptConsumed}
+          curatorScope={curatorScope}
+        />
           </div>
         </CardContent>
       </Card>
