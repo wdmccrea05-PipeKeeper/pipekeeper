@@ -333,11 +333,17 @@ export default function CollectionHub() {
       {/* Collection Overview */}
       <section className="space-y-4">
         <SectionTitle>Collection Overview</SectionTitle>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className={`grid grid-cols-1 sm:grid-cols-2 ${whiskeyOpenable ? 'xl:grid-cols-6' : 'xl:grid-cols-4'} gap-4`}>
           <StatCard icon={TrendingUp} label="Total Value" value={isLoading ? '—' : currency(metrics.totalValue)} sub="Across active collections" accent="#C89752" />
           <StatCard icon={PipeIcon} label="Pipes" value={isLoading ? '—' : pipes.length} sub="In collection" accent="#B48C4B" />
           <StatCard icon={Leaf} label="Blends" value={isLoading ? '—' : blends.length} sub="Tracked blends" accent="#6E8A57" />
           <StatCard icon={Flame} label="Recent Sessions" value={isLoading ? '—' : metrics.recentSessionsCount} sub="This week" accent="#B56A5F" />
+          {whiskeyOpenable && (
+            <>
+              <StatCard icon={WhiskeyKeeperIcon} label="Bottles" value={isLoading ? '—' : bottles.length} sub="In collection" accent="#B66565" />
+              <StatCard icon={Flame} label="Tastings" value={isLoading ? '—' : tastings.length} sub="Tracked tastings" accent="#A35050" />
+            </>
+          )}
         </div>
       </section>
 
