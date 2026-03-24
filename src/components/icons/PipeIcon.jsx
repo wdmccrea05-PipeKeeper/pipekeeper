@@ -1,46 +1,46 @@
-/**
- * Canonical Pipe Icon — exports the standard tobacco pipe icon used throughout the app.
- * This is the improved, visually recognizable pipe icon from PipeKeeperIcons.
- * 
- * Usage: import PipeIcon from '@/components/icons/PipeIcon'
- *        <PipeIcon className="w-5 h-5" />
- */
+import React from "react";
 
-function Svg({ children, className = "", viewBox = "0 0 24 24" }) {
+export default function PipeIcon({
+  className = "w-5 h-5",
+  color = "currentColor",
+  title = "Pipe",
+}) {
   return (
     <svg
-      viewBox={viewBox}
+      viewBox="0 0 64 64"
       className={className}
+      role="img"
+      aria-label={title}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {children}
+      <path
+        d="M18 12h10c5 0 8 3 8 8v8c0 6-4 10-10 10h-6c-5 0-8-3-8-8V20c0-5 2-8 6-8Z"
+        stroke={color}
+        strokeWidth="3"
+        strokeLinejoin="round"
+        fill={color}
+        fillOpacity="0.14"
+      />
+      <path
+        d="M28 30c8 0 14 2 18 6"
+        stroke={color}
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M46 36h8c4 0 6 2 6 5s-2 5-6 5h-4"
+        stroke={color}
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M20 12v-3h12v3"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
     </svg>
-  );
-}
-
-export default function PipeIcon({ className = "h-5 w-5", strokeWidth = 2 }) {
-  return (
-    <Svg className={className}>
-      <path
-        d="M5.5 13.7c0-1.9 1.5-3.4 3.4-3.4h1.9c1.9 0 3.4 1.5 3.4 3.4v1.1c0 1.9-1.5 3.4-3.4 3.4H8.9c-1.9 0-3.4-1.5-3.4-3.4v-1.1Z"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinejoin="round"
-      />
-      <path
-        d="M14.2 13.2h2.8c1.4 0 2.5 1.1 2.5 2.5v.4c0 1-.8 1.8-1.8 1.8h-3.5"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M14.2 13.2c.2-2.1 1.8-3.6 4.1-3.6h.6"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-      />
-    </Svg>
   );
 }
