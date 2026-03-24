@@ -1,28 +1,21 @@
-/**
- * CURATOR ACTION RESULT CARD
- * 
- * Renders a single structured recommendation from expert action.
- * Displays title, explanation, proposed changes, and action buttons.
- */
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, MessageCircle, Trash2 } from "lucide-react";
 
 export default function CuratorActionResultCard({
   item,
+  state,
   onAccept,
   onReject,
   onAskCurator,
-  isApplying = false,
-  isAccepted = false,
-  isRejected = false,
 }) {
-  if (!item) return null;
+  const isApplying = state?.status === "applying";
+  const isAccepted = state?.status === "accepted";
+  const isRejected = state?.status === "rejected";
 
   return (
     <div
-      className="rounded-xl p-4 sm:p-5 mb-3 border"
+      className="rounded-xl p-4 sm:p-5 border"
       style={{
         background: isAccepted
           ? "linear-gradient(135deg, rgba(46, 125, 92, 0.12), rgba(46, 125, 92, 0.08))"
