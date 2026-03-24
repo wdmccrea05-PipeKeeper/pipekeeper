@@ -789,7 +789,7 @@ ${englishText}`;
 
     const result = await runCuratorAction({
       actionType,
-      executor: executeCuratorAction,
+      executor: curatorActionExecutor,
       normalizer: normalizeCuratorActionResult,
       context: buildCuratorContext(),
       onAudit: logCuratorAuditEvent,
