@@ -272,6 +272,24 @@ export default function CuratorWorkspace({
   const sessionStartedRef = useRef(false);
   const startupConsumedRef = useRef(false);
 
+  const buildCuratorContext = () => {
+    return {
+      pipes,
+      blends,
+      bottles,
+      tasteProfile: userProfile,
+      activeModule: "curator",
+    };
+  };
+
+  const logCuratorAuditEvent = async (payload) => {
+    try {
+      await base44.entities.CuratorEvent?.create?.(payload);
+    } catch {
+      // non-blocking on purpose
+    }
+  };
+
   const resolvedLaunchContext = useMemo(
     () => resolveWorkspaceLaunchContext(launchContext, preFilledPrompt, routedContext),
     [launchContext, preFilledPrompt, routedContext]
