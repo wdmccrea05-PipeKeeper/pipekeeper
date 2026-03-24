@@ -63,7 +63,7 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
           title={t('quickActions.addPipe', 'Add Pipe')}
           aria-label={t('quickActions.addPipe', 'Add Pipe')}
         >
-          <Plus className="w-4 h-4" />
+          <PipeIcon className="w-4 h-4" />
           <span className="hidden sm:inline">{t('quickActions.addPipe', 'Add Pipe')}</span>
         </Button>
         <Button
