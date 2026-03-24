@@ -212,6 +212,10 @@ export async function aggregateCollection(userEmail) {
         })
       : null;
 
+    // Final lookup uses id-first fallback consistent with map creation
+    const mostTastedBottleKey = mostTastedBottle?.id || mostTastedBottle?.name;
+    const tastings = mostTastedBottleKey ? (bottleUsageMap[mostTastedBottleKey] || 0) : 0;
+
     const mostValuedBottle = bottlesList.length > 0
       ? bottlesList.reduce((max, b) => {
           const bVal = getBottleValue(b);
@@ -273,7 +277,7 @@ export async function aggregateCollection(userEmail) {
         mostTastedBottle: mostTastedBottle ? {
           id: mostTastedBottle.id,
           name: mostTastedBottle.name,
-          tastings: bottleUsageMap[mostTastedBottle.id || mostTastedBottle.name] || 0,
+          tastings: tastings,
         } : null,
         mostValuedBottle: mostValuedBottle ? {
           id: mostValuedBottle.id,

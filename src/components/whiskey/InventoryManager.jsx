@@ -333,7 +333,7 @@ export default function InventoryManager({ bottle, onClose }) {
 
 // Helper: compute inventory value for a bottle given its units
 export function computeInventoryValue(bottle, units) {
-  const marketValue = bottle.average_market_value || bottle.purchase_price || 0;
+  const marketValue = getBottleUnitValue(bottle);
   if (!marketValue || !units?.length) return marketValue * (bottle.bottle_count || 1);
 
   return units.reduce((sum, u) => {
