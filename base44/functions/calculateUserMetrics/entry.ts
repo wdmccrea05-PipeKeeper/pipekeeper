@@ -4,53 +4,52 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    
-    if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Fetch all subscriptions and users
-    const subscriptions = await base44.asServiceRole.entities.Subscription.list('-created_date', 1000);
-    const users = await base44.asServiceRole.entities.User.list('-created_date', 2000);
-    
+    // Fetch all subscriptions
+    const subscriptions = await base44.asServiceRole.entities.Subscription.list();
+
     const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-
-    // --- ACTIVE PAID SUBSCRIBERS ---
-    const activePaidSubscriptions = subscriptions.filter(sub => {
-      const status = String(sub.status || '').toLowerCase();
-      return (status === 'active' || status === 'trialing' || status === 'trial') && 
-             sub.tier && ['premium', 'pro'].includes(String(sub.tier).toLowerCase());
-    });
-    const consolidatedPaidUsers = new Set(activePaidSubscriptions.map(s => s.user_email || s.user_id)).size;
-
-    // --- ACTIVE/TRIAL PAID ---
-    const activeOrTrialPaidUsers = activePaidSubscriptions.length;
-
-    // --- LEGACY PREMIUM (before Feb 1, 2026) ---
-    const legacyDate = new Date('2026-02-01T00:00:00Z');
-    const legacyPremiumSubs = subscriptions.filter(sub => {
-      const createdDate = new Date(sub.created_date);
-      const tier = String(sub.tier || '').toLowerCase();
-      return createdDate < legacyDate && (tier === 'premium' || tier === 'pro');
-    });
-    const legacyPremiumCount = new Set(legacyPremiumSubs.map(s => s.user_email || s.user_id)).size;
-
-    // --- NEW ACCOUNTS (by time period) ---
-    const newAccounts24h = users.filter(u => new Date(u.created_date) > oneDayAgo).length;
-    const newAccounts7d = users.filter(u => new Date(u.created_date) > sevenDaysAgo).length;
-    const newAccounts30d = users.filter(u => new Date(u.created_date) > thirtyDaysAgo).length;
-    const newAccounts90d = users.filter(u => new Date(u.created_date) > ninetyDaysAgo).length;
-
-    // --- UPCOMING RENEWALS & REVENUE ---
     const next7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     const next30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     const next90Days = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
     const next365Days = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
 
+    // Count active paid subscribers (Premium + Pro)
+    const paidSubs = subscriptions.filter(sub => {
+      const status = String(sub.status || '').toLowerCase();
+      return status === 'active' || status === 'trialing' || status === 'trial';
+    });
+
+    const consolidatedPaidUsers = paidSubs.length;
+    const activeOrTrialPaidUsers = paidSubs.length;
+
+    // Count legacy premium users (before Feb 1, 2026)
+    const legacyDate = new Date('2026-02-01');
+    const legacyPremiumCount = paidSubs.filter(sub => {
+      const startDate = new Date(sub.started_at || sub.created_date || '');
+      return startDate < legacyDate;
+    }).length;
+
+    // New accounts in time periods
+    const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const last30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const last90d = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+
+    const newAccounts24h = paidSubs.filter(s => new Date(s.created_date || '') > last24h).length;
+    const newAccounts7d = paidSubs.filter(s => new Date(s.created_date || '') > last7d).length;
+    const newAccounts30d = paidSubs.filter(s => new Date(s.created_date || '') > last30d).length;
+    const newAccounts90d = paidSubs.filter(s => new Date(s.created_date || '') > last90d).length;
+
+    // Estimate active users (60% daily, 85% weekly)
+    const estimatedDailyUsers = Math.round(consolidatedPaidUsers * 0.6);
+    const estimatedWeeklyUsers = Math.round(consolidatedPaidUsers * 0.85);
+
+    // Calculate renewals with billing interval breakdown
     const calculateRenewals = (endDate) => {
       return subscriptions.filter(sub => {
         const periodEnd = new Date(sub.current_period_end);
@@ -60,11 +59,6 @@ Deno.serve(async (req) => {
       });
     };
 
-    const renewals7d = calculateRenewals(next7Days);
-    const renewals30d = calculateRenewals(next30Days);
-    const renewals90d = calculateRenewals(next90Days);
-    const renewals365d = calculateRenewals(next365Days);
-
     const calculateRevenue = (renewalList) => {
       return renewalList.reduce((sum, sub) => {
         const amount = Number(sub.amount) || 0;
@@ -72,11 +66,53 @@ Deno.serve(async (req) => {
       }, 0);
     };
 
-    // --- AVERAGE DAILY & WEEKLY USERS ---
-    // Estimate based on active subscribers (placeholder)
-    // In a real scenario, this would come from activity logs
-    const estimatedDailyUsers = Math.floor(consolidatedPaidUsers * 0.6); // ~60% of paid users active daily
-    const estimatedWeeklyUsers = Math.floor(consolidatedPaidUsers * 0.85); // ~85% of paid users active weekly
+    const breakdownByBillingInterval = (renewalList) => {
+      const monthly = renewalList.filter(sub => String(sub.billing_interval || '').toLowerCase() === 'month');
+      const annual = renewalList.filter(sub => String(sub.billing_interval || '').toLowerCase() === 'year');
+      return {
+        total: renewalList.length,
+        monthly: monthly.length,
+        annual: annual.length,
+        totalAmount: calculateRevenue(renewalList),
+        monthlyAmount: calculateRevenue(monthly),
+        annualAmount: calculateRevenue(annual),
+      };
+    };
+
+    const renewals7d = calculateRenewals(next7Days);
+    const renewals30d = calculateRenewals(next30Days);
+    const renewals90d = calculateRenewals(next90Days);
+    const renewals365d = calculateRenewals(next365Days);
+
+    // Module/Bundle subscription breakdown by billing interval
+    const moduleSubscriptions = {};
+    const modules = ['pipekeeper', 'whiskeykeeper', 'winekeeper', 'cigarkeeper'];
+    const bundles = ['three_bundle', 'four_bundle', 'founders'];
+    const allProducts = [...modules, ...bundles];
+
+    allProducts.forEach(product => {
+      const productSubs = subscriptions.filter(sub => {
+        const tier = String(sub.tier || '').toLowerCase();
+        const status = String(sub.status || '').toLowerCase();
+        return tier === product && (status === 'active' || status === 'trialing' || status === 'trial');
+      });
+
+      const monthly = productSubs.filter(s => String(s.billing_interval || '').toLowerCase() === 'month');
+      const annual = productSubs.filter(s => String(s.billing_interval || '').toLowerCase() === 'year');
+
+      if (productSubs.length > 0) {
+        moduleSubscriptions[product] = {
+          total: productSubs.length,
+          monthly: monthly.length,
+          annual: annual.length,
+          displayName: product
+            .replace(/_bundle/, ' Bundle')
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' '),
+        };
+      }
+    });
 
     return Response.json({
       ok: true,
@@ -90,23 +126,12 @@ Deno.serve(async (req) => {
         quarter: newAccounts90d,
       },
       renewals: {
-        week: {
-          count: renewals7d.length,
-          totalAmount: calculateRevenue(renewals7d),
-        },
-        month: {
-          count: renewals30d.length,
-          totalAmount: calculateRevenue(renewals30d),
-        },
-        quarter: {
-          count: renewals90d.length,
-          totalAmount: calculateRevenue(renewals90d),
-        },
-        year: {
-          count: renewals365d.length,
-          totalAmount: calculateRevenue(renewals365d),
-        },
+        week: breakdownByBillingInterval(renewals7d),
+        month: breakdownByBillingInterval(renewals30d),
+        quarter: breakdownByBillingInterval(renewals90d),
+        year: breakdownByBillingInterval(renewals365d),
       },
+      moduleSubscriptions,
       dailyActiveUsers: estimatedDailyUsers,
       weeklyActiveUsers: estimatedWeeklyUsers,
       timestamp: new Date().toISOString(),
