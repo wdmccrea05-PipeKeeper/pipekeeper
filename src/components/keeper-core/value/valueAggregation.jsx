@@ -34,8 +34,8 @@ export function getTobaccoValue(blend) {
  */
 export function getBottleValue(bottle) {
   if (!bottle) return 0;
-  // Prefer estimated_value, fall back to purchase_price
-  return bottle.estimated_value || bottle.purchase_price || 0;
+  // Use the correct Bottle schema fields in priority order
+  return bottle.collector_value || bottle.aftermarket_price || bottle.retail_price || bottle.average_market_value || bottle.purchase_price || 0;
 }
 
 /**

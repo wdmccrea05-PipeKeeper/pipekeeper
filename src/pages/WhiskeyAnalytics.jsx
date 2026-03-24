@@ -3,23 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import ModuleNav from '@/components/modules/ModuleNav';
-import { BookOpen, TrendingUp, BarChart3 } from 'lucide-react';
-import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
-import { formatCurrency } from '@/components/utils/localeFormatters';
-import { RELEASE_MODE, isAdminWhiskeyUnlocked } from '@/components/utils/releaseConfig';
+import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 
 function WhiskeyAnalyticsInner() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
 
-  const moduleNavItems = [
-    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: WhiskeyKeeperIcon },
-    { name: t('nav.tastingNotes') || 'Tastings', path: '/Tastings', icon: BookOpen },
-    { name: t('nav.insights') || 'Insights', path: '/WhiskeyInsights', icon: TrendingUp },
-    { name: t('nav.analytics') || 'Analytics', path: '/WhiskeyAnalytics', icon: BarChart3 },
-  ];
+
 
   const { data: bottles = [] } = useQuery({
     queryKey: ['bottles', user?.email],
@@ -37,7 +28,7 @@ function WhiskeyAnalyticsInner() {
 
   return (
     <div className="space-y-6">
-      <ModuleNav items={moduleNavItems} currentPath="/WhiskeyAnalytics" />
+      <WhiskeyKeeperModuleNav currentPageName="WhiskeyAnalytics" />
 
       <div>
         <h1

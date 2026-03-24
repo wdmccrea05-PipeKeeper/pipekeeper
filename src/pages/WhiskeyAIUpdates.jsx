@@ -8,10 +8,7 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
 import { Loader2, Wand2, Globe, Tags, DollarSign, Beaker, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
-import ModuleNav from '@/components/modules/ModuleNav';
-import { BookOpen, TrendingUp, BarChart3 } from 'lucide-react';
-import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
-import { useLocation } from 'react-router-dom';
+import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 
 function WhiskeyBottleIcon({ className, style }) {
   return (
@@ -26,7 +23,7 @@ function WhiskeyBottleIcon({ className, style }) {
 export default function WhiskeyAIUpdates() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation();
+
   const { user } = useCurrentUser();
   const queryClient = useQueryClient();
 
@@ -36,12 +33,7 @@ export default function WhiskeyAIUpdates() {
   const [classifyBusy, setClassifyBusy] = useState(false);
   const [enrichResults, setEnrichResults] = useState(null);
 
-  const moduleNav = [
-    { name: t('nav.bottles') || 'Bottles', path: '/Whiskey', icon: WhiskeyKeeperIcon },
-    { name: t('nav.tastingNotes') || 'Tastings', path: '/Tastings', icon: BookOpen },
-    { name: t('nav.insights') || 'Insights', path: '/WhiskeyInsights', icon: TrendingUp },
-    { name: t('nav.analytics') || 'Analytics', path: '/WhiskeyAnalytics', icon: BarChart3 },
-  ];
+
 
   const { data: bottles = [], refetch: refetchBottles } = useQuery({
     queryKey: ['bottles-ai', user?.email],
@@ -324,7 +316,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
   return (
     <LockedModuleGuard moduleKey="whiskeykeeper">
     <div className="space-y-8">
-      <ModuleNav items={moduleNav} currentPath={location.pathname} />
+      <WhiskeyKeeperModuleNav currentPageName="WhiskeyAIUpdates" />
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4">

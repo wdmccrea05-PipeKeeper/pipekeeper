@@ -23,11 +23,11 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion } from "@/components/utils/companion";
-import { getEntitlementTier, hasPaidAccess, hasProAccess, isTrialingAccess, getPlanLabel } from "@/components/utils/premiumAccess";
+
 import { PK_THEME } from "@/components/utils/pkTheme";
 
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
+
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 

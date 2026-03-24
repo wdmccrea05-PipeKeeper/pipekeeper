@@ -21,6 +21,7 @@ import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import BrandLogo from '@/components/branding/BrandLogo';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import { getPipeValue, getTobaccoValue, getBottleValue } from '@/components/keeper-core/value/valueAggregation';
+import { calculateTobaccoCollectionValue } from '@/components/utils/tobaccoQuantityHelpers';
 
 const MODULE_META = {
   pipekeeper: {
@@ -231,7 +232,7 @@ export default function CollectionHub() {
   const metrics = useMemo(() => {
     // Only include whiskey value if whiskey is openable
     const pipeValue = pipes.reduce((sum, p) => sum + Number(getPipeValue(p) || 0), 0);
-    const tobaccoValue = blends.reduce((sum, b) => sum + Number(getTobaccoValue(b) || 0), 0);
+    const tobaccoValue = calculateTobaccoCollectionValue(blends);
     const whiskeyValue = whiskeyOpenable
       ? bottles.reduce((sum, b) => sum + Number(getBottleValue(b) || 0), 0)
       : 0;
@@ -254,11 +255,13 @@ export default function CollectionHub() {
 
     const mostSmokedPipe = [...pipes]
       .map((p) => ({ ...p, __count: logsByPipe[p.id] || 0 }))
-      .sort((a, b) => b.__count - a.__count)[0] || null;
+      .sort((a, b) => b.__count - a.__count)
+      .find((p) => p.__count > 0) || null;
 
     const favoriteBlend = [...blends]
       .map((b) => ({ ...b, __count: logsByBlend[b.id] || 0 }))
-      .sort((a, b) => b.__count - a.__count)[0] || null;
+      .sort((a, b) => b.__count - a.__count)
+      .find((b) => b.__count > 0) || null;
 
     const mostValuablePipe = [...pipes]
       .sort((a, b) => Number(getPipeValue(b) || 0) - Number(getPipeValue(a) || 0))[0] || null;
@@ -342,9 +345,9 @@ export default function CollectionHub() {
       <section className="space-y-4">
         <SectionTitle>Quick Actions</SectionTitle>
         <div className="flex flex-wrap gap-4">
-          <QuickAction icon={Plus} label="Add Pipe" accent="#C89752" onClick={() => navigate('/PipeKeeper?action=add_pipe')} />
-          <QuickAction icon={Plus} label="Add Blend" accent="#8E7E60" onClick={() => navigate('/PipeKeeper?action=add_blend')} />
-          <QuickAction icon={Flame} label="Log Smoke" accent="#B56A5F" onClick={() => navigate('/PipeKeeper?action=log_smoke')} />
+          <QuickAction icon={Plus} label="Add Pipe" accent="#C89752" onClick={() => navigate('/Pipes?action=add')} />
+          <QuickAction icon={Plus} label="Add Blend" accent="#8E7E60" onClick={() => navigate('/Tobacco?action=add')} />
+          <QuickAction icon={Flame} label="Log Smoke" accent="#B56A5F" onClick={() => navigate('/PipeKeeper')} />
           <QuickAction icon={Layers} label="View Pipes" accent="#B48C4B" onClick={() => navigate(createPageUrl('PipeKeeper'))} />
           {whiskeyOpenable && (
             <>
@@ -452,33 +455,6 @@ export default function CollectionHub() {
                 onClick={() => navigate(`/BottleDetail?id=${encodeURIComponent(metrics.mostValuableBottle.id)}`)}
               />
             )}
-          </div>
-        </section>
-      )}
-
-      {/* Whiskey Collection — only show when whiskey enabled AND has data */}
-      {whiskeyOpenable && bottles.length > 0 && (
-        <section className="space-y-4">
-          <SectionTitle>Whiskey Collection</SectionTitle>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-            {metrics.mostValuableBottle && (
-              <CatalogPlate
-                title="Most Valuable Bottle"
-                value={metrics.mostValuableBottle.name}
-                subtitle={currency(getBottleValue(metrics.mostValuableBottle))}
-                heroImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
-                bgImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
-                accent="#B66565"
-                onClick={() => navigate(`/BottleDetail?id=${encodeURIComponent(metrics.mostValuableBottle.id)}`)}
-              />
-            )}
-            <CatalogPlate
-              title="Total Whiskey Value"
-              value={currency(bottles.reduce((s, b) => s + Number(getBottleValue(b) || 0), 0))}
-              subtitle={`${bottles.length} bottles`}
-              accent="#A35050"
-              onClick={() => navigate(createPageUrl('WhiskeyKeeper'))}
-            />
           </div>
         </section>
       )}
