@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { base44 } from '@/api/base44Client';
 import ImageCropper from '@/components/pipes/ImageCropper';
-import OnlineImageSearchModal from '@/components/search/OnlineImageSearchModal';
+
 import PhotoUploader from '@/components/PhotoUploader';
 import { toast } from 'sonner';
 

@@ -5,8 +5,8 @@ import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
 import {
-  Plus, BookOpen, TrendingUp, Search, Package, Grid3X3, List,
-  Package2, Pencil, Trash2, Star, DollarSign, Layers
+  Plus, BookOpen, Search, Package, Grid3X3, List,
+  Package2, Pencil, Trash2, Star, DollarSign
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from '@/components/i18n/safeTranslation';
