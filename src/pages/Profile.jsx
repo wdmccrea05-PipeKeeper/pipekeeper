@@ -938,7 +938,26 @@ export default function ProfilePage() {
               </div>
               <Switch
                 checked={formData.whiskeykeeper_enabled}
-                onCheckedChange={(v) => setFormData((p) => ({ ...p, whiskeykeeper_enabled: !!v }))}
+                onCheckedChange={async (v) => {
+                  const newVal = !!v;
+                  setFormData((p) => ({ ...p, whiskeykeeper_enabled: newVal }));
+                  try {
+                    if (profileId) {
+                      await safeUpdate("UserProfile", profileId, { whiskeykeeper_enabled: newVal }, email);
+                    } else {
+                      await base44.entities.UserProfile.create({
+                        user_id: userId || undefined,
+                        user_email: email || undefined,
+                        whiskeykeeper_enabled: newVal,
+                      });
+                    }
+                    toast.success(newVal ? "WhiskeyKeeper enabled" : "WhiskeyKeeper disabled");
+                    await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
+                  } catch (e) {
+                    console.error("[Profile] WhiskeyKeeper toggle error:", e);
+                    toast.error("Failed to update WhiskeyKeeper setting");
+                  }
+                }}
                 className="data-[state=checked]:bg-[#A35C5C]"
               />
             </div>
