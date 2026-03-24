@@ -391,6 +391,7 @@ export default function PipesPage() {
                     image={pipe.photos?.[0]}
                     title={pipe.name}
                     subtitle={pipe.maker || t("pipesExtended.unknownMaker")}
+                    onEdit={() => handleEdit(pipe)}
                     badges={
                       <>
                         {pipe.shape && (
@@ -447,6 +448,7 @@ export default function PipesPage() {
                     isFavorite={pipe.is_favorite}
                     onToggleFavorite={() => handleToggleFavorite(pipe)}
                     onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}
+                    onEdit={() => handleEdit(pipe)}
                     fallbackIcon={
                       <div className="text-[#E0D8C8]/25 text-center">
                         <PipeShapeIcon shape={pipe.shape} className="w-16 h-16 mx-auto mb-2" style={{ color: "rgba(180,140,75,0.3)" }} />

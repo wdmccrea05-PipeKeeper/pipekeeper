@@ -469,6 +469,7 @@ export default function TobaccoPage() {
                       image={blend.logo || blend.photo}
                       title={blend.name}
                       subtitle={blend.manufacturer || t("tobaccoExtended.unknownMaker")}
+                      onEdit={() => { setEditingBlend(blend); setShowForm(true); }}
                       badges={
                         <>
                           {blend.blend_type && (
@@ -512,7 +513,8 @@ export default function TobaccoPage() {
                       isFavorite={blend.is_favorite}
                       onToggleFavorite={() => handleToggleFavorite(blend)}
                       onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}
-                      fallbackIcon={
+                      onEdit={() => { setEditingBlend(blend); setShowForm(true); }}
+                      fallbackIcon{
                         <div className="text-[#E0D8C8]/20 text-center">
                           <Leaf className="w-14 h-14 mx-auto mb-2" style={{ color: "rgba(90,124,90,0.25)" }} />
                           <p className="text-xs uppercase tracking-wider" style={{ color: "rgba(180,140,75,0.35)" }}>
