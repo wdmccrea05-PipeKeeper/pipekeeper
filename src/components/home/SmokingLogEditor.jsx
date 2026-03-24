@@ -72,7 +72,7 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
             <SelectValue placeholder={t("smokingLog.selectPipe")} />
           </SelectTrigger>
           <SelectContent>
-            {pipes.map(p => (
+            {(pipes || []).map(p => (
               <SelectItem key={p.id} value={p.id}>
                 {p.name}
               </SelectItem>
