@@ -1,228 +1,168 @@
-import { base44 } from '@/api/base44Client';
-import { toast } from 'sonner';
-
 /**
  * ACTION APPLY HANDLERS
  * 
- * These handlers commit structured action recommendations to the database.
- * Each handler performs the actual update and returns success/failure status.
+ * Maps recommendation types to update operations on pipes, blends, bottles.
+ * Each handler validates, applies, and returns result status.
  */
 
-/**
- * Apply pipe specialization changes
- */
-export async function applyPipeSpecializations(groups, pipeData = {}) {
-  const results = {
-    success: 0,
-    failed: 0,
-    errors: [],
-  };
+import { base44 } from "@/api/base44Client";
 
-  for (const group of groups) {
-    for (const item of group.items) {
-      if (item.proposedChange?.type !== 'pipe_specialization') continue;
+const handlers = {
+  /**
+   * Specialization recommendations
+   * Apply: { specializations: [...] } to pipe.focus field
+   */
+  specialization: async (item, user) => {
+    if (!item?.recordId || item.recordType !== "pipe") {
+      throw new Error("Invalid specialization recommendation");
+    }
 
-      try {
-        const { pipeName, specialization } = item.proposedChange.payload;
-        
-        // Find pipe by name
-        const allPipes = await base44.entities.Pipe.list();
-        const pipe = allPipes.find(p => p.name === pipeName);
-        
-        if (!pipe) {
-          throw new Error(`Pipe "${pipeName}" not found`);
-        }
+    const changes = item.proposedChanges || {};
+    const specializations = changes.specializations || [];
 
-        // Update pipe with focus/specialization
-        const focusArray = Array.isArray(pipe.focus) ? [...pipe.focus] : [];
-        if (!focusArray.includes(specialization)) {
-          focusArray.push(specialization);
-        }
+    if (!specializations.length) {
+      throw new Error("No specializations provided");
+    }
 
-        await base44.entities.Pipe.update(pipe.id, {
-          focus: focusArray,
-        });
+    await base44.entities.Pipe.update(item.recordId, {
+      focus: specializations,
+    });
 
-        results.success++;
-        toast.success(`${pipeName} specialization applied`);
-      } catch (err) {
-        results.failed++;
-        results.errors.push(err.message);
-        toast.error(`Failed to apply specialization: ${err.message}`);
+    return { success: true, applied: "specializations" };
+  },
+
+  /**
+   * Reclassification recommendations for blends
+   * Apply: { blend_type, strength, etc. } to blend fields
+   */
+  reclassification: async (item, user) => {
+    if (!item?.recordId) {
+      throw new Error("Invalid reclassification recommendation");
+    }
+
+    const changes = item.proposedChanges || {};
+    
+    if (Object.keys(changes).length === 0) {
+      throw new Error("No fields to update");
+    }
+
+    const entity = item.recordType === "blend" ? "TobaccoBlend" : item.recordType === "pipe" ? "Pipe" : null;
+    if (!entity) {
+      throw new Error(`Unknown record type: ${item.recordType}`);
+    }
+
+    await base44.entities[entity].update(item.recordId, changes);
+
+    return { success: true, applied: Object.keys(changes) };
+  },
+
+  /**
+   * Measurement update recommendations for pipes
+   * Apply: { length_mm, weight_grams, bowl_width_mm, etc. } to pipe
+   */
+  measurements: async (item, user) => {
+    if (!item?.recordId || item.recordType !== "pipe") {
+      throw new Error("Invalid measurement recommendation");
+    }
+
+    const changes = item.proposedChanges || {};
+    
+    // Only allow measurement fields
+    const MEASUREMENT_FIELDS = [
+      "length_mm",
+      "weight_grams",
+      "bowl_height_mm",
+      "bowl_width_mm",
+      "bowl_diameter_mm",
+      "bowl_depth_mm",
+    ];
+
+    const validChanges = {};
+    for (const [key, value] of Object.entries(changes)) {
+      if (MEASUREMENT_FIELDS.includes(key) && value !== null && value !== undefined) {
+        validChanges[key] = value;
       }
     }
-  }
 
-  return results;
-}
+    if (Object.keys(validChanges).length === 0) {
+      throw new Error("No valid measurement fields provided");
+    }
+
+    await base44.entities.Pipe.update(item.recordId, validChanges);
+
+    return { success: true, applied: Object.keys(validChanges) };
+  },
+
+  /**
+   * Generic optimization changes (reclassify, add focus, etc.)
+   */
+  "reclassification|redundancy|rotation_fit|value_gap": async (item, user) => {
+    if (!item?.recordId) {
+      throw new Error("Invalid optimization recommendation");
+    }
+
+    const changes = item.proposedChanges || {};
+    
+    if (Object.keys(changes).length === 0) {
+      throw new Error("No fields to update");
+    }
+
+    // Determine entity type from recordType
+    const entity = item.recordType === "pipe" ? "Pipe" : item.recordType === "blend" ? "TobaccoBlend" : item.recordType === "bottle" ? "Bottle" : null;
+    if (!entity) {
+      throw new Error(`Unknown record type: ${item.recordType}`);
+    }
+
+    await base44.entities[entity].update(item.recordId, changes);
+
+    return { success: true, applied: Object.keys(changes) };
+  },
+};
 
 /**
- * Apply tobacco blend reclassifications
+ * Apply a single recommendation
  */
-export async function applyTobaccoReclassifications(groups) {
-  const results = {
-    success: 0,
-    failed: 0,
-    errors: [],
-  };
-
-  for (const group of groups) {
-    for (const item of group.items) {
-      if (item.proposedChange?.type !== 'tobacco_classification') continue;
-
-      try {
-        const { blendName, blendType } = item.proposedChange.payload;
-        
-        // Find blend by name
-        const allBlends = await base44.entities.TobaccoBlend.list();
-        const blend = allBlends.find(b => b.name === blendName);
-        
-        if (!blend) {
-          throw new Error(`Blend "${blendName}" not found`);
-        }
-
-        // Update blend classification
-        await base44.entities.TobaccoBlend.update(blend.id, {
-          blend_type: blendType,
-        });
-
-        results.success++;
-        toast.success(`${blendName} reclassified to ${blendType}`);
-      } catch (err) {
-        results.failed++;
-        results.errors.push(err.message);
-        toast.error(`Failed to reclassify: ${err.message}`);
-      }
-    }
+export async function applyRecommendation(item, user) {
+  if (!item) {
+    throw new Error("No recommendation to apply");
   }
 
-  return results;
-}
-
-/**
- * Apply collection optimization changes (pipes + tobacco + bottles)
- */
-export async function applyCollectionOptimization(groups) {
-  const results = {
-    pipeSpecializations: { success: 0, failed: 0, errors: [] },
-    tobaccoReclassifications: { success: 0, failed: 0, errors: [] },
-    bottleSuggestions: { success: 0, failed: 0, errors: [] },
-    collectionReviews: { success: 0, failed: 0, errors: [] },
-  };
-
-  for (const group of groups) {
-    for (const item of group.items) {
-      const changeType = item.proposedChange?.type;
-
-      if (changeType === 'pipe_specialization') {
-        try {
-          const { pipeName, specialization } = item.proposedChange.payload;
-          const allPipes = await base44.entities.Pipe.list();
-          const pipe = allPipes.find(p => p.name === pipeName);
-          
-          if (pipe) {
-            const focusArray = Array.isArray(pipe.focus) ? [...pipe.focus] : [];
-            if (!focusArray.includes(specialization)) {
-              focusArray.push(specialization);
-            }
-            await base44.entities.Pipe.update(pipe.id, { focus: focusArray });
-            results.pipeSpecializations.success++;
-          } else {
-            throw new Error(`Pipe "${pipeName}" not found`);
-          }
-        } catch (err) {
-          results.pipeSpecializations.failed++;
-          results.pipeSpecializations.errors.push(err.message);
-        }
-      }
-
-      else if (changeType === 'tobacco_classification') {
-        try {
-          const { blendName, blendType } = item.proposedChange.payload;
-          const allBlends = await base44.entities.TobaccoBlend.list();
-          const blend = allBlends.find(b => b.name === blendName);
-          
-          if (blend) {
-            await base44.entities.TobaccoBlend.update(blend.id, {
-              blend_type: blendType,
-            });
-            results.tobaccoReclassifications.success++;
-          } else {
-            throw new Error(`Blend "${blendName}" not found`);
-          }
-        } catch (err) {
-          results.tobaccoReclassifications.failed++;
-          results.tobaccoReclassifications.errors.push(err.message);
-        }
-      }
-
-      else if (changeType === 'bottle_addition_suggestion') {
-        // These are suggestions, not direct updates
-        results.bottleSuggestions.success++;
-        toast.info(`Bottle suggestion: ${item.itemName}`);
-      }
-
-      else if (changeType === 'collection_review') {
-        // These are reviews for the user to consider
-        results.collectionReviews.success++;
-      }
-    }
-  }
-
-  // Summary toast
-  const totalSuccess = 
-    results.pipeSpecializations.success +
-    results.tobaccoReclassifications.success +
-    results.bottleSuggestions.success;
+  // Find handler by type
+  const handler = handlers[item.type] || handlers["reclassification|redundancy|rotation_fit|value_gap"];
   
-  if (totalSuccess > 0) {
-    toast.success(`Applied ${totalSuccess} recommendations to your collection`);
+  if (!handler) {
+    throw new Error(`No handler for recommendation type: ${item.type}`);
+  }
+
+  return handler(item, user);
+}
+
+/**
+ * Apply multiple recommendations
+ */
+export async function applyRecommendations(items, user) {
+  const results = {
+    applied: [],
+    failed: [],
+  };
+
+  for (const item of items) {
+    try {
+      const result = await applyRecommendation(item, user);
+      results.applied.push({
+        itemId: item.id,
+        recordId: item.recordId,
+        recordType: item.recordType,
+        ...result,
+      });
+    } catch (err) {
+      results.failed.push({
+        itemId: item.id,
+        recordId: item.recordId,
+        error: err?.message || "Unknown error",
+      });
+    }
   }
 
   return results;
-}
-
-/**
- * Open Curator for clarification with clean context
- */
-export function buildClarificationPrompt(clarificationContext) {
-  const { actionId, title, selectedItems } = clarificationContext;
-
-  if (!selectedItems || selectedItems.length === 0) {
-    // Generic clarification
-    return `I have a question about the ${title} recommendations. Can you provide more detail about why these changes are recommended?`;
-  }
-
-  // Item-specific clarification
-  const itemList = selectedItems
-    .map(item => `- ${item.itemName}: ${item.issue}`)
-    .join('\n');
-
-  return `I'd like to understand more about these recommendations:
-
-${itemList}
-
-Can you explain the reasoning in more detail?`;
-}
-
-/**
- * Generic handler dispatcher
- */
-export async function applyActionChanges(actionId, groups) {
-  try {
-    switch (actionId) {
-      case 'optimize_collection':
-        return await applyCollectionOptimization(groups);
-      case 'recommend_specializations':
-        return await applyPipeSpecializations(groups);
-      case 'reclassify_tobacco_blends':
-        return await applyTobaccoReclassifications(groups);
-      default:
-        throw new Error(`Unknown action: ${actionId}`);
-    }
-  } catch (err) {
-    console.error('Apply action failed:', err);
-    toast.error(`Failed to apply changes: ${err.message}`);
-    throw err;
-  }
 }
