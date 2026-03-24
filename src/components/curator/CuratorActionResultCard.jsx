@@ -1,6 +1,4 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { CheckCircle2, MessageCircle, Trash2 } from "lucide-react";
 
 export default function CuratorActionResultCard({
   item,
@@ -14,157 +12,80 @@ export default function CuratorActionResultCard({
   const isRejected = state?.status === "rejected";
 
   return (
-    <div
-      className="rounded-xl p-4 sm:p-5 border"
-      style={{
-        background: isAccepted
-          ? "linear-gradient(135deg, rgba(46, 125, 92, 0.12), rgba(46, 125, 92, 0.08))"
-          : isRejected
-          ? "linear-gradient(135deg, rgba(100, 70, 45, 0.1), rgba(100, 70, 45, 0.08))"
-          : "linear-gradient(135deg, rgba(60, 45, 30, 0.5), rgba(50, 35, 25, 0.4))",
-        borderColor: isAccepted
-          ? "rgba(46, 125, 92, 0.35)"
-          : isRejected
-          ? "rgba(100, 70, 45, 0.35)"
-          : "rgba(140, 105, 65, 0.3)",
-      }}
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <h4
-          className="font-semibold text-base leading-snug"
-          style={{
-            color: isAccepted ? "#4A7C59" : isRejected ? "#C87941" : "#F5F1E7",
-          }}
-        >
-          {item.title}
-        </h4>
-        {(isAccepted || isRejected) && (
-          <CheckCircle2
-            className="w-4 h-4 flex-shrink-0 mt-0.5"
-            style={{
-              color: isAccepted ? "#4A7C59" : "#C87941",
-            }}
-          />
-        )}
+    <div className="rounded-xl border border-amber-500/20 bg-black/20 p-4">
+      <div className="min-w-0">
+        <div className="text-base font-medium text-amber-100">{item.title}</div>
+
+        {item.recordName ? (
+          <div className="mt-1 text-xs uppercase tracking-wide text-amber-500/70">
+            {item.recordType}: {item.recordName}
+          </div>
+        ) : null}
+
+        <div className="mt-2 text-sm text-amber-50/85">{item.explanation}</div>
+
+        {item.rationale ? (
+          <div className="mt-2 text-xs text-amber-50/60">{item.rationale}</div>
+        ) : null}
+
+        {typeof item.confidence === "number" ? (
+          <div className="mt-2 text-xs text-amber-50/60">
+            Confidence: {Math.round(item.confidence * 100)}%
+          </div>
+        ) : null}
       </div>
 
-      {/* Record info */}
-      {item.recordName && (
-        <div
-          className="text-xs uppercase tracking-wide mb-2"
-          style={{ color: "rgba(212, 165, 116, 0.7)" }}
-        >
-          {item.recordType}: {item.recordName}
-        </div>
-      )}
-
-      {/* Explanation */}
-      <p
-        className="text-sm mb-3 leading-relaxed"
-        style={{ color: "rgba(245, 241, 231, 0.85)" }}
-      >
-        {item.explanation}
-      </p>
-
-      {/* Rationale */}
-      {item.rationale && (
-        <p
-          className="text-xs mb-3 leading-relaxed italic"
-          style={{ color: "rgba(224, 216, 200, 0.65)" }}
-        >
-          {item.rationale}
-        </p>
-      )}
-
-      {/* Confidence */}
-      {typeof item.confidence === "number" && (
-        <div
-          className="text-xs mb-3"
-          style={{ color: "rgba(180, 140, 75, 0.8)" }}
-        >
-          Confidence: <strong>{Math.round(item.confidence * 100)}%</strong>
-        </div>
-      )}
-
-      {/* Proposed changes */}
-      {item.proposedChanges && Object.keys(item.proposedChanges).length > 0 && (
-        <div className="mb-3 p-2 rounded-lg" style={{ background: "rgba(180, 140, 75, 0.08)" }}>
-          <div
-            className="text-xs uppercase tracking-wide mb-1.5"
-            style={{ color: "rgba(180, 140, 75, 0.8)" }}
-          >
-            Changes
+      {item.proposedChanges && Object.keys(item.proposedChanges).length > 0 ? (
+        <div className="mt-3 rounded-lg bg-amber-500/5 p-3">
+          <div className="mb-2 text-xs uppercase tracking-wide text-amber-500/70">
+            Proposed Changes
           </div>
-          <pre
-            className="text-xs leading-relaxed overflow-auto"
-            style={{ color: "rgba(224, 216, 200, 0.75)" }}
-          >
-            {Object.entries(item.proposedChanges)
-              .map(([key, val]) => `${key}: ${typeof val === "object" ? JSON.stringify(val) : val}`)
-              .join("\n")}
+          <pre className="overflow-auto whitespace-pre-wrap break-words text-xs text-amber-50/75">
+            {JSON.stringify(item.proposedChanges, null, 2)}
           </pre>
         </div>
-      )}
+      ) : null}
 
-      {/* Status message */}
-      {isAccepted && (
-        <p
-          className="text-sm font-medium mb-3"
-          style={{ color: "#4A7C59" }}
-        >
-          ✓ Applied to your collection
-        </p>
-      )}
+      {state?.error ? (
+        <div className="mt-3 text-sm text-red-400">{state.error}</div>
+      ) : null}
 
-      {isRejected && (
-        <p
-          className="text-sm font-medium mb-3"
-          style={{ color: "#C87941" }}
-        >
-          ✕ Dismissed
-        </p>
-      )}
-
-      {/* Action buttons */}
-      {!isAccepted && !isRejected && (
-        <div className="flex flex-wrap gap-2">
-          <Button
-            size="sm"
-            onClick={onAccept}
-            disabled={isApplying}
-            style={{
-              background: "linear-gradient(135deg, rgba(74, 124, 89, 0.95), rgba(65, 105, 76, 1))",
-              color: "white",
-            }}
-            className="hover:opacity-90"
-          >
-            {isApplying ? "Applying…" : "Accept"}
-          </Button>
-
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onReject}
-            disabled={isApplying}
-            className="gap-1"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            Reject
-          </Button>
-
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={onAskCurator}
-            disabled={isApplying}
-            className="gap-1"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            Ask
-          </Button>
+      {(isAccepted || isRejected) && (
+        <div className="mt-3 text-sm text-amber-200/80">
+          {isAccepted ? "Applied." : "Dismissed."}
         </div>
       )}
+
+      {!isAccepted && !isRejected ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={onAccept}
+            disabled={isApplying}
+            className="rounded-lg bg-amber-500 px-3 py-2 text-sm font-medium text-black disabled:opacity-50"
+          >
+            {isApplying ? "Applying..." : "Accept"}
+          </button>
+
+          <button
+            type="button"
+            onClick={onReject}
+            disabled={isApplying}
+            className="rounded-lg border border-amber-500/30 px-3 py-2 text-sm text-amber-100 disabled:opacity-50"
+          >
+            Reject
+          </button>
+
+          <button
+            type="button"
+            onClick={onAskCurator}
+            disabled={isApplying}
+            className="rounded-lg border border-amber-500/30 px-3 py-2 text-sm text-amber-100 disabled:opacity-50"
+          >
+            Ask Curator
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

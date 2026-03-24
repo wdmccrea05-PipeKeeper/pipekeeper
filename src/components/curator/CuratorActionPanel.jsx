@@ -1,7 +1,5 @@
 import React from "react";
 import CuratorActionResultCard from "./CuratorActionResultCard";
-import EmptyActionResultCard from "./EmptyActionResultCard";
-import CuratorActionErrorCard from "./CuratorActionErrorCard";
 
 export default function CuratorActionPanel({
   actionRun,
@@ -15,17 +13,8 @@ export default function CuratorActionPanel({
 
   if (actionRun.status === "running") {
     return (
-      <div
-        className="rounded-xl border p-4"
-        style={{
-          borderColor: "rgba(212, 165, 116, 0.2)",
-          background: "rgba(0, 0, 0, 0.2)",
-        }}
-      >
-        <div
-          className="text-sm"
-          style={{ color: "rgba(245, 241, 231, 0.8)" }}
-        >
+      <div className="rounded-xl border border-amber-500/20 bg-black/20 p-4">
+        <div className="text-sm text-amber-50/80">
           Curator is reviewing your collection...
         </div>
       </div>
@@ -34,31 +23,40 @@ export default function CuratorActionPanel({
 
   if (actionRun.status === "timeout" || actionRun.status === "error") {
     return (
-      <CuratorActionErrorCard
-        error={actionRun.error}
-        onRetry={onRetry}
-        onAskCurator={onAskCurator}
-      />
+      <div className="rounded-xl border border-red-500/20 bg-black/20 p-4">
+        <div className="font-medium text-red-300">
+          Curator could not complete this action.
+        </div>
+        <div className="mt-1 text-sm text-amber-50/70">
+          {actionRun.error || "Please try again."}
+        </div>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-3 rounded-lg bg-amber-500 px-3 py-2 text-sm font-medium text-black"
+        >
+          Try Again
+        </button>
+      </div>
     );
   }
 
   if (actionRun.status === "empty") {
     return (
-      <EmptyActionResultCard
-        summary={actionRun.summary}
-        onAskCurator={onAskCurator}
-      />
+      <div className="rounded-xl border border-amber-500/20 bg-black/20 p-4">
+        <div className="font-medium text-amber-100">
+          No actionable recommendations right now
+        </div>
+        <div className="mt-1 text-sm text-amber-50/70">
+          {actionRun.summary}
+        </div>
+      </div>
     );
   }
 
   return (
     <div className="space-y-3">
-      <div
-        className="text-sm"
-        style={{ color: "rgba(245, 241, 231, 0.75)" }}
-      >
-        {actionRun.summary}
-      </div>
+      <div className="text-sm text-amber-50/75">{actionRun.summary}</div>
 
       {actionRun.items.map((item) => (
         <CuratorActionResultCard
