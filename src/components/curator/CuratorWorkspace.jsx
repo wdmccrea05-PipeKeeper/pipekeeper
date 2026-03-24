@@ -23,7 +23,7 @@ import { useTasteProfile, buildTasteProfileContext } from "@/components/curator/
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 import CuratorActionPanel from "./CuratorActionPanel";
 import normalizeCuratorActionResult from "./normalizeCuratorActionResult";
-import curatorActionExecutor from "./curatorActionExecutor";
+import { executeCuratorAction } from "./curatorActionExecutor";
 import { runCuratorAction } from "./curatorActionService";
 import { applyCuratorRecommendation } from "./curatorApplyHandlers";
 import CuratorActionStatusBar from "@/components/curator/CuratorActionStatusBar";
