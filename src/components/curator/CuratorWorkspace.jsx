@@ -29,6 +29,8 @@ import { buildSafeCollectionContext, buildPromptBlock } from "@/components/curat
 import CuratorActionStatusBar from "@/components/curator/CuratorActionStatusBar";
 import CuratorActionResultCard from "@/components/curator/CuratorActionResultCard";
 import CuratorActionErrorCard from "@/components/curator/CuratorActionErrorCard";
+import EmptyActionResultCard from "@/components/curator/EmptyActionResultCard";
+import { applyRecommendation } from "@/components/curator/actionApplyHandlers";
 
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
@@ -261,6 +263,7 @@ export default function CuratorWorkspace({
   const [actionError, setActionError] = useState(null);
   const [applyLoading, setApplyLoading] = useState(false);
   const [lastExecutionId, setLastExecutionId] = useState(null);
+  const [itemStates, setItemStates] = useState({}); // Track individual item apply state
 
   const messagesEndRef = useRef(null);
   const threadInitPromiseRef = useRef(null);
@@ -746,48 +749,62 @@ ${englishText}`;
     sendMessage(prompt);
   };
 
-  const handleApplyActionItems = async (groups, selectedItemIds) => {
-    if (!actionResult || !user?.email) return;
-    
-    setApplyLoading(true);
+  const handleAcceptRecommendation = async (item) => {
+    if (!item?.id || !user?.email) return;
+
+    setItemStates((prev) => ({
+      ...prev,
+      [item.id]: { status: "applying" },
+    }));
+
     try {
-      const results = await applyAllRecommendations(groups, user);
-      
+      await applyRecommendation(item, user);
+
+      setItemStates((prev) => ({
+        ...prev,
+        [item.id]: { status: "accepted" },
+      }));
+
       queryClient.invalidateQueries({ queryKey: ["pipes"] });
       queryClient.invalidateQueries({ queryKey: ["blends"] });
       queryClient.invalidateQueries({ queryKey: ["bottles"] });
-      
-      const successCount = results.total.success;
-      if (successCount > 0) {
-        toast.success(`Applied ${successCount} change${successCount !== 1 ? 's' : ''} to your collection`);
-        setActionResult(null);
-      }
-      
-      if (results.total.failed > 0) {
-        toast.error(`${results.total.failed} change${results.total.failed !== 1 ? 's' : ''} failed`);
-      }
+
+      toast.success(`Applied: ${item.title}`);
     } catch (err) {
-      console.error('Apply failed:', err);
-      toast.error("Failed to apply changes");
-    } finally {
-      setApplyLoading(false);
+      console.error("Accept failed:", err);
+      setItemStates((prev) => ({
+        ...prev,
+        [item.id]: { status: "idle", error: err?.message || "Failed to apply" },
+      }));
+      toast.error(err?.message || "Failed to apply recommendation");
     }
   };
 
-  const handleClarifyAction = (clarificationContext) => {
-    if (clarificationContext?.dismiss) {
-      setActionResult(null);
-      return;
-    }
-    if (clarificationContext?.refineAll) {
-      setActionResult(null);
-      setInput("Can you refine these recommendations? I'd like to see different or more specific suggestions.");
-      setTimeout(() => document.querySelector('input[placeholder*="Ask Curator"]')?.focus(), 100);
-      return;
-    }
+  const handleRejectRecommendation = (item) => {
+    if (!item?.id) return;
+    setItemStates((prev) => ({
+      ...prev,
+      [item.id]: { status: "rejected" },
+    }));
+  };
 
-    if (!actionResult) return;
+  const handleAskCuratorAboutItem = (item) => {
+    if (!item) return;
     setActionResult(null);
+    setInput(
+      `I'd like to understand more about this recommendation: \"${item.title}\". Can you explain in more detail?`
+    );
+    setTimeout(() => document.querySelector('input[placeholder*="Ask Curator"]')?.focus(), 100);
+  };
+
+  const handleDismissAction = () => {
+    setActionResult(null);
+    setItemStates({});
+  };
+
+  const handleAskFollowUp = () => {
+    setActionResult(null);
+    setItemStates({});
     setTimeout(() => document.querySelector('input[placeholder*="Ask Curator"]')?.focus(), 100);
   };
 
