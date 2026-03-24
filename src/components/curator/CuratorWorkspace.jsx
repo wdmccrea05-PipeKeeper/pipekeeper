@@ -33,7 +33,7 @@ import CuratorActionErrorCard from "@/components/curator/CuratorActionErrorCard"
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
 const AGENT_NAME = "expert_tobacconist";
-const ACTION_EXECUTION_TIMEOUT = 120000; // 120 seconds
+const ACTION_EXECUTION_TIMEOUT = 8000; // 8 seconds hard timeout for expert actions
 
 /**
  * Promise wrapper with timeout
