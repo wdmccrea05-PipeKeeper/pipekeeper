@@ -27,6 +27,7 @@ import curatorActionExecutor from "./curatorActionExecutor";
 import { runCuratorAction } from "./curatorActionService";
 import { applyCuratorRecommendation } from "./curatorApplyHandlers";
 import { CURATOR_ACTIONS } from "./types/curatorActionTypes";
+import { buildSafeCollectionContext, buildPromptBlock } from "./collectionContextBudget";
 
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
@@ -425,6 +426,14 @@ export default function CuratorWorkspace({
         const englishText = await translateToEnglish(text, locale);
         const conversation = await base44.agents.getConversation(ensuredThreadId);
 
+        console.log("Curator sendMessage input:", {
+          pipes: pipes?.length || 0,
+          blends: blends?.length || 0,
+          bottles: bottles?.length || 0,
+          logs: logs?.length || 0,
+          tastingLogs: tastingLogs?.length || 0,
+        });
+
         const safeCtx = buildSafeCollectionContext({
           pipes,
           blends,
@@ -671,6 +680,8 @@ Category: ${activeContext.category || "general"}`;
   const handleExpertAction = async (actionType) => {
     setLastActionType(actionType);
     setItemStates({});
+
+    console.log("Curator expert action context:", buildCuratorContext());
 
     const requestId =
       globalThis.crypto?.randomUUID?.() || `${actionType}_${Date.now()}`;
