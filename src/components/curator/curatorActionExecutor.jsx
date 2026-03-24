@@ -298,7 +298,7 @@ function normalizeExecutorResult(raw, actionId) {
     actionType: actionId || raw.actionType || "unknown",
     summary: raw.summary || `${validItems.length} recommendations found`,
     items: validItems.map((item, idx) => ({
-      id: item.id || `${actionId}_${idx}",
+      id: item.id || `${actionId}_${idx}`,
       type: item.type,
       title: item.title,
       explanation: item.explanation || "",
