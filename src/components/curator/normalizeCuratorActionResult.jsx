@@ -217,9 +217,12 @@ function normalizeGroups(groups) {
     return [];
   }
 
-  return groups
+  const normalized = groups
     .map((group, idx) => normalizeGroup(group, idx))
     .filter((g) => g && g.items && g.items.length > 0);
+  
+  console.log(`[normalizer] Normalized groups: ${normalized.length} groups remain after filtering`);
+  return normalized;
 }
 
 /**
