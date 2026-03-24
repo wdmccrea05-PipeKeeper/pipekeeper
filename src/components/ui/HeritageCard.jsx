@@ -7,16 +7,18 @@ import { cn } from "@/lib/utils";
  */
 
 // Base heritage card surface
-export function HeritageCard({ children, className, style, accent, withTexture = true }) {
+export function HeritageCard({ children, className, style, accent, withTexture = true, onClick, ...rest }) {
   return (
     <div
       className={cn("relative rounded-lg overflow-hidden", className)}
+      onClick={onClick}
       style={{
         background: "linear-gradient(145deg, rgba(48, 34, 22, 0.75), rgba(38, 26, 18, 0.88))",
         border: "1px solid rgba(120, 90, 65, 0.32)",
         boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)",
         ...style,
       }}
+      {...rest}
     >
       {withTexture && <WoodGrainTexture accent={accent || "#B48C4B"} />}
       <div className="relative">{children}</div>
