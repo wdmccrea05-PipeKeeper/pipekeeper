@@ -113,7 +113,7 @@ export default function StoryCard({ card }) {
           />
         );
 
-      case 'journey':
+      case 'journey': {
         const journeyText = `You've logged ${card.data.sessions} sessions, collected ${card.data.pipes} pipes, and curated ${card.data.blends} blends. Your collector's journey continues.`;
         return (
           <JourneyCardLayout
@@ -122,6 +122,7 @@ export default function StoryCard({ card }) {
             accent={accent}
           />
         );
+      }
 
       case 'milestone':
         return (
