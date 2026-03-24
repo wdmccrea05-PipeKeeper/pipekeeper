@@ -257,12 +257,15 @@ export default function CuratorWorkspace({
   const [sending, setSending] = useState(false);
   const [initializing, setInitializing] = useState(false);
   const [initError, setInitError] = useState("");
+  const [actionRun, setActionRun] = useState(null);
+  const [itemStates, setItemStates] = useState({});
+  const [lastActionType, setLastActionType] = useState(null);
+  const [followUpSeed, setFollowUpSeed] = useState(null);
   const [runningAction, setRunningAction] = useState(null);
   const [actionResult, setActionResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [applyLoading, setApplyLoading] = useState(false);
   const [lastExecutionId, setLastExecutionId] = useState(null);
-  const [itemStates, setItemStates] = useState({}); // Track individual item apply state
 
   const messagesEndRef = useRef(null);
   const threadInitPromiseRef = useRef(null);
