@@ -351,7 +351,7 @@ export default function TobaccoPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__none__">{t("tobacco.allStrengths")}</SelectItem>
-              {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{t(`strengths.${strength}`, strength)}</SelectItem>))
+              {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{t(`strengths.${strength}`, strength)}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
