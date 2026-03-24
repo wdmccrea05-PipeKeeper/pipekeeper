@@ -873,7 +873,7 @@ ${JSON.stringify(item.proposedChanges || {}, null, 2)}
         background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
         border: "1px solid rgba(140,105,65,0.35)",
         boxShadow: "0 10px 28px rgba(0,0,0,0.6)",
-        height: "clamp(480px, 75vh, 820px)",
+        height: "clamp(360px, 90vh, 820px)",
       }}
     >
       <div
@@ -929,7 +929,7 @@ ${JSON.stringify(item.proposedChanges || {}, null, 2)}
       </div>
 
       <div
-        className="flex-1 overflow-y-auto px-4 sm:px-6 py-4"
+        className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 min-h-0"
         style={{ background: "rgba(15,10,8,0.3)", overscrollBehavior: "contain" }}
       >
         {!actionRun && (
