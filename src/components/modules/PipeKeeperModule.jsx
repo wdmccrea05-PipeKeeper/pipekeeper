@@ -13,6 +13,7 @@ import PipeKeeperModuleNav from './PipeKeeperModuleNav';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import ModuleQuickLaunch from './ModuleQuickLaunch';
 import QuickSearchPipe from '@/components/ai/QuickSearchPipe';
+import SmokingLogPanel from '@/components/home/SmokingLogPanel';
 import { useProfilePrivacy } from '@/components/hooks/useProfilePrivacy';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
@@ -26,6 +27,7 @@ export default function PipeKeeperModule() {
   const queryClient = useQueryClient();
   
   const [showQuickSearch, setShowQuickSearch] = useState(false);
+  const [showSmokingLog, setShowSmokingLog] = useState(false);
 
 
 
@@ -120,7 +122,7 @@ export default function PipeKeeperModule() {
       key: 'logSession',
       Icon: BookOpen,
       label: t('quickActions.logSession'),
-      onClick: () => navigate('/Home')
+      onClick: () => setShowSmokingLog(true)
     },
     {
       key: 'curator',
@@ -266,6 +268,21 @@ export default function PipeKeeperModule() {
         onOpenChange={setShowQuickSearch}
         onAdd={handlePipeAdded}
       />
+
+      {/* Smoking Log Modal */}
+      {showSmokingLog && (
+        <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setShowSmokingLog(false)}>
+          <div className="flex items-center justify-center min-h-screen p-4" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-[rgba(20,15,12,0.95)] rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 border border-[rgba(180,140,75,0.35)]">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-[#E0D8C8]">{t('smokingLog.logSession')}</h2>
+                <button onClick={() => setShowSmokingLog(false)} className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] text-xl">×</button>
+              </div>
+              <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

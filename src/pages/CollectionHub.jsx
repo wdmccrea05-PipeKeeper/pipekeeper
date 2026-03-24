@@ -348,7 +348,7 @@ export default function CollectionHub() {
         <div className="flex flex-wrap gap-4">
           <QuickAction icon={Plus} label="Add Pipe" accent="#C89752" onClick={() => navigate('/Pipes?action=add')} />
           <QuickAction icon={Plus} label="Add Blend" accent="#8E7E60" onClick={() => navigate('/Tobacco?action=add')} />
-          <QuickAction icon={Flame} label="Log Smoke" accent="#B56A5F" onClick={() => navigate('/PipeKeeper')} />
+          <QuickAction icon={Flame} label="Log Smoke" accent="#B56A5F" onClick={() => navigate(createPageUrl('PipeKeeper?action=log-smoke'))} />
           <QuickAction icon={Layers} label="View Pipes" accent="#B48C4B" onClick={() => navigate(createPageUrl('PipeKeeper'))} />
           {whiskeyOpenable && (
             <>
