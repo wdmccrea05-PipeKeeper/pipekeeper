@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import React, { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import {
   translateToEnglish,
@@ -21,15 +21,11 @@ import {
 import { validateOwnershipIntegrity } from "@/components/utils/curatorOwnershipGuard";
 import { useTasteProfile, buildTasteProfileContext } from "@/components/curator/useTasteProfile";
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
-import { executeCuratorAction } from "@/components/curator/curatorActionExecutor";
-import { normalizeCuratorActionResult } from "@/components/curator/normalizeCuratorActionResult";
-import { parseCuratorActionResponse } from "@/components/curator/parseCuratorActionResponse";
-import { buildSafeCollectionContext, buildPromptBlock } from "@/components/curator/collectionContextBudget";
-import CuratorActionStatusBar from "@/components/curator/CuratorActionStatusBar";
-import CuratorActionResultCard from "@/components/curator/CuratorActionResultCard";
-import CuratorActionErrorCard from "@/components/curator/CuratorActionErrorCard";
-import EmptyActionResultCard from "@/components/curator/EmptyActionResultCard";
-import { applyRecommendation } from "@/components/curator/actionApplyHandlers";
+import CuratorActionPanel from "./CuratorActionPanel";
+import normalizeCuratorActionResult from "./normalizeCuratorActionResult";
+import curatorActionExecutor from "./curatorActionExecutor";
+import { runCuratorAction } from "./curatorActionService";
+import { applyCuratorRecommendation } from "./curatorApplyHandlers";
 
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
