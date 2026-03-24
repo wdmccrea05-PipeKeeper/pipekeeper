@@ -254,6 +254,7 @@ export default function CuratorWorkspace({
   const threadInitPromiseRef = useRef(null);
   const sessionStartedRef = useRef(false);
   const startupConsumedRef = useRef(false);
+  const handledActionRef = useRef(null);
 
   const buildCuratorContext = () => ({
     pipes: pipes || [],
@@ -620,6 +621,36 @@ Category: ${activeContext.category || "general"}`;
     },
     [input, sending, ensureThread, t, pipes, blends, bottles, tastingLogs, userProfile, tasteProfile, messages.length, sessionId, messages, launchContext]
   );
+
+  // ROUTED EXPERT ACTIONS (silent_action execution)
+  useEffect(() => {
+    const actionType =
+      resolvedLaunchContext?.actionType ||
+      resolvedLaunchContext?.sourceAction ||
+      resolvedLaunchContext?.recommendationContext?.actionType ||
+      null;
+
+    const executionMode = resolvedLaunchContext?.executionMode || null;
+    const launchKey = `${executionMode || "none"}:${actionType || "none"}:${resolvedLaunchContext?.source || "unknown"}`;
+
+    if (!actionType) return;
+    if (executionMode !== "silent_action") return;
+    if (sending || initializing) return;
+    if (handledActionRef.current === launchKey) return;
+
+    console.log("Curator routed expert action firing:", {
+      actionType,
+      executionMode,
+      resolvedLaunchContext,
+    });
+
+    handledActionRef.current = launchKey;
+    handleExpertAction(actionType);
+  }, [
+    resolvedLaunchContext,
+    sending,
+    initializing,
+  ]);
 
   // STARTUP ROUTED PROMPTS (one-time only)
   useEffect(() => {
