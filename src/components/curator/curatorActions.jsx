@@ -298,6 +298,26 @@ Use only my actual collection data and tasting history. Be specific, concise, an
     }),
     eventName: 'curator_action_optimize_whiskey_collection',
   },
+
+  {
+    id: 'session_builder',
+    label: 'Plan Session',
+    description: 'Build a curated pipe, tobacco, and whiskey session',
+    icon: Sparkles,
+    modules: ['pipe', 'tobacco', 'whiskey'],
+    sourceExpert: 'expert_session_builder',
+    visibility: (ctx) => {
+      const { pipes = [] } = ctx;
+      return pipes.length > 0;
+    },
+    buildPrompt: () => '',
+    buildContext: (ctx) => ({
+      type: 'session_builder',
+      dataRequirement: ['pipes', 'blends', 'bottles', 'smokingLogs', 'tastingLogs'],
+      sourceExpert: 'expert_session_builder',
+    }),
+    eventName: 'curator_action_session_builder',
+  },
 ];
 
 /**
