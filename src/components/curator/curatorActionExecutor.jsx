@@ -240,7 +240,7 @@ Allowed fields in proposedChanges:
 - collector_value
 
 STRICT OUTPUT RULES:
-- item.type must be "measurement_update" (reuse for data enrichment)
+- item.type must be "bottle_data_update"
 - recordType must be "bottle"
 - Return at most 5 items
 - Each item must target a real existing bottle record
