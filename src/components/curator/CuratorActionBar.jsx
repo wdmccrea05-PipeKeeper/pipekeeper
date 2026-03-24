@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { CURATOR_ACTIONS, getVisibleActions, buildActionLaunchContext } from './curatorActions.js';
+import { CURATOR_ACTIONS, getVisibleActions, buildActionLaunchContext } from './curatorActions';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { logCuratorEvent } from '@/components/utils/curatorEventLogger';
 
