@@ -1,13 +1,18 @@
 import { base44 } from "@/api/base44Client";
 import parseCuratorActionResponse from "./parseCuratorActionResponse";
+import { buildSafeCollectionContext, buildPromptBlock } from "./collectionContextBudget";
 
 function buildSharedInstruction(context) {
-  const pipes = context?.pipes || [];
-  const blends = context?.blends || [];
-  const bottles = context?.bottles || [];
-  const smokingLogs = context?.smokingLogs || [];
-  const tastingLogs = context?.tastingLogs || [];
-  const userProfile = context?.userProfile || null;
+  const safeContext = buildSafeCollectionContext({
+    pipes: context?.pipes || [],
+    blends: context?.blends || [],
+    bottles: context?.bottles || [],
+    smokingLogs: context?.smokingLogs || [],
+    tastingLogs: context?.tastingLogs || [],
+    userProfile: context?.userProfile || null,
+  });
+
+  const compressedCollectionBlock = buildPromptBlock(safeContext);
   const tasteProfile = context?.tasteProfile || null;
 
   return `
@@ -58,20 +63,11 @@ Schema:
   ]
 }
 
-Collection context:
-${JSON.stringify(
-  {
-    pipes,
-    blends,
-    bottles,
-    smokingLogs,
-    tastingLogs,
-    userProfile,
-    tasteProfile,
-  },
-  null,
-  2
-)}
+Use this collection context:
+${compressedCollectionBlock}
+
+Taste profile:
+${JSON.stringify(tasteProfile || {}, null, 2)}
 `;
 }
 
@@ -91,22 +87,10 @@ Focus on:
 - collection balance strengths and weak points
 
 OUTPUT REQUIREMENTS:
-- Return only the most actionable 3 to 8 recommendations
+- Return only the most actionable 3 to 6 recommendations
 - Every item must be specific and practical
 - Use actual collection and log evidence
 - Proposed changes must be record-level changes, not vague advice
-
-GOOD examples:
-- update a pipe specialization
-- reclassify a blend family
-- flag a pipe for rotation usage notes
-- normalize a classification field
-
-BAD examples:
-- “consider smoking more Virginias”
-- “your collection is balanced”
-- “maybe buy another pipe”
-unless tied to a concrete actionable record recommendation
 `;
 }
 
@@ -181,7 +165,6 @@ OUTPUT REQUIREMENTS:
 - recordType must be "blend"
 - proposedChanges must contain direct field updates
 
-Do not output generic cellar advice.
 Return only field-level actionable recommendations for specific blend records.
 `;
 }
