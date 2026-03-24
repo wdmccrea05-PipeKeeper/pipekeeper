@@ -75,106 +75,47 @@ ${JSON.stringify(tasteProfile || {}, null, 2)}
 }
 
 function buildSessionBuilderPrompt(context) {
-  const hasPipes = (context?.pipes || []).length > 0;
-  const hasBlends = (context?.blends || []).length > 0;
-  const hasBottles = (context?.bottles || []).length > 0;
-
-  let sessionTaskDescription;
-
-  if (hasPipes && hasBlends) {
-    sessionTaskDescription = `Generate exactly 3 curated session experiences from the user's real collection.
-A session may combine:
-- a pipe
-- a tobacco blend
-- and, if available, a whiskey bottle
-
-The 3 sessions must cover these intents:
-1. Mood / relaxed evening
-2. Rotation / underused item recovery
-3. Discovery / something different
-
-STRICT RULES:
-- item.type must be "session_builder"
-- recordType must be "pipe"
-- recordId must be the actual id of the pipe anchoring the session
-- recordName must be the actual pipe name
-- proposedChanges must be {}
-- Use human-readable text only
-- No snake_case in title/explanation/rationale
-- If no whiskey is available, still build a pipe + tobacco session
-- If a pipe collection exists, do NOT return zero items
-- Keep each explanation concise and practical
-
-Return exactly 3 items unless there are zero pipes. If there are zero pipes, return zero items.`;
-  } else if (hasPipes && hasBottles) {
-    sessionTaskDescription = `Generate exactly 3 curated session experiences pairing pipes with whiskey bottles from the user's collection.
-Each session must pair:
-- a pipe (required)
-- a whiskey bottle (required)
-
-The 3 sessions must cover these intents:
-1. Mood / relaxed evening
-2. Rotation / underused item recovery
-3. Discovery / something different
-
-STRICT RULES:
-- item.type must be "session_builder"
-- recordType must be "pipe"
-- recordId must be the actual id of the pipe anchoring the session
-- recordName must be the actual pipe name
-- proposedChanges must be {}
-- Each explanation must mention both the pipe AND the whiskey bottle pairing
-- Use human-readable text only
-- No snake_case in title/explanation/rationale
-- Keep each explanation concise and practical
-
-Return exactly 3 items if pipes and whiskey both exist. If either pipes or whiskey bottles are missing, return zero items.`;
-  } else if (hasBlends && hasBottles) {
-    sessionTaskDescription = `Generate exactly 3 curated session experiences pairing tobacco blends with whiskey bottles from the user's collection.
-Each session must pair:
-- a tobacco blend (required)
-- a whiskey bottle (required)
-
-The 3 sessions must cover these intents:
-1. Mood / relaxed evening
-2. Rotation / underused item recovery
-3. Discovery / something different
-
-STRICT RULES:
-- item.type must be "session_builder"
-- recordType must be "blend"
-- recordId must be the actual id of the blend anchoring the session
-- recordName must be the actual blend name
-- proposedChanges must be {}
-- Each explanation must mention both the tobacco blend AND the whiskey bottle pairing
-- Use human-readable text only
-- No snake_case in title/explanation/rationale
-- Keep each explanation concise and practical
-
-Return exactly 3 items if both blends and whiskey exist. If either is missing, return zero items.`;
-  } else if (hasBottles && !hasPipes && !hasBlends) {
-    sessionTaskDescription = `The user has only whiskey bottles but no pipes or tobacco blends. Session experiences require pairing items.
-
-STRICT RULES:
-- If only whiskey bottles are available without pipes or blends, return zero items
-- No sessions can be built without at least one other item type
-
-Return zero items.`;
-  } else {
-    sessionTaskDescription = `Generate exactly 3 curated session experiences from the user's real collection.
-A session may combine:
-- a pipe
-- a tobacco blend
-- and, if available, a whiskey bottle
-
-Return exactly 3 items unless there are zero pipes. If there are zero pipes, return zero items.`;
-  }
+  const hasPipes = Array.isArray(context?.pipes) && context.pipes.length > 0;
+  const hasBlends = Array.isArray(context?.blends) && context.blends.length > 0;
+  const hasBottles = Array.isArray(context?.bottles) && context.bottles.length > 0;
 
   return `
 ${buildSharedInstruction(context)}
 
 TASK:
-${sessionTaskDescription}
+Generate exactly 3 curated session experiences from the user's real collection.
+
+A session may combine:
+- a pipe
+- a tobacco blend
+- a whiskey bottle
+
+The 3 sessions must cover these intents:
+1. Mood / relaxed evening
+2. Rotation / underused item recovery
+3. Discovery / something different
+
+STRICT RULES:
+- item.type must be "session_builder"
+- recordType must be "pipe"
+- recordId must be the actual id of the pipe anchoring the session
+- recordName must be the actual pipe name
+- proposedChanges must be {}
+- Use human-readable text only
+- No snake_case in title/explanation/rationale
+- Return exactly 3 items when at least one pipe exists
+- If no pipes exist, return zero items
+
+WHISKEY RULE:
+${hasBottles ? `Because whiskey bottles are available in this scope, at least 2 of the 3 sessions MUST include a specific whiskey bottle from the collection.` : `No whiskey bottles are available in this scope, so sessions should use pipe + tobacco only.`}
+
+TOBACCO RULE:
+${hasBlends ? `Use actual tobacco blends from the collection.` : `If no tobacco blends are available, explain the session using the pipe alone.`}
+
+PIPE RULE:
+${hasPipes ? `You must anchor every session to a real pipe record from the collection.` : `If no pipes exist, return zero items.`}
+
+Return JSON only.
 `;
 }
 
