@@ -124,7 +124,7 @@ Return {"items": [], "summary": "Blend classifications look accurate"} if no cha
  * @param {Object} params.launchContext - Routed context from action launch
  * @returns {Promise<{result: Object, executionId: string, actionId: string}>}
  */
-export default async function curatorActionExecutor({
+export async function executeCuratorAction({
   actionId,
   executionId,
   displayLabel,
