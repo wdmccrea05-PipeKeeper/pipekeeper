@@ -1,3 +1,4 @@
+import { base44 } from "@/api/base44Client";
 import parseCuratorActionResponse from "./parseCuratorActionResponse";
 
 function buildSharedInstruction(context) {
@@ -126,13 +127,14 @@ Use actual evidence such as:
 OUTPUT REQUIREMENTS:
 - item.type must be "specialization"
 - recordType must be "pipe"
-- proposedChanges must contain fields that can be written directly, for example:
+- proposedChanges must contain direct writable fields such as:
   {
     "specialization": "Outdoor Rotation"
   }
 
-Do NOT return generic strategy text.
 Only return actionable specialization cards for actual pipe records.
+Do NOT return generic strategy text.
+Do NOT return observations without a writable recommendation.
 `;
 }
 
@@ -206,17 +208,21 @@ export default async function curatorActionExecutor({
 }) {
   const prompt = getActionPrompt(actionType, context);
 
-  if (!window?.base44?.integrations?.Core?.InvokeLLM) {
+  if (!base44?.integrations?.Core?.InvokeLLM) {
     throw new Error("Curator LLM integration is unavailable.");
   }
 
-  const responseText = await window.base44.integrations.Core.InvokeLLM({
+  const responseText = await base44.integrations.Core.InvokeLLM({
     prompt,
     add_context_from_internet: false,
   });
 
   if (process.env.NODE_ENV !== "production") {
-    console.log("Curator raw action response:", responseText);
+    console.log("Curator raw action response:", {
+      actionType,
+      requestId,
+      responseText,
+    });
   }
 
   if (!responseText) {
