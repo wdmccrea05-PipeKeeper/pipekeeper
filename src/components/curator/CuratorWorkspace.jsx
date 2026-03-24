@@ -736,6 +736,10 @@ Category: ${activeContext.category || "general"}`;
     });
 
     setActionRun(result);
+
+    if (onPromptConsumed) {
+      onPromptConsumed();
+    }
   };
 
   const handleRetryAction = () => {
