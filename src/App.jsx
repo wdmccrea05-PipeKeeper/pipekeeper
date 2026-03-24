@@ -69,6 +69,116 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
+    <Routes>
+      <Route path="/share/:moduleType/:shareToken" element={<PublicSharedRecord />} />
+      <Route path="/CuratorAnalyticsDashboard" element={
+        <LayoutWrapper currentPageName="CuratorAnalyticsDashboard">
+          <CuratorAnalyticsDashboard />
+        </LayoutWrapper>
+      } />
+      <Route path="/CollectionInsightsShare" element={
+        <LayoutWrapper currentPageName="CollectionInsightsShare">
+          <CollectionInsightsShare />
+        </LayoutWrapper>
+      } />
+      <Route path="/Whiskey" element={
+        <LayoutWrapper currentPageName="Whiskey">
+          <Whiskey />
+        </LayoutWrapper>
+      } />
+      <Route path="/WhiskeyAnalytics" element={
+        <LayoutWrapper currentPageName="WhiskeyAnalytics">
+          <WhiskeyAnalytics />
+        </LayoutWrapper>
+      } />
+      <Route path="/Tastings" element={
+        <LayoutWrapper currentPageName="Tastings">
+          <Tastings />
+        </LayoutWrapper>
+      } />
+      <Route path="/Curator" element={
+        <LayoutWrapper currentPageName="Curator">
+          <Curator />
+        </LayoutWrapper>
+      } />
+      <Route path="/Subscription" element={
+        <LayoutWrapper currentPageName="Subscription">
+          <Subscription />
+        </LayoutWrapper>
+      } />
+      <Route path="/SubscriptionSuccessFlow" element={
+        <SubscriptionSuccessFlow />
+      } />
+      <Route path="/CollectionHub" element={
+        <LayoutWrapper currentPageName="CollectionHub">
+          <CollectionHub />
+        </LayoutWrapper>
+      } />
+      <Route path="/PipeKeeper" element={
+        <LayoutWrapper currentPageName="PipeKeeper">
+          <PipeKeeper />
+        </LayoutWrapper>
+      } />
+      <Route path="/WhiskeyKeeper" element={
+        <LayoutWrapper currentPageName="WhiskeyKeeper">
+          <WhiskeyKeeper />
+        </LayoutWrapper>
+      } />
+      <Route path="/WhiskeyAIUpdates" element={
+        <LayoutWrapper currentPageName="WhiskeyAIUpdates">
+          <WhiskeyAIUpdates />
+        </LayoutWrapper>
+      } />
+      <Route path="/BottleDetail" element={
+        <LayoutWrapper currentPageName="BottleDetail">
+          <BottleDetail />
+        </LayoutWrapper>
+      } />
+      <Route path="/BottleForm" element={
+        <LayoutWrapper currentPageName="BottleForm">
+          <BottleFormPage />
+        </LayoutWrapper>
+      } />
+      <Route path="/HelpCenter" element={
+        <LayoutWrapper currentPageName="HelpCenter">
+          <HelpCenter />
+        </LayoutWrapper>
+      } />
+      <Route path="/Tutorials" element={
+        <LayoutWrapper currentPageName="Tutorials">
+          <Tutorials />
+        </LayoutWrapper>
+      } />
+      <Route path="/PipeDetail" element={
+        <LayoutWrapper currentPageName="PipeDetail">
+          <PipeDetail />
+        </LayoutWrapper>
+      } />
+      <Route path="/TobaccoDetail" element={
+        <LayoutWrapper currentPageName="TobaccoDetail">
+          <TobaccoDetail />
+        </LayoutWrapper>
+      } />
+      <Route path="/" element={
+        <LayoutWrapper currentPageName={mainPageKey}>
+          <MainPage />
+        </LayoutWrapper>
+      } />
+      {Object.entries(Pages).map(([path, Page]) => (
+        <Route
+          key={path}
+          path={`/${path}`}
+          element={
+            <LayoutWrapper currentPageName={path}>
+              <Page />
+            </LayoutWrapper>
+          }
+        />
+      ))}
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
+  );
+};
 
 
 function App() {
