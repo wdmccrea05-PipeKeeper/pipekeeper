@@ -400,7 +400,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
                   <SelectValue placeholder={t("smokingLog.selectBowl")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={null}>{t("smokingLog.noSpecificBowl")}</SelectItem>
+                  <SelectItem value="">{t("smokingLog.noSpecificBowl")}</SelectItem>
                   {selectedPipe.interchangeable_bowls.map((bowl, idx) => {
                     const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
                     return (
@@ -446,7 +446,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
                   <SelectValue placeholder={t("smokingLog.autoNone")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={null}>{t("smokingLog.autoNone")}</SelectItem>
+                  <SelectItem value="">{t("smokingLog.autoNone")}</SelectItem>
                   {containers.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.container_name} — {c.quantity_grams ?? 0}g
