@@ -348,7 +348,7 @@ export default function CollectionHub() {
           <QuickAction icon={PipeIcon} label="Add Pipe" accent="#C89752" onClick={() => navigate('/Pipes?action=add')} />
           <QuickAction icon={Leaf} label="Add Blend" accent="#8E7E60" onClick={() => navigate('/Tobacco?action=add')} />
           <QuickAction icon={Flame} label="Log Smoke" accent="#B56A5F" onClick={() => navigate(createPageUrl('PipeKeeper?action=log-smoke'))} />
-          <QuickAction icon={Layers} label="View Pipes" accent="#B48C4B" onClick={() => navigate(createPageUrl('PipeKeeper'))} />
+          <QuickAction icon={Layers} label="View Pipes" accent="#B48C4B" onClick={() => navigate('/Pipes')} />
           {whiskeyOpenable && (
             <>
               <QuickAction icon={WhiskeyKeeperIcon} label="Add Bottle" accent="#B66565" onClick={() => navigate('/BottleForm')} />
