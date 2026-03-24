@@ -1080,6 +1080,15 @@ ${englishText}`;
         className="flex-1 overflow-y-auto px-4 sm:px-6 py-4"
         style={{ background: "rgba(15,10,8,0.3)", overscrollBehavior: "contain" }}
       >
+        <CuratorActionPanel
+          actionRun={actionRun}
+          itemStates={itemStates}
+          onRetry={handleRetryAction}
+          onAccept={handleAcceptRecommendation}
+          onReject={handleRejectRecommendation}
+          onAskCurator={handleAskCuratorAboutRecommendation}
+        />
+
         {runningAction && (
           <CuratorActionStatusBar actionLabel={runningAction} isRunning={true} />
         )}
@@ -1100,7 +1109,7 @@ ${englishText}`;
           />
         )}
         
-        {actionResult && !runningAction && !actionError && (
+        {actionResult && !runningAction && !actionError && !actionRun && (
           <div className="mb-4 space-y-2">
             {actionResult.items && actionResult.items.length > 0 ? (
               <>
