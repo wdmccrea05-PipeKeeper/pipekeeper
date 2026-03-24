@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from "sonner";
-import { openAppleSubscriptions, openNativePaywall, startApplePurchaseFlow } from "@/components/utils/nativeIAPBridge";
+import { openAppleSubscriptions, openNativePaywall, startApplePurchaseFlow, isIOSWebView } from "@/components/utils/nativeIAPBridge";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 function FeatureList({ items }) {
@@ -25,6 +25,7 @@ function FeatureList({ items }) {
 function AppleSubscription() {
   const { t } = useTranslation();
   const { hasPaid, isTrial } = useCurrentUser();
+  const [upgrading, setUpgrading] = React.useState(false);
 
   const freeFeatures = [
     t("subscription.appleFeatureFree1"),
@@ -57,22 +58,39 @@ function AppleSubscription() {
     t("subscription.appleFeaturePro8"),
   ];
 
-  const openSubscription = (tier = "pro") => {
-    if (!isAppleBuild) return;
+  const openSubscription = async (tier = "pro") => {
+    setUpgrading(true);
+    try {
+      if (!isAppleBuild) {
+        toast.error("Apple subscription only available in the app");
+        return;
+      }
 
-    // Prefer tier-aware paywall so Pro upgrades present the correct product.
-    const openedTierPaywall = startApplePurchaseFlow(tier);
-    if (openedTierPaywall) return;
+      const isWebView = isIOSWebView();
+      if (!isWebView) {
+        toast.error("Please open this in the PipeKeeper app to upgrade.");
+        return;
+      }
 
-    const openedPaywall = openNativePaywall();
-    if (openedPaywall) return;
+      // Prefer tier-aware paywall so Pro upgrades present the correct product.
+      const openedTierPaywall = startApplePurchaseFlow(tier);
+      if (openedTierPaywall) return;
 
-    const openedManage = openAppleSubscriptions();
-    if (openedManage) return;
+      const openedPaywall = openNativePaywall();
+      if (openedPaywall) return;
 
-    // Fallback so user never gets a dead click
-    window.open("https://apps.apple.com/account/subscriptions", "_blank");
-    toast.info(t("subscription.openedAppleSubsInBrowser"));
+      const openedManage = openAppleSubscriptions();
+      if (openedManage) return;
+
+      // Fallback so user never gets a dead click
+      window.open("https://apps.apple.com/account/subscriptions", "_blank");
+      toast.info(t("subscription.openedAppleSubsInBrowser"));
+    } catch (error) {
+      console.error("[Subscription] upgrade error:", error);
+      toast.error("Failed to open subscription. Please try again.");
+    } finally {
+      setUpgrading(false);
+    }
   };
 
   const openManage = () => {
@@ -120,8 +138,8 @@ function AppleSubscription() {
           <CardContent>
             <FeatureList items={proFeatures} />
             <div className="mt-4">
-              <Button className="w-full" onClick={() => openSubscription("pro")}>
-                {t("subscription.subscribe")}
+              <Button className="w-full" onClick={() => openSubscription("pro")} disabled={upgrading}>
+                {upgrading ? "Opening..." : t("subscription.subscribe")}
               </Button>
             </div>
           </CardContent>
