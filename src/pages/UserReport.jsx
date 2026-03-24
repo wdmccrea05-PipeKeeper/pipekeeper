@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Loader2, Users, TrendingUp, RefreshCw, Crown, UserX, Search, ChevronDown, ChevronUp, UserPlus, Clock, Zap, TrendingDown, Download } from "lucide-react";
+import { Loader2, Users, TrendingUp, RefreshCw, Crown, UserX, Search, ChevronDown, ChevronUp, UserPlus, Clock, Zap, TrendingDown, Download, Calendar, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -21,6 +21,8 @@ export default function UserReport() {
   const [sortColumn, setSortColumn] = useState('created_date');
   const [sortDirection, setSortDirection] = useState('desc');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [newAccountsDateRange, setNewAccountsDateRange] = useState('week');
+  const [renewalsDateRange, setRenewalsDateRange] = useState('month');
 
   const { data: user, isLoading: isLoadingUser, error: userError } = useQuery({
     queryKey: ['current-user'],
@@ -65,6 +67,18 @@ export default function UserReport() {
   const usageMetrics = adminMetrics?.usageMetrics || {};
   const usageAvgPipes = usageMetrics?.avgPipesPerUser || {};
   const usageAvgTobaccos = usageMetrics?.avgTobaccosPerUser || {};
+
+  // Consolidate Premium/Pro into single tier
+  const consolidatedPaidUsers = summary.paid_users;
+  const consolidatedPaidPercentage = summary.paid_percentage;
+  const consolidatedUserCount = (userCounts.premium || 0) + (userCounts.pro || 0);
+  const consolidatedTrialCount = (subscriptionBreakdown.activeOrTrialPremium || 0) + (subscriptionBreakdown.activeOrTrialPro || 0);
+
+  // Consolidate Apple/iOS into single platform
+  const applePlatformBreakdown = {
+    paid: (platformBreakdown.apple?.paid || 0) + (platformBreakdown.ios?.paid || 0),
+    free: (platformBreakdown.apple?.free || 0) + (platformBreakdown.ios?.free || 0)
+  };
 
   const filteredData = useMemo(() => {
     if (!report) return { paid: [], free: [] };
@@ -362,100 +376,82 @@ export default function UserReport() {
           </CardContent>
         </Card>
 
-        {/* Platform Cards */}
-        {adminMetrics?.platformBreakdown && !metricsLoading && (
-          <>
-            <Card className="bg-transparent">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.apple")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.apple?.paid || 0}</span>
+        {/* Platform Cards - Consolidated Apple/iOS */}
+          {adminMetrics?.platformBreakdown && !metricsLoading && (
+            <>
+              <Card className="bg-transparent">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-[#E0D8C8]">iOS/Apple</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
+                      <span className="font-bold text-[#F5F1E7]">{applePlatformBreakdown.paid}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
+                      <span className="font-bold text-[#F5F1E7]">{applePlatformBreakdown.free}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.apple?.free || 0}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card className="bg-transparent">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.android")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.android?.paid || 0}</span>
+              <Card className="bg-transparent">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.android")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
+                      <span className="font-bold text-[#F5F1E7]">{platformBreakdown.android?.paid || 0}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
+                      <span className="font-bold text-[#F5F1E7]">{platformBreakdown.android?.free || 0}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.android?.free || 0}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card className="bg-transparent">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.web")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.web?.paid || 0}</span>
+              <Card className="bg-transparent">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.web")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
+                      <span className="font-bold text-[#F5F1E7]">{platformBreakdown.web?.paid || 0}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
+                      <span className="font-bold text-[#F5F1E7]">{platformBreakdown.web?.free || 0}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.web?.free || 0}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card className="bg-transparent">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.iOS")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.ios?.paid || 0}</span>
+              <Card className="bg-transparent">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.unknown")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
+                      <span className="font-bold text-[#F5F1E7]">{platformBreakdown.unknown?.paid || 0}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
+                      <span className="font-bold text-[#F5F1E7]">{platformBreakdown.unknown?.free || 0}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.ios?.free || 0}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-transparent">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.unknown")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.unknown?.paid || 0}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.unknown?.free || 0}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </>
-        )}
+                </CardContent>
+              </Card>
+            </>
+          )}
       </div>
 
       {/* Trials Panel */}
@@ -524,7 +520,7 @@ export default function UserReport() {
         </Card>
       )}
 
-      {/* Churn Panel */}
+      {/* Churn Panel - Consolidated */}
       {adminMetrics?.churnMetrics && !metricsLoading && (
         <Card className="bg-transparent mb-6">
           <CardHeader className="pb-3">
@@ -536,19 +532,19 @@ export default function UserReport() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.premiumChurnRate")}</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">Paid Churn Rate (30d)</p>
+                <p className="text-2xl font-bold text-[#F5F1E7]">{((churnMetrics.premiumChurn30d || 0) + (churnMetrics.proChurn30d || 0)) / 2}%</p>
+              </div>
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">Premium Churn (30d)</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{churnMetrics.premiumChurn30d || 0}%</p>
               </div>
               <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.proChurnRate")}</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">Pro Churn (30d)</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{churnMetrics.proChurn30d || 0}%</p>
               </div>
               <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.proToPremium")}</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">{churnMetrics.proToPremiumDowngrade || 0}</p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.premiumToFree")}</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">Downgrade to Free</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{churnMetrics.premiumToFreeDowngrade || 0}</p>
               </div>
             </div>
@@ -556,60 +552,166 @@ export default function UserReport() {
         </Card>
       )}
 
-      {/* Additional Metrics Cards */}
+      {/* Consolidated Premium/Pro Metrics */}
       {adminMetrics && !metricsLoading && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.premiumUsers")}</CardTitle>
-              <p className="text-xs text-[#E0D8C8]/50 mt-1">{t("userReport.postFeb1")}</p>
+              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Active Paid Subscribers</CardTitle>
+              <p className="text-xs text-[#E0D8C8]/50 mt-1">Premium + Pro Combined</p>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-[#F5F1E7]">{userCounts.premium || 0}</p>
+              <p className="text-3xl font-bold text-[#F5F1E7]">{consolidatedUserCount}</p>
             </CardContent>
           </Card>
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.proUsers")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Active/Trial Paid</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-[#F5F1E7]">{userCounts.pro || 0}</p>
+              <p className="text-3xl font-bold text-[#F5F1E7]">{consolidatedTrialCount}</p>
             </CardContent>
           </Card>
           <Card className="bg-transparent">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.onTrial")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-[#F5F1E7]">{trialMetrics.currentlyOnTrial || 0}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-transparent">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.activeTrialPremium")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-[#F5F1E7]">{subscriptionBreakdown.activeOrTrialPremium || 0}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-transparent">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.activeTrialPro")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-[#F5F1E7]">{subscriptionBreakdown.activeOrTrialPro || 0}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-transparent">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">{t("userReport.legacyPremium")}</CardTitle>
-              <p className="text-xs text-[#E0D8C8]/50 mt-1">{t("userReport.subscribedBeforeFeb1")}</p>
+              <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Legacy Premium</CardTitle>
+              <p className="text-xs text-[#E0D8C8]/50 mt-1">Subscribed before Feb 1, 2026</p>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-[#F5F1E7]">{userCounts.legacyPremium || 0}</p>
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* New Tracking Cards */}
+      {adminMetrics && !metricsLoading && (
+        <>
+          {/* Daily/Weekly Activity */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <Card className="bg-transparent">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
+                  <Users className="w-5 h-5 text-[#E0D8C8]/70" />
+                  Average Daily Users/Logins
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-[#F5F1E7]">{adminMetrics.dailyActiveUsers || 0}</p>
+                <p className="text-xs text-[#E0D8C8]/50 mt-2">Last 30 days average</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-transparent">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-[#E0D8C8]/70" />
+                  Average Weekly Users
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-[#F5F1E7]">{adminMetrics.weeklyActiveUsers || 0}</p>
+                <p className="text-xs text-[#E0D8C8]/50 mt-2">Last 4 weeks average</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* New Accounts by Time Period */}
+          <Card className="bg-transparent mb-6">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-[#E0D8C8]/70" />
+                  New Accounts Created
+                </CardTitle>
+                <select
+                  value={newAccountsDateRange}
+                  onChange={(e) => setNewAccountsDateRange(e.target.value)}
+                  className="text-xs bg-[#2a1f18] border border-[#8b6239]/30 text-[#E0D8C8] px-2 py-1 rounded"
+                >
+                  <option value="day">Last 24 Hours</option>
+                  <option value="week">Last 7 Days</option>
+                  <option value="month">Last 30 Days</option>
+                  <option value="quarter">Last 90 Days</option>
+                </select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
+                  <p className="text-xs text-[#E0D8C8]/70">24 Hours</p>
+                  <p className="text-2xl font-bold text-[#F5F1E7]">{adminMetrics.newAccounts?.day || 0}</p>
+                </div>
+                <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
+                  <p className="text-xs text-[#E0D8C8]/70">7 Days</p>
+                  <p className="text-2xl font-bold text-[#F5F1E7]">{adminMetrics.newAccounts?.week || 0}</p>
+                </div>
+                <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
+                  <p className="text-xs text-[#E0D8C8]/70">30 Days</p>
+                  <p className="text-2xl font-bold text-[#F5F1E7]">{adminMetrics.newAccounts?.month || 0}</p>
+                </div>
+                <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
+                  <p className="text-xs text-[#E0D8C8]/70">90 Days</p>
+                  <p className="text-2xl font-bold text-[#F5F1E7]">{adminMetrics.newAccounts?.quarter || 0}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Subscription Renewals */}
+          <Card className="bg-transparent mb-6">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-[#E0D8C8]/70" />
+                  Upcoming Subscription Renewals & Revenue
+                </CardTitle>
+                <select
+                  value={renewalsDateRange}
+                  onChange={(e) => setRenewalsDateRange(e.target.value)}
+                  className="text-xs bg-[#2a1f18] border border-[#8b6239]/30 text-[#E0D8C8] px-2 py-1 rounded"
+                >
+                  <option value="week">Next 7 Days</option>
+                  <option value="month">Next 30 Days</option>
+                  <option value="quarter">Next 90 Days</option>
+                  <option value="year">Next 365 Days</option>
+                </select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+                <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
+                  <p className="text-xs text-[#E0D8C8]/70">Renewal Count</p>
+                  <p className="text-2xl font-bold text-[#F5F1E7]">{adminMetrics.renewals?.[renewalsDateRange]?.count || 0}</p>
+                </div>
+                <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
+                  <p className="text-xs text-[#E0D8C8]/70">Projected Revenue</p>
+                  <p className="text-2xl font-bold text-[#F5F1E7]">${(adminMetrics.renewals?.[renewalsDateRange]?.totalAmount || 0).toFixed(2)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Module Usage Tracking (Placeholder for Future) */}
+          <Card className="bg-transparent mb-6 border-[#8b6239]/20 opacity-75">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-[#E0D8C8] flex items-center gap-2">
+                <Zap className="w-5 h-5" />
+                Module Usage & Revenue (Coming Soon)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-[#E0D8C8]/50 text-sm">Tracking for:</p>
+              <ul className="text-xs text-[#E0D8C8]/40 space-y-1 mt-2">
+                <li>• Modules used per user</li>
+                <li>• Which modules are most popular</li>
+                <li>• Module adoption by tier (Free/Paid)</li>
+                <li>• Recurring revenue per module</li>
+                <li>• Bundle usage and revenue</li>
+              </ul>
+            </CardContent>
+          </Card>
+        </>
       )}
 
       {/* Usage Metrics */}
