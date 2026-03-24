@@ -358,7 +358,8 @@ export default function CollectionHub() {
           {whiskeyOpenable && (
             <>
               <QuickAction icon={WhiskeyKeeperIcon} label="Add Bottle" accent="#B66565" onClick={() => navigate('/BottleForm')} />
-              <QuickAction icon={WhiskeyKeeperIcon} label="My Whiskey" accent="#A35050" onClick={() => navigate(createPageUrl('WhiskeyKeeper'))} />
+              <QuickAction icon={WhiskeyKeeperIcon} label="My Whiskey" accent="#A35050" onClick={() => navigate('/Whiskey')} />
+              <QuickAction icon={WhiskeyKeeperIcon} label="Log Tasting" accent="#A35050" onClick={() => navigate(createPageUrl('Tastings'))} />
             </>
           )}
           <QuickAction icon={({ className, ...props }) => <div className={`${className} rounded-lg overflow-hidden bg-white flex items-center justify-center`}><img src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png" className="w-full h-full object-cover" alt="Curator" /></div>} label="Open Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
