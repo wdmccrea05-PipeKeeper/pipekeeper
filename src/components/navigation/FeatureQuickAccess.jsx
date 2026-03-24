@@ -66,7 +66,7 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
       icon: HelpCircle,
       label: t("nav.help"),
       description: t("nav.faq"),
-      page: "Help",
+      page: "HelpCenter",
     },
   ];
   
@@ -78,7 +78,7 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl">{t("quickAccess.quickAccess")}</DialogTitle>
           <p className="text-sm text-[#E0D8C8]/70">{t("quickAccess.jumpToFeatures")}</p>

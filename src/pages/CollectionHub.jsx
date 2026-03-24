@@ -81,7 +81,7 @@ function StatCard({ icon: Icon, label, value, sub, accent = '#C89752' }) {
       </div>
       <div>
         <p className="text-[11px] uppercase tracking-[0.18em] font-semibold mb-2" style={{ color: `${accent}D8` }}>{label}</p>
-        <div className="text-4xl font-bold leading-none" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{value}</div>
+        <div className="text-2xl sm:text-4xl font-bold leading-none break-words" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{value}</div>
         {sub ? <p className="text-sm mt-2" style={{ color: 'rgba(224,216,200,0.68)' }}>{sub}</p> : null}
       </div>
     </div>
@@ -116,7 +116,7 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
         </div>
       </div>
 
-      <p className="text-lg leading-relaxed" style={{ color: 'rgba(224,216,200,0.82)' }}>{meta.description}</p>
+      <p className="text-sm sm:text-base leading-relaxed" style={{ color: 'rgba(224,216,200,0.82)' }}>{meta.description}</p>
 
       {stats.length > 0 && (
         <div className="grid grid-cols-3 gap-4 pt-4 border-t" style={{ borderColor: `${meta.accent}26` }}>
@@ -139,7 +139,7 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
           color: meta.accent,
         }}
       >
-        Open {meta.label} →
+        Open {meta.label}
       </button>
     </div>
   );
@@ -269,10 +269,8 @@ export default function CollectionHub() {
 
     const recentActivity = smokeLogs.slice(0, 5).map((log) => ({
       id: log.id,
-      title: log.blend_name || 'Recent session',
-      subtitle: `${log.pipe_name ? `In ${log.pipe_name}` : 'Pipe session'}${log.date ? ` • ${getRecentLabel(log.date)}` : ''}`,
-      pipeId: log.pipe_id,
-    }));
+      title: log.blend_name || log.pipe_name || 'Recent session',
+      subtitle: `${log.pipe_name ? log.pipe_name : 'Session'}${log.date ? ` · ${getRecentLabel(log.date)}` : ''}`,
 
     return {
       totalValue,
@@ -291,7 +289,7 @@ export default function CollectionHub() {
   const pipeStats = [
     { label: 'Pipes', value: pipes.length },
     { label: 'Blends', value: blends.length },
-    { label: 'Recent Sessions', value: isLoading ? '—' : metrics.recentSessionsCount },
+    { label: 'This Week', value: isLoading ? '—' : metrics.recentSessionsCount },
   ];
 
   const whiskeyStats = [
@@ -503,10 +501,10 @@ export default function CollectionHub() {
                   <Activity className="w-5 h-5" style={{ color: '#D4A574' }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-lg font-bold truncate" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{activity.title}</p>
-                  <p className="text-sm mt-1 truncate" style={{ color: 'rgba(224,216,200,0.7)' }}>{activity.subtitle}</p>
+                  <p className="text-base font-bold break-words line-clamp-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{activity.title}</p>
+                  <p className="text-sm mt-1 break-words line-clamp-1" style={{ color: 'rgba(224,216,200,0.7)' }}>{activity.subtitle}</p>
                 </div>
-                <span className="text-sm shrink-0" style={{ color: '#D4A574' }}>View →</span>
+                <span className="text-sm shrink-0" style={{ color: '#D4A574' }}>View</span>
               </button>
             ))}
           </div>

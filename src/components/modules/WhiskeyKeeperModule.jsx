@@ -212,7 +212,7 @@ export default function WhiskeyKeeperModule({
             </div>
             <div className="text-3xl font-bold text-[#F5F1E7] mt-2">{bottleTypes}</div>
             <p className="text-xs mt-1 text-[#E0D8C8]/60">
-              {totalBottles} total bottles
+              {totalBottles} {t('whiskey.totalBottles') || 'total bottles'}
             </p>
           </div>
 
@@ -226,7 +226,7 @@ export default function WhiskeyKeeperModule({
             </div>
             <div className="text-3xl font-bold text-[#F5F1E7] mt-2">{totalBottles}</div>
             <p className="text-xs mt-1 text-[#E0D8C8]/60">
-              {openBottles} open · {sealedBottles} sealed
+              {openBottles} {t('whiskey.open') || 'open'} · {sealedBottles} {t('whiskey.sealed') || 'sealed'}
             </p>
           </div>
 

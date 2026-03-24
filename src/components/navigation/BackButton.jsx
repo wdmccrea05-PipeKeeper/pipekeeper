@@ -45,7 +45,7 @@ export default function BackButton({ currentPageName, className = '' }) {
       aria-label={t('common.back', 'Back')}
     >
       <ArrowLeft className="w-4 h-4 mr-1" />
-      <span className="hidden sm:inline">{t('common.back', 'Back')}</span>
+      <span>{t('common.back', 'Back')}</span>
     </Button>
   );
 }
