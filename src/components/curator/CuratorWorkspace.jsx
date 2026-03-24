@@ -650,6 +650,7 @@ Category: ${activeContext.category || "general"}`;
     resolvedLaunchContext,
     sending,
     initializing,
+    handleExpertAction,
   ]);
 
   // STARTUP ROUTED PROMPTS (one-time only)
