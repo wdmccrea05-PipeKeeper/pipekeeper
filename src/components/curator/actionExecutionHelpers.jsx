@@ -209,6 +209,7 @@ export function createActionExecutionContext(action, collectionContext) {
     executionId,
     // CRITICALLY: Store prompt in executor-only field, NOT initialPrompt
     _internalPrompt: prompt, // Private field: used only by executeCuratorAction
+    actionType: action.id, // Used by routed action effect
     sourceAction: action.id,
     sourceExpert: action.sourceExpert,
     recommendationContext: context,
