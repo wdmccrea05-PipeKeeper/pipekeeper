@@ -688,7 +688,6 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
       ...prev,
       [item.id]: { status: "applying", error: null },
     }));
-
     if (messageId) {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -707,9 +706,9 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         )
       );
     }
-
     try {
-      if (item.type === "pairing_recommendation" || item.type === "session_builder") {
+      const isNonMutating = item.type === "pairing_recommendation" || item.type === "session_builder";
+      if (isNonMutating) {
         try {
           const sessions = JSON.parse(localStorage.getItem("pk_sessions") || "[]");
           const next = [{ ...item, savedAt: new Date().toISOString() }, ...sessions.filter(x => x.id !== item.id)];
@@ -717,32 +716,16 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         } catch (e) {
           console.warn('Failed to save session:', e);
         }
-        setItemStates((prev) => ({
-          ...prev,
-          [item.id]: { status: "accepted", error: null },
-        }));
-        if (messageId) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === messageId
-                ? {
-                    ...msg,
-                    meta: {
-                      ...msg.meta,
-                      itemStates: {
-                        ...(msg.meta?.itemStates || {}),
-                        [item.id]: { status: "accepted", error: null },
-                      },
-                    },
-                  }
-                : msg
-            )
-          );
-        }
         toast.success("Session saved.");
-        return;
+      } else {
+        await applyCuratorRecommendation(item);
+        toast.success("Recommendation applied.");
+        await Promise.allSettled([
+          queryClient.invalidateQueries({ queryKey: ["pipes"] }),
+          queryClient.invalidateQueries({ queryKey: ["blends"] }),
+          queryClient.invalidateQueries({ queryKey: ["bottles"] }),
+        ]);
       }
-      await applyCuratorRecommendation(item);
       setItemStates((prev) => ({
         ...prev,
         [item.id]: { status: "accepted", error: null },
@@ -765,12 +748,6 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
           )
         );
       }
-      toast.success("Recommendation applied.");
-      await Promise.allSettled([
-        queryClient.invalidateQueries({ queryKey: ["pipes"] }),
-        queryClient.invalidateQueries({ queryKey: ["blends"] }),
-        queryClient.invalidateQueries({ queryKey: ["bottles"] }),
-      ]);
     } catch (error) {
       const nextError = error?.message || "Failed to apply recommendation.";
       setItemStates((prev) => ({
