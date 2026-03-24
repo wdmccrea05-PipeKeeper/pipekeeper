@@ -63,7 +63,7 @@ export default function PipesPage() {
       window.history.replaceState({}, '', '/Pipes');
     }
     const editId = urlParams.get('edit');
-    if (editId) {
+    if (editId && pipes?.length > 0) {
       const pipeToEdit = pipes.find(p => p.id === editId);
       if (pipeToEdit) {
         setEditingPipe(pipeToEdit);

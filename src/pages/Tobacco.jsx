@@ -77,7 +77,7 @@ export default function TobaccoPage() {
       window.history.replaceState({}, '', '/Tobacco');
     }
     const editId = urlParams.get('edit');
-    if (editId) {
+    if (editId && blends?.length > 0) {
       const blendToEdit = blends.find(b => b.id === editId);
       if (blendToEdit) {
         setEditingBlend(blendToEdit);
