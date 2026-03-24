@@ -292,21 +292,28 @@ Return complete and accurate information based on the blend name or description 
       }
     }
 
+    const roundOptional = (val) => {
+      if (!val) return null;
+      const num = Number(val);
+      const rounded = Math.round(num * 100) / 100;
+      return rounded % 1 === 0 ? Math.round(rounded) : rounded;
+    };
+
     const cleanedData = {
       ...formData,
-      tin_size_oz: formData.tin_size_oz ? Number(formData.tin_size_oz) : null,
-      tin_total_tins: formData.tin_total_tins ? Number(formData.tin_total_tins) : null,
-      tin_total_quantity_oz: formData.tin_total_quantity_oz ? Number(formData.tin_total_quantity_oz) : null,
-      tin_tins_open: formData.tin_tins_open ? Number(formData.tin_tins_open) : null,
-      tin_tins_cellared: formData.tin_tins_cellared ? Number(formData.tin_tins_cellared) : null,
-      bulk_total_quantity_oz: formData.bulk_total_quantity_oz ? Number(formData.bulk_total_quantity_oz) : null,
-      bulk_open: formData.bulk_open ? Number(formData.bulk_open) : null,
-      bulk_cellared: formData.bulk_cellared ? Number(formData.bulk_cellared) : null,
-      pouch_size_oz: formData.pouch_size_oz ? Number(formData.pouch_size_oz) : null,
-      pouch_total_pouches: formData.pouch_total_pouches ? Number(formData.pouch_total_pouches) : null,
-      pouch_total_quantity_oz: formData.pouch_total_quantity_oz ? Number(formData.pouch_total_quantity_oz) : null,
-      pouch_pouches_open: formData.pouch_pouches_open ? Number(formData.pouch_pouches_open) : null,
-      pouch_pouches_cellared: formData.pouch_pouches_cellared ? Number(formData.pouch_pouches_cellared) : null,
+      tin_size_oz: roundOptional(formData.tin_size_oz),
+      tin_total_tins: roundOptional(formData.tin_total_tins),
+      tin_total_quantity_oz: roundOptional(formData.tin_total_quantity_oz),
+      tin_tins_open: roundOptional(formData.tin_tins_open),
+      tin_tins_cellared: roundOptional(formData.tin_tins_cellared),
+      bulk_total_quantity_oz: roundOptional(formData.bulk_total_quantity_oz),
+      bulk_open: roundOptional(formData.bulk_open),
+      bulk_cellared: roundOptional(formData.bulk_cellared),
+      pouch_size_oz: roundOptional(formData.pouch_size_oz),
+      pouch_total_pouches: roundOptional(formData.pouch_total_pouches),
+      pouch_total_quantity_oz: roundOptional(formData.pouch_total_quantity_oz),
+      pouch_pouches_open: roundOptional(formData.pouch_pouches_open),
+      pouch_pouches_cellared: roundOptional(formData.pouch_pouches_cellared),
       rating: formData.rating ? Math.round(Number(formData.rating)) : null,
     };
     onSave(cleanedData);

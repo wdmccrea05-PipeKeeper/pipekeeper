@@ -166,6 +166,7 @@ function MessageBubble({ message }) {
         ) : (
           <ReactMarkdown
             className="text-sm prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+            skipHtml
             components={{
               p: ({ children }) => <p className="my-2 leading-relaxed">{children}</p>,
               ul: ({ children }) => <ul className="my-2 ml-4 list-disc space-y-1">{children}</ul>,
