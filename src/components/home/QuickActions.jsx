@@ -128,6 +128,7 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
                   src={CURATOR_ICON}
                   alt=""
                   className="w-full h-full object-cover"
+                  style={{ filter: 'hue-rotate(35deg) saturate(0.8) brightness(1.1)' }}
                   aria-hidden="true"
                 />
               ) : (
