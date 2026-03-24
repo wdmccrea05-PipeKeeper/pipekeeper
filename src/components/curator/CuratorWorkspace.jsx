@@ -240,6 +240,7 @@ export default function CuratorWorkspace({
   const [lastActionType, setLastActionType] = useState(null);
 
   const messagesEndRef = useRef(null);
+  const scrollContainerRef = useRef(null);
   const threadInitPromiseRef = useRef(null);
   const sessionStartedRef = useRef(false);
   const startupConsumedRef = useRef(false);
@@ -313,9 +314,34 @@ export default function CuratorWorkspace({
     [pipes, blends, effectiveSmokingLogs, bottles, userProfile, t]
   );
 
+  const scrollToBottom = useCallback((behavior = "smooth") => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({
+        behavior,
+        block: "end",
+      });
+      return;
+    }
+
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior,
+      });
+    }
+  }, []);
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, sending]);
+    scrollToBottom("smooth");
+  }, [messages, sending, actionRun, scrollToBottom]);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      scrollToBottom("smooth");
+    }, 80);
+
+    return () => window.clearTimeout(id);
+  }, [messages.length, actionRun?.status, scrollToBottom]);
 
   const ensureThread = useCallback(async () => {
     if (threadId) return threadId;
@@ -802,10 +828,33 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
     }
   };
 
+  function humanizeFieldLabel(key) {
+    return String(key || "")
+      .replace(/_/g, " ")
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .replace(/\b\w/g, (m) => m.toUpperCase());
+  }
+
+  function humanizeFieldValue(value) {
+    if (value === null || value === undefined || value === "") return "None";
+    if (typeof value === "boolean") return value ? "Yes" : "No";
+    return String(value)
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (m) => m.toUpperCase());
+  }
+
   const handleAskCuratorAboutRecommendation = (item) => {
     const prompt =
       item.followUpPrompt ||
       `Explain this recommendation in more detail and tell me what would change if I accept it: ${item.title}`;
+
+    const proposedEntries = Object.entries(item.proposedChanges || {});
+    const formattedChanges =
+      proposedEntries.length > 0
+        ? proposedEntries
+            .map(([key, value]) => `- ${humanizeFieldLabel(key)}: ${humanizeFieldValue(value)}`)
+            .join("\n")
+        : "- No direct field changes";
 
     setInput(prompt);
 
@@ -814,12 +863,10 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
       {
         id: `curator-followup-context-${item.id}-${Date.now()}`,
         role: "assistant",
-        content: `Clarifying recommendation for **${item.recordName || item.title}**.
+        content: `Here's more detail on this recommendation for **${item.recordName || item.title}**.
 
 Proposed changes:
-\`\`\`json
-${JSON.stringify(item.proposedChanges || {}, null, 2)}
-\`\`\``,
+${formattedChanges}`,
         meta: {},
       },
     ]);
@@ -929,8 +976,13 @@ ${JSON.stringify(item.proposedChanges || {}, null, 2)}
       </div>
 
       <div
+        ref={scrollContainerRef}
         className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 min-h-0"
-        style={{ background: "rgba(15,10,8,0.3)", overscrollBehavior: "contain" }}
+        style={{
+          background: "rgba(15,10,8,0.3)",
+          overscrollBehavior: "contain",
+          WebkitOverflowScrolling: "touch",
+        }}
       >
         {!actionRun && (
           <div className="mb-4 flex flex-wrap gap-2">
