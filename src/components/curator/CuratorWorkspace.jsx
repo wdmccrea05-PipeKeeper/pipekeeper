@@ -24,13 +24,13 @@ import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 import CuratorActionPanel from "./CuratorActionPanel";
 import CuratorActionResultCard from "./CuratorActionResultCard";
 import normalizeCuratorActionResult from "./normalizeCuratorActionResult.jsx";
-import curatorActionExecutor from "./curatorActionExecutor";
+import curatorActionExecutor from "./curatorActionExecutor.jsx";
 import { runCuratorAction } from "./curatorActionService.js";
 import { buildCuratorChatSystemPrompt, buildCuratorActivitySummary } from "./chatAdvicePrompting";
-import { applyCuratorRecommendation } from "./curatorApplyHandlers";
-import { saveSessionItem } from "./sessionBuilderStorage";
-import SavedSessionsPanel from "./SavedSessionsPanel";
-import { CURATOR_ACTIONS } from "./types/curatorActionTypes";
+import { applyCuratorRecommendation } from "./curatorApplyHandlers.js";
+import { saveSessionItem } from "./sessionBuilderStorage.js";
+import SavedSessionsPanel from "./SavedSessionsPanel.jsx";
+import { CURATOR_ACTIONS } from "./types/curatorActionTypes.js";
 import { buildSafeCollectionContext, buildPromptBlock } from "./collectionContextBudget";
 import extractActionableAdvice from "./extractActionableAdvice";
 
