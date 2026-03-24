@@ -2,7 +2,23 @@ import { Pipe } from "@/entities/Pipe";
 import { Blend } from "@/entities/Blend";
 import { Bottle } from "@/entities/Bottle";
 
+function ensureValidChangeSet(item) {
+  if (!item?.recordId) {
+    throw new Error("Recommendation is missing a target record.");
+  }
+
+  if (!item?.proposedChanges || typeof item.proposedChanges !== "object") {
+    throw new Error("Recommendation is missing proposed changes.");
+  }
+
+  if (Object.keys(item.proposedChanges).length === 0) {
+    throw new Error("Recommendation has no fields to apply.");
+  }
+}
+
 export async function applyCuratorRecommendation(item) {
+  ensureValidChangeSet(item);
+
   switch (item.type) {
     case "specialization":
     case "measurement_update":
