@@ -24,7 +24,7 @@ export function useCurrentUser() {
 
   // Use the user already fetched by AuthContext to avoid a duplicate base44.auth.me() call
   // on startup. The queryFn still runs on explicit invalidateQueries/refetch calls.
-  const { user: authUser, isLoadingAuth } = useAuth();
+  const { user: authUser, isLoadingAuth, isAuthenticated } = useAuth();
 
   const {
     data: user,
@@ -77,7 +77,7 @@ export function useCurrentUser() {
     // Only run query when auth has fully resolved AND user is authenticated.
     // If auth completes with auth_required error or no user, do NOT fetch user profile.
     // This prevents half-authenticated requests after invalid/expired/missing token.
-    enabled: !isLoadingAuth && isAuthenticated,
+    enabled: !!authUser && !isLoadingAuth && isAuthenticated,
     retry: 2,
   });
 
