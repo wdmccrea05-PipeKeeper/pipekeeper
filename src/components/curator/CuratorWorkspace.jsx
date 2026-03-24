@@ -822,6 +822,7 @@ ${JSON.stringify(item.proposedChanges || {}, null, 2)}
   const handleDismissAction = () => {
     setActionRun(null);
     setItemStates({});
+    handledActionRef.current = null;
   };
 
   const handleKeyDown = (e) => {
