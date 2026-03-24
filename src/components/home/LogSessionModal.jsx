@@ -150,6 +150,9 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
 
   const createLogMutation = useMutation({
     mutationFn: (data) => base44.entities.SmokingLog.create(data),
+    onError: (err) => {
+      toast.error(t("common.error", { defaultValue: "Error" }) + ": " + (err?.message || "Failed to save log"));
+    },
     onSuccess: async (_, variables) => {
       if (variables.container_id) {
         try {
