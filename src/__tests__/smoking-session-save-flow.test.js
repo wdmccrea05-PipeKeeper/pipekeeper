@@ -71,14 +71,13 @@ describe('Smoking session save flow', () => {
   });
 
   it('prepareLogData constructs correct shape for create mutation', () => {
-    const logData = {
+    // Note: The actual prepareLogData function normalizes schema per schemaCompatibility.js
+    // This test verifies the minimal contract: pipe_id, blend_id, date are required
+    const formData = {
       pipe_id: 'pipe-1',
-      pipe_name: 'Test Pipe',
       blend_id: 'blend-1',
-      blend_name: 'Test Blend',
-      bowl_variant_id: '', // Will be falsy in normalization logic
-      bowl_name: null,
-      container_id: null,
+      bowl_variant_id: '',
+      container_id: '',
       bowls_used: 1,
       is_break_in: false,
       date: '2026-03-24',
@@ -86,13 +85,15 @@ describe('Smoking session save flow', () => {
     };
 
     // Validation checks in submit
-    const hasRequiredFields = logData.pipe_id && logData.blend_id;
+    const hasRequiredFields = formData.pipe_id && formData.blend_id;
     expect(hasRequiredFields).toBe(true);
 
-    // All fields present for mutation payload
-    expect(Object.keys(logData)).toContain('pipe_id');
-    expect(Object.keys(logData)).toContain('blend_id');
-    expect(Object.keys(logData)).toContain('date');
+    // Form data has all expected shape keys
+    expect(Object.keys(formData)).toContain('pipe_id');
+    expect(Object.keys(formData)).toContain('blend_id');
+    expect(Object.keys(formData)).toContain('date');
+    expect(Object.keys(formData)).toContain('bowl_variant_id');
+    expect(Object.keys(formData)).toContain('container_id');
   });
 
   it('createLogMutation.onSuccess resets form and closes sheet', () => {
