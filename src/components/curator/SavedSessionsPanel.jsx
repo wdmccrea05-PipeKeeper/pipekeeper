@@ -1,9 +1,23 @@
 import { useState, useMemo } from "react";
-import { getSavedSessions, removeSavedSessionItem } from "./sessionBuilderStorage.js";
+
+const SESSIONS_KEY = "pk_sessions";
+
+function getSessions() {
+  try {
+    return JSON.parse(localStorage.getItem(SESSIONS_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function removeSession(id) {
+  const sessions = getSessions().filter(s => s.id !== id);
+  localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+}
 
 export default function SavedSessionsPanel() {
   const [key, setKey] = useState(0);
-  const sessions = useMemo(() => getSavedSessions(), [key]);
+  const sessions = useMemo(() => getSessions(), [key]);
 
   if (!sessions.length) {
     return (
@@ -19,7 +33,7 @@ export default function SavedSessionsPanel() {
         <div key={item.id} className="rounded-lg border border-amber-500/15 bg-amber-500/5 p-2">
           <p className="text-sm font-medium text-amber-100">{item.title || "Session"}</p>
           <button
-            onClick={() => { removeSavedSessionItem(item.id); setKey(k => k + 1); }}
+            onClick={() => { removeSession(item.id); setKey(k => k + 1); }}
             className="mt-2 text-xs text-amber-100 border border-amber-500/30 rounded px-2 py-1"
           >
             Remove

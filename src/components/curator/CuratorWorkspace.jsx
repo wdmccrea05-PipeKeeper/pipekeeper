@@ -28,7 +28,6 @@ import curatorActionExecutor from "./curatorActionExecutor.jsx";
 import { runCuratorAction } from "./curatorActionService.js";
 import { buildCuratorChatSystemPrompt, buildCuratorActivitySummary } from "./chatAdvicePrompting";
 import { applyCuratorRecommendation } from "./curatorApplyHandlers.js";
-import { saveSessionItem } from "./sessionBuilderStorage.js";
 import SavedSessionsPanel from "./SavedSessionsPanel.jsx";
 import { CURATOR_ACTIONS } from "./types/curatorActionTypes.js";
 import { buildSafeCollectionContext, buildPromptBlock } from "./collectionContextBudget";
@@ -710,41 +709,16 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
     }
 
     try {
-      // Non-mutating actions (pairing/session) - save but don't apply
       if (item.type === "pairing_recommendation" || item.type === "session_builder") {
-        saveSessionItem(item);
-        
-        setItemStates((prev) => ({
-          ...prev,
-          [item.id]: { status: "accepted", error: null },
-        }));
-
-        if (messageId) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === messageId
-                ? {
-                    ...msg,
-                    meta: {
-                      ...msg.meta,
-                      itemStates: {
-                        ...(msg.meta?.itemStates || {}),
-                        [item.id]: { status: "accepted", error: null },
-                      },
-                    },
-                  }
-                : msg
-            )
-          );
+        try {
+          const sessions = JSON.parse(localStorage.getItem("pk_sessions") || "[]");
+          const next = [{ ...item, savedAt: new Date().toISOString() }, ...sessions.filter(x => x.id !== item.id)];
+          localStorage.setItem("pk_sessions", JSON.stringify(next));
+        } catch (e) {
+          console.warn('Failed to save session:', e);
         }
 
-        toast.success("Session saved.");
-        return;
-      }
-
-      await applyCuratorRecommendation(item);
-
-      setItemStates((prev) => ({
+        setItemStates((prev) => ({
         ...prev,
         [item.id]: { status: "accepted", error: null },
       }));
