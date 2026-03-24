@@ -5,7 +5,7 @@ import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Grid3X3, List, Sparkles, Package2, Package, Leaf, BookOpen, TrendingUp } from "lucide-react";
+import { Plus, Search, Grid3X3, List, Sparkles, Package2, Package } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
