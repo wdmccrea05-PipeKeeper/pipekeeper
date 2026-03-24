@@ -15,6 +15,10 @@ import { useAuth } from "@/lib/AuthContext";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
+// Module-level in-flight locks — prevent duplicate calls when multiple components mount simultaneously
+let ensureUserInFlight = false;
+let syncSubscriptionInFlight = false;
+
 export function useCurrentUser() {
   const queryClient = useQueryClient();
 
@@ -159,10 +163,10 @@ export function useCurrentUser() {
   useEffect(() => {
     if (userLoading || !user?.email) return;
     
-    // Only try once per session
     const sessionKey = `pk_user_ensured_${user.email}`;
-    if (sessionStorage.getItem(sessionKey)) return;
+    if (sessionStorage.getItem(sessionKey) || ensureUserInFlight) return;
 
+    ensureUserInFlight = true;
     let cancelled = false;
 
     (async () => {
@@ -173,21 +177,16 @@ export function useCurrentUser() {
           await refetchUser();
         }
       } catch (err) {
-        // Always mark as ensured to prevent blocking page load
-        // User entity will be created automatically by Base44 if needed
-        if (!cancelled) {
-          sessionStorage.setItem(sessionKey, 'true');
-        }
+        if (!cancelled) sessionStorage.setItem(sessionKey, 'true');
         if (import.meta?.env?.DEV) {
           console.warn("[useCurrentUser] ensureUserRecord failed (non-fatal):", err?.message || err);
         }
+      } finally {
+        ensureUserInFlight = false;
       }
     })();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [userLoading, user?.email, refetchUser]);
+    return () => { cancelled = true; };
 
   // Subscription sync on mount: fixes delayed webhook timing on re-login.
   // FIX ISSUE-13: Use timestamp-based gate (10 minutes) to balance freshness vs churn
@@ -198,13 +197,11 @@ export function useCurrentUser() {
 
     const sessionKey = `pk_subscription_sync_${user.email}`;
     const lastSync = sessionStorage.getItem(sessionKey);
-    const SYNC_INTERVAL = 10 * 60 * 1000; // 10 minutes
+    const SYNC_INTERVAL = 10 * 60 * 1000;
     
-    if (lastSync && Date.now() - Number(lastSync) < SYNC_INTERVAL) {
-      // Sync ran recently, skip
-      return;
-    }
+    if ((lastSync && Date.now() - Number(lastSync) < SYNC_INTERVAL) || syncSubscriptionInFlight) return;
 
+    syncSubscriptionInFlight = true;
     let cancelled = false;
 
     (async () => {
@@ -215,10 +212,9 @@ export function useCurrentUser() {
           console.warn("[useCurrentUser] syncSubscriptionForMe failed (non-fatal):", err?.message || err);
         }
       } finally {
+        syncSubscriptionInFlight = false;
         if (!cancelled) {
           sessionStorage.setItem(sessionKey, String(Date.now()));
-          // Invalidate subscription cache with exact key to pick up sync results
-          // Use exact:true to avoid invalidating other cache entries
           await queryClient.invalidateQueries({ 
             queryKey: ["subscription", userId || email],
             exact: true 
@@ -228,10 +224,7 @@ export function useCurrentUser() {
       }
     })();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [userLoading, user?.email, refetchUser, refetchSubscription]);
+    return () => { cancelled = true; };
 
   // Authoritative provider: user.subscription_provider, then subscription.provider.
   const provider = resolveProviderFromUser(user) || resolveSubscriptionProvider(subscription);
