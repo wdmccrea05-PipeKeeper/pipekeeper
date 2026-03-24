@@ -274,16 +274,23 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       return;
     }
 
+    const roundOptional = (val) => {
+      if (!val) return null;
+      const num = Number(val);
+      const rounded = Math.round(num * 100) / 100;
+      return rounded % 1 === 0 ? Math.round(rounded) : rounded;
+    };
+
     const cleanedData = {
       ...formData,
-      length_mm: formData.length_mm ? Number(formData.length_mm) : null,
-      weight_grams: formData.weight_grams ? Number(formData.weight_grams) : null,
-      bowl_height_mm: formData.bowl_height_mm ? Number(formData.bowl_height_mm) : null,
-      bowl_width_mm: formData.bowl_width_mm ? Number(formData.bowl_width_mm) : null,
-      bowl_diameter_mm: formData.bowl_diameter_mm ? Number(formData.bowl_diameter_mm) : null,
-      bowl_depth_mm: formData.bowl_depth_mm ? Number(formData.bowl_depth_mm) : null,
-      purchase_price: formData.purchase_price ? Number(formData.purchase_price) : null,
-      estimated_value: formData.estimated_value ? Number(formData.estimated_value) : null,
+      length_mm: roundOptional(formData.length_mm),
+      weight_grams: roundOptional(formData.weight_grams),
+      bowl_height_mm: roundOptional(formData.bowl_height_mm),
+      bowl_width_mm: roundOptional(formData.bowl_width_mm),
+      bowl_diameter_mm: roundOptional(formData.bowl_diameter_mm),
+      bowl_depth_mm: roundOptional(formData.bowl_depth_mm),
+      purchase_price: roundOptional(formData.purchase_price),
+      estimated_value: roundOptional(formData.estimated_value),
       interchangeable_bowls: hasInterchangeableBowls ? formData.interchangeable_bowls : [],
     };
 
