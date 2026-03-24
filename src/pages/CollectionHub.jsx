@@ -271,6 +271,8 @@ export default function CollectionHub() {
       id: log.id,
       title: log.blend_name || log.pipe_name || 'Recent session',
       subtitle: `${log.pipe_name ? log.pipe_name : 'Session'}${log.date ? ` · ${getRecentLabel(log.date)}` : ''}`,
+      pipeId: log.pipe_id,
+    }));
 
     return {
       totalValue,
