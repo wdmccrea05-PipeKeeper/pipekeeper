@@ -34,6 +34,7 @@ import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { toast } from "sonner";
 import { prepareLogData, getBowlsUsed, getTotalBowlsFromLogs, getBreakInBowlsFromLogs, parseLocalCalendarDate, toLocalDateYmd } from "@/components/utils/schemaCompatibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import SmokingLogLoadingState from "./SmokingLogLoadingState";
 
 const TOBACCO_DENSITY_GCM3 = 0.30; // g/cm³ for pipe tobacco (loosely packed)
 const BOWL_GEOMETRY_FACTOR = 0.85; // account for tapered bowl shape
@@ -485,9 +486,13 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   if (isAppleBuild) return null;
 
-  // While subscription state is still loading, don't flash the upgrade prompt
-  // at paying users whose sync hasn't completed yet.
-  if (userLoading) return null;
+  // While subscription state is still loading, show a loading state instead of blank/null
+  // to prevent UI jump or flicker for paying users whose sync hasn't completed yet.
+  if (userLoading) {
+    return (
+      <SmokingLogLoadingState />
+    );
+  }
 
   if (!hasPaid) {
     return (
