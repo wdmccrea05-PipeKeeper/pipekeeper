@@ -6,7 +6,6 @@ import {
   Plus,
   Leaf,
   Flame,
-  Layers,
   Clock3,
   Activity,
   TrendingUp,
@@ -21,7 +20,7 @@ import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModu
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import BrandLogo from '@/components/branding/BrandLogo';
 import CatalogPlate from '@/components/home/CatalogPlate';
-import { getPipeValue, getTobaccoValue, getBottleValue } from '@/components/keeper-core/value/valueAggregation';
+import { getPipeValue, getBottleValue } from '@/components/keeper-core/value/valueAggregation';
 import { calculateTobaccoCollectionValue } from '@/components/utils/tobaccoQuantityHelpers';
 
 const MODULE_META = {

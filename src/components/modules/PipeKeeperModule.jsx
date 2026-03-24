@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Leaf, BookOpen, TrendingUp, Plus, Search, Camera, Target } from 'lucide-react';
+import { Leaf, BookOpen, TrendingUp, Search } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency, formatWeight } from '@/components/utils/localeFormatters';
@@ -20,7 +20,7 @@ const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc4971
 export default function PipeKeeperModule() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation();
+
   const { user } = useCurrentUser();
   const { hideValues, hideCollectionCounts } = useProfilePrivacy();
   const queryClient = useQueryClient();

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Sparkles, TrendingUp, Lightbulb, RefreshCw } from "lucide-react";
+import { Camera, TrendingUp, Lightbulb, RefreshCw } from "lucide-react";
 import QuickPipeIdentifier from "@/components/ai/QuickPipeIdentifier";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import AIUpdatesPanel from "@/components/ai/AIUpdatesPanel";

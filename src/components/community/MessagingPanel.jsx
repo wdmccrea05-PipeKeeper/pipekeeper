@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -118,9 +118,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     },
   });
 
-  const markAsReadMutation = useMutation({
-    mutationFn: (messageId) => base44.entities.Message.update(messageId, { is_read: true }),
-  });
+
 
   const toggleSaveMutation = useMutation({
     mutationFn: ({ messageId, saved }) => safeUpdate('Message', messageId, { is_saved: saved }),

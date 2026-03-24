@@ -1,15 +1,12 @@
 // Quick access panel for feature discoverability
 // Helps users remember where features live without redesigning navigation
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Zap, Package, Leaf, BarChart3, FileText, 
-  Sparkles, User, HelpCircle, CreditCard 
-} from 'lucide-react';
+import { Package, Leaf, BarChart3, FileText, Sparkles, User, HelpCircle, CreditCard } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function FeatureQuickAccess({ isOpen, onClose }) {
