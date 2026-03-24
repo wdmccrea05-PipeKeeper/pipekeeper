@@ -41,10 +41,20 @@ export default function UserReport() {
     retry: false,
   });
 
-  const { data: adminMetrics, isLoading: metricsLoading } = useQuery({
+  const { data: adminMetrics, isLoading: metricsLoading, refetch: refetchAdminMetrics } = useQuery({
     queryKey: ['admin-metrics'],
     queryFn: async () => {
       const response = await base44.functions.invoke('getAdminMetrics', {});
+      return response.data;
+    },
+    enabled: isAdmin,
+    retry: false,
+  });
+
+  const { data: userMetrics, isLoading: userMetricsLoading, refetch: refetchUserMetrics } = useQuery({
+    queryKey: ['user-metrics'],
+    queryFn: async () => {
+      const response = await base44.functions.invoke('calculateUserMetrics', {});
       return response.data;
     },
     enabled: isAdmin,
@@ -68,11 +78,16 @@ export default function UserReport() {
   const usageAvgPipes = usageMetrics?.avgPipesPerUser || {};
   const usageAvgTobaccos = usageMetrics?.avgTobaccosPerUser || {};
 
-  // Consolidate Premium/Pro into single tier
-  const consolidatedPaidUsers = summary.paid_users;
+  // Consolidate Premium/Pro into single tier - use calculated metrics if available
+  const consolidatedPaidUsers = userMetrics?.consolidatedPaidUsers || summary.paid_users;
   const consolidatedPaidPercentage = summary.paid_percentage;
-  const consolidatedUserCount = (userCounts.premium || 0) + (userCounts.pro || 0);
-  const consolidatedTrialCount = (subscriptionBreakdown.activeOrTrialPremium || 0) + (subscriptionBreakdown.activeOrTrialPro || 0);
+  const consolidatedUserCount = userMetrics?.consolidatedPaidUsers || ((userCounts.premium || 0) + (userCounts.pro || 0));
+  const consolidatedTrialCount = userMetrics?.activeOrTrialPaidUsers || ((subscriptionBreakdown.activeOrTrialPremium || 0) + (subscriptionBreakdown.activeOrTrialPro || 0));
+  const legacyPremiumCount = userMetrics?.legacyPremiumCount || (userCounts.legacyPremium || 0);
+  const newAccountsData = userMetrics?.newAccounts || { day: 0, week: 0, month: 0, quarter: 0 };
+  const renewalsData = userMetrics?.renewals || { week: { count: 0, totalAmount: 0 }, month: { count: 0, totalAmount: 0 }, quarter: { count: 0, totalAmount: 0 }, year: { count: 0, totalAmount: 0 } };
+  const dailyActiveUsers = userMetrics?.dailyActiveUsers || 0;
+  const weeklyActiveUsers = userMetrics?.weeklyActiveUsers || 0;
 
   // Consolidate Apple/iOS into single platform
   const applePlatformBreakdown = {
@@ -246,6 +261,7 @@ export default function UserReport() {
                   toast.error(res?.data?.error || t("userReport.backfillFailed"));
                 }
                 await refetch();
+                await refetchUserMetrics();
               } catch (e) {
                 toast.error(e?.message || t("userReport.backfillFailed"));
               } finally {
@@ -273,6 +289,7 @@ export default function UserReport() {
           <Button
             onClick={() => {
               refetch();
+              refetchUserMetrics();
               toast.success(t("userReport.reportRefreshed"));
             }}
             variant="outline"
@@ -561,7 +578,7 @@ export default function UserReport() {
               <p className="text-xs text-[#E0D8C8]/50 mt-1">Premium + Pro Combined</p>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-[#F5F1E7]">{consolidatedUserCount}</p>
+              <p className="text-3xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : consolidatedUserCount}</p>
             </CardContent>
           </Card>
           <Card className="bg-transparent">
@@ -569,7 +586,7 @@ export default function UserReport() {
               <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Active/Trial Paid</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-[#F5F1E7]">{consolidatedTrialCount}</p>
+              <p className="text-3xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : consolidatedTrialCount}</p>
             </CardContent>
           </Card>
           <Card className="bg-transparent">
@@ -578,7 +595,7 @@ export default function UserReport() {
               <p className="text-xs text-[#E0D8C8]/50 mt-1">Subscribed before Feb 1, 2026</p>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-[#F5F1E7]">{userCounts.legacyPremium || 0}</p>
+              <p className="text-3xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : legacyPremiumCount}</p>
             </CardContent>
           </Card>
         </div>
@@ -597,7 +614,7 @@ export default function UserReport() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold text-[#F5F1E7]">{adminMetrics.dailyActiveUsers || 0}</p>
+                <p className="text-3xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : dailyActiveUsers}</p>
                 <p className="text-xs text-[#E0D8C8]/50 mt-2">Last 30 days average</p>
               </CardContent>
             </Card>
@@ -610,7 +627,7 @@ export default function UserReport() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold text-[#F5F1E7]">{adminMetrics.weeklyActiveUsers || 0}</p>
+                <p className="text-3xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : weeklyActiveUsers}</p>
                 <p className="text-xs text-[#E0D8C8]/50 mt-2">Last 4 weeks average</p>
               </CardContent>
             </Card>
@@ -640,19 +657,19 @@ export default function UserReport() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                   <p className="text-xs text-[#E0D8C8]/70">24 Hours</p>
-                  <p className="text-2xl font-bold text-[#F5F1E7]">{adminMetrics.newAccounts?.day || 0}</p>
+                  <p className="text-2xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : newAccountsData.day}</p>
                 </div>
                 <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                   <p className="text-xs text-[#E0D8C8]/70">7 Days</p>
-                  <p className="text-2xl font-bold text-[#F5F1E7]">{adminMetrics.newAccounts?.week || 0}</p>
+                  <p className="text-2xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : newAccountsData.week}</p>
                 </div>
                 <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                   <p className="text-xs text-[#E0D8C8]/70">30 Days</p>
-                  <p className="text-2xl font-bold text-[#F5F1E7]">{adminMetrics.newAccounts?.month || 0}</p>
+                  <p className="text-2xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : newAccountsData.month}</p>
                 </div>
                 <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                   <p className="text-xs text-[#E0D8C8]/70">90 Days</p>
-                  <p className="text-2xl font-bold text-[#F5F1E7]">{adminMetrics.newAccounts?.quarter || 0}</p>
+                  <p className="text-2xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : newAccountsData.quarter}</p>
                 </div>
               </div>
             </CardContent>
@@ -682,11 +699,11 @@ export default function UserReport() {
               <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                 <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                   <p className="text-xs text-[#E0D8C8]/70">Renewal Count</p>
-                  <p className="text-2xl font-bold text-[#F5F1E7]">{adminMetrics.renewals?.[renewalsDateRange]?.count || 0}</p>
+                  <p className="text-2xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : renewalsData[renewalsDateRange]?.count || 0}</p>
                 </div>
                 <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                   <p className="text-xs text-[#E0D8C8]/70">Projected Revenue</p>
-                  <p className="text-2xl font-bold text-[#F5F1E7]">${(adminMetrics.renewals?.[renewalsDateRange]?.totalAmount || 0).toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-[#F5F1E7]">${userMetricsLoading ? '...' : (renewalsData[renewalsDateRange]?.totalAmount || 0).toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
