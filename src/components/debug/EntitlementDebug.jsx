@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { isLegacyPremium, isFoundingMember } from '@/components/utils/premiumAccess';
-// eslint-disable-next-line no-unused-vars
 import { ChevronDown, ChevronUp, Copy, Check, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/safeTranslation';
