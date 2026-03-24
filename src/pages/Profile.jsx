@@ -926,7 +926,22 @@ export default function ProfilePage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            {/* WhiskeyKeeper Toggle */}
+            <div className="flex items-center justify-between p-4 rounded-lg bg-stone-900/40 border border-stone-700">
+              <div className="flex items-center gap-3">
+                <WhiskeyKeeperIcon size={24} color="#D4A574" />
+                <div>
+                  <div className="font-semibold text-stone-100">WhiskeyKeeper</div>
+                  <div className="text-xs text-stone-400">Whiskey collection, tasting notes, and inventory</div>
+                </div>
+              </div>
+              <Switch
+                checked={formData.whiskeykeeper_enabled}
+                onCheckedChange={(v) => setFormData((p) => ({ ...p, whiskeykeeper_enabled: !!v }))}
+                className="data-[state=checked]:bg-[#A35C5C]"
+              />
+            </div>
             <ModuleVisibilitySettings />
           </CardContent>
         </Card>
