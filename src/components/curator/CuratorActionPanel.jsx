@@ -58,16 +58,21 @@ export default function CuratorActionPanel({
     <div className="space-y-3">
       <div className="text-sm text-amber-50/75">{actionRun.summary}</div>
 
-      {actionRun.items.map((item) => (
-        <CuratorActionResultCard
-          key={item.id}
-          item={item}
-          state={itemStates[item.id] || { status: "idle", error: null }}
-          onAccept={() => onAccept(item)}
-          onReject={() => onReject(item)}
-          onAskCurator={() => onAskCurator(item)}
-        />
-      ))}
+      {actionRun.items.map((item) => {
+        const itemState = itemStates[item.id] || { status: "idle", error: null };
+        return (
+          <CuratorActionResultCard
+            key={item.id}
+            item={item}
+            isApplying={itemState.status === "applying"}
+            isAccepted={itemState.status === "accepted"}
+            isRejected={itemState.status === "rejected"}
+            onAccept={() => onAccept(item)}
+            onReject={() => onReject(item)}
+            onAskCurator={() => onAskCurator(item)}
+          />
+        );
+      })}
     </div>
   );
 }
