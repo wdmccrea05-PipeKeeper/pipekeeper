@@ -264,14 +264,74 @@ Be specific with price estimates where possible. Use current market knowledge. F
     }),
     eventName: 'curator_action_reclassify_tobacco_blends',
   },
+
+  {
+    id: 'optimize_whiskey_collection',
+    label: 'Optimize Whiskey Collection',
+    description: 'Analyze whiskey balance, redundancy, and tasting gaps',
+    icon: Sparkles,
+    modules: ['whiskey'],
+    sourceExpert: 'expert_whiskey_advisor',
+    visibility: (ctx) => {
+      const { bottles = [] } = ctx;
+      return bottles.length > 0;
+    },
+    buildPrompt: (ctx) => {
+      const { bottles = [], tastingLogs = [] } = ctx;
+
+      return `Analyze my whiskey collection for optimization.
+
+Review:
+1. Collection balance across whiskey types, regions, proof, and age
+2. Redundancies or overconcentration
+3. Untasted or underexplored bottles
+4. Priority bottles to open or revisit
+5. Missing categories that would strengthen the collection
+6. Top 3 optimization opportunities grounded in actual bottle data
+
+Use only my actual collection data and tasting history. Be specific, concise, and practical.`;
+    },
+    buildContext: (ctx) => ({
+      type: 'optimize_whiskey_collection',
+      dataRequirement: ['bottles', 'tastingLogs'],
+      sourceExpert: 'expert_whiskey_advisor',
+    }),
+    eventName: 'curator_action_optimize_whiskey_collection',
+  },
 ];
+
+/**
+ * Check if an action matches the selected curator scope
+ */
+function actionMatchesScope(action, curatorScope) {
+  if (!curatorScope || curatorScope === "all") return true;
+
+  const modules = Array.isArray(action.modules) ? action.modules : [];
+
+  if (curatorScope === "pipekeeper") {
+    return modules.includes("pipe") || modules.includes("tobacco");
+  }
+
+  if (curatorScope === "whiskeykeeper") {
+    return modules.includes("whiskey");
+  }
+
+  return true;
+}
 
 /**
  * Get visible actions for current collection context
  */
 export function getVisibleActions(context) {
-  return CURATOR_ACTIONS.filter(action => {
+  const curatorScope = context?.curatorScope || "all";
+
+  return CURATOR_ACTIONS.filter((action) => {
+    if (!actionMatchesScope(action, curatorScope)) {
+      return false;
+    }
+
     if (!action.visibility) return true;
+
     try {
       return action.visibility(context);
     } catch (e) {

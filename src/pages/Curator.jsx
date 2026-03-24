@@ -316,6 +316,7 @@ export default function Curator() {
               tastingLogs={scopedTastingLogs}
               smokingLogs={scopedSmokingLogs}
               userProfile={userProfile}
+              curatorScope={curatorScope}
               onActionSelect={handleExpertAction}
             />
 

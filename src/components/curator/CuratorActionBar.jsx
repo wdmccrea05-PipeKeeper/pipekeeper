@@ -15,14 +15,23 @@ export default function CuratorActionBar({
   tastingLogs = [],
   smokingLogs = [],
   userProfile = null,
+  curatorScope = "all",
   onActionSelect = null,
   disabled = false,
 }) {
   const { t } = useTranslation();
 
   const collectionContext = useMemo(
-    () => ({ pipes, blends, bottles, tastingLogs, smokingLogs, userProfile }),
-    [pipes, blends, bottles, tastingLogs, smokingLogs, userProfile]
+    () => ({
+      pipes,
+      blends,
+      bottles,
+      tastingLogs,
+      smokingLogs,
+      userProfile,
+      curatorScope,
+    }),
+    [pipes, blends, bottles, tastingLogs, smokingLogs, userProfile, curatorScope]
   );
 
   const visibleActions = useMemo(() => {
