@@ -111,6 +111,19 @@ Return {"items": [], "summary": "All pipes have sufficient measurement data"} if
 Return {"items": [], "summary": "Blend classifications look accurate"} if no changes needed.`,
 };
 
+/**
+ * Execute a curator expert action with timeout, error handling, and structured results.
+ * 
+ * @param {Object} params
+ * @param {string} params.actionId - Action type (optimize_collection, recommend_specializations, etc)
+ * @param {string} params.executionId - Unique execution ID
+ * @param {string} params.displayLabel - User-facing label
+ * @param {string} params.userPrompt - Additional instructions
+ * @param {Object} params.collectionContext - Pipes, blends, bottles, logs
+ * @param {Object} params.user - Current user
+ * @param {Object} params.launchContext - Routed context from action launch
+ * @returns {Promise<{result: Object, executionId: string, actionId: string}>}
+ */
 export default async function curatorActionExecutor({
   actionId,
   executionId,
