@@ -788,7 +788,7 @@ ${englishText}`;
 
     const result = await runCuratorAction({
       actionType,
-      executor: curatorActionExecutor,
+      executor: executeCuratorAction,
       normalizer: normalizeCuratorActionResult,
       context: buildCuratorContext(),
       onAudit: logCuratorAuditEvent,
