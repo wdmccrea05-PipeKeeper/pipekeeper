@@ -10,16 +10,17 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { session_id, resulted_in_action } = body;
+    const sessionId = body.session_id || body.sessionId;
+    const resultedInAction = body.resulted_in_action ?? body.resultedInAction ?? false;
 
-    if (!session_id) {
+    if (!sessionId) {
       return Response.json({ error: 'session_id required' }, { status: 400 });
     }
 
     // Find session
     const sessions = await base44.entities.CuratorSession.filter({
       created_by: user.email,
-      session_id,
+      session_id: sessionId,
     });
 
     if (!sessions[0]) {
@@ -36,16 +37,16 @@ Deno.serve(async (req) => {
       ended_at: new Date().toISOString(),
       status: 'completed',
       session_duration_seconds: durationSeconds,
-      resulted_in_action: resulted_in_action || false,
+      resulted_in_action: resultedInAction,
     });
 
     // Log close event
     await base44.functions.invoke('logCuratorEvent', {
       event_type: 'curator_session_closed',
-      session_id,
+      session_id: sessionId,
       metadata: {
         duration_seconds: durationSeconds,
-        resulted_in_action: resulted_in_action || false,
+        resulted_in_action: resultedInAction,
       },
     });
 
