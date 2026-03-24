@@ -100,7 +100,7 @@ export default function PipeKeeperModule() {
   const quickLaunchActions = [
     {
       key: 'addPipe',
-      iconImage: "https://media.base44.com/images/public/694956e18d119cc497192525/46669d680_image.png",
+      usePipeIcon: true,
       label: t('quickActions.addPipe'),
       onClick: () => navigate('/Pipes?action=add')
     },
