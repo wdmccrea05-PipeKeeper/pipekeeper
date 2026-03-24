@@ -22,19 +22,16 @@ import { validateOwnershipIntegrity } from "@/components/utils/curatorOwnershipG
 import { useTasteProfile, buildTasteProfileContext } from "@/components/curator/useTasteProfile";
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 import CuratorActionPanel from "./CuratorActionPanel";
+import CuratorActionResultCard from "./CuratorActionResultCard";
 import normalizeCuratorActionResult from "./normalizeCuratorActionResult";
 import curatorActionExecutor from "./curatorActionExecutor";
 import { runCuratorAction } from "./curatorActionService";
 import { applyCuratorRecommendation } from "./curatorApplyHandlers";
 import { CURATOR_ACTIONS } from "./types/curatorActionTypes";
 import { buildSafeCollectionContext, buildPromptBlock } from "./collectionContextBudget";
+import extractActionableAdvice from "./extractActionableAdvice";
 
-const CURATOR_ICON =
-  "https://media.base44.com/images/public/694956e18d119cc497192525/2a1417d59_inappcurator.png";
 const AGENT_NAME = "expert_tobacconist";
-const ACTION_EXECUTION_TIMEOUT = 8000; // 8 seconds hard timeout for expert actions
-
-
 
 function generateQuickPrompts({ pipes = [], blends = [], logs = [], bottles = [], userProfile = null, t }) {
   const prompts = [];
@@ -95,36 +92,10 @@ function generateQuickPrompts({ pipes = [], blends = [], logs = [], bottles = []
     );
   }
 
-  // Cross-collection prompts
   if (bottles.length > 0 && blends.length > 0) {
     prompts.push(
       t("curator.quickPrompt.crossPairing", {
         defaultValue: "Which of my whiskey bottles pairs best with my tobacco collection?",
-      })
-    );
-  }
-
-  if (bottles.length > 0) {
-    prompts.push(
-      t("curator.quickPrompt.tonightSession", {
-        defaultValue: "What's the ideal pipe, tobacco, and whiskey combination for tonight?",
-      })
-    );
-  }
-
-  const whiskyPrefs = userProfile?.whiskey_preferences;
-  if (whiskyPrefs?.types?.includes('Scotch') || whiskyPrefs?.flavors?.includes('Peated')) {
-    prompts.push(
-      t("curator.quickPrompt.peatPairing", {
-        defaultValue: "Which Latakia or English blends pair well with my peated Scotch?",
-      })
-    );
-  }
-
-  if (whiskyPrefs?.types?.includes('Bourbon') || whiskyPrefs?.flavors?.includes('Sweet')) {
-    prompts.push(
-      t("curator.quickPrompt.bourbonPairing", {
-        defaultValue: "Which Virginia blends complement my bourbon collection?",
       })
     );
   }
@@ -144,64 +115,6 @@ function generateQuickPrompts({ pipes = [], blends = [], logs = [], bottles = []
   }
 
   return prompts.slice(0, 4);
-}
-
-function MessageBubble({ message }) {
-  const isUser = message.role === "user";
-
-  return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}>
-      <div
-        className={`max-w-[85%] rounded-2xl px-4 py-3 ${isUser ? "text-white" : "text-[#E0D8C8]"}`}
-        style={{
-          background: isUser
-            ? "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))"
-            : "linear-gradient(135deg, rgba(60,45,30,0.5), rgba(50,35,25,0.7))",
-          border: isUser ? "none" : "1px solid rgba(140,105,65,0.3)",
-          boxShadow: isUser
-            ? "0 2px 8px rgba(0,0,0,0.3)"
-            : "0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.1)",
-        }}
-      >
-        {isUser ? (
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-        ) : (
-          <ReactMarkdown
-            className="text-sm prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
-            skipHtml
-            components={{
-              p: ({ children }) => <p className="my-2 leading-relaxed">{children}</p>,
-              ul: ({ children }) => <ul className="my-2 ml-4 list-disc space-y-1">{children}</ul>,
-              ol: ({ children }) => <ol className="my-2 ml-4 list-decimal space-y-1">{children}</ol>,
-              li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-              strong: ({ children }) => (
-                <strong className="font-semibold text-amber-300">{children}</strong>
-              ),
-              em: ({ children }) => <em className="italic text-[#E0D8C8]/90">{children}</em>,
-              code: ({ inline, children }) =>
-                inline ? (
-                  <code
-                    className="px-1.5 py-0.5 rounded text-amber-300 text-xs font-mono"
-                    style={{ background: "rgba(0,0,0,0.3)" }}
-                  >
-                    {children}
-                  </code>
-                ) : (
-                  <code
-                    className="block px-3 py-2 rounded text-amber-300 text-xs font-mono my-2"
-                    style={{ background: "rgba(0,0,0,0.4)" }}
-                  >
-                    {children}
-                  </code>
-                ),
-            }}
-          >
-            {message.content}
-          </ReactMarkdown>
-        )}
-      </div>
-    </div>
-  );
 }
 
 function resolveWorkspaceLaunchContext(launchContext, preFilledPrompt, routedContext) {
@@ -230,6 +143,73 @@ function resolveWorkspaceLaunchContext(launchContext, preFilledPrompt, routedCon
   };
 }
 
+function MessageBubble({
+  message,
+  onAcceptAdvice,
+  onRejectAdvice,
+  onAskCuratorAboutAdvice,
+}) {
+  const isUser = message.role === "user";
+  const actionItems = Array.isArray(message?.meta?.actionItems)
+    ? message.meta.actionItems
+    : [];
+
+  return (
+    <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}>
+      <div className="max-w-[85%]">
+        <div
+          className={`rounded-2xl px-4 py-3 ${isUser ? "text-white" : "text-[#E0D8C8]"}`}
+          style={{
+            background: isUser
+              ? "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))"
+              : "linear-gradient(135deg, rgba(60,45,30,0.5), rgba(50,35,25,0.7))",
+            border: isUser ? "none" : "1px solid rgba(140,105,65,0.3)",
+            boxShadow: isUser
+              ? "0 2px 8px rgba(0,0,0,0.3)"
+              : "0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.1)",
+          }}
+        >
+          {isUser ? (
+            <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          ) : (
+            <ReactMarkdown
+              className="text-sm prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+              skipHtml
+              components={{
+                p: ({ children }) => <p className="my-2 leading-relaxed">{children}</p>,
+                ul: ({ children }) => <ul className="my-2 ml-4 list-disc space-y-1">{children}</ul>,
+                ol: ({ children }) => <ol className="my-2 ml-4 list-decimal space-y-1">{children}</ol>,
+                li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                strong: ({ children }) => (
+                  <strong className="font-semibold text-amber-300">{children}</strong>
+                ),
+                em: ({ children }) => <em className="italic text-[#E0D8C8]/90">{children}</em>,
+              }}
+            >
+              {message.content}
+            </ReactMarkdown>
+          )}
+        </div>
+
+        {!isUser && actionItems.length > 0 ? (
+          <div className="mt-3 space-y-3">
+            {actionItems.map((item) => (
+              <CuratorActionResultCard
+                key={item.id}
+                item={item}
+                state={{ status: "idle", error: null }}
+                onAccept={() => onAcceptAdvice(item)}
+                onReject={() => onRejectAdvice(item)}
+                onAskCurator={() => onAskCuratorAboutAdvice(item)}
+              />
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export default function CuratorWorkspace({
   pipes = [],
   blends = [],
@@ -256,7 +236,6 @@ export default function CuratorWorkspace({
   const [actionRun, setActionRun] = useState(null);
   const [itemStates, setItemStates] = useState({});
   const [lastActionType, setLastActionType] = useState(null);
-  const [followUpSeed, setFollowUpSeed] = useState(null);
 
   const messagesEndRef = useRef(null);
   const threadInitPromiseRef = useRef(null);
@@ -264,24 +243,45 @@ export default function CuratorWorkspace({
   const startupConsumedRef = useRef(false);
   const handledActionRef = useRef(null);
 
-  const buildCuratorContext = () => ({
+  const { data: fetchedLogs = [] } = useQuery({
+    queryKey: ["smokingLogs", user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.SmokingLog.filter({ created_by: user?.email });
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 30000,
+  });
+
+  const effectiveSmokingLogs = smokingLogs?.length ? smokingLogs : fetchedLogs;
+
+  const tasteProfile = useTasteProfile({
+    pipes,
+    blends,
+    bottles,
+    smokingLogs: effectiveSmokingLogs,
+    tastingLogs,
+    profile: userProfile,
+  });
+
+  const buildCuratorContext = useCallback(() => ({
     pipes: pipes || [],
     blends: blends || [],
     bottles: bottles || [],
-    smokingLogs: smokingLogs || logs || [],
+    smokingLogs: effectiveSmokingLogs || [],
     tastingLogs: tastingLogs || [],
     userProfile: userProfile || null,
     tasteProfile: tasteProfile || null,
     activeModule: "curator",
-  });
+  }), [pipes, blends, bottles, effectiveSmokingLogs, tastingLogs, userProfile, tasteProfile]);
 
-    const logCuratorAuditEvent = async (payload) => {
+  const logCuratorAuditEvent = useCallback(async (payload) => {
     try {
       await base44.entities.CuratorEvent?.create?.(payload);
     } catch {
-      // non-blocking on purpose
+      // intentionally non-blocking
     }
-  };
+  }, []);
 
   const resolvedLaunchContext = useMemo(
     () => resolveWorkspaceLaunchContext(launchContext, preFilledPrompt, routedContext),
@@ -293,38 +293,22 @@ export default function CuratorWorkspace({
     resolvedContextRef.current = resolvedLaunchContext;
   }, [resolvedLaunchContext]);
 
-  const launchContextRef = useRef(launchContext);
-  useEffect(() => {
-    launchContextRef.current = launchContext;
-  }, [launchContext]);
-
-  const { data: logs = [] } = useQuery({
-    queryKey: ["smokingLogs", user?.email],
-    queryFn: async () => {
-      const result = await base44.entities.SmokingLog.filter({ created_by: user?.email });
-      return Array.isArray(result) ? result : [];
-    },
-    enabled: !!user?.email,
-    staleTime: 30000,
-  });
-
-  const tasteProfile = useTasteProfile({
-    pipes,
-    blends,
-    bottles,
-    smokingLogs: logs,
-    tastingLogs,
-    profile: userProfile,
-  });
+  const quickPrompts = useMemo(
+    () =>
+      generateQuickPrompts({
+        pipes,
+        blends,
+        logs: effectiveSmokingLogs,
+        bottles,
+        userProfile,
+        t,
+      }),
+    [pipes, blends, effectiveSmokingLogs, bottles, userProfile, t]
+  );
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, sending]);
-
-  const quickPrompts = useMemo(
-    () => generateQuickPrompts({ pipes, blends, logs, bottles, userProfile, t }),
-    [pipes.length, blends.length, logs.length, bottles.length, userProfile, t]
-  );
 
   const ensureThread = useCallback(async () => {
     if (threadId) return threadId;
@@ -382,35 +366,10 @@ export default function CuratorWorkspace({
 
   useEffect(() => {
     if (!user?.id || threadId) return;
-
     ensureThread().catch((e) => {
       console.error("Failed to initialize curator thread:", e);
     });
   }, [user?.id, threadId, ensureThread]);
-
-  useEffect(() => {
-    const load = async () => {
-      if (!threadId) return;
-
-      try {
-        const conversation = await base44.agents.getConversation(threadId);
-        const mapped = (conversation?.messages || []).map((m) => ({
-          id: m.id || `${m.role}-${Math.random()}`,
-          role: m.role,
-          content: m.content || "",
-          meta: m.meta || {},
-        }));
-
-        if (mapped.length > 0) {
-          setMessages(mapped);
-        }
-      } catch (e) {
-        console.error("Failed to load curator messages:", e);
-      }
-    };
-
-    load();
-  }, [threadId]);
 
   const sendMessage = useCallback(
     async (textOverride = null, contextOverride = null) => {
@@ -426,108 +385,93 @@ export default function CuratorWorkspace({
 
       setMessages((prev) => [...prev, optimistic]);
 
-      if (!textOverride) {
-        setInput("");
-      }
+      if (!textOverride) setInput("");
 
       try {
         const ensuredThreadId = await ensureThread();
         const englishText = await translateToEnglish(text, locale);
         const conversation = await base44.agents.getConversation(ensuredThreadId);
 
-        console.log("Curator sendMessage input:", {
-          pipes: pipes?.length || 0,
-          blends: blends?.length || 0,
-          bottles: bottles?.length || 0,
-          logs: logs?.length || 0,
-          tastingLogs: tastingLogs?.length || 0,
-        });
-
         const safeCtx = buildSafeCollectionContext({
           pipes,
           blends,
           bottles,
-          smokingLogs: logs,
+          smokingLogs: effectiveSmokingLogs,
           tastingLogs,
           userProfile,
         });
+
         const collectionBlock = buildPromptBlock(safeCtx);
-
         const tasteProfileContext = buildTasteProfileContext(tasteProfile);
-
         const blendTypesList = BLEND_TYPES.join(", ");
+
+        const activitySummary = `
+COLLECTION SUMMARY:
+- Pipes: ${pipes.length}
+- Blends: ${blends.length}
+- Bottles: ${bottles.length}
+- Smoking Logs: ${effectiveSmokingLogs.length}
+- Tasting Logs: ${tastingLogs.length}
+
+INSTRUCTION:
+Reference the user's actual collection and logs whenever giving advice.
+Do not answer generically if collection data is available.
+If data is insufficient for a specific ranking, say exactly what is missing.
+If you recommend a concrete field update to a record, append a FINAL json code block with this schema:
+{
+  "items": [
+    {
+      "id": "string",
+      "type": "specialization | reclassification | measurement_update | rotation_optimization | redundancy_flag",
+      "title": "string",
+      "explanation": "string",
+      "rationale": "string",
+      "confidence": 0.0,
+      "recordType": "pipe | blend | bottle",
+      "recordId": "string",
+      "recordName": "string",
+      "proposedChanges": {},
+      "followUpPrompt": "string"
+    }
+  ]
+}
+Only append that json block if the user can actually take action on the advice.
+`;
 
         let contextMessage = `TOBACCO BLEND TYPE VOCABULARY (always use these exact terms when referring to blend types):
 ${blendTypesList}
 
-${collectionBlock}`;
+${collectionBlock}
 
-        const activeContext = contextOverride || resolvedContextRef.current?.recommendationContext;
+${tasteProfileContext ? `${tasteProfileContext}\n\n` : ""}${activitySummary}
+
+You are the in-app curator for a collector app.
+You must use the provided collection context and activity logs.
+Do not give generic hobby advice when specific collection data is available.
+If the user asks for ranking, underuse, frequency, redundancy, specialization, or pairing advice, base it on the provided records and logs.
+If the logs are insufficient to answer precisely, explain the limitation clearly and answer as specifically as possible from the available records.
+Do not invent usage statistics that are not present.
+
+USER QUESTION:
+${englishText}`;
+
+        const activeContext =
+          contextOverride || resolvedContextRef.current?.recommendationContext;
 
         if (messages.length === 0 && activeContext) {
-          const hasAuthoritative =
-            activeContext.pipeId || activeContext.blendId || activeContext.bottleId ||
-            activeContext.pipe_id || activeContext.blend_id || activeContext.bottle_id;
+          const selectedPipeName = activeContext.pipeName || activeContext.pipe_name || "";
+          const selectedBlendName = activeContext.blendName || activeContext.blend_name || "";
+          const selectedBottleName = activeContext.bottleName || activeContext.bottle_name || "";
 
-          if (hasAuthoritative) {
-            const selectedPipeName = activeContext.pipeName || activeContext.pipe_name || '';
-            const selectedBlendName = activeContext.blendName || activeContext.blend_name || '';
-            const selectedBottleName = activeContext.bottleName || activeContext.bottle_name || '';
-
+          if (selectedPipeName || selectedBlendName || selectedBottleName) {
             contextMessage += `
 
-AUTHORITATIVE APP SELECTION (treat these as confirmed, do NOT question their existence):
-${selectedPipeName ? `- Selected Pipe: "${selectedPipeName}" (ID confirmed by app)` : ''}
-${selectedBlendName ? `- Selected Tobacco: "${selectedBlendName}" (ID confirmed by app)` : ''}
-${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}" (ID confirmed by app)` : ''}
-
-INSTRUCTION: These items were explicitly selected by the user in the app. Do NOT ask if they exist or challenge the selection. Treat them as the starting point and give direct, confident advice.`;
-          } else if (
-            activeContext.originalTitle ||
-            activeContext.originalInsight ||
-            activeContext.module ||
-            activeContext.category
-          ) {
-            contextMessage += `
-
-ORIGINAL RECOMMENDATION CONTEXT:
-Title: ${activeContext.originalTitle || "N/A"}
-Insight: ${activeContext.originalInsight || "N/A"}
-Module: ${activeContext.module || "general"}
-Category: ${activeContext.category || "general"}`;
+AUTHORITATIVE APP SELECTION:
+${selectedPipeName ? `- Selected Pipe: "${selectedPipeName}"` : ""}
+${selectedBlendName ? `- Selected Tobacco: "${selectedBlendName}"` : ""}
+${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
           }
         }
-
-        if (tasteProfileContext) {
-          contextMessage += `\n\n${tasteProfileContext}`;
-        }
-
-        const activitySummary = `
-        COLLECTION SUMMARY:
-        - Pipes: ${pipes.length}
-        - Blends: ${blends.length}
-        - Bottles: ${bottles.length}
-        - Smoking Logs: ${logs.length}
-        - Tasting Logs: ${tastingLogs.length}
-
-        INSTRUCTION:
-        Reference the user's actual collection and logs whenever giving advice.
-        Do not answer generically if collection data is available.
-        If data is insufficient for a specific ranking, say exactly what is missing.
-        `;
-
-        contextMessage += activitySummary;
-
-        contextMessage += `
-        You are the in-app curator for a collector app.
-        You must use the provided collection context and activity logs.
-        Do not give generic hobby advice when specific collection data is available.
-        If the user asks for ranking, underuse, frequency, redundancy, specialization, or pairing advice, base it on the provided records and logs.
-        If the logs are insufficient to answer precisely, explain the limitation clearly and answer as specifically as possible from the available records.
-        Do not invent usage statistics that are not present.
-
-        USER QUESTION:
-        ${englishText}`;
 
         await base44.agents.addMessage(conversation, {
           role: "user",
@@ -541,7 +485,6 @@ Category: ${activeContext.category || "general"}`;
             await new Promise((resolve) => setTimeout(resolve, 2000));
             const updated = await base44.agents.getConversation(ensuredThreadId);
             const lastMsg = updated?.messages?.[updated.messages.length - 1];
-
             if (lastMsg?.role === "assistant" && lastMsg?.content) {
               return lastMsg.content;
             }
@@ -551,17 +494,20 @@ Category: ${activeContext.category || "general"}`;
         };
 
         const assistantResponse = await waitForResponse();
-        
-        const sanitizedResponse = validateOwnershipIntegrity(assistantResponse, pipes, blends, bottles);
-        
-        const translatedResponse = await translateFromEnglish(sanitizedResponse, locale);
+        const sanitizedResponse = validateOwnershipIntegrity(
+          assistantResponse,
+          pipes,
+          blends,
+          bottles
+        );
 
-        const userMsgIndex = messages.filter((m) => m.role === "user").length;
-        const assistantMsgIndex = messages.filter((m) => m.role === "assistant").length;
+        const { cleanedText, items: actionItems } =
+          extractActionableAdvice(sanitizedResponse);
+
+        const translatedResponse = await translateFromEnglish(cleanedText, locale);
 
         setMessages((prev) => {
           const withoutLocal = prev.filter((m) => m.id !== optimisticId);
-          
           return [
             ...withoutLocal,
             { id: `user-${Date.now()}`, role: "user", content: text, meta: {} },
@@ -569,31 +515,28 @@ Category: ${activeContext.category || "general"}`;
               id: `assistant-${Date.now()}`,
               role: "assistant",
               content: translatedResponse,
-              meta: {},
+              meta: {
+                actionItems,
+              },
             },
           ];
         });
 
-        // CRITICAL: Do NOT add raw response to chat thread for action execution
-        // Actions use separate executeCuratorAction path with result cards
-
         if (sessionId) {
           try {
-            await base44.functions.invoke('persistCuratorMessage', {
+            await base44.functions.invoke("persistCuratorMessage", {
               session_id: sessionId,
-              role: 'user',
+              role: "user",
               content: text,
-              message_index: userMsgIndex,
             });
 
-            await base44.functions.invoke('persistCuratorMessage', {
+            await base44.functions.invoke("persistCuratorMessage", {
               session_id: sessionId,
-              role: 'assistant',
+              role: "assistant",
               content: translatedResponse,
-              message_index: assistantMsgIndex,
             });
           } catch (persistError) {
-            console.error('Failed to persist curator messages:', persistError);
+            console.error("Failed to persist curator messages:", persistError);
           }
         }
 
@@ -617,24 +560,32 @@ Category: ${activeContext.category || "general"}`;
           })}: ${msg.slice(0, 120)}`
         );
         setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-
-        if (textOverride) {
-          setInput(text);
-        }
-
+        if (textOverride) setInput(text);
         return false;
       } finally {
         setSending(false);
       }
     },
-    [input, sending, ensureThread, t, pipes, blends, bottles, tastingLogs, userProfile, tasteProfile, messages.length, sessionId, messages, launchContext]
+    [
+      input,
+      sending,
+      ensureThread,
+      t,
+      pipes,
+      blends,
+      bottles,
+      effectiveSmokingLogs,
+      tastingLogs,
+      userProfile,
+      tasteProfile,
+      messages.length,
+      sessionId,
+    ]
   );
 
   const handleExpertAction = useCallback(async (actionType) => {
     setLastActionType(actionType);
     setItemStates({});
-
-    console.log("Curator expert action context:", buildCuratorContext());
 
     const requestId =
       globalThis.crypto?.randomUUID?.() || `${actionType}_${Date.now()}`;
@@ -649,22 +600,30 @@ Category: ${activeContext.category || "general"}`;
       startedAt: Date.now(),
     });
 
-    const result = await runCuratorAction({
-      actionType,
-      executor: curatorActionExecutor,
-      normalizer: normalizeCuratorActionResult,
-      context: buildCuratorContext(),
-      onAudit: logCuratorAuditEvent,
-    });
+    try {
+      const result = await runCuratorAction({
+        actionType,
+        executor: curatorActionExecutor,
+        normalizer: normalizeCuratorActionResult,
+        context: buildCuratorContext(),
+        onAudit: logCuratorAuditEvent,
+      });
 
-    setActionRun(result);
-
-    if (onPromptConsumed) {
-      onPromptConsumed();
+      setActionRun(result);
+    } catch (err) {
+      setActionRun({
+        requestId,
+        actionType,
+        status: "error",
+        summary: "",
+        items: [],
+        error: err?.message || "Curator failed",
+      });
+    } finally {
+      if (onPromptConsumed) onPromptConsumed();
     }
-  }, [logCuratorAuditEvent, onPromptConsumed]);
+  }, [buildCuratorContext, logCuratorAuditEvent, onPromptConsumed]);
 
-  // ROUTED EXPERT ACTIONS (silent_action execution)
   useEffect(() => {
     const actionType =
       resolvedLaunchContext?.actionType ||
@@ -680,32 +639,16 @@ Category: ${activeContext.category || "general"}`;
     if (sending || initializing) return;
     if (handledActionRef.current === launchKey) return;
 
-    console.log("Curator routed expert action firing:", {
-      actionType,
-      executionMode,
-      resolvedLaunchContext,
-    });
-
-    console.log("Curator routed expert action firing:", {
-      actionType,
-      executionMode,
-      resolvedLaunchContext,
-    });
-
     handledActionRef.current = launchKey;
     handleExpertAction(actionType);
-  }, [
-    resolvedLaunchContext,
-    sending,
-    initializing,
-    handleExpertAction,
-  ]);
+  }, [resolvedLaunchContext, sending, initializing, handleExpertAction]);
 
-  // STARTUP ROUTED PROMPTS (one-time only)
   useEffect(() => {
     const startupPrompt = String(resolvedLaunchContext?.initialPrompt || "").trim();
+    const executionMode = resolvedLaunchContext?.executionMode || null;
 
     if (!startupPrompt) return;
+    if (executionMode === "silent_action") return; // critical: do not dump action prompts into chat
     if (!user?.id) return;
     if (sending || initializing) return;
     if (startupConsumedRef.current) return;
@@ -716,12 +659,13 @@ Category: ${activeContext.category || "general"}`;
     (async () => {
       try {
         await ensureThread();
-
         if (cancelled || startupConsumedRef.current) return;
 
         startupConsumedRef.current = true;
-        console.log("[CuratorWorkspace] Sending startup routed prompt");
-        const ok = await sendMessage(startupPrompt, resolvedLaunchContext?.recommendationContext || null);
+        const ok = await sendMessage(
+          startupPrompt,
+          resolvedLaunchContext?.recommendationContext || null
+        );
 
         if (ok && onPromptConsumed) {
           onPromptConsumed();
@@ -749,8 +693,6 @@ Category: ${activeContext.category || "general"}`;
     onPromptConsumed,
     messages.length,
   ]);
-
-
 
   const handleQuickPrompt = (prompt) => {
     setInput(prompt);
@@ -804,46 +746,7 @@ Category: ${activeContext.category || "general"}`;
   };
 
   const handleAskCuratorAboutRecommendation = (item) => {
-    setFollowUpSeed({
-      recommendationId: item.id,
-      recordId: item.recordId,
-      recordType: item.recordType,
-      title: item.title,
-      followUpPrompt: item.followUpPrompt,
-      proposedChanges: item.proposedChanges,
-    });
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `followup_${item.id}_${Date.now()}`,
-        role: "user",
-        content: item.followUpPrompt,
-        metadata: {
-          source: "curator_action_followup",
-          recommendationId: item.id,
-          recordId: item.recordId,
-          recordType: item.recordType,
-        },
-      },
-    ]);
-  };
-
-  const handleAskCuratorAboutItem = (item) => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `followup_${item.id}_${Date.now()}`,
-        role: "user",
-        content: item.followUpPrompt || `Explain this recommendation: ${item.title}`,
-        metadata: {
-          source: "curator_action_followup",
-          recommendationId: item.id,
-          recordId: item.recordId,
-          recordType: item.recordType,
-        },
-      },
-    ]);
+    setInput(item.followUpPrompt || `Explain this recommendation: ${item.title}`);
   };
 
   const handleDismissAction = () => {
@@ -865,19 +768,18 @@ Category: ${activeContext.category || "general"}`;
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden' && sessionId) {
+      if (document.visibilityState === "hidden" && sessionId) {
         endCuratorSession({
           sessionId,
           resultedInAction: false,
-        }).catch((e) => console.warn('Failed to close session on visibility change:', e));
+        }).catch(() => {});
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (sessionId) {
         endCuratorSession({
           sessionId,
@@ -918,7 +820,7 @@ Category: ${activeContext.category || "general"}`;
             </div>
           ) : null}
 
-          {quickPrompts.length > 0 && messages.length === 0 ? (
+          {quickPrompts.length > 0 && messages.length === 0 && !actionRun ? (
             <div className="space-y-2">
               <p
                 className="text-xs uppercase tracking-wider"
@@ -960,6 +862,7 @@ Category: ${activeContext.category || "general"}`;
           onAccept={handleAcceptRecommendation}
           onReject={handleRejectRecommendation}
           onAskCurator={handleAskCuratorAboutRecommendation}
+          onDismiss={handleDismissAction}
         />
 
         {messages.length === 0 && !actionRun ? (
@@ -982,7 +885,13 @@ Category: ${activeContext.category || "general"}`;
         ) : messages.length > 0 ? (
           <>
             {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} />
+              <MessageBubble
+                key={msg.id}
+                message={msg}
+                onAcceptAdvice={handleAcceptRecommendation}
+                onRejectAdvice={handleRejectRecommendation}
+                onAskCuratorAboutAdvice={handleAskCuratorAboutRecommendation}
+              />
             ))}
 
             {sending ? (
@@ -1011,8 +920,8 @@ Category: ${activeContext.category || "general"}`;
             ) : null}
 
             <div ref={messagesEndRef} />
-            </>
-            ) : null}
+          </>
+        ) : null}
       </div>
 
       <div
