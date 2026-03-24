@@ -36,8 +36,8 @@ Deno.serve(async (req) => {
       status: 'active',
     });
 
-    // Log curator_opened event
-    await base44.functions.invoke('logCuratorEvent', {
+    // Log curator_opened event (fire-and-forget to avoid CPU timeout)
+    base44.functions.invoke('logCuratorEvent', {
       event_type: 'curator_opened',
       session_id: sessionId,
       recommendation_context: originating_recommendation,
@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
         pipes_count,
         blends_count,
       },
-    });
+    }).catch(() => {});
 
     return Response.json({ 
       success: true, 
