@@ -1,5 +1,43 @@
 import React from "react";
 
+function humanizeKey(key) {
+  return String(key || "")
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\bmm\b/gi, "mm")
+    .replace(/\bg\b/gi, "g")
+    .replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
+function humanizeValue(value) {
+  if (value === null || value === undefined || value === "") return "None";
+
+  if (typeof value === "boolean") {
+    return value ? "Yes" : "No";
+  }
+
+  if (typeof value === "number") {
+    return String(value);
+  }
+
+  return String(value)
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
+function humanizeRecordType(recordType) {
+  switch (recordType) {
+    case "pipe":
+      return "Pipe";
+    case "blend":
+      return "Blend";
+    case "bottle":
+      return "Bottle";
+    default:
+      return humanizeValue(recordType);
+  }
+}
+
 export default function CuratorActionResultCard({
   item,
   state,
@@ -10,6 +48,7 @@ export default function CuratorActionResultCard({
   const isApplying = state?.status === "applying";
   const isAccepted = state?.status === "accepted";
   const isRejected = state?.status === "rejected";
+  const proposedEntries = Object.entries(item.proposedChanges || {});
 
   return (
     <div className="rounded-xl border border-amber-500/20 bg-black/20 p-4">
@@ -18,7 +57,7 @@ export default function CuratorActionResultCard({
 
         {item.recordName ? (
           <div className="mt-1 text-xs uppercase tracking-wide text-amber-500/70">
-            {item.recordType}: {item.recordName}
+            {humanizeRecordType(item.recordType)}: {item.recordName}
           </div>
         ) : null}
 
@@ -35,14 +74,27 @@ export default function CuratorActionResultCard({
         ) : null}
       </div>
 
-      {item.proposedChanges && Object.keys(item.proposedChanges).length > 0 ? (
+      {proposedEntries.length > 0 ? (
         <div className="mt-3 rounded-lg bg-amber-500/5 p-3">
           <div className="mb-2 text-xs uppercase tracking-wide text-amber-500/70">
             Proposed Changes
           </div>
-          <pre className="overflow-auto whitespace-pre-wrap break-words text-xs text-amber-50/75">
-            {JSON.stringify(item.proposedChanges, null, 2)}
-          </pre>
+
+          <div className="space-y-2">
+            {proposedEntries.map(([key, value]) => (
+              <div
+                key={key}
+                className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 border-b border-amber-500/10 pb-2 last:border-b-0 last:pb-0"
+              >
+                <div className="text-xs text-amber-50/60">
+                  {humanizeKey(key)}
+                </div>
+                <div className="text-sm text-amber-100 sm:text-right">
+                  {humanizeValue(value)}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : null}
 
