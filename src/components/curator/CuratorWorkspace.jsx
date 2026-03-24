@@ -278,9 +278,14 @@ export default function CuratorWorkspace({
 
   const logCuratorAuditEvent = useCallback(async (payload) => {
     try {
-      await base44.entities.CuratorEvent?.create?.(payload);
-    } catch {
-      // intentionally non-blocking
+      // Audit logging is optional; don't block curator workflows on audit failures
+      if (base44.entities.CuratorEvent?.create) {
+        await base44.entities.CuratorEvent.create(payload);
+      }
+    } catch (err) {
+      if (import.meta?.env?.DEV) {
+        console.warn('[Curator] Audit log failed (non-blocking):', err?.message);
+      }
     }
   }, []);
 
