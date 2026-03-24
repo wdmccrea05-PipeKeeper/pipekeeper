@@ -26,6 +26,7 @@ import CuratorActionResultCard from "./CuratorActionResultCard";
 import normalizeCuratorActionResult from "./normalizeCuratorActionResult";
 import curatorActionExecutor from "./curatorActionExecutor";
 import { runCuratorAction } from "./curatorActionService";
+import { buildCuratorChatSystemPrompt, buildCuratorActivitySummary } from "./chatAdvicePrompting";
 import { applyCuratorRecommendation } from "./curatorApplyHandlers";
 import { CURATOR_ACTIONS } from "./types/curatorActionTypes";
 import { buildSafeCollectionContext, buildPromptBlock } from "./collectionContextBudget";
@@ -405,38 +406,15 @@ export default function CuratorWorkspace({
         const tasteProfileContext = buildTasteProfileContext(tasteProfile);
         const blendTypesList = BLEND_TYPES.join(", ");
 
-        const activitySummary = `
-COLLECTION SUMMARY:
-- Pipes: ${pipes.length}
-- Blends: ${blends.length}
-- Bottles: ${bottles.length}
-- Smoking Logs: ${effectiveSmokingLogs.length}
-- Tasting Logs: ${tastingLogs.length}
+        const activitySummary = buildCuratorActivitySummary({
+          pipes,
+          blends,
+          bottles,
+          smokingLogs: effectiveSmokingLogs,
+          tastingLogs,
+        });
 
-INSTRUCTION:
-Reference the user's actual collection and logs whenever giving advice.
-Do not answer generically if collection data is available.
-If data is insufficient for a specific ranking, say exactly what is missing.
-If you recommend a concrete field update to a record, append a FINAL json code block with this schema:
-{
-  "items": [
-    {
-      "id": "string",
-      "type": "specialization | reclassification | measurement_update | rotation_optimization | redundancy_flag",
-      "title": "string",
-      "explanation": "string",
-      "rationale": "string",
-      "confidence": 0.0,
-      "recordType": "pipe | blend | bottle",
-      "recordId": "string",
-      "recordName": "string",
-      "proposedChanges": {},
-      "followUpPrompt": "string"
-    }
-  ]
-}
-Only append that json block if the user can actually take action on the advice.
-`;
+        const systemPrompt = buildCuratorChatSystemPrompt();
 
         let contextMessage = `TOBACCO BLEND TYPE VOCABULARY (always use these exact terms when referring to blend types):
 ${blendTypesList}
@@ -445,12 +423,7 @@ ${collectionBlock}
 
 ${tasteProfileContext ? `${tasteProfileContext}\n\n` : ""}${activitySummary}
 
-You are the in-app curator for a collector app.
-You must use the provided collection context and activity logs.
-Do not give generic hobby advice when specific collection data is available.
-If the user asks for ranking, underuse, frequency, redundancy, specialization, or pairing advice, base it on the provided records and logs.
-If the logs are insufficient to answer precisely, explain the limitation clearly and answer as specifically as possible from the available records.
-Do not invent usage statistics that are not present.
+${systemPrompt}
 
 USER QUESTION:
 ${englishText}`;
@@ -746,7 +719,26 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
   };
 
   const handleAskCuratorAboutRecommendation = (item) => {
-    setInput(item.followUpPrompt || `Explain this recommendation: ${item.title}`);
+    const prompt =
+      item.followUpPrompt ||
+      `Explain this recommendation in more detail and tell me what would change if I accept it: ${item.title}`;
+
+    setInput(prompt);
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `curator-followup-context-${item.id}-${Date.now()}`,
+        role: "assistant",
+        content: `Clarifying recommendation for **${item.recordName || item.title}**.
+
+Proposed changes:
+\`\`\`json
+${JSON.stringify(item.proposedChanges || {}, null, 2)}
+\`\`\``,
+        meta: {},
+      },
+    ]);
   };
 
   const handleDismissAction = () => {
