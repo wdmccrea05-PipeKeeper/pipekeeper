@@ -109,7 +109,7 @@ export default function WhiskeyKeeper() {
 
   return (
     <LockedModuleGuard moduleKey="whiskeykeeper">
-      <div className="space-y-8">
+      <div className="space-y-8 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 120px)' }}>
         {/* Hero */}
         <div className="flex items-start justify-between gap-4">
           <div>
