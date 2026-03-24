@@ -187,11 +187,9 @@ export function useCurrentUser() {
     })();
 
     return () => { cancelled = true; };
+  }, [userLoading, user?.email, refetchUser]);
 
-  // Subscription sync on mount: fixes delayed webhook timing on re-login.
-  // FIX ISSUE-13: Use timestamp-based gate (10 minutes) to balance freshness vs churn
-  // Webhooks typically deliver within seconds; 10-min gate prevents excessive background syncs
-  // while still catching delayed webhooks within a reasonable window.
+  // Subscription sync on mount
   useEffect(() => {
     if (userLoading || !user?.email) return;
 
@@ -225,6 +223,7 @@ export function useCurrentUser() {
     })();
 
     return () => { cancelled = true; };
+  }, [userLoading, user?.email, refetchUser, refetchSubscription]);
 
   // Authoritative provider: user.subscription_provider, then subscription.provider.
   const provider = resolveProviderFromUser(user) || resolveSubscriptionProvider(subscription);
