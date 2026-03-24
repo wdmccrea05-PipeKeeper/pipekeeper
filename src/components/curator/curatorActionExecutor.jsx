@@ -26,16 +26,24 @@ export default async function curatorActionExecutor({
   return parsed;
 }
 
-// Replace only this function body with your actual AI runtime call if needed.
-// Keep the return value as raw text.
+// Execute the curator model using the LLM integration
 async function runCuratorModel({ actionType, context, requestId }) {
-  if (!window?.base44?.ai?.run) {
-    throw new Error("Curator AI runtime is unavailable.");
+  // Extract the prompt from the context passed by the executor caller
+  const prompt = context?.initialPrompt;
+  
+  if (!prompt) {
+    throw new Error("No prompt found for curator action execution.");
   }
 
-  return window.base44.ai.run({
-    actionType,
-    context,
-    requestId,
+  // Use the base44 LLM integration to invoke the model
+  if (!window?.base44?.integrations?.Core?.InvokeLLM) {
+    throw new Error("Curator LLM integration is unavailable.");
+  }
+
+  const response = await window.base44.integrations.Core.InvokeLLM({
+    prompt,
+    add_context_from_internet: false, // Expert actions use only collection context
   });
+
+  return response;
 }
