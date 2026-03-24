@@ -462,7 +462,7 @@ export default function PipesPage() {
                 </motion.div>
               ))}
             </AnimatePresence>
-          </motion.div>
+          </div>
         ) : (
           <motion.div 
             className={viewMode === 'grid' 
