@@ -48,6 +48,7 @@ export default function CuratorActionResultCard({
   const isApplying = state?.status === "applying";
   const isAccepted = state?.status === "accepted";
   const isRejected = state?.status === "rejected";
+  const isPairing = item.type === "pairing_recommendation";
   const proposedEntries = Object.entries(item.proposedChanges || {});
 
   return (
@@ -116,7 +117,7 @@ export default function CuratorActionResultCard({
             disabled={isApplying}
             className="rounded-lg bg-amber-500 px-3 py-2 text-sm font-medium text-black disabled:opacity-50"
           >
-            {isApplying ? "Applying..." : "Accept"}
+            {isApplying ? "Applying..." : isPairing ? "Try This Session" : "Accept"}
           </button>
 
           <button
@@ -125,7 +126,7 @@ export default function CuratorActionResultCard({
             disabled={isApplying}
             className="rounded-lg border border-amber-500/30 px-3 py-2 text-sm text-amber-100 disabled:opacity-50"
           >
-            Reject
+            {isPairing ? "Skip" : "Reject"}
           </button>
 
           <button

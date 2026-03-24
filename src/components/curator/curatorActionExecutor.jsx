@@ -186,6 +186,43 @@ Return only field-level actionable recommendations for specific blend records.
 `;
 }
 
+function buildPairingPrompt(context) {
+  return `
+${buildSharedInstruction(context)}
+
+TASK:
+Generate 3 curated session pairings based on the user's collection.
+
+Each pairing must include:
+- pipe
+- blend
+- whiskey (if available)
+- session theme (mood, balance, discovery, rotation)
+
+Session types to consider:
+- Relaxed evening
+- Discovery / exploration
+- Rotation balancing
+- Flavor contrast
+- Flavor harmony
+
+OUTPUT REQUIREMENTS:
+- item.type must be "pairing_recommendation"
+- recordType must be "pipe"
+- recordId must reference the pipe used
+- proposedChanges must be {}
+
+Each item must include:
+- title (user-friendly)
+- explanation (what the experience is)
+- rationale (why this works)
+- followUpPrompt (optional)
+
+Return EXACTLY 3 pairings.
+Focus on EXPERIENCE, not data updates.
+`;
+}
+
 function getActionPrompt(actionType, context) {
   switch (actionType) {
     case "optimize_collection":
@@ -196,6 +233,8 @@ function getActionPrompt(actionType, context) {
       return buildUpdatePipeMeasurementsPrompt(context);
     case "reclassify_tobacco_blends":
       return buildReclassifyTobaccoBlendsPrompt(context);
+    case "pairing_recommendation":
+      return buildPairingPrompt(context);
     default:
       throw new Error(`Unsupported curator action type: ${actionType}`);
   }

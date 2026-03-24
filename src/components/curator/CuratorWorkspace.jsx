@@ -931,15 +931,42 @@ ${JSON.stringify(item.proposedChanges || {}, null, 2)}
         className="flex-1 overflow-y-auto px-4 sm:px-6 py-4"
         style={{ background: "rgba(15,10,8,0.3)", overscrollBehavior: "contain" }}
       >
+        {!actionRun && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            <button
+              onClick={() => handleExpertAction('optimize_collection')}
+              className="px-3 py-1.5 text-xs rounded-lg border"
+              style={{
+                color: 'rgba(180,140,75,1)',
+                borderColor: 'rgba(140,105,65,0.3)',
+                background: 'rgba(100,70,45,0.15)',
+              }}
+            >
+              Optimize
+            </button>
+            <button
+              onClick={() => handleExpertAction('pairing_recommendation')}
+              className="px-3 py-1.5 text-xs rounded-lg border"
+              style={{
+                color: 'rgba(180,140,75,1)',
+                borderColor: 'rgba(140,105,65,0.3)',
+                background: 'rgba(100,70,45,0.15)',
+              }}
+            >
+              Evening Pairings
+            </button>
+          </div>
+        )}
+
         <CuratorActionPanel
-          actionRun={actionRun}
-          itemStates={itemStates}
-          onRetry={handleRetryAction}
-          onAccept={handleAcceptRecommendation}
-          onReject={handleRejectRecommendation}
-          onAskCurator={handleAskCuratorAboutRecommendation}
-          onDismiss={handleDismissAction}
-        />
+            actionRun={actionRun}
+            itemStates={itemStates}
+            onRetry={handleRetryAction}
+            onAccept={handleAcceptRecommendation}
+            onReject={handleRejectRecommendation}
+            onAskCurator={handleAskCuratorAboutRecommendation}
+            onDismiss={handleDismissAction}
+          />
 
         {messages.length === 0 && !actionRun ? (
           <div className="flex items-center justify-center h-full min-h-[120px]">
