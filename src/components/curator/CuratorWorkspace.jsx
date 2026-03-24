@@ -831,42 +831,55 @@ ${englishText}`;
         setActionError(null);
 
         const result = await promiseWithTimeout(
-          executeCuratorAction({
-            actionId: sourceAction,
-            executionId: newExecId,
-            displayLabel,
-            userPrompt: regenCtx._internalPrompt || "Analyze and recommend optimizations",
-            collectionContext: {
-              pipes,
-              blends,
-              bottles,
-              smokingLogs: logs,
-              tastingLogs,
-            },
-            user,
-            launchContext: { ...regenCtx, regenerateMode },
-          }),
-          ACTION_EXECUTION_TIMEOUT,
-          "This recommendation took too long to complete. Please try again."
+         executeCuratorAction({
+           actionId: sourceAction,
+           executionId: newExecId,
+           displayLabel,
+           userPrompt: regenCtx._internalPrompt || "Analyze and recommend optimizations",
+           collectionContext: {
+             pipes,
+             blends,
+             bottles,
+             smokingLogs: logs,
+             tastingLogs,
+           },
+           user,
+           launchContext: { ...regenCtx, regenerateMode },
+         }),
+         ACTION_EXECUTION_TIMEOUT,
+         "This recommendation took too long to complete. Please try again."
         );
 
-        const parsed = typeof result.result === "string"
-          ? parseCuratorActionResponse(result.result)
-          : result.result;
-        const normalized = normalizeCuratorActionResult(parsed, {
-          actionId: sourceAction,
-          executionId: newExecId,
-          title: displayLabel,
-        });
-        setActionResult(normalized);
-        setActionError(null);
-        setRunningAction(null);
-      } catch (err) {
+        try {
+         const parsed = typeof result.result === "string"
+           ? parseCuratorActionResponse(result.result)
+           : result.result;
+         const normalized = normalizeCuratorActionResult(parsed, {
+           actionId: sourceAction,
+           executionId: newExecId,
+           title: displayLabel,
+         });
+         setActionResult(normalized);
+         setActionError(null);
+         setRunningAction(null);
+        } catch (normErr) {
+         console.error(`[CuratorWorkspace] Regeneration normalization failed: ${newExecId}`, normErr);
+         setRunningAction(null);
+         setActionError({
+           title: "Analysis could not be completed",
+           message: "No actionable results were generated. Try refining your request and try again.",
+           error: normErr?.message || "Normalization failed"
+         });
+         setActionResult(null);
+        }
+        } catch (err) {
         setRunningAction(null);
         setActionError({
-          title: "Regeneration failed",
-          message: err?.message || "Could not complete the analysis.",
-          error: err?.message,
+         title: "Analysis could not be completed",
+         message: err?.message === "Response timeout"
+           ? "This analysis took too long to complete. Try refining your request."
+           : err?.message || "Could not complete the analysis.",
+         error: err?.message,
         });
       }
     };
