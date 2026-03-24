@@ -21,19 +21,16 @@ function buildSharedInstruction(context) {
   return `
 You are the in-app curator for a collector app.
 
-Your job is to review the user's actual collection records and activity logs and return structured, actionable recommendations.
-
-HARD RULES:
-1. Return VALID JSON only.
-2. Do not return markdown.
-3. Do not return prose outside JSON.
-4. Do not explain your chain of thought.
-5. Do not invent records or IDs.
-6. Every recommendation must target a real recordId from the provided data.
-7. Every recommendation must include proposedChanges that can actually be applied.
-8. If there is not enough evidence for an actionable change, do not fake one.
-9. If no actionable changes exist, return an empty items array.
-10. Keep results concise and practical.
+Return VALID JSON only.
+Do not return markdown.
+Do not return prose outside JSON.
+Do not invent records or record IDs.
+Use only the provided collection context.
+If no valid result exists, return:
+{
+  "summary": "No actionable recommendations right now.",
+  "items": []
+}
 
 Allowed item.type values:
 - specialization
@@ -41,6 +38,8 @@ Allowed item.type values:
 - measurement_update
 - rotation_optimization
 - redundancy_flag
+- pairing_recommendation
+- session_builder
 
 Allowed recordType values:
 - pipe
@@ -53,7 +52,7 @@ Schema:
   "items": [
     {
       "id": "string",
-      "type": "specialization | reclassification | measurement_update | rotation_optimization | redundancy_flag",
+      "type": "specialization | reclassification | measurement_update | rotation_optimization | redundancy_flag | pairing_recommendation | session_builder",
       "title": "string",
       "explanation": "string",
       "rationale": "string",
@@ -67,11 +66,44 @@ Schema:
   ]
 }
 
-Use this collection context:
+Collection context:
 ${compressedCollectionBlock}
 
 Taste profile:
 ${JSON.stringify(tasteProfile || {}, null, 2)}
+`;
+}
+
+function buildSessionBuilderPrompt(context) {
+  return `
+${buildSharedInstruction(context)}
+
+TASK:
+Generate exactly 3 curated session experiences from the user's real collection.
+
+A session may combine:
+- a pipe
+- a tobacco blend
+- and, if available, a whiskey bottle
+
+The 3 sessions must cover these intents:
+1. Mood / relaxed evening
+2. Rotation / underused item recovery
+3. Discovery / something different
+
+STRICT RULES:
+- item.type must be "session_builder"
+- recordType must be "pipe"
+- recordId must be the actual id of the pipe anchoring the session
+- recordName must be the actual pipe name
+- proposedChanges must be {}
+- Use human-readable text only
+- No snake_case in title/explanation/rationale
+- If no whiskey is available, still build a pipe + tobacco session
+- If a pipe collection exists, do NOT return zero items
+- Keep each explanation concise and practical
+
+Return exactly 3 items unless there are zero pipes. If there are zero pipes, return zero items.
 `;
 }
 
@@ -80,23 +112,23 @@ function buildOptimizeCollectionPrompt(context) {
 ${buildSharedInstruction(context)}
 
 TASK:
-Analyze the user's collection for practical optimization opportunities.
+Return only the top 3 highest-confidence optimization recommendations for this collection.
 
-Focus on:
-- underused pipes that should be rotated in
-- redundant blends that overlap too heavily
-- holes in the cellar or rotation
-- pipe/blend mismatches
+Allowed recommendation focus:
+- underused pipes
+- redundant blends
 - specialization opportunities
-- collection balance strengths and weak points
+- obvious collection gaps
 
-OUTPUT REQUIREMENTS:
-- Return only the most actionable 3 to 5 recommendations
-- Every item must be specific and practical
-- Use actual collection and log evidence
-- Proposed changes must be record-level changes, not vague advice
-- Titles must be user-facing and natural language
-- Use human-readable text, not snake_case or internal field names
+STRICT OUTPUT RULES:
+- Return at most 3 items
+- Each item must be directly actionable on an existing record
+- Do not return broad strategy
+- Do not return acquisition advice
+- Do not return cross-module essays
+- Keep summary to one sentence
+- Use short, user-facing titles
+- Use human-readable values, not snake_case
 `;
 }
 
@@ -124,12 +156,9 @@ OUTPUT REQUIREMENTS:
 - Titles must be user-facing and natural language
 - Good example: "Assign Boswell Jumbo to Rich Aromatic Rotation"
 - Bad example: "Specialization for Boswell Jumbo"
-- Use human-readable values in title, explanation, and rationale
-- Do not use snake_case or internal field naming in user-facing text
 
 Only return actionable specialization cards for actual pipe records.
-Do NOT return generic strategy text.
-Do NOT return observations without a writable recommendation.
+Return at most 5 items.
 `;
 }
 
@@ -143,19 +172,15 @@ Find pipe records with missing, clearly incomplete, or weak geometric measuremen
 OUTPUT REQUIREMENTS:
 - item.type must be "measurement_update"
 - recordType must be "pipe"
-- only suggest fields when there is a reasonable basis
 - proposedChanges may include:
   - length_mm
   - bowl_height_mm
   - bowl_width_mm
   - bowl_diameter_mm
   - weight_g
-- Titles must be user-facing and natural language
-- Use human-readable text, not snake_case or internal field names
 
-If measurement support is weak, do not invent precise values.
-Prefer fewer, higher-confidence recommendations over guessing.
-Return only the most actionable 3 to 5 recommendations.
+Return at most 5 items.
+Use human-readable titles and explanations.
 `;
 }
 
@@ -164,79 +189,24 @@ function buildReclassifyTobaccoBlendsPrompt(context) {
 ${buildSharedInstruction(context)}
 
 TASK:
-Review actual tobacco blend records and propose classification normalization or correction.
+Return only the top 5 highest-confidence tobacco blend reclassification or normalization recommendations.
 
-Focus on:
+Allowed fields in proposedChanges:
 - blend_type
 - family
 - subtype
 - components
 - strength
-- normalization consistency across similar blends
 
-OUTPUT REQUIREMENTS:
+STRICT OUTPUT RULES:
 - item.type must be "reclassification"
 - recordType must be "blend"
-- proposedChanges must contain direct field updates
-- Return only the most actionable 3 to 5 recommendations
-- Titles must be user-facing and natural language
-- Use human-readable text, not snake_case or internal field names
-
-Return only field-level actionable recommendations for specific blend records.
-`;
-}
-
-function buildSessionBuilderPrompt(context) {
-  return `
-${buildSharedInstruction(context)}
-
-TASK:
-Generate 3 curated session experiences from the user's actual collection.
-
-A session may combine:
-- pipe
-- tobacco blend
-- whiskey bottle
-
-Each session must be built around one of these intents:
-- mood
-- balance
-- rotation
-- discovery
-- contrast
-- harmony
-
-OUTPUT REQUIREMENTS:
-- Return EXACTLY 3 items
-- item.type must be "session_builder"
-- recordType must be "pipe"
-- recordId must reference the pipe used
-- proposedChanges must be {}
-- Use natural language titles
-- Use human-readable text only
-- Do not use snake_case in user-facing text
-
-Each item must include:
-- title
-- explanation
-- rationale
-- confidence
-- recordType
-- recordId
-- recordName
-- proposedChanges: {}
-- followUpPrompt
-
-The explanation should include:
-- which pipe
-- which blend
-- which whiskey (if available)
-- why the pairing works
-- what kind of session it creates
-
-If whiskey is unavailable, still generate a pipe + tobacco session.
-
-Return JSON only.
+- Return at most 5 items
+- Each item must target a real existing blend record
+- Use short, user-facing titles
+- Use human-readable values, not snake_case
+- Do not return general cellar commentary
+- Do not return recommendations unless a direct field update is justified
 `;
 }
 
@@ -251,11 +221,37 @@ function getActionPrompt(actionType, context) {
     case "reclassify_tobacco_blends":
       return buildReclassifyTobaccoBlendsPrompt(context);
     case "pairing_recommendation":
-      return buildSessionBuilderPrompt(context);
     case "session_builder":
       return buildSessionBuilderPrompt(context);
     default:
       throw new Error(`Unsupported curator action type: ${actionType}`);
+  }
+}
+
+async function invokeCuratorLLM({ prompt, actionType, requestId }) {
+  try {
+    const response = await base44.functions.invoke("invokeCuratorLLM", {
+      prompt,
+      actionType,
+      requestId,
+    });
+
+    if (typeof response === "string") return response;
+    if (response?.result) return response.result;
+    if (response?.data) return response.data;
+    if (response?.content) return response.content;
+    if (response && typeof response === "object") return JSON.stringify(response);
+
+    return response;
+  } catch (err) {
+    if (!base44?.integrations?.Core?.InvokeLLM) {
+      throw err;
+    }
+
+    return base44.integrations.Core.InvokeLLM({
+      prompt,
+      add_context_from_internet: false,
+    });
   }
 }
 
@@ -266,13 +262,10 @@ export default async function curatorActionExecutor({
 }) {
   const prompt = getActionPrompt(actionType, context);
 
-  if (!base44?.integrations?.Core?.InvokeLLM) {
-    throw new Error("Curator LLM integration is unavailable.");
-  }
-
-  const responseText = await base44.integrations.Core.InvokeLLM({
+  const responseText = await invokeCuratorLLM({
     prompt,
-    add_context_from_internet: false,
+    actionType,
+    requestId,
   });
 
   if (process.env.NODE_ENV !== "production") {
@@ -287,7 +280,9 @@ export default async function curatorActionExecutor({
     throw new Error("Curator returned no response.");
   }
 
-  const parsed = parseCuratorActionResponse(responseText);
+  const parsed = parseCuratorActionResponse(
+    typeof responseText === "string" ? responseText : JSON.stringify(responseText)
+  );
 
   if (!parsed || typeof parsed !== "object") {
     throw new Error("Curator returned unusable structured data.");
