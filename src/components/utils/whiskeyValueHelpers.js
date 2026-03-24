@@ -4,22 +4,17 @@ export function toNumber(value, fallback = 0) {
 }
 
 export function getBottleUnitValue(bottle) {
-  return toNumber(
-    bottle?.collector_value ??
-      bottle?.aftermarket_price ??
-      bottle?.retail_price ??
-      bottle?.average_market_value ??
-      bottle?.purchase_price ??
-      0,
-    0
-  );
+  if (toNumber(bottle?.collector_value, 0) > 0) return toNumber(bottle.collector_value, 0);
+  if (toNumber(bottle?.aftermarket_price, 0) > 0) return toNumber(bottle.aftermarket_price, 0);
+  if (toNumber(bottle?.retail_price, 0) > 0) return toNumber(bottle.retail_price, 0);
+  if (toNumber(bottle?.purchase_price, 0) > 0) return toNumber(bottle.purchase_price, 0);
+  return 0;
 }
 
 export function getBottleDisplayValueLabel(bottle) {
   if (toNumber(bottle?.collector_value, 0) > 0) return 'Collector Value';
   if (toNumber(bottle?.aftermarket_price, 0) > 0) return 'Aftermarket Value';
   if (toNumber(bottle?.retail_price, 0) > 0) return 'Retail Value';
-  if (toNumber(bottle?.average_market_value, 0) > 0) return 'Market Value';
   if (toNumber(bottle?.purchase_price, 0) > 0) return 'Purchase Price';
   return 'Value';
 }
@@ -46,7 +41,8 @@ export function formatCurrency(value) {
 export function buildInventoryCountByBottleId(inventoryUnits = []) {
   return inventoryUnits.reduce((acc, unit) => {
     if (!unit?.bottle_id) return acc;
-    acc[unit.bottle_id] = (acc[unit.bottle_id] || 0) + 1;
+    const quantity = toNumber(unit?.quantity, 1);
+    acc[unit.bottle_id] = (acc[unit.bottle_id] || 0) + quantity;
     return acc;
   }, {});
 }
