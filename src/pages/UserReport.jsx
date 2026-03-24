@@ -696,14 +696,16 @@ export default function UserReport() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                  <p className="text-xs text-[#E0D8C8]/70">Renewal Count</p>
-                  <p className="text-2xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : renewalsData[renewalsDateRange]?.count || 0}</p>
+                  <p className="text-xs text-[#E0D8C8]/70">Total Renewals</p>
+                  <p className="text-2xl font-bold text-[#F5F1E7]">{userMetricsLoading ? '...' : renewalsData[renewalsDateRange]?.total || 0}</p>
+                  <p className="text-xs text-[#E0D8C8]/40 mt-1">Monthly: {userMetricsLoading ? '...' : renewalsData[renewalsDateRange]?.monthly || 0} | Annual: {userMetricsLoading ? '...' : renewalsData[renewalsDateRange]?.annual || 0}</p>
                 </div>
                 <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                   <p className="text-xs text-[#E0D8C8]/70">Projected Revenue</p>
                   <p className="text-2xl font-bold text-[#F5F1E7]">${userMetricsLoading ? '...' : (renewalsData[renewalsDateRange]?.totalAmount || 0).toFixed(2)}</p>
+                  <p className="text-xs text-[#E0D8C8]/40 mt-1">Monthly: ${userMetricsLoading ? '...' : (renewalsData[renewalsDateRange]?.monthlyAmount || 0).toFixed(2)} | Annual: ${userMetricsLoading ? '...' : (renewalsData[renewalsDateRange]?.annualAmount || 0).toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
