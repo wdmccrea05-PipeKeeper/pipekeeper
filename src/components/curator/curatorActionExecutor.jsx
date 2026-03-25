@@ -290,169 +290,172 @@ STRICT OUTPUT RULES:
 `;
 }
 
-function buildFindSimilarPipesCuratorPrompt(context, anchorItems) {
-  const { pipes = [] } = context;
-  const pool = anchorItems?.length ? anchorItems : pipes;
-  if (pool.length === 0) throw new Error("No pipes in collection to base recommendations on.");
-  if (pool.length === 1) {
-    return buildFindSimilarPrompt("pipe", pool[0], context);
-  }
-  // Multi-anchor: 2 results per anchor
-  const ownedNames = pipes.map(p => p.name).filter(Boolean);
-  const anchorsBlock = pool.map((p, i) => {
-    const details = [
-      p.shape && `Shape: ${p.shape}`,
-      p.maker && `Maker: ${p.maker}`,
-      p.bowl_material && `Material: ${p.bowl_material}`,
-      p.finish && `Finish: ${p.finish}`,
-      p.sizeClass && `Size: ${p.sizeClass}`,
-      p.bend && `Bend: ${p.bend}`,
-    ].filter(Boolean).join(", ");
-    return `Anchor ${i + 1}: "${p.name}" (${details})`;
-  }).join("\n");
-  return `You are a world-class pipe curator AI. Return VALID JSON only — no markdown, no prose outside JSON.
+// ─── LIGHTWEIGHT FIND SIMILAR PROMPTS ────────────────────────────────────
 
-⚠️ CRITICAL: You have ${pool.length} reference pipes below. Return EXACTLY 2 recommendations for EACH anchor pipe — ${pool.length * 2} total items. Each item MUST include an "anchorRef" field with the anchor pipe name it was inspired by.
+function buildLightweightFindSimilarBlendPrompt(anchor, context) {
+  const blends = Array.isArray(context?.blends) ? context.blends : [];
+  const ownedNames = blends.map(b => b.name).filter(Boolean);
 
-ANCHOR PIPES:
-${anchorsBlock}
+  // LIMIT: Only top 5 favorites + anchor
+  const favorites = blends
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    .slice(0, 5)
+    .map(b => b.name);
 
-OWNED PIPES (NEVER recommend these):
-${ownedNames.map(n => `- ${n}`).join("\n") || "None"}
+  const anchorDetails = [
+    anchor.blend_type && `Type: ${anchor.blend_type}`,
+    anchor.strength && `Strength: ${anchor.strength}`,
+    anchor.cut && `Cut: ${anchor.cut}`,
+    anchor.flavor_notes?.length && `Flavors: ${anchor.flavor_notes.slice(0, 3).join(", ")}`,
+  ].filter(Boolean).join(" | ");
 
-RULES:
-- Never recommend owned pipes
-- Recommend real, commercially available pipes
-- Each recommendation must be distinct
-- Distribute exactly 2 results per anchor
+  return `You are a tobacco curator. Return VALID JSON only - no markdown, no prose.
 
-Return JSON:
+TASK: Recommend exactly 3 tobacco blends NOT in the user's collection, similar to the anchor blend.
+
+ANCHOR BLEND: "${anchor.name}" (${anchorDetails})
+
+OWNED BLENDS (NEVER recommend):
+${ownedNames.map(n => `- ${n}`).join("\n")}
+
+TOP FAVORITES:
+${favorites.join(", ")}
+
+USER PREFERENCES:
+${context?.userProfile?.strength_preference ? `Strength: ${context.userProfile.strength_preference}` : "Not specified"}
+
+RETURN EXACTLY 3 ITEMS. Each in 1-2 sentences. No long explanations.
+
 {
-  "summary": "Brief intro sentence",
+  "summary": "Three blends you might enjoy",
+  "items": [
+    {
+      "id": "sim_1",
+      "type": "similar_item",
+      "recordType": "blend",
+      "title": "Blend Name by Maker",
+      "category": "Blend type",
+      "explanation": "Why similar (1 sentence max)",
+      "characteristics": ["trait1", "trait2"],
+      "whyFitsYou": "Personal note (1 sentence)"
+    }
+  ]
+}`;
+}
+
+function buildLightweightFindSimilarPipePrompt(anchor, context) {
+  const pipes = Array.isArray(context?.pipes) ? context.pipes : [];
+  const ownedNames = pipes.map(p => p.name).filter(Boolean);
+
+  const anchorDetails = [
+    anchor.shape && `Shape: ${anchor.shape}`,
+    anchor.maker && `Maker: ${anchor.maker}`,
+    anchor.sizeClass && `Size: ${anchor.sizeClass}`,
+  ].filter(Boolean).join(" | ");
+
+  return `You are a pipe curator. Return VALID JSON only - no markdown, no prose.
+
+TASK: Recommend exactly 3 pipes NOT in the user's collection, similar to the anchor pipe.
+
+ANCHOR PIPE: "${anchor.name}" (${anchorDetails})
+
+OWNED PIPES (NEVER recommend):
+${ownedNames.map(n => `- ${n}`).join("\n")}
+
+RETURN EXACTLY 3 ITEMS. Each in 1-2 sentences. No long explanations.
+
+{
+  "summary": "Three pipes you might enjoy",
   "items": [
     {
       "id": "sim_1",
       "type": "similar_item",
       "recordType": "pipe",
       "title": "Pipe Name by Maker",
-      "category": "Shape / Style",
-      "explanation": "Why this is similar to the anchor pipe",
-      "characteristics": ["trait 1", "trait 2"],
-      "whyFitsYou": "Personalized note",
-      "anchorRef": "Anchor pipe name this is based on",
-      "group": "closest_match"
+      "category": "Shape",
+      "explanation": "Why similar (1 sentence max)",
+      "characteristics": ["trait1", "trait2"],
+      "whyFitsYou": "Personal note (1 sentence)"
     }
   ]
 }`;
 }
 
-function buildFindSimilarBlendsCuratorPrompt(context, anchorItems) {
-  const { blends = [] } = context;
-  const pool = anchorItems?.length ? anchorItems : blends;
-  if (pool.length === 0) throw new Error("No blends in collection to base recommendations on.");
-  if (pool.length === 1) {
-    return buildFindSimilarPrompt("blend", pool[0], context);
-  }
-  const ownedNames = blends.map(b => b.name).filter(Boolean);
-  const anchorsBlock = pool.map((b, i) => {
-    const details = [
-      b.blend_type && `Type: ${b.blend_type}`,
-      b.strength && `Strength: ${b.strength}`,
-      b.cut && `Cut: ${b.cut}`,
-      b.flavor_notes?.length && `Flavors: ${b.flavor_notes.join(", ")}`,
-    ].filter(Boolean).join(", ");
-    return `Anchor ${i + 1}: "${b.name}" by ${b.manufacturer || "Unknown"} (${details})`;
-  }).join("\n");
-  return `You are a world-class tobacco curator AI. Return VALID JSON only — no markdown, no prose outside JSON.
-
-⚠️ CRITICAL: You have ${pool.length} reference blends below. Return EXACTLY 2 recommendations for EACH anchor blend — ${pool.length * 2} total items. Each item MUST include an "anchorRef" field with the anchor blend name it was inspired by.
-
-ANCHOR BLENDS:
-${anchorsBlock}
-
-OWNED BLENDS (NEVER recommend these):
-${ownedNames.map(n => `- ${n}`).join("\n") || "None"}
-
-RULES:
-- Never recommend owned blends
-- Recommend only real, commercially available tobacco blends
-- Each recommendation must be distinct
-- Distribute exactly 2 results per anchor
-
-Return JSON:
-{
-  "summary": "Brief intro sentence",
-  "items": [
-    {
-      "id": "sim_1",
-      "type": "similar_item",
-      "recordType": "blend",
-      "title": "Blend Name by Manufacturer",
-      "category": "Blend type / style",
-      "explanation": "Why this is similar to the anchor blend",
-      "characteristics": ["trait 1", "trait 2", "trait 3"],
-      "whyFitsYou": "Personalized note",
-      "anchorRef": "Anchor blend name this is based on",
-      "group": "closest_match"
-    }
-  ]
-}`;
-}
-
-function buildFindSimilarBottlesCuratorPrompt(context, anchorItems) {
-  const { bottles = [] } = context;
-  const pool = anchorItems?.length ? anchorItems : bottles;
-  if (pool.length === 0) throw new Error("No bottles in collection to base recommendations on.");
-  if (pool.length === 1) {
-    return buildFindSimilarPrompt("bottle", pool[0], context);
-  }
+function buildLightweightFindSimilarBottlePrompt(anchor, context) {
+  const bottles = Array.isArray(context?.bottles) ? context.bottles : [];
   const ownedNames = bottles.map(b => b.name).filter(Boolean);
-  const anchorsBlock = pool.map((b, i) => {
-    const details = [
-      b.type && `Type: ${b.type}`,
-      b.region && `Region: ${b.region}`,
-      b.age && `Age: ${b.age}yr`,
-      b.abv && `ABV: ${b.abv}%`,
-    ].filter(Boolean).join(", ");
-    return `Anchor ${i + 1}: "${b.name}" (${details})`;
-  }).join("\n");
-  return `You are a world-class whiskey curator AI. Return VALID JSON only — no markdown, no prose outside JSON.
 
-⚠️ CRITICAL: You have ${pool.length} reference bottles below. Return EXACTLY 2 recommendations for EACH anchor bottle — ${pool.length * 2} total items. Each item MUST include an "anchorRef" field with the anchor bottle name it was inspired by.
+  const anchorDetails = [
+    anchor.type && `Type: ${anchor.type}`,
+    anchor.region && `Region: ${anchor.region}`,
+    anchor.age && `Age: ${anchor.age}yr`,
+  ].filter(Boolean).join(" | ");
 
-ANCHOR BOTTLES:
-${anchorsBlock}
+  return `You are a whiskey curator. Return VALID JSON only - no markdown, no prose.
 
-OWNED BOTTLES (NEVER recommend these):
-${ownedNames.map(n => `- ${n}`).join("\n") || "None"}
+TASK: Recommend exactly 3 whiskey bottles NOT in the user's collection, similar to the anchor bottle.
 
-RULES:
-- Never recommend owned bottles
-- Recommend real, commercially available whiskeys
-- Each must be distinct
-- Distribute exactly 2 results per anchor
+ANCHOR BOTTLE: "${anchor.name}" (${anchorDetails})
 
-Return JSON:
+OWNED BOTTLES (NEVER recommend):
+${ownedNames.map(n => `- ${n}`).join("\n")}
+
+RETURN EXACTLY 3 ITEMS. Each in 1-2 sentences. No long explanations.
+
 {
-  "summary": "Brief intro sentence",
+  "summary": "Three bottles you might enjoy",
   "items": [
     {
       "id": "sim_1",
       "type": "similar_item",
       "recordType": "bottle",
       "title": "Bottle Name",
-      "category": "Whiskey type / region",
-      "explanation": "Why this is similar to the anchor bottle",
-      "characteristics": ["trait 1", "trait 2"],
-      "whyFitsYou": "Personalized note",
-      "anchorRef": "Anchor bottle name this is based on",
-      "group": "closest_match"
+      "category": "Type / Region",
+      "explanation": "Why similar (1 sentence max)",
+      "characteristics": ["trait1", "trait2"],
+      "whyFitsYou": "Personal note (1 sentence)"
     }
   ]
 }`;
 }
 
 function getActionPrompt(actionType, context, anchorOverrides) {
+  // FAST PATHS: Use lightweight prompts for find_similar actions
+  if (actionType === "find_similar_blends" && anchorOverrides?.[0]) {
+    console.log("[Curator] Find similar blends (lightweight)");
+    return buildLightweightFindSimilarBlendPrompt(anchorOverrides[0], context);
+  }
+
+  if (actionType === "find_similar_pipes" && anchorOverrides?.[0]) {
+    console.log("[Curator] Find similar pipes (lightweight)");
+    return buildLightweightFindSimilarPipePrompt(anchorOverrides[0], context);
+  }
+
+  if (actionType === "find_similar_bottles" && anchorOverrides?.[0]) {
+    console.log("[Curator] Find similar bottles (lightweight)");
+    return buildLightweightFindSimilarBottlePrompt(anchorOverrides[0], context);
+  }
+
+  // FALLBACK: Use original builder if no fast path
+  if (actionType === "find_similar_blends") {
+    const blends = context?.blends || [];
+    if (blends.length === 0) throw new Error("No blends in collection.");
+    return buildFindSimilarPrompt("blend", blends[0], context);
+  }
+
+  if (actionType === "find_similar_pipes") {
+    const pipes = context?.pipes || [];
+    if (pipes.length === 0) throw new Error("No pipes in collection.");
+    return buildFindSimilarPrompt("pipe", pipes[0], context);
+  }
+
+  if (actionType === "find_similar_bottles") {
+    const bottles = context?.bottles || [];
+    if (bottles.length === 0) throw new Error("No bottles in collection.");
+    return buildFindSimilarPrompt("bottle", bottles[0], context);
+  }
+
+  // Standard actions
   switch (actionType) {
     case "optimize_collection":
       return buildOptimizeCollectionPrompt(context);
@@ -469,12 +472,6 @@ function getActionPrompt(actionType, context, anchorOverrides) {
     case "pairing_recommendation":
     case "session_builder":
       return buildSessionBuilderPrompt(context);
-    case "find_similar_pipes":
-      return buildFindSimilarPipesCuratorPrompt(context, anchorOverrides);
-    case "find_similar_blends":
-      return buildFindSimilarBlendsCuratorPrompt(context, anchorOverrides);
-    case "find_similar_bottles":
-      return buildFindSimilarBottlesCuratorPrompt(context, anchorOverrides);
     default:
       throw new Error(`Unsupported curator action type: ${actionType}`);
   }
@@ -490,8 +487,6 @@ async function invokeCuratorLLM({
     add_context_from_internet: false,
   });
 
-  // InvokeLLM returns either string or object
-  // Normalize to string for consistency
   if (typeof response === "string") return response;
   if (typeof response === "object" && response !== null) {
     return JSON.stringify(response);
@@ -505,7 +500,16 @@ export default async function curatorActionExecutor({
   requestId,
   anchorOverrides,
 }) {
+  const isSimilarAction = actionType.startsWith("find_similar");
+  
+  console.log(`[Curator] ${actionType} start`, {
+    isSimilar: isSimilarAction,
+    hasAnchors: !!anchorOverrides?.length,
+  });
+
   const prompt = getActionPrompt(actionType, context, anchorOverrides);
+  const promptSize = JSON.stringify(prompt).length;
+  console.log(`[Curator] Prompt size: ${promptSize} bytes`);
 
   const responseText = await invokeCuratorLLM({
     prompt,
@@ -513,13 +517,10 @@ export default async function curatorActionExecutor({
     requestId,
   });
 
-  if (process.env.NODE_ENV !== "production") {
-    console.log("Curator raw action response:", {
-      actionType,
-      requestId,
-      responseText,
-    });
-  }
+  console.log("[Curator] Response received", {
+    length: responseText?.length,
+    isString: typeof responseText === "string",
+  });
 
   if (!responseText) {
     throw new Error("Curator returned no response.");
@@ -528,6 +529,11 @@ export default async function curatorActionExecutor({
   const parsed = parseCuratorActionResponse(
     typeof responseText === "string" ? responseText : JSON.stringify(responseText)
   );
+
+  console.log("[Curator] Parsed successfully", {
+    hasSummary: !!parsed?.summary,
+    itemCount: parsed?.items?.length || 0,
+  });
 
   if (!parsed || typeof parsed !== "object") {
     throw new Error("Curator returned unusable structured data.");

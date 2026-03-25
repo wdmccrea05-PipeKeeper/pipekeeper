@@ -1,56 +1,45 @@
-import React, { useState } from "react";
-import { SearchCheck, X, Star, TrendingUp } from "lucide-react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
-const TYPE_CONFIG = {
+const CONFIG = {
   find_similar_blends: {
-    label: "Discover Similar Blends",
-    itemsKey: "blends",
-    nameFn: (b) => `${b.name}${b.manufacturer ? ` — ${b.manufacturer}` : ""}`,
-    keyFn: (b) => b.id,
-    noun: "blend",
+    label: "Select Tobacco Blend",
+    dataKey: "blends",
+    itemKey: "name",
   },
   find_similar_pipes: {
-    label: "Discover Similar Pipes",
-    itemsKey: "pipes",
-    nameFn: (p) => `${p.name}${p.maker ? ` — ${p.maker}` : ""}`,
-    keyFn: (p) => p.id,
-    noun: "pipe",
+    label: "Select Pipe",
+    dataKey: "pipes",
+    itemKey: "name",
   },
   find_similar_bottles: {
-    label: "Discover Similar Pours",
-    itemsKey: "bottles",
-    nameFn: (b) => `${b.name}${b.distillery ? ` — ${b.distillery}` : ""}`,
-    keyFn: (b) => b.id,
-    noun: "bottle",
+    label: "Select Whiskey Bottle",
+    dataKey: "bottles",
+    itemKey: "name",
   },
 };
 
-/** Returns up to 3 "best" items as default anchors based on usage + favorites */
-function getTop3(items, logs, actionType) {
-  if (!items?.length) return [];
+function scoreItemImportance(item, logs = []) {
+  let score = 0;
 
-  const isBlend = actionType === "find_similar_blends";
-  const isPipe = actionType === "find_similar_pipes";
+  // Favorites: +10
+  if (item.is_favorite) score += 10;
 
-  // Count usage from logs
-  const usageCounts = {};
-  if (logs?.length) {
-    for (const log of logs) {
-      const key = isBlend ? log.blend_name : isPipe ? log.pipe_name : log.bottle_id;
-      if (key) usageCounts[key] = (usageCounts[key] || 0) + 1;
-    }
-  }
+  // Recent usage: count logs for this item in last 30 days
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const recentUsage = logs.filter(
+    (log) =>
+      (log.blend_id === item.id || log.pipe_id === item.id || log.bottle_id === item.id) &&
+      new Date(log.date) > thirtyDaysAgo
+  ).length;
 
-  const scored = items.map((item) => {
-    const usageKey = isBlend ? item.name : isPipe ? item.name : item.id;
-    const usage = usageCounts[usageKey] || 0;
-    const fav = item.is_favorite ? 3 : 0;
-    return { item, score: usage + fav };
-  });
+  score += recentUsage * 2;
 
-  scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, 3).map((s) => s.item);
+  // Rating: +5 per point (max 5)
+  if (item.rating) score += Math.min(item.rating, 5);
+
+  return score;
 }
 
 export default function FindSimilarPicker({
@@ -63,136 +52,139 @@ export default function FindSimilarPicker({
   onConfirm,
   onCancel,
 }) {
-  const config = TYPE_CONFIG[actionType];
+  const config = CONFIG[actionType];
   if (!config) return null;
 
-  const allItems = actionType === "find_similar_blends" ? blends
-    : actionType === "find_similar_pipes" ? pipes
-    : bottles;
+  const [mode, setMode] = useState("auto");
+  const [selected, setSelected] = useState(null);
 
-  const logs = actionType === "find_similar_bottles" ? tastingLogs : smokingLogs;
-  const top3 = getTop3(allItems, logs, actionType);
+  const data = {
+    find_similar_blends: blends,
+    find_similar_pipes: pipes,
+    find_similar_bottles: bottles,
+  }[actionType] || [];
 
-  const [mode, setMode] = useState("top3"); // "top3" | "pick"
-  const [selectedId, setSelectedId] = useState(top3[0]?.id || allItems[0]?.id || "");
+  const logs = actionType === "find_similar_blends" ? smokingLogs : tastingLogs;
 
-  const selectedItem = allItems.find((i) => i.id === selectedId);
+  // Auto-select top 3 favorites + recently used
+  const topItems = useMemo(() => {
+    if (data.length === 0) return [];
+    return data
+      .map((item) => ({
+        item,
+        score: scoreItemImportance(item, logs),
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map((x) => x.item);
+  }, [data, logs]);
+
+  const itemList = mode === "auto" ? topItems : data;
+  const displaySelected = selected !== null ? selected : (topItems[0]?.id || null);
 
   const handleConfirm = () => {
-    if (mode === "top3") {
-      onConfirm(top3.length > 0 ? top3 : allItems.slice(0, 3), true);
+    if (mode === "auto") {
+      onConfirm(topItems, true);
     } else {
-      if (!selectedItem) return;
-      onConfirm([selectedItem], false);
+      const selectedItem = data.find((d) => d.id === displaySelected);
+      if (selectedItem) onConfirm([selectedItem], false);
     }
   };
 
   return (
-    <div
-      className="rounded-xl p-4 mb-4 space-y-4"
-      style={{
-        background: "linear-gradient(145deg, rgba(40,28,20,0.98), rgba(32,22,15,0.98))",
-        border: "1px solid rgba(180,140,75,0.3)",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
-      }}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <SearchCheck className="w-4 h-4 text-[#B48C4B]" />
-          <span className="text-sm font-semibold text-[#F5F1E7]">{config.label}</span>
+    <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: "rgba(0,0,0,0.5)" }}>
+      <div className="rounded-xl p-6 max-w-md w-full mx-4" style={{ background: "rgba(32,22,15,0.95)", border: "1px solid rgba(140,105,65,0.35)" }}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold" style={{ color: "#E0D8C8" }}>
+            {config.label}
+          </h3>
+          <button onClick={onCancel} className="p-1 hover:bg-white/10 rounded">
+            <X className="w-4 h-4" style={{ color: "#E0D8C8" }} />
+          </button>
         </div>
-        <button
-          onClick={onCancel}
-          className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white/10 text-[#D8C7A6]/60 transition-colors"
-        >
-          <X className="w-3.5 h-3.5" />
-        </button>
-      </div>
 
-      <p className="text-xs text-[#E0D8C8]/65">
-        Which {config.noun} should Curator use as a reference for finding similar items?
-      </p>
-
-      {/* Mode selector */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setMode("top3")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-            mode === "top3"
-              ? "bg-[rgba(180,140,75,0.2)] border border-[rgba(180,140,75,0.4)] text-[#D4A574]"
-              : "border border-[rgba(180,140,75,0.15)] text-[#E0D8C8]/60 hover:bg-white/5"
-          }`}
-        >
-          <TrendingUp className="w-3.5 h-3.5" />
-          My Top {Math.min(3, top3.length) || 3} {config.noun}s
-        </button>
-        <button
-          onClick={() => setMode("pick")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-            mode === "pick"
-              ? "bg-[rgba(180,140,75,0.2)] border border-[rgba(180,140,75,0.4)] text-[#D4A574]"
-              : "border border-[rgba(180,140,75,0.15)] text-[#E0D8C8]/60 hover:bg-white/5"
-          }`}
-        >
-          Choose a specific {config.noun}
-        </button>
-      </div>
-
-      {/* Top 3 display */}
-      {mode === "top3" && (
-        <div className="space-y-1.5">
-          {(top3.length > 0 ? top3 : allItems.slice(0, 3)).map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(180,140,75,0.12)" }}
+        <div className="space-y-3 mb-4">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setMode("auto")}
+              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                mode === "auto"
+                  ? "bg-amber-500 text-black"
+                  : "bg-white/10 text-amber-100 hover:bg-white/15"
+              }`}
             >
-              {item.is_favorite && <Star className="w-3 h-3 text-[#D4A574] flex-shrink-0" />}
-              <span className="text-[#E0D8C8]/85 truncate">{config.nameFn(item)}</span>
-            </div>
-          ))}
-          {top3.length === 0 && allItems.length === 0 && (
-            <p className="text-xs text-[#E0D8C8]/45 text-center py-2">No items found.</p>
-          )}
-          <p className="text-[10px] text-[#E0D8C8]/40 pt-1">
-            Based on most-used and favorited {config.noun}s
-          </p>
+              Top Picks ({topItems.length})
+            </button>
+            <button
+              onClick={() => setMode("manual")}
+              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                mode === "manual"
+                  ? "bg-amber-500 text-black"
+                  : "bg-white/10 text-amber-100 hover:bg-white/15"
+              }`}
+            >
+              Choose
+            </button>
+          </div>
         </div>
-      )}
 
-      {/* Single pick dropdown */}
-      {mode === "pick" && (
-        <div>
+        {mode === "auto" ? (
+          <div className="space-y-2 mb-4">
+            {topItems.map((item) => (
+              <div
+                key={item.id}
+                className="p-3 rounded-lg"
+                style={{ background: "rgba(60,45,30,0.5)", border: "1px solid rgba(140,105,65,0.2)" }}
+              >
+                <div className="font-medium text-sm" style={{ color: "#E0D8C8" }}>
+                  {item[config.itemKey]}
+                </div>
+                {item.rating && (
+                  <div className="text-xs mt-1" style={{ color: "rgba(224,216,200,0.6)" }}>
+                    ⭐ {item.rating}/5
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
           <select
-            value={selectedId}
-            onChange={(e) => setSelectedId(e.target.value)}
-            className="w-full rounded-lg px-3 py-2 text-sm text-[#F5F1E7] appearance-none"
-            style={{
-              background: "rgba(20,15,12,0.7)",
-              border: "1px solid rgba(180,140,75,0.3)",
-              outline: "none",
-            }}
+            value={displaySelected || ""}
+            onChange={(e) => setSelected(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg mb-4 text-sm"
+            style={{ background: "rgba(20,14,10,0.6)", border: "1px solid rgba(140,105,65,0.3)", color: "#E0D8C8" }}
           >
-            {allItems.map((item) => (
-              <option key={item.id} value={item.id} style={{ background: "#241913" }}>
-                {config.nameFn(item)}
+            <option value="" disabled>
+              Select an item
+            </option>
+            {data.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item[config.itemKey]}
               </option>
             ))}
           </select>
-        </div>
-      )}
+        )}
 
-      {/* Confirm button */}
-      <Button
-        onClick={handleConfirm}
-        disabled={mode === "pick" && !selectedItem}
-        className="w-full"
-        style={{ background: "linear-gradient(135deg, #a35c5c, #8f4e4e)", color: "#fff" }}
-      >
-        <SearchCheck className="w-4 h-4 mr-2" />
-        Find Similar
-      </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleConfirm}
+            disabled={mode === "manual" && !displaySelected}
+            className="flex-1"
+            style={{
+              background: "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))",
+            }}
+          >
+            Find Similar
+          </Button>
+          <Button
+            onClick={onCancel}
+            variant="outline"
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

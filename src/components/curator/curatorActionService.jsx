@@ -1,4 +1,5 @@
-const ACTION_TIMEOUT_MS = 150000;
+const BASE_ACTION_TIMEOUT_MS = 30000; // 30s for standard actions
+const FIND_SIMILAR_TIMEOUT_MS = 15000; // 15s for similar items (fast path)
 
 function withTimeout(promise, ms) {
   return new Promise((resolve, reject) => {
@@ -28,6 +29,11 @@ export async function runCuratorAction({
     globalThis.crypto?.randomUUID?.() ||
     `curator_${actionType}_${Date.now()}`;
 
+  // Use shorter timeout for find_similar actions
+  const timeoutMs = actionType.startsWith("find_similar")
+    ? FIND_SIMILAR_TIMEOUT_MS
+    : BASE_ACTION_TIMEOUT_MS;
+
   try {
     Promise.resolve(
       onAudit?.({ requestId, actionType, phase: "started", context })
@@ -35,7 +41,7 @@ export async function runCuratorAction({
 
     const raw = await withTimeout(
       executor({ actionType, context, requestId, anchorOverrides }),
-      ACTION_TIMEOUT_MS
+      timeoutMs
     );
 
     if (!raw) {
