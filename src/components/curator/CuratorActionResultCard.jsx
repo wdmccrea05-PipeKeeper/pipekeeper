@@ -62,7 +62,9 @@ export default function CuratorActionResultCard({ item, state, onAccept, onRejec
           )
         )}
 
-        <div className="mt-2 text-sm text-amber-50/85">{item.explanation}</div>
+        {!isSession && (
+          <div className="mt-2 text-sm text-amber-50/85">{item.explanation}</div>
+        )}
 
         {item.rationale && (
           <div className="mt-2 text-xs text-amber-50/60">{item.rationale}</div>
