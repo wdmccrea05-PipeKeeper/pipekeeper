@@ -3,7 +3,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils/createPageUrl';
-import { BookOpen, MessageSquare, AlertCircle, Search } from 'lucide-react';
+import { BookOpen, MessageSquare, AlertCircle, Search, Mail, ExternalLink } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,42 @@ export default function HelpCenter() {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(90,58,30,0.18),transparent_28%),linear-gradient(180deg,#140f0b_0%,#0b0908_100%)]">
       <div className="max-w-[1000px] mx-auto px-4 py-10">
+        {/* Contact Support Banner — always at top */}
+        <div
+          className="rounded-2xl p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between"
+          style={{
+            background: "linear-gradient(135deg, rgba(163,92,92,0.18), rgba(139,58,58,0.12))",
+            border: "1px solid rgba(163,92,92,0.35)",
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(163,92,92,0.2)", border: "1px solid rgba(163,92,92,0.35)" }}>
+              <Mail className="w-5 h-5" style={{ color: "#d4857a" }} />
+            </div>
+            <div>
+              <div className="text-base font-semibold text-[#F5F1E7]">Contact Support</div>
+              <div className="text-sm text-[#D7C9B2]/75 mt-0.5">
+                Questions, bugs, billing issues, or account help —{" "}
+                <a
+                  href="mailto:admin@pipekeeperapp.com"
+                  className="underline font-medium hover:opacity-80 transition-opacity"
+                  style={{ color: "#d4a574" }}
+                >
+                  admin@pipekeeperapp.com
+                </a>
+              </div>
+            </div>
+          </div>
+          <a
+            href="/support"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0 hover:opacity-90 transition-opacity"
+            style={{ background: "rgba(163,92,92,0.85)", color: "#fff", border: "1px solid rgba(163,92,92,0.5)" }}
+          >
+            <ExternalLink className="w-4 h-4" />
+            Support Page
+          </a>
+        </div>
+
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#F5F1E7] mb-2">
