@@ -261,8 +261,7 @@ export async function runFindSimilar({ recordType, anchor, context, mode = "deta
 
   const responseText = await base44.integrations.Core.InvokeLLM({
     prompt,
-    add_context_from_internet: true,
-    model: "gemini_3_flash",
+    add_context_from_internet: false,
   });
 
   const raw = typeof responseText === "string" ? responseText : JSON.stringify(responseText);
