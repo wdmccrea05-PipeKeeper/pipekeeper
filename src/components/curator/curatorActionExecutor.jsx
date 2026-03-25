@@ -311,31 +311,11 @@ function getActionPrompt(actionType, context) {
   }
 }
 
-async function invokeCuratorLLM({ prompt, actionType, requestId }) {
-  try {
-    const response = await base44.functions.invoke("invokeCuratorLLM", {
-      prompt,
-      actionType,
-      requestId,
-    });
-
-    if (typeof response === "string") return response;
-    if (response?.result) return response.result;
-    if (response?.data) return response.data;
-    if (response?.content) return response.content;
-    if (response && typeof response === "object") return JSON.stringify(response);
-
-    return response;
-  } catch (err) {
-    if (!base44?.integrations?.Core?.InvokeLLM) {
-      throw err;
-    }
-
-    return base44.integrations.Core.InvokeLLM({
-      prompt,
-      add_context_from_internet: false,
-    });
-  }
+async function invokeCuratorLLM({ prompt }) {
+  return base44.integrations.Core.InvokeLLM({
+    prompt,
+    add_context_from_internet: false,
+  });
 }
 
 export default async function curatorActionExecutor({
