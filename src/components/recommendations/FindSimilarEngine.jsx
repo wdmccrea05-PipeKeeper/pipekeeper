@@ -16,21 +16,9 @@ export function isOwnedItem(name, ownedSet) {
 // ─── Prompt builders ───────────────────────────────────────────────────────
 function buildBlendSimilarPrompt(anchor, context, mode) {
   const { blends = [], smokingLogs = [], userProfile = null } = context;
+  // Only need names for exclusion — no need to send full blend objects
   const ownedNames = blends.map(b => b.name).filter(Boolean).slice(0, 40);
-  const limit = mode === "curator" ? 6 : 3;
-
-  const anchorDetails = [
-    anchor.blend_type && `Type: ${anchor.blend_type}`,
-    anchor.strength && `Strength: ${anchor.strength}`,
-    anchor.cut && `Cut: ${anchor.cut}`,
-    anchor.room_note && `Room Note: ${anchor.room_note}`,
-    anchor.tobacco_components?.length && `Components: ${anchor.tobacco_components.join(", ")}`,
-    anchor.flavor_notes?.length && `Flavor Notes: ${anchor.flavor_notes.join(", ")}`,
-    anchor.aging_potential && `Aging Potential: ${anchor.aging_potential}`,
-    anchor.notes && `Personal Notes: ${anchor.notes}`,
-  ].filter(Boolean).join("\n");
-
-  const recentLogs = (smokingLogs || []).filter(l => l.blend_name === anchor.name).slice(0, 5);
+  const recentLogs = (smokingLogs || []).filter(l => l.blend_name === anchor.name).slice(0, 3);
   const prefStr = userProfile ? [
     userProfile.strength_preference && `Preferred strength: ${userProfile.strength_preference}`,
     userProfile.preferred_blend_types?.length && `Preferred types: ${userProfile.preferred_blend_types.join(", ")}`,
@@ -95,23 +83,9 @@ Return JSON:
 }
 
 function buildPipeSimilarPrompt(anchor, context, mode) {
-  const { pipes = [], smokingLogs = [], userProfile = null } = context;
-  const ownedNames = pipes.map(p => p.name).filter(Boolean).slice(0, 40);
-  const limit = mode === "curator" ? 6 : 3;
-
-  const anchorDetails = [
-    anchor.shape && `Shape: ${anchor.shape}`,
-    anchor.maker && `Maker: ${anchor.maker}`,
-    anchor.bowl_material && `Material: ${anchor.bowl_material}`,
-    anchor.finish && `Finish: ${anchor.finish}`,
-    anchor.sizeClass && `Size class: ${anchor.sizeClass}`,
-    anchor.chamber_volume && `Chamber volume: ${anchor.chamber_volume}`,
-    anchor.bend && `Bend: ${anchor.bend}`,
-    anchor.stem_material && `Stem: ${anchor.stem_material}`,
-    anchor.length_mm && `Length: ${anchor.length_mm}mm`,
-    anchor.usage_characteristics && `Smoking character: ${anchor.usage_characteristics}`,
-    anchor.notes && `Notes: ${anchor.notes}`,
-  ].filter(Boolean).join("\n");
+  // Only need names for exclusion — no need to send full pipe objects
+  const { smokingLogs = [], userProfile = null } = context;
+  const ownedNames = (context.pipes || []).map(p => p.name).filter(Boolean).slice(0, 40);
 
   const prefStr = userProfile ? [
     userProfile.preferred_shapes?.length && `Preferred shapes: ${userProfile.preferred_shapes.join(", ")}`,
@@ -174,22 +148,9 @@ Return JSON:
 }
 
 function buildBottleSimilarPrompt(anchor, context, mode) {
-  const { bottles = [], tastingLogs = [], userProfile = null } = context;
-  const ownedNames = bottles.map(b => b.name).filter(Boolean).slice(0, 40);
-  const limit = mode === "curator" ? 6 : 3;
-
-  const anchorDetails = [
-    anchor.type && `Type: ${anchor.type}`,
-    anchor.distillery && `Distillery: ${anchor.distillery}`,
-    anchor.region && `Region: ${anchor.region}`,
-    anchor.country && `Country: ${anchor.country}`,
-    anchor.age && `Age: ${anchor.age} years`,
-    anchor.abv && `ABV: ${anchor.abv}%`,
-    anchor.bottle_type && `Bottle type: ${anchor.bottle_type}`,
-    anchor.tasting_notes && `Tasting notes: ${anchor.tasting_notes}`,
-    anchor.finish && `Finish: ${anchor.finish}`,
-  ].filter(Boolean).join("\n");
-
+  // Only need names for exclusion — no need to send full bottle objects
+  const { tastingLogs = [], userProfile = null } = context;
+  const ownedNames = (context.bottles || []).map(b => b.name).filter(Boolean).slice(0, 40);
   const myTastings = (tastingLogs || []).filter(l => l.bottle_id === anchor.id).slice(0, 3);
   const tastingNotesSummary = myTastings.map(t => t.notes).filter(Boolean).join("; ");
 
