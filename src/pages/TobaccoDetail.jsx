@@ -98,7 +98,7 @@ export default function TobaccoDetail() {
   const totalOz = (Number(blend.tin_total_quantity_oz) || 0) + (Number(blend.bulk_total_quantity_oz) || 0) + (Number(blend.pouch_total_quantity_oz) || 0);
 
   return (
-    <div className="p-6 md:p-8 space-y-6 text-[#F5F1E7]">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 text-[#F5F1E7]">
       <div className="flex items-center justify-between gap-3">
         <Button variant="outline" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -147,7 +147,7 @@ export default function TobaccoDetail() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <DetailStat label="Type" value={t(`blendTypes.${blend.blend_type}`, blend.blend_type) || '—'} icon={() => <Leaf className="w-4 h-4" />} />
               <DetailStat label="Strength" value={blend.strength || '—'} icon={() => <span className="text-[#B48C4B]">●</span>} />
               <DetailStat label="Cut" value={blend.cut || '—'} icon={() => <span className="text-[#B48C4B]">●</span>} />
