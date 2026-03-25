@@ -18,6 +18,10 @@ function normalizeItem(item, actionType, index) {
     recordType: item.recordType || null,
     recordId: item.recordId,
     recordName: item.recordName || "",
+    blendId: item.blendId || null,
+    blendName: item.blendName || "",
+    bottleId: item.bottleId || null,
+    bottleName: item.bottleName || "",
     proposedChanges: item.proposedChanges || {},
     followUpPrompt:
       item.followUpPrompt ||
