@@ -16,7 +16,7 @@ export function isOwnedItem(name, ownedSet) {
 // ─── Prompt builders ───────────────────────────────────────────────────────
 function buildBlendSimilarPrompt(anchor, context, mode) {
   const { blends = [], smokingLogs = [], userProfile = null } = context;
-  const ownedNames = blends.map(b => b.name).filter(Boolean);
+  const ownedNames = blends.map(b => b.name).filter(Boolean).slice(0, 40);
   const limit = mode === "curator" ? 6 : 3;
 
   const anchorDetails = [
@@ -96,7 +96,7 @@ Return JSON:
 
 function buildPipeSimilarPrompt(anchor, context, mode) {
   const { pipes = [], smokingLogs = [], userProfile = null } = context;
-  const ownedNames = pipes.map(p => p.name).filter(Boolean);
+  const ownedNames = pipes.map(p => p.name).filter(Boolean).slice(0, 40);
   const limit = mode === "curator" ? 6 : 3;
 
   const anchorDetails = [
@@ -175,7 +175,7 @@ Return JSON:
 
 function buildBottleSimilarPrompt(anchor, context, mode) {
   const { bottles = [], tastingLogs = [], userProfile = null } = context;
-  const ownedNames = bottles.map(b => b.name).filter(Boolean);
+  const ownedNames = bottles.map(b => b.name).filter(Boolean).slice(0, 40);
   const limit = mode === "curator" ? 6 : 3;
 
   const anchorDetails = [

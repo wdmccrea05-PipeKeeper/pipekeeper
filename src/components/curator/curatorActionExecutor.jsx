@@ -298,7 +298,7 @@ function buildFindSimilarPipesCuratorPrompt(context, anchorItems) {
     return buildFindSimilarPrompt("pipe", pool[0], context, "detail");
   }
   // Multi-anchor: 2 results per anchor
-  const ownedNames = pipes.map(p => p.name).filter(Boolean);
+  const ownedNames = pipes.map(p => p.name).filter(Boolean).slice(0, 40);
   const anchorsBlock = pool.map((p, i) => {
     const details = [
       p.shape && `Shape: ${p.shape}`,
@@ -353,7 +353,7 @@ function buildFindSimilarBlendsCuratorPrompt(context, anchorItems) {
   if (pool.length === 1) {
     return buildFindSimilarPrompt("blend", pool[0], context, "detail");
   }
-  const ownedNames = blends.map(b => b.name).filter(Boolean);
+  const ownedNames = blends.map(b => b.name).filter(Boolean).slice(0, 40);
   const anchorsBlock = pool.map((b, i) => {
     const details = [
       b.blend_type && `Type: ${b.blend_type}`,
@@ -406,7 +406,7 @@ function buildFindSimilarBottlesCuratorPrompt(context, anchorItems) {
   if (pool.length === 1) {
     return buildFindSimilarPrompt("bottle", pool[0], context, "detail");
   }
-  const ownedNames = bottles.map(b => b.name).filter(Boolean);
+  const ownedNames = bottles.map(b => b.name).filter(Boolean).slice(0, 40);
   const anchorsBlock = pool.map((b, i) => {
     const details = [
       b.type && `Type: ${b.type}`,
