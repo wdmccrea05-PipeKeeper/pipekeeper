@@ -291,46 +291,165 @@ STRICT OUTPUT RULES:
 }
 
 function buildFindSimilarPipesCuratorPrompt(context, anchorItems) {
-  const { pipes = [], smokingLogs = [] } = context;
+  const { pipes = [] } = context;
   const pool = anchorItems?.length ? anchorItems : pipes;
   if (pool.length === 0) throw new Error("No pipes in collection to base recommendations on.");
   if (pool.length === 1) {
     return buildFindSimilarPrompt("pipe", pool[0], context, "curator");
   }
-  // Multi-anchor: combine into one prompt asking for items similar to ANY of the anchors
-  const anchorNames = pool.map(p => `"${p.name}"`).join(", ");
-  return buildFindSimilarPrompt("pipe", pool[0], {
-    ...context,
-    _multiAnchorNote: `Base recommendations on similarity to ANY of these pipes: ${anchorNames}`,
-  }, "curator");
+  // Multi-anchor: 2 results per anchor
+  const ownedNames = pipes.map(p => p.name).filter(Boolean);
+  const anchorsBlock = pool.map((p, i) => {
+    const details = [
+      p.shape && `Shape: ${p.shape}`,
+      p.maker && `Maker: ${p.maker}`,
+      p.bowl_material && `Material: ${p.bowl_material}`,
+      p.finish && `Finish: ${p.finish}`,
+      p.sizeClass && `Size: ${p.sizeClass}`,
+      p.bend && `Bend: ${p.bend}`,
+    ].filter(Boolean).join(", ");
+    return `Anchor ${i + 1}: "${p.name}" (${details})`;
+  }).join("\n");
+  return `You are a world-class pipe curator AI. Return VALID JSON only — no markdown, no prose outside JSON.
+
+⚠️ CRITICAL: You have ${pool.length} reference pipes below. Return EXACTLY 2 recommendations for EACH anchor pipe — ${pool.length * 2} total items. Each item MUST include an "anchorRef" field with the anchor pipe name it was inspired by.
+
+ANCHOR PIPES:
+${anchorsBlock}
+
+OWNED PIPES (NEVER recommend these):
+${ownedNames.map(n => `- ${n}`).join("\n") || "None"}
+
+RULES:
+- Never recommend owned pipes
+- Recommend real, commercially available pipes
+- Each recommendation must be distinct
+- Distribute exactly 2 results per anchor
+
+Return JSON:
+{
+  "summary": "Brief intro sentence",
+  "items": [
+    {
+      "id": "sim_1",
+      "type": "similar_item",
+      "recordType": "pipe",
+      "title": "Pipe Name by Maker",
+      "category": "Shape / Style",
+      "explanation": "Why this is similar to the anchor pipe",
+      "characteristics": ["trait 1", "trait 2"],
+      "whyFitsYou": "Personalized note",
+      "anchorRef": "Anchor pipe name this is based on",
+      "group": "closest_match"
+    }
+  ]
+}`;
 }
 
 function buildFindSimilarBlendsCuratorPrompt(context, anchorItems) {
-  const { blends = [], smokingLogs = [] } = context;
+  const { blends = [] } = context;
   const pool = anchorItems?.length ? anchorItems : blends;
   if (pool.length === 0) throw new Error("No blends in collection to base recommendations on.");
   if (pool.length === 1) {
     return buildFindSimilarPrompt("blend", pool[0], context, "curator");
   }
-  const anchorNames = pool.map(b => `"${b.name}"`).join(", ");
-  return buildFindSimilarPrompt("blend", pool[0], {
-    ...context,
-    _multiAnchorNote: `Base recommendations on similarity to ANY of these blends: ${anchorNames}`,
-  }, "curator");
+  const ownedNames = blends.map(b => b.name).filter(Boolean);
+  const anchorsBlock = pool.map((b, i) => {
+    const details = [
+      b.blend_type && `Type: ${b.blend_type}`,
+      b.strength && `Strength: ${b.strength}`,
+      b.cut && `Cut: ${b.cut}`,
+      b.flavor_notes?.length && `Flavors: ${b.flavor_notes.join(", ")}`,
+    ].filter(Boolean).join(", ");
+    return `Anchor ${i + 1}: "${b.name}" by ${b.manufacturer || "Unknown"} (${details})`;
+  }).join("\n");
+  return `You are a world-class tobacco curator AI. Return VALID JSON only — no markdown, no prose outside JSON.
+
+⚠️ CRITICAL: You have ${pool.length} reference blends below. Return EXACTLY 2 recommendations for EACH anchor blend — ${pool.length * 2} total items. Each item MUST include an "anchorRef" field with the anchor blend name it was inspired by.
+
+ANCHOR BLENDS:
+${anchorsBlock}
+
+OWNED BLENDS (NEVER recommend these):
+${ownedNames.map(n => `- ${n}`).join("\n") || "None"}
+
+RULES:
+- Never recommend owned blends
+- Recommend only real, commercially available tobacco blends
+- Each recommendation must be distinct
+- Distribute exactly 2 results per anchor
+
+Return JSON:
+{
+  "summary": "Brief intro sentence",
+  "items": [
+    {
+      "id": "sim_1",
+      "type": "similar_item",
+      "recordType": "blend",
+      "title": "Blend Name by Manufacturer",
+      "category": "Blend type / style",
+      "explanation": "Why this is similar to the anchor blend",
+      "characteristics": ["trait 1", "trait 2", "trait 3"],
+      "whyFitsYou": "Personalized note",
+      "anchorRef": "Anchor blend name this is based on",
+      "group": "closest_match"
+    }
+  ]
+}`;
 }
 
 function buildFindSimilarBottlesCuratorPrompt(context, anchorItems) {
-  const { bottles = [], tastingLogs = [] } = context;
+  const { bottles = [] } = context;
   const pool = anchorItems?.length ? anchorItems : bottles;
   if (pool.length === 0) throw new Error("No bottles in collection to base recommendations on.");
   if (pool.length === 1) {
     return buildFindSimilarPrompt("bottle", pool[0], context, "curator");
   }
-  const anchorNames = pool.map(b => `"${b.name}"`).join(", ");
-  return buildFindSimilarPrompt("bottle", pool[0], {
-    ...context,
-    _multiAnchorNote: `Base recommendations on similarity to ANY of these bottles: ${anchorNames}`,
-  }, "curator");
+  const ownedNames = bottles.map(b => b.name).filter(Boolean);
+  const anchorsBlock = pool.map((b, i) => {
+    const details = [
+      b.type && `Type: ${b.type}`,
+      b.region && `Region: ${b.region}`,
+      b.age && `Age: ${b.age}yr`,
+      b.abv && `ABV: ${b.abv}%`,
+    ].filter(Boolean).join(", ");
+    return `Anchor ${i + 1}: "${b.name}" (${details})`;
+  }).join("\n");
+  return `You are a world-class whiskey curator AI. Return VALID JSON only — no markdown, no prose outside JSON.
+
+⚠️ CRITICAL: You have ${pool.length} reference bottles below. Return EXACTLY 2 recommendations for EACH anchor bottle — ${pool.length * 2} total items. Each item MUST include an "anchorRef" field with the anchor bottle name it was inspired by.
+
+ANCHOR BOTTLES:
+${anchorsBlock}
+
+OWNED BOTTLES (NEVER recommend these):
+${ownedNames.map(n => `- ${n}`).join("\n") || "None"}
+
+RULES:
+- Never recommend owned bottles
+- Recommend real, commercially available whiskeys
+- Each must be distinct
+- Distribute exactly 2 results per anchor
+
+Return JSON:
+{
+  "summary": "Brief intro sentence",
+  "items": [
+    {
+      "id": "sim_1",
+      "type": "similar_item",
+      "recordType": "bottle",
+      "title": "Bottle Name",
+      "category": "Whiskey type / region",
+      "explanation": "Why this is similar to the anchor bottle",
+      "characteristics": ["trait 1", "trait 2"],
+      "whyFitsYou": "Personalized note",
+      "anchorRef": "Anchor bottle name this is based on",
+      "group": "closest_match"
+    }
+  ]
+}`;
 }
 
 function getActionPrompt(actionType, context, anchorOverrides) {

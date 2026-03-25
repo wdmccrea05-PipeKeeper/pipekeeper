@@ -37,6 +37,9 @@ function SimilarItemCard({ item }) {
           {item.category && (
             <div className="text-xs text-[#B48C4B] mt-0.5 uppercase tracking-wider">{item.category}</div>
           )}
+          {item.anchorRef && (
+            <div className="text-xs mt-0.5" style={{ color: "rgba(212,165,116,0.6)" }}>Similar to: {item.anchorRef}</div>
+          )}
         </div>
         {item.group && GROUP_LABELS[item.group] && (
           <span
