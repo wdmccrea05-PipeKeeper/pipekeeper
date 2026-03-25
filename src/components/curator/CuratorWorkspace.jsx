@@ -35,6 +35,7 @@ import {
 } from "./chatAdvicePrompting.js";
 import { applyCuratorRecommendation } from "./curatorApplyHandlers.js";
 import SavedSessionsPanel from "./SavedSessionsPanel.jsx";
+import FindSimilarPicker from "./FindSimilarPicker.jsx";
 import { buildSafeCollectionContext, buildPromptBlock } from "./collectionContextBudget.jsx";
 import extractActionableAdvice from "./extractActionableAdvice.js";
 
@@ -265,6 +266,7 @@ export default function CuratorWorkspace({
   const [actionRun, setActionRun] = useState(null);
   const [itemStates, setItemStates] = useState({});
   const [lastActionType, setLastActionType] = useState(null);
+  const [pendingFindSimilar, setPendingFindSimilar] = useState(null); // actionType needing anchor pick
 
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -617,8 +619,16 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
     ]
   );
 
+  const FIND_SIMILAR_ACTIONS = ["find_similar_blends", "find_similar_pipes", "find_similar_bottles"];
+
   const handleExpertAction = useCallback(
-    async (actionType) => {
+    async (actionType, anchorOverrides) => {
+      // For find-similar actions, show picker first unless anchors already provided
+      if (FIND_SIMILAR_ACTIONS.includes(actionType) && !anchorOverrides) {
+        setPendingFindSimilar(actionType);
+        return;
+      }
+
       setLastActionType(actionType);
       setItemStates({});
 
@@ -642,6 +652,7 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
           normalizer: normalizeCuratorActionResult,
           context: buildCuratorContext(),
           onAudit: logCuratorAuditEvent,
+          anchorOverrides,
         });
 
         setActionRun(result);
@@ -739,6 +750,16 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
   const handleRetryAction = () => {
     if (!lastActionType) return;
     handleExpertAction(lastActionType);
+  };
+
+  const handleFindSimilarConfirm = (anchorItems, isTop3) => {
+    const actionType = pendingFindSimilar;
+    setPendingFindSimilar(null);
+    handleExpertAction(actionType, anchorItems);
+  };
+
+  const handleFindSimilarCancel = () => {
+    setPendingFindSimilar(null);
   };
 
   const handleAcceptRecommendation = async (item, messageId = null) => {
@@ -1027,6 +1048,19 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
           WebkitOverflowScrolling: "touch",
         }}
       >
+        {pendingFindSimilar ? (
+          <FindSimilarPicker
+            actionType={pendingFindSimilar}
+            pipes={pipes}
+            blends={blends}
+            bottles={bottles}
+            smokingLogs={effectiveSmokingLogs}
+            tastingLogs={tastingLogs}
+            onConfirm={handleFindSimilarConfirm}
+            onCancel={handleFindSimilarCancel}
+          />
+        ) : null}
+
         <CuratorActionPanel
           actionRun={actionRun}
           itemStates={itemStates}

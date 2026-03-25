@@ -290,42 +290,50 @@ STRICT OUTPUT RULES:
 `;
 }
 
-function buildFindSimilarPipesCuratorPrompt(context) {
+function buildFindSimilarPipesCuratorPrompt(context, anchorItems) {
   const { pipes = [], smokingLogs = [] } = context;
-  if (pipes.length === 0) {
-    throw new Error("No pipes in collection to base recommendations on.");
+  const pool = anchorItems?.length ? anchorItems : pipes;
+  if (pool.length === 0) throw new Error("No pipes in collection to base recommendations on.");
+  if (pool.length === 1) {
+    return buildFindSimilarPrompt("pipe", pool[0], context, "curator");
   }
-  // Pick anchor: most recently logged pipe, or first pipe
-  const loggedPipeNames = smokingLogs.map(l => l.pipe_name).filter(Boolean);
-  const anchor = pipes.find(p => loggedPipeNames.includes(p.name)) || pipes[0];
-  return buildFindSimilarPrompt("pipe", anchor, context, "curator");
+  // Multi-anchor: combine into one prompt asking for items similar to ANY of the anchors
+  const anchorNames = pool.map(p => `"${p.name}"`).join(", ");
+  return buildFindSimilarPrompt("pipe", pool[0], {
+    ...context,
+    _multiAnchorNote: `Base recommendations on similarity to ANY of these pipes: ${anchorNames}`,
+  }, "curator");
 }
 
-function buildFindSimilarBlendsCuratorPrompt(context) {
+function buildFindSimilarBlendsCuratorPrompt(context, anchorItems) {
   const { blends = [], smokingLogs = [] } = context;
-  if (blends.length === 0) {
-    throw new Error("No blends in collection to base recommendations on.");
+  const pool = anchorItems?.length ? anchorItems : blends;
+  if (pool.length === 0) throw new Error("No blends in collection to base recommendations on.");
+  if (pool.length === 1) {
+    return buildFindSimilarPrompt("blend", pool[0], context, "curator");
   }
-  const loggedBlendNames = smokingLogs.map(l => l.blend_name).filter(Boolean);
-  const anchor = blends.find(b => loggedBlendNames.includes(b.name))
-    || blends.find(b => b.is_favorite)
-    || blends[0];
-  return buildFindSimilarPrompt("blend", anchor, context, "curator");
+  const anchorNames = pool.map(b => `"${b.name}"`).join(", ");
+  return buildFindSimilarPrompt("blend", pool[0], {
+    ...context,
+    _multiAnchorNote: `Base recommendations on similarity to ANY of these blends: ${anchorNames}`,
+  }, "curator");
 }
 
-function buildFindSimilarBottlesCuratorPrompt(context) {
+function buildFindSimilarBottlesCuratorPrompt(context, anchorItems) {
   const { bottles = [], tastingLogs = [] } = context;
-  if (bottles.length === 0) {
-    throw new Error("No bottles in collection to base recommendations on.");
+  const pool = anchorItems?.length ? anchorItems : bottles;
+  if (pool.length === 0) throw new Error("No bottles in collection to base recommendations on.");
+  if (pool.length === 1) {
+    return buildFindSimilarPrompt("bottle", pool[0], context, "curator");
   }
-  const loggedBottleIds = tastingLogs.map(l => l.bottle_id).filter(Boolean);
-  const anchor = bottles.find(b => loggedBottleIds.includes(b.id))
-    || bottles.find(b => b.is_favorite)
-    || bottles[0];
-  return buildFindSimilarPrompt("bottle", anchor, context, "curator");
+  const anchorNames = pool.map(b => `"${b.name}"`).join(", ");
+  return buildFindSimilarPrompt("bottle", pool[0], {
+    ...context,
+    _multiAnchorNote: `Base recommendations on similarity to ANY of these bottles: ${anchorNames}`,
+  }, "curator");
 }
 
-function getActionPrompt(actionType, context) {
+function getActionPrompt(actionType, context, anchorOverrides) {
   switch (actionType) {
     case "optimize_collection":
       return buildOptimizeCollectionPrompt(context);
@@ -343,11 +351,11 @@ function getActionPrompt(actionType, context) {
     case "session_builder":
       return buildSessionBuilderPrompt(context);
     case "find_similar_pipes":
-      return buildFindSimilarPipesCuratorPrompt(context);
+      return buildFindSimilarPipesCuratorPrompt(context, anchorOverrides);
     case "find_similar_blends":
-      return buildFindSimilarBlendsCuratorPrompt(context);
+      return buildFindSimilarBlendsCuratorPrompt(context, anchorOverrides);
     case "find_similar_bottles":
-      return buildFindSimilarBottlesCuratorPrompt(context);
+      return buildFindSimilarBottlesCuratorPrompt(context, anchorOverrides);
     default:
       throw new Error(`Unsupported curator action type: ${actionType}`);
   }
@@ -364,8 +372,9 @@ export default async function curatorActionExecutor({
   actionType,
   context,
   requestId,
+  anchorOverrides,
 }) {
-  const prompt = getActionPrompt(actionType, context);
+  const prompt = getActionPrompt(actionType, context, anchorOverrides);
 
   const responseText = await invokeCuratorLLM({
     prompt,

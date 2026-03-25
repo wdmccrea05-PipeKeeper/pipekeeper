@@ -22,6 +22,7 @@ export async function runCuratorAction({
   normalizer,
   context,
   onAudit,
+  anchorOverrides,
 }) {
   const requestId =
     globalThis.crypto?.randomUUID?.() ||
@@ -33,7 +34,7 @@ export async function runCuratorAction({
     ).catch(() => {});
 
     const raw = await withTimeout(
-      executor({ actionType, context, requestId }),
+      executor({ actionType, context, requestId, anchorOverrides }),
       ACTION_TIMEOUT_MS
     );
 
