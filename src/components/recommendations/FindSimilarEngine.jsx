@@ -33,7 +33,7 @@ function buildBlendSimilarPrompt(anchor, context) {
     userProfile.notes && `Collector notes: ${userProfile.notes}`,
   ].filter(Boolean).join("\n") : "";
 
-  return `You are a world-class tobacco curator AI. Return VALID JSON only — no markdown, no prose outside JSON.
+  return `You are a world-class tobacco curator AI. Return VALID JSON only - no markdown, no prose outside JSON.
 
 TASK: Recommend exactly 3 tobacco blends NOT in the user's collection that are similar to the anchor blend.
 
@@ -96,7 +96,7 @@ function buildPipeSimilarPrompt(anchor, context) {
     userProfile.notes && `Collector notes: ${userProfile.notes}`,
   ].filter(Boolean).join("\n") : "";
 
-  return `You are a world-class pipe curator AI. Return VALID JSON only — no markdown, no prose outside JSON.
+  return `You are a world-class pipe curator AI. Return VALID JSON only - no markdown, no prose outside JSON.
 
 TASK: Recommend exactly 3 pipes NOT in the user's collection that are similar to the anchor pipe.
 
@@ -155,7 +155,7 @@ function buildBottleSimilarPrompt(anchor, context) {
     userProfile.whiskey_notes && `Whiskey notes: ${userProfile.whiskey_notes}`,
   ].filter(Boolean).join("\n") : "";
 
-  return `You are a world-class whiskey curator AI. Return VALID JSON only — no markdown, no prose outside JSON.
+  return `You are a world-class whiskey curator AI. Return VALID JSON only - no markdown, no prose outside JSON.
 
 TASK: Recommend exactly 3 whiskey bottles NOT in the user's collection that are similar to the anchor bottle.
 
@@ -229,7 +229,6 @@ export async function runFindSimilar({ recordType, anchor, context }) {
 
   const items = Array.isArray(parsed?.items) ? parsed.items : [];
 
-  // Build owned set for deduplication/filtering
   let ownedItems = [];
   if (recordType === "blend") ownedItems = context?.blends || [];
   else if (recordType === "pipe") ownedItems = context?.pipes || [];
