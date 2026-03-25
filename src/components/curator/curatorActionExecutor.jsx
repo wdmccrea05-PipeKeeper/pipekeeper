@@ -60,6 +60,10 @@ Schema:
       "recordType": "pipe | blend | bottle",
       "recordId": "string",
       "recordName": "string",
+      "blendId": "string (optional, for session_builder)",
+      "blendName": "string (optional, for session_builder)",
+      "bottleId": "string (optional, for session_builder)",
+      "bottleName": "string (optional, for session_builder)",
       "proposedChanges": {},
       "followUpPrompt": "string"
     }
@@ -101,16 +105,21 @@ STRICT RULES:
 - recordId must be the actual id of the pipe anchoring the session
 - recordName must be the actual pipe name
 - proposedChanges must be {}
+- You MUST populate blendId and blendName with a real tobacco blend from the collection if any blends exist
+- You MUST populate bottleId and bottleName with a real whiskey bottle from the collection if any bottles exist
+- The explanation MUST name the specific tobacco blend and whiskey bottle being recommended (e.g. "Pair your [PIPE NAME] with [BLEND NAME] and a pour of [BOTTLE NAME]")
+- The rationale MUST explain why this specific combination works
 - Use human-readable text only
 - No snake_case in title/explanation/rationale
 - Return exactly 3 items when at least one pipe exists
 - If no pipes exist, return zero items
+- Each session must use DIFFERENT pipes, blends, and bottles — do not repeat the same item
 
 WHISKEY RULE:
-${hasBottles ? `Because whiskey bottles are available in this scope, at least 2 of the 3 sessions MUST include a specific whiskey bottle from the collection.` : `No whiskey bottles are available in this scope, so sessions should use pipe + tobacco only.`}
+${hasBottles ? `Because whiskey bottles are available in this scope, at least 2 of the 3 sessions MUST include a specific whiskey bottle from the collection. Populate bottleId and bottleName.` : `No whiskey bottles are available in this scope, so sessions should use pipe + tobacco only.`}
 
 TOBACCO RULE:
-${hasBlends ? `Use actual tobacco blends from the collection.` : `If no tobacco blends are available, explain the session using the pipe alone.`}
+${hasBlends ? `Use actual tobacco blends from the collection. Always populate blendId and blendName.` : `If no tobacco blends are available, explain the session using the pipe alone.`}
 
 PIPE RULE:
 ${hasPipes ? `You must anchor every session to a real pipe record from the collection.` : `If no pipes exist, return zero items.`}

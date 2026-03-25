@@ -64,6 +64,21 @@ export default function CuratorActionResultCard({
           </div>
         ) : null}
 
+        {isSession && (item.blendName || item.bottleName) ? (
+          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+            {item.blendName ? (
+              <div className="text-xs uppercase tracking-wide text-emerald-400/70">
+                Tobacco: {item.blendName}
+              </div>
+            ) : null}
+            {item.bottleName ? (
+              <div className="text-xs uppercase tracking-wide text-sky-400/70">
+                Whiskey: {item.bottleName}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="mt-2 text-sm text-amber-50/85">{item.explanation}</div>
 
         {item.rationale ? (
