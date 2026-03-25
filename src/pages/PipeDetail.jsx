@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Pencil, Share2, Search } from 'lucide-react';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
+import PipeSpecialization from '@/components/pipes/PipeSpecialization';
+import MaintenanceLog from '@/components/pipes/MaintenanceLog';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -10,6 +12,8 @@ import InlinePhotoEditor from '@/components/shared/InlinePhotoEditor';
 import PipeShapeIcon from '@/components/pipes/PipeShapeIcon';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { toast } from 'sonner';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 
 function DetailStat({ label, value, icon: Icon }) {
   return (
@@ -30,10 +34,12 @@ function DetailStat({ label, value, icon: Icon }) {
 export default function PipeDetail() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user, hasPremium: isPaidUser } = useCurrentUser();
   const [params] = useSearchParams();
   const pipeId = params.get('id') || params.get('pipeId');
   
   const [pipe, setPipe] = useState(null);
+  const [blends, setBlends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showSimilar, setShowSimilar] = useState(false);
@@ -44,26 +50,45 @@ export default function PipeDetail() {
   useEffect(() => {
     let mounted = true;
     
-    async function loadPipe() {
+    async function loadData() {
       if (!pipeId) {
         setLoading(false);
         return;
       }
       
       try {
-        const record = await base44.entities.Pipe.get(pipeId);
-        if (mounted) setPipe(record);
+        const [pipeRecord, blendsList] = await Promise.all([
+          base44.entities.Pipe.get(pipeId),
+          base44.entities.TobaccoBlend.list('-updated_date', 200).catch(() => [])
+        ]);
+        
+        if (mounted) {
+          setPipe(pipeRecord);
+          setBlends(Array.isArray(blendsList) ? blendsList : []);
+        }
       } catch (e) {
-        console.error('[PipeDetail] failed to load pipe', e);
+        console.error('[PipeDetail] failed to load data', e);
         if (mounted) setPipe(null);
       } finally {
         if (mounted) setLoading(false);
       }
     }
     
-    loadPipe();
+    loadData();
     return () => { mounted = false; };
   }, [pipeId]);
+
+  const handlePipeUpdate = async (updates) => {
+    if (!pipe) return;
+    try {
+      await base44.entities.Pipe.update(pipe.id, updates);
+      setPipe(prev => ({ ...prev, ...updates }));
+      toast.success(t("common.saved") || "Pipe updated");
+    } catch (e) {
+      console.error('[PipeDetail] update failed', e);
+      toast.error(t("errors.updateFailed") || "Failed to update pipe");
+    }
+  };
 
   async function handleFindSimilar() {
     setShowSimilar(true);
@@ -183,6 +208,22 @@ export default function PipeDetail() {
           </div>
         </div>
       </div>
+
+      {pipe && (
+        <>
+          <PipeSpecialization 
+            pipe={pipe}
+            blends={blends}
+            onUpdate={handlePipeUpdate}
+            isPaidUser={isPaidUser}
+          />
+
+          <MaintenanceLog 
+            pipeId={pipe.id}
+            pipeName={pipe.name}
+          />
+        </>
+      )}
 
       <ShareRecordModal
         isOpen={showShareModal}

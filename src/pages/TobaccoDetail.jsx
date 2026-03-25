@@ -4,6 +4,8 @@ import { ArrowLeft, Pencil, Leaf, Share2, Search } from 'lucide-react';
 import PipeIcon from '@/components/icons/PipeIcon';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
 import BestPipesDrawer from '@/components/recommendations/BestPipesDrawer';
+import TobaccoInventoryManager from '@/components/tobacco/TobaccoInventoryManager';
+import CellarLog from '@/components/tobacco/CellarLog';
 import { scorePipeBlend } from '@/components/utils/pairingScoreCanonical';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { base44 } from '@/api/base44Client';
@@ -12,6 +14,7 @@ import { formatWeight } from '@/components/utils/localeFormatters';
 import InlinePhotoEditor from '@/components/shared/InlinePhotoEditor';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { toast } from 'sonner';
 
 function DetailStat({ label, value, icon: Icon }) {
   return (
@@ -42,6 +45,7 @@ export default function TobaccoDetail() {
   const [similarLoading, setSimilarLoading] = useState(false);
   const [similarResult, setSimilarResult] = useState(null);
   const [similarError, setSimilarError] = useState(null);
+  const [isUpdatingInventory, setIsUpdatingInventory] = useState(false);
 
   const [showBestPipes, setShowBestPipes] = useState(false);
   const [bestPipesLoading, setBestPipesLoading] = useState(false);
@@ -71,6 +75,21 @@ export default function TobaccoDetail() {
     loadBlend();
     return () => { mounted = false; };
   }, [blendId]);
+
+  const handleBlendUpdate = async (updates) => {
+    if (!blend) return;
+    setIsUpdatingInventory(true);
+    try {
+      await base44.entities.TobaccoBlend.update(blend.id, updates);
+      setBlend(prev => ({ ...prev, ...updates }));
+      toast.success(t("inventory.saved") || "Inventory updated");
+    } catch (e) {
+      console.error('[TobaccoDetail] update failed', e);
+      toast.error(t("errors.updateFailed") || "Failed to update inventory");
+    } finally {
+      setIsUpdatingInventory(false);
+    }
+  };
 
   async function handleFindSimilar() {
     setShowSimilar(true);
@@ -242,6 +261,18 @@ export default function TobaccoDetail() {
           </div>
         </div>
       </div>
+
+      {blend && (
+        <>
+          <TobaccoInventoryManager 
+            blend={blend} 
+            onUpdate={handleBlendUpdate}
+            isUpdating={isUpdatingInventory}
+          />
+
+          <CellarLog blend={blend} />
+        </>
+      )}
 
       <ShareRecordModal
         isOpen={showShareModal}
