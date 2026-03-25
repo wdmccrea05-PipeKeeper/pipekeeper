@@ -138,6 +138,7 @@ function normalizeItem(rawItem, isExternalItem = false) {
       explanation: rawItem.explanation || "",
       characteristics: ensureArray(rawItem.characteristics),
       whyFitsYou: rawItem.whyFitsYou || "",
+      anchorRef: rawItem.anchorRef || "",
       group: rawItem.group || "default",
     };
   }
@@ -209,13 +210,30 @@ export default function normalizeCuratorActionResult(raw, actionType) {
     const recordType = actionType.replace("find_similar_", "").replace("s", "");
     const fallbackItems = buildFallbackSimilarItems(recordType, 3);
     return {
-      summary: "Here are some recommendations based on your collection:",
+      summary: "Could not generate recommendations. Here are some suggestions based on your collection:",
       items: fallbackItems,
     };
   }
 
+  // For similar_item type results, preserve anchor information in summary
+  const hasSimilarItems = items.some(item => item.type === "similar_item");
+  let finalSummary = summary;
+  if (hasSimilarItems && actionType?.startsWith("find_similar")) {
+    const anchorRefs = items
+      .filter(item => item.anchorRef)
+      .map(item => item.anchorRef)
+      .filter((v, i, a) => a.indexOf(v) === i);
+    if (anchorRefs.length > 0) {
+      if (anchorRefs.length === 1) {
+        finalSummary = `Recommendations similar to "${anchorRefs[0]}"`;
+      } else {
+        finalSummary = `Recommendations based on: ${anchorRefs.join(", ")}`;
+      }
+    }
+  }
+
   return {
-    summary,
+    summary: finalSummary,
     items,
   };
 }

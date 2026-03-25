@@ -296,12 +296,6 @@ function buildLightweightFindSimilarBlendPrompt(anchor, context) {
   const blends = Array.isArray(context?.blends) ? context.blends : [];
   const ownedNames = blends.map(b => b.name).filter(Boolean);
 
-  // LIMIT: Only top 5 favorites + anchor
-  const favorites = blends
-    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-    .slice(0, 5)
-    .map(b => b.name);
-
   const anchorDetails = [
     anchor.blend_type && `Type: ${anchor.blend_type}`,
     anchor.strength && `Strength: ${anchor.strength}`,
@@ -313,13 +307,16 @@ function buildLightweightFindSimilarBlendPrompt(anchor, context) {
 
 TASK: Recommend exactly 3 tobacco blends NOT in the user's collection, similar to the anchor blend.
 
-ANCHOR BLEND: "${anchor.name}" (${anchorDetails})
+ANCHOR BLEND (PRIMARY REFERENCE): "${anchor.name}" by ${anchor.manufacturer || "Unknown"}
+${anchorDetails}
+
+IMPORTANT RULE:
+All recommendations must be based ONLY on this specific anchor blend: "${anchor.name}".
+Do NOT use any other blend as a comparison basis.
+Focus entirely on matching the characteristics of "${anchor.name}".
 
 OWNED BLENDS (NEVER recommend):
 ${ownedNames.map(n => `- ${n}`).join("\n")}
-
-TOP FAVORITES:
-${favorites.join(", ")}
 
 USER PREFERENCES:
 ${context?.userProfile?.strength_preference ? `Strength: ${context.userProfile.strength_preference}` : "Not specified"}
@@ -337,7 +334,8 @@ RETURN EXACTLY 3 ITEMS. Each in 1-2 sentences. No long explanations.
       "category": "Blend type",
       "explanation": "Why similar (1 sentence max)",
       "characteristics": ["trait1", "trait2"],
-      "whyFitsYou": "Personal note (1 sentence)"
+      "whyFitsYou": "Personal note (1 sentence)",
+      "anchorRef": "${anchor.name}"
     }
   ]
 }`;
@@ -357,7 +355,13 @@ function buildLightweightFindSimilarPipePrompt(anchor, context) {
 
 TASK: Recommend exactly 3 pipes NOT in the user's collection, similar to the anchor pipe.
 
-ANCHOR PIPE: "${anchor.name}" (${anchorDetails})
+ANCHOR PIPE (PRIMARY REFERENCE): "${anchor.name}" by ${anchor.maker || "Unknown"}
+${anchorDetails}
+
+IMPORTANT RULE:
+All recommendations must be based ONLY on this specific anchor pipe: "${anchor.name}".
+Do NOT use any other pipe as a comparison basis.
+Focus entirely on matching the characteristics of "${anchor.name}".
 
 OWNED PIPES (NEVER recommend):
 ${ownedNames.map(n => `- ${n}`).join("\n")}
@@ -375,7 +379,8 @@ RETURN EXACTLY 3 ITEMS. Each in 1-2 sentences. No long explanations.
       "category": "Shape",
       "explanation": "Why similar (1 sentence max)",
       "characteristics": ["trait1", "trait2"],
-      "whyFitsYou": "Personal note (1 sentence)"
+      "whyFitsYou": "Personal note (1 sentence)",
+      "anchorRef": "${anchor.name}"
     }
   ]
 }`;
@@ -395,7 +400,13 @@ function buildLightweightFindSimilarBottlePrompt(anchor, context) {
 
 TASK: Recommend exactly 3 whiskey bottles NOT in the user's collection, similar to the anchor bottle.
 
-ANCHOR BOTTLE: "${anchor.name}" (${anchorDetails})
+ANCHOR BOTTLE (PRIMARY REFERENCE): "${anchor.name}"
+${anchorDetails}
+
+IMPORTANT RULE:
+All recommendations must be based ONLY on this specific anchor bottle: "${anchor.name}".
+Do NOT use any other bottle as a comparison basis.
+Focus entirely on matching the characteristics of "${anchor.name}".
 
 OWNED BOTTLES (NEVER recommend):
 ${ownedNames.map(n => `- ${n}`).join("\n")}
@@ -413,46 +424,50 @@ RETURN EXACTLY 3 ITEMS. Each in 1-2 sentences. No long explanations.
       "category": "Type / Region",
       "explanation": "Why similar (1 sentence max)",
       "characteristics": ["trait1", "trait2"],
-      "whyFitsYou": "Personal note (1 sentence)"
+      "whyFitsYou": "Personal note (1 sentence)",
+      "anchorRef": "${anchor.name}"
     }
   ]
 }`;
 }
 
 function getActionPrompt(actionType, context, anchorOverrides) {
+  // Normalize anchorOverrides: support both legacy array and new structured object
+  const anchors = Array.isArray(anchorOverrides)
+    ? anchorOverrides
+    : anchorOverrides?.anchors || [];
+  const anchorMode = Array.isArray(anchorOverrides)
+    ? (anchors.length > 1 ? "top3" : "single")
+    : (anchorOverrides?.mode || (anchors.length > 1 ? "top3" : "single"));
+
+  console.log("[FindSimilar] anchorOverrides received:", {
+    actionType,
+    anchorMode,
+    anchors: anchors.map(a => a?.name),
+  });
+
   // FAST PATHS: Use lightweight prompts for find_similar actions
-  if (actionType === "find_similar_blends" && anchorOverrides?.[0]) {
-    console.log("[Curator] Find similar blends (lightweight)");
-    return buildLightweightFindSimilarBlendPrompt(anchorOverrides[0], context);
-  }
-
-  if (actionType === "find_similar_pipes" && anchorOverrides?.[0]) {
-    console.log("[Curator] Find similar pipes (lightweight)");
-    return buildLightweightFindSimilarPipePrompt(anchorOverrides[0], context);
-  }
-
-  if (actionType === "find_similar_bottles" && anchorOverrides?.[0]) {
-    console.log("[Curator] Find similar bottles (lightweight)");
-    return buildLightweightFindSimilarBottlePrompt(anchorOverrides[0], context);
-  }
-
-  // FALLBACK: Use original builder if no fast path
   if (actionType === "find_similar_blends") {
-    const blends = context?.blends || [];
-    if (blends.length === 0) throw new Error("No blends in collection.");
-    return buildFindSimilarPrompt("blend", blends[0], context);
+    if (anchors.length === 0) throw new Error("No anchor blend selected for similar blend recommendations.");
+    if (anchorMode === "single" || anchors.length === 1) {
+      console.log("[FindSimilar] Single anchor blend:", anchors[0].name);
+      return buildLightweightFindSimilarBlendPrompt(anchors[0], context);
+    }
+    // top3 multi-anchor
+    console.log("[FindSimilar] Multi-anchor blends:", anchors.map(a => a.name));
+    return buildLightweightFindSimilarBlendPrompt(anchors[0], context);
   }
 
   if (actionType === "find_similar_pipes") {
-    const pipes = context?.pipes || [];
-    if (pipes.length === 0) throw new Error("No pipes in collection.");
-    return buildFindSimilarPrompt("pipe", pipes[0], context);
+    if (anchors.length === 0) throw new Error("No anchor pipe selected for similar pipe recommendations.");
+    console.log("[FindSimilar] Anchor pipe:", anchors[0].name);
+    return buildLightweightFindSimilarPipePrompt(anchors[0], context);
   }
 
   if (actionType === "find_similar_bottles") {
-    const bottles = context?.bottles || [];
-    if (bottles.length === 0) throw new Error("No bottles in collection.");
-    return buildFindSimilarPrompt("bottle", bottles[0], context);
+    if (anchors.length === 0) throw new Error("No anchor bottle selected for similar bottle recommendations.");
+    console.log("[FindSimilar] Anchor bottle:", anchors[0].name);
+    return buildLightweightFindSimilarBottlePrompt(anchors[0], context);
   }
 
   // Standard actions

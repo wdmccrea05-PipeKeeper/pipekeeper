@@ -755,7 +755,15 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
   const handleFindSimilarConfirm = (anchorItems, isTop3) => {
     const actionType = pendingFindSimilar;
     setPendingFindSimilar(null);
-    handleExpertAction(actionType, anchorItems);
+    const anchorConfig = {
+      anchors: anchorItems,
+      mode: isTop3 ? "top3" : "single",
+    };
+    console.log("[FindSimilar] handleFindSimilarConfirm:", {
+      mode: anchorConfig.mode,
+      anchors: anchorItems.map(a => a?.name),
+    });
+    handleExpertAction(actionType, anchorConfig);
   };
 
   const handleFindSimilarCancel = () => {

@@ -55,7 +55,8 @@ export default function FindSimilarPicker({
   const config = CONFIG[actionType];
   if (!config) return null;
 
-  const [mode, setMode] = useState("auto");
+  // DEFAULT: Pick mode (single-selection)
+  const [mode, setMode] = useState("pick");
   const [selected, setSelected] = useState(null);
 
   const data = {
@@ -66,7 +67,7 @@ export default function FindSimilarPicker({
 
   const logs = actionType === "find_similar_blends" ? smokingLogs : tastingLogs;
 
-  // Auto-select top 3 favorites + recently used
+  // Auto-select top 3 favorites + recently used (for top3 mode)
   const topItems = useMemo(() => {
     if (data.length === 0) return [];
     return data
@@ -79,15 +80,26 @@ export default function FindSimilarPicker({
       .map((x) => x.item);
   }, [data, logs]);
 
-  const itemList = mode === "auto" ? topItems : data;
-  const displaySelected = selected !== null ? selected : (topItems[0]?.id || null);
+  // Initialize selected to first item in current mode
+  const displaySelected = useMemo(() => {
+    if (selected !== null) return selected;
+    if (mode === "pick" && data.length > 0) return data[0].id;
+    if (mode === "top3" && topItems.length > 0) return topItems[0].id;
+    return null;
+  }, [selected, mode, data, topItems]);
+
+  const itemList = mode === "pick" ? data : topItems;
 
   const handleConfirm = () => {
-    if (mode === "auto") {
-      onConfirm(topItems, true);
-    } else {
+    if (mode === "pick") {
       const selectedItem = data.find((d) => d.id === displaySelected);
-      if (selectedItem) onConfirm([selectedItem], false);
+      if (selectedItem) {
+        console.log("[FindSimilar] Pick mode: single anchor", selectedItem.name);
+        onConfirm([selectedItem], false);
+      }
+    } else if (mode === "top3") {
+      console.log("[FindSimilar] Top3 mode: multiple anchors", topItems.map(t => t.name));
+      onConfirm(topItems, true);
     }
   };
 
@@ -106,29 +118,45 @@ export default function FindSimilarPicker({
         <div className="space-y-3 mb-4">
           <div className="flex gap-2">
             <button
-              onClick={() => setMode("auto")}
+              onClick={() => { setMode("pick"); setSelected(null); }}
               className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === "auto"
+                mode === "pick"
                   ? "bg-amber-500 text-black"
                   : "bg-white/10 text-amber-100 hover:bg-white/15"
               }`}
             >
-              Top Picks ({topItems.length})
+              Pick One
             </button>
             <button
-              onClick={() => setMode("manual")}
+              onClick={() => { setMode("top3"); setSelected(null); }}
               className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === "manual"
+                mode === "top3"
                   ? "bg-amber-500 text-black"
                   : "bg-white/10 text-amber-100 hover:bg-white/15"
               }`}
             >
-              Choose
+              Top 3 ({topItems.length})
             </button>
           </div>
         </div>
 
-        {mode === "auto" ? (
+        {mode === "pick" ? (
+          <select
+            value={displaySelected || ""}
+            onChange={(e) => setSelected(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg mb-4 text-sm"
+            style={{ background: "rgba(20,14,10,0.6)", border: "1px solid rgba(140,105,65,0.3)", color: "#E0D8C8" }}
+          >
+            <option value="" disabled>
+              Select an item
+            </option>
+            {data.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item[config.itemKey]}
+              </option>
+            ))}
+          </select>
+        ) : (
           <div className="space-y-2 mb-4">
             {topItems.map((item) => (
               <div
@@ -147,28 +175,12 @@ export default function FindSimilarPicker({
               </div>
             ))}
           </div>
-        ) : (
-          <select
-            value={displaySelected || ""}
-            onChange={(e) => setSelected(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg mb-4 text-sm"
-            style={{ background: "rgba(20,14,10,0.6)", border: "1px solid rgba(140,105,65,0.3)", color: "#E0D8C8" }}
-          >
-            <option value="" disabled>
-              Select an item
-            </option>
-            {data.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item[config.itemKey]}
-              </option>
-            ))}
-          </select>
         )}
 
         <div className="flex gap-2">
           <Button
             onClick={handleConfirm}
-            disabled={mode === "manual" && !displaySelected}
+            disabled={!displaySelected}
             className="flex-1"
             style={{
               background: "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))",
