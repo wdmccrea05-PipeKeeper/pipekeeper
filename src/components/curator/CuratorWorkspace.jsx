@@ -789,7 +789,7 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
 
     try {
       const isNonMutating =
-        item.type === "pairing_recommendation" || item.type === "session_builder";
+        item.type === "pairing_recommendation" || item.type === "session_builder" || item.type === "similar_item";
 
       if (isNonMutating) {
         try {

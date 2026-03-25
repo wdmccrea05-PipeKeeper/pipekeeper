@@ -480,11 +480,23 @@ function getActionPrompt(actionType, context, anchorOverrides) {
   }
 }
 
-async function invokeCuratorLLM({ prompt }) {
-  return base44.integrations.Core.InvokeLLM({
+async function invokeCuratorLLM({
+  prompt,
+  actionType,
+  requestId,
+}) {
+  const response = await base44.integrations.Core.InvokeLLM({
     prompt,
     add_context_from_internet: false,
   });
+
+  // InvokeLLM returns either string or object
+  // Normalize to string for consistency
+  if (typeof response === "string") return response;
+  if (typeof response === "object" && response !== null) {
+    return JSON.stringify(response);
+  }
+  return String(response);
 }
 
 export default async function curatorActionExecutor({
