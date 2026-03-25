@@ -11,15 +11,8 @@ function humanizeKey(key) {
 
 function humanizeValue(value) {
   if (value === null || value === undefined || value === "") return "None";
-
-  if (typeof value === "boolean") {
-    return value ? "Yes" : "No";
-  }
-
-  if (typeof value === "number") {
-    return String(value);
-  }
-
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "number") return String(value);
   return String(value)
     .replace(/_/g, " ")
     .replace(/\b\w/g, (m) => m.toUpperCase());
@@ -27,14 +20,10 @@ function humanizeValue(value) {
 
 function humanizeRecordType(recordType) {
   switch (recordType) {
-    case "pipe":
-      return "Pipe";
-    case "blend":
-      return "Blend";
-    case "bottle":
-      return "Bottle";
-    default:
-      return humanizeValue(recordType);
+    case "pipe": return "Pipe";
+    case "blend": return "Blend";
+    case "bottle": return "Bottle";
+    default: return humanizeValue(recordType);
   }
 }
 
@@ -59,19 +48,19 @@ export default function CuratorActionResultCard({
         <div className="text-base font-medium text-amber-100">{item.title}</div>
 
         {isSession ? (
-          <div className="mt-2 space-y-0.5">
+          <div className="mt-1 space-y-0.5">
             {item.recordName ? (
               <div className="text-xs uppercase tracking-wide text-amber-500/70">
                 Pipe: {item.recordName}
               </div>
             ) : null}
             {item.blendName ? (
-              <div className="text-xs uppercase tracking-wide text-emerald-400/70">
+              <div className="text-xs uppercase tracking-wide text-amber-500/70">
                 Blend: {item.blendName}
               </div>
             ) : null}
             {item.bottleName ? (
-              <div className="text-xs uppercase tracking-wide text-sky-400/70">
+              <div className="text-xs uppercase tracking-wide text-amber-500/70">
                 Pour: {item.bottleName}
               </div>
             ) : null}
@@ -96,27 +85,22 @@ export default function CuratorActionResultCard({
       </div>
 
       {proposedEntries.length > 0 && !isNonMutating ? (
-       <div className="mt-3 rounded-lg bg-amber-500/5 p-3">
-         <div className="mb-2 text-xs uppercase tracking-wide text-amber-500/70">
-           Proposed Changes
-         </div>
-
-         <div className="space-y-2">
-           {proposedEntries.map(([key, value]) => (
-             <div
-               key={key}
-               className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 border-b border-amber-500/10 pb-2 last:border-b-0 last:pb-0"
-             >
-               <div className="text-xs text-amber-50/60">
-                 {humanizeKey(key)}
-               </div>
-               <div className="text-sm text-amber-100 sm:text-right">
-                 {humanizeValue(value)}
-               </div>
-             </div>
-           ))}
-         </div>
-       </div>
+        <div className="mt-3 rounded-lg bg-amber-500/5 p-3">
+          <div className="mb-2 text-xs uppercase tracking-wide text-amber-500/70">
+            Proposed Changes
+          </div>
+          <div className="space-y-2">
+            {proposedEntries.map(([key, value]) => (
+              <div
+                key={key}
+                className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 border-b border-amber-500/10 pb-2 last:border-b-0 last:pb-0"
+              >
+                <div className="text-xs text-amber-50/60">{humanizeKey(key)}</div>
+                <div className="text-sm text-amber-100 sm:text-right">{humanizeValue(value)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       ) : null}
 
       {state?.error ? (
