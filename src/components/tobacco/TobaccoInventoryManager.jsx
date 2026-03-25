@@ -174,129 +174,25 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
   };
 
   return (
-    <div className="space-y-4 rounded-lg p-4 border" style={{
-      background: "linear-gradient(145deg, rgba(50,35,25,0.6), rgba(30,20,15,0.8))",
-      borderColor: "rgba(120,90,65,0.25)"
+    <div className="space-y-4 rounded-2xl p-5" style={{
+      background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+      border: "1px solid rgba(140,105,65,0.35)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
     }}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Package className="w-5 h-5 text-[#E0D8C8]" />
-          <h3 className="font-semibold text-[#E0D8C8]">{t("tobaccoExtended.inventoryStatus")}</h3>
-        </div>
-        <Button 
-          size="sm" 
-          onClick={handleSave}
-          disabled={isUpdating}
-          className="bg-[#A35C5C] hover:bg-[#8B4A4A] text-white font-semibold"
-        >
-          {isUpdating ? t("common.saving") : t("inventory.saveChanges")}
-        </Button>
-      </div>
-
-      <p className="text-sm text-[#E0D8C8]/70">
-        {t("inventory.trackDesc")}
-      </p>
-
-      <Tabs defaultValue="tins" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-[#1A2B3A] border-b border-[#E0D8C8]/20">
-          <TabsTrigger value="tins" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] flex items-center gap-1.5">
-            <Package className="w-4 h-4" />
-            <span>{t("units.tinPlural")}</span>
-          </TabsTrigger>
-          <TabsTrigger value="bulk" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] flex items-center gap-1.5">
-            <Box className="w-4 h-4" />
-            <span>{t("tobaccoExtended.bulk")}</span>
-          </TabsTrigger>
-          <TabsTrigger value="pouches" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] flex items-center gap-1.5">
-            <Briefcase className="w-4 h-4" />
-            <span>{t("tobaccoExtended.pouches")}</span>
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Tins Tab */}
-        <TabsContent value="tins" className="space-y-4 mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.tinSize")}</Label>
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.tin_size_oz !== '' ? parseFloat(formData.tin_size_oz).toFixed(2) : ''}
-                onChange={(e) => handleChange('tin_size_oz', e.target.value)}
-                placeholder={t("inventory.tinSizePlaceholder")}
-                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.totalTins")}</Label>
-              <Input
-                type="number"
-                min="0"
-                value={formData.tin_total_tins}
-                onChange={(e) => handleChange('tin_total_tins', e.target.value)}
-                placeholder={t("inventory.totalTinsPlaceholder")}
-                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.totalQuantity")}</Label>
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.tin_total_quantity_oz !== '' ? parseFloat(formData.tin_total_quantity_oz).toFixed(2) : ''}
-                placeholder={t("tobaccoExtended.autoCalculated")}
-                className="border-[#8b6239]/20 bg-[#1f1510]/60 text-[#E0D8C8]/70"
-                readOnly
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.tinsOpen")}</Label>
-              <Input
-                type="number"
-                min="0"
-                value={formData.tin_tins_open}
-                onChange={(e) => handleChange('tin_tins_open', e.target.value)}
-                placeholder={t("inventory.tinsOpenPlaceholder")}
-                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">{t("inventory.tinsToCellar")}</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  min="0"
-                  value={formData.tin_tins_cellared}
-                  onChange={(e) => handleChange('tin_tins_cellared', e.target.value)}
-                  placeholder={t("inventory.tinsToCellarPlaceholder")}
-                  className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A] flex-1"
-                />
-                <Button
-                  size="sm"
-                  onClick={() => addToCellarLog('tin', formData.tin_tins_cellared, formData.tin_cellared_date)}
-                  disabled={!formData.tin_tins_cellared || !formData.tin_cellared_date || addingToCellar === 'tin'}
-                  className="bg-[#A35C5C] hover:bg-[#8B4A4A] flex-shrink-0"
-                >
-                  {addingToCellar === 'tin' ? '...' : <Plus className="w-4 h-4" />}
-                </Button>
-              </div>
-            </div>
             <div className="space-y-2">
               <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.dateCellared")}</Label>
               <Input
                 type="date"
                 value={formData.tin_cellared_date}
                 onChange={(e) => handleChange('tin_cellared_date', e.target.value)}
-                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
+                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
               />
             </div>
-          </div>
-        </TabsContent>
+            </div>
+            </TabsContent>
 
-        {/* Bulk Tab */}
-        <TabsContent value="bulk" className="space-y-4 mt-4">
+            {/* Bulk Tab */}
+            <TabsContent value="bulk" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.bulkTotalQuantity")}</Label>
@@ -307,7 +203,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.bulk_total_quantity_oz !== '' ? parseFloat(formData.bulk_total_quantity_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_total_quantity_oz', e.target.value)}
                 placeholder={t("inventory.bulkTotalPlaceholder")}
-                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
+                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
               />
             </div>
             <div className="space-y-2">
@@ -319,21 +215,21 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.bulk_open !== '' ? parseFloat(formData.bulk_open).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_open', e.target.value)}
                 placeholder={t("inventory.bulkOpenPlaceholder")}
-                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
+                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
               />
             </div>
             <div className="space-y-2">
               <Label className="text-[#E0D8C8] font-semibold">{t("inventory.bulkToCellar")}</Label>
               <div className="flex gap-2">
                 <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.bulk_cellared !== '' ? parseFloat(formData.bulk_cellared).toFixed(2) : ''}
-                  onChange={(e) => handleChange('bulk_cellared', e.target.value)}
-                  placeholder={t("inventory.bulkToCellarPlaceholder")}
-                  className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A] flex-1"
-                />
+                   type="number"
+                   step="0.01"
+                   min="0"
+                   value={formData.bulk_cellared !== '' ? parseFloat(formData.bulk_cellared).toFixed(2) : ''}
+                   onChange={(e) => handleChange('bulk_cellared', e.target.value)}
+                   placeholder={t("inventory.bulkToCellarPlaceholder")}
+                   style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))", flex: 1 }}
+                 />
                 <Button
                   size="sm"
                   onClick={() => addToCellarLog('bulk', formData.bulk_cellared, formData.bulk_cellared_date)}
@@ -350,14 +246,14 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="date"
                 value={formData.bulk_cellared_date}
                 onChange={(e) => handleChange('bulk_cellared_date', e.target.value)}
-                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
+                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
               />
             </div>
             </div>
             </TabsContent>
 
-        {/* Pouches Tab */}
-        <TabsContent value="pouches" className="space-y-4 mt-4">
+            {/* Pouches Tab */}
+            <TabsContent value="pouches" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.pouchSize")}</Label>
@@ -368,7 +264,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.pouch_size_oz !== '' ? parseFloat(formData.pouch_size_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('pouch_size_oz', e.target.value)}
                 placeholder={t("inventory.pouchSizePlaceholder")}
-                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
+                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
               />
             </div>
             <div className="space-y-2">
@@ -379,7 +275,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.pouch_total_pouches}
                 onChange={(e) => handleChange('pouch_total_pouches', e.target.value)}
                 placeholder={t("inventory.totalPouchesPlaceholder")}
-                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
+                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
               />
             </div>
             <div className="space-y-2">
@@ -390,7 +286,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 min="0"
                 value={formData.pouch_total_quantity_oz !== '' ? parseFloat(formData.pouch_total_quantity_oz).toFixed(2) : ''}
                 placeholder={t("tobaccoExtended.autoCalculated")}
-                className="border-[#8b6239]/20 bg-[#1f1510]/60 text-[#E0D8C8]/70"
+                style={{ borderColor: "rgba(140,105,65,0.2)", background: "rgba(255,255,255,0.03)", color: "rgba(224,216,200,0.5)" }}
                 readOnly
               />
             </div>
@@ -402,20 +298,20 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.pouch_pouches_open}
                 onChange={(e) => handleChange('pouch_pouches_open', e.target.value)}
                 placeholder={t("inventory.pouchesOpenPlaceholder")}
-                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
+                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
               />
             </div>
             <div className="space-y-2">
               <Label className="text-[#E0D8C8] font-semibold">{t("inventory.pouchesToCellar")}</Label>
               <div className="flex gap-2">
                 <Input
-                  type="number"
-                  min="0"
-                  value={formData.pouch_pouches_cellared}
-                  onChange={(e) => handleChange('pouch_pouches_cellared', e.target.value)}
-                  placeholder={t("inventory.pouchesToCellarPlaceholder")}
-                  className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A] flex-1"
-                />
+                   type="number"
+                   min="0"
+                   value={formData.pouch_pouches_cellared}
+                   onChange={(e) => handleChange('pouch_pouches_cellared', e.target.value)}
+                   placeholder={t("inventory.pouchesToCellarPlaceholder")}
+                   style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))", flex: 1 }}
+                 />
                 <Button
                   size="sm"
                   onClick={() => addToCellarLog('pouch', formData.pouch_pouches_cellared, formData.pouch_cellared_date)}
@@ -432,12 +328,11 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="date"
                 value={formData.pouch_cellared_date}
                 onChange={(e) => handleChange('pouch_cellared_date', e.target.value)}
-                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
+                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
               />
             </div>
             </div>
             </TabsContent>
             </Tabs>
             </div>
-  );
 }
