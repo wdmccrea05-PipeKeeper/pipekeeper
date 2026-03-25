@@ -27,13 +27,7 @@ function humanizeRecordType(recordType) {
   }
 }
 
-export default function CuratorActionResultCard({
-  item,
-  state,
-  onAccept,
-  onReject,
-  onAskCurator,
-}) {
+export default function CuratorActionResultCard({ item, state, onAccept, onReject, onAskCurator }) {
   const isApplying = state?.status === "applying";
   const isAccepted = state?.status === "accepted";
   const isRejected = state?.status === "rejected";
@@ -44,51 +38,46 @@ export default function CuratorActionResultCard({
 
   return (
     <div className="rounded-xl border border-amber-500/20 bg-black/20 p-4">
+
       <div className="min-w-0">
         <div className="text-base font-medium text-amber-100">{item.title}</div>
 
         {isSession ? (
           <div className="mt-1 space-y-0.5">
-            {item.recordName ? (
-              <div className="text-xs uppercase tracking-wide text-amber-500/70">
-                Pipe: {item.recordName}
-              </div>
-            ) : null}
-            {item.blendName ? (
-              <div className="text-xs uppercase tracking-wide text-amber-500/70">
-                Blend: {item.blendName}
-              </div>
-            ) : null}
-            {item.bottleName ? (
-              <div className="text-xs uppercase tracking-wide text-amber-500/70">
-                Pour: {item.bottleName}
-              </div>
-            ) : null}
+            {item.recordName && (
+              <div className="text-xs uppercase tracking-wide text-amber-500/70">Pipe: {item.recordName}</div>
+            )}
+            {item.blendName && (
+              <div className="text-xs uppercase tracking-wide text-amber-500/70">Blend: {item.blendName}</div>
+            )}
+            {item.bottleName && (
+              <div className="text-xs uppercase tracking-wide text-amber-500/70">Pour: {item.bottleName}</div>
+            )}
           </div>
-        ) : item.recordName ? (
-          <div className="mt-1 text-xs uppercase tracking-wide text-amber-500/70">
-            {humanizeRecordType(item.recordType)}: {item.recordName}
-          </div>
-        ) : null}
+        ) : (
+          item.recordName && (
+            <div className="mt-1 text-xs uppercase tracking-wide text-amber-500/70">
+              {humanizeRecordType(item.recordType)}: {item.recordName}
+            </div>
+          )
+        )}
 
         <div className="mt-2 text-sm text-amber-50/85">{item.explanation}</div>
 
-        {item.rationale ? (
+        {item.rationale && (
           <div className="mt-2 text-xs text-amber-50/60">{item.rationale}</div>
-        ) : null}
+        )}
 
-        {typeof item.confidence === "number" ? (
+        {typeof item.confidence === "number" && (
           <div className="mt-2 text-xs text-amber-50/60">
             Confidence: {Math.round(item.confidence * 100)}%
           </div>
-        ) : null}
+        )}
       </div>
 
-      {proposedEntries.length > 0 && !isNonMutating ? (
+      {proposedEntries.length > 0 && !isNonMutating && (
         <div className="mt-3 rounded-lg bg-amber-500/5 p-3">
-          <div className="mb-2 text-xs uppercase tracking-wide text-amber-500/70">
-            Proposed Changes
-          </div>
+          <div className="mb-2 text-xs uppercase tracking-wide text-amber-500/70">Proposed Changes</div>
           <div className="space-y-2">
             {proposedEntries.map(([key, value]) => (
               <div
@@ -101,11 +90,11 @@ export default function CuratorActionResultCard({
             ))}
           </div>
         </div>
-      ) : null}
+      )}
 
-      {state?.error ? (
+      {state?.error && (
         <div className="mt-3 text-sm text-red-400">{state.error}</div>
-      ) : null}
+      )}
 
       {(isAccepted || isRejected) && (
         <div className="mt-3 text-sm text-amber-200/80">
@@ -113,7 +102,7 @@ export default function CuratorActionResultCard({
         </div>
       )}
 
-      {!isAccepted && !isRejected ? (
+      {!isAccepted && !isRejected && (
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"
@@ -142,7 +131,8 @@ export default function CuratorActionResultCard({
             Ask Curator
           </button>
         </div>
-      ) : null}
+      )}
+
     </div>
   );
 }
