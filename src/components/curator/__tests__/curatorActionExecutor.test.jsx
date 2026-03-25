@@ -1,57 +1,106 @@
-/**
- * CURATOR ACTION EXECUTOR TESTS
- * 
- * Tests for:
- * 1. Action enters running state immediately
- * 2. 8s timeout resolves to visible error state
- * 3. Malformed AI output renders visible error
- * 4. Empty results render empty state
- * 5. Valid results parse correctly
- * 6. All execution paths complete (no hanging)
- */
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { base44 } from "@/api/base44Client";
+import curatorActionExecutor from "../curatorActionExecutor.jsx";
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+vi.mock("@/api/base44Client", () => ({
+  base44: {
+    integrations: {
+      Core: {
+        InvokeLLM: vi.fn(),
+      },
+    },
+    functions: {
+      invoke: vi.fn(),
+    },
+  },
+}));
 
-describe("Curator Action Executor", () => {
-  describe("timeout handling", () => {
-    it("should reject with timeout error after 8 seconds", async () => {
-      const slowPromise = new Promise(() => {
-        // Never resolves
-      });
+vi.mock("../collectionContextBudget", () => ({
+  buildSafeCollectionContext: vi.fn(() => ({ ok: true })),
+  buildPromptBlock: vi.fn(() => "COMPRESSED_CONTEXT"),
+}));
 
-      const timeoutPromise = Promise.race([
-        slowPromise,
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Timeout")), 100) // Shorter timeout for test
-        ),
-      ]);
-
-      await expect(timeoutPromise).rejects.toThrow("Timeout");
-    });
+describe("curatorActionExecutor", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  describe("result normalization", () => {
-    it("should normalize valid items", () => {
-      const raw = {
-        actionType: "optimize_collection",
-        summary: "2 opportunities found",
+  it("parses valid JSON response from fallback InvokeLLM", async () => {
+    base44.functions.invoke.mockRejectedValueOnce(new Error("no function"));
+    base44.integrations.Core.InvokeLLM.mockResolvedValueOnce(
+      JSON.stringify({
+        summary: "1 recommendation found",
         items: [
           {
-            id: "opt_1",
-            type: "reclassification",
-            title: "Reclassify Pipe X",
-            explanation: "Better fit",
-            recordType: "pipe",
-            recordId: "123",
-            recordName: "Dunhill",
-            proposedChanges: { focus: ["Outdoor"] },
+            id: "rec_1",
+            type: "specialization",
+            title: "Assign Pipe A to Outdoor Rotation",
+            explanation: "Good fit",
             rationale: "Usage pattern",
-            confidence: 0.85,
+            confidence: 0.9,
+            recordType: "pipe",
+            recordId: "pipe_1",
+            recordName: "Pipe A",
+            proposedChanges: { specialization: "Outdoor Rotation" },
+            followUpPrompt: "Why?",
           },
         ],
-      };
+      })
+    );
 
-      const normalized = normalizeExecutorResult(raw, "optimize_collection");
+    const result = await curatorActionExecutor({
+      actionType: "recommend_specializations",
+      context: { pipes: [], blends: [], bottles: [] },
+      requestId: "req_1",
+    });
 
-      expect(normalized.items).toHaveLength(1);
-      expect(normalized.items[0].title).toBe(\"Reclassify Pipe X\");\n      expect(normalized.items[0].confidence).toBe(0.85);\n    });\n\n    it(\"should filter invalid items\", () => {\n      const raw = {\n        items: [\n          {\n            id: \"opt_1\",\n            type: \"test\",\n            title: \"Valid\",\n            recordType: \"pipe\",\n            recordId: \"123\",\n          },\n          {\n            id: \"opt_2\",\n            type: \"test\",\n            title: \"Missing recordId\",\n            recordType: \"pipe\",\n            // recordId missing\n          },\n        ],\n      };\n\n      const normalized = normalizeExecutorResult(raw, \"test_action\");\n      expect(normalized.items).toHaveLength(1);\n    });\n\n    it(\"should return empty items with summary\", () => {\n      const raw = {\n        actionType: \"optimize_collection\",\n        summary: \"No opportunities at this time\",\n        items: [],\n      };\n\n      const normalized = normalizeExecutorResult(raw, \"optimize_collection\");\n      expect(normalized.items).toHaveLength(0);\n      expect(normalized.summary).toBe(\"No opportunities at this time\");\n    });\n  });\n\n  describe(\"error states\", () => {\n    it(\"should handle malformed JSON response\", () => {\n      const malformedText = \"This is not JSON at all\";\n\n      expect(() => {\n        JSON.parse(malformedText);\n      }).toThrow();\n    });\n\n    it(\"should handle missing required fields\", () => {\n      const incomplete = {\n        actionType: \"test\",\n        // Missing summary and items\n      };\n\n      const normalized = normalizeExecutorResult(incomplete, \"test\");\n      expect(normalized.summary).toBeDefined();\n      expect(normalized.items).toBeDefined();\n    });\n  });\n});\n\n/**\n * Normalizer helper (imported from actual module)\n */\nfunction normalizeExecutorResult(raw, actionId) {\n  if (!raw || typeof raw !== \"object\") {\n    throw new Error(\"Invalid response structure\");\n  }\n\n  const items = Array.isArray(raw.items) ? raw.items : [];\n\n  const validItems = items.filter((item) => {\n    return (\n      item &&\n      item.recordId &&\n      item.title &&\n      item.type &&\n      item.recordType\n    );\n  });\n\n  return {\n    actionType: actionId || raw.actionType || \"unknown\",\n    summary:\n      raw.summary || (validItems.length === 0 ? \"No recommendations found\" : `${validItems.length} recommendations found`),\n    items: validItems.map((item, idx) => ({\n      id: item.id || `${actionId}_${idx}`,\n      type: item.type,\n      title: item.title,\n      explanation: item.explanation || \"\",\n      recordType: item.recordType,\n      recordId: item.recordId,\n      recordName: item.recordName || \"\",\n      proposedChanges: item.proposedChanges || {},\n      rationale: item.rationale || \"\",\n      confidence: typeof item.confidence === \"number\" ? item.confidence : null,\n    })),\n  };\n}\n"}}]
+    expect(result.summary).toBe("1 recommendation found");
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].recordId).toBe("pipe_1");
+  });
+
+  it("prefers invokeCuratorLLM function when available", async () => {
+    base44.functions.invoke.mockResolvedValueOnce({
+      result: JSON.stringify({
+        summary: "1 bottle recommendation",
+        items: [
+          {
+            id: "rec_2",
+            type: "metadata_update",
+            title: "Add Retail Price",
+            explanation: "Useful for valuation",
+            rationale: "Missing market data",
+            confidence: 0.8,
+            recordType: "bottle",
+            recordId: "bottle_1",
+            recordName: "Bottle A",
+            proposedChanges: { retail_price: 59.99 },
+            followUpPrompt: "Why this price?",
+          },
+        ],
+      }),
+    });
+
+    const result = await curatorActionExecutor({
+      actionType: "update_bottle_data",
+      context: { pipes: [], blends: [], bottles: [{ id: "bottle_1" }] },
+      requestId: "req_2",
+    });
+
+    expect(base44.functions.invoke).toHaveBeenCalled();
+    expect(result.items[0].recordType).toBe("bottle");
+  });
+
+  it("throws when no response is returned", async () => {
+    base44.functions.invoke.mockRejectedValueOnce(new Error("no function"));
+    base44.integrations.Core.InvokeLLM.mockResolvedValueOnce("");
+
+    await expect(
+      curatorActionExecutor({
+        actionType: "recommend_specializations",
+        context: { pipes: [], blends: [], bottles: [] },
+        requestId: "req_3",
+      })
+    ).rejects.toThrow("Curator returned no response.");
+  });
+});
