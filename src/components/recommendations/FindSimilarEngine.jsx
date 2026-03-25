@@ -49,9 +49,11 @@ Return ${limit} items distributed across groups.`
 
   return `You are a world-class tobacco curator AI. Return VALID JSON only — no markdown, no prose outside JSON.
 
+⚠️ CRITICAL INSTRUCTION: The ONLY reference blend you must use is "${anchor.name}" by ${anchor.manufacturer || "Unknown"}. Do NOT use any other blend from the collection as the reference — not even the most frequently used one. The user explicitly selected this blend. Ignore all usage frequency data when choosing the anchor.
+
 TASK: Recommend ${limit} tobacco blends NOT already in the user's collection that are similar to the anchor blend.
 
-ANCHOR BLEND:
+ANCHOR BLEND (USE THIS AND ONLY THIS AS YOUR REFERENCE):
 Name: ${anchor.name}
 Manufacturer: ${anchor.manufacturer || "Unknown"}
 ${anchorDetails}
@@ -131,9 +133,11 @@ Return ${limit} items distributed across groups.`
 
   return `You are a world-class pipe curator AI. Return VALID JSON only — no markdown, no prose outside JSON.
 
+⚠️ CRITICAL INSTRUCTION: The ONLY reference pipe you must use is "${anchor.name}". Do NOT use any other pipe from the collection as the reference. The user explicitly selected this pipe.
+
 TASK: Recommend ${limit} pipes NOT already in the user's collection that are similar to the anchor pipe.
 
-ANCHOR PIPE:
+ANCHOR PIPE (USE THIS AND ONLY THIS AS YOUR REFERENCE):
 Name: ${anchor.name}
 ${anchorDetails}
 
@@ -207,9 +211,11 @@ Return ${limit} items distributed across groups.`
 
   return `You are a world-class whiskey curator AI. Return VALID JSON only — no markdown, no prose outside JSON.
 
+⚠️ CRITICAL INSTRUCTION: The ONLY reference bottle you must use is "${anchor.name}". Do NOT use any other bottle from the collection as the reference. The user explicitly selected this bottle.
+
 TASK: Recommend ${limit} whiskey bottles NOT already in the user's collection that are similar to the anchor bottle.
 
-ANCHOR BOTTLE:
+ANCHOR BOTTLE (USE THIS AND ONLY THIS AS YOUR REFERENCE):
 Name: ${anchor.name}
 ${anchorDetails}
 ${tastingNotesSummary ? `My tasting notes: ${tastingNotesSummary}` : ""}
