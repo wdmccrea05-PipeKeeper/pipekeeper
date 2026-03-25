@@ -17,7 +17,7 @@ export function isOwnedItem(name, ownedSet) {
 function buildBlendSimilarPrompt(anchor, context, mode) {
   const { blends = [], smokingLogs = [], userProfile = null } = context;
   // Only need names for exclusion — no need to send full blend objects
-  const ownedNames = blends.map(b => b.name).filter(Boolean).slice(0, 40);
+  const ownedNames = blends.map(b => b.name).filter(Boolean);
   const recentLogs = (smokingLogs || []).filter(l => l.blend_name === anchor.name).slice(0, 3);
   const prefStr = userProfile ? [
     userProfile.strength_preference && `Preferred strength: ${userProfile.strength_preference}`,
@@ -85,7 +85,7 @@ Return JSON:
 function buildPipeSimilarPrompt(anchor, context, mode) {
   // Only need names for exclusion — no need to send full pipe objects
   const { smokingLogs = [], userProfile = null } = context;
-  const ownedNames = (context.pipes || []).map(p => p.name).filter(Boolean).slice(0, 40);
+  const ownedNames = (context.pipes || []).map(p => p.name).filter(Boolean);
 
   const prefStr = userProfile ? [
     userProfile.preferred_shapes?.length && `Preferred shapes: ${userProfile.preferred_shapes.join(", ")}`,
@@ -150,7 +150,7 @@ Return JSON:
 function buildBottleSimilarPrompt(anchor, context, mode) {
   // Only need names for exclusion — no need to send full bottle objects
   const { tastingLogs = [], userProfile = null } = context;
-  const ownedNames = (context.bottles || []).map(b => b.name).filter(Boolean).slice(0, 40);
+  const ownedNames = (context.bottles || []).map(b => b.name).filter(Boolean);
   const myTastings = (tastingLogs || []).filter(l => l.bottle_id === anchor.id).slice(0, 3);
   const tastingNotesSummary = myTastings.map(t => t.notes).filter(Boolean).join("; ");
 
