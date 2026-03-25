@@ -874,9 +874,21 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
   };
 
   const handleAskCuratorAboutRecommendation = (item) => {
-    const prompt =
-      item.followUpPrompt ||
-      `Explain this recommendation in more detail and tell me what would change if I accept it: ${item.title}`;
+    const isSession = item.type === "session_builder" || item.type === "pairing_recommendation";
+
+    let sessionContext = "";
+    if (isSession) {
+      const parts = [];
+      if (item.recordName) parts.push(`Pipe: ${item.recordName}`);
+      if (item.blendName) parts.push(`Blend: ${item.blendName}`);
+      if (item.bottleName) parts.push(`Pour: ${item.bottleName}`);
+      if (parts.length > 0) {
+        sessionContext = `\n\nSession: ${parts.join(" | ")}`;
+      }
+      if (item.rationale) {
+        sessionContext += `\nRationale: ${item.rationale}`;
+      }
+    }
 
     const proposedEntries = Object.entries(item.proposedChanges || {});
     const formattedChanges =
@@ -887,22 +899,20 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
                 `- ${humanizeFieldLabel(key)}: ${humanizeFieldValue(value)}`
             )
             .join("\n")
-        : "- No direct field changes";
+        : "";
 
-    setInput(prompt);
+    const basePrompt = item.followUpPrompt ||
+      (isSession
+        ? `Tell me more about this session recommendation and why it suits my collection.${sessionContext}`
+        : `Explain this recommendation in more detail and tell me what would change if I accept it: ${item.title}${formattedChanges ? `\n\nProposed changes:\n${formattedChanges}` : ""}`);
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `curator-followup-context-${item.id}-${Date.now()}`,
-        role: "assistant",
-        content: `Here's more detail on this recommendation for **${item.recordName || item.title}**.
+    const contextOverride = isSession ? {
+      pipeName: item.recordName,
+      blendName: item.blendName,
+      bottleName: item.bottleName,
+    } : null;
 
-Proposed changes:
-${formattedChanges}`,
-        meta: {},
-      },
-    ]);
+    sendMessage(basePrompt, contextOverride);
   };
 
   const handleDismissAction = () => {
