@@ -111,7 +111,8 @@ export default function SimilarItemsDrawer({
           background: "linear-gradient(145deg, rgba(38,26,18,0.99), rgba(25,17,12,1))",
           border: "1px solid rgba(180,140,75,0.2)",
           borderBottom: "none",
-          maxHeight: "85vh",
+          height: "90vh",
+          maxHeight: "90vh",
           boxShadow: "0 -8px 40px rgba(0,0,0,0.6)",
         }}
       >
