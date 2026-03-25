@@ -19,23 +19,35 @@ import {
   CuratorEvents,
 } from "@/components/utils/curatorEventLogger";
 import { validateOwnershipIntegrity } from "@/components/utils/curatorOwnershipGuard";
-import { useTasteProfile, buildTasteProfileContext } from "@/components/curator/useTasteProfile";
+import {
+  useTasteProfile,
+  buildTasteProfileContext,
+} from "@/components/curator/useTasteProfile";
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 import CuratorActionPanel from "./CuratorActionPanel";
 import CuratorActionResultCard from "./CuratorActionResultCard";
 import normalizeCuratorActionResult from "./normalizeCuratorActionResult.jsx";
 import curatorActionExecutor from "./curatorActionExecutor.jsx";
 import { runCuratorAction } from "./curatorActionService.js";
-import { buildCuratorChatSystemPrompt, buildCuratorActivitySummary } from "./chatAdvicePrompting.js";
+import {
+  buildCuratorChatSystemPrompt,
+  buildCuratorActivitySummary,
+} from "./chatAdvicePrompting.js";
 import { applyCuratorRecommendation } from "./curatorApplyHandlers.js";
 import SavedSessionsPanel from "./SavedSessionsPanel.jsx";
-import { CURATOR_ACTIONS } from "./types/curatorActionTypes.js";
-import { buildSafeCollectionContext, buildPromptBlock } from "./collectionContextBudget";
-import extractActionableAdvice from "./extractActionableAdvice";
+import { buildSafeCollectionContext, buildPromptBlock } from "./collectionContextBudget.jsx";
+import extractActionableAdvice from "./extractActionableAdvice.js";
 
 const AGENT_NAME = "expert_tobacconist";
 
-function generateQuickPrompts({ pipes = [], blends = [], logs = [], bottles = [], userProfile = null, t }) {
+function generateQuickPrompts({
+  pipes = [],
+  blends = [],
+  logs = [],
+  bottles = [],
+  userProfile = null,
+  t,
+}) {
   const prompts = [];
 
   if (pipes.length > 10) {
@@ -143,6 +155,21 @@ function resolveWorkspaceLaunchContext(launchContext, preFilledPrompt, routedCon
     displayLabel: launchContext?.displayLabel || null,
     displayStatus: launchContext?.displayStatus || null,
   };
+}
+
+function humanizeFieldLabel(key) {
+  return String(key || "")
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
+function humanizeFieldValue(value) {
+  if (value === null || value === undefined || value === "") return "None";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  return String(value)
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (m) => m.toUpperCase());
 }
 
 function MessageBubble({
@@ -267,26 +294,28 @@ export default function CuratorWorkspace({
     profile: userProfile,
   });
 
-  const buildCuratorContext = useCallback(() => ({
-    pipes: pipes || [],
-    blends: blends || [],
-    bottles: bottles || [],
-    smokingLogs: effectiveSmokingLogs || [],
-    tastingLogs: tastingLogs || [],
-    userProfile: userProfile || null,
-    tasteProfile: tasteProfile || null,
-    activeModule: "curator",
-  }), [pipes, blends, bottles, effectiveSmokingLogs, tastingLogs, userProfile, tasteProfile]);
+  const buildCuratorContext = useCallback(
+    () => ({
+      pipes: pipes || [],
+      blends: blends || [],
+      bottles: bottles || [],
+      smokingLogs: effectiveSmokingLogs || [],
+      tastingLogs: tastingLogs || [],
+      userProfile: userProfile || null,
+      tasteProfile: tasteProfile || null,
+      activeModule: "curator",
+    }),
+    [pipes, blends, bottles, effectiveSmokingLogs, tastingLogs, userProfile, tasteProfile]
+  );
 
   const logCuratorAuditEvent = useCallback(async (payload) => {
     try {
-      // Audit logging is optional; don't block curator workflows on audit failures
       if (base44.entities.CuratorEvent?.create) {
         await base44.entities.CuratorEvent.create(payload);
       }
     } catch (err) {
       if (import.meta?.env?.DEV) {
-        console.warn('[Curator] Audit log failed (non-blocking):', err?.message);
+        console.warn("[Curator] Audit log failed (non-blocking):", err?.message);
       }
     }
   }, []);
@@ -588,46 +617,49 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
     ]
   );
 
-  const handleExpertAction = useCallback(async (actionType) => {
-    setLastActionType(actionType);
-    setItemStates({});
+  const handleExpertAction = useCallback(
+    async (actionType) => {
+      setLastActionType(actionType);
+      setItemStates({});
 
-    const requestId =
-      globalThis.crypto?.randomUUID?.() || `${actionType}_${Date.now()}`;
+      const requestId =
+        globalThis.crypto?.randomUUID?.() || `${actionType}_${Date.now()}`;
 
-    setActionRun({
-      requestId,
-      actionType,
-      status: "running",
-      summary: "",
-      items: [],
-      error: null,
-      startedAt: Date.now(),
-    });
-
-    try {
-      const result = await runCuratorAction({
-        actionType,
-        executor: curatorActionExecutor,
-        normalizer: normalizeCuratorActionResult,
-        context: buildCuratorContext(),
-        onAudit: logCuratorAuditEvent,
-      });
-
-      setActionRun(result);
-    } catch (err) {
       setActionRun({
         requestId,
         actionType,
-        status: "error",
+        status: "running",
         summary: "",
         items: [],
-        error: err?.message || "Curator failed",
+        error: null,
+        startedAt: Date.now(),
       });
-    } finally {
-      if (onPromptConsumed) onPromptConsumed();
-    }
-  }, [buildCuratorContext, logCuratorAuditEvent, onPromptConsumed]);
+
+      try {
+        const result = await runCuratorAction({
+          actionType,
+          executor: curatorActionExecutor,
+          normalizer: normalizeCuratorActionResult,
+          context: buildCuratorContext(),
+          onAudit: logCuratorAuditEvent,
+        });
+
+        setActionRun(result);
+      } catch (err) {
+        setActionRun({
+          requestId,
+          actionType,
+          status: "error",
+          summary: "",
+          items: [],
+          error: err?.message || "Curator failed",
+        });
+      } finally {
+        if (onPromptConsumed) onPromptConsumed();
+      }
+    },
+    [buildCuratorContext, logCuratorAuditEvent, onPromptConsumed]
+  );
 
   useEffect(() => {
     const actionType =
@@ -653,7 +685,7 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
     const executionMode = resolvedLaunchContext?.executionMode || null;
 
     if (!startupPrompt) return;
-    if (executionMode === "silent_action") return; // critical: do not dump action prompts into chat
+    if (executionMode === "silent_action") return;
     if (!user?.id) return;
     if (sending || initializing) return;
     if (startupConsumedRef.current) return;
@@ -714,6 +746,7 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
       ...prev,
       [item.id]: { status: "applying", error: null },
     }));
+
     if (messageId) {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -732,16 +765,23 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         )
       );
     }
+
     try {
-      const isNonMutating = item.type === "pairing_recommendation" || item.type === "session_builder";
+      const isNonMutating =
+        item.type === "pairing_recommendation" || item.type === "session_builder";
+
       if (isNonMutating) {
         try {
           const sessions = JSON.parse(localStorage.getItem("pk_sessions") || "[]");
-          const next = [{ ...item, savedAt: new Date().toISOString() }, ...sessions.filter(x => x.id !== item.id)];
+          const next = [
+            { ...item, savedAt: new Date().toISOString() },
+            ...sessions.filter((x) => x.id !== item.id),
+          ];
           localStorage.setItem("pk_sessions", JSON.stringify(next));
         } catch (e) {
-          console.warn('Failed to save session:', e);
+          console.warn("Failed to save session:", e);
         }
+
         toast.success("Session saved.");
       } else {
         await applyCuratorRecommendation(item);
@@ -752,10 +792,12 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
           queryClient.invalidateQueries({ queryKey: ["bottles"] }),
         ]);
       }
+
       setItemStates((prev) => ({
         ...prev,
         [item.id]: { status: "accepted", error: null },
       }));
+
       if (messageId) {
         setMessages((prev) =>
           prev.map((msg) =>
@@ -776,10 +818,12 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
       }
     } catch (error) {
       const nextError = error?.message || "Failed to apply recommendation.";
+
       setItemStates((prev) => ({
         ...prev,
         [item.id]: { status: "error", error: nextError },
       }));
+
       if (messageId) {
         setMessages((prev) =>
           prev.map((msg) =>
@@ -798,6 +842,7 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
           )
         );
       }
+
       toast.error("Failed to apply recommendation.");
     }
   };
@@ -828,21 +873,6 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
     }
   };
 
-  function humanizeFieldLabel(key) {
-    return String(key || "")
-      .replace(/_/g, " ")
-      .replace(/([a-z])([A-Z])/g, "$1 $2")
-      .replace(/\b\w/g, (m) => m.toUpperCase());
-  }
-
-  function humanizeFieldValue(value) {
-    if (value === null || value === undefined || value === "") return "None";
-    if (typeof value === "boolean") return value ? "Yes" : "No";
-    return String(value)
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (m) => m.toUpperCase());
-  }
-
   const handleAskCuratorAboutRecommendation = (item) => {
     const prompt =
       item.followUpPrompt ||
@@ -852,7 +882,10 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
     const formattedChanges =
       proposedEntries.length > 0
         ? proposedEntries
-            .map(([key, value]) => `- ${humanizeFieldLabel(key)}: ${humanizeFieldValue(value)}`)
+            .map(
+              ([key, value]) =>
+                `- ${humanizeFieldLabel(key)}: ${humanizeFieldValue(value)}`
+            )
             .join("\n")
         : "- No direct field changes";
 
@@ -984,17 +1017,15 @@ ${formattedChanges}`,
           WebkitOverflowScrolling: "touch",
         }}
       >
-
-
         <CuratorActionPanel
-            actionRun={actionRun}
-            itemStates={itemStates}
-            onRetry={handleRetryAction}
-            onAccept={handleAcceptRecommendation}
-            onReject={handleRejectRecommendation}
-            onAskCurator={handleAskCuratorAboutRecommendation}
-            onDismiss={handleDismissAction}
-          />
+          actionRun={actionRun}
+          itemStates={itemStates}
+          onRetry={handleRetryAction}
+          onAccept={handleAcceptRecommendation}
+          onReject={handleRejectRecommendation}
+          onAskCurator={handleAskCuratorAboutRecommendation}
+          onDismiss={handleDismissAction}
+        />
 
         <SavedSessionsPanel />
 
@@ -1092,13 +1123,18 @@ ${formattedChanges}`,
             ) : (
               <>
                 <Send className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">{t("common.send", { defaultValue: "Send" })}</span>
+                <span className="hidden sm:inline">
+                  {t("common.send", { defaultValue: "Send" })}
+                </span>
               </>
             )}
           </Button>
         </div>
 
-        <p className="text-xs mt-1.5 hidden sm:block" style={{ color: "rgba(224,216,200,0.4)" }}>
+        <p
+          className="text-xs mt-1.5 hidden sm:block"
+          style={{ color: "rgba(224,216,200,0.4)" }}
+        >
           {t("curator.pressEnter", {
             defaultValue: "Press Enter to send. Cmd/Ctrl+Enter also works.",
           })}
