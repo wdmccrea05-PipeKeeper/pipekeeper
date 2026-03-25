@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Pencil, Leaf, Share2, Search } from 'lucide-react';
+import { ArrowLeft, Pencil, Leaf, Share2, Search, Pipette } from 'lucide-react';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
+import BestPipesDrawer from '@/components/recommendations/BestPipesDrawer';
+import { scorePipeBlend } from '@/components/utils/pairingScoreCanonical';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -39,6 +41,11 @@ export default function TobaccoDetail() {
   const [similarLoading, setSimilarLoading] = useState(false);
   const [similarResult, setSimilarResult] = useState(null);
   const [similarError, setSimilarError] = useState(null);
+
+  const [showBestPipes, setShowBestPipes] = useState(false);
+  const [bestPipesLoading, setBestPipesLoading] = useState(false);
+  const [bestPipesResults, setBestPipesResults] = useState(null);
+  const [bestPipesError, setBestPipesError] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -86,6 +93,38 @@ export default function TobaccoDetail() {
     }
   }
 
+  async function handleBestPipes() {
+    setShowBestPipes(true);
+    setBestPipesLoading(true);
+    setBestPipesError(null);
+    setBestPipesResults(null);
+    try {
+      const pipes = await base44.entities.Pipe.list('-updated_date', 200).catch(() => []);
+      const userProfile = null; // basic scoring without profile for now
+      const scored = (pipes || [])
+        .filter(p => !p.ai_excluded)
+        .map(p => {
+          const { score, why } = scorePipeBlend(p, blend, userProfile);
+          return {
+            pipe_id: p.id,
+            pipe_name: p.name,
+            maker: p.maker,
+            shape: p.shape,
+            bowl_material: p.bowl_material,
+            score,
+            why,
+          };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+      setBestPipesResults(scored);
+    } catch (e) {
+      setBestPipesError(e?.message || 'Failed to score pipes.');
+    } finally {
+      setBestPipesLoading(false);
+    }
+  }
+
   if (loading) {
     return <div className="p-6 text-[#F5F1E7]"><p>Loading blend…</p></div>;
   }
@@ -104,7 +143,11 @@ export default function TobaccoDetail() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button onClick={handleBestPipes} style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}>
+            <Pipette className="w-4 h-4 mr-2" />
+            Best Pipes
+          </Button>
           <Button onClick={handleFindSimilar} style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}>
             <Search className="w-4 h-4 mr-2" />
             Find Similar
@@ -213,6 +256,16 @@ export default function TobaccoDetail() {
         error={similarError}
         onRetry={handleFindSimilar}
         recordType="blend"
+        anchorName={blend?.name}
+      />
+
+      <BestPipesDrawer
+        isOpen={showBestPipes}
+        onClose={() => setShowBestPipes(false)}
+        results={bestPipesResults}
+        loading={bestPipesLoading}
+        error={bestPipesError}
+        onRetry={handleBestPipes}
         anchorName={blend?.name}
       />
     </div>
