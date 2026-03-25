@@ -27,6 +27,7 @@ import HelpCenter from '@/pages/HelpCenter';
 import Tutorials from '@/pages/Tutorials';
 import PipeDetail from '@/pages/PipeDetail';
 import TobaccoDetail from '@/pages/TobaccoDetail';
+import Support from '@/pages/Support';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -157,6 +158,11 @@ const AuthenticatedApp = () => {
       <Route path="/TobaccoDetail" element={
         <LayoutWrapper currentPageName="TobaccoDetail">
           <TobaccoDetail />
+        </LayoutWrapper>
+      } />
+      <Route path="/support" element={
+        <LayoutWrapper currentPageName="Support">
+          <Support />
         </LayoutWrapper>
       } />
       <Route path="/" element={
