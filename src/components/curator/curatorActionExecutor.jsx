@@ -295,7 +295,7 @@ function buildFindSimilarPipesCuratorPrompt(context, anchorItems) {
   const pool = anchorItems?.length ? anchorItems : pipes;
   if (pool.length === 0) throw new Error("No pipes in collection to base recommendations on.");
   if (pool.length === 1) {
-    return buildFindSimilarPrompt("pipe", pool[0], context, "curator");
+    return buildFindSimilarPrompt("pipe", pool[0], context, "detail");
   }
   // Multi-anchor: 2 results per anchor
   const ownedNames = pipes.map(p => p.name).filter(Boolean);
@@ -351,7 +351,7 @@ function buildFindSimilarBlendsCuratorPrompt(context, anchorItems) {
   const pool = anchorItems?.length ? anchorItems : blends;
   if (pool.length === 0) throw new Error("No blends in collection to base recommendations on.");
   if (pool.length === 1) {
-    return buildFindSimilarPrompt("blend", pool[0], context, "curator");
+    return buildFindSimilarPrompt("blend", pool[0], context, "detail");
   }
   const ownedNames = blends.map(b => b.name).filter(Boolean);
   const anchorsBlock = pool.map((b, i) => {
@@ -404,7 +404,7 @@ function buildFindSimilarBottlesCuratorPrompt(context, anchorItems) {
   const pool = anchorItems?.length ? anchorItems : bottles;
   if (pool.length === 0) throw new Error("No bottles in collection to base recommendations on.");
   if (pool.length === 1) {
-    return buildFindSimilarPrompt("bottle", pool[0], context, "curator");
+    return buildFindSimilarPrompt("bottle", pool[0], context, "detail");
   }
   const ownedNames = bottles.map(b => b.name).filter(Boolean);
   const anchorsBlock = pool.map((b, i) => {
