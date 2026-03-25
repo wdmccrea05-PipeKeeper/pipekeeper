@@ -58,24 +58,27 @@ export default function CuratorActionResultCard({
       <div className="min-w-0">
         <div className="text-base font-medium text-amber-100">{item.title}</div>
 
-        {item.recordName ? (
-          <div className="mt-1 text-xs uppercase tracking-wide text-amber-500/70">
-            {humanizeRecordType(item.recordType)}: {item.recordName}
-          </div>
-        ) : null}
-
-        {isSession && (item.blendName || item.bottleName) ? (
-          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+        {isSession ? (
+          <div className="mt-2 space-y-0.5">
+            {item.recordName ? (
+              <div className="text-xs uppercase tracking-wide text-amber-500/70">
+                Pipe: {item.recordName}
+              </div>
+            ) : null}
             {item.blendName ? (
               <div className="text-xs uppercase tracking-wide text-emerald-400/70">
-                Tobacco: {item.blendName}
+                Blend: {item.blendName}
               </div>
             ) : null}
             {item.bottleName ? (
               <div className="text-xs uppercase tracking-wide text-sky-400/70">
-                Whiskey: {item.bottleName}
+                Pour: {item.bottleName}
               </div>
             ) : null}
+          </div>
+        ) : item.recordName ? (
+          <div className="mt-1 text-xs uppercase tracking-wide text-amber-500/70">
+            {humanizeRecordType(item.recordType)}: {item.recordName}
           </div>
         ) : null}
 
