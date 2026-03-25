@@ -1,6 +1,7 @@
 import React from "react";
-import { X, RefreshCw, Pipette } from "lucide-react";
+import { X, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PipeIcon from "@/components/icons/PipeIcon";
 
 export default function BestPipesDrawer({
   isOpen,
@@ -37,7 +38,7 @@ export default function BestPipesDrawer({
         >
           <div>
             <div className="flex items-center gap-2">
-              <Pipette className="w-4 h-4 text-[#B48C4B]" />
+              <PipeIcon className="w-4 h-4" color="#B48C4B" />
               <span className="font-semibold text-[#F5F1E7]">Best Pipe Matches</span>
             </div>
             {anchorName && (

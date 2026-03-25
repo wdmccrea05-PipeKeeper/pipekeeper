@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Pencil, Leaf, Share2, Search, Pipette } from 'lucide-react';
+import { ArrowLeft, Pencil, Leaf, Share2, Search } from 'lucide-react';
+import PipeIcon from '@/components/icons/PipeIcon';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
 import BestPipesDrawer from '@/components/recommendations/BestPipesDrawer';
 import { scorePipeBlend } from '@/components/utils/pairingScoreCanonical';
@@ -99,7 +100,8 @@ export default function TobaccoDetail() {
     setBestPipesError(null);
     setBestPipesResults(null);
     try {
-      const pipes = await base44.entities.Pipe.list('-updated_date', 200).catch(() => []);
+      const me = await base44.auth.me();
+      const pipes = await base44.entities.Pipe.filter({ created_by: me.email }, '-updated_date', 200).catch(() => []);
       const userProfile = null; // basic scoring without profile for now
       const scored = (pipes || [])
         .filter(p => !p.ai_excluded)
@@ -145,7 +147,7 @@ export default function TobaccoDetail() {
         </Button>
         <div className="flex gap-2 flex-wrap">
           <Button onClick={handleBestPipes} style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}>
-            <Pipette className="w-4 h-4 mr-2" />
+            <PipeIcon className="w-4 h-4 mr-2" color="#D4A574" />
             Best Pipes
           </Button>
           <Button onClick={handleFindSimilar} style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}>
