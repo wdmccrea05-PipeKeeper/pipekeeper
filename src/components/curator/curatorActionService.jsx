@@ -1,4 +1,4 @@
-const ACTION_TIMEOUT_MS = 90000;
+const ACTION_TIMEOUT_MS = 150000;
 
 function withTimeout(promise, ms) {
   return new Promise((resolve, reject) => {
