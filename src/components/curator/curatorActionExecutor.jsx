@@ -1,5 +1,6 @@
 import { base44 } from "@/api/base44Client";
 import parseCuratorActionResponse from "./parseCuratorActionResponse";
+import { buildFindSimilarPrompt } from "@/components/recommendations/FindSimilarEngine";
 import {
   buildSafeCollectionContext,
   buildPromptBlock,
@@ -289,6 +290,41 @@ STRICT OUTPUT RULES:
 `;
 }
 
+function buildFindSimilarPipesCuratorPrompt(context) {
+  const { pipes = [], smokingLogs = [] } = context;
+  if (pipes.length === 0) {
+    throw new Error("No pipes in collection to base recommendations on.");
+  }
+  // Pick anchor: most recently logged pipe, or first pipe
+  const loggedPipeNames = smokingLogs.map(l => l.pipe_name).filter(Boolean);
+  const anchor = pipes.find(p => loggedPipeNames.includes(p.name)) || pipes[0];
+  return buildFindSimilarPrompt("pipe", anchor, context, "curator");
+}
+
+function buildFindSimilarBlendsCuratorPrompt(context) {
+  const { blends = [], smokingLogs = [] } = context;
+  if (blends.length === 0) {
+    throw new Error("No blends in collection to base recommendations on.");
+  }
+  const loggedBlendNames = smokingLogs.map(l => l.blend_name).filter(Boolean);
+  const anchor = blends.find(b => loggedBlendNames.includes(b.name))
+    || blends.find(b => b.is_favorite)
+    || blends[0];
+  return buildFindSimilarPrompt("blend", anchor, context, "curator");
+}
+
+function buildFindSimilarBottlesCuratorPrompt(context) {
+  const { bottles = [], tastingLogs = [] } = context;
+  if (bottles.length === 0) {
+    throw new Error("No bottles in collection to base recommendations on.");
+  }
+  const loggedBottleIds = tastingLogs.map(l => l.bottle_id).filter(Boolean);
+  const anchor = bottles.find(b => loggedBottleIds.includes(b.id))
+    || bottles.find(b => b.is_favorite)
+    || bottles[0];
+  return buildFindSimilarPrompt("bottle", anchor, context, "curator");
+}
+
 function getActionPrompt(actionType, context) {
   switch (actionType) {
     case "optimize_collection":
@@ -306,6 +342,12 @@ function getActionPrompt(actionType, context) {
     case "pairing_recommendation":
     case "session_builder":
       return buildSessionBuilderPrompt(context);
+    case "find_similar_pipes":
+      return buildFindSimilarPipesCuratorPrompt(context);
+    case "find_similar_blends":
+      return buildFindSimilarBlendsCuratorPrompt(context);
+    case "find_similar_bottles":
+      return buildFindSimilarBottlesCuratorPrompt(context);
     default:
       throw new Error(`Unsupported curator action type: ${actionType}`);
   }

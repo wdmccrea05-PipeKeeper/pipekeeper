@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Pencil, Leaf, Share2 } from 'lucide-react';
+import { ArrowLeft, Pencil, Leaf, Share2, Search } from 'lucide-react';
+import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
+import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { formatWeight } from '@/components/utils/localeFormatters';
@@ -33,6 +35,10 @@ export default function TobaccoDetail() {
   const [blend, setBlend] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showSimilar, setShowSimilar] = useState(false);
+  const [similarLoading, setSimilarLoading] = useState(false);
+  const [similarResult, setSimilarResult] = useState(null);
+  const [similarError, setSimilarError] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -58,6 +64,28 @@ export default function TobaccoDetail() {
     return () => { mounted = false; };
   }, [blendId]);
 
+  async function handleFindSimilar() {
+    setShowSimilar(true);
+    setSimilarLoading(true);
+    setSimilarError(null);
+    setSimilarResult(null);
+    try {
+      const allBlends = await base44.entities.TobaccoBlend.list('-updated_date', 200).catch(() => []);
+      const allLogs = await base44.entities.SmokingLog.list('-date', 100).catch(() => []);
+      const result = await runFindSimilar({
+        recordType: 'blend',
+        anchor: blend,
+        context: { blends: allBlends || [], smokingLogs: allLogs || [] },
+        mode: 'detail',
+      });
+      setSimilarResult(result);
+    } catch (e) {
+      setSimilarError(e?.message || 'Failed to find similar blends.');
+    } finally {
+      setSimilarLoading(false);
+    }
+  }
+
   if (loading) {
     return <div className="p-6 text-[#F5F1E7]"><p>Loading blend…</p></div>;
   }
@@ -77,6 +105,10 @@ export default function TobaccoDetail() {
           Back
         </Button>
         <div className="flex gap-2">
+          <Button onClick={handleFindSimilar} style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}>
+            <Search className="w-4 h-4 mr-2" />
+            Find Similar
+          </Button>
           <Button variant="outline" onClick={() => setShowShareModal(true)}>
             <Share2 className="w-4 h-4 mr-2" />
             Share
@@ -171,6 +203,17 @@ export default function TobaccoDetail() {
         onOpenChange={setShowShareModal}
         moduleType="tobacco"
         record={blend}
+      />
+
+      <SimilarItemsDrawer
+        isOpen={showSimilar}
+        onClose={() => setShowSimilar(false)}
+        result={similarResult}
+        loading={similarLoading}
+        error={similarError}
+        onRetry={handleFindSimilar}
+        recordType="blend"
+        anchorName={blend?.name}
       />
     </div>
   );

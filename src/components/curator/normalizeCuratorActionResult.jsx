@@ -3,7 +3,13 @@ function asArray(value) {
 }
 
 function normalizeItem(item, actionType, index) {
-  if (!item || !item.recordId || !item.title || !item.type) {
+  if (!item || !item.title || !item.type) {
+    return null;
+  }
+
+  // similar_item types are external — they don't have a recordId
+  const isSimilarItem = item.type === "similar_item";
+  if (!isSimilarItem && !item.recordId) {
     return null;
   }
 
@@ -13,11 +19,10 @@ function normalizeItem(item, actionType, index) {
     title: item.title,
     explanation: item.explanation || "",
     rationale: item.rationale || "",
-    confidence:
-      typeof item.confidence === "number" ? item.confidence : null,
+    confidence: typeof item.confidence === "number" ? item.confidence : null,
     recordType: item.recordType || null,
-    recordId: item.recordId,
-    recordName: item.recordName || "",
+    recordId: item.recordId || null,
+    recordName: item.recordName || item.title || "",
     blendId: item.blendId || null,
     blendName: item.blendName || "",
     bottleId: item.bottleId || null,
@@ -26,6 +31,11 @@ function normalizeItem(item, actionType, index) {
     followUpPrompt:
       item.followUpPrompt ||
       `Explain why this recommendation is appropriate: ${item.title}`,
+    // similar_item extra fields
+    category: item.category || null,
+    characteristics: Array.isArray(item.characteristics) ? item.characteristics : [],
+    whyFitsYou: item.whyFitsYou || null,
+    group: item.group || null,
   };
 }
 

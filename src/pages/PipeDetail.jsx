@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Pencil, Share2 } from 'lucide-react';
+import { ArrowLeft, Pencil, Share2, Search } from 'lucide-react';
+import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
+import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/components/utils/localeFormatters';
@@ -34,6 +36,10 @@ export default function PipeDetail() {
   const [pipe, setPipe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showSimilar, setShowSimilar] = useState(false);
+  const [similarLoading, setSimilarLoading] = useState(false);
+  const [similarResult, setSimilarResult] = useState(null);
+  const [similarError, setSimilarError] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -59,6 +65,27 @@ export default function PipeDetail() {
     return () => { mounted = false; };
   }, [pipeId]);
 
+  async function handleFindSimilar() {
+    setShowSimilar(true);
+    setSimilarLoading(true);
+    setSimilarError(null);
+    setSimilarResult(null);
+    try {
+      const allPipes = await base44.entities.Pipe.list('-updated_date', 200).catch(() => []);
+      const result = await runFindSimilar({
+        recordType: 'pipe',
+        anchor: pipe,
+        context: { pipes: allPipes || [] },
+        mode: 'detail',
+      });
+      setSimilarResult(result);
+    } catch (e) {
+      setSimilarError(e?.message || 'Failed to find similar pipes.');
+    } finally {
+      setSimilarLoading(false);
+    }
+  }
+
   if (loading) {
     return <div className="p-6 text-[#F5F1E7]"><p>Loading pipe…</p></div>;
   }
@@ -77,6 +104,10 @@ export default function PipeDetail() {
            Back
          </Button>
          <div className="flex gap-2">
+           <Button onClick={handleFindSimilar} style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}>
+             <Search className="w-4 h-4 mr-2" />
+             Find Similar
+           </Button>
            <Button onClick={() => setShowShareModal(true)} style={{ background: 'rgba(180, 140, 75, 0.2)', border: '1px solid rgba(180, 140, 75, 0.35)', color: '#F5F1E7' }}>
              <Share2 className="w-4 h-4 mr-2" />
              Share
@@ -158,6 +189,17 @@ export default function PipeDetail() {
         onOpenChange={setShowShareModal}
         moduleType="pipe"
         record={pipe}
+      />
+
+      <SimilarItemsDrawer
+        isOpen={showSimilar}
+        onClose={() => setShowSimilar(false)}
+        result={similarResult}
+        loading={similarLoading}
+        error={similarError}
+        onRetry={handleFindSimilar}
+        recordType="pipe"
+        anchorName={pipe?.name}
       />
     </div>
   );

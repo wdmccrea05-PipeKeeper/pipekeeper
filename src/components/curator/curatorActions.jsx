@@ -19,7 +19,7 @@
  * }
  */
 
-import { Sparkles, Ruler, Droplet, Tags, Target } from 'lucide-react';
+import { Sparkles, Ruler, Droplet, Tags, Target, SearchCheck } from 'lucide-react';
 import { isInternalModuleTester } from '@/components/utils/moduleReleaseState';
 import {
   getTobaccoReclassificationCandidates,
@@ -317,6 +317,66 @@ Use only my actual collection data and tasting history. Be specific, concise, an
       sourceExpert: 'expert_session_builder',
     }),
     eventName: 'curator_action_session_builder',
+  },
+
+  {
+    id: 'find_similar_blends',
+    label: 'Discover Similar Blends',
+    description: 'Find tobacco blends not in your collection similar to your favorites',
+    icon: SearchCheck,
+    modules: ['tobacco'],
+    sourceExpert: 'expert_tobacconist',
+    visibility: (ctx) => {
+      const { blends = [] } = ctx;
+      return blends.length > 0;
+    },
+    buildPrompt: () => '',
+    buildContext: (ctx) => ({
+      type: 'find_similar_blends',
+      dataRequirement: ['blends', 'smokingLogs'],
+      sourceExpert: 'expert_tobacconist',
+    }),
+    eventName: 'curator_action_find_similar_blends',
+  },
+
+  {
+    id: 'find_similar_pipes',
+    label: 'Discover Similar Pipes',
+    description: 'Find pipes not in your collection similar to ones you love',
+    icon: SearchCheck,
+    modules: ['pipe'],
+    sourceExpert: 'expert_pipe_advisor',
+    visibility: (ctx) => {
+      const { pipes = [] } = ctx;
+      return pipes.length > 0;
+    },
+    buildPrompt: () => '',
+    buildContext: (ctx) => ({
+      type: 'find_similar_pipes',
+      dataRequirement: ['pipes', 'smokingLogs'],
+      sourceExpert: 'expert_pipe_advisor',
+    }),
+    eventName: 'curator_action_find_similar_pipes',
+  },
+
+  {
+    id: 'find_similar_bottles',
+    label: 'Discover Similar Pours',
+    description: 'Find whiskey bottles not in your collection similar to ones you enjoy',
+    icon: SearchCheck,
+    modules: ['whiskey'],
+    sourceExpert: 'expert_whiskey_advisor',
+    visibility: (ctx) => {
+      const { bottles = [] } = ctx;
+      return bottles.length > 0;
+    },
+    buildPrompt: () => '',
+    buildContext: (ctx) => ({
+      type: 'find_similar_bottles',
+      dataRequirement: ['bottles', 'tastingLogs'],
+      sourceExpert: 'expert_whiskey_advisor',
+    }),
+    eventName: 'curator_action_find_similar_bottles',
   },
 ];
 

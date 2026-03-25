@@ -9,7 +9,10 @@ import {
   CalendarDays,
   Share2,
   Package,
+  Search,
 } from 'lucide-react';
+import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
+import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -105,6 +108,10 @@ export default function BottleDetail() {
   const [editingTasting, setEditingTasting] = useState(null);
   const [showTastingModal, setShowTastingModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showSimilar, setShowSimilar] = useState(false);
+  const [similarLoading, setSimilarLoading] = useState(false);
+  const [similarResult, setSimilarResult] = useState(null);
+  const [similarError, setSimilarError] = useState(null);
   const [showInventoryManager, setShowInventoryManager] = useState(
     params.get('inventory') === '1'
   );
@@ -148,7 +155,26 @@ export default function BottleDetail() {
     }
   }
 
-
+  async function handleFindSimilar() {
+    setShowSimilar(true);
+    setSimilarLoading(true);
+    setSimilarError(null);
+    setSimilarResult(null);
+    try {
+      const allTastings = await base44.entities.TastingLog.list('-tasting_date', 100).catch(() => []);
+      const result = await runFindSimilar({
+        recordType: 'bottle',
+        anchor: bottle,
+        context: { bottles: allBottles || [], tastingLogs: allTastings || [] },
+        mode: 'detail',
+      });
+      setSimilarResult(result);
+    } catch (e) {
+      setSimilarError(e?.message || 'Failed to find similar pours.');
+    } finally {
+      setSimilarLoading(false);
+    }
+  }
 
   useEffect(() => {
     let mounted = true;
@@ -201,6 +227,13 @@ export default function BottleDetail() {
           </Button>
 
           <div className="flex gap-2">
+            <Button
+              onClick={handleFindSimilar}
+              style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}
+            >
+              <Search className="w-4 h-4 mr-2" />
+              Find Similar
+            </Button>
             <Button
               variant="outline"
               onClick={() => setShowShareModal(true)}
@@ -501,6 +534,17 @@ export default function BottleDetail() {
         onOpenChange={setShowShareModal}
         moduleType="bottle"
         record={bottle}
+      />
+
+      <SimilarItemsDrawer
+        isOpen={showSimilar}
+        onClose={() => setShowSimilar(false)}
+        result={similarResult}
+        loading={similarLoading}
+        error={similarError}
+        onRetry={handleFindSimilar}
+        recordType="bottle"
+        anchorName={bottle?.name}
       />
     </>
   );
