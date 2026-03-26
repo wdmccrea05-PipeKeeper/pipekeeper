@@ -183,66 +183,57 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
                 {results.map((blend, idx) => (
                   <Card
                     key={idx}
-                    className="border-stone-200 hover:border-amber-300 transition-colors"
+                    className="transition-colors"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(180,140,75,0.2)' }}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-semibold text-stone-800 text-lg">{blend.name}</h4>
-                          </div>
-                          <p className="text-sm text-stone-600 font-medium">{blend.manufacturer}</p>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-lg break-words" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{blend.name}</h4>
+                          {blend.manufacturer && (
+                            <p className="text-sm font-medium mt-0.5" style={{ color: 'rgba(212,165,116,0.85)' }}>{blend.manufacturer}</p>
+                          )}
                           {blend.description && (
-                            <p className="text-sm text-stone-600 mt-2 leading-relaxed">{blend.description}</p>
+                            <p className="text-sm mt-2 leading-relaxed" style={{ color: 'rgba(224,216,200,0.72)' }}>{blend.description}</p>
                           )}
                           <div className="flex flex-wrap gap-1.5 mt-3">
                             {blend.blend_type && (
-                              <Badge 
-                                variant="secondary" 
-                                className={`${BLEND_COLORS[blend.blend_type] || 'bg-stone-100 text-stone-800 border-stone-200'} text-xs`}
-                              >
+                              <Badge variant="secondary" className="text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: 'rgba(212,165,116,1)', border: '1px solid rgba(180,140,75,0.32)' }}>
                                 {blend.blend_type}
                               </Badge>
                             )}
                             {blend.strength && (
-                              <Badge variant="secondary" className="bg-stone-100 text-stone-700 border-stone-200 text-xs">
+                              <Badge variant="secondary" className="text-xs" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(224,216,200,0.85)', border: '1px solid rgba(255,255,255,0.12)' }}>
                                 {blend.strength}
                               </Badge>
                             )}
                             {blend.cut && (
-                              <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200 text-xs">
+                              <Badge variant="secondary" className="text-xs" style={{ background: 'rgba(163,92,92,0.15)', color: 'rgba(220,160,160,0.9)', border: '1px solid rgba(163,92,92,0.28)' }}>
                                 {blend.cut}
                               </Badge>
                             )}
-                            {blend.production_status && (
-                              <Badge 
-                                variant="secondary" 
-                                className={`text-xs ${
-                                  blend.production_status === 'Discontinued' 
-                                    ? 'bg-rose-100 text-rose-800 border-rose-200'
-                                    : 'bg-blue-100 text-blue-800 border-blue-200'
-                                }`}
-                              >
+                            {blend.production_status && blend.production_status !== 'Current Production' && (
+                              <Badge variant="secondary" className="text-xs" style={{
+                                background: blend.production_status === 'Discontinued' ? 'rgba(200,70,70,0.15)' : 'rgba(46,125,92,0.15)',
+                                color: blend.production_status === 'Discontinued' ? 'rgba(240,140,140,0.9)' : 'rgba(100,200,140,0.9)',
+                                border: blend.production_status === 'Discontinued' ? '1px solid rgba(200,70,70,0.28)' : '1px solid rgba(46,125,92,0.28)',
+                              }}>
                                 {blend.production_status}
                               </Badge>
                             )}
                           </div>
                           {blend.flavor_notes && blend.flavor_notes.length > 0 && (
-                            <div className="mt-2">
-                              <p className="text-xs text-stone-500">
-                                {t("quickSearch.flavors")}: {blend.flavor_notes.slice(0, 5).join(', ')}
-                              </p>
-                            </div>
+                            <p className="text-xs mt-2" style={{ color: 'rgba(224,216,200,0.55)' }}>
+                              {t("quickSearch.flavors")}: {blend.flavor_notes.slice(0, 5).join(', ')}
+                            </p>
                           )}
                           {blend.tobacco_components && blend.tobacco_components.length > 0 && (
-                            <div className="mt-1">
-                              <p className="text-xs text-stone-500">
-                                {t("quickSearch.components")}: {blend.tobacco_components.join(', ')}
-                              </p>
-                            </div>
+                            <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.55)' }}>
+                              {t("quickSearch.components")}: {blend.tobacco_components.join(', ')}
+                            </p>
                           )}
                           {blend.tin_size_oz && (
-                            <p className="text-xs text-stone-500 mt-1">
+                            <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.55)' }}>
                               {t("quickSearch.tinSize")}: {blend.tin_size_oz}oz
                             </p>
                           )}
@@ -250,8 +241,8 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
                         <div className="shrink-0 text-right space-y-3">
                           {blend.typical_rating && (
                             <div>
-                              <p className="text-xs text-stone-500">{t("quickSearch.avgRating")}</p>
-                              <p className="font-semibold text-amber-700 text-sm flex items-center gap-1">
+                              <p className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("quickSearch.avgRating")}</p>
+                              <p className="font-semibold text-sm flex items-center gap-1 justify-end" style={{ color: '#D4A574' }}>
                                 ⭐ {blend.typical_rating}/5
                               </p>
                             </div>
@@ -262,15 +253,9 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
                             className="bg-emerald-600 hover:bg-emerald-700 w-full"
                           >
                             {adding === blend.name ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                {t("quickSearch.adding")}
-                              </>
+                              <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t("quickSearch.adding")}</>
                             ) : (
-                              <>
-                                <Plus className="w-4 h-4 mr-2" />
-                                {t("quickSearch.addToCellar")}
-                              </>
+                              <><Plus className="w-4 h-4 mr-2" />{t("quickSearch.addToCellar")}</>
                             )}
                           </Button>
                         </div>
