@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import AddFlowChoice from './AddFlowChoice';
 import AddFlowQuickSearch from './AddFlowQuickSearch';
@@ -11,6 +12,7 @@ import AddFlowBlendInventory from './AddFlowBlendInventory';
 const TYPE_LABELS = { pipe: 'Pipe', blend: 'Blend', bottle: 'Bottle' };
 
 export default function AddFlowModal({ open, onClose, onCreated, initialItemType }) {
+  const navigate = useNavigate();
   const [step, setStep] = useState('choice');
   const [itemType] = useState(initialItemType || 'blend');
   const [searchResult, setSearchResult] = useState(null);
@@ -25,7 +27,15 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
   }, [open]);
 
   const close = () => onClose();
-  const created = (record) => { onCreated?.(record); close(); };
+  const created = (record) => {
+    onCreated?.(record);
+    close();
+    if (record?.id) {
+      const detailPath = itemType === 'blend' ? 'TobaccoDetail' : itemType === 'pipe' ? 'PipeDetail' : 'BottleDetail';
+      const paramName = itemType === 'blend' ? 'id' : 'id';
+      navigate(`/${detailPath}?${paramName}=${encodeURIComponent(record.id)}`);
+    }
+  };
 
   const goBack = () => {
     const map = {
