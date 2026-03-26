@@ -17,6 +17,14 @@ import ShareRecordModal from '@/components/share/ShareRecordModal';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { toast } from 'sonner';
 
+function getOwnershipLabel(blend) {
+  const parts = [];
+  if (blend.tin_total_tins) parts.push(`${blend.tin_total_tins} tin${blend.tin_total_tins !== 1 ? 's' : ''}`);
+  if (blend.pouch_total_pouches) parts.push(`${blend.pouch_total_pouches} pouch${blend.pouch_total_pouches !== 1 ? 'es' : ''}`);
+  if (blend.bulk_total_quantity_oz) parts.push(`${blend.bulk_total_quantity_oz} oz bulk`);
+  return parts.length > 0 ? parts.join(', ') : '0';
+}
+
 function DetailStat({ label, value, icon: Icon }) {
   return (
     <div className="rounded-2xl p-3" style={{ background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(180,140,75,0.16)' }}>
@@ -241,8 +249,8 @@ export default function TobaccoDetail() {
                   <p className="text-2xl font-semibold mt-2">{formatWeight(totalOz)}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Tins Owned</p>
-                  <p className="text-2xl font-semibold mt-2">{blend.tin_total_tins || 0}</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Owned</p>
+                  <p className="text-2xl font-semibold mt-2">{getOwnershipLabel(blend)}</p>
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Status</p>
