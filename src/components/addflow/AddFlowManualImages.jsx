@@ -172,7 +172,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
       const record = buildFinalRecord(itemType, finalData);
       const created = await base44.entities[ENTITIES[itemType]].create(record);
       toast.success(`${typeLabel} saved!`);
-      onCreated(created);
+      onCreated({ ...created, ...finalData });
     } catch (e) {
       toast.error(e?.message || 'Failed to save');
     } finally {
