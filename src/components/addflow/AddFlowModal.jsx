@@ -135,7 +135,7 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
                 }
 
                 saveStepData({
-                  _quickRecord: record,
+                  _quickRecord: { id: record.id, name: record.name },
                   name: record.name || searchResult?.name,
                   manufacturer: record.manufacturer || searchResult?.manufacturer,
                   maker: record.maker || searchResult?.maker,
