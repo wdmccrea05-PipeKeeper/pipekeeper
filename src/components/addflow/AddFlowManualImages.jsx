@@ -173,7 +173,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
             Add Photo
           </h2>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>Step 3 of 3 — Optional</p>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>{itemType === 'blend' ? 'Step 4 of 4 — Optional' : 'Step 3 of 3 — Optional'}</p>
         </div>
       </div>
 

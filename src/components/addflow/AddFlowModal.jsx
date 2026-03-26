@@ -6,6 +6,7 @@ import AddFlowQuickConfirm from './AddFlowQuickConfirm';
 import AddFlowManualBasic from './AddFlowManualBasic';
 import AddFlowManualDetails from './AddFlowManualDetails';
 import AddFlowManualImages from './AddFlowManualImages';
+import AddFlowBlendInventory from './AddFlowBlendInventory';
 
 const TYPE_LABELS = { pipe: 'Pipe', blend: 'Blend', bottle: 'Bottle' };
 
@@ -30,9 +31,11 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
     const map = {
       quickSearch: 'choice',
       quickConfirm: 'quickSearch',
+      blendInventoryQuick: 'quickConfirm',
+      blendInventoryManual: 'manualDetails',
       manualBasic: 'choice',
       manualDetails: 'manualBasic',
-      manualImages: 'manualDetails',
+      manualImages: itemType === 'blend' ? 'blendInventoryManual' : 'manualDetails',
     };
     const prev = map[step];
     if (prev) setStep(prev);
@@ -75,7 +78,28 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
               result={searchResult}
               onSearchAgain={() => setStep('quickSearch')}
               onManual={() => setStep('manualBasic')}
-              onCreated={created}
+              onCreated={itemType === 'blend'
+                ? (record) => { setManualData(prev => ({ ...prev, _quickRecord: record })); setStep('blendInventoryQuick'); }
+                : created
+              }
+            />
+          )}
+
+          {step === 'blendInventoryQuick' && (
+            <AddFlowBlendInventory
+              {...sharedProps}
+              stepLabel="Inventory — Final Step"
+              data={manualData}
+              onNext={async (inv) => {
+                const rec = manualData._quickRecord;
+                if (rec) {
+                  try {
+                    const { base44 } = await import('@/api/base44Client');
+                    const updated = await base44.entities.TobaccoBlend.update(rec.id, inv);
+                    created({ ...rec, ...inv });
+                  } catch { created(rec); }
+                } else { close(); }
+              }}
             />
           )}
 
@@ -91,7 +115,16 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
             <AddFlowManualDetails
               {...sharedProps}
               data={manualData}
-              onNext={(d) => { setManualData(prev => ({ ...prev, ...d })); setStep('manualImages'); }}
+              onNext={(d) => { setManualData(prev => ({ ...prev, ...d })); setStep(itemType === 'blend' ? 'blendInventoryManual' : 'manualImages'); }}
+            />
+          )}
+
+          {step === 'blendInventoryManual' && (
+            <AddFlowBlendInventory
+              {...sharedProps}
+              stepLabel="Step 3 of 4"
+              data={manualData}
+              onNext={(inv) => { setManualData(prev => ({ ...prev, ...inv })); setStep('manualImages'); }}
             />
           )}
 
