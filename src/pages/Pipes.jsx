@@ -77,7 +77,7 @@ export default function PipesPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const action = urlParams.get('action');
     if (action === 'add') {
-      setShowForm(true);
+      setShowAddFlow(true);
       window.history.replaceState({}, '', '/Pipes');
     }
   }, []);
@@ -375,7 +375,7 @@ export default function PipesPage() {
                   : t("pipesPage.noMatchFilters")
             }
             actionLabel={pipes.length === 0 ? t("pipesPage.addFirstPipe") : null}
-            onAction={pipes.length === 0 ? () => setShowForm(true) : null}
+            onAction={pipes.length === 0 ? () => setShowAddFlow(true) : null}
             secondaryActionLabel={pipes.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || shapeFilter || materialFilter ? t("pipesPage.clearFilters") : null}
             onSecondaryAction={pipes.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setShapeFilter(''); setMaterialFilter(''); }}
           />

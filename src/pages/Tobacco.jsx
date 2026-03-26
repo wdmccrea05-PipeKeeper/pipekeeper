@@ -100,7 +100,7 @@ export default function TobaccoPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const action = urlParams.get('action');
     if (action === 'add') {
-      setShowForm(true);
+      setShowAddFlow(true);
       window.history.replaceState({}, '', '/Tobacco');
     }
   }, []);
@@ -443,7 +443,7 @@ export default function TobaccoPage() {
                   : t("tobaccoPage.noMatchFilters")
             }
             actionLabel={blends.length === 0 ? t("tobaccoPage.addFirstBlend") : null}
-            onAction={blends.length === 0 ? () => setShowForm(true) : null}
+            onAction={blends.length === 0 ? () => setShowAddFlow(true) : null}
             secondaryActionLabel={blends.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || typeFilter || strengthFilter ? t("pipesPage.clearFilters") : null}
             onSecondaryAction={
   blends.length === 0

@@ -76,7 +76,7 @@ export default function WhiskeyPage() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('action') === 'add') {
-      setShowForm(true);
+      setShowAddFlow(true);
       window.history.replaceState({}, '', '/Whiskey');
     }
   }, []);
