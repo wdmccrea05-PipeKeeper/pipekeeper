@@ -178,13 +178,24 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
       // If this is a quick add (has _quickRecord), update existing record
       if (data._quickRecord && itemType === 'blend') {
         const updateData = buildFinalRecord(itemType, finalData);
-        await base44.entities.TobaccoBlend.update(data._quickRecord.id, updateData);
+        const blendId = data._quickRecord.id;
+        await base44.entities.TobaccoBlend.update(blendId, updateData);
+        
+        // Create CellarLog entries for cellared quantities
+        await createCellarLogsForRecord(blendId, finalData, data._quickRecord.name);
+        
         toast.success(`${typeLabel} saved!`);
         onCreated({ ...data._quickRecord, ...updateData });
       } else {
         // Manual add - create new record
         const record = buildFinalRecord(itemType, finalData);
         const created = await base44.entities[ENTITIES[itemType]].create(record);
+        
+        // Create CellarLog entries for cellared quantities
+        if (itemType === 'blend') {
+          await createCellarLogsForRecord(created.id, finalData, created.name);
+        }
+        
         toast.success(`${typeLabel} saved!`);
         onCreated({ ...created, ...finalData });
       }
@@ -194,6 +205,53 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
       setSaving(false);
     }
   };
+  
+  async function createCellarLogsForRecord(blendId, data, blendName) {
+    const today = new Date().toISOString().split('T')[0];
+    const logs = [];
+    
+    // Tins cellared
+    if (data.tin_tins_cellared && Number(data.tin_tins_cellared) > 0 && data.tin_size_oz) {
+      const amount = Number(data.tin_tins_cellared) * Number(data.tin_size_oz);
+      logs.push({
+        blend_id: blendId,
+        blend_name: blendName,
+        transaction_type: 'added',
+        date: data.tin_cellared_date || today,
+        amount_oz: amount,
+        container_type: 'tin',
+      });
+    }
+    
+    // Bulk cellared
+    if (data.bulk_cellared && Number(data.bulk_cellared) > 0) {
+      logs.push({
+        blend_id: blendId,
+        blend_name: blendName,
+        transaction_type: 'added',
+        date: data.bulk_cellared_date || today,
+        amount_oz: Number(data.bulk_cellared),
+        container_type: 'bulk',
+      });
+    }
+    
+    // Pouches cellared
+    if (data.pouch_pouches_cellared && Number(data.pouch_pouches_cellared) > 0 && data.pouch_size_oz) {
+      const amount = Number(data.pouch_pouches_cellared) * Number(data.pouch_size_oz);
+      logs.push({
+        blend_id: blendId,
+        blend_name: blendName,
+        transaction_type: 'added',
+        date: data.pouch_cellared_date || today,
+        amount_oz: amount,
+        container_type: 'pouch',
+      });
+    }
+    
+    if (logs.length > 0) {
+      await base44.entities.CellarLog.bulkCreate(logs);
+    }
+  }
 
   return (
     <div className="flex flex-col">
