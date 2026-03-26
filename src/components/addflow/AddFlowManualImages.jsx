@@ -243,6 +243,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
       const inventoryPayload = finalData._inventoryPayload || createInventoryEngine(itemType).buildUpdatePayload(finalData);
 
+      // If we have a quick record ID, update it instead of creating a new one
       if (finalData._quickRecord?.id) {
         const updateData = cleanObject({
           ...inventoryPayload,
@@ -262,6 +263,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         return;
       }
 
+      // Create new record
       const recordPayload = cleanObject({
         ...buildBaseRecord(itemType, finalData),
         ...inventoryPayload,
@@ -297,7 +299,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
             Add Photo
           </h2>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
-            Optional final step
+            Step 4 of 4 — Optional
           </p>
         </div>
       </div>
