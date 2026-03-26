@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { ArrowLeft, Upload, Image, Loader2, Check } from 'lucide-react';
+import { ArrowLeft, Upload, Loader2, Check, BookImage, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
@@ -40,10 +41,84 @@ function buildFinalRecord(itemType, data) {
   return { name: data.name };
 }
 
+function LogoLibraryPicker({ onSelect, onClose }) {
+  const [query, setQuery] = useState('');
+  const [logos, setLogos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+
+  const handleSearch = async () => {
+    if (!query.trim()) return;
+    setLoading(true);
+    try {
+      const all = await base44.entities.TobaccoLogoLibrary.list('-created_date', 200);
+      const q = query.toLowerCase().trim();
+      const filtered = all.filter(l => l.brand_name?.toLowerCase().includes(q));
+      setLogos(filtered);
+      setSearched(true);
+    } catch {
+      setLogos([]);
+      setSearched(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(180,140,75,0.25)', background: 'rgba(20,13,8,0.95)' }}>
+      <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(180,140,75,0.12)' }}>
+        <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>Browse Logo Library</p>
+        <button onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10">
+          <X className="w-3.5 h-3.5" style={{ color: 'rgba(224,216,200,0.6)' }} />
+        </button>
+      </div>
+      <div className="p-3 flex gap-2">
+        <Input
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
+          placeholder="Search brand name…"
+          autoFocus
+          className="flex-1 text-sm"
+          style={{ background: 'rgba(20,13,8,0.7)', border: '1px solid rgba(180,140,75,0.3)', color: '#F5F1E7' }}
+        />
+        <Button
+          onClick={handleSearch}
+          disabled={loading || !query.trim()}
+          size="sm"
+          style={{ background: 'rgba(180,140,75,0.9)', color: '#1a1008', fontWeight: 600, flexShrink: 0 }}
+        >
+          {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+        </Button>
+      </div>
+      {searched && logos.length === 0 && (
+        <p className="text-center text-xs py-4" style={{ color: 'rgba(224,216,200,0.4)' }}>No logos found for "{query}"</p>
+      )}
+      {logos.length > 0 && (
+        <div className="grid grid-cols-3 gap-2 p-3 max-h-52 overflow-y-auto">
+          {logos.map(logo => (
+            <button
+              key={logo.id}
+              onClick={() => onSelect(logo.logo_url)}
+              className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-white/[0.06] transition-colors"
+              style={{ border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <img src={logo.logo_url} alt={logo.brand_name} className="w-12 h-12 object-contain rounded" />
+              <p className="text-[10px] text-center leading-tight" style={{ color: 'rgba(212,165,116,0.8)' }}>{logo.brand_name}</p>
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="pb-1" />
+    </div>
+  );
+}
+
 export default function AddFlowManualImages({ itemType, typeLabel, data, onBack, onCreated }) {
   const [imageUrl, setImageUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
   const fileRef = useRef(null);
 
   const imageLabel = itemType === 'blend' ? 'Tin / Label Photo' :
@@ -147,6 +222,26 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
           </button>
         )}
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
+
+        {/* Logo library option — blend only */}
+        {itemType === 'blend' && !imageUrl && (
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => setShowLibrary(v => !v)}
+              className="flex items-center gap-2 justify-center w-full py-2.5 rounded-xl transition-colors hover:bg-white/5"
+              style={{ border: '1px solid rgba(180,140,75,0.2)', color: 'rgba(180,140,75,0.75)' }}
+            >
+              <BookImage className="w-4 h-4" />
+              <span className="text-sm font-medium">Browse Logo Library</span>
+            </button>
+            {showLibrary && (
+              <LogoLibraryPicker
+                onSelect={(url) => { setImageUrl(url); setShowLibrary(false); }}
+                onClose={() => setShowLibrary(false)}
+              />
+            )}
+          </div>
+        )}
 
         {/* Actions */}
         <Button
