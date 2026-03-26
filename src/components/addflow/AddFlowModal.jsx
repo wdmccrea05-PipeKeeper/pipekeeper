@@ -90,7 +90,19 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
               onSearchAgain={() => setStep('quickSearch')}
               onManual={() => setStep('manualBasic')}
               onCreated={itemType === 'blend'
-                ? (record) => { setManualData(prev => ({ ...prev, _quickRecord: record })); setStep('blendInventoryQuick'); }
+                ? (record) => { 
+                    setManualData(prev => ({
+                      ...prev,
+                      _quickRecord: record,
+                      name: record.name,
+                      manufacturer: record.manufacturer,
+                      blend_type: searchResult?.blend_type,
+                      cut: searchResult?.cut,
+                      strength: searchResult?.strength,
+                      flavor_notes: searchResult?.flavor_notes,
+                    }));
+                    setStep('blendInventoryQuick');
+                  }
                 : created
               }
             />
