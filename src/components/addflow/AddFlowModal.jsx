@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import AddFlowChoice from './AddFlowChoice';
@@ -7,57 +7,89 @@ import AddFlowQuickConfirm from './AddFlowQuickConfirm';
 import AddFlowManualBasic from './AddFlowManualBasic';
 import AddFlowManualDetails from './AddFlowManualDetails';
 import AddFlowManualImages from './AddFlowManualImages';
-import AddFlowBlendInventory from './AddFlowBlendInventory';
+import InventoryStep from '@/components/inventory/InventoryStep';
 
-const TYPE_LABELS = { pipe: 'Pipe', blend: 'Blend', bottle: 'Bottle' };
+const TYPE_LABELS = {
+  pipe: 'Pipe',
+  blend: 'Blend',
+  bottle: 'Bottle',
+};
+
+function getInventoryStepName(itemType, mode) {
+  if (itemType === 'blend') return mode === 'quick' ? 'inventoryQuick' : 'inventoryManual';
+  if (itemType === 'bottle') return mode === 'quick' ? 'inventoryQuick' : 'inventoryManual';
+  if (itemType === 'pipe') return mode === 'manual' ? 'inventoryManual' : null;
+  return null;
+}
 
 export default function AddFlowModal({ open, onClose, onCreated, initialItemType }) {
   const navigate = useNavigate();
   const [step, setStep] = useState('choice');
   const [itemType, setItemType] = useState(initialItemType || 'blend');
   const [searchResult, setSearchResult] = useState(null);
-  const [manualData, setManualData] = useState({});
+  const [wizardData, setWizardData] = useState({});
 
   useEffect(() => {
-    if (open) {
-      setItemType(initialItemType || 'blend');
-      setStep('choice');
-      setSearchResult(null);
-      setManualData({});
-    }
+    if (!open) return;
+    setItemType(initialItemType || 'blend');
+    setStep('choice');
+    setSearchResult(null);
+    setWizardData({});
   }, [open, initialItemType]);
 
-  const close = () => onClose();
-  const created = (record) => {
+  const sharedProps = {
+    itemType,
+    typeLabel: TYPE_LABELS[itemType],
+    onClose,
+  };
+
+  const close = () => onClose?.();
+
+  const goToRecord = (record) => {
     onCreated?.(record);
     close();
-    if (record?.id) {
-      const detailPath = itemType === 'blend' ? 'TobaccoDetail' : itemType === 'pipe' ? 'PipeDetail' : 'BottleDetail';
-      const paramName = itemType === 'blend' ? 'id' : 'id';
-      navigate(`/${detailPath}?${paramName}=${encodeURIComponent(record.id)}`);
-    }
+
+    if (!record?.id) return;
+    const route =
+      itemType === 'blend'
+        ? '/TobaccoDetail'
+        : itemType === 'pipe'
+          ? '/PipeDetail'
+          : '/BottleDetail';
+
+    navigate(`${route}?id=${encodeURIComponent(record.id)}`);
   };
 
   const goBack = () => {
-    const map = {
+    const previous = {
       quickSearch: 'choice',
       quickConfirm: 'quickSearch',
-      blendInventoryQuick: 'quickConfirm',
-      blendImagesQuick: 'blendInventoryQuick',
-      blendInventoryManual: 'manualDetails',
+      inventoryQuick: 'quickConfirm',
       manualBasic: 'choice',
       manualDetails: 'manualBasic',
-      manualImages: itemType === 'blend' ? 'blendInventoryManual' : 'manualDetails',
+      inventoryManual: 'manualDetails',
+      manualImages:
+        itemType === 'blend'
+          ? 'inventoryManual'
+          : itemType === 'bottle'
+            ? 'inventoryManual'
+            : itemType === 'pipe'
+              ? 'inventoryManual'
+              : 'manualDetails',
+      imagesQuick: itemType === 'blend' || itemType === 'bottle' ? 'inventoryQuick' : 'quickConfirm',
     };
-    const prev = map[step];
-    if (prev) setStep(prev);
+
+    const next = previous[step];
+    if (next) setStep(next);
     else close();
   };
 
-  const sharedProps = { itemType, onBack: goBack, onClose: close, typeLabel: TYPE_LABELS[itemType] };
+  const saveStepData = (patch) => {
+    setWizardData((prev) => ({ ...prev, ...patch }));
+  };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) close(); }}>
+    <Dialog open={open} onOpenChange={(value) => !value && close()}>
       <DialogContent
         className="max-w-lg w-full p-0 overflow-hidden"
         style={{
@@ -79,7 +111,11 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
           {step === 'quickSearch' && (
             <AddFlowQuickSearch
               {...sharedProps}
-              onSelect={(result) => { setSearchResult(result); setStep('quickConfirm'); }}
+              onBack={goBack}
+              onSelect={(result) => {
+                setSearchResult(result);
+                setStep('quickConfirm');
+              }}
               onManual={() => setStep('manualBasic')}
             />
           )}
@@ -87,75 +123,105 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
           {step === 'quickConfirm' && (
             <AddFlowQuickConfirm
               {...sharedProps}
+              onBack={goBack}
               result={searchResult}
               onSearchAgain={() => setStep('quickSearch')}
               onManual={() => setStep('manualBasic')}
-              onCreated={itemType === 'blend'
-                ? (record) => { 
-                    setManualData(prev => ({
-                      ...prev,
-                      _quickRecord: record,
-                      name: record.name,
-                      manufacturer: record.manufacturer,
-                      blend_type: searchResult?.blend_type,
-                      cut: searchResult?.cut,
-                      strength: searchResult?.strength,
-                      flavor_notes: searchResult?.flavor_notes,
-                    }));
-                    setStep('blendInventoryQuick');
-                  }
-                : created
-              }
-            />
-          )}
+              onCreated={(record) => {
+                const nextInventory = getInventoryStepName(itemType, 'quick');
+                if (!nextInventory) {
+                  goToRecord(record);
+                  return;
+                }
 
-          {step === 'blendInventoryQuick' && (
-            <AddFlowBlendInventory
-              {...sharedProps}
-              stepLabel="Inventory — Step 2 of 3"
-              data={manualData}
-              onNext={(inv) => { setManualData(prev => ({ ...prev, ...inv })); setStep('blendImagesQuick'); }}
-            />
-          )}
+                saveStepData({
+                  _quickRecord: record,
+                  name: record.name || searchResult?.name,
+                  manufacturer: record.manufacturer || searchResult?.manufacturer,
+                  maker: record.maker || searchResult?.maker,
+                  distillery: record.distillery || searchResult?.distillery,
+                  blend_type: searchResult?.blend_type,
+                  cut: searchResult?.cut,
+                  strength: searchResult?.strength,
+                  flavor_notes: searchResult?.flavor_notes,
+                  shape: searchResult?.shape,
+                  bowl_material: searchResult?.bowl_material,
+                  type: searchResult?.whiskey_type,
+                  age: searchResult?.age,
+                  abv: searchResult?.abv,
+                });
 
-          {step === 'blendImagesQuick' && (
-            <AddFlowManualImages
-              {...sharedProps}
-              data={manualData}
-              onCreated={created}
+                setStep(nextInventory);
+              }}
             />
           )}
 
           {step === 'manualBasic' && (
             <AddFlowManualBasic
               {...sharedProps}
-              data={manualData}
-              onNext={(d) => { setManualData(prev => ({ ...prev, ...d })); setStep('manualDetails'); }}
+              onBack={goBack}
+              data={wizardData}
+              onNext={(data) => {
+                saveStepData(data);
+                setStep('manualDetails');
+              }}
             />
           )}
 
           {step === 'manualDetails' && (
             <AddFlowManualDetails
               {...sharedProps}
-              data={manualData}
-              onNext={(d) => { setManualData(prev => ({ ...prev, ...d })); setStep(itemType === 'blend' ? 'blendInventoryManual' : 'manualImages'); }}
+              onBack={goBack}
+              data={wizardData}
+              onNext={(data) => {
+                saveStepData(data);
+                const nextInventory = getInventoryStepName(itemType, 'manual');
+                setStep(nextInventory || 'manualImages');
+              }}
             />
           )}
 
-          {step === 'blendInventoryManual' && (
-            <AddFlowBlendInventory
+          {step === 'inventoryQuick' && (
+            <InventoryStep
+              moduleType={itemType}
+              stepLabel={itemType === 'blend' ? 'Inventory — Step 3 of 4' : 'Inventory — Step 3 of 4'}
+              data={wizardData}
+              onBack={goBack}
+              onNext={(inventoryData) => {
+                saveStepData(inventoryData);
+                setStep(itemType === 'pipe' ? 'manualImages' : 'imagesQuick');
+              }}
+            />
+          )}
+
+          {step === 'inventoryManual' && (
+            <InventoryStep
+              moduleType={itemType}
+              stepLabel={itemType === 'pipe' ? 'Ownership — Step 3 of 4' : 'Inventory — Step 3 of 4'}
+              data={wizardData}
+              onBack={goBack}
+              onNext={(inventoryData) => {
+                saveStepData(inventoryData);
+                setStep('manualImages');
+              }}
+            />
+          )}
+
+          {step === 'imagesQuick' && (
+            <AddFlowManualImages
               {...sharedProps}
-              stepLabel="Step 3 of 4"
-              data={manualData}
-              onNext={(inv) => { setManualData(prev => ({ ...prev, ...inv })); setStep('manualImages'); }}
+              data={wizardData}
+              onBack={goBack}
+              onCreated={goToRecord}
             />
           )}
 
           {step === 'manualImages' && (
             <AddFlowManualImages
               {...sharedProps}
-              data={manualData}
-              onCreated={created}
+              data={wizardData}
+              onBack={goBack}
+              onCreated={goToRecord}
             />
           )}
         </div>
