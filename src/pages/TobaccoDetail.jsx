@@ -21,7 +21,10 @@ function getOwnershipLabel(blend) {
   const parts = [];
   if (blend.tin_total_tins) parts.push(`${blend.tin_total_tins} tin${blend.tin_total_tins !== 1 ? 's' : ''}`);
   if (blend.pouch_total_pouches) parts.push(`${blend.pouch_total_pouches} pouch${blend.pouch_total_pouches !== 1 ? 'es' : ''}`);
-  if (blend.bulk_total_quantity_oz) parts.push(`${blend.bulk_total_quantity_oz} oz bulk`);
+  if (blend.bulk_total_quantity_oz) {
+    const bulkFormatted = Number(blend.bulk_total_quantity_oz).toFixed(2);
+    parts.push(`${bulkFormatted} oz bulk`);
+  }
   return parts.length > 0 ? parts.join(', ') : '0';
 }
 
