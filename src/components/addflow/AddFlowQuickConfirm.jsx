@@ -89,9 +89,14 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
             strength: result.strength,
             description: result.description,
           });
-          // Merge enriched data
-          if (enriched?.data) {
-            finalData = { ...clean, ...enriched.data };
+          // Merge enriched data - handle both response.data and direct response
+          const enrichedFields = enriched?.data || enriched;
+          if (enrichedFields) {
+            const { cut, rating, production_status, aging_potential } = enrichedFields;
+            if (cut !== undefined && cut !== null) finalData.cut = cut;
+            if (rating !== undefined && rating !== null) finalData.rating = rating;
+            if (production_status !== undefined && production_status !== null) finalData.production_status = production_status;
+            if (aging_potential !== undefined && aging_potential !== null) finalData.aging_potential = aging_potential;
           }
         } catch (enrichError) {
           // Fallback: save without enrichment
