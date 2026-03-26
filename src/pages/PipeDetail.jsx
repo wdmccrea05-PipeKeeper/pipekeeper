@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Pencil, Share2, Search } from 'lucide-react';
+import { ArrowLeft, Pencil, Share2, Search, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
 import PipeSpecialization from '@/components/pipes/PipeSpecialization';
@@ -45,6 +46,8 @@ export default function PipeDetail() {
   const [blends, setBlends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [showSimilar, setShowSimilar] = useState(false);
   const [similarLoading, setSimilarLoading] = useState(false);
   const [similarResult, setSimilarResult] = useState(null);
@@ -79,6 +82,18 @@ export default function PipeDetail() {
     loadData();
     return () => { mounted = false; };
   }, [pipeId, user?.email]);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await base44.entities.Pipe.delete(pipe.id);
+      toast.success('Pipe deleted');
+      navigate(-1);
+    } catch (e) {
+      toast.error('Failed to delete pipe');
+      setDeleting(false);
+    }
+  };
 
   const handlePipeUpdate = async (updates) => {
     if (!pipe) return;
@@ -144,10 +159,13 @@ export default function PipeDetail() {
              Share
            </Button>
            <Button onClick={() => navigate(`/Pipes?edit=${encodeURIComponent(pipe.id)}`)} style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))', color: '#fff' }}>
-             <Pencil className="w-4 h-4 mr-2" />
-             Edit
-           </Button>
-        </div>
+              <Pencil className="w-4 h-4 mr-2" />
+              Edit
+            </Button>
+            <Button onClick={() => setShowDeleteConfirm(true)} variant="outline" style={{ borderColor: 'rgba(180,80,80,0.4)', color: 'rgba(220,120,120,0.9)' }}>
+              <Trash2 className="w-4 h-4" />
+            </Button>
+           </div>
       </div>
 
       {/* Tabbed functions card — top */}
@@ -248,6 +266,21 @@ export default function PipeDetail() {
         moduleType="pipe"
         record={pipe}
       />
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this pipe?</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently delete <strong>{pipe?.name}</strong>. This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleting} style={{ background: 'rgba(180,60,60,0.9)', color: '#fff' }}>
+              {deleting ? 'Deleting…' : 'Yes, delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <SimilarItemsDrawer
         isOpen={showSimilar}

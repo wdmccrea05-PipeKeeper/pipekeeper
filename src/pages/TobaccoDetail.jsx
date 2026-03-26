@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Pencil, Leaf, Share2, Search } from 'lucide-react';
+import { ArrowLeft, Pencil, Leaf, Share2, Search, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import PipeIcon from '@/components/icons/PipeIcon';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
 import BestPipesDrawer from '@/components/recommendations/BestPipesDrawer';
@@ -39,6 +40,8 @@ export default function TobaccoDetail() {
   const [blend, setBlend] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [showSimilar, setShowSimilar] = useState(false);
   const [similarLoading, setSimilarLoading] = useState(false);
   const [similarResult, setSimilarResult] = useState(null);
@@ -73,6 +76,18 @@ export default function TobaccoDetail() {
     loadBlend();
     return () => { mounted = false; };
   }, [blendId]);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await base44.entities.TobaccoBlend.delete(blend.id);
+      toast.success('Blend deleted');
+      navigate(-1);
+    } catch (e) {
+      toast.error('Failed to delete blend');
+      setDeleting(false);
+    }
+  };
 
   const handleBlendUpdate = async (updates) => {
     if (!blend) return;
@@ -179,6 +194,9 @@ export default function TobaccoDetail() {
             <Pencil className="w-4 h-4 mr-2" />
             Edit
           </Button>
+          <Button onClick={() => setShowDeleteConfirm(true)} variant="outline" style={{ borderColor: 'rgba(180,80,80,0.4)', color: 'rgba(220,120,120,0.9)' }}>
+            <Trash2 className="w-4 h-4" />
+          </Button>
         </div>
       </div>
 
@@ -278,6 +296,21 @@ export default function TobaccoDetail() {
         moduleType="tobacco"
         record={blend}
       />
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this blend?</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently delete <strong>{blend?.name}</strong>. This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleting} style={{ background: 'rgba(180,60,60,0.9)', color: '#fff' }}>
+              {deleting ? 'Deleting…' : 'Yes, delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <SimilarItemsDrawer
         isOpen={showSimilar}

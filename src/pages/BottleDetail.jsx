@@ -10,7 +10,9 @@ import {
   Share2,
   Package,
   Search,
+  Trash2,
 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
@@ -112,9 +114,22 @@ export default function BottleDetail() {
   const [similarLoading, setSimilarLoading] = useState(false);
   const [similarResult, setSimilarResult] = useState(null);
   const [similarError, setSimilarError] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [showInventoryManager, setShowInventoryManager] = useState(
     params.get('inventory') === '1'
   );
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await base44.entities.Bottle.delete(bottle.id);
+      navigate(-1);
+    } catch (e) {
+      console.error(e);
+      setDeleting(false);
+    }
+  }
 
   async function loadBottle() {
     if (!bottleId) {
@@ -250,6 +265,9 @@ export default function BottleDetail() {
             >
               <Pencil className="w-4 h-4 mr-2" />
               Edit
+            </Button>
+            <Button onClick={() => setShowDeleteConfirm(true)} variant="outline" style={{ borderColor: 'rgba(180,80,80,0.4)', color: 'rgba(220,120,120,0.9)' }}>
+              <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -528,6 +546,21 @@ export default function BottleDetail() {
           }}
         />
       ) : null}
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this bottle?</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently delete <strong>{bottle?.name}</strong>. This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleting} style={{ background: 'rgba(180,60,60,0.9)', color: '#fff' }}>
+              {deleting ? 'Deleting…' : 'Yes, delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <ShareRecordModal
         isOpen={showShareModal}
