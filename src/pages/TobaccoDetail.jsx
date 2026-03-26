@@ -189,25 +189,25 @@ export default function TobaccoDetail() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <div className="flex gap-2 flex-wrap">
-          <Button onClick={handleBestPipes} style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}>
+        <div className="flex gap-2 flex-wrap items-center">
+          <Button onClick={handleBestPipes} size="sm" style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}>
             <PipeIcon className="w-4 h-4 mr-2" color="#D4A574" />
             Best Pipes
           </Button>
-          <Button onClick={handleFindSimilar} style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}>
+          <Button onClick={handleFindSimilar} size="sm" style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}>
             <Search className="w-4 h-4 mr-2" />
             Find Similar
           </Button>
-          <Button variant="outline" onClick={() => setShowShareModal(true)}>
+          <Button variant="outline" size="sm" onClick={() => setShowShareModal(true)}>
             <Share2 className="w-4 h-4 mr-2" />
             Share
           </Button>
           <EnrichButton itemType="blend" record={blend} onEnriched={setBlend} />
-          <Button onClick={() => navigate(`/Tobacco?edit=${encodeURIComponent(blend.id)}`)} style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))', color: '#fff' }}>
+          <Button onClick={() => navigate(`/Tobacco?edit=${encodeURIComponent(blend.id)}`)} size="sm" style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))', color: '#fff' }}>
             <Pencil className="w-4 h-4 mr-2" />
             Edit
           </Button>
-          <Button onClick={() => setShowDeleteConfirm(true)} variant="outline" style={{ borderColor: 'rgba(180,80,80,0.4)', color: 'rgba(220,120,120,0.9)' }}>
+          <Button onClick={() => setShowDeleteConfirm(true)} variant="outline" size="sm" style={{ borderColor: 'rgba(180,80,80,0.4)', color: 'rgba(220,120,120,0.9)' }}>
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
