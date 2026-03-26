@@ -89,6 +89,11 @@ export default function PipeDetail() {
       await base44.entities.Pipe.delete(pipe.id);
       toast.success('Pipe deleted');
       navigate('/Pipes');
+    } catch (e) {
+      toast.error('Failed to delete pipe');
+      setDeleting(false);
+    }
+  };
 
   const handlePipeUpdate = async (updates) => {
     if (!pipe) return;

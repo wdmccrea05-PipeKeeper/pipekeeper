@@ -83,6 +83,11 @@ export default function TobaccoDetail() {
       await base44.entities.TobaccoBlend.delete(blend.id);
       toast.success('Blend deleted');
       navigate('/Tobacco');
+    } catch (e) {
+      toast.error('Failed to delete blend');
+      setDeleting(false);
+    }
+  };
 
   const handleBlendUpdate = async (updates) => {
     if (!blend) return;
