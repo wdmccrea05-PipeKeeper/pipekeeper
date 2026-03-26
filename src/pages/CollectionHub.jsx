@@ -106,7 +106,15 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: `${meta.accent}22`, border: `1px solid ${meta.accent}44` }}>
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: `${meta.accent}1E`, border: `1px solid ${meta.accent}44` }}>
+            {icon ? <img src={icon} alt={meta.label} className="w-9 h-9 sm:w-10 sm:h-10 object-contain" /> : null}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-lg sm:text-2xl leading-tight font-bold mb-1 break-words" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{meta.label}</h3>
+            <p className="text-xs sm:text-sm" style={{ color: `${meta.accent}E8` }}>{meta.tagline}</p>
+          </div>
+        </div>
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `${meta.accent}22`, border: `1px solid ${meta.accent}44` }}>
           <ChevronRight className="w-5 h-5" style={{ color: meta.accent }} />
         </div>
       </div>
