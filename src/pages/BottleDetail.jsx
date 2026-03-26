@@ -124,7 +124,7 @@ export default function BottleDetail() {
     setDeleting(true);
     try {
       await base44.entities.Bottle.delete(bottle.id);
-      navigate(-1);
+      navigate('/Whiskey');
     } catch (e) {
       console.error(e);
       setDeleting(false);
