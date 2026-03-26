@@ -126,6 +126,8 @@ export default function WhiskeyExporter() {
       const unopened = bottles.filter(b => !b.opened_date).length;
       const avgRating = bottles.filter(b => b.rating).reduce((s, b, _, a) => s + b.rating / a.length, 0);
 
+      const fmtMoney = (n) => `$${parseFloat(Number(n).toFixed(2)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
       doc.setFontSize(12);
       doc.setFont(undefined, 'bold');
       doc.text('Collection Summary', 20, 45);
@@ -133,7 +135,7 @@ export default function WhiskeyExporter() {
       doc.setFontSize(10);
       doc.text(`Total Bottles: ${totalBottles}`, 20, 52);
       doc.text(`Unopened: ${unopened}`, 20, 58);
-      doc.text(`Total Purchase Value: $${totalValue.toLocaleString()}`, 20, 64);
+      doc.text(`Total Purchase Value: ${fmtMoney(totalValue)}`, 20, 64);
       if (avgRating) doc.text(`Average Rating: ${avgRating.toFixed(1)} / 5`, 20, 70);
 
       // Bottle details
@@ -174,14 +176,17 @@ export default function WhiskeyExporter() {
 
         if (bottleValue) {
           doc.setFont(undefined, 'bold');
-          doc.text(`${bottleValueLabel}: $${bottleValue}${bottle.fill_level ? ` | Fill: ${bottle.fill_level}` : ''}`, 25, y);
+          doc.text(`${bottleValueLabel}: ${fmtMoney(bottleValue)}${bottle.fill_level ? ` | Fill: ${bottle.fill_level}` : ''}`, 25, y);
           doc.setFont(undefined, 'normal');
           y += 5;
         }
 
         if (bottle.rating) {
-          doc.text(`Rating: ${'★'.repeat(bottle.rating)}${'☆'.repeat(5 - bottle.rating)} (${bottle.rating}/5)`, 25, y);
-          y += 5;
+          const ratingNum = parseFloat(bottle.rating);
+          if (!isNaN(ratingNum)) {
+            doc.text(`Rating: ${ratingNum.toFixed(1)} / 5`, 25, y);
+            y += 5;
+          }
         }
 
         if (bottle.notes) {

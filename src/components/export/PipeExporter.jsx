@@ -104,17 +104,12 @@ export default function PipeExporter() {
       doc.text(`${t("pipeExporter.owner")} ${user?.full_name || user?.email}`, pageWidth / 2, 34, { align: 'center' });
       
       // Summary
-      const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
-      const totalPurchase = pipes.reduce((sum, p) => sum + (p.purchase_price || 0), 0);
-      
-      doc.setFontSize(12);
-      doc.setFont(undefined, 'bold');
-      doc.text(t("pipeExporter.collectionSummary"), 20, 45);
-      doc.setFont(undefined, 'normal');
-      doc.setFontSize(10);
-      doc.text(`${t("pipeExporter.totalPipes")} ${pipes.length}`, 20, 52);
-      doc.text(`${t("pipeExporter.totalPurchaseValue")} $${totalPurchase.toLocaleString()}`, 20, 58);
-      doc.text(`${t("pipeExporter.currentEstimatedValue")} $${totalValue.toLocaleString()}`, 20, 64);
+      const totalValue = pipes.reduce((sum, p) => sum + (Number(p.estimated_value) || 0), 0);
+      const totalPurchase = pipes.reduce((sum, p) => sum + (Number(p.purchase_price) || 0), 0);
+      const fmtMoney = (n) => `$${Number(n).toFixed(2)}`;
+
+      doc.text(`${t("pipeExporter.totalPurchaseValue")} ${fmtMoney(totalPurchase)}`, 20, 58);
+      doc.text(`${t("pipeExporter.currentEstimatedValue")} ${fmtMoney(totalValue)}`, 20, 64);
       
       // Individual pipes
       let y = 75;
@@ -176,8 +171,10 @@ export default function PipeExporter() {
         }
         
         if (pipe.purchase_price || pipe.estimated_value) {
+          const pp = pipe.purchase_price ? fmtMoney(pipe.purchase_price) : 'N/A';
+          const ev = pipe.estimated_value ? fmtMoney(pipe.estimated_value) : 'N/A';
           doc.setFont(undefined, 'bold');
-          doc.text(`${t("pipeExporter.purchasePricePrefix")} $${pipe.purchase_price || 'N/A'} | ${t("pipeExporter.currentValuePrefix")} $${pipe.estimated_value || 'N/A'}`, 25, y);
+          doc.text(`${t("pipeExporter.purchasePricePrefix")} ${pp} | ${t("pipeExporter.currentValuePrefix")} ${ev}`, 25, y);
           doc.setFont(undefined, 'normal');
           y += 5;
         }
