@@ -1,10 +1,21 @@
+// Production subscription checkout links.
+// Insert live production Stripe links before release.
+// Do NOT use test links here.
+
 export const SUBSCRIPTION_LINKS = {
-  premium: {
-    monthly: "https://buy.stripe.com/test_eVaeVf7eS28q2fOfZ0", // Replace with your actual Premium Monthly Stripe Payment Link
-    annual: "https://buy.stripe.com/test_dRudiB46G3cu7n2144",  // Replace with your actual Premium Annual Stripe Payment Link
-  },
-  pro: {
-    monthly: "https://buy.stripe.com/test_7sIeXj0Yw00g7n2dRa", // Replace with your actual Pro Monthly Stripe Payment Link
-    annual: "https://buy.stripe.com/test_aEUfXj46GboqgYQfZb",  // Replace with your actual Pro Annual Stripe Payment Link
-  },
+  pipekeeper_monthly: "",
+  pipekeeper_annual: "",
+  whiskeykeeper_monthly: "",
+  whiskeykeeper_annual: "",
+  cigarkeeper_monthly: "",
+  cigarkeeper_annual: "",
+  winekeeper_monthly: "",
+  winekeeper_annual: "",
+  three_bundle_monthly: "",
+  three_bundle_annual: "",
+  four_bundle_monthly: "",
+  four_bundle_annual: "",
+  founders_annual: "",
 };
+
+export default SUBSCRIPTION_LINKS;
