@@ -169,10 +169,20 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         else if (itemType === 'pipe') finalData.photos = [imageUrl];
         else if (itemType === 'bottle') finalData.photo = imageUrl;
       }
-      const record = buildFinalRecord(itemType, finalData);
-      const created = await base44.entities[ENTITIES[itemType]].create(record);
-      toast.success(`${typeLabel} saved!`);
-      onCreated({ ...created, ...finalData });
+      
+      // If this is a quick add (has _quickRecord), update existing record
+      if (data._quickRecord && itemType === 'blend') {
+        const updateData = buildFinalRecord(itemType, finalData);
+        await base44.entities.TobaccoBlend.update(data._quickRecord.id, updateData);
+        toast.success(`${typeLabel} saved!`);
+        onCreated({ ...data._quickRecord, ...updateData });
+      } else {
+        // Manual add - create new record
+        const record = buildFinalRecord(itemType, finalData);
+        const created = await base44.entities[ENTITIES[itemType]].create(record);
+        toast.success(`${typeLabel} saved!`);
+        onCreated({ ...created, ...finalData });
+      }
     } catch (e) {
       toast.error(e?.message || 'Failed to save');
     } finally {

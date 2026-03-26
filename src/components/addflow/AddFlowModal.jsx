@@ -121,19 +121,7 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
             <AddFlowManualImages
               {...sharedProps}
               data={manualData}
-              onCreated={async () => {
-                const rec = manualData._quickRecord;
-                if (rec) {
-                  try {
-                    const { base44 } = await import('@/api/base44Client');
-                    await base44.entities.TobaccoBlend.update(rec.id, manualData);
-                    created({ ...rec, ...manualData });
-                  } catch (e) {
-                    console.error('Update failed:', e);
-                    created(rec);
-                  }
-                }
-              }}
+              onCreated={created}
             />
           )}
 
