@@ -25,10 +25,15 @@ function buildFinalRecord(itemType, data) {
     tin_tins_cellared: data.tin_tins_cellared,
     tin_cellared_date: data.tin_cellared_date,
     bulk_total_quantity_oz: data.bulk_total_quantity_oz,
+    bulk_open: data.bulk_open,
+    bulk_cellared: data.bulk_cellared,
     bulk_cellared_date: data.bulk_cellared_date,
     pouch_total_pouches: data.pouch_total_pouches,
     pouch_size_oz: data.pouch_size_oz,
     pouch_total_quantity_oz: data.pouch_total_quantity_oz,
+    pouch_pouches_open: data.pouch_pouches_open,
+    pouch_pouches_cellared: data.pouch_pouches_cellared,
+    pouch_cellared_date: data.pouch_cellared_date,
   });
   if (itemType === 'pipe') return clean({
     name: data.name,
