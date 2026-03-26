@@ -21,7 +21,7 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
   useEffect(() => {
     if (open) {
       setItemType(initialItemType || 'blend');
-      setStep(initialItemType ? 'quickSearch' : 'choice');
+      setStep('choice');
       setSearchResult(null);
       setManualData({});
     }
