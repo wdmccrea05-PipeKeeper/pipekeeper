@@ -1,0 +1,173 @@
+import React, { useState } from 'react';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const STRENGTHS = ['Mild', 'Mild-Medium', 'Medium', 'Medium-Full', 'Full'];
+const CUTS = ['Ribbon', 'Flake', 'Broken Flake', 'Ready Rubbed', 'Plug', 'Rope', 'Crumble Cake', 'Shag', 'Coin', 'Twist', 'Cube Cut'];
+const FINISHES = ['Smooth', 'Sandblast', 'Rusticated', 'Partially Rusticated', 'Carved', 'Natural', 'Other'];
+const MATERIALS = ['Briar', 'Meerschaum', 'Corn Cob', 'Clay', 'Morta', 'Cherry Wood', 'Olive Wood', 'Other'];
+const CONDITIONS = ['Mint', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor', 'Estate - Unrestored'];
+
+const inputStyle = {
+  background: 'rgba(20,13,8,0.7)',
+  border: '1px solid rgba(180,140,75,0.28)',
+  color: '#F5F1E7',
+};
+
+function FieldRow({ label, children }) {
+  return (
+    <div className="space-y-1.5">
+      <Label style={{ color: 'rgba(224,216,200,0.65)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        {label}
+      </Label>
+      {children}
+    </div>
+  );
+}
+
+function StyledSelect({ value, onChange, options, placeholder }) {
+  return (
+    <Select value={value || ''} onValueChange={onChange}>
+      <SelectTrigger style={{ ...inputStyle, height: 40 }}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+      </SelectContent>
+    </Select>
+  );
+}
+
+export default function AddFlowManualDetails({ itemType, onBack, onNext, data }) {
+  const [values, setValues] = useState({
+    strength: data?.strength || '',
+    cut: data?.cut || '',
+    flavor_notes_raw: Array.isArray(data?.flavor_notes) ? data.flavor_notes.join(', ') : (data?.flavor_notes_raw || ''),
+    notes: data?.notes || '',
+    finish: data?.finish || '',
+    bowl_material: data?.bowl_material || '',
+    condition: data?.condition || '',
+    abv: data?.abv || '',
+    age: data?.age || '',
+  });
+
+  const set = (key, val) => setValues(prev => ({ ...prev, [key]: val }));
+
+  const handleNext = () => {
+    const out = { ...values };
+    if (out.flavor_notes_raw) {
+      out.flavor_notes = out.flavor_notes_raw.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    delete out.flavor_notes_raw;
+    onNext(out);
+  };
+
+  return (
+    <div className="flex flex-col">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-6 pt-6 pb-5">
+        <button
+          onClick={onBack}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+          style={{ color: 'rgba(224,216,200,0.6)' }}
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <div className="min-w-0">
+          <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+            Details
+          </h2>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>Step 2 of 3</p>
+        </div>
+      </div>
+
+      <div className="mx-6" style={{ height: 1, background: 'rgba(180,140,75,0.12)' }} />
+
+      <div className="px-6 py-6 flex flex-col gap-5">
+        {itemType === 'blend' && (
+          <>
+            <FieldRow label="Strength">
+              <StyledSelect value={values.strength} onChange={v => set('strength', v)} options={STRENGTHS} placeholder="Select strength…" />
+            </FieldRow>
+            <FieldRow label="Cut">
+              <StyledSelect value={values.cut} onChange={v => set('cut', v)} options={CUTS} placeholder="Select cut…" />
+            </FieldRow>
+            <FieldRow label="Flavor Notes">
+              <Input
+                value={values.flavor_notes_raw}
+                onChange={e => set('flavor_notes_raw', e.target.value)}
+                placeholder="e.g. Nutty, Sweet, Earthy (comma separated)…"
+                style={inputStyle}
+                className="placeholder:text-[rgba(224,216,200,0.3)]"
+              />
+            </FieldRow>
+          </>
+        )}
+
+        {itemType === 'pipe' && (
+          <>
+            <FieldRow label="Bowl Material">
+              <StyledSelect value={values.bowl_material} onChange={v => set('bowl_material', v)} options={MATERIALS} placeholder="Select material…" />
+            </FieldRow>
+            <FieldRow label="Finish">
+              <StyledSelect value={values.finish} onChange={v => set('finish', v)} options={FINISHES} placeholder="Select finish…" />
+            </FieldRow>
+            <FieldRow label="Condition">
+              <StyledSelect value={values.condition} onChange={v => set('condition', v)} options={CONDITIONS} placeholder="Select condition…" />
+            </FieldRow>
+          </>
+        )}
+
+        {itemType === 'bottle' && (
+          <>
+            <FieldRow label="Proof / ABV">
+              <Input
+                type="number"
+                value={values.abv}
+                onChange={e => set('abv', e.target.value)}
+                placeholder="e.g. 43"
+                style={inputStyle}
+                className="placeholder:text-[rgba(224,216,200,0.3)]"
+              />
+            </FieldRow>
+            <FieldRow label="Age (Years)">
+              <Input
+                type="number"
+                value={values.age}
+                onChange={e => set('age', e.target.value)}
+                placeholder="e.g. 12"
+                style={inputStyle}
+                className="placeholder:text-[rgba(224,216,200,0.3)]"
+              />
+            </FieldRow>
+          </>
+        )}
+
+        <FieldRow label="Notes">
+          <Textarea
+            value={values.notes}
+            onChange={e => set('notes', e.target.value)}
+            placeholder="Any personal notes…"
+            rows={3}
+            style={{ ...inputStyle, resize: 'none' }}
+            className="placeholder:text-[rgba(224,216,200,0.3)]"
+          />
+        </FieldRow>
+
+        <Button
+          onClick={handleNext}
+          className="w-full mt-2"
+          style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))', color: '#fff', fontWeight: 600 }}
+        >
+          Continue
+          <ChevronRight className="w-4 h-4 ml-1" />
+        </Button>
+      </div>
+      <div className="pb-2" />
+    </div>
+  );
+}

@@ -530,7 +530,6 @@ export default function PipesPage() {
           initialItemType="pipe"
           onCreated={(record) => {
             queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
-            if (record) { setEditingPipe(record); setShowForm(true); }
           }}
         />
       </div>

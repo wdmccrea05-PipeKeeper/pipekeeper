@@ -1,104 +1,108 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import AddFlowEntry from './AddFlowEntry';
-import AddFlowQuickAdd from './AddFlowQuickAdd';
-import AddFlowSearchStep from './AddFlowSearchStep';
-import AddFlowConfirmStep from './AddFlowConfirmStep';
-import AddFlowEnhancementStep from './AddFlowEnhancementStep';
-import AddFlowProcessingStep from './AddFlowProcessingStep';
+import AddFlowChoice from './AddFlowChoice';
+import AddFlowQuickSearch from './AddFlowQuickSearch';
+import AddFlowQuickConfirm from './AddFlowQuickConfirm';
+import AddFlowManualBasic from './AddFlowManualBasic';
+import AddFlowManualDetails from './AddFlowManualDetails';
+import AddFlowManualImages from './AddFlowManualImages';
+
+const TYPE_LABELS = { pipe: 'Pipe', blend: 'Blend', bottle: 'Bottle' };
 
 export default function AddFlowModal({ open, onClose, onCreated, initialItemType }) {
-  const [step, setStep] = useState('entry');
-  const [itemType, setItemType] = useState(initialItemType || null);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [step, setStep] = useState('choice');
+  const [itemType] = useState(initialItemType || 'blend');
+  const [searchResult, setSearchResult] = useState(null);
+  const [manualData, setManualData] = useState({});
 
   useEffect(() => {
     if (open) {
-      setStep(initialItemType ? 'modeSelect' : 'entry');
-      setItemType(initialItemType || null);
-      setSelectedItem(null);
+      setStep('choice');
+      setSearchResult(null);
+      setManualData({});
     }
-  }, [open, initialItemType]);
+  }, [open]);
 
-  const handleClose = () => {
-    onClose();
+  const close = () => onClose();
+  const created = (record) => { onCreated?.(record); close(); };
+
+  const goBack = () => {
+    const map = {
+      quickSearch: 'choice',
+      quickConfirm: 'quickSearch',
+      manualBasic: 'choice',
+      manualDetails: 'manualBasic',
+      manualImages: 'manualDetails',
+    };
+    const prev = map[step];
+    if (prev) setStep(prev);
+    else close();
   };
 
-  const handleEntrySelectType = (type) => {
-    setItemType(type);
-    setStep('modeSelect');
-  };
-
-  const handleModeSelect = (mode) => {
-    if (mode === 'quick') setStep('quickAdd');
-    else setStep('search');
-  };
-
-  const handleSearchSelect = (item) => {
-    setSelectedItem(item);
-    setStep('confirm');
-  };
-
-  const handleConfirm = () => {
-    setStep('enhancements');
-  };
-
-  const handleEnhancementsConfirm = () => {
-    setStep('processing');
-  };
-
-  const handleCreated = (record) => {
-    onCreated?.(record);
-    handleClose();
-  };
-
-  const handleBack = () => {
-    if (step === 'modeSelect') {
-      if (initialItemType) { handleClose(); return; }
-      setStep('entry');
-    } else if (step === 'quickAdd') setStep('modeSelect');
-    else if (step === 'search') setStep('modeSelect');
-    else if (step === 'confirm') setStep('search');
-    else if (step === 'enhancements') setStep('confirm');
-  };
+  const sharedProps = { itemType, onBack: goBack, onClose: close, typeLabel: TYPE_LABELS[itemType] };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) close(); }}>
       <DialogContent
-        className="max-w-md w-full p-0 overflow-hidden border-0"
+        className="max-w-lg w-full p-0 overflow-hidden"
         style={{
-          background: 'linear-gradient(180deg, rgba(36,25,16,0.99) 0%, rgba(22,15,10,1) 100%)',
-          border: '1px solid rgba(180,140,75,0.22)',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.7)',
+          background: 'linear-gradient(180deg, rgba(34,23,15,0.99) 0%, rgba(20,13,8,1) 100%)',
+          border: '1px solid rgba(180,140,75,0.24)',
+          boxShadow: '0 28px 72px rgba(0,0,0,0.75)',
+          borderRadius: '1.25rem',
         }}
       >
-        {step === 'entry' && (
-          <AddFlowEntry onSelectType={handleEntrySelectType} onClose={handleClose} />
-        )}
-        {step === 'modeSelect' && (
-          <AddFlowEntry
-            fixedType={itemType}
-            onSelectType={handleEntrySelectType}
-            onSelectMode={handleModeSelect}
-            onClose={handleClose}
-            onBack={handleBack}
-          />
-        )}
-        {step === 'quickAdd' && (
-          <AddFlowQuickAdd itemType={itemType} onBack={handleBack} onCreated={handleCreated} />
-        )}
-        {step === 'search' && (
-          <AddFlowSearchStep itemType={itemType} onSelect={handleSearchSelect} onBack={handleBack} />
-        )}
-        {step === 'confirm' && (
-          <AddFlowConfirmStep itemType={itemType} item={selectedItem} onConfirm={handleConfirm} onBack={handleBack} />
-        )}
-        {step === 'enhancements' && (
-          <AddFlowEnhancementStep itemType={itemType} item={selectedItem} onConfirm={handleEnhancementsConfirm} onBack={handleBack} />
-        )}
-        {step === 'processing' && (
-          <AddFlowProcessingStep itemType={itemType} item={selectedItem} onCreated={handleCreated} />
-        )}
+        <div className="overflow-y-auto" style={{ maxHeight: '90vh' }}>
+          {step === 'choice' && (
+            <AddFlowChoice
+              {...sharedProps}
+              onQuickAdd={() => setStep('quickSearch')}
+              onManualAdd={() => setStep('manualBasic')}
+            />
+          )}
+
+          {step === 'quickSearch' && (
+            <AddFlowQuickSearch
+              {...sharedProps}
+              onSelect={(result) => { setSearchResult(result); setStep('quickConfirm'); }}
+              onManual={() => setStep('manualBasic')}
+            />
+          )}
+
+          {step === 'quickConfirm' && (
+            <AddFlowQuickConfirm
+              {...sharedProps}
+              result={searchResult}
+              onSearchAgain={() => setStep('quickSearch')}
+              onManual={() => setStep('manualBasic')}
+              onCreated={created}
+            />
+          )}
+
+          {step === 'manualBasic' && (
+            <AddFlowManualBasic
+              {...sharedProps}
+              data={manualData}
+              onNext={(d) => { setManualData(prev => ({ ...prev, ...d })); setStep('manualDetails'); }}
+            />
+          )}
+
+          {step === 'manualDetails' && (
+            <AddFlowManualDetails
+              {...sharedProps}
+              data={manualData}
+              onNext={(d) => { setManualData(prev => ({ ...prev, ...d })); setStep('manualImages'); }}
+            />
+          )}
+
+          {step === 'manualImages' && (
+            <AddFlowManualImages
+              {...sharedProps}
+              data={manualData}
+              onCreated={created}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

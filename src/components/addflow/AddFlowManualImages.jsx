@@ -1,0 +1,174 @@
+import React, { useState, useRef } from 'react';
+import { ArrowLeft, Upload, Image, Loader2, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
+
+const ENTITIES = { blend: 'TobaccoBlend', pipe: 'Pipe', bottle: 'Bottle' };
+
+function buildFinalRecord(itemType, data) {
+  const clean = obj => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined && v !== null && v !== ''));
+  if (itemType === 'blend') return clean({
+    name: data.name,
+    manufacturer: data.manufacturer,
+    blend_type: data.blend_type,
+    strength: data.strength,
+    cut: data.cut,
+    flavor_notes: data.flavor_notes?.length ? data.flavor_notes : undefined,
+    notes: data.notes,
+    logo: data.logo,
+  });
+  if (itemType === 'pipe') return clean({
+    name: data.name,
+    maker: data.maker,
+    shape: data.shape,
+    bowl_material: data.bowl_material,
+    finish: data.finish,
+    condition: data.condition,
+    notes: data.notes,
+    photos: data.photos?.length ? data.photos : undefined,
+  });
+  if (itemType === 'bottle') return clean({
+    name: data.name,
+    distillery: data.distillery,
+    type: data.type,
+    abv: data.abv ? Number(data.abv) : undefined,
+    age: data.age ? Number(data.age) : undefined,
+    notes: data.notes,
+    photo: data.photo,
+  });
+  return { name: data.name };
+}
+
+export default function AddFlowManualImages({ itemType, typeLabel, data, onBack, onCreated }) {
+  const [imageUrl, setImageUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const fileRef = useRef(null);
+
+  const imageLabel = itemType === 'blend' ? 'Tin / Label Photo' :
+                     itemType === 'pipe' ? 'Pipe Photo' : 'Bottle Photo';
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setImageUrl(file_url);
+    } catch {
+      toast.error('Image upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const finalData = { ...data };
+      if (imageUrl) {
+        if (itemType === 'blend') finalData.logo = imageUrl;
+        else if (itemType === 'pipe') finalData.photos = [imageUrl];
+        else if (itemType === 'bottle') finalData.photo = imageUrl;
+      }
+      const record = buildFinalRecord(itemType, finalData);
+      const created = await base44.entities[ENTITIES[itemType]].create(record);
+      toast.success(`${typeLabel} saved!`);
+      onCreated(created);
+    } catch (e) {
+      toast.error(e?.message || 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-6 pt-6 pb-5">
+        <button
+          onClick={onBack}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+          style={{ color: 'rgba(224,216,200,0.6)' }}
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <div className="min-w-0">
+          <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+            Add Photo
+          </h2>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>Step 3 of 3 — Optional</p>
+        </div>
+      </div>
+
+      <div className="mx-6" style={{ height: 1, background: 'rgba(180,140,75,0.12)' }} />
+
+      <div className="px-6 py-6 flex flex-col gap-5">
+        <p className="text-sm" style={{ color: 'rgba(224,216,200,0.55)' }}>
+          Add a photo now, or skip and add one later from the record.
+        </p>
+
+        {/* Upload zone */}
+        {imageUrl ? (
+          <div className="relative rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(180,140,75,0.25)', height: 180 }}>
+            <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
+            <button
+              onClick={() => setImageUrl('')}
+              className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+              style={{ background: 'rgba(20,13,8,0.85)', color: '#F5F1E7', border: '1px solid rgba(255,255,255,0.15)' }}
+            >
+              ×
+            </button>
+            <div className="absolute bottom-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(46,125,92,0.85)', color: '#fff' }}>
+              <Check className="w-3 h-3" /> Uploaded
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="rounded-2xl flex flex-col items-center justify-center gap-3 py-10 transition-colors hover:bg-white/[0.03] active:bg-white/[0.05]"
+            style={{ border: '2px dashed rgba(180,140,75,0.25)', color: 'rgba(180,140,75,0.6)' }}
+          >
+            {uploading ? (
+              <Loader2 className="w-8 h-8 animate-spin" />
+            ) : (
+              <>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.2)' }}>
+                  <Upload className="w-5 h-5" />
+                </div>
+                <div className="text-center">
+                  <p className="font-medium text-sm" style={{ color: 'rgba(212,165,116,0.85)' }}>{imageLabel}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.35)' }}>Tap to browse</p>
+                </div>
+              </>
+            )}
+          </button>
+        )}
+        <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
+
+        {/* Actions */}
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full"
+          style={{ background: 'linear-gradient(135deg, rgba(46,125,92,1), rgba(36,105,76,1))', color: '#fff', fontWeight: 600 }}
+        >
+          {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+          Save {typeLabel}
+        </Button>
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="text-center text-sm py-1 transition-colors hover:opacity-80"
+          style={{ color: 'rgba(224,216,200,0.4)' }}
+        >
+          Skip photo and save
+        </button>
+      </div>
+      <div className="pb-2" />
+    </div>
+  );
+}

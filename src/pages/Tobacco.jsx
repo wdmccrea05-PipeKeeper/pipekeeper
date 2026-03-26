@@ -641,7 +641,6 @@ export default function TobaccoPage() {
           initialItemType="blend"
           onCreated={(record) => {
             invalidateBlendQueries(queryClient, user?.email);
-            if (record) { setEditingBlend(record); setShowForm(true); }
           }}
         />
 
