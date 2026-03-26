@@ -11,15 +11,35 @@ const PLACEHOLDERS = {
 };
 
 const PROMPTS = {
-  blend: (q) => `Find real pipe tobacco blends matching: "${q}". Return JSON with 5 results. Each: name, manufacturer, blend_type, strength, description (1 sentence).`,
-  pipe: (q) => `Find real tobacco pipes matching: "${q}". Return JSON with 5 results. Each: name, maker, shape, bowl_material, description (1 sentence).`,
-  bottle: (q) => `Find real whiskey bottles/expressions matching: "${q}". Return JSON with 5 results. Each: name, distillery, whiskey_type, age (number or null), abv (number or null), description (1 sentence).`,
+  blend: (q) => `List up to 5 real pipe tobacco blends that match "${q}". Use your knowledge of pipe tobacco. Return JSON object with an "items" array. Each item: name (string), manufacturer (string), blend_type (string), strength (string), description (one sentence about the blend).`,
+  pipe: (q) => `List up to 5 real tobacco pipes that match "${q}". Use your knowledge of pipe makers and models. Return JSON object with an "items" array. Each item: name (string), maker (string), shape (string), bowl_material (string), description (one sentence).`,
+  bottle: (q) => `List up to 5 real whiskey bottles/expressions that match "${q}". Use your knowledge of whiskey brands. Return JSON object with an "items" array. Each item: name (string), distillery (string), whiskey_type (string), age (number or null), abv (number or null), description (one sentence).`,
 };
 
 const SCHEMA = {
-  blend: { items: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, manufacturer: { type: 'string' }, blend_type: { type: 'string' }, strength: { type: 'string' }, description: { type: 'string' } } } } },
-  pipe: { items: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, maker: { type: 'string' }, shape: { type: 'string' }, bowl_material: { type: 'string' }, description: { type: 'string' } } } } },
-  bottle: { items: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, distillery: { type: 'string' }, whiskey_type: { type: 'string' }, age: { type: 'number' }, abv: { type: 'number' }, description: { type: 'string' } } } } },
+  type: 'object',
+  properties: {
+    items: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          manufacturer: { type: 'string' },
+          maker: { type: 'string' },
+          distillery: { type: 'string' },
+          blend_type: { type: 'string' },
+          whiskey_type: { type: 'string' },
+          shape: { type: 'string' },
+          bowl_material: { type: 'string' },
+          strength: { type: 'string' },
+          age: { type: 'number' },
+          abv: { type: 'number' },
+          description: { type: 'string' },
+        },
+      },
+    },
+  },
 };
 
 function getSubtitle(itemType, item) {
@@ -42,12 +62,7 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
     try {
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: PROMPTS[itemType](query.trim()),
-        add_context_from_internet: true,
-        model: 'gemini_3_flash',
-        response_json_schema: {
-          type: 'object',
-          properties: SCHEMA[itemType],
-        },
+        response_json_schema: SCHEMA,
       });
       setResults(Array.isArray(res?.items) ? res.items.filter(i => i?.name) : []);
     } catch {

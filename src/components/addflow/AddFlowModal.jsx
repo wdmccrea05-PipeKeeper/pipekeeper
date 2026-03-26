@@ -42,7 +42,7 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
   const sharedProps = { itemType, onBack: goBack, onClose: close, typeLabel: TYPE_LABELS[itemType] };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) close(); }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o && step === 'choice') close(); }}>
       <DialogContent
         className="max-w-lg w-full p-0 overflow-hidden"
         style={{
