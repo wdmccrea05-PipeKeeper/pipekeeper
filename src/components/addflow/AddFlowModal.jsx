@@ -14,17 +14,18 @@ const TYPE_LABELS = { pipe: 'Pipe', blend: 'Blend', bottle: 'Bottle' };
 export default function AddFlowModal({ open, onClose, onCreated, initialItemType }) {
   const navigate = useNavigate();
   const [step, setStep] = useState('choice');
-  const [itemType] = useState(initialItemType || 'blend');
+  const [itemType, setItemType] = useState(initialItemType || 'blend');
   const [searchResult, setSearchResult] = useState(null);
   const [manualData, setManualData] = useState({});
 
   useEffect(() => {
     if (open) {
+      setItemType(initialItemType || 'blend');
       setStep('choice');
       setSearchResult(null);
       setManualData({});
     }
-  }, [open]);
+  }, [open, initialItemType]);
 
   const close = () => onClose();
   const created = (record) => {
