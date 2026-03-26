@@ -177,9 +177,32 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
       
       // If this is a quick add (has _quickRecord), update existing record
       if (data._quickRecord && itemType === 'blend') {
-        const updateData = buildFinalRecord(itemType, finalData);
         const blendId = data._quickRecord.id;
-        await base44.entities.TobaccoBlend.update(blendId, updateData);
+        // For quick add, preserve enriched fields and only add inventory/image data
+        const updateData = {
+          ...(imageUrl && { logo: imageUrl }),
+          tin_total_tins: finalData.tin_total_tins,
+          tin_size_oz: finalData.tin_size_oz,
+          tin_total_quantity_oz: finalData.tin_total_quantity_oz,
+          tin_tins_open: finalData.tin_tins_open,
+          tin_tins_cellared: finalData.tin_tins_cellared,
+          tin_cellared_date: finalData.tin_cellared_date,
+          bulk_total_quantity_oz: finalData.bulk_total_quantity_oz,
+          bulk_open: finalData.bulk_open,
+          bulk_cellared: finalData.bulk_cellared,
+          bulk_cellared_date: finalData.bulk_cellared_date,
+          pouch_total_pouches: finalData.pouch_total_pouches,
+          pouch_size_oz: finalData.pouch_size_oz,
+          pouch_total_quantity_oz: finalData.pouch_total_quantity_oz,
+          pouch_pouches_open: finalData.pouch_pouches_open,
+          pouch_pouches_cellared: finalData.pouch_pouches_cellared,
+          pouch_cellared_date: finalData.pouch_cellared_date,
+        };
+        // Filter out undefined values
+        const cleanUpdate = Object.fromEntries(
+          Object.entries(updateData).filter(([, v]) => v !== undefined)
+        );
+        await base44.entities.TobaccoBlend.update(blendId, cleanUpdate);
         
         // Create CellarLog entries for cellared quantities
         await createCellarLogsForRecord(blendId, finalData, data._quickRecord.name);
