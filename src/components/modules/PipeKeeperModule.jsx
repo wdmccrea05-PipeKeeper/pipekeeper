@@ -15,6 +15,7 @@ import ModuleQuickLaunch from './ModuleQuickLaunch';
 import QuickSearchPipe from '@/components/ai/QuickSearchPipe';
 import SmokingLogPanel from '@/components/home/SmokingLogPanel';
 import { useProfilePrivacy } from '@/components/hooks/useProfilePrivacy';
+import AddFlowModal from '@/components/addflow/AddFlowModal';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
@@ -29,6 +30,8 @@ export default function PipeKeeperModule() {
   
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showSmokingLog, setShowSmokingLog] = useState(params.get('action') === 'log-smoke');
+  const [addFlowOpen, setAddFlowOpen] = useState(false);
+  const [addFlowType, setAddFlowType] = useState(null);
 
 
 
@@ -111,13 +114,13 @@ export default function PipeKeeperModule() {
       key: 'addPipe',
       usePipeIcon: true,
       label: t('quickActions.addPipe'),
-      onClick: () => navigate('/Pipes?action=add')
+      onClick: () => { setAddFlowType('pipe'); setAddFlowOpen(true); }
     },
     {
       key: 'addBlend',
       Icon: Leaf,
       label: t('quickActions.addBlend'),
-      onClick: () => navigate('/Tobacco?action=add')
+      onClick: () => { setAddFlowType('blend'); setAddFlowOpen(true); }
     },
     {
       key: 'quickSearch',
@@ -293,6 +296,18 @@ export default function PipeKeeperModule() {
           </div>
         </div>
       )}
+
+      {/* Add Flow Modal */}
+      <AddFlowModal
+        open={addFlowOpen}
+        onClose={() => { setAddFlowOpen(false); setAddFlowType(null); }}
+        initialItemType={addFlowType}
+        onCreated={() => { 
+          handlePipeAdded();
+          setAddFlowOpen(false);
+          setAddFlowType(null);
+        }}
+      />
     </div>
   );
 }
