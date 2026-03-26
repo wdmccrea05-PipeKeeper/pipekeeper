@@ -179,31 +179,8 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
       if (data._quickRecord && itemType === 'blend') {
         const blendId = data._quickRecord.id;
         
-        // Enrich with metadata before saving
-        let enrichedData = {};
-        try {
-          const enriched = await base44.functions.invoke('enrichTobaccoBlend', {
-            name: data._quickRecord.name,
-            manufacturer: data._quickRecord.manufacturer,
-            blend_type: data._quickRecord.blend_type,
-            strength: data._quickRecord.strength,
-            description: data._quickRecord.notes,
-          });
-          // Merge enriched data directly from response
-          if (enriched) {
-            const { cut, rating, production_status, aging_potential } = enriched;
-            if (cut) enrichedData.cut = cut;
-            if (rating) enrichedData.rating = rating;
-            if (production_status) enrichedData.production_status = production_status;
-            if (aging_potential) enrichedData.aging_potential = aging_potential;
-          }
-        } catch (enrichError) {
-          console.warn('Enrichment failed:', enrichError);
-        }
-        
-        // For quick add, preserve enriched fields and only add inventory/image data
+        // For quick add, only add inventory/image data
         const updateData = {
-          ...enrichedData,
           ...(imageUrl && { logo: imageUrl }),
           tin_total_tins: finalData.tin_total_tins,
           tin_size_oz: finalData.tin_size_oz,

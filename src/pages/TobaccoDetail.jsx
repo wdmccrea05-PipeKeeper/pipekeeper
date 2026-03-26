@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Pencil, Leaf, Share2, Search, Trash2 } from 'lucide-react';
+import EnrichButton from '@/components/shared/EnrichButton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import PipeIcon from '@/components/icons/PipeIcon';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
@@ -201,6 +202,7 @@ export default function TobaccoDetail() {
             <Share2 className="w-4 h-4 mr-2" />
             Share
           </Button>
+          <EnrichButton itemType="blend" record={blend} onEnriched={setBlend} />
           <Button onClick={() => navigate(`/Tobacco?edit=${encodeURIComponent(blend.id)}`)} style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))', color: '#fff' }}>
             <Pencil className="w-4 h-4 mr-2" />
             Edit
