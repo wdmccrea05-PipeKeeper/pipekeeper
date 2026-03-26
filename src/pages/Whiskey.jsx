@@ -30,6 +30,7 @@ import { getBottleUnitValue } from '@/components/utils/whiskeyValueHelpers';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { useProfilePrivacy } from '@/components/hooks/useProfilePrivacy';
+import AddFlowModal from '@/components/addflow/AddFlowModal';
 
 function StatBadge({ icon: Icon, label, value, accent = '#D4A574' }) {
   return (
@@ -70,6 +71,7 @@ export default function WhiskeyPage() {
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('whiskeyViewMode') || 'grid');
   const [displayMode, setDisplayMode] = useState(() => localStorage.getItem('whiskeyDisplayMode') === 'collector');
   const [sortBy, setSortBy] = useState(() => localStorage.getItem('whiskeySortBy') || 'date');
+  const [showAddFlow, setShowAddFlow] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -267,7 +269,7 @@ export default function WhiskeyPage() {
                     {t('quickActions.quickSearchBottle', 'Quick Add')}
                   </Button>
                   <Button
-                    onClick={() => { setEditingBottle(null); setShowForm(true); }}
+                    onClick={() => { setEditingBottle(null); setShowAddFlow(true); }}
                     size="sm"
                     className="text-xs sm:text-sm whitespace-nowrap"
                     style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))', color: '#F5F1E7', border: '1px solid rgba(163,92,92,0.5)' }}
@@ -464,7 +466,7 @@ export default function WhiskeyPage() {
             <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">{t('whiskey.noBottlesYet', 'No bottles yet')}</h2>
             <p style={{ color: 'rgba(224,216,200,0.6)' }} className="mb-6 max-w-sm mx-auto">{t('whiskey.startTracking', 'Start tracking your whiskey collection')}</p>
             <div className="flex gap-3 justify-center flex-wrap">
-              <Button onClick={() => setShowForm(true)} style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))', color: '#F5F1E7' }}>
+              <Button onClick={() => setShowAddFlow(true)} style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))', color: '#F5F1E7' }}>
                 <Plus className="w-4 h-4 mr-2" />
                 {t('whiskey.addFirstBottle', 'Add First Bottle')}
               </Button>
@@ -475,6 +477,16 @@ export default function WhiskeyPage() {
             </div>
           </div>
         )}
+
+        <AddFlowModal
+          open={showAddFlow}
+          onClose={() => setShowAddFlow(false)}
+          initialItemType="bottle"
+          onCreated={(record) => {
+            queryClient.invalidateQueries({ queryKey: ['bottles'] });
+            if (record?.id) setInventoryBottle(record);
+          }}
+        />
 
         {/* Quick Search */}
         <QuickSearchBottle

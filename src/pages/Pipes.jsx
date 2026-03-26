@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
+import AddFlowModal from "@/components/addflow/AddFlowModal";
 
 
 const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Brandy", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
@@ -48,6 +49,7 @@ export default function PipesPage() {
     return localStorage.getItem('pipesDisplayMode') === 'collector';
   });
   const [showQuickSearch, setShowQuickSearch] = useState(false);
+  const [showAddFlow, setShowAddFlow] = useState(false);
   const [sortBy, setSortBy] = useState('date');
 
   const queryClient = useQueryClient();
@@ -241,8 +243,7 @@ export default function PipesPage() {
                   });
                   return;
                 }
-                setEditingPipe(null);
-                setShowForm(true);
+                setShowAddFlow(true);
               }}
               variant="primary"
               className="flex-shrink-0"
@@ -521,6 +522,16 @@ export default function PipesPage() {
           open={showQuickSearch}
           onOpenChange={setShowQuickSearch}
           onAdd={handleQuickSearchAdd}
+        />
+
+        <AddFlowModal
+          open={showAddFlow}
+          onClose={() => setShowAddFlow(false)}
+          initialItemType="pipe"
+          onCreated={(record) => {
+            queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
+            if (record) { setEditingPipe(record); setShowForm(true); }
+          }}
         />
       </div>
     </div>

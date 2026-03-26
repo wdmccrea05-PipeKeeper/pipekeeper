@@ -30,6 +30,7 @@ import CellarDriftAlert from "../components/tobacco/CellarDriftAlert";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { formatWeight } from "@/components/utils/localeFormatters";
+import AddFlowModal from "@/components/addflow/AddFlowModal";
 
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 const STRENGTHS = ["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
@@ -58,6 +59,7 @@ export default function TobaccoPage() {
     return localStorage.getItem('tobaccoDisplayMode') === 'collector';
   });
   const [showQuickSearch, setShowQuickSearch] = useState(false);
+  const [showAddFlow, setShowAddFlow] = useState(false);
   const [showBulkUpdate, setShowBulkUpdate] = useState(false);
   const [quickEditMode, setQuickEditMode] = useState(false);
   const [selectedForEdit, setSelectedForEdit] = useState([]);
@@ -295,24 +297,24 @@ export default function TobaccoPage() {
               {t("pipesPage.quickSearchAdd")}
             </Button>
             <Button 
-              onClick={async () => {
-                const limitCheck = await canCreateTobacco(user?.email, hasPaid, isTrial);
-                if (!limitCheck.canCreate) {
-                  toast.error(t(limitCheck.reason, { limit: limitCheck.limit }), {
-                    action: {
-                      label: t("subscription.upgrade"),
-                      onClick: () => window.location.href = createPageUrl('Subscription')
-                    }
-                  });
-                  return;
-                }
-                setEditingBlend(null);
-                setShowForm(true);
-              }}
-              className={PK_THEME.buttonPrimary}
+             onClick={async () => {
+               const limitCheck = await canCreateTobacco(user?.email, hasPaid, isTrial);
+               if (!limitCheck.canCreate) {
+                 toast.error(t(limitCheck.reason, { limit: limitCheck.limit }), {
+                   action: {
+                     label: t("subscription.upgrade"),
+                     onClick: () => window.location.href = createPageUrl('Subscription')
+                   }
+                 });
+                 return;
+               }
+               setEditingBlend(null);
+               setShowAddFlow(true);
+             }}
+             className={PK_THEME.buttonPrimary}
             >
-              <Plus className="w-4 h-4 mr-2" />
-              {t("tobaccoPage.addBlend")}
+             <Plus className="w-4 h-4 mr-2" />
+             {t("tobaccoPage.addBlend")}
             </Button>
           </div>
         </motion.div>
@@ -631,6 +633,16 @@ export default function TobaccoPage() {
           open={showQuickSearch}
           onOpenChange={setShowQuickSearch}
           onAdd={handleQuickSearchAdd}
+        />
+
+        <AddFlowModal
+          open={showAddFlow}
+          onClose={() => setShowAddFlow(false)}
+          initialItemType="blend"
+          onCreated={(record) => {
+            invalidateBlendQueries(queryClient, user?.email);
+            if (record) { setEditingBlend(record); setShowForm(true); }
+          }}
         />
 
         {/* Quick Edit Floating Button */}
