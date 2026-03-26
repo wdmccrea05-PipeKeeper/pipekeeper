@@ -148,11 +148,9 @@ export function buildAccessSummary(user, subscription) {
     activeModules = parseModulesCsv(user?.paid_modules_csv);
   }
 
-  // Current release-safe fallback: if user is Pro and we still cannot infer modules,
-  // ensure at least PipeKeeper unlocks rather than showing a false free-like state.
-  if (tier === 'pro' && activeModules.length === 0) {
-    activeModules = ['pipekeeper'];
-  }
+  // If tier is pro but modules are still unresolved, preserve empty state honestly.
+  // The UI should show a syncing / restore-needed message instead of fabricating access.
+  // Do NOT default to pipekeeper — that masks entitlement sync failures.
 
   const isFoundingMember = user?.isFoundingMember === true;
   if (isFoundingMember && tier === 'pro') {

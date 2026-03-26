@@ -1,9 +1,6 @@
 /**
- * Subscription Success Flow
- * Hotfix goals:
- * - do not treat a non-error sync as sufficient proof of unlock
- * - explicitly verify current user entitlements and active modules after sync
- * - prefer deterministic PipeKeeper unlock confirmation in the current release
+ * Subscription Success Flow — module-neutral
+ * Success validated for any active module, not PipeKeeper-specific.
  */
 
 import React, { useEffect, useState } from 'react';
@@ -79,9 +76,10 @@ export default function SubscriptionSuccessFlow() {
 
         const rebuiltAccess = buildAccessSummary(me, pseudoSubscription);
         const unlockedModules = rebuiltAccess?.activeModules || [];
-        const hasPipeKeeper = rebuiltAccess?.tier === 'pro' && unlockedModules.includes('pipekeeper');
+        // Module-neutral success check — works for PipeKeeper, WhiskeyKeeper, or any future module
+        const hasAccess = rebuiltAccess?.tier === 'pro' && unlockedModules.length > 0;
 
-        if (!hasPipeKeeper) {
+        if (!hasAccess) {
           setError('Your payment was received, but access is still updating. Please retry once or reopen the app in a moment.');
           setPhase('error');
           return;
@@ -104,9 +102,7 @@ export default function SubscriptionSuccessFlow() {
     }
 
     syncAndConfirm();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [queryClient]);
 
   if (phase === 'loading') {
@@ -140,10 +136,7 @@ export default function SubscriptionSuccessFlow() {
           <div className="flex gap-3">
             <Button
               variant="secondary"
-              onClick={() => {
-                setPhase('loading');
-                window.location.reload();
-              }}
+              onClick={() => { setPhase('loading'); window.location.reload(); }}
               className="flex-1"
             >
               Retry
@@ -175,7 +168,7 @@ export default function SubscriptionSuccessFlow() {
         </h1>
 
         <p style={{ color: '#E0D8C8' }} className="text-sm mb-6">
-          Your subscription is now active and PipeKeeper has been unlocked.
+          Your subscription is now active.
         </p>
 
         {modules.length > 0 && (
@@ -188,10 +181,7 @@ export default function SubscriptionSuccessFlow() {
                 <div
                   key={m}
                   className="px-3 py-2 rounded-lg text-sm font-medium"
-                  style={{
-                    background: 'rgba(180, 140, 75, 0.15)',
-                    color: '#D4A574',
-                  }}
+                  style={{ background: 'rgba(180, 140, 75, 0.15)', color: '#D4A574' }}
                 >
                   {toDisplayName(m)}
                 </div>
@@ -203,10 +193,7 @@ export default function SubscriptionSuccessFlow() {
         <Button
           onClick={() => navigate(targetUrl)}
           className="w-full"
-          style={{
-            background: 'linear-gradient(135deg, #a35c5c, #8f4e4e)',
-            color: '#F5F1E7',
-          }}
+          style={{ background: 'linear-gradient(135deg, #a35c5c, #8f4e4e)', color: '#F5F1E7' }}
         >
           Explore Collections
         </Button>
