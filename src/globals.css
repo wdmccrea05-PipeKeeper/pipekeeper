@@ -21,15 +21,23 @@
   --ck-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
 }
 
-html,
-body,
-#root {
+/* ─── Scroll fix: single document scroll, no nested root trap ─── */
+html {
   height: 100%;
+}
+
+body {
+  min-height: 100%;
   background:
     radial-gradient(circle at top, rgba(180, 140, 75, 0.08), transparent 30%),
     linear-gradient(180deg, var(--ck-bg-2) 0%, var(--ck-bg-1) 42%, var(--ck-bg-0) 100%);
   color: var(--ck-text);
-  overflow: auto;
+  /* Do NOT set overflow here — let the document scroll naturally */
+}
+
+/* #root must NOT set height:100% or overflow:auto — that creates a nested scroll trap on iPad */
+#root {
+  min-height: 100vh;
 }
 
 body {

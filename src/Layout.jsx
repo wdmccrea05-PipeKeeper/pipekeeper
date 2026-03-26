@@ -43,7 +43,7 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </header>
 
-      <main className="pb-10">
+      <main className="pb-16 md:pb-10">
         <div className="ck-page-shell pt-4 md:pt-6">
           {children}
         </div>
