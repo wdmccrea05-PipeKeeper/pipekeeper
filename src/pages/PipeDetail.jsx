@@ -153,12 +153,12 @@ export default function PipeDetail() {
       {/* Tabbed functions card — top */}
       <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(145deg, rgba(38,26,18,0.98), rgba(25,17,12,1))', border: '1px solid rgba(180,140,75,0.18)', boxShadow: '0 14px 40px rgba(0,0,0,0.4)' }}>
         <Tabs defaultValue="condition" className="w-full">
-          <div className="border-b border-[rgba(180,140,75,0.15)] px-4 pt-2">
-            <TabsList className="bg-transparent gap-1">
-              <TabsTrigger value="condition" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg">Condition</TabsTrigger>
-              <TabsTrigger value="rotation" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg">Rotation</TabsTrigger>
-              <TabsTrigger value="specialization" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg">Specialization</TabsTrigger>
-              <TabsTrigger value="maintenance" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg">Maintenance</TabsTrigger>
+          <div className="border-b border-[rgba(180,140,75,0.15)] px-2 pt-2 overflow-x-auto">
+            <TabsList className="bg-transparent gap-0.5 flex-nowrap min-w-max">
+              <TabsTrigger value="condition" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">Condition</TabsTrigger>
+              <TabsTrigger value="rotation" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">Rotation</TabsTrigger>
+              <TabsTrigger value="specialization" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">Specialization</TabsTrigger>
+              <TabsTrigger value="maintenance" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">Maintenance</TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value="condition" className="p-4 m-0">

@@ -18,16 +18,14 @@ import { toast } from 'sonner';
 
 function DetailStat({ label, value, icon: Icon }) {
   return (
-    <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(180,140,75,0.16)' }}>
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[rgba(180,140,75,0.12)] border border-[rgba(180,140,75,0.2)]">
-          <Icon className="w-4 h-4 text-[#B48C4B]" />
+    <div className="rounded-2xl p-3" style={{ background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(180,140,75,0.16)' }}>
+      <div className="flex items-center gap-2 mb-1">
+        <div className="w-6 h-6 rounded-lg flex items-center justify-center bg-[rgba(180,140,75,0.12)] flex-shrink-0">
+          <Icon className="w-3 h-3 text-[#B48C4B]" />
         </div>
-        <div>
-          <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{label}</p>
-          <p className="text-lg font-semibold text-[#F5F1E7] mt-1 break-words">{value}</p>
-        </div>
+        <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/68 leading-tight">{label}</p>
       </div>
+      <p className="text-sm font-semibold text-[#F5F1E7] break-words leading-snug">{value}</p>
     </div>
   );
 }
