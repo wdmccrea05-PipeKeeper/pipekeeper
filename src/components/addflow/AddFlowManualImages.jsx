@@ -1,113 +1,118 @@
-import React, { useState, useRef } from 'react';
-import { ArrowLeft, Upload, Loader2, Check, BookImage, Search, X } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { ArrowLeft, BookImage, Check, Loader2, Search, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { createInventoryEngine } from '@/components/inventory/InventoryEngine';
 
-const ENTITIES = { blend: 'TobaccoBlend', pipe: 'Pipe', bottle: 'Bottle' };
+const ENTITIES = {
+  blend: 'TobaccoBlend',
+  pipe: 'Pipe',
+  bottle: 'Bottle',
+};
 
-function buildFinalRecord(itemType, data) {
-  const clean = obj => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined && v !== null && v !== ''));
-  if (itemType === 'blend') return clean({
-    name: data.name,
-    manufacturer: data.manufacturer,
-    blend_type: data.blend_type,
-    strength: data.strength,
-    cut: data.cut,
-    flavor_notes: data.flavor_notes?.length ? data.flavor_notes : undefined,
-    notes: data.notes,
-    logo: data.logo,
-    tin_total_tins: data.tin_total_tins,
-    tin_size_oz: data.tin_size_oz,
-    tin_total_quantity_oz: data.tin_total_quantity_oz,
-    tin_tins_open: data.tin_tins_open,
-    tin_tins_cellared: data.tin_tins_cellared,
-    tin_cellared_date: data.tin_cellared_date,
-    bulk_total_quantity_oz: data.bulk_total_quantity_oz,
-    bulk_open: data.bulk_open,
-    bulk_cellared: data.bulk_cellared,
-    bulk_cellared_date: data.bulk_cellared_date,
-    pouch_total_pouches: data.pouch_total_pouches,
-    pouch_size_oz: data.pouch_size_oz,
-    pouch_total_quantity_oz: data.pouch_total_quantity_oz,
-    pouch_pouches_open: data.pouch_pouches_open,
-    pouch_pouches_cellared: data.pouch_pouches_cellared,
-    pouch_cellared_date: data.pouch_cellared_date,
-  });
-  if (itemType === 'pipe') return clean({
-    name: data.name,
-    maker: data.maker,
-    shape: data.shape,
-    bowl_material: data.bowl_material,
-    finish: data.finish,
-    condition: data.condition,
-    notes: data.notes,
-    photos: data.photos?.length ? data.photos : undefined,
-  });
-  if (itemType === 'bottle') return clean({
-    name: data.name,
-    distillery: data.distillery,
-    type: data.type,
-    abv: data.abv ? Number(data.abv) : undefined,
-    age: data.age ? Number(data.age) : undefined,
-    notes: data.notes,
-    photo: data.photo,
-  });
-  return { name: data.name };
+function cleanObject(obj) {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, value]) => value !== undefined && value !== null && value !== '')
+  );
+}
+
+function buildBaseRecord(itemType, data) {
+  if (itemType === 'blend') {
+    return cleanObject({
+      name: data.name,
+      manufacturer: data.manufacturer,
+      blend_type: data.blend_type,
+      strength: data.strength,
+      cut: data.cut,
+      flavor_notes: Array.isArray(data.flavor_notes) && data.flavor_notes.length ? data.flavor_notes : undefined,
+      notes: data.notes,
+      logo: data.logo,
+    });
+  }
+
+  if (itemType === 'pipe') {
+    return cleanObject({
+      name: data.name,
+      maker: data.maker,
+      shape: data.shape,
+      bowl_material: data.bowl_material,
+      finish: data.finish,
+      condition: data.condition,
+      notes: data.notes,
+      photos: Array.isArray(data.photos) && data.photos.length ? data.photos : undefined,
+    });
+  }
+
+  if (itemType === 'bottle') {
+    return cleanObject({
+      name: data.name,
+      distillery: data.distillery,
+      type: data.type,
+      age: data.age ? Number(data.age) : undefined,
+      abv: data.abv ? Number(data.abv) : undefined,
+      notes: data.notes,
+      photo: data.photo,
+    });
+  }
+
+  return cleanObject({ name: data.name });
 }
 
 function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
   const [query, setQuery] = useState(initialQuery);
   const [logos, setLogos] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
 
-  React.useEffect(() => {
-    if (initialQuery.trim()) handleSearch(initialQuery);
-  }, []);
-
-  const handleSearch = async (q = query) => {
-    if (!q.trim()) return;
+  const handleSearch = async (term = query) => {
+    if (!term.trim()) return;
     setLoading(true);
     try {
       const all = await base44.entities.TobaccoLogoLibrary.list('-created_date', 500);
-      const lq = q.toLowerCase().trim();
-      const queryWords = lq.split(/\s+/).filter(Boolean);
-      let filtered = (all || []).filter(l => {
-        const brandLower = l.brand_name?.toLowerCase() || '';
-        // Match if any word from query is in the brand name
-        return queryWords.some(word => brandLower.includes(word)) || brandLower.includes(lq);
-      });
-      // If no exact matches, show all available logos for browsing
-      if (filtered.length === 0) filtered = all || [];
-      setLogos(filtered);
-      setSearched(true);
+      const normalized = term.toLowerCase().trim();
+      const results = (all || []).filter((logo) =>
+        (logo.brand_name || '').toLowerCase().includes(normalized)
+      );
+      setLogos(results);
     } catch {
       setLogos([]);
-      setSearched(true);
     } finally {
       setLoading(false);
     }
   };
 
+  React.useEffect(() => {
+    if (initialQuery.trim()) {
+      handleSearch(initialQuery);
+    }
+  }, [initialQuery]);
+
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(180,140,75,0.25)', background: 'rgba(20,13,8,0.95)' }}>
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{ border: '1px solid rgba(180,140,75,0.25)', background: 'rgba(20,13,8,0.95)' }}
+    >
       <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(180,140,75,0.12)' }}>
         <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>Browse Logo Library</p>
         <button onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10">
           <X className="w-3.5 h-3.5" style={{ color: 'rgba(224,216,200,0.6)' }} />
         </button>
       </div>
+
       <div className="p-3 flex gap-2">
         <Input
           value={query}
-          onChange={e => setQuery(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           placeholder="Search brand name…"
           autoFocus
           className="flex-1 text-sm"
-          style={{ background: 'rgba(20,13,8,0.7)', border: '1px solid rgba(180,140,75,0.3)', color: '#F5F1E7' }}
+          style={{
+            background: 'rgba(20,13,8,0.7)',
+            border: '1px solid rgba(180,140,75,0.3)',
+            color: '#F5F1E7',
+          }}
         />
         <Button
           onClick={() => handleSearch()}
@@ -118,12 +123,10 @@ function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
           {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
         </Button>
       </div>
-      {searched && logos.length === 0 && (
-        <p className="text-center text-xs py-4" style={{ color: 'rgba(224,216,200,0.4)' }}>No logos found for "{query}"</p>
-      )}
+
       {logos.length > 0 && (
         <div className="grid grid-cols-3 gap-2 p-3 max-h-52 overflow-y-auto">
-          {logos.map(logo => (
+          {logos.map((logo) => (
             <button
               key={logo.id}
               onClick={() => onSelect(logo.logo_url)}
@@ -131,30 +134,91 @@ function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
               style={{ border: '1px solid rgba(255,255,255,0.07)' }}
             >
               <img src={logo.logo_url} alt={logo.brand_name} className="w-12 h-12 object-contain rounded" />
-              <p className="text-[10px] text-center leading-tight" style={{ color: 'rgba(212,165,116,0.8)' }}>{logo.brand_name}</p>
+              <p className="text-[10px] text-center leading-tight" style={{ color: 'rgba(212,165,116,0.8)' }}>
+                {logo.brand_name}
+              </p>
             </button>
           ))}
         </div>
       )}
-      <div className="pb-1" />
     </div>
   );
 }
 
+async function createCellarLogsForBlend(blendId, data, blendName) {
+  const today = new Date().toISOString().split('T')[0];
+  const logs = [];
+
+  if (data.tin_tins_cellared && Number(data.tin_tins_cellared) > 0 && data.tin_size_oz) {
+    logs.push({
+      blend_id: blendId,
+      blend_name: blendName,
+      transaction_type: 'added',
+      date: data.tin_cellared_date || today,
+      amount_oz: Number(data.tin_tins_cellared) * Number(data.tin_size_oz),
+      container_type: 'tin',
+    });
+  }
+
+  if (data.bulk_cellared && Number(data.bulk_cellared) > 0) {
+    logs.push({
+      blend_id: blendId,
+      blend_name: blendName,
+      transaction_type: 'added',
+      date: data.bulk_cellared_date || today,
+      amount_oz: Number(data.bulk_cellared),
+      container_type: 'bulk',
+    });
+  }
+
+  if (data.pouch_pouches_cellared && Number(data.pouch_pouches_cellared) > 0 && data.pouch_size_oz) {
+    logs.push({
+      blend_id: blendId,
+      blend_name: blendName,
+      transaction_type: 'added',
+      date: data.pouch_cellared_date || today,
+      amount_oz: Number(data.pouch_pouches_cellared) * Number(data.pouch_size_oz),
+      container_type: 'pouch',
+    });
+  }
+
+  if (data.jar_cellared && Number(data.jar_cellared) > 0) {
+    logs.push({
+      blend_id: blendId,
+      blend_name: blendName,
+      transaction_type: 'added',
+      date: data.jar_cellared_date || today,
+      amount_oz: Number(data.jar_cellared),
+      container_type: 'jar',
+    });
+  }
+
+  if (logs.length > 0) {
+    await base44.entities.CellarLog.bulkCreate(logs);
+  }
+}
+
 export default function AddFlowManualImages({ itemType, typeLabel, data, onBack, onCreated }) {
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageUrl, setImageUrl] = useState(
+    itemType === 'blend' ? data.logo || '' : itemType === 'pipe' ? data.photos?.[0] || '' : data.photo || ''
+  );
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const fileRef = useRef(null);
 
-  const imageLabel = itemType === 'blend' ? 'Tin / Label Photo' :
-                     itemType === 'pipe' ? 'Pipe Photo' : 'Bottle Photo';
+  const imageLabel =
+    itemType === 'blend'
+      ? 'Tin / Label Photo'
+      : itemType === 'pipe'
+        ? 'Pipe Photo'
+        : 'Bottle Photo';
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setImageUrl(file_url);
@@ -167,119 +231,59 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
   const handleSave = async () => {
     setSaving(true);
+
     try {
       const finalData = { ...data };
+
       if (imageUrl) {
         if (itemType === 'blend') finalData.logo = imageUrl;
-        else if (itemType === 'pipe') finalData.photos = [imageUrl];
-        else if (itemType === 'bottle') finalData.photo = imageUrl;
+        if (itemType === 'pipe') finalData.photos = [imageUrl];
+        if (itemType === 'bottle') finalData.photo = imageUrl;
       }
-      
-      // If this is a quick add (has _quickRecord), update existing record
-      if (data._quickRecord && itemType === 'blend') {
-        const blendId = data._quickRecord.id;
-        
-        // For quick add, only add inventory/image data
-        const updateData = {
-          ...(imageUrl && { logo: imageUrl }),
-          tin_total_tins: finalData.tin_total_tins,
-          tin_size_oz: finalData.tin_size_oz,
-          tin_total_quantity_oz: finalData.tin_total_quantity_oz,
-          tin_tins_open: finalData.tin_tins_open,
-          tin_tins_cellared: finalData.tin_tins_cellared,
-          tin_cellared_date: finalData.tin_cellared_date,
-          bulk_total_quantity_oz: finalData.bulk_total_quantity_oz,
-          bulk_open: finalData.bulk_open,
-          bulk_cellared: finalData.bulk_cellared,
-          bulk_cellared_date: finalData.bulk_cellared_date,
-          pouch_total_pouches: finalData.pouch_total_pouches,
-          pouch_size_oz: finalData.pouch_size_oz,
-          pouch_total_quantity_oz: finalData.pouch_total_quantity_oz,
-          pouch_pouches_open: finalData.pouch_pouches_open,
-          pouch_pouches_cellared: finalData.pouch_pouches_cellared,
-          pouch_cellared_date: finalData.pouch_cellared_date,
-        };
-        // Filter out undefined values
-        const cleanUpdate = Object.fromEntries(
-          Object.entries(updateData).filter(([, v]) => v !== undefined)
-        );
-        await base44.entities.TobaccoBlend.update(blendId, cleanUpdate);
-        
-        // Create CellarLog entries for cellared quantities
-        await createCellarLogsForRecord(blendId, finalData, data._quickRecord.name);
-        
-        toast.success(`${typeLabel} saved!`);
-        onCreated({ ...data._quickRecord, ...updateData });
-      } else {
-        // Manual add - create new record
-        const record = buildFinalRecord(itemType, finalData);
-        const created = await base44.entities[ENTITIES[itemType]].create(record);
-        
-        // Create CellarLog entries for cellared quantities
+
+      const inventoryPayload = finalData._inventoryPayload || createInventoryEngine(itemType).buildUpdatePayload(finalData);
+
+      if (finalData._quickRecord?.id) {
+        const updateData = cleanObject({
+          ...inventoryPayload,
+          ...(itemType === 'blend' ? { logo: finalData.logo } : {}),
+          ...(itemType === 'pipe' ? { photos: finalData.photos } : {}),
+          ...(itemType === 'bottle' ? { photo: finalData.photo } : {}),
+        });
+
+        await base44.entities[ENTITIES[itemType]].update(finalData._quickRecord.id, updateData);
+
         if (itemType === 'blend') {
-          await createCellarLogsForRecord(created.id, finalData, created.name);
+          await createCellarLogsForBlend(finalData._quickRecord.id, { ...finalData, ...updateData }, finalData._quickRecord.name);
         }
-        
+
         toast.success(`${typeLabel} saved!`);
-        onCreated({ ...created, ...finalData });
+        onCreated?.({ ...finalData._quickRecord, ...updateData });
+        return;
       }
-    } catch (e) {
-      toast.error(e?.message || 'Failed to save');
+
+      const recordPayload = cleanObject({
+        ...buildBaseRecord(itemType, finalData),
+        ...inventoryPayload,
+      });
+
+      const created = await base44.entities[ENTITIES[itemType]].create(recordPayload);
+
+      if (itemType === 'blend') {
+        await createCellarLogsForBlend(created.id, recordPayload, created.name);
+      }
+
+      toast.success(`${typeLabel} saved!`);
+      onCreated?.({ ...created, ...recordPayload });
+    } catch (error) {
+      toast.error(error?.message || 'Failed to save');
     } finally {
       setSaving(false);
     }
   };
-  
-  async function createCellarLogsForRecord(blendId, data, blendName) {
-    const today = new Date().toISOString().split('T')[0];
-    const logs = [];
-    
-    // Tins cellared
-    if (data.tin_tins_cellared && Number(data.tin_tins_cellared) > 0 && data.tin_size_oz) {
-      const amount = Number(data.tin_tins_cellared) * Number(data.tin_size_oz);
-      logs.push({
-        blend_id: blendId,
-        blend_name: blendName,
-        transaction_type: 'added',
-        date: data.tin_cellared_date || today,
-        amount_oz: amount,
-        container_type: 'tin',
-      });
-    }
-    
-    // Bulk cellared
-    if (data.bulk_cellared && Number(data.bulk_cellared) > 0) {
-      logs.push({
-        blend_id: blendId,
-        blend_name: blendName,
-        transaction_type: 'added',
-        date: data.bulk_cellared_date || today,
-        amount_oz: Number(data.bulk_cellared),
-        container_type: 'bulk',
-      });
-    }
-    
-    // Pouches cellared
-    if (data.pouch_pouches_cellared && Number(data.pouch_pouches_cellared) > 0 && data.pouch_size_oz) {
-      const amount = Number(data.pouch_pouches_cellared) * Number(data.pouch_size_oz);
-      logs.push({
-        blend_id: blendId,
-        blend_name: blendName,
-        transaction_type: 'added',
-        date: data.pouch_cellared_date || today,
-        amount_oz: amount,
-        container_type: 'pouch',
-      });
-    }
-    
-    if (logs.length > 0) {
-      await base44.entities.CellarLog.bulkCreate(logs);
-    }
-  }
 
   return (
     <div className="flex flex-col">
-      {/* Header */}
       <div className="flex items-center gap-3 px-6 pt-6 pb-5">
         <button
           onClick={onBack}
@@ -292,7 +296,9 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
             Add Photo
           </h2>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>{itemType === 'blend' ? 'Step 4 of 4 — Optional' : 'Step 3 of 3 — Optional'}</p>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
+            Optional final step
+          </p>
         </div>
       </div>
 
@@ -303,9 +309,11 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
           Add a photo now, or skip and add one later from the record.
         </p>
 
-        {/* Upload zone */}
         {imageUrl ? (
-          <div className="relative rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(180,140,75,0.25)', height: 240, background: 'rgba(0,0,0,0.2)' }}>
+          <div
+            className="relative rounded-2xl overflow-hidden"
+            style={{ border: '1px solid rgba(180,140,75,0.25)', height: 240, background: 'rgba(0,0,0,0.2)' }}
+          >
             <img src={imageUrl} alt="Preview" className="w-full h-full object-contain" />
             <button
               onClick={() => setImageUrl('')}
@@ -314,77 +322,76 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
             >
               ×
             </button>
-            <div className="absolute bottom-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(46,125,92,0.85)', color: '#fff' }}>
+            <div
+              className="absolute bottom-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-full text-xs"
+              style={{ background: 'rgba(46,125,92,0.85)', color: '#fff' }}
+            >
               <Check className="w-3 h-3" /> Uploaded
             </div>
           </div>
         ) : (
           <button
+            type="button"
             onClick={() => fileRef.current?.click()}
-            disabled={uploading}
-            className="rounded-2xl flex flex-col items-center justify-center gap-3 py-10 transition-colors hover:bg-white/[0.03] active:bg-white/[0.05]"
-            style={{ border: '2px dashed rgba(180,140,75,0.25)', color: 'rgba(180,140,75,0.6)' }}
+            className="w-full rounded-2xl border-2 border-dashed px-5 py-10 text-center transition-colors hover:bg-white/5"
+            style={{ borderColor: 'rgba(180,140,75,0.25)', color: 'rgba(224,216,200,0.65)' }}
           >
             {uploading ? (
-              <Loader2 className="w-8 h-8 animate-spin" />
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span className="text-sm">Uploading...</span>
+              </div>
             ) : (
-              <>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.2)' }}>
-                  <Upload className="w-5 h-5" />
-                </div>
-                <div className="text-center">
-                  <p className="font-medium text-sm" style={{ color: 'rgba(212,165,116,0.85)' }}>{imageLabel}</p>
-                  <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.35)' }}>Tap to browse</p>
-                </div>
-              </>
+              <div className="flex flex-col items-center gap-2">
+                <Upload className="w-6 h-6" />
+                <span className="text-sm">{imageLabel}</span>
+              </div>
             )}
           </button>
         )}
-        <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
 
-        {/* Logo library option — blend only */}
-        {itemType === 'blend' && !imageUrl && (
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={() => setShowLibrary(v => !v)}
-              className="flex items-center gap-2 justify-center w-full py-2.5 rounded-xl transition-colors hover:bg-white/5"
-              style={{ border: '1px solid rgba(180,140,75,0.2)', color: 'rgba(180,140,75,0.75)' }}
-            >
-              <BookImage className="w-4 h-4" />
-              <span className="text-sm font-medium">Browse Logo Library</span>
-            </button>
-            {showLibrary && (
-              <LogoLibraryPicker
-                onSelect={(url) => { setImageUrl(url); setShowLibrary(false); }}
-                onClose={() => setShowLibrary(false)}
-                initialQuery={data?.name || ''}
-              />
-            )}
-          </div>
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+
+        {itemType === 'blend' && (
+          <Button
+            variant="outline"
+            onClick={() => setShowLibrary((prev) => !prev)}
+            style={{
+              borderColor: 'rgba(180,140,75,0.25)',
+              color: 'rgba(224,216,200,0.75)',
+              background: 'transparent',
+            }}
+          >
+            <BookImage className="w-4 h-4 mr-2" />
+            Browse Library
+          </Button>
         )}
 
-        {/* Actions */}
+        {showLibrary && itemType === 'blend' && (
+          <LogoLibraryPicker
+            initialQuery={data.manufacturer || data.name || ''}
+            onSelect={(url) => {
+              setImageUrl(url);
+              setShowLibrary(false);
+            }}
+            onClose={() => setShowLibrary(false)}
+          />
+        )}
+
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="w-full"
-          style={{ background: 'linear-gradient(135deg, rgba(46,125,92,1), rgba(36,105,76,1))', color: '#fff', fontWeight: 600 }}
+          className="w-full mt-2"
+          style={{
+            background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))',
+            color: '#fff',
+            fontWeight: 600,
+          }}
         >
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
           Save {typeLabel}
         </Button>
-
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving}
-          className="text-center text-sm py-1 transition-colors hover:opacity-80 w-full"
-          style={{ color: 'rgba(224,216,200,0.4)' }}
-        >
-          Skip photo and save
-        </button>
       </div>
-      <div className="pb-2" />
     </div>
   );
 }
