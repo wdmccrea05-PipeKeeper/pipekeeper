@@ -178,8 +178,32 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
       // If this is a quick add (has _quickRecord), update existing record
       if (data._quickRecord && itemType === 'blend') {
         const blendId = data._quickRecord.id;
+        
+        // Enrich with reclassification before saving
+        let enrichedData = {};
+        try {
+          const enriched = await base44.functions.invoke('reclassifyTobaccoBlend', {
+            name: data._quickRecord.name,
+            manufacturer: data._quickRecord.manufacturer,
+            blend_type: data._quickRecord.blend_type,
+            strength: data._quickRecord.strength,
+            description: data._quickRecord.notes,
+          });
+          const enrichedFields = enriched?.data || enriched;
+          if (enrichedFields) {
+            const { cut, rating, production_status, aging_potential } = enrichedFields;
+            if (cut !== undefined && cut !== null) enrichedData.cut = cut;
+            if (rating !== undefined && rating !== null) enrichedData.rating = rating;
+            if (production_status !== undefined && production_status !== null) enrichedData.production_status = production_status;
+            if (aging_potential !== undefined && aging_potential !== null) enrichedData.aging_potential = aging_potential;
+          }
+        } catch (enrichError) {
+          console.warn('Enrichment failed:', enrichError);
+        }
+        
         // For quick add, preserve enriched fields and only add inventory/image data
         const updateData = {
+          ...enrichedData,
           ...(imageUrl && { logo: imageUrl }),
           tin_total_tins: finalData.tin_total_tins,
           tin_size_oz: finalData.tin_size_oz,
