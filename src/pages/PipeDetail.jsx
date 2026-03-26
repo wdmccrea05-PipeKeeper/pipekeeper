@@ -124,6 +124,8 @@ export default function PipeDetail() {
 
   const mainPhoto = pipe.photos?.[0];
 
+  const fmt2 = (v) => v != null && !isNaN(Number(v)) ? parseFloat(Number(v).toFixed(2)) : '—';
+
   return (
     <div className="p-6 md:p-8 space-y-6 text-[#F5F1E7]">
       <div className="flex items-center justify-between gap-3">
@@ -147,6 +149,33 @@ export default function PipeDetail() {
         </div>
       </div>
 
+      {/* Tabbed functions card — top */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(145deg, rgba(38,26,18,0.98), rgba(25,17,12,1))', border: '1px solid rgba(180,140,75,0.18)', boxShadow: '0 14px 40px rgba(0,0,0,0.4)' }}>
+        <Tabs defaultValue="condition" className="w-full">
+          <div className="border-b border-[rgba(180,140,75,0.15)] px-4 pt-2">
+            <TabsList className="bg-transparent gap-1">
+              <TabsTrigger value="condition" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg">Condition</TabsTrigger>
+              <TabsTrigger value="rotation" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg">Rotation</TabsTrigger>
+              <TabsTrigger value="specialization" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg">Specialization</TabsTrigger>
+              <TabsTrigger value="maintenance" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg">Maintenance</TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value="condition" className="p-4 m-0">
+            <PipeConditionTracker pipe={pipe} onUpdate={handlePipeUpdate} />
+          </TabsContent>
+          <TabsContent value="rotation" className="p-4 m-0">
+            <RotationPlanner pipe={pipe} blends={blends} />
+          </TabsContent>
+          <TabsContent value="specialization" className="p-4 m-0">
+            <PipeSpecialization pipe={pipe} blends={blends} onUpdate={handlePipeUpdate} isPaidUser={isPaidUser} />
+          </TabsContent>
+          <TabsContent value="maintenance" className="p-4 m-0">
+            <MaintenanceLog pipeId={pipe.id} pipeName={pipe.name} />
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Main info card — below */}
       <div className="rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(145deg, rgba(38,26,18,0.98), rgba(25,17,12,1))', border: '1px solid rgba(180,140,75,0.18)', boxShadow: '0 14px 40px rgba(0,0,0,0.4)' }}>
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr]">
           <div className="p-6 flex flex-col items-center gap-4 border-r border-[rgba(180,140,75,0.12)]">
@@ -189,11 +218,11 @@ export default function PipeDetail() {
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Length (mm)</p>
-                  <p className="text-2xl font-semibold mt-2">{pipe.length_mm || '—'}</p>
+                  <p className="text-2xl font-semibold mt-2">{fmt2(pipe.length_mm)}</p>
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Weight (g)</p>
-                  <p className="text-2xl font-semibold mt-2">{pipe.weight_grams || '—'}</p>
+                  <p className="text-2xl font-semibold mt-2">{fmt2(pipe.weight_grams)}</p>
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Condition</p>
@@ -211,33 +240,6 @@ export default function PipeDetail() {
           </div>
         </div>
       </div>
-
-      {pipe && (
-        <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(145deg, rgba(38,26,18,0.98), rgba(25,17,12,1))', border: '1px solid rgba(180,140,75,0.18)', boxShadow: '0 14px 40px rgba(0,0,0,0.4)' }}>
-          <Tabs defaultValue="condition" className="w-full">
-            <div className="border-b border-[rgba(180,140,75,0.15)] px-4 pt-2">
-              <TabsList className="bg-transparent gap-1">
-                <TabsTrigger value="condition" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg">Condition</TabsTrigger>
-                <TabsTrigger value="rotation" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg">Rotation</TabsTrigger>
-                <TabsTrigger value="specialization" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg">Specialization</TabsTrigger>
-                <TabsTrigger value="maintenance" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg">Maintenance</TabsTrigger>
-              </TabsList>
-            </div>
-            <TabsContent value="condition" className="p-4 m-0">
-              <PipeConditionTracker pipe={pipe} onUpdate={handlePipeUpdate} />
-            </TabsContent>
-            <TabsContent value="rotation" className="p-4 m-0">
-              <RotationPlanner pipe={pipe} blends={blends} />
-            </TabsContent>
-            <TabsContent value="specialization" className="p-4 m-0">
-              <PipeSpecialization pipe={pipe} blends={blends} onUpdate={handlePipeUpdate} isPaidUser={isPaidUser} />
-            </TabsContent>
-            <TabsContent value="maintenance" className="p-4 m-0">
-              <MaintenanceLog pipeId={pipe.id} pipeName={pipe.name} />
-            </TabsContent>
-          </Tabs>
-        </div>
-      )}
 
       <ShareRecordModal
         isOpen={showShareModal}
