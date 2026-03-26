@@ -62,8 +62,7 @@ export default function PipeDetail() {
       try {
         const [pipeRecord, blendsList] = await Promise.all([
           base44.entities.Pipe.get(pipeId),
-          base44.entities.TobaccoBlend.list('-updated_date', 200).catch(() => [])
-        ]);
+          base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-updated_date', 500).catch(() => [])        ]);
         
         if (mounted) {
           setPipe(pipeRecord);
