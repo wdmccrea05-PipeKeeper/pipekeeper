@@ -211,7 +211,7 @@ export default function TobaccoDetail() {
                 <p className="text-xs uppercase tracking-wider mt-2">No Photo</p>
               </div>
             )}
-            <InlinePhotoEditor photos={blend.photos || []} maxPhotos={2} label="Photos" onUpdate={async (updatedPhotos) => {
+            <InlinePhotoEditor photos={blend.photos || []} maxPhotos={2} label="Photos" showLogoLibrary onUpdate={async (updatedPhotos) => {
               await base44.entities.TobaccoBlend.update(blend.id, { photos: updatedPhotos });
               setBlend((prev) => ({ ...prev, photos: updatedPhotos }));
             }} />

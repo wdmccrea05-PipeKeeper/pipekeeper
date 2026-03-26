@@ -1,7 +1,80 @@
 import React, { useRef, useState } from 'react';
-import { Camera, ImagePlus, Pencil, X, Loader2 } from 'lucide-react';
+import { Camera, ImagePlus, Pencil, X, Loader2, BookImage, Search } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import ImageCropper from '@/components/pipes/ImageCropper';
+import { Input } from '@/components/ui/input';
+
+function LogoLibraryPicker({ onSelect, onClose }) {
+  const [query, setQuery] = useState('');
+  const [logos, setLogos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+
+  const handleSearch = async () => {
+    if (!query.trim()) return;
+    setLoading(true);
+    try {
+      const all = await base44.entities.TobaccoLogoLibrary.list('-created_date', 200);
+      const q = query.toLowerCase().trim();
+      setLogos((all || []).filter(l => l.brand_name?.toLowerCase().includes(q)));
+      setSearched(true);
+    } catch {
+      setLogos([]);
+      setSearched(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="mt-2 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(180,140,75,0.25)', background: 'rgba(20,13,8,0.97)' }}>
+      <div className="flex items-center justify-between px-3 py-2" style={{ borderBottom: '1px solid rgba(180,140,75,0.12)' }}>
+        <p className="text-xs font-semibold" style={{ color: '#F5F1E7' }}>Browse Logo Library</p>
+        <button onClick={onClose} className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10">
+          <X className="w-3 h-3" style={{ color: 'rgba(224,216,200,0.6)' }} />
+        </button>
+      </div>
+      <div className="p-2 flex gap-1.5">
+        <Input
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
+          placeholder="Search brand…"
+          autoFocus
+          className="flex-1 text-xs h-8"
+          style={{ background: 'rgba(20,13,8,0.7)', border: '1px solid rgba(180,140,75,0.3)', color: '#F5F1E7' }}
+        />
+        <button
+          onClick={handleSearch}
+          disabled={loading || !query.trim()}
+          className="px-2 rounded-lg flex items-center justify-center"
+          style={{ background: 'rgba(180,140,75,0.85)', color: '#1a1008', flexShrink: 0 }}
+        >
+          {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+        </button>
+      </div>
+      {searched && logos.length === 0 && (
+        <p className="text-center text-[10px] py-3" style={{ color: 'rgba(224,216,200,0.4)' }}>No logos found</p>
+      )}
+      {logos.length > 0 && (
+        <div className="grid grid-cols-4 gap-1.5 p-2 max-h-44 overflow-y-auto">
+          {logos.map(logo => (
+            <button
+              key={logo.id}
+              onClick={() => onSelect(logo.logo_url)}
+              className="flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-white/[0.06] transition-colors"
+              style={{ border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <img src={logo.logo_url} alt={logo.brand_name} className="w-10 h-10 object-contain rounded" />
+              <p className="text-[9px] text-center leading-tight line-clamp-2" style={{ color: 'rgba(212,165,116,0.8)' }}>{logo.brand_name}</p>
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="pb-1" />
+    </div>
+  );
+}
 
 /**
  * InlinePhotoEditor
@@ -12,7 +85,7 @@ import ImageCropper from '@/components/pipes/ImageCropper';
  *   maxPhotos?: number            — default 5
  *   label?: string                — section label
  */
-export default function InlinePhotoEditor({ photos = [], onUpdate, maxPhotos = 5, label = 'Photos' }) {
+export default function InlinePhotoEditor({ photos = [], onUpdate, maxPhotos = 5, label = 'Photos', showLogoLibrary = false }) {
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
 
@@ -20,6 +93,7 @@ export default function InlinePhotoEditor({ photos = [], onUpdate, maxPhotos = 5
   const [error, setError] = useState('');
   const [cropUrl, setCropUrl] = useState(null);   // URL being cropped
   const [cropIndex, setCropIndex] = useState(null); // index of existing photo being edited
+  const [showLibrary, setShowLibrary] = useState(false);
 
   const cleanPhotos = Array.isArray(photos) ? photos.filter(Boolean) : [];
   const canAdd = cleanPhotos.length < maxPhotos && !uploading;
@@ -176,7 +250,33 @@ export default function InlinePhotoEditor({ photos = [], onUpdate, maxPhotos = 5
             )}
           </button>
         )}
+
+        {/* Logo Library button — blend only */}
+        {canAdd && showLogoLibrary && (
+          <button
+            type="button"
+            onClick={() => setShowLibrary(v => !v)}
+            className="w-20 h-20 rounded-xl flex flex-col items-center justify-center gap-1 flex-shrink-0 transition-all hover:opacity-80 active:scale-95"
+            style={{
+              background: showLibrary ? 'rgba(180,140,75,0.12)' : 'rgba(255,255,255,0.04)',
+              border: '1px dashed rgba(180,140,75,0.35)',
+              color: 'rgba(180,140,75,0.75)',
+            }}
+            aria-label="Browse logo library"
+            title="Logo Library"
+          >
+            <BookImage className="w-5 h-5" />
+            <span className="text-[9px] font-medium">Library</span>
+          </button>
+        )}
       </div>
+
+      {showLibrary && (
+        <LogoLibraryPicker
+          onSelect={(url) => { onUpdate([...cleanPhotos, url]); setShowLibrary(false); }}
+          onClose={() => setShowLibrary(false)}
+        />
+      )}
 
       {error && <p className="text-xs text-red-400">{error}</p>}
 
