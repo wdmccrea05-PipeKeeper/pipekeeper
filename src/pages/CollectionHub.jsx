@@ -106,15 +106,36 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: `${meta.accent}1E`, border: `1px solid ${meta.accent}44` }}>
-            {icon ? <img src={icon} alt={meta.label} className="w-9 h-9 sm:w-10 sm:h-10 object-contain" /> : null}
+          <div
+            className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+            style={{ background: `${meta.accent}22`, border: `1px solid ${meta.accent}44` }}
+          >
+            {icon ? (
+              <img src={icon} alt={meta.label} className="w-9 h-9 sm:w-10 sm:h-10 object-contain" />
+            ) : moduleKey === 'pipekeeper' ? (
+              <PipeIcon className="w-6 h-6 sm:w-7 sm:h-7" style={{ color: meta.accent }} />
+            ) : moduleKey === 'whiskeykeeper' ? (
+              <WhiskeyKeeperIcon className="w-6 h-6 sm:w-7 sm:h-7" style={{ color: meta.accent }} />
+            ) : null}
           </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="text-lg sm:text-2xl leading-tight font-bold mb-1 break-words" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{meta.label}</h3>
-            <p className="text-xs sm:text-sm" style={{ color: `${meta.accent}E8` }}>{meta.tagline}</p>
+
+          <div className="flex-1 min-w-0">
+            <h3
+              className="text-3xl sm:text-4xl font-bold leading-[1.05] break-words"
+              style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+            >
+              {meta.label}
+            </h3>
+            <p className="text-sm sm:text-base mt-2 break-words" style={{ color: meta.accent }}>
+              {meta.tagline}
+            </p>
           </div>
         </div>
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `${meta.accent}22`, border: `1px solid ${meta.accent}44` }}>
+
+        <div
+          className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+          style={{ background: `${meta.accent}18`, border: `1px solid ${meta.accent}44` }}
+        >
           <ChevronRight className="w-5 h-5" style={{ color: meta.accent }} />
         </div>
       </div>
