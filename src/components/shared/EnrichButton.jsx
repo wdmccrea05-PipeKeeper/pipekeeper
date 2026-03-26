@@ -11,6 +11,9 @@ export default function EnrichButton({ itemType, record, onEnriched }) {
     setLoading(true);
     try {
       if (itemType === 'blend') {
+        const updateData = {};
+
+        // 1. Get Cut from public enrichment data
         const enriched = await base44.functions.invoke('enrichTobaccoBlend', {
           name: record.name,
           manufacturer: record.manufacturer,
@@ -18,21 +21,27 @@ export default function EnrichButton({ itemType, record, onEnriched }) {
           strength: record.strength,
           description: record.notes,
         });
+        if (enriched?.cut) updateData.cut = enriched.cut;
+        if (enriched?.rating) updateData.rating = enriched.rating;
 
-        if (enriched) {
-          const updateData = {};
-          if (enriched.cut) updateData.cut = enriched.cut;
-          if (enriched.rating) updateData.rating = enriched.rating;
-          if (enriched.production_status) updateData.production_status = enriched.production_status;
-          if (enriched.aging_potential) updateData.aging_potential = enriched.aging_potential;
+        // 2. Calculate Status from inventory
+        const hasOpen = (record.tin_tins_open || 0) > 0 || (record.bulk_open || 0) > 0 || (record.pouch_pouches_open || 0) > 0;
+        const hasCellared = (record.tin_tins_cellared || 0) > 0 || (record.bulk_cellared || 0) > 0 || (record.pouch_pouches_cellared || 0) > 0;
+        if (hasOpen && hasCellared) updateData.production_status = 'Both';
+        else if (hasCellared) updateData.production_status = 'Cellared';
+        else if (hasOpen) updateData.production_status = 'Open';
 
-          if (Object.keys(updateData).length > 0) {
-            await base44.entities.TobaccoBlend.update(record.id, updateData);
-            toast.success('Blend enriched with metadata');
-            onEnriched?.({ ...record, ...updateData });
-          } else {
-            toast.info('No new metadata to add');
-          }
+        // 3. Determine Aging from cellar logs
+        const cellarLogs = await base44.entities.CellarLog.filter({ blend_id: record.id }, '-date', 100).catch(() => []);
+        const hasAgedItems = (cellarLogs || []).some(log => log.transaction_type === 'added' && log.date);
+        if (hasAgedItems) updateData.aging_potential = 'Aging';
+
+        if (Object.keys(updateData).length > 0) {
+          await base44.entities.TobaccoBlend.update(record.id, updateData);
+          toast.success('Blend enriched with metadata');
+          onEnriched?.({ ...record, ...updateData });
+        } else {
+          toast.info('No new metadata to add');
         }
       } else if (itemType === 'pipe') {
         // Similar enrichment logic for pipes if needed
