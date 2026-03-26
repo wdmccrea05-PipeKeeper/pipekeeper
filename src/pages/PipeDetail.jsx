@@ -4,6 +4,8 @@ import { ArrowLeft, Pencil, Share2, Search } from 'lucide-react';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
 import PipeSpecialization from '@/components/pipes/PipeSpecialization';
 import MaintenanceLog from '@/components/pipes/MaintenanceLog';
+import PipeConditionTracker from '@/components/pipes/PipeConditionTracker';
+import RotationPlanner from '@/components/pipes/RotationPlanner';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -211,6 +213,16 @@ export default function PipeDetail() {
 
       {pipe && (
         <>
+          <PipeConditionTracker
+            pipe={pipe}
+            onUpdate={handlePipeUpdate}
+          />
+
+          <RotationPlanner
+            pipe={pipe}
+            blends={blends}
+          />
+
           <PipeSpecialization 
             pipe={pipe}
             blends={blends}
