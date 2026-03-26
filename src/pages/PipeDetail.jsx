@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useMeasurement } from '@/components/utils/measurementConversion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Pencil, Share2, Search, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -39,6 +40,7 @@ export default function PipeDetail() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, hasPremium: isPaidUser } = useCurrentUser();
+  const { formatLength, formatWeight } = useMeasurement();
   const [params] = useSearchParams();
   const pipeId = params.get('id') || params.get('pipeId');
   
@@ -236,12 +238,12 @@ export default function PipeDetail() {
                   <p className="text-2xl font-semibold mt-2">{pipe.sizeClass || '—'}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Length (mm)</p>
-                  <p className="text-2xl font-semibold mt-2">{fmt2(pipe.length_mm)}</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Length</p>
+                  <p className="text-2xl font-semibold mt-2">{formatLength(pipe.length_mm) || '—'}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Weight (g)</p>
-                  <p className="text-2xl font-semibold mt-2">{fmt2(pipe.weight_grams)}</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Weight</p>
+                  <p className="text-2xl font-semibold mt-2">{formatWeight(pipe.weight_grams) || '—'}</p>
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Condition</p>
