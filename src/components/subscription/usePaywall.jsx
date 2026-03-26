@@ -41,8 +41,9 @@ export function usePaywall() {
           throw new Error('Invalid plan selection');
         }
 
-        // Initiate Stripe checkout with success URL preserved
-        const successUrl = options?.successUrl || `/SubscriptionSuccessFlow?next=${options?.successUrl || '/CollectionHub'}`;
+        // Always route through SubscriptionSuccessFlow, never directly to a module page
+        const nextPath = options?.successUrl || '/CollectionHub';
+        const successUrl = `/SubscriptionSuccessFlow?next=${encodeURIComponent(nextPath)}`;
         const cancelUrl = options?.cancelUrl || '/';
         
         await initiateCheckout(
