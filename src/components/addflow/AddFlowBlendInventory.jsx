@@ -82,9 +82,29 @@ function buildInventoryFields(containerType, values) {
   if (containerType === 'tin') {
     fields.tin_tins_open = isOpen ? (Number(values.tin_count) || 1) : 0;
     fields.tin_tins_cellared = isOpen ? 0 : (Number(values.tin_count) || 1);
-  }
-  if (values.storage === 'Cellar' || values.storage === 'Both') {
-    if (values.cellar_date) fields.tin_cellared_date = values.cellar_date;
+    if (values.storage === 'Cellar' || values.storage === 'Both') {
+      if (values.cellar_date) fields.tin_cellared_date = values.cellar_date;
+    }
+  } else if (containerType === 'bulk') {
+    const bulkQty = Number(values.bulk_oz) || 0;
+    fields.bulk_open = isOpen ? bulkQty : 0;
+    fields.bulk_cellared = isOpen ? 0 : bulkQty;
+    if (values.storage === 'Cellar' || values.storage === 'Both') {
+      if (values.cellar_date) fields.bulk_cellared_date = values.cellar_date;
+    }
+  } else if (containerType === 'jar') {
+    const jarQty = Number(values.jar_oz) || 0;
+    fields.bulk_open = isOpen ? jarQty : 0;
+    fields.bulk_cellared = isOpen ? 0 : jarQty;
+    if (values.storage === 'Cellar' || values.storage === 'Both') {
+      if (values.cellar_date) fields.bulk_cellared_date = values.cellar_date;
+    }
+  } else if (containerType === 'pouch') {
+    fields.pouch_pouches_open = isOpen ? (Number(values.pouch_count) || 1) : 0;
+    fields.pouch_pouches_cellared = isOpen ? 0 : (Number(values.pouch_count) || 1);
+    if (values.storage === 'Cellar' || values.storage === 'Both') {
+      if (values.cellar_date) fields.pouch_cellared_date = values.cellar_date;
+    }
   }
   return fields;
 }
