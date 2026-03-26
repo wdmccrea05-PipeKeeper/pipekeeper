@@ -208,8 +208,8 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
         {/* Upload zone */}
         {imageUrl ? (
-          <div className="relative rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(180,140,75,0.25)', height: 180 }}>
-            <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
+          <div className="relative rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(180,140,75,0.25)', height: 240, background: 'rgba(0,0,0,0.2)' }}>
+            <img src={imageUrl} alt="Preview" className="w-full h-full object-contain" />
             <button
               onClick={() => setImageUrl('')}
               className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
