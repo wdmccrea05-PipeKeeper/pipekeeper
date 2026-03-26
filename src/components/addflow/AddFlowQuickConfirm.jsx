@@ -78,25 +78,24 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
       // Remove undefined keys
       const clean = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
       
-      // For blends, enrich with cut, rating, status, aging via reclassification
+      // For blends, enrich with cut, rating, status, aging via enrichment
       let finalData = clean;
       if (itemType === 'blend') {
         try {
-          const enriched = await base44.functions.invoke('reclassifyTobaccoBlend', {
+          const enriched = await base44.functions.invoke('enrichTobaccoBlend', {
             name: result.name,
             manufacturer: result.manufacturer,
             blend_type: result.blend_type,
             strength: result.strength,
             description: result.description,
           });
-          // Merge enriched data - handle both response.data and direct response
-          const enrichedFields = enriched?.data || enriched;
-          if (enrichedFields) {
-            const { cut, rating, production_status, aging_potential } = enrichedFields;
-            if (cut !== undefined && cut !== null) finalData.cut = cut;
-            if (rating !== undefined && rating !== null) finalData.rating = rating;
-            if (production_status !== undefined && production_status !== null) finalData.production_status = production_status;
-            if (aging_potential !== undefined && aging_potential !== null) finalData.aging_potential = aging_potential;
+          // Merge enriched data directly from response
+          if (enriched) {
+            const { cut, rating, production_status, aging_potential } = enriched;
+            if (cut) finalData.cut = cut;
+            if (rating) finalData.rating = rating;
+            if (production_status) finalData.production_status = production_status;
+            if (aging_potential) finalData.aging_potential = aging_potential;
           }
         } catch (enrichError) {
           // Fallback: save without enrichment
