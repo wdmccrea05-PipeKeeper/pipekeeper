@@ -124,6 +124,7 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: PROMPTS[itemType](query.trim()),
         response_json_schema: SCHEMA,
+        add_context_from_internet: true,
       });
       const raw = Array.isArray(res?.items) ? res.items.filter(i => i?.name) : [];
       setResults(rankResults(itemType, raw, query.trim()));
