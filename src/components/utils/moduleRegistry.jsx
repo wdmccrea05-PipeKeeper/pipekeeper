@@ -67,7 +67,7 @@ export const KEEPER_MODULES = [
     titleKey: 'hub.whiskeykeeper',
     icon: MODULE_ICONS?.whiskeykeeper,
     route: 'WhiskeyKeeper',
-    enabled: false,
+    enabled: true,
     description: 'Track your whiskey collection with tasting notes and bottle inventory.',
     moduleKey: MODULES.WHISKEYKEEPER,
 
@@ -84,7 +84,7 @@ export const KEEPER_MODULES = [
     itemLabel: 'Bottle',
     itemLabelPlural: 'Bottles',
     entityName: 'Bottle',
-    status: 'internal',
+    status: 'active',
   },
   {
     type: 'cigars',

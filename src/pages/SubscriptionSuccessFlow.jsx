@@ -1,40 +1,19 @@
 /**
  * Subscription Success Flow
- * Post-purchase explicit sync and confirmation
- * 3-phase: loading → success → error
- *
- * HARDENED:
- * - requires syncSubscriptionForMe to return an actual paid-access result
- * - requires unlocked module list, not just "no error"
- * - invalidates all access + visibility caches before showing success
+ * Validates subscription activation for any module (not PipeKeeper-specific).
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, AlertCircle, Loader } from 'lucide-react';
+import { buildAccessSummary } from '@/components/access/accessSummary';
 
-function formatModuleLabel(moduleKey) {
-  const labels = {
-    pipekeeper: 'PipeKeeper',
-    whiskeykeeper: 'WhiskeyKeeper',
-    cigarkeeper: 'CigarKeeper',
-    winekeeper: 'WineKeeper',
-  };
-  return labels[String(moduleKey || '').toLowerCase()] || String(moduleKey || 'CollectionKeeper');
-}
-
-function deriveModulesFromPlanKey(planKey) {
-  const key = String(planKey || '').toLowerCase();
-  if (key.startsWith('pipekeeper_')) return ['pipekeeper'];
-  if (key.startsWith('whiskeykeeper_')) return ['whiskeykeeper'];
-  if (key.startsWith('cigarkeeper_')) return ['cigarkeeper'];
-  if (key.startsWith('winekeeper_')) return ['winekeeper'];
-  if (key.includes('three_module')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
-  if (key.includes('four_module') || key.includes('founders')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
-  return [];
+function toDisplayName(moduleKey) {
+  if (!moduleKey) return 'Module';
+  return moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1).replace('keeper', ' Keeper');
 }
 
 export default function SubscriptionSuccessFlow() {
@@ -42,7 +21,7 @@ export default function SubscriptionSuccessFlow() {
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
-  const [phase, setPhase] = useState('loading'); // loading | success | error
+  const [phase, setPhase] = useState('loading');
   const [error, setError] = useState(null);
   const [accessSummary, setAccessSummary] = useState(null);
 
@@ -53,54 +32,65 @@ export default function SubscriptionSuccessFlow() {
 
     async function syncAndConfirm() {
       try {
-        const response = await base44.functions.invoke('syncSubscriptionForMe', {});
-        const data = response?.data || {};
-
+        const syncResponse = await base44.functions.invoke('syncSubscriptionForMe', {});
         if (!mounted) return;
 
-        if (data?.error) {
-          throw new Error(data.error);
-        }
-
-        if (data?.status === 'no_customer') {
-          setError('No billing account was found yet. Please wait a moment and try again.');
+        if (syncResponse?.data?.status === 'no_subscription' || syncResponse?.data?.status === 'no_customer') {
+          setError('Subscription not found yet. Please wait a moment and try again.');
           setPhase('error');
           return;
         }
 
-        if (data?.status === 'no_subscription') {
-          setError('Your purchase has not finished syncing yet. Please try again.');
+        if (syncResponse?.data?.error) {
+          setError(syncResponse.data.error);
           setPhase('error');
           return;
         }
 
-        const activeModules = Array.isArray(data?.activeModules) && data.activeModules.length > 0
-          ? data.activeModules
-          : deriveModulesFromPlanKey(data?.planKey);
+        await queryClient.invalidateQueries({ queryKey: ['current-user'] });
+        await queryClient.invalidateQueries({ queryKey: ['subscription'] });
+        await queryClient.refetchQueries({ queryKey: ['current-user'] });
+        await queryClient.refetchQueries({ queryKey: ['subscription'] });
 
-        const hasPaidAccess = data?.hasPaidAccess === true || data?.tier === 'pro';
-
-        if (!hasPaidAccess || activeModules.length === 0) {
-          setError('Your subscription synced, but module access is not ready yet. Please retry in a moment.');
-          setPhase('error');
-          return;
-        }
-
-        const normalized = {
-          ...data,
-          activeModules,
-          hasPaidAccess: true,
-        };
-
-        setAccessSummary(normalized);
-
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ['current-user'] }),
-          queryClient.invalidateQueries({ queryKey: ['subscription'] }),
-          queryClient.invalidateQueries({ queryKey: ['module-visibility-profile'] }),
-          queryClient.invalidateQueries({ queryKey: ['user-profile'] }),
+        const [meRes, subRes] = await Promise.all([
+          base44.auth.me(),
+          base44.functions.invoke('getMySubscriptionSummary', {}),
         ]);
 
+        const me = meRes || null;
+        const subscriptionSummary = subRes?.data || null;
+
+        const pseudoSubscription = subscriptionSummary
+          ? {
+              provider: subscriptionSummary.provider,
+              status: subscriptionSummary.status,
+              tier: subscriptionSummary.tier,
+              current_period_end: subscriptionSummary.expiresAt,
+              plan_key: subscriptionSummary.planKey,
+              modules_csv: subscriptionSummary.modulesCsv,
+              metadata: subscriptionSummary.modulesCsv
+                ? { modules_csv: subscriptionSummary.modulesCsv }
+                : undefined,
+            }
+          : null;
+
+        const rebuiltAccess = buildAccessSummary(me, pseudoSubscription);
+        const unlockedModules = rebuiltAccess?.activeModules || [];
+        // Validate success for any module — not tied to PipeKeeper specifically
+        const hasAccess = rebuiltAccess?.tier === 'pro' && unlockedModules.length > 0;
+
+        if (!hasAccess) {
+          setError('Your payment was received, but access is still updating. Please retry once or reopen the app in a moment.');
+          setPhase('error');
+          return;
+        }
+
+        setAccessSummary({
+          ...rebuiltAccess,
+          activeModules: unlockedModules,
+          manageUrl: subscriptionSummary?.manageUrl || null,
+          expiresAt: subscriptionSummary?.expiresAt || null,
+        });
         setPhase('success');
       } catch (err) {
         if (!mounted) return;
@@ -112,13 +102,10 @@ export default function SubscriptionSuccessFlow() {
     }
 
     syncAndConfirm();
-
     return () => {
       mounted = false;
     };
   }, [queryClient]);
-
-  const modules = useMemo(() => accessSummary?.activeModules || [], [accessSummary]);
 
   if (phase === 'loading') {
     return (
@@ -159,10 +146,7 @@ export default function SubscriptionSuccessFlow() {
             >
               Retry
             </Button>
-            <Button
-              onClick={() => navigate(targetUrl)}
-              className="flex-1"
-            >
+            <Button onClick={() => navigate(targetUrl)} className="flex-1">
               Continue Anyway
             </Button>
           </div>
@@ -170,6 +154,8 @@ export default function SubscriptionSuccessFlow() {
       </div>
     );
   }
+
+  const modules = accessSummary?.activeModules || [];
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] p-4">
@@ -187,13 +173,13 @@ export default function SubscriptionSuccessFlow() {
         </h1>
 
         <p style={{ color: '#E0D8C8' }} className="text-sm mb-6">
-          Your subscription is now active.
+          Your subscription is now active. Your modules are ready to use.
         </p>
 
         {modules.length > 0 && (
           <div className="mb-8">
             <p style={{ color: '#8b6239' }} className="text-xs font-semibold uppercase tracking-wider mb-3">
-              You Now Have Access To
+              Active Access
             </p>
             <div className="space-y-2">
               {modules.map((m) => (
@@ -205,7 +191,7 @@ export default function SubscriptionSuccessFlow() {
                     color: '#D4A574',
                   }}
                 >
-                  {formatModuleLabel(m)}
+                  {toDisplayName(m)}
                 </div>
               ))}
             </div>

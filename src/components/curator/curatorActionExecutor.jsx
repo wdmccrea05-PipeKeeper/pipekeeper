@@ -449,23 +449,95 @@ function getActionPrompt(actionType, context, anchorOverrides) {
   // FAST PATHS: Use lightweight prompts for find_similar actions
   if (actionType === "find_similar_blends") {
     if (anchors.length === 0) throw new Error("No anchor blend selected for similar blend recommendations.");
-    if (anchorMode === "single" || anchors.length === 1) {
-      console.log("[FindSimilar] Single anchor blend:", anchors[0].name);
-      return buildLightweightFindSimilarBlendPrompt(anchors[0], context);
+    if (anchorMode === "top3" && anchors.length > 1) {
+      // Multi-anchor: build a combined prompt that references all anchors
+      console.log("[FindSimilar] Multi-anchor blends:", anchors.map(a => a.name));
+      const anchorLines = anchors.map((a, i) => {
+        const details = [
+          a.blend_type && `Type: ${a.blend_type}`,
+          a.strength && `Strength: ${a.strength}`,
+          a.cut && `Cut: ${a.cut}`,
+          a.flavor_notes?.length && `Flavors: ${a.flavor_notes.slice(0, 3).join(", ")}`,
+        ].filter(Boolean).join(" | ");
+        return `${i + 1}. "${a.name}" by ${a.manufacturer || "Unknown"} — ${details}`;
+      }).join("\n");
+      const ownedNames = (context?.blends || []).map(b => b.name).filter(Boolean);
+      return `You are a tobacco curator. Return VALID JSON only - no markdown, no prose.
+
+TASK: Recommend exactly 3 tobacco blends NOT in the user's collection that complement or are similar to the following anchors.
+
+ANCHOR BLENDS:
+${anchorLines}
+
+OWNED BLENDS (NEVER recommend):
+${ownedNames.map(n => `- ${n}`).join("\n")}
+
+RETURN EXACTLY 3 ITEMS spanning diversity across the anchors.
+
+{"summary":"Three blends you might enjoy","items":[{"id":"sim_1","type":"similar_item","recordType":"blend","title":"Blend Name by Maker","category":"Blend type","explanation":"Why recommended","characteristics":["trait1","trait2"],"whyFitsYou":"Personal note","anchorRef":"Anchor blend name"}]}`;
     }
-    // top3 multi-anchor
-    console.log("[FindSimilar] Multi-anchor blends:", anchors.map(a => a.name));
+    console.log("[FindSimilar] Single anchor blend:", anchors[0].name);
     return buildLightweightFindSimilarBlendPrompt(anchors[0], context);
   }
 
   if (actionType === "find_similar_pipes") {
     if (anchors.length === 0) throw new Error("No anchor pipe selected for similar pipe recommendations.");
+    if (anchorMode === "top3" && anchors.length > 1) {
+      console.log("[FindSimilar] Multi-anchor pipes:", anchors.map(a => a.name));
+      const anchorLines = anchors.map((a, i) => {
+        const details = [
+          a.shape && `Shape: ${a.shape}`,
+          a.maker && `Maker: ${a.maker}`,
+          a.sizeClass && `Size: ${a.sizeClass}`,
+        ].filter(Boolean).join(" | ");
+        return `${i + 1}. "${a.name}" — ${details}`;
+      }).join("\n");
+      const ownedNames = (context?.pipes || []).map(p => p.name).filter(Boolean);
+      return `You are a pipe curator. Return VALID JSON only - no markdown, no prose.
+
+TASK: Recommend exactly 3 pipes NOT in the user's collection that complement or are similar to the following anchors.
+
+ANCHOR PIPES:
+${anchorLines}
+
+OWNED PIPES (NEVER recommend):
+${ownedNames.map(n => `- ${n}`).join("\n")}
+
+RETURN EXACTLY 3 ITEMS spanning diversity across the anchors.
+
+{"summary":"Three pipes you might enjoy","items":[{"id":"sim_1","type":"similar_item","recordType":"pipe","title":"Pipe Name by Maker","category":"Shape","explanation":"Why recommended","characteristics":["trait1","trait2"],"whyFitsYou":"Personal note","anchorRef":"Anchor pipe name"}]}`;
+    }
     console.log("[FindSimilar] Anchor pipe:", anchors[0].name);
     return buildLightweightFindSimilarPipePrompt(anchors[0], context);
   }
 
   if (actionType === "find_similar_bottles") {
     if (anchors.length === 0) throw new Error("No anchor bottle selected for similar bottle recommendations.");
+    if (anchorMode === "top3" && anchors.length > 1) {
+      console.log("[FindSimilar] Multi-anchor bottles:", anchors.map(a => a.name));
+      const anchorLines = anchors.map((a, i) => {
+        const details = [
+          a.type && `Type: ${a.type}`,
+          a.region && `Region: ${a.region}`,
+          a.age && `Age: ${a.age}yr`,
+        ].filter(Boolean).join(" | ");
+        return `${i + 1}. "${a.name}" — ${details}`;
+      }).join("\n");
+      const ownedNames = (context?.bottles || []).map(b => b.name).filter(Boolean);
+      return `You are a whiskey curator. Return VALID JSON only - no markdown, no prose.
+
+TASK: Recommend exactly 3 whiskey bottles NOT in the user's collection that complement or are similar to the following anchors.
+
+ANCHOR BOTTLES:
+${anchorLines}
+
+OWNED BOTTLES (NEVER recommend):
+${ownedNames.map(n => `- ${n}`).join("\n")}
+
+RETURN EXACTLY 3 ITEMS spanning diversity across the anchors.
+
+{"summary":"Three bottles you might enjoy","items":[{"id":"sim_1","type":"similar_item","recordType":"bottle","title":"Bottle Name","category":"Type / Region","explanation":"Why recommended","characteristics":["trait1","trait2"],"whyFitsYou":"Personal note","anchorRef":"Anchor bottle name"}]}`;
+    }
     console.log("[FindSimilar] Anchor bottle:", anchors[0].name);
     return buildLightweightFindSimilarBottlePrompt(anchors[0], context);
   }

@@ -36,7 +36,8 @@ function normalizeTier(tier) {
 function subscriptionGrantsPaidAccess(subscription) {
   if (!subscription) return false;
   const status = String(subscription?.status || '').toLowerCase();
-  return ['active', 'trialing', 'past_due', 'incomplete'].includes(status);
+  // 'incomplete' intentionally excluded — payment has not been confirmed
+  return ['active', 'trialing', 'past_due'].includes(status);
 }
 
 function resolveTier(user, subscription) {
