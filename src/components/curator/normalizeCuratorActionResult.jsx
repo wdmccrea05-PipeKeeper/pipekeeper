@@ -7,10 +7,12 @@ function ensureArray(value) {
 // ─── Fallback items for similar_item failures ──────────────────────────────
 
 function buildFallbackSimilarItems(recordType, count = 3) {
+  // Use random IDs to avoid React key collisions across retries
+  const uid = () => Math.random().toString(36).slice(2, 8);
   const fallbacks = {
     blend: [
       {
-        id: "fallback_1",
+        id: `fallback_${uid()}`,
         type: "similar_item",
         recordType: "blend",
         title: "English Aromatic Blend",
@@ -21,7 +23,7 @@ function buildFallbackSimilarItems(recordType, count = 3) {
         group: "fallback",
       },
       {
-        id: "fallback_2",
+        id: `fallback_${uid()}`,
         type: "similar_item",
         recordType: "blend",
         title: "Latakia-Forward Blend",
@@ -32,7 +34,7 @@ function buildFallbackSimilarItems(recordType, count = 3) {
         group: "fallback",
       },
       {
-        id: "fallback_3",
+        id: `fallback_${uid()}`,
         type: "similar_item",
         recordType: "blend",
         title: "Virginia-Based Blend",
@@ -45,7 +47,7 @@ function buildFallbackSimilarItems(recordType, count = 3) {
     ],
     pipe: [
       {
-        id: "fallback_1",
+        id: `fallback_${uid()}`,
         type: "similar_item",
         recordType: "pipe",
         title: "Classic Bent Billiard",
@@ -56,7 +58,7 @@ function buildFallbackSimilarItems(recordType, count = 3) {
         group: "fallback",
       },
       {
-        id: "fallback_2",
+        id: `fallback_${uid()}`,
         type: "similar_item",
         recordType: "pipe",
         title: "Straight Apple",
@@ -67,7 +69,7 @@ function buildFallbackSimilarItems(recordType, count = 3) {
         group: "fallback",
       },
       {
-        id: "fallback_3",
+        id: `fallback_${uid()}`,
         type: "similar_item",
         recordType: "pipe",
         title: "Lovat-Style Pipe",
@@ -80,7 +82,7 @@ function buildFallbackSimilarItems(recordType, count = 3) {
     ],
     bottle: [
       {
-        id: "fallback_1",
+        id: `fallback_${uid()}`,
         type: "similar_item",
         recordType: "bottle",
         title: "Highland Scotch",
@@ -91,7 +93,7 @@ function buildFallbackSimilarItems(recordType, count = 3) {
         group: "fallback",
       },
       {
-        id: "fallback_2",
+        id: `fallback_${uid()}`,
         type: "similar_item",
         recordType: "bottle",
         title: "Bourbon Whiskey",
@@ -102,7 +104,7 @@ function buildFallbackSimilarItems(recordType, count = 3) {
         group: "fallback",
       },
       {
-        id: "fallback_3",
+        id: `fallback_${uid()}`,
         type: "similar_item",
         recordType: "bottle",
         title: "Rye Whiskey",
@@ -207,7 +209,9 @@ export default function normalizeCuratorActionResult(raw, actionType) {
 
   // FALLBACK: If similar action returned no items or malformed result, provide fallback
   if (actionType?.startsWith("find_similar") && items.length === 0) {
-    const recordType = actionType.replace("find_similar_", "").replace("s", "");
+    // Robust mapping: find_similar_blends → blend, find_similar_pipes → pipe, find_similar_bottles → bottle
+    const typeMap = { find_similar_blends: "blend", find_similar_pipes: "pipe", find_similar_bottles: "bottle" };
+    const recordType = typeMap[actionType] || "blend";
     const fallbackItems = buildFallbackSimilarItems(recordType, 3);
     return {
       summary: "Could not generate recommendations. Here are some suggestions based on your collection:",

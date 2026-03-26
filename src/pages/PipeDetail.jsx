@@ -78,7 +78,7 @@ export default function PipeDetail() {
     
     loadData();
     return () => { mounted = false; };
-  }, [pipeId]);
+  }, [pipeId, user?.email]);
 
   const handlePipeUpdate = async (updates) => {
     if (!pipe) return;
@@ -98,7 +98,9 @@ export default function PipeDetail() {
     setSimilarError(null);
     setSimilarResult(null);
     try {
-      const allPipes = await base44.entities.Pipe.list('-updated_date', 200).catch(() => []);
+      const allPipes = user?.email
+        ? await base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 200).catch(() => [])
+        : [];
       const result = await runFindSimilar({
         recordType: 'pipe',
         anchor: pipe,

@@ -517,9 +517,12 @@ export default async function curatorActionExecutor({
 }) {
   const isSimilarAction = actionType.startsWith("find_similar");
   
+  const anchorList = Array.isArray(anchorOverrides) ? anchorOverrides : (anchorOverrides?.anchors || []);
   console.log(`[Curator] ${actionType} start`, {
     isSimilar: isSimilarAction,
-    hasAnchors: !!anchorOverrides?.length,
+    hasAnchors: anchorList.length > 0,
+    anchorCount: anchorList.length,
+    anchorNames: anchorList.map(a => a?.name),
   });
 
   const prompt = getActionPrompt(actionType, context, anchorOverrides);
