@@ -4,19 +4,24 @@ import { base44 } from '@/api/base44Client';
 import ImageCropper from '@/components/pipes/ImageCropper';
 import { Input } from '@/components/ui/input';
 
-function LogoLibraryPicker({ onSelect, onClose }) {
-  const [query, setQuery] = useState('');
+function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
+  const [query, setQuery] = useState(initialQuery);
   const [logos, setLogos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
-  const handleSearch = async () => {
-    if (!query.trim()) return;
+  // Auto-search when opened with a pre-filled query
+  React.useEffect(() => {
+    if (initialQuery.trim()) handleSearch(initialQuery);
+  }, []);
+
+  const handleSearch = async (q = query) => {
+    if (!q.trim()) return;
     setLoading(true);
     try {
       const all = await base44.entities.TobaccoLogoLibrary.list('-created_date', 200);
-      const q = query.toLowerCase().trim();
-      setLogos((all || []).filter(l => l.brand_name?.toLowerCase().includes(q)));
+      const lq = q.toLowerCase().trim();
+      setLogos((all || []).filter(l => l.brand_name?.toLowerCase().includes(lq)));
       setSearched(true);
     } catch {
       setLogos([]);
@@ -45,7 +50,7 @@ function LogoLibraryPicker({ onSelect, onClose }) {
           style={{ background: 'rgba(20,13,8,0.7)', border: '1px solid rgba(180,140,75,0.3)', color: '#F5F1E7' }}
         />
         <button
-          onClick={handleSearch}
+          onClick={() => handleSearch()}
           disabled={loading || !query.trim()}
           className="px-2 rounded-lg flex items-center justify-center"
           style={{ background: 'rgba(180,140,75,0.85)', color: '#1a1008', flexShrink: 0 }}
@@ -85,7 +90,7 @@ function LogoLibraryPicker({ onSelect, onClose }) {
  *   maxPhotos?: number            — default 5
  *   label?: string                — section label
  */
-export default function InlinePhotoEditor({ photos = [], onUpdate, maxPhotos = 5, label = 'Photos', showLogoLibrary = false }) {
+export default function InlinePhotoEditor({ photos = [], onUpdate, maxPhotos = 5, label = 'Photos', showLogoLibrary = false, recordName = '' }) {
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
 
@@ -275,6 +280,7 @@ export default function InlinePhotoEditor({ photos = [], onUpdate, maxPhotos = 5
         <LogoLibraryPicker
           onSelect={(url) => { onUpdate([...cleanPhotos, url]); setShowLibrary(false); }}
           onClose={() => setShowLibrary(false)}
+          initialQuery={recordName}
         />
       )}
 

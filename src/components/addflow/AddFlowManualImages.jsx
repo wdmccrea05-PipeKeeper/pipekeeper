@@ -18,6 +18,17 @@ function buildFinalRecord(itemType, data) {
     flavor_notes: data.flavor_notes?.length ? data.flavor_notes : undefined,
     notes: data.notes,
     logo: data.logo,
+    tin_total_tins: data.tin_total_tins,
+    tin_size_oz: data.tin_size_oz,
+    tin_total_quantity_oz: data.tin_total_quantity_oz,
+    tin_tins_open: data.tin_tins_open,
+    tin_tins_cellared: data.tin_tins_cellared,
+    tin_cellared_date: data.tin_cellared_date,
+    bulk_total_quantity_oz: data.bulk_total_quantity_oz,
+    bulk_cellared_date: data.bulk_cellared_date,
+    pouch_total_pouches: data.pouch_total_pouches,
+    pouch_size_oz: data.pouch_size_oz,
+    pouch_total_quantity_oz: data.pouch_total_quantity_oz,
   });
   if (itemType === 'pipe') return clean({
     name: data.name,
@@ -41,19 +52,23 @@ function buildFinalRecord(itemType, data) {
   return { name: data.name };
 }
 
-function LogoLibraryPicker({ onSelect, onClose }) {
-  const [query, setQuery] = useState('');
+function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
+  const [query, setQuery] = useState(initialQuery);
   const [logos, setLogos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
-  const handleSearch = async () => {
-    if (!query.trim()) return;
+  React.useEffect(() => {
+    if (initialQuery.trim()) handleSearch(initialQuery);
+  }, []);
+
+  const handleSearch = async (q = query) => {
+    if (!q.trim()) return;
     setLoading(true);
     try {
       const all = await base44.entities.TobaccoLogoLibrary.list('-created_date', 200);
-      const q = query.toLowerCase().trim();
-      const filtered = all.filter(l => l.brand_name?.toLowerCase().includes(q));
+      const lq = q.toLowerCase().trim();
+      const filtered = (all || []).filter(l => l.brand_name?.toLowerCase().includes(lq));
       setLogos(filtered);
       setSearched(true);
     } catch {
@@ -83,7 +98,7 @@ function LogoLibraryPicker({ onSelect, onClose }) {
           style={{ background: 'rgba(20,13,8,0.7)', border: '1px solid rgba(180,140,75,0.3)', color: '#F5F1E7' }}
         />
         <Button
-          onClick={handleSearch}
+          onClick={() => handleSearch()}
           disabled={loading || !query.trim()}
           size="sm"
           style={{ background: 'rgba(180,140,75,0.9)', color: '#1a1008', fontWeight: 600, flexShrink: 0 }}
@@ -238,6 +253,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
               <LogoLibraryPicker
                 onSelect={(url) => { setImageUrl(url); setShowLibrary(false); }}
                 onClose={() => setShowLibrary(false)}
+                initialQuery={data?.name || ''}
               />
             )}
           </div>
