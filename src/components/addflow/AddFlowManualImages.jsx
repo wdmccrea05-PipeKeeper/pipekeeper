@@ -278,9 +278,10 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         </Button>
 
         <button
+          type="button"
           onClick={handleSave}
           disabled={saving}
-          className="text-center text-sm py-1 transition-colors hover:opacity-80"
+          className="text-center text-sm py-1 transition-colors hover:opacity-80 w-full"
           style={{ color: 'rgba(224,216,200,0.4)' }}
         >
           Skip photo and save
