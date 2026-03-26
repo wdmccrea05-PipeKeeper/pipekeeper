@@ -13,6 +13,10 @@ function buildRecord(itemType, result) {
     manufacturer: clean(result.manufacturer),
     blend_type: clean(result.blend_type),
     strength: clean(result.strength),
+    cut: clean(result.cut),
+    rating: clean(result.rating),
+    production_status: clean(result.production_status),
+    aging_potential: clean(result.aging_potential),
     notes: clean(result.description),
   };
   if (itemType === 'pipe') return {
