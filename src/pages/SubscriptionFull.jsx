@@ -104,8 +104,9 @@ export default function SubscriptionFull() {
           console.warn("[SubscriptionFull] success sync failed:", e);
         }
       } finally {
-        window.history.replaceState({}, document.title, createPageUrl("SubscriptionSuccess"));
-        window.location.href = createPageUrl("SubscriptionSuccess");
+        const successUrl = createPageUrl("SubscriptionSuccessFlow?next=/CollectionHub");
+        window.history.replaceState({}, document.title, successUrl);
+        window.location.href = successUrl;
       }
     })();
   }, [isIOSApp, refetch, queryClient]);

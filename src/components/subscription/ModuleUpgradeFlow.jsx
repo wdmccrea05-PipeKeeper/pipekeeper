@@ -170,11 +170,29 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
         }
       }
 
+      const moduleRouteMap = {
+        pipekeeper: '/PipeKeeper',
+        whiskeykeeper: '/WhiskeyKeeper',
+        cigarkeeper: '/CollectionHub',
+        winekeeper: '/CollectionHub',
+      };
+
+      const nextPath =
+        selectedOption.modules?.length === 1
+          ? (moduleRouteMap[selectedOption.modules[0]] || '/CollectionHub')
+          : '/CollectionHub';
+
+      const successFlowUrl =
+        `${window.location.origin}/SubscriptionSuccessFlow` +
+        `?next=${encodeURIComponent(nextPath)}` +
+        `&type=${encodeURIComponent(selectedOption.type)}` +
+        `&billing=${encodeURIComponent(billingPeriod)}`;
+
       const checkoutParams = {
         type: selectedOption.type,
         modules: selectedOption.modules,
         billingPeriod,
-        successUrl: `${window.location.origin}/SubscriptionSuccess?type=${encodeURIComponent(selectedOption.type)}&billing=${encodeURIComponent(billingPeriod)}`,
+        successUrl: successFlowUrl,
         cancelUrl: `${window.location.origin}/Subscription`,
       };
 

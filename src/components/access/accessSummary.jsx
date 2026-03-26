@@ -3,7 +3,7 @@
  * Hotfix goals:
  * - correctly map current plan keys (three_module_bundle / four_module_bundle)
  * - derive active modules from modules_csv / activeModules metadata when present
- * - fail safely to PipeKeeper for ambiguous Pro access in the current release
+ * - preserve unresolved module state honestly instead of fabricating PipeKeeper access
  */
 
 const STRIPE_PRODUCT_MAP = {
