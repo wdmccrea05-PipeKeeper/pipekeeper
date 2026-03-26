@@ -21,10 +21,10 @@ export default function EnrichButton({ itemType, record, onEnriched }) {
 
         if (enriched) {
           const updateData = {};
-          if (enriched.cut && !record.cut) updateData.cut = enriched.cut;
-          if (enriched.rating && !record.rating) updateData.rating = enriched.rating;
-          if (enriched.production_status && !record.production_status) updateData.production_status = enriched.production_status;
-          if (enriched.aging_potential && !record.aging_potential) updateData.aging_potential = enriched.aging_potential;
+          if (enriched.cut) updateData.cut = enriched.cut;
+          if (enriched.rating) updateData.rating = enriched.rating;
+          if (enriched.production_status) updateData.production_status = enriched.production_status;
+          if (enriched.aging_potential) updateData.aging_potential = enriched.aging_potential;
 
           if (Object.keys(updateData).length > 0) {
             await base44.entities.TobaccoBlend.update(record.id, updateData);
