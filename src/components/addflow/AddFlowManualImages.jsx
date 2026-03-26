@@ -66,9 +66,14 @@ function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
     if (!q.trim()) return;
     setLoading(true);
     try {
-      const all = await base44.entities.TobaccoLogoLibrary.list('-created_date', 200);
+      const all = await base44.entities.TobaccoLogoLibrary.list('-created_date', 500);
       const lq = q.toLowerCase().trim();
-      const filtered = (all || []).filter(l => l.brand_name?.toLowerCase().includes(lq));
+      const queryWords = lq.split(/\s+/).filter(Boolean);
+      const filtered = (all || []).filter(l => {
+        const brandLower = l.brand_name?.toLowerCase() || '';
+        // Match if any word from query is in the brand name
+        return queryWords.some(word => brandLower.includes(word)) || brandLower.includes(lq);
+      });
       setLogos(filtered);
       setSearched(true);
     } catch {
