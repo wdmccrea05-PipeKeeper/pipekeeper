@@ -32,6 +32,7 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
       quickSearch: 'choice',
       quickConfirm: 'quickSearch',
       blendInventoryQuick: 'quickConfirm',
+      blendImagesQuick: 'blendInventoryQuick',
       blendInventoryManual: 'manualDetails',
       manualBasic: 'choice',
       manualDetails: 'manualBasic',
@@ -88,15 +89,23 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
           {step === 'blendInventoryQuick' && (
             <AddFlowBlendInventory
               {...sharedProps}
-              stepLabel="Inventory — Final Step"
+              stepLabel="Inventory — Step 2 of 3"
               data={manualData}
-              onNext={async (inv) => {
+              onNext={(inv) => { setManualData(prev => ({ ...prev, ...inv })); setStep('blendImagesQuick'); }}
+            />
+          )}
+
+          {step === 'blendImagesQuick' && (
+            <AddFlowManualImages
+              {...sharedProps}
+              data={manualData}
+              onCreated={async (record) => {
                 const rec = manualData._quickRecord;
                 if (rec) {
                   try {
                     const { base44 } = await import('@/api/base44Client');
-                    const updated = await base44.entities.TobaccoBlend.update(rec.id, inv);
-                    created({ ...rec, ...inv });
+                    await base44.entities.TobaccoBlend.update(rec.id, manualData);
+                    created({ ...rec, ...manualData });
                   } catch { created(rec); }
                 } else { close(); }
               }}
