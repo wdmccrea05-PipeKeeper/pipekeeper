@@ -105,21 +105,21 @@ export default function CuratorActionResultCard({ item, state, onAccept, onRejec
       )}
 
       {!isAccepted && !isRejected && (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 flex gap-2">
           <button
             type="button"
             onClick={onAccept}
             disabled={isApplying}
-            className="rounded-lg bg-amber-500 px-3 py-2 text-sm font-medium text-black disabled:opacity-50"
+            className="rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-black disabled:opacity-50 whitespace-nowrap"
           >
-            {isApplying ? "Applying..." : isNonMutating ? "Try This Session" : "Accept"}
+            {isApplying ? "Applying..." : isNonMutating ? "Try This" : "Accept"}
           </button>
 
           <button
             type="button"
             onClick={onReject}
             disabled={isApplying}
-            className="rounded-lg border border-amber-500/30 px-3 py-2 text-sm text-amber-100 disabled:opacity-50"
+            className="rounded-lg border border-amber-500/30 px-3 py-1.5 text-sm text-amber-100 disabled:opacity-50 whitespace-nowrap"
           >
             {isNonMutating ? "Skip" : "Reject"}
           </button>
@@ -128,7 +128,7 @@ export default function CuratorActionResultCard({ item, state, onAccept, onRejec
             type="button"
             onClick={onAskCurator}
             disabled={isApplying}
-            className="rounded-lg border border-amber-500/30 px-3 py-2 text-sm text-amber-100 disabled:opacity-50"
+            className="rounded-lg border border-amber-500/30 px-3 py-1.5 text-sm text-amber-100 disabled:opacity-50 whitespace-nowrap"
           >
             Ask Curator
           </button>
