@@ -10,10 +10,71 @@ const PLACEHOLDERS = {
   bottle: 'e.g. Laphroaig 10, Buffalo Trace…',
 };
 
+// Normalize for comparison: lowercase, trim, collapse whitespace, strip punctuation
+function norm(s) {
+  return (s || '').toLowerCase().trim().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ');
+}
+
+// Score a result item against the query. Higher = better match.
+function scoreItem(itemType, item, normQuery) {
+  const namePrimary =
+    itemType === 'blend' ? item.name :
+    itemType === 'pipe' ? item.name :
+    item.name;
+  const nameNorm = norm(namePrimary);
+  const queryTokens = normQuery.split(' ').filter(Boolean);
+
+  if (nameNorm === normQuery) return 100;                    // exact
+  if (nameNorm.startsWith(normQuery)) return 90;            // starts with
+  if (nameNorm.includes(normQuery)) return 80;              // contains full phrase
+  // token overlap
+  const nameTokens = nameNorm.split(' ');
+  const overlap = queryTokens.filter(t => nameTokens.includes(t)).length;
+  if (overlap === queryTokens.length) return 70;            // all tokens present
+  if (overlap > 0) return 50 + overlap * 5;                 // partial token match
+  return 0;                                                  // no match
+}
+
+// Re-rank results so exact/close matches appear first
+function rankResults(itemType, items, query) {
+  const normQuery = norm(query);
+  return [...items]
+    .map(item => ({ item, score: scoreItem(itemType, item, normQuery) }))
+    .sort((a, b) => b.score - a.score)
+    .map(({ item, score }) => ({ ...item, _exactMatch: score >= 80 }));
+}
+
 const PROMPTS = {
-  blend: (q) => `List up to 5 real pipe tobacco blends that match "${q}". Use your knowledge of pipe tobacco. Return JSON object with an "items" array. Each item: name (string), manufacturer (string), blend_type (string), strength (string), description (one sentence about the blend).`,
-  pipe: (q) => `List up to 5 real tobacco pipes that match "${q}". Use your knowledge of pipe makers and models. Return JSON object with an "items" array. Each item: name (string), maker (string), shape (string), bowl_material (string), description (one sentence).`,
-  bottle: (q) => `List up to 5 real whiskey bottles/expressions that match "${q}". Use your knowledge of whiskey brands. Return JSON object with an "items" array. Each item: name (string), distillery (string), whiskey_type (string), age (number or null), abv (number or null), description (one sentence).`,
+  blend: (q) => `I am looking up the pipe tobacco blend named exactly "${q}".
+
+Return a JSON object with an "items" array of up to 6 results.
+Rules:
+1. The FIRST result MUST be the blend named "${q}" itself if it exists — do not substitute a similar blend.
+2. After the exact match, you may include closely related blends (same manufacturer, same family, or highly similar).
+3. Do NOT place similar-sounding blends ahead of "${q}".
+4. If "${q}" does not exist, return the closest real alternatives.
+
+Each item: name (string), manufacturer (string), blend_type (string), strength (string), description (one sentence).`,
+
+  pipe: (q) => `I am looking up the tobacco pipe named or made by "${q}".
+
+Return a JSON object with an "items" array of up to 6 results.
+Rules:
+1. The FIRST result MUST be the pipe "${q}" itself if it exists.
+2. After the exact match, you may include closely related models or maker's other pipes.
+3. Do NOT place similar pipes ahead of "${q}".
+
+Each item: name (string), maker (string), shape (string), bowl_material (string), description (one sentence).`,
+
+  bottle: (q) => `I am looking up the whiskey bottle or expression named exactly "${q}".
+
+Return a JSON object with an "items" array of up to 6 results.
+Rules:
+1. The FIRST result MUST be the expression named "${q}" itself if it exists.
+2. After the exact match, you may include closely related expressions from the same distillery.
+3. Do NOT place similar bottles ahead of "${q}".
+
+Each item: name (string), distillery (string), whiskey_type (string), age (number or null), abv (number or null), description (one sentence).`,
 };
 
 const SCHEMA = {
@@ -64,7 +125,8 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
         prompt: PROMPTS[itemType](query.trim()),
         response_json_schema: SCHEMA,
       });
-      setResults(Array.isArray(res?.items) ? res.items.filter(i => i?.name) : []);
+      const raw = Array.isArray(res?.items) ? res.items.filter(i => i?.name) : [];
+      setResults(rankResults(itemType, raw, query.trim()));
     } catch {
       setResults([]);
     } finally {
@@ -139,10 +201,17 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
                 key={i}
                 onClick={() => onSelect(item)}
                 className="w-full text-left flex items-start justify-between gap-3 px-4 py-3.5 rounded-xl transition-colors hover:bg-white/[0.05] active:bg-white/[0.07]"
-                style={{ border: '1px solid rgba(255,255,255,0.07)' }}
+                style={{ border: item._exactMatch && i === 0 ? '1px solid rgba(180,140,75,0.35)' : '1px solid rgba(255,255,255,0.07)' }}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-sm break-words" style={{ color: '#F5F1E7' }}>{item.name}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-semibold text-sm break-words" style={{ color: '#F5F1E7' }}>{item.name}</p>
+                    {item._exactMatch && i === 0 && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(180,140,75,0.18)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.3)' }}>
+                        Best Match
+                      </span>
+                    )}
+                  </div>
                   {getSubtitle(itemType, item) && (
                     <p className="text-xs mt-0.5" style={{ color: 'rgba(212,165,116,0.75)' }}>{getSubtitle(itemType, item)}</p>
                   )}
