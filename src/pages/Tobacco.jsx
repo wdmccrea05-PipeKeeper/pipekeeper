@@ -13,7 +13,7 @@ import PipeKeeperModuleNav from "@/components/modules/PipeKeeperModuleNav";
 import TobaccoCard from "@/components/tobacco/TobaccoCard";
 import TobaccoListItem from "@/components/tobacco/TobaccoListItem";
 import TobaccoForm from "@/components/tobacco/TobaccoForm";
-import QuickSearchTobacco from "@/components/ai/QuickSearchTobacco";
+
 import TobaccoExporter from "@/components/export/TobaccoExporter";
 import CollectorDisplayCard from "@/components/ui/CollectorDisplayCard";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -58,7 +58,6 @@ export default function TobaccoPage() {
   const [displayMode, setDisplayMode] = useState(() => {
     return localStorage.getItem('tobaccoDisplayMode') === 'collector';
   });
-  const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showAddFlow, setShowAddFlow] = useState(false);
   const [showBulkUpdate, setShowBulkUpdate] = useState(false);
   const [quickEditMode, setQuickEditMode] = useState(false);
@@ -188,12 +187,7 @@ export default function TobaccoPage() {
     }
   };
 
-  const handleQuickSearchAdd = (blend) => {
-    queryClient.invalidateQueries({ queryKey: ['blends', user?.email] });
-    // Open the edit form for the newly added blend
-    setEditingBlend(blend);
-    setShowForm(true);
-  };
+
 
   const handleBulkUpdate = (blendIds, updateData) => {
     bulkUpdateMutation.mutate({ blendIds, updateData });
@@ -289,13 +283,6 @@ export default function TobaccoPage() {
                 {quickEditMode ? t("tobaccoPage.exitQuickEdit") : t("tobaccoPage.quickEdit")}
               </Button>
             )}
-            <Button 
-              onClick={() => setShowQuickSearch(true)}
-              className="bg-[rgba(180,140,75,0.15)] border border-[rgba(180,140,75,0.35)] text-[#E0D8C8] hover:bg-[rgba(180,140,75,0.25)]"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {t("pipesPage.quickSearchAdd")}
-            </Button>
             <Button 
              onClick={async () => {
                const limitCheck = await canCreateTobacco(user?.email, hasPaid, isTrial);
@@ -627,13 +614,6 @@ export default function TobaccoPage() {
             />
           </SheetContent>
         </Sheet>
-
-        {/* Quick Search Dialog */}
-        <QuickSearchTobacco
-          open={showQuickSearch}
-          onOpenChange={setShowQuickSearch}
-          onAdd={handleQuickSearchAdd}
-        />
 
         <AddFlowModal
           open={showAddFlow}
