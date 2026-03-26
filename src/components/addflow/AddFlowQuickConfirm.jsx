@@ -77,7 +77,29 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
       const data = buildRecord(itemType, result);
       // Remove undefined keys
       const clean = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
-      const record = await base44.entities[ENTITIES[itemType]].create(clean);
+      
+      // For blends, enrich with cut, rating, status, aging via reclassification
+      let finalData = clean;
+      if (itemType === 'blend') {
+        try {
+          const enriched = await base44.functions.invoke('reclassifyTobaccoBlend', {
+            name: result.name,
+            manufacturer: result.manufacturer,
+            blend_type: result.blend_type,
+            strength: result.strength,
+            description: result.description,
+          });
+          // Merge enriched data
+          if (enriched?.data) {
+            finalData = { ...clean, ...enriched.data };
+          }
+        } catch (enrichError) {
+          // Fallback: save without enrichment
+          console.warn('Enrichment failed, saving basic record:', enrichError);
+        }
+      }
+      
+      const record = await base44.entities[ENTITIES[itemType]].create(finalData);
       toast.success(`${typeLabel} added!`);
       onCreated(record);
     } catch (e) {
