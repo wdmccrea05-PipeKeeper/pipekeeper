@@ -1,10 +1,11 @@
-const ACTION_TIMEOUT_MS = 25000;
+const BASE_ACTION_TIMEOUT_MS = 30000;
+const FIND_SIMILAR_TIMEOUT_MS = 15000;
 
 function withTimeout(promise, ms) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error("Action timed out")), ms);
 
-    promise
+    Promise.resolve(promise)
       .then((value) => {
         clearTimeout(timer);
         resolve(value);
@@ -16,25 +17,53 @@ function withTimeout(promise, ms) {
   });
 }
 
+function getAnchorList(anchorOverrides) {
+  if (Array.isArray(anchorOverrides)) return anchorOverrides.filter(Boolean);
+  if (Array.isArray(anchorOverrides?.anchors)) {
+    return anchorOverrides.anchors.filter(Boolean);
+  }
+  return [];
+}
+
 export async function runCuratorAction({
   actionType,
   executor,
   normalizer,
   context,
   onAudit,
+  anchorOverrides,
 }) {
   const requestId =
     globalThis.crypto?.randomUUID?.() ||
     `curator_${actionType}_${Date.now()}`;
 
+  const anchorList = getAnchorList(anchorOverrides);
+  const timeoutMs = String(actionType || "").startsWith("find_similar")
+    ? FIND_SIMILAR_TIMEOUT_MS
+    : BASE_ACTION_TIMEOUT_MS;
+
+  console.log("[Curator] runCuratorAction", {
+    actionType,
+    requestId,
+    timeoutMs,
+    anchorOverrides,
+    anchorCount: anchorList.length,
+  });
+
   try {
     Promise.resolve(
-      onAudit?.({ requestId, actionType, phase: "started", context })
+      onAudit?.({
+        requestId,
+        actionType,
+        phase: "started",
+        context,
+        anchorOverrides,
+      })
     ).catch(() => {});
 
     const raw = await withTimeout(
-      executor({ actionType, context, requestId }),
-      ACTION_TIMEOUT_MS
+      executor({ actionType, context, requestId, anchorOverrides }),
+      timeoutMs
     );
 
     if (!raw) {
@@ -89,6 +118,13 @@ export async function runCuratorAction({
       .toLowerCase()
       .includes("timed out");
 
+    console.error("[Curator] runCuratorAction failed", {
+      actionType,
+      requestId,
+      error,
+      anchorCount: anchorList.length,
+    });
+
     return {
       requestId,
       actionType,
@@ -101,7 +137,12 @@ export async function runCuratorAction({
     };
   } finally {
     Promise.resolve(
-      onAudit?.({ requestId, actionType, phase: "finished" })
+      onAudit?.({
+        requestId,
+        actionType,
+        phase: "finished",
+        anchorOverrides,
+      })
     ).catch(() => {});
   }
 }
