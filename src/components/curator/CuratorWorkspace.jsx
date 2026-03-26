@@ -28,7 +28,7 @@ import CuratorActionPanel from "./CuratorActionPanel";
 import CuratorActionResultCard from "./CuratorActionResultCard";
 import normalizeCuratorActionResult from "./normalizeCuratorActionResult.jsx";
 import curatorActionExecutor from "./curatorActionExecutor.jsx";
-import { runCuratorAction } from "./curatorActionService.js";
+import { runCuratorAction } from "./curatorActionService.jsx";
 import {
   buildCuratorChatSystemPrompt,
   buildCuratorActivitySummary,
@@ -265,7 +265,7 @@ export default function CuratorWorkspace({
   const [initError, setInitError] = useState("");
   const [actionRun, setActionRun] = useState(null);
   const [itemStates, setItemStates] = useState({});
-  const [lastActionType, setLastActionType] = useState(null);
+  const [lastActionRequest, setLastActionRequest] = useState(null); // { actionType, anchorOverrides }
   const [pendingFindSimilar, setPendingFindSimilar] = useState(null); // actionType needing anchor pick
 
   const messagesEndRef = useRef(null);
@@ -629,7 +629,8 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         return;
       }
 
-      setLastActionType(actionType);
+      console.log("[Curator] action start", { actionType, hasAnchors: !!anchorOverrides, anchorOverrides });
+      setLastActionRequest({ actionType, anchorOverrides });
       setItemStates({});
 
       const requestId =
@@ -646,6 +647,7 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
       });
 
       try {
+        console.log("[Curator] runCuratorAction call", { actionType, hasAnchors: !!anchorOverrides });
         const result = await runCuratorAction({
           actionType,
           executor: curatorActionExecutor,
@@ -748,8 +750,9 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
   };
 
   const handleRetryAction = () => {
-    if (!lastActionType) return;
-    handleExpertAction(lastActionType);
+    if (!lastActionRequest) return;
+    console.log("[Curator] retry", lastActionRequest);
+    handleExpertAction(lastActionRequest.actionType, lastActionRequest.anchorOverrides);
   };
 
   const handleFindSimilarConfirm = (anchorItems, isTop3) => {
