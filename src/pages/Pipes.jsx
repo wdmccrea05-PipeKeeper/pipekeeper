@@ -5,7 +5,7 @@ import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Grid3X3, List, Sparkles, Package2, Package } from "lucide-react";
+import { Plus, Search, Grid3X3, List, Package2, Package } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -376,8 +376,8 @@ export default function PipesPage() {
             }
             actionLabel={pipes.length === 0 ? t("pipesPage.addFirstPipe") : null}
             onAction={pipes.length === 0 ? () => setShowAddFlow(true) : null}
-            secondaryActionLabel={pipes.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || shapeFilter || materialFilter ? t("pipesPage.clearFilters") : null}
-            onSecondaryAction={pipes.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setShapeFilter(''); setMaterialFilter(''); }}
+            secondaryActionLabel={searchQuery || shapeFilter || materialFilter ? t("pipesPage.clearFilters") : null}
+            onSecondaryAction={() => { setSearchQuery(''); setShapeFilter(''); setMaterialFilter(''); }}
           />
         ) : displayMode && viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -517,12 +517,7 @@ export default function PipesPage() {
           </SheetContent>
         </Sheet>
 
-        {/* Quick Search Dialog */}
-        <QuickSearchPipe
-          open={showQuickSearch}
-          onOpenChange={setShowQuickSearch}
-          onAdd={handleQuickSearchAdd}
-        />
+
 
         <AddFlowModal
           open={showAddFlow}

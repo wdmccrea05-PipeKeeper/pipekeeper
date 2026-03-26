@@ -264,10 +264,6 @@ export default function WhiskeyPage() {
                 {/* Right: Action buttons */}
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <WhiskeyExporter />
-                  <Button onClick={() => setShowQuickSearch(true)} variant="outline" size="sm" className="text-xs sm:text-sm whitespace-nowrap">
-                    <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-                    {t('quickActions.quickSearchBottle', 'Quick Add')}
-                  </Button>
                   <Button
                     onClick={() => { setEditingBottle(null); setShowAddFlow(true); }}
                     size="sm"
@@ -449,9 +445,9 @@ export default function WhiskeyPage() {
               })}
             </div>
           </div>
-        ) : (
+          ) : (
           <div
-            className="rounded-2xl p-16 text-center"
+           className="rounded-2xl p-16 text-center"
             style={{
               background: 'linear-gradient(135deg, rgba(42,31,24,0.4), rgba(31,21,16,0.5))',
               border: '1px solid rgba(180,140,75,0.15)',
@@ -470,10 +466,6 @@ export default function WhiskeyPage() {
                 <Plus className="w-4 h-4 mr-2" />
                 {t('whiskey.addFirstBottle', 'Add First Bottle')}
               </Button>
-              <Button onClick={() => setShowQuickSearch(true)} variant="outline">
-                <Search className="w-4 h-4 mr-2" />
-                {t('quickActions.quickSearchBottle', 'Quick Add')}
-              </Button>
             </div>
           </div>
         )}
@@ -488,15 +480,7 @@ export default function WhiskeyPage() {
           }}
         />
 
-        {/* Quick Search */}
-        <QuickSearchBottle
-          isOpen={showQuickSearch}
-          onClose={() => setShowQuickSearch(false)}
-          onBottleAdded={(created) => {
-            queryClient.invalidateQueries({ queryKey: ['bottles'] });
-            if (created?.id) setInventoryBottle(created);
-          }}
-        />
+
 
         {/* Share Modal */}
         {shareBottle && (

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { rankSearchResults } from '@/utils/search/SmartSearchEngine';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -131,7 +132,8 @@ Prioritize well-known, commonly available bottles. Return a JSON object with a "
     });
 
     const deduplicated = deduplicateBottles(result?.bottles || []);
-    setResults(deduplicated);
+    const ranked = rankSearchResults(query, deduplicated, 'bottle');
+    setResults(ranked.slice(0, 20));
     setSearching(false);
   };
 
@@ -240,6 +242,9 @@ Prioritize well-known, commonly available bottles. Return a JSON object with a "
                         <p className="text-xs text-[#E0D8C8]/70 mt-0.5">{bottle.distillery}</p>
                       )}
                       <div className="flex flex-wrap gap-1.5 mt-2">
+                        {bottle._isExact && (
+                          <Badge className="text-xs bg-emerald-900/60 text-emerald-200 border-emerald-700/50" style={{ fontWeight: '600' }}>✓ Exact Match</Badge>
+                        )}
                         {bottle.type && <Badge className="text-xs bg-amber-900/50 text-amber-200 border-amber-700/40">{bottle.type}</Badge>}
                         {bottle.region && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.region}</Badge>}
                         {bottle.age_years && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.age_years}yr</Badge>}

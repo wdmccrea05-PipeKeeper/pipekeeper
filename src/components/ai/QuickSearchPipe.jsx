@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { formatCurrency } from '@/components/utils/localeFormatters';
+import { rankSearchResults } from '@/utils/search/SmartSearchEngine';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -75,7 +76,8 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
         }
       });
 
-      setResults(result.pipes || []);
+      const ranked = rankSearchResults(query, result.pipes || [], 'pipe');
+      setResults(ranked.slice(0, 20));
     } catch (err) {
       console.error('Search error:', err);
     } finally {
@@ -191,6 +193,11 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
                             <p className="text-sm font-medium text-stone-700 mt-2 leading-relaxed">{pipe.description}</p>
                           )}
                           <div className="flex flex-wrap gap-1.5 mt-3">
+                            {pipe._isExact && (
+                              <Badge variant="secondary" className="text-xs" style={{ background: 'rgba(180, 140, 75, 0.25)', color: 'rgba(212,165,116,1)', border: '1px solid rgba(180,140,75,0.45)', fontWeight: '600' }}>
+                              ✓ Exact Match
+                              </Badge>
+                            )}
                             {pipe.typical_shapes?.slice(0, 3).map((shape, i) => (
                               <Badge key={i} variant="secondary" className="bg-amber-100 text-amber-900 border-amber-300 text-xs font-medium">
                                 {shape}

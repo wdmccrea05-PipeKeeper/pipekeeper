@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { rankSearchResults } from '@/utils/search/SmartSearchEngine';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -86,7 +87,8 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
         }
       });
 
-      setResults(result.blends || []);
+      const ranked = rankSearchResults(query, result.blends || [], 'blend');
+      setResults(ranked.slice(0, 20));
     } catch (err) {
       console.error('Search error:', err);
     } finally {
@@ -197,11 +199,16 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
                             <p className="text-sm mt-2 leading-relaxed" style={{ color: 'rgba(224,216,200,0.72)' }}>{blend.description}</p>
                           )}
                           <div className="flex flex-wrap gap-1.5 mt-3">
-                            {blend.blend_type && (
-                              <Badge variant="secondary" className="text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: 'rgba(212,165,116,1)', border: '1px solid rgba(180,140,75,0.32)' }}>
-                                {blend.blend_type}
-                              </Badge>
-                            )}
+                                     {blend._isExact && (
+                                       <Badge variant="secondary" className="text-xs" style={{ background: 'rgba(46,125,92,0.25)', color: 'rgba(100,220,160,1)', border: '1px solid rgba(46,125,92,0.5)', fontWeight: '600' }}>
+                                         ✓ Exact Match
+                                       </Badge>
+                                     )}
+                                     {blend.blend_type && (
+                                       <Badge variant="secondary" className="text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: 'rgba(212,165,116,1)', border: '1px solid rgba(180,140,75,0.32)' }}>
+                                         {blend.blend_type}
+                                       </Badge>
+                                     )}
                             {blend.strength && (
                               <Badge variant="secondary" className="text-xs" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(224,216,200,0.85)', border: '1px solid rgba(255,255,255,0.12)' }}>
                                 {blend.strength}

@@ -105,9 +105,7 @@ export default function InventoryStep({
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
             {stepLabel}
           </h2>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
-            {config.label}
-          </p>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>Step 3 of 4</p>
         </div>
       </div>
 

@@ -431,16 +431,12 @@ export default function TobaccoPage() {
             }
             actionLabel={blends.length === 0 ? t("tobaccoPage.addFirstBlend") : null}
             onAction={blends.length === 0 ? () => setShowAddFlow(true) : null}
-            secondaryActionLabel={blends.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || typeFilter || strengthFilter ? t("pipesPage.clearFilters") : null}
-            onSecondaryAction={
-  blends.length === 0
-    ? () => setShowQuickSearch(true)
-    : () => {
-        setSearchQuery('');
-        setTypeFilter('__none__');
-        setStrengthFilter('__none__');
-      }
-}
+            secondaryActionLabel={searchQuery || typeFilter || strengthFilter ? t("pipesPage.clearFilters") : null}
+            onSecondaryAction={() => {
+            setSearchQuery('');
+            setTypeFilter('__none__');
+            setStrengthFilter('__none__');
+            }}
           />
         ) : displayMode && viewMode === 'grid' && !quickEditMode ? (
           <motion.div 
