@@ -96,13 +96,13 @@ export default function QuickLaunch() {
     {
       label: t("quickActions.addPipe", "Add Pipe"),
       icon: "/branding/pipe-icon.png?v=3",
-      path: "/PipeForm",
+      path: "/Pipes?action=add",
       accent: "#D4A574",
     },
     {
       label: t("quickActions.addBlend", "Add Blend"),
       icon: Leaf,
-      path: "/TobaccoForm",
+      path: "/Tobacco?action=add",
       accent: "#7C9A6D",
     },
     {
@@ -123,14 +123,8 @@ export default function QuickLaunch() {
     {
       label: t("quickActions.addBottle", "Add Bottle"),
       icon: BottleQuickIcon,
-      path: "/BottleForm",
+      path: "/Whiskey?action=add",
       accent: "#D4A574",
-    },
-    {
-      label: t("quickActions.quickSearchBottle", "Quick Search Bottle"),
-      icon: Search,
-      path: "/WhiskeyKeeper",
-      accent: "#B48C4B",
     },
     {
       label: t("quickActions.logTasting", "Log Tasting"),

@@ -12,7 +12,6 @@ import { calculateCellaredOzFromLogs } from '@/components/utils/tobaccoQuantityH
 import PipeKeeperModuleNav from './PipeKeeperModuleNav';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import ModuleQuickLaunch from './ModuleQuickLaunch';
-import QuickSearchPipe from '@/components/ai/QuickSearchPipe';
 import SmokingLogPanel from '@/components/home/SmokingLogPanel';
 import { useProfilePrivacy } from '@/components/hooks/useProfilePrivacy';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
@@ -28,7 +27,6 @@ export default function PipeKeeperModule() {
   const { hideValues, hideCollectionCounts } = useProfilePrivacy();
   const queryClient = useQueryClient();
   
-  const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showSmokingLog, setShowSmokingLog] = useState(params.get('action') === 'log-smoke');
   const [addFlowOpen, setAddFlowOpen] = useState(false);
   const [addFlowType, setAddFlowType] = useState(null);
@@ -126,7 +124,7 @@ export default function PipeKeeperModule() {
       key: 'quickSearch',
       Icon: Search,
       label: t('quickActions.quickSearchPipe'),
-      onClick: () => setShowQuickSearch(true)
+      onClick: () => { setAddFlowType('pipe'); setAddFlowOpen(true); }
     },
     {
       key: 'logSession',
@@ -274,13 +272,6 @@ export default function PipeKeeperModule() {
           </div>
         </div>
       )}
-
-      {/* Quick Search Modal */}
-      <QuickSearchPipe 
-        open={showQuickSearch} 
-        onOpenChange={setShowQuickSearch}
-        onAdd={handlePipeAdded}
-      />
 
       {/* Smoking Log Modal */}
       {showSmokingLog && (

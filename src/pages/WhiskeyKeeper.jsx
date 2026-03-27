@@ -82,9 +82,9 @@ export default function WhiskeyKeeper() {
       onClick: () => navigate('/Whiskey?action=add')
     },
     {
-      key: 'quickSearch',
+      key: 'browseCollection',
       Icon: Glasses,
-      label: t('quickActions.quickSearchBottle', 'Quick Search'),
+      label: t('whiskey.yourCollection', 'Browse Collection'),
       onClick: () => navigate('/Whiskey')
     },
     {
