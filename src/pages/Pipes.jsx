@@ -15,7 +15,7 @@ import PipeKeeperModuleNav from "@/components/modules/PipeKeeperModuleNav";
 import PipeCard from "@/components/pipes/PipeCard";
 import PipeListItem from "@/components/pipes/PipeListItem";
 import PipeForm from "@/components/pipes/PipeForm";
-import QuickSearchPipe from "@/components/ai/QuickSearchPipe";
+
 import PipeExporter from "@/components/export/PipeExporter";
 import CollectorDisplayCard from "@/components/ui/CollectorDisplayCard";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
@@ -48,7 +48,6 @@ export default function PipesPage() {
   const [displayMode, setDisplayMode] = useState(() => {
     return localStorage.getItem('pipesDisplayMode') === 'collector';
   });
-  const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showAddFlow, setShowAddFlow] = useState(false);
   const [sortBy, setSortBy] = useState('date');
 
@@ -137,12 +136,7 @@ export default function PipesPage() {
     setShowForm(true);
   };
 
-  const handleQuickSearchAdd = (pipe) => {
-    queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
-    // Open the edit form for the newly added pipe
-    setEditingPipe(pipe);
-    setShowForm(true);
-  };
+
 
   const toggleFavoriteMutation = useMutation({
     mutationFn: ({ id, is_favorite }) => safeUpdate('Pipe', id, { is_favorite }, user?.email),
@@ -222,15 +216,7 @@ export default function PipesPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             <PipeExporter />
-            <Button 
-              onClick={() => setShowQuickSearch(true)}
-              variant="secondary"
-              className="flex-shrink-0"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">{t("pipesPage.quickSearchAdd")}</span>
-              <span className="sm:hidden">{t("pipesPage.quickSearch")}</span>
-            </Button>
+
             <Button 
               onClick={async () => {
                 const limitCheck = await canCreatePipe(user?.email, hasPaid, isTrial);
