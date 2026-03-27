@@ -952,19 +952,18 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
             .join("\n")
         : "";
 
-    const basePrompt = item.followUpPrompt ||
-      (isSession
-        ? `Tell me more about this session recommendation and why it suits my collection.${sessionContext}`
-        : `Explain this recommendation in more detail and tell me what would change if I accept it: ${item.title}${formattedChanges ? `\n\nProposed changes:\n${formattedChanges}` : ""}`);
+    const basePrompt = isSession
+      ? `Please give me a detailed explanation and rationale for this session recommendation — why this specific pairing suits my collection, my taste profile, and what I can expect from the experience:${sessionContext}`
+      : `Please give me a detailed explanation and rationale for this recommendation. Why does this change make sense for my collection, and what will improve if I accept it?\n\nRecommendation: ${item.title}${formattedChanges ? `\n\nProposed changes:\n${formattedChanges}` : ""}`;
 
-    // Populate the input field so the user can see and send the question
-    setInput(basePrompt);
+    const contextOverride = isSession ? {
+      pipeName: item.recordName,
+      blendName: item.blendName,
+      bottleName: item.bottleName,
+    } : null;
 
-    // Scroll the input into view
-    setTimeout(() => {
-      const inputEl = document.querySelector('[data-curator-input]');
-      if (inputEl) inputEl.focus();
-    }, 50);
+    // Auto-send immediately — no user input required
+    sendMessage(basePrompt, contextOverride);
   };
 
   const handleDismissAction = () => {
