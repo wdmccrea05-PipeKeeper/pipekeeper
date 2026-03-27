@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { scopedEntities } from "@/components/api/scopedEntities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
@@ -50,6 +51,7 @@ export default function PipesPage() {
   });
   const [showAddFlow, setShowAddFlow] = useState(false);
   const [sortBy, setSortBy] = useState('date');
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const queryClient = useQueryClient();
 
@@ -71,29 +73,27 @@ export default function PipesPage() {
     staleTime: 10000,
   });
 
-  // Handle URL action parameter
-  React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const action = urlParams.get('action');
+  // Handle URL action parameter — uses searchParams so it fires whenever URL changes
+  useEffect(() => {
+    const action = searchParams.get('action');
     if (action === 'add') {
       setShowAddFlow(true);
-      window.history.replaceState({}, '', '/Pipes');
+      setSearchParams({}, { replace: true });
     }
-  }, []);
+  }, [searchParams]);
 
   // Handle URL edit parameter
-  React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const editId = urlParams.get('edit');
+  useEffect(() => {
+    const editId = searchParams.get('edit');
     if (editId && pipes?.length > 0) {
       const pipeToEdit = pipes.find(p => p.id === editId);
       if (pipeToEdit) {
         setEditingPipe(pipeToEdit);
         setShowForm(true);
-        window.history.replaceState({}, '', '/Pipes');
+        setSearchParams({}, { replace: true });
       }
     }
-  }, [pipes]);
+  }, [pipes, searchParams]);
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
