@@ -267,7 +267,7 @@ export default function Curator() {
   return (
     <div className="space-y-5">
       {/* Internal Module Navigation */}
-      {availableScopes.length > 1 && (
+      {availableScopes.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
           {availableScopes.map((opt) => {
             const selected = curatorScope === opt.value;
