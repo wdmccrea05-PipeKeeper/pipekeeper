@@ -81,7 +81,7 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, data })
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
             Details
           </h2>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>Step 2 of 3</p>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>Step 2 of 4</p>
         </div>
       </div>
 

@@ -18,7 +18,6 @@ import BottleForm from '@/components/whiskey/BottleForm';
 import LogTastingModal from '@/components/whiskey/LogTastingModal';
 import BottleInsights from '@/components/whiskey/BottleInsights';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
-import QuickSearchBottle from '@/components/ai/QuickSearchBottle';
 import InventoryManager from '@/components/whiskey/InventoryManager';
 import InventoryMigrator from '@/components/whiskey/InventoryMigrator';
 import CollectorDisplayCard from '@/components/ui/CollectorDisplayCard';
@@ -66,7 +65,6 @@ export default function WhiskeyPage() {
   const [showTastingLog, setShowTastingLog] = useState(null);
   const [editingTastingLog, setEditingTastingLog] = useState(null);
   const [shareBottle, setShareBottle] = useState(null);
-  const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [inventoryBottle, setInventoryBottle] = useState(null);
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('whiskeyViewMode') || 'grid');
   const [displayMode, setDisplayMode] = useState(() => localStorage.getItem('whiskeyDisplayMode') === 'collector');

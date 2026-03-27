@@ -70,7 +70,7 @@ export default function AddFlowManualBasic({ itemType, typeLabel, onBack, onNext
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
             Basic Info
           </h2>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>Step 1 of 3</p>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>Step 1 of 4</p>
         </div>
       </div>
 
