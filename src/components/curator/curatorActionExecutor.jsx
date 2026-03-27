@@ -57,7 +57,7 @@ Schema:
       "title": "string",
       "explanation": "string",
       "rationale": "string",
-      "confidence": 0.0,
+      "confidence": 0.85,
       "recordType": "pipe | blend | bottle",
       "recordId": "string",
       "recordName": "string",
@@ -110,6 +110,7 @@ STRICT RULES:
 - You MUST populate bottleId and bottleName with a real whiskey bottle from the collection if any bottles exist
 - The explanation MUST name the specific tobacco blend and whiskey bottle being recommended (e.g. "Pair your [PIPE NAME] with [BLEND NAME] and a pour of [BOTTLE NAME]")
 - The rationale MUST explain why this specific combination works
+- confidence must be a float between 0.70 and 0.95 reflecting how well-suited the pairing is (never 0)
 - Use human-readable text only
 - No snake_case in title/explanation/rationale
 - Return exactly 3 items when at least one pipe exists
