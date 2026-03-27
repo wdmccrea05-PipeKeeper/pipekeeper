@@ -42,6 +42,116 @@ import extractActionableAdvice from "./extractActionableAdvice.js";
 
 const AGENT_NAME = "expert_tobacconist";
 
+function buildSafeCollectionContext({ pipes = [], blends = [], bottles = [], smokingLogs = [], tastingLogs = [], userProfile = null }) {
+  return {
+    pipes: pipes.map((p) => ({
+      id: p.id,
+      name: p.name,
+      maker: p.maker,
+      shape: p.shape,
+      bowl_material: p.bowl_material,
+      finish: p.finish,
+      chamber_volume: p.chamber_volume,
+      focus: p.focus,
+      is_favorite: p.is_favorite,
+      ai_excluded: p.ai_excluded,
+    })),
+    blends: blends.map((b) => ({
+      id: b.id,
+      name: b.name,
+      manufacturer: b.manufacturer,
+      blend_type: b.blend_type,
+      strength: b.strength,
+      flavor_notes: b.flavor_notes,
+      is_favorite: b.is_favorite,
+      ai_excluded: b.ai_excluded,
+    })),
+    bottles: bottles.map((bt) => ({
+      id: bt.id,
+      name: bt.name,
+      distillery: bt.distillery,
+      type: bt.type,
+      age_statement: bt.age_statement,
+      is_favorite: bt.is_favorite,
+    })),
+    smokingLogs: smokingLogs.slice(-30).map((l) => ({
+      pipe_id: l.pipe_id,
+      pipe_name: l.pipe_name,
+      blend_id: l.blend_id,
+      blend_name: l.blend_name,
+      date: l.date,
+    })),
+    tastingLogs: tastingLogs.slice(-20).map((l) => ({
+      bottle_id: l.bottle_id,
+      bottle_name: l.bottle_name,
+      date: l.date,
+      rating: l.rating,
+    })),
+    userProfile: userProfile ? {
+      preferred_blend_types: userProfile.preferred_blend_types,
+      strength_preference: userProfile.strength_preference,
+      smoke_duration_preference: userProfile.smoke_duration_preference,
+      notes: userProfile.notes,
+      whiskey_notes: userProfile.whiskey_notes,
+    } : null,
+  };
+}
+
+function buildPromptBlock(ctx) {
+  const lines = [];
+
+  if (ctx.pipes?.length) {
+    lines.push(`PIPES (${ctx.pipes.length}):`);
+    ctx.pipes.forEach((p) => {
+      lines.push(`  - ${p.name}${p.maker ? ` by ${p.maker}` : ""}${p.shape ? `, ${p.shape}` : ""}${p.bowl_material ? `, ${p.bowl_material}` : ""}${p.chamber_volume ? `, ${p.chamber_volume} chamber` : ""}${p.focus?.length ? `, focus: ${p.focus.join("/")}` : ""}${p.is_favorite ? " [favorite]" : ""}`);
+    });
+  }
+
+  if (ctx.blends?.length) {
+    lines.push(`\nBLENDS (${ctx.blends.length}):`);
+    ctx.blends.forEach((b) => {
+      lines.push(`  - ${b.name}${b.manufacturer ? ` by ${b.manufacturer}` : ""}${b.blend_type ? `, ${b.blend_type}` : ""}${b.strength ? `, ${b.strength}` : ""}${b.flavor_notes?.length ? `, notes: ${b.flavor_notes.join("/")}` : ""}${b.is_favorite ? " [favorite]" : ""}`);
+    });
+  }
+
+  if (ctx.bottles?.length) {
+    lines.push(`\nWHISKEY BOTTLES (${ctx.bottles.length}):`);
+    ctx.bottles.forEach((bt) => {
+      lines.push(`  - ${bt.name}${bt.distillery ? ` (${bt.distillery})` : ""}${bt.type ? `, ${bt.type}` : ""}${bt.age_statement ? `, ${bt.age_statement}yr` : ""}`);
+    });
+  }
+
+  if (ctx.smokingLogs?.length) {
+    lines.push(`\nRECENT SMOKING SESSIONS (last ${ctx.smokingLogs.length}):`);
+    ctx.smokingLogs.forEach((l) => {
+      lines.push(`  - ${l.pipe_name || l.pipe_id} + ${l.blend_name || l.blend_id} on ${l.date?.slice(0, 10) || "unknown"}`);
+    });
+  }
+
+  if (ctx.tastingLogs?.length) {
+    lines.push(`\nRECENT TASTINGS (last ${ctx.tastingLogs.length}):`);
+    ctx.tastingLogs.forEach((l) => {
+      lines.push(`  - ${l.bottle_name || l.bottle_id}${l.rating ? ` rated ${l.rating}/5` : ""} on ${l.date?.slice(0, 10) || "unknown"}`);
+    });
+  }
+
+  if (ctx.userProfile) {
+    const p = ctx.userProfile;
+    const prefs = [
+      p.preferred_blend_types?.length && `preferred blends: ${p.preferred_blend_types.join(", ")}`,
+      p.strength_preference && `strength: ${p.strength_preference}`,
+      p.smoke_duration_preference && `duration: ${p.smoke_duration_preference}`,
+      p.notes && `notes: ${p.notes}`,
+      p.whiskey_notes && `whiskey notes: ${p.whiskey_notes}`,
+    ].filter(Boolean);
+    if (prefs.length) {
+      lines.push(`\nUSER PREFERENCES: ${prefs.join(" | ")}`);
+    }
+  }
+
+  return lines.join("\n") || "No collection data available.";
+}
+
 function generateQuickPrompts({
   pipes = [],
   blends = [],
