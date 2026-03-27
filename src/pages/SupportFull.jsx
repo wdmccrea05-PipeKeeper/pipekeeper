@@ -27,23 +27,31 @@ const SUPPORT_TOPICS = [
 const FAQ_ITEMS = [
   {
     q: "How do I restore my subscription after reinstalling?",
-    a: "Open the app, go to Settings → Subscription, and tap 'Restore Purchases'. Your subscription is tied to your Apple ID and will restore automatically. If it doesn't, contact us with your Apple receipt.",
+    a: "On the web app, go to Settings → Subscription and click 'Restore Purchases' or re-login with the same email. On iOS, open the app, go to Settings → Subscription, and tap 'Restore Purchases'. Your subscription is tied to your account and will restore automatically. If it doesn't, contact us with your Apple receipt or order number.",
   },
   {
     q: "My data isn't syncing across devices — what should I do?",
-    a: "Make sure you are signed in to the same account on both devices. Pull down to refresh the main list. If the issue persists, try logging out and back in. If data is still missing after 5 minutes, contact support.",
+    a: "Make sure you are signed in to the same account on both devices. Refresh the page or pull down to refresh the main list. If the issue persists, try logging out and back in. If data is still missing after 5 minutes, contact support with your account email.",
   },
   {
     q: "How do I cancel my subscription?",
-    a: "Subscriptions are managed through Apple. Go to Settings → [your name] → Subscriptions on your iPhone or iPad, find CollectionKeeper / PipeKeeper, and tap Cancel. You'll retain access until the end of the billing period.",
+    a: "Web subscriptions can be cancelled through the Billing Portal — go to Settings → Subscription → Manage Billing. iOS subscriptions are managed through Apple: Settings → [your name] → Subscriptions, find CollectionKeeper / PipeKeeper, and tap Cancel. You'll retain access until the end of the billing period.",
   },
   {
     q: "I was charged but my premium features aren't unlocked.",
-    a: "First, tap 'Restore Purchases' in the app settings. If that doesn't work within a few minutes, email us at admin@pipekeeperapp.com with your Apple receipt or order number and we'll resolve it manually.",
+    a: "First, try 'Restore Purchases' in the app settings (or re-login on the web app). If that doesn't work within a few minutes, email us at admin@pipekeeperapp.com with your order number or Apple receipt and we'll resolve it manually.",
+  },
+  {
+    q: "How do I add a new pipe, blend, or bottle?",
+    a: "All items are added through the unified Add Flow wizard. Click 'Add' from any module page, or use the Quick Access button (lightning bolt icon in the top header) from any page. The wizard guides you through: choosing item type, searching an online library to auto-fill details, entering basic info, optional details, inventory, and photos.",
+  },
+  {
+    q: "How do I use Plan Session in the Curator?",
+    a: "Open the Curator from the top navigation. In the Expert Actions panel, click 'Plan Session'. The AI generates 3 curated session recommendations — each pairing a pipe with a tobacco blend (and a whiskey bottle if WhiskeyKeeper is active). Each card shows a confidence score and rationale. Click 'Try This' to use a session, 'Skip' to dismiss it, or 'Ask Curator' to discuss it.",
   },
   {
     q: "Can I export or back up my collection data?",
-    a: "Yes — use the Export feature in PipeKeeper or WhiskeyKeeper (Settings → Export). Your data is also stored in your account and persists across reinstalls as long as you sign in with the same credentials.",
+    a: "Yes — use the Export feature in PipeKeeper (Insights → Export) or WhiskeyKeeper. Your data is stored in your account and persists across devices and reinstalls as long as you sign in with the same credentials.",
   },
   {
     q: "How do I delete my account?",
@@ -351,7 +359,9 @@ ${formData.message}
             <p><strong className="text-[#F5F1E7]">Premium features disappeared after update:</strong> Go to Settings → Subscription → Restore Purchases. Your entitlements will sync within 30 seconds.</p>
             <p><strong className="text-[#F5F1E7]">Can't sign in:</strong> Make sure you're using the same login method (Apple Sign-In, Google, or email) that you originally used to create your account.</p>
             <p><strong className="text-[#F5F1E7]">Data not appearing after adding it:</strong> Pull down to refresh the list. If data is still missing, log out and back in to force a full sync.</p>
-            <p><strong className="text-[#F5F1E7]">Pairing or AI features not working:</strong> These require an active internet connection and a Premium subscription. Check both, then try again.</p>
+            <p><strong className="text-[#F5F1E7]">Pairing or AI features not working:</strong> These require an active internet connection and an active subscription. Check both, then try again. If Curator Expert Actions appear stuck, reload the page.</p>
+            <p><strong className="text-[#F5F1E7]">Plan Session shows 0% confidence:</strong> This has been resolved. If you still see it, reload the page to get fresh recommendations.</p>
+            <p><strong className="text-[#F5F1E7]">Plan Session including whiskey unexpectedly:</strong> Whiskey pairings only appear when WhiskeyKeeper is active and you have bottles in your collection. Toggle WhiskeyKeeper in your Profile settings.</p>
           </div>
         </div>
 
