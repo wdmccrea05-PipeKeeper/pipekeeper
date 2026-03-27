@@ -266,6 +266,35 @@ export default function Curator() {
 
   return (
     <div className="space-y-5">
+      {/* Internal Module Navigation */}
+      {availableScopes.length > 1 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {availableScopes.map((opt) => {
+            const selected = curatorScope === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => handleScopeChange(opt.value)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+                style={{
+                  background: selected ? "rgba(163,92,92,0.22)" : "rgba(255,255,255,0.04)",
+                  border: selected ? "1px solid rgba(163,92,92,0.55)" : "1px solid rgba(120,90,65,0.2)",
+                  color: selected ? "#F5F1E7" : "rgba(224,216,200,0.55)",
+                }}
+              >
+                {opt.isPipeIcon ? (
+                  <PipeIcon className="w-4 h-4" color={selected ? "#F5F1E7" : "rgba(224,216,200,0.55)"} />
+                ) : opt.icon ? (
+                  <opt.icon className="w-4 h-4" />
+                ) : null}
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <Card>
         <CardHeader className="border-b border-[#8b6239]/20">
           <div className="flex items-start gap-4">
@@ -285,7 +314,7 @@ export default function Curator() {
           </div>
         </CardHeader>
 
-        {availableScopes.length > 1 && (
+        {false && availableScopes.length > 1 && (
           <div className="px-6 py-3 border-b flex items-center gap-3 flex-wrap" style={{ borderColor: 'rgba(139,98,57,0.2)' }}>
             <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(180,140,75,0.6)' }}>
               {t("curator.adviceScope", "Advice Scope")}
