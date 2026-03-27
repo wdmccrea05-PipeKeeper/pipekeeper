@@ -124,7 +124,7 @@ export default function CuratorActionBar({
                       className="text-xs mt-0.5 leading-tight"
                       style={{ color: 'rgba(224,216,200,0.6)' }}
                     >
-                      {action.description}
+                      {typeof action.description === 'function' ? action.description(collectionContext) : action.description}
                     </div>
                   </div>
                 </div>

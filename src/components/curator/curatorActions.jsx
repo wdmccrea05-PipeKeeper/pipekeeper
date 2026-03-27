@@ -302,7 +302,12 @@ Use only my actual collection data and tasting history. Be specific, concise, an
   {
     id: 'session_builder',
     label: 'Plan Session',
-    description: 'Build a curated pipe, tobacco, and whiskey session',
+    description: (ctx) => {
+      const whiskeyActive = ctx?.userProfile?.whiskeykeeper_enabled !== false && (ctx?.bottles?.length > 0 || ctx?.curatorScope === 'whiskeykeeper');
+      return whiskeyActive
+        ? 'Build a curated pipe, tobacco, and whiskey session'
+        : 'Build a curated pipe and tobacco session';
+    },
     icon: Sparkles,
     modules: ['pipe', 'tobacco', 'whiskey'],
     sourceExpert: 'expert_session_builder',
