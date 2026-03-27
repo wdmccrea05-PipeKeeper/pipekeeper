@@ -121,7 +121,7 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
 
           <div className="flex-1 min-w-0">
             <h3
-              className="text-3xl sm:text-4xl font-bold leading-[1.05] break-words"
+              className="text-2xl sm:text-3xl font-bold leading-tight whitespace-nowrap"
               style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
             >
               {meta.label}
