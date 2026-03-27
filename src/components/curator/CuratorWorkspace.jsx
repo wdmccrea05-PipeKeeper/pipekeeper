@@ -36,7 +36,7 @@ import {
 import { applyCuratorRecommendation } from "./curatorApplyHandlers.js";
 import SavedSessionsPanel from "./SavedSessionsPanel.jsx";
 import FindSimilarPicker from "./FindSimilarPicker.jsx";
-import { buildSafeCollectionContext, buildPromptBlock } from "./collectionContextBudget.jsx";
+import LogSessionModal from "@/components/home/LogSessionModal";
 import extractActionableAdvice from "./extractActionableAdvice.js";
 
 const AGENT_NAME = "expert_tobacconist";
@@ -267,6 +267,7 @@ export default function CuratorWorkspace({
   const [itemStates, setItemStates] = useState({});
   const [lastActionRequest, setLastActionRequest] = useState(null); // { actionType, anchorOverrides }
   const [pendingFindSimilar, setPendingFindSimilar] = useState(null); // actionType needing anchor pick
+  const [logSessionModal, setLogSessionModal] = useState({ isOpen: false, pipeId: "", blendId: "" });
 
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -814,7 +815,17 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
           console.warn("Failed to save session:", e);
         }
 
-        toast.success("Session saved.");
+        if (item.type === "session_builder") {
+          const matchedPipe = pipes.find((p) => p.name === item.recordName);
+          const matchedBlend = blends.find((b) => b.name === item.blendName);
+          setLogSessionModal({
+            isOpen: true,
+            pipeId: matchedPipe?.id || "",
+            blendId: matchedBlend?.id || "",
+          });
+        } else {
+          toast.success("Session saved.");
+        }
       } else {
         await applyCuratorRecommendation(item);
         toast.success("Recommendation applied.");
@@ -989,15 +1000,26 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
   }, [sessionId]);
 
   return (
-    <div
-      className="rounded-xl overflow-hidden shadow-2xl flex flex-col"
-      style={{
-        background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
-        border: "1px solid rgba(140,105,65,0.35)",
-        boxShadow: "0 10px 28px rgba(0,0,0,0.6)",
-        height: "clamp(360px, 90vh, 820px)",
-      }}
-    >
+    <>
+      <LogSessionModal
+        isOpen={logSessionModal.isOpen}
+        onClose={() => setLogSessionModal({ isOpen: false, pipeId: "", blendId: "" })}
+        pipes={pipes}
+        blends={blends}
+        user={user}
+        initialPipeId={logSessionModal.pipeId}
+        initialBlendId={logSessionModal.blendId}
+      />
+
+      <div
+        className="rounded-xl overflow-hidden shadow-2xl flex flex-col"
+        style={{
+          background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+          border: "1px solid rgba(140,105,65,0.35)",
+          boxShadow: "0 10px 28px rgba(0,0,0,0.6)",
+          height: "clamp(360px, 90vh, 820px)",
+        }}
+      >
       <div
         className="px-4 sm:px-6 py-3 border-b flex-shrink-0"
         style={{ borderColor: "rgba(140,105,65,0.2)", background: "rgba(20,14,10,0.4)" }}
@@ -1196,5 +1218,6 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         </p>
       </div>
     </div>
+    </>
   );
 }

@@ -41,22 +41,33 @@ function estimateTobaccoUsage(pipe, bowls) {
   return gramsPerBowl * numBowls * 0.035274;
 }
 
-export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = [], user }) {
+export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = [], user, initialPipeId = "", initialBlendId = "" }) {
   const { t } = useTranslation();
   const { hasPaid } = useCurrentUser();
   const entitlements = useEntitlements();
   const queryClient = useQueryClient();
   const [autoReduceInventory, setAutoReduceInventory] = useState(true);
   const [formData, setFormData] = useState({
-    pipe_id: "",
+    pipe_id: initialPipeId || "",
     bowl_variant_id: "",
-    blend_id: "",
+    blend_id: initialBlendId || "",
     container_id: "",
     bowls_used: 1,
     is_break_in: false,
     date: toLocalDateYmd(),
     notes: "",
   });
+
+  // Sync pre-populated values when modal opens with new suggestions
+  React.useEffect(() => {
+    if (isOpen && (initialPipeId || initialBlendId)) {
+      setFormData((prev) => ({
+        ...prev,
+        pipe_id: initialPipeId || prev.pipe_id,
+        blend_id: initialBlendId || prev.blend_id,
+      }));
+    }
+  }, [isOpen, initialPipeId, initialBlendId]);
 
   const selectedPipe = (pipes || []).find((p) => p && p.id === formData.pipe_id);
   const hasMultipleBowls =
@@ -400,7 +411,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
                   <SelectValue placeholder={t("smokingLog.selectBowl")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t("smokingLog.noSpecificBowl")}</SelectItem>
+                  <SelectItem value={null}>{t("smokingLog.noSpecificBowl")}</SelectItem>
                   {selectedPipe.interchangeable_bowls.map((bowl, idx) => {
                     const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
                     return (
@@ -446,7 +457,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
                   <SelectValue placeholder={t("smokingLog.autoNone")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t("smokingLog.autoNone")}</SelectItem>
+                  <SelectItem value={null}>{t("smokingLog.autoNone")}</SelectItem>
                   {containers.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.container_name} — {c.quantity_grams ?? 0}g
