@@ -957,13 +957,14 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         ? `Tell me more about this session recommendation and why it suits my collection.${sessionContext}`
         : `Explain this recommendation in more detail and tell me what would change if I accept it: ${item.title}${formattedChanges ? `\n\nProposed changes:\n${formattedChanges}` : ""}`);
 
-    const contextOverride = isSession ? {
-      pipeName: item.recordName,
-      blendName: item.blendName,
-      bottleName: item.bottleName,
-    } : null;
+    // Populate the input field so the user can see and send the question
+    setInput(basePrompt);
 
-    sendMessage(basePrompt, contextOverride);
+    // Scroll the input into view
+    setTimeout(() => {
+      const inputEl = document.querySelector('[data-curator-input]');
+      if (inputEl) inputEl.focus();
+    }, 50);
   };
 
   const handleDismissAction = () => {
@@ -1195,6 +1196,7 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
       >
         <div className="flex gap-2 sm:gap-3">
           <Input
+            data-curator-input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
