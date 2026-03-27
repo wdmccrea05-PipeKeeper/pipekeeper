@@ -37,6 +37,7 @@ import { applyCuratorRecommendation } from "./curatorApplyHandlers.js";
 import SavedSessionsPanel from "./SavedSessionsPanel.jsx";
 import FindSimilarPicker from "./FindSimilarPicker.jsx";
 import LogSessionModal from "@/components/home/LogSessionModal";
+import LogTastingModal from "@/components/whiskey/LogTastingModal";
 import extractActionableAdvice from "./extractActionableAdvice.js";
 
 const AGENT_NAME = "expert_tobacconist";
@@ -268,6 +269,7 @@ export default function CuratorWorkspace({
   const [lastActionRequest, setLastActionRequest] = useState(null); // { actionType, anchorOverrides }
   const [pendingFindSimilar, setPendingFindSimilar] = useState(null); // actionType needing anchor pick
   const [logSessionModal, setLogSessionModal] = useState({ isOpen: false, pipeId: "", blendId: "" });
+  const [logTastingModal, setLogTastingModal] = useState({ isOpen: false, bottle: null });
 
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -816,13 +818,19 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         }
 
         if (item.type === "session_builder") {
-          const matchedPipe = pipes.find((p) => p.name === item.recordName);
-          const matchedBlend = blends.find((b) => b.name === item.blendName);
-          setLogSessionModal({
-            isOpen: true,
-            pipeId: matchedPipe?.id || "",
-            blendId: matchedBlend?.id || "",
-          });
+          const matchedBottle = bottles.find((b) => b.name === item.bottleName);
+          if (matchedBottle) {
+            // WhiskeyKeeper session — open tasting log
+            setLogTastingModal({ isOpen: true, bottle: matchedBottle });
+          } else {
+            const matchedPipe = pipes.find((p) => p.name === item.recordName);
+            const matchedBlend = blends.find((b) => b.name === item.blendName);
+            setLogSessionModal({
+              isOpen: true,
+              pipeId: matchedPipe?.id || "",
+              blendId: matchedBlend?.id || "",
+            });
+          }
         } else {
           toast.success("Session saved.");
         }
@@ -1010,6 +1018,19 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         initialPipeId={logSessionModal.pipeId}
         initialBlendId={logSessionModal.blendId}
       />
+
+      {logTastingModal.isOpen && (
+        <LogTastingModal
+          bottle={logTastingModal.bottle}
+          bottles={bottles}
+          isOpen={logTastingModal.isOpen}
+          onClose={() => setLogTastingModal({ isOpen: false, bottle: null })}
+          onSaved={() => {
+            setLogTastingModal({ isOpen: false, bottle: null });
+            queryClient.invalidateQueries({ queryKey: ["tasting-logs"] });
+          }}
+        />
+      )}
 
       <div
         className="rounded-xl overflow-hidden shadow-2xl flex flex-col"
