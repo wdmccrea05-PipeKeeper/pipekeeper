@@ -104,6 +104,7 @@ export default function RotationPlanner({ user, pipe, blends }) {
     );
   }
 
+  const { t } = useTranslation();
   const [expandedNeedsRotation, setExpandedNeedsRotation] = useState(false);
   const [expandedNeverSmoked, setExpandedNeverSmoked] = useState(false);
   const [expandedRecentlySmoked, setExpandedRecentlySmoked] = useState(false);
