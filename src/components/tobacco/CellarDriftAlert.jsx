@@ -62,7 +62,7 @@ export default function CellarDriftAlert({ blends, user }) {
         <div className="flex-1">
           <h3 className="font-semibold text-amber-900">{t("cellarDrift.title")}</h3>
           <p className="text-sm text-amber-800 mt-1">
-            {t("cellarDrift.description", "{count} blend(s) have cellared amounts that don't match your transaction logs ({diff} oz total difference).", { count: driftedBlends.length, diff: formatNumber(totalDrift, 2) })}
+            {`${driftedBlends.length} ${t("cellarDrift.blendsHave", "blend(s) have cellared amounts that don't match your transaction logs")} (${formatNumber(totalDrift, 2)} oz ${t("cellarDrift.totalDiff", "total difference")}).`}
           </p>
         </div>
         <div className="flex gap-2">
