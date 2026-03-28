@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const PRO_LAUNCH_CUTOFF = "2026-02-01T00:00:00.000Z";
 const normEmail = (email) => String(email || "").trim().toLowerCase();
@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     }
 
     // Fetch all data in parallel
-    const [allUsers, allSubscriptions, allPipes, allTobaccosResult, allSmokingLogs, allComments] = await Promise.all([
+    const [allUsersRaw, allSubscriptionsRaw, allPipesRaw, allTobaccosResult, allSmokingLogsRaw, allCommentsRaw] = await Promise.all([
       base44.asServiceRole.entities.User.list(),
       base44.asServiceRole.entities.Subscription.list(),
       base44.asServiceRole.entities.Pipe.list(),
@@ -23,8 +23,13 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Comment.list(),
     ]);
     
-    // Ensure arrays (SDK might return object with results property)
-    const allTobaccos = Array.isArray(allTobaccosResult) ? allTobaccosResult : (allTobaccosResult?.results || []);
+    const toArray = (r) => Array.isArray(r) ? r : (r?.results || []);
+    const allUsers = toArray(allUsersRaw);
+    const allSubscriptions = toArray(allSubscriptionsRaw);
+    const allPipes = toArray(allPipesRaw);
+    const allTobaccos = toArray(allTobaccosResult);
+    const allSmokingLogs = toArray(allSmokingLogsRaw);
+    const allComments = toArray(allCommentsRaw);
 
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);

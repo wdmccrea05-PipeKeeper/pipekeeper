@@ -10,7 +10,8 @@ Deno.serve(async (req) => {
     }
 
     // Fetch all subscriptions
-    const subscriptions = await base44.asServiceRole.entities.Subscription.list();
+    const subsRaw = await base44.asServiceRole.entities.Subscription.list();
+    const subscriptions = Array.isArray(subsRaw) ? subsRaw : (subsRaw?.results || []);
 
     const now = new Date();
     const next7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
