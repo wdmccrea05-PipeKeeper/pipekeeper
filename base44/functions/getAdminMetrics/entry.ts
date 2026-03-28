@@ -8,28 +8,32 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    // Admin-only access
     if (user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Fetch all data in parallel
-    const [allUsersRaw, allSubscriptionsRaw, allPipesRaw, allTobaccosResult, allSmokingLogsRaw, allCommentsRaw] = await Promise.all([
-      base44.asServiceRole.entities.User.list(),
-      base44.asServiceRole.entities.Subscription.list(),
-      base44.asServiceRole.entities.Pipe.list(),
-      base44.asServiceRole.entities.TobaccoBlend.list(),
-      base44.asServiceRole.entities.SmokingLog.list(),
-      base44.asServiceRole.entities.Comment.list(),
+    // Paginated fetch to avoid huge single-response Brotli decompression failures
+    const PAGE = 200;
+    const fetchAll = async (entity) => {
+      const results = [];
+      let skip = 0;
+      while (true) {
+        const page = await entity.list(null, PAGE, skip);
+        const arr = Array.isArray(page) ? page : (page?.results || []);
+        results.push(...arr);
+        if (arr.length < PAGE) break;
+        skip += PAGE;
+      }
+      return results;
+    };
+
+    const [allUsers, allSubscriptions, allPipes, allTobaccos, allComments] = await Promise.all([
+      fetchAll(base44.asServiceRole.entities.User),
+      fetchAll(base44.asServiceRole.entities.Subscription),
+      fetchAll(base44.asServiceRole.entities.Pipe),
+      fetchAll(base44.asServiceRole.entities.TobaccoBlend),
+      fetchAll(base44.asServiceRole.entities.Comment),
     ]);
-    
-    const toArray = (r) => Array.isArray(r) ? r : (r?.results || []);
-    const allUsers = toArray(allUsersRaw);
-    const allSubscriptions = toArray(allSubscriptionsRaw);
-    const allPipes = toArray(allPipesRaw);
-    const allTobaccos = toArray(allTobaccosResult);
-    const allSmokingLogs = toArray(allSmokingLogsRaw);
-    const allComments = toArray(allCommentsRaw);
 
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
