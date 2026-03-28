@@ -106,7 +106,6 @@ function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           placeholder="Search brand name…"
-          autoFocus
           className="flex-1 text-sm"
           style={{
             background: 'rgba(20,13,8,0.7)',

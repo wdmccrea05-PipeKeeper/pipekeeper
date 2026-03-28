@@ -160,7 +160,6 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             placeholder={PLACEHOLDERS[itemType]}
-            autoFocus
             className="flex-1"
             style={{
               background: 'rgba(20,13,8,0.7)',

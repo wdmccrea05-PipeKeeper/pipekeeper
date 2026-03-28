@@ -301,6 +301,7 @@ export default function InventoryStep({
           Continue
         </Button>
       </div>
+      <div className="pb-4" />
     </div>
   );
 }

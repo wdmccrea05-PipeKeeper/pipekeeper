@@ -89,7 +89,7 @@ export default function AddFlowManualBasic({ itemType, typeLabel, onBack, onNext
                 placeholder={`Enter ${f.label.toLowerCase()}…`}
                 style={inputStyle}
                 className="placeholder:text-[rgba(224,216,200,0.3)]"
-                autoFocus={f.key === 'name'}
+
               />
             ) : (
               <Select value={values[f.key] || ''} onValueChange={(v) => set(f.key, v)}>

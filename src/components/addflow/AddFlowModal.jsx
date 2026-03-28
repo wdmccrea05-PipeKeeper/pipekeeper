@@ -97,9 +97,18 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
           border: '1px solid rgba(180,140,75,0.24)',
           boxShadow: '0 28px 72px rgba(0,0,0,0.75)',
           borderRadius: '1.25rem',
+          maxHeight: 'calc(100dvh - 32px)',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        <div className="overflow-y-auto" style={{ maxHeight: '90vh' }}>
+        <div
+          className="overflow-y-auto flex-1"
+          style={{
+            overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           {step === 'choice' && (
             <AddFlowChoice
               {...sharedProps}
