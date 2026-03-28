@@ -66,45 +66,21 @@ export default function UserReport() {
     refetchUserMetrics();
   }, [renewalsDateRange, newAccountsDateRange, refetchUserMetrics]);
 
-  const filteredData = useMemo(() => {
-    if (!report) return { paid: [], free: [] };
-
-    let paid = [...(report.paid_users || [])];
-    let free = [...(report.free_users || [])];
-
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      paid = paid.filter((u) => {
-        const email = String(u.email || '').toLowerCase();
-        const name = String(u.full_name || '').toLowerCase();
-        return email.includes(query) || name.includes(query);
-      });
-      free = free.filter((u) => {
-        const email = String(u.email || '').toLowerCase();
-        const name = String(u.full_name || '').toLowerCase();
-        return email.includes(query) || name.includes(query);
-      });
-    }
-
-    const sortFn = (a, b) => {
-      let aVal = a[sortColumn];
-      let bVal = b[sortColumn];
-      
-      if (sortColumn === 'created_date' || sortColumn === 'subscription_end') {
-        aVal = new Date(aVal || 0);
-        bVal = new Date(bVal || 0);
-      }
-      
-      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    };
-
-    paid.sort(sortFn);
-    free.sort(sortFn);
-
-    return { paid, free };
-  }, [report, searchQuery, sortColumn, sortDirection]);
+  // Compute platform breakdown from report data — must be before any early returns
+  const computedPlatformBreakdown = useMemo(() => {
+    const breakdown = { apple: { paid: 0, free: 0 }, android: { paid: 0, free: 0 }, web: { paid: 0, free: 0 }, unknown: { paid: 0, free: 0 } };
+    (report?.paid_users || []).forEach(u => {
+      const p = (u.platform || 'web').toLowerCase();
+      const key = (p === 'ios' || p === 'apple') ? 'apple' : (p === 'android' ? 'android' : (p === 'web' ? 'web' : 'unknown'));
+      breakdown[key].paid++;
+    });
+    (report?.free_users || []).forEach(u => {
+      const p = (u.platform || 'web').toLowerCase();
+      const key = (p === 'ios' || p === 'apple') ? 'apple' : (p === 'android' ? 'android' : (p === 'web' ? 'web' : 'unknown'));
+      breakdown[key].free++;
+    });
+    return breakdown;
+  }, [report]);
 
   // Early returns - AFTER all hooks
   if (isLoadingUser) {
@@ -190,22 +166,6 @@ export default function UserReport() {
   const renewalsData = userMetrics?.renewals || { week: { count: 0, totalAmount: 0 }, month: { count: 0, totalAmount: 0 }, quarter: { count: 0, totalAmount: 0 }, year: { count: 0, totalAmount: 0 } };
   const dailyActiveUsers = userMetrics?.dailyActiveUsers || 0;
   const weeklyActiveUsers = userMetrics?.weeklyActiveUsers || 0;
-
-  // Compute platform breakdown directly from the report data (source of truth)
-  const computedPlatformBreakdown = useMemo(() => {
-    const breakdown = { apple: { paid: 0, free: 0 }, android: { paid: 0, free: 0 }, web: { paid: 0, free: 0 }, unknown: { paid: 0, free: 0 } };
-    (report?.paid_users || []).forEach(u => {
-      const p = (u.platform || 'web').toLowerCase();
-      const key = (p === 'ios' || p === 'apple') ? 'apple' : (p === 'android' ? 'android' : (p === 'web' ? 'web' : 'unknown'));
-      breakdown[key].paid++;
-    });
-    (report?.free_users || []).forEach(u => {
-      const p = (u.platform || 'web').toLowerCase();
-      const key = (p === 'ios' || p === 'apple') ? 'apple' : (p === 'android' ? 'android' : (p === 'web' ? 'web' : 'unknown'));
-      breakdown[key].free++;
-    });
-    return breakdown;
-  }, [report]);
 
   const handleSort = (column) => {
     if (sortColumn === column) {
