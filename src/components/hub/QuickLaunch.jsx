@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Leaf, BookOpen, TrendingUp, Search, FlaskConical } from "lucide-react";
+import { Leaf, BookOpen, TrendingUp, Search, Sparkles } from "lucide-react";
 
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -104,6 +104,12 @@ export default function QuickLaunch() {
       icon: Leaf,
       path: "/Tobacco?action=add",
       accent: "#7C9A6D",
+    },
+    {
+      label: "Identify Pipe",
+      icon: Sparkles,
+      path: "/PipeKeeper?action=identify",
+      accent: "#F0C58A",
     },
     {
       label: t("quickActions.logSession", "Log Session"),

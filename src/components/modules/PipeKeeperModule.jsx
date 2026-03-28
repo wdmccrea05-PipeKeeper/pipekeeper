@@ -4,7 +4,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Leaf, BookOpen, TrendingUp, Search } from 'lucide-react';
+import { Leaf, BookOpen, TrendingUp, Search, Sparkles } from 'lucide-react';
+import PipeIdentifier from '@/components/ai/PipeIdentifier';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency, formatWeight } from '@/components/utils/localeFormatters';
@@ -28,6 +29,7 @@ export default function PipeKeeperModule() {
   const queryClient = useQueryClient();
   
   const [showSmokingLog, setShowSmokingLog] = useState(params.get('action') === 'log-smoke');
+  const [showIdentifier, setShowIdentifier] = useState(params.get('action') === 'identify');
   const [addFlowOpen, setAddFlowOpen] = useState(false);
   const [addFlowType, setAddFlowType] = useState(null);
 
@@ -129,6 +131,12 @@ export default function PipeKeeperModule() {
         setShowSmokingLog(true);
         window.history.replaceState({}, '', window.location.pathname + '?action=log-smoke');
       }
+    },
+    {
+      key: 'identifyPipe',
+      Icon: Sparkles,
+      label: 'Identify Pipe',
+      onClick: () => setShowIdentifier(true)
     },
     {
       key: 'curator',
@@ -264,6 +272,23 @@ export default function PipeKeeperModule() {
                 onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(favoriteBlends[0].id)}`)}
               />
             )}
+          </div>
+        </div>
+      )}
+
+      {/* AI Pipe Identifier Modal */}
+      {showIdentifier && (
+        <div className="fixed inset-0 z-50 bg-black/60" onClick={() => setShowIdentifier(false)}>
+          <div className="flex items-center justify-center min-h-screen p-4" onClick={(e) => e.stopPropagation()}>
+            <div className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-[#E0D8C8] flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-[#F0C58A]" /> AI Pipe Identifier
+                </h2>
+                <button onClick={() => setShowIdentifier(false)} className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] text-2xl">×</button>
+              </div>
+              <PipeIdentifier />
+            </div>
           </div>
         </div>
       )}
