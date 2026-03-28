@@ -107,11 +107,15 @@ export default function CellarLog({ blend }) {
 
   const syncBlendCellarQuantities = async () => {
     try {
-      // Always fetch fresh from the server — cache may lag after create/delete.
-      const allLogs = await base44.entities.CellarLog.filter({ 
-        blend_id: blend.id, 
-        created_by: user?.email 
-      });
+      // Use cached logs when available to avoid a redundant network call; the cache
+      // may not include the just-created/deleted entry yet, so fall back to a fresh fetch.
+      const cachedLogs = queryClient.getQueryData(['cellar-logs', blend.id]);
+      const allLogs = cachedLogs !== undefined
+        ? cachedLogs
+        : await base44.entities.CellarLog.filter({ 
+            blend_id: blend.id, 
+            created_by: user?.email 
+          });
 
       const correctValues = calculateCorrectCellaredValues(blend, allLogs);
 
