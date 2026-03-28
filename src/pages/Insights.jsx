@@ -1374,9 +1374,9 @@ export default function Insights() {
                   "linear-gradient(90deg, transparent 0%, rgba(180, 140, 75, 0.25) 40%, rgba(180, 140, 75, 0.25) 60%, transparent 100%)",
               }}
             />
-            <div className="relative flex items-center gap-4 py-3">
+            <div className="relative flex items-start gap-3 py-3">
               <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
                 style={{
                   background:
                     "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
@@ -1394,26 +1394,26 @@ export default function Insights() {
                 />
               </div>
 
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <h2
-                  className="text-2xl font-bold tracking-tight"
+                  className="text-xl sm:text-2xl font-bold tracking-tight"
                   style={{
                     color: "#F5F1E7",
                     fontFamily: "'Georgia', serif",
                     textShadow: "0 2px 4px rgba(0,0,0,0.6)",
                   }}
                 >
-                  {t("insights.topHighlights")}
+                  {t("insights.topHighlights", "Top Highlights")}
                 </h2>
                 <p
                   className="text-xs uppercase tracking-[0.12em] font-semibold mt-1"
                   style={{ color: "rgba(180, 140, 75, 0.75)" }}
                 >
-                  {t("insights.topHighlightsSub")}
+                  {t("insights.topHighlightsSub", "Your collection's best moments")}
                 </p>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 shrink-0">
                 {fullStoryCards.length > 0 && (
                   <StoryTrigger
                     onClick={() => setShowFullStory(true)}
@@ -1423,7 +1423,7 @@ export default function Insights() {
                 )}
                 <button
                   onClick={() => navigate(createPageUrl("CollectionInsightsShare"))}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 active:scale-95"
+                  className="flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 active:scale-95"
                   style={{
                     background: "linear-gradient(135deg, rgba(180,140,75,1) 0%, rgba(160,120,65,1) 100%)",
                     color: "rgba(28,18,10,1)",
