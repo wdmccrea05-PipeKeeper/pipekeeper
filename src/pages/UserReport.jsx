@@ -66,7 +66,32 @@ export default function UserReport() {
     refetchUserMetrics();
   }, [renewalsDateRange, newAccountsDateRange, refetchUserMetrics]);
 
-  // Compute platform breakdown from report data — must be before any early returns
+  // All useMemos must be before any early returns
+  const filteredData = useMemo(() => {
+    if (!report) return { paid: [], free: [] };
+    let paid = [...(report.paid_users || [])];
+    let free = [...(report.free_users || [])];
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      paid = paid.filter(u => String(u.email || '').toLowerCase().includes(query) || String(u.full_name || '').toLowerCase().includes(query));
+      free = free.filter(u => String(u.email || '').toLowerCase().includes(query) || String(u.full_name || '').toLowerCase().includes(query));
+    }
+    const sortFn = (a, b) => {
+      let aVal = a[sortColumn];
+      let bVal = b[sortColumn];
+      if (sortColumn === 'created_date' || sortColumn === 'subscription_end') {
+        aVal = new Date(aVal || 0);
+        bVal = new Date(bVal || 0);
+      }
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    };
+    paid.sort(sortFn);
+    free.sort(sortFn);
+    return { paid, free };
+  }, [report, searchQuery, sortColumn, sortDirection]);
+
   const computedPlatformBreakdown = useMemo(() => {
     const breakdown = { apple: { paid: 0, free: 0 }, android: { paid: 0, free: 0 }, web: { paid: 0, free: 0 }, unknown: { paid: 0, free: 0 } };
     (report?.paid_users || []).forEach(u => {
