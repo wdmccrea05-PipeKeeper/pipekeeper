@@ -239,7 +239,13 @@ export async function runFindSimilar({ recordType, anchor, context }) {
   const seen = new Set();
   const filtered = items.filter(item => {
     const name = item.title || item.name || "";
+    // Also check just the blend name portion (title may be "Name by Manufacturer")
+    const nameOnly = name.split(/ by /i)[0].trim();
     if (isOwnedItem(name, ownedSet)) return false;
+    if (isOwnedItem(nameOnly, ownedSet)) return false;
+    // Also check if any owned item name appears inside the normalized title
+    const normalizedTitle = normalizeName(name);
+    if ([...ownedSet].some(owned => normalizedTitle.includes(owned) || owned.includes(normalizeName(nameOnly)))) return false;
     const key = normalizeName(name);
     if (!key || seen.has(key)) return false;
     seen.add(key);
