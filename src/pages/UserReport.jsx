@@ -191,10 +191,21 @@ export default function UserReport() {
   const dailyActiveUsers = userMetrics?.dailyActiveUsers || 0;
   const weeklyActiveUsers = userMetrics?.weeklyActiveUsers || 0;
 
-  const applePlatformBreakdown = {
-    paid: (platformBreakdown.apple?.paid || 0) + (platformBreakdown.ios?.paid || 0),
-    free: (platformBreakdown.apple?.free || 0) + (platformBreakdown.ios?.free || 0)
-  };
+  // Compute platform breakdown directly from the report data (source of truth)
+  const computedPlatformBreakdown = useMemo(() => {
+    const breakdown = { apple: { paid: 0, free: 0 }, android: { paid: 0, free: 0 }, web: { paid: 0, free: 0 }, unknown: { paid: 0, free: 0 } };
+    (report?.paid_users || []).forEach(u => {
+      const p = (u.platform || 'web').toLowerCase();
+      const key = (p === 'ios' || p === 'apple') ? 'apple' : (p === 'android' ? 'android' : (p === 'web' ? 'web' : 'unknown'));
+      breakdown[key].paid++;
+    });
+    (report?.free_users || []).forEach(u => {
+      const p = (u.platform || 'web').toLowerCase();
+      const key = (p === 'ios' || p === 'apple') ? 'apple' : (p === 'android' ? 'android' : (p === 'web' ? 'web' : 'unknown'));
+      breakdown[key].free++;
+    });
+    return breakdown;
+  }, [report]);
 
   const handleSort = (column) => {
     if (sortColumn === column) {
@@ -395,7 +406,7 @@ export default function UserReport() {
           </CardContent>
         </Card>
 
-        {adminMetrics?.platformBreakdown && !metricsLoading && (
+        {report && (
           <>
             <Card className="bg-transparent">
               <CardHeader className="pb-3">
@@ -405,11 +416,11 @@ export default function UserReport() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{applePlatformBreakdown.paid}</span>
+                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.apple.paid}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{applePlatformBreakdown.free}</span>
+                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.apple.free}</span>
                   </div>
                 </div>
               </CardContent>
@@ -423,11 +434,11 @@ export default function UserReport() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.android?.paid || 0}</span>
+                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.android.paid}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.android?.free || 0}</span>
+                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.android.free}</span>
                   </div>
                 </div>
               </CardContent>
@@ -441,11 +452,11 @@ export default function UserReport() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.web?.paid || 0}</span>
+                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.web.paid}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.web?.free || 0}</span>
+                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.web.free}</span>
                   </div>
                 </div>
               </CardContent>
@@ -459,11 +470,11 @@ export default function UserReport() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.unknown?.paid || 0}</span>
+                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.unknown.paid}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{platformBreakdown.unknown?.free || 0}</span>
+                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.unknown.free}</span>
                   </div>
                 </div>
               </CardContent>
