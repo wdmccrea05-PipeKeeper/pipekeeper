@@ -9,9 +9,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Fetch all subscriptions
-    const subsRaw = await base44.asServiceRole.entities.Subscription.list();
-    const subscriptions = Array.isArray(subsRaw) ? subsRaw : (subsRaw?.results || []);
+    // Paginated fetch — SDK serializes large responses as strings, use PAGE=50
+    const PAGE = 50;
+    const fetchAll = async (entity) => {
+      const results = [];
+      let skip = 0;
+      while (true) {
+        let page = await entity.list(null, PAGE, skip);
+        if (typeof page === 'string') {
+          try { page = JSON.parse(page); } catch { break; }
+        }
+        if (!Array.isArray(page) || page.length === 0) break;
+        results.push(...page);
+        if (page.length < PAGE) break;
+        skip += PAGE;
+      }
+      return results;
+    };
+
+    const [subscriptions, allUsers] = await Promise.all([
+      fetchAll(base44.asServiceRole.entities.Subscription),
+      fetchAll(base44.asServiceRole.entities.User),
+    ]);
 
     const now = new Date();
     const next7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -53,14 +72,16 @@ Deno.serve(async (req) => {
     const last30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const last90d = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
 
-    const newAccounts24h = paidSubs.filter(s => new Date(s.created_date || '') > last24h).length;
-    const newAccounts7d = paidSubs.filter(s => new Date(s.created_date || '') > last7d).length;
-    const newAccounts30d = paidSubs.filter(s => new Date(s.created_date || '') > last30d).length;
-    const newAccounts90d = paidSubs.filter(s => new Date(s.created_date || '') > last90d).length;
+    // New accounts = new User registrations (not subscription records)
+    const newAccounts24h = allUsers.filter(u => new Date(u.created_date || '') > last24h).length;
+    const newAccounts7d = allUsers.filter(u => new Date(u.created_date || '') > last7d).length;
+    const newAccounts30d = allUsers.filter(u => new Date(u.created_date || '') > last30d).length;
+    const newAccounts90d = allUsers.filter(u => new Date(u.created_date || '') > last90d).length;
 
-    // Estimate active users (60% daily, 85% weekly)
-    const estimatedDailyUsers = Math.round(consolidatedPaidUsers * 0.6);
-    const estimatedWeeklyUsers = Math.round(consolidatedPaidUsers * 0.85);
+    // Estimate active users based on total user base (not just paid)
+    const totalUsers = allUsers.length;
+    const estimatedDailyUsers = Math.round(totalUsers * 0.15);
+    const estimatedWeeklyUsers = Math.round(totalUsers * 0.35);
 
     // Calculate renewals with billing interval breakdown
     const calculateRenewals = (endDate) => {

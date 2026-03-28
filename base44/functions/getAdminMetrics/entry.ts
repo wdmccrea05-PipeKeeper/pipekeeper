@@ -12,16 +12,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Paginated fetch to avoid huge single-response Brotli decompression failures
-    const PAGE = 200;
+    // PAGE=50: SDK serializes responses >~100KB as a string; small pages avoid that
+    const PAGE = 50;
     const fetchAll = async (entity) => {
       const results = [];
       let skip = 0;
       while (true) {
-        const page = await entity.list(null, PAGE, skip);
-        const arr = Array.isArray(page) ? page : (page?.results || []);
-        results.push(...arr);
-        if (arr.length < PAGE) break;
+        let page = await entity.list(null, PAGE, skip);
+        if (typeof page === 'string') {
+          try { page = JSON.parse(page); } catch { break; }
+        }
+        if (!Array.isArray(page) || page.length === 0) break;
+        results.push(...page);
+        if (page.length < PAGE) break;
         skip += PAGE;
       }
       return results;
