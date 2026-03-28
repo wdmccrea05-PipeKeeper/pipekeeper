@@ -64,7 +64,7 @@ export default function BrandLogo({
     <div className={cn("flex items-center gap-2 min-w-0 bg-transparent", className)}>
       {logoNode}
       <span
-        className="font-semibold whitespace-nowrap leading-none truncate"
+        className="font-semibold whitespace-nowrap leading-none truncate hidden sm:inline"
         style={{
           color: "#F5F1E7",
           fontFamily: "'Georgia', serif",

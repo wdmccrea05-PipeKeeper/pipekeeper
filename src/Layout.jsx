@@ -22,7 +22,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               <div className="flex items-center gap-2">
-                <LanguageSwitcher className="w-[110px] sm:min-w-[130px]" />
+                <LanguageSwitcher className="w-[90px] sm:w-[110px] sm:min-w-[130px]" />
 
                 <Button
                   type="button"

@@ -133,7 +133,7 @@ export default function ModuleNav({ currentPageName }) {
   ];
 
   return (
-    <div className="flex items-center gap-1 pb-1">
+    <div className="flex items-center gap-1 pb-1 min-w-0">
       {/* Desktop nav */}
       <div className="hidden md:flex flex-wrap items-center gap-1">
         {items.map((item) => (

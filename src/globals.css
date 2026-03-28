@@ -28,11 +28,12 @@ html {
 
 body {
   min-height: 100%;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at top, rgba(180, 140, 75, 0.08), transparent 30%),
     linear-gradient(180deg, var(--ck-bg-2) 0%, var(--ck-bg-1) 42%, var(--ck-bg-0) 100%);
   color: var(--ck-text);
-  /* Do NOT set overflow here — let the document scroll naturally */
+  /* Do NOT set overflow-y here — let the document scroll naturally */
 }
 
 /* #root must NOT set height:100% or overflow:auto — that creates a nested scroll trap on iPad */

@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { formatCurrency } from "@/components/utils/localeFormatters";
 import {
-  calculateCellaredOzFromLogs,
+  calculateCellaredOzFromBlend,
   calculateTobaccoCollectionValue,
 } from "@/components/utils/tobaccoQuantityHelpers";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
@@ -1047,8 +1047,8 @@ export default function Insights() {
   );
 
   const totalCellaredOz = useMemo(
-    () => calculateCellaredOzFromLogs(cellarLogs),
-    [cellarLogs]
+    () => blends.reduce((sum, b) => sum + calculateCellaredOzFromBlend(b), 0),
+    [blends]
   );
 
   const totalCollectionValue = totalPipeValue + totalTobaccoValue;
@@ -1286,7 +1286,7 @@ export default function Insights() {
             </div>
 
             <p
-              className="text-base pl-14"
+              className="text-base sm:pl-14"
               style={{ color: "rgba(224, 216, 200, 0.75)" }}
             >
               {t("insights.subtitle")}
