@@ -8,7 +8,7 @@ import { Leaf, BookOpen, TrendingUp, Search } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency, formatWeight } from '@/components/utils/localeFormatters';
-import { calculateCellaredOzFromLogs } from '@/components/utils/tobaccoQuantityHelpers';
+import { calculateCellaredOzFromBlend } from '@/components/utils/tobaccoQuantityHelpers';
 import PipeKeeperModuleNav from './PipeKeeperModuleNav';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import ModuleQuickLaunch from './ModuleQuickLaunch';
@@ -54,12 +54,7 @@ export default function PipeKeeperModule() {
     staleTime: 10000,
   });
 
-  const { data: cellarLogs = [] } = useQuery({
-    queryKey: ['cellar-logs', user?.email],
-    queryFn: () => base44.entities.CellarLog.filter({ created_by: user?.email }),
-    enabled: !!user?.email,
-    staleTime: 30000,
-  });
+
 
   const { data: smokingLogs = [] } = useQuery({
     queryKey: ['smoking-logs-summary', user?.email],
@@ -76,7 +71,7 @@ export default function PipeKeeperModule() {
     }, 0);
   }, [pipes]);
 
-  const totalCellaredOz = useMemo(() => calculateCellaredOzFromLogs(cellarLogs), [cellarLogs]);
+  const totalCellaredOz = useMemo(() => blends.reduce((sum, b) => sum + calculateCellaredOzFromBlend(b), 0), [blends]);
   
   const mostSmokedPipe = useMemo(() => {
     if (!smokingLogs.length || !pipes.length) return null;
