@@ -11,13 +11,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Paginate to avoid timeouts on large datasets
-    const PAGE = 200;
+    // Use small page size - SDK serializes large responses as strings causing issues
+    const PAGE = 50;
     const fetchAll = async (entity) => {
       const results = [];
       let skip = 0;
       while (true) {
-        const page = await entity.list(null, PAGE, skip);
+        let page = await entity.list(null, PAGE, skip);
+        if (typeof page === 'string') {
+          try { page = JSON.parse(page); } catch { break; }
+        }
+        if (!Array.isArray(page) || page.length === 0) break;
         results.push(...page);
         if (page.length < PAGE) break;
         skip += PAGE;
@@ -25,17 +29,13 @@ Deno.serve(async (req) => {
       return results;
     };
 
-    const [allProfiles, allUsers, allSubscriptions] = await Promise.all([
-      fetchAll(base44.asServiceRole.entities.UserProfile),
-      fetchAll(base44.asServiceRole.entities.User),
-      fetchAll(base44.asServiceRole.entities.Subscription)
-    ]);
-
-    // Build a set of emails that have actually used this app (have a UserProfile)
-    const appUserEmails = new Set(allProfiles.map(p => normEmail(p.user_email)).filter(Boolean));
-
-    // Filter allUsers to only those who have a UserProfile in this app
-    const appUsers = allUsers.filter(u => appUserEmails.has(normEmail(u.email)));
+    const allProfiles = await fetchAll(base44.asServiceRole.entities.UserProfile);
+    const allSubscriptions = await fetchAll(base44.asServiceRole.entities.Subscription);
+    const allUsers = await fetchAll(base44.asServiceRole.entities.User);
+    const userByEmail = new Map();
+    allUsers.forEach(u => {
+      if (u.email) userByEmail.set(normEmail(u.email), u);
+    });
 
     const subscriptionMap = new Map();
     const subsByEmail = new Map();
@@ -90,8 +90,22 @@ Deno.serve(async (req) => {
     const paidUsers = [];
     const freeUsers = [];
 
-    appUsers.forEach(u => {
-      const email = normEmail(u.email);
+    // Deduplicate profiles by email (keep the earliest created)
+    const seenEmails = new Set();
+    const uniqueProfiles = allProfiles.filter(profile => {
+      const email = normEmail(profile.user_email || profile.created_by);
+      if (!email || seenEmails.has(email)) return false;
+      seenEmails.add(email);
+      return true;
+    });
+
+    // Iterate over UserProfile records — these ARE the app's users
+    // user_email may be empty; fall back to created_by (platform-populated auth email)
+    uniqueProfiles.forEach(profile => {
+      const email = normEmail(profile.user_email || profile.created_by);
+      if (!email) return;
+
+      const u = userByEmail.get(email) || {};
       const subscription = subscriptionMap.get(u.id) || subscriptionMap.get(email);
 
       let isPaid = false;
@@ -127,21 +141,12 @@ Deno.serve(async (req) => {
         }
       }
 
-      if (!isPaid) {
-        const userSubLevel = (u.subscription_level || '').toLowerCase();
-        if (['paid', 'premium', 'pro'].includes(userSubLevel)) {
-          isPaid = true;
-          effectiveStatus = u.subscription_status || 'active';
-          effectiveTier = userSubLevel === 'paid' ? 'premium' : userSubLevel;
-        }
-      }
-
       const userData = {
-        email: u.email,
-        full_name: u.full_name,
-        role: u.role,
+        email: email,
+        full_name: u.full_name || profile.display_name || '',
+        role: u.role || 'user',
         platform: u.data?.platform || u.platform || 'web',
-        created_date: u.created_date,
+        created_date: profile.created_date || u.created_date,
         subscription_status: effectiveStatus,
         subscription_tier: effectiveTier,
         subscription_end: subscription?.current_period_end || null,
@@ -155,7 +160,7 @@ Deno.serve(async (req) => {
       }
     });
 
-    const totalUsers = appUsers.length;
+    const totalUsers = uniqueProfiles.length;
     const paidCount = paidUsers.length;
     const freeCount = freeUsers.length;
     const paidPercentage = totalUsers === 0 ? '0.0' : ((paidCount / totalUsers) * 100).toFixed(1);
