@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -11,7 +11,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Use small page size - SDK serializes large responses as strings causing issues
     const PAGE = 50;
     const fetchAll = async (entity) => {
       const results = [];
@@ -29,15 +28,12 @@ Deno.serve(async (req) => {
       return results;
     };
 
-    const allProfiles = await fetchAll(base44.asServiceRole.entities.UserProfile);
-    const allSubscriptions = await fetchAll(base44.asServiceRole.entities.Subscription);
-    const allUsers = await fetchAll(base44.asServiceRole.entities.User);
-    const userByEmail = new Map();
-    allUsers.forEach(u => {
-      if (u.email) userByEmail.set(normEmail(u.email), u);
-    });
+    const [allUsers, allSubscriptions] = await Promise.all([
+      fetchAll(base44.asServiceRole.entities.User),
+      fetchAll(base44.asServiceRole.entities.Subscription),
+    ]);
 
-    const subscriptionMap = new Map();
+    // Build subscription lookup maps
     const subsByEmail = new Map();
     const subsByUserId = new Map();
 
@@ -53,59 +49,61 @@ Deno.serve(async (req) => {
       }
     });
 
-    const processSubs = (subs, key) => {
-      const validSubs = subs.filter(s => {
-        const status = (s.status || '').toLowerCase();
-        return status !== 'incomplete_expired';
-      });
-      if (validSubs.length === 0) return;
+    const rankSub = (s) => {
+      const st = (s.status || '').toLowerCase();
+      if (st === 'active') return 5;
+      if (st === 'trialing' || st === 'trial') return 4;
+      if (st === 'incomplete') return 3;
+      if (st === 'past_due') return 2;
+      return 1;
+    };
 
-      const rank = (s) => {
+    const pickBestSub = (subs) => {
+      const valid = subs.filter(s => {
         const st = (s.status || '').toLowerCase();
-        if (st === 'active') return 5;
-        if (st === 'trialing') return 4;
-        if (st === 'incomplete') return 3;
-        if (st === 'past_due') return 2;
-        return 1;
-      };
-
-      const best = [...validSubs].sort((a, b) => {
-        const rDiff = rank(b) - rank(a);
+        return st !== 'incomplete_expired';
+      });
+      if (!valid.length) return null;
+      return [...valid].sort((a, b) => {
+        const rDiff = rankSub(b) - rankSub(a);
         if (rDiff !== 0) return rDiff;
         const tierA = (a.tier || '').toLowerCase();
         const tierB = (b.tier || '').toLowerCase();
         if (tierB === 'pro' && tierA !== 'pro') return 1;
         if (tierA === 'pro' && tierB !== 'pro') return -1;
-        const ca = new Date(a.created_date || 0).getTime();
-        const cb = new Date(b.created_date || 0).getTime();
-        return cb - ca;
+        return new Date(b.created_date || 0) - new Date(a.created_date || 0);
       })[0];
-
-      subscriptionMap.set(key, best);
     };
 
-    subsByUserId.forEach(processSubs);
-    subsByEmail.forEach(processSubs);
+    // Build subscription map per user (by id or email)
+    const subscriptionMap = new Map();
+    subsByUserId.forEach((subs, uid) => {
+      const best = pickBestSub(subs);
+      if (best) subscriptionMap.set(uid, best);
+    });
+    subsByEmail.forEach((subs, email) => {
+      if (!subscriptionMap.has(email)) {
+        const best = pickBestSub(subs);
+        if (best) subscriptionMap.set(email, best);
+      }
+    });
 
     const paidUsers = [];
     const freeUsers = [];
 
-    // Deduplicate profiles by email (keep the earliest created)
+    // Deduplicate users by email
     const seenEmails = new Set();
-    const uniqueProfiles = allProfiles.filter(profile => {
-      const email = normEmail(profile.user_email || profile.created_by);
+    const uniqueUsers = allUsers.filter(u => {
+      const email = normEmail(u.email);
       if (!email || seenEmails.has(email)) return false;
       seenEmails.add(email);
       return true;
     });
 
-    // Iterate over UserProfile records — these ARE the app's users
-    // user_email may be empty; fall back to created_by (platform-populated auth email)
-    uniqueProfiles.forEach(profile => {
-      const email = normEmail(profile.user_email || profile.created_by);
+    uniqueUsers.forEach(u => {
+      const email = normEmail(u.email);
       if (!email) return;
 
-      const u = userByEmail.get(email) || {};
       const subscription = subscriptionMap.get(u.id) || subscriptionMap.get(email);
 
       let isPaid = false;
@@ -114,19 +112,18 @@ Deno.serve(async (req) => {
 
       if (subscription) {
         const subStatus = (subscription.status || '').toLowerCase();
-        const subTier = subscription.tier || 'premium';
-        const subPeriodEnd = subscription.current_period_end;
+        const notExpired = !subscription.current_period_end || new Date(subscription.current_period_end) > new Date();
         const isActiveStatus = ['active', 'trialing', 'trial', 'incomplete'].includes(subStatus);
-        const notExpired = !subPeriodEnd || new Date(subPeriodEnd) > new Date();
         if (isActiveStatus && notExpired) {
           isPaid = true;
           effectiveStatus = subscription.status;
-          effectiveTier = subTier;
+          effectiveTier = subscription.tier || 'premium';
         } else {
           effectiveStatus = subscription.status;
         }
       }
 
+      // Fallback: check user.data entitlement fields
       if (!isPaid && u.data) {
         const entitlementTier = (u.data.entitlement_tier || '').toLowerCase();
         const subscriptionTier = (u.data.subscription_tier || '').toLowerCase();
@@ -142,15 +139,15 @@ Deno.serve(async (req) => {
       }
 
       const userData = {
-        email: email,
-        full_name: u.full_name || profile.display_name || '',
+        email,
+        full_name: u.full_name || '',
         role: u.role || 'user',
         platform: u.data?.platform || u.platform || 'web',
-        created_date: profile.created_date || u.created_date,
+        created_date: u.created_date,
         subscription_status: effectiveStatus,
         subscription_tier: effectiveTier,
         subscription_end: subscription?.current_period_end || null,
-        billing_interval: subscription?.billing_interval || null
+        billing_interval: subscription?.billing_interval || null,
       };
 
       if (isPaid) {
@@ -160,18 +157,15 @@ Deno.serve(async (req) => {
       }
     });
 
-    const totalUsers = uniqueProfiles.length;
+    const totalUsers = uniqueUsers.length;
     const paidCount = paidUsers.length;
     const freeCount = freeUsers.length;
     const paidPercentage = totalUsers === 0 ? '0.0' : ((paidCount / totalUsers) * 100).toFixed(1);
 
-    const sortedPaid = paidUsers.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-    const sortedFree = freeUsers.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-
     return Response.json({
       summary: { total_users: totalUsers, paid_users: paidCount, free_users: freeCount, paid_percentage: paidPercentage },
-      paid_users: sortedPaid,
-      free_users: sortedFree,
+      paid_users: paidUsers.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)),
+      free_users: freeUsers.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)),
     });
 
   } catch (error) {
