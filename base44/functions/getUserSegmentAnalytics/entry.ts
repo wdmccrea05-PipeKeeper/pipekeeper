@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   try {
@@ -18,12 +18,12 @@ Deno.serve(async (req) => {
     const cutoffISO = cutoffDate.toISOString().split('T')[0];
 
     // Get daily metrics for period
-    const metrics = await base44.asServiceRole.entities.DailyUserMetrics.filter(
+    const metricsRaw = await base44.asServiceRole.entities.DailyUserMetrics.filter(
       {},
       '-date',
       10000
     );
-
+    const metrics = Array.isArray(metricsRaw) ? metricsRaw : (metricsRaw?.results || []);
     const recentMetrics = metrics.filter(m => m.date >= cutoffISO);
 
     // Aggregate by user

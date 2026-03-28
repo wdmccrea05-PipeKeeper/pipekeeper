@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   try {
@@ -17,14 +17,20 @@ Deno.serve(async (req) => {
     cutoffDate.setDate(cutoffDate.getDate() - period_days);
     const cutoffISO = cutoffDate.toISOString();
 
-    // Get all events in period
-    const events = await base44.asServiceRole.entities.CuratorEvent.filter(
-      {},
-      '-timestamp',
-      5000
-    );
-
-    const recentEvents = events.filter(e => new Date(e.timestamp) >= cutoffDate);
+    // Get all events in period (paginated to avoid Brotli decompression failure)
+    const PAGE = 200;
+    const allEvents = [];
+    let skip = 0;
+    while (true) {
+      const page = await base44.asServiceRole.entities.CuratorEvent.list('-timestamp', PAGE, skip);
+      const arr = Array.isArray(page) ? page : (page?.results || []);
+      // Stop if we've gone past the cutoff date (sorted desc)
+      const relevant = arr.filter(e => new Date(e.timestamp) >= cutoffDate);
+      allEvents.push(...relevant);
+      if (arr.length < PAGE || relevant.length < arr.length) break;
+      skip += PAGE;
+    }
+    const recentEvents = allEvents;
 
     // Aggregate by recommendation key
     const byRecommendation = {};
