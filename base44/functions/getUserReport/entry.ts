@@ -166,8 +166,7 @@ Deno.serve(async (req) => {
     return Response.json({
       summary: { total_users: totalUsers, paid_users: paidCount, free_users: freeCount, paid_percentage: paidPercentage },
       paid_users: sortedPaid,
-      free_users: sortedFree.slice(0, 500),  // Cap at 500 to prevent payload overload
-      free_users_truncated: sortedFree.length > 500,
+      free_users: sortedFree,
     });
 
   } catch (error) {
