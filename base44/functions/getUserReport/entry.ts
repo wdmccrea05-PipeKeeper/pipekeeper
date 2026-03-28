@@ -25,10 +25,17 @@ Deno.serve(async (req) => {
       return results;
     };
 
-    const [allUsers, allSubscriptions] = await Promise.all([
+    const [allProfiles, allUsers, allSubscriptions] = await Promise.all([
+      fetchAll(base44.asServiceRole.entities.UserProfile),
       fetchAll(base44.asServiceRole.entities.User),
       fetchAll(base44.asServiceRole.entities.Subscription)
     ]);
+
+    // Build a set of emails that have actually used this app (have a UserProfile)
+    const appUserEmails = new Set(allProfiles.map(p => normEmail(p.user_email)).filter(Boolean));
+
+    // Filter allUsers to only those who have a UserProfile in this app
+    const appUsers = allUsers.filter(u => appUserEmails.has(normEmail(u.email)));
 
     const subscriptionMap = new Map();
     const subsByEmail = new Map();
@@ -83,7 +90,7 @@ Deno.serve(async (req) => {
     const paidUsers = [];
     const freeUsers = [];
 
-    allUsers.forEach(u => {
+    appUsers.forEach(u => {
       const email = normEmail(u.email);
       const subscription = subscriptionMap.get(u.id) || subscriptionMap.get(email);
 
@@ -148,7 +155,7 @@ Deno.serve(async (req) => {
       }
     });
 
-    const totalUsers = allUsers.length;
+    const totalUsers = appUsers.length;
     const paidCount = paidUsers.length;
     const freeCount = freeUsers.length;
     const paidPercentage = totalUsers === 0 ? '0.0' : ((paidCount / totalUsers) * 100).toFixed(1);
