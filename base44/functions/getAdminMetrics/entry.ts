@@ -68,8 +68,10 @@ Deno.serve(async (req) => {
     });
 
     // Categorize users and build user tiers
-    const usersByTier = { free: [], premium: [], pro: [], legacyPremium: [] };
+    // Legacy premium = still premium tier, just at the old price point — counted as premium paid
+    const usersByTier = { free: [], premium: [], pro: [] };
     let foundingMemberCount = 0;
+    let legacyPremiumCount = 0; // tracked separately for renewal rate context only
 
     allUsers.forEach(u => {
       const email = normEmail(u.email);
@@ -152,16 +154,15 @@ Deno.serve(async (req) => {
         return;
       }
 
-      // Categorize by tier and legacy status
+      // Categorize by tier — legacy premium users still count as premium paid
       const isLegacy = effectiveStartedAt && new Date(effectiveStartedAt) < proLaunchDate;
       const tier = (effectiveTier || 'premium').toLowerCase();
 
       if (tier === 'pro') {
         usersByTier.pro.push(u);
-      } else if (isLegacy) {
-        usersByTier.legacyPremium.push(u);
       } else {
         usersByTier.premium.push(u);
+        if (isLegacy) legacyPremiumCount++; // legacy = lower renewal price, not a separate tier
       }
 
       if (u.isFoundingMember) {
@@ -173,9 +174,9 @@ Deno.serve(async (req) => {
     const userCounts = {
       total: allUsers.length,
       free: usersByTier.free.length,
-      premium: usersByTier.premium.length,
+      premium: usersByTier.premium.length, // includes legacy premium subscribers
       pro: usersByTier.pro.length,
-      legacyPremium: usersByTier.legacyPremium.length,
+      legacyPremiumRenewal: legacyPremiumCount, // informational: how many renew at old price
       foundingMembers: foundingMemberCount,
     };
 
