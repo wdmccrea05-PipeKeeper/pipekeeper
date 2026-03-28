@@ -108,50 +108,56 @@ export default function RotationPlanner({ user, pipe, blends }) {
   const [expandedNeverSmoked, setExpandedNeverSmoked] = useState(false);
   const [expandedRecentlySmoked, setExpandedRecentlySmoked] = useState(false);
   const [expandedInRegularRotation, setExpandedInRegularRotation] = useState(false);
-  const { data: pipes = [] } = useQuery({
+
+  const { data: allPipes = [] } = useQuery({
+    queryKey: ['pipes-rotation', user?.email],
+    queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-updated_date', 500),
+    enabled: !!user?.email,
+  });
+
+  const { data: logs = [] } = useQuery({
     queryKey: ['smoking-logs', user?.email],
     queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 1000),
     enabled: !!user?.email,
   });
 
-  // Calculate last smoked date for each pipe (safe from invalid dates)
-   const getBowlsUsed = (log) => {
-     if (!log) return 0;
-     return log.bowls_used || log.bowls_smoked || 1;
-   };
+  const getBowlsUsed = (log) => {
+    if (!log) return 0;
+    return log.bowls_used || log.bowls_smoked || 1;
+  };
 
-   // ISSUE-1: Exclude collection-only (ai_excluded) pipes from all rotation/usage analytics
-   const activePipes = (pipes || []).filter(p => !p.ai_excluded);
+  // Exclude collection-only (ai_excluded) pipes from rotation analytics
+  const activePipes = (allPipes || []).filter(p => !p.ai_excluded);
 
-   const pipeRotation = activePipes.map(pipe => {
-     try {
-       const pipeLogs = (logs || []).filter(log => log && log.pipe_id === pipe.id);
-       const lastLog = pipeLogs[0]; // Already sorted by -date
-       let lastSmoked = null;
-       let daysSince = null;
+  const pipeRotation = activePipes.map(pipe => {
+    try {
+      const pipeLogs = (logs || []).filter(log => log && log.pipe_id === pipe.id);
+      const lastLog = pipeLogs.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+      let lastSmoked = null;
+      let daysSince = null;
 
-       if (lastLog?.date) {
-         try {
-           const d = parseLocalCalendarDate(lastLog.date);
-           if (!Number.isNaN(d.getTime())) {
-             lastSmoked = d;
-             daysSince = differenceInCalendarDays(new Date(), d);
-           }
-         } catch {
-           // invalid date, leave as null
-         }
-       }
+      if (lastLog?.date) {
+        try {
+          const d = parseLocalCalendarDate(lastLog.date);
+          if (!Number.isNaN(d.getTime())) {
+            lastSmoked = d;
+            daysSince = differenceInCalendarDays(new Date(), d);
+          }
+        } catch {
+          // invalid date, leave as null
+        }
+      }
 
-       return {
-         ...pipe,
-         lastSmoked,
-         daysSince,
-         totalSessions: pipeLogs.reduce((sum, log) => sum + getBowlsUsed(log), 0),
-       };
-     } catch {
-       return { ...pipe, lastSmoked: null, daysSince: null, totalSessions: 0 };
-     }
-   });
+      return {
+        ...pipe,
+        lastSmoked,
+        daysSince,
+        totalSessions: pipeLogs.reduce((sum, log) => sum + getBowlsUsed(log), 0),
+      };
+    } catch {
+      return { ...pipe, lastSmoked: null, daysSince: null, totalSessions: 0 };
+    }
+  });
 
   const needsRotation = pipeRotation
     .filter(p => p.daysSince !== null && p.daysSince > 60)
