@@ -167,7 +167,6 @@ const AuthenticatedApp = () => {
           <Support />
         </LayoutWrapper>
       } />
-      } />
       <Route path="/ShoppingList" element={
         <LayoutWrapper currentPageName="ShoppingList">
           <ShoppingList />
