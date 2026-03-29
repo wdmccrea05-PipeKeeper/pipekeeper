@@ -181,12 +181,11 @@ export function buildStripeConfig() {
   };
 
   // Log missing env vars to console for debugging
-  const missing = requiredPrices.filter(key => !import.meta.env[key]);
-  if (missing.length > 0) {
-    console.warn(
-      '[StripeConfig] Missing required environment variables:',
-      missing
-    );
+  if (import.meta.env.DEV) {
+    const missing = requiredPrices.filter(key => !import.meta.env[key]);
+    if (missing.length > 0) {
+      console.warn('[StripeConfig] Missing required environment variables:', missing);
+    }
   }
 
   return config;
@@ -244,7 +243,7 @@ export function validateStripeConfig() {
     }
   }
 
-  if (errors.length > 0) {
+  if (errors.length > 0 && import.meta.env.DEV) {
     console.error('[StripeConfig] Validation failed:', errors);
   }
 

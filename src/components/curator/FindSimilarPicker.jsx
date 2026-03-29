@@ -94,11 +94,11 @@ export default function FindSimilarPicker({
     if (mode === "pick") {
       const selectedItem = data.find((d) => d.id === displaySelected);
       if (selectedItem) {
-        console.log("[FindSimilar] Pick mode: single anchor", selectedItem.name);
+        if (import.meta.env.DEV) { console.log("[FindSimilar] Pick mode: single anchor", selectedItem.name); }
         onConfirm([selectedItem], false);
       }
     } else if (mode === "top3") {
-      console.log("[FindSimilar] Top3 mode: multiple anchors", topItems.map(t => t.name));
+      if (import.meta.env.DEV) { console.log("[FindSimilar] Top3 mode: multiple anchors", topItems.map(t => t.name)); }
       onConfirm(topItems, true);
     }
   };

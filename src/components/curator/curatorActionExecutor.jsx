@@ -441,18 +441,14 @@ function getActionPrompt(actionType, context, anchorOverrides) {
     ? (anchors.length > 1 ? "top3" : "single")
     : (anchorOverrides?.mode || (anchors.length > 1 ? "top3" : "single"));
 
-  console.log("[FindSimilar] anchorOverrides received:", {
-    actionType,
-    anchorMode,
-    anchors: anchors.map(a => a?.name),
-  });
+  if (import.meta.env.DEV) { console.log("[FindSimilar] anchorOverrides received:", { actionType, anchorMode, anchors: anchors.map(a => a?.name) }); }
 
   // FAST PATHS: Use lightweight prompts for find_similar actions
   if (actionType === "find_similar_blends") {
     if (anchors.length === 0) throw new Error("No anchor blend selected for similar blend recommendations.");
     if (anchorMode === "top3" && anchors.length > 1) {
       // Multi-anchor: build a combined prompt that references all anchors
-      console.log("[FindSimilar] Multi-anchor blends:", anchors.map(a => a.name));
+      if (import.meta.env.DEV) { console.log("[FindSimilar] Multi-anchor blends:", anchors.map(a => a.name)); }
       const anchorLines = anchors.map((a, i) => {
         const details = [
           a.blend_type && `Type: ${a.blend_type}`,
@@ -477,14 +473,14 @@ RETURN EXACTLY 3 ITEMS spanning diversity across the anchors.
 
 {"summary":"Three blends you might enjoy","items":[{"id":"sim_1","type":"similar_item","recordType":"blend","title":"Blend Name by Maker","category":"Blend type","explanation":"Why recommended","characteristics":["trait1","trait2"],"whyFitsYou":"Personal note","anchorRef":"Anchor blend name"}]}`;
     }
-    console.log("[FindSimilar] Single anchor blend:", anchors[0].name);
+    if (import.meta.env.DEV) { console.log("[FindSimilar] Single anchor blend:", anchors[0].name); }
     return buildLightweightFindSimilarBlendPrompt(anchors[0], context);
   }
 
   if (actionType === "find_similar_pipes") {
     if (anchors.length === 0) throw new Error("No anchor pipe selected for similar pipe recommendations.");
     if (anchorMode === "top3" && anchors.length > 1) {
-      console.log("[FindSimilar] Multi-anchor pipes:", anchors.map(a => a.name));
+      if (import.meta.env.DEV) { console.log("[FindSimilar] Multi-anchor pipes:", anchors.map(a => a.name)); }
       const anchorLines = anchors.map((a, i) => {
         const details = [
           a.shape && `Shape: ${a.shape}`,
@@ -508,14 +504,14 @@ RETURN EXACTLY 3 ITEMS spanning diversity across the anchors.
 
 {"summary":"Three pipes you might enjoy","items":[{"id":"sim_1","type":"similar_item","recordType":"pipe","title":"Pipe Name by Maker","category":"Shape","explanation":"Why recommended","characteristics":["trait1","trait2"],"whyFitsYou":"Personal note","anchorRef":"Anchor pipe name"}]}`;
     }
-    console.log("[FindSimilar] Anchor pipe:", anchors[0].name);
+    if (import.meta.env.DEV) { console.log("[FindSimilar] Anchor pipe:", anchors[0].name); }
     return buildLightweightFindSimilarPipePrompt(anchors[0], context);
   }
 
   if (actionType === "find_similar_bottles") {
     if (anchors.length === 0) throw new Error("No anchor bottle selected for similar bottle recommendations.");
     if (anchorMode === "top3" && anchors.length > 1) {
-      console.log("[FindSimilar] Multi-anchor bottles:", anchors.map(a => a.name));
+      if (import.meta.env.DEV) { console.log("[FindSimilar] Multi-anchor bottles:", anchors.map(a => a.name)); }
       const anchorLines = anchors.map((a, i) => {
         const details = [
           a.type && `Type: ${a.type}`,
@@ -539,7 +535,7 @@ RETURN EXACTLY 3 ITEMS spanning diversity across the anchors.
 
 {"summary":"Three bottles you might enjoy","items":[{"id":"sim_1","type":"similar_item","recordType":"bottle","title":"Bottle Name","category":"Type / Region","explanation":"Why recommended","characteristics":["trait1","trait2"],"whyFitsYou":"Personal note","anchorRef":"Anchor bottle name"}]}`;
     }
-    console.log("[FindSimilar] Anchor bottle:", anchors[0].name);
+    if (import.meta.env.DEV) { console.log("[FindSimilar] Anchor bottle:", anchors[0].name); }
     return buildLightweightFindSimilarBottlePrompt(anchors[0], context);
   }
 
@@ -591,16 +587,11 @@ export default async function curatorActionExecutor({
   const isSimilarAction = actionType.startsWith("find_similar");
   
   const anchorList = Array.isArray(anchorOverrides) ? anchorOverrides : (anchorOverrides?.anchors || []);
-  console.log(`[Curator] ${actionType} start`, {
-    isSimilar: isSimilarAction,
-    hasAnchors: anchorList.length > 0,
-    anchorCount: anchorList.length,
-    anchorNames: anchorList.map(a => a?.name),
-  });
+  if (import.meta.env.DEV) { console.log(`[Curator] ${actionType} start`, { isSimilar: isSimilarAction, hasAnchors: anchorList.length > 0, anchorCount: anchorList.length, anchorNames: anchorList.map(a => a?.name) }); }
 
   const prompt = getActionPrompt(actionType, context, anchorOverrides);
   const promptSize = JSON.stringify(prompt).length;
-  console.log(`[Curator] Prompt size: ${promptSize} bytes`);
+  if (import.meta.env.DEV) { console.log(`[Curator] Prompt size: ${promptSize} bytes`); }
 
   const responseText = await invokeCuratorLLM({
     prompt,
@@ -608,10 +599,7 @@ export default async function curatorActionExecutor({
     requestId,
   });
 
-  console.log("[Curator] Response received", {
-    length: responseText?.length,
-    isString: typeof responseText === "string",
-  });
+  if (import.meta.env.DEV) { console.log("[Curator] Response received", { length: responseText?.length, isString: typeof responseText === "string" }); }
 
   if (!responseText) {
     throw new Error("Curator returned no response.");
@@ -621,10 +609,7 @@ export default async function curatorActionExecutor({
     typeof responseText === "string" ? responseText : JSON.stringify(responseText)
   );
 
-  console.log("[Curator] Parsed successfully", {
-    hasSummary: !!parsed?.summary,
-    itemCount: parsed?.items?.length || 0,
-  });
+  if (import.meta.env.DEV) { console.log("[Curator] Parsed successfully", { hasSummary: !!parsed?.summary, itemCount: parsed?.items?.length || 0 }); }
 
   if (!parsed || typeof parsed !== "object") {
     throw new Error("Curator returned unusable structured data.");

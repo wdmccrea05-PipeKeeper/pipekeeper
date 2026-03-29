@@ -28,7 +28,7 @@ import CuratorActionPanel from "./CuratorActionPanel";
 import CuratorActionResultCard from "./CuratorActionResultCard";
 import normalizeCuratorActionResult from "./normalizeCuratorActionResult.jsx";
 import curatorActionExecutor from "./curatorActionExecutor.jsx";
-import { runCuratorAction } from "./curatorActionService.jsx";
+import { runCuratorAction } from "./curatorActionService.js";
 import {
   buildCuratorChatSystemPrompt,
   buildCuratorActivitySummary,
@@ -742,7 +742,7 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         return;
       }
 
-      console.log("[Curator] action start", { actionType, hasAnchors: !!anchorOverrides, anchorOverrides });
+      if (import.meta.env.DEV) { console.log("[Curator] action start", { actionType, hasAnchors: !!anchorOverrides, anchorOverrides }); }
       setLastActionRequest({ actionType, anchorOverrides });
       setItemStates({});
 
@@ -760,7 +760,7 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
       });
 
       try {
-        console.log("[Curator] runCuratorAction call", { actionType, hasAnchors: !!anchorOverrides });
+        if (import.meta.env.DEV) { console.log("[Curator] runCuratorAction call", { actionType, hasAnchors: !!anchorOverrides }); }
         const result = await runCuratorAction({
           actionType,
           executor: curatorActionExecutor,
@@ -864,7 +864,7 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
 
   const handleRetryAction = () => {
     if (!lastActionRequest) return;
-    console.log("[Curator] retry", lastActionRequest);
+    if (import.meta.env.DEV) { console.log("[Curator] retry", lastActionRequest); }
     handleExpertAction(lastActionRequest.actionType, lastActionRequest.anchorOverrides);
   };
 
@@ -875,10 +875,7 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
       anchors: anchorItems,
       mode: isTop3 ? "top3" : "single",
     };
-    console.log("[FindSimilar] handleFindSimilarConfirm:", {
-      mode: anchorConfig.mode,
-      anchors: anchorItems.map(a => a?.name),
-    });
+    if (import.meta.env.DEV) { console.log("[FindSimilar] handleFindSimilarConfirm:", { mode: anchorConfig.mode, anchors: anchorItems.map(a => a?.name) }); }
     handleExpertAction(actionType, anchorConfig);
   };
 
