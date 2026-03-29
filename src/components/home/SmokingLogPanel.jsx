@@ -552,7 +552,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                     </div>
                     <div className="flex items-center gap-2 text-xs text-[#E0D8C8]/90 font-medium">
                       <Calendar className="w-3 h-3" />
-                      {format(parseLocalCalendarDate(log.date), 'MMM d, yyyy')}
+                      {log.date ? format(parseLocalCalendarDate(log.date), 'MMM d, yyyy') : '—'}
                       <span>•</span>
                       <span className="text-[#E0D8C8]">{getBowlsUsed(log)} {getBowlsUsed(log) > 1 ? t("units.bowlPlural") : t("units.bowl")}</span>
                     </div>

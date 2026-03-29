@@ -1,4 +1,9 @@
 import React, { useState } from "react";
+import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +60,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
   });
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
 
   const convertToImperial = (mm) => {
     if (!mm) return null;
@@ -82,7 +88,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
       setBowlForm({ ...bowlForm, photo: file_url });
     } catch (error) {
       console.error("Error uploading photo:", error);
-      alert(t("bowls.photoUploadError"));
+      toast.error(t("bowls.photoUploadError"));
     } finally {
       setUploadingPhoto(false);
     }
@@ -149,14 +155,30 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
   };
 
   const handleDeleteBowl = (index) => {
-    if (!window.confirm(t("bowls.removeBowlConfirm"))) return;
-    const updatedBowls = interchangeableBowls.filter((_, i) => i !== index);
-    // re-stabilize ids for display/selection if you want consistent ordering
+    setConfirmDeleteIndex(index);
+  };
+
+  const confirmDelete = () => {
+    const updatedBowls = interchangeableBowls.filter((_, i) => i !== confirmDeleteIndex);
     const rekeyed = updatedBowls.map((b, i) => ({ ...b, bowl_variant_id: b.bowl_variant_id || `bowl_${i}` }));
     onUpdate({ interchangeable_bowls: rekeyed });
+    setConfirmDeleteIndex(null);
   };
 
   return (
+    <>
+    <AlertDialog open={confirmDeleteIndex !== null} onOpenChange={(open) => !open && setConfirmDeleteIndex(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t("bowls.removeBowlConfirm")}</AlertDialogTitle>
+          <AlertDialogDescription>This bowl will be removed from the pipe.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+          <AlertDialogAction className="bg-rose-600 hover:bg-rose-700" onClick={confirmDelete}>{t("common.delete")}</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
       <CardHeader>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -473,5 +495,6 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
         )}
       </CardContent>
     </Card>
+    </>
   );
 }
