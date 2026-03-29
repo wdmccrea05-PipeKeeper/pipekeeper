@@ -9,6 +9,13 @@
 
 import { hasPaidAccess } from './premiumAccess';
 import { MODULES, MODULE_LIST, getActiveModules } from './moduleRegistry';
+import { isModuleLaunched } from './moduleReleaseState';
+
+// Only modules with canonical 'launched' state are granted to normal users.
+// WhiskeyKeeper is 'internal' until official release — excluded here.
+function getLaunchedActiveModules() {
+  return getActiveModules().filter((m) => isModuleLaunched(m));
+}
 
 export { MODULES, MODULE_LIST };
 
@@ -29,7 +36,7 @@ export function hasModuleProAccess(user, _module) {
  */
 export function getModulesWithProAccess(user) {
   if (!hasPaidAccess(user)) return [];
-  return getActiveModules();
+  return getLaunchedActiveModules();
 }
 
 /**
@@ -48,7 +55,7 @@ export function getSubscriptionSummary(user) {
   const isPro = hasPaidAccess(user);
   return {
     hasPaidAccess: isPro,
-    modules: isPro ? getActiveModules() : [],
+    modules: isPro ? getLaunchedActiveModules() : [],
     tier: isPro ? 'pro' : 'free',
     entitlements: isPro ? [ENTITLEMENTS.PRO] : [ENTITLEMENTS.FREE],
   };

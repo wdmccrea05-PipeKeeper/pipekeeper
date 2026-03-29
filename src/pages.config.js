@@ -158,7 +158,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Home",
+    mainPage: "CollectionHub",
     Pages: PAGES,
     Layout: __Layout,
 };

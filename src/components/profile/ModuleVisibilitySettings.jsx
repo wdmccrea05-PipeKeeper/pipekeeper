@@ -7,6 +7,7 @@ import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import { isModuleLaunched } from '@/components/utils/moduleReleaseState';
+import { isInternalModuleTester } from '@/components/utils/moduleReleaseState';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 
 function ModuleIcon({ src, alt, className }) {
@@ -19,13 +20,15 @@ export default function ModuleVisibilitySettings() {
   const { user, isLoading: userLoading } = useCurrentUser();
   const [saving, setSaving] = useState(null);
   const isAdmin = user?.role === 'admin';
+  const isTester = isInternalModuleTester(user);
 
   const MODULE_CONFIG = [
     { id: 'pipekeeper', label: t('hub.pipekeeper', 'PipeKeeper'), description: t('pipekeeper.description', 'Pipe collection, tobacco, smoking logs, and pairings.'), icon: MODULE_ICONS.pipekeeper, launched: isModuleLaunched('pipekeeper'), canDisable: false, allowToggle: false },
-    { id: 'whiskeykeeper', label: t('hub.whiskeykeeper', 'WhiskeyKeeper'), description: t('whiskeykeeper.description', 'Whiskey bottle collection, tasting notes, and inventory.'), icon: MODULE_ICONS.whiskeykeeper, launched: isModuleLaunched('whiskeykeeper'), canDisable: true, allowToggle: true, alcoholRelated: true },
+    // WhiskeyKeeper is internal — only show toggle to internal testers/admins
+    { id: 'whiskeykeeper', label: t('hub.whiskeykeeper', 'WhiskeyKeeper'), description: t('whiskeykeeper.description', 'Whiskey bottle collection, tasting notes, and inventory.'), icon: MODULE_ICONS.whiskeykeeper, launched: isModuleLaunched('whiskeykeeper'), canDisable: true, allowToggle: isTester, alcoholRelated: true, hiddenForNormalUsers: !isTester },
     { id: 'winekeeper', label: t('hub.winekeeper', 'WineKeeper'), description: t('profile.winekeeperDescription', 'Wine cellar management and bottle tracking.'), icon: MODULE_ICONS.winekeeper, launched: isModuleLaunched('winekeeper'), canDisable: true, alcoholRelated: true },
     { id: 'cigarkeeper', label: t('hub.cigarkeeper', 'CigarKeeper'), description: t('profile.cigarkeeperDescription', 'Cigar collection curation and tasting.'), icon: MODULE_ICONS.cigarkeeper, launched: isModuleLaunched('cigarkeeper'), canDisable: true },
-  ];
+  ].filter((mod) => !mod.hiddenForNormalUsers);
 
   async function handleToggle(moduleId, enabled) {
     if (!enabled) {

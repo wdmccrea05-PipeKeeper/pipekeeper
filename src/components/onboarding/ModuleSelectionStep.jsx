@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Check, Wine } from 'lucide-react';
 
+// WhiskeyKeeper is not yet launched for normal users — presets only include PipeKeeper.
 const PRESETS = [
   {
     label: 'Pipes Only',
@@ -14,19 +15,9 @@ const PRESETS = [
     states: { pipekeeper: true, whiskeykeeper: false, winekeeper: false, cigarkeeper: false },
   },
   {
-    label: 'Pipes + Whiskey',
-    description: 'Pipes, tobacco, and your whiskey collection.',
-    states: { pipekeeper: true, whiskeykeeper: true, winekeeper: false, cigarkeeper: false },
-  },
-  {
     label: 'Hide Alcohol Modules',
     description: 'Only non-alcohol modules active. Great for sober users.',
     states: { pipekeeper: true, whiskeykeeper: false, winekeeper: false, cigarkeeper: false },
-  },
-  {
-    label: 'Full CollectionKeeper',
-    description: 'All available modules active.',
-    states: { pipekeeper: true, whiskeykeeper: true, winekeeper: false, cigarkeeper: false },
   },
 ];
 
@@ -44,8 +35,9 @@ const MODULE_CONFIG = [
     label: 'WhiskeyKeeper',
     description: 'Whiskey bottles & tasting notes',
     icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png',
-    launched: true,
+    launched: false,  // Not yet launched for normal users — internal/admin only
     alcoholRelated: true,
+    comingSoon: true,
   },
   {
     id: 'winekeeper',
