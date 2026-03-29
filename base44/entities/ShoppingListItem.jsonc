@@ -1,0 +1,128 @@
+{
+  "name": "ShoppingListItem",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the item"
+    },
+    "item_type": {
+      "type": "string",
+      "enum": [
+        "blend",
+        "pipe",
+        "tobacco_bulk",
+        "tobacco_tin",
+        "bottle",
+        "accessory"
+      ],
+      "description": "Type of item being purchased"
+    },
+    "shopping_type": {
+      "type": "string",
+      "enum": [
+        "restock",
+        "buy_new_item"
+      ],
+      "default": "buy_new_item",
+      "description": "Whether this is a restock or new acquisition"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "acquired",
+        "archived",
+        "removed"
+      ],
+      "default": "active",
+      "description": "Current status of the Shopping List entry"
+    },
+    "brand": {
+      "type": "string",
+      "description": "Brand or manufacturer"
+    },
+    "blend_name": {
+      "type": "string",
+      "description": "Blend or product name"
+    },
+    "model_name": {
+      "type": "string",
+      "description": "Pipe model or variant name"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "description": "Priority level"
+    },
+    "desired_quantity": {
+      "type": "number",
+      "description": "Desired quantity"
+    },
+    "quantity_unit": {
+      "type": "string",
+      "enum": [
+        "units",
+        "oz",
+        "grams",
+        "tins",
+        "pouches"
+      ],
+      "description": "Unit of measurement"
+    },
+    "target_price": {
+      "type": "number",
+      "description": "Target/max price willing to pay"
+    },
+    "notes": {
+      "type": "string",
+      "description": "User notes"
+    },
+    "source": {
+      "type": "string",
+      "description": "Where user discovered this item"
+    },
+    "source_url": {
+      "type": "string",
+      "description": "URL to retailer or product page"
+    },
+    "linked_entity_id": {
+      "type": "string",
+      "description": "ID of linked Pipe, TobaccoBlend, or Bottle if from owned collection"
+    },
+    "linked_entity_type": {
+      "type": "string",
+      "enum": [
+        "Pipe",
+        "TobaccoBlend",
+        "Bottle",
+        null
+      ],
+      "description": "Type of linked entity"
+    },
+    "is_manual": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this was manually added or from search"
+    },
+    "acquired_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when item was acquired"
+    },
+    "acquired_collection_id": {
+      "type": "string",
+      "description": "ID of created record if converted to owned item"
+    }
+  },
+  "required": [
+    "name",
+    "item_type",
+    "shopping_type"
+  ]
+}

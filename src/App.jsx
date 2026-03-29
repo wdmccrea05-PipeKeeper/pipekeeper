@@ -29,6 +29,7 @@ import PipeDetail from '@/pages/PipeDetail';
 import TobaccoDetail from '@/pages/TobaccoDetail';
 import Support from '@/pages/Support';
 import WantList from '@/pages/WantList';
+import ShoppingList from '@/pages/ShoppingList';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -166,9 +167,10 @@ const AuthenticatedApp = () => {
           <Support />
         </LayoutWrapper>
       } />
-      <Route path="/WantList" element={
-        <LayoutWrapper currentPageName="WantList">
-          <WantList />
+      } />
+      <Route path="/ShoppingList" element={
+        <LayoutWrapper currentPageName="ShoppingList">
+          <ShoppingList />
         </LayoutWrapper>
       } />
       <Route path="/" element={
