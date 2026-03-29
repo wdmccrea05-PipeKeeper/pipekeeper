@@ -1,0 +1,55 @@
+{
+  "name": "AcquisitionItem",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the item"
+    },
+    "item_type": {
+      "type": "string",
+      "enum": [
+        "blend",
+        "pipe",
+        "bottle"
+      ],
+      "description": "Type of item"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "wishlist",
+        "shopping_list",
+        "restock",
+        "tried_not_owned",
+        "do_not_buy_again",
+        "archived"
+      ],
+      "default": "wishlist",
+      "description": "Current status of the item"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "description": "Priority level"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the item"
+    },
+    "estimated_price": {
+      "type": "number",
+      "description": "Estimated price"
+    }
+  },
+  "required": [
+    "name",
+    "item_type",
+    "status"
+  ]
+}
