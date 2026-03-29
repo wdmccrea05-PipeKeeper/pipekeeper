@@ -485,7 +485,7 @@ export default function CollectionReportExporter({ user }) {
             </DialogTitle>
           </DialogHeader>
           
-          <ScrollArea className="flex-1 min-h-0 w-full rounded-md border p-4">
+          <ScrollArea className="flex-1 min-h-0 w-full rounded-md border p-4 bg-white">
             <div dangerouslySetInnerHTML={{ __html: pdfPreview }} />
           </ScrollArea>
 
