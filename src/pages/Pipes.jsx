@@ -58,7 +58,7 @@ export default function PipesPage() {
   const { user, hasPaid, isTrial } = useCurrentUser();
 
   const { data: pipes = [], isLoading } = useQuery({
-    queryKey: ['pipes', user?.email, sortBy],
+    queryKey: ['pipes', user?.email],
     queryFn: async () => {
       try {
         const result = await scopedEntities.Pipe.listForUser(user?.email, '-created_date');
@@ -186,7 +186,7 @@ export default function PipesPage() {
         // Default: date (newest first)
         return new Date(b?.created_date || 0).getTime() - new Date(a?.created_date || 0).getTime();
       } catch (e) {
-        if (process.env.NODE_ENV !== "production") console.error('Sort error:', e);
+        if (import.meta.env.DEV) console.error('Sort error:', e);
         return 0;
       }
     });

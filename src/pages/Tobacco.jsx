@@ -3,7 +3,7 @@ import { scopedEntities } from "@/components/api/scopedEntities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Grid3X3, List, Sparkles, Edit3, Leaf, Package2 } from "lucide-react";
+import { Plus, Search, Grid3X3, List, Edit3, Leaf, Package2 } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -59,7 +59,6 @@ export default function TobaccoPage() {
     return localStorage.getItem('tobaccoDisplayMode') === 'collector';
   });
   const [showAddFlow, setShowAddFlow] = useState(false);
-  const [showBulkUpdate, setShowBulkUpdate] = useState(false);
   const [quickEditMode, setQuickEditMode] = useState(false);
   const [selectedForEdit, setSelectedForEdit] = useState([]);
   const [showQuickEditPanel, setShowQuickEditPanel] = useState(false);

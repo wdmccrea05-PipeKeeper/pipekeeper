@@ -1351,8 +1351,8 @@ export default function Insights() {
                           smokingLogs[
                             smokingLogs.length - 1
                           ]?.date?.slice(0, 10) || now.toISOString().slice(0, 10)
-                        ) / 7
-                      )
+                        )
+                      ) / 7
                     )
                   )
                 ).toFixed(1)
@@ -1433,7 +1433,7 @@ export default function Insights() {
                   title="Generate shareable collection insights"
                 >
                   <Share2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Share Insights</span>
+                  <span className="hidden sm:inline">{t("insights.shareInsights", "Share Insights")}</span>
                 </button>
               </div>
             </div>

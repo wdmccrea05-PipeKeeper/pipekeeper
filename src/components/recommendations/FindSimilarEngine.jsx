@@ -51,7 +51,7 @@ RECENT SESSIONS WITH THIS BLEND:
 ${recentLogs.length > 0 ? recentLogs.map(l => `- ${l.date || ""} using ${l.pipe_name || "unknown pipe"}`).join("\n") : "None logged"}
 
 RULES:
-- Return exactly 5 items
+- Return exactly 3 items
 - Never recommend owned blends
 - Only real, commercially available tobacco blends
 - Each must be distinct
@@ -111,7 +111,7 @@ USER PREFERENCES:
 ${prefStr || "Not specified"}
 
 RULES:
-- Return exactly 5 items
+- Return exactly 3 items
 - Never recommend owned pipes
 - Only real, commercially available pipes
 - Each must be distinct
@@ -171,7 +171,7 @@ USER PREFERENCES:
 ${prefStr || "Not specified"}
 
 RULES:
-- Return exactly 5 items
+- Return exactly 3 items
 - Never recommend owned bottles
 - Only real, commercially available whiskeys
 - Each must be distinct
