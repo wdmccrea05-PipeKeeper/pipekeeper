@@ -9,6 +9,10 @@ export const PLAN_CONFIG = getStripeConfig();
  * Map user selection to Stripe product
  * Returns plan key and resolved modules
  * Throws if plan is unavailable or invalid
+ *
+ * NOTE: modules returned here represent what the plan *intends* to unlock.
+ * Release-state gating (filtering out non-launched modules for normal users)
+ * is applied downstream in buildAccessSummary — not here.
  */
 export function getPlanFromSelection(selectedPlan, billingPeriod, selectedModules = [], baseModule) {
   if (selectedPlan === 'single') {
@@ -17,44 +21,44 @@ export function getPlanFromSelection(selectedPlan, billingPeriod, selectedModule
       throw new Error('No module specified for single plan');
     }
     const planKey = `${module}_pro_${billingPeriod}`;
-    
-    // Validate plan is available
+
     try {
       getRequiredStripePlan(planKey);
     } catch {
       throw new Error('This subscription option is not currently available. Please contact support.');
     }
-    
+
     return { planKey, modules: [module] };
   }
 
   if (selectedPlan === 'three') {
     const planKey = `three_module_bundle_${billingPeriod}`;
-    
-    // Validate plan is available
+
     try {
       getRequiredStripePlan(planKey);
     } catch {
       throw new Error('This subscription option is not currently available. Please contact support.');
     }
 
-    // For 3-module: use selectedModules if provided
+    // For 3-module: use explicitly selectedModules if provided.
+    // Do NOT fall back to a default list that includes non-launched modules.
+    // If no modules provided, default to pipekeeper only — the entitlement layer
+    // will expand access once additional modules launch.
     const modules = selectedModules.length >= 1
       ? selectedModules.slice(0, 3)
-      : ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+      : ['pipekeeper'];
     return { planKey, modules };
   }
 
   if (selectedPlan === 'four') {
     const planKey = `four_module_bundle_${billingPeriod}`;
-    
-    // Validate plan is available
+
     try {
       getRequiredStripePlan(planKey);
     } catch {
       throw new Error('This subscription option is not currently available. Please contact support.');
     }
-    
+
     return {
       planKey,
       modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
@@ -109,14 +113,14 @@ export async function initiateCheckout(planKey, selectedModules = [], successUrl
 export async function handlePostPurchase() {
   try {
     const response = await base44.functions.invoke('syncSubscriptionForMe', {});
-    
+
     if (response?.data?.status === 'no_subscription') {
       if (import.meta.env.DEV) {
         console.warn('[PostPurchase] No subscription found after checkout');
       }
       throw new Error('Subscription not found. This may take a moment to process.');
     }
-    
+
     if (response?.data?.error) {
       throw new Error(response.data.error);
     }
@@ -130,7 +134,11 @@ export async function handlePostPurchase() {
 }
 
 /**
- * Map Stripe product to modules for entitlement system
+ * Map Stripe product to intended modules for entitlement system.
+ *
+ * IMPORTANT: This returns the *plan-intended* module list, not the *effective* module list.
+ * Release-state filtering (removing non-launched modules for normal users) must be applied
+ * by the caller (buildAccessSummary) — not here.
  */
 export function getModulesFromPlanKey(planKey, metadata) {
   if (planKey.includes('founders')) {
@@ -146,8 +154,10 @@ export function getModulesFromPlanKey(planKey, metadata) {
     if (metadata?.activeModules && Array.isArray(metadata.activeModules)) {
       return metadata.activeModules.slice(0, 3);
     }
-    // Fallback to first 3
-    return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+    // Safe fallback: only pipekeeper (the only currently-launched module).
+    // Do NOT default to ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'] since those
+    // modules are not yet launched for normal users.
+    return ['pipekeeper'];
   }
 
   if (planKey.includes('pipekeeper')) return ['pipekeeper'];

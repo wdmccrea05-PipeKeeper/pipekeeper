@@ -1,10 +1,21 @@
 /**
  * CANONICAL ACCESS SUMMARY SYSTEM
- * Hotfix goals:
- * - correctly map current plan keys (three_module_bundle / four_module_bundle)
- * - derive active modules from modules_csv / activeModules metadata when present
- * - preserve unresolved module state honestly instead of fabricating PipeKeeper access
+ *
+ * Rules:
+ * - activeModules only contains modules that are BOTH entitled AND released
+ * - WhiskeyKeeper (and any other non-launched module) is filtered out for normal users
+ *   regardless of plan tier, until it is officially launched
+ * - Admin/internal testers bypass release-state gating
+ * - Founding members are subject to the same release-state gate as normal users
+ *   (they will automatically gain WhiskeyKeeper access when it launches)
+ * - Never fabricate module access from CollectionKeeper shell presence
+ * - Never infer all modules from tier === 'pro' alone
  */
+
+import {
+  getEffectiveModuleReleaseState,
+  isInternalModuleTester,
+} from '@/components/utils/moduleReleaseState';
 
 const STRIPE_PRODUCT_MAP = {
   founders_bundle_annual: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], billingPeriod: 'annual' },
@@ -25,6 +36,17 @@ const STRIPE_PRODUCT_MAP = {
 };
 
 const VALID_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+
+/**
+ * Filter modules by effective release state.
+ * Normal users: only 'launched' modules pass through.
+ * Admin/internal testers: all modules pass through unchanged.
+ */
+function filterModulesByReleaseState(modules, user) {
+  if (!Array.isArray(modules)) return [];
+  if (isInternalModuleTester(user)) return modules;
+  return modules.filter((m) => getEffectiveModuleReleaseState(m, user) === 'launched');
+}
 
 function normalizeTier(tier) {
   const t = String(tier || '').trim().toLowerCase();
@@ -121,6 +143,8 @@ function mapSubscriptionToModules(subscription) {
 
   if (planKey.startsWith('three_module_bundle_')) {
     const metadataModules = parseMetadataModules(subscription);
+    // Use metadata modules if present; otherwise fall back to PipeKeeper only
+    // (safe default — never infer WK/CK/WineK before they launch)
     modules = metadataModules.length ? metadataModules.slice(0, 3) : ['pipekeeper'];
   }
 
@@ -154,10 +178,19 @@ export function buildAccessSummary(user, subscription) {
 
   const isFoundingMember = user?.isFoundingMember === true;
   if (isFoundingMember && tier === 'pro') {
+    // Founding members are entitled to all 4 modules — but only those that are released.
+    // Release-state filter below handles gating until WK/CigarK/WineK launch.
     activeModules = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
-    planKey = 'founders_bundle_annual';
-    billingPeriod = 'annual';
+    planKey = planKey || 'founders_bundle_annual';
+    billingPeriod = billingPeriod || 'annual';
   }
+
+  // ─── RELEASE-STATE GATE ───────────────────────────────────────────────────
+  // Filter activeModules to only those whose effective release state is 'launched'.
+  // Admin/internal testers bypass this filter — all their entitled modules pass through.
+  // This is the single enforcement point that prevents WhiskeyKeeper (state: 'internal')
+  // from appearing in normal users' activeModules before it officially launches.
+  activeModules = filterModulesByReleaseState(activeModules, user);
 
   return {
     tier,
