@@ -91,6 +91,12 @@ function SinglePipeRotation({ pipe }) {
 
 // ─── Collection-wide rotation view ──────────────────────────────────────────
 export default function RotationPlanner({ user, pipe, blends }) {
+  const { t } = useTranslation();
+  const [expandedNeedsRotation, setExpandedNeedsRotation] = useState(false);
+  const [expandedNeverSmoked, setExpandedNeverSmoked] = useState(false);
+  const [expandedRecentlySmoked, setExpandedRecentlySmoked] = useState(false);
+  const [expandedInRegularRotation, setExpandedInRegularRotation] = useState(false);
+
   // If a specific pipe is passed, render single-pipe mode
   if (pipe) {
     return (
@@ -103,12 +109,6 @@ export default function RotationPlanner({ user, pipe, blends }) {
       </div>
     );
   }
-
-  const { t } = useTranslation();
-  const [expandedNeedsRotation, setExpandedNeedsRotation] = useState(false);
-  const [expandedNeverSmoked, setExpandedNeverSmoked] = useState(false);
-  const [expandedRecentlySmoked, setExpandedRecentlySmoked] = useState(false);
-  const [expandedInRegularRotation, setExpandedInRegularRotation] = useState(false);
 
   const { data: allPipes = [] } = useQuery({
     queryKey: ['pipes-rotation', user?.email],

@@ -125,7 +125,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
                      <div className="flex items-center gap-2 mb-1">
                        <span className="font-medium" style={{ color: "#E0D8C8" }}>{maintenanceTypes[log.maintenance_type]}</span>
                        <span className="text-xs" style={{ color: "rgba(180, 140, 75, 0.8)" }}>
-                         {parseLocalCalendarDate(log.date).toLocaleDateString()}
+                         {log.date ? parseLocalCalendarDate(log.date).toLocaleDateString() : '—'}
                        </span>
                      </div>
                      {log.description && (

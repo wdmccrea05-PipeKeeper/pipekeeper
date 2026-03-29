@@ -182,7 +182,7 @@ Return complete and accurate information based on the blend name or description 
   };
 
   const handlePhotoUpload = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
@@ -194,7 +194,7 @@ Return complete and accurate information based on the blend name or description 
   };
 
   const handleLogoUpload = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
@@ -268,7 +268,7 @@ Return complete and accurate information based on the blend name or description 
   };
 
   const removeComponent = (index) => {
-    handleChange('tobacco_components', formData.tobacco_components.filter((_, i) => i !== index));
+    handleChange('tobacco_components', (formData.tobacco_components || []).filter((_, i) => i !== index));
   };
 
   const toggleFlavorNote = (note) => {
