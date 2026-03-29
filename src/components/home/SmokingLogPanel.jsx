@@ -665,12 +665,12 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
             {formData.blend_id && containers.length > 0 && (
               <div className="space-y-2">
                 <Label className="text-[#E0D8C8]">{t("smokingLog.container")}</Label>
-                <Select value={formData.container_id || ""} onValueChange={(v) => setFormData({ ...formData, container_id: v })}>
+                <Select value={formData.container_id || "__none__"} onValueChange={(v) => setFormData({ ...formData, container_id: v === '__none__' ? '' : v })}>
                   <SelectTrigger>
                     <SelectValue placeholder={t("smokingLog.autoNone")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={null}>{t("smokingLog.autoNone")}</SelectItem>
+                    <SelectItem value="__none__">{t("smokingLog.autoNone")}</SelectItem>
                     {containers.map(c => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.container_name} — {c.quantity_grams ?? 0}g

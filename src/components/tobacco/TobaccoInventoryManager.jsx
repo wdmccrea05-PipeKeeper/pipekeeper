@@ -222,7 +222,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.tin_size_oz !== '' ? parseFloat(formData.tin_size_oz).toFixed(2) : ''}
+                value={formData.tin_size_oz != null && formData.tin_size_oz !== '' ? parseFloat(formData.tin_size_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('tin_size_oz', e.target.value)}
                 placeholder={t("inventory.tinSizePlaceholder")}
                 style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
@@ -245,7 +245,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.tin_total_quantity_oz !== '' ? parseFloat(formData.tin_total_quantity_oz).toFixed(2) : ''}
+                value={formData.tin_total_quantity_oz != null && formData.tin_total_quantity_oz !== '' ? parseFloat(formData.tin_total_quantity_oz).toFixed(2) : ''}
                 placeholder={t("tobaccoExtended.autoCalculated")}
                 style={{ borderColor: "rgba(140,105,65,0.2)", background: "rgba(255,255,255,0.03)", color: "rgba(224,216,200,0.5)" }}
                 readOnly
@@ -304,7 +304,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.bulk_total_quantity_oz !== '' ? parseFloat(formData.bulk_total_quantity_oz).toFixed(2) : ''}
+                value={formData.bulk_total_quantity_oz != null && formData.bulk_total_quantity_oz !== '' ? parseFloat(formData.bulk_total_quantity_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_total_quantity_oz', e.target.value)}
                 placeholder={t("inventory.bulkTotalPlaceholder")}
                 style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
@@ -316,7 +316,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.bulk_open !== '' ? parseFloat(formData.bulk_open).toFixed(2) : ''}
+                value={formData.bulk_open != null && formData.bulk_open !== '' ? parseFloat(formData.bulk_open).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_open', e.target.value)}
                 placeholder={t("inventory.bulkOpenPlaceholder")}
                 style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
@@ -329,7 +329,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                   type="number"
                   step="0.01"
                   min="0"
-                  value={formData.bulk_cellared !== '' ? parseFloat(formData.bulk_cellared).toFixed(2) : ''}
+                  value={formData.bulk_cellared != null && formData.bulk_cellared !== '' ? parseFloat(formData.bulk_cellared).toFixed(2) : ''}
                   onChange={(e) => handleChange('bulk_cellared', e.target.value)}
                   placeholder={t("inventory.bulkToCellarPlaceholder")}
                   style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))", flex: 1 }}
@@ -365,7 +365,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.pouch_size_oz !== '' ? parseFloat(formData.pouch_size_oz).toFixed(2) : ''}
+                value={formData.pouch_size_oz != null && formData.pouch_size_oz !== '' ? parseFloat(formData.pouch_size_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('pouch_size_oz', e.target.value)}
                 placeholder={t("inventory.pouchSizePlaceholder")}
                 style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
@@ -388,7 +388,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.pouch_total_quantity_oz !== '' ? parseFloat(formData.pouch_total_quantity_oz).toFixed(2) : ''}
+                value={formData.pouch_total_quantity_oz != null && formData.pouch_total_quantity_oz !== '' ? parseFloat(formData.pouch_total_quantity_oz).toFixed(2) : ''}
                 placeholder={t("tobaccoExtended.autoCalculated")}
                 style={{ borderColor: "rgba(140,105,65,0.2)", background: "rgba(255,255,255,0.03)", color: "rgba(224,216,200,0.5)" }}
                 readOnly

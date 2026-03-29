@@ -235,9 +235,9 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
   const removePhoto = (index, isStamping = false) => {
     if (isStamping) {
-      handleChange('stamping_photos', formData.stamping_photos.filter((_, i) => i !== index));
+      handleChange('stamping_photos', (formData.stamping_photos || []).filter((_, i) => i !== index));
     } else {
-      handleChange('photos', formData.photos.filter((_, i) => i !== index));
+      handleChange('photos', (formData.photos || []).filter((_, i) => i !== index));
     }
   };
 
