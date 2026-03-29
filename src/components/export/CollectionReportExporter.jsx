@@ -173,8 +173,8 @@ export default function CollectionReportExporter({ user }) {
             <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("common.value")}:</strong> $${(p.estimated_value || 0).toFixed(2)}</p>
           </div>
           <div>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.length")}:</strong> ${p.length_mm || '-'} mm</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.weight")}:</strong> ${p.weight_grams || '-'} g</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.length")}:</strong> ${p.length_mm ? (p.length_mm).toFixed(2) : '-'} mm</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.weight")}:</strong> ${p.weight_grams ? (p.weight_grams).toFixed(2) : '-'} g</p>
             <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("reports.yearMade")}:</strong> ${p.year_made || '-'}</p>
             <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("reports.purchasePrice")}:</strong> $${(p.purchase_price || 0).toFixed(2)}</p>
           </div>
