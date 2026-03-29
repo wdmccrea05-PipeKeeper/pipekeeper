@@ -158,28 +158,63 @@ export default function CollectionReportExporter({ user }) {
       <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.owner")}:</strong> ${user?.full_name || user?.email}</p>
       <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.totalCollectionValue")}:</strong> ${formatCurrency(totalValue)}</p>
       <hr style="margin: 20px 0;">
-      <p style="font-style: italic; color: #333333; font-weight: 500;">${t("reports.insuranceReportDesc")}</p>
-      <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-        <thead>
-          <tr style="background-color: #e8e8e8;">
-            <th style="border: 1px solid #999; padding: 10px; text-align: left; font-weight: bold; color: #1a1a1a;">${t("reports.item")}</th>
-            <th style="border: 1px solid #999; padding: 10px; text-align: left; font-weight: bold; color: #1a1a1a;">${t("pipesExtended.maker")}</th>
-            <th style="border: 1px solid #999; padding: 10px; text-align: left; font-weight: bold; color: #1a1a1a;">${t("pipesExtended.condition")}</th>
-            <th style="border: 1px solid #999; padding: 10px; text-align: right; font-weight: bold; color: #1a1a1a;">${t("common.value")}</th>
-          </tr>
-        </thead>
-        <tbody>`;
+      <p style="font-style: italic; color: #333333; font-weight: 500;">${t("reports.insuranceReportDesc")}</p>`;
 
     pipes.forEach(p => {
-      html += `<tr>
-        <td style="border: 1px solid #ccc; padding: 10px; color: #1a1a1a; font-weight: 500;">${p.name || t("reports.unnamed")}</td>
-        <td style="border: 1px solid #ccc; padding: 10px; color: #1a1a1a; font-weight: 500;">${p.maker || '-'}</td>
-        <td style="border: 1px solid #ccc; padding: 10px; color: #1a1a1a; font-weight: 500;">${p.condition || '-'}</td>
-        <td style="border: 1px solid #ccc; padding: 10px; text-align: right; color: #1a1a1a; font-weight: 600;">${formatCurrency(p.estimated_value || 0)}</td>
-      </tr>`;
+      html += `<div style="margin-bottom: 40px; border: 1px solid #ddd; padding: 20px; page-break-inside: avoid;">
+        <h2 style="color: #0a0a0a; font-weight: bold; font-size: 18px; margin-bottom: 15px;">${p.name || t("reports.unnamed")}</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+          <div>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.maker")}:</strong> ${p.maker || '-'}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.shape")}:</strong> ${p.shape || '-'}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.condition")}:</strong> ${p.condition || '-'}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("reports.materials")}:</strong> ${p.bowl_material || '-'} / ${p.stem_material || '-'}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("common.value")}:</strong> ${formatCurrency(p.estimated_value || 0)}</p>
+          </div>
+          <div>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.length")}:</strong> ${p.length_mm || '-'} mm</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.weight")}:</strong> ${p.weight_grams || '-'} g</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("reports.yearMade")}:</strong> ${p.year_made || '-'}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("reports.purchasePrice")}:</strong> ${formatCurrency(p.purchase_price || 0)}</p>
+          </div>
+        </div>
+
+        ${p.photos && p.photos.length > 0 ? `
+        <div style="margin-bottom: 20px;">
+          <h4 style="color: #1a1a1a; font-weight: bold; margin-bottom: 10px;">Photos</h4>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+            ${p.photos.map(photo => `<img src="${photo}" style="width: 100%; height: 150px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px;" />`).join('')}
+          </div>
+        </div>
+        ` : ''}
+
+        ${p.stamping_photos && p.stamping_photos.length > 0 ? `
+        <div style="margin-bottom: 20px;">
+          <h4 style="color: #1a1a1a; font-weight: bold; margin-bottom: 10px;">Stamping Photos</h4>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+            ${p.stamping_photos.map(photo => `<img src="${photo}" style="width: 100%; height: 150px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px;" />`).join('')}
+          </div>
+        </div>
+        ` : ''}
+
+        ${p.stamping ? `
+        <div style="margin-bottom: 20px; padding: 15px; background-color: #f5f5f5; border-radius: 4px;">
+          <p style="color: #1a1a1a; font-weight: 600;"><strong>Stamping:</strong></p>
+          <p style="color: #1a1a1a; margin-top: 5px; font-family: monospace;">${p.stamping}</p>
+        </div>
+        ` : ''}
+
+        ${p.notes ? `
+        <div style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-left: 3px solid #999; border-radius: 4px;">
+          <p style="color: #1a1a1a; font-weight: 600;"><strong>Description/Notes:</strong></p>
+          <p style="color: #1a1a1a; margin-top: 5px;">${p.notes}</p>
+        </div>
+        ` : ''}
+      </div>`;
     });
 
-    html += `</tbody></table></div>`;
+    html += `</div>`;
     return html;
   };
 
