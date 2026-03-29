@@ -1,6 +1,7 @@
 /**
  * Subscription Success Flow
- * Validates subscription activation for any module (not PipeKeeper-specific).
+ * Validates subscription activation for any module (not PipeKeeper-specific)
+ * and fails safely with a hard timeout instead of spinning forever.
  */
 
 import React, { useEffect, useState } from 'react';
@@ -11,9 +12,27 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle2, AlertCircle, Loader } from 'lucide-react';
 import { buildAccessSummary } from '@/components/access/accessSummary';
 
+const SYNC_TIMEOUT_MS = 20000;
+
 function toDisplayName(moduleKey) {
   if (!moduleKey) return 'Module';
   return moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1).replace('keeper', ' Keeper');
+}
+
+function withTimeout(promise, ms, message) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+
+    Promise.resolve(promise)
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+  });
 }
 
 export default function SubscriptionSuccessFlow() {
@@ -24,6 +43,7 @@ export default function SubscriptionSuccessFlow() {
   const [phase, setPhase] = useState('loading');
   const [error, setError] = useState(null);
   const [accessSummary, setAccessSummary] = useState(null);
+  const [attempt, setAttempt] = useState(0);
 
   const targetUrl = searchParams.get('next') || '/CollectionHub';
 
@@ -32,69 +52,83 @@ export default function SubscriptionSuccessFlow() {
 
     async function syncAndConfirm() {
       try {
-        const syncResponse = await base44.functions.invoke('syncSubscriptionForMe', {});
-        if (!mounted) return;
+        setPhase('loading');
+        setError(null);
 
-        if (syncResponse?.data?.status === 'no_subscription' || syncResponse?.data?.status === 'no_customer') {
-          setError('Subscription not found yet. Please wait a moment and try again.');
-          setPhase('error');
-          return;
-        }
+        const result = await withTimeout(
+          (async () => {
+            const syncResponse = await base44.functions.invoke('syncSubscriptionForMe', {});
+            if (!mounted) return null;
 
-        if (syncResponse?.data?.error) {
-          setError(syncResponse.data.error);
-          setPhase('error');
-          return;
-        }
-
-        await queryClient.invalidateQueries({ queryKey: ['current-user'] });
-        await queryClient.invalidateQueries({ queryKey: ['subscription'] });
-        await queryClient.refetchQueries({ queryKey: ['current-user'] });
-        await queryClient.refetchQueries({ queryKey: ['subscription'] });
-
-        const [meRes, subRes] = await Promise.all([
-          base44.auth.me(),
-          base44.functions.invoke('getMySubscriptionSummary', {}),
-        ]);
-
-        const me = meRes || null;
-        const subscriptionSummary = subRes?.data || null;
-
-        const pseudoSubscription = subscriptionSummary
-          ? {
-              provider: subscriptionSummary.provider,
-              status: subscriptionSummary.status,
-              tier: subscriptionSummary.tier,
-              current_period_end: subscriptionSummary.expiresAt,
-              plan_key: subscriptionSummary.planKey,
-              modules_csv: subscriptionSummary.modulesCsv,
-              metadata: subscriptionSummary.modulesCsv
-                ? { modules_csv: subscriptionSummary.modulesCsv }
-                : undefined,
+            if (
+              syncResponse?.data?.status === 'no_subscription' ||
+              syncResponse?.data?.status === 'no_customer'
+            ) {
+              throw new Error('Subscription not found yet. Please wait a moment and try again.');
             }
-          : null;
 
-        const rebuiltAccess = buildAccessSummary(me, pseudoSubscription);
-        const unlockedModules = rebuiltAccess?.activeModules || [];
-        // Validate success for any module — not tied to PipeKeeper specifically
-        const hasAccess = rebuiltAccess?.tier === 'pro' && unlockedModules.length > 0;
+            if (syncResponse?.data?.error) {
+              throw new Error(syncResponse.data.error);
+            }
 
-        if (!hasAccess) {
-          setError('Your payment was received, but access is still updating. Please retry once or reopen the app in a moment.');
-          setPhase('error');
-          return;
-        }
+            await queryClient.invalidateQueries({ queryKey: ['current-user'] });
+            await queryClient.invalidateQueries({ queryKey: ['subscription'] });
+            await queryClient.refetchQueries({ queryKey: ['current-user'] });
+            await queryClient.refetchQueries({ queryKey: ['subscription'] });
 
-        setAccessSummary({
-          ...rebuiltAccess,
-          activeModules: unlockedModules,
-          manageUrl: subscriptionSummary?.manageUrl || null,
-          expiresAt: subscriptionSummary?.expiresAt || null,
-        });
+            const [meRes, subRes] = await Promise.all([
+              base44.auth.me(),
+              base44.functions.invoke('getMySubscriptionSummary', {}),
+            ]);
+
+            const me = meRes || null;
+            const subscriptionSummary = subRes?.data || null;
+
+            const pseudoSubscription = subscriptionSummary
+              ? {
+                  provider: subscriptionSummary.provider,
+                  status: subscriptionSummary.status,
+                  tier: subscriptionSummary.tier,
+                  current_period_end: subscriptionSummary.expiresAt,
+                  plan_key: subscriptionSummary.planKey,
+                  modules_csv: subscriptionSummary.modulesCsv,
+                  metadata: subscriptionSummary.modulesCsv
+                    ? { modules_csv: subscriptionSummary.modulesCsv }
+                    : undefined,
+                }
+              : null;
+
+            const rebuiltAccess = buildAccessSummary(me, pseudoSubscription);
+            const unlockedModules = rebuiltAccess?.activeModules || [];
+            const hasAccess = rebuiltAccess?.tier === 'pro' && unlockedModules.length > 0;
+
+            if (!hasAccess) {
+              throw new Error(
+                'Your payment was received, but access is still updating. Please retry once or reopen the app in a moment.'
+              );
+            }
+
+            return {
+              ...rebuiltAccess,
+              activeModules: unlockedModules,
+              manageUrl: subscriptionSummary?.manageUrl || null,
+              expiresAt: subscriptionSummary?.expiresAt || null,
+            };
+          })(),
+          SYNC_TIMEOUT_MS,
+          'Subscription activation is taking longer than expected. Please retry once or reopen the app in a moment.'
+        );
+
+        if (!mounted || !result) return;
+
+        setAccessSummary(result);
         setPhase('success');
       } catch (err) {
         if (!mounted) return;
-        const msg = err instanceof Error ? err.message : 'Subscription activation failed';
+        const msg =
+          err instanceof Error
+            ? err.message
+            : 'Subscription activation failed. Please try again.';
         setError(msg);
         setPhase('error');
         console.error('[SubscriptionSuccessFlow] Sync failed:', err);
@@ -102,10 +136,11 @@ export default function SubscriptionSuccessFlow() {
     }
 
     syncAndConfirm();
+
     return () => {
       mounted = false;
     };
-  }, [queryClient]);
+  }, [queryClient, attempt]);
 
   if (phase === 'loading') {
     return (
@@ -138,10 +173,7 @@ export default function SubscriptionSuccessFlow() {
           <div className="flex gap-3">
             <Button
               variant="secondary"
-              onClick={() => {
-                setPhase('loading');
-                window.location.reload();
-              }}
+              onClick={() => setAttempt((prev) => prev + 1)}
               className="flex-1"
             >
               Retry
@@ -178,7 +210,10 @@ export default function SubscriptionSuccessFlow() {
 
         {modules.length > 0 && (
           <div className="mb-8">
-            <p style={{ color: '#8b6239' }} className="text-xs font-semibold uppercase tracking-wider mb-3">
+            <p
+              style={{ color: '#8b6239' }}
+              className="text-xs font-semibold uppercase tracking-wider mb-3"
+            >
               Active Access
             </p>
             <div className="space-y-2">
