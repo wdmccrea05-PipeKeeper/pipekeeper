@@ -61,7 +61,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     notes: ''
   });
 
-  const selectedPipe = (pipes || []).find(p => p && p.id === formData.pipe_id);
+  const selectedPipe = useMemo(() => (pipes || []).find(p => p && p.id === formData.pipe_id), [pipes, formData.pipe_id]);
   const hasMultipleBowls = Array.isArray(selectedPipe?.interchangeable_bowls) && selectedPipe.interchangeable_bowls.length > 0;
   const sortedBlends = useMemo(() => {
     return [...(blends || [])].sort((a, b) => {
@@ -460,9 +460,10 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     const tobaccoUsed = estimateTobaccoUsage(pipe, bowls);
 
     let bowl_name = null;
-    if (formData.bowl_variant_id && hasMultipleBowls) {
+    const activeBowlId = formData.bowl_variant_id === '__none__' ? '' : formData.bowl_variant_id;
+    if (activeBowlId && hasMultipleBowls && selectedPipe?.interchangeable_bowls) {
       const bowl = selectedPipe.interchangeable_bowls.find(
-        b => (b.bowl_variant_id || `bowl_${selectedPipe.interchangeable_bowls.indexOf(b)}`) === formData.bowl_variant_id
+        (b, idx) => (b.bowl_variant_id || `bowl_${idx}`) === activeBowlId
       );
       bowl_name = bowl?.name || null;
     }
@@ -591,7 +592,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label className="text-[#E0D8C8]">{t("smokingLog.pipe")}</Label>
-              <Select value={formData.pipe_id} onValueChange={(v) => setFormData({ ...formData, pipe_id: v })}>
+              <Select value={formData.pipe_id} onValueChange={(v) => setFormData({ ...formData, pipe_id: v, bowl_variant_id: '' })}>
                 <SelectTrigger>
                   <SelectValue placeholder={t("smokingLog.selectPipe")} />
                 </SelectTrigger>
@@ -626,13 +627,13 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               {hasMultipleBowls && (
               <div className="space-y-2">
                 <Label className="text-[#E0D8C8]">{t("smokingLog.bowlUsed")}</Label>
-                <Select value={formData.bowl_variant_id} onValueChange={(v) => setFormData({ ...formData, bowl_variant_id: v })}>
+                <Select value={formData.bowl_variant_id || '__none__'} onValueChange={(v) => setFormData({ ...formData, bowl_variant_id: v === '__none__' ? '' : v })}>
                   <SelectTrigger>
                     <SelectValue placeholder={t("smokingLog.selectBowl")} />
                     </SelectTrigger>
                     <SelectContent>
-                    <SelectItem value="">{t("smokingLog.noSpecificBowl")}</SelectItem>
-                    {selectedPipe.interchangeable_bowls.map((bowl, idx) => {
+                    <SelectItem value="__none__">{t("smokingLog.noSpecificBowl")}</SelectItem>
+                    {(selectedPipe?.interchangeable_bowls || []).map((bowl, idx) => {
                       const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
                       return (
                         <SelectItem key={bowlId} value={bowlId}>
@@ -669,7 +670,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                     <SelectValue placeholder={t("smokingLog.autoNone")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">{t("smokingLog.autoNone")}</SelectItem>
+                    <SelectItem value={null}>{t("smokingLog.autoNone")}</SelectItem>
                     {containers.map(c => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.container_name} — {c.quantity_grams ?? 0}g
