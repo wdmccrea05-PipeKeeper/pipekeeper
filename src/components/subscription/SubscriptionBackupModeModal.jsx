@@ -1,58 +1,44 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, ExternalLink, CheckCircle2, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { SUBSCRIPTION_LINKS } from "@/components/config/subscriptionLinks";
+import { getStripeConfig } from "@/components/subscription/stripeConfig";
+
+const SUPPORT_EMAIL = "admin@pipekeeperapp.com";
 
 export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
   const { t } = useTranslation();
-  const [config, setConfig] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedTier] = useState("pro");
   const [selectedTerm, setSelectedTerm] = useState("monthly");
   const [paymentReference, setPaymentReference] = useState("");
   const [userMessage, setUserMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadConfig();
-    }
-  }, [isOpen]);
-
-  const availableLinks = useMemo(
-    () => ({
-      monthly: SUBSCRIPTION_LINKS.pipekeeper_monthly || "",
-      annual: SUBSCRIPTION_LINKS.pipekeeper_annual || "",
-    }),
-    []
-  );
-
-  const loadConfig = async () => {
+  // Derive available plans from canonical Stripe config — no hardcoded links
+  const availablePlans = useMemo(() => {
     try {
-      setLoading(true);
-      setConfig({
-        supportEmail: "admin@pipekeeperapp.com",
-      });
-    } catch (err) {
-      console.error("[SubscriptionBackupModeModal] Failed to load config:", err);
-      setConfig(null);
-    } finally {
-      setLoading(false);
+      const config = getStripeConfig();
+      return {
+        monthly: config?.pipekeeper_pro_monthly?.isAvailable
+          ? config.pipekeeper_pro_monthly
+          : null,
+        annual: config?.pipekeeper_pro_annual?.isAvailable
+          ? config.pipekeeper_pro_annual
+          : null,
+      };
+    } catch {
+      return { monthly: null, annual: null };
     }
-  };
+  }, []);
 
-  const getConfiguredPaymentLink = (term) => {
-    return availableLinks[term] || "";
-  };
+  const hasAnyPlan = Boolean(availablePlans.monthly || availablePlans.annual);
 
-  const handleRequestUnlock = async () => {
+  const handleRequestReview = async () => {
     if (!user?.email) {
       toast.error(t("subscriptionBackup.unableToIdentify"));
       return;
@@ -61,14 +47,12 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
     try {
       setSubmitting(true);
 
-      const checkoutUrl = getConfiguredPaymentLink(selectedTerm);
-
       await base44.entities.SubscriptionSupportRequest.create({
         user_email: user.email,
-        requested_tier: selectedTier,
+        requested_tier: "pro",
         requested_term: selectedTerm,
-        checkout_url_used: checkoutUrl || null,
-        status: "paid_confirmed",
+        checkout_url_used: null,
+        status: "manual_review_requested",
         user_message: userMessage.trim() || null,
         payment_reference: paymentReference.trim() || null,
       });
@@ -89,19 +73,6 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
   };
 
   if (!isOpen) return null;
-
-  if (loading) {
-    return (
-      <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full bg-[#1A2B3A] border-[#A35C5C]/50">
-          <CardContent className="pt-6 flex items-center justify-center gap-3">
-            <Loader2 className="w-5 h-5 text-[#A35C5C] animate-spin" />
-            <span className="text-[#E0D8C8]">{t("subscriptionBackup.loadingOptions")}</span>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   if (submitted) {
     return (
@@ -126,9 +97,6 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
       </div>
     );
   }
-
-  const hasMonthlyLink = Boolean(availableLinks.monthly);
-  const hasAnnualLink = Boolean(availableLinks.annual);
 
   return (
     <div
@@ -155,77 +123,24 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-8">
-          {(hasMonthlyLink || hasAnnualLink) && (
-            <div>
-              <h3 className="font-semibold text-[#E0D8C8] mb-4 flex items-center gap-2">
-                <ExternalLink className="w-4 h-4" />
-                {t("subscriptionBackup.newSubscription")}
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {hasMonthlyLink && (
-                  <a
-                    href={availableLinks.monthly}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block"
-                  >
-                    <Button
-                      variant="outline"
-                      className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
-                    >
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="font-semibold">{t("subscriptionBackup.proMonthly")}</span>
-                        <span className="text-xs text-[#E0D8C8]/60">
-                          {t("subscriptionBackup.proMonthlyPrice")}
-                        </span>
-                      </div>
-                    </Button>
-                  </a>
-                )}
-
-                {hasAnnualLink && (
-                  <a
-                    href={availableLinks.annual}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block"
-                  >
-                    <Button
-                      variant="outline"
-                      className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
-                    >
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="font-semibold">{t("subscriptionBackup.proAnnual")}</span>
-                        <span className="text-xs text-[#E0D8C8]/60">
-                          {t("subscriptionBackup.proAnnualPrice")}
-                        </span>
-                      </div>
-                    </Button>
-                  </a>
-                )}
-              </div>
+        <CardContent className="space-y-6 px-4 sm:px-6 pb-6">
+          {/* Plans unavailable notice */}
+          {!hasAnyPlan && (
+            <div className="rounded-lg bg-[#A35C5C]/10 border border-[#A35C5C]/30 px-4 py-3 text-sm text-[#E0D8C8]/80">
+              Direct checkout is not available right now. Use the form below to request manual access review, or email{" "}
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="underline text-[#D4A574]">
+                {SUPPORT_EMAIL}
+              </a>
+              .
             </div>
           )}
 
-          <div className={hasMonthlyLink || hasAnnualLink ? "border-t border-[#A35C5C]/20 pt-6" : ""}>
+          {/* Manual review form */}
+          <div>
             <h3 className="font-semibold text-[#E0D8C8] mb-4 flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               {t("subscriptionBackup.alreadyPaid")}
             </h3>
-
-            {!hasMonthlyLink && !hasAnnualLink && (
-              <p className="text-sm text-[#E0D8C8]/70 mb-4">
-                Direct backup checkout links are not configured in this build. Use this form to request access review, or contact{" "}
-                <a
-                  href={`mailto:${config?.supportEmail || 'admin@pipekeeperapp.com'}`}
-                  className="underline text-[#D4A574]"
-                >
-                  {config?.supportEmail || 'admin@pipekeeperapp.com'}
-                </a>.
-              </p>
-            )}
 
             <div className="space-y-4">
               <div>
@@ -233,30 +148,34 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                   {t("subscriptionBackup.billingTerm")}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setSelectedTerm("monthly")}
-                    className="border-[#A35C5C]/30 text-[#E0D8C8]"
-                    style={{
-                      background:
-                        selectedTerm === "monthly" ? "rgba(163,92,92,0.22)" : "transparent",
-                    }}
-                  >
-                    {t("subscriptionBackup.monthly")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setSelectedTerm("annual")}
-                    className="border-[#A35C5C]/30 text-[#E0D8C8]"
-                    style={{
-                      background:
-                        selectedTerm === "annual" ? "rgba(163,92,92,0.22)" : "transparent",
-                    }}
-                  >
-                    {t("subscriptionBackup.annual")}
-                  </Button>
+                  {(["monthly", "annual"]).map((term) => {
+                    const plan = availablePlans[term];
+                    const disabled = !plan;
+                    return (
+                      <Button
+                        key={term}
+                        type="button"
+                        variant="outline"
+                        disabled={disabled}
+                        onClick={() => !disabled && setSelectedTerm(term)}
+                        className="border-[#A35C5C]/30 text-[#E0D8C8]"
+                        style={{
+                          background:
+                            selectedTerm === term ? "rgba(163,92,92,0.22)" : "transparent",
+                          opacity: disabled ? 0.4 : 1,
+                        }}
+                      >
+                        {term === "monthly"
+                          ? t("subscriptionBackup.monthly")
+                          : t("subscriptionBackup.annual")}
+                        {plan && (
+                          <span className="ml-1 text-xs text-[#E0D8C8]/60">
+                            {plan.displayPrice}{plan.displayPeriod}
+                          </span>
+                        )}
+                      </Button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -288,7 +207,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
               </div>
 
               <Button
-                onClick={handleRequestUnlock}
+                onClick={handleRequestReview}
                 disabled={submitting}
                 className="w-full bg-[#A35C5C] hover:bg-[#8F4E4E] text-[#F3EBDD]"
               >
@@ -301,6 +220,15 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                   t("subscriptionBackup.submitRequest")
                 )}
               </Button>
+
+              <p className="text-xs text-[#E0D8C8]/50 text-center">
+                Our team will review your request and activate access manually.
+                Contact{" "}
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="underline text-[#D4A574]">
+                  {SUPPORT_EMAIL}
+                </a>{" "}
+                for urgent issues.
+              </p>
             </div>
           </div>
         </CardContent>

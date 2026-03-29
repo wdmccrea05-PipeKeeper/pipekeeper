@@ -109,7 +109,9 @@ export async function handlePostPurchase() {
     const response = await base44.functions.invoke('syncSubscriptionForMe', {});
     
     if (response?.data?.status === 'no_subscription') {
-      console.warn('[PostPurchase] No subscription found after checkout');
+      if (import.meta.env.DEV) {
+        console.warn('[PostPurchase] No subscription found after checkout');
+      }
       throw new Error('Subscription not found. This may take a moment to process.');
     }
     
