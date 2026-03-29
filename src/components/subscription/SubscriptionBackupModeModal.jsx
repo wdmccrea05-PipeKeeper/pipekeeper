@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, ExternalLink, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { SUBSCRIPTION_LINKS } from "@/components/config/subscriptionLinks";
 
 export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
   const { t } = useTranslation();
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedTier, setSelectedTier] = useState("pro");
+  const [selectedTier] = useState("pro");
   const [selectedTerm, setSelectedTerm] = useState("monthly");
   const [paymentReference, setPaymentReference] = useState("");
   const [userMessage, setUserMessage] = useState("");
@@ -25,6 +25,14 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
       loadConfig();
     }
   }, [isOpen]);
+
+  const availableLinks = useMemo(
+    () => ({
+      monthly: SUBSCRIPTION_LINKS.pipekeeper_monthly || "",
+      annual: SUBSCRIPTION_LINKS.pipekeeper_annual || "",
+    }),
+    []
+  );
 
   const loadConfig = async () => {
     try {
@@ -40,14 +48,8 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
     }
   };
 
-  const getStripePaymentLink = (tier, term) => {
-    const links = {
-      premium_monthly: "https://buy.stripe.com/6oU5kD6txgpV5WD6Zjgbm03",
-      premium_annual: "https://buy.stripe.com/fZudR94lpa1x0Cj4Rbgbm04",
-      pro_monthly: "https://buy.stripe.com/dRm14n2dhgpV5WD97rgbm01",
-      pro_annual: "https://buy.stripe.com/bJefZh4lp1v198P6Zjgbm02",
-    };
-    return links[`${tier}_${term}`] || "";
+  const getConfiguredPaymentLink = (term) => {
+    return availableLinks[term] || "";
   };
 
   const handleRequestUnlock = async () => {
@@ -59,7 +61,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
     try {
       setSubmitting(true);
 
-      const checkoutUrl = getStripePaymentLink(selectedTier, selectedTerm);
+      const checkoutUrl = getConfiguredPaymentLink(selectedTerm);
 
       await base44.entities.SubscriptionSupportRequest.create({
         user_email: user.email,
@@ -111,7 +113,9 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                 <CheckCircle2 className="w-6 h-6 text-green-500" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-[#E0D8C8] mb-2">{t("subscriptionBackup.requestSentTitle")}</h3>
+                <h3 className="text-lg font-semibold text-[#E0D8C8] mb-2">
+                  {t("subscriptionBackup.requestSentTitle")}
+                </h3>
                 <p className="text-sm text-[#E0D8C8]/70">
                   {t("subscriptionBackup.reviewPayment")}
                 </p>
@@ -123,13 +127,21 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
     );
   }
 
+  const hasMonthlyLink = Boolean(availableLinks.monthly);
+  const hasAnnualLink = Boolean(availableLinks.annual);
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
+    <div
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto"
+      style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}
+    >
       <Card className="max-w-2xl w-full bg-[#1A2B3A] border-[#A35C5C]/50 my-8 sm:my-0">
         <CardHeader className="pt-6 sm:pt-8 px-4 sm:px-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <CardTitle className="text-xl sm:text-2xl text-[#E0D8C8]">{t("subscriptionBackup.title")}</CardTitle>
+              <CardTitle className="text-xl sm:text-2xl text-[#E0D8C8]">
+                {t("subscriptionBackup.title")}
+              </CardTitle>
               <p className="text-xs sm:text-sm text-[#E0D8C8]/70 mt-2">
                 {t("subscriptionBackup.description")}
               </p>
@@ -144,84 +156,108 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
         </CardHeader>
 
         <CardContent className="space-y-8">
-          {/* Checkout Links Section */}
-          <div>
-            <h3 className="font-semibold text-[#E0D8C8] mb-4 flex items-center gap-2">
-              <ExternalLink className="w-4 h-4" />
-              {t("subscriptionBackup.newSubscription")}
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <a
-                href={getStripePaymentLink("pro", "monthly")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block"
-              >
-                <Button
-                  variant="outline"
-                  className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
-                >
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="font-semibold">{t("subscriptionBackup.proMonthly")}</span>
-                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.proMonthlyPrice")}</span>
-                  </div>
-                </Button>
-              </a>
+          {(hasMonthlyLink || hasAnnualLink) && (
+            <div>
+              <h3 className="font-semibold text-[#E0D8C8] mb-4 flex items-center gap-2">
+                <ExternalLink className="w-4 h-4" />
+                {t("subscriptionBackup.newSubscription")}
+              </h3>
 
-              <a
-                href={getStripePaymentLink("pro", "annual")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block"
-              >
-                <Button
-                  variant="outline"
-                  className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
-                >
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="font-semibold">{t("subscriptionBackup.proAnnual")}</span>
-                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.proAnnualPrice")}</span>
-                  </div>
-                </Button>
-              </a>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {hasMonthlyLink && (
+                  <a
+                    href={availableLinks.monthly}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <Button
+                      variant="outline"
+                      className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="font-semibold">{t("subscriptionBackup.proMonthly")}</span>
+                        <span className="text-xs text-[#E0D8C8]/60">
+                          {t("subscriptionBackup.proMonthlyPrice")}
+                        </span>
+                      </div>
+                    </Button>
+                  </a>
+                )}
+
+                {hasAnnualLink && (
+                  <a
+                    href={availableLinks.annual}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <Button
+                      variant="outline"
+                      className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="font-semibold">{t("subscriptionBackup.proAnnual")}</span>
+                        <span className="text-xs text-[#E0D8C8]/60">
+                          {t("subscriptionBackup.proAnnualPrice")}
+                        </span>
+                      </div>
+                    </Button>
+                  </a>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Payment Proof Section */}
-          <div className="border-t border-[#A35C5C]/20 pt-6">
+          <div className={hasMonthlyLink || hasAnnualLink ? "border-t border-[#A35C5C]/20 pt-6" : ""}>
             <h3 className="font-semibold text-[#E0D8C8] mb-4 flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               {t("subscriptionBackup.alreadyPaid")}
             </h3>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">
-                  {t("subscriptionSupport.subscriptionTier")}
-                </label>
-                <Select value={selectedTier} onValueChange={setSelectedTier}>
-                  <SelectTrigger className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pro">{t("subscriptionSupport.pro")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            {!hasMonthlyLink && !hasAnnualLink && (
+              <p className="text-sm text-[#E0D8C8]/70 mb-4">
+                Direct backup checkout links are not configured in this build. Use this form to request access review, or contact{" "}
+                <a
+                  href={`mailto:${config?.supportEmail || 'admin@pipekeeperapp.com'}`}
+                  className="underline text-[#D4A574]"
+                >
+                  {config?.supportEmail || 'admin@pipekeeperapp.com'}
+                </a>.
+              </p>
+            )}
 
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-[#E0D8C8] mb-2">
                   {t("subscriptionBackup.billingTerm")}
                 </label>
-                <Select value={selectedTerm} onValueChange={setSelectedTerm}>
-                  <SelectTrigger className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="monthly">{t("subscriptionBackup.monthly")}</SelectItem>
-                    <SelectItem value="annual">{t("subscriptionBackup.annual")}</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSelectedTerm("monthly")}
+                    className="border-[#A35C5C]/30 text-[#E0D8C8]"
+                    style={{
+                      background:
+                        selectedTerm === "monthly" ? "rgba(163,92,92,0.22)" : "transparent",
+                    }}
+                  >
+                    {t("subscriptionBackup.monthly")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSelectedTerm("annual")}
+                    className="border-[#A35C5C]/30 text-[#E0D8C8]"
+                    style={{
+                      background:
+                        selectedTerm === "annual" ? "rgba(163,92,92,0.22)" : "transparent",
+                    }}
+                  >
+                    {t("subscriptionBackup.annual")}
+                  </Button>
+                </div>
               </div>
 
               <div>
@@ -262,23 +298,10 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                     {t("subscriptionBackup.sending")}
                   </>
                 ) : (
-                  t("subscriptionBackup.requestUnlock")
+                  t("subscriptionBackup.submitRequest")
                 )}
               </Button>
             </div>
-          </div>
-
-          {/* Support Info */}
-          <div className="bg-[#243548]/50 border border-[#A35C5C]/20 rounded-lg p-4 text-sm text-[#E0D8C8]/70">
-            <p>
-              {t("subscriptionBackup.needHelp")}{" "}
-              <a
-                href={`mailto:${config?.supportEmail || "admin@pipekeeperapp.com"}`}
-                className="text-[#A35C5C] hover:underline font-medium"
-              >
-                {config?.supportEmail || "admin@pipekeeperapp.com"}
-              </a>
-            </p>
           </div>
         </CardContent>
       </Card>
