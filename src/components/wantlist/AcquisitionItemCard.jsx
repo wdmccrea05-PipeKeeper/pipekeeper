@@ -58,9 +58,8 @@ export default function AcquisitionItemCard({
     restock: "Restock",
     tried_not_owned: "Tried (Not Owned)",
     do_not_buy_again: "Not for Me",
-    purchased: "Purchased",
     archived: "Archived",
-  }[item.status];
+  }[item.status] || "Unknown";
 
   const priorityColor = {
     low: "text-blue-500",
@@ -72,8 +71,8 @@ export default function AcquisitionItemCard({
     <div
       className={`border rounded-lg p-4 ${
         isMuted
-          ? "bg-gray-50 border-gray-200 opacity-60"
-          : "bg-white border-gray-200"
+          ? "bg-[rgba(255,255,255,0.03)] border-[#b48c4b]/20 opacity-60"
+          : "bg-[rgba(255,255,255,0.03)] border-[#b48c4b]/20"
       }`}
     >
       <div className="flex items-start justify-between gap-4">
@@ -86,26 +85,18 @@ export default function AcquisitionItemCard({
         )}
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-sm">{item.name}</h3>
-          <p className="text-xs text-gray-600">{item.brand_or_maker}</p>
-          <p className="text-xs text-gray-500 mt-1">{item.item_type}</p>
-
-          {item.reason && isMuted && (
-            <p className="text-xs text-gray-600 mt-2 italic">
-              Reason: {item.reason}
-            </p>
-          )}
-
+          <h3 className="font-semibold text-sm text-[#E0D8C8]">{item.name}</h3>
+          <p className="text-xs text-[#E0D8C8]/60 mt-1 capitalize">{item.item_type}</p>
           {item.estimated_price && (
-            <p className="text-xs text-gray-600 mt-1">
+            <p className="text-xs text-[#E0D8C8]/50 mt-1">
               Est: ${item.estimated_price.toFixed(2)}
             </p>
           )}
         </div>
 
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-1">
-            <span className="text-xs font-medium text-gray-600">
+          <div className="flex flex-col items-end gap-1">
+            <span className="text-xs font-medium text-[#D4A574]">
               {statusLabel}
             </span>
             <Flag className={`w-4 h-4 ${priorityColor}`} />
@@ -118,7 +109,7 @@ export default function AcquisitionItemCard({
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full text-sm p-2 border rounded"
+            className="w-full text-sm p-2 border rounded bg-[rgba(255,255,255,0.05)] border-[#b48c4b]/30 text-[#E0D8C8] placeholder-[#E0D8C8]/40"
             rows={3}
             placeholder="Add notes..."
           />
@@ -138,7 +129,7 @@ export default function AcquisitionItemCard({
       )}
 
       {!showNotes && item.notes && (
-        <p className="text-xs text-gray-600 mt-2 italic">
+        <p className="text-xs text-[#E0D8C8]/60 mt-2 italic">
           Notes: {item.notes}
         </p>
       )}
@@ -164,6 +155,9 @@ export default function AcquisitionItemCard({
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleStatusChange("tried_not_owned")}>
               Tried (Not Owned)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusChange("restock")}>
+              Restock
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => handleStatusChange("do_not_buy_again")}>

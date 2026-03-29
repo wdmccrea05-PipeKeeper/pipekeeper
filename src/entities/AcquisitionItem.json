@@ -9,7 +9,7 @@
     "item_type": {
       "type": "string",
       "enum": ["blend", "pipe", "bottle"],
-      "description": "Type of item (tobacco blend, pipe, or whiskey bottle)"
+      "description": "Type of item"
     },
     "status": {
       "type": "string",
@@ -30,10 +30,6 @@
     "estimated_price": {
       "type": "number",
       "description": "Estimated price"
-    },
-    "image_url": {
-      "type": "string",
-      "description": "URL to item image"
     }
   },
   "required": ["name", "item_type", "status"]

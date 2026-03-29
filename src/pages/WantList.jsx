@@ -136,11 +136,11 @@ export default function WantList() {
                 Add Item
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="bg-[rgba(22,17,13,0.96)] border-white/10">
               <DialogHeader>
                 <DialogTitle>Add to Want List</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-4 text-[#E0D8C8]">
                 <div>
                   <label className="block text-sm font-medium mb-2">Item Name</label>
                   <Input
