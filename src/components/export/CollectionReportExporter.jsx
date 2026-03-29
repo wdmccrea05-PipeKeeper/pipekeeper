@@ -192,35 +192,36 @@ export default function CollectionReportExporter({ user }) {
       </div>`;
     });
 
-    blends.forEach(b => {
-      const blendValue = b.manual_market_value || b.ai_estimated_value || 0;
-      const totalQty = (b.tin_total_quantity_oz || 0) + (b.bulk_total_quantity_oz || 0) + (b.pouch_total_quantity_oz || 0);
-      html += `<div style="margin-bottom: 12px; border: 1px solid #ddd; padding: 12px; page-break-inside: avoid; break-inside: avoid;">
-        <h3 style="color: #0a0a0a; font-weight: bold; font-size: 14px; margin: 0 0 8px 0;">${b.name || t("reports.unnamed")}</h3>
+    if (blends.length > 0) {
+      html += `<h2 style="color: #0a0a0a; font-weight: bold; font-size: 16px; margin: 20px 0 10px 0;">Tobacco Blends</h2>
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+          <thead>
+            <tr style="background-color: #e8e8e8;">
+              <th style="border: 1px solid #999; padding: 6px; text-align: left; font-weight: bold; color: #1a1a1a; width: 60px;">Logo</th>
+              <th style="border: 1px solid #999; padding: 6px; text-align: left; font-weight: bold; color: #1a1a1a;">Blend Name</th>
+              <th style="border: 1px solid #999; padding: 6px; text-align: center; font-weight: bold; color: #1a1a1a; width: 70px;">Ounces</th>
+              <th style="border: 1px solid #999; padding: 6px; text-align: center; font-weight: bold; color: #1a1a1a; width: 60px;">Age</th>
+              <th style="border: 1px solid #999; padding: 6px; text-align: right; font-weight: bold; color: #1a1a1a; width: 70px;">Value</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      blends.forEach(b => {
+        const blendValue = b.manual_market_value || b.ai_estimated_value || 0;
+        const totalQty = (b.tin_total_quantity_oz || 0) + (b.bulk_total_quantity_oz || 0) + (b.pouch_total_quantity_oz || 0);
+        const age = b.tin_cellared_date ? Math.floor((new Date() - new Date(b.tin_cellared_date)) / (1000 * 60 * 60 * 24 * 365)) : (b.bulk_cellared_date ? Math.floor((new Date() - new Date(b.bulk_cellared_date)) / (1000 * 60 * 60 * 24 * 365)) : null);
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; font-size: 12px;">
-          <div>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("reports.manufacturer")}:</strong> ${b.manufacturer || '-'}</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("reports.blendType")}:</strong> ${b.blend_type || '-'}</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("reports.strength")}:</strong> ${b.strength || '-'}</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("common.value")}:</strong> $${(blendValue).toFixed(2)}</p>
-          </div>
-          <div>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("reports.totalQuantity")}:</strong> ${totalQty.toFixed(2)} oz</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("reports.rating")}:</strong> ${b.rating ? b.rating + '/5' : '-'}</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("reports.status")}:</strong> ${b.production_status || '-'}</p>
-          </div>
-        </div>
+        html += `<tr style="border-bottom: 1px solid #ddd;">
+          <td style="border: 1px solid #ddd; padding: 4px; text-align: center;">${b.logo ? `<img src="${b.logo}" style="width: 50px; height: 40px; object-fit: contain;" />` : '-'}</td>
+          <td style="border: 1px solid #ddd; padding: 4px; color: #1a1a1a;">${b.name || '-'}</td>
+          <td style="border: 1px solid #ddd; padding: 4px; text-align: center; color: #1a1a1a;">${totalQty.toFixed(2)}</td>
+          <td style="border: 1px solid #ddd; padding: 4px; text-align: center; color: #1a1a1a;">${age !== null ? age + ' yr' : '-'}</td>
+          <td style="border: 1px solid #ddd; padding: 4px; text-align: right; color: #1a1a1a; font-weight: 600;">$${(blendValue).toFixed(2)}</td>
+        </tr>`;
+      });
 
-        ${b.logo ? `
-        <div style="margin-bottom: 8px;">
-          <img src="${b.logo}" style="width: 100%; height: 80px; object-fit: contain; border: 1px solid #ddd; border-radius: 3px; background: #f9f9f9;" />
-        </div>
-        ` : ''}
-
-        ${b.notes ? `<p style="color: #1a1a1a; margin: 3px 0; font-size: 11px;">${b.notes.substring(0, 100)}${b.notes.length > 100 ? '...' : ''}</p>` : ''}
-      </div>`;
-    });
+      html += `</tbody></table>`;
+    }
 
     html += `</div>`;
     return html;
