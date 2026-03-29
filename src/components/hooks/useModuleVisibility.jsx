@@ -3,7 +3,8 @@ import { isInternalModuleTester } from "@/components/utils/moduleReleaseState";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
 
 export function useModuleVisibility(profile, user) {
-  const { activeModules } = useAccessSummary();
+  const accessSummary = useAccessSummary();
+  const activeModules = accessSummary?.activeModules ?? [];
 
   const prefsSet = profile?.module_preferences_set === true;
 
