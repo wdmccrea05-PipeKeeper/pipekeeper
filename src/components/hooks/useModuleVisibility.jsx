@@ -73,7 +73,8 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
 }
 
 export function useModuleVisibility(profile, user) {
-  const { activeModules = [] } = useAccessSummary();
+  const summary = useAccessSummary();
+  const { activeModules = [] } = summary || {};
   const [isLoading, setIsLoading] = useState(false);
 
   const visibility = useMemo(
