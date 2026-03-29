@@ -366,14 +366,16 @@ export default function CollectionReportExporter({ user }) {
         {/* Pipe Collection Report */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              disabled={isExporting}
-              variant="outline"
-              className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              {t("reports.pipeCollectionReport")}
-            </Button>
+            <div>
+              <Button
+                disabled={isExporting}
+                variant="outline"
+                className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                {t("reports.pipeCollectionReport")}
+              </Button>
+            </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-full min-w-[200px]">
             <DropdownMenuItem onClick={() => handleReport('pipe', 'csv')}>
@@ -390,14 +392,16 @@ export default function CollectionReportExporter({ user }) {
         {/* Tobacco Collection Report */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              disabled={isExporting}
-              variant="outline"
-              className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              {t("reports.tobaccoCollectionReport")}
-            </Button>
+            <div>
+              <Button
+                disabled={isExporting}
+                variant="outline"
+                className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                {t("reports.tobaccoCollectionReport")}
+              </Button>
+            </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-full min-w-[200px]">
             <DropdownMenuItem onClick={() => handleReport('tobacco', 'csv')}>
@@ -414,14 +418,16 @@ export default function CollectionReportExporter({ user }) {
         {/* Insurance Report */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              disabled={isExporting}
-              variant="outline"
-              className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              {t("reports.insuranceReport")}
-            </Button>
+            <div>
+              <Button
+                disabled={isExporting}
+                variant="outline"
+                className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                {t("reports.insuranceReport")}
+              </Button>
+            </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-full min-w-[200px]">
             <DropdownMenuItem onClick={() => handleReport('insurance', 'csv')}>
@@ -438,14 +444,16 @@ export default function CollectionReportExporter({ user }) {
         {/* Stats Report */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              disabled={isExporting}
-              variant="outline"
-              className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              {t("reports.collectionStatsReport")}
-            </Button>
+            <div>
+              <Button
+                disabled={isExporting}
+                variant="outline"
+                className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                {t("reports.collectionStatsReport")}
+              </Button>
+            </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-full min-w-[200px]">
             <DropdownMenuItem onClick={() => handleReport('stats', 'csv')}>
