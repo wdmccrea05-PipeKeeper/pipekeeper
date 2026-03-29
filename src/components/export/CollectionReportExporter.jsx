@@ -325,24 +325,20 @@ export default function CollectionReportExporter({ user }) {
     };
   };
 
-  const downloadPDFAsFile = async () => {
+  const downloadPDFAsFile = () => {
     if (!pdfPreview) return;
-    try {
-      const { jsPDF } = await import('jspdf');
-      const doc = new jsPDF();
-      const html = document.createElement('div');
-      html.innerHTML = pdfPreview;
-      doc.html(html, {
-        callback: () => {
-          doc.save(`${previewTitle.replace(/\s+/g, '-')}.pdf`);
-        },
-        margin: 10,
-        x: 0,
-        y: 0,
-      });
-    } catch (error) {
-      toast.error(t("reports.exportFailed"));
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error(t("reports.popupBlocked"));
+      return;
     }
+    printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><style>body { font-family: Arial, sans-serif; margin: 0; padding: 20px; } @media print { body { margin: 0; padding: 0; } }</style></head><body>${pdfPreview}</body></html>`);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      setTimeout(() => printWindow.close(), 100);
+    };
   };
 
   const handleReport = async (type, format) => {
@@ -530,7 +526,7 @@ export default function CollectionReportExporter({ user }) {
             </Button>
             <Button variant="outline" onClick={downloadPDFAsFile}>
               <Download className="w-4 h-4 mr-2" />
-              {t("reports.downloadPDF") || "Download PDF"}
+              {t("reports.savePDF") || "Save as PDF"}
             </Button>
             <Button onClick={downloadPDF}>
               <FileText className="w-4 h-4 mr-2" />
