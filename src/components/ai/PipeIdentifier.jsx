@@ -209,19 +209,42 @@ Be specific and detailed. If uncertain about something, say so.`;
         {/* Results */}
         {result && (
           <div
-            className="rounded-2xl p-5 space-y-2"
+            className="rounded-2xl p-5 space-y-4"
             style={{
               background: "rgba(20,15,10,0.7)",
               border: "1px solid rgba(140,105,65,0.3)",
             }}
           >
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#F0C58A]" />
               <span className="text-sm font-semibold text-[#D4A574]">AI Identification Result</span>
             </div>
             <div className="text-sm text-[#E0D8C8] whitespace-pre-wrap leading-relaxed">
               {typeof result === 'string' ? result : JSON.stringify(result, null, 2)}
             </div>
+            <Button
+              onClick={() => {
+                const itemName = typeof result === 'string' ? 'Identified Pipe' : 'Identified Pipe';
+                base44.entities.AcquisitionItem.create({
+                  name: itemName,
+                  item_type: 'pipe',
+                  status: 'wishlist',
+                  priority: 'medium',
+                  notes: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
+                }).then(() => {
+                  toast.success('Added to Want List!');
+                  setResult(null);
+                  setPhotos([]);
+                  setPreviews([]);
+                }).catch(err => {
+                  toast.error('Failed to add to Want List');
+                  console.error(err);
+                });
+              }}
+              className="w-full bg-gradient-to-r from-[#7E4A3A] to-[#5F342A] hover:from-[#8C5242] hover:to-[#6B3C30] text-[#F8EBDD]"
+            >
+              Add to Want List
+            </Button>
           </div>
         )}
       </CardContent>

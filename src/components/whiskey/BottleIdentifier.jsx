@@ -252,3 +252,50 @@ Provide detailed, accurate information based on what you can see in the images.`
     </Card>
   );
 }
+
+function BottleIdentifierWithWantList({ onBottleIdentified }) {
+  const { t } = useTranslation();
+  const [identifier, setIdentifier] = useState(null);
+  const [result, setResult] = useState(null);
+
+  const handleIdentified = (data) => {
+    setResult(data);
+    onBottleIdentified?.(data);
+  };
+
+  const handleAddToWantList = async () => {
+    if (!result) return;
+    try {
+      await base44.entities.AcquisitionItem.create({
+        name: result.name || 'Identified Whiskey',
+        item_type: 'bottle',
+        status: 'wishlist',
+        priority: 'medium',
+        notes: `Distillery: ${result.distillery}\nType: ${result.type}\nAge: ${result.age || 'Unknown'}\nABV: ${result.abv || 'Unknown'}`,
+        estimated_price: result.purchase_price,
+      });
+      toast.success('Added to Want List!');
+      setResult(null);
+      setIdentifier(null);
+    } catch (err) {
+      toast.error('Failed to add to Want List');
+      console.error(err);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <BottleIdentifier onBottleIdentified={handleIdentified} />
+      {result && (
+        <Button
+          onClick={handleAddToWantList}
+          className="w-full bg-gradient-to-r from-[#7E4A3A] to-[#5F342A] hover:from-[#8C5242] hover:to-[#6B3C30] text-[#F8EBDD]"
+        >
+          Add to Want List
+        </Button>
+      )}
+    </div>
+  );
+}
+
+export { BottleIdentifierWithWantList };
