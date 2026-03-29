@@ -21,8 +21,8 @@ export function getPlanFromSelection(selectedPlan, billingPeriod, selectedModule
     // Validate plan is available
     try {
       getRequiredStripePlan(planKey);
-    } catch (err) {
-      throw new Error(`Cannot select plan: ${err instanceof Error ? err.message : 'Plan unavailable'}`);
+    } catch {
+      throw new Error('This subscription option is not currently available. Please contact support.');
     }
     
     return { planKey, modules: [module] };
@@ -34,8 +34,8 @@ export function getPlanFromSelection(selectedPlan, billingPeriod, selectedModule
     // Validate plan is available
     try {
       getRequiredStripePlan(planKey);
-    } catch (err) {
-      throw new Error(`Cannot select plan: ${err instanceof Error ? err.message : 'Plan unavailable'}`);
+    } catch {
+      throw new Error('This subscription option is not currently available. Please contact support.');
     }
 
     // For 3-module: use selectedModules if provided
@@ -51,8 +51,8 @@ export function getPlanFromSelection(selectedPlan, billingPeriod, selectedModule
     // Validate plan is available
     try {
       getRequiredStripePlan(planKey);
-    } catch (err) {
-      throw new Error(`Cannot select plan: ${err instanceof Error ? err.message : 'Plan unavailable'}`);
+    } catch {
+      throw new Error('This subscription option is not currently available. Please contact support.');
     }
     
     return {
@@ -69,16 +69,18 @@ export function getPlanFromSelection(selectedPlan, billingPeriod, selectedModule
  * Validates plan before attempting checkout
  */
 export async function initiateCheckout(planKey, selectedModules = [], successUrl = '/', cancelUrl = '/') {
+  let plan;
   try {
-    // Validate plan exists and has price ID before calling backend
-    const plan = getRequiredStripePlan(planKey);
-    
-    if (!plan.priceId) {
-      throw new Error(
-        `Checkout not available for this plan. Please try a different option or contact support.`
-      );
-    }
+    plan = getRequiredStripePlan(planKey);
+  } catch {
+    throw new Error('This subscription option is not currently available. Please contact support.');
+  }
 
+  if (!plan.priceId) {
+    throw new Error('Checkout is temporarily unavailable. Please try again later or contact support.');
+  }
+
+  try {
     const response = await base44.functions.invoke('createCheckoutSession', {
       planKey,
       selectedModules,
@@ -89,11 +91,11 @@ export async function initiateCheckout(planKey, selectedModules = [], successUrl
     if (response?.data?.sessionUrl) {
       window.location.href = response.data.sessionUrl;
     } else {
-      const errorMsg = response?.data?.error || 'Could not start checkout';
+      const errorMsg = response?.data?.error || 'Could not start checkout. Please try again.';
       throw new Error(errorMsg);
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Checkout failed';
+    const message = error instanceof Error ? error.message : 'Checkout is temporarily unavailable. Please try again later.';
     console.error('[Checkout] Error:', message, error);
     throw new Error(message);
   }
