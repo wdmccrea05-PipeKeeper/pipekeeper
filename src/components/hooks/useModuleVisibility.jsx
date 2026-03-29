@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { isInternalModuleTester } from "@/components/utils/moduleReleaseState";
-import { useAccessSummary } from "@/components/access/useAccessSummary";
+import { useAccessSummary } from "@/components/hooks/useAccessSummary";
 
 export function useModuleVisibility(profile, user) {
   const { activeModules } = useAccessSummary();
