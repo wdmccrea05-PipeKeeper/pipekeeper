@@ -183,10 +183,15 @@ export default function CollectionReportExporter({ user }) {
 
         ${p.photos && p.photos.length > 0 ? `
         <div style="margin-bottom: 8px;">
-          <img src="${p.photos[0]}" style="width: 100%; height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 3px;" />
+          <img src="${p.photos[0]}" style="width: 100%; object-fit: contain; max-height: 180px; border: 1px solid #ddd; border-radius: 3px;" />
         </div>
         ` : ''}
 
+        ${p.stamping_photos && p.stamping_photos.length > 0 ? `
+        <div style="margin-bottom: 8px;">
+          <img src="${p.stamping_photos[0]}" style="width: 100%; object-fit: contain; max-height: 120px; border: 1px solid #ddd; border-radius: 3px;" />
+        </div>
+        ` : ''}
         ${p.stamping ? `<p style="color: #1a1a1a; font-weight: 600; margin: 3px 0; font-size: 11px;"><strong>Stamping:</strong> ${p.stamping}</p>` : ''}
         ${p.notes ? `<p style="color: #1a1a1a; margin: 3px 0; font-size: 11px;">${p.notes.substring(0, 100)}${p.notes.length > 100 ? '...' : ''}</p>` : ''}
       </div>`;
