@@ -24,7 +24,9 @@ export default function TastingLogForm({ bottle, onSubmit, onCancel }) {
     e.preventDefault();
     onSubmit({
       ...formData,
-      tasting_date: new Date(`${formData.tasting_date}T00:00:00`).toISOString(),
+      tasting_date: formData.tasting_date
+        ? new Date(`${formData.tasting_date}T00:00:00`).toISOString()
+        : null,
     });
   };
 
