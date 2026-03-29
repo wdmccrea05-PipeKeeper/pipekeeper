@@ -50,11 +50,12 @@ function moduleDefaultEnabled(moduleKey, prefsSet, profile, user) {
     return saved === true;
   }
 
-  // Preferences NOT yet saved — derive from release state only.
-  // A 'launched' module defaults on; 'internal' modules default on only for internal testers.
-  // PipeKeeper is currently the only 'launched' module so normal users naturally get only PipeKeeper.
-  // This is entitlement-derived, NOT a hardcoded PipeKeeper-first assumption.
-  return effectiveState === 'launched' || (effectiveState === 'internal' && isInternalModuleTester(user));
+  // Preferences NOT yet saved — derive defaults from access level:
+  //   Admin/internal testers: no defaults forced. They choose explicitly during onboarding.
+  //   Normal users: default on for launched modules (currently only pipekeeper), off otherwise.
+  // This produces pipekeeper-only for normal users via entitlement, NOT via hardcoded default.
+  if (isInternalModuleTester(user)) return false;
+  return effectiveState === 'launched';
 }
 
 export function deriveModuleStates(profile, user = null) {
@@ -151,7 +152,7 @@ export function useModuleVisibility() {
     if (!email && !userId) return;
 
     const patch = {
-      pipekeeper_enabled: states.pipekeeper !== false,
+      pipekeeper_enabled: states.pipekeeper === true,
       whiskeykeeper_enabled: states.whiskeykeeper === true,
       winekeeper_enabled: states.winekeeper === true,
       cigarkeeper_enabled: states.cigarkeeper === true,

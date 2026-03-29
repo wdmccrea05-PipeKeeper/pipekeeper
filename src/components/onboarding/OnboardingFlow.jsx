@@ -15,6 +15,8 @@ import ModuleSelectionStep from './ModuleSelectionStep';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 
 import { usePaywall } from '@/components/subscription/usePaywall';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { isInternalModuleTester } from '@/components/utils/moduleReleaseState';
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/d2be37fcd_IMG_4833.jpeg';
 
 // Safe localStorage wrapper for onboarding state
@@ -37,9 +39,14 @@ function safeSetOnboarding(key, value) {
 
 export default function OnboardingFlow({ onComplete, onSkip }) {
   const [currentStep, setCurrentStep] = useState(0);
+  const { user } = useCurrentUser();
+  const isTester = isInternalModuleTester(user);
+  // No module pre-selected — user explicitly chooses during onboarding.
+  // Normal users will be guided to PipeKeeper (their entitlement).
+  // Admin/internal testers can choose any accessible module.
   const [moduleSelections, setModuleSelections] = useState({
-    pipekeeper: true,
-    whiskeykeeper: true,
+    pipekeeper: false,
+    whiskeykeeper: false,
     winekeeper: false,
     cigarkeeper: false,
   });
@@ -515,6 +522,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                     <ModuleSelectionStep
                       selections={moduleSelections}
                       onChange={setModuleSelections}
+                      isTester={isTester}
                     />
                   ) : (
                     currentStepData.content

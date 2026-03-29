@@ -1,64 +1,91 @@
 /**
  * ModuleSelectionStep — onboarding step for choosing active modules.
- * Shown to new users only. Saves module preferences immediately on change.
+ *
+ * CollectionKeeper is the platform shell. Modules are optional layers.
+ * PipeKeeper is NOT required or default — it is the current normal-user entitlement.
+ * WhiskeyKeeper is selectable by admin/internal testers before public launch.
+ *
+ * Props:
+ *   selections  — { [moduleId]: boolean }
+ *   onChange    — (newSelections) => void
+ *   isTester    — boolean (admin/internal tester — can select all accessible modules)
  */
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Check, Wine } from 'lucide-react';
+import { Check } from 'lucide-react';
 
-// WhiskeyKeeper is not yet launched for normal users — presets only include PipeKeeper.
-const PRESETS = [
-  {
-    label: 'Pipes Only',
-    description: 'Focus on your pipe collection and tobacco.',
-    states: { pipekeeper: true, whiskeykeeper: false, winekeeper: false, cigarkeeper: false },
-  },
-  {
-    label: 'Hide Alcohol Modules',
-    description: 'Only non-alcohol modules active. Great for sober users.',
-    states: { pipekeeper: true, whiskeykeeper: false, winekeeper: false, cigarkeeper: false },
-  },
-];
-
-const MODULE_CONFIG = [
+// Module catalogue. `testerOnly: true` means hidden from normal users until public launch.
+const MODULE_CATALOGUE = [
   {
     id: 'pipekeeper',
     label: 'PipeKeeper',
     description: 'Pipes, tobacco & smoking logs',
     icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/27f5c2c92_PKNB.png',
-    launched: true,
   },
   {
     id: 'whiskeykeeper',
     label: 'WhiskeyKeeper',
     description: 'Whiskey bottles & tasting notes',
     icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/752a8ab5c_WKNB.png',
-    launched: false,  // Not yet launched for normal users — internal/admin only
+    testerOnly: true,   // hidden for normal users until WhiskeyKeeper officially launches
     alcoholRelated: true,
-    comingSoon: true,
   },
   {
     id: 'winekeeper',
     label: 'WineKeeper',
     description: 'Wine cellar (coming soon)',
     icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/ef580a0c9_WineKNB.png',
-    launched: false,
-    alcoholRelated: true,
     comingSoon: true,
+    alcoholRelated: true,
   },
   {
     id: 'cigarkeeper',
     label: 'CigarKeeper',
     description: 'Cigar collection (coming soon)',
     icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/c26fb6746_CigarKNB.png',
-    launched: false,
     comingSoon: true,
   },
 ];
 
-export default function ModuleSelectionStep({ selections, onChange }) {
+export default function ModuleSelectionStep({ selections, onChange, isTester = false }) {
   const [activePreset, setActivePreset] = useState(null);
+
+  // Only show modules relevant to this user's access level
+  const visibleModules = MODULE_CATALOGUE.filter(
+    (m) => !m.testerOnly || isTester
+  );
+
+  // Presets reflect what's actually accessible
+  const presets = isTester
+    ? [
+        {
+          label: 'PipeKeeper Only',
+          description: 'Pipes, tobacco & smoking logs.',
+          states: { pipekeeper: true, whiskeykeeper: false, winekeeper: false, cigarkeeper: false },
+        },
+        {
+          label: 'WhiskeyKeeper Only',
+          description: 'Whiskey bottles & tasting notes.',
+          states: { pipekeeper: false, whiskeykeeper: true, winekeeper: false, cigarkeeper: false },
+        },
+        {
+          label: 'Pipes + Whiskey',
+          description: 'Both modules active.',
+          states: { pipekeeper: true, whiskeykeeper: true, winekeeper: false, cigarkeeper: false },
+        },
+      ]
+    : [
+        {
+          label: 'PipeKeeper',
+          description: 'Pipe collection and tobacco management.',
+          states: { pipekeeper: true, whiskeykeeper: false, winekeeper: false, cigarkeeper: false },
+        },
+        {
+          label: 'No Alcohol Modules',
+          description: 'Only non-alcohol modules. Great for sober users.',
+          states: { pipekeeper: true, whiskeykeeper: false, winekeeper: false, cigarkeeper: false },
+        },
+      ];
 
   function applyPreset(preset) {
     setActivePreset(preset.label);
@@ -66,18 +93,20 @@ export default function ModuleSelectionStep({ selections, onChange }) {
   }
 
   function toggleModule(moduleId) {
-    const mod = MODULE_CONFIG.find(m => m.id === moduleId);
+    const mod = MODULE_CATALOGUE.find((m) => m.id === moduleId);
+
+    // Coming-soon modules are not selectable yet
+    if (mod?.comingSoon) return;
 
     const currentlyEnabled = selections[moduleId] === true;
     const newEnabled = !currentlyEnabled;
 
-    // Ensure at least one launched module remains on
+    // Must keep at least one module selected
     if (!newEnabled) {
-      const launchedModules = MODULE_CONFIG.filter(m => m.launched);
-      const wouldHaveOneLeft = launchedModules.filter(m =>
-        m.id !== moduleId && selections[m.id] !== false
-      ).length >= 1;
-      if (!wouldHaveOneLeft) return;
+      const selectedCount = visibleModules.filter(
+        (m) => m.id !== moduleId && selections[m.id] === true && !m.comingSoon
+      ).length;
+      if (selectedCount < 1) return;
     }
 
     setActivePreset(null);
@@ -90,7 +119,7 @@ export default function ModuleSelectionStep({ selections, onChange }) {
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-[#E0D8C8]/50 mb-2">Quick presets</p>
         <div className="grid grid-cols-2 gap-2">
-          {PRESETS.map((preset) => (
+          {presets.map((preset) => (
             <button
               key={preset.label}
               onClick={() => applyPreset(preset)}
@@ -111,18 +140,19 @@ export default function ModuleSelectionStep({ selections, onChange }) {
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-[#E0D8C8]/50 mb-2">Or choose individually</p>
         <div className="space-y-2">
-          {MODULE_CONFIG.map((mod) => {
-            const enabled = selections[mod.id] !== false;
+          {visibleModules.map((mod) => {
+            const enabled = selections[mod.id] === true;
+            const isDisabled = mod.comingSoon;
             return (
               <button
                 key={mod.id}
                 onClick={() => toggleModule(mod.id)}
-                disabled={mod.required}
+                disabled={isDisabled}
                 className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
                   enabled
                     ? 'border-amber-500/40 bg-amber-500/8'
                     : 'border-[#E0D8C8]/15 bg-transparent opacity-50'
-                } ${mod.required ? 'cursor-default' : 'cursor-pointer hover:border-[#E0D8C8]/30'}`}
+                } ${isDisabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:border-[#E0D8C8]/30'}`}
               >
                 <img
                   src={mod.icon}
@@ -132,14 +162,14 @@ export default function ModuleSelectionStep({ selections, onChange }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-sm text-[#F5F1E7]">{mod.label}</span>
-                    {mod.required && (
-                      <Badge className="text-[10px] bg-amber-600/30 text-amber-300 border-0 px-1.5 py-0">Always on</Badge>
-                    )}
-                    {mod.alcoholRelated && !mod.required && (
+                    {mod.alcoholRelated && (
                       <Badge className="text-[10px] bg-amber-900/30 text-amber-400 border-0 px-1.5 py-0">Alcohol</Badge>
                     )}
                     {mod.comingSoon && (
                       <Badge className="text-[10px] bg-[#E0D8C8]/10 text-[#E0D8C8]/50 border-0 px-1.5 py-0">Soon</Badge>
+                    )}
+                    {mod.testerOnly && isTester && (
+                      <Badge className="text-[10px] bg-purple-900/30 text-purple-300 border-0 px-1.5 py-0">Preview</Badge>
                     )}
                   </div>
                   <p className="text-xs text-[#E0D8C8]/50 mt-0.5">{mod.description}</p>
