@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { base44 } from "@/api/base44Client";
-import { Download, FileJson, Loader2 } from "lucide-react";
+import { Download, FileJson, FileSpreadsheet, Loader2 } from "lucide-react";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -153,7 +153,7 @@ export default function SmokingLogReportExporter({ user }) {
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
             ) : (
-              <FileJson className="w-4 h-4 mr-2" />
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
             )}
             {t("usageLogReport.downloadExcel")}
           </Button>

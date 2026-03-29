@@ -68,14 +68,7 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
       manualBasic: 'choice',
       manualDetails: 'manualBasic',
       inventoryManual: 'manualDetails',
-      manualImages:
-        itemType === 'blend'
-          ? 'inventoryManual'
-          : itemType === 'bottle'
-            ? 'inventoryManual'
-            : itemType === 'pipe'
-              ? 'inventoryManual'
-              : 'manualDetails',
+      manualImages: (itemType === 'blend' || itemType === 'bottle' || itemType === 'pipe') ? 'inventoryManual' : 'manualDetails',
       imagesQuick: itemType === 'blend' || itemType === 'bottle' ? 'inventoryQuick' : 'quickConfirm',
     };
 
@@ -193,7 +186,7 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
           {step === 'inventoryQuick' && (
             <InventoryStep
               moduleType={itemType}
-              stepLabel={itemType === 'blend' ? 'Inventory — Step 3 of 4' : 'Inventory — Step 3 of 4'}
+              stepLabel="Inventory — Step 3 of 4"
               data={wizardData}
               onBack={goBack}
               onNext={(inventoryData) => {

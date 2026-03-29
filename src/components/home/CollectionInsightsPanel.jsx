@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { BarChart3, Grid3x3, BookOpen, CalendarClock, FileText, Clock, Star } from "lucide-react";
+import { BarChart3, Grid3x3, BookOpen, CalendarClock, FileText, Clock, Star, TrendingUp } from "lucide-react";
 import PairingGrid from "@/components/home/PairingGrid";
 import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
 import CollectionReportExporter from "@/components/export/CollectionReportExporter";
@@ -170,7 +170,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
                   <span className="truncate w-full text-center leading-tight">{t("insights.stats")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="trends" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 data-[state=active]:bg-amber-600/20 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent" style={{ color: "rgba(224,216,200,0.6)" }}>
-                  <BarChart3 className="w-4 h-4 flex-shrink-0" />
+                  <TrendingUp className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.trends")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="aging" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 relative data-[state=active]:bg-amber-600/20 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent" style={{ color: "rgba(224,216,200,0.6)" }}>
