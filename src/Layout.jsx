@@ -11,7 +11,7 @@ export default function Layout({ children, currentPageName }) {
   const [quickAccessOpen, setQuickAccessOpen] = useState(false);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={{ backgroundColor: '#140f0c' }}>
       <header className="sticky top-0 z-40 border-b border-white/10 bg-[rgba(20,15,12,0.88)] backdrop-blur-md">
         <div className="ck-page-shell">
           <div className="flex flex-col gap-3 py-3 md:py-4">

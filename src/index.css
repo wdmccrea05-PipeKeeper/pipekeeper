@@ -89,7 +89,8 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: #140f0c;
+    @apply text-foreground;
     overflow-wrap: break-word;
     word-break: break-word;
   }
