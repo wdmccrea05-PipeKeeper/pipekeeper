@@ -148,7 +148,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
                   {log.cost && (
                     <span className="flex items-center gap-1">
                       <DollarSign className="w-3 h-3" />
-                      {log.cost.toFixed(2)}
+                      {Number(log.cost).toFixed(2)}
                     </span>
                   )}
                 </div>

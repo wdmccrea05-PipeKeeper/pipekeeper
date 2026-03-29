@@ -167,7 +167,7 @@ export default function BreakInSchedule({ pipe, blends = [] }) {
 
   if (isAppleBuild) return null;
 
-  const totalBowls = schedule.reduce((sum, s) => sum + s.suggested_bowls, 0);
+  const totalBowls = schedule.reduce((sum, s) => sum + (s.suggested_bowls || 0), 0);
   const completedBowls = schedule.reduce((sum, s) => sum + (s.bowls_completed || 0), 0);
   const progress = totalBowls > 0 ? Math.round((completedBowls / totalBowls) * 100) : 0;
 
