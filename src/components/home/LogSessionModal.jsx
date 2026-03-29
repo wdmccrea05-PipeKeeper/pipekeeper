@@ -365,7 +365,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
             <Label className="text-[#E0D8C8]">{t("smokingLog.pipe")}</Label>
             <Select
               value={formData.pipe_id}
-              onValueChange={(v) => setFormData({ ...formData, pipe_id: v })}
+              onValueChange={(v) => setFormData({ ...formData, pipe_id: v, bowl_variant_id: '' })}
             >
               <SelectTrigger>
                 <SelectValue placeholder={t("smokingLog.selectPipe")} />
@@ -411,8 +411,8 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
                   <SelectValue placeholder={t("smokingLog.selectBowl")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={null}>{t("smokingLog.noSpecificBowl")}</SelectItem>
-                  {selectedPipe.interchangeable_bowls.map((bowl, idx) => {
+                  <SelectItem value="__none__">{t("smokingLog.noSpecificBowl")}</SelectItem>
+                  {(selectedPipe?.interchangeable_bowls || []).map((bowl, idx) => {
                     const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
                     return (
                       <SelectItem key={bowlId} value={bowlId}>
@@ -457,7 +457,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
                   <SelectValue placeholder={t("smokingLog.autoNone")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={null}>{t("smokingLog.autoNone")}</SelectItem>
+                  <SelectItem value="__none__">{t("smokingLog.autoNone")}</SelectItem>
                   {containers.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.container_name} — {c.quantity_grams ?? 0}g

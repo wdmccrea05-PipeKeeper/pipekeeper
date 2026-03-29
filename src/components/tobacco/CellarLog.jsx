@@ -365,18 +365,14 @@ export default function CellarLog({ blend }) {
                         )}
                         <span className="flex items-center gap-1 text-xs text-[#3a2a20]/60">
                           <Calendar className="w-3 h-3" />
-                          {format(new Date(log.date), 'MMM d, yyyy')}
+                          {log.date ? format(new Date(log.date), 'MMM d, yyyy') : '—'}
                         </span>
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        if (window.confirm(t("cellarLog.deleteConfirm"))) {
-                          deleteLogMutation.mutate(log.id);
-                        }
-                      }}
+                      onClick={() => deleteLogMutation.mutate(log.id)}
                       className="text-[#3a2a20]/40 hover:text-red-600"
                     >
                       <Trash2 className="w-4 h-4" />

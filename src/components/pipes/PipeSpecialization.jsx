@@ -191,7 +191,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
               </SelectContent>
             </Select>
             <div className="flex flex-wrap gap-1.5">
-              <p className="text-xs" style={{ color: "rgba(224,216,200,0.5)" }} className="w-full mb-1">{t("pipeDetailTabs.quickAdd")}</p>
+              <p className="text-xs w-full mb-1" style={{ color: "rgba(224,216,200,0.5)" }}>{t("pipeDetailTabs.quickAdd")}</p>
               {FOCUS_OPTIONS.filter(o => !designations.includes(o.canonical)).map(option => (
                 <Badge
                   key={option.canonical}
