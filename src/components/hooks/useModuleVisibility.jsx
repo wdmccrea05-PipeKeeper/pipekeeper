@@ -46,8 +46,13 @@ export function useModuleVisibility(profile, user) {
     });
   };
 
+  const isModuleEnabled = (moduleKey) => !!visibility[moduleKey];
+
   return {
     visibility,
+    moduleStates: visibility,
+    isModuleEnabled,
+    isLoading: !accessSummary,
     saveModulePreferences,
   };
 }

@@ -30,9 +30,9 @@ function shouldAppearAsExpandingSoon(moduleKey, user) {
 }
 
 export function useEnabledKeeperModules() {
-  const visibility = useModuleVisibility();
-  const { moduleStates, isLoading, isModuleEnabled } = visibility;
   const { user } = useCurrentUser();
+  const visibility = useModuleVisibility(null, user);
+  const { moduleStates, isLoading, isModuleEnabled } = visibility;
 
   const enabledModules = useMemo(() => {
     return KEEPER_MODULES.filter((m) => canOpenModuleNow(m.moduleKey, user, isModuleEnabled));
