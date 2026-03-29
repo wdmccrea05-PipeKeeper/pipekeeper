@@ -224,8 +224,9 @@ export default function ProfilePage() {
       drinking_style: [],
       cocktails: [],
     },
-    pipekeeper_enabled: true,
-    whiskeykeeper_enabled: true,
+    // Module visibility: null = not yet set (system derives from release state)
+    pipekeeper_enabled: null,
+    whiskeykeeper_enabled: false,
     winekeeper_enabled: false,
     cigarkeeper_enabled: false,
   });
@@ -279,8 +280,9 @@ export default function ProfilePage() {
       wine_notes: source.wine_notes || "",
       cigar_notes: source.cigar_notes || "",
       whiskey_preferences: source.whiskey_preferences || { types: [], flavors: [], drinking_style: [], cocktails: [] },
-      pipekeeper_enabled: source.pipekeeper_enabled !== false,
-      whiskeykeeper_enabled: source.whiskeykeeper_enabled !== false,
+      // Use saved value exactly; null/undefined = not set (system will derive from release state)
+      pipekeeper_enabled: source.pipekeeper_enabled ?? null,
+      whiskeykeeper_enabled: source.whiskeykeeper_enabled === true,
       winekeeper_enabled: source.winekeeper_enabled === true,
       cigarkeeper_enabled: source.cigarkeeper_enabled === true,
     }));

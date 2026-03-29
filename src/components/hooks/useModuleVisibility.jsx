@@ -36,25 +36,25 @@ export const MODULE_FIELDS = {
 function moduleDefaultEnabled(moduleKey, prefsSet, profile, user) {
   const effectiveState = getEffectiveModuleReleaseState(moduleKey, user);
 
+  // Hard block: module is fully blocked — never show to anyone
   if (effectiveState === 'blocked') return false;
-  if (effectiveState === 'internal') {
-    // Only show to internal testers, but respect their profile preference if they are one
-    if (!isInternalModuleTester(user)) return false;
-    // For internal testers, check profile preference
+
+  // Internal module: only internal testers can see/enable it
+  if (effectiveState === 'internal' && !isInternalModuleTester(user)) return false;
+
+  // Preferences saved — always honour saved value exactly
+  if (prefsSet) {
+    const field = `${moduleKey}_enabled`;
+    const saved = profile?.[field];
+    // Saved boolean wins; undefined/null treated as false (no implicit defaults)
+    return saved === true;
   }
 
-  switch (moduleKey) {
-    case 'pipekeeper':
-      return prefsSet ? profile?.pipekeeper_enabled !== false : true;
-    case 'whiskeykeeper':
-      return prefsSet ? profile?.whiskeykeeper_enabled === true : false;
-    case 'winekeeper':
-      return prefsSet ? profile?.winekeeper_enabled === true : false;
-    case 'cigarkeeper':
-      return prefsSet ? profile?.cigarkeeper_enabled === true : false;
-    default:
-      return false;
-  }
+  // Preferences NOT yet saved — derive from release state only.
+  // A 'launched' module defaults on; 'internal' modules default on only for internal testers.
+  // PipeKeeper is currently the only 'launched' module so normal users naturally get only PipeKeeper.
+  // This is entitlement-derived, NOT a hardcoded PipeKeeper-first assumption.
+  return effectiveState === 'launched' || (effectiveState === 'internal' && isInternalModuleTester(user));
 }
 
 export function deriveModuleStates(profile, user = null) {

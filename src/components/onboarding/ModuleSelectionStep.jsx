@@ -28,7 +28,6 @@ const MODULE_CONFIG = [
     description: 'Pipes, tobacco & smoking logs',
     icon: 'https://media.base44.com/images/public/694956e18d119cc497192525/27f5c2c92_PKNB.png',
     launched: true,
-    required: true,
   },
   {
     id: 'whiskeykeeper',
@@ -68,9 +67,8 @@ export default function ModuleSelectionStep({ selections, onChange }) {
 
   function toggleModule(moduleId) {
     const mod = MODULE_CONFIG.find(m => m.id === moduleId);
-    if (mod?.required) return; // PipeKeeper cannot be disabled
 
-    const currentlyEnabled = selections[moduleId] !== false;
+    const currentlyEnabled = selections[moduleId] === true;
     const newEnabled = !currentlyEnabled;
 
     // Ensure at least one launched module remains on

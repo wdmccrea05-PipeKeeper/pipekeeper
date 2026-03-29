@@ -40,9 +40,9 @@ export function setCurrentOnboardingStep(step) {
 export function getSelectedModules() {
   try {
     const modules = localStorage.getItem(ONBOARDING_KEYS.SELECTED_MODULES);
-    return modules ? JSON.parse(modules) : ["pipekeeper"];
+    return modules ? JSON.parse(modules) : [];
   } catch {
-    return ["pipekeeper"];
+    return [];
   }
 }
 
