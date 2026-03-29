@@ -34,7 +34,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
     pouch_cellared_date: blend?.pouch_cellared_date ?? '',
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (blend) {
       setFormData({
         tin_size_oz: blend.tin_size_oz ?? '',

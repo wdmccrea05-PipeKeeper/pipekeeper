@@ -22,7 +22,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
   const [lowInventoryThreshold, setLowInventoryThreshold] = useState(() => {
     return parseFloat(localStorage.getItem('lowInventoryThreshold')) || 2.0;
   });
-  const [showSettings, setShowSettings] = useState(false);
+
   const [isOpen, setIsOpen] = useState(true);
   
   const { user: currentUser } = useCurrentUser();
@@ -662,37 +662,6 @@ export default function TobaccoCollectionStats({ user: userProp }) {
         </DialogContent>
       </Dialog>
 
-      {/* Settings Dialog */}
-      <Dialog open={showSettings} onOpenChange={setShowSettings}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("stats.inventoryAlertSettings")}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t("stats.lowInventoryThreshold")}</Label>
-              <Input
-                type="number"
-                min="0"
-                step="0.5"
-                value={lowInventoryThreshold}
-                onChange={(e) => setLowInventoryThreshold(parseFloat(e.target.value) || 0)}
-              />
-              <p className="text-xs text-stone-500">
-                {t("stats.notifyWhenDrops")}
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setShowSettings(false)} className="flex-1">
-                {t("forms.cancel")}
-              </Button>
-              <Button onClick={handleThresholdSave} className="flex-1">
-                {t("stats.saveSettings")}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

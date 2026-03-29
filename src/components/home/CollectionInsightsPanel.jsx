@@ -25,7 +25,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function CollectionInsightsPanel({ pipes, blends, user, activeTab: externalActiveTab, onTabChange }) {
   const { t } = useTranslation();
-  const { hasPro } = useCurrentUser();
+  useCurrentUser();
   const [activeTab, setActiveTab] = useState(isAppleBuild ? "stats" : (externalActiveTab || "log"));
 
   useEffect(() => {
@@ -92,23 +92,10 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
   // ✅ Fetch the same user profile used by the AI Updates panel
   const { data: userProfile } = useQuery({
     queryKey: ["user-profile", user?.email],
-    enabled: !!(user?.id || user?.email),
+    enabled: !!user?.email,
     queryFn: async () => {
-      const byEmail = await base44.entities.UserProfile.filter({ user_email: user?.email }).catch(() => []);
-      const byCreatedBy = await base44.entities.UserProfile.filter({ created_by: user?.email }).catch(() => []);
-      const all = [...byEmail, ...byCreatedBy];
-      const seen = new Set();
-      const unique = all.filter((r) => {
-        const key = r?.id || `${r?.user_id || ""}|${r?.user_email || ""}|${r?.created_by || ""}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-      const sorted = unique.sort((a, b) =>
-        (Date.parse(b.updated_date ?? b.updated_at ?? b.created_date ?? "") || 0) -
-        (Date.parse(a.updated_date ?? a.updated_at ?? a.created_date ?? "") || 0)
-      );
-      return sorted[0] || null;
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email }).catch(() => []);
+      return profiles[0] || null;
     },
     staleTime: 10_000,
   });
