@@ -2,7 +2,7 @@ import React from "react";
 
 export default function PipeIcon({
   className = "w-5 h-5",
-  color = "currentColor",
+  color = "#d4a574",
   title = "Pipe",
 }) {
   return (
