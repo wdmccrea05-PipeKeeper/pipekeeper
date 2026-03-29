@@ -5,6 +5,9 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Plus, Filter } from "lucide-react";
 import AcquisitionItemCard from "@/components/wantlist/AcquisitionItemCard";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +37,8 @@ export default function WantList() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
+  const [addItemOpen, setAddItemOpen] = useState(false);
+  const [newItem, setNewItem] = useState({ name: "", item_type: "blend", status: "wishlist" });
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["acquisitionItems"],
@@ -81,6 +86,22 @@ export default function WantList() {
     );
   };
 
+  const handleAddItem = async () => {
+    if (!newItem.name.trim()) return;
+    try {
+      await base44.entities.AcquisitionItem.create({
+        name: newItem.name,
+        item_type: newItem.item_type,
+        status: newItem.status,
+      });
+      queryClient.invalidateQueries({ queryKey: ["acquisitionItems"] });
+      setNewItem({ name: "", item_type: "blend", status: "wishlist" });
+      setAddItemOpen(false);
+    } catch (err) {
+      console.error("Failed to add item:", err);
+    }
+  };
+
   const handlePurchase = (item) => {
     // Trigger add flow with prefilled data
     // This will be connected to the Add Item flow
@@ -101,10 +122,59 @@ export default function WantList() {
               Track items you want to try, buy, or restock
             </p>
           </div>
-          <Button onClick={() => console.log("Add new item")}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Item
-          </Button>
+          <Dialog open={addItemOpen} onOpenChange={setAddItemOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Item
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add to Want List</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Item Name</label>
+                  <Input
+                    placeholder="e.g., Latakia Blend, Irish Whiskey"
+                    value={newItem.name}
+                    onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Type</label>
+                  <Select value={newItem.item_type} onValueChange={(v) => setNewItem({ ...newItem, item_type: v })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="blend">Tobacco Blend</SelectItem>
+                      <SelectItem value="pipe">Pipe</SelectItem>
+                      <SelectItem value="bottle">Whiskey Bottle</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Category</label>
+                  <Select value={newItem.status} onValueChange={(v) => setNewItem({ ...newItem, status: v })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="wishlist">Wish List</SelectItem>
+                      <SelectItem value="shopping_list">Shopping List</SelectItem>
+                      <SelectItem value="restock">Restock</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setAddItemOpen(false)}>Cancel</Button>
+                  <Button onClick={handleAddItem} disabled={!newItem.name.trim()}>Add Item</Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -130,13 +200,13 @@ export default function WantList() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="wishlist">Wish List</TabsTrigger>
-            <TabsTrigger value="shopping_list">Shopping</TabsTrigger>
-            <TabsTrigger value="restock">Restock</TabsTrigger>
-            <TabsTrigger value="tried">Tried</TabsTrigger>
-            <TabsTrigger value="notforme">Not for Me</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-3 sm:grid-cols-6">
+            <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
+            <TabsTrigger value="wishlist" className="text-xs sm:text-sm">Wish List</TabsTrigger>
+            <TabsTrigger value="shopping_list" className="text-xs sm:text-sm">Shopping</TabsTrigger>
+            <TabsTrigger value="restock" className="hidden sm:flex text-xs sm:text-sm">Restock</TabsTrigger>
+            <TabsTrigger value="tried" className="hidden sm:flex text-xs sm:text-sm">Tried</TabsTrigger>
+            <TabsTrigger value="notforme" className="hidden sm:flex text-xs sm:text-sm">Not for Me</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-6">
