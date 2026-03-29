@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useAccessSummary } from "@/components/access/useAccessSummary";
+import { useAccessSummary } from "@/components/hooks/useAccessSummary";
 import { isInternalModuleTester } from "@/components/utils/moduleReleaseState";
 
 const MODULES = [
