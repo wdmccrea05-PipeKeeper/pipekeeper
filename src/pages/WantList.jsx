@@ -61,13 +61,13 @@ export default function WantList() {
       switch (sortBy) {
         case "priority":
           const priorityOrder = { high: 0, medium: 1, low: 2 };
-          return (
-            priorityOrder[a.priority] - priorityOrder[b.priority]
-          );
+          const aPriority = priorityOrder[a.priority || "medium"] || 1;
+          const bPriority = priorityOrder[b.priority || "medium"] || 1;
+          return aPriority - bPriority;
         case "name":
-          return a.name.localeCompare(b.name);
+          return (a.name || "").localeCompare(b.name || "");
         case "type":
-          return a.item_type.localeCompare(b.item_type);
+          return (a.item_type || "").localeCompare(b.item_type || "");
         case "recent":
         default:
           return new Date(b.created_date) - new Date(a.created_date);
@@ -109,14 +109,22 @@ export default function WantList() {
     }
   };
 
-  const handlePurchase = (item) => {
-    // Trigger add flow with prefilled data
-    // This will be connected to the Add Item flow
-    console.log("Purchase flow for:", item);
+  const handlePurchase = async (item) => {
+    try {
+      await base44.entities.AcquisitionItem.update(item.id, { status: "archived" });
+      queryClient.invalidateQueries({ queryKey: ["acquisitionItems"] });
+    } catch (err) {
+      console.error("Failed to mark as purchased:", err);
+    }
   };
 
   const handleShare = (item) => {
-    console.log("Share item:", item);
+    const text = `${item.name} (${item.item_type})`;
+    if (navigator.share) {
+      navigator.share({ title: "Want List", text });
+    } else {
+      navigator.clipboard.writeText(text);
+    }
   };
 
   return (
@@ -124,8 +132,8 @@ export default function WantList() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Want List</h1>
-            <p className="text-gray-600 mt-1">
+           <h1 className="text-3xl font-bold text-[#F5F1E7]">Want List</h1>
+           <p className="text-[#E0D8C8]/60 mt-1">
               Track items you want to try, buy, or restock
             </p>
           </div>
@@ -144,9 +152,10 @@ export default function WantList() {
                 <div>
                   <label className="block text-sm font-medium mb-2">Item Name</label>
                   <Input
-                    placeholder="e.g., Latakia Blend, Irish Whiskey"
-                    value={newItem.name}
-                    onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                   placeholder="e.g., Latakia Blend, Irish Whiskey"
+                   value={newItem.name}
+                   onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                   className="bg-[rgba(255,255,255,0.05)] border-[#b48c4b]/30 text-[#E0D8C8] placeholder-[#E0D8C8]/40"
                   />
                 </div>
                 <div>
@@ -172,6 +181,8 @@ export default function WantList() {
                       <SelectItem value="wishlist">Wish List</SelectItem>
                       <SelectItem value="shopping_list">Shopping List</SelectItem>
                       <SelectItem value="restock">Restock</SelectItem>
+                      <SelectItem value="tried_not_owned">Tried (Not Owned)</SelectItem>
+                      <SelectItem value="do_not_buy_again">Not for Me</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -204,7 +215,7 @@ export default function WantList() {
                 <DropdownMenuItem
                   key={key}
                   onClick={() => setSortBy(key)}
-                  className={sortBy === key ? "bg-gray-100" : ""}
+                  className={sortBy === key ? "bg-[#b48c4b]/20" : ""}
                 >
                   {label}
                 </DropdownMenuItem>
@@ -218,19 +229,19 @@ export default function WantList() {
             <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
             <TabsTrigger value="wishlist" className="text-xs sm:text-sm">Wish List</TabsTrigger>
             <TabsTrigger value="shopping_list" className="text-xs sm:text-sm">Shopping</TabsTrigger>
-            <TabsTrigger value="restock" className="hidden sm:flex text-xs sm:text-sm">Restock</TabsTrigger>
-            <TabsTrigger value="tried" className="hidden sm:flex text-xs sm:text-sm">Tried</TabsTrigger>
-            <TabsTrigger value="notforme" className="hidden sm:flex text-xs sm:text-sm">Not for Me</TabsTrigger>
+            <TabsTrigger value="restock" className="text-xs sm:text-sm">Restock</TabsTrigger>
+            <TabsTrigger value="tried" className="text-xs sm:text-sm">Tried</TabsTrigger>
+            <TabsTrigger value="notforme" className="text-xs sm:text-sm">Not For Me</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-6">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="text-gray-500">Loading...</div>
+               <div className="text-[#E0D8C8]/50">Loading...</div>
               </div>
             ) : filteredItems.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-500">No items in this category</p>
+                <p className="text-[#E0D8C8]/50">No items in this category</p>
               </div>
             ) : (
               <div className="grid gap-4">
