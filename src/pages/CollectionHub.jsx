@@ -21,6 +21,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import BrandLogo from '@/components/branding/BrandLogo';
+import { Heart } from 'lucide-react';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import { getPipeValue, getBottleValue } from '@/components/keeper-core/value/valueAggregation';
 import { calculateTobaccoCollectionValue } from '@/components/utils/tobaccoQuantityHelpers';
@@ -383,9 +384,10 @@ export default function CollectionHub() {
              <QuickAction icon={Plus} label="Add Bottle" accent="#B66565" onClick={() => navigate('/BottleForm')} />
              <QuickAction icon={BarChart3} label="My Whiskey" accent="#A35050" onClick={() => navigate('/Whiskey')} />
              <QuickAction icon={Glasses} label="Log Tasting" accent="#A35050" onClick={() => navigate(createPageUrl('Tastings'))} />
-           </>
-          )}
-          <QuickAction icon={({ className, ...props }) => <div className={`${className} rounded-lg overflow-hidden bg-white flex items-center justify-center`}><img src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png" className="w-full h-full object-cover" alt="Curator" /></div>} label="Open Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
+             </>
+             )}
+             <QuickAction icon={Heart} label="Want List" accent="#C89752" onClick={() => navigate('/WantList')} />
+             <QuickAction icon={({ className, ...props }) => <div className={`${className} rounded-lg overflow-hidden bg-white flex items-center justify-center`}><img src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png" className="w-full h-full object-cover" alt="Curator" /></div>} label="Open Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
         </div>
       </section>
 
