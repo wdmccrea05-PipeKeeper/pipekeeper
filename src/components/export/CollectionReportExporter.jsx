@@ -150,67 +150,75 @@ export default function CollectionReportExporter({ user }) {
 
   const generateInsurancePDF = async () => {
     const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
-    const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
+    const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+    const totalPipesValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
+    const totalBlendsValue = blends.reduce((sum, b) => sum + (b.manual_market_value || b.ai_estimated_value || 0), 0);
+    const totalValue = totalPipesValue + totalBlendsValue;
 
-    let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #1a1a1a;">
-      <h1 style="color: #0a0a0a; font-weight: bold; font-size: 28px;">${t("reports.insuranceValuationReport")}</h1>
-      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
-      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.owner")}:</strong> ${user?.full_name || user?.email}</p>
-      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.totalCollectionValue")}:</strong> $${(totalValue || 0).toFixed(2)}</p>
-      <hr style="margin: 20px 0;">
-      <p style="font-style: italic; color: #333333; font-weight: 500;">${t("reports.insuranceReportDesc")}</p>`;
+    let html = `<div style="font-family: Arial, sans-serif; padding: 20px 30px; color: #1a1a1a;">
+      <h1 style="color: #0a0a0a; font-weight: bold; font-size: 24px; margin: 0 0 10px 0;">${t("reports.insuranceValuationReport")}</h1>
+      <p style="color: #1a1a1a; font-weight: 600; margin: 4px 0;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
+      <p style="color: #1a1a1a; font-weight: 600; margin: 4px 0;"><strong>${t("reports.owner")}:</strong> ${user?.full_name || user?.email}</p>
+      <p style="color: #1a1a1a; font-weight: 600; margin: 4px 0;"><strong>${t("reports.totalCollectionValue")}:</strong> $${(totalValue || 0).toFixed(2)}</p>
+      <hr style="margin: 12px 0;">
+      <p style="font-style: italic; color: #333333; font-weight: 500; margin: 8px 0; font-size: 13px;">${t("reports.insuranceReportDesc")}</p>`;
 
     pipes.forEach(p => {
-      html += `<div style="margin-bottom: 40px; border: 1px solid #ddd; padding: 20px; page-break-inside: avoid;">
-        <h2 style="color: #0a0a0a; font-weight: bold; font-size: 18px; margin-bottom: 15px;">${p.name || t("reports.unnamed")}</h2>
+      html += `<div style="margin-bottom: 12px; border: 1px solid #ddd; padding: 12px; page-break-inside: avoid; break-inside: avoid;">
+        <h3 style="color: #0a0a0a; font-weight: bold; font-size: 14px; margin: 0 0 8px 0;">${p.name || t("reports.unnamed")}</h3>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; font-size: 12px;">
           <div>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.maker")}:</strong> ${p.maker || '-'}</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.shape")}:</strong> ${p.shape || '-'}</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.condition")}:</strong> ${p.condition || '-'}</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("reports.materials")}:</strong> ${p.bowl_material || '-'} / ${p.stem_material || '-'}</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("common.value")}:</strong> $${(p.estimated_value || 0).toFixed(2)}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("pipesExtended.maker")}:</strong> ${p.maker || '-'}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("pipesExtended.shape")}:</strong> ${p.shape || '-'}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("pipesExtended.condition")}:</strong> ${p.condition || '-'}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("common.value")}:</strong> $${(p.estimated_value || 0).toFixed(2)}</p>
           </div>
           <div>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.length")}:</strong> ${p.length_mm ? (p.length_mm).toFixed(2) : '-'} mm</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.weight")}:</strong> ${p.weight_grams ? (p.weight_grams).toFixed(2) : '-'} g</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("reports.yearMade")}:</strong> ${p.year_made || '-'}</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("reports.purchasePrice")}:</strong> $${(p.purchase_price || 0).toFixed(2)}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("pipesExtended.length")}:</strong> ${p.length_mm ? (p.length_mm).toFixed(2) : '-'} mm</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("pipesExtended.weight")}:</strong> ${p.weight_grams ? (p.weight_grams).toFixed(2) : '-'} g</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("reports.yearMade")}:</strong> ${p.year_made || '-'}</p>
           </div>
         </div>
 
         ${p.photos && p.photos.length > 0 ? `
-        <div style="margin-bottom: 20px;">
-          <h4 style="color: #1a1a1a; font-weight: bold; margin-bottom: 10px;">Photos</h4>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
-            ${p.photos.map(photo => `<img src="${photo}" style="width: 100%; height: 150px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px;" />`).join('')}
+        <div style="margin-bottom: 8px;">
+          <img src="${p.photos[0]}" style="width: 100%; height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 3px;" />
+        </div>
+        ` : ''}
+
+        ${p.stamping ? `<p style="color: #1a1a1a; font-weight: 600; margin: 3px 0; font-size: 11px;"><strong>Stamping:</strong> ${p.stamping}</p>` : ''}
+        ${p.notes ? `<p style="color: #1a1a1a; margin: 3px 0; font-size: 11px;">${p.notes.substring(0, 100)}${p.notes.length > 100 ? '...' : ''}</p>` : ''}
+      </div>`;
+    });
+
+    blends.forEach(b => {
+      const blendValue = b.manual_market_value || b.ai_estimated_value || 0;
+      const totalQty = (b.tin_total_quantity_oz || 0) + (b.bulk_total_quantity_oz || 0) + (b.pouch_total_quantity_oz || 0);
+      html += `<div style="margin-bottom: 12px; border: 1px solid #ddd; padding: 12px; page-break-inside: avoid; break-inside: avoid;">
+        <h3 style="color: #0a0a0a; font-weight: bold; font-size: 14px; margin: 0 0 8px 0;">${b.name || t("reports.unnamed")}</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; font-size: 12px;">
+          <div>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("reports.manufacturer")}:</strong> ${b.manufacturer || '-'}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("reports.blendType")}:</strong> ${b.blend_type || '-'}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("reports.strength")}:</strong> ${b.strength || '-'}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("common.value")}:</strong> $${(blendValue).toFixed(2)}</p>
+          </div>
+          <div>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("reports.totalQuantity")}:</strong> ${totalQty.toFixed(2)} oz</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("reports.rating")}:</strong> ${b.rating ? b.rating + '/5' : '-'}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 3px 0;"><strong>${t("reports.status")}:</strong> ${b.production_status || '-'}</p>
           </div>
         </div>
-        ` : ''}
 
-        ${p.stamping_photos && p.stamping_photos.length > 0 ? `
-        <div style="margin-bottom: 20px;">
-          <h4 style="color: #1a1a1a; font-weight: bold; margin-bottom: 10px;">Stamping Photos</h4>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
-            ${p.stamping_photos.map(photo => `<img src="${photo}" style="width: 100%; height: 150px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px;" />`).join('')}
-          </div>
+        ${b.logo ? `
+        <div style="margin-bottom: 8px;">
+          <img src="${b.logo}" style="width: 100%; height: 80px; object-fit: contain; border: 1px solid #ddd; border-radius: 3px; background: #f9f9f9;" />
         </div>
         ` : ''}
 
-        ${p.stamping ? `
-        <div style="margin-bottom: 20px; padding: 15px; background-color: #f5f5f5; border-radius: 4px;">
-          <p style="color: #1a1a1a; font-weight: 600;"><strong>Stamping:</strong></p>
-          <p style="color: #1a1a1a; margin-top: 5px; font-family: monospace;">${p.stamping}</p>
-        </div>
-        ` : ''}
-
-        ${p.notes ? `
-        <div style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-left: 3px solid #999; border-radius: 4px;">
-          <p style="color: #1a1a1a; font-weight: 600;"><strong>Description/Notes:</strong></p>
-          <p style="color: #1a1a1a; margin-top: 5px;">${p.notes}</p>
-        </div>
-        ` : ''}
+        ${b.notes ? `<p style="color: #1a1a1a; margin: 3px 0; font-size: 11px;">${b.notes.substring(0, 100)}${b.notes.length > 100 ? '...' : ''}</p>` : ''}
       </div>`;
     });
 
