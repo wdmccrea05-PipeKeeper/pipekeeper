@@ -156,7 +156,7 @@ export default function CollectionReportExporter({ user }) {
       <h1 style="color: #0a0a0a; font-weight: bold; font-size: 28px;">${t("reports.insuranceValuationReport")}</h1>
       <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
       <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.owner")}:</strong> ${user?.full_name || user?.email}</p>
-      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.totalCollectionValue")}:</strong> ${formatCurrency(totalValue)}</p>
+      <p style="color: #1a1a1a; font-weight: 600;"><strong>${t("reports.totalCollectionValue")}:</strong> $${(totalValue || 0).toFixed(2)}</p>
       <hr style="margin: 20px 0;">
       <p style="font-style: italic; color: #333333; font-weight: 500;">${t("reports.insuranceReportDesc")}</p>`;
 
@@ -170,13 +170,13 @@ export default function CollectionReportExporter({ user }) {
             <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.shape")}:</strong> ${p.shape || '-'}</p>
             <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.condition")}:</strong> ${p.condition || '-'}</p>
             <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("reports.materials")}:</strong> ${p.bowl_material || '-'} / ${p.stem_material || '-'}</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("common.value")}:</strong> ${formatCurrency(p.estimated_value || 0)}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("common.value")}:</strong> $${(p.estimated_value || 0).toFixed(2)}</p>
           </div>
           <div>
             <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.length")}:</strong> ${p.length_mm || '-'} mm</p>
             <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("pipesExtended.weight")}:</strong> ${p.weight_grams || '-'} g</p>
             <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("reports.yearMade")}:</strong> ${p.year_made || '-'}</p>
-            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("reports.purchasePrice")}:</strong> ${formatCurrency(p.purchase_price || 0)}</p>
+            <p style="color: #1a1a1a; font-weight: 600; margin: 8px 0;"><strong>${t("reports.purchasePrice")}:</strong> $${(p.purchase_price || 0).toFixed(2)}</p>
           </div>
         </div>
 
