@@ -103,7 +103,7 @@ export default function ModuleVisibilitySettings() {
       </p>
       <div className="space-y-3">
         {MODULE_CONFIG.map((mod) => {
-          const enabled = moduleStates[mod.id] === true;
+          const enabled = moduleStates[mod.id]?.enabled === true;
           const isSaving = saving === mod.id;
           return (
             <div

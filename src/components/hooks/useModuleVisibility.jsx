@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useAccessSummary } from "@/components/access/useAccessSummary";
+import { useAccessSummary } from "@/components/hooks/useAccessSummary";
 import { isInternalModuleTester } from "@/components/utils/moduleReleaseState";
 
 const MODULE_KEYS = ["pipekeeper", "whiskeykeeper"];

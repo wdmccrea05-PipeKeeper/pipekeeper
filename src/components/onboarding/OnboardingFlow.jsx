@@ -398,24 +398,29 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
 
   const currentStepData = steps[currentStep];
 
-  const handleNext = async () => {
-    // If leaving the module step, save selections
-    if (steps[currentStep]?.isModuleStep) {
-      try {
-        await saveModulePreferences(moduleSelections);
-        
-        // Check if 2+ modules selected -> show paywall
-        const selectedCount = Object.values(moduleSelections).filter(Boolean).length;
-        if (selectedCount >= 2) {
-          setShowPaywall(true);
-          setPaywallStep(currentStep + 1);
-          return;
-        }
-      } catch (e) {
-        console.warn('[Onboarding] Could not save module preferences:', e);
+  const handleModuleStepNext = async (selections) => {
+    try {
+      await saveModulePreferences(selections);
+      
+      // Check if 2+ modules selected -> show paywall
+      const selectedCount = Object.values(selections).filter(Boolean).length;
+      if (selectedCount >= 2) {
+        setShowPaywall(true);
+        setPaywallStep(currentStep + 1);
+        return;
       }
+    } catch (e) {
+      console.warn('[Onboarding] Could not save module preferences:', e);
     }
 
+    if (currentStep === steps.length - 1) {
+      onComplete();
+    } else {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleNext = async () => {
     if (currentStep === steps.length - 1) {
       onComplete();
     } else {
@@ -520,9 +525,10 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                 >
                   {currentStepData.isModuleStep ? (
                     <ModuleSelectionStep
-                      selections={moduleSelections}
+                      user={user}
+                      selectedModules={moduleSelections}
                       onChange={setModuleSelections}
-                      isTester={isTester}
+                      onNext={handleModuleStepNext}
                     />
                   ) : (
                     currentStepData.content
@@ -530,38 +536,40 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                 </motion.div>
               </AnimatePresence>
             </CardContent>
-            <div className="p-4 sm:p-6 border-t border-[#E0D8C8]/15 flex items-center justify-between">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                disabled={currentStep === 0}
-                size="sm"
-                className="sm:size-default"
-              >
-                <ArrowLeft className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">{t("common.back")}</span>
-              </Button>
-              <div className="text-xs sm:text-sm text-[#E0D8C8]/60">
-                {currentStep + 1}/{steps.length}
+            {!currentStepData.isModuleStep && (
+              <div className="p-4 sm:p-6 border-t border-[#E0D8C8]/15 flex items-center justify-between">
+                <Button
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={currentStep === 0}
+                  size="sm"
+                  className="sm:size-default"
+                >
+                  <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">{t("common.back")}</span>
+                </Button>
+                <div className="text-xs sm:text-sm text-[#E0D8C8]/60">
+                  {currentStep + 1}/{steps.length}
+                </div>
+                <Button
+                  onClick={handleNext}
+                  size="sm"
+                >
+                  {currentStep === steps.length - 1 ? (
+                    <>
+                      <span className="hidden sm:inline">{t("onboarding.getStarted")}</span>
+                      <span className="sm:hidden">{t("onboarding.start")}</span>
+                      <Check className="w-4 h-4 sm:ml-2" />
+                    </>
+                  ) : (
+                    <>
+                      <span className="hidden sm:inline">{t("common.next")}</span>
+                      <ArrowRight className="w-4 h-4 sm:ml-2" />
+                    </>
+                  )}
+                </Button>
               </div>
-              <Button
-                onClick={handleNext}
-                size="sm"
-              >
-                {currentStep === steps.length - 1 ? (
-                  <>
-                    <span className="hidden sm:inline">{t("onboarding.getStarted")}</span>
-                    <span className="sm:hidden">{t("onboarding.start")}</span>
-                    <Check className="w-4 h-4 sm:ml-2" />
-                  </>
-                ) : (
-                  <>
-                    <span className="hidden sm:inline">{t("common.next")}</span>
-                    <ArrowRight className="w-4 h-4 sm:ml-2" />
-                  </>
-                )}
-              </Button>
-            </div>
+            )}
           </Card>
         </motion.div>
       </div>
