@@ -39,6 +39,8 @@ export default function WantList() {
   const [sortBy, setSortBy] = useState("recent");
   const [addItemOpen, setAddItemOpen] = useState(false);
   const [newItem, setNewItem] = useState({ name: "", item_type: "blend", status: "wishlist" });
+  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [addError, setAddError] = useState("");
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["acquisitionItems"],
@@ -88,6 +90,8 @@ export default function WantList() {
 
   const handleAddItem = async () => {
     if (!newItem.name.trim()) return;
+    setIsAddingItem(true);
+    setAddError("");
     try {
       await base44.entities.AcquisitionItem.create({
         name: newItem.name,
@@ -98,7 +102,10 @@ export default function WantList() {
       setNewItem({ name: "", item_type: "blend", status: "wishlist" });
       setAddItemOpen(false);
     } catch (err) {
+      setAddError(err?.message || "Failed to add item. Please try again.");
       console.error("Failed to add item:", err);
+    } finally {
+      setIsAddingItem(false);
     }
   };
 
@@ -168,9 +175,16 @@ export default function WantList() {
                     </SelectContent>
                   </Select>
                 </div>
+                {addError && (
+                  <div className="p-3 bg-red-500/20 border border-red-500/50 rounded text-red-200 text-sm">
+                    {addError}
+                  </div>
+                )}
                 <div className="flex gap-2 justify-end">
-                  <Button variant="outline" onClick={() => setAddItemOpen(false)}>Cancel</Button>
-                  <Button onClick={handleAddItem} disabled={!newItem.name.trim()}>Add Item</Button>
+                  <Button variant="outline" onClick={() => setAddItemOpen(false)} disabled={isAddingItem}>Cancel</Button>
+                  <Button onClick={handleAddItem} disabled={!newItem.name.trim() || isAddingItem}>
+                    {isAddingItem ? "Adding..." : "Add Item"}
+                  </Button>
                 </div>
               </div>
             </DialogContent>
