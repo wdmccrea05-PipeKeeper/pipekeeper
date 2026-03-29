@@ -26,28 +26,57 @@ export default function AcquisitionItemCard({
 }) {
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState(item.notes || "");
+  const [isLoading, setIsLoading] = useState(false);
   const { updateStatus, updatePriority, updateNotes, archiveItem } =
     useWantListActions();
 
   const handleStatusChange = async (newStatus) => {
-    await updateStatus(item.id, newStatus);
-    onStatusChange?.(item.id, newStatus);
+    try {
+      setIsLoading(true);
+      await updateStatus(item.id, newStatus);
+      onStatusChange?.(item.id, newStatus);
+    } catch (err) {
+      console.error("Failed to update status:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handlePriorityChange = async (newPriority) => {
-    await updatePriority(item.id, newPriority);
-    onStatusChange?.(item.id);
+    try {
+      setIsLoading(true);
+      await updatePriority(item.id, newPriority);
+      onStatusChange?.(item.id);
+    } catch (err) {
+      console.error("Failed to update priority:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleArchive = async () => {
-    await archiveItem(item.id);
-    onArchive?.(item.id);
+    try {
+      setIsLoading(true);
+      await archiveItem(item.id);
+      onArchive?.(item.id);
+    } catch (err) {
+      console.error("Failed to archive item:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleNotesUpdate = async () => {
-    await updateNotes(item.id, notes);
-    setShowNotes(false);
-    onStatusChange?.(item.id);
+    try {
+      setIsLoading(true);
+      await updateNotes(item.id, notes);
+      setShowNotes(false);
+      onStatusChange?.(item.id);
+    } catch (err) {
+      console.error("Failed to update notes:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isMuted = item.status === "do_not_buy_again";
@@ -65,7 +94,7 @@ export default function AcquisitionItemCard({
     low: "text-blue-500",
     medium: "text-yellow-500",
     high: "text-red-500",
-  }[item.priority];
+  }[item.priority || "medium"] || "text-yellow-500";
 
   return (
     <div
@@ -76,13 +105,6 @@ export default function AcquisitionItemCard({
       }`}
     >
       <div className="flex items-start justify-between gap-4">
-        {item.image && (
-          <img
-            src={item.image}
-            alt={item.name}
-            className="w-16 h-16 object-cover rounded"
-          />
-        )}
 
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-sm text-[#E0D8C8]">{item.name}</h3>
@@ -105,7 +127,7 @@ export default function AcquisitionItemCard({
       </div>
 
       {showNotes && (
-        <div className="mt-3 border-t pt-3">
+        <div className="mt-3 border-t border-[#b48c4b]/20 pt-3">
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -114,16 +136,17 @@ export default function AcquisitionItemCard({
             placeholder="Add notes..."
           />
           <div className="flex gap-2 mt-2">
-            <Button size="sm" onClick={handleNotesUpdate}>
-              Save
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowNotes(false)}
-            >
-              Cancel
-            </Button>
+           <Button size="sm" onClick={handleNotesUpdate} disabled={isLoading}>
+             {isLoading ? "Saving..." : "Save"}
+           </Button>
+           <Button
+             size="sm"
+             variant="outline"
+             onClick={() => setShowNotes(false)}
+             disabled={isLoading}
+           >
+             Cancel
+           </Button>
           </div>
         </div>
       )}
@@ -136,17 +159,18 @@ export default function AcquisitionItemCard({
 
       <div className="flex gap-2 mt-4 flex-wrap">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs h-8"
-            >
-              Status
-              <ChevronDown className="w-3 h-3 ml-1" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
+           <DropdownMenuTrigger asChild>
+             <Button
+               size="sm"
+               variant="outline"
+               className="text-xs h-8"
+               disabled={isLoading}
+             >
+               Status
+               <ChevronDown className="w-3 h-3 ml-1" />
+             </Button>
+           </DropdownMenuTrigger>
+           <DropdownMenuContent className="bg-[rgba(22,17,13,0.96)] border-[#b48c4b]/30">
             <DropdownMenuItem onClick={() => handleStatusChange("wishlist")}>
               Wish List
             </DropdownMenuItem>
@@ -172,12 +196,13 @@ export default function AcquisitionItemCard({
               size="sm"
               variant="outline"
               className="text-xs h-8"
+              disabled={isLoading}
             >
               Priority
               <ChevronDown className="w-3 h-3 ml-1" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent className="bg-[rgba(22,17,13,0.96)] border-[#b48c4b]/30">
             <DropdownMenuItem onClick={() => handlePriorityChange("low")}>
               Low
             </DropdownMenuItem>
@@ -195,28 +220,31 @@ export default function AcquisitionItemCard({
           variant="outline"
           className="text-xs h-8"
           onClick={() => setShowNotes(!showNotes)}
+          disabled={isLoading}
         >
           <Edit2 className="w-3 h-3 mr-1" />
           Notes
         </Button>
 
-        {item.status !== "purchased" && (
+        {item.status !== "archived" && (
           <Button
             size="sm"
             variant="outline"
             className="text-xs h-8"
             onClick={() => onPurchase?.(item)}
+            disabled={isLoading}
           >
             <CheckCircle2 className="w-3 h-3 mr-1" />
             Purchased
           </Button>
-        )}
+          )}
 
         <Button
           size="sm"
           variant="outline"
           className="text-xs h-8"
           onClick={() => onShare?.(item)}
+          disabled={isLoading}
         >
           <Share2 className="w-3 h-3" />
         </Button>
@@ -224,8 +252,9 @@ export default function AcquisitionItemCard({
         <Button
           size="sm"
           variant="outline"
-          className="text-xs h-8 text-red-500"
+          className="text-xs h-8 text-red-400"
           onClick={handleArchive}
+          disabled={isLoading}
         >
           <Trash2 className="w-3 h-3" />
         </Button>
