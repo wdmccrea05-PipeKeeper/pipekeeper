@@ -15,7 +15,7 @@ import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-export default function BreakInSchedule({ pipe, blends }) {
+export default function BreakInSchedule({ pipe, blends = [] }) {
   const { t } = useTranslation();
   const [generating, setGenerating] = useState(false);
   const [schedule, setSchedule] = useState(pipe.break_in_schedule || []);
@@ -124,6 +124,7 @@ export default function BreakInSchedule({ pipe, blends }) {
   };
 
   const logBreakInSession = async (scheduleItem) => {
+    if (!scheduleItem.blend_id) return;
     await base44.entities.SmokingLog.create({
       pipe_id: pipe.id,
       pipe_name: pipe.name,

@@ -39,8 +39,8 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const pipe = pipes.find(p => p.id === formData.pipe_id);
-    const blend = blends.find(b => b.id === formData.blend_id);
+    const pipe = (pipes || []).find(p => p?.id === formData.pipe_id);
+    const blend = (blends || []).find(b => b?.id === formData.blend_id);
     
     if (!pipe || !blend) return;
 
