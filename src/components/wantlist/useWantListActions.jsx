@@ -99,5 +99,6 @@ export function useWantListActions() {
     markPurchased,
     archiveItem,
     linkToCollection,
+    createFromIdentification,
   };
 }
