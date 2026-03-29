@@ -143,9 +143,8 @@ function mapSubscriptionToModules(subscription) {
 
   if (planKey.startsWith('three_module_bundle_')) {
     const metadataModules = parseMetadataModules(subscription);
-    // Use metadata modules if present; otherwise fall back to PipeKeeper only
-    // (safe default — never infer WK/CK/WineK before they launch)
-    modules = metadataModules.length ? metadataModules.slice(0, 3) : ['pipekeeper'];
+    // Use metadata modules if present; otherwise keep empty
+    modules = metadataModules.length ? metadataModules.slice(0, 3) : [];
   }
 
   return { modules, planKey, billingPeriod: mapped.billingPeriod };
@@ -191,6 +190,11 @@ export function buildAccessSummary(user, subscription) {
   // This is the single enforcement point that prevents WhiskeyKeeper (state: 'internal')
   // from appearing in normal users' activeModules before it officially launches.
   activeModules = filterModulesByReleaseState(activeModules, user);
+
+  // Safety: ensure activeModules is always an array
+  if (!activeModules || activeModules.length === 0) {
+    activeModules = [];
+  }
 
   return {
     tier,

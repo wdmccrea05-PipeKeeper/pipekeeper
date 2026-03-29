@@ -281,7 +281,7 @@ export default function ProfilePage() {
       cigar_notes: source.cigar_notes || "",
       whiskey_preferences: source.whiskey_preferences || { types: [], flavors: [], drinking_style: [], cocktails: [] },
       // Use saved value exactly; null/undefined = not set (system will derive from release state)
-      pipekeeper_enabled: source.pipekeeper_enabled ?? null,
+      pipekeeper_enabled: source.pipekeeper_enabled,
       whiskeykeeper_enabled: source.whiskeykeeper_enabled === true,
       winekeeper_enabled: source.winekeeper_enabled === true,
       cigarkeeper_enabled: source.cigarkeeper_enabled === true,
