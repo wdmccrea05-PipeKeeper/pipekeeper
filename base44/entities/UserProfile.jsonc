@@ -1,0 +1,270 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "User's email"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Public display name"
+    },
+    "bio": {
+      "type": "string",
+      "description": "User bio/description"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Profile picture URL"
+    },
+    "city": {
+      "type": "string",
+      "description": "City name"
+    },
+    "state_province": {
+      "type": "string",
+      "description": "State or Province"
+    },
+    "country": {
+      "type": "string",
+      "description": "Country"
+    },
+    "postal_code": {
+      "type": "string",
+      "description": "Zip code or postal code"
+    },
+    "show_location": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to show location in public profile and enable location search"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether profile is publicly searchable"
+    },
+    "allow_comments": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to allow comments on collection"
+    },
+    "enable_messaging": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to enable instant messaging with friends"
+    },
+    "allow_web_lookups": {
+      "type": "boolean",
+      "default": true,
+      "description": "Allow AI to use external web lookups for enrichment and identification"
+    },
+    "enable_curator": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable proactive Collection Curator insights"
+    },
+    "privacy_hide_values": {
+      "type": "boolean",
+      "default": false,
+      "description": "Hide pipe values in public profile"
+    },
+    "privacy_hide_inventory": {
+      "type": "boolean",
+      "default": false,
+      "description": "Hide tobacco inventory quantities in public profile"
+    },
+    "privacy_hide_collection_counts": {
+      "type": "boolean",
+      "default": false,
+      "description": "Hide collection counts in public profile"
+    },
+    "home_hide_collection_values": {
+      "type": "boolean",
+      "default": false,
+      "description": "Hide collection value panels on home page hero cards"
+    },
+    "social_media": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Array of social media links with platform name and URL"
+    },
+    "show_social_media": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to display social media links publicly"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time user was active"
+    },
+    "blocked_users": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of blocked user emails"
+    },
+    "clenching_preference": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No",
+        "Sometimes"
+      ],
+      "description": "Does the user prefer pipes that can be clenched"
+    },
+    "smoke_duration_preference": {
+      "type": "string",
+      "enum": [
+        "Short (15-30 min)",
+        "Medium (30-60 min)",
+        "Long (60+ min)",
+        "No Preference"
+      ],
+      "description": "Preferred smoking session duration"
+    },
+    "preferred_blend_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Favorite tobacco blend types"
+    },
+    "pipe_size_preference": {
+      "type": "string",
+      "enum": [
+        "Small",
+        "Medium",
+        "Large",
+        "Extra Large",
+        "No Preference"
+      ],
+      "description": "Preferred pipe bowl size"
+    },
+    "preferred_shapes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Favorite pipe shapes"
+    },
+    "strength_preference": {
+      "type": "string",
+      "enum": [
+        "Mild",
+        "Mild-Medium",
+        "Medium",
+        "Medium-Full",
+        "Full",
+        "No Preference"
+      ],
+      "description": "Preferred tobacco strength"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional preferences and notes (PipeKeeper)"
+    },
+    "whiskey_notes": {
+      "type": "string",
+      "description": "Free-form WhiskeyKeeper notes for AI recommendations. E.g. preferred styles, dislikes, pairing priorities, collector goals."
+    },
+    "wine_notes": {
+      "type": "string",
+      "description": "Free-form WineKeeper notes for AI recommendations."
+    },
+    "cigar_notes": {
+      "type": "string",
+      "description": "Free-form CigarKeeper notes for AI recommendations."
+    },
+    "measurement_preference": {
+      "type": "string",
+      "enum": [
+        "metric",
+        "imperial"
+      ],
+      "default": "metric",
+      "description": "User's preferred measurement system for displaying dimensions and weights"
+    },
+    "whiskey_preferences": {
+      "type": "object",
+      "description": "User's whiskey preferences for personalized recommendations",
+      "properties": {
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Preferred whiskey types e.g. Scotch, Bourbon, Rye"
+        },
+        "flavors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Preferred flavor profiles e.g. Peated, Smoky, Sherried"
+        },
+        "drinking_style": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Preferred drinking styles e.g. Neat, On the rocks"
+        },
+        "cocktails": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Preferred cocktails e.g. Old Fashioned, Manhattan"
+        }
+      }
+    },
+    "pipekeeper_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether PipeKeeper module is visible and active for this user"
+    },
+    "whiskeykeeper_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether WhiskeyKeeper module is visible and active for this user"
+    },
+    "winekeeper_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether WineKeeper module is visible and active for this user"
+    },
+    "cigarkeeper_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether CigarKeeper module is visible and active for this user"
+    },
+    "module_preferences_set": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user has explicitly set their module preferences (used to detect new vs existing users)"
+    },
+    "wantlist_prompt_on_low_inventory": {
+      "type": "boolean",
+      "default": true,
+      "description": "Prompt to add to Want List when inventory is running low"
+    },
+    "wantlist_suggest_unavailable": {
+      "type": "boolean",
+      "default": true,
+      "description": "Suggest adding to Want List when an item is unavailable"
+    },
+    "wantlist_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether Want List feature is enabled for this user"
+    }
+  },
+  "required": [
+    "user_email"
+  ]
+}

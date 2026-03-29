@@ -11,22 +11,61 @@
       "enum": [
         "blend",
         "pipe",
-        "bottle"
+        "tobacco_bulk",
+        "tobacco_tin",
+        "accessory"
       ],
-      "description": "Type of item"
+      "description": "Type of item being acquired"
     },
-    "status": {
+    "category": {
       "type": "string",
       "enum": [
         "wishlist",
         "shopping_list",
         "restock",
         "tried_not_owned",
-        "do_not_buy_again",
-        "archived"
+        "do_not_buy_again"
       ],
       "default": "wishlist",
-      "description": "Current status of the item"
+      "description": "Current category/status of the item"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "acquired",
+        "archived",
+        "removed"
+      ],
+      "default": "active",
+      "description": "Lifecycle status of the Want List entry"
+    },
+    "brand": {
+      "type": "string",
+      "description": "Manufacturer or brand (tobacco brand, pipe maker, etc.)"
+    },
+    "blend_name": {
+      "type": "string",
+      "description": "Specific blend or product name"
+    },
+    "pipe_model": {
+      "type": "string",
+      "description": "Pipe model/shape if applicable"
+    },
+    "pipe_type": {
+      "type": "string",
+      "enum": [
+        "new_production",
+        "estate",
+        "artisan_custom",
+        "vintage",
+        "unknown"
+      ],
+      "description": "For pipes: production type"
+    },
+    "format": {
+      "type": "string",
+      "description": "Format/packaging (tin, bulk, etc.)"
     },
     "priority": {
       "type": "string",
@@ -36,20 +75,74 @@
         "high"
       ],
       "default": "medium",
-      "description": "Priority level"
+      "description": "Priority level for acquisition"
     },
-    "notes": {
+    "desired_quantity": {
+      "type": "number",
+      "description": "Desired quantity (tins, ounces, units)"
+    },
+    "quantity_unit": {
       "type": "string",
-      "description": "Additional notes about the item"
+      "enum": [
+        "units",
+        "oz",
+        "grams",
+        "tins",
+        "pouches"
+      ],
+      "description": "Unit of measurement for quantity"
+    },
+    "target_price": {
+      "type": "number",
+      "description": "Target/max price willing to pay"
     },
     "estimated_price": {
       "type": "number",
-      "description": "Estimated price"
+      "description": "Estimated market price"
+    },
+    "notes": {
+      "type": "string",
+      "description": "User notes and comments"
+    },
+    "source": {
+      "type": "string",
+      "description": "Where user discovered this item (friend, store, online, etc.)"
+    },
+    "source_url": {
+      "type": "string",
+      "description": "URL or link to retailer/product page"
+    },
+    "linked_entity_id": {
+      "type": "string",
+      "description": "ID of linked Pipe, TobaccoBlend, or Bottle entity if from search"
+    },
+    "linked_entity_type": {
+      "type": "string",
+      "enum": [
+        "Pipe",
+        "TobaccoBlend",
+        "Bottle",
+        null
+      ],
+      "description": "Type of linked entity"
+    },
+    "is_manual": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this was manually added or from search"
+    },
+    "acquired_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when item was acquired"
+    },
+    "acquired_collection_id": {
+      "type": "string",
+      "description": "ID of created Pipe/TobaccoBlend/Bottle record if converted"
     }
   },
   "required": [
     "name",
-    "item_type",
-    "status"
+    "item_type"
   ]
 }
