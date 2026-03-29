@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { FileText, Table, X } from "lucide-react";
+import { FileText, Table, X, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -290,6 +290,26 @@ export default function CollectionReportExporter({ user }) {
     };
   };
 
+  const downloadPDFAsFile = async () => {
+    if (!pdfPreview) return;
+    try {
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+      const html = document.createElement('div');
+      html.innerHTML = pdfPreview;
+      doc.html(html, {
+        callback: () => {
+          doc.save(`${previewTitle.replace(/\s+/g, '-')}.pdf`);
+        },
+        margin: 10,
+        x: 0,
+        y: 0,
+      });
+    } catch (error) {
+      toast.error(t("reports.exportFailed"));
+    }
+  };
+
   const handleReport = async (type, format) => {
     try {
       setIsExporting(true);
@@ -464,6 +484,10 @@ export default function CollectionReportExporter({ user }) {
           <DialogFooter className="flex-shrink-0">
             <Button variant="outline" onClick={() => setPdfPreview(null)}>
               {t("forms.cancel")}
+            </Button>
+            <Button variant="outline" onClick={downloadPDFAsFile}>
+              <Download className="w-4 h-4 mr-2" />
+              {t("reports.downloadPDF") || "Download PDF"}
             </Button>
             <Button onClick={downloadPDF}>
               <FileText className="w-4 h-4 mr-2" />
