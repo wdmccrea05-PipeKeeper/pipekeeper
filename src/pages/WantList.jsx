@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n";
 import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Plus, Filter } from "lucide-react";
 import AcquisitionItemCard from "@/components/wantlist/AcquisitionItemCard";
@@ -98,11 +99,14 @@ export default function WantList() {
         item_type: newItem.item_type,
         status: newItem.status,
       });
+      toast.success('Item added to Want List!');
       queryClient.invalidateQueries({ queryKey: ["acquisitionItems"] });
       setNewItem({ name: "", item_type: "blend", status: "wishlist" });
       setAddItemOpen(false);
     } catch (err) {
-      setAddError(err?.message || "Failed to add item. Please try again.");
+      const errorMsg = err?.message || "Failed to add item. Please try again.";
+      setAddError(errorMsg);
+      toast.error(errorMsg);
       console.error("Failed to add item:", err);
     } finally {
       setIsAddingItem(false);
@@ -112,8 +116,10 @@ export default function WantList() {
   const handlePurchase = async (item) => {
     try {
       await base44.entities.AcquisitionItem.update(item.id, { status: "archived" });
+      toast.success('Marked as purchased!');
       queryClient.invalidateQueries({ queryKey: ["acquisitionItems"] });
     } catch (err) {
+      toast.error('Failed to mark as purchased');
       console.error("Failed to mark as purchased:", err);
     }
   };

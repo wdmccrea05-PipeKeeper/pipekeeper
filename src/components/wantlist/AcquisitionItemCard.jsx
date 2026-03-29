@@ -7,6 +7,7 @@ import {
   ChevronDown,
   Flag,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -34,8 +35,10 @@ export default function AcquisitionItemCard({
     try {
       setIsLoading(true);
       await updateStatus(item.id, newStatus);
+      toast.success('Status updated');
       onStatusChange?.(item.id, newStatus);
     } catch (err) {
+      toast.error('Failed to update status');
       console.error("Failed to update status:", err);
     } finally {
       setIsLoading(false);
@@ -46,8 +49,10 @@ export default function AcquisitionItemCard({
     try {
       setIsLoading(true);
       await updatePriority(item.id, newPriority);
+      toast.success('Priority updated');
       onStatusChange?.(item.id);
     } catch (err) {
+      toast.error('Failed to update priority');
       console.error("Failed to update priority:", err);
     } finally {
       setIsLoading(false);
@@ -58,8 +63,10 @@ export default function AcquisitionItemCard({
     try {
       setIsLoading(true);
       await archiveItem(item.id);
+      toast.success('Item archived');
       onArchive?.(item.id);
     } catch (err) {
+      toast.error('Failed to archive item');
       console.error("Failed to archive item:", err);
     } finally {
       setIsLoading(false);
@@ -70,9 +77,11 @@ export default function AcquisitionItemCard({
     try {
       setIsLoading(true);
       await updateNotes(item.id, notes);
+      toast.success('Notes saved');
       setShowNotes(false);
       onStatusChange?.(item.id);
     } catch (err) {
+      toast.error('Failed to save notes');
       console.error("Failed to update notes:", err);
     } finally {
       setIsLoading(false);
@@ -231,7 +240,19 @@ export default function AcquisitionItemCard({
             size="sm"
             variant="outline"
             className="text-xs h-8"
-            onClick={() => onPurchase?.(item)}
+            onClick={async () => {
+              try {
+                setIsLoading(true);
+                await archiveItem(item.id);
+                toast.success('Marked as purchased!');
+                onArchive?.(item.id);
+              } catch (err) {
+                toast.error('Failed to mark as purchased');
+                console.error(err);
+              } finally {
+                setIsLoading(false);
+              }
+            }}
             disabled={isLoading}
           >
             <CheckCircle2 className="w-3 h-3 mr-1" />
