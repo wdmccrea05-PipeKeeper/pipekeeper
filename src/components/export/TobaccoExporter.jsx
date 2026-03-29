@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { toast } from 'sonner';
 import { calculateCellaredOzFromLogs } from "@/components/utils/tobaccoQuantityHelpers";
 
 // ─── PDF HELPERS ────────────────────────────────────────────────────────────
@@ -388,6 +389,9 @@ export default function TobaccoExporter() {
       });
 
       doc.save(`tobacco-collection-${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('TobaccoExporter PDF error:', error);
+      toast.error('Export failed: ' + error.message);
     } finally {
       setLoading(false);
     }

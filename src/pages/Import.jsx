@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { invalidatePipeQueries, invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ArrowLeft, Download, Upload, FileSpreadsheet, CheckCircle, AlertCircle } from "lucide-react";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const PIPE_TEMPLATE_HEADERS = [
@@ -36,14 +37,7 @@ export default function ImportPage() {
   
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-    retry: 1,
-  });
-
-  const isPaidUser = hasPremiumAccess(user);
+  const { user, hasPaid: isPaidUser } = useCurrentUser();
 
   const downloadPipeTemplate = () => {
     const csvContent = PIPE_TEMPLATE_HEADERS.join(',') + '\n' +
@@ -128,7 +122,7 @@ export default function ImportPage() {
       setPipeResults({ success, failed, total: pipes.length });
       invalidatePipeQueries(queryClient, user?.email);
     } catch (error) {
-      alert(t("import.csvParseFailed"));
+      toast.error(t("import.csvParseFailed"));
     } finally {
       setUploadingPipes(false);
       e.target.value = '';
@@ -161,7 +155,7 @@ export default function ImportPage() {
       setTobaccoResults({ success, failed, total: blends.length });
       invalidateBlendQueries(queryClient, user?.email);
     } catch (error) {
-      alert(t("import.csvParseFailed"));
+      toast.error(t("import.csvParseFailed"));
     } finally {
       setUploadingTobacco(false);
       e.target.value = '';
