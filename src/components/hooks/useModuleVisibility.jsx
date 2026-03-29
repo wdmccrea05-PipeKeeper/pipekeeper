@@ -1,13 +1,17 @@
 /**
- * useModuleVisibility — central source of truth for module lock/visibility state.
+ * useModuleVisibility — central source of truth for module enabled/visibility state.
  *
- * Visibility is separate from entitlements. Hidden/blocked modules do not delete data.
+ * Resolution order:
+ *   1. If user has saved module preferences → use saved value, filtered through access gate
+ *   2. Else if admin/internal tester → no defaults (tester explicitly chooses via onboarding)
+ *   3. Else → derive from canUserAccessModule (access + entitlement, not release state)
  *
- * Key behavior:
- * - launched modules respect saved profile preferences
- * - internal modules are visible only to internal/admin testers
- * - blocked modules are hidden for everyone
- * - local admin preview overrides from moduleReleaseState are honored
+ * CollectionKeeper is the platform shell. Modules are optional layers.
+ * PipeKeeper is NOT a hardcoded default — it resolves as enabled for normal users
+ * because it is the only currently-launched accessible module, not because it is special.
+ *
+ * Release state is used as an ACCESS FILTER (canUserAccessModule),
+ * never as the primary source of enabled state.
  */
 
 import { useMemo } from 'react';
@@ -16,15 +20,11 @@ import { base44 } from '@/api/base44Client';
 import { safeUpdate } from '@/components/utils/safeUpdate';
 import {
   MODULE_RELEASE_STATES,
-  getEffectiveModuleReleaseState,
+  canUserAccessModule,
   isInternalModuleTester,
 } from '@/components/utils/moduleReleaseState';
 
 const normEmail = (e) => String(e || '').trim().toLowerCase();
-
-export const LAUNCHED_MODULES = Object.entries(MODULE_RELEASE_STATES)
-  .filter(([, state]) => state === 'launched')
-  .map(([key]) => key);
 
 export const MODULE_FIELDS = {
   pipekeeper: 'pipekeeper_enabled',
@@ -33,40 +33,50 @@ export const MODULE_FIELDS = {
   cigarkeeper: 'cigarkeeper_enabled',
 };
 
+const ALL_MODULE_KEYS = Object.keys(MODULE_RELEASE_STATES);
+
+/**
+ * Determine whether a module should be enabled for a given user.
+ *
+ * @param {string} moduleKey
+ * @param {boolean} prefsSet  — whether user has ever explicitly saved module preferences
+ * @param {object|null} profile — UserProfile record
+ * @param {object|null} user  — current user
+ */
 function moduleDefaultEnabled(moduleKey, prefsSet, profile, user) {
-  const effectiveState = getEffectiveModuleReleaseState(moduleKey, user);
+  // Step 1: Access gate — hard filter regardless of any other logic.
+  // canUserAccessModule returns false for blocked modules (everyone) and
+  // internal modules for non-testers. This is the only place release state is consulted.
+  const canAccess = canUserAccessModule(moduleKey, user, true);
+  if (!canAccess) return false;
 
-  // Hard block: module is fully blocked — never show to anyone
-  if (effectiveState === 'blocked') return false;
-
-  // Internal module: only internal testers can see/enable it
-  if (effectiveState === 'internal' && !isInternalModuleTester(user)) return false;
-
-  // Preferences saved — always honour saved value exactly
+  // Step 2: Saved preferences take priority (when present and access is granted).
   if (prefsSet) {
-    const field = `${moduleKey}_enabled`;
+    const field = MODULE_FIELDS[moduleKey];
     const saved = profile?.[field];
-    // Saved boolean wins; undefined/null treated as false (no implicit defaults)
+    // Saved boolean wins exactly. null/undefined = not explicitly set → treat as false.
     return saved === true;
   }
 
-  // Preferences NOT yet saved — derive defaults from access level:
-  //   Admin/internal testers: no defaults forced. They choose explicitly during onboarding.
-  //   Normal users: default on for launched modules (currently only pipekeeper), off otherwise.
-  // This produces pipekeeper-only for normal users via entitlement, NOT via hardcoded default.
+  // Step 3: No saved preferences yet.
+  //   - Admin/internal testers: no default. They choose explicitly during onboarding.
+  //     Forcing a default would override their intentional WhiskeyKeeper-only setup.
+  //   - Normal users: default on if accessible. Since only launched modules pass the
+  //     access gate above, normal users will get pipekeeper=true via access, not hardcoding.
   if (isInternalModuleTester(user)) return false;
-  return effectiveState === 'launched';
+
+  // Normal user with access and no saved prefs → on by default.
+  // This currently resolves to pipekeeper=true for normal users (the only launched module).
+  return true;
 }
 
 export function deriveModuleStates(profile, user = null) {
   const prefsSet = profile?.module_preferences_set === true;
 
-  return {
-    pipekeeper: moduleDefaultEnabled('pipekeeper', prefsSet, profile, user),
-    whiskeykeeper: moduleDefaultEnabled('whiskeykeeper', prefsSet, profile, user),
-    winekeeper: moduleDefaultEnabled('winekeeper', prefsSet, profile, user),
-    cigarkeeper: moduleDefaultEnabled('cigarkeeper', prefsSet, profile, user),
-  };
+  return ALL_MODULE_KEYS.reduce((acc, key) => {
+    acc[key] = moduleDefaultEnabled(key, prefsSet, profile, user);
+    return acc;
+  }, {});
 }
 
 export function useModuleVisibility() {
@@ -151,6 +161,7 @@ export function useModuleVisibility() {
   async function saveModulePreferences(states) {
     if (!email && !userId) return;
 
+    // Save exactly what the user selected. No coercion.
     const patch = {
       pipekeeper_enabled: states.pipekeeper === true,
       whiskeykeeper_enabled: states.whiskeykeeper === true,
