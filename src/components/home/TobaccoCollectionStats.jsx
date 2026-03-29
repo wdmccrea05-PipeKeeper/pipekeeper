@@ -25,7 +25,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
   const [showSettings, setShowSettings] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   
-  const { user: currentUser, hasPro } = useCurrentUser();
+  const { user: currentUser } = useCurrentUser();
   const user = userProp || currentUser;
 
   const { data: blends = [] } = useQuery({
@@ -42,19 +42,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
     initialData: [],
   });
 
-  const { data: smokingLogs = [] } = useQuery({
-    queryKey: ['smoking-logs-all', user?.email],
-    queryFn: () => scopedEntities.SmokingLog.listForUser(user?.email, '-date', 500),
-    enabled: !!user?.email,
-    initialData: [],
-  });
 
-  const { data: pipes = [] } = useQuery({
-    queryKey: ['pipes-all', user?.email],
-    queryFn: () => scopedEntities.Pipe.listForUser(user?.email),
-    enabled: !!user?.email,
-    initialData: [],
-  });
 
   // Calculate statistics (safe from null/undefined)
   const totalBlends = (blends || []).length;

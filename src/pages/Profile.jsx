@@ -833,7 +833,7 @@ export default function ProfilePage() {
             <div className="pt-2 space-y-3">
               <div className="flex items-center gap-2">
                 <WhiskeyKeeperIcon size={16} color="rgb(217,119,6)" />
-                <Label className="font-semibold text-base" style={{ color: 'rgba(224,216,200,0.85)' }}>Whiskey Preferences</Label>
+                <Label className="font-semibold text-base" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profile.whiskeyPreferences", "Whiskey Preferences")}</Label>
               </div>
               <p className="text-xs text-stone-500">
                 Used by Curator to personalize pairing recommendations and cross-collection insights.
@@ -890,7 +890,7 @@ export default function ProfilePage() {
                 className="text-stone-100 border-stone-500 hover:bg-stone-800 hover:text-stone-50"
               >
                 <Share2 className="w-4 h-4 mr-2" />
-                Share Collection Insights
+                {t("profile.shareCollectionInsights", "Share Collection Insights")}
               </Button>
 
               {user?.email ? (
@@ -919,9 +919,9 @@ export default function ProfilePage() {
                 <Layers className="w-6 h-6" style={{ color: '#D4A574' }} />
               </div>
               <div>
-                <CardTitle className="text-xl" style={{ color: '#F5F1E7' }}>Active Modules</CardTitle>
+                <CardTitle className="text-xl" style={{ color: '#F5F1E7' }}>{t("profile.activeModules", "Active Modules")}</CardTitle>
                 <CardDescription style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  Control which collection modules are visible. Your data is never deleted when a module is hidden.
+                  {t("profile.activeModulesDesc", "Control which collection modules are visible. Your data is never deleted when a module is hidden.")}
                 </CardDescription>
               </div>
             </div>
@@ -951,11 +951,11 @@ export default function ProfilePage() {
                         whiskeykeeper_enabled: newVal,
                       });
                     }
-                    toast.success(newVal ? "WhiskeyKeeper enabled" : "WhiskeyKeeper disabled");
+                    toast.success(newVal ? t("profile.whiskeyKeeperEnabled", "WhiskeyKeeper enabled") : t("profile.whiskeyKeeperDisabled", "WhiskeyKeeper disabled"));
                     await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
                   } catch (e) {
                     console.error("[Profile] WhiskeyKeeper toggle error:", e);
-                    toast.error("Failed to update WhiskeyKeeper setting");
+                    toast.error(t("profile.whiskeyKeeperUpdateFailed", "Failed to update WhiskeyKeeper setting"));
                   }
                 }}
                 className="data-[state=checked]:bg-[#A35C5C]"
