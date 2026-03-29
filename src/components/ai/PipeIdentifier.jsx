@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Sparkles, Camera, Upload, Loader2, X } from "lucide-react";
+import { Sparkles, Camera, Upload, Loader2, X, Heart } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -236,6 +236,10 @@ Be specific and detailed. If uncertain about something, say so.`;
                   setResult(null);
                   setPhotos([]);
                   setPreviews([]);
+                  setNameHint('');
+                  setMakerHint('');
+                  setShapeHint('');
+                  setStampingHint('');
                 }).catch(err => {
                   toast.error('Failed to add to Want List');
                   console.error(err);
@@ -243,6 +247,7 @@ Be specific and detailed. If uncertain about something, say so.`;
               }}
               className="w-full bg-gradient-to-r from-[#7E4A3A] to-[#5F342A] hover:from-[#8C5242] hover:to-[#6B3C30] text-[#F8EBDD]"
             >
+              <Heart className="w-4 h-4 mr-2" />
               Add to Want List
             </Button>
           </div>

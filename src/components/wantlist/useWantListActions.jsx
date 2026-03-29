@@ -58,7 +58,7 @@ export function useWantListActions() {
     });
   };
 
-  const markPurchased = async (itemId, date) => {
+  const markPurchased = async (itemId) => {
     return await base44.entities.AcquisitionItem.update(itemId, {
       status: "archived",
     });
@@ -73,7 +73,18 @@ export function useWantListActions() {
   const linkToCollection = async (itemId, collectionRecordId) => {
     return await base44.entities.AcquisitionItem.update(itemId, {
       status: "archived",
-      notes: `Linked to collection record`,
+      notes: `Linked to collection: ${collectionRecordId}`,
+    });
+  };
+
+  const createFromIdentification = async (identificationData) => {
+    return await base44.entities.AcquisitionItem.create({
+      name: identificationData.name || 'Item',
+      item_type: identificationData.item_type || 'blend',
+      status: 'wishlist',
+      priority: 'medium',
+      notes: identificationData.notes,
+      estimated_price: identificationData.estimated_price,
     });
   };
 

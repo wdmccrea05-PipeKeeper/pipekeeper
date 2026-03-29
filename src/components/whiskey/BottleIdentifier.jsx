@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Sparkles, Camera, Upload, Loader2 } from "lucide-react";
+import { Sparkles, Camera, Upload, Loader2, Heart } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ export default function BottleIdentifier({ onBottleIdentified }) {
   const [typeHint, setTypeHint] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [result, setResult] = useState(null);
 
   const handleUpload = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -59,7 +60,7 @@ export default function BottleIdentifier({ onBottleIdentified }) {
       if (distilleryHint) hints.push(`Distillery: ${distilleryHint}`);
       if (typeHint) hints.push(`Type: ${typeHint}`);
 
-      const result = await base44.integrations.Core.InvokeLLM({
+      const apiResult = await base44.integrations.Core.InvokeLLM({
         prompt: `Identify this whiskey bottle from the provided images. 
 
 ${hints.length > 0 ? `User provided hints:\n${hints.join('\n')}\n\n` : ''}
@@ -96,36 +97,54 @@ Provide detailed, accurate information based on what you can see in the images.`
       });
 
       const bottleData = {
-        name: result.name || '',
-        distillery: result.distillery || '',
-        region: result.region || '',
-        country: result.country || '',
-        type: result.type || 'Other',
-        age: result.age || null,
-        abv: result.abv || null,
-        bottle_size: result.bottle_size || '750ml',
-        notes: result.tasting_notes || '',
-        purchase_price: result.estimated_price || null,
+        name: apiResult.name || '',
+        distillery: apiResult.distillery || '',
+        region: apiResult.region || '',
+        country: apiResult.country || '',
+        type: apiResult.type || 'Other',
+        age: apiResult.age || null,
+        abv: apiResult.abv || null,
+        bottle_size: apiResult.bottle_size || '750ml',
+        notes: apiResult.tasting_notes || '',
+        purchase_price: apiResult.estimated_price || null,
         photo: photoUrls[0] || '',
         fill_level: 'Full',
         bottle_count: 1,
         favorite: false
       };
 
+      setResult(bottleData);
       onBottleIdentified(bottleData);
       toast.success(t("bottleIdentifier.identifySuccess", "Bottle identified successfully"));
-      
-      // Reset
+    } catch (err) {
+      console.error('Identify error:', err);
+      toast.error(t("bottleIdentifier.identifyFailed", "Failed to identify bottle"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddToWantList = async () => {
+    if (!result) return;
+    try {
+      await base44.entities.AcquisitionItem.create({
+        name: result.name || 'Identified Whiskey',
+        item_type: 'bottle',
+        status: 'wishlist',
+        priority: 'medium',
+        notes: `Distillery: ${result.distillery}\nType: ${result.type}\nAge: ${result.age || 'Unknown'}\nABV: ${result.abv || 'Unknown'}`,
+        estimated_price: result.purchase_price,
+      });
+      toast.success('Added to Want List!');
+      setResult(null);
       setPhotos([]);
       setPhotoUrls([]);
       setNameHint('');
       setDistilleryHint('');
       setTypeHint('');
     } catch (err) {
-      console.error('Identify error:', err);
-      toast.error(t("bottleIdentifier.identifyFailed", "Failed to identify bottle"));
-    } finally {
-      setLoading(false);
+      toast.error('Failed to add to Want List');
+      console.error(err);
     }
   };
 
@@ -156,146 +175,133 @@ Provide detailed, accurate information based on what you can see in the images.`
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <label
-            className="rounded-2xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors text-center"
+        {/* Results */}
+        {result && (
+          <div
+            className="rounded-2xl p-5 space-y-4"
             style={{
-              background: "linear-gradient(145deg, rgba(34,25,18,0.95), rgba(26,20,16,0.95))",
-              border: "1px dashed rgba(140,105,65,0.38)",
-              minHeight: "132px",
+              background: "rgba(20,15,10,0.7)",
+              border: "1px solid rgba(140,105,65,0.3)",
             }}
           >
-            {uploading ? (
-              <>
-                <Loader2 className="w-7 h-7 text-[#D7C9B2]/80 animate-spin" />
-                <span className="font-medium text-[#F5F1E7]">
-                  {t("common.uploading", "Uploading...")}
-                </span>
-              </>
-            ) : (
-              <>
-                <Upload className="w-7 h-7 text-[#D7C9B2]/80" />
-                <span className="font-medium text-[#F5F1E7]">
-                  {t("bottleIdentifier.uploadPhotos", "Upload Label Photos")}
-                </span>
-              </>
-            )}
-            <input type="file" accept="image/*" multiple className="hidden" onChange={handleUpload} disabled={uploading} />
-          </label>
-
-          <label
-            className="rounded-2xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors text-center"
-            style={{
-              background: "linear-gradient(145deg, rgba(34,25,18,0.95), rgba(26,20,16,0.95))",
-              border: "1px dashed rgba(140,105,65,0.38)",
-              minHeight: "132px",
-            }}
-          >
-            {uploading ? (
-              <>
-                <Loader2 className="w-7 h-7 text-[#D7C9B2]/80 animate-spin" />
-                <span className="font-medium text-[#F5F1E7]">
-                  {t("common.uploading", "Uploading...")}
-                </span>
-              </>
-            ) : (
-              <>
-                <Camera className="w-7 h-7 text-[#D7C9B2]/80" />
-                <span className="font-medium text-[#F5F1E7]">
-                  {t("common.takePhoto", "Take Photo")}
-                </span>
-              </>
-            )}
-            <input type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={handleUpload} disabled={uploading} />
-          </label>
-        </div>
-
-        {photos.length > 0 && (
-          <div className="text-sm text-[#D7C9B2]/80">
-            {photos.length} {t("bottleIdentifier.photosSelected", "photo(s) selected")}
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#F0C58A]" />
+              <span className="text-sm font-semibold text-[#D4A574]">Bottle Identified</span>
+            </div>
+            <div className="text-sm text-[#E0D8C8] space-y-2">
+              <p><strong>Name:</strong> {result.name}</p>
+              <p><strong>Distillery:</strong> {result.distillery}</p>
+              <p><strong>Type:</strong> {result.type}</p>
+              {result.age && <p><strong>Age:</strong> {result.age} years</p>}
+              {result.abv && <p><strong>ABV:</strong> {result.abv}%</p>}
+            </div>
+            <Button
+              onClick={handleAddToWantList}
+              className="w-full bg-gradient-to-r from-[#7E4A3A] to-[#5F342A] hover:from-[#8C5242] hover:to-[#6B3C30] text-[#F8EBDD]"
+            >
+              <Heart className="w-4 h-4 mr-2" />
+              Add to Want List
+            </Button>
           </div>
         )}
 
-        <div className="space-y-4">
-          <div className="text-sm font-semibold text-[#F5F1E7]">
-            {t("bottleIdentifier.optionalHints", "Optional Hints")}
-          </div>
+        {!result && (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label
+                className="rounded-2xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors text-center"
+                style={{
+                  background: "linear-gradient(145deg, rgba(34,25,18,0.95), rgba(26,20,16,0.95))",
+                  border: "1px dashed rgba(140,105,65,0.38)",
+                  minHeight: "132px",
+                }}
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-7 h-7 text-[#D7C9B2]/80 animate-spin" />
+                    <span className="font-medium text-[#F5F1E7]">
+                      {t("common.uploading", "Uploading...")}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-7 h-7 text-[#D7C9B2]/80" />
+                    <span className="font-medium text-[#F5F1E7]">
+                      {t("bottleIdentifier.uploadPhotos", "Upload Label Photos")}
+                    </span>
+                  </>
+                )}
+                <input type="file" accept="image/*" multiple className="hidden" onChange={handleUpload} disabled={uploading} />
+              </label>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Input
-              value={nameHint}
-              onChange={(e) => setNameHint(e.target.value)}
-              placeholder={t("bottleIdentifier.nameLabel", "Name / Label")}
-            />
-            <Input
-              value={distilleryHint}
-              onChange={(e) => setDistilleryHint(e.target.value)}
-              placeholder={t("bottleIdentifier.distillery", "Distillery")}
-            />
-            <Input
-              value={typeHint}
-              onChange={(e) => setTypeHint(e.target.value)}
-              placeholder={t("bottleIdentifier.type", "Type")}
-            />
-          </div>
-        </div>
+              <label
+                className="rounded-2xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors text-center"
+                style={{
+                  background: "linear-gradient(145deg, rgba(34,25,18,0.95), rgba(26,20,16,0.95))",
+                  border: "1px dashed rgba(140,105,65,0.38)",
+                  minHeight: "132px",
+                }}
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-7 h-7 text-[#D7C9B2]/80 animate-spin" />
+                    <span className="font-medium text-[#F5F1E7]">
+                      {t("common.uploading", "Uploading...")}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Camera className="w-7 h-7 text-[#D7C9B2]/80" />
+                    <span className="font-medium text-[#F5F1E7]">
+                      {t("common.takePhoto", "Take Photo")}
+                    </span>
+                  </>
+                )}
+                <input type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={handleUpload} disabled={uploading} />
+              </label>
+            </div>
 
-        <Button
-          onClick={handleIdentify}
-          disabled={loading || uploading || !photoUrls.length}
-          className="w-full bg-gradient-to-r from-[#A35C5C] to-[#8C4B4B] hover:from-[#B26666] hover:to-[#995454] text-[#F8EBDD] border border-[rgba(255,255,255,0.06)]"
-        >
-          {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-          {t("bottleIdentifier.identifyBottle", "Identify Bottle")}
-        </Button>
+            {photos.length > 0 && (
+              <div className="text-sm text-[#D7C9B2]/80">
+                {photos.length} {t("bottleIdentifier.photosSelected", "photo(s) selected")}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div className="text-sm font-semibold text-[#F5F1E7]">
+                {t("bottleIdentifier.optionalHints", "Optional Hints")}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Input
+                  value={nameHint}
+                  onChange={(e) => setNameHint(e.target.value)}
+                  placeholder={t("bottleIdentifier.nameLabel", "Name / Label")}
+                />
+                <Input
+                  value={distilleryHint}
+                  onChange={(e) => setDistilleryHint(e.target.value)}
+                  placeholder={t("bottleIdentifier.distillery", "Distillery")}
+                />
+                <Input
+                  value={typeHint}
+                  onChange={(e) => setTypeHint(e.target.value)}
+                  placeholder={t("bottleIdentifier.type", "Type")}
+                />
+              </div>
+            </div>
+
+            <Button
+              onClick={handleIdentify}
+              disabled={loading || uploading || !photoUrls.length}
+              className="w-full bg-gradient-to-r from-[#A35C5C] to-[#8C4B4B] hover:from-[#B26666] hover:to-[#995454] text-[#F8EBDD] border border-[rgba(255,255,255,0.06)]"
+            >
+              {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+              {t("bottleIdentifier.identifyBottle", "Identify Bottle")}
+            </Button>
+          </>
+        )}
       </CardContent>
     </Card>
   );
 }
-
-function BottleIdentifierWithWantList({ onBottleIdentified }) {
-  const { t } = useTranslation();
-  const [identifier, setIdentifier] = useState(null);
-  const [result, setResult] = useState(null);
-
-  const handleIdentified = (data) => {
-    setResult(data);
-    onBottleIdentified?.(data);
-  };
-
-  const handleAddToWantList = async () => {
-    if (!result) return;
-    try {
-      await base44.entities.AcquisitionItem.create({
-        name: result.name || 'Identified Whiskey',
-        item_type: 'bottle',
-        status: 'wishlist',
-        priority: 'medium',
-        notes: `Distillery: ${result.distillery}\nType: ${result.type}\nAge: ${result.age || 'Unknown'}\nABV: ${result.abv || 'Unknown'}`,
-        estimated_price: result.purchase_price,
-      });
-      toast.success('Added to Want List!');
-      setResult(null);
-      setIdentifier(null);
-    } catch (err) {
-      toast.error('Failed to add to Want List');
-      console.error(err);
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <BottleIdentifier onBottleIdentified={handleIdentified} />
-      {result && (
-        <Button
-          onClick={handleAddToWantList}
-          className="w-full bg-gradient-to-r from-[#7E4A3A] to-[#5F342A] hover:from-[#8C5242] hover:to-[#6B3C30] text-[#F8EBDD]"
-        >
-          Add to Want List
-        </Button>
-      )}
-    </div>
-  );
-}
-
-export { BottleIdentifierWithWantList };
