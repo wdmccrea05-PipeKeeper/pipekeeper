@@ -2,22 +2,18 @@
   "name": "AcquisitionItem",
   "type": "object",
   "properties": {
-    "item_type": {
-      "type": "string",
-      "enum": ["blend", "bottle", "pipe"],
-      "description": "Type of item"
-    },
     "name": {
       "type": "string",
-      "description": "Item name"
+      "description": "Name of the item"
     },
-    "brand_or_maker": {
+    "item_type": {
       "type": "string",
-      "description": "Brand or maker name"
+      "enum": ["blend", "pipe", "bottle"],
+      "description": "Type of item (tobacco blend, pipe, or whiskey bottle)"
     },
     "status": {
       "type": "string",
-      "enum": ["wishlist", "shopping_list", "restock", "tried_not_owned", "do_not_buy_again", "purchased", "archived"],
+      "enum": ["wishlist", "shopping_list", "restock", "tried_not_owned", "do_not_buy_again", "archived"],
       "default": "wishlist",
       "description": "Current status of the item"
     },
@@ -27,111 +23,18 @@
       "default": "medium",
       "description": "Priority level"
     },
-    "source_type": {
-      "type": "string",
-      "enum": ["manual", "session", "curator", "shared", "restock"],
-      "description": "How the item was added"
-    },
-    "source_record_id": {
-      "type": "string",
-      "description": "ID of the source record (e.g., SmokingLog ID)"
-    },
-    "matched_collection_record_id": {
-      "type": "string",
-      "description": "ID of matched collection item after purchase"
-    },
-    "from_session_id": {
-      "type": "string",
-      "description": "SmokingLog or TastingLog ID if sourced from session"
-    },
-    "shared_by_user_id": {
-      "type": "string",
-      "description": "Email of user who shared this item"
-    },
     "notes": {
       "type": "string",
-      "description": "User notes about the item"
-    },
-    "reason": {
-      "type": "string",
-      "description": "Reason (for do_not_buy_again status)"
+      "description": "Additional notes about the item"
     },
     "estimated_price": {
       "type": "number",
-      "description": "Estimated purchase price"
+      "description": "Estimated price"
     },
-    "desired_quantity": {
-      "type": "number",
-      "description": "Desired quantity to purchase"
-    },
-    "image": {
+    "image_url": {
       "type": "string",
-      "description": "Image URL"
-    },
-    "purchased_date": {
-      "type": "string",
-      "format": "date",
-      "description": "Date when item was purchased"
-    },
-    "blend_type": {
-      "type": "string",
-      "description": "Tobacco blend type"
-    },
-    "cut": {
-      "type": "string",
-      "description": "Tobacco cut"
-    },
-    "strength": {
-      "type": "string",
-      "description": "Tobacco strength"
-    },
-    "components": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Tobacco components"
-    },
-    "distillery": {
-      "type": "string",
-      "description": "Distillery name for bottles"
-    },
-    "proof": {
-      "type": "number",
-      "description": "Proof for bottles"
-    },
-    "age": {
-      "type": "number",
-      "description": "Age in years for bottles"
-    },
-    "bottle_category": {
-      "type": "string",
-      "description": "Bottle category/type"
-    },
-    "pipe_maker": {
-      "type": "string",
-      "description": "Pipe maker"
-    },
-    "pipe_model": {
-      "type": "string",
-      "description": "Pipe model"
-    },
-    "pipe_shape": {
-      "type": "string",
-      "description": "Pipe shape"
-    },
-    "pipe_finish": {
-      "type": "string",
-      "description": "Pipe finish"
-    },
-    "pipe_material": {
-      "type": "string",
-      "description": "Pipe bowl material"
-    },
-    "pipe_desired_condition": {
-      "type": "string",
-      "description": "Desired condition for pipe"
+      "description": "URL to item image"
     }
   },
-  "required": ["item_type", "name", "brand_or_maker", "status"]
+  "required": ["name", "item_type", "status"]
 }
