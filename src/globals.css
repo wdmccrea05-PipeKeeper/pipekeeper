@@ -28,6 +28,7 @@ html {
 
 body {
   min-height: 100%;
+  background-color: #140f0c;
   /* Do NOT set overflow-x:hidden on body — breaks vertical scroll on iOS Safari */
   /* Do NOT set overflow-y here — let the document scroll naturally */
 }
