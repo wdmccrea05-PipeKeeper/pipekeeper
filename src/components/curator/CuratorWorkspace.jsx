@@ -27,7 +27,7 @@ import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 import CuratorActionPanel from "./CuratorActionPanel";
 import CuratorActionResultCard from "./CuratorActionResultCard";
 import normalizeCuratorActionResult from "./normalizeCuratorActionResult.jsx";
-import curatorActionExecutor from "./curatorActionExecutor.jsx";
+import curatorActionExecutor from "./curatorActionExecutor.js";
 import { runCuratorAction } from "./curatorActionService.js";
 import {
   buildCuratorChatSystemPrompt,

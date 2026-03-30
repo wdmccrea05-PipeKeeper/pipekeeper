@@ -433,7 +433,6 @@ RETURN EXACTLY 3 ITEMS. Each in 1-2 sentences. No long explanations.
 }
 
 function getActionPrompt(actionType, context, anchorOverrides) {
-  // Normalize anchorOverrides: support both legacy array and new structured object
   const anchors = Array.isArray(anchorOverrides)
     ? anchorOverrides
     : anchorOverrides?.anchors || [];
@@ -443,11 +442,9 @@ function getActionPrompt(actionType, context, anchorOverrides) {
 
   if (import.meta.env.DEV) { console.log("[FindSimilar] anchorOverrides received:", { actionType, anchorMode, anchors: anchors.map(a => a?.name) }); }
 
-  // FAST PATHS: Use lightweight prompts for find_similar actions
   if (actionType === "find_similar_blends") {
     if (anchors.length === 0) throw new Error("No anchor blend selected for similar blend recommendations.");
     if (anchorMode === "top3" && anchors.length > 1) {
-      // Multi-anchor: build a combined prompt that references all anchors
       if (import.meta.env.DEV) { console.log("[FindSimilar] Multi-anchor blends:", anchors.map(a => a.name)); }
       const anchorLines = anchors.map((a, i) => {
         const details = [
@@ -539,7 +536,6 @@ RETURN EXACTLY 3 ITEMS spanning diversity across the anchors.
     return buildLightweightFindSimilarBottlePrompt(anchors[0], context);
   }
 
-  // Standard actions
   switch (actionType) {
     case "optimize_collection":
       return buildOptimizeCollectionPrompt(context);
@@ -561,11 +557,7 @@ RETURN EXACTLY 3 ITEMS spanning diversity across the anchors.
   }
 }
 
-async function invokeCuratorLLM({
-  prompt,
-  actionType,
-  requestId,
-}) {
+async function invokeCuratorLLM({ prompt, actionType, requestId }) {
   const response = await base44.integrations.Core.InvokeLLM({
     prompt,
     add_context_from_internet: false,
@@ -593,11 +585,7 @@ export default async function curatorActionExecutor({
   const promptSize = JSON.stringify(prompt).length;
   if (import.meta.env.DEV) { console.log(`[Curator] Prompt size: ${promptSize} bytes`); }
 
-  const responseText = await invokeCuratorLLM({
-    prompt,
-    actionType,
-    requestId,
-  });
+  const responseText = await invokeCuratorLLM({ prompt, actionType, requestId });
 
   if (import.meta.env.DEV) { console.log("[Curator] Response received", { length: responseText?.length, isString: typeof responseText === "string" }); }
 
