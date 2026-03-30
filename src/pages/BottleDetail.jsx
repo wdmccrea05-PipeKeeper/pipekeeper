@@ -118,11 +118,6 @@ function BottleDetailInner() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { user, isLoading: userLoading } = useCurrentUser();
-  const [, setEditingTasting] = useState(null);
-  const { useState, useEffect, useMemo } = require('react');
-  const updateBottle = (updates) => {
-    setBottle(prev => ({ ...prev, ...updates }));
-  };
 
   const bottleId = params.get("id") || params.get("bottleId");
   const userEmail = user?.email || null;
@@ -143,6 +138,10 @@ function BottleDetailInner() {
   const [showInventoryManager, setShowInventoryManager] = useState(
     params.get("inventory") === "1"
   );
+
+  const updateBottle = (updates) => {
+    setBottle(prev => ({ ...prev, ...updates }));
+  };
 
   async function handleDelete() {
     if (!bottle?.id || !userEmail || bottle.created_by !== userEmail) return;
