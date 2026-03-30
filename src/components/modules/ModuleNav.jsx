@@ -68,8 +68,7 @@ export default function ModuleNav({ currentPageName }) {
 
   const items = [
     { page: "CollectionHub", label: "Hub", icon: Home },
-
-    ...(enabledKeys.has("pipekeeper")
+    ...(enabledKeys.has("pipekeeper") || currentPageName === "PipeKeeper"
       ? [
           {
             page: "PipeKeeper",
@@ -79,8 +78,7 @@ export default function ModuleNav({ currentPageName }) {
           },
         ]
       : []),
-
-    ...(whiskeyOpenable
+    ...(whiskeyOpenable || currentPageName === "WhiskeyKeeper"
       ? [
           {
             page: "WhiskeyKeeper",
