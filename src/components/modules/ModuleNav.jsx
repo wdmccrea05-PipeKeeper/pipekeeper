@@ -15,10 +15,8 @@ import {
   BarChart3,
   TestTube2,
 } from "lucide-react";
-import {
-  MODULE_ICONS,
-  getAssetImageStyle,
-} from "@/components/branding/moduleAssets";
+import PipeIcon from "@/components/icons/PipeIcon";
+import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 import { isModuleEnabled } from "@/components/utils/moduleGuard";
 
 function NavItem({ item, isActive }) {
@@ -36,15 +34,7 @@ function NavItem({ item, isActive }) {
           : "1px solid transparent",
       }}
     >
-      {item.image ? (
-        <img
-          src={item.image}
-          alt={item.label}
-          className="w-4 h-4 object-contain bg-transparent flex-shrink-0"
-          style={getAssetImageStyle(item.assetKey, "small")}
-          draggable={false}
-        />
-      ) : item.icon ? (
+      {item.icon ? (
         <item.icon
           className="w-4 h-4 flex-shrink-0"
           style={{ color: isActive ? "#D4A574" : "rgba(180,140,75,0.78)" }}
@@ -57,7 +47,7 @@ function NavItem({ item, isActive }) {
 
 export default function ModuleNav({ currentPageName, user }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { isAdmin } = user || {};
+  const isAdmin = user?.role === 'admin';
   const location = useLocation();
 
   // Module items filtered by enablement
@@ -66,8 +56,7 @@ export default function ModuleNav({ currentPageName, user }) {
     moduleItems.push({
       page: "PipeKeeper",
       label: "PipeKeeper",
-      image: MODULE_ICONS.pipekeeper,
-      assetKey: "pipekeeper",
+      icon: PipeIcon,
       path: "/PipeKeeper",
     });
   }
@@ -75,8 +64,7 @@ export default function ModuleNav({ currentPageName, user }) {
     moduleItems.push({
       page: "WhiskeyKeeper",
       label: "WhiskeyKeeper",
-      image: MODULE_ICONS.whiskeykeeper,
-      assetKey: "whiskeykeeper",
+      icon: WhiskeyKeeperIcon,
       path: "/WhiskeyKeeper",
     });
   }
@@ -175,15 +163,7 @@ export default function ModuleNav({ currentPageName, user }) {
                     color: isActive ? "#F5F1E7" : "rgba(224,216,200,0.78)",
                   }}
                 >
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.label}
-                      className="w-4 h-4 object-contain bg-transparent flex-shrink-0"
-                      style={getAssetImageStyle(item.assetKey, "small")}
-                      draggable={false}
-                    />
-                  ) : item.icon ? (
+                  {item.icon ? (
                     <item.icon
                       className="w-4 h-4 flex-shrink-0"
                       style={{
