@@ -8,6 +8,8 @@ import CuratorActionBar from "@/components/curator/CuratorActionBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
+import { useEnabledModules } from "@/components/hooks/useEnabledModules";
+import { buildEnabledCuratorScopes } from "@/components/curator/curatorActionVisibility";
 import { Sparkles } from "lucide-react";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 
