@@ -69,17 +69,17 @@ export default function WantListCard({ item, onStatusChange, onArchive, onShare,
 
   return (
     <div
-      className={`border rounded-lg p-4 ${
+      className={`border rounded-xl p-5 ${
         isMuted
           ? "bg-[rgba(255,255,255,0.03)] border-[#b48c4b]/15 opacity-60"
           : "bg-[rgba(255,255,255,0.05)] border-[#b48c4b]/25"
       }`}
     >
-      <div className="flex items-start justify-between gap-4 mb-2">
+      <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-sm text-[#E0D8C8]">{item.name}</h3>
-          {item.brand && <p className="text-xs text-[#E0D8C8]/60">{item.brand}</p>}
-          <p className="text-xs text-[#E0D8C8]/45 mt-0.5">{typeLabel}</p>
+          <h3 className="font-semibold text-base text-[#F5F1E7] leading-snug">{item.name}</h3>
+          {item.brand && <p className="text-sm text-[#D4A574]/80 mt-0.5">{item.brand}</p>}
+          <p className="text-xs text-[#E0D8C8]/45 mt-1 uppercase tracking-wide">{typeLabel}</p>
         </div>
 
         <div className="flex flex-col items-end gap-1.5">
@@ -107,7 +107,7 @@ export default function WantListCard({ item, onStatusChange, onArchive, onShare,
         <p className="text-xs text-[#E0D8C8]/55 italic mt-1">{item.notes}</p>
       )}
 
-      <div className="flex gap-2 mt-3 flex-wrap">
+      <div className="flex gap-2 mt-4 flex-wrap">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button size="sm" variant="outline" className="text-xs h-8" disabled={isLoading}>

@@ -514,16 +514,16 @@ function ViewList({ onBack }) {
                       s.has(item.id) ? s.delete(item.id) : s.add(item.id);
                       setSelectedItems(s);
                     }}
-                    className="absolute top-4 left-4 w-4 h-4 cursor-pointer z-10"
+                    className="absolute top-5 left-5 w-4 h-4 cursor-pointer z-10"
                   />
-                  <div className={selectedItems.has(item.id) ? "pl-10" : ""}>
+                  <div className={selectedItems.has(item.id) ? "pl-12" : ""}>
                     <WantListCard item={item} onStatusChange={handleStatusChange} onArchive={handleArchive} />
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </TabsContent>
+                  </div>
+                  ))}
+                  </div>
+                  )}
+                  </TabsContent>
       </Tabs>
     </div>
   );
