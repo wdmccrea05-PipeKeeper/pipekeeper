@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { BookOpen, PlusCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -10,11 +10,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 
 function TastingsInner() {
   const { t } = useTranslation();
-  const { user } = useCurrentUser();
-  const userEmail = useMemo(
-    () => String(user?.email || user?.user_email || '').trim().toLowerCase(),
-    [user]
-  );
+  const { user, isLoading: userLoading } = useCurrentUser();
 
   const [tastings, setTastings] = useState([]);
   const [bottles, setBottles] = useState([]);
@@ -22,7 +18,9 @@ function TastingsInner() {
   const [editingTasting, setEditingTasting] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  async function loadData() {
+  const userEmail = user?.email || null;
+
+  const loadData = useCallback(async () => {
     if (!userEmail) {
       setTastings([]);
       setBottles([]);
@@ -31,39 +29,47 @@ function TastingsInner() {
 
     try {
       const [logs, bottleRows] = await Promise.all([
-        base44.entities.TastingLog.filter({ created_by: userEmail }, '-tasting_date', 200),
-        base44.entities.Bottle.filter({ created_by: userEmail }, '-updated_date', 200),
+        base44.entities.TastingLog.filter({ created_by: userEmail }, '-tasting_date', 500).catch(() => []),
+        base44.entities.Bottle.filter({ created_by: userEmail }, '-created_date', 500).catch(() => []),
       ]);
 
-      setTastings(
-        [...(logs || [])].sort(
-          (a, b) => new Date(b.tasting_date || b.created_at) - new Date(a.tasting_date || a.created_at)
-        )
+      const sortedLogs = [...(logs || [])].sort(
+        (a, b) =>
+          new Date(b.tasting_date || b.created_at || 0) -
+          new Date(a.tasting_date || a.created_at || 0)
       );
+
+      setTastings(sortedLogs);
       setBottles(bottleRows || []);
     } catch (e) {
       console.error('[Tastings] failed to load', e);
       setTastings([]);
       setBottles([]);
     }
-  }
+  }, [userEmail]);
 
   useEffect(() => {
+    if (userLoading) return;
     loadData();
-  }, [userEmail]);
+  }, [loadData, userLoading]);
 
   return (
     <>
       <div className="space-y-6">
         <WhiskeyKeeperModuleNav currentPageName="Tastings" />
-        
+
         <div className="p-6 space-y-6 text-[#F5F1E7]">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold" style={{ fontFamily: "'Georgia', serif" }}>
+              <h1
+                className="text-4xl font-bold"
+                style={{ fontFamily: "'Georgia', serif" }}
+              >
                 {t('whiskey.tastings', 'Tasting Notes')}
               </h1>
-              <p className="text-[#D8C7A6]/78 mt-2">{tastings.length} {t('whiskey.tastingsLogged', 'tastings logged')}</p>
+              <p className="text-[#D8C7A6]/78 mt-2">
+                {tastings.length} {t('whiskey.tastingsLogged', 'tastings logged')}
+              </p>
             </div>
 
             <Button
@@ -126,7 +132,9 @@ function TastingsInner() {
                 >
                   <p className="text-xl font-semibold">{log.bottle_name}</p>
                   <p className="text-[#D8C7A6]/76 mt-1">
-                    {log.tasting_date ? new Date(log.tasting_date).toLocaleDateString('en-US') : 'Unknown date'}
+                    {log.tasting_date
+                      ? new Date(log.tasting_date).toLocaleDateString('en-US')
+                      : 'Unknown date'}
                   </p>
                 </button>
               ))}
