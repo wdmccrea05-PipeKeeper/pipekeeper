@@ -18,7 +18,6 @@ import PipeIcon from '@/components/icons/PipeIcon';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
-import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import BrandLogo from '@/components/branding/BrandLogo';
@@ -226,7 +225,7 @@ export default function CollectionHub() {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
   const [showLogSelector, setShowLogSelector] = useState(false);
-  const { enabledModules, expandingSoonModules, isModuleEnabled } = useEnabledKeeperModules();
+  const { enabledModuleKeys } = useEnabledModules();
   const { enabled } = useEnabledModules();
   const whiskeyOpenable = enabled.whiskeykeeper;
   const pipekeeperOpenable = enabled.pipekeeper;
@@ -316,8 +315,8 @@ export default function CollectionHub() {
     };
   }, [pipes, blends, bottles, smokeLogs, whiskeyOpenable]);
 
-  const openableModuleKeys = enabledModules.map((m) => m.moduleKey);
-  const expandingKeys = expandingSoonModules.map((m) => m.moduleKey);
+  const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route);
+  const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route);
 
   const pipeStats = [
     { label: 'Pipes', value: pipes.length },
