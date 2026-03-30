@@ -6,8 +6,8 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useMutation } from '@tanstack/react-query';
 
 // Conversion constants
-const MM_TO_INCH = 1 / 25.4;
-const GRAM_TO_OZ = 1 / 28.35;
+const MM_TO_INCH = 1 / 25.4; // multiply mm by this to get inches
+const GRAM_TO_OZ = 1 / 28.35; // multiply grams by this to get ounces
 
 // Context for measurement preference
 const MeasurementContext = createContext({

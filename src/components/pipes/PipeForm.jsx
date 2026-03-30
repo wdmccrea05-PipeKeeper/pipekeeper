@@ -370,7 +370,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           <CardTitle className="text-lg text-[#E0D8C8]">{t("pipesExtended.pipePhotos")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {formData.photos?.map((photo, idx) => (
               <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-[#E0D8C8]/15 group">
                 <img src={photo} alt="" className="w-full h-full object-cover" />
@@ -427,7 +427,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           <p className="text-sm text-[#E0D8C8]/70">{t("pipesExtended.stampingPhotosDesc")}</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {formData.stamping_photos?.map((photo, idx) => (
               <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-[#E0D8C8]/15 group">
                 <img src={photo} alt="" className="w-full h-full object-cover" />
