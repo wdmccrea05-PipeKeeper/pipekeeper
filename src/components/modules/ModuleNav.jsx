@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import PipeIcon from "@/components/icons/PipeIcon";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
-import { isModuleEnabled } from "@/components/utils/moduleGuard";
+import { useAccessSummary } from "@/components/hooks/useAccessSummary";
 
 function NavItem({ item, isActive }) {
   return (
@@ -48,37 +48,38 @@ function NavItem({ item, isActive }) {
 export default function ModuleNav({ currentPageName, user }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const access = useAccessSummary();
 
   const isAdmin =
     user?.role === "admin" ||
     user?.is_admin === true ||
     user?.isAdmin === true;
 
-  const moduleItems = [];
+  const activeModules = access?.activeModules || [];
 
-  if (import.meta?.env?.DEV) {
-    console.log("[ModuleNav] user object keys:", user ? Object.keys(user) : "no user");
-    console.log("[ModuleNav] pipekeeper_enabled:", user?.pipekeeper_enabled);
-    console.log("[ModuleNav] whiskeykeeper_enabled:", user?.whiskeykeeper_enabled);
-  }
+  const moduleItems = useMemo(() => {
+    const items = [];
 
-  if (user && isModuleEnabled(user, "pipekeeper")) {
-    moduleItems.push({
-      page: "PipeKeeper",
-      label: "PipeKeeper",
-      icon: PipeIcon,
-      path: "/PipeKeeper",
-    });
-  }
+    if (activeModules.includes("pipekeeper")) {
+      items.push({
+        page: "PipeKeeper",
+        label: "PipeKeeper",
+        icon: PipeIcon,
+        path: "/PipeKeeper",
+      });
+    }
 
-  if (user && isModuleEnabled(user, "whiskeykeeper")) {
-    moduleItems.push({
-      page: "WhiskeyKeeper",
-      label: "WhiskeyKeeper",
-      icon: WhiskeyKeeperIcon,
-      path: "/WhiskeyKeeper",
-    });
-  }
+    if (activeModules.includes("whiskeykeeper")) {
+      items.push({
+        page: "WhiskeyKeeper",
+        label: "WhiskeyKeeper",
+        icon: WhiskeyKeeperIcon,
+        path: "/WhiskeyKeeper",
+      });
+    }
+
+    return items;
+  }, [activeModules]);
 
   const baseItems = [
     { page: "CollectionHub", label: "Hub", icon: Home, path: "/" },
