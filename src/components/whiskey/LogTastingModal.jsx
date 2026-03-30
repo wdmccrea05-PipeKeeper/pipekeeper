@@ -175,7 +175,7 @@ export default function LogTastingModal({ bottle, bottles = [], editLog = null, 
         <div className="shrink-0 px-6 py-4 flex items-center justify-between border-b border-[rgba(180,140,75,0.16)]">
           <div>
             <h2 className="text-xl font-bold text-[#F5F1E7]">
-              {isEdit ? 'Edit Tasting' : 'Record Tasting'}
+              {isEdit ? 'Edit Tasting' : 'Log Whiskey Tasting'}
             </h2>
             <p className="text-sm text-[#D8C7A6]/75 mt-1">
               {bottleMode === "external" && externalBottle ? externalBottle.name : (form.bottle_name || 'Select a bottle')}
@@ -189,18 +189,35 @@ export default function LogTastingModal({ bottle, bottles = [], editLog = null, 
         {/* Body */}
         <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5 space-y-5">
 
-          {/* Bottle selector */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-[#E0D8C8]">Bottle</label>
+          {/* Bottle Source Segmented Control */}
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-semibold text-[#E0D8C8] block mb-2">Bottle Source</label>
               {!isEdit && (
-                <button
-                  type="button"
-                  onClick={() => { setBottleMode(bottleMode === "collection" ? "external" : "collection"); setExternalBottle(null); }}
-                  className="text-xs text-[#D4A574]/80 hover:text-[#D4A574] transition-colors"
-                >
-                  {bottleMode === "collection" ? "Log Something New →" : "← From My Collection"}
-                </button>
+                <div className="flex rounded-xl overflow-hidden border border-[rgba(180,140,75,0.25)]">
+                  <button
+                    type="button"
+                    onClick={() => { setBottleMode("collection"); setExternalBottle(null); updateField('bottle_id', ''); updateField('bottle_name', ''); }}
+                    className={`flex-1 py-2 text-sm font-medium transition-all ${
+                      bottleMode === "collection"
+                        ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
+                        : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
+                    }`}
+                  >
+                    From Collection
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setBottleMode("external"); updateField('bottle_id', ''); updateField('bottle_name', ''); }}
+                    className={`flex-1 py-2 text-sm font-medium transition-all ${
+                      bottleMode === "external"
+                        ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
+                        : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
+                    }`}
+                  >
+                    Something New
+                  </button>
+                </div>
               )}
             </div>
 
@@ -213,7 +230,7 @@ export default function LogTastingModal({ bottle, bottles = [], editLog = null, 
                     updateField('bottle_id', e.target.value);
                     updateField('bottle_name', selected?.name || '');
                   }}
-                  className="w-full rounded-lg px-3 py-2 bg-[rgba(255,255,255,0.05)] border border-[rgba(180,140,75,0.18)] text-[#F5F1E7]"
+                  className="w-full rounded-xl px-3 py-2.5 bg-[rgba(20,15,12,0.6)] border border-[rgba(140,105,65,0.28)] text-[#F5F1E7] text-sm"
                 >
                   <option value="" className="bg-[#1A120D]">Select a bottle...</option>
                   {bottles.map((b) => (
@@ -221,7 +238,7 @@ export default function LogTastingModal({ bottle, bottles = [], editLog = null, 
                   ))}
                 </select>
               ) : (
-                <p className="text-xs text-[#E0D8C8]/50 py-2">No bottles in your collection. Use "Log Something New" to record an external pour.</p>
+                <p className="text-xs text-[#E0D8C8]/50 py-2">No bottles in your collection yet. Switch to "Something New" to log an external pour.</p>
               )
             ) : (
               externalBottle
