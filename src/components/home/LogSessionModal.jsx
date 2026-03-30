@@ -329,21 +329,38 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <SheetContent className="overflow-y-auto">
         <SheetHeader className="mb-6">
-          <SheetTitle>{t("smokingLog.logSession")}</SheetTitle>
+        <SheetTitle>Log Pipe Session</SheetTitle>
         </SheetHeader>
         <form onSubmit={handleSubmit} className="space-y-5">
 
           {/* ── PIPE ── */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-[#E0D8C8]">{t("smokingLog.pipe")}</Label>
-              <button
-                type="button"
-                onClick={() => { setPipeMode(pipeMode === "collection" ? "external" : "collection"); setExternalPipe(null); setFormData((f) => ({ ...f, pipe_id: "", bowl_variant_id: "" })); }}
-                className="text-xs text-[#D4A574]/80 hover:text-[#D4A574] transition-colors"
-              >
-                {pipeMode === "collection" ? "Use Other Pipe →" : "← From My Collection"}
-              </button>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-[#E0D8C8] text-sm font-semibold block mb-2">Pipe Source</Label>
+              <div className="flex rounded-xl overflow-hidden border border-[rgba(180,140,75,0.25)]">
+                <button
+                  type="button"
+                  onClick={() => { setPipeMode("collection"); setExternalPipe(null); setFormData((f) => ({ ...f, pipe_id: "", bowl_variant_id: "" })); }}
+                  className={`flex-1 py-2 text-sm font-medium transition-all ${
+                    pipeMode === "collection"
+                      ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
+                      : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
+                  }`}
+                >
+                  From Collection
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setPipeMode("external"); setFormData((f) => ({ ...f, pipe_id: "", bowl_variant_id: "" })); }}
+                  className={`flex-1 py-2 text-sm font-medium transition-all ${
+                    pipeMode === "external"
+                      ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
+                      : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
+                  }`}
+                >
+                  Other Pipe
+                </button>
+              </div>
             </div>
 
             {pipeMode === "collection" ? (
@@ -399,16 +416,33 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
           )}
 
           {/* ── BLEND ── */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-[#E0D8C8]">{t("smokingLog.tobaccoBlend")}</Label>
-              <button
-                type="button"
-                onClick={() => { setBlendMode(blendMode === "collection" ? "external" : "collection"); setExternalBlend(null); setFormData((f) => ({ ...f, blend_id: "", container_id: "" })); }}
-                className="text-xs text-[#D4A574]/80 hover:text-[#D4A574] transition-colors"
-              >
-                {blendMode === "collection" ? "Log Something New →" : "← From My Collection"}
-              </button>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-[#E0D8C8] text-sm font-semibold block mb-2">Blend Source</Label>
+              <div className="flex rounded-xl overflow-hidden border border-[rgba(180,140,75,0.25)]">
+                <button
+                  type="button"
+                  onClick={() => { setBlendMode("collection"); setExternalBlend(null); setFormData((f) => ({ ...f, blend_id: "", container_id: "" })); }}
+                  className={`flex-1 py-2 text-sm font-medium transition-all ${
+                    blendMode === "collection"
+                      ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
+                      : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
+                  }`}
+                >
+                  From Collection
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setBlendMode("external"); setFormData((f) => ({ ...f, blend_id: "", container_id: "" })); }}
+                  className={`flex-1 py-2 text-sm font-medium transition-all ${
+                    blendMode === "external"
+                      ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
+                      : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
+                  }`}
+                >
+                  Something New
+                </button>
+              </div>
             </div>
 
             {blendMode === "collection" ? (
