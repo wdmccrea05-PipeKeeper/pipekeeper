@@ -224,7 +224,7 @@ export function useCurrentUser() {
     })();
 
     return () => { cancelled = true; };
-  }, [userLoading, user?.email, refetchUser]);
+  }, [userLoading, user?.email, refetchUser, refetchProfile]);
 
   // Subscription sync on mount
   useEffect(() => {
