@@ -1,68 +1,63 @@
-/**
- * useEnabledKeeperModules — canonical launched vs expanding-soon module buckets.
- *
- * This hook powers the Hub and launcher surfaces. It separates:
- * - modules the current user can actually open now
- * - modules intentionally shown as "Expanding Soon"
- */
+import { useMemo } from "react";
+import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 
-import { useMemo } from 'react';
-import { KEEPER_MODULES } from '@/components/utils/moduleRegistry';
-import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
-import { useCurrentUser } from '@/components/hooks/useCurrentUser';
-import {
-  getEffectiveModuleReleaseState,
-  isInternalModuleTester,
-} from '@/components/utils/moduleReleaseState';
+const MODULE_KEYS = ["pipekeeper", "whiskeykeeper", "winekeeper", "cigarkeeper"];
 
-function canOpenModuleNow(moduleKey, user, isModuleEnabled) {
-  const state = getEffectiveModuleReleaseState(moduleKey, user);
-  if (state === 'blocked') return false;
-  if (state === 'internal') return isInternalModuleTester(user) && isModuleEnabled(moduleKey);
-  return isModuleEnabled(moduleKey);
-}
+export function useEnabledModules(profile = null, user = null) {
+  const { moduleStates, isLoading } = useModuleVisibility(profile, user);
 
-function shouldAppearAsExpandingSoon(moduleKey, user) {
-  const state = getEffectiveModuleReleaseState(moduleKey, user);
-  if (state === 'blocked') return true;
-  if (state === 'internal') return !isInternalModuleTester(user);
-  return false;
-}
+  const enabledModuleKeys = useMemo(() => {
+    return MODULE_KEYS.filter((key) => moduleStates?.[key]?.enabled === true);
+  }, [moduleStates]);
 
-export function useEnabledKeeperModules() {
-  const { user } = useCurrentUser();
-  const visibility = useModuleVisibility(null, user);
-  const { moduleStates, isLoading, isModuleEnabled } = visibility;
+  const accessibleModuleKeys = useMemo(() => {
+    return MODULE_KEYS.filter((key) => moduleStates?.[key]?.accessible === true);
+  }, [moduleStates]);
 
-  const enabledModules = useMemo(() => {
-    return KEEPER_MODULES.filter((m) => canOpenModuleNow(m.moduleKey, user, isModuleEnabled));
-  }, [moduleStates, isModuleEnabled, user]);
+  const enabled = useMemo(
+    () => ({
+      pipekeeper: enabledModuleKeys.includes("pipekeeper"),
+      whiskeykeeper: enabledModuleKeys.includes("whiskeykeeper"),
+      winekeeper: enabledModuleKeys.includes("winekeeper"),
+      cigarkeeper: enabledModuleKeys.includes("cigarkeeper"),
+    }),
+    [enabledModuleKeys]
+  );
 
-  const expandingSoonModules = useMemo(() => {
-    return KEEPER_MODULES.filter((m) => shouldAppearAsExpandingSoon(m.moduleKey, user));
-  }, [moduleStates, user]);
+  const accessible = useMemo(
+    () => ({
+      pipekeeper: accessibleModuleKeys.includes("pipekeeper"),
+      whiskeykeeper: accessibleModuleKeys.includes("whiskeykeeper"),
+      winekeeper: accessibleModuleKeys.includes("winekeeper"),
+      cigarkeeper: accessibleModuleKeys.includes("cigarkeeper"),
+    }),
+    [accessibleModuleKeys]
+  );
 
-  const internalPreviewModules = useMemo(() => {
-    return KEEPER_MODULES.filter((m) => {
-      const state = getEffectiveModuleReleaseState(m.moduleKey, user);
-      return state === 'internal' && isInternalModuleTester(user) && isModuleEnabled(m.moduleKey);
-    });
-  }, [moduleStates, user, isModuleEnabled]);
+  const hasMultipleEnabledModules = enabledModuleKeys.length > 1;
+  const hasSingleEnabledModule = enabledModuleKeys.length === 1;
+  const singleEnabledModule = hasSingleEnabledModule ? enabledModuleKeys[0] : null;
 
-  const allVisibleModules = useMemo(() => {
-    const keys = new Set([
-      ...enabledModules.map((m) => m.moduleKey),
-      ...expandingSoonModules.map((m) => m.moduleKey),
-    ]);
-    return KEEPER_MODULES.filter((m) => keys.has(m.moduleKey));
-  }, [enabledModules, expandingSoonModules]);
+  function isModuleEnabled(moduleKey) {
+    return enabledModuleKeys.includes(moduleKey);
+  }
+
+  function isModuleAccessible(moduleKey) {
+    return accessibleModuleKeys.includes(moduleKey);
+  }
 
   return {
-    ...visibility,
-    enabledModules,
-    expandingSoonModules,
-    internalPreviewModules,
-    allVisibleModules,
     isLoading,
+    enabled,
+    accessible,
+    enabledModuleKeys,
+    accessibleModuleKeys,
+    hasMultipleEnabledModules,
+    hasSingleEnabledModule,
+    singleEnabledModule,
+    isModuleEnabled,
+    isModuleAccessible,
   };
 }
+
+export default useEnabledModules;
