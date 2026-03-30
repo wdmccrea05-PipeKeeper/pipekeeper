@@ -156,17 +156,7 @@ export default function ShoppingList() {
                 <DialogTitle>Add to Shopping List</DialogTitle>
               </DialogHeader>
               <ShoppingListSearch
-                onSelect={(data) => {
-                  base44.entities.ShoppingListItem.create(data)
-                    .then(() => {
-                      toast.success("Item added");
-                      handleAddSuccess();
-                    })
-                    .catch((err) => {
-                      toast.error("Failed to add");
-                      console.error(err);
-                    });
-                }}
+                onAdded={handleAddSuccess}
               />
             </DialogContent>
           </Dialog>
