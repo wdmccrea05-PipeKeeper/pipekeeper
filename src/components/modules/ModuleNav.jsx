@@ -19,7 +19,6 @@ import {
   MODULE_ICONS,
   getAssetImageStyle,
 } from "@/components/branding/moduleAssets";
-import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { isModuleEnabled } from "@/components/utils/moduleGuard";
 
 function NavItem({ item, isActive }) {
@@ -56,81 +55,85 @@ function NavItem({ item, isActive }) {
   );
 }
 
-export default function ModuleNav({ currentPageName }) {
+export default function ModuleNav({ currentPageName, user }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, isAdmin } = useCurrentUser();
+  const { isAdmin } = user || {};
   const location = useLocation();
 
-  const allItems = [
-    { page: "CollectionHub", label: "Hub", icon: Home, path: "/" },
-    {
+  // Module items filtered by enablement
+  const moduleItems = [];
+  if (user && isModuleEnabled(user, "pipekeeper")) {
+    moduleItems.push({
       page: "PipeKeeper",
       label: "PipeKeeper",
       image: MODULE_ICONS.pipekeeper,
       assetKey: "pipekeeper",
       path: "/PipeKeeper",
-      moduleKey: "pipekeeper",
-    },
-    {
+    });
+  }
+  if (user && isModuleEnabled(user, "whiskeykeeper")) {
+    moduleItems.push({
       page: "WhiskeyKeeper",
       label: "WhiskeyKeeper",
       image: MODULE_ICONS.whiskeykeeper,
       assetKey: "whiskeykeeper",
       path: "/WhiskeyKeeper",
-      moduleKey: "whiskeykeeper",
-    },
+    });
+  }
+
+  // Base navigation items
+  const baseItems = [
+    { page: "CollectionHub", label: "Hub", icon: Home, path: "/" },
+    ...moduleItems,
     { page: "Curator", label: "Curator", icon: Target, path: "/Curator" },
     { page: "Community", label: "Community", icon: Users, path: "/Community" },
     { page: "Profile", label: "Profile", icon: User, path: "/Profile" },
     { page: "HelpCenter", label: "Help", icon: HelpCircle, path: "/HelpCenter" },
-    ...(isAdmin
-      ? [
-          {
-            page: "AdminReports",
-            label: "Admin Reports",
-            icon: Shield,
-            path: "/AdminReports",
-          },
-          {
-            page: "AdminSubscriptionRequests",
-            label: "Subscription Requests",
-            icon: ClipboardList,
-            path: "/AdminSubscriptionRequests",
-          },
-          {
-            page: "AdminSubscriptionTools",
-            label: "Subscription Tools",
-            icon: Wrench,
-            path: "/AdminSubscriptionTools",
-          },
-          {
-            page: "UserReport",
-            label: "User Report",
-            icon: FileBarChart2,
-            path: "/UserReport",
-          },
-          {
-            page: "CuratorAnalyticsDashboard",
-            label: "Curator Analytics",
-            icon: BarChart3,
-            path: "/CuratorAnalyticsDashboard",
-          },
-          {
-            page: "SubscriptionE2ETest",
-            label: "Sub E2E Test",
-            icon: TestTube2,
-            path: "/SubscriptionE2ETest",
-          },
-        ]
-      : []),
   ];
 
-  const items = allItems.filter((item) => {
-    if (item.moduleKey) {
-      return isModuleEnabled(user, item.moduleKey);
-    }
-    return true;
-  });
+  // Admin items
+  const adminItems = isAdmin
+    ? [
+        {
+          page: "AdminReports",
+          label: "Admin Reports",
+          icon: Shield,
+          path: "/AdminReports",
+        },
+        {
+          page: "AdminSubscriptionRequests",
+          label: "Subscription Requests",
+          icon: ClipboardList,
+          path: "/AdminSubscriptionRequests",
+        },
+        {
+          page: "AdminSubscriptionTools",
+          label: "Subscription Tools",
+          icon: Wrench,
+          path: "/AdminSubscriptionTools",
+        },
+        {
+          page: "UserReport",
+          label: "User Report",
+          icon: FileBarChart2,
+          path: "/UserReport",
+        },
+        {
+          page: "CuratorAnalyticsDashboard",
+          label: "Curator Analytics",
+          icon: BarChart3,
+          path: "/CuratorAnalyticsDashboard",
+        },
+        {
+          page: "SubscriptionE2ETest",
+          label: "Sub E2E Test",
+          icon: TestTube2,
+          path: "/SubscriptionE2ETest",
+        },
+      ]
+    : [];
+
+  const items = [...baseItems, ...adminItems];
 
   return (
     <div className="flex items-center gap-1 pb-1 min-w-0">
