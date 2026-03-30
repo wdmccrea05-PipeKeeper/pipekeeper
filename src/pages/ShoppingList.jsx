@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 const SORT_OPTIONS = {
   recent: "Recently Added",
@@ -26,6 +27,9 @@ const SORT_OPTIONS = {
 
 export default function ShoppingList() {
   const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+  const userEmail = user?.email || null;
+
   const [activeTab, setActiveTab] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
   const [searchText, setSearchText] = useState("");
@@ -33,42 +37,42 @@ export default function ShoppingList() {
   const [selectedItems, setSelectedItems] = useState(new Set());
 
   const { data: items = [], isLoading } = useQuery({
-    queryKey: ["shoppingListItems"],
+    queryKey: ["shoppingListItems", userEmail],
+    enabled: !!userEmail,
     queryFn: async () => {
-      const all = await base44.entities.ShoppingListItem.list("-created_date", 500);
-      return all.filter((i) => i.status !== "archived");
+      const rows = await base44.entities.ShoppingListItem
+        .filter({ created_by: userEmail }, "-created_date", 500)
+        .catch(() => []);
+      return (rows || []).filter((i) => i.status !== "archived");
     },
   });
 
   const filteredItems = useMemo(() => {
-    let result = items;
+    let result = [...items];
 
-    // Tab filter
     if (activeTab === "restock") {
       result = result.filter((item) => item.shopping_type === "restock");
     } else if (activeTab === "buy_new") {
       result = result.filter((item) => item.shopping_type === "buy_new_item");
     }
 
-    // Search filter
     if (searchText) {
-      const search_lower = searchText.toLowerCase();
+      const searchLower = searchText.toLowerCase();
       result = result.filter(
         (item) =>
-          (item.name || "").toLowerCase().includes(search_lower) ||
-          (item.brand || "").toLowerCase().includes(search_lower) ||
-          (item.blend_name || "").toLowerCase().includes(search_lower) ||
-          (item.notes || "").toLowerCase().includes(search_lower)
+          (item.name || "").toLowerCase().includes(searchLower) ||
+          (item.brand || "").toLowerCase().includes(searchLower) ||
+          (item.blend_name || "").toLowerCase().includes(searchLower) ||
+          (item.notes || "").toLowerCase().includes(searchLower)
       );
     }
 
-    // Sort
     result.sort((a, b) => {
       switch (sortBy) {
         case "priority": {
           const priorityOrder = { high: 0, medium: 1, low: 2 };
-          const aPriority = priorityOrder[a.priority || "medium"] || 1;
-          const bPriority = priorityOrder[b.priority || "medium"] || 1;
+          const aPriority = priorityOrder[a.priority || "medium"] ?? 1;
+          const bPriority = priorityOrder[b.priority || "medium"] ?? 1;
           return aPriority - bPriority;
         }
         case "name":
@@ -79,7 +83,7 @@ export default function ShoppingList() {
           return (a.target_price || 0) - (b.target_price || 0);
         case "recent":
         default:
-          return new Date(b.created_date) - new Date(a.created_date);
+          return new Date(b.created_date || 0) - new Date(a.created_date || 0);
       }
     });
 
@@ -88,16 +92,16 @@ export default function ShoppingList() {
 
   const handleAddSuccess = () => {
     setAddOpen(false);
-    queryClient.invalidateQueries({ queryKey: ["shoppingListItems"] });
+    queryClient.invalidateQueries({ queryKey: ["shoppingListItems", userEmail] });
   };
 
   const handleStatusChange = () => {
-    queryClient.invalidateQueries({ queryKey: ["shoppingListItems"] });
+    queryClient.invalidateQueries({ queryKey: ["shoppingListItems", userEmail] });
   };
 
   const handleArchive = (itemId) => {
     queryClient.setQueryData(
-      ["shoppingListItems"],
+      ["shoppingListItems", userEmail],
       items.filter((item) => item.id !== itemId)
     );
     setSelectedItems((prev) => {
@@ -122,8 +126,12 @@ export default function ShoppingList() {
       toast.error("Select items to share");
       return;
     }
+
     const selectedList = items.filter((item) => selectedItems.has(item.id));
-    const text = selectedList.map((item) => `${item.name}${item.brand ? ` by ${item.brand}` : ""}`).join("\n");
+    const text = selectedList
+      .map((item) => `${item.name}${item.brand ? ` by ${item.brand}` : ""}`)
+      .join("\n");
+
     if (navigator.share) {
       navigator.share({ title: "Shopping List", text });
     } else {
@@ -135,7 +143,6 @@ export default function ShoppingList() {
   return (
     <div className="min-h-screen pb-10">
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* Header */}
         <div className="flex items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-[#F5F1E7]">Shopping List</h1>
@@ -155,14 +162,11 @@ export default function ShoppingList() {
               <DialogHeader>
                 <DialogTitle>Add to Shopping List</DialogTitle>
               </DialogHeader>
-              <ShoppingListSearch
-                onAdded={handleAddSuccess}
-              />
+              <ShoppingListSearch onAdded={handleAddSuccess} />
             </DialogContent>
           </Dialog>
         </div>
 
-        {/* Controls */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="flex-1">
             <div className="relative">
@@ -203,7 +207,6 @@ export default function ShoppingList() {
           )}
         </div>
 
-        {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="all">All</TabsTrigger>
@@ -212,7 +215,11 @@ export default function ShoppingList() {
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-6">
-            {isLoading ? (
+            {!userEmail ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-[#E0D8C8]/50">Loading...</div>
+              </div>
+            ) : isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="text-[#E0D8C8]/50">Loading...</div>
               </div>
