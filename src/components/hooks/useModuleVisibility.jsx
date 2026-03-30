@@ -1,21 +1,15 @@
 import { useCallback, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { isInternalModuleTester } from "@/components/utils/moduleReleaseState";
+import { useCanonicalProfile } from "@/utils/getCanonicalUserProfile";
 
-const MODULE_KEYS = ["pipekeeper", "whiskeykeeper"];
+const MODULE_KEYS = ["pipekeeper", "whiskeykeeper", "winekeeper", "cigarkeeper"];
 
-function coercePrefsFromProfile(profile) {
-  return {
-    pipekeeper:
-      typeof profile?.pipekeeper_enabled === "boolean"
-        ? profile.pipekeeper_enabled
-        : undefined,
-    whiskeykeeper:
-      typeof profile?.whiskeykeeper_enabled === "boolean"
-        ? profile.whiskeykeeper_enabled
-        : undefined,
-  };
+function normalizeBoolean(value) {
+  return typeof value === "boolean" ? value : undefined;
 }
 
 function buildAccessibleModules(activeModules, user) {
@@ -24,6 +18,8 @@ function buildAccessibleModules(activeModules, user) {
   if (isInternalModuleTester(user)) {
     accessible.add("pipekeeper");
     accessible.add("whiskeykeeper");
+    accessible.add("winekeeper");
+    accessible.add("cigarkeeper");
   }
 
   return accessible;
@@ -31,17 +27,22 @@ function buildAccessibleModules(activeModules, user) {
 
 function buildVisibility({ profile, user, activeModules }) {
   const prefsSet = profile?.module_preferences_set === true;
-  const prefs = coercePrefsFromProfile(profile);
   const accessible = buildAccessibleModules(activeModules, user);
+
+  const prefMap = {
+    pipekeeper: normalizeBoolean(profile?.pipekeeper_enabled),
+    whiskeykeeper: normalizeBoolean(profile?.whiskeykeeper_enabled),
+    winekeeper: normalizeBoolean(profile?.winekeeper_enabled),
+    cigarkeeper: normalizeBoolean(profile?.cigarkeeper_enabled),
+  };
 
   const visibility = {};
 
-  for (const moduleKey of MODULE_KEYS) {
+  for (const key of MODULE_KEYS) {
     if (prefsSet) {
-      visibility[moduleKey] =
-        accessible.has(moduleKey) && prefs[moduleKey] !== false;
+      visibility[key] = accessible.has(key) && prefMap[key] !== false;
     } else {
-      visibility[moduleKey] = accessible.has(moduleKey);
+      visibility[key] = accessible.has(key);
     }
   }
 
@@ -56,26 +57,49 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
     pipekeeper: {
       key: "pipekeeper",
       enabled: !!visibility.pipekeeper,
-      visible: accessible.has("pipekeeper"),
       accessible: accessible.has("pipekeeper"),
+      visible: accessible.has("pipekeeper"),
       canToggle: accessible.has("pipekeeper"),
       testerOnly: false,
     },
     whiskeykeeper: {
       key: "whiskeykeeper",
       enabled: !!visibility.whiskeykeeper,
-      visible: accessible.has("whiskeykeeper"),
       accessible: accessible.has("whiskeykeeper"),
+      visible: accessible.has("whiskeykeeper"),
       canToggle: accessible.has("whiskeykeeper"),
+      testerOnly: tester,
+    },
+    winekeeper: {
+      key: "winekeeper",
+      enabled: !!visibility.winekeeper,
+      accessible: accessible.has("winekeeper"),
+      visible: accessible.has("winekeeper"),
+      canToggle: accessible.has("winekeeper"),
+      testerOnly: tester,
+    },
+    cigarkeeper: {
+      key: "cigarkeeper",
+      enabled: !!visibility.cigarkeeper,
+      accessible: accessible.has("cigarkeeper"),
+      visible: accessible.has("cigarkeeper"),
+      canToggle: accessible.has("cigarkeeper"),
       testerOnly: tester,
     },
   };
 }
 
-export function useModuleVisibility(profile, user) {
-  const summary = useAccessSummary();
-  const { activeModules = [] } = summary || {};
-  const [isLoading, setIsLoading] = useState(false);
+export function useModuleVisibility(passedProfile = null, passedUser = null) {
+  const queryClient = useQueryClient();
+  const { user: currentUser, isLoading: userLoading } = useCurrentUser();
+  const { data: canonicalProfileData, isLoading: profileLoading } = useCanonicalProfile();
+  const { activeModules = [] } = useAccessSummary() || {};
+
+  const user = passedUser || currentUser || null;
+  const profile = passedProfile || canonicalProfileData?.profile || null;
+  const profileId = profile?.id || canonicalProfileData?.profileId || null;
+
+  const [isSaving, setIsSaving] = useState(false);
 
   const visibility = useMemo(
     () => buildVisibility({ profile, user, activeModules }),
@@ -94,13 +118,14 @@ export function useModuleVisibility(profile, user) {
 
   const persistPreferences = useCallback(
     async (payload) => {
-      setIsLoading(true);
+      setIsSaving(true);
       try {
-        const me = await base44.auth.me();
-        const userId = me?.id || profile?.id || user?.id;
+        const me = user || (await base44.auth.me());
+        const userId = me?.id || me?.auth_user_id;
+        const userEmail = me?.email || profile?.user_email || profile?.created_by || null;
 
-        if (!userId) {
-          throw new Error("Unable to update module preferences.");
+        if (!userId && !userEmail) {
+          throw new Error("Unable to determine user identity for module preferences.");
         }
 
         const normalized = {
@@ -116,6 +141,18 @@ export function useModuleVisibility(profile, user) {
               : typeof payload.whiskeykeeper === "boolean"
                 ? payload.whiskeykeeper
                 : undefined,
+          winekeeper_enabled:
+            typeof payload.winekeeper_enabled === "boolean"
+              ? payload.winekeeper_enabled
+              : typeof payload.winekeeper === "boolean"
+                ? payload.winekeeper
+                : undefined,
+          cigarkeeper_enabled:
+            typeof payload.cigarkeeper_enabled === "boolean"
+              ? payload.cigarkeeper_enabled
+              : typeof payload.cigarkeeper === "boolean"
+                ? payload.cigarkeeper
+                : undefined,
           module_preferences_set: true,
         };
 
@@ -123,12 +160,25 @@ export function useModuleVisibility(profile, user) {
           Object.entries(normalized).filter(([, value]) => value !== undefined)
         );
 
-        return await base44.entities.User.update(userId, cleanPayload);
+        if (profileId) {
+          await base44.entities.UserProfile.update(profileId, cleanPayload);
+        } else {
+          await base44.entities.UserProfile.create({
+            user_id: userId || undefined,
+            user_email: userEmail || undefined,
+            created_by: userEmail || undefined,
+            ...cleanPayload,
+          });
+        }
+
+        await queryClient.invalidateQueries({ queryKey: ["canonical-profile"] });
+        await queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+        await queryClient.invalidateQueries({ queryKey: ["current-user"] });
       } finally {
-        setIsLoading(false);
+        setIsSaving(false);
       }
     },
-    [profile, user]
+    [profileId, profile?.user_email, profile?.created_by, queryClient, user]
   );
 
   const setModuleEnabled = useCallback(
@@ -140,6 +190,8 @@ export function useModuleVisibility(profile, user) {
       const nextState = {
         pipekeeper: visibility.pipekeeper,
         whiskeykeeper: visibility.whiskeykeeper,
+        winekeeper: visibility.winekeeper,
+        cigarkeeper: visibility.cigarkeeper,
         [moduleId]: !!enabled,
       };
 
@@ -148,7 +200,7 @@ export function useModuleVisibility(profile, user) {
         throw new Error("At least one module must remain enabled.");
       }
 
-      return persistPreferences(nextState);
+      await persistPreferences(nextState);
     },
     [persistPreferences, visibility]
   );
@@ -164,6 +216,14 @@ export function useModuleVisibility(profile, user) {
           typeof moduleSelections?.whiskeykeeper === "boolean"
             ? moduleSelections.whiskeykeeper
             : visibility.whiskeykeeper,
+        winekeeper:
+          typeof moduleSelections?.winekeeper === "boolean"
+            ? moduleSelections.winekeeper
+            : visibility.winekeeper,
+        cigarkeeper:
+          typeof moduleSelections?.cigarkeeper === "boolean"
+            ? moduleSelections.cigarkeeper
+            : visibility.cigarkeeper,
       };
 
       const selectedCount = Object.values(normalized).filter(Boolean).length;
@@ -171,7 +231,7 @@ export function useModuleVisibility(profile, user) {
         throw new Error("At least one module must be selected.");
       }
 
-      return persistPreferences(normalized);
+      await persistPreferences(normalized);
     },
     [persistPreferences, visibility]
   );
@@ -180,9 +240,11 @@ export function useModuleVisibility(profile, user) {
     visibility,
     moduleStates,
     isModuleEnabled,
-    isLoading,
+    isLoading: userLoading || profileLoading || isSaving,
     setModuleEnabled,
     saveModulePreferences,
+    profile,
+    user,
   };
 }
 
