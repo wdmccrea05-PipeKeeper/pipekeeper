@@ -514,9 +514,9 @@ function ViewList({ onBack }) {
                       s.has(item.id) ? s.delete(item.id) : s.add(item.id);
                       setSelectedItems(s);
                     }}
-                    className="absolute top-5 left-5 w-4 h-4 cursor-pointer z-10"
+                    className="absolute top-5 left-5 w-4 h-4 cursor-pointer z-10 accent-[#D4A574]"
                   />
-                  <div className={selectedItems.has(item.id) ? "pl-12" : ""}>
+                  <div className="pl-10">
                     <WantListCard item={item} onStatusChange={handleStatusChange} onArchive={handleArchive} />
                   </div>
                   </div>

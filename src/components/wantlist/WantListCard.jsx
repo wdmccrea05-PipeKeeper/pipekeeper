@@ -116,11 +116,11 @@ export default function WantListCard({ item, onStatusChange, onArchive, onShare,
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-[rgba(22,17,13,0.96)] border-[#b48c4b]/30">
-            <DropdownMenuItem onClick={() => handleCategoryChange("wishlist")}>Wish</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleCategoryChange("shopping_list")}>Shopping</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleCategoryChange("tried_not_owned")}>Tried</DropdownMenuItem>
+            <DropdownMenuItem className="text-[#E0D8C8] hover:bg-white/10 focus:bg-white/10 focus:text-[#F5F1E7]" onClick={() => handleCategoryChange("wishlist")}>Wish</DropdownMenuItem>
+            <DropdownMenuItem className="text-[#E0D8C8] hover:bg-white/10 focus:bg-white/10 focus:text-[#F5F1E7]" onClick={() => handleCategoryChange("shopping_list")}>Shopping</DropdownMenuItem>
+            <DropdownMenuItem className="text-[#E0D8C8] hover:bg-white/10 focus:bg-white/10 focus:text-[#F5F1E7]" onClick={() => handleCategoryChange("tried_not_owned")}>Tried</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleCategoryChange("do_not_buy_again")}>Not for Me</DropdownMenuItem>
+            <DropdownMenuItem className="text-[#E0D8C8] hover:bg-white/10 focus:bg-white/10 focus:text-[#F5F1E7]" onClick={() => handleCategoryChange("do_not_buy_again")}>Not for Me</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
