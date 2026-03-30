@@ -1,6 +1,15 @@
 export function isModuleEnabled(user, moduleKey) {
   if (!user) return false;
-  return user?.activeModules?.[moduleKey] === true;
+
+  const enabledFieldMap = {
+    pipekeeper: "pipekeeper_enabled",
+    whiskeykeeper: "whiskeykeeper_enabled",
+    winekeeper: "winekeeper_enabled",
+    cigarkeeper: "cigarkeeper_enabled",
+  };
+
+  const fieldName = enabledFieldMap[moduleKey];
+  return fieldName ? user[fieldName] === true : false;
 }
 
 export function requireModule(user, moduleKey) {
