@@ -4,12 +4,14 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import ExternalItemSearch from '@/components/session/ExternalItemSearch';
+import SessionContextTags from '@/components/session/SessionContextTags';
+import PostSessionPrompt from '@/components/session/PostSessionPrompt';
 
 const SERVING_OPTIONS = ['Neat', 'With Ice', 'With Water', 'Cocktail', 'Other'];
 
 function RatingSelector({ value, onChange }) {
   const values = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
-
   return (
     <div className="space-y-2">
       <p className="text-sm font-medium text-[#E0D8C8]">Rating</p>
@@ -21,14 +23,11 @@ function RatingSelector({ value, onChange }) {
             onClick={() => onChange(rating)}
             className="px-3 py-2 rounded-lg text-sm font-medium transition-all"
             style={{
-              background:
-                value === rating
-                  ? 'linear-gradient(135deg, rgba(196,122,58,1), rgba(160,95,40,1))'
-                  : 'rgba(255,255,255,0.05)',
+              background: value === rating
+                ? 'linear-gradient(135deg, rgba(196,122,58,1), rgba(160,95,40,1))'
+                : 'rgba(255,255,255,0.05)',
               color: value === rating ? '#1A120D' : '#F5F1E7',
-              border: value === rating
-                ? '1px solid rgba(196,122,58,0.9)'
-                : '1px solid rgba(180,140,75,0.18)',
+              border: value === rating ? '1px solid rgba(196,122,58,0.9)' : '1px solid rgba(180,140,75,0.18)',
             }}
           >
             <span className="inline-flex items-center gap-1">
@@ -42,22 +41,30 @@ function RatingSelector({ value, onChange }) {
   );
 }
 
-export default function LogTastingModal({
-  bottle,
-  bottles = [],
-  editLog = null,
-  onClose,
-  onSaved,
-  isOpen = true,
-}) {
+function ExternalChip({ label, onClear }) {
+  return (
+    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[rgba(180,140,75,0.15)] border border-[rgba(180,140,75,0.3)] text-xs text-[#D4A574]">
+      <span className="font-medium truncate max-w-[200px]">{label}</span>
+      <button type="button" onClick={onClear} className="shrink-0 hover:text-white">
+        <X className="w-3 h-3" />
+      </button>
+    </div>
+  );
+}
+
+export default function LogTastingModal({ bottle, bottles = [], editLog = null, onClose, onSaved, isOpen = true }) {
   const isEdit = Boolean(editLog);
 
   const initialDate = useMemo(() => {
-    if (editLog?.tasting_date) {
-      return String(editLog.tasting_date).slice(0, 10);
-    }
+    if (editLog?.tasting_date) return String(editLog.tasting_date).slice(0, 10);
     return new Date().toISOString().slice(0, 10);
   }, [editLog]);
+
+  // Bottle mode: "collection" | "external"
+  const [bottleMode, setBottleMode] = useState(bottle ? "collection" : "collection");
+  const [externalBottle, setExternalBottle] = useState(null);
+  const [contextTag, setContextTag] = useState('');
+  const [postPromptItems, setPostPromptItems] = useState(null);
 
   const [form, setForm] = useState({
     bottle_id: bottle?.id || editLog?.bottle_id || '',
@@ -66,9 +73,7 @@ export default function LogTastingModal({
     rating: editLog?.rating ?? '',
     notes: editLog?.notes || '',
     serving_method: editLog?.serving_method || 'Neat',
-    tags: Array.isArray(editLog?.tags)
-      ? editLog.tags.join(', ')
-      : editLog?.tags || '',
+    tags: Array.isArray(editLog?.tags) ? editLog.tags.join(', ') : editLog?.tags || '',
   });
 
   const [saving, setSaving] = useState(false);
@@ -89,27 +94,35 @@ export default function LogTastingModal({
   }
 
   async function handleSave() {
-    if (!form.bottle_id || !form.bottle_name) {
-      setError('Bottle information is missing.');
+    // Validate
+    if (bottleMode === "collection" && (!form.bottle_id || !form.bottle_name)) {
+      setError('Please select a bottle from your collection.');
+      return;
+    }
+    if (bottleMode === "external" && !externalBottle) {
+      setError('Please search for or add the bottle you tasted.');
       return;
     }
 
     setSaving(true);
     setError('');
 
+    const bottleId = bottleMode === "collection" ? form.bottle_id : `ext_${Date.now()}`;
+    const bottleName = bottleMode === "collection" ? form.bottle_name : (externalBottle.name || "External Bottle");
+
+    const tagsArr = form.tags
+      ? form.tags.split(',').map((t) => t.trim()).filter(Boolean)
+      : [];
+    if (contextTag) tagsArr.push(contextTag);
+
     const payload = {
-      bottle_id: form.bottle_id,
-      bottle_name: form.bottle_name,
+      bottle_id: bottleId,
+      bottle_name: bottleName,
       tasting_date: form.tasting_date,
       rating: form.rating === '' ? null : Number(form.rating),
       notes: form.notes?.trim() || '',
       serving_method: form.serving_method || 'Neat',
-      tags: form.tags
-        ? form.tags
-            .split(',')
-            .map((t) => t.trim())
-            .filter(Boolean)
-        : [],
+      tags: tagsArr,
     };
 
     try {
@@ -119,15 +132,33 @@ export default function LogTastingModal({
       } else {
         saved = await base44.entities.TastingLog.create(payload);
       }
-
       onSaved?.(saved);
-      onClose?.();
+
+      // Post-prompt for external bottles
+      if (bottleMode === "external" && externalBottle && !isEdit) {
+        setPostPromptItems([{
+          label: externalBottle.name || "External Bottle",
+          item_type: "bottle",
+          itemData: externalBottle,
+        }]);
+      } else {
+        onClose?.();
+      }
     } catch (e) {
       console.error('[LogTastingModal] save failed', e);
       setError('Unable to save tasting. Please try again.');
     } finally {
       setSaving(false);
     }
+  }
+
+  if (postPromptItems) {
+    return (
+      <PostSessionPrompt
+        externalItems={postPromptItems}
+        onDone={() => { setPostPromptItems(null); onClose?.(); }}
+      />
+    );
   }
 
   return (
@@ -140,137 +171,121 @@ export default function LogTastingModal({
           boxShadow: '0 18px 48px rgba(0,0,0,0.55)',
         }}
       >
+        {/* Header */}
         <div className="shrink-0 px-6 py-4 flex items-center justify-between border-b border-[rgba(180,140,75,0.16)]">
           <div>
             <h2 className="text-xl font-bold text-[#F5F1E7]">
               {isEdit ? 'Edit Tasting' : 'Record Tasting'}
             </h2>
             <p className="text-sm text-[#D8C7A6]/75 mt-1">
-              {form.bottle_name || 'Bottle'}
+              {bottleMode === "external" && externalBottle ? externalBottle.name : (form.bottle_name || 'Select a bottle')}
             </p>
           </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-white/5"
-            aria-label="Close tasting modal"
-          >
+          <button type="button" onClick={onClose} className="p-2 rounded-lg hover:bg-white/5" aria-label="Close">
             <X className="w-5 h-5 text-[#E0D8C8]" />
           </button>
         </div>
 
+        {/* Body */}
         <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5 space-y-5">
-          {bottles.length > 0 && (
-            <div>
-              <label className="text-sm font-medium text-[#E0D8C8] block mb-2">
-                Bottle
-              </label>
-              <select
-                value={form.bottle_id}
-                onChange={(e) => {
-                  const selected = bottles.find((b) => b.id === e.target.value);
-                  updateField('bottle_id', e.target.value);
-                  updateField('bottle_name', selected?.name || '');
-                }}
-                className="w-full rounded-lg px-3 py-2 bg-[rgba(255,255,255,0.05)] border border-[rgba(180,140,75,0.18)] text-[#F5F1E7]"
-              >
-                <option value="" className="bg-[#1A120D]">
-                  Select a bottle...
-                </option>
-                {bottles.map((b) => (
-                  <option key={b.id} value={b.id} className="bg-[#1A120D]">
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
 
+          {/* Bottle selector */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-[#E0D8C8]">Bottle</label>
+              {!isEdit && (
+                <button
+                  type="button"
+                  onClick={() => { setBottleMode(bottleMode === "collection" ? "external" : "collection"); setExternalBottle(null); }}
+                  className="text-xs text-[#D4A574]/80 hover:text-[#D4A574] transition-colors"
+                >
+                  {bottleMode === "collection" ? "Log Something New →" : "← From My Collection"}
+                </button>
+              )}
+            </div>
+
+            {bottleMode === "collection" ? (
+              bottles.length > 0 ? (
+                <select
+                  value={form.bottle_id}
+                  onChange={(e) => {
+                    const selected = bottles.find((b) => b.id === e.target.value);
+                    updateField('bottle_id', e.target.value);
+                    updateField('bottle_name', selected?.name || '');
+                  }}
+                  className="w-full rounded-lg px-3 py-2 bg-[rgba(255,255,255,0.05)] border border-[rgba(180,140,75,0.18)] text-[#F5F1E7]"
+                >
+                  <option value="" className="bg-[#1A120D]">Select a bottle...</option>
+                  {bottles.map((b) => (
+                    <option key={b.id} value={b.id} className="bg-[#1A120D]">{b.name}</option>
+                  ))}
+                </select>
+              ) : (
+                <p className="text-xs text-[#E0D8C8]/50 py-2">No bottles in your collection. Use "Log Something New" to record an external pour.</p>
+              )
+            ) : (
+              externalBottle
+                ? <ExternalChip label={externalBottle.name || "External Bottle"} onClear={() => setExternalBottle(null)} />
+                : <ExternalItemSearch itemType="bottle" onSelect={setExternalBottle} />
+            )}
+          </div>
+
+          {/* Date + Serving */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-[#E0D8C8] block mb-2">
-                Tasting Date
-              </label>
-              <Input
-                type="date"
-                value={form.tasting_date}
-                onChange={(e) => updateField('tasting_date', e.target.value)}
-              />
+              <label className="text-sm font-medium text-[#E0D8C8] block mb-2">Tasting Date</label>
+              <Input type="date" value={form.tasting_date} onChange={(e) => updateField('tasting_date', e.target.value)} />
             </div>
-
             <div>
-              <label className="text-sm font-medium text-[#E0D8C8] block mb-2">
-                Serving Method
-              </label>
+              <label className="text-sm font-medium text-[#E0D8C8] block mb-2">Serving Method</label>
               <select
                 value={form.serving_method}
                 onChange={(e) => updateField('serving_method', e.target.value)}
                 className="w-full rounded-lg px-3 py-2 bg-[rgba(255,255,255,0.05)] border border-[rgba(180,140,75,0.18)] text-[#F5F1E7]"
               >
                 {SERVING_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt} className="bg-[#1A120D]">
-                    {opt}
-                  </option>
+                  <option key={opt} value={opt} className="bg-[#1A120D]">{opt}</option>
                 ))}
               </select>
             </div>
           </div>
 
-          <RatingSelector
-            value={form.rating}
-            onChange={(rating) => updateField('rating', rating)}
-          />
+          <RatingSelector value={form.rating} onChange={(rating) => updateField('rating', rating)} />
 
           <div>
-            <label className="text-sm font-medium text-[#E0D8C8] block mb-2">
-              Tasting Notes
-            </label>
+            <label className="text-sm font-medium text-[#E0D8C8] block mb-2">Tasting Notes</label>
             <Textarea
               value={form.notes}
               onChange={(e) => updateField('notes', e.target.value)}
               placeholder="What stood out? Aroma, palate, finish, balance, pairing, etc."
-              className="min-h-[140px]"
+              className="min-h-[120px]"
             />
           </div>
+
+          <SessionContextTags value={contextTag} onChange={setContextTag} />
 
           <div>
-            <label className="text-sm font-medium text-[#E0D8C8] block mb-2">
-              Tags
-            </label>
-            <Input
-              value={form.tags}
-              onChange={(e) => updateField('tags', e.target.value)}
-              placeholder="dessert, oak, citrus, special occasion"
-            />
+            <label className="text-sm font-medium text-[#E0D8C8] block mb-2">Tags</label>
+            <Input value={form.tags} onChange={(e) => updateField('tags', e.target.value)} placeholder="dessert, oak, citrus, special occasion" />
           </div>
 
-          {error ? (
-            <div className="rounded-lg px-3 py-2 text-sm text-[#F5F1E7] bg-red-500/15 border border-red-400/20">
-              {error}
-            </div>
-          ) : null}
+          {error && (
+            <div className="rounded-lg px-3 py-2 text-sm text-[#F5F1E7] bg-red-500/15 border border-red-400/20">{error}</div>
+          )}
         </div>
 
+        {/* Footer */}
         <div className="shrink-0 px-6 py-4 border-t border-[rgba(180,140,75,0.16)] flex gap-3">
-          <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
-            Cancel
-          </Button>
+          <Button type="button" variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
           <Button
             type="button"
             className="flex-1"
             onClick={handleSave}
-            disabled={saving}
-            style={{
-              background: 'linear-gradient(135deg, rgba(196,122,58,1), rgba(160,95,40,1))',
-              color: '#1A120D',
-            }}
+            disabled={saving || (bottleMode === "collection" && !form.bottle_id) || (bottleMode === "external" && !externalBottle)}
+            style={{ background: 'linear-gradient(135deg, rgba(196,122,58,1), rgba(160,95,40,1))', color: '#1A120D' }}
           >
             {saving ? (
-              <span className="inline-flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Saving...
-              </span>
+              <span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Saving...</span>
             ) : isEdit ? 'Update Tasting' : 'Save Tasting'}
           </Button>
         </div>
