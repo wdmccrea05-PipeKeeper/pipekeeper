@@ -388,8 +388,8 @@ export default function CollectionHub() {
       <LogSessionSelector
         isOpen={showLogSelector}
         onClose={() => setShowLogSelector(false)}
-        onSelectPipe={() => navigate(createPageUrl('PipeKeeper?action=log-smoke'))}
-        onSelectWhiskey={() => navigate(createPageUrl('Tastings'))}
+        onSelectPipe={() => navigate('/PipeKeeper?action=log-smoke')}
+        onSelectWhiskey={() => navigate('/Tastings')}
       />
 
       {/* Your Collections */}
