@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import LogSessionSelector from '@/components/session/LogSessionSelector';
 import {
   ChevronRight,
   Plus,
@@ -9,9 +10,7 @@ import {
   Clock3,
   Activity,
   TrendingUp,
-  Layers,
-  Glasses,
-  BarChart3,
+  BookOpen,
 } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import PipeIcon from '@/components/icons/PipeIcon';
@@ -224,6 +223,7 @@ function getRecentLabel(dateString) {
 export default function CollectionHub() {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
+  const [showLogSelector, setShowLogSelector] = useState(false);
   const { enabledModules, expandingSoonModules, isModuleEnabled } = useEnabledKeeperModules();
   const whiskeyOpenable = isModuleEnabled('whiskeykeeper');
 
@@ -371,25 +371,25 @@ export default function CollectionHub() {
         </div>
       </section>
 
-      {/* Quick Actions — directly below Overview */}
+      {/* Quick Actions */}
       <section className="space-y-4">
         <SectionTitle>Quick Actions</SectionTitle>
-        <div className="flex flex-wrap gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
           <QuickAction icon={PipeIcon} label="Add Pipe" accent="#C89752" onClick={() => navigate('/Pipes?action=add')} />
           <QuickAction icon={Leaf} label="Add Blend" accent="#8E7E60" onClick={() => navigate('/Tobacco?action=add')} />
-          <QuickAction icon={Flame} label="Log Smoke" accent="#B56A5F" onClick={() => navigate(createPageUrl('PipeKeeper?action=log-smoke'))} />
-          <QuickAction icon={Layers} label="View Pipes" accent="#B48C4B" onClick={() => navigate('/Pipes')} />
-          {whiskeyOpenable && (
-           <>
-             <QuickAction icon={Plus} label="Add Whiskey" accent="#B66565" onClick={() => navigate('/BottleForm')} />
-             <QuickAction icon={BarChart3} label="My Whiskey" accent="#A35050" onClick={() => navigate('/Whiskey')} />
-             <QuickAction icon={Glasses} label="Log Tasting" accent="#A35050" onClick={() => navigate(createPageUrl('Tastings'))} />
-             </>
-             )}
-             <QuickAction icon={Heart} label="Want List" accent="#C89752" onClick={() => navigate('/WantList')} />
-             <QuickAction icon={({ className, ...props }) => <div className={`${className} rounded-lg overflow-hidden bg-white flex items-center justify-center`}><img src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png" className="w-full h-full object-cover" alt="Curator" /></div>} label="Open Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
+          <QuickAction icon={Plus} label="Add Whiskey" accent="#B66565" onClick={() => navigate('/BottleForm')} />
+          <QuickAction icon={BookOpen} label="Log Session" accent="#4A7C59" onClick={() => setShowLogSelector(true)} />
+          <QuickAction icon={Heart} label="Want List" accent="#C89752" onClick={() => navigate('/WantList')} />
+          <QuickAction icon={({ className, ...props }) => <div className={`${className} rounded-lg overflow-hidden bg-white flex items-center justify-center`}><img src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png" className="w-full h-full object-cover" alt="Curator" /></div>} label="Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
         </div>
       </section>
+
+      <LogSessionSelector
+        isOpen={showLogSelector}
+        onClose={() => setShowLogSelector(false)}
+        onSelectPipe={() => navigate(createPageUrl('PipeKeeper?action=log-smoke'))}
+        onSelectWhiskey={() => navigate(createPageUrl('Tastings'))}
+      />
 
       {/* Your Collections */}
       {openableModuleKeys.length > 0 && (
