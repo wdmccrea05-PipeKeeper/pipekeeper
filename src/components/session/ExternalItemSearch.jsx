@@ -1,13 +1,10 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search, Loader2, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { rankSearchResults } from "@/utils/search/SmartSearchEngine";
-
-const ENTITY_BY_TYPE = {
-  blend: "TobaccoBlend",
-  bottle: "Bottle",
-  pipe: "Pipe",
-};
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useAccessSummary } from "@/components/hooks/useAccessSummary";
+import { scopedEntities } from "@/components/api/scopedEntities";
 
 const SCHEMA_BY_TYPE = {
   blend: {
@@ -99,10 +96,11 @@ function normalizeLocalResult(itemType, item) {
       _source: "local",
     };
   }
+
   if (itemType === "bottle") {
     return {
       name: item.name || item.expression || "",
-      distillery: item.distillery || "",
+      distillery: item.distillery || item.brand || "",
       type: item.type || item.whiskey_type || "",
       expression: item.expression || item.name || "",
       notes: item.notes || "",
@@ -111,6 +109,7 @@ function normalizeLocalResult(itemType, item) {
       _source: "local",
     };
   }
+
   return {
     maker: item.maker || "",
     model: item.model || item.name || "",
@@ -132,6 +131,7 @@ function normalizeRemoteResult(itemType, item) {
       _source: "remote",
     };
   }
+
   if (itemType === "bottle") {
     return {
       name: item.name || item.expression || "",
@@ -142,6 +142,7 @@ function normalizeRemoteResult(itemType, item) {
       _source: "remote",
     };
   }
+
   return {
     maker: item.maker || "",
     model: item.model || item.name || "",
@@ -163,13 +164,14 @@ function displayLabel(itemType, item) {
 
 function dedupeResults(itemType, items) {
   const seen = new Set();
+
   return items.filter((item) => {
     const key =
       itemType === "blend"
         ? `${(item.name || "").toLowerCase()}|${(item.manufacturer || "").toLowerCase()}`
         : itemType === "bottle"
-          ? `${(item.name || item.expression || "").toLowerCase()}|${(item.distillery || "").toLowerCase()}`
-          : `${(item.model || item.name || "").toLowerCase()}|${(item.maker || "").toLowerCase()}`;
+        ? `${(item.name || item.expression || "").toLowerCase()}|${(item.distillery || "").toLowerCase()}`
+        : `${(item.model || item.name || "").toLowerCase()}|${(item.maker || "").toLowerCase()}`;
 
     if (seen.has(key)) return false;
     seen.add(key);
@@ -178,24 +180,58 @@ function dedupeResults(itemType, items) {
 }
 
 export default function ExternalItemSearch({ itemType = "blend", onSelect, initialQuery = "" }) {
+  const { user } = useCurrentUser();
+  const access = useAccessSummary();
+  const userEmail = user?.email || null;
+
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [manual, setManual] = useState({ a: "", b: "", c: "", d: "" });
 
+  const activeModules = access?.activeModules || [];
+  const whiskeyEnabled = activeModules.includes("whiskeykeeper");
+
   const labels = MANUAL_LABELS[itemType] || MANUAL_LABELS.blend;
+
+  const itemTypeAllowed = useMemo(() => {
+    if (itemType === "blend" || itemType === "pipe") return true;
+    if (itemType === "bottle") return whiskeyEnabled;
+    return false;
+  }, [itemType, whiskeyEnabled]);
+
+  const loadLocalItems = async () => {
+    if (!userEmail) return [];
+
+    if (itemType === "blend") {
+      return scopedEntities.TobaccoBlend.listForUser(userEmail, "-updated_date", 500).catch(() => []);
+    }
+
+    if (itemType === "pipe") {
+      return scopedEntities.Pipe.listForUser(userEmail, "-updated_date", 500).catch(() => []);
+    }
+
+    if (itemType === "bottle") {
+      if (!whiskeyEnabled) return [];
+      return base44.entities.Bottle.filter({ created_by: userEmail }, "-updated_date", 500).catch(() => []);
+    }
+
+    return [];
+  };
 
   const doSearch = async () => {
     const q = query.trim();
-    if (!q) return;
+    if (!q || !itemTypeAllowed) {
+      setResults([]);
+      return;
+    }
 
     setLoading(true);
     setResults(null);
 
     try {
-      const entityName = ENTITY_BY_TYPE[itemType];
-      const localItems = await base44.entities[entityName].list("-updated_date", 500).catch(() => []);
+      const localItems = await loadLocalItems();
       const rankedLocal = rankSearchResults(q, localItems || [], itemType)
         .slice(0, 8)
         .map((item) => normalizeLocalResult(itemType, item));
@@ -233,6 +269,8 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
   };
 
   const handleManualSubmit = () => {
+    if (!itemTypeAllowed) return;
+
     const primary = manual.a.trim();
     if (!primary) return;
 
@@ -265,6 +303,12 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
 
   return (
     <div className="space-y-3">
+      {!itemTypeAllowed && itemType === "bottle" ? (
+        <div className="rounded-xl border border-[rgba(180,140,75,0.18)] bg-[rgba(255,255,255,0.03)] px-3 py-3 text-sm text-[#E0D8C8]/70">
+          Whiskey search is not available in this release.
+        </div>
+      ) : null}
+
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4A574]/60" />
@@ -275,12 +319,13 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
             onKeyDown={(e) => e.key === "Enter" && doSearch()}
             placeholder={PLACEHOLDER_BY_TYPE[itemType] || "Search…"}
             className="w-full h-9 pl-9 pr-3 rounded-lg bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.28)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-1 focus:ring-[#A35C5C]"
+            disabled={!itemTypeAllowed}
           />
         </div>
         <button
           type="button"
           onClick={doSearch}
-          disabled={loading || !query.trim()}
+          disabled={loading || !query.trim() || !itemTypeAllowed}
           className="px-3 h-9 rounded-lg text-sm font-medium text-white disabled:opacity-50 transition-all"
           style={{ background: "linear-gradient(135deg,#a35c5c,#8f4e4e)" }}
         >
@@ -288,7 +333,7 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
         </button>
       </div>
 
-      {results !== null && (
+      {results !== null && itemTypeAllowed && (
         <div className="space-y-1.5">
           {results.length === 0 ? (
             <p className="text-xs text-[#E0D8C8]/50 text-center py-2">No matches found.</p>
@@ -327,13 +372,14 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
         type="button"
         onClick={() => setShowManual((v) => !v)}
         className="flex items-center gap-1.5 text-xs text-[#D4A574]/80 hover:text-[#D4A574] transition-colors"
+        disabled={!itemTypeAllowed}
       >
         <Plus className="w-3.5 h-3.5" />
         Add manually
         {showManual ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
       </button>
 
-      {showManual && (
+      {showManual && itemTypeAllowed && (
         <div className="space-y-2 p-3 rounded-xl border border-[rgba(180,140,75,0.18)] bg-[rgba(0,0,0,0.15)]">
           {["a", "b", "c", "d"].map((key, i) => (
             <div key={key}>
