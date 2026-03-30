@@ -18,7 +18,6 @@ import {
 import PipeIcon from "@/components/icons/PipeIcon";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 import { isModuleEnabled } from "@/components/utils/moduleGuard";
-import { base44 } from "@/api/base44Client";
 
 function NavItem({ item, isActive }) {
   return (
@@ -48,16 +47,21 @@ function NavItem({ item, isActive }) {
 
 export default function ModuleNav({ currentPageName, user }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isAdmin = user?.role === 'admin';
   const location = useLocation();
 
-  // Module items filtered by enablement
+  const isAdmin =
+    user?.role === "admin" ||
+    user?.is_admin === true ||
+    user?.isAdmin === true;
+
   const moduleItems = [];
+
   if (import.meta?.env?.DEV) {
-    console.log('[ModuleNav] user object keys:', user ? Object.keys(user) : 'no user');
-    console.log('[ModuleNav] pipekeeper_enabled:', user?.pipekeeper_enabled);
-    console.log('[ModuleNav] whiskeykeeper_enabled:', user?.whiskeykeeper_enabled);
+    console.log("[ModuleNav] user object keys:", user ? Object.keys(user) : "no user");
+    console.log("[ModuleNav] pipekeeper_enabled:", user?.pipekeeper_enabled);
+    console.log("[ModuleNav] whiskeykeeper_enabled:", user?.whiskeykeeper_enabled);
   }
+
   if (user && isModuleEnabled(user, "pipekeeper")) {
     moduleItems.push({
       page: "PipeKeeper",
@@ -66,6 +70,7 @@ export default function ModuleNav({ currentPageName, user }) {
       path: "/PipeKeeper",
     });
   }
+
   if (user && isModuleEnabled(user, "whiskeykeeper")) {
     moduleItems.push({
       page: "WhiskeyKeeper",
@@ -75,7 +80,6 @@ export default function ModuleNav({ currentPageName, user }) {
     });
   }
 
-  // Base navigation items—modules appear right after Hub
   const baseItems = [
     { page: "CollectionHub", label: "Hub", icon: Home, path: "/" },
     ...moduleItems,
@@ -85,7 +89,6 @@ export default function ModuleNav({ currentPageName, user }) {
     { page: "HelpCenter", label: "Help", icon: HelpCircle, path: "/HelpCenter" },
   ];
 
-  // Admin items
   const adminItems = isAdmin
     ? [
         {
@@ -131,7 +134,6 @@ export default function ModuleNav({ currentPageName, user }) {
 
   return (
     <div className="flex items-center gap-1 pb-1 min-w-0">
-      {/* Desktop nav */}
       <div className="hidden md:flex flex-wrap items-center gap-1">
         {items.map((item) => (
           <NavItem
@@ -142,7 +144,6 @@ export default function ModuleNav({ currentPageName, user }) {
         ))}
       </div>
 
-      {/* Mobile dropdown menu */}
       <div className="md:hidden relative">
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -156,6 +157,7 @@ export default function ModuleNav({ currentPageName, user }) {
           <div className="absolute top-10 left-0 bg-[#1d1511] border border-[rgba(180,140,75,0.35)] rounded-lg shadow-lg z-50 min-w-[200px] max-w-[calc(100vw-2rem)] max-h-[80vh] overflow-y-auto">
             {items.map((item) => {
               const isActive = location.pathname.startsWith(item.path);
+
               return (
                 <Link
                   key={item.page}
