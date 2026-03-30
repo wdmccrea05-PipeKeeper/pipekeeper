@@ -60,4 +60,5 @@ export function useEnabledModules(profile = null, user = null) {
   };
 }
 
+export { useEnabledModules as useEnabledKeeperModules };
 export default useEnabledModules;
