@@ -79,14 +79,6 @@ export default function ModuleNav({ currentPageName, user }) {
     { page: "HelpCenter", label: "Help", icon: HelpCircle, path: "/HelpCenter" },
   ];
 
-  // Remove duplicate moduleItems from baseItems—prevent spreading twice
-  const visibleBaseItems = baseItems.filter(item => {
-    if (item.page === 'PipeKeeper' || item.page === 'WhiskeyKeeper') {
-      return moduleItems.some(m => m.page === item.page);
-    }
-    return true;
-  });
-
   // Admin items
   const adminItems = isAdmin
     ? [
@@ -129,7 +121,7 @@ export default function ModuleNav({ currentPageName, user }) {
       ]
     : [];
 
-  const items = [...visibleBaseItems, ...adminItems];
+  const items = [...baseItems, ...adminItems];
 
   return (
     <div className="flex items-center gap-1 pb-1 min-w-0">
