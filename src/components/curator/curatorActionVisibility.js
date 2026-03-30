@@ -1,4 +1,4 @@
-import { getItemModule, shouldRenderModuleContent } from "@/components/utils/moduleContentVisibility";
+import { getItemModule } from "@/components/utils/moduleContentVisibility";
 
 function matchesPipekeeperAction(action) {
   const text = [
@@ -60,4 +60,34 @@ export function shouldShowCuratorAction(action, enabledModules) {
 
 export function filterCuratorActions(actions, enabledModules) {
   return (actions || []).filter((action) => shouldShowCuratorAction(action, enabledModules));
+}
+
+export function buildEnabledCuratorScopes(enabledModules) {
+  const scopes = [];
+
+  if ((enabledModules?.pipekeeper && enabledModules?.whiskeykeeper) || (!enabledModules?.pipekeeper && !enabledModules?.whiskeykeeper)) {
+    scopes.push({ key: "all", label: "All Modules" });
+  }
+
+  if (enabledModules?.pipekeeper) {
+    scopes.push({ key: "pipekeeper", label: "PipeKeeper" });
+  }
+
+  if (enabledModules?.whiskeykeeper) {
+    scopes.push({ key: "whiskeykeeper", label: "WhiskeyKeeper" });
+  }
+
+  if (enabledModules?.winekeeper) {
+    scopes.push({ key: "winekeeper", label: "WineKeeper" });
+  }
+
+  if (enabledModules?.cigarkeeper) {
+    scopes.push({ key: "cigarkeeper", label: "CigarKeeper" });
+  }
+
+  if (scopes.length === 0) {
+    scopes.push({ key: "all", label: "All Modules" });
+  }
+
+  return scopes;
 }
