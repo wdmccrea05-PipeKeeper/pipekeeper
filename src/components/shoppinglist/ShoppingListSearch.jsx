@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
 import { rankSearchResults } from "@/utils/search/SmartSearchEngine";
 import { Button } from "@/components/ui/button";
@@ -7,10 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-const ITEM_TYPES = [
-  { value: "blend", label: "Tobacco" },
-  { value: "pipe", label: "Pipe" },
-  { value: "bottle", label: "Whiskey" },
+const ALL_ITEM_TYPES = [
+  { value: "blend", label: "Tobacco", moduleKey: "pipekeeper_enabled" },
+  { value: "pipe", label: "Pipe", moduleKey: "pipekeeper_enabled" },
+  { value: "bottle", label: "Whiskey", moduleKey: "whiskeykeeper_enabled" },
 ];
 
 const SHOPPING_TYPES = [
@@ -104,6 +105,12 @@ async function searchBottle(query) {
 }
 
 export default function ShoppingListSearch({ onAdded }) {
+  const { user } = useCurrentUser();
+  const ITEM_TYPES = useMemo(() => {
+    if (!user) return ALL_ITEM_TYPES;
+    return ALL_ITEM_TYPES.filter((t) => user[t.moduleKey] !== false);
+  }, [user]);
+
   const [itemType, setItemType] = useState("blend");
   const [shoppingType, setShoppingType] = useState("buy_new_item");
   const [query, setQuery] = useState("");
@@ -175,19 +182,19 @@ export default function ShoppingListSearch({ onAdded }) {
           <p className="text-xs text-[#E0D8C8]/60 mb-2 font-medium uppercase tracking-wide">Item Category</p>
           <div className="flex gap-2">
             {ITEM_TYPES.map((t) => (
-              <button
-                key={t.value}
-                onClick={() => { setItemType(t.value); setResults([]); setSearched(false); }}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-colors ${
-                  itemType === t.value
-                    ? "bg-[#A35C5C] border-[#A35C5C] text-white"
-                    : "border-[rgba(180,140,75,0.25)] text-[#E0D8C8]/70 hover:bg-white/5"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
+          <button
+            key={t.value}
+            onClick={() => { setItemType(t.value); setResults([]); setSearched(false); }}
+            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-colors ${
+              itemType === t.value
+                ? "bg-[#A35C5C] border-[#A35C5C] text-white"
+                : "border-[rgba(180,140,75,0.25)] text-[#E0D8C8]/70 hover:bg-white/5"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+        </div>
         </div>
 
         <div>
