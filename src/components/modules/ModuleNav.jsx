@@ -18,6 +18,7 @@ import {
 import PipeIcon from "@/components/icons/PipeIcon";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 import { isModuleEnabled } from "@/components/utils/moduleGuard";
+import { base44 } from "@/api/base44Client";
 
 function NavItem({ item, isActive }) {
   return (

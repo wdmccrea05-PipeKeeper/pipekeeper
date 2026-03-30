@@ -84,6 +84,28 @@ export function useCurrentUser() {
   const userId = user?.id || user?.auth_user_id;
   const email = user?.email ? normEmail(user.email) : null;
 
+  // Fetch UserProfile for module enablement fields
+  const {
+    data: userProfile,
+    isLoading: profileLoading,
+  } = useQueryRQ({
+    queryKey: ["user-profile", email],
+    queryFn: async () => {
+      if (!email) return null;
+      try {
+        const profiles = await base44.entities.UserProfile.filter({ user_email: email });
+        return profiles?.[0] || null;
+      } catch (error) {
+        if (import.meta?.env?.DEV) {
+          console.warn("[useCurrentUser] UserProfile fetch error:", error);
+        }
+        return null;
+      }
+    },
+    enabled: !!email,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const {
     data: subscription,
     isLoading: subLoading,
@@ -240,14 +262,17 @@ export function useCurrentUser() {
   const isAdmin = user?.role === "admin";
   const isFounding = isFoundingMember(user);
 
-  const isLoading = userLoading || subLoading;
+  // Merge user with userProfile for module fields
+  const mergedUser = userProfile ? { ...user, ...userProfile } : user;
+
+  const isLoading = userLoading || subLoading || profileLoading;
 
   const refetch = async () => {
     await Promise.all([refetchUser(), refetchSubscription()]);
   };
 
   return {
-    user,
+    user: mergedUser,
     subscription,
     provider, // Canonical provider (stripe, apple, or null)
     tier, // Canonical tier from getEntitlementTier
