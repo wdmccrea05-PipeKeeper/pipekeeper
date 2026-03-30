@@ -13,6 +13,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
+import WhiskeyBottleIcon from '@/components/icons/WhiskeyBottleIcon';
 import PipeIcon from '@/components/icons/PipeIcon';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/components/utils/createPageUrl';
@@ -377,7 +378,7 @@ export default function CollectionHub() {
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
           <QuickAction icon={PipeIcon} label="Add Pipe" accent="#C89752" onClick={() => navigate('/Pipes?action=add')} />
           <QuickAction icon={Leaf} label="Add Blend" accent="#8E7E60" onClick={() => navigate('/Tobacco?action=add')} />
-          <QuickAction icon={Plus} label="Add Whiskey" accent="#B66565" onClick={() => navigate('/BottleForm')} />
+          <QuickAction icon={WhiskeyBottleIcon} label="Add Whiskey" accent="#B66565" onClick={() => navigate('/BottleForm')} />
           <QuickAction icon={BookOpen} label="Log Session" accent="#4A7C59" onClick={() => setShowLogSelector(true)} />
           <QuickAction icon={Heart} label="Want List" accent="#C89752" onClick={() => navigate('/WantList')} />
           <QuickAction icon={({ className, ...props }) => <div className={`${className} rounded-lg overflow-hidden bg-white flex items-center justify-center`}><img src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png" className="w-full h-full object-cover" alt="Curator" /></div>} label="Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
