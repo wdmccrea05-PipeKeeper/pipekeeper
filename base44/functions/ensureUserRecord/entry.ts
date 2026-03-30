@@ -51,6 +51,25 @@ Deno.serve(async (req) => {
       // Single update — no double-write
       await base44.asServiceRole.entities.User.update(existing.id, patch);
       
+      // Ensure UserProfile exists for existing user
+      try {
+        const existingProfile = await base44.asServiceRole.entities.UserProfile.filter({ user_email: emailLower });
+        if (!existingProfile || existingProfile.length === 0) {
+          await base44.asServiceRole.entities.UserProfile.create({
+            user_email: emailLower,
+            pipekeeper_enabled: true,
+            whiskeykeeper_enabled: true,
+            winekeeper_enabled: false,
+            cigarkeeper_enabled: false,
+            module_preferences_set: false
+          });
+          console.log('[ensureUserRecord] UserProfile created for existing user');
+        }
+      } catch (profileError) {
+        // Non-fatal: if profile creation fails, continue
+        console.warn('[ensureUserRecord] Failed to ensure UserProfile (non-fatal):', profileError?.message);
+      }
+      
       return Response.json({ 
         ok: true, 
         user: { ...existing, ...patch },
@@ -70,7 +89,25 @@ Deno.serve(async (req) => {
       role: authUser.role || 'user'
     });
 
-    // New user created successfully - reconciliation will happen via other functions
+    // Also create UserProfile for module preferences
+    console.log('[ensureUserRecord] Creating UserProfile for new user');
+    try {
+      const existingProfile = await base44.asServiceRole.entities.UserProfile.filter({ user_email: emailLower });
+      if (!existingProfile || existingProfile.length === 0) {
+        await base44.asServiceRole.entities.UserProfile.create({
+          user_email: emailLower,
+          pipekeeper_enabled: true,
+          whiskeykeeper_enabled: true,
+          winekeeper_enabled: false,
+          cigarkeeper_enabled: false,
+          module_preferences_set: false
+        });
+        console.log('[ensureUserRecord] UserProfile created with default module preferences');
+      }
+    } catch (profileError) {
+      // Non-fatal: if profile creation fails, continue
+      console.warn('[ensureUserRecord] Failed to create UserProfile (non-fatal):', profileError?.message);
+    }
 
     console.log('[ensureUserRecord] New user created successfully');
     return Response.json({ 

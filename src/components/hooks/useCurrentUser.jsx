@@ -88,13 +88,18 @@ export function useCurrentUser() {
   const {
     data: userProfile,
     isLoading: profileLoading,
+    refetch: refetchProfile,
   } = useQueryRQ({
     queryKey: ["user-profile", email],
     queryFn: async () => {
       if (!email) return null;
       try {
         const profiles = await base44.entities.UserProfile.filter({ user_email: email });
-        return profiles?.[0] || null;
+        const profile = profiles?.[0] || null;
+        if (import.meta?.env?.DEV) {
+          console.log('[useCurrentUser] UserProfile loaded:', profile?.id ? 'found' : 'not found');
+        }
+        return profile;
       } catch (error) {
         if (import.meta?.env?.DEV) {
           console.warn("[useCurrentUser] UserProfile fetch error:", error);
@@ -181,6 +186,16 @@ export function useCurrentUser() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  // Invalidate profile cache when email changes
+  useEffect(() => {
+    if (email) {
+      queryClient.invalidateQueries({ 
+        queryKey: ["user-profile", email],
+        exact: true 
+      });
+    }
+  }, [email, queryClient]);
+
   // Ensure user record exists with platform info
   useEffect(() => {
     if (userLoading || !user?.email) return;
@@ -196,7 +211,7 @@ export function useCurrentUser() {
         await base44.functions.invoke("ensureUserRecord", {});
         if (!cancelled) {
           sessionStorage.setItem(sessionKey, 'true');
-          await refetchUser();
+          await Promise.all([refetchUser(), refetchProfile()]);
         }
       } catch (err) {
         if (!cancelled) sessionStorage.setItem(sessionKey, 'true');

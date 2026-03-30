@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
@@ -53,6 +54,11 @@ export default function ModuleNav({ currentPageName, user }) {
 
   // Module items filtered by enablement
   const moduleItems = [];
+  if (import.meta?.env?.DEV) {
+    console.log('[ModuleNav] user object keys:', user ? Object.keys(user) : 'no user');
+    console.log('[ModuleNav] pipekeeper_enabled:', user?.pipekeeper_enabled);
+    console.log('[ModuleNav] whiskeykeeper_enabled:', user?.whiskeykeeper_enabled);
+  }
   if (user && isModuleEnabled(user, "pipekeeper")) {
     moduleItems.push({
       page: "PipeKeeper",
