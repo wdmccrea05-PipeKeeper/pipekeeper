@@ -1,45 +1,52 @@
-import { useEffect, useRef } from "react";
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClientInstance } from '@/lib/query-client'
-import NavigationTracker from '@/lib/NavigationTracker'
-import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import PageNotFound from './lib/PageNotFound';
-import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import GlobalErrorBoundary from '@/components/system/GlobalErrorBoundary';
-import PublicSharedRecord from '@/pages/PublicSharedRecord';
-import CuratorAnalyticsDashboard from '@/pages/CuratorAnalyticsDashboard';
-import CollectionInsightsShare from '@/pages/CollectionInsightsShare';
-import Whiskey from '@/pages/Whiskey.jsx';
-import WhiskeyAnalytics from '@/pages/WhiskeyAnalytics';
-import Tastings from '@/pages/Tastings';
-import Curator from '@/pages/Curator';
-import Subscription from '@/pages/Subscription';
-import SubscriptionSuccessFlow from '@/pages/SubscriptionSuccessFlow';
-import CollectionHub from '@/pages/CollectionHub';
-import PipeKeeper from '@/pages/PipeKeeper';
-import WhiskeyKeeper from '@/pages/WhiskeyKeeper';
-import WhiskeyAIUpdates from '@/pages/WhiskeyAIUpdates';
-import BottleDetail from '@/pages/BottleDetail';
-import BottleFormPage from '@/pages/BottleFormPage';
-import HelpCenter from '@/pages/HelpCenter';
-import Tutorials from '@/pages/Tutorials';
-import PipeDetail from '@/pages/PipeDetail';
-import TobaccoDetail from '@/pages/TobaccoDetail';
-import Support from '@/pages/Support';
-import WantList from '@/pages/WantList';
-import ShoppingList from '@/pages/ShoppingList';
-import SupportPublic from '@/pages/SupportPublic';
-import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
+import { useRef } from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClientInstance } from "@/lib/query-client";
+import NavigationTracker from "@/lib/NavigationTracker";
+import { pagesConfig } from "./pages.config";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import PageNotFound from "./lib/PageNotFound";
+import { AuthProvider, useAuth } from "@/lib/AuthContext";
+import UserNotRegisteredError from "@/components/UserNotRegisteredError";
+import GlobalErrorBoundary from "@/components/system/GlobalErrorBoundary";
+import PublicSharedRecord from "@/pages/PublicSharedRecord";
+import CuratorAnalyticsDashboard from "@/pages/CuratorAnalyticsDashboard";
+import CollectionInsightsShare from "@/pages/CollectionInsightsShare";
+import Whiskey from "@/pages/Whiskey.jsx";
+import WhiskeyAnalytics from "@/pages/WhiskeyAnalytics";
+import Tastings from "@/pages/Tastings";
+import Curator from "@/pages/Curator";
+import Subscription from "@/pages/Subscription";
+import SubscriptionSuccessFlow from "@/pages/SubscriptionSuccessFlow";
+import CollectionHub from "@/pages/CollectionHub";
+import PipeKeeper from "@/pages/PipeKeeper";
+import WhiskeyKeeper from "@/pages/WhiskeyKeeper";
+import WhiskeyAIUpdates from "@/pages/WhiskeyAIUpdates";
+import BottleDetail from "@/pages/BottleDetail";
+import BottleFormPage from "@/pages/BottleFormPage";
+import HelpCenter from "@/pages/HelpCenter";
+import Tutorials from "@/pages/Tutorials";
+import PipeDetail from "@/pages/PipeDetail";
+import TobaccoDetail from "@/pages/TobaccoDetail";
+import Support from "@/pages/Support";
+import WantList from "@/pages/WantList";
+import ShoppingList from "@/pages/ShoppingList";
+import SupportPublic from "@/pages/SupportPublic";
+import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : () => <></>;
 
-const LayoutWrapper = ({ children, currentPageName }) => Layout ?
-  <Layout currentPageName={currentPageName}>{children}</Layout>
-  : <>{children}</>;
+const LayoutWrapper = ({ children, currentPageName }) =>
+  Layout ? <Layout currentPageName={currentPageName}>{children}</Layout> : <>{children}</>;
+
+const WhiskeyReleaseRoute = ({ currentPageName, children }) => (
+  <LayoutWrapper currentPageName={currentPageName}>
+    <LockedModuleGuard moduleKey="whiskeykeeper">
+      {children}
+    </LockedModuleGuard>
+  </LayoutWrapper>
+);
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -53,11 +60,11 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (window.location.pathname === '/support-public') {
+  if (window.location.pathname === "/support-public") {
     return <SupportPublic />;
   }
 
-  if (authError?.type === 'auth_required') {
+  if (authError?.type === "auth_required") {
     if (!loginRedirectedRef.current) {
       loginRedirectedRef.current = true;
       navigateToLogin();
@@ -69,7 +76,7 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (authError?.type === 'user_not_registered') {
+  if (authError?.type === "user_not_registered") {
     return <UserNotRegisteredError />;
   }
 
@@ -77,118 +84,198 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route path="/support-public" element={<SupportPublic />} />
       <Route path="/share/:moduleType/:shareToken" element={<PublicSharedRecord />} />
-      <Route path="/CuratorAnalyticsDashboard" element={
-        <LayoutWrapper currentPageName="CuratorAnalyticsDashboard">
-          <CuratorAnalyticsDashboard />
-        </LayoutWrapper>
-      } />
-      <Route path="/CollectionInsightsShare" element={
-        <LayoutWrapper currentPageName="CollectionInsightsShare">
-          <CollectionInsightsShare />
-        </LayoutWrapper>
-      } />
-      <Route path="/Whiskey" element={
-        <LayoutWrapper currentPageName="Whiskey">
-          <Whiskey />
-        </LayoutWrapper>
-      } />
-      <Route path="/WhiskeyAnalytics" element={
-        <LayoutWrapper currentPageName="WhiskeyAnalytics">
-          <WhiskeyAnalytics />
-        </LayoutWrapper>
-      } />
-      <Route path="/Tastings" element={
-        <LayoutWrapper currentPageName="Tastings">
-          <Tastings />
-        </LayoutWrapper>
-      } />
-      <Route path="/Curator" element={
-        <LayoutWrapper currentPageName="Curator">
-          <Curator />
-        </LayoutWrapper>
-      } />
-      <Route path="/Subscription" element={
-        <LayoutWrapper currentPageName="Subscription">
-          <Subscription />
-        </LayoutWrapper>
-      } />
-      <Route path="/SubscriptionSuccessFlow" element={
-        <SubscriptionSuccessFlow />
-      } />
-      <Route path="/CollectionHub" element={
-        <LayoutWrapper currentPageName="CollectionHub">
-          <CollectionHub />
-        </LayoutWrapper>
-      } />
-      <Route path="/PipeKeeper" element={
-        <LayoutWrapper currentPageName="PipeKeeper">
-          <PipeKeeper />
-        </LayoutWrapper>
-      } />
-      <Route path="/WhiskeyKeeper" element={
-        <LayoutWrapper currentPageName="WhiskeyKeeper">
-          <WhiskeyKeeper />
-        </LayoutWrapper>
-      } />
-      <Route path="/WhiskeyAIUpdates" element={
-        <LayoutWrapper currentPageName="WhiskeyAIUpdates">
-          <WhiskeyAIUpdates />
-        </LayoutWrapper>
-      } />
-      <Route path="/BottleDetail" element={
-        <LayoutWrapper currentPageName="BottleDetail">
-          <LockedModuleGuard moduleKey="whiskeykeeper">
+
+      <Route
+        path="/CuratorAnalyticsDashboard"
+        element={
+          <LayoutWrapper currentPageName="CuratorAnalyticsDashboard">
+            <CuratorAnalyticsDashboard />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/CollectionInsightsShare"
+        element={
+          <LayoutWrapper currentPageName="CollectionInsightsShare">
+            <CollectionInsightsShare />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/Whiskey"
+        element={
+          <WhiskeyReleaseRoute currentPageName="Whiskey">
+            <Whiskey />
+          </WhiskeyReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/WhiskeyAnalytics"
+        element={
+          <WhiskeyReleaseRoute currentPageName="WhiskeyAnalytics">
+            <WhiskeyAnalytics />
+          </WhiskeyReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/Tastings"
+        element={
+          <WhiskeyReleaseRoute currentPageName="Tastings">
+            <Tastings />
+          </WhiskeyReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/Curator"
+        element={
+          <LayoutWrapper currentPageName="Curator">
+            <Curator />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/Subscription"
+        element={
+          <LayoutWrapper currentPageName="Subscription">
+            <Subscription />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route path="/SubscriptionSuccessFlow" element={<SubscriptionSuccessFlow />} />
+
+      <Route
+        path="/CollectionHub"
+        element={
+          <LayoutWrapper currentPageName="CollectionHub">
+            <CollectionHub />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/PipeKeeper"
+        element={
+          <LayoutWrapper currentPageName="PipeKeeper">
+            <PipeKeeper />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/WhiskeyKeeper"
+        element={
+          <WhiskeyReleaseRoute currentPageName="WhiskeyKeeper">
+            <WhiskeyKeeper />
+          </WhiskeyReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/WhiskeyAIUpdates"
+        element={
+          <WhiskeyReleaseRoute currentPageName="WhiskeyAIUpdates">
+            <WhiskeyAIUpdates />
+          </WhiskeyReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/BottleDetail"
+        element={
+          <WhiskeyReleaseRoute currentPageName="BottleDetail">
             <BottleDetail />
-          </LockedModuleGuard>
-        </LayoutWrapper>
-      } />
-      <Route path="/BottleForm" element={
-        <LayoutWrapper currentPageName="BottleForm">
-          <LockedModuleGuard moduleKey="whiskeykeeper">
+          </WhiskeyReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/BottleForm"
+        element={
+          <WhiskeyReleaseRoute currentPageName="BottleForm">
             <BottleFormPage />
-          </LockedModuleGuard>
-        </LayoutWrapper>
-      } />
-      <Route path="/HelpCenter" element={
-        <LayoutWrapper currentPageName="HelpCenter">
-          <HelpCenter />
-        </LayoutWrapper>
-      } />
-      <Route path="/Tutorials" element={
-        <LayoutWrapper currentPageName="Tutorials">
-          <Tutorials />
-        </LayoutWrapper>
-      } />
-      <Route path="/PipeDetail" element={
-        <LayoutWrapper currentPageName="PipeDetail">
-          <PipeDetail />
-        </LayoutWrapper>
-      } />
-      <Route path="/TobaccoDetail" element={
-        <LayoutWrapper currentPageName="TobaccoDetail">
-          <TobaccoDetail />
-        </LayoutWrapper>
-      } />
-      <Route path="/support" element={
-        <LayoutWrapper currentPageName="Support">
-          <Support />
-        </LayoutWrapper>
-      } />
-      <Route path="/WantList" element={
-        <LayoutWrapper currentPageName="WantList">
-          <WantList />
-        </LayoutWrapper>
-      } />
-      <Route path="/ShoppingList" element={
-        <LayoutWrapper currentPageName="ShoppingList">
-          <ShoppingList />
-        </LayoutWrapper>
-      } />
-      <Route path="/" element={
-        <LayoutWrapper currentPageName={mainPageKey}>
-          <MainPage />
-        </LayoutWrapper>
-      } />
+          </WhiskeyReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/HelpCenter"
+        element={
+          <LayoutWrapper currentPageName="HelpCenter">
+            <HelpCenter />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/Tutorials"
+        element={
+          <LayoutWrapper currentPageName="Tutorials">
+            <Tutorials />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/PipeDetail"
+        element={
+          <LayoutWrapper currentPageName="PipeDetail">
+            <PipeDetail />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/TobaccoDetail"
+        element={
+          <LayoutWrapper currentPageName="TobaccoDetail">
+            <TobaccoDetail />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/support"
+        element={
+          <LayoutWrapper currentPageName="Support">
+            <Support />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/WantList"
+        element={
+          <LayoutWrapper currentPageName="WantList">
+            <WantList />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/ShoppingList"
+        element={
+          <LayoutWrapper currentPageName="ShoppingList">
+            <ShoppingList />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/"
+        element={
+          <LayoutWrapper currentPageName={mainPageKey}>
+            <MainPage />
+          </LayoutWrapper>
+        }
+      />
+
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}
@@ -200,6 +287,7 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -217,7 +305,7 @@ function App() {
         </QueryClientProvider>
       </AuthProvider>
     </GlobalErrorBoundary>
-  )
+  );
 }
 
-export default App
+export default App;
