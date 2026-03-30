@@ -167,6 +167,11 @@ const AuthenticatedApp = () => {
           <Support />
         </LayoutWrapper>
       } />
+      <Route path="/WantList" element={
+        <LayoutWrapper currentPageName="WantList">
+          <WantList />
+        </LayoutWrapper>
+      } />
       <Route path="/ShoppingList" element={
         <LayoutWrapper currentPageName="ShoppingList">
           <ShoppingList />
