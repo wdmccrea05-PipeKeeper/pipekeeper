@@ -444,3 +444,7 @@ function BottleDetailInner() {
     </LockedModuleGuard>
   );
 }
+
+export default function BottleDetail() {
+  return <BottleDetailInner />;
+}
