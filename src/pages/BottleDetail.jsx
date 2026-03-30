@@ -118,6 +118,11 @@ function BottleDetailInner() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { user, isLoading: userLoading } = useCurrentUser();
+  const [, setEditingTasting] = useState(null);
+  const { useState, useEffect, useMemo } = require('react');
+  const updateBottle = (updates) => {
+    setBottle(prev => ({ ...prev, ...updates }));
+  };
 
   const bottleId = params.get("id") || params.get("bottleId");
   const userEmail = user?.email || null;
@@ -292,7 +297,7 @@ function BottleDetailInner() {
   }
 
   return (
-    <>
+    <LockedModuleGuard moduleKey="whiskeykeeper">
       <div className="p-6 md:p-8 space-y-6 text-[#F5F1E7]">
         <div className="flex items-center justify-between gap-3">
           <Button variant="outline" onClick={() => navigate(-1)}>
@@ -372,3 +377,71 @@ function BottleDetailInner() {
                     ? bottle.photos
                     : []
                 }
+                onPhotosChange={(newPhotos) => updateBottle({ photos: newPhotos })}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {showShareModal && (
+        <ShareRecordModal
+          record={bottle}
+          recordType="bottle"
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
+
+      {showTastingModal && (
+        <LogTastingModal
+          bottle={bottle}
+          editingTasting={editingTasting}
+          onClose={() => {
+            setShowTastingModal(false);
+            setEditingTasting(null);
+            loadTastings();
+          }}
+        />
+      )}
+
+      {showSimilar && (
+        <SimilarItemsDrawer
+          loading={similarLoading}
+          result={similarResult}
+          error={similarError}
+          onClose={() => setShowSimilar(false)}
+        />
+      )}
+
+      {showDeleteConfirm && (
+        <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete bottle?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
+      {showInventoryManager && (
+        <InventoryManager
+          bottle={bottle}
+          onClose={() => setShowInventoryManager(false)}
+          onUpdate={loadBottle}
+        />
+      )}
+    </LockedModuleGuard>
+  );
+}
