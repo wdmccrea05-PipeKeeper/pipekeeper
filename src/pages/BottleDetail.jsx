@@ -370,4 +370,5 @@ function BottleDetailInner() {
                 photos={
                   bottle.photos?.length
                     ? bottle.photos
-                    :
+                    : []
+                }
