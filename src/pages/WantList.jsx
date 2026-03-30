@@ -14,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { rankSearchResults } from "@/utils/search/SmartSearchEngine";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useAccessSummary } from "@/components/hooks/useAccessSummary";
 
 // ─── AI Search config (mirrored from AddFlowQuickSearch) ───────────────────
 const PLACEHOLDERS = {
@@ -69,10 +71,11 @@ const LIST_DESTINATIONS = [
   { value: "do_not_buy_again", label: "Not for Me" },
 ];
 
-const ITEM_TYPES = [
-  { value: "blend", label: "Blend", itemType: "blend" },
-  { value: "pipe", label: "Pipe", itemType: "pipe" },
-  { value: "bottle", label: "Whiskey", itemType: "bottle" },
+// Dynamic item types based on access. Defined in AddItemFlow via useMemo.
+const BASE_ITEM_TYPES = [
+  { value: "blend", label: "Blend", itemType: "blend", moduleKey: "pipekeeper" },
+  { value: "pipe", label: "Pipe", itemType: "pipe", moduleKey: "pipekeeper" },
+  { value: "bottle", label: "Whiskey", itemType: "bottle", moduleKey: "whiskeykeeper" },
 ];
 
 // ─── Manual add forms ───────────────────────────────────────────────────────
@@ -149,6 +152,13 @@ function ManualForm({ itemType, onSubmit, onBack }) {
 
 // ─── Add Item Multi-Step Flow ────────────────────────────────────────────────
 function AddItemFlow({ onDone, onBack }) {
+  const access = useAccessSummary();
+  const activeModules = access?.activeModules || [];
+
+  const ITEM_TYPES = useMemo(() => {
+    return BASE_ITEM_TYPES.filter((t) => activeModules.includes(t.moduleKey));
+  }, [activeModules]);
+
   const [step, setStep] = useState("type"); // type | search | manual | destination
   const [itemType, setItemType] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -382,16 +392,22 @@ function AddItemFlow({ onDone, onBack }) {
 // ─── View Current List ───────────────────────────────────────────────────────
 function ViewList({ onBack }) {
   const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+  const userEmail = user?.email || null;
+
   const [activeTab, setActiveTab] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
   const [searchText, setSearchText] = useState("");
   const [selectedItems, setSelectedItems] = useState(new Set());
 
   const { data: items = [], isLoading } = useQuery({
-    queryKey: ["acquisitionItems"],
+    queryKey: ["acquisitionItems", userEmail],
+    enabled: !!userEmail,
     queryFn: async () => {
-      const all = await base44.entities.AcquisitionItem.list("-created_date", 500);
-      return all.filter((i) => i.status !== "archived" && i.status !== "removed");
+      const rows = await base44.entities.AcquisitionItem
+        .filter({ created_by: userEmail }, "-created_date", 500)
+        .catch(() => []);
+      return (rows || []).filter((i) => i.status !== "archived" && i.status !== "removed");
     },
   });
 
@@ -430,9 +446,9 @@ function ViewList({ onBack }) {
     return result;
   }, [items, activeTab, searchText, sortBy]);
 
-  const handleStatusChange = () => queryClient.invalidateQueries({ queryKey: ["acquisitionItems"] });
+  const handleStatusChange = () => queryClient.invalidateQueries({ queryKey: ["acquisitionItems", userEmail] });
   const handleArchive = (itemId) => {
-    queryClient.setQueryData(["acquisitionItems"], items.filter((i) => i.id !== itemId));
+    queryClient.setQueryData(["acquisitionItems", userEmail], items.filter((i) => i.id !== itemId));
     setSelectedItems((prev) => { const s = new Set(prev); s.delete(itemId); return s; });
   };
 
@@ -495,7 +511,9 @@ function ViewList({ onBack }) {
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-4">
-          {isLoading ? (
+          {!userEmail ? (
+            <div className="flex items-center justify-center py-12 text-[#E0D8C8]/50">Loading…</div>
+          ) : isLoading ? (
             <div className="flex items-center justify-center py-12 text-[#E0D8C8]/50">Loading…</div>
           ) : filteredItems.length === 0 ? (
             <div className="text-center py-12 text-[#E0D8C8]/50">No items in this list</div>

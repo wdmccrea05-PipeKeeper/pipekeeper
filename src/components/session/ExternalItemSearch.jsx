@@ -304,9 +304,9 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
   return (
     <div className="space-y-3">
       {!itemTypeAllowed && itemType === "bottle" ? (
-        <div className="rounded-xl border border-[rgba(180,140,75,0.18)] bg-[rgba(255,255,255,0.03)] px-3 py-3 text-sm text-[#E0D8C8]/70">
-          Whiskey search is not available in this release.
-        </div>
+       <div className="rounded-xl border border-[rgba(180,140,75,0.18)] bg-[rgba(255,255,255,0.03)] px-3 py-3 text-sm text-[#E0D8C8]/70">
+         Whiskey search is not available in this release.
+       </div>
       ) : null}
 
       <div className="flex gap-2">
