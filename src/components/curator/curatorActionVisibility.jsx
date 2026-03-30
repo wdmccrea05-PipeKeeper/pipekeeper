@@ -1,4 +1,4 @@
-import { getItemModule, shouldRenderModuleContent } from "@/components/utils/moduleContentVisibility";
+import { getItemModule } from "@/components/utils/moduleContentVisibility";
 
 function matchesPipekeeperAction(action) {
   const text = [
@@ -60,6 +60,17 @@ export function shouldShowCuratorAction(action, enabledModules) {
 
 export function filterCuratorActions(actions, enabledModules) {
   return (actions || []).filter((action) => shouldShowCuratorAction(action, enabledModules));
+}
+
+export function buildEnabledCuratorScopes(enabled) {
+  const scopes = [];
+  const hasPipe = !!enabled?.pipekeeper;
+  const hasWhiskey = !!enabled?.whiskeykeeper;
+  if (hasPipe && hasWhiskey) scopes.push({ key: "all", label: "All Modules" });
+  if (hasPipe) scopes.push({ key: "pipekeeper", label: "PipeKeeper" });
+  if (hasWhiskey) scopes.push({ key: "whiskeykeeper", label: "WhiskeyKeeper" });
+  if (scopes.length === 0) scopes.push({ key: "all", label: "All Modules" });
+  return scopes;
 }
 
 export function buildEnabledCuratorScopes(enabled) {

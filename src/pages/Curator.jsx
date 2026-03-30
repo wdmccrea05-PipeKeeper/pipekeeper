@@ -149,7 +149,7 @@ export default function Curator() {
   );
 
   // Once enabled modules are known, correct the default scope if needed
-  React.useEffect(() => {
+  useEffect(() => {
     if (!location?.state?.scope) {
       const enabledCount = [enabled.pipekeeper, enabled.whiskeykeeper].filter(Boolean).length;
       if (enabledCount === 1) {
