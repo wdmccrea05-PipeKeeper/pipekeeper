@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, Leaf, Star } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { cn } from '@/lib/utils';
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { scopedEntities } from '@/components/api/scopedEntities';
 
 const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
@@ -17,30 +18,31 @@ export default function GlobalSearchCommand({ open, onClose }) {
   const [selected, setSelected] = useState(0);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useCurrentUser();
 
-  // Load all pipes and blends
+  const userEmail = user?.email || null;
+
   const { data: pipes = [] } = useQuery({
-    queryKey: ['pipes-search'],
-    queryFn: () => base44.entities.Pipe.list('-updated_date', 500),
+    queryKey: ['pipes-search', userEmail],
+    queryFn: () => scopedEntities.Pipe.listForUser(userEmail, '-updated_date', 500),
+    enabled: !!userEmail,
     staleTime: 60000,
   });
 
   const { data: blends = [] } = useQuery({
-    queryKey: ['blends-search'],
-    queryFn: () => base44.entities.TobaccoBlend.list('-updated_date', 500),
+    queryKey: ['blends-search', userEmail],
+    queryFn: () => scopedEntities.TobaccoBlend.listForUser(userEmail, '-updated_date', 500),
+    enabled: !!userEmail,
     staleTime: 60000,
   });
 
-  // Fuzzy search function
   const fuzzyMatch = (str, pattern) => {
     if (!str || !pattern) return false;
     const strLower = str.toLowerCase();
     const patternLower = pattern.toLowerCase();
-    
-    // Direct substring match gets priority
+
     if (strLower.includes(patternLower)) return true;
-    
-    // Fuzzy match for typos
+
     let patternIdx = 0;
     for (let i = 0; i < strLower.length && patternIdx < patternLower.length; i++) {
       if (strLower[i] === patternLower[patternIdx]) {
@@ -50,19 +52,18 @@ export default function GlobalSearchCommand({ open, onClose }) {
     return patternIdx === patternLower.length;
   };
 
-  // Search results
-  const results = React.useMemo(() => {
+  const results = useMemo(() => {
     if (!query.trim()) return [];
 
     const pipeResults = pipes
-      .filter(p => 
-        fuzzyMatch(p.name, query) || 
-        fuzzyMatch(p.maker, query) || 
+      .filter((p) =>
+        fuzzyMatch(p.name, query) ||
+        fuzzyMatch(p.maker, query) ||
         fuzzyMatch(p.shape, query) ||
-        p.focus?.some(f => fuzzyMatch(f, query))
+        p.focus?.some((f) => fuzzyMatch(f, query))
       )
       .slice(0, 8)
-      .map(p => ({
+      .map((p) => ({
         type: 'pipe',
         id: p.id,
         title: p.name,
@@ -73,14 +74,14 @@ export default function GlobalSearchCommand({ open, onClose }) {
       }));
 
     const blendResults = blends
-      .filter(b => 
-        fuzzyMatch(b.name, query) || 
-        fuzzyMatch(b.manufacturer, query) || 
+      .filter((b) =>
+        fuzzyMatch(b.name, query) ||
+        fuzzyMatch(b.manufacturer, query) ||
         fuzzyMatch(b.blend_type, query) ||
-        b.flavor_notes?.some(f => fuzzyMatch(f, query))
+        b.flavor_notes?.some((f) => fuzzyMatch(f, query))
       )
       .slice(0, 8)
-      .map(b => ({
+      .map((b) => ({
         type: 'blend',
         id: b.id,
         title: b.name,
@@ -93,17 +94,16 @@ export default function GlobalSearchCommand({ open, onClose }) {
     return [...pipeResults, ...blendResults];
   }, [query, pipes, blends]);
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!open) return;
-      
+
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setSelected(prev => Math.min(prev + 1, results.length - 1));
+        setSelected((prev) => Math.min(prev + 1, results.length - 1));
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setSelected(prev => Math.max(prev - 1, 0));
+        setSelected((prev) => Math.max(prev - 1, 0));
       } else if (e.key === 'Enter' && results[selected]) {
         e.preventDefault();
         navigate(results[selected].url);
@@ -115,12 +115,10 @@ export default function GlobalSearchCommand({ open, onClose }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [open, results, selected, navigate, onClose]);
 
-  // Reset selection when query changes
   useEffect(() => {
     setSelected(0);
   }, [query]);
 
-  // Reset on close
   useEffect(() => {
     if (!open) {
       setQuery('');
@@ -173,16 +171,16 @@ export default function GlobalSearchCommand({ open, onClose }) {
               >
                 <div className="w-10 h-10 rounded-lg border border-stone-200 bg-white flex items-center justify-center flex-shrink-0">
                   {result.icon ? (
-                    <img 
-                      src={result.icon} 
-                      alt="" 
+                    <img
+                      src={result.icon}
+                      alt=""
                       className="w-8 h-8 object-contain"
                       style={result.type === 'pipe' ? { filter: 'brightness(0)' } : {}}
                     />
                   ) : result.type === 'pipe' ? (
-                    <img 
-                      src={PIPE_ICON} 
-                      alt="" 
+                    <img
+                      src={PIPE_ICON}
+                      alt=""
                       className="w-8 h-8 object-contain"
                       style={{ filter: 'brightness(0)' }}
                     />
