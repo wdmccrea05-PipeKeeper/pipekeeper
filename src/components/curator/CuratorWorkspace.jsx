@@ -27,7 +27,7 @@ import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 import CuratorActionPanel from "./CuratorActionPanel";
 import CuratorActionResultCard from "./CuratorActionResultCard";
 import normalizeCuratorActionResult from "./normalizeCuratorActionResult.jsx";
-import curatorActionExecutor from "./curatorActionExecutor";
+import { executeCuratorAction } from "./curatorActionExecutor";
 import { runCuratorAction } from "./curatorActionService.js";
 import {
   buildCuratorChatSystemPrompt,
@@ -763,7 +763,7 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         if (import.meta.env.DEV) { console.log("[Curator] runCuratorAction call", { actionType, hasAnchors: !!anchorOverrides }); }
         const result = await runCuratorAction({
           actionType,
-          executor: curatorActionExecutor,
+          executor: executeCuratorAction,
           normalizer: normalizeCuratorActionResult,
           context: buildCuratorContext(),
           onAudit: logCuratorAuditEvent,

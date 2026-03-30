@@ -231,7 +231,7 @@ export default function CollectionHub() {
   const pipekeeperOpenable = enabled.pipekeeper;
 
   const { data, isLoading } = useQuery({
-    queryKey: ['collection-hub-dashboard', user?.email, whiskeyOpenable],
+    queryKey: ['collection-hub-dashboard', user?.email, pipekeeperOpenable, whiskeyOpenable],
     enabled: !!user?.email,
     staleTime: 2 * 60 * 1000,
     queryFn: async () => {
@@ -250,19 +250,16 @@ export default function CollectionHub() {
     },
   });
 
-  const pipes = data?.pipes || [];
-  const blends = data?.blends || [];
-  const smokeLogs = data?.smokeLogs || [];
-  const bottles = data?.bottles || [];
-  const tastings = data?.tastings || [];
+  const pipes = pipekeeperOpenable ? (data?.pipes || []) : [];
+  const blends = pipekeeperOpenable ? (data?.blends || []) : [];
+  const smokeLogs = pipekeeperOpenable ? (data?.smokeLogs || []) : [];
+  const bottles = whiskeyOpenable ? (data?.bottles || []) : [];
+  const tastings = whiskeyOpenable ? (data?.tastings || []) : [];
 
   const metrics = useMemo(() => {
-    // Only include whiskey value if whiskey is openable
-    const pipeValue = pipes.reduce((sum, p) => sum + Number(getPipeValue(p) || 0), 0);
-    const tobaccoValue = calculateTobaccoCollectionValue(blends);
-    const whiskeyValue = whiskeyOpenable
-      ? bottles.reduce((sum, b) => sum + Number(getBottleValue(b) || 0), 0)
-      : 0;
+    const pipeValue = pipekeeperOpenable ? pipes.reduce((sum, p) => sum + Number(getPipeValue(p) || 0), 0) : 0;
+    const tobaccoValue = pipekeeperOpenable ? calculateTobaccoCollectionValue(blends) : 0;
+    const whiskeyValue = whiskeyOpenable ? bottles.reduce((sum, b) => sum + Number(getBottleValue(b) || 0), 0) : 0;
     const totalValue = pipeValue + tobaccoValue + whiskeyValue;
 
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
@@ -280,18 +277,23 @@ export default function CollectionHub() {
       return acc;
     }, {});
 
-    const mostSmokedPipe = [...pipes]
-      .map((p) => ({ ...p, __count: logsByPipe[p.id] || 0 }))
-      .sort((a, b) => b.__count - a.__count)
-      .find((p) => p.__count > 0) || null;
+    const mostSmokedPipe = pipekeeperOpenable
+      ? [...pipes]
+          .map((p) => ({ ...p, __count: logsByPipe[p.id] || 0 }))
+          .sort((a, b) => b.__count - a.__count)
+          .find((p) => p.__count > 0) || null
+      : null;
 
-    const favoriteBlend = [...blends]
-      .map((b) => ({ ...b, __count: logsByBlend[b.id] || 0 }))
-      .sort((a, b) => b.__count - a.__count)
-      .find((b) => b.__count > 0) || null;
+    const favoriteBlend = pipekeeperOpenable
+      ? [...blends]
+          .map((b) => ({ ...b, __count: logsByBlend[b.id] || 0 }))
+          .sort((a, b) => b.__count - a.__count)
+          .find((b) => b.__count > 0) || null
+      : null;
 
-    const mostValuablePipe = [...pipes]
-      .sort((a, b) => Number(getPipeValue(b) || 0) - Number(getPipeValue(a) || 0))[0] || null;
+    const mostValuablePipe = pipekeeperOpenable
+      ? [...pipes].sort((a, b) => Number(getPipeValue(b) || 0) - Number(getPipeValue(a) || 0))[0] || null
+      : null;
 
     const mostValuableBottle = whiskeyOpenable
       ? [...bottles].sort((a, b) => Number(getBottleValue(b) || 0) - Number(getBottleValue(a) || 0))[0] || null
@@ -313,7 +315,7 @@ export default function CollectionHub() {
       mostValuableBottle,
       recentActivity,
     };
-  }, [pipes, blends, bottles, smokeLogs, whiskeyOpenable]);
+  }, [pipes, blends, bottles, smokeLogs, pipekeeperOpenable, whiskeyOpenable]);
 
   const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route);
   const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route);

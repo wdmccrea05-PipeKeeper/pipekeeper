@@ -24,6 +24,7 @@ import ExternalItemSearch from "@/components/session/ExternalItemSearch";
 import ExternalItemManualEntry from "@/components/session/ExternalItemManualEntry";
 import SessionContextTags from "@/components/session/SessionContextTags";
 import PostSessionPrompt from "@/components/session/PostSessionPrompt";
+import { saveSession } from "@/components/session/saveSession";
 
 const TOBACCO_DENSITY_GCM3 = 0.30;
 const BOWL_GEOMETRY_FACTOR = 0.85;
@@ -64,18 +65,16 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
 
   const [autoReduceInventory, setAutoReduceInventory] = useState(true);
   const [contextTag, setContextTag] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  // Pipe state: "collection" | "external"
   const [pipeMode, setPipeMode] = useState("collection");
   const [externalPipe, setExternalPipe] = useState(null);
   const [showPipeManual, setShowPipeManual] = useState(false);
 
-  // Blend state: "collection" | "external"
   const [blendMode, setBlendMode] = useState("collection");
   const [externalBlend, setExternalBlend] = useState(null);
   const [showBlendManual, setShowBlendManual] = useState(false);
 
-  // Post-save prompt
   const [postPromptItems, setPostPromptItems] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -263,74 +262,86 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
     },
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
 
-    if (entitlements.tier === "free") {
-      if ((recentLogs || []).length >= entitlements.limits.smokingLogs) {
-        toast.error(t("smokingLog.freeLimitReached", { limit: entitlements.limits.smokingLogs }));
-        return;
+    try {
+      if (entitlements.tier === "free") {
+        if ((recentLogs || []).length >= entitlements.limits.smokingLogs) {
+          toast.error(t("smokingLog.freeLimitReached", { limit: entitlements.limits.smokingLogs }));
+          setSaving(false);
+          return;
+        }
       }
+
+      const pipe = pipeMode === "collection" ? (pipes || []).find((p) => p && p.id === formData.pipe_id) : null;
+      const blend = blendMode === "collection" ? (blends || []).find((b) => b && b.id === formData.blend_id) : null;
+
+      if (pipeMode === "collection" && !pipe) { toast.error(t("smokingLog.selectBoth")); setSaving(false); return; }
+      if (pipeMode === "external" && !externalPipe) { toast.error("Please select or add an external pipe."); setSaving(false); return; }
+      if (blendMode === "collection" && !blend) { toast.error(t("smokingLog.selectBoth")); setSaving(false); return; }
+      if (blendMode === "external" && !externalBlend) { toast.error("Please select or add an external blend."); setSaving(false); return; }
+
+      const bowls = parseInt(formData.bowls_used) || 1;
+      let tobaccoUsed = 0;
+      if (blendMode === "collection") {
+        tobaccoUsed = pipe ? estimateTobaccoUsage(pipe, bowls) : (bowls * 0.75 * 0.035274);
+      }
+
+      let bowl_name = null;
+      if (pipeMode === "collection" && formData.bowl_variant_id && hasMultipleBowls) {
+        const bowl = selectedPipe.interchangeable_bowls.find(
+          (b) => (b.bowl_variant_id || `bowl_${selectedPipe.interchangeable_bowls.indexOf(b)}`) === formData.bowl_variant_id
+        );
+        bowl_name = bowl?.name || null;
+      }
+
+      const pipe_name = pipeMode === "collection" ? pipe.name : ([externalPipe.maker, externalPipe.model].filter(Boolean).join(" ") || "External Pipe");
+      const blend_name = blendMode === "collection" ? blend.name : (externalBlend.name || "External Blend");
+      const pipe_id = pipeMode === "collection" ? formData.pipe_id : null;
+      const blend_id = blendMode === "collection" ? formData.blend_id : null;
+
+      const logData = prepareLogData({
+        ...formData,
+        pipe_id,
+        blend_id,
+        pipe_name,
+        blend_name,
+        bowl_name,
+        date: toLocalDateYmd(formData.date),
+        bowls_used: bowls,
+        tobaccoUsed,
+        container_id: blendMode === "collection" ? (formData.container_id || null) : null,
+        notes: [
+          formData.notes,
+          contextTag ? `Context: ${contextTag}` : "",
+        ].filter(Boolean).join("\n"),
+        ...(pipeMode === "external" && externalPipe ? {
+          external_pipe_name: [externalPipe.maker, externalPipe.model || externalPipe.name].filter(Boolean).join(" ") || pipe_name,
+          external_pipe_maker: externalPipe.maker || "",
+          external_pipe_shape: externalPipe.shape || "",
+        } : {}),
+        ...(blendMode === "external" && externalBlend ? {
+          external_blend_name: externalBlend.name || blend_name,
+          external_blend_manufacturer: externalBlend.manufacturer || "",
+          external_blend_type: externalBlend.blend_type || "",
+        } : {}),
+      });
+
+      // Create log via mutation (guarantees cache invalidation)
+      await new Promise((resolve, reject) => {
+        createLogMutation.mutate(logData, {
+          onSuccess: resolve,
+          onError: reject,
+        });
+      });
+    } catch (err) {
+      console.error("Session save error:", err);
+      toast.error("Failed to log session");
+    } finally {
+      setSaving(false);
     }
-
-    const pipe = pipeMode === "collection" ? (pipes || []).find((p) => p && p.id === formData.pipe_id) : null;
-    const blend = blendMode === "collection" ? (blends || []).find((b) => b && b.id === formData.blend_id) : null;
-
-    if (pipeMode === "collection" && !pipe) { toast.error(t("smokingLog.selectBoth")); return; }
-    if (pipeMode === "external" && !externalPipe) { toast.error("Please select or add an external pipe."); return; }
-    if (blendMode === "collection" && !blend) { toast.error(t("smokingLog.selectBoth")); return; }
-    if (blendMode === "external" && !externalBlend) { toast.error("Please select or add an external blend."); return; }
-
-    const bowls = parseInt(formData.bowls_used) || 1;
-    // Tobacco usage depends on blend ownership (not pipe ownership)
-    // If blend is from collection, estimate usage even when pipe is external.
-    // When pipe is external, fall back to a medium-bowl estimate (0.75g/bowl).
-    let tobaccoUsed = 0;
-    if (blendMode === "collection") {
-      tobaccoUsed = pipe ? estimateTobaccoUsage(pipe, bowls) : (bowls * 0.75 * 0.035274);
-    }
-
-    let bowl_name = null;
-    if (pipeMode === "collection" && formData.bowl_variant_id && hasMultipleBowls) {
-      const bowl = selectedPipe.interchangeable_bowls.find(
-        (b) => (b.bowl_variant_id || `bowl_${selectedPipe.interchangeable_bowls.indexOf(b)}`) === formData.bowl_variant_id
-      );
-      bowl_name = bowl?.name || null;
-    }
-
-    const pipe_name = pipeMode === "collection" ? pipe.name : ([externalPipe.maker, externalPipe.model].filter(Boolean).join(" ") || "External Pipe");
-    const blend_name = blendMode === "collection" ? blend.name : (externalBlend.name || "External Blend");
-    const pipe_id = pipeMode === "collection" ? formData.pipe_id : null;
-    const blend_id = blendMode === "collection" ? formData.blend_id : null;
-
-    const logData = prepareLogData({
-      ...formData,
-      pipe_id,
-      blend_id,
-      pipe_name,
-      blend_name,
-      bowl_name,
-      date: toLocalDateYmd(formData.date),
-      bowls_used: bowls,
-      tobaccoUsed,
-      container_id: blendMode === "collection" ? (formData.container_id || null) : null,
-      notes: [
-        formData.notes,
-        contextTag ? `Context: ${contextTag}` : "",
-      ].filter(Boolean).join("\n"),
-      // Structured external item data (queryable)
-      ...(pipeMode === "external" && externalPipe ? {
-        external_pipe_name: [externalPipe.maker, externalPipe.model || externalPipe.name].filter(Boolean).join(" ") || pipe_name,
-        external_pipe_maker: externalPipe.maker || "",
-        external_pipe_shape: externalPipe.shape || "",
-      } : {}),
-      ...(blendMode === "external" && externalBlend ? {
-        external_blend_name: externalBlend.name || blend_name,
-        external_blend_manufacturer: externalBlend.manufacturer || "",
-        external_blend_type: externalBlend.blend_type || "",
-      } : {}),
-    });
-    createLogMutation.mutate(logData);
   };
 
   if (isAppleBuild) return null;
@@ -345,7 +356,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
   }
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Sheet open={isOpen} onOpenChange={(open) => { if (!open && !saving) onClose(); }}>
       <SheetContent className="overflow-y-auto">
         <SheetHeader className="mb-6">
         <SheetTitle>Log Pipe Session</SheetTitle>
@@ -359,23 +370,25 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
               <div className="flex rounded-xl overflow-hidden border border-[rgba(180,140,75,0.25)]">
                 <button
                   type="button"
+                  disabled={saving}
                   onClick={() => { setPipeMode("collection"); setExternalPipe(null); setFormData((f) => ({ ...f, pipe_id: "", bowl_variant_id: "" })); }}
                   className={`flex-1 py-2 text-sm font-medium transition-all ${
                     pipeMode === "collection"
                       ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
                       : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
-                  }`}
+                  } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   From Collection
                 </button>
                 <button
                   type="button"
+                  disabled={saving}
                   onClick={() => { setPipeMode("external"); setFormData((f) => ({ ...f, pipe_id: "", bowl_variant_id: "" })); }}
                   className={`flex-1 py-2 text-sm font-medium transition-all ${
                     pipeMode === "external"
                       ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
                       : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
-                  }`}
+                  } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   Other Pipe
                 </button>
@@ -384,7 +397,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
 
             {pipeMode === "collection" ? (
               <>
-                <Select value={formData.pipe_id} onValueChange={(v) => setFormData({ ...formData, pipe_id: v, bowl_variant_id: "" })}>
+                <Select value={formData.pipe_id} onValueChange={(v) => setFormData({ ...formData, pipe_id: v, bowl_variant_id: "" })} disabled={saving}>
                   <SelectTrigger><SelectValue placeholder={t("smokingLog.selectPipe")} /></SelectTrigger>
                   <SelectContent>
                     {(pipes || []).map((p) => {
@@ -430,7 +443,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
           {pipeMode === "collection" && hasMultipleBowls && (
             <div className="space-y-2">
               <Label className="text-[#E0D8C8]">{t("smokingLog.bowlUsed")}</Label>
-              <Select value={formData.bowl_variant_id} onValueChange={(v) => setFormData({ ...formData, bowl_variant_id: v })}>
+              <Select value={formData.bowl_variant_id} onValueChange={(v) => setFormData({ ...formData, bowl_variant_id: v })} disabled={saving}>
                 <SelectTrigger><SelectValue placeholder={t("smokingLog.selectBowl")} /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">{t("smokingLog.noSpecificBowl")}</SelectItem>
@@ -450,23 +463,25 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
               <div className="flex rounded-xl overflow-hidden border border-[rgba(180,140,75,0.25)]">
                 <button
                   type="button"
+                  disabled={saving}
                   onClick={() => { setBlendMode("collection"); setExternalBlend(null); setFormData((f) => ({ ...f, blend_id: "", container_id: "" })); }}
                   className={`flex-1 py-2 text-sm font-medium transition-all ${
                     blendMode === "collection"
                       ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
                       : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
-                  }`}
+                  } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   From Collection
                 </button>
                 <button
                   type="button"
+                  disabled={saving}
                   onClick={() => { setBlendMode("external"); setFormData((f) => ({ ...f, blend_id: "", container_id: "" })); }}
                   className={`flex-1 py-2 text-sm font-medium transition-all ${
                     blendMode === "external"
                       ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
                       : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
-                  }`}
+                  } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   Something New
                 </button>
@@ -474,7 +489,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
             </div>
 
             {blendMode === "collection" ? (
-              <Select value={formData.blend_id} onValueChange={(v) => setFormData({ ...formData, blend_id: v, container_id: "" })}>
+              <Select value={formData.blend_id} onValueChange={(v) => setFormData({ ...formData, blend_id: v, container_id: "" })} disabled={saving}>
                 <SelectTrigger><SelectValue placeholder={t("smokingLog.selectBlend")} /></SelectTrigger>
                 <SelectContent>
                   {sortedBlends.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
@@ -500,7 +515,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
           {blendMode === "collection" && formData.blend_id && containers.length > 0 && (
             <div className="space-y-2">
               <Label className="text-[#E0D8C8]">{t("smokingLog.container")}</Label>
-              <Select value={formData.container_id || ""} onValueChange={(v) => setFormData({ ...formData, container_id: v })}>
+              <Select value={formData.container_id || ""} onValueChange={(v) => setFormData({ ...formData, container_id: v })} disabled={saving}>
                 <SelectTrigger><SelectValue placeholder={t("smokingLog.autoNone")} /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">{t("smokingLog.autoNone")}</SelectItem>
@@ -513,7 +528,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
           {/* Bowls used */}
           <div className="space-y-2">
             <Label className="text-[#E0D8C8]">{t("smokingLog.numberOfBowls")}</Label>
-            <Input type="number" min="1" value={formData.bowls_used} onChange={(e) => setFormData({ ...formData, bowls_used: e.target.value })} />
+            <Input type="number" min="1" value={formData.bowls_used} onChange={(e) => setFormData({ ...formData, bowls_used: e.target.value })} disabled={saving} />
             {pipeMode === "collection" && formData.pipe_id && formData.bowls_used && (
               <p className="text-xs text-[#A4B0C4]">
                 {t("smokingLog.estUsage")}: ~{Number(estimateTobaccoUsage(selectedPipe, parseInt(formData.bowls_used) || 1)).toFixed(2)} {t("units.oz")}
@@ -524,7 +539,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
           {/* Date */}
           <div className="space-y-2">
             <Label className="text-[#E0D8C8]">{t("smokingLog.date")}</Label>
-            <Input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
+            <Input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} disabled={saving} />
           </div>
 
           {/* Context tags */}
@@ -534,13 +549,13 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
           <div className="space-y-3">
             {pipeMode === "collection" && (
               <div className="flex items-center gap-3">
-                <Switch checked={formData.is_break_in} onCheckedChange={(v) => setFormData({ ...formData, is_break_in: v })} />
+                <Switch checked={formData.is_break_in} onCheckedChange={(v) => setFormData({ ...formData, is_break_in: v })} disabled={saving} />
                 <Label className="text-[#E0D8C8]">{t("smokingLog.partOfBreakIn")}</Label>
               </div>
             )}
             {blendMode === "collection" && (
               <div className="flex items-center gap-3">
-                <Switch checked={autoReduceInventory} onCheckedChange={setAutoReduceInventory} />
+                <Switch checked={autoReduceInventory} onCheckedChange={setAutoReduceInventory} disabled={saving} />
                 <Label className="flex items-center gap-2 text-[#E0D8C8]">
                   {t("smokingLog.autoReduce")}
                   <Badge className="bg-[#A35C5C] text-[#F3EBDD] text-xs">
@@ -555,7 +570,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
           {/* Notes */}
           <div className="space-y-2">
             <Label className="text-[#E0D8C8]">{t("smokingLog.notes")}</Label>
-            <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder={t("smokingLog.notesPlaceholder")} rows={3} />
+            <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder={t("smokingLog.notesPlaceholder")} rows={3} disabled={saving} />
           </div>
 
           {/* Inline save requirements guidance */}
@@ -576,11 +591,11 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
           })()}
 
           <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">{t("common.cancel")}</Button>
+            <Button type="button" variant="outline" onClick={onClose} disabled={saving} className="flex-1">{t("common.cancel")}</Button>
             <Button
               type="submit"
               disabled={
-                createLogMutation.isPending ||
+                saving ||
                 (pipeMode === "collection" && !formData.pipe_id) ||
                 (pipeMode === "external" && !externalPipe) ||
                 (blendMode === "collection" && !formData.blend_id) ||
@@ -588,7 +603,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
               }
               className="flex-1"
             >
-              {t("smokingLog.logSession")}
+              {saving ? "Saving..." : t("smokingLog.logSession")}
             </Button>
           </div>
         </form>
