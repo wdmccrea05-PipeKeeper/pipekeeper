@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import ExternalItemSearch from '@/components/session/ExternalItemSearch';
+import ExternalItemManualEntry from '@/components/session/ExternalItemManualEntry';
 import SessionContextTags from '@/components/session/SessionContextTags';
 import PostSessionPrompt from '@/components/session/PostSessionPrompt';
 
@@ -63,6 +64,7 @@ export default function LogTastingModal({ bottle, bottles = [], editLog = null, 
   // Bottle mode: "collection" | "external"
   const [bottleMode, setBottleMode] = useState(bottle ? "collection" : "collection");
   const [externalBottle, setExternalBottle] = useState(null);
+  const [showBottleManual, setShowBottleManual] = useState(false);
   const [contextTag, setContextTag] = useState('');
   const [postPromptItems, setPostPromptItems] = useState(null);
 
@@ -240,10 +242,19 @@ export default function LogTastingModal({ bottle, bottles = [], editLog = null, 
               ) : (
                 <p className="text-xs text-[#E0D8C8]/50 py-2">No bottles in your collection yet. Switch to "Something New" to log an external pour.</p>
               )
+            ) : externalBottle ? (
+              <ExternalChip label={externalBottle.name || "External Bottle"} onClear={() => { setExternalBottle(null); setShowBottleManual(false); }} />
+            ) : showBottleManual ? (
+              <ExternalItemManualEntry
+                itemType="bottle"
+                onCancel={() => setShowBottleManual(false)}
+                onSave={(item) => { setExternalBottle(item); setShowBottleManual(false); }}
+              />
             ) : (
-              externalBottle
-                ? <ExternalChip label={externalBottle.name || "External Bottle"} onClear={() => setExternalBottle(null)} />
-                : <ExternalItemSearch itemType="bottle" onSelect={setExternalBottle} />
+              <>
+                <ExternalItemSearch itemType="bottle" onSelect={setExternalBottle} onManualAdd={() => setShowBottleManual(true)} />
+                <p className="text-xs text-amber-400/80 mt-1">Select a search result or add the item manually to continue.</p>
+              </>
             )}
           </div>
 

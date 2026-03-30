@@ -21,6 +21,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from "sonner";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import ExternalItemSearch from "@/components/session/ExternalItemSearch";
+import ExternalItemManualEntry from "@/components/session/ExternalItemManualEntry";
 import SessionContextTags from "@/components/session/SessionContextTags";
 import PostSessionPrompt from "@/components/session/PostSessionPrompt";
 
@@ -67,10 +68,12 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
   // Pipe state: "collection" | "external"
   const [pipeMode, setPipeMode] = useState("collection");
   const [externalPipe, setExternalPipe] = useState(null);
+  const [showPipeManual, setShowPipeManual] = useState(false);
 
   // Blend state: "collection" | "external"
   const [blendMode, setBlendMode] = useState("collection");
   const [externalBlend, setExternalBlend] = useState(null);
+  const [showBlendManual, setShowBlendManual] = useState(false);
 
   // Post-save prompt
   const [postPromptItems, setPostPromptItems] = useState(null);
@@ -244,8 +247,10 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       setFormData({ pipe_id: "", bowl_variant_id: "", blend_id: "", container_id: "", bowls_used: 1, is_break_in: false, date: toLocalDateYmd(), notes: "" });
       setPipeMode("collection");
       setExternalPipe(null);
+      setShowPipeManual(false);
       setBlendMode("collection");
       setExternalBlend(null);
+      setShowBlendManual(false);
       setContextTag("");
 
       toast.success(t("smokingLog.logSession") + " " + t("common.saved", { defaultValue: "saved" }));
@@ -277,7 +282,9 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
     if (blendMode === "external" && !externalBlend) { toast.error("Please select or add an external blend."); return; }
 
     const bowls = parseInt(formData.bowls_used) || 1;
-    const tobaccoUsed = pipeMode === "collection" ? estimateTobaccoUsage(pipe, bowls) : 0;
+    // Tobacco usage depends on blend ownership (not pipe ownership)
+    // If blend is from collection we still estimate usage even if pipe is external
+    const tobaccoUsed = blendMode === "collection" ? estimateTobaccoUsage(pipe, bowls) : 0;
 
     let bowl_name = null;
     if (pipeMode === "collection" && formData.bowl_variant_id && hasMultipleBowls) {
@@ -303,13 +310,21 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       bowls_used: bowls,
       tobaccoUsed,
       container_id: blendMode === "collection" ? (formData.container_id || null) : null,
-      // Store external data in notes if not already there
       notes: [
         formData.notes,
         contextTag ? `Context: ${contextTag}` : "",
-        pipeMode === "external" ? `[External pipe: ${pipe_name}]` : "",
-        blendMode === "external" ? `[External blend: ${blend_name}]` : "",
       ].filter(Boolean).join("\n"),
+      // Structured external item data (queryable)
+      ...(pipeMode === "external" && externalPipe ? {
+        external_pipe_name: [externalPipe.maker, externalPipe.model || externalPipe.name].filter(Boolean).join(" ") || pipe_name,
+        external_pipe_maker: externalPipe.maker || "",
+        external_pipe_shape: externalPipe.shape || "",
+      } : {}),
+      ...(blendMode === "external" && externalBlend ? {
+        external_blend_name: externalBlend.name || blend_name,
+        external_blend_manufacturer: externalBlend.manufacturer || "",
+        external_blend_type: externalBlend.blend_type || "",
+      } : {}),
     });
     createLogMutation.mutate(logData);
   };
@@ -391,10 +406,19 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
                   </Alert>
                 )}
               </>
+            ) : externalPipe ? (
+              <ExternalItemChip label={[externalPipe.maker, externalPipe.model || externalPipe.name].filter(Boolean).join(" ") || "External Pipe"} onClear={() => { setExternalPipe(null); setShowPipeManual(false); }} />
+            ) : showPipeManual ? (
+              <ExternalItemManualEntry
+                itemType="pipe"
+                onCancel={() => setShowPipeManual(false)}
+                onSave={(item) => { setExternalPipe(item); setShowPipeManual(false); }}
+              />
             ) : (
-              externalPipe
-                ? <ExternalItemChip label={[externalPipe.maker, externalPipe.model].filter(Boolean).join(" ") || "External Pipe"} onClear={() => setExternalPipe(null)} />
-                : <ExternalItemSearch itemType="pipe" onSelect={setExternalPipe} />
+              <>
+                <ExternalItemSearch itemType="pipe" onSelect={setExternalPipe} onManualAdd={() => setShowPipeManual(true)} />
+                <p className="text-xs text-amber-400/80 mt-1">Select a search result or add the item manually to continue.</p>
+              </>
             )}
           </div>
 
@@ -452,10 +476,19 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
                   {sortedBlends.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
                 </SelectContent>
               </Select>
+            ) : externalBlend ? (
+              <ExternalItemChip label={externalBlend.name || "External Blend"} onClear={() => { setExternalBlend(null); setShowBlendManual(false); }} />
+            ) : showBlendManual ? (
+              <ExternalItemManualEntry
+                itemType="blend"
+                onCancel={() => setShowBlendManual(false)}
+                onSave={(item) => { setExternalBlend(item); setShowBlendManual(false); }}
+              />
             ) : (
-              externalBlend
-                ? <ExternalItemChip label={externalBlend.name || "External Blend"} onClear={() => setExternalBlend(null)} />
-                : <ExternalItemSearch itemType="blend" onSelect={setExternalBlend} />
+              <>
+                <ExternalItemSearch itemType="blend" onSelect={setExternalBlend} onManualAdd={() => setShowBlendManual(true)} />
+                <p className="text-xs text-amber-400/80 mt-1">Select a search result or add the item manually to continue.</p>
+              </>
             )}
           </div>
 

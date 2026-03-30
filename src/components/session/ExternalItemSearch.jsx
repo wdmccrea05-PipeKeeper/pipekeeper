@@ -158,7 +158,7 @@ export default function ExternalItemSearch({
             color: "rgba(224,216,200,0.7)",
           }}
         >
-          <p>No likely matches found.</p>
+          <p>No matches found in your collection.</p>
           <p className="mt-1" style={{ color: "rgba(224,216,200,0.5)" }}>
             Add it manually to continue.
           </p>
