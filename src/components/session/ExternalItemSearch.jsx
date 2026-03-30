@@ -1,239 +1,365 @@
-import React, { useMemo, useState } from "react";
-import { Loader2, Search, Plus } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { Search, Loader2, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { rankSearchResults } from "@/utils/search/SmartSearchEngine";
 
 const ENTITY_BY_TYPE = {
-  pipe: "Pipe",
   blend: "TobaccoBlend",
   bottle: "Bottle",
+  pipe: "Pipe",
 };
 
-const PLACEHOLDERS = {
-  pipe: "Search for a pipe you tried...",
-  blend: "Search for a blend you tried...",
-  bottle: "Search for a whiskey you tried...",
+const SCHEMA_BY_TYPE = {
+  blend: {
+    type: "object",
+    properties: {
+      results: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            manufacturer: { type: "string" },
+            blend_type: { type: "string" },
+            description: { type: "string" },
+          },
+        },
+      },
+    },
+  },
+  bottle: {
+    type: "object",
+    properties: {
+      results: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            distillery: { type: "string" },
+            type: { type: "string" },
+            expression: { type: "string" },
+            description: { type: "string" },
+          },
+        },
+      },
+    },
+  },
+  pipe: {
+    type: "object",
+    properties: {
+      results: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            maker: { type: "string" },
+            model: { type: "string" },
+            shape: { type: "string" },
+            description: { type: "string" },
+          },
+        },
+      },
+    },
+  },
 };
 
-function normalizeResult(itemType, item) {
-  if (itemType === "pipe") {
-    return {
-      id: item.id,
-      item_type: "pipe",
-      name: item.name || item.model || "Unknown Pipe",
-      brand_or_maker: item.maker || "",
-      maker: item.maker || "",
-      model: item.model || item.name || "",
-      shape: item.shape || "",
-      notes: item.notes || "",
-      _searchScore: item._searchScore,
-      _isExact: item._isExact,
-    };
+const MANUAL_LABELS = {
+  blend: ["Blend Name *", "Manufacturer", "Blend Type", "Notes"],
+  bottle: ["Expression Name *", "Distillery / Brand", "Type (Scotch, Bourbon…)", "Notes"],
+  pipe: ["Maker / Brand", "Model / Name *", "Shape", "Notes"],
+};
+
+const PLACEHOLDER_BY_TYPE = {
+  blend: "Search tobacco blends…",
+  bottle: "Search whiskey / spirits…",
+  pipe: "Search pipes…",
+};
+
+function buildPrompt(itemType, query) {
+  if (itemType === "blend") {
+    return `Find likely real-world pipe tobacco matches for "${query}". Return up to 6 results with name, manufacturer, blend_type, and short description. Prefer exact or highly likely known blends first.`;
   }
+  if (itemType === "bottle") {
+    return `Find likely real-world whiskey or spirits matches for "${query}". Return up to 6 results with name, expression if known, distillery, type, and short description. Prefer exact or highly likely known bottles first.`;
+  }
+  return `Find likely real-world pipe matches for "${query}". Return up to 6 results with maker, model/name, shape, and short description. Prefer exact or highly likely known pipes first.`;
+}
 
+function normalizeLocalResult(itemType, item) {
   if (itemType === "blend") {
     return {
-      id: item.id,
-      item_type: "blend",
-      name: item.name || "Unknown Blend",
-      brand_or_maker: item.manufacturer || "",
+      name: item.name,
       manufacturer: item.manufacturer || "",
       blend_type: item.blend_type || "",
-      cut: item.cut || "",
       notes: item.notes || "",
-      _searchScore: item._searchScore,
       _isExact: item._isExact,
+      _searchScore: item._searchScore,
+      _source: "local",
     };
   }
-
+  if (itemType === "bottle") {
+    return {
+      name: item.name || item.expression || "",
+      distillery: item.distillery || "",
+      type: item.type || item.whiskey_type || "",
+      expression: item.expression || item.name || "",
+      notes: item.notes || "",
+      _isExact: item._isExact,
+      _searchScore: item._searchScore,
+      _source: "local",
+    };
+  }
   return {
-    id: item.id,
-    item_type: "bottle",
-    name: item.name || item.expression || "Unknown Whiskey",
-    brand_or_maker: item.distillery || "",
-    distillery: item.distillery || "",
-    expression: item.expression || item.name || "",
-    type: item.type || item.whiskey_type || "",
-    age: item.age || "",
+    maker: item.maker || "",
+    model: item.model || item.name || "",
+    shape: item.shape || "",
     notes: item.notes || "",
-    _searchScore: item._searchScore,
     _isExact: item._isExact,
+    _searchScore: item._searchScore,
+    _source: "local",
   };
 }
 
-export default function ExternalItemSearch({
-  itemType,
-  value,
-  onSelect,
-  onManualAdd,
-  label,
-}) {
-  const [query, setQuery] = useState(value?.name || "");
-  const [results, setResults] = useState([]);
-  const [searched, setSearched] = useState(false);
-  const [searching, setSearching] = useState(false);
+function normalizeRemoteResult(itemType, item) {
+  if (itemType === "blend") {
+    return {
+      name: item.name || "",
+      manufacturer: item.manufacturer || "",
+      blend_type: item.blend_type || "",
+      notes: item.description || "",
+      _source: "remote",
+    };
+  }
+  if (itemType === "bottle") {
+    return {
+      name: item.name || item.expression || "",
+      distillery: item.distillery || "",
+      type: item.type || "",
+      expression: item.expression || item.name || "",
+      notes: item.description || "",
+      _source: "remote",
+    };
+  }
+  return {
+    maker: item.maker || "",
+    model: item.model || item.name || "",
+    shape: item.shape || "",
+    notes: item.description || "",
+    _source: "remote",
+  };
+}
 
-  const placeholder = useMemo(
-    () => PLACEHOLDERS[itemType] || "Search...",
-    [itemType]
-  );
+function displayLabel(itemType, item) {
+  if (itemType === "blend") {
+    return `${item.name}${item.manufacturer ? ` — ${item.manufacturer}` : ""}`;
+  }
+  if (itemType === "bottle") {
+    return `${item.name}${item.distillery ? ` — ${item.distillery}` : ""}`;
+  }
+  return `${item.model || item.name || ""}${item.maker ? ` — ${item.maker}` : ""}`;
+}
 
-  const handleSearch = async (rawQuery = query) => {
-    const q = (rawQuery || "").trim();
-    if (!q) {
-      setResults([]);
-      setSearched(false);
-      return;
-    }
+function dedupeResults(itemType, items) {
+  const seen = new Set();
+  return items.filter((item) => {
+    const key =
+      itemType === "blend"
+        ? `${(item.name || "").toLowerCase()}|${(item.manufacturer || "").toLowerCase()}`
+        : itemType === "bottle"
+          ? `${(item.name || item.expression || "").toLowerCase()}|${(item.distillery || "").toLowerCase()}`
+          : `${(item.model || item.name || "").toLowerCase()}|${(item.maker || "").toLowerCase()}`;
 
-    setSearching(true);
-    setSearched(false);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export default function ExternalItemSearch({ itemType = "blend", onSelect, initialQuery = "" }) {
+  const [query, setQuery] = useState(initialQuery);
+  const [results, setResults] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showManual, setShowManual] = useState(false);
+  const [manual, setManual] = useState({ a: "", b: "", c: "", d: "" });
+
+  const labels = MANUAL_LABELS[itemType] || MANUAL_LABELS.blend;
+
+  const doSearch = async () => {
+    const q = query.trim();
+    if (!q) return;
+
+    setLoading(true);
+    setResults(null);
 
     try {
       const entityName = ENTITY_BY_TYPE[itemType];
-      const allItems = await base44.entities[entityName]
-        .list("-updated_date", 500)
-        .catch(() => []);
+      const localItems = await base44.entities[entityName].list("-updated_date", 500).catch(() => []);
+      const rankedLocal = rankSearchResults(q, localItems || [], itemType)
+        .slice(0, 8)
+        .map((item) => normalizeLocalResult(itemType, item));
 
-      const ranked = rankSearchResults(q, allItems || [], itemType);
-      const normalized = ranked.slice(0, 12).map((item) => normalizeResult(itemType, item));
+      let merged = [...rankedLocal];
 
-      setResults(normalized);
-      setSearched(true);
+      const needsRemoteFallback =
+        rankedLocal.length === 0 || !rankedLocal.some((item) => item._isExact);
+
+      if (needsRemoteFallback) {
+        try {
+          const llmResult = await base44.integrations.Core.InvokeLLM({
+            prompt: buildPrompt(itemType, q),
+            add_context_from_internet: true,
+            response_json_schema: SCHEMA_BY_TYPE[itemType],
+            model: "gemini_3_flash",
+          });
+
+          const remoteItems = (llmResult?.results || []).map((item) =>
+            normalizeRemoteResult(itemType, item)
+          );
+
+          merged = dedupeResults(itemType, [...rankedLocal, ...remoteItems]).slice(0, 10);
+        } catch {
+          merged = rankedLocal;
+        }
+      }
+
+      setResults(merged);
+    } catch {
+      setResults([]);
     } finally {
-      setSearching(false);
+      setLoading(false);
     }
+  };
+
+  const handleManualSubmit = () => {
+    const primary = manual.a.trim();
+    if (!primary) return;
+
+    let item;
+    if (itemType === "blend") {
+      item = {
+        name: primary,
+        manufacturer: manual.b.trim(),
+        blend_type: manual.c.trim(),
+        notes: manual.d.trim(),
+      };
+    } else if (itemType === "bottle") {
+      item = {
+        name: primary,
+        distillery: manual.b.trim(),
+        type: manual.c.trim(),
+        notes: manual.d.trim(),
+      };
+    } else {
+      item = {
+        maker: manual.a.trim(),
+        model: manual.b.trim() || manual.a.trim(),
+        shape: manual.c.trim(),
+        notes: manual.d.trim(),
+      };
+    }
+
+    onSelect(item);
   };
 
   return (
     <div className="space-y-3">
-      {label ? (
-        <p
-          className="text-sm font-medium"
-          style={{ color: "rgba(224,216,200,0.8)" }}
-        >
-          {label}
-        </p>
-      ) : null}
-
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search
-            className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2"
-            style={{ color: "rgba(224,216,200,0.45)" }}
-          />
-          <Input
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4A574]/60" />
+          <input
+            type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSearch();
-            }}
-            placeholder={placeholder}
-            className="pl-9"
+            onKeyDown={(e) => e.key === "Enter" && doSearch()}
+            placeholder={PLACEHOLDER_BY_TYPE[itemType] || "Search…"}
+            className="w-full h-9 pl-9 pr-3 rounded-lg bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.28)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-1 focus:ring-[#A35C5C]"
           />
         </div>
-
-        <Button
+        <button
           type="button"
-          onClick={() => handleSearch()}
-          disabled={searching || !query.trim()}
-          style={{
-            background: "rgba(163,92,92,0.95)",
-            color: "#fff",
-            minWidth: 52,
-          }}
+          onClick={doSearch}
+          disabled={loading || !query.trim()}
+          className="px-3 h-9 rounded-lg text-sm font-medium text-white disabled:opacity-50 transition-all"
+          style={{ background: "linear-gradient(135deg,#a35c5c,#8f4e4e)" }}
         >
-          {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-        </Button>
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+        </button>
       </div>
 
-      {searched && results.length === 0 ? (
-        <div
-          className="rounded-xl p-3 text-sm"
-          style={{
-            border: "1px solid rgba(180,140,75,0.18)",
-            background: "rgba(255,255,255,0.02)",
-            color: "rgba(224,216,200,0.7)",
-          }}
-        >
-          <p>No matches found in your collection.</p>
-          <p className="mt-1" style={{ color: "rgba(224,216,200,0.5)" }}>
-            Add it manually to continue.
-          </p>
-        </div>
-      ) : null}
-
-      {results.length > 0 ? (
-        <div className="space-y-2">
-          {results.map((result) => (
-            <button
-              key={`${result.item_type}-${result.id}`}
-              type="button"
-              onClick={() => onSelect?.(result)}
-              className="w-full text-left rounded-xl p-3 transition-colors hover:bg-white/[0.04]"
-              style={{
-                border: "1px solid rgba(180,140,75,0.18)",
-                background: "rgba(255,255,255,0.02)",
-              }}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div
-                    className="font-medium break-words"
-                    style={{ color: "#F5F1E7" }}
-                  >
-                    {result.name}
-                  </div>
-                  {result.brand_or_maker ? (
-                    <div
-                      className="text-sm mt-1"
-                      style={{ color: "rgba(224,216,200,0.65)" }}
-                    >
-                      {result.brand_or_maker}
+      {results !== null && (
+        <div className="space-y-1.5">
+          {results.length === 0 ? (
+            <p className="text-xs text-[#E0D8C8]/50 text-center py-2">No matches found.</p>
+          ) : (
+            results.map((item, i) => (
+              <button
+                key={`${itemType}-${i}-${displayLabel(itemType, item)}`}
+                type="button"
+                onClick={() => onSelect(item)}
+                className="w-full text-left px-3 py-2.5 rounded-lg border border-[rgba(180,140,75,0.18)] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] transition-colors"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-[#F5F1E7] break-words">
+                      {displayLabel(itemType, item)}
                     </div>
+                    {item.notes ? (
+                      <div className="text-xs text-[#E0D8C8]/50 mt-0.5 line-clamp-1">
+                        {item.notes}
+                      </div>
+                    ) : null}
+                  </div>
+                  {item._isExact ? (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[rgba(46,125,92,0.25)] text-[#9BE3B5] shrink-0">
+                      Exact
+                    </span>
                   ) : null}
                 </div>
-
-                {result._isExact ? (
-                  <span
-                    className="text-[11px] px-2 py-1 rounded-full shrink-0"
-                    style={{
-                      background: "rgba(46,125,92,0.22)",
-                      color: "#9BE3B5",
-                    }}
-                  >
-                    Exact
-                  </span>
-                ) : null}
-              </div>
-            </button>
-          ))}
+              </button>
+            ))
+          )}
         </div>
-      ) : null}
+      )}
 
-      <div className="pt-1">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onManualAdd?.(query)}
-          className="w-full"
-          style={{
-            borderColor: "rgba(180,140,75,0.25)",
-            color: "rgba(224,216,200,0.85)",
-          }}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Manually
-        </Button>
-      </div>
-
-      <p
-        className="text-xs"
-        style={{ color: "rgba(224,216,200,0.45)" }}
+      <button
+        type="button"
+        onClick={() => setShowManual((v) => !v)}
+        className="flex items-center gap-1.5 text-xs text-[#D4A574]/80 hover:text-[#D4A574] transition-colors"
       >
-        Select a result or add manually to continue.
+        <Plus className="w-3.5 h-3.5" />
+        Add manually
+        {showManual ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+      </button>
+
+      {showManual && (
+        <div className="space-y-2 p-3 rounded-xl border border-[rgba(180,140,75,0.18)] bg-[rgba(0,0,0,0.15)]">
+          {["a", "b", "c", "d"].map((key, i) => (
+            <div key={key}>
+              <label className="text-xs text-[#E0D8C8]/70 block mb-1">{labels[i]}</label>
+              <input
+                type="text"
+                value={manual[key]}
+                onChange={(e) => setManual((prev) => ({ ...prev, [key]: e.target.value }))}
+                className="w-full h-8 px-2.5 rounded-lg bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.25)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-1 focus:ring-[#A35C5C]"
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={handleManualSubmit}
+            disabled={itemType === "pipe" ? !manual.b.trim() && !manual.a.trim() : !manual.a.trim()}
+            className="w-full h-8 rounded-lg text-sm font-medium text-white disabled:opacity-40 mt-1"
+            style={{ background: "linear-gradient(135deg,#a35c5c,#8f4e4e)" }}
+          >
+            Use This
+          </button>
+        </div>
+      )}
+
+      <p className="text-xs text-[#E0D8C8]/45">
+        Select a result or add the item manually to continue.
       </p>
     </div>
   );
