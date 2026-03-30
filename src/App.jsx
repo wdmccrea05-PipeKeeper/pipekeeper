@@ -30,6 +30,7 @@ import TobaccoDetail from '@/pages/TobaccoDetail';
 import Support from '@/pages/Support';
 import WantList from '@/pages/WantList';
 import ShoppingList from '@/pages/ShoppingList';
+import SupportPublic from '@/pages/SupportPublic';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -50,6 +51,11 @@ const AuthenticatedApp = () => {
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
       </div>
     );
+  }
+
+  // Allow public support page without auth
+  if (window.location.pathname === '/support-public') {
+    return <SupportPublic />;
   }
 
   // Redirect unauthenticated users to login
@@ -73,6 +79,7 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
+      <Route path="/support-public" element={<SupportPublic />} />
       <Route path="/share/:moduleType/:shareToken" element={<PublicSharedRecord />} />
       <Route path="/CuratorAnalyticsDashboard" element={
         <LayoutWrapper currentPageName="CuratorAnalyticsDashboard">
