@@ -322,7 +322,7 @@ export default function CollectionHub() {
   ];
 
   const whiskeyStats = [
-    { label: 'Bottles', value: bottles.length },
+    { label: 'Whiskey', value: bottles.length },
     { label: 'Tastings', value: tastings.length },
     { label: 'Value', value: currency(bottles.reduce((s, b) => s + Number(getBottleValue(b) || 0), 0)) },
   ];
@@ -364,7 +364,7 @@ export default function CollectionHub() {
           <StatCard icon={Flame} label="Recent Sessions" value={isLoading ? '—' : metrics.recentSessionsCount} sub="This week" accent="#B56A5F" />
           {whiskeyOpenable && (
             <>
-              <StatCard icon={WhiskeyKeeperIcon} label="Bottles" value={isLoading ? '—' : bottles.length} sub="In collection" accent="#B66565" />
+              <StatCard icon={WhiskeyKeeperIcon} label="Whiskey" value={isLoading ? '—' : bottles.length} sub="In collection" accent="#B66565" />
               <StatCard icon={Flame} label="Tastings" value={isLoading ? '—' : tastings.length} sub="Tracked tastings" accent="#A35050" />
             </>
           )}
@@ -381,7 +381,7 @@ export default function CollectionHub() {
           <QuickAction icon={Layers} label="View Pipes" accent="#B48C4B" onClick={() => navigate('/Pipes')} />
           {whiskeyOpenable && (
            <>
-             <QuickAction icon={Plus} label="Add Bottle" accent="#B66565" onClick={() => navigate('/BottleForm')} />
+             <QuickAction icon={Plus} label="Add Whiskey" accent="#B66565" onClick={() => navigate('/BottleForm')} />
              <QuickAction icon={BarChart3} label="My Whiskey" accent="#A35050" onClick={() => navigate('/Whiskey')} />
              <QuickAction icon={Glasses} label="Log Tasting" accent="#A35050" onClick={() => navigate(createPageUrl('Tastings'))} />
              </>

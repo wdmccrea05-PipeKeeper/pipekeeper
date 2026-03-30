@@ -269,7 +269,7 @@ export default function WhiskeyPage() {
                     style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))', color: '#F5F1E7', border: '1px solid rgba(163,92,92,0.5)' }}
                   >
                     <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-                    {t('whiskey.addBottle', 'Add Bottle')}
+                    {t('whiskey.addWhiskey', 'Add Whiskey')}
                   </Button>
                 </div>
                 </div>
@@ -317,7 +317,7 @@ export default function WhiskeyPage() {
         <Sheet open={showForm} onOpenChange={setShowForm}>
           <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
             <SheetHeader className="mb-6">
-              <SheetTitle>{editingBottle ? t('whiskey.editBottle', 'Edit Bottle') : t('whiskey.addBottle', 'Add Bottle')}</SheetTitle>
+              <SheetTitle>{editingBottle ? t('whiskey.editWhiskey', 'Edit Whiskey') : t('whiskey.addWhiskey', 'Add Whiskey')}</SheetTitle>
             </SheetHeader>
             <BottleForm bottle={editingBottle} onSubmit={handleSaveBottle} onCancel={() => { setShowForm(false); setEditingBottle(null); }} />
           </SheetContent>
@@ -457,12 +457,12 @@ export default function WhiskeyPage() {
              >
                <WhiskeyKeeperIcon size={32} color="rgba(180,140,75,0.5)" />
             </div>
-            <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">{t('whiskey.noBottlesYet', 'No bottles yet')}</h2>
+            <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">{t('whiskey.noWhiskeyYet', 'No whiskey yet')}</h2>
             <p style={{ color: 'rgba(224,216,200,0.6)' }} className="mb-6 max-w-sm mx-auto">{t('whiskey.startTracking', 'Start tracking your whiskey collection')}</p>
             <div className="flex gap-3 justify-center flex-wrap">
               <Button onClick={() => setShowAddFlow(true)} style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))', color: '#F5F1E7' }}>
                 <Plus className="w-4 h-4 mr-2" />
-                {t('whiskey.addFirstBottle', 'Add First Bottle')}
+                {t('whiskey.addFirstWhiskey', 'Add Whiskey')}
               </Button>
             </div>
           </div>

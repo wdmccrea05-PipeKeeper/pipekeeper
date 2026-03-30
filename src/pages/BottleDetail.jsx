@@ -219,7 +219,7 @@ export default function BottleDetail() {
   if (loading) {
     return (
       <div className="p-6 text-[#F5F1E7]">
-        <p>Loading bottle…</p>
+        <p>Loading…</p>
       </div>
     );
   }
@@ -323,7 +323,7 @@ export default function BottleDetail() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DetailStat label="Type" value={bottle.type || '—'} icon={Star} />
-                <DetailStat label="Bottle Type" value={bottle.bottle_type || '—'} icon={Star} />
+                <DetailStat label="Whiskey Type" value={bottle.bottle_type || '—'} icon={Star} />
                 <DetailStat label="Amount Paid" value={formatCurrency(bottle.purchase_price)} icon={DollarSign} />
                 <DetailStat label="Collector Value" value={formatCurrency(bottle.collector_value)} icon={DollarSign} />
               </div>
@@ -433,7 +433,7 @@ export default function BottleDetail() {
                     onClick={() =>
                       navigate('/Curator', {
                         state: {
-                          seedPrompt: `Help me understand this bottle and how to enjoy it: ${bottle.name}${bottle.distillery ? ` by ${bottle.distillery}` : ''}. Include tasting guidance, serving suggestions, and what pairs well with it in my collection.`,
+                          seedPrompt: `Help me understand this whiskey and how to enjoy it: ${bottle.name}${bottle.distillery ? ` by ${bottle.distillery}` : ''}. Include tasting guidance, serving suggestions, and what pairs well with it in my collection.`,
                           scope: 'whiskeykeeper',
                           selectedModules: ['whiskeykeeper'],
                           sourceRecord: {
@@ -446,7 +446,7 @@ export default function BottleDetail() {
                     }
                   >
                     <WhiskeyKeeperIcon className="w-4 h-4 mr-2" />
-                    Ask Curator about this bottle
+                    Ask Curator about this whiskey
                   </Button>
                 </div>
               </div>
@@ -550,8 +550,8 @@ export default function BottleDetail() {
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this bottle?</AlertDialogTitle>
-            <AlertDialogDescription>This will permanently delete <strong>{bottle?.name}</strong>. This action cannot be undone.</AlertDialogDescription>
+            <AlertDialogTitle>Delete this whiskey?</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently delete <strong>{bottle?.name}</strong> from your collection. This action cannot be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>

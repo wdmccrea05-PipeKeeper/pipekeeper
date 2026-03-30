@@ -127,7 +127,7 @@ export default function QuickLaunch() {
 
   const whiskeyActions = [
     {
-      label: t("quickActions.addBottle", "Add Bottle"),
+      label: t("quickActions.addWhiskey", "Add Whiskey"),
       icon: BottleQuickIcon,
       path: "/Whiskey?action=add",
       accent: "#D4A574",
