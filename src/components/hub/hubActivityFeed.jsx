@@ -1,20 +1,25 @@
 import { base44 } from '@/api/base44Client';
 
 /**
- * Get recent cross-module activity for the current user
- * Aggregates recent smoking logs, tastings, and item additions
- * @returns {Promise<Array>} Array of activity items with module context
+ * Get recent cross-module activity for the current user only.
+ * @param {string|null} userEmail
+ * @param {object} options
+ * @param {boolean} options.includeWhiskey
+ * @returns {Promise<Array>}
  */
-export async function getRecentCrossModuleActivity() {
+export async function getRecentCrossModuleActivity(userEmail = null, options = {}) {
+  const { includeWhiskey = false } = options;
+
+  if (!userEmail) return [];
+
   try {
     const activities = [];
 
-    // Fetch recent smoking logs (PipeKeeper)
     try {
-      const logs = await base44.entities.SmokingLog.list('-date', 5);
+      const logs = await base44.entities.SmokingLog.filter({ created_by: userEmail }, '-date', 5);
       if (logs && logs.length > 0) {
         activities.push(
-          ...logs.map(log => ({
+          ...logs.map((log) => ({
             id: `smoking-${log.id}`,
             type: 'smoking',
             module: 'pipes',
@@ -29,30 +34,28 @@ export async function getRecentCrossModuleActivity() {
       console.warn('[hubActivityFeed] Error fetching smoking logs:', err?.message);
     }
 
-    // Fetch recent tasting logs (WhiskeyKeeper)
-    try {
-      const tastings = await base44.entities.TastingLog.list('-tasting_date', 5);
-      if (tastings && tastings.length > 0) {
-        activities.push(
-          ...tastings.map(tasting => ({
-            id: `tasting-${tasting.id}`,
-            type: 'tasting',
-            module: 'whiskey',
-            date: new Date(tasting.tasting_date),
-            title: tasting.bottle_name,
-            subtitle: tasting.notes ? tasting.notes.substring(0, 50) : 'Tasting logged',
-            icon: '🥃',
-          }))
-        );
+    if (includeWhiskey) {
+      try {
+        const tastings = await base44.entities.TastingLog.filter({ created_by: userEmail }, '-tasting_date', 5);
+        if (tastings && tastings.length > 0) {
+          activities.push(
+            ...tastings.map((tasting) => ({
+              id: `tasting-${tasting.id}`,
+              type: 'tasting',
+              module: 'whiskey',
+              date: new Date(tasting.tasting_date),
+              title: tasting.bottle_name,
+              subtitle: tasting.notes ? tasting.notes.substring(0, 50) : 'Tasting logged',
+              icon: '🥃',
+            }))
+          );
+        }
+      } catch (err) {
+        console.warn('[hubActivityFeed] Error fetching tasting logs:', err?.message);
       }
-    } catch (err) {
-      console.warn('[hubActivityFeed] Error fetching tasting logs:', err?.message);
     }
 
-    // Sort by date (most recent first)
     activities.sort((a, b) => b.date.getTime() - a.date.getTime());
-
-    // Return most recent 5 activities
     return activities.slice(0, 5);
   } catch (error) {
     console.warn('[hubActivityFeed] Error fetching cross-module activity:', error);
@@ -60,9 +63,6 @@ export async function getRecentCrossModuleActivity() {
   }
 }
 
-/**
- * Format activity date for display
- */
 export function formatActivityDate(date) {
   const now = new Date();
   const diffMs = now - date;
