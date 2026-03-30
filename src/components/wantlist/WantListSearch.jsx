@@ -1,36 +1,62 @@
-import React, { useState, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import React, { useState, useCallback, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Search, Plus } from "lucide-react";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useAccessSummary } from "@/components/hooks/useAccessSummary";
+import { scopedEntities } from "@/components/api/scopedEntities";
+import { base44 } from "@/api/base44Client";
 
 export default function WantListSearch({ onSelect, onManualAdd }) {
+  const { user } = useCurrentUser();
+  const access = useAccessSummary();
+
+  const userEmail = user?.email || null;
+  const activeModules = access?.activeModules || [];
+  const whiskeyEnabled = activeModules.includes("whiskeykeeper");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
 
+  const availableCategories = useMemo(() => {
+    const categories = ["all", "pipe", "blend"];
+    if (whiskeyEnabled) categories.push("bottle");
+    return categories;
+  }, [whiskeyEnabled]);
+
   const handleSearch = useCallback(async (query) => {
-    if (!query.trim()) {
+    if (!query.trim() || !userEmail) {
       setResults([]);
       return;
     }
 
     setSearching(true);
     try {
-      const [pipes, blends, bottles] = await Promise.all([
-        base44.entities.Pipe.filter({}, "-updated_date", 50),
-        base44.entities.TobaccoBlend.filter({}, "-updated_date", 50),
-        base44.entities.Bottle.filter({}, "-updated_date", 50),
-      ]);
+      const promises = [
+        scopedEntities.Pipe.listForUser(userEmail, "-updated_date", 200),
+        scopedEntities.TobaccoBlend.listForUser(userEmail, "-updated_date", 200),
+      ];
 
-      const query_lower = query.toLowerCase();
+      if (whiskeyEnabled) {
+        promises.push(
+          base44.entities.Bottle.filter({ created_by: userEmail }, "-updated_date", 200).catch(() => [])
+        );
+      }
+
+      const resolved = await Promise.all(promises);
+      const pipes = resolved[0] || [];
+      const blends = resolved[1] || [];
+      const bottles = whiskeyEnabled ? (resolved[2] || []) : [];
+
+      const queryLower = query.toLowerCase();
 
       const pipeResults = pipes
         .filter((p) =>
-          (p.name || "").toLowerCase().includes(query_lower) ||
-          (p.maker || "").toLowerCase().includes(query_lower)
+          (p.name || "").toLowerCase().includes(queryLower) ||
+          (p.maker || "").toLowerCase().includes(queryLower)
         )
         .map((p) => ({
           id: p.id,
@@ -43,8 +69,8 @@ export default function WantListSearch({ onSelect, onManualAdd }) {
 
       const blendResults = blends
         .filter((b) =>
-          (b.name || "").toLowerCase().includes(query_lower) ||
-          (b.manufacturer || "").toLowerCase().includes(query_lower)
+          (b.name || "").toLowerCase().includes(queryLower) ||
+          (b.manufacturer || "").toLowerCase().includes(queryLower)
         )
         .map((b) => ({
           id: b.id,
@@ -55,25 +81,27 @@ export default function WantListSearch({ onSelect, onManualAdd }) {
           entity: b,
         }));
 
-      const bottleResults = bottles
-        .filter((b) =>
-          (b.name || "").toLowerCase().includes(query_lower) ||
-          (b.brand || "").toLowerCase().includes(query_lower)
-        )
-        .map((b) => ({
-          id: b.id,
-          name: b.name,
-          brand: b.brand,
-          type: "bottle",
-          display: `${b.name} by ${b.brand || "Unknown"}`,
-          entity: b,
-        }));
+      const bottleResults = whiskeyEnabled
+        ? bottles
+            .filter((b) =>
+              (b.name || "").toLowerCase().includes(queryLower) ||
+              (b.brand || "").toLowerCase().includes(queryLower)
+            )
+            .map((b) => ({
+              id: b.id,
+              name: b.name,
+              brand: b.brand,
+              type: "bottle",
+              display: `${b.name} by ${b.brand || "Unknown"}`,
+              entity: b,
+            }))
+        : [];
 
-      const combined = [
-        ...pipeResults,
-        ...blendResults,
-        ...bottleResults,
-      ];
+      let combined = [...pipeResults, ...blendResults, ...bottleResults];
+
+      if (selectedCategory !== "all") {
+        combined = combined.filter((r) => r.type === selectedCategory);
+      }
 
       setResults(combined);
     } catch (err) {
@@ -82,64 +110,84 @@ export default function WantListSearch({ onSelect, onManualAdd }) {
     } finally {
       setSearching(false);
     }
-  }, []);
+  }, [selectedCategory, userEmail, whiskeyEnabled]);
 
-  const handleSelectResult = (result) => {
-    onSelect({
-      name: result.name,
-      brand: result.brand,
-      item_type: result.type === "blend" ? "blend" : result.type === "pipe" ? "pipe" : "bottle",
-      linked_entity_id: result.id,
-      linked_entity_type: result.type === "pipe" ? "Pipe" : result.type === "blend" ? "TobaccoBlend" : "Bottle",
-      is_manual: false,
-    });
-    setSearchQuery("");
-    setResults([]);
+  const handleSelect = (item) => {
+    if (onSelect) {
+      onSelect(item);
+    }
   };
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-3 top-3 w-4 h-4 text-[#D4A574]/50" />
+      <div className="flex gap-2">
         <Input
-          placeholder="Search blends, pipes, bottles..."
           value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            handleSearch(e.target.value);
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search your collection records"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSearch(searchQuery);
           }}
-          className="pl-10"
         />
+        <Button
+          type="button"
+          onClick={() => handleSearch(searchQuery)}
+          disabled={searching || !userEmail}
+        >
+          <Search className="w-4 h-4 mr-2" />
+          Search
+        </Button>
       </div>
 
-      {results.length > 0 && (
-        <div className="max-h-96 overflow-y-auto space-y-2 bg-[rgba(255,255,255,0.03)] border border-[#b48c4b]/20 rounded-lg p-3">
-          {results.map((result) => (
-            <button
-              key={`${result.type}-${result.id}`}
-              onClick={() => handleSelectResult(result)}
-              className="w-full text-left p-3 rounded border border-[#b48c4b]/20 hover:bg-[rgba(255,255,255,0.06)] transition-colors"
-            >
-              <div className="flex items-center justify-between">
-                <div className="min-w-0">
-                  <div className="font-medium text-[#E0D8C8]">{result.display}</div>
-                  <div className="text-xs text-[#E0D8C8]/50 capitalize">{result.type}</div>
-                </div>
-                <Plus className="w-4 h-4 text-[#D4A574] ml-2 flex-shrink-0" />
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {searchQuery && results.length === 0 && !searching && (
-        <div className="text-center py-6">
-          <p className="text-[#E0D8C8]/50 text-sm mb-3">No results found</p>
-          <Button variant="outline" onClick={() => onManualAdd(searchQuery)}>
-            Add Manually
+      <div className="flex flex-wrap gap-2">
+        {availableCategories.map((category) => (
+          <Button
+            key={category}
+            type="button"
+            variant={selectedCategory === category ? "default" : "outline"}
+            onClick={() => setSelectedCategory(category)}
+          >
+            {category === "all"
+              ? "All"
+              : category === "pipe"
+              ? "Pipes"
+              : category === "blend"
+              ? "Tobacco"
+              : "Whiskey"}
           </Button>
-        </div>
-      )}
+        ))}
+      </div>
+
+      <div className="space-y-2">
+        {results.map((item) => (
+          <button
+            key={`${item.type}-${item.id}`}
+            type="button"
+            onClick={() => handleSelect(item)}
+            className="w-full rounded-xl border px-4 py-3 text-left transition hover:bg-white/5"
+            style={{
+              borderColor: "rgba(180,140,75,0.18)",
+              background: "rgba(255,255,255,0.02)",
+            }}
+          >
+            <div className="font-medium text-[#F5F1E7]">{item.name}</div>
+            <div className="text-sm text-[#D8C7A6]/75">{item.display}</div>
+          </button>
+        ))}
+
+        {!searching && searchQuery.trim() && results.length === 0 && (
+          <div className="rounded-xl border px-4 py-6 text-center text-[#D8C7A6]/75">
+            No matches found in your records.
+          </div>
+        )}
+      </div>
+
+      <div>
+        <Button type="button" variant="outline" onClick={onManualAdd}>
+          <Plus className="w-4 h-4 mr-2" />
+          Add Manually
+        </Button>
+      </div>
     </div>
   );
 }
