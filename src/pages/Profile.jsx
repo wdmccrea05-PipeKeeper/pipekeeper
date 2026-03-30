@@ -928,42 +928,8 @@ export default function ProfilePage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* WhiskeyKeeper Toggle */}
-            <div className="flex items-center justify-between p-4 rounded-lg bg-stone-900/40 border border-stone-700">
-              <div className="flex items-center gap-3">
-                <WhiskeyKeeperIcon size={24} color="#D4A574" />
-                <div>
-                  <div className="font-semibold text-stone-100">WhiskeyKeeper</div>
-                  <div className="text-xs text-stone-400">Whiskey collection, tasting notes, and inventory</div>
-                </div>
-              </div>
-              <Switch
-                checked={formData.whiskeykeeper_enabled}
-                onCheckedChange={async (v) => {
-                  const newVal = !!v;
-                  setFormData((p) => ({ ...p, whiskeykeeper_enabled: newVal }));
-                  try {
-                    if (profileId) {
-                      await safeUpdate("UserProfile", profileId, { whiskeykeeper_enabled: newVal }, email);
-                    } else {
-                      await base44.entities.UserProfile.create({
-                        user_id: userId || undefined,
-                        user_email: email || undefined,
-                        whiskeykeeper_enabled: newVal,
-                      });
-                    }
-                    toast.success(newVal ? t("profile.whiskeyKeeperEnabled", "WhiskeyKeeper enabled") : t("profile.whiskeyKeeperDisabled", "WhiskeyKeeper disabled"));
-                    await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
-                  } catch (e) {
-                    console.error("[Profile] WhiskeyKeeper toggle error:", e);
-                    toast.error(t("profile.whiskeyKeeperUpdateFailed", "Failed to update WhiskeyKeeper setting"));
-                  }
-                }}
-                className="data-[state=checked]:bg-[#A35C5C]"
-              />
-            </div>
-            <ModuleVisibilitySettings />
+          <CardContent>
+            <ModuleVisibilitySettings profile={profile} user={user} />
           </CardContent>
         </Card>
 

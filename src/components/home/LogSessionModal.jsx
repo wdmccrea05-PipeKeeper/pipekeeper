@@ -283,8 +283,12 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
 
     const bowls = parseInt(formData.bowls_used) || 1;
     // Tobacco usage depends on blend ownership (not pipe ownership)
-    // If blend is from collection we still estimate usage even if pipe is external
-    const tobaccoUsed = blendMode === "collection" ? estimateTobaccoUsage(pipe, bowls) : 0;
+    // If blend is from collection, estimate usage even when pipe is external.
+    // When pipe is external, fall back to a medium-bowl estimate (0.75g/bowl).
+    let tobaccoUsed = 0;
+    if (blendMode === "collection") {
+      tobaccoUsed = pipe ? estimateTobaccoUsage(pipe, bowls) : (bowls * 0.75 * 0.035274);
+    }
 
     let bowl_name = null;
     if (pipeMode === "collection" && formData.bowl_variant_id && hasMultipleBowls) {
@@ -553,6 +557,23 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
             <Label className="text-[#E0D8C8]">{t("smokingLog.notes")}</Label>
             <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder={t("smokingLog.notesPlaceholder")} rows={3} />
           </div>
+
+          {/* Inline save requirements guidance */}
+          {(() => {
+            const msgs = [];
+            if (pipeMode === "collection" && !formData.pipe_id) msgs.push("Select a pipe from your collection to continue.");
+            if (pipeMode === "external" && !externalPipe) msgs.push("Select a search result or add the pipe manually to continue.");
+            if (blendMode === "collection" && !formData.blend_id) msgs.push("Select a blend from your collection to continue.");
+            if (blendMode === "external" && !externalBlend) msgs.push("Select a search result or add the blend manually to continue.");
+            if (msgs.length === 0) return null;
+            return (
+              <div className="rounded-xl px-3 py-2.5 space-y-1" style={{ background: "rgba(180,140,75,0.10)", border: "1px solid rgba(180,140,75,0.22)" }}>
+                {msgs.map((m) => (
+                  <p key={m} className="text-xs" style={{ color: "rgba(212,165,116,0.9)" }}>⚠ {m}</p>
+                ))}
+              </div>
+            );
+          })()}
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">{t("common.cancel")}</Button>
