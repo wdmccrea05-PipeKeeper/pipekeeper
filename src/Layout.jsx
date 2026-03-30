@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import BrandLogo from "@/components/branding/BrandLogo";
 import ModuleNav from "@/components/modules/ModuleNav";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -6,9 +7,14 @@ import BackButton from "@/components/navigation/BackButton";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 import { Button } from "@/components/ui/button";
 import { Zap } from "lucide-react";
+import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
+import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 
 export default function Layout({ children, currentPageName }) {
   const [quickAccessOpen, setQuickAccessOpen] = useState(false);
+  const { isModuleEnabled } = useEnabledKeeperModules();
+
+  const activeModule = currentPageName === "PipeKeeper" ? "pipekeeper" : currentPageName === "WhiskeyKeeper" ? "whiskeykeeper" : null;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#140f0c' }}>
@@ -19,6 +25,22 @@ export default function Layout({ children, currentPageName }) {
               <div className="flex items-center gap-3 min-w-0">
                 <BackButton currentPageName={currentPageName} />
                 <BrandLogo className="min-w-0" />
+                {activeModule && (
+                  <Link
+                    to={`/${currentPageName}`}
+                    className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-[#6b4a2d]/55 border border-[rgba(180,140,75,0.35)]"
+                    style={{ color: "#F5F1E7" }}
+                  >
+                    {MODULE_ICONS[activeModule] && (
+                      <img
+                        src={MODULE_ICONS[activeModule]}
+                        alt={currentPageName}
+                        className="w-4 h-4 object-contain"
+                      />
+                    )}
+                    <span>{currentPageName === "PipeKeeper" ? "PipeKeeper" : "WhiskeyKeeper"}</span>
+                  </Link>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
