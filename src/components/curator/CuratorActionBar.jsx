@@ -1,6 +1,8 @@
 import { useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { CURATOR_ACTIONS, getVisibleActions, buildActionLaunchContext } from './curatorActions';
+import { filterCuratorActions } from './curatorActionVisibility';
+import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { logCuratorEvent } from '@/components/utils/curatorEventLogger';
 
@@ -20,6 +22,7 @@ export default function CuratorActionBar({
   disabled = false,
 }) {
   const { t } = useTranslation();
+  const { enabled } = useEnabledModules();
 
   const collectionContext = useMemo(
     () => ({
@@ -35,8 +38,9 @@ export default function CuratorActionBar({
   );
 
   const visibleActions = useMemo(() => {
-    return getVisibleActions(collectionContext);
-  }, [collectionContext]);
+    const actions = getVisibleActions(collectionContext);
+    return filterCuratorActions(actions, enabled);
+  }, [collectionContext, enabled]);
 
   const handleActionClick = useCallback(
     async (action) => {

@@ -19,6 +19,7 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
+import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import BrandLogo from '@/components/branding/BrandLogo';
 import { Heart } from 'lucide-react';
@@ -226,7 +227,9 @@ export default function CollectionHub() {
   const { user } = useCurrentUser();
   const [showLogSelector, setShowLogSelector] = useState(false);
   const { enabledModules, expandingSoonModules, isModuleEnabled } = useEnabledKeeperModules();
-  const whiskeyOpenable = isModuleEnabled('whiskeykeeper');
+  const { enabled } = useEnabledModules();
+  const whiskeyOpenable = enabled.whiskeykeeper;
+  const pipekeeperOpenable = enabled.pipekeeper;
 
   const { data, isLoading } = useQuery({
     queryKey: ['collection-hub-dashboard', user?.email, whiskeyOpenable],
@@ -234,9 +237,9 @@ export default function CollectionHub() {
     staleTime: 2 * 60 * 1000,
     queryFn: async () => {
       const [pipes, blends, smokeLogs, bottles, tastings] = await Promise.all([
-        base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 500).catch(() => []),
-        base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-updated_date', 500).catch(() => []),
-        base44.entities.SmokingLog.filter({ created_by: user.email }, '-date', 1000).catch(() => []),
+        pipekeeperOpenable ? base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 500).catch(() => []) : Promise.resolve([]),
+        pipekeeperOpenable ? base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-updated_date', 500).catch(() => []) : Promise.resolve([]),
+        pipekeeperOpenable ? base44.entities.SmokingLog.filter({ created_by: user.email }, '-date', 1000).catch(() => []) : Promise.resolve([]),
         whiskeyOpenable
           ? base44.entities.Bottle.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
           : Promise.resolve([]),
@@ -358,28 +361,24 @@ export default function CollectionHub() {
       {/* Collection Overview */}
       <section className="space-y-4">
         <SectionTitle>Collection Overview</SectionTitle>
-        <div className={`grid grid-cols-1 sm:grid-cols-2 ${whiskeyOpenable ? 'xl:grid-cols-6' : 'xl:grid-cols-4'} gap-4`}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <StatCard icon={TrendingUp} label="Total Value" value={isLoading ? '—' : currency(metrics.totalValue)} sub="Across active collections" accent="#C89752" />
-          <StatCard icon={PipeIcon} label="Pipes" value={isLoading ? '—' : pipes.length} sub="In collection" accent="#B48C4B" />
-          <StatCard icon={Leaf} label="Blends" value={isLoading ? '—' : blends.length} sub="Tracked blends" accent="#6E8A57" />
-          <StatCard icon={Flame} label="Recent Sessions" value={isLoading ? '—' : metrics.recentSessionsCount} sub="This week" accent="#B56A5F" />
-          {whiskeyOpenable && (
-            <>
-              <StatCard icon={WhiskeyKeeperIcon} label="Whiskey" value={isLoading ? '—' : bottles.length} sub="In collection" accent="#B66565" />
-              <StatCard icon={Flame} label="Tastings" value={isLoading ? '—' : tastings.length} sub="Tracked tastings" accent="#A35050" />
-            </>
-          )}
+          {pipekeeperOpenable && <StatCard icon={PipeIcon} label="Pipes" value={isLoading ? '—' : pipes.length} sub="In collection" accent="#B48C4B" />}
+          {pipekeeperOpenable && <StatCard icon={Leaf} label="Blends" value={isLoading ? '—' : blends.length} sub="Tracked blends" accent="#6E8A57" />}
+          {pipekeeperOpenable && <StatCard icon={Flame} label="Recent Sessions" value={isLoading ? '—' : metrics.recentSessionsCount} sub="This week" accent="#B56A5F" />}
+          {whiskeyOpenable && <StatCard icon={WhiskeyKeeperIcon} label="Whiskey" value={isLoading ? '—' : bottles.length} sub="In collection" accent="#B66565" />}
+          {whiskeyOpenable && <StatCard icon={Flame} label="Tastings" value={isLoading ? '—' : tastings.length} sub="Tracked tastings" accent="#A35050" />}
         </div>
       </section>
 
       {/* Quick Actions */}
       <section className="space-y-4">
         <SectionTitle>Quick Actions</SectionTitle>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
-          <QuickAction icon={PipeIcon} label="Add Pipe" accent="#C89752" onClick={() => navigate('/Pipes?action=add')} />
-          <QuickAction icon={Leaf} label="Add Blend" accent="#8E7E60" onClick={() => navigate('/Tobacco?action=add')} />
-          <QuickAction icon={WhiskeyBottleIcon} label="Add Whiskey" accent="#B66565" onClick={() => navigate('/BottleForm')} />
-          <QuickAction icon={BookOpen} label="Log Session" accent="#4A7C59" onClick={() => setShowLogSelector(true)} />
+        <div className="flex flex-wrap gap-4">
+          {pipekeeperOpenable && <QuickAction icon={PipeIcon} label="Add Pipe" accent="#C89752" onClick={() => navigate('/Pipes?action=add')} />}
+          {pipekeeperOpenable && <QuickAction icon={Leaf} label="Add Blend" accent="#8E7E60" onClick={() => navigate('/Tobacco?action=add')} />}
+          {whiskeyOpenable && <QuickAction icon={WhiskeyBottleIcon} label="Add Whiskey" accent="#B66565" onClick={() => navigate('/BottleForm')} />}
+          {(pipekeeperOpenable || whiskeyOpenable) && <QuickAction icon={BookOpen} label="Log Session" accent="#4A7C59" onClick={() => setShowLogSelector(true)} />}
           <QuickAction icon={Heart} label="Want List" accent="#C89752" onClick={() => navigate('/WantList')} />
           <QuickAction icon={({ className, ...props }) => <div className={`${className} rounded-lg overflow-hidden bg-white flex items-center justify-center`}><img src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png" className="w-full h-full object-cover" alt="Curator" /></div>} label="Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
         </div>
@@ -446,7 +445,7 @@ export default function CollectionHub() {
         <section className="space-y-4">
           <SectionTitle>Top Highlights</SectionTitle>
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-            {metrics.mostSmokedPipe && (
+            {pipekeeperOpenable && metrics.mostSmokedPipe && (
               <CatalogPlate
                 title="Most Smoked Pipe"
                 value={metrics.mostSmokedPipe.name}
@@ -457,7 +456,7 @@ export default function CollectionHub() {
                 onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(metrics.mostSmokedPipe.id)}`)}
               />
             )}
-            {metrics.favoriteBlend && (
+            {pipekeeperOpenable && metrics.favoriteBlend && (
               <CatalogPlate
                 title="Favorite Blend"
                 value={metrics.favoriteBlend.name}
@@ -468,7 +467,7 @@ export default function CollectionHub() {
                 onClick={() => navigate(`/TobaccoDetail?id=${encodeURIComponent(metrics.favoriteBlend.id)}`)}
               />
             )}
-            {metrics.mostValuablePipe && (
+            {pipekeeperOpenable && metrics.mostValuablePipe && (
               <CatalogPlate
                 title="Most Valuable Pipe"
                 value={metrics.mostValuablePipe.name}
@@ -495,7 +494,7 @@ export default function CollectionHub() {
       )}
 
       {/* Recent Activity */}
-      {metrics.recentActivity.length > 0 && (
+      {pipekeeperOpenable && metrics.recentActivity.length > 0 && (
         <section className="space-y-4">
           <SectionTitle>Recent Activity</SectionTitle>
           <div className="space-y-3">

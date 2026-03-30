@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -127,6 +127,7 @@ export default function Curator() {
   const { user } = useCurrentUser();
   const { t } = useTranslation();
   const { isModuleEnabled } = useEnabledKeeperModules();
+  const { enabled } = useEnabledModules();
   const location = useLocation();
   const [launchContext, setLaunchContext] = useState(() => {
     // Hydrate from React Router location.state.seedPrompt (e.g. from BottleDetail)
@@ -141,11 +142,21 @@ export default function Curator() {
     }
     return resolveLaunchContext();
   });
-  const [curatorScope, setCuratorScope] = useState(() => {
-    // Default to pipekeeper if only one module enabled, otherwise "all"
-    const hasMultipleModules = isModuleEnabled("whiskeykeeper");
-    return location?.state?.scope || (hasMultipleModules ? "all" : "pipekeeper");
-  });
+  const [curatorScope, setCuratorScope] = useState(
+    location?.state?.scope || "all"
+  );
+
+  // Once enabled modules are known, correct the default scope if needed
+  React.useEffect(() => {
+    if (!location?.state?.scope) {
+      const enabledCount = [enabled.pipekeeper, enabled.whiskeykeeper].filter(Boolean).length;
+      if (enabledCount === 1) {
+        if (enabled.whiskeykeeper && !enabled.pipekeeper) setCuratorScope("whiskeykeeper");
+        else if (enabled.pipekeeper && !enabled.whiskeykeeper) setCuratorScope("pipekeeper");
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled.pipekeeper, enabled.whiskeykeeper]);
 
   const handleScopeChange = (newScope) => {
     setCuratorScope(newScope);
@@ -222,13 +233,11 @@ export default function Curator() {
   // Available scope options based on enabled modules
   // If only PipeKeeper is enabled, skip the "All Modules" option to keep UI clean
   const availableScopes = useMemo(() => {
-    const whiskeyScopeAvailable = isModuleEnabled("whiskeykeeper");
-    if (!whiskeyScopeAvailable) {
-      return [SCOPE_OPTIONS[1]];
-    }
-    const opts = [SCOPE_OPTIONS[0], SCOPE_OPTIONS[1], SCOPE_OPTIONS[2]];
-    return opts;
-  }, [isModuleEnabled]);
+    return buildEnabledCuratorScopes(enabled).map((s) => {
+      const opt = SCOPE_OPTIONS.find((o) => o.value === s.key);
+      return opt || { value: s.key, label: s.label, isPipeIcon: false };
+    });
+  }, [enabled]);
 
   const handlePromptConsumed = () => {
     clearRouteState();

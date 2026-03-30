@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Leaf, BookOpen, TrendingUp, Search, Sparkles } from "lucide-react";
 
-import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
+import { useEnabledModules } from "@/components/hooks/useEnabledModules";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 
@@ -89,8 +89,9 @@ function ActionCard({ action, navigate }) {
 export default function QuickLaunch() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { isModuleEnabled } = useModuleVisibility();
-  const whiskeyEnabled = isModuleEnabled('whiskeykeeper');
+  const { enabled } = useEnabledModules();
+  const whiskeyEnabled = enabled.whiskeykeeper;
+  const pipekeeperEnabled = enabled.pipekeeper;
 
   const pipeActions = [
     {
@@ -156,18 +157,20 @@ export default function QuickLaunch() {
           {t("hub.quickLaunch", "Quick Launch")}
         </h2>
 
-        <div>
-          <SectionTitle label={t("nav.pipekeeper", "PipeKeeper")} />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {pipeActions.map((action) => (
-              <ActionCard
-                key={`${action.path}-${action.label}`}
-                action={action}
-                navigate={navigate}
-              />
-            ))}
+        {pipekeeperEnabled && (
+          <div>
+            <SectionTitle label={t("nav.pipekeeper", "PipeKeeper")} />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {pipeActions.map((action) => (
+                <ActionCard
+                  key={`${action.path}-${action.label}`}
+                  action={action}
+                  navigate={navigate}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {whiskeyEnabled && (
           <div>
