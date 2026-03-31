@@ -450,13 +450,13 @@ export default function PipeDetail() {
                 <div>
                   <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Length</p>
                   <p className="text-2xl font-semibold mt-2">
-                    {normalized.lengthValue != null ? formatLength(Number(normalized.lengthValue)) : '—'}
+                    {normalized.lengthValue != null ? (formatLength(Number(normalized.lengthValue)) || `${normalized.lengthValue} mm`) : '—'}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Weight</p>
                   <p className="text-2xl font-semibold mt-2">
-                    {normalized.weightValue != null ? formatWeight(Number(normalized.weightValue)) : '—'}
+                    {normalized.weightValue != null ? (formatWeight(Number(normalized.weightValue)) || `${normalized.weightValue} g`) : '—'}
                   </p>
                 </div>
                 <div>
@@ -464,6 +464,26 @@ export default function PipeDetail() {
                   <p className="text-2xl font-semibold mt-2">{conditionSummary}</p>
                 </div>
               </div>
+              {(normalized.bowlHeightValue != null || normalized.bowlWidthValue != null || normalized.bowlDiameterValue != null || normalized.bowlDepthValue != null) && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-[rgba(180,140,75,0.12)]">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Bowl Height</p>
+                    <p className="text-xl font-semibold mt-2">{normalized.bowlHeightValue != null ? (formatLength(Number(normalized.bowlHeightValue)) || `${normalized.bowlHeightValue} mm`) : '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Bowl Width</p>
+                    <p className="text-xl font-semibold mt-2">{normalized.bowlWidthValue != null ? (formatLength(Number(normalized.bowlWidthValue)) || `${normalized.bowlWidthValue} mm`) : '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Bowl Diameter</p>
+                    <p className="text-xl font-semibold mt-2">{normalized.bowlDiameterValue != null ? (formatLength(Number(normalized.bowlDiameterValue)) || `${normalized.bowlDiameterValue} mm`) : '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Bowl Depth</p>
+                    <p className="text-xl font-semibold mt-2">{normalized.bowlDepthValue != null ? (formatLength(Number(normalized.bowlDepthValue)) || `${normalized.bowlDepthValue} mm`) : '—'}</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {pipe.notes && (
