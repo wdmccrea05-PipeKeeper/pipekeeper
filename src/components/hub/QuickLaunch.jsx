@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Leaf, BookOpen, TrendingUp, Search, Sparkles } from "lucide-react";
+import { Leaf, BookOpen, TrendingUp, Sparkles } from "lucide-react";
 
 import { useEnabledModules } from "@/components/hooks/useEnabledModules";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { MODULE_ICONS } from "@/components/branding/moduleAssets";
+import LogSessionSelector from "@/components/session/LogSessionSelector";
 
 function BottleQuickIcon({ className, style }) {
   return (
@@ -26,18 +26,6 @@ function BottleQuickIcon({ className, style }) {
   );
 }
 
-function PipeQuickIcon({ className, style }) {
-  return (
-    <img
-      src={MODULE_ICONS.pipeicon}
-      alt="Pipe"
-      className={className}
-      style={{ ...style, objectFit: "contain", backgroundColor: "transparent" }}
-      draggable={false}
-    />
-  );
-}
-
 function SectionTitle({ label }) {
   return (
     <div className="flex items-center gap-2 mb-3">
@@ -51,13 +39,13 @@ function SectionTitle({ label }) {
   );
 }
 
-function ActionCard({ action, navigate }) {
+function ActionCard({ action, navigate, onClick }) {
   const Icon = action.icon;
   const isImageIcon = typeof Icon === "string";
 
   return (
     <button
-      onClick={() => navigate(action.path)}
+      onClick={onClick || (() => navigate(action.path))}
       className="group p-4 rounded-xl text-left transition-all duration-300"
       style={{
         background:
@@ -90,10 +78,23 @@ export default function QuickLaunch() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { enabled } = useEnabledModules();
+  const [showLogSelector, setShowLogSelector] = useState(false);
+
   const whiskeyEnabled = enabled.whiskeykeeper;
   const pipekeeperEnabled = enabled.pipekeeper;
+  const hasDualSessionModules = whiskeyEnabled && pipekeeperEnabled;
 
-  const pipeActions = [
+  const handleOpenCombinedSessionFlow = () => {
+    navigate('/Curator', {
+      state: {
+        scope: 'all',
+        seedPrompt: 'Help me plan a combined pipe and whiskey session from my collection and tell me what I should log.',
+        source: 'quick-launch-log-session',
+      },
+    });
+  };
+
+  const pipeActions = useMemo(() => ([
     {
       label: t("quickActions.addPipe", "Add Pipe"),
       icon: "/branding/pipe-icon.png?v=3",
@@ -115,8 +116,9 @@ export default function QuickLaunch() {
     {
       label: t("quickActions.logSession", "Log Session"),
       icon: BookOpen,
-      path: "/SmokingLog",
+      path: "/PipeKeeper?action=log-smoke",
       accent: "#C87941",
+      onClick: hasDualSessionModules ? () => setShowLogSelector(true) : undefined,
     },
     {
       label: t("nav.insights", "Insights"),
@@ -124,9 +126,9 @@ export default function QuickLaunch() {
       path: "/Insights",
       accent: "#8B5CF6",
     },
-  ];
+  ]), [hasDualSessionModules, t]);
 
-  const whiskeyActions = [
+  const whiskeyActions = useMemo(() => ([
     {
       label: t("quickActions.addWhiskey", "Add Whiskey"),
       icon: BottleQuickIcon,
@@ -134,10 +136,11 @@ export default function QuickLaunch() {
       accent: "#D4A574",
     },
     {
-      label: t("quickActions.logTasting", "Log Tasting"),
+      label: hasDualSessionModules ? t("quickActions.logSession", "Log Session") : t("quickActions.logTasting", "Log Tasting"),
       icon: BookOpen,
-      path: "/Tastings",
+      path: "/Tastings?action=log",
       accent: "#C87941",
+      onClick: hasDualSessionModules ? () => setShowLogSelector(true) : undefined,
     },
     {
       label: t("nav.insights", "Insights"),
@@ -145,48 +148,62 @@ export default function QuickLaunch() {
       path: "/WhiskeyInsights",
       accent: "#8B5CF6",
     },
-  ];
+  ]), [hasDualSessionModules, t]);
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <h2
-          className="text-sm uppercase tracking-[0.12em] font-semibold"
-          style={{ color: "rgba(180, 140, 75, 0.8)" }}
-        >
-          {t("hub.quickLaunch", "Quick Launch")}
-        </h2>
+    <>
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <h2
+            className="text-sm uppercase tracking-[0.12em] font-semibold"
+            style={{ color: "rgba(180, 140, 75, 0.8)" }}
+          >
+            {t("hub.quickLaunch", "Quick Launch")}
+          </h2>
 
-        {pipekeeperEnabled && (
-          <div>
-            <SectionTitle label={t("nav.pipekeeper", "PipeKeeper")} />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {pipeActions.map((action) => (
-                <ActionCard
-                  key={`${action.path}-${action.label}`}
-                  action={action}
-                  navigate={navigate}
-                />
-              ))}
+          {pipekeeperEnabled && (
+            <div>
+              <SectionTitle label={t("nav.pipekeeper", "PipeKeeper")} />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {pipeActions.map((action) => (
+                  <ActionCard
+                    key={`${action.path}-${action.label}`}
+                    action={action}
+                    navigate={navigate}
+                    onClick={action.onClick}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {whiskeyEnabled && (
-          <div>
-            <SectionTitle label={t("nav.whiskeykeeper", "WhiskeyKeeper")} />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {whiskeyActions.map((action) => (
-                <ActionCard
-                  key={`${action.path}-${action.label}`}
-                  action={action}
-                  navigate={navigate}
-                />
-              ))}
+          {whiskeyEnabled && (
+            <div>
+              <SectionTitle label={t("nav.whiskeykeeper", "WhiskeyKeeper")} />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {whiskeyActions.map((action) => (
+                  <ActionCard
+                    key={`${action.path}-${action.label}`}
+                    action={action}
+                    navigate={navigate}
+                    onClick={action.onClick}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+
+      <LogSessionSelector
+        isOpen={showLogSelector}
+        onClose={() => setShowLogSelector(false)}
+        pipeEnabled={pipekeeperEnabled}
+        whiskeyEnabled={whiskeyEnabled}
+        onSelectPipe={() => navigate('/PipeKeeper?action=log-smoke')}
+        onSelectWhiskey={() => navigate('/Tastings?action=log')}
+        onSelectCombined={handleOpenCombinedSessionFlow}
+      />
+    </>
   );
 }
