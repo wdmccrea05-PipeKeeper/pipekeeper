@@ -38,11 +38,16 @@ const SEARCH_SCHEMA = {
       items: {
         type: "object",
         properties: {
-          name: { type: "string" }, manufacturer: { type: "string" },
-          maker: { type: "string" }, model: { type: "string" },
-          distillery: { type: "string" }, expression: { type: "string" },
-          blend_type: { type: "string" }, whiskey_type: { type: "string" },
-          type: { type: "string" }, shape: { type: "string" },
+          name: { type: "string" },
+          manufacturer: { type: "string" },
+          maker: { type: "string" },
+          model: { type: "string" },
+          distillery: { type: "string" },
+          expression: { type: "string" },
+          blend_type: { type: "string" },
+          whiskey_type: { type: "string" },
+          type: { type: "string" },
+          shape: { type: "string" },
           description: { type: "string" },
         },
       },
@@ -71,7 +76,6 @@ const LIST_DESTINATIONS = [
   { value: "do_not_buy_again", label: "Not for Me" },
 ];
 
-// Dynamic item types based on access. Defined in AddItemFlow via useMemo.
 const BASE_ITEM_TYPES = [
   { value: "blend", label: "Blend", itemType: "blend", moduleKey: "pipekeeper" },
   { value: "pipe", label: "Pipe", itemType: "pipe", moduleKey: "pipekeeper" },
@@ -152,6 +156,8 @@ function ManualForm({ itemType, onSubmit, onBack }) {
 
 // ─── Add Item Multi-Step Flow ────────────────────────────────────────────────
 function AddItemFlow({ onDone, onBack }) {
+  const { user } = useCurrentUser();
+  const userEmail = user?.email || null;
   const access = useAccessSummary();
   const activeModules = access?.activeModules || [];
 
@@ -202,11 +208,17 @@ function AddItemFlow({ onDone, onBack }) {
   };
 
   const handleSaveToList = async (category) => {
+    if (!userEmail) {
+      toast.error("Unable to identify the current user");
+      return;
+    }
+
     setSaving(true);
     try {
       const item = selectedItem;
       const brand =
         item.manufacturer || item.maker || item.distillery || item.brand || "";
+
       const payload = {
         name: item.name,
         item_type: itemType === "bottle" ? "bottle" : itemType,
@@ -217,7 +229,9 @@ function AddItemFlow({ onDone, onBack }) {
         status: "active",
         is_manual: item._source === "manual",
         notes: item.notes || "",
+        created_by: userEmail,
       };
+
       await base44.entities.AcquisitionItem.create(payload);
       toast.success("Added to your want list");
       onDone();
@@ -228,7 +242,6 @@ function AddItemFlow({ onDone, onBack }) {
     }
   };
 
-  // Step: choose type
   if (step === "type") {
     return (
       <div className="space-y-4">
@@ -245,7 +258,10 @@ function AddItemFlow({ onDone, onBack }) {
           {ITEM_TYPES.map((t) => (
             <button
               key={t.value}
-              onClick={() => { setItemType(t.value); setStep("search"); }}
+              onClick={() => {
+                setItemType(t.value);
+                setStep("search");
+              }}
               className="py-6 rounded-xl border border-[rgba(180,140,75,0.25)] text-[#E0D8C8]/80 hover:bg-white/5 hover:border-[#D4A574]/40 transition-all font-medium text-sm"
             >
               {t.label}
@@ -256,13 +272,19 @@ function AddItemFlow({ onDone, onBack }) {
     );
   }
 
-  // Step: search
   if (step === "search") {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3 mb-2">
-          <button onClick={() => { setStep("type"); setResults([]); setSearched(false); setQuery(""); }}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-[#E0D8C8]/60">
+          <button
+            onClick={() => {
+              setStep("type");
+              setResults([]);
+              setSearched(false);
+              setQuery("");
+            }}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-[#E0D8C8]/60"
+          >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
@@ -298,7 +320,12 @@ function AddItemFlow({ onDone, onBack }) {
                 key={`${item.name}-${i}`}
                 onClick={() => handleSelectResult(item)}
                 className="w-full text-left flex items-start justify-between gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.05] transition-colors"
-                style={{ border: item._isExact && i === 0 ? "1px solid rgba(180,140,75,0.35)" : "1px solid rgba(255,255,255,0.07)" }}
+                style={{
+                  border:
+                    item._isExact && i === 0
+                      ? "1px solid rgba(180,140,75,0.35)"
+                      : "1px solid rgba(255,255,255,0.07)",
+                }}
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -345,7 +372,6 @@ function AddItemFlow({ onDone, onBack }) {
     );
   }
 
-  // Step: manual
   if (step === "manual") {
     return (
       <ManualForm
@@ -356,13 +382,14 @@ function AddItemFlow({ onDone, onBack }) {
     );
   }
 
-  // Step: destination
   if (step === "destination") {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3 mb-2">
-          <button onClick={() => setStep(selectedItem?._source === "manual" ? "manual" : "search")}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-[#E0D8C8]/60">
+          <button
+            onClick={() => setStep(selectedItem?._source === "manual" ? "manual" : "search")}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-[#E0D8C8]/60"
+          >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
@@ -414,13 +441,11 @@ function ViewList({ onBack }) {
   const filteredItems = useMemo(() => {
     let result = [...items];
 
-    // Tab filter by category
     if (activeTab === "wishlist") result = result.filter((i) => i.category === "wishlist");
     else if (activeTab === "shopping") result = result.filter((i) => i.category === "shopping_list" || i.category === "restock");
     else if (activeTab === "tried") result = result.filter((i) => i.category === "tried_not_owned");
     else if (activeTab === "notforme") result = result.filter((i) => i.category === "do_not_buy_again");
 
-    // Search filter
     if (searchText) {
       const q = searchText.toLowerCase();
       result = result.filter(
@@ -432,7 +457,6 @@ function ViewList({ onBack }) {
       );
     }
 
-    // Sort
     result.sort((a, b) => {
       if (sortBy === "priority") {
         const order = { high: 0, medium: 1, low: 2 };
@@ -446,22 +470,34 @@ function ViewList({ onBack }) {
     return result;
   }, [items, activeTab, searchText, sortBy]);
 
-  const handleStatusChange = () => queryClient.invalidateQueries({ queryKey: ["acquisitionItems", userEmail] });
+  const handleStatusChange = () =>
+    queryClient.invalidateQueries({ queryKey: ["acquisitionItems", userEmail] });
+
   const handleArchive = (itemId) => {
     queryClient.setQueryData(["acquisitionItems", userEmail], items.filter((i) => i.id !== itemId));
-    setSelectedItems((prev) => { const s = new Set(prev); s.delete(itemId); return s; });
+    setSelectedItems((prev) => {
+      const s = new Set(prev);
+      s.delete(itemId);
+      return s;
+    });
   };
 
   const handleMultiShare = () => {
     if (!selectedItems.size) return;
-    const text = items.filter((i) => selectedItems.has(i.id)).map((i) => `${i.name}${i.brand ? ` by ${i.brand}` : ""}`).join("\n");
+    const text = items
+      .filter((i) => selectedItems.has(i.id))
+      .map((i) => `${i.name}${i.brand ? ` by ${i.brand}` : ""}`)
+      .join("\n");
+
     if (navigator.share) navigator.share({ title: "Want List", text });
-    else { navigator.clipboard.writeText(text); toast.success("Copied to clipboard"); }
+    else {
+      navigator.clipboard.writeText(text);
+      toast.success("Copied to clipboard");
+    }
   };
 
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={onBack} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-[#E0D8C8]/60">
           <ArrowLeft className="w-4 h-4" />
@@ -469,7 +505,6 @@ function ViewList({ onBack }) {
         <h2 className="text-xl font-bold text-[#F5F1E7]">Your Want List</h2>
       </div>
 
-      {/* Controls */}
       <div className="flex gap-3 mb-4 flex-col sm:flex-row">
         <div className="relative flex-1">
           <SearchIcon className="absolute left-3 top-3 w-4 h-4 text-[#D4A574]/50" />
@@ -490,17 +525,24 @@ function ViewList({ onBack }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               {Object.entries(SORT_OPTIONS).map(([k, v]) => (
-                <DropdownMenuItem key={k} onClick={() => setSortBy(k)} className={sortBy === k ? "bg-[#b48c4b]/20" : ""}>{v}</DropdownMenuItem>
+                <DropdownMenuItem
+                  key={k}
+                  onClick={() => setSortBy(k)}
+                  className={sortBy === k ? "bg-[#b48c4b]/20" : ""}
+                >
+                  {v}
+                </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
           {selectedItems.size > 0 && (
-            <Button variant="outline" size="sm" onClick={handleMultiShare}>Share ({selectedItems.size})</Button>
+            <Button variant="outline" size="sm" onClick={handleMultiShare}>
+              Share ({selectedItems.size})
+            </Button>
           )}
         </div>
       </div>
 
-      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
         <TabsList className="w-full grid grid-cols-5">
           <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
@@ -537,11 +579,11 @@ function ViewList({ onBack }) {
                   <div className="pl-10">
                     <WantListCard item={item} onStatusChange={handleStatusChange} onArchive={handleArchive} />
                   </div>
-                  </div>
-                  ))}
-                  </div>
-                  )}
-                  </TabsContent>
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
     </div>
   );
@@ -550,10 +592,12 @@ function ViewList({ onBack }) {
 // ─── Entry Screen ────────────────────────────────────────────────────────────
 export default function WantList() {
   const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+  const userEmail = user?.email || null;
   const [view, setView] = useState("entry"); // entry | list | add
 
   const handleAddDone = () => {
-    queryClient.invalidateQueries({ queryKey: ["acquisitionItems"] });
+    queryClient.invalidateQueries({ queryKey: ["acquisitionItems", userEmail] });
     setView("entry");
   };
 
@@ -597,9 +641,7 @@ export default function WantList() {
           </div>
         )}
 
-        {view === "list" && (
-          <ViewList onBack={() => setView("entry")} />
-        )}
+        {view === "list" && <ViewList onBack={() => setView("entry")} />}
 
         {view === "add" && (
           <div>
