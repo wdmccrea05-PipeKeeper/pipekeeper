@@ -39,6 +39,7 @@ import ShareRecordModal from '@/components/share/ShareRecordModal';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { scopedEntities } from '@/components/api/scopedEntities';
 
 function DetailStat({ label, value, icon: Icon }) {
   return (
@@ -146,12 +147,12 @@ export default function PipeDetail() {
       }
 
       try {
-        const [pipeRecord, blendsList] = await Promise.all([
-          base44.entities.Pipe.get(pipeId),
-          base44.entities.TobaccoBlend
-            .filter({ created_by: user?.email }, '-updated_date', 500)
-            .catch(() => []),
+        const [pipeResults, blendsList] = await Promise.all([
+          scopedEntities.Pipe.filterForUser(user?.email, { id: pipeId }, '-updated_date', 1),
+          scopedEntities.TobaccoBlend.listForUser(user?.email, '-updated_date', 500).catch(() => []),
         ]);
+
+        const pipeRecord = pipeResults?.[0] || null;
 
         if (mounted) {
           setPipe(pipeRecord);
@@ -187,7 +188,14 @@ export default function PipeDetail() {
     if (!pipe) return;
     try {
       await base44.entities.Pipe.update(pipe.id, updates);
-      setPipe((prev) => ({ ...prev, ...updates }));
+      // Re-fetch fresh record from the same scoped path used on load
+      const results = await scopedEntities.Pipe.filterForUser(user?.email, { id: pipe.id }, '-updated_date', 1).catch(() => null);
+      const fresh = results?.[0];
+      if (fresh) {
+        setPipe(fresh);
+      } else {
+        setPipe((prev) => ({ ...prev, ...updates }));
+      }
       toast.success(t('common.saved') || 'Pipe updated');
     } catch (e) {
       console.error('[PipeDetail] update failed', e);
@@ -237,22 +245,9 @@ export default function PipeDetail() {
       bowlWidthValue: firstPresent(pipe, ['bowl_width_mm', 'bowlWidth', 'bowlWidthMm']),
       bowlDiameterValue: firstPresent(pipe, ['bowl_diameter_mm', 'bowlDiameter', 'bowlDiameterMm', 'chamber_diameter_mm']),
       bowlDepthValue: firstPresent(pipe, ['bowl_depth_mm', 'bowlDepth', 'bowlDepthMm', 'chamber_depth_mm']),
-      includedInAi: firstPresent(pipe, ['included_in_ai', 'includedInAi']),
-      smokingCharacteristics: firstPresent(pipe, [
-        'usage_characteristics',
-        'smoking_characteristics',
-        'usageCharacteristics',
-        'smokingCharacteristics',
-      ]),
-      purchasePrice: firstPresent(pipe, ['purchase_price', 'purchasePrice']),
-      estimatedValue: firstPresent(pipe, ['estimated_value', 'estimatedValue']),
-      bowlMaterial: firstPresent(pipe, ['bowl_material', 'bowlMaterial']),
-      stemMaterial: firstPresent(pipe, ['stem_material', 'stemMaterial']),
-      filterType: firstPresent(pipe, ['filter_type', 'filterType']),
-      countryOfOrigin: firstPresent(pipe, ['country_of_origin', 'countryOfOrigin']),
-      chamberVolume: firstPresent(pipe, ['chamber_volume', 'chamberVolume']),
-      favorite: firstPresent(pipe, ['is_favorite', 'isFavorite']),
-      collectibleOnly: firstPresent(pipe, ['collectible_only', 'collectibleOnly']),
+      includedInAi: firstPresent(pipe, ['included_in_ai', 'includedInAi']) ??
+        (pipe?.ai_excluded != null ? !pipe.ai_excluded : null),
+      collectibleOnly: firstPresent(pipe, ['collectible_only', 'collectibleOnly', 'ai_excluded']),
     };
   }, [pipe]);
 
