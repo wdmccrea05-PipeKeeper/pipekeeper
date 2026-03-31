@@ -18,86 +18,72 @@ const RECORD_TYPE_MAP = {
   find_similar_bottles: "bottle",
 };
 
+// ─── JSON extraction helpers ────────────────────────────────────────────────
+
 function extractJsonCandidate(text) {
   if (!text || typeof text !== "string") return null;
-
   const trimmed = text.trim();
   if (!trimmed) return null;
 
-  const fencedJson =
+  // ```json ... ``` or ``` ... ```
+  const fenced =
     trimmed.match(/```json\s*([\s\S]*?)```/i) ||
     trimmed.match(/```\s*([\s\S]*?)```/i);
+  if (fenced?.[1]?.trim()) return fenced[1].trim();
 
-  if (fencedJson?.[1]?.trim()) {
-    return fencedJson[1].trim();
-  }
-
+  // First { ... } block
   const objectMatch = trimmed.match(/(\{[\s\S]*\})/);
-  if (objectMatch?.[1]?.trim()) {
-    return objectMatch[1].trim();
-  }
+  if (objectMatch?.[1]?.trim()) return objectMatch[1].trim();
 
-  const arrayMatch = trimmed.match(/($begin:math:display$\[\\s\\S\]\*$end:math:display$)/);
-  if (arrayMatch?.[1]?.trim()) {
-    return arrayMatch[1].trim();
-  }
+  // First [ ... ] block
+  const arrayMatch = trimmed.match(/(\[[\s\S]*\])/);
+  if (arrayMatch?.[1]?.trim()) return arrayMatch[1].trim();
 
   return null;
 }
 
 function parseRawResponse(raw) {
-  if (!raw) {
-    throw new Error("Curator returned no response");
-  }
+  if (!raw) throw new Error("Curator returned no response");
 
-  if (Array.isArray(raw)) {
-    return { items: raw };
-  }
+  if (Array.isArray(raw)) return { items: raw };
 
   if (typeof raw === "object") {
-    if (Array.isArray(raw.items) || Array.isArray(raw.groups)) {
-      return raw;
-    }
+    // Unwrap common backend payload wrappers
+    if (typeof raw.result !== "undefined") return parseRawResponse(raw.result);
+    if (typeof raw.output !== "undefined") return parseRawResponse(raw.output);
+    if (typeof raw.body !== "undefined") return parseRawResponse(raw.body);
+    if (typeof raw.data !== "undefined" && raw.data !== raw) return parseRawResponse(raw.data);
 
-    if (typeof raw.result !== "undefined") {
-      return parseRawResponse(raw.result);
-    }
-
-    if (typeof raw.output !== "undefined") {
-      return parseRawResponse(raw.output);
-    }
-
-    if (typeof raw.body !== "undefined") {
-      return parseRawResponse(raw.body);
-    }
-
-    if (typeof raw.data !== "undefined" && raw.data !== raw) {
-      return parseRawResponse(raw.data);
-    }
+    // Already canonical
+    if (Array.isArray(raw.groups) || Array.isArray(raw.items)) return raw;
 
     return raw;
   }
 
   const text = String(raw).trim();
-  if (!text) {
-    throw new Error("Curator returned an empty string");
-  }
+  if (!text) throw new Error("Curator returned an empty string");
 
+  // Try plain JSON first
   try {
     return JSON.parse(text);
   } catch {
-    const candidate = extractJsonCandidate(text);
-    if (candidate) {
-      try {
-        return JSON.parse(candidate);
-      } catch {
-        // continue to final fallback below
-      }
+    // fall through
+  }
+
+  // Try extracted candidate (fenced blocks, embedded objects/arrays)
+  const candidate = extractJsonCandidate(text);
+  if (candidate) {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      // fall through
     }
   }
 
   throw new Error("Curator response could not be parsed as JSON");
 }
+
+// ─── Shared utilities ────────────────────────────────────────────────────────
 
 function getActionByType(actionType) {
   return (CURATOR_ACTIONS || []).find(
@@ -107,82 +93,56 @@ function getActionByType(actionType) {
 
 function getAnchorList(anchorOverrides) {
   if (Array.isArray(anchorOverrides)) return anchorOverrides.filter(Boolean);
-  if (Array.isArray(anchorOverrides?.anchors)) {
-    return anchorOverrides.anchors.filter(Boolean);
-  }
-  if (
-    anchorOverrides &&
-    typeof anchorOverrides === "object" &&
-    !Array.isArray(anchorOverrides)
-  ) {
-    return [anchorOverrides];
-  }
+  if (Array.isArray(anchorOverrides?.anchors)) return anchorOverrides.anchors.filter(Boolean);
+  if (anchorOverrides && typeof anchorOverrides === "object") return [anchorOverrides];
   return [];
 }
 
 function normalizeSimilarItem(item, recordType, anchor) {
   const title = item?.title || item?.name || "Recommendation";
-
   return {
     id:
       item?.id ||
-      `similar_${recordType}_${String(title)
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_")}`,
+      `similar_${recordType}_${String(title).toLowerCase().replace(/[^a-z0-9]+/g, "_")}`,
     type: item?.type || "similar_item",
     recordType,
     title,
     category: item?.category || "",
     explanation: item?.explanation || "",
     whyFitsYou: item?.whyFitsYou || "",
-    characteristics: Array.isArray(item?.characteristics)
-      ? item.characteristics
-      : [],
+    characteristics: Array.isArray(item?.characteristics) ? item.characteristics : [],
     anchorId: anchor?.id || null,
     anchorName: anchor?.name || null,
   };
 }
 
+// ─── Find Similar ─────────────────────────────────────────────────────────────
+
 async function handleFindSimilar({ actionType, context, anchorOverrides }) {
   const recordType = RECORD_TYPE_MAP[actionType];
-  if (!recordType) {
-    throw new Error(`Unsupported find-similar action type: ${actionType}`);
-  }
+  if (!recordType) throw new Error(`Unsupported find-similar action type: ${actionType}`);
 
   const anchors = getAnchorList(anchorOverrides);
-
-  if (anchors.length === 0) {
-    throw new Error("Find Similar requires at least one anchor item");
-  }
+  if (anchors.length === 0) throw new Error("Find Similar requires at least one anchor item");
 
   const allResults = [];
   const seen = new Set();
 
   for (const anchor of anchors) {
     try {
-      const result = await runFindSimilar({
-        recordType,
-        anchor,
-        context,
-      });
-
+      const result = await runFindSimilar({ recordType, anchor, context });
       const items = result?.items || result?.recommendations || [];
       for (const item of items) {
         const key = String(item?.title || item?.name || "")
           .toLowerCase()
           .replace(/[^a-z0-9]/g, "")
           .trim();
-
         if (!key || seen.has(key)) continue;
         seen.add(key);
         allResults.push(normalizeSimilarItem(item, recordType, anchor));
       }
     } catch (err) {
-      console.warn(
-        "[CuratorExecutor] find-similar failed for anchor",
-        anchor?.name,
-        err?.message
-      );
+      console.warn("[CuratorExecutor] find-similar failed for anchor", anchor?.name, err?.message);
     }
   }
 
@@ -194,9 +154,7 @@ async function handleFindSimilar({ actionType, context, anchorOverrides }) {
     title: "Curator Similar Recommendations",
     summary:
       finalItems.length > 0
-        ? `Found ${finalItems.length} similar ${recordType}${
-            finalItems.length === 1 ? "" : "s"
-          } based on ${anchorNames.join(", ")}.`
+        ? `Found ${finalItems.length} similar ${recordType}${finalItems.length === 1 ? "" : "s"} based on ${anchorNames.join(", ")}.`
         : `No similar ${recordType}s found right now.`,
     groups: [
       {
@@ -210,10 +168,11 @@ async function handleFindSimilar({ actionType, context, anchorOverrides }) {
   };
 }
 
+// ─── Generic Action ───────────────────────────────────────────────────────────
+
 function buildGenericCuratorPrompt(action, context) {
   const safeContext = buildSafeCollectionContext(context || {});
   const contextBlock = buildPromptBlock(safeContext);
-
   const actionPrompt =
     typeof action?.buildPrompt === "function"
       ? action.buildPrompt(context || {})
@@ -221,21 +180,17 @@ function buildGenericCuratorPrompt(action, context) {
 
   return `You are PipeKeeper Curator.
 
-Return VALID JSON ONLY.
-Do not use markdown.
-Do not wrap the response in backticks.
-Do not include commentary before or after the JSON.
+Return VALID JSON ONLY. No markdown. No backticks. No commentary before or after.
 
 COLLECTION CONTEXT:
 ${contextBlock}
 
-ACTION:
-${action?.label || action?.id || "Curator Action"}
+ACTION: ${action?.label || action?.id || "Curator Action"}
 
 TASK:
 ${actionPrompt}
 
-Return JSON in this exact canonical structure:
+Return JSON in this exact structure:
 {
   "actionId": "${action?.id || "curator_action"}",
   "title": "${action?.label || "Curator Results"}",
@@ -266,19 +221,17 @@ Return JSON in this exact canonical structure:
   ]
 }
 
-If there are no actionable items, still return valid JSON with:
-- a summary
-- groups: []`;
+If no actionable items exist, return valid JSON with a summary and groups: [].`;
 }
 
 async function invokeCuratorModel({ prompt, actionType, requestId }) {
+  // Primary: invokeCuratorLLM backend function
   try {
     const response = await base44.functions.invoke("invokeCuratorLLM", {
       prompt,
       actionType,
       requestId,
     });
-
     return parseRawResponse(response);
   } catch (primaryErr) {
     console.warn(
@@ -287,28 +240,23 @@ async function invokeCuratorModel({ prompt, actionType, requestId }) {
     );
   }
 
+  // Fallback: Core InvokeLLM integration
   const fallbackRaw = await base44.integrations.Core.InvokeLLM({
     prompt,
     add_context_from_internet: false,
   });
-
   return parseRawResponse(fallbackRaw);
 }
 
 async function handleGenericAction({ actionType, context, requestId }) {
   const action = getActionByType(actionType);
-
-  if (!action) {
-    throw new Error(`Unknown curator action type: ${actionType}`);
-  }
+  if (!action) throw new Error(`Unknown curator action type: ${actionType}`);
 
   const prompt = buildGenericCuratorPrompt(action, context);
-  return await invokeCuratorModel({
-    prompt,
-    actionType,
-    requestId,
-  });
+  return await invokeCuratorModel({ prompt, actionType, requestId });
 }
+
+// ─── Public API ───────────────────────────────────────────────────────────────
 
 export async function executeCuratorAction({
   actionType,
@@ -317,18 +265,9 @@ export async function executeCuratorAction({
   anchorOverrides,
 }) {
   if (FIND_SIMILAR_TYPES.has(actionType)) {
-    return await handleFindSimilar({
-      actionType,
-      context,
-      anchorOverrides,
-    });
+    return await handleFindSimilar({ actionType, context, anchorOverrides });
   }
-
-  return await handleGenericAction({
-    actionType,
-    context,
-    requestId,
-  });
+  return await handleGenericAction({ actionType, context, requestId });
 }
 
 export default executeCuratorAction;
