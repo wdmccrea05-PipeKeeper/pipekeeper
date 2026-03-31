@@ -688,8 +688,10 @@ function CommunityPageInner() {
                       : friendship.requester_email;
                     const profile = publicProfiles.find(p => p.user_email === friendEmail);
                     const moduleTags = [];
-                    if (profile?.pipekeeper_enabled !== false) moduleTags.push({ label: '🪵 PipeKeeper', bg: 'rgba(120,80,40,0.35)', color: 'rgba(212,165,116,1)' });
-                    if (profile?.whiskeykeeper_enabled === true) moduleTags.push({ label: '🥃 WhiskeyKeeper', bg: 'rgba(90,60,20,0.35)', color: 'rgba(212,190,100,1)' });
+                    if (profile?.pipekeeper_enabled !== false) {
+                      moduleTags.push({ label: '🪵 PipeKeeper', bg: 'rgba(120,80,40,0.35)', color: 'rgba(212,165,116,1)' });
+                    }
+                    // WhiskeyKeeper is not publicly released yet — do not show as a public module tag here.
                     return (
                       <div 
                         key={friendship.id}
