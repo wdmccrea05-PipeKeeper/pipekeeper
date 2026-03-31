@@ -578,30 +578,12 @@ export default function PipeDetail() {
 
                 <SectionCard title="Measurements" icon={Ruler}>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                    <MetaRow
-                      label="Length"
-                      value={normalized.lengthValue != null ? formatLength(Number(normalized.lengthValue)) : '—'}
-                    />
-                    <MetaRow
-                      label="Weight"
-                      value={normalized.weightValue != null ? formatWeight(Number(normalized.weightValue)) : '—'}
-                    />
-                    <MetaRow
-                      label="Bowl Height"
-                      value={normalized.bowlHeightValue != null ? formatLength(Number(normalized.bowlHeightValue)) : '—'}
-                    />
-                    <MetaRow
-                      label="Bowl Width"
-                      value={normalized.bowlWidthValue != null ? formatLength(Number(normalized.bowlWidthValue)) : '—'}
-                    />
-                    <MetaRow
-                      label="Bowl Diameter"
-                      value={normalized.bowlDiameterValue != null ? formatLength(Number(normalized.bowlDiameterValue)) : '—'}
-                    />
-                    <MetaRow
-                      label="Bowl Depth"
-                      value={normalized.bowlDepthValue != null ? formatLength(Number(normalized.bowlDepthValue)) : '—'}
-                    />
+                    <MetaRow label="Length" value={normalized.lengthValue != null ? (formatLength(Number(normalized.lengthValue)) || `${normalized.lengthValue} mm`) : '—'} />
+                    <MetaRow label="Weight" value={normalized.weightValue != null ? (formatWeight(Number(normalized.weightValue)) || `${normalized.weightValue} g`) : '—'} />
+                    <MetaRow label="Bowl Height" value={normalized.bowlHeightValue != null ? (formatLength(Number(normalized.bowlHeightValue)) || `${normalized.bowlHeightValue} mm`) : '—'} />
+                    <MetaRow label="Bowl Width" value={normalized.bowlWidthValue != null ? (formatLength(Number(normalized.bowlWidthValue)) || `${normalized.bowlWidthValue} mm`) : '—'} />
+                    <MetaRow label="Bowl Diameter" value={normalized.bowlDiameterValue != null ? (formatLength(Number(normalized.bowlDiameterValue)) || `${normalized.bowlDiameterValue} mm`) : '—'} />
+                    <MetaRow label="Bowl Depth" value={normalized.bowlDepthValue != null ? (formatLength(Number(normalized.bowlDepthValue)) || `${normalized.bowlDepthValue} mm`) : '—'} />
                   </div>
                 </SectionCard>
 
