@@ -270,6 +270,28 @@ export const storyEngine = {
       });
     }
 
+    if (analysis.bottleCount === 10) {
+      milestones.push({
+        title: 'Whiskey Collector',
+        message: 'Ten bottles in your whiskey collection. A solid cabinet.',
+        emoji: '🥃'
+      });
+    } else if (analysis.bottleCount === 25) {
+      milestones.push({
+        title: 'Whiskey Connoisseur',
+        message: 'Twenty-five bottles. You have a serious collection.',
+        emoji: '🏆'
+      });
+    }
+
+    if (analysis.tastingCount === 50) {
+      milestones.push({
+        title: '50 Tastings',
+        message: 'Fifty tasting notes logged. Your palate is well-trained.',
+        emoji: '📓'
+      });
+    }
+
     return milestones;
   },
 

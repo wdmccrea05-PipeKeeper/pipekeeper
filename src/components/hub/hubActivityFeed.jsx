@@ -1,14 +1,17 @@
 import { base44 } from '@/api/base44Client';
+import { normalizeSmokingLog, normalizeTastingLog } from '@/components/utils/activityNormalizer';
 
 /**
  * Get recent cross-module activity for the current user only.
+ * Uses canonical normalizer so all surfaces share the same activity model.
  * @param {string|null} userEmail
  * @param {object} options
  * @param {boolean} options.includeWhiskey
+ * @param {number}  options.limit
  * @returns {Promise<Array>}
  */
 export async function getRecentCrossModuleActivity(userEmail = null, options = {}) {
-  const { includeWhiskey = false } = options;
+  const { includeWhiskey = false, limit = 5 } = options;
 
   if (!userEmail) return [];
 
@@ -16,19 +19,13 @@ export async function getRecentCrossModuleActivity(userEmail = null, options = {
     const activities = [];
 
     try {
-      const logs = await base44.entities.SmokingLog.filter({ created_by: userEmail }, '-date', 5);
-      if (logs && logs.length > 0) {
-        activities.push(
-          ...logs.map((log) => ({
-            id: `smoking-${log.id}`,
-            type: 'smoking',
-            module: 'pipes',
-            date: new Date(log.date),
-            title: log.pipe_name,
-            subtitle: log.blend_name,
-            icon: '🔴',
-          }))
-        );
+      const logs = await base44.entities.SmokingLog.filter({ created_by: userEmail }, '-date', limit);
+      if (logs?.length > 0) {
+        activities.push(...logs.map((log) => ({
+          ...normalizeSmokingLog(log),
+          module: 'pipes',
+          icon: '🔴',
+        })));
       }
     } catch (err) {
       console.warn('[hubActivityFeed] Error fetching smoking logs:', err?.message);
@@ -36,27 +33,23 @@ export async function getRecentCrossModuleActivity(userEmail = null, options = {
 
     if (includeWhiskey) {
       try {
-        const tastings = await base44.entities.TastingLog.filter({ created_by: userEmail }, '-tasting_date', 5);
-        if (tastings && tastings.length > 0) {
-          activities.push(
-            ...tastings.map((tasting) => ({
-              id: `tasting-${tasting.id}`,
-              type: 'tasting',
-              module: 'whiskey',
-              date: new Date(tasting.tasting_date),
-              title: tasting.bottle_name,
-              subtitle: tasting.notes ? tasting.notes.substring(0, 50) : 'Tasting logged',
-              icon: '🥃',
-            }))
-          );
+        const tastings = await base44.entities.TastingLog.filter({ created_by: userEmail }, '-tasting_date', limit);
+        if (tastings?.length > 0) {
+          activities.push(...tastings.map((tasting) => ({
+            ...normalizeTastingLog(tasting),
+            module: 'whiskey',
+            icon: '🥃',
+          })));
         }
       } catch (err) {
         console.warn('[hubActivityFeed] Error fetching tasting logs:', err?.message);
       }
     }
 
-    activities.sort((a, b) => b.date.getTime() - a.date.getTime());
-    return activities.slice(0, 5);
+    activities.sort((a, b) => {
+      try { return new Date(b.date) - new Date(a.date); } catch { return 0; }
+    });
+    return activities.slice(0, limit);
   } catch (error) {
     console.warn('[hubActivityFeed] Error fetching cross-module activity:', error);
     return [];

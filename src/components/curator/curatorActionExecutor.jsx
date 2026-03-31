@@ -475,11 +475,72 @@ async function invokeCuratorModel({ prompt, actionType, requestId }) {
   return parseRawResponse(fallbackRaw);
 }
 
+function buildSessionBuilderPrompt(context) {
+  const safeContext = buildSafeCollectionContext(context || {});
+  const contextBlock = buildPromptBlock(safeContext);
+
+  const hasPipes = (context?.pipes?.length || 0) > 0;
+  const hasBlends = (context?.blends?.length || 0) > 0;
+  const hasBottles = (context?.bottles?.length || 0) > 0;
+
+  // Determine session scope from available data
+  const scope = hasPipes && hasBottles ? 'combined'
+    : hasBottles ? 'whiskey_only'
+    : 'pipe_only';
+
+  const schemaExample = scope === 'combined'
+    ? `{ "type": "session_builder", "id": "session_1", "title": "Evening Pairing", "recordType": "session", "recordName": "Exact pipe name from collection or null", "blendName": "Exact blend name from collection or null", "bottleName": "Exact bottle name from collection or null", "explanation": "Why this session works together", "rationale": "Detailed tasting/smoking rationale", "confidence": "high" }`
+    : scope === 'whiskey_only'
+    ? `{ "type": "session_builder", "id": "session_1", "title": "Whiskey Tasting Session", "recordType": "session", "recordName": null, "blendName": null, "bottleName": "Exact bottle name from collection", "explanation": "Why this bottle is ideal tonight", "rationale": "Tasting notes and approach", "confidence": "high" }`
+    : `{ "type": "session_builder", "id": "session_1", "title": "Pipe Session", "recordType": "session", "recordName": "Exact pipe name from collection", "blendName": "Exact blend name from collection", "bottleName": null, "explanation": "Why this pipe and blend pair well", "rationale": "Smoking rationale", "confidence": "high" }`;
+
+  return `You are CollectionKeeper Curator. Generate a personalized session recommendation.
+
+Return VALID JSON ONLY. No markdown. No backticks. No commentary.
+
+COLLECTION CONTEXT:
+${contextBlock}
+
+TASK: Recommend the ideal session for tonight based on the user's collection data, preferences, and usage history.
+
+RULES:
+- recordName: use EXACT pipe name from the collection context (or null if whiskey-only)
+- blendName: use EXACT tobacco blend name from the collection context (or null if whiskey-only)
+- bottleName: use EXACT bottle name from the collection context (or null if pipe-only)
+- For combined sessions, include all three fields where applicable
+- Only reference items that exist in the provided collection context
+- explanation should be 1-2 sentences on why this pairing works
+- rationale should provide sensory/experiential detail
+
+SCOPE: ${scope}
+
+Return JSON in this exact structure:
+{
+  "actionId": "session_builder",
+  "title": "Tonight's Session",
+  "summary": "Brief description of the recommended session",
+  "groups": [
+    {
+      "groupKey": "session_recommendation",
+      "groupTitle": "Recommended Session",
+      "description": "Your personalized session for tonight",
+      "priority": "high",
+      "items": [
+        ${schemaExample}
+      ]
+    }
+  ]
+}`;
+}
+
 async function handleGenericAction({ actionType, context, requestId }) {
   const action = getActionByType(actionType);
   if (!action) throw new Error(`Unknown curator action type: ${actionType}`);
 
-  const prompt = buildGenericCuratorPrompt(action, context, actionType);
+  const prompt = actionType === 'session_builder'
+    ? buildSessionBuilderPrompt(context)
+    : buildGenericCuratorPrompt(action, context, actionType);
+
   const raw = await invokeCuratorModel({ prompt, actionType, requestId });
 
   const fallbackType =

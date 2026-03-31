@@ -484,22 +484,56 @@ export default function CollectionIntelligencePanel({ pipes, blends, bottles = [
       }
     }
 
-    // ── Insight 4: Collector-only items ─────────────────────────────────────
-    if (excludedCount > 0) {
-      insights.push({
-        id: "collector_items",
-        category: CATEGORIES.collection_health,
-        icon: "shield",
-        title: t("collectionIntelligence.insightCollectorTitle"),
-        description: excludedCount === 1
-          ? t("collectionIntelligence.insightCollectorDescOne")
-          : t("collectionIntelligence.insightCollectorDesc", { count: excludedCount }),
-        actionLabel: null,
-        actionUrl: null,
+    // ── Insight 3b: Whiskey tasting cadence ────────────────────────────────
+    if (eligibleBottles.length >= 3 && (tastings || []).length > 0) {
+      const now30 = new Date();
+      const thirtyDaysAgo = new Date(now30.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const recentTastings = (tastings || []).filter((tt) => {
+        try { return new Date(tt.tasting_date || tt.date || tt.created_date) >= thirtyDaysAgo; } catch { return false; }
       });
+      if (recentTastings.length === 0) {
+        insights.push({
+          id: 'whiskey_cadence',
+          category: CATEGORIES.usage,
+          icon: 'activity',
+          title: 'No tastings logged in the last 30 days',
+          description: 'Keep your tasting cadence active to improve future whiskey recommendations.',
+          actionLabel: 'Log a Tasting',
+          actionUrl: '/Tastings?action=log',
+        });
+      }
     }
 
-    // ── Insight 5: Blend variety ─────────────────────────────────────────────
+    // ── Insight 3c: Highly rated bottles without notes ───────────────────────
+    if (eligibleBottles.length > 0 && (tastings || []).length > 0) {
+      const ratingsByBottle = {};
+      for (const tt of tastings || []) {
+        if (tt.bottle_id && tt.rating) {
+          if (!ratingsByBottle[tt.bottle_id]) ratingsByBottle[tt.bottle_id] = [];
+          ratingsByBottle[tt.bottle_id].push(Number(tt.rating));
+        }
+      }
+      const highRatedWithoutNotes = eligibleBottles.filter((b) => {
+        const ratings = ratingsByBottle[b.id] || [];
+        if (ratings.length === 0) return false;
+        const avg = ratings.reduce((s, r) => s + r, 0) / ratings.length;
+        return avg >= 4 && !b.notes;
+      });
+      if (highRatedWithoutNotes.length > 0) {
+        insights.push({
+          id: 'whiskey_high_rated_no_notes',
+          category: CATEGORIES.value,
+          icon: 'sparkles',
+          title: `${highRatedWithoutNotes.length} highly-rated bottle${highRatedWithoutNotes.length > 1 ? 's' : ''} without notes`,
+          description: 'Add tasting notes to your top-rated bottles to build a richer flavor profile.',
+          actionLabel: 'View Tastings',
+          actionUrl: '/Tastings',
+        });
+      }
+    }
+
+    // ── Insight 4: Collector-only items ─────────────────────────────────────
+
     const blendTypes = new Set(eligibleBlends.map((b) => b.blend_type).filter(Boolean));
     if (eligibleBlends.length > 0) {
       if (blendTypes.size < 3) {
