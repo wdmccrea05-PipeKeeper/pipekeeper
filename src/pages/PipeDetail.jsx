@@ -243,16 +243,28 @@ export default function PipeDetail() {
 
     return {
       ...pipe,
+      // Geometry
       sizeClass: firstPresent(pipe, ['sizeClass', 'size_class']),
       bowlStyle: firstPresent(pipe, ['bowlStyle', 'bowl_style']),
       shankShape: firstPresent(pipe, ['shankShape', 'shank_shape']),
+      // Measurements
       lengthValue: firstPresent(pipe, ['length_mm', 'length', 'lengthMm']),
       weightValue: firstPresent(pipe, ['weight_grams', 'weight', 'weightGrams']),
       bowlHeightValue: firstPresent(pipe, ['bowl_height_mm', 'bowlHeight', 'bowlHeightMm']),
       bowlWidthValue: firstPresent(pipe, ['bowl_width_mm', 'bowlWidth', 'bowlWidthMm']),
       bowlDiameterValue: firstPresent(pipe, ['bowl_diameter_mm', 'bowlDiameter', 'bowlDiameterMm', 'chamber_diameter_mm']),
       bowlDepthValue: firstPresent(pipe, ['bowl_depth_mm', 'bowlDepth', 'bowlDepthMm', 'chamber_depth_mm']),
+      // Physical characteristics (snake_case → camelCase)
+      bowlMaterial: firstPresent(pipe, ['bowl_material', 'bowlMaterial']),
+      stemMaterial: firstPresent(pipe, ['stem_material', 'stemMaterial']),
+      filterType: firstPresent(pipe, ['filter_type', 'filterType']),
+      chamberVolume: firstPresent(pipe, ['chamber_volume', 'chamberVolume']),
       countryOfOrigin: firstPresent(pipe, ['country_of_origin', 'countryOfOrigin']),
+      // Value & meta
+      purchasePrice: firstPresent(pipe, ['purchase_price', 'purchasePrice']),
+      estimatedValue: firstPresent(pipe, ['estimated_value', 'estimatedValue']),
+      favorite: firstPresent(pipe, ['is_favorite', 'favorite']),
+      smokingCharacteristics: firstPresent(pipe, ['usage_characteristics', 'smoking_characteristics', 'smokingCharacteristics', 'usageCharacteristics']),
       includedInAi: firstPresent(pipe, ['included_in_ai', 'includedInAi']) ??
         (pipe?.ai_excluded != null ? !pipe.ai_excluded : null),
       collectibleOnly: firstPresent(pipe, ['collectible_only', 'collectibleOnly', 'ai_excluded']),
