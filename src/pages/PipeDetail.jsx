@@ -252,6 +252,7 @@ export default function PipeDetail() {
       bowlWidthValue: firstPresent(pipe, ['bowl_width_mm', 'bowlWidth', 'bowlWidthMm']),
       bowlDiameterValue: firstPresent(pipe, ['bowl_diameter_mm', 'bowlDiameter', 'bowlDiameterMm', 'chamber_diameter_mm']),
       bowlDepthValue: firstPresent(pipe, ['bowl_depth_mm', 'bowlDepth', 'bowlDepthMm', 'chamber_depth_mm']),
+      countryOfOrigin: firstPresent(pipe, ['country_of_origin', 'countryOfOrigin']),
       includedInAi: firstPresent(pipe, ['included_in_ai', 'includedInAi']) ??
         (pipe?.ai_excluded != null ? !pipe.ai_excluded : null),
       collectibleOnly: firstPresent(pipe, ['collectible_only', 'collectibleOnly', 'ai_excluded']),
