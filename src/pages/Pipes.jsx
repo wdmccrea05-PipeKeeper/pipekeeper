@@ -120,6 +120,10 @@ export default function PipesPage() {
       invalidatePipeQueries(queryClient, user?.email);
       setShowForm(false);
       setEditingPipe(null);
+      toast.success(t('notifications.updated') || 'Pipe updated');
+    },
+    onError: (error) => {
+      toast.error(error.message || t('pipesPage.failedToAddPipe') || 'Failed to update pipe');
     },
   });
 

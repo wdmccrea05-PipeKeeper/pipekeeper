@@ -141,18 +141,26 @@ export default function PipeDetail() {
     let mounted = true;
 
     async function loadData() {
-      if (!pipeId) {
+      if (!pipeId || !user?.email) {
         setLoading(false);
         return;
       }
 
-      try {
-        const [pipeResults, blendsList] = await Promise.all([
-          scopedEntities.Pipe.filterForUser(user?.email, { id: pipeId }, '-updated_date', 1),
-          scopedEntities.TobaccoBlend.listForUser(user?.email, '-updated_date', 500).catch(() => []),
-        ]);
+      setLoading(true);
 
-        const pipeRecord = pipeResults?.[0] || null;
+      try {
+        // getForUser uses filter({ id, created_by }) — explicit and ownership-scoped
+        // fallback to direct .get() in case filter-by-id behaves unexpectedly
+        let pipeRecord = await scopedEntities.Pipe.getForUser(user.email, pipeId).catch(() => null);
+        if (!pipeRecord) {
+          // Fallback: direct primary key lookup, then verify ownership
+          const direct = await base44.entities.Pipe.get(pipeId).catch(() => null);
+          if (direct && direct.created_by === user.email) {
+            pipeRecord = direct;
+          }
+        }
+
+        const blendsList = await scopedEntities.TobaccoBlend.listForUser(user.email, '-updated_date', 500).catch(() => []);
 
         if (mounted) {
           setPipe(pipeRecord);
@@ -188,14 +196,13 @@ export default function PipeDetail() {
     if (!pipe) return;
     try {
       await base44.entities.Pipe.update(pipe.id, updates);
-      // Re-fetch fresh record from the same scoped path used on load
-      const results = await scopedEntities.Pipe.filterForUser(user?.email, { id: pipe.id }, '-updated_date', 1).catch(() => null);
-      const fresh = results?.[0];
-      if (fresh) {
-        setPipe(fresh);
-      } else {
-        setPipe((prev) => ({ ...prev, ...updates }));
+      // Re-fetch: try getForUser first, fallback to direct get
+      let fresh = await scopedEntities.Pipe.getForUser(user?.email, pipe.id).catch(() => null);
+      if (!fresh) {
+        const direct = await base44.entities.Pipe.get(pipe.id).catch(() => null);
+        if (direct && direct.created_by === user?.email) fresh = direct;
       }
+      setPipe(fresh || ((prev) => ({ ...prev, ...updates })));
       toast.success(t('common.saved') || 'Pipe updated');
     } catch (e) {
       console.error('[PipeDetail] update failed', e);
