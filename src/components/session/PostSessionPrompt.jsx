@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { CheckCircle, X } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 /**
  * PostSessionPrompt
@@ -21,32 +22,94 @@ const ITEM_TYPE_MAP = {
   pipe: "pipe",
 };
 
-function buildAcquisitionItem(item_type, itemData, category) {
+function buildAcquisitionItem(itemType, itemData, category, userEmail) {
+  const normalizedType = ITEM_TYPE_MAP[itemType] || itemType;
+
   const base = {
-    item_type: ITEM_TYPE_MAP[item_type] || item_type,
+    item_type: normalizedType,
     category,
     status: "active",
     is_manual: false,
+    priority: "medium",
+    created_by: userEmail || undefined,
   };
-  if (item_type === "blend") {
-    return { ...base, name: itemData.name || "Unknown Blend", brand: itemData.manufacturer || "", notes: [itemData.blend_type, itemData.notes].filter(Boolean).join(" · ") };
+
+  if (itemType === "blend") {
+    return {
+      ...base,
+      name: itemData?.name || "Unknown Blend",
+      brand: itemData?.manufacturer || "",
+      blend_name: itemData?.name || undefined,
+      notes: [itemData?.blend_type, itemData?.notes].filter(Boolean).join(" · "),
+    };
   }
-  if (item_type === "bottle") {
-    return { ...base, name: itemData.name || "Unknown Bottle", brand: itemData.distillery || "", notes: [itemData.type, itemData.notes].filter(Boolean).join(" · ") };
+
+  if (itemType === "bottle") {
+    return {
+      ...base,
+      name: itemData?.name || "Unknown Bottle",
+      brand: itemData?.distillery || "",
+      notes: [itemData?.type, itemData?.notes].filter(Boolean).join(" · "),
+    };
   }
-  // pipe
-  const pipeName = [itemData.maker, itemData.model].filter(Boolean).join(" ") || "Unknown Pipe";
-  return { ...base, name: pipeName, brand: itemData.maker || "", pipe_model: itemData.model || "", notes: [itemData.shape, itemData.notes].filter(Boolean).join(" · ") };
+
+  const pipeName =
+    [itemData?.maker, itemData?.model].filter(Boolean).join(" ") ||
+    itemData?.name ||
+    "Unknown Pipe";
+
+  return {
+    ...base,
+    name: pipeName,
+    brand: itemData?.maker || "",
+    pipe_model: itemData?.model || undefined,
+    notes: [itemData?.shape, itemData?.notes].filter(Boolean).join(" · "),
+  };
 }
 
 const CHOICES = [
-  { key: "wishlist", label: "Add to Wish", style: { background: "linear-gradient(135deg,rgba(180,140,75,0.28),rgba(160,120,55,0.18))", border: "1px solid rgba(180,140,75,0.35)", color: "#D4A574" } },
-  { key: "shopping_list", label: "Add to Shopping", style: { background: "linear-gradient(135deg,rgba(46,125,92,0.25),rgba(30,100,70,0.15))", border: "1px solid rgba(46,125,92,0.35)", color: "#4CAF82" } },
-  { key: "do_not_buy_again", label: "Not for Me", style: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#E0D8C8" } },
-  { key: "ignore", label: "Ignore", style: { background: "transparent", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(224,216,200,0.45)" } },
+  {
+    key: "wishlist",
+    label: "Add to Wish",
+    style: {
+      background: "linear-gradient(135deg,rgba(180,140,75,0.28),rgba(160,120,55,0.18))",
+      border: "1px solid rgba(180,140,75,0.35)",
+      color: "#D4A574",
+    },
+  },
+  {
+    key: "shopping_list",
+    label: "Add to Shopping",
+    style: {
+      background: "linear-gradient(135deg,rgba(46,125,92,0.25),rgba(30,100,70,0.15))",
+      border: "1px solid rgba(46,125,92,0.35)",
+      color: "#4CAF82",
+    },
+  },
+  {
+    key: "do_not_buy_again",
+    label: "Not for Me",
+    style: {
+      background: "rgba(255,255,255,0.04)",
+      border: "1px solid rgba(255,255,255,0.1)",
+      color: "#E0D8C8",
+    },
+  },
+  {
+    key: "ignore",
+    label: "Ignore",
+    style: {
+      background: "transparent",
+      border: "1px solid rgba(255,255,255,0.08)",
+      color: "rgba(224,216,200,0.45)",
+    },
+  },
 ];
 
 export default function PostSessionPrompt({ externalItems = [], onDone }) {
+  const { user } = useCurrentUser();
+  const userEmail = user?.email || null;
+
   const [decisions, setDecisions] = useState({});
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
@@ -56,17 +119,25 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
   const allDecided = externalItems.every((ei) => decisions[ei.label] !== undefined);
 
   const handleSave = async () => {
+    if (!userEmail) {
+      toast.error("Unable to identify the current user");
+      return;
+    }
+
     setSaving(true);
+
     for (const ei of externalItems) {
       const choice = decisions[ei.label];
       if (!choice || choice === "ignore") continue;
+
       try {
-        const acqItem = buildAcquisitionItem(ei.item_type, ei.itemData, choice);
+        const acqItem = buildAcquisitionItem(ei.item_type, ei.itemData, choice, userEmail);
         await base44.entities.AcquisitionItem.create(acqItem);
       } catch (e) {
         console.error("PostSessionPrompt: failed to create AcquisitionItem", e);
       }
     }
+
     setSaving(false);
     setDone(true);
     toast.success("Want list updated");
@@ -122,7 +193,10 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
         <div className="px-5 py-4 border-t border-[rgba(180,140,75,0.14)] flex gap-3">
           <button
             type="button"
-            onClick={() => { setDone(true); onDone?.(); }}
+            onClick={() => {
+              setDone(true);
+              onDone?.();
+            }}
             className="flex-1 h-9 rounded-lg text-sm text-[#E0D8C8]/50 border border-white/10"
           >
             Skip
@@ -130,7 +204,7 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
           <button
             type="button"
             onClick={handleSave}
-            disabled={!allDecided || saving}
+            disabled={!allDecided || saving || !userEmail}
             className="flex-1 h-9 rounded-lg text-sm font-semibold text-white disabled:opacity-40 transition-all"
             style={{ background: "linear-gradient(135deg,#a35c5c,#8f4e4e)" }}
           >
