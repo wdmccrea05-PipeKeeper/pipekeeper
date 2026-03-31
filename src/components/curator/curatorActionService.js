@@ -42,14 +42,6 @@ export async function runCuratorAction({
     ? FIND_SIMILAR_TIMEOUT_MS
     : BASE_ACTION_TIMEOUT_MS;
 
-  console.log("[Curator] runCuratorAction", {
-    actionType,
-    requestId,
-    timeoutMs,
-    anchorOverrides,
-    anchorCount: anchorList.length,
-  });
-
   try {
     Promise.resolve(
       onAudit?.({
@@ -77,7 +69,10 @@ export async function runCuratorAction({
       };
     }
 
-    const normalized = normalizer(raw, { actionId: actionType });
+    const normalized = normalizer(raw, {
+      actionId: actionType,
+      context,
+    });
 
     if (!normalized) {
       return {
@@ -114,8 +109,7 @@ export async function runCuratorAction({
       actionType,
       status: "success",
       summary:
-        normalized.summary ||
-        `${flatItems.length} recommendations found`,
+        normalized.summary || `${flatItems.length} recommendations found`,
       items: flatItems,
       error: null,
     };
@@ -123,13 +117,6 @@ export async function runCuratorAction({
     const isTimeout = String(error?.message || "")
       .toLowerCase()
       .includes("timed out");
-
-    console.error("[Curator] runCuratorAction failed", {
-      actionType,
-      requestId,
-      error,
-      anchorCount: anchorList.length,
-    });
 
     return {
       requestId,
