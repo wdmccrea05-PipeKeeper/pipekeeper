@@ -1,8 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useMeasurement } from '@/components/utils/measurementConversion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Pencil, Share2, Search, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import {
+  ArrowLeft,
+  Pencil,
+  Share2,
+  Search,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  Ruler,
+  CircleDollarSign,
+  Info,
+} from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
 import PipeSpecialization from '@/components/pipes/PipeSpecialization';
@@ -24,7 +44,10 @@ function DetailStat({ label, value, icon: Icon }) {
   return (
     <div
       className="rounded-2xl p-4"
-      style={{ background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(180,140,75,0.16)' }}
+      style={{
+        background: 'rgba(255,255,255,0.035)',
+        border: '1px solid rgba(180,140,75,0.16)',
+      }}
     >
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[rgba(180,140,75,0.12)] border border-[rgba(180,140,75,0.2)]">
@@ -43,7 +66,10 @@ function MetaRow({ label, value }) {
   return (
     <div
       className="rounded-xl p-4"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.12)' }}
+      style={{
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(180,140,75,0.12)',
+      }}
     >
       <p className="text-[11px] uppercase tracking-[0.14em] text-[#D8C7A6]/60">{label}</p>
       <p className="text-sm md:text-base font-medium text-[#F5F1E7] mt-1 break-words">{value}</p>
@@ -51,16 +77,43 @@ function MetaRow({ label, value }) {
   );
 }
 
-function SectionCard({ title, children }) {
+function SectionCard({ title, icon: Icon, children }) {
   return (
     <div
       className="rounded-2xl p-5"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}
+      style={{
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(180,140,75,0.14)',
+      }}
     >
-      <p className="text-sm font-semibold mb-4 text-[#F5F1E7]">{title}</p>
+      <div className="flex items-center gap-2 mb-4">
+        {Icon ? <Icon className="w-4 h-4 text-[#D4A574]" /> : null}
+        <p className="text-sm font-semibold text-[#F5F1E7]">{title}</p>
+      </div>
       {children}
     </div>
   );
+}
+
+function firstPresent(record, keys) {
+  for (const key of keys) {
+    const value = record?.[key];
+    if (value !== undefined && value !== null && value !== '') {
+      return value;
+    }
+  }
+  return null;
+}
+
+function showText(value) {
+  if (value === null || value === undefined || value === '') return '—';
+  return String(value);
+}
+
+function showBool(value) {
+  if (value === true) return 'Yes';
+  if (value === false) return 'No';
+  return '—';
 }
 
 export default function PipeDetail() {
@@ -81,7 +134,7 @@ export default function PipeDetail() {
   const [similarLoading, setSimilarLoading] = useState(false);
   const [similarResult, setSimilarResult] = useState(null);
   const [similarError, setSimilarError] = useState(null);
-  const [snapshotOpen, setSnapshotOpen] = useState(true);
+  const [detailCardOpen, setDetailCardOpen] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -95,7 +148,9 @@ export default function PipeDetail() {
       try {
         const [pipeRecord, blendsList] = await Promise.all([
           base44.entities.Pipe.get(pipeId),
-          base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-updated_date', 500).catch(() => []),
+          base44.entities.TobaccoBlend
+            .filter({ created_by: user?.email }, '-updated_date', 500)
+            .catch(() => []),
         ]);
 
         if (mounted) {
@@ -133,10 +188,10 @@ export default function PipeDetail() {
     try {
       await base44.entities.Pipe.update(pipe.id, updates);
       setPipe((prev) => ({ ...prev, ...updates }));
-      toast.success(t("common.saved") || "Pipe updated");
+      toast.success(t('common.saved') || 'Pipe updated');
     } catch (e) {
       console.error('[PipeDetail] update failed', e);
-      toast.error(t("errors.updateFailed") || "Failed to update pipe");
+      toast.error(t('errors.updateFailed') || 'Failed to update pipe');
     }
   };
 
@@ -145,16 +200,21 @@ export default function PipeDetail() {
     setSimilarLoading(true);
     setSimilarError(null);
     setSimilarResult(null);
+
     try {
       const allPipes = user?.email
-        ? await base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 200).catch(() => [])
+        ? await base44.entities.Pipe
+            .filter({ created_by: user.email }, '-updated_date', 200)
+            .catch(() => [])
         : [];
+
       const result = await runFindSimilar({
         recordType: 'pipe',
         anchor: pipe,
         context: { pipes: allPipes || [] },
         mode: 'detail',
       });
+
       setSimilarResult(result);
     } catch (e) {
       setSimilarError(e?.message || 'Failed to find similar pipes.');
@@ -163,12 +223,57 @@ export default function PipeDetail() {
     }
   }
 
+  const normalized = useMemo(() => {
+    if (!pipe) return null;
+
+    const lengthValue = firstPresent(pipe, ['length_mm', 'length']);
+    const weightValue = firstPresent(pipe, ['weight_grams', 'weight']);
+    const bowlHeightValue = firstPresent(pipe, ['bowl_height_mm', 'bowlHeight']);
+    const bowlWidthValue = firstPresent(pipe, ['bowl_width_mm', 'bowlWidth']);
+    const bowlDiameterValue = firstPresent(pipe, ['bowl_diameter_mm', 'bowlDiameter']);
+    const bowlDepthValue = firstPresent(pipe, ['bowl_depth_mm', 'bowlDepth']);
+
+    const sizeClass = firstPresent(pipe, ['sizeClass', 'size_class']);
+    const bowlStyle = firstPresent(pipe, ['bowlStyle', 'bowl_style']);
+    const shankShape = firstPresent(pipe, ['shankShape', 'shank_shape']);
+    const includedInAi = firstPresent(pipe, ['included_in_ai', 'includedInAi']);
+    const smokingCharacteristics = firstPresent(pipe, [
+      'usage_characteristics',
+      'smoking_characteristics',
+      'usageCharacteristics',
+      'smokingCharacteristics',
+    ]);
+
+    return {
+      ...pipe,
+      lengthValue,
+      weightValue,
+      bowlHeightValue,
+      bowlWidthValue,
+      bowlDiameterValue,
+      bowlDepthValue,
+      sizeClass,
+      bowlStyle,
+      shankShape,
+      includedInAi,
+      smokingCharacteristics,
+    };
+  }, [pipe]);
+
   if (loading) {
-    return <div className="p-6 text-[#F5F1E7]"><p>Loading pipe…</p></div>;
+    return (
+      <div className="p-6 text-[#F5F1E7]">
+        <p>Loading pipe…</p>
+      </div>
+    );
   }
 
-  if (!pipe) {
-    return <div className="p-6 text-[#F5F1E7]"><p>Unable to load record.</p></div>;
+  if (!pipe || !normalized) {
+    return (
+      <div className="p-6 text-[#F5F1E7]">
+        <p>Unable to load record.</p>
+      </div>
+    );
   }
 
   const mainPhoto = pipe.photos?.[0];
@@ -178,16 +283,9 @@ export default function PipeDetail() {
     return Number.isFinite(num) && value !== '' && value != null ? formatCurrency(num) : '—';
   };
 
-  const showText = (value) => {
-    if (value === null || value === undefined || value === '') return '—';
-    return String(value);
-  };
-
-  const showBool = (value) => {
-    if (value === true) return 'Yes';
-    if (value === false) return 'No';
-    return '—';
-  };
+  const conditionSummary = normalized.condition
+    ? String(normalized.condition).split('-').pop()?.trim() || String(normalized.condition)
+    : '—';
 
   return (
     <div className="p-6 md:p-8 space-y-6 text-[#F5F1E7]">
@@ -196,39 +294,57 @@ export default function PipeDetail() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
+
         <div className="flex gap-2">
           <Button
             onClick={handleFindSimilar}
-            style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}
+            style={{
+              background: 'rgba(180,140,75,0.15)',
+              border: '1px solid rgba(180,140,75,0.3)',
+              color: '#D4A574',
+            }}
           >
             <Search className="w-4 h-4 mr-2" />
             Find Similar
           </Button>
+
           <Button
             onClick={() => setShowShareModal(true)}
-            style={{ background: 'rgba(180, 140, 75, 0.2)', border: '1px solid rgba(180, 140, 75, 0.35)', color: '#F5F1E7' }}
+            style={{
+              background: 'rgba(180, 140, 75, 0.2)',
+              border: '1px solid rgba(180, 140, 75, 0.35)',
+              color: '#F5F1E7',
+            }}
           >
             <Share2 className="w-4 h-4 mr-2" />
             Share
           </Button>
+
           <Button
             onClick={() => navigate(`/Pipes?edit=${encodeURIComponent(pipe.id)}`)}
-            style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))', color: '#fff' }}
+            style={{
+              background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))',
+              color: '#fff',
+            }}
           >
             <Pencil className="w-4 h-4 mr-2" />
             Edit
           </Button>
+
           <Button
             onClick={() => setShowDeleteConfirm(true)}
             variant="outline"
-            style={{ borderColor: 'rgba(180,80,80,0.4)', color: 'rgba(220,120,120,0.9)' }}
+            style={{
+              borderColor: 'rgba(180,80,80,0.4)',
+              color: 'rgba(220,120,120,0.9)',
+            }}
           >
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
       </div>
 
-      {/* Snapshot card — now collapsible */}
+      {/* Snapshot card stays visible */}
       <div
         className="rounded-3xl overflow-hidden"
         style={{
@@ -237,112 +353,126 @@ export default function PipeDetail() {
           boxShadow: '0 14px 40px rgba(0,0,0,0.4)',
         }}
       >
-        <button
-          type="button"
-          onClick={() => setSnapshotOpen((prev) => !prev)}
-          className="w-full flex items-center justify-between px-5 md:px-6 py-4 border-b border-[rgba(180,140,75,0.15)] text-left"
-        >
-          <div>
-            <p className="text-lg md:text-xl font-semibold text-[#F5F1E7]">Pipe Snapshot</p>
-            <p className="text-sm text-[#D8C7A6]/70 mt-1">
-              Quick overview of the pipe record
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-[#D4A574]">
-            <span className="text-xs uppercase tracking-[0.14em]">
-              {snapshotOpen ? 'Hide' : 'Show'}
-            </span>
-            {snapshotOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </div>
-        </button>
+        <div className="px-6 py-5 border-b border-[rgba(180,140,75,0.15)]">
+          <p className="text-2xl font-semibold text-[#F5F1E7]">Pipe Snapshot</p>
+          <p className="text-sm text-[#D8C7A6]/70 mt-1">Quick overview of the pipe record</p>
+        </div>
 
-        {snapshotOpen && (
-          <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr]">
-            <div className="p-6 flex flex-col items-center gap-4 border-r border-[rgba(180,140,75,0.12)]">
-              {mainPhoto ? (
-                <img
-                  src={mainPhoto}
-                  alt={pipe.name}
-                  className="max-h-[440px] w-full object-contain"
-                  style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.45))' }}
+        <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr]">
+          <div className="p-6 flex flex-col items-center gap-4 border-r border-[rgba(180,140,75,0.12)]">
+            {mainPhoto ? (
+              <img
+                src={mainPhoto}
+                alt={pipe.name}
+                className="max-h-[440px] w-full object-contain"
+                style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.45))' }}
+              />
+            ) : (
+              <div className="w-full h-[280px] rounded-2xl flex flex-col items-center justify-center bg-[rgba(255,255,255,0.03)] text-[#D8C7A6]/55 border border-[rgba(180,140,75,0.14)]">
+                <PipeShapeIcon
+                  shape={pipe.shape}
+                  className="w-16 h-16"
+                  style={{ color: 'rgba(180,140,75,0.3)' }}
                 />
-              ) : (
-                <div className="w-full h-[280px] rounded-2xl flex flex-col items-center justify-center bg-[rgba(255,255,255,0.03)] text-[#D8C7A6]/55 border border-[rgba(180,140,75,0.14)]">
-                  <PipeShapeIcon shape={pipe.shape} className="w-16 h-16" style={{ color: 'rgba(180,140,75,0.3)' }} />
-                  <p className="text-xs uppercase tracking-wider mt-2">{pipe.shape || 'No Photo'}</p>
-                </div>
-              )}
+                <p className="text-xs uppercase tracking-wider mt-2">{pipe.shape || 'No Photo'}</p>
+              </div>
+            )}
 
-              <InlinePhotoEditor
-                photos={pipe.photos || []}
-                maxPhotos={5}
-                label="Photos"
-                onUpdate={async (updatedPhotos) => {
-                  await base44.entities.Pipe.update(pipe.id, { photos: updatedPhotos });
-                  setPipe((prev) => ({ ...prev, photos: updatedPhotos }));
-                }}
+            <InlinePhotoEditor
+              photos={pipe.photos || []}
+              maxPhotos={5}
+              label="Photos"
+              onUpdate={async (updatedPhotos) => {
+                await base44.entities.Pipe.update(pipe.id, { photos: updatedPhotos });
+                setPipe((prev) => ({ ...prev, photos: updatedPhotos }));
+              }}
+            />
+          </div>
+
+          <div className="p-6 md:p-8 space-y-6">
+            <div>
+              <h1
+                className="text-3xl md:text-5xl font-bold leading-tight break-words"
+                style={{ fontFamily: "'Georgia', serif" }}
+              >
+                {pipe.name}
+              </h1>
+              <p className="text-base md:text-lg text-[#D8C7A6]/84 mt-3 break-words">
+                {[pipe.maker, pipe.country_of_origin].filter(Boolean).join(' • ')}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <DetailStat
+                label="Shape"
+                value={t(`shapes.${pipe.shape}`, pipe.shape) || '—'}
+                icon={() => <PipeShapeIcon shape={pipe.shape} className="w-4 h-4" />}
+              />
+              <DetailStat
+                label="Material"
+                value={normalized.bowl_material || '—'}
+                icon={() => <span className="text-[#B48C4B]">●</span>}
+              />
+              <DetailStat
+                label="Finish"
+                value={normalized.finish || '—'}
+                icon={() => <span className="text-[#B48C4B]">●</span>}
+              />
+              <DetailStat
+                label="Estimated Value"
+                value={money(normalized.estimated_value)}
+                icon={() => <CircleDollarSign className="w-4 h-4 text-[#B48C4B]" />}
               />
             </div>
 
-            <div className="p-6 md:p-8 space-y-6">
-              <div>
-                <h1
-                  className="text-3xl md:text-5xl font-bold leading-tight break-words"
-                  style={{ fontFamily: "'Georgia', serif" }}
-                >
-                  {pipe.name}
-                </h1>
-                <p className="text-base md:text-lg text-[#D8C7A6]/84 mt-3 break-words">
-                  {[pipe.maker, pipe.country_of_origin].filter(Boolean).join(' • ')}
-                </p>
+            <div
+              className="rounded-2xl p-5"
+              style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(180,140,75,0.14)',
+              }}
+            >
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Size</p>
+                  <p className="text-2xl font-semibold mt-2">{normalized.sizeClass || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Length</p>
+                  <p className="text-2xl font-semibold mt-2">
+                    {normalized.lengthValue != null ? formatLength(normalized.lengthValue) : '—'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Weight</p>
+                  <p className="text-2xl font-semibold mt-2">
+                    {normalized.weightValue != null ? formatWeight(normalized.weightValue) : '—'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Condition</p>
+                  <p className="text-2xl font-semibold mt-2">{conditionSummary}</p>
+                </div>
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <DetailStat label="Shape" value={t(`shapes.${pipe.shape}`, pipe.shape) || '—'} icon={() => <PipeShapeIcon shape={pipe.shape} className="w-4 h-4" />} />
-                <DetailStat label="Material" value={pipe.bowl_material || '—'} icon={() => <span className="text-[#B48C4B]">●</span>} />
-                <DetailStat label="Finish" value={pipe.finish || '—'} icon={() => <span className="text-[#B48C4B]">●</span>} />
-                <DetailStat label="Estimated Value" value={money(pipe.estimated_value)} icon={() => <span className="text-[#B48C4B]">$</span>} />
-              </div>
-
+            {pipe.notes && (
               <div
                 className="rounded-2xl p-5"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(180,140,75,0.14)',
+                }}
               >
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Size</p>
-                    <p className="text-2xl font-semibold mt-2">{pipe.sizeClass || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Length</p>
-                    <p className="text-2xl font-semibold mt-2">{formatLength(pipe.length_mm) || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Weight</p>
-                    <p className="text-2xl font-semibold mt-2">{formatWeight(pipe.weight_grams) || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Condition</p>
-                    <p className="text-2xl font-semibold mt-2">{pipe.condition ? pipe.condition.split('-').pop() : '—'}</p>
-                  </div>
-                </div>
+                <p className="text-sm font-semibold mb-2">Notes</p>
+                <p className="text-[#E0D8C8]/80 whitespace-pre-wrap">{pipe.notes}</p>
               </div>
-
-              {pipe.notes && (
-                <div
-                  className="rounded-2xl p-5"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}
-                >
-                  <p className="text-sm font-semibold mb-2">Notes</p>
-                  <p className="text-[#E0D8C8]/80 whitespace-pre-wrap">{pipe.notes}</p>
-                </div>
-              )}
-            </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Functional tabs + details tab */}
+      {/* Functional/details card is the collapsible one */}
       <div
         className="rounded-2xl overflow-hidden"
         style={{
@@ -351,101 +481,206 @@ export default function PipeDetail() {
           boxShadow: '0 14px 40px rgba(0,0,0,0.4)',
         }}
       >
-        <Tabs defaultValue="condition" className="w-full">
-          <div className="border-b border-[rgba(180,140,75,0.15)] px-2 pt-2 overflow-x-auto">
-            <TabsList className="bg-transparent gap-0.5 flex-nowrap min-w-max">
-              <TabsTrigger value="condition" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">Condition</TabsTrigger>
-              <TabsTrigger value="rotation" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">Rotation</TabsTrigger>
-              <TabsTrigger value="specialization" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">Specialization</TabsTrigger>
-              <TabsTrigger value="maintenance" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">Maintenance</TabsTrigger>
-              <TabsTrigger value="details" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">Details</TabsTrigger>
-            </TabsList>
+        <button
+          type="button"
+          onClick={() => setDetailCardOpen((prev) => !prev)}
+          className="w-full flex items-center justify-between px-5 py-4 border-b border-[rgba(180,140,75,0.15)] text-left"
+        >
+          <div>
+            <p className="text-lg font-semibold text-[#F5F1E7]">Pipe Functions & Details</p>
+            <p className="text-sm text-[#D8C7A6]/70 mt-1">
+              Condition, rotation, specialization, maintenance, and full record details
+            </p>
           </div>
+          <div className="flex items-center gap-2 text-[#D4A574]">
+            <span className="text-xs uppercase tracking-[0.14em]">
+              {detailCardOpen ? 'Hide' : 'Show'}
+            </span>
+            {detailCardOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </div>
+        </button>
 
-          <TabsContent value="condition" className="p-4 m-0">
-            <PipeConditionTracker pipe={pipe} onUpdate={handlePipeUpdate} />
-          </TabsContent>
-
-          <TabsContent value="rotation" className="p-4 m-0">
-            <RotationPlanner pipe={pipe} blends={blends} />
-          </TabsContent>
-
-          <TabsContent value="specialization" className="p-4 m-0">
-            <PipeSpecialization pipe={pipe} blends={blends} onUpdate={handlePipeUpdate} isPaidUser={isPaidUser} />
-          </TabsContent>
-
-          <TabsContent value="maintenance" className="p-4 m-0">
-            <MaintenanceLog pipeId={pipe.id} pipeName={pipe.name} />
-          </TabsContent>
-
-          <TabsContent value="details" className="p-4 md:p-5 m-0">
-            <div className="space-y-4">
-              <SectionCard title="Pipe Geometry">
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                  <MetaRow label="Shape" value={showText(pipe.shape)} />
-                  <MetaRow label="Bowl Style" value={showText(pipe.bowlStyle || pipe.bowl_style)} />
-                  <MetaRow label="Shank Shape" value={showText(pipe.shankShape || pipe.shank_shape)} />
-                  <MetaRow label="Bend" value={showText(pipe.bend)} />
-                  <MetaRow label="Size Class" value={showText(pipe.sizeClass)} />
-                  <MetaRow label="Chamber Volume" value={showText(pipe.chamber_volume)} />
-                </div>
-              </SectionCard>
-
-              <SectionCard title="Physical Characteristics">
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                  <MetaRow label="Bowl Material" value={showText(pipe.bowl_material)} />
-                  <MetaRow label="Stem Material" value={showText(pipe.stem_material)} />
-                  <MetaRow label="Finish" value={showText(pipe.finish)} />
-                  <MetaRow label="Filter Type" value={showText(pipe.filter_type)} />
-                  <MetaRow label="Country of Origin" value={showText(pipe.country_of_origin)} />
-                  <MetaRow label="Maker" value={showText(pipe.maker)} />
-                </div>
-              </SectionCard>
-
-              <SectionCard title="Measurements">
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                  <MetaRow label="Length" value={formatLength(pipe.length_mm) || '—'} />
-                  <MetaRow label="Weight" value={formatWeight(pipe.weight_grams) || '—'} />
-                  <MetaRow label="Bowl Height" value={formatLength(pipe.bowl_height_mm) || '—'} />
-                  <MetaRow label="Bowl Width" value={formatLength(pipe.bowl_width_mm) || '—'} />
-                  <MetaRow label="Bowl Diameter" value={formatLength(pipe.bowl_diameter_mm) || '—'} />
-                  <MetaRow label="Bowl Depth" value={formatLength(pipe.bowl_depth_mm) || '—'} />
-                </div>
-              </SectionCard>
-
-              <SectionCard title="Value & Notes">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                  <MetaRow label="Purchase Price" value={money(pipe.purchase_price)} />
-                  <MetaRow label="Estimated Value" value={money(pipe.estimated_value)} />
-                  <MetaRow label="Favorite" value={showBool(pipe.is_favorite)} />
-                  <MetaRow label="Collectible Only" value={showBool(pipe.collectible_only)} />
-                  <MetaRow label="Included in AI" value={showBool(pipe.included_in_ai)} />
-                  <MetaRow label="Condition" value={showText(pipe.condition)} />
-                </div>
-
-                <div className="space-y-3">
-                  <div
-                    className="rounded-xl p-4"
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.12)' }}
-                  >
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-[#D8C7A6]/60 mb-2">Usage Characteristics</p>
-                    <p className="text-sm text-[#F5F1E7] whitespace-pre-wrap">
-                      {showText(pipe.usage_characteristics || pipe.smoking_characteristics)}
-                    </p>
-                  </div>
-
-                  <div
-                    className="rounded-xl p-4"
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.12)' }}
-                  >
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-[#D8C7A6]/60 mb-2">Notes</p>
-                    <p className="text-sm text-[#F5F1E7] whitespace-pre-wrap">{showText(pipe.notes)}</p>
-                  </div>
-                </div>
-              </SectionCard>
+        {detailCardOpen && (
+          <Tabs defaultValue="condition" className="w-full">
+            <div className="border-b border-[rgba(180,140,75,0.15)] px-2 pt-2 overflow-x-auto">
+              <TabsList className="bg-transparent gap-0.5 flex-nowrap min-w-max">
+                <TabsTrigger
+                  value="condition"
+                  className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3"
+                >
+                  Condition
+                </TabsTrigger>
+                <TabsTrigger
+                  value="rotation"
+                  className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3"
+                >
+                  Rotation
+                </TabsTrigger>
+                <TabsTrigger
+                  value="specialization"
+                  className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3"
+                >
+                  Specialization
+                </TabsTrigger>
+                <TabsTrigger
+                  value="maintenance"
+                  className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3"
+                >
+                  Maintenance
+                </TabsTrigger>
+                <TabsTrigger
+                  value="details"
+                  className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3"
+                >
+                  Details
+                </TabsTrigger>
+              </TabsList>
             </div>
-          </TabsContent>
-        </Tabs>
+
+            <TabsContent value="condition" className="p-4 m-0">
+              <PipeConditionTracker pipe={pipe} onUpdate={handlePipeUpdate} />
+            </TabsContent>
+
+            <TabsContent value="rotation" className="p-4 m-0">
+              <RotationPlanner pipe={pipe} blends={blends} />
+            </TabsContent>
+
+            <TabsContent value="specialization" className="p-4 m-0">
+              <PipeSpecialization
+                pipe={pipe}
+                blends={blends}
+                onUpdate={handlePipeUpdate}
+                isPaidUser={isPaidUser}
+              />
+            </TabsContent>
+
+            <TabsContent value="maintenance" className="p-4 m-0">
+              <MaintenanceLog pipeId={pipe.id} pipeName={pipe.name} />
+            </TabsContent>
+
+            <TabsContent value="details" className="p-4 md:p-5 m-0">
+              <div className="space-y-4">
+                <SectionCard title="Pipe Geometry" icon={Info}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                    <MetaRow label="Shape" value={showText(normalized.shape)} />
+                    <MetaRow label="Bowl Style" value={showText(normalized.bowlStyle)} />
+                    <MetaRow label="Shank Shape" value={showText(normalized.shankShape)} />
+                    <MetaRow label="Bend" value={showText(normalized.bend)} />
+                    <MetaRow label="Size Class" value={showText(normalized.sizeClass)} />
+                    <MetaRow label="Chamber Volume" value={showText(normalized.chamber_volume)} />
+                  </div>
+                </SectionCard>
+
+                <SectionCard title="Physical Characteristics" icon={Info}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                    <MetaRow label="Bowl Material" value={showText(normalized.bowl_material)} />
+                    <MetaRow label="Stem Material" value={showText(normalized.stem_material)} />
+                    <MetaRow label="Finish" value={showText(normalized.finish)} />
+                    <MetaRow label="Filter Type" value={showText(normalized.filter_type)} />
+                    <MetaRow label="Country of Origin" value={showText(normalized.country_of_origin)} />
+                    <MetaRow label="Maker" value={showText(normalized.maker)} />
+                  </div>
+                </SectionCard>
+
+                <SectionCard title="Measurements" icon={Ruler}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                    <MetaRow
+                      label="Length"
+                      value={
+                        normalized.lengthValue != null
+                          ? formatLength(normalized.lengthValue)
+                          : '—'
+                      }
+                    />
+                    <MetaRow
+                      label="Weight"
+                      value={
+                        normalized.weightValue != null
+                          ? formatWeight(normalized.weightValue)
+                          : '—'
+                      }
+                    />
+                    <MetaRow
+                      label="Bowl Height"
+                      value={
+                        normalized.bowlHeightValue != null
+                          ? formatLength(normalized.bowlHeightValue)
+                          : '—'
+                      }
+                    />
+                    <MetaRow
+                      label="Bowl Width"
+                      value={
+                        normalized.bowlWidthValue != null
+                          ? formatLength(normalized.bowlWidthValue)
+                          : '—'
+                      }
+                    />
+                    <MetaRow
+                      label="Bowl Diameter"
+                      value={
+                        normalized.bowlDiameterValue != null
+                          ? formatLength(normalized.bowlDiameterValue)
+                          : '—'
+                      }
+                    />
+                    <MetaRow
+                      label="Bowl Depth"
+                      value={
+                        normalized.bowlDepthValue != null
+                          ? formatLength(normalized.bowlDepthValue)
+                          : '—'
+                      }
+                    />
+                  </div>
+                </SectionCard>
+
+                <SectionCard title="Value & Notes" icon={CircleDollarSign}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                    <MetaRow label="Purchase Price" value={money(normalized.purchase_price)} />
+                    <MetaRow label="Estimated Value" value={money(normalized.estimated_value)} />
+                    <MetaRow label="Favorite" value={showBool(normalized.is_favorite)} />
+                    <MetaRow label="Collectible Only" value={showBool(normalized.collectible_only)} />
+                    <MetaRow label="Included in AI" value={showBool(normalized.includedInAi)} />
+                    <MetaRow label="Condition" value={showText(normalized.condition)} />
+                  </div>
+
+                  <div className="space-y-3">
+                    <div
+                      className="rounded-xl p-4"
+                      style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(180,140,75,0.12)',
+                      }}
+                    >
+                      <p className="text-[11px] uppercase tracking-[0.14em] text-[#D8C7A6]/60 mb-2">
+                        Usage Characteristics
+                      </p>
+                      <p className="text-sm text-[#F5F1E7] whitespace-pre-wrap">
+                        {showText(normalized.smokingCharacteristics)}
+                      </p>
+                    </div>
+
+                    <div
+                      className="rounded-xl p-4"
+                      style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(180,140,75,0.12)',
+                      }}
+                    >
+                      <p className="text-[11px] uppercase tracking-[0.14em] text-[#D8C7A6]/60 mb-2">
+                        Notes
+                      </p>
+                      <p className="text-sm text-[#F5F1E7] whitespace-pre-wrap">
+                        {showText(normalized.notes)}
+                      </p>
+                    </div>
+                  </div>
+                </SectionCard>
+              </div>
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
 
       <ShareRecordModal
@@ -465,7 +700,11 @@ export default function PipeDetail() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={deleting} style={{ background: 'rgba(180,60,60,0.9)', color: '#fff' }}>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              style={{ background: 'rgba(180,60,60,0.9)', color: '#fff' }}
+            >
               {deleting ? 'Deleting…' : 'Yes, delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
