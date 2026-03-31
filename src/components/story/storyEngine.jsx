@@ -1,6 +1,8 @@
 /**
- * Collector Story Engine
- * Generates narrative cards from collection data
+ * @deprecated — storyEngine is retired.
+ * The canonical story path is CollectionStoryCard (backend-driven via generateCollectionStory).
+ * This file is kept only to avoid breaking any residual imports during the transition.
+ * Do not add new logic here.
  */
 
 import { differenceInDays } from 'date-fns';

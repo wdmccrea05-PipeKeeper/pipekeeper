@@ -20,8 +20,8 @@
  * @returns {object}
  */
 export function normalizeSmokingLog(log) {
-  const title = log.pipe_name || log.pipe_id || 'Pipe Session';
-  const subtitle = log.blend_name || log.blend_id || '';
+  const title = log.blend_name || log.pipe_name || 'Pipe Session';
+  const subtitle = `${log.pipe_name || 'Pipe session'}${log.date ? ' · ' + formatActivityDate(log.date) : ''}`;
   return {
     id: log.id || `smoking_${log.pipe_id}_${log.date}`,
     type: 'session',
@@ -30,6 +30,7 @@ export function normalizeSmokingLog(log) {
     subtitle,
     recordId: log.pipe_id || null,
     blendId: log.blend_id || null,
+    destination: log.pipe_id ? `/PipeDetail?id=${encodeURIComponent(log.pipe_id)}` : '/PipeKeeper',
   };
 }
 
@@ -40,8 +41,8 @@ export function normalizeSmokingLog(log) {
  */
 export function normalizeTastingLog(log) {
   const title = log.bottle_name || log.bottle_id || 'Whiskey Tasting';
-  const rating = log.rating ? `Rated ${log.rating}/5` : '';
-  const subtitle = rating || log.notes?.slice(0, 60) || '';
+  const dateStr = log.tasting_date || log.date;
+  const subtitle = `Whiskey tasting${dateStr ? ' · ' + formatActivityDate(dateStr) : ''}`;
   return {
     id: log.id || `tasting_${log.bottle_id}_${log.tasting_date || log.date}`,
     type: 'tasting',
@@ -50,7 +51,22 @@ export function normalizeTastingLog(log) {
     subtitle,
     recordId: log.bottle_id || null,
     blendId: null,
+    destination: log.bottle_id ? `/BottleDetail?id=${encodeURIComponent(log.bottle_id)}` : '/Tastings',
   };
+}
+
+/**
+ * Format a date string to a short locale date for display.
+ * @param {string} dateString
+ * @returns {string}
+ */
+function formatActivityDate(dateString) {
+  if (!dateString) return '';
+  try {
+    return new Date(dateString).toLocaleDateString();
+  } catch {
+    return '';
+  }
 }
 
 /**

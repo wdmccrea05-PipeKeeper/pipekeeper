@@ -75,6 +75,10 @@ export default function CuratorActionPanel({
     );
   }
 
+  // Prefer grouped rendering; fall back to flat items for backward compatibility
+  const groups = Array.isArray(actionRun.groups) && actionRun.groups.length > 0 ? actionRun.groups : null;
+  const flatItems = Array.isArray(actionRun.items) ? actionRun.items : [];
+
   return (
     <div className="space-y-3 mb-4">
       <div className="flex items-center justify-between gap-3">
@@ -90,16 +94,41 @@ export default function CuratorActionPanel({
         ) : null}
       </div>
 
-      {actionRun.items.map((item) => (
-        <CuratorActionResultCard
-          key={item.id}
-          item={item}
-          state={itemStates[item.id] || { status: "idle", error: null }}
-          onAccept={() => onAccept(item)}
-          onReject={() => onReject(item)}
-          onAskCurator={() => onAskCurator(item)}
-        />
-      ))}
+      {groups ? (
+        groups.map((group) => (
+          <div key={group.groupKey || group.groupTitle} className="space-y-2">
+            {group.groupTitle && (
+              <div className="text-xs font-semibold uppercase tracking-wider text-amber-500/70 px-1">
+                {group.groupTitle}
+              </div>
+            )}
+            {group.description && (
+              <div className="text-xs text-amber-50/55 px-1 -mt-1 mb-1">{group.description}</div>
+            )}
+            {(group.items || []).map((item) => (
+              <CuratorActionResultCard
+                key={item.id}
+                item={item}
+                state={itemStates[item.id] || { status: "idle", error: null }}
+                onAccept={() => onAccept(item)}
+                onReject={() => onReject(item)}
+                onAskCurator={() => onAskCurator(item)}
+              />
+            ))}
+          </div>
+        ))
+      ) : (
+        flatItems.map((item) => (
+          <CuratorActionResultCard
+            key={item.id}
+            item={item}
+            state={itemStates[item.id] || { status: "idle", error: null }}
+            onAccept={() => onAccept(item)}
+            onReject={() => onReject(item)}
+            onAskCurator={() => onAskCurator(item)}
+          />
+        ))
+      )}
     </div>
   );
 }

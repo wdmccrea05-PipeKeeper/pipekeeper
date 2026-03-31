@@ -24,6 +24,7 @@ import { Heart } from 'lucide-react';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import { getPipeValue, getBottleValue } from '@/components/keeper-core/value/valueAggregation';
 import { calculateTobaccoCollectionValue } from '@/components/utils/tobaccoQuantityHelpers';
+import { buildUnifiedActivityFeed } from '@/components/utils/activityNormalizer';
 
 const MODULE_META = {
   pipekeeper: {
@@ -213,37 +214,6 @@ function QuickAction({ icon: Icon, label, accent, onClick }) {
   );
 }
 
-function getRecentLabel(dateString) {
-  if (!dateString) return '';
-  const dt = new Date(dateString);
-  if (Number.isNaN(dt.getTime())) return '';
-  return dt.toLocaleDateString();
-}
-
-function normalizeRecentActivity(smokeLogs = [], tastings = []) {
-  const smokingActivity = (smokeLogs || []).map((log) => ({
-    id: `smoke-${log.id}`,
-    type: 'pipe',
-    sortDate: new Date(log.date || log.created_date || log.created_at || 0).getTime() || 0,
-    title: log.blend_name || log.pipe_name || 'Recent session',
-    subtitle: `${log.pipe_name || 'Pipe session'}${log.date ? ` · ${getRecentLabel(log.date)}` : ''}`,
-    destination: log.pipe_id ? `/PipeDetail?id=${encodeURIComponent(log.pipe_id)}` : '/PipeKeeper',
-  }));
-
-  const whiskeyActivity = (tastings || []).map((log) => ({
-    id: `tasting-${log.id}`,
-    type: 'whiskey',
-    sortDate: new Date(log.tasting_date || log.date || log.created_date || log.created_at || 0).getTime() || 0,
-    title: log.bottle_name || 'Recent tasting',
-    subtitle: `Whiskey tasting${log.tasting_date || log.date ? ` · ${getRecentLabel(log.tasting_date || log.date)}` : ''}`,
-    destination: log.bottle_id ? `/BottleDetail?id=${encodeURIComponent(log.bottle_id)}` : '/Tastings',
-  }));
-
-  return [...smokingActivity, ...whiskeyActivity]
-    .sort((a, b) => b.sortDate - a.sortDate)
-    .slice(0, 5);
-}
-
 export default function CollectionHub() {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
@@ -326,7 +296,7 @@ export default function CollectionHub() {
       ? [...bottles].sort((a, b) => Number(getBottleValue(b) || 0) - Number(getBottleValue(a) || 0))[0] || null
       : null;
 
-    const recentActivity = normalizeRecentActivity(smokeLogs, tastings);
+    const recentActivity = buildUnifiedActivityFeed(smokeLogs, tastings, { limit: 5 });
 
     return {
       totalValue,
@@ -537,11 +507,11 @@ export default function CollectionHub() {
                 className="w-full rounded-[22px] p-5 flex items-center gap-4 text-left"
                 style={{
                   background: 'linear-gradient(145deg, rgba(40,28,18,0.92), rgba(24,17,11,0.98))',
-                  border: `1px solid ${activity.type === 'whiskey' ? 'rgba(182,101,101,0.24)' : 'rgba(180,140,75,0.18)'}`,
+                  border: `1px solid ${activity.type === 'tasting' ? 'rgba(182,101,101,0.24)' : 'rgba(180,140,75,0.18)'}`,
                 }}
               >
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: activity.type === 'whiskey' ? 'rgba(182,101,101,0.14)' : 'rgba(180,140,75,0.14)', border: activity.type === 'whiskey' ? '1px solid rgba(182,101,101,0.24)' : '1px solid rgba(180,140,75,0.24)' }}>
-                  {activity.type === 'whiskey' ? (
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: activity.type === 'tasting' ? 'rgba(182,101,101,0.14)' : 'rgba(180,140,75,0.14)', border: activity.type === 'tasting' ? '1px solid rgba(182,101,101,0.24)' : '1px solid rgba(180,140,75,0.24)' }}>
+                  {activity.type === 'tasting' ? (
                     <WhiskeyKeeperIcon className="w-5 h-5" style={{ color: '#D47C7C' }} />
                   ) : (
                     <Activity className="w-5 h-5" style={{ color: '#D4A574' }} />
@@ -551,7 +521,7 @@ export default function CollectionHub() {
                   <p className="text-base font-bold break-words line-clamp-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{activity.title}</p>
                   <p className="text-sm mt-1 break-words line-clamp-1" style={{ color: 'rgba(224,216,200,0.7)' }}>{activity.subtitle}</p>
                 </div>
-                <span className="text-sm shrink-0" style={{ color: activity.type === 'whiskey' ? '#D47C7C' : '#D4A574' }}>View</span>
+                <span className="text-sm shrink-0" style={{ color: activity.type === 'tasting' ? '#D47C7C' : '#D4A574' }}>View</span>
               </button>
             ))}
           </div>

@@ -1,5 +1,8 @@
 /**
- * Hook for generating and caching collector stories
+ * @deprecated — useCollectorStory and storyEngine are retired.
+ * The canonical story path is CollectionStoryCard (backend-driven via generateCollectionStory).
+ * StoryButton now uses that path directly.
+ * This file is kept only to avoid breaking any residual imports during the transition.
  */
 
 import { useQuery } from '@tanstack/react-query';
