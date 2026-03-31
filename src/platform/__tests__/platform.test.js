@@ -87,8 +87,8 @@ describe("moduleTypes — constants", () => {
     expect(ACTIVE_MODULES).toContain("tobacco");
   });
 
-  test("ACTIVE_MODULES does not contain future modules", () => {
-    expect(ACTIVE_MODULES).not.toContain("whiskey");
+  test("ACTIVE_MODULES contains launched platform modules and excludes blocked future modules", () => {
+    expect(ACTIVE_MODULES).toContain("whiskey");
     expect(ACTIVE_MODULES).not.toContain("cigar");
     expect(ACTIVE_MODULES).not.toContain("coffee");
   });
@@ -500,8 +500,13 @@ describe("platform/entitlements — isModuleEnabled", () => {
     expect(isModuleEnabled(PLATFORM_MODULES.TOBACCO)).toBe(true);
   });
 
-  test("returns false for whiskey (not yet launched)", () => {
+  test("returns false for whiskey by default until explicitly enabled in entitlements", () => {
     expect(isModuleEnabled(PLATFORM_MODULES.WHISKEY)).toBe(false);
+  });
+
+  test("returns true for whiskey when entitlement data enables it", () => {
+    expect(getEnabledModules({ whiskeykeeper_enabled: true })).toContain(PLATFORM_MODULES.WHISKEY);
+    expect(buildModuleEntitlements({ whiskeykeeper_enabled: true })[PLATFORM_MODULES.WHISKEY].enabled).toBe(true);
   });
 
   test("accepts custom enabled modules list", () => {
@@ -552,8 +557,8 @@ describe("moduleAdapters — getAdapter", () => {
     expect(adapter.moduleType).toBe("tobacco");
   });
 
-  test("returns null for unregistered module type", () => {
-    expect(getAdapter("whiskey")).toBeNull();
+  test("returns whiskey adapter for registered whiskey module type", () => {
+    expect(getAdapter("whiskey")).not.toBeNull();
   });
 });
 
@@ -566,8 +571,8 @@ describe("moduleAdapters — normalizeItemForPlatform", () => {
   });
 
   test("returns raw item when no adapter is registered", () => {
-    const raw = { id: "w1", name: "Whiskey" };
-    expect(normalizeItemForPlatform(raw, "whiskey")).toBe(raw);
+    const raw = { id: "x1", name: "Unknown" };
+    expect(normalizeItemForPlatform(raw, "unknown")).toBe(raw);
   });
 });
 
