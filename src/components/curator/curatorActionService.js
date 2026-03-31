@@ -114,7 +114,8 @@ export async function runCuratorAction({
       actionType,
       status: "success",
       summary:
-        normalized.summary || `${flatItems.length} recommendations found`,
+        normalized.summary ||
+        `${flatItems.length} recommendations found`,
       items: flatItems,
       error: null,
     };
