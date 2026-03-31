@@ -226,37 +226,33 @@ export default function PipeDetail() {
   const normalized = useMemo(() => {
     if (!pipe) return null;
 
-    const lengthValue = firstPresent(pipe, ['length_mm', 'length']);
-    const weightValue = firstPresent(pipe, ['weight_grams', 'weight']);
-    const bowlHeightValue = firstPresent(pipe, ['bowl_height_mm', 'bowlHeight']);
-    const bowlWidthValue = firstPresent(pipe, ['bowl_width_mm', 'bowlWidth']);
-    const bowlDiameterValue = firstPresent(pipe, ['bowl_diameter_mm', 'bowlDiameter']);
-    const bowlDepthValue = firstPresent(pipe, ['bowl_depth_mm', 'bowlDepth']);
-
-    const sizeClass = firstPresent(pipe, ['sizeClass', 'size_class']);
-    const bowlStyle = firstPresent(pipe, ['bowlStyle', 'bowl_style']);
-    const shankShape = firstPresent(pipe, ['shankShape', 'shank_shape']);
-    const includedInAi = firstPresent(pipe, ['included_in_ai', 'includedInAi']);
-    const smokingCharacteristics = firstPresent(pipe, [
-      'usage_characteristics',
-      'smoking_characteristics',
-      'usageCharacteristics',
-      'smokingCharacteristics',
-    ]);
-
     return {
       ...pipe,
-      lengthValue,
-      weightValue,
-      bowlHeightValue,
-      bowlWidthValue,
-      bowlDiameterValue,
-      bowlDepthValue,
-      sizeClass,
-      bowlStyle,
-      shankShape,
-      includedInAi,
-      smokingCharacteristics,
+      sizeClass: firstPresent(pipe, ['sizeClass', 'size_class']),
+      bowlStyle: firstPresent(pipe, ['bowlStyle', 'bowl_style']),
+      shankShape: firstPresent(pipe, ['shankShape', 'shank_shape']),
+      lengthValue: firstPresent(pipe, ['length_mm', 'length', 'lengthMm']),
+      weightValue: firstPresent(pipe, ['weight_grams', 'weight', 'weightGrams']),
+      bowlHeightValue: firstPresent(pipe, ['bowl_height_mm', 'bowlHeight', 'bowlHeightMm']),
+      bowlWidthValue: firstPresent(pipe, ['bowl_width_mm', 'bowlWidth', 'bowlWidthMm']),
+      bowlDiameterValue: firstPresent(pipe, ['bowl_diameter_mm', 'bowlDiameter', 'bowlDiameterMm', 'chamber_diameter_mm']),
+      bowlDepthValue: firstPresent(pipe, ['bowl_depth_mm', 'bowlDepth', 'bowlDepthMm', 'chamber_depth_mm']),
+      includedInAi: firstPresent(pipe, ['included_in_ai', 'includedInAi']),
+      smokingCharacteristics: firstPresent(pipe, [
+        'usage_characteristics',
+        'smoking_characteristics',
+        'usageCharacteristics',
+        'smokingCharacteristics',
+      ]),
+      purchasePrice: firstPresent(pipe, ['purchase_price', 'purchasePrice']),
+      estimatedValue: firstPresent(pipe, ['estimated_value', 'estimatedValue']),
+      bowlMaterial: firstPresent(pipe, ['bowl_material', 'bowlMaterial']),
+      stemMaterial: firstPresent(pipe, ['stem_material', 'stemMaterial']),
+      filterType: firstPresent(pipe, ['filter_type', 'filterType']),
+      countryOfOrigin: firstPresent(pipe, ['country_of_origin', 'countryOfOrigin']),
+      chamberVolume: firstPresent(pipe, ['chamber_volume', 'chamberVolume']),
+      favorite: firstPresent(pipe, ['is_favorite', 'isFavorite']),
+      collectibleOnly: firstPresent(pipe, ['collectible_only', 'collectibleOnly']),
     };
   }, [pipe]);
 
@@ -344,7 +340,6 @@ export default function PipeDetail() {
         </div>
       </div>
 
-      {/* Snapshot card stays visible */}
       <div
         className="rounded-3xl overflow-hidden"
         style={{
@@ -398,19 +393,19 @@ export default function PipeDetail() {
                 {pipe.name}
               </h1>
               <p className="text-base md:text-lg text-[#D8C7A6]/84 mt-3 break-words">
-                {[pipe.maker, pipe.country_of_origin].filter(Boolean).join(' • ')}
+                {[normalized.maker, normalized.countryOfOrigin].filter(Boolean).join(' • ')}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <DetailStat
                 label="Shape"
-                value={t(`shapes.${pipe.shape}`, pipe.shape) || '—'}
-                icon={() => <PipeShapeIcon shape={pipe.shape} className="w-4 h-4" />}
+                value={t(`shapes.${normalized.shape}`, normalized.shape) || '—'}
+                icon={() => <PipeShapeIcon shape={normalized.shape} className="w-4 h-4" />}
               />
               <DetailStat
                 label="Material"
-                value={normalized.bowl_material || '—'}
+                value={normalized.bowlMaterial || '—'}
                 icon={() => <span className="text-[#B48C4B]">●</span>}
               />
               <DetailStat
@@ -420,7 +415,7 @@ export default function PipeDetail() {
               />
               <DetailStat
                 label="Estimated Value"
-                value={money(normalized.estimated_value)}
+                value={money(normalized.estimatedValue)}
                 icon={() => <CircleDollarSign className="w-4 h-4 text-[#B48C4B]" />}
               />
             </div>
@@ -440,13 +435,13 @@ export default function PipeDetail() {
                 <div>
                   <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Length</p>
                   <p className="text-2xl font-semibold mt-2">
-                    {normalized.lengthValue != null ? formatLength(normalized.lengthValue) : '—'}
+                    {normalized.lengthValue != null ? formatLength(Number(normalized.lengthValue)) : '—'}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Weight</p>
                   <p className="text-2xl font-semibold mt-2">
-                    {normalized.weightValue != null ? formatWeight(normalized.weightValue) : '—'}
+                    {normalized.weightValue != null ? formatWeight(Number(normalized.weightValue)) : '—'}
                   </p>
                 </div>
                 <div>
@@ -472,7 +467,6 @@ export default function PipeDetail() {
         </div>
       </div>
 
-      {/* Functional/details card is the collapsible one */}
       <div
         className="rounded-2xl overflow-hidden"
         style={{
@@ -504,34 +498,19 @@ export default function PipeDetail() {
           <Tabs defaultValue="condition" className="w-full">
             <div className="border-b border-[rgba(180,140,75,0.15)] px-2 pt-2 overflow-x-auto">
               <TabsList className="bg-transparent gap-0.5 flex-nowrap min-w-max">
-                <TabsTrigger
-                  value="condition"
-                  className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3"
-                >
+                <TabsTrigger value="condition" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
                   Condition
                 </TabsTrigger>
-                <TabsTrigger
-                  value="rotation"
-                  className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3"
-                >
+                <TabsTrigger value="rotation" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
                   Rotation
                 </TabsTrigger>
-                <TabsTrigger
-                  value="specialization"
-                  className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3"
-                >
+                <TabsTrigger value="specialization" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
                   Specialization
                 </TabsTrigger>
-                <TabsTrigger
-                  value="maintenance"
-                  className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3"
-                >
+                <TabsTrigger value="maintenance" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
                   Maintenance
                 </TabsTrigger>
-                <TabsTrigger
-                  value="details"
-                  className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3"
-                >
+                <TabsTrigger value="details" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
                   Details
                 </TabsTrigger>
               </TabsList>
@@ -567,17 +546,17 @@ export default function PipeDetail() {
                     <MetaRow label="Shank Shape" value={showText(normalized.shankShape)} />
                     <MetaRow label="Bend" value={showText(normalized.bend)} />
                     <MetaRow label="Size Class" value={showText(normalized.sizeClass)} />
-                    <MetaRow label="Chamber Volume" value={showText(normalized.chamber_volume)} />
+                    <MetaRow label="Chamber Volume" value={showText(normalized.chamberVolume)} />
                   </div>
                 </SectionCard>
 
                 <SectionCard title="Physical Characteristics" icon={Info}>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                    <MetaRow label="Bowl Material" value={showText(normalized.bowl_material)} />
-                    <MetaRow label="Stem Material" value={showText(normalized.stem_material)} />
+                    <MetaRow label="Bowl Material" value={showText(normalized.bowlMaterial)} />
+                    <MetaRow label="Stem Material" value={showText(normalized.stemMaterial)} />
                     <MetaRow label="Finish" value={showText(normalized.finish)} />
-                    <MetaRow label="Filter Type" value={showText(normalized.filter_type)} />
-                    <MetaRow label="Country of Origin" value={showText(normalized.country_of_origin)} />
+                    <MetaRow label="Filter Type" value={showText(normalized.filterType)} />
+                    <MetaRow label="Country of Origin" value={showText(normalized.countryOfOrigin)} />
                     <MetaRow label="Maker" value={showText(normalized.maker)} />
                   </div>
                 </SectionCard>
@@ -586,61 +565,37 @@ export default function PipeDetail() {
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                     <MetaRow
                       label="Length"
-                      value={
-                        normalized.lengthValue != null
-                          ? formatLength(normalized.lengthValue)
-                          : '—'
-                      }
+                      value={normalized.lengthValue != null ? formatLength(Number(normalized.lengthValue)) : '—'}
                     />
                     <MetaRow
                       label="Weight"
-                      value={
-                        normalized.weightValue != null
-                          ? formatWeight(normalized.weightValue)
-                          : '—'
-                      }
+                      value={normalized.weightValue != null ? formatWeight(Number(normalized.weightValue)) : '—'}
                     />
                     <MetaRow
                       label="Bowl Height"
-                      value={
-                        normalized.bowlHeightValue != null
-                          ? formatLength(normalized.bowlHeightValue)
-                          : '—'
-                      }
+                      value={normalized.bowlHeightValue != null ? formatLength(Number(normalized.bowlHeightValue)) : '—'}
                     />
                     <MetaRow
                       label="Bowl Width"
-                      value={
-                        normalized.bowlWidthValue != null
-                          ? formatLength(normalized.bowlWidthValue)
-                          : '—'
-                      }
+                      value={normalized.bowlWidthValue != null ? formatLength(Number(normalized.bowlWidthValue)) : '—'}
                     />
                     <MetaRow
                       label="Bowl Diameter"
-                      value={
-                        normalized.bowlDiameterValue != null
-                          ? formatLength(normalized.bowlDiameterValue)
-                          : '—'
-                      }
+                      value={normalized.bowlDiameterValue != null ? formatLength(Number(normalized.bowlDiameterValue)) : '—'}
                     />
                     <MetaRow
                       label="Bowl Depth"
-                      value={
-                        normalized.bowlDepthValue != null
-                          ? formatLength(normalized.bowlDepthValue)
-                          : '—'
-                      }
+                      value={normalized.bowlDepthValue != null ? formatLength(Number(normalized.bowlDepthValue)) : '—'}
                     />
                   </div>
                 </SectionCard>
 
                 <SectionCard title="Value & Notes" icon={CircleDollarSign}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                    <MetaRow label="Purchase Price" value={money(normalized.purchase_price)} />
-                    <MetaRow label="Estimated Value" value={money(normalized.estimated_value)} />
-                    <MetaRow label="Favorite" value={showBool(normalized.is_favorite)} />
-                    <MetaRow label="Collectible Only" value={showBool(normalized.collectible_only)} />
+                    <MetaRow label="Purchase Price" value={money(normalized.purchasePrice)} />
+                    <MetaRow label="Estimated Value" value={money(normalized.estimatedValue)} />
+                    <MetaRow label="Favorite" value={showBool(normalized.favorite)} />
+                    <MetaRow label="Collectible Only" value={showBool(normalized.collectibleOnly)} />
                     <MetaRow label="Included in AI" value={showBool(normalized.includedInAi)} />
                     <MetaRow label="Condition" value={showText(normalized.condition)} />
                   </div>
