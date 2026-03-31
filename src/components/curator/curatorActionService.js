@@ -77,9 +77,9 @@ export async function runCuratorAction({
       };
     }
 
-    const normalized = normalizer(raw, actionType);
+    const normalized = normalizer(raw, { actionId: actionType });
 
-    if (!normalized || !Array.isArray(normalized.items)) {
+    if (!normalized) {
       return {
         requestId,
         actionType,
@@ -90,7 +90,13 @@ export async function runCuratorAction({
       };
     }
 
-    if (normalized.items.length === 0) {
+    const flatItems = Array.isArray(normalized.items)
+      ? normalized.items
+      : Array.isArray(normalized.groups)
+      ? normalized.groups.flatMap((group) => group.items || [])
+      : [];
+
+    if (flatItems.length === 0) {
       return {
         requestId,
         actionType,
@@ -109,8 +115,8 @@ export async function runCuratorAction({
       status: "success",
       summary:
         normalized.summary ||
-        `${normalized.items.length} recommendations found`,
-      items: normalized.items,
+        `${flatItems.length} recommendations found`,
+      items: flatItems,
       error: null,
     };
   } catch (error) {
@@ -146,3 +152,5 @@ export async function runCuratorAction({
     ).catch(() => {});
   }
 }
+
+export default runCuratorAction;
