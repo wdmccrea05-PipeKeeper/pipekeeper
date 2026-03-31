@@ -7,4 +7,4 @@ export {
   getActiveModules,
   getModuleByKey as getModule,
   getAllModuleConfigs as getAllModules,
-} from '../src/components/utils/moduleRegistry.jsx';
+} from '../components/utils/moduleRegistry.jsx';
