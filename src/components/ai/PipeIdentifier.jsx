@@ -62,7 +62,7 @@ function InfoRow({ label, value }) {
   );
 }
 
-export default function PipeIdentifier({ pipe, onUpdatePipe }) {
+export default function PipeIdentifier() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
   const userEmail = user?.email || null;
