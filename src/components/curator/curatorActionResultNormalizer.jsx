@@ -1,34 +1,27 @@
 /**
  * CURATOR ACTION RESULT NORMALIZER
- * 
+ *
  * Transforms disparate AI output formats into canonical actionable structure.
  * Handles:
  * - Already-correct modern shape (groups array)
  * - Legacy specialization assessment format
  * - Flat recommendations/insights/actions
- * - Underexplored opportunities
  * - Failsafe: throws on unmapped actionable data
  */
 
-/**
- * Main normalizer entry point
- */
 export function normalizeCuratorActionResult(raw, fallbackMeta = {}) {
   if (!raw) {
     return createEmptyResult(fallbackMeta);
   }
 
-  // CASE A: Already correct modern shape
   if (Array.isArray(raw?.groups)) {
     return normalizeModernShape(raw, fallbackMeta);
   }
 
-  // CASE B: Legacy specialization assessment shape
   if (raw.currentSpecializationAssessment || raw.recommendations) {
     return normalizeLegacySpecializationShape(raw, fallbackMeta);
   }
 
-  // CASE C: Flat recommendations/insights/actions shape
   if (
     Array.isArray(raw?.recommendations) ||
     Array.isArray(raw?.insights) ||
@@ -38,13 +31,9 @@ export function normalizeCuratorActionResult(raw, fallbackMeta = {}) {
     return normalizeFlatShape(raw, fallbackMeta);
   }
 
-  // No actionable shape detected
   return createEmptyResult(fallbackMeta);
 }
 
-/**
- * CASE A: Modern shape already present
- */
 function normalizeModernShape(raw, fallbackMeta) {
   const groups = (raw.groups || [])
     .map((group, idx) => normalizeGroup(group, idx))
@@ -66,13 +55,9 @@ function normalizeModernShape(raw, fallbackMeta) {
   };
 }
 
-/**
- * CASE B: Legacy specialization assessment + underexplored opportunities
- */
 function normalizeLegacySpecializationShape(raw, fallbackMeta) {
   const groups = [];
 
-  // Handle recommendations (e.g., pipe specializations)
   if (Array.isArray(raw.recommendations) && raw.recommendations.length > 0) {
     const recGroup = {
       groupKey: "specialization_recommendations",
@@ -87,10 +72,15 @@ function normalizeLegacySpecializationShape(raw, fallbackMeta) {
       const item = {
         id: makeId("rec", idx),
         type: "pipe",
+        recordType: "pipe",
         itemId: null,
         itemName: `${rec.specialization || "Specialization"} Focus`,
+        title: `${rec.specialization || "Specialization"} Focus`,
         issue: "Pipe specialization opportunity detected.",
         recommendation: `Consider specializing pipes for ${rec.specialization || "this category"}. ${
+          rec.tobaccoTypes ? `Suggested blends: ${rec.tobaccoTypes.join(", ")}` : ""
+        }`,
+        explanation: `Consider specializing pipes for ${rec.specialization || "this category"}. ${
           rec.tobaccoTypes ? `Suggested blends: ${rec.tobaccoTypes.join(", ")}` : ""
         }`,
         proposedChange: {
@@ -100,7 +90,12 @@ function normalizeLegacySpecializationShape(raw, fallbackMeta) {
             suggestedBlends: rec.tobaccoTypes || [],
           },
         },
+        proposedChanges: {
+          specialization: rec.specialization,
+          suggestedBlends: rec.tobaccoTypes || [],
+        },
         confidence: rec.confidence || "medium",
+        characteristics: Array.isArray(rec.tobaccoTypes) ? rec.tobaccoTypes : [],
       };
 
       recGroup.items.push(item);
@@ -112,7 +107,6 @@ function normalizeLegacySpecializationShape(raw, fallbackMeta) {
     }
   }
 
-  // Handle underexplored opportunities
   if (
     Array.isArray(raw.underexploredOpportunities) &&
     raw.underexploredOpportunities.length > 0
@@ -127,19 +121,27 @@ function normalizeLegacySpecializationShape(raw, fallbackMeta) {
     };
 
     raw.underexploredOpportunities.forEach((opp, idx) => {
+      const category = opp.category || opp;
       const item = {
         id: makeId("opp", idx),
         type: "collection",
+        recordType: "collection",
         itemId: null,
-        itemName: opp.category || opp,
+        itemName: category,
+        title: category,
         issue: "This specialization is underrepresented in your collection.",
-        recommendation: `Explore ${opp.category || opp} to improve collection breadth and diversity.`,
+        recommendation: `Explore ${category} to improve collection breadth and diversity.`,
+        explanation: `Explore ${category} to improve collection breadth and diversity.`,
         proposedChange: {
           type: "collection_expansion",
           payload: {
-            category: opp.category || opp,
+            category,
             reason: "Diversification opportunity",
           },
+        },
+        proposedChanges: {
+          category,
+          reason: "Diversification opportunity",
         },
         confidence: "low",
       };
@@ -153,7 +155,6 @@ function normalizeLegacySpecializationShape(raw, fallbackMeta) {
     }
   }
 
-  // Failsafe: if raw has actionable data but produced zero items, throw
   if (groups.length === 0 && raw.recommendations?.length > 0) {
     throw new Error(
       "Normalization failure: specialization recommendations present but no items were produced."
@@ -177,49 +178,30 @@ function normalizeLegacySpecializationShape(raw, fallbackMeta) {
   };
 }
 
-/**
- * CASE C: Flat recommendations/insights/actions shape
- */
 function normalizeFlatShape(raw, fallbackMeta) {
   const groups = [];
-
-  // Collect all items from various flat fields
   const allItems = [];
 
   if (Array.isArray(raw.recommendations)) {
-    allItems.push({
-      source: "recommendations",
-      items: raw.recommendations,
-    });
+    allItems.push({ source: "recommendations", items: raw.recommendations });
   }
 
   if (Array.isArray(raw.actions)) {
-    allItems.push({
-      source: "actions",
-      items: raw.actions,
-    });
+    allItems.push({ source: "actions", items: raw.actions });
   }
 
   if (Array.isArray(raw.insights)) {
-    allItems.push({
-      source: "insights",
-      items: raw.insights,
-    });
+    allItems.push({ source: "insights", items: raw.insights });
   }
 
   if (Array.isArray(raw.items)) {
-    allItems.push({
-      source: "items",
-      items: raw.items,
-    });
+    allItems.push({ source: "items", items: raw.items });
   }
 
-  // If nothing found, fail
   if (allItems.length === 0) {
     return createEmptyResult(fallbackMeta);
   }
 
-  // Create one group per source
   for (const source of allItems) {
     const groupKey = `${source.source}_group`;
     const groupTitle = formatGroupTitle(source.source);
@@ -227,6 +209,8 @@ function normalizeFlatShape(raw, fallbackMeta) {
     const group = {
       groupKey,
       groupTitle,
+      description: raw.summary || undefined,
+      priority: "medium",
       itemCount: 0,
       items: [],
     };
@@ -244,7 +228,6 @@ function normalizeFlatShape(raw, fallbackMeta) {
     }
   }
 
-  // Failsafe: if raw has items but produced zero groups, throw
   if (
     groups.length === 0 &&
     (raw.recommendations?.length > 0 ||
@@ -270,9 +253,6 @@ function normalizeFlatShape(raw, fallbackMeta) {
   };
 }
 
-/**
- * Normalize a group object
- */
 function normalizeGroup(group, idx) {
   if (!group) return null;
 
@@ -294,26 +274,26 @@ function normalizeGroup(group, idx) {
   };
 }
 
-/**
- * Normalize a single item
- */
 function normalizeItem(item, groupKey, idx) {
   if (!item) return null;
 
-  // Build unique ID
   const id =
     item.id ||
     item.recommendation_id ||
     makeId(`${groupKey}_item`, idx);
 
-  // Infer type if not provided
   let type = item.type || "collection";
   if (item.pipeName || item.pipe_name) type = "pipe";
   if (item.blendName || item.blend_name || item.tobaccoName) type = "tobacco";
   if (item.bottleName || item.bottle_name) type = "bottle";
 
-  // Build name
-  const itemName =
+  const recordType =
+    item.recordType ||
+    item.record_type ||
+    (type === "tobacco" ? "blend" : type);
+
+  const title =
+    item.title ||
     item.itemName ||
     item.item_name ||
     item.pipeName ||
@@ -325,12 +305,38 @@ function normalizeItem(item, groupKey, idx) {
     item.name ||
     `${type} recommendation`;
 
-  // Issue and recommendation
-  const issue = item.issue || item.problem || "Opportunity detected.";
-  const recommendation =
-    item.recommendation || item.suggested_action || item.action || "Review this item.";
+  const itemName =
+    item.itemName ||
+    item.item_name ||
+    item.name ||
+    title;
 
-  // Proposed change
+  const issue =
+    item.issue ||
+    item.problem ||
+    item.observation ||
+    (item.explanation ? item.explanation : "Opportunity detected.");
+
+  const recommendation =
+    item.recommendation ||
+    item.suggested_action ||
+    item.action ||
+    item.explanation ||
+    item.whyFitsYou ||
+    "Review this item.";
+
+  const explanation =
+    item.explanation ||
+    item.recommendation ||
+    item.issue ||
+    item.whyFitsYou ||
+    recommendation;
+
+  const rationale =
+    item.rationale ||
+    item.whyFitsYou ||
+    "";
+
   let proposedChange = null;
   if (item.proposedChange) {
     proposedChange = {
@@ -344,31 +350,52 @@ function normalizeItem(item, groupKey, idx) {
     };
   }
 
+  const proposedChanges =
+    item.proposedChanges ||
+    proposedChange?.payload ||
+    {};
+
   return {
     id,
     type,
+    recordType,
     itemId: item.itemId || item.item_id || null,
+    recordId: item.recordId || item.record_id || null,
     itemName,
+    title,
+    recordName:
+      item.recordName ||
+      item.record_name ||
+      item.anchorName ||
+      item.anchor_name ||
+      null,
+    anchorId: item.anchorId || item.anchor_id || null,
+    anchorName: item.anchorName || item.anchor_name || null,
+    category: item.category || "",
     issue,
     recommendation,
+    explanation,
+    rationale,
+    whyFitsYou: item.whyFitsYou || "",
+    characteristics: Array.isArray(item.characteristics)
+      ? item.characteristics
+      : [],
     proposedChange,
+    proposedChanges,
     confidence: normalizeConfidence(item.confidence || "medium"),
+    followUpPrompt: item.followUpPrompt || item.follow_up_prompt || "",
   };
 }
 
-/**
- * Normalize confidence level
- */
 function normalizeConfidence(value) {
   const val = String(value || "").toLowerCase().trim();
   if (val.includes("high")) return "high";
   if (val.includes("low")) return "low";
+  if (val === "1" || val === "0.9" || val === "0.95") return "high";
+  if (val === "0.2" || val === "0.3" || val === "0.4") return "low";
   return "medium";
 }
 
-/**
- * Format group title from source field name
- */
 function formatGroupTitle(source) {
   const titles = {
     recommendations: "Recommendations",
@@ -379,9 +406,6 @@ function formatGroupTitle(source) {
   return titles[source] || source;
 }
 
-/**
- * Helper: Create empty result
- */
 function createEmptyResult(fallbackMeta) {
   return {
     actionId: fallbackMeta.actionId || "curator_action",
@@ -393,16 +417,10 @@ function createEmptyResult(fallbackMeta) {
   };
 }
 
-/**
- * Helper: Generate unique ID
- */
 function makeId(prefix, index) {
   return `${prefix}_${index}_${Date.now()}`;
 }
 
-/**
- * Helper: Generate execution ID
- */
 function generateExecutionId() {
   return `exec_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
