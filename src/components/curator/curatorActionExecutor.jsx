@@ -18,24 +18,19 @@ const RECORD_TYPE_MAP = {
   find_similar_bottles: "bottle",
 };
 
-// ─── JSON extraction helpers ────────────────────────────────────────────────
-
 function extractJsonCandidate(text) {
   if (!text || typeof text !== "string") return null;
   const trimmed = text.trim();
   if (!trimmed) return null;
 
-  // ```json ... ``` or ``` ... ```
   const fenced =
     trimmed.match(/```json\s*([\s\S]*?)```/i) ||
     trimmed.match(/```\s*([\s\S]*?)```/i);
   if (fenced?.[1]?.trim()) return fenced[1].trim();
 
-  // First { ... } block
   const objectMatch = trimmed.match(/(\{[\s\S]*\})/);
   if (objectMatch?.[1]?.trim()) return objectMatch[1].trim();
 
-  // First [ ... ] block
   const arrayMatch = trimmed.match(/(\[[\s\S]*\])/);
   if (arrayMatch?.[1]?.trim()) return arrayMatch[1].trim();
 
@@ -43,47 +38,32 @@ function extractJsonCandidate(text) {
 }
 
 function parseRawResponse(raw) {
-  if (!raw) throw new Error("Curator returned no response");
+  if (!raw) throw new Error("Curator returned no response.");
 
   if (Array.isArray(raw)) return { items: raw };
 
   if (typeof raw === "object") {
-    // Unwrap common backend payload wrappers
     if (typeof raw.result !== "undefined") return parseRawResponse(raw.result);
     if (typeof raw.output !== "undefined") return parseRawResponse(raw.output);
     if (typeof raw.body !== "undefined") return parseRawResponse(raw.body);
     if (typeof raw.data !== "undefined" && raw.data !== raw) return parseRawResponse(raw.data);
-
-    // Already canonical
-    if (Array.isArray(raw.groups) || Array.isArray(raw.items)) return raw;
-
     return raw;
   }
 
   const text = String(raw).trim();
-  if (!text) throw new Error("Curator returned an empty string");
+  if (!text) throw new Error("Curator returned no response.");
 
-  // Try plain JSON first
   try {
     return JSON.parse(text);
   } catch {
-    // fall through
-  }
-
-  // Try extracted candidate (fenced blocks, embedded objects/arrays)
-  const candidate = extractJsonCandidate(text);
-  if (candidate) {
-    try {
+    const candidate = extractJsonCandidate(text);
+    if (candidate) {
       return JSON.parse(candidate);
-    } catch {
-      // fall through
     }
   }
 
-  throw new Error("Curator response could not be parsed as JSON");
+  throw new Error("Curator returned unparseable JSON.");
 }
-
-// ─── Shared utilities ────────────────────────────────────────────────────────
 
 function getActionByType(actionType) {
   return (CURATOR_ACTIONS || []).find(
@@ -98,25 +78,241 @@ function getAnchorList(anchorOverrides) {
   return [];
 }
 
+function normalizeString(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function buildRecordIndexes(context = {}) {
+  const pipeIndex = new Map();
+  const blendIndex = new Map();
+  const bottleIndex = new Map();
+
+  for (const pipe of context?.pipes || []) {
+    const candidates = [
+      pipe?.name,
+      `${pipe?.maker || ""} ${pipe?.name || ""}`.trim(),
+    ].filter(Boolean);
+
+    for (const candidate of candidates) {
+      const key = normalizeString(candidate);
+      if (key && !pipeIndex.has(key)) {
+        pipeIndex.set(key, pipe);
+      }
+    }
+  }
+
+  for (const blend of context?.blends || []) {
+    const candidates = [
+      blend?.name,
+      `${blend?.manufacturer || ""} ${blend?.name || ""}`.trim(),
+    ].filter(Boolean);
+
+    for (const candidate of candidates) {
+      const key = normalizeString(candidate);
+      if (key && !blendIndex.has(key)) {
+        blendIndex.set(key, blend);
+      }
+    }
+  }
+
+  for (const bottle of context?.bottles || []) {
+    const candidates = [
+      bottle?.name,
+      `${bottle?.distillery || bottle?.brand || ""} ${bottle?.name || ""}`.trim(),
+    ].filter(Boolean);
+
+    for (const candidate of candidates) {
+      const key = normalizeString(candidate);
+      if (key && !bottleIndex.has(key)) {
+        bottleIndex.set(key, bottle);
+      }
+    }
+  }
+
+  return { pipeIndex, blendIndex, bottleIndex };
+}
+
+function inferRecordType(item, fallbackType = null) {
+  if (item?.recordType) return item.recordType;
+  if (item?.record_type) return item.record_type;
+  if (item?.type === "pipe") return "pipe";
+  if (item?.type === "bottle") return "bottle";
+  if (item?.type === "blend" || item?.type === "tobacco") return "blend";
+
+  const payload = item?.proposedChanges || item?.proposedChange?.payload || {};
+  const keys = Object.keys(payload || {});
+
+  const pipeKeys = new Set([
+    "length_mm",
+    "weight_grams",
+    "bowl_height_mm",
+    "bowl_width_mm",
+    "bowl_diameter_mm",
+    "bowl_depth_mm",
+    "length",
+    "weight",
+    "bowlHeight",
+    "bowlWidth",
+    "bowlDiameter",
+    "bowlDepth",
+    "shape",
+    "bowl_style",
+    "bowlStyle",
+    "shank_shape",
+    "shankShape",
+    "bend",
+    "sizeClass",
+    "size_class",
+    "bowl_material",
+    "stem_material",
+    "finish",
+    "filter_type",
+    "usage_characteristics",
+    "smoking_characteristics",
+    "usageCharacteristics",
+    "smokingCharacteristics",
+    "condition",
+  ]);
+
+  const bottleKeys = new Set([
+    "retail_price",
+    "aftermarket_price",
+    "collector_value",
+    "abv",
+    "region",
+    "distillery",
+    "age",
+    "type",
+  ]);
+
+  const blendKeys = new Set([
+    "blend_type",
+    "manufacturer",
+    "cut",
+    "strength",
+    "flavor_notes",
+  ]);
+
+  if (keys.some((k) => pipeKeys.has(k))) return "pipe";
+  if (keys.some((k) => bottleKeys.has(k))) return "bottle";
+  if (keys.some((k) => blendKeys.has(k))) return "blend";
+
+  return fallbackType;
+}
+
+function resolveTargetRecord(item, context = {}, fallbackType = null) {
+  if (item?.recordId && item?.recordType) return item;
+
+  const inferredType = inferRecordType(item, fallbackType);
+  const { pipeIndex, blendIndex, bottleIndex } = buildRecordIndexes(context);
+
+  const candidates = [
+    item?.recordName,
+    item?.itemName,
+    item?.title,
+    item?.anchorName,
+    item?.name,
+  ].filter(Boolean);
+
+  let matched = null;
+
+  for (const candidate of candidates) {
+    const key = normalizeString(candidate);
+    if (!key) continue;
+
+    if (inferredType === "pipe" && pipeIndex.has(key)) {
+      matched = { type: "pipe", record: pipeIndex.get(key) };
+      break;
+    }
+    if (inferredType === "blend" && blendIndex.has(key)) {
+      matched = { type: "blend", record: blendIndex.get(key) };
+      break;
+    }
+    if (inferredType === "bottle" && bottleIndex.has(key)) {
+      matched = { type: "bottle", record: bottleIndex.get(key) };
+      break;
+    }
+
+    if (!matched) {
+      if (pipeIndex.has(key)) matched = { type: "pipe", record: pipeIndex.get(key) };
+      else if (blendIndex.has(key)) matched = { type: "blend", record: blendIndex.get(key) };
+      else if (bottleIndex.has(key)) matched = { type: "bottle", record: bottleIndex.get(key) };
+    }
+
+    if (matched) break;
+  }
+
+  if (!matched) {
+    return {
+      ...item,
+      recordType: inferredType || item?.recordType || "collection",
+    };
+  }
+
+  return {
+    ...item,
+    recordType: inferredType || matched.type,
+    recordId: item?.recordId || matched.record?.id || null,
+    itemId: item?.itemId || matched.record?.id || null,
+    recordName: item?.recordName || matched.record?.name || item?.itemName || item?.title || null,
+    itemName: item?.itemName || matched.record?.name || item?.recordName || item?.title || null,
+  };
+}
+
+function enrichCanonicalResult(result, context = {}, fallbackType = null) {
+  if (!result || typeof result !== "object") return result;
+
+  if (Array.isArray(result.groups)) {
+    return {
+      ...result,
+      groups: result.groups.map((group) => ({
+        ...group,
+        items: (group.items || []).map((item) =>
+          resolveTargetRecord(item, context, fallbackType)
+        ),
+      })),
+    };
+  }
+
+  if (Array.isArray(result.items)) {
+    return {
+      ...result,
+      items: result.items.map((item) =>
+        resolveTargetRecord(item, context, fallbackType)
+      ),
+    };
+  }
+
+  return result;
+}
+
 function normalizeSimilarItem(item, recordType, anchor) {
   const title = item?.title || item?.name || "Recommendation";
+
   return {
     id:
       item?.id ||
-      `similar_${recordType}_${String(title).toLowerCase().replace(/[^a-z0-9]+/g, "_")}`,
+      `similar_${recordType}_${String(title)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")}`,
     type: item?.type || "similar_item",
     recordType,
     title,
+    itemName: title,
     category: item?.category || "",
     explanation: item?.explanation || "",
     whyFitsYou: item?.whyFitsYou || "",
     characteristics: Array.isArray(item?.characteristics) ? item.characteristics : [],
     anchorId: anchor?.id || null,
     anchorName: anchor?.name || null,
+    recordId: item?.recordId || item?.record_id || item?.itemId || item?.item_id || null,
+    itemId: item?.itemId || item?.item_id || item?.recordId || item?.record_id || null,
+    recordName: item?.recordName || item?.record_name || title,
   };
 }
-
-// ─── Find Similar ─────────────────────────────────────────────────────────────
 
 async function handleFindSimilar({ actionType, context, anchorOverrides }) {
   const recordType = RECORD_TYPE_MAP[actionType];
@@ -168,15 +364,42 @@ async function handleFindSimilar({ actionType, context, anchorOverrides }) {
   };
 }
 
-// ─── Generic Action ───────────────────────────────────────────────────────────
-
-function buildGenericCuratorPrompt(action, context) {
+function buildGenericCuratorPrompt(action, context, actionType) {
   const safeContext = buildSafeCollectionContext(context || {});
   const contextBlock = buildPromptBlock(safeContext);
+
   const actionPrompt =
     typeof action?.buildPrompt === "function"
       ? action.buildPrompt(context || {})
       : action?.prompt || action?.description || action?.id || "Curator action";
+
+  const extraMeasurementInstructions =
+    actionType === "update_pipe_measurements"
+      ? `
+IMPORTANT FOR PIPE MEASUREMENT ACTIONS:
+- Every recommendation MUST include:
+  - "recordType": "pipe"
+  - "recordId": the exact pipe id from the provided collection context
+  - "recordName": the exact pipe name from the provided collection context
+- If you can confidently infer actual numeric pipe measurements from reliable evidence already present in context, return them in proposedChange.payload using canonical keys:
+  - length_mm
+  - weight_grams
+  - bowl_height_mm
+  - bowl_width_mm
+  - bowl_diameter_mm
+  - bowl_depth_mm
+- If you do NOT have reliable numeric values, still include recordId and recordName, and return:
+  - "type": "advice_only"
+  - a human explanation
+  - no fake numeric values
+- Never omit the target pipe id when recommending an update for a specific pipe.`
+      : `
+IMPORTANT:
+- Every actionable recommendation must include:
+  - "recordType"
+  - "recordId"
+  - "recordName"
+- Use exact record ids from the provided collection context whenever the recommendation targets a specific collection item.`;
 
   return `You are PipeKeeper Curator.
 
@@ -189,6 +412,8 @@ ACTION: ${action?.label || action?.id || "Curator Action"}
 
 TASK:
 ${actionPrompt}
+
+${extraMeasurementInstructions}
 
 Return JSON in this exact structure:
 {
@@ -204,15 +429,18 @@ Return JSON in this exact structure:
       "items": [
         {
           "id": "rec_1",
-          "type": "collection",
+          "type": "measurement_update",
+          "recordType": "pipe",
+          "recordId": "exact-record-id",
+          "recordName": "Exact record name",
+          "itemName": "Optional display title",
           "title": "Recommendation title",
-          "itemName": "Optional item name",
           "issue": "What you found",
           "recommendation": "What the user should do",
           "explanation": "Why this matters",
           "confidence": "medium",
           "proposedChange": {
-            "type": "advice_only",
+            "type": "field_update",
             "payload": {}
           }
         }
@@ -225,7 +453,6 @@ If no actionable items exist, return valid JSON with a summary and groups: [].`;
 }
 
 async function invokeCuratorModel({ prompt, actionType, requestId }) {
-  // Primary: invokeCuratorLLM backend function
   try {
     const response = await base44.functions.invoke("invokeCuratorLLM", {
       prompt,
@@ -240,11 +467,11 @@ async function invokeCuratorModel({ prompt, actionType, requestId }) {
     );
   }
 
-  // Fallback: Core InvokeLLM integration
   const fallbackRaw = await base44.integrations.Core.InvokeLLM({
     prompt,
     add_context_from_internet: false,
   });
+
   return parseRawResponse(fallbackRaw);
 }
 
@@ -252,11 +479,18 @@ async function handleGenericAction({ actionType, context, requestId }) {
   const action = getActionByType(actionType);
   if (!action) throw new Error(`Unknown curator action type: ${actionType}`);
 
-  const prompt = buildGenericCuratorPrompt(action, context);
-  return await invokeCuratorModel({ prompt, actionType, requestId });
-}
+  const prompt = buildGenericCuratorPrompt(action, context, actionType);
+  const raw = await invokeCuratorModel({ prompt, actionType, requestId });
 
-// ─── Public API ───────────────────────────────────────────────────────────────
+  const fallbackType =
+    actionType === "update_pipe_measurements"
+      ? "pipe"
+      : actionType === "update_bottle_data"
+      ? "bottle"
+      : null;
+
+  return enrichCanonicalResult(raw, context, fallbackType);
+}
 
 export async function executeCuratorAction({
   actionType,
@@ -265,9 +499,18 @@ export async function executeCuratorAction({
   anchorOverrides,
 }) {
   if (FIND_SIMILAR_TYPES.has(actionType)) {
-    return await handleFindSimilar({ actionType, context, anchorOverrides });
+    return await handleFindSimilar({
+      actionType,
+      context,
+      anchorOverrides,
+    });
   }
-  return await handleGenericAction({ actionType, context, requestId });
+
+  return await handleGenericAction({
+    actionType,
+    context,
+    requestId,
+  });
 }
 
 export default executeCuratorAction;
