@@ -514,8 +514,18 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           >
             <Combobox
               value={formData.country_of_origin}
-              onValueChange={(v) => handleChange('country_of_origin', v)}
-              options={recentCountries}
+              onValueChange={(v) => {
+                // Normalize common aliases to canonical form
+                const normalized = v === 'USA' ? 'United States' : v;
+                handleChange('country_of_origin', normalized);
+              }}
+              options={[
+                // Deduplicate: remove 'USA' if 'United States' is present
+                ...new Set(
+                  recentCountries
+                    .map(c => c === 'USA' ? 'United States' : c)
+                )
+              ]}
               placeholder={t("pipesExtended.countryPlaceholder")}
               searchPlaceholder={t("common.searchPlaceholder")}
               allowCustom={true}
