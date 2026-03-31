@@ -56,17 +56,12 @@ export default function CuratorActionResultCard({
     item.anchorName ||
     "Recommendation";
 
-  const displayRecordType =
-    item.recordType ||
-    item.type ||
-    null;
-
   const displayExplanation =
     item.explanation ||
     item.recommendation ||
     item.issue ||
     item.whyFitsYou ||
-    "Review this recommendation.";
+    "Review this item.";
 
   const displayRationale =
     item.rationale ||
@@ -109,15 +104,15 @@ export default function CuratorActionResultCard({
             )}
           </div>
         ) : (
-          (item.recordName || displayRecordType || item.category || item.anchorName) && (
+          (item.recordName || item.recordType || item.category || item.anchorName) && (
             <div className="mt-1 text-xs uppercase tracking-wide text-amber-500/70">
               {item.recordName
-                ? `${humanizeRecordType(displayRecordType)}: ${item.recordName}`
+                ? `${humanizeRecordType(item.recordType)}: ${item.recordName}`
                 : item.category
                 ? item.category
                 : item.anchorName
                 ? `Based on: ${item.anchorName}`
-                : humanizeRecordType(displayRecordType)}
+                : humanizeRecordType(item.recordType)}
             </div>
           )
         )}
