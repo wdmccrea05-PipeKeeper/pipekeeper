@@ -303,21 +303,96 @@ Use only my actual collection data and tasting history. Be specific, concise, an
     id: 'session_builder',
     label: 'Plan Session',
     description: (ctx) => {
-      const whiskeyActive = ctx?.userProfile?.whiskeykeeper_enabled !== false && (ctx?.bottles?.length > 0 || ctx?.curatorScope === 'whiskeykeeper');
-      return whiskeyActive
-        ? 'Build a curated pipe, tobacco, and whiskey session'
-        : 'Build a curated pipe and tobacco session';
+      const hasPipes = (ctx?.pipes?.length || 0) > 0;
+      const hasBlends = (ctx?.blends?.length || 0) > 0;
+      const hasBottles = (ctx?.bottles?.length || 0) > 0;
+      const isWhiskeyScope = ctx?.curatorScope === 'whiskeykeeper';
+      const isPipeScope = ctx?.curatorScope === 'pipekeeper';
+
+      if ((hasPipes || hasBlends) && hasBottles && !isPipeScope && !isWhiskeyScope) {
+        return 'Build a curated pipe, tobacco, and whiskey session';
+      }
+      if (hasBottles && !hasPipes && !hasBlends) {
+        return 'Build a curated whiskey session';
+      }
+      return 'Build a curated pipe and tobacco session';
     },
     icon: Sparkles,
     modules: ['pipe', 'tobacco', 'whiskey'],
     sourceExpert: 'expert_session_builder',
     visibility: (ctx) => {
-      const { pipes = [] } = ctx;
-      return pipes.length > 0;
+      const hasPipes = (ctx?.pipes?.length || 0) > 0;
+      const hasBlends = (ctx?.blends?.length || 0) > 0;
+      const hasBottles = (ctx?.bottles?.length || 0) > 0;
+      return hasPipes || hasBlends || hasBottles;
     },
-    buildPrompt: () => '',
+    buildPrompt: (ctx) => {
+      const { pipes = [], blends = [], bottles = [], smokingLogs = [], tastingLogs = [], curatorScope = 'all' } = ctx;
+      const hasPipeData = pipes.length > 0 || blends.length > 0;
+      const hasWhiskeyData = bottles.length > 0;
+      const recentSmokes = smokingLogs
+        .slice(0, 5)
+        .map((log) => `- ${log.pipe_name || 'Pipe'} + ${log.blend_name || 'Blend'} on ${log.date || 'unknown date'}`)
+        .join('\n');
+      const recentTastings = tastingLogs
+        .slice(0, 5)
+        .map((log) => `- ${log.bottle_name || 'Bottle'}${log.rating ? ` (${log.rating}/5)` : ''} on ${log.tasting_date || log.date || 'unknown date'}`)
+        .join('\n');
+
+      if (curatorScope === 'whiskeykeeper' || (!hasPipeData && hasWhiskeyData)) {
+        return `Plan a whiskey session from my collection.
+
+Use only bottles from my actual collection. Recommend:
+1. The best bottle for tonight and why
+2. One backup option with a different profile
+3. Ideal pour context (relaxed sipping, celebratory, contemplative, etc.)
+4. Whether I should log a tasting note afterward
+5. Any bottle I should revisit based on my recent tasting history
+
+Recent tastings:
+${recentTastings || '- None logged yet'}`;
+      }
+
+      if (curatorScope === 'pipekeeper' || (hasPipeData && !hasWhiskeyData)) {
+        return `Plan a pipe session from my collection.
+
+Use only pipes and blends from my actual collection. Recommend:
+1. The best pipe + tobacco pairing for tonight
+2. One backup pairing
+3. Why the pairing fits my usage patterns and collection strengths
+4. Whether this session helps balance my rotation
+5. What I should log afterward
+
+Recent smoking sessions:
+${recentSmokes || '- None logged yet'}`;
+      }
+
+      return `Plan a combined pipe and whiskey session from my collection.
+
+Use only items I actually own. Recommend:
+1. The best pipe for tonight
+2. The best tobacco blend for that pipe
+3. The best whiskey pairing for that pipe + blend session
+4. One backup whiskey or blend option in case I want a different direction
+5. Why the pairing works across flavor, strength, mood, and recent usage history
+6. What I should log after the session across both PipeKeeper and WhiskeyKeeper
+
+Recent smoking sessions:
+${recentSmokes || '- None logged yet'}
+
+Recent tastings:
+${recentTastings || '- None logged yet'}`;
+    },
     buildContext: (ctx) => ({
       type: 'session_builder',
+      mode:
+        ctx?.curatorScope === 'whiskeykeeper'
+          ? 'whiskey'
+          : ctx?.curatorScope === 'pipekeeper'
+          ? 'pipe'
+          : (ctx?.bottles?.length > 0 && ((ctx?.pipes?.length || 0) > 0 || (ctx?.blends?.length || 0) > 0))
+          ? 'combined'
+          : (ctx?.bottles?.length > 0 ? 'whiskey' : 'pipe'),
       dataRequirement: ['pipes', 'blends', 'bottles', 'smokingLogs', 'tastingLogs'],
       sourceExpert: 'expert_session_builder',
     }),
