@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { BookOpen, PlusCircle } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import LogTastingModal from '@/components/whiskey/LogTastingModal';
@@ -11,6 +12,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 function TastingsInner() {
   const { t } = useTranslation();
   const { user, isLoading: userLoading } = useCurrentUser();
+  const location = useLocation();
 
   const [tastings, setTastings] = useState([]);
   const [bottles, setBottles] = useState([]);
@@ -19,6 +21,22 @@ function TastingsInner() {
   const [showModal, setShowModal] = useState(false);
 
   const userEmail = user?.email || null;
+  const shouldAutoOpenLogModal = useMemo(() => {
+    const params = new URLSearchParams(location.search || '');
+    return params.get('action') === 'log';
+  }, [location.search]);
+
+  const openCreateModal = useCallback((preferredBottle = null) => {
+    setSelectedBottle(preferredBottle || bottles[0] || null);
+    setEditingTasting(null);
+    setShowModal(true);
+  }, [bottles]);
+
+  const closeModal = useCallback(() => {
+    setShowModal(false);
+    setEditingTasting(null);
+    setSelectedBottle(null);
+  }, []);
 
   const loadData = useCallback(async () => {
     if (!userEmail) {
@@ -53,6 +71,11 @@ function TastingsInner() {
     loadData();
   }, [loadData, userLoading]);
 
+  useEffect(() => {
+    if (!shouldAutoOpenLogModal || userLoading || showModal) return;
+    openCreateModal();
+  }, [openCreateModal, shouldAutoOpenLogModal, showModal, userLoading]);
+
   return (
     <>
       <div className="space-y-6">
@@ -73,11 +96,7 @@ function TastingsInner() {
             </div>
 
             <Button
-              onClick={() => {
-                setSelectedBottle(bottles[0] || null);
-                setEditingTasting(null);
-                setShowModal(true);
-              }}
+              onClick={() => openCreateModal()}
               style={{
                 background: 'linear-gradient(135deg, rgba(196,122,58,1), rgba(160,95,40,1))',
                 color: '#1A120D',
@@ -103,11 +122,7 @@ function TastingsInner() {
               </p>
               <Button
                 className="mt-5"
-                onClick={() => {
-                  setSelectedBottle(bottles[0] || null);
-                  setEditingTasting(null);
-                  setShowModal(true);
-                }}
+                onClick={() => openCreateModal()}
               >
                 Log Tasting
               </Button>
@@ -148,16 +163,10 @@ function TastingsInner() {
           bottle={selectedBottle}
           bottles={bottles}
           editLog={editingTasting}
-          onClose={() => {
-            setShowModal(false);
-            setEditingTasting(null);
-            setSelectedBottle(null);
-          }}
+          onClose={closeModal}
           onSaved={async () => {
             await loadData();
-            setShowModal(false);
-            setEditingTasting(null);
-            setSelectedBottle(null);
+            closeModal();
           }}
         />
       ) : null}
