@@ -45,13 +45,13 @@ export default function WhiskeyHighlightCard({
       {/* Content — bottom anchored like PipeKeeper */}
       <div className="absolute inset-0 flex flex-col justify-end p-5 z-10">
         <p
-          className="text-xs uppercase tracking-[0.15em] font-bold mb-2 drop-shadow-lg"
+          className="text-[10px] sm:text-xs uppercase tracking-[0.08em] sm:tracking-[0.15em] font-bold mb-2 drop-shadow-lg leading-tight"
           style={{ color: accent }}
         >
           {title}
         </p>
         <p
-          className="text-xl sm:text-2xl font-bold leading-tight break-words drop-shadow-lg"
+          className="text-xl sm:text-2xl font-bold leading-tight line-clamp-2 drop-shadow-lg"
           style={{
             color: '#F5F1E7',
             textShadow: '0 2px 8px rgba(0,0,0,0.6)',

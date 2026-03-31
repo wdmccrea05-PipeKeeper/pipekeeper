@@ -304,7 +304,7 @@ function BottleDetailInner() {
             Back
           </Button>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 justify-end">
             <Button
               onClick={handleFindSimilar}
               style={{
@@ -313,12 +313,12 @@ function BottleDetailInner() {
                 color: "#D4A574",
               }}
             >
-              <Search className="w-4 h-4 mr-2" />
-              Find Similar
+              <Search className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Find Similar</span>
             </Button>
             <Button variant="outline" onClick={() => setShowShareModal(true)}>
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
+              <Share2 className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Share</span>
             </Button>
             <Button
               onClick={() =>
@@ -330,8 +330,8 @@ function BottleDetailInner() {
                 color: "#fff",
               }}
             >
-              <Pencil className="w-4 h-4 mr-2" />
-              Edit
+              <Pencil className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Edit</span>
             </Button>
             <Button
               onClick={() => setShowDeleteConfirm(true)}
