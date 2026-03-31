@@ -11,9 +11,8 @@ export const MODULE_TYPES = {
   COFFEE: "coffee",
 };
 
-// Modules that are active in the current PipeKeeper build.
-// Future modules are defined above but kept out of this list until launched.
-export const ACTIVE_MODULES = [MODULE_TYPES.PIPE, MODULE_TYPES.TOBACCO];
+// Modules that are active in the current build.
+export const ACTIVE_MODULES = [MODULE_TYPES.PIPE, MODULE_TYPES.TOBACCO, MODULE_TYPES.WHISKEY];
 
 // Human-readable display names keyed by module type.
 export const MODULE_DISPLAY_NAMES = {

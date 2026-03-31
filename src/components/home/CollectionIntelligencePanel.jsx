@@ -343,7 +343,7 @@ function UpdateFeedItem({ update }) {
 //   - Future modules (WhiskeyKeeper, CigarKeeper, etc.) can inject their own insights
 //     by extending the insight generation logic or passing an `extraInsights` prop
 // ─────────────────────────────────────────────────────────────────────────────
-export default function CollectionIntelligencePanel({ pipes, blends, user }) {
+export default function CollectionIntelligencePanel({ pipes, blends, bottles = [], tastings = [], user }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [rotationModalOpen, setRotationModalOpen] = useState(false);
@@ -391,16 +391,13 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
 
   // ── Insight & health generation (memoised — no side-effects) ────────────────
   const { insights, healthMetrics, topRecommendations, aiUpdates, latestLogByPipe, overduePipes } = useMemo(() => {
-    // Respect the platform-level ai_excluded rule for all AI-driven output.
-    // Excluded items still count toward value, inventory, and statistics —
-    // only the recommendation/insight pipeline excludes them.
+    const lang = localStorage.getItem('pk_lang') || 'en-US';
     const eligiblePipes = filterAiEligibleItems(pipes || []);
     const eligibleBlends = filterAiEligibleItems(blends || []);
+    const eligibleBottles = filterAiEligibleItems(bottles || []);
     const excludedCount =
-      (pipes?.length || 0) +
-      (blends?.length || 0) -
-      eligiblePipes.length -
-      eligibleBlends.length;
+      (pipes?.length || 0) + (blends?.length || 0) + (bottles?.length || 0) -
+      eligiblePipes.length - eligibleBlends.length - eligibleBottles.length;
 
     const now = new Date();
     const insights = [];
@@ -411,10 +408,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
       if (!log.pipe_id) continue;
       const logDate = log.date ? new Date(log.date) : null;
       if (!logDate) continue;
-      if (
-        !latestLogByPipe[log.pipe_id] ||
-        logDate > new Date(latestLogByPipe[log.pipe_id])
-      ) {
+      if (!latestLogByPipe[log.pipe_id] || logDate > new Date(latestLogByPipe[log.pipe_id])) {
         latestLogByPipe[log.pipe_id] = log.date;
       }
     }
@@ -422,12 +416,8 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
     // ── Insight 1: Rotation opportunity ──────────────────────────────────────
     const overduePipes = eligiblePipes.filter((p) => {
       const lastDate = latestLogByPipe[p.id];
-      if (!lastDate) return true; // never used
-      try {
-        return differenceInCalendarDays(now, new Date(lastDate)) > 60;
-      } catch {
-        return false;
-      }
+      if (!lastDate) return true;
+      try { return differenceInCalendarDays(now, new Date(lastDate)) > 60; } catch { return false; }
     });
 
     if (overduePipes.length > 0) {
@@ -436,16 +426,12 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
         category: CATEGORIES.usage,
         icon: "clock",
         title: t("collectionIntelligence.insightRotationTitle"),
-        description:
-          overduePipes.length === 1
-            ? t("collectionIntelligence.insightRotationDescOne")
-            : t("collectionIntelligence.insightRotationDesc", {
-                count: overduePipes.length,
-              }),
-        actionLabel:
-          overduePipes.length === 1
-            ? t("collectionIntelligence.reviewOnePipe")
-            : t("collectionIntelligence.reviewPipes", { count: overduePipes.length }),
+        description: overduePipes.length === 1
+          ? t("collectionIntelligence.insightRotationDescOne")
+          : t("collectionIntelligence.insightRotationDesc", { count: overduePipes.length }),
+        actionLabel: overduePipes.length === 1
+          ? t("collectionIntelligence.reviewOnePipe")
+          : t("collectionIntelligence.reviewPipes", { count: overduePipes.length }),
         actionUrl: null,
         isDrillDown: true,
         curatorPrompt: t("collectionIntelligence.rotationCuratorPrompt", "Help me create a rotation plan for the pipes I have not used in over 60 days."),
@@ -454,11 +440,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
 
     // ── Insight 2: Cellar readiness ──────────────────────────────────────────
     const peakBlends = eligibleBlends.filter((b) => {
-      const dates = [
-        b.tin_cellared_date,
-        b.bulk_cellared_date,
-        b.pouch_cellared_date,
-      ].filter(Boolean);
+      const dates = [b.tin_cellared_date, b.bulk_cellared_date, b.pouch_cellared_date].filter(Boolean);
       if (dates.length === 0) return false;
       const oldest = dates.reduce((a, d) => (d < a ? d : a));
       try {
@@ -466,9 +448,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
         if (b.aging_potential === "Excellent" && months >= 18) return true;
         if (b.aging_potential === "Good" && months >= 9) return true;
         if (b.aging_potential === "Fair" && months >= 3) return true;
-      } catch {
-        // ignore invalid dates
-      }
+      } catch { /* ignore */ }
       return false;
     });
 
@@ -478,41 +458,49 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
         category: CATEGORIES.collection_health,
         icon: "leaf",
         title: t("collectionIntelligence.insightCellarTitle"),
-        description:
-          peakBlends.length === 1
-            ? t("collectionIntelligence.insightCellarDescOne")
-            : t("collectionIntelligence.insightCellarDesc", {
-                count: peakBlends.length,
-              }),
+        description: peakBlends.length === 1
+          ? t("collectionIntelligence.insightCellarDescOne")
+          : t("collectionIntelligence.insightCellarDesc", { count: peakBlends.length }),
         actionLabel: t("collectionIntelligence.askCurator"),
         actionUrl: null,
         curatorPrompt: t("collectionIntelligence.cellarCuratorPrompt", "Which of my aged blends should I review or open first, and why?"),
       });
     }
 
-    // ── Insight 3: Collector-only items ─────────────────────────────────────
+    // ── Insight 3: Whiskey untasted ──────────────────────────────────────────
+    if (eligibleBottles.length > 0) {
+      const tastedBottleIds = new Set((tastings || []).map(t => t.bottle_id).filter(Boolean));
+      const untastedCount = eligibleBottles.filter(b => !tastedBottleIds.has(b.id)).length;
+      if (untastedCount > 0) {
+        insights.push({
+          id: "whiskey_untasted",
+          category: CATEGORIES.usage,
+          icon: "sparkles",
+          title: `${untastedCount} bottle${untastedCount === 1 ? '' : 's'} not yet tasted`,
+          description: "Log a tasting to build your whiskey history and improve recommendations.",
+          actionLabel: "Log a Tasting",
+          actionUrl: "/Tastings?action=log",
+        });
+      }
+    }
+
+    // ── Insight 4: Collector-only items ─────────────────────────────────────
     if (excludedCount > 0) {
       insights.push({
         id: "collector_items",
         category: CATEGORIES.collection_health,
         icon: "shield",
         title: t("collectionIntelligence.insightCollectorTitle"),
-        description:
-          excludedCount === 1
-            ? t("collectionIntelligence.insightCollectorDescOne")
-            : t("collectionIntelligence.insightCollectorDesc", {
-                count: excludedCount,
-              }),
+        description: excludedCount === 1
+          ? t("collectionIntelligence.insightCollectorDescOne")
+          : t("collectionIntelligence.insightCollectorDesc", { count: excludedCount }),
         actionLabel: null,
         actionUrl: null,
       });
     }
 
-    // ── Insight 4: Blend variety ─────────────────────────────────────────────
-    const blendTypes = new Set(
-      eligibleBlends.map((b) => b.blend_type).filter(Boolean)
-    );
-
+    // ── Insight 5: Blend variety ─────────────────────────────────────────────
+    const blendTypes = new Set(eligibleBlends.map((b) => b.blend_type).filter(Boolean));
     if (eligibleBlends.length > 0) {
       if (blendTypes.size < 3) {
         insights.push({
@@ -520,9 +508,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
           category: CATEGORIES.value,
           icon: "sparkles",
           title: t("collectionIntelligence.insightDiversityLowTitle"),
-          description: t("collectionIntelligence.insightDiversityLowDesc", {
-            count: blendTypes.size,
-          }),
+          description: t("collectionIntelligence.insightDiversityLowDesc", { count: blendTypes.size }),
           actionLabel: t("collectionIntelligence.askCurator"),
           actionUrl: null,
           curatorPrompt: t("collectionIntelligence.diversityCuratorPrompt", "Analyze my tobacco cellar variety and tell me what additions would improve balance."),
@@ -533,9 +519,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
           category: CATEGORIES.value,
           icon: "sparkles",
           title: t("collectionIntelligence.insightDiversityHighTitle"),
-          description: t("collectionIntelligence.insightDiversityHighDesc", {
-            count: blendTypes.size,
-          }),
+          description: t("collectionIntelligence.insightDiversityHighDesc", { count: blendTypes.size }),
           actionLabel: t("collectionIntelligence.askCurator"),
           actionUrl: null,
           curatorPrompt: t("collectionIntelligence.diversityAnalysisCuratorPrompt", "Explain how my tobacco cellar variety supports different smoking experiences."),
@@ -543,26 +527,21 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
       }
     }
 
-    // ── Insight 5: Collection gap from latest optimization ───────────────────
+    // ── Insight 6: Collection gap from latest optimization ───────────────────
     const gaps = activeOpt?.collection_gaps?.missing_coverage || [];
     if (gaps.length > 0) {
       const firstGap = gaps[0];
-      const gapName =
-        typeof firstGap === "string"
-          ? firstGap
-          : firstGap?.blend_type || firstGap?.gap_blend_type || null;
+      const gapName = typeof firstGap === "string" ? firstGap : firstGap?.blend_type || firstGap?.gap_blend_type || null;
       if (gapName) {
         insights.push({
           id: "collection_gap",
           category: CATEGORIES.collection_health,
           icon: "activity",
           title: t("collectionIntelligence.insightGapTitle"),
-          description: t("collectionIntelligence.insightGapDesc", {
-            type: gapName,
-          }),
+          description: t("collectionIntelligence.insightGapDesc", { type: gapName }),
           actionLabel: t("collectionIntelligence.exploreCurator"),
           actionUrl: null,
-          curatorPrompt: t("collectionIntelligence.gapCuratorPrompt", `My collection has a gap in ${gapName}. What should I consider adding to improve coverage?`).replace('${gapName}', gapName),
+          curatorPrompt: `My collection has a gap in ${gapName}. What should I consider adding to improve coverage?`,
         });
       }
     }
@@ -571,120 +550,71 @@ export default function CollectionIntelligencePanel({ pipes, blends, user }) {
     const recentlyUsedCount = eligiblePipes.filter((p) => {
       const lastDate = latestLogByPipe[p.id];
       if (!lastDate) return false;
-      try {
-        return differenceInCalendarDays(now, new Date(lastDate)) <= 60;
-      } catch {
-        return false;
-      }
+      try { return differenceInCalendarDays(now, new Date(lastDate)) <= 60; } catch { return false; }
     }).length;
 
-    const rotationRatio =
-      eligiblePipes.length === 0
-        ? null
-        : recentlyUsedCount / eligiblePipes.length;
+    const rotationRatio = eligiblePipes.length === 0 ? null : recentlyUsedCount / eligiblePipes.length;
+    const rotationBalance = rotationRatio === null ? "\u2014"
+      : rotationRatio >= 0.6 ? t("collectionIntelligence.healthGood")
+      : rotationRatio >= 0.3 ? t("collectionIntelligence.healthModerate")
+      : t("collectionIntelligence.healthLow");
 
-    const rotationBalance =
-      rotationRatio === null
-        ? "—"
-        : rotationRatio >= 0.6
-        ? t("collectionIntelligence.healthGood")
-        : rotationRatio >= 0.3
-        ? t("collectionIntelligence.healthModerate")
-        : t("collectionIntelligence.healthLow");
-
-    const blendDiversity =
-      blendTypes.size >= 5
-        ? t("collectionIntelligence.healthStrong")
-        : blendTypes.size >= 3
-        ? t("collectionIntelligence.healthModerate")
-        : blendTypes.size >= 1
-        ? t("collectionIntelligence.healthLow")
-        : "—";
+    const blendDiversity = blendTypes.size >= 5 ? t("collectionIntelligence.healthStrong")
+      : blendTypes.size >= 3 ? t("collectionIntelligence.healthModerate")
+      : blendTypes.size >= 1 ? t("collectionIntelligence.healthLow") : "\u2014";
 
     const cellaredBlendCount = eligibleBlends.filter(
-      (b) =>
-        (Number(b.tin_tins_cellared) || 0) > 0 ||
-        (Number(b.bulk_cellared) || 0) > 0 ||
-        (Number(b.pouch_pouches_cellared) || 0) > 0
+      (b) => (Number(b.tin_tins_cellared) || 0) > 0 || (Number(b.bulk_cellared) || 0) > 0 || (Number(b.pouch_pouches_cellared) || 0) > 0
     ).length;
 
-    const cellarReadiness =
-      peakBlends.length >= 3
-        ? t("collectionIntelligence.healthStrong")
-        : peakBlends.length >= 1
-        ? t("collectionIntelligence.healthModerate")
-        : cellaredBlendCount > 0
-        ? t("collectionIntelligence.healthGood")
-        : "—";
+    const cellarReadiness = peakBlends.length >= 3 ? t("collectionIntelligence.healthStrong")
+      : peakBlends.length >= 1 ? t("collectionIntelligence.healthModerate")
+      : cellaredBlendCount > 0 ? t("collectionIntelligence.healthGood") : "\u2014";
+
+    const whiskeyHealth = eligibleBottles.length === 0 ? null
+      : (tastings || []).length >= 5 ? t("collectionIntelligence.healthGood")
+      : (tastings || []).length >= 1 ? t("collectionIntelligence.healthModerate")
+      : t("collectionIntelligence.healthLow");
 
     const healthMetrics = [
-      {
-        label: t("collectionIntelligence.healthRotation"),
-        value: rotationBalance,
-      },
-      {
-        label: t("collectionIntelligence.healthDiversity"),
-        value: blendDiversity,
-      },
-      {
-        label: t("collectionIntelligence.healthCellar"),
-        value: cellarReadiness,
-      },
+      { label: t("collectionIntelligence.healthRotation"), value: rotationBalance },
+      { label: t("collectionIntelligence.healthDiversity"), value: blendDiversity },
+      { label: t("collectionIntelligence.healthCellar"), value: cellarReadiness },
+      ...(whiskeyHealth ? [{ label: "Whiskey Activity", value: whiskeyHealth }] : []),
     ];
 
-    // ── Top AI recommendations (from PairingMatrix, ai_excluded respected) ───
-     // Items with ai_excluded=true were already excluded from the matrix at
-     // generation time, so we just pick the highest-scoring results.
-     const topRecommendations = (activePairings?.pairings || [])
-       .filter((p) => p.score >= 7)
-       .sort((a, b) => b.score - a.score)
-       .slice(0, 3)
-       .map((p) => ({
-         pipe_name: sanitizeRecommendationText(p.pipe_name, lang),
-         tobacco_name: sanitizeRecommendationText(p.tobacco_name, lang),
-         score: p.score,
-         blend_type: p.blend_type,
-         // Natural-language reason — avoids technical AI terminology
-         reason: sanitizeRecommendationText(
-           p.blend_type
-             ? t("collectionIntelligence.pairingReasonBlendType", {
-                 blendType: p.blend_type,
-               })
-             : t("collectionIntelligence.pairingReasonDefault"),
-           lang
-         ),
-       }));
+    // ── Top AI recommendations ────────────────────────────────────────────────
+    const topRecommendations = (activePairings?.pairings || [])
+      .filter((p) => p.score >= 7)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map((p) => ({
+        pipe_name: sanitizeRecommendationText(p.pipe_name, lang),
+        tobacco_name: sanitizeRecommendationText(p.tobacco_name, lang),
+        score: p.score,
+        blend_type: p.blend_type,
+        reason: sanitizeRecommendationText(
+          p.blend_type
+            ? t("collectionIntelligence.pairingReasonBlendType", { blendType: p.blend_type })
+            : t("collectionIntelligence.pairingReasonDefault"),
+          lang
+        ),
+      }));
 
-    // ── AI Updates feed ──────────────────────────────────────────────────────
+    // ── AI Updates feed ───────────────────────────────────────────────────────
     const aiUpdates = [];
-
     if (activePairings) {
-      const date =
-        activePairings.generated_date || activePairings.created_date || null;
-      aiUpdates.push({
-        id: "pairing_matrix",
-        title: t("collectionIntelligence.updatePairingMatrix"),
-        description: t("collectionIntelligence.updatePairingDesc"),
-        timeAgo: date,
-      });
+      aiUpdates.push({ id: "pairing_matrix", title: t("collectionIntelligence.updatePairingMatrix"), description: t("collectionIntelligence.updatePairingDesc"), timeAgo: activePairings.generated_date || activePairings.created_date || null });
     }
-
     if (activeOpt) {
-      const date =
-        activeOpt.generated_date || activeOpt.created_date || null;
-      aiUpdates.push({
-        id: "optimization",
-        title: t("collectionIntelligence.updateOptimization"),
-        description: t("collectionIntelligence.updateOptimizationDesc"),
-        timeAgo: date,
-      });
+      aiUpdates.push({ id: "optimization", title: t("collectionIntelligence.updateOptimization"), description: t("collectionIntelligence.updateOptimizationDesc"), timeAgo: activeOpt.generated_date || activeOpt.created_date || null });
     }
 
     return { insights, healthMetrics, topRecommendations, aiUpdates, latestLogByPipe, overduePipes };
-  }, [pipes, blends, logs, activePairings, activeOpt, t]);
+  }, [pipes, blends, bottles, tastings, logs, activePairings, activeOpt, t]);
 
   // Don't render if the collection is completely empty
-  if (!pipes?.length && !blends?.length) return null;
+  if (!pipes?.length && !blends?.length && !bottles?.length) return null;
 
   const visibleInsights = expanded
     ? insights

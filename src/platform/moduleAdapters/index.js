@@ -6,6 +6,7 @@
 // platform layer can resolve them by module type without hardcoded conditionals.
 
 import { pipeAdapter, tobaccoAdapter } from "./pipeAdapter.js";
+import { whiskeyAdapter } from "./whiskeyAdapter.js";
 import { MODULE_TYPES } from "../moduleTypes.js";
 
 /**
@@ -15,8 +16,8 @@ import { MODULE_TYPES } from "../moduleTypes.js";
 const adapterRegistry = {
   [MODULE_TYPES.PIPE]: pipeAdapter,
   [MODULE_TYPES.TOBACCO]: tobaccoAdapter,
+  [MODULE_TYPES.WHISKEY]: whiskeyAdapter,
   // Future modules register here:
-  // [MODULE_TYPES.WHISKEY]: whiskeyAdapter,
   // [MODULE_TYPES.CIGAR]: cigarAdapter,
   // [MODULE_TYPES.COFFEE]: coffeeAdapter,
 };
@@ -73,4 +74,4 @@ export function isItemAiEligibleViaAdapter(rawItem, moduleType) {
   return adapter.isAiEligible(rawItem);
 }
 
-export { pipeAdapter, tobaccoAdapter };
+export { pipeAdapter, tobaccoAdapter, whiskeyAdapter };

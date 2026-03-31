@@ -7,13 +7,13 @@ import { differenceInDays } from 'date-fns';
 
 export const storyEngine = {
   generateCollectorStory(data) {
-    const { pipes = [], blends = [], logs = [] } = data;
+    const { pipes = [], blends = [], logs = [], bottles = [], tastings = [] } = data;
 
-    if (pipes.length === 0 && blends.length === 0) {
-      return []; // No data to generate story
+    if (pipes.length === 0 && blends.length === 0 && bottles.length === 0) {
+      return [];
     }
 
-    const analysis = this.analyzeCollection({ pipes, blends, logs });
+    const analysis = this.analyzeCollection({ pipes, blends, logs, bottles, tastings });
     const highlights = this.identifyHighlights(analysis);
     const cards = this.buildStoryCards(highlights, analysis);
 
@@ -21,11 +21,10 @@ export const storyEngine = {
   },
 
   analyzeCollection(data) {
-    const { pipes = [], blends = [], logs = [] } = data;
+    const { pipes = [], blends = [], logs = [], bottles = [], tastings = [] } = data;
 
     // Analyze pipe usage
     const pipeUsage = {};
-    const pipeLastUsed = {};
     const logsByPipe = {};
 
     logs.forEach(log => {
@@ -36,7 +35,6 @@ export const storyEngine = {
       }
     });
 
-    // Find most smoked pipe
     let mostSmokedPipe = null;
     let maxBowls = 0;
     for (const [pipeId, bowls] of Object.entries(pipeUsage)) {
@@ -46,7 +44,6 @@ export const storyEngine = {
       }
     }
 
-    // Analyze blend usage
     const blendUsage = {};
     logs.forEach(log => {
       if (log?.blend_id) {
@@ -63,86 +60,87 @@ export const storyEngine = {
       }
     }
 
-    // Calculate streak
+    // Analyze whiskey tastings
+    const bottleTastingCount = {};
+    const bottleRatings = {};
+    tastings.forEach(t => {
+      if (t?.bottle_id) {
+        bottleTastingCount[t.bottle_id] = (bottleTastingCount[t.bottle_id] || 0) + 1;
+        if (t.rating) {
+          if (!bottleRatings[t.bottle_id]) bottleRatings[t.bottle_id] = [];
+          bottleRatings[t.bottle_id].push(Number(t.rating));
+        }
+      }
+    });
+
+    let mostTastedBottle = null;
+    let maxTastings = 0;
+    for (const [bottleId, count] of Object.entries(bottleTastingCount)) {
+      if (count > maxTastings) {
+        maxTastings = count;
+        mostTastedBottle = bottles.find(b => b.id === bottleId);
+      }
+    }
+
+    let highestRatedBottle = null;
+    let highestAvgRating = 0;
+    for (const [bottleId, ratings] of Object.entries(bottleRatings)) {
+      if (ratings.length === 0) continue;
+      const avg = ratings.reduce((s, r) => s + r, 0) / ratings.length;
+      if (avg > highestAvgRating) {
+        highestAvgRating = avg;
+        highestRatedBottle = bottles.find(b => b.id === bottleId);
+      }
+    }
+
+    // Calculate streak (pipe sessions)
     let longestStreak = 0;
     if (logs.length > 0) {
       const sortedLogs = [...logs].sort((a, b) => {
-        try {
-          return new Date(a.date) - new Date(b.date);
-        } catch {
-          return 0;
-        }
+        try { return new Date(a.date) - new Date(b.date); } catch { return 0; }
       });
-
       let currentStreak = 1;
       for (let i = 1; i < sortedLogs.length; i++) {
         try {
-          const prevDate = new Date(sortedLogs[i - 1].date);
-          const currDate = new Date(sortedLogs[i].date);
-          const daysDiff = differenceInDays(currDate, prevDate);
-
-          if (daysDiff <= 1) {
-            currentStreak++;
-          } else {
-            longestStreak = Math.max(longestStreak, currentStreak);
-            currentStreak = 1;
-          }
-        } catch {
-          // skip
-        }
+          const daysDiff = differenceInDays(new Date(sortedLogs[i].date), new Date(sortedLogs[i - 1].date));
+          if (daysDiff <= 1) { currentStreak++; } else { longestStreak = Math.max(longestStreak, currentStreak); currentStreak = 1; }
+        } catch { /* skip */ }
       }
       longestStreak = Math.max(longestStreak, currentStreak);
     }
 
-    // Calculate collection value using canonical helpers
-    const pipeValue = pipes.reduce((sum, p) => {
-      const val = Number(p.estimated_value) || 0;
-      return sum + val;
-    }, 0);
-    
-    // FIXED: Use canonical tobacco value calculation (value per oz * actual quantity)
-    // Import calculateTotalOzFromBlend if available or inline the logic
+    const pipeValue = pipes.reduce((sum, p) => sum + (Number(p.estimated_value) || 0), 0);
     const blendValue = blends.reduce((sum, b) => {
       const valuePerOz = Number(b.manual_market_value) || Number(b.ai_estimated_value) || 0;
       if (valuePerOz <= 0) return sum;
-      
-      // Calculate total quantity from all formats
-      const tinOz = Number(b.tin_total_quantity_oz) || 0;
-      const bulkOz = Number(b.bulk_total_quantity_oz) || 0;
-      const pouchOz = Number(b.pouch_total_quantity_oz) || 0;
-      const totalOz = tinOz + bulkOz + pouchOz;
-      
+      const totalOz = (Number(b.tin_total_quantity_oz) || 0) + (Number(b.bulk_total_quantity_oz) || 0) + (Number(b.pouch_total_quantity_oz) || 0);
       return sum + (valuePerOz * totalOz);
     }, 0);
+    const whiskeyValue = bottles.reduce((sum, b) => {
+      return sum + (Number(b.collector_value) || Number(b.aftermarket_price) || Number(b.retail_price) || Number(b.purchase_price) || 0);
+    }, 0);
 
-    // Analyze cellar using canonical quantity calculation
     const totalCellarOz = blends.reduce((sum, b) => {
-      const tinOz = Number(b.tin_total_quantity_oz) || 0;
-      const bulkOz = Number(b.bulk_total_quantity_oz) || 0;
-      const pouchOz = Number(b.pouch_total_quantity_oz) || 0;
-      return sum + tinOz + bulkOz + pouchOz;
+      return sum + (Number(b.tin_total_quantity_oz) || 0) + (Number(b.bulk_total_quantity_oz) || 0) + (Number(b.pouch_total_quantity_oz) || 0);
     }, 0);
 
     return {
-      pipes,
-      blends,
-      logs,
+      pipes, blends, logs, bottles, tastings,
       pipeCount: pipes.length,
       blendCount: blends.length,
+      bottleCount: bottles.length,
+      tastingCount: tastings.length,
       totalSessions: logs.length,
-      mostSmokedPipe,
-      mostSmokedBowls: maxBowls,
-      favoriteBlend,
-      favoriteBowls: maxBlendBowls,
+      mostSmokedPipe, mostSmokedBowls: maxBowls,
+      favoriteBlend, favoriteBowls: maxBlendBowls,
+      mostTastedBottle, mostTastedCount: maxTastings,
+      highestRatedBottle, highestAvgRating,
       longestStreak,
       totalBowls: logs.reduce((sum, l) => sum + (l.bowls_used || 1), 0),
-      pipeValue,
-      blendValue,
-      totalValue: pipeValue + blendValue,
+      pipeValue, blendValue, whiskeyValue,
+      totalValue: pipeValue + blendValue + whiskeyValue,
       totalCellarOz,
-      pipeUsage,
-      blendUsage,
-      logsByPipe
+      pipeUsage, blendUsage, logsByPipe,
     };
   },
 
@@ -207,38 +205,38 @@ export const storyEngine = {
 
     // Cellar Size
     if (analysis.blendCount > 0) {
-      highlights.push({
-        type: 'cellarSize',
-        data: { count: analysis.blendCount, oz: analysis.totalCellarOz },
-        priority: 4
-      });
+      highlights.push({ type: 'cellarSize', data: { count: analysis.blendCount, oz: analysis.totalCellarOz }, priority: 4 });
+    }
+
+    // Most Tasted Bottle (WhiskeyKeeper)
+    if (analysis.mostTastedBottle && analysis.mostTastedCount > 0) {
+      highlights.push({ type: 'mostTastedBottle', data: analysis.mostTastedBottle, tastings: analysis.mostTastedCount, priority: 8 });
+    }
+
+    // Highest Rated Bottle (WhiskeyKeeper)
+    if (analysis.highestRatedBottle && analysis.highestAvgRating > 0) {
+      highlights.push({ type: 'highestRatedBottle', data: analysis.highestRatedBottle, rating: analysis.highestAvgRating, priority: 7 });
+    }
+
+    // Bottle Count (WhiskeyKeeper)
+    if (analysis.bottleCount > 0) {
+      highlights.push({ type: 'bottleCount', data: { count: analysis.bottleCount }, priority: 4 });
     }
 
     // Collector Milestone
     const milestones = this.checkMilestones(analysis);
     if (milestones.length > 0) {
-      highlights.push({
-        type: 'milestone',
-        data: milestones[0],
-        priority: 11 // High priority
-      });
+      highlights.push({ type: 'milestone', data: milestones[0], priority: 11 });
     }
 
     // Collector Journey (always include)
     highlights.push({
       type: 'journey',
-      data: {
-        sessions: analysis.totalSessions,
-        pipes: analysis.pipeCount,
-        blends: analysis.blendCount
-      },
+      data: { sessions: analysis.totalSessions, pipes: analysis.pipeCount, blends: analysis.blendCount, bottles: analysis.bottleCount, tastings: analysis.tastingCount },
       priority: 3
     });
 
-    // Sort by priority (descending) and limit to 10 cards
-    return highlights
-      .sort((a, b) => b.priority - a.priority)
-      .slice(0, 10);
+    return highlights.sort((a, b) => b.priority - a.priority).slice(0, 10);
   },
 
   checkMilestones(analysis) {
