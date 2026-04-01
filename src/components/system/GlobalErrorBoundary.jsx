@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { AlertCircle } from 'lucide-react';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { AlertCircle } from "lucide-react";
 
 class GlobalErrorBoundary extends React.Component {
   constructor(props) {
@@ -13,118 +13,132 @@ class GlobalErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Enhanced logging for i18n debugging
     const currentLang = (() => {
       try {
-        return localStorage.getItem('pk_lang') || 'unknown';
+        return localStorage.getItem("pk_lang") || "unknown";
       } catch {
-        return 'unknown';
+        return "unknown";
       }
     })();
 
     const currentRoute = (() => {
       try {
-        return window.location.pathname || 'unknown';
+        return window.location.pathname || "unknown";
       } catch {
-        return 'unknown';
+        return "unknown";
       }
     })();
 
     const errorDetails = {
-      error: error?.toString() || 'Unknown error',
-      message: error?.message || '',
-      stack: error?.stack || '',
-      componentStack: errorInfo?.componentStack || '',
+      error: error?.toString() || "Unknown error",
+      message: error?.message || "",
+      stack: error?.stack || "",
+      componentStack: errorInfo?.componentStack || "",
       language: currentLang,
       route: currentRoute,
       timestamp: new Date().toISOString(),
     };
 
     this.setState({ diagnostics: errorDetails });
-    console.error('[GlobalErrorBoundary] Error caught:', errorDetails);
-    
-    // Check for i18n-related errors
-    if (error?.message?.includes('is not a function') || 
-        error?.message?.includes('useTranslation') ||
-        error?.message?.includes('formatCurrency')) {
-      console.error('[GlobalErrorBoundary] ⚠️ i18n/formatter error detected!', {
-        language: currentLang,
-        route: currentRoute,
-        errorMsg: error?.message
-      });
-    }
+    console.error("[GlobalErrorBoundary] Error caught:", errorDetails);
   }
+
+  handleTryAgain = () => {
+    try {
+      localStorage.setItem("pk_lang", "en");
+    } catch {}
+    this.setState({ hasError: false, error: null, diagnostics: null });
+  };
+
+  handleReload = () => {
+    try {
+      localStorage.setItem("pk_lang", "en");
+    } catch {}
+    window.location.reload();
+  };
 
   render() {
     if (this.state.hasError) {
-      const isI18nError = this.state.error?.message?.includes('useTranslation') || 
-                          this.state.error?.message?.includes('is not a function') ||
-                          this.state.error?.message?.includes('formatCurrency');
-
       return (
-        <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] flex items-center justify-center p-6">
-          <div className="max-w-md w-full bg-[#1A2B3A] rounded-2xl p-8 border border-[#A35C5C]/30 shadow-2xl">
+        <div
+          className="min-h-screen flex items-center justify-center p-6"
+          style={{
+            background:
+              "radial-gradient(circle at top, rgba(40,28,18,0.95), rgba(10,8,8,1) 60%)",
+          }}
+        >
+          <div
+            className="max-w-md w-full rounded-3xl p-8 shadow-2xl"
+            style={{
+              background:
+                "linear-gradient(145deg, rgba(38,26,18,0.98), rgba(22,16,12,1))",
+              border: "1px solid rgba(180,140,75,0.22)",
+            }}
+          >
             <div className="flex flex-col items-center text-center gap-4">
               <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+                src="/branding/collectionkeeper-logo.png"
                 alt="CollectionKeeper"
-                className="w-16 h-16 object-contain"
+                className="w-20 h-20 object-contain"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg";
+                }}
               />
-              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center -mt-2">
-                <AlertCircle className="w-6 h-6 text-red-500" />
+
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center"
+                style={{
+                  background: "rgba(180,80,80,0.14)",
+                  border: "1px solid rgba(180,80,80,0.28)",
+                }}
+              >
+                <AlertCircle className="w-6 h-6 text-[#D36B6B]" />
               </div>
-              
+
               <div>
-                <h1 className="text-2xl font-bold text-[#E0D8C8] mb-2">Something went wrong</h1>
-                <p className="text-[#E0D8C8]/70 text-sm">
-                  An unexpected error occurred. Please refresh the page.
+                <h1 className="text-4xl font-bold text-[#F5F1E7] mb-3 leading-tight">
+                  Something went wrong
+                </h1>
+                <p className="text-[#E0D8C8]/78 text-lg leading-relaxed">
+                  An unexpected error occurred. Please try again or reload the page.
                 </p>
               </div>
-              
-              {isI18nError && (
-                <div className="w-full p-3 bg-amber-900/20 border border-amber-600/30 rounded text-left">
-                  <p className="text-xs text-amber-400">
-                    Translation error detected. <br/>
-                    Language: {this.state.diagnostics?.language || 'unknown'}<br/>
-                    Route: {this.state.diagnostics?.route || 'unknown'}
-                  </p>
-                </div>
-              )}
-              
-              {import.meta?.env?.DEV && (
-                <details className="w-full mt-4 text-left">
-                  <summary className="text-xs text-[#E0D8C8]/50 cursor-pointer hover:text-[#E0D8C8]/70">
+
+              {import.meta?.env?.DEV ? (
+                <details className="w-full mt-2 text-left">
+                  <summary className="text-xs text-[#E0D8C8]/55 cursor-pointer hover:text-[#E0D8C8]/75">
                     Error Details
                   </summary>
-                  <pre className="mt-2 text-xs text-red-400 bg-black/20 p-3 rounded overflow-auto max-h-32">
-                    {this.state.error?.stack || this.state.error?.message || String(this.state.error)}
+                  <pre className="mt-2 text-xs text-red-300 bg-black/25 p-3 rounded overflow-auto max-h-40 whitespace-pre-wrap">
+                    {this.state.error?.stack ||
+                      this.state.error?.message ||
+                      String(this.state.error)}
                   </pre>
                 </details>
-              )}
-              
+              ) : null}
+
               <div className="flex gap-3 mt-4 w-full">
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    // Clear potential bad i18n state
-                    try {
-                      localStorage.setItem('pk_lang', 'en');
-                    } catch {}
-                    this.setState({ hasError: false, error: null, diagnostics: null });
-                  }}
+                  onClick={this.handleTryAgain}
                   className="flex-1"
+                  style={{
+                    borderColor: "rgba(180,140,75,0.28)",
+                    color: "#F0E6D6",
+                    background: "rgba(255,255,255,0.02)",
+                  }}
                 >
                   Try Again
                 </Button>
                 <Button
-                  onClick={() => {
-                    // Reset to English on critical errors
-                    try {
-                      if (isI18nError) localStorage.setItem('pk_lang', 'en');
-                    } catch {}
-                    window.location.reload();
-                  }}
+                  onClick={this.handleReload}
                   className="flex-1"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, rgba(180,100,100,1), rgba(150,80,80,1))",
+                    color: "#fff",
+                  }}
                 >
                   Reload Page
                 </Button>
