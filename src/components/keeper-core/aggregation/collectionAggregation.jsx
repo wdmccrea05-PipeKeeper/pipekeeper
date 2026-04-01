@@ -11,32 +11,9 @@
 
 import { base44 } from '@/api/base44Client';
 import { shouldFetchModuleData } from '@/components/utils/moduleReleaseState';
+import { getBottleValue, getPipeValue } from '@/components/keeper-core/value/valueAggregation';
 
-/**
- * Get the best available value for a bottle
- * Priority: collector_value > aftermarket_price > retail_price > purchase_price > 0
- */
-function getBottleValue(bottle) {
-  return (
-    Number(bottle.collector_value) ||
-    Number(bottle.aftermarket_price) ||
-    Number(bottle.retail_price) ||
-    Number(bottle.purchase_price) ||
-    0
-  );
-}
 
-/**
- * Get the best available value for a pipe
- * Priority: estimated_value > purchase_price > 0
- */
-function getPipeValue(pipe) {
-  return (
-    Number(pipe.estimated_value) ||
-    Number(pipe.purchase_price) ||
-    0
-  );
-}
 
 /**
  * Get total tobacco value: value per oz × total oz across all container types.

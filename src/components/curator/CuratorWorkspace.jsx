@@ -806,6 +806,25 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         });
 
         setActionRun(result);
+
+        // Persist grouped results in chat message meta so they survive panel dismiss/replay
+        if (result.status === 'success' && (result.groups?.length > 0 || result.items?.length > 0)) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `action-${requestId}`,
+              role: 'assistant',
+              content: result.summary || '',
+              meta: {
+                groups: result.groups || [],
+                actionItems: result.items || [],
+                summary: result.summary,
+                actionType,
+                itemStates: {},
+              },
+            },
+          ]);
+        }
       } catch (err) {
         setActionRun({
           requestId,

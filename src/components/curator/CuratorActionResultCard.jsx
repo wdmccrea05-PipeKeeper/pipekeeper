@@ -33,6 +33,40 @@ function humanizeRecordType(recordType) {
   }
 }
 
+function SessionLine({ label, value }) {
+  if (!value) return null;
+  return (
+    <div className="text-xs uppercase tracking-wide text-amber-500/78">
+      {label}: {value}
+    </div>
+  );
+}
+
+function buildSessionItemLines(item) {
+  const pipeName =
+    item.pipeName ||
+    item.recordName ||
+    item.pipe?.name ||
+    item.session?.pipeName ||
+    null;
+
+  const blendName =
+    item.blendName ||
+    item.blend?.name ||
+    item.session?.blendName ||
+    null;
+
+  const bottleName =
+    item.bottleName ||
+    item.pourName ||
+    item.whiskeyName ||
+    item.bottle?.name ||
+    item.session?.bottleName ||
+    null;
+
+  return { pipeName, blendName, bottleName };
+}
+
 export default function CuratorActionResultCard({
   item,
   state,
@@ -78,6 +112,8 @@ export default function CuratorActionResultCard({
     ? item.characteristics.filter(Boolean)
     : [];
 
+  const { pipeName, blendName, bottleName } = buildSessionItemLines(item);
+
   return (
     <div className="rounded-xl border border-amber-500/20 bg-black/20 p-4">
       <div className="min-w-0">
@@ -85,23 +121,11 @@ export default function CuratorActionResultCard({
           {displayTitle}
         </div>
 
-        {isSession ? (
-          <div className="mt-1 space-y-0.5">
-            {item.recordName && (
-              <div className="text-xs uppercase tracking-wide text-amber-500/70">
-                Pipe: {item.recordName}
-              </div>
-            )}
-            {item.blendName && (
-              <div className="text-xs uppercase tracking-wide text-amber-500/70">
-                Blend: {item.blendName}
-              </div>
-            )}
-            {item.bottleName && (
-              <div className="text-xs uppercase tracking-wide text-amber-500/70">
-                Pour: {item.bottleName}
-              </div>
-            )}
+        {isSession || isPairing ? (
+          <div className="mt-2 space-y-1">
+            <SessionLine label="Pipe" value={pipeName} />
+            <SessionLine label="Blend" value={blendName} />
+            <SessionLine label="Pour" value={bottleName} />
           </div>
         ) : (
           (item.recordName || item.recordType || item.category || item.anchorName) && (
@@ -117,12 +141,12 @@ export default function CuratorActionResultCard({
           )
         )}
 
-        <div className="mt-2 text-sm text-amber-50/85">
+        <div className="mt-3 text-sm text-amber-50/85">
           {displayExplanation}
         </div>
 
         {displayRationale && displayRationale !== displayExplanation && (
-          <div className="mt-2 text-xs text-amber-50/60">
+          <div className="mt-2 text-xs text-amber-50/65 whitespace-pre-line">
             {displayRationale}
           </div>
         )}
