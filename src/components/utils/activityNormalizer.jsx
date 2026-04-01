@@ -4,15 +4,73 @@
  *
  * Canonical activity shape:
  *   {
- *     id:       string  — unique stable key
+ *     id:       string
  *     type:     'session' | 'tasting'
- *     date:     string  — ISO date string
- *     title:    string  — primary display text
- *     subtitle: string  — secondary display text
- *     recordId: string | null  — primary record id (pipe_id or bottle_id)
- *     blendId:  string | null  — tobacco blend id (sessions only)
+ *     date:     string
+ *     title:    string
+ *     subtitle: string
+ *     recordId: string | null
+ *     blendId:  string | null
+ *     destination: string
  *   }
  */
+
+function toDisplayString(value) {
+  if (value === null || value === undefined || value === "") return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+
+  if (Array.isArray(value)) {
+    return value.map(toDisplayString).filter(Boolean).join(", ");
+  }
+
+  if (typeof value === "object") {
+    return (
+      value.label ||
+      value.name ||
+      value.title ||
+      value.value ||
+      value.display ||
+      ""
+    );
+  }
+
+  return "";
+}
+
+function normalizeDateValue(value) {
+  if (!value) return "";
+  try {
+    const dt = new Date(value);
+    if (Number.isNaN(dt.getTime())) return "";
+    return dt.toISOString();
+  } catch {
+    return "";
+  }
+}
+
+function formatActivityDate(dateString) {
+  if (!dateString) return "";
+  try {
+    const dt = new Date(dateString);
+    if (Number.isNaN(dt.getTime())) return "";
+    return dt.toLocaleDateString();
+  } catch {
+    return "";
+  }
+}
+
+function semanticActivityKey(item) {
+  const normalizedDate = item.date ? item.date.slice(0, 19) : "";
+  return [
+    item.type || "",
+    item.title || "",
+    item.subtitle || "",
+    item.recordId || "",
+    item.blendId || "",
+    normalizedDate,
+  ].join("::");
+}
 
 /**
  * Normalize a SmokingLog entry.
@@ -20,17 +78,26 @@
  * @returns {object}
  */
 export function normalizeSmokingLog(log) {
-  const title = log.blend_name || log.pipe_name || 'Pipe Session';
-  const subtitle = `${log.pipe_name || 'Pipe session'}${log.date ? ' · ' + formatActivityDate(log.date) : ''}`;
+  const pipeName = toDisplayString(log.pipe_name);
+  const blendName = toDisplayString(log.blend_name);
+  const activityDate = log.date || log.created_date || log.created_at || "";
+
+  const title = blendName || pipeName || "Pipe Session";
+  const subtitle = `${pipeName || "Pipe session"}${
+    activityDate ? " · " + formatActivityDate(activityDate) : ""
+  }`;
+
   return {
-    id: log.id || `smoking_${log.pipe_id}_${log.date}`,
-    type: 'session',
-    date: log.date || log.created_date || '',
+    id: log.id || `smoking_${log.pipe_id || "none"}_${activityDate || "unknown"}`,
+    type: "session",
+    date: normalizeDateValue(activityDate),
     title,
     subtitle,
     recordId: log.pipe_id || null,
     blendId: log.blend_id || null,
-    destination: log.pipe_id ? `/PipeDetail?id=${encodeURIComponent(log.pipe_id)}` : '/PipeKeeper',
+    destination: log.pipe_id
+      ? `/PipeDetail?id=${encodeURIComponent(log.pipe_id)}`
+      : "/PipeKeeper",
   };
 }
 
@@ -40,58 +107,70 @@ export function normalizeSmokingLog(log) {
  * @returns {object}
  */
 export function normalizeTastingLog(log) {
-  const title = log.bottle_name || log.bottle_id || 'Whiskey Tasting';
-  const dateStr = log.tasting_date || log.date;
-  const subtitle = `Whiskey tasting${dateStr ? ' · ' + formatActivityDate(dateStr) : ''}`;
+  const bottleName = toDisplayString(log.bottle_name) || toDisplayString(log.bottle);
+  const activityDate = log.tasting_date || log.date || log.created_date || log.created_at || "";
+
   return {
-    id: log.id || `tasting_${log.bottle_id}_${log.tasting_date || log.date}`,
-    type: 'tasting',
-    date: log.tasting_date || log.date || log.created_date || '',
-    title,
-    subtitle,
+    id: log.id || `tasting_${log.bottle_id || "none"}_${activityDate || "unknown"}`,
+    type: "tasting",
+    date: normalizeDateValue(activityDate),
+    title: bottleName || "Whiskey Tasting",
+    subtitle: `Whiskey tasting${
+      activityDate ? " · " + formatActivityDate(activityDate) : ""
+    }`,
     recordId: log.bottle_id || null,
     blendId: null,
-    destination: log.bottle_id ? `/BottleDetail?id=${encodeURIComponent(log.bottle_id)}` : '/Tastings',
+    destination: log.bottle_id
+      ? `/BottleDetail?id=${encodeURIComponent(log.bottle_id)}`
+      : "/Tastings",
   };
 }
 
 /**
- * Format a date string to a short locale date for display.
- * @param {string} dateString
- * @returns {string}
- */
-function formatActivityDate(dateString) {
-  if (!dateString) return '';
-  try {
-    return new Date(dateString).toLocaleDateString();
-  } catch {
-    return '';
-  }
-}
-
-/**
  * Merge and sort SmokingLogs + TastingLogs into a unified chronological feed.
+ * Also removes exact id duplicates and semantic duplicates.
  *
  * @param {object[]} smokingLogs
  * @param {object[]} tastingLogs
- * @param {object}   options
- * @param {number}   [options.limit=20]  — max items to return
+ * @param {object} options
+ * @param {number} [options.limit=20]
  * @returns {object[]}
  */
-export function buildUnifiedActivityFeed(smokingLogs = [], tastingLogs = [], { limit = 20 } = {}) {
-  const dedupedSmoking = [...new Map(smokingLogs.map(l => [l.id, l])).values()];
-  const dedupedTastings = [...new Map(tastingLogs.map(l => [l.id, l])).values()];
+export function buildUnifiedActivityFeed(
+  smokingLogs = [],
+  tastingLogs = [],
+  { limit = 20 } = {}
+) {
+  const dedupedSmokingById = [...new Map((smokingLogs || []).map((l) => [l.id || JSON.stringify(l), l])).values()];
+  const dedupedTastingsById = [...new Map((tastingLogs || []).map((l) => [l.id || JSON.stringify(l), l])).values()];
 
-  const sessions = dedupedSmoking.map(normalizeSmokingLog);
-  const tastings = dedupedTastings.map(normalizeTastingLog);
+  const normalized = [
+    ...dedupedSmokingById.map(normalizeSmokingLog),
+    ...dedupedTastingsById.map(normalizeTastingLog),
+  ];
 
-  const all = [...sessions, ...tastings].sort((a, b) => {
-    try {
-      return new Date(b.date) - new Date(a.date);
-    } catch {
-      return 0;
+  const semanticMap = new Map();
+  for (const item of normalized) {
+    const key = semanticActivityKey(item);
+    if (!semanticMap.has(key)) {
+      semanticMap.set(key, item);
+      continue;
     }
-  });
 
-  return all.slice(0, limit);
+    const existing = semanticMap.get(key);
+    const existingTime = existing?.date ? new Date(existing.date).getTime() : 0;
+    const currentTime = item?.date ? new Date(item.date).getTime() : 0;
+
+    if (currentTime > existingTime) {
+      semanticMap.set(key, item);
+    }
+  }
+
+  return [...semanticMap.values()]
+    .sort((a, b) => {
+      const aTime = a?.date ? new Date(a.date).getTime() : 0;
+      const bTime = b?.date ? new Date(b.date).getTime() : 0;
+      return bTime - aTime;
+    })
+    .slice(0, limit);
 }
