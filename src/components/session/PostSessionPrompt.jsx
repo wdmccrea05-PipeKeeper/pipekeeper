@@ -119,6 +119,7 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
   const allDecided = externalItems.every((ei) => decisions[ei.label] !== undefined);
 
   const handleSave = async () => {
+    if (saving) return;
     if (!userEmail) {
       toast.error("Unable to identify the current user");
       return;
