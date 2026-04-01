@@ -1009,7 +1009,8 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
               blendId: matchedBlend?.id || "",
             });
           }
-        } else {
+        }
+      } else {
         await applyCuratorRecommendation(item);
         toast.success("Recommendation applied.");
         await Promise.allSettled([
