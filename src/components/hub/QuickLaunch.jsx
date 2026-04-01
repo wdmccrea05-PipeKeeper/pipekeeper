@@ -1,10 +1,14 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Leaf, BookOpen, TrendingUp, Sparkles } from "lucide-react";
 
+import { base44 } from "@/api/base44Client";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useEnabledModules } from "@/components/hooks/useEnabledModules";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import LogSessionSelector from "@/components/session/LogSessionSelector";
+import CombinedSessionModal from "@/components/session/CombinedSessionModal";
 
 function BottleQuickIcon({ className, style }) {
   return (
@@ -76,79 +80,111 @@ function ActionCard({ action, navigate, onClick }) {
 
 export default function QuickLaunch() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
   const { t } = useTranslation();
   const { enabled } = useEnabledModules();
+
   const [showLogSelector, setShowLogSelector] = useState(false);
+  const [showCombinedModal, setShowCombinedModal] = useState(false);
 
   const whiskeyEnabled = enabled.whiskeykeeper;
   const pipekeeperEnabled = enabled.pipekeeper;
   const hasDualSessionModules = whiskeyEnabled && pipekeeperEnabled;
 
+  const { data: combinedSessionData } = useQuery({
+    queryKey: ["quick-launch-combined-session-data", user?.email, pipekeeperEnabled, whiskeyEnabled],
+    enabled: !!user?.email && hasDualSessionModules && showCombinedModal,
+    staleTime: 60 * 1000,
+    queryFn: async () => {
+      const [pipes, blends, bottles] = await Promise.all([
+        pipekeeperEnabled
+          ? base44.entities.Pipe.filter({ created_by: user.email }, "-updated_date", 500).catch(() => [])
+          : Promise.resolve([]),
+        pipekeeperEnabled
+          ? base44.entities.TobaccoBlend.filter({ created_by: user.email }, "-updated_date", 500).catch(() => [])
+          : Promise.resolve([]),
+        whiskeyEnabled
+          ? base44.entities.Bottle.filter({ created_by: user.email }, "-updated_date", 500).catch(() => [])
+          : Promise.resolve([]),
+      ]);
+
+      return {
+        pipes: Array.isArray(pipes) ? pipes : [],
+        blends: Array.isArray(blends) ? blends : [],
+        bottles: Array.isArray(bottles) ? bottles : [],
+      };
+    },
+  });
+
   const handleOpenCombinedSessionFlow = () => {
-    navigate('/Curator', {
-      state: {
-        scope: 'all',
-        seedPrompt: 'Help me plan a combined pipe and whiskey session from my collection and tell me what I should log.',
-        source: 'quick-launch-log-session',
-      },
-    });
+    setShowLogSelector(false);
+    setShowCombinedModal(true);
   };
 
-  const pipeActions = useMemo(() => ([
-    {
-      label: t("quickActions.addPipe", "Add Pipe"),
-      icon: "/branding/pipe-icon.png?v=3",
-      path: "/Pipes?action=add",
-      accent: "#D4A574",
-    },
-    {
-      label: t("quickActions.addBlend", "Add Blend"),
-      icon: Leaf,
-      path: "/Tobacco?action=add",
-      accent: "#7C9A6D",
-    },
-    {
-      label: "Identify Pipe",
-      icon: Sparkles,
-      path: "/PipeKeeper?action=identify",
-      accent: "#F0C58A",
-    },
-    {
-      label: t("quickActions.logSession", "Log Session"),
-      icon: BookOpen,
-      path: "/PipeKeeper?action=log-smoke",
-      accent: "#C87941",
-      onClick: hasDualSessionModules ? () => setShowLogSelector(true) : undefined,
-    },
-    {
-      label: t("nav.insights", "Insights"),
-      icon: TrendingUp,
-      path: "/Insights",
-      accent: "#8B5CF6",
-    },
-  ]), [hasDualSessionModules, t]);
+  const pipeActions = useMemo(
+    () => [
+      {
+        label: t("quickActions.addPipe", "Add Pipe"),
+        icon: "/branding/pipe-icon.png?v=3",
+        path: "/Pipes?action=add",
+        accent: "#D4A574",
+      },
+      {
+        label: t("quickActions.addBlend", "Add Blend"),
+        icon: Leaf,
+        path: "/Tobacco?action=add",
+        accent: "#7C9A6D",
+      },
+      {
+        label: "Identify Pipe",
+        icon: Sparkles,
+        path: "/PipeKeeper?action=identify",
+        accent: "#F0C58A",
+      },
+      {
+        label: t("quickActions.logSession", "Log Session"),
+        icon: BookOpen,
+        path: "/PipeKeeper?action=log-smoke",
+        accent: "#C87941",
+        onClick: hasDualSessionModules ? () => setShowLogSelector(true) : undefined,
+      },
+      {
+        label: t("nav.insights", "Insights"),
+        icon: TrendingUp,
+        path: "/Insights",
+        accent: "#8B5CF6",
+      },
+    ],
+    [hasDualSessionModules, t]
+  );
 
-  const whiskeyActions = useMemo(() => ([
-    {
-      label: t("quickActions.addWhiskey", "Add Whiskey"),
-      icon: BottleQuickIcon,
-      path: "/Whiskey?action=add",
-      accent: "#D4A574",
-    },
-    {
-      label: hasDualSessionModules ? t("quickActions.logSession", "Log Session") : t("quickActions.logTasting", "Log Tasting"),
-      icon: BookOpen,
-      path: "/Tastings?action=log",
-      accent: "#C87941",
-      onClick: hasDualSessionModules ? () => setShowLogSelector(true) : undefined,
-    },
-    {
-      label: t("nav.insights", "Insights"),
-      icon: TrendingUp,
-      path: "/WhiskeyInsights",
-      accent: "#8B5CF6",
-    },
-  ]), [hasDualSessionModules, t]);
+  const whiskeyActions = useMemo(
+    () => [
+      {
+        label: t("quickActions.addWhiskey", "Add Whiskey"),
+        icon: BottleQuickIcon,
+        path: "/Whiskey?action=add",
+        accent: "#D4A574",
+      },
+      {
+        label: hasDualSessionModules
+          ? t("quickActions.logSession", "Log Session")
+          : t("quickActions.logTasting", "Log Tasting"),
+        icon: BookOpen,
+        path: "/Tastings?action=log",
+        accent: "#C87941",
+        onClick: hasDualSessionModules ? () => setShowLogSelector(true) : undefined,
+      },
+      {
+        label: t("nav.insights", "Insights"),
+        icon: TrendingUp,
+        path: "/WhiskeyInsights",
+        accent: "#8B5CF6",
+      },
+    ],
+    [hasDualSessionModules, t]
+  );
 
   return (
     <>
@@ -161,7 +197,7 @@ export default function QuickLaunch() {
             {t("hub.quickLaunch", "Quick Launch")}
           </h2>
 
-          {pipekeeperEnabled && (
+          {pipekeeperEnabled ? (
             <div>
               <SectionTitle label={t("nav.pipekeeper", "PipeKeeper")} />
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -175,9 +211,9 @@ export default function QuickLaunch() {
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
 
-          {whiskeyEnabled && (
+          {whiskeyEnabled ? (
             <div>
               <SectionTitle label={t("nav.whiskeykeeper", "WhiskeyKeeper")} />
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -191,7 +227,7 @@ export default function QuickLaunch() {
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -200,9 +236,24 @@ export default function QuickLaunch() {
         onClose={() => setShowLogSelector(false)}
         pipeEnabled={pipekeeperEnabled}
         whiskeyEnabled={whiskeyEnabled}
-        onSelectPipe={() => navigate('/PipeKeeper?action=log-smoke')}
-        onSelectWhiskey={() => navigate('/Tastings?action=log')}
+        onSelectPipe={() => navigate("/PipeKeeper?action=log-smoke")}
+        onSelectWhiskey={() => navigate("/Tastings?action=log")}
         onSelectCombined={handleOpenCombinedSessionFlow}
+      />
+
+      <CombinedSessionModal
+        isOpen={showCombinedModal}
+        onClose={() => setShowCombinedModal(false)}
+        pipes={combinedSessionData?.pipes || []}
+        blends={combinedSessionData?.blends || []}
+        bottles={combinedSessionData?.bottles || []}
+        onSaved={async () => {
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ["quick-launch-combined-session-data"] }),
+            queryClient.invalidateQueries({ queryKey: ["collection-hub-dashboard"] }),
+            queryClient.invalidateQueries({ queryKey: ["smokingLogs", user?.email] }),
+          ]);
+        }}
       />
     </>
   );
