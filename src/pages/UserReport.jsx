@@ -179,8 +179,8 @@ export default function UserReport() {
   const userCounts = adminMetrics?.userCounts || {};
   const subscriptionBreakdown = adminMetrics?.subscriptionBreakdown || {};
   const usageMetrics = adminMetrics?.usageMetrics || {};
-  const usageAvgPipes = usageMetrics?.avgPipesPerUser || {};
-  const usageAvgTobaccos = usageMetrics?.avgTobaccosPerUser || {};
+  const usageAvgPipes = usageMetrics?.avgPipesPerUser || userMetrics?.avgPipesPerUser || 0;
+  const usageAvgTobaccos = usageMetrics?.avgTobaccosPerUser || userMetrics?.avgTobaccoPerUser || 0;
 
   const consolidatedPaidUsers = userMetrics?.consolidatedPaidUsers || summary.paid_users;
   const consolidatedPaidPercentage = summary.paid_percentage;
@@ -643,13 +643,13 @@ export default function UserReport() {
               <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                 <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Avg Pipes/User</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">
-                  {(usageAvgPipes?.average || 0).toFixed(1)}
+                  {typeof usageAvgPipes === 'object' ? (usageAvgPipes?.average || 0).toFixed(1) : (usageAvgPipes || 0).toFixed(1)}
                 </p>
               </div>
               <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                 <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Avg Tobacco/User</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">
-                  {(usageAvgTobaccos?.average || 0).toFixed(1)}
+                  {typeof usageAvgTobaccos === 'object' ? (usageAvgTobaccos?.average || 0).toFixed(1) : (usageAvgTobaccos || 0).toFixed(1)}
                 </p>
               </div>
             </div>

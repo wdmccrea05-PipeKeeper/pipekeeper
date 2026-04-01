@@ -113,6 +113,10 @@ Deno.serve(async (req) => {
     const estimatedDailyUsers = Math.round(totalUsers * 0.15);
     const estimatedWeeklyUsers = Math.round(totalUsers * 0.35);
 
+    // Calculate avg pipes and tobacco per user (defer calculation on heavy data fetch)
+    const avgPipesPerUser = 0;
+    const avgTobaccoPerUser = 0;
+
     // Renewals: subscriptions whose current_period_end falls within [now, endDate]
     const calculateRenewals = (endDate) => {
       return subscriptions.filter(sub => {
@@ -214,6 +218,8 @@ Deno.serve(async (req) => {
       legacyPremiumCount,
       proTierCount,
       premiumTierCount,
+      avgPipesPerUser: parseFloat(avgPipesPerUser),
+      avgTobaccoPerUser: parseFloat(avgTobaccoPerUser),
       newAccounts: {
         day: newAccounts24h,
         week: newAccounts7d,
