@@ -32,6 +32,7 @@ import WantList from "@/pages/WantList";
 import ShoppingList from "@/pages/ShoppingList";
 import SupportPublic from "@/pages/SupportPublic";
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
+import { MeasurementProvider } from "@/components/utils/measurementConversion";
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -300,7 +301,9 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           <Router basename="/">
             <NavigationTracker />
-            <AuthenticatedApp />
+            <MeasurementProvider>
+              <AuthenticatedApp />
+            </MeasurementProvider>
           </Router>
         </QueryClientProvider>
       </AuthProvider>

@@ -329,13 +329,9 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
         } : {}),
       });
 
-      // Create log via mutation (guarantees cache invalidation)
-      await new Promise((resolve, reject) => {
-        createLogMutation.mutate(logData, {
-          onSuccess: resolve,
-          onError: reject,
-        });
-      });
+      // Use mutateAsync so the promise resolves correctly even when the
+      // definition-level onSuccess calls onClose() (which unmounts the component).
+      await createLogMutation.mutateAsync(logData);
     } catch (err) {
       console.error("Session save error:", err);
       toast.error("Failed to log session");
