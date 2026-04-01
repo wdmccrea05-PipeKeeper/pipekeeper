@@ -134,21 +134,36 @@ Deno.serve(async (req) => {
       }, 0);
     };
 
+    // Deduplicate renewals by user (a user with multiple products = 1 renewing customer)
+    const deduplicateRenewals = (renewalList) => {
+      const uniqueUsers = new Set();
+      const uniqueSubs = [];
+      renewalList.forEach(sub => {
+        const userId = sub.user_email || sub.user_id || sub.created_by;
+        if (userId && !uniqueUsers.has(userId)) {
+          uniqueUsers.add(userId);
+          uniqueSubs.push(sub);
+        }
+      });
+      return uniqueSubs;
+    };
+
     // Returns object with `count` (matches what the UI reads) plus detailed breakdown
     const breakdownByBillingInterval = (renewalList) => {
-      const monthly = renewalList.filter(sub => {
+      const deduped = deduplicateRenewals(renewalList);
+      const monthly = deduped.filter(sub => {
         const interval = String(sub.billing_interval || '').toLowerCase();
         return interval === 'month' || interval === 'monthly';
       });
-      const annual = renewalList.filter(sub => {
+      const annual = deduped.filter(sub => {
         const interval = String(sub.billing_interval || '').toLowerCase();
         return interval === 'year' || interval === 'yearly';
       });
       return {
-        count: renewalList.length,
+        count: deduped.length,
         monthly: monthly.length,
         annual: annual.length,
-        totalAmount: calculateRevenue(renewalList),
+        totalAmount: calculateRevenue(deduped),
         monthlyAmount: calculateRevenue(monthly),
         annualAmount: calculateRevenue(annual),
       };
