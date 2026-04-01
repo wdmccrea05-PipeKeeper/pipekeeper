@@ -122,6 +122,8 @@ export default function BottleListItem({
             {bottle?.type && <MiniBadge>{bottle.type}</MiniBadge>}
             {bottle?.bottle_type && <MiniBadge>{bottle.bottle_type}</MiniBadge>}
             {bottle?.bottle_size && <MiniBadge>{bottle.bottle_size}</MiniBadge>}
+            {bottle?.age && <MiniBadge>{bottle.age}yr</MiniBadge>}
+            {bottle?.abv && <MiniBadge>{bottle.abv}% ABV</MiniBadge>}
             <MiniBadge>{totalCount} total</MiniBadge>
             {inventorySummary.open > 0 && <MiniBadge>{inventorySummary.open} open</MiniBadge>}
             {inventorySummary.sealed > 0 && <MiniBadge>{inventorySummary.sealed} sealed</MiniBadge>}

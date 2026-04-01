@@ -371,13 +371,97 @@ function BottleDetailInner() {
               )}
 
               <InlinePhotoEditor
-                photos={
-                  bottle.photos?.length
-                    ? bottle.photos
-                    : []
-                }
+                photos={bottle.photos?.length ? bottle.photos : []}
                 onPhotosChange={(newPhotos) => updateBottle({ photos: newPhotos })}
               />
+            </div>
+
+            {/* Right info panel */}
+            <div className="p-6 space-y-6">
+              <div>
+                <h1 className="text-3xl font-bold text-[#F5F1E7] break-words leading-tight">{bottle.name}</h1>
+                {(bottle.distillery || bottle.region || bottle.country) && (
+                  <p className="text-[#D8C7A6]/80 mt-1 text-base">
+                    {[bottle.distillery, bottle.region, bottle.country].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+                {(bottle.type || bottle.bottle_type) && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {bottle.bottle_type && (
+                      <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(79,120,180,0.2)', border: '1px solid rgba(79,120,180,0.3)', color: '#C5D9FF' }}>{bottle.bottle_type}</span>
+                    )}
+                    {bottle.type && (
+                      <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(180,140,75,0.18)', border: '1px solid rgba(180,140,75,0.28)', color: '#F5F1E7' }}>{bottle.type}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {unitValue > 0 && (
+                  <DetailStat label={valueSource || 'Value'} value={formatCurrency(unitValue)} icon={DollarSign} />
+                )}
+                {avgRating && (
+                  <DetailStat label="Avg Rating" value={`${avgRating} / 5`} icon={Star} />
+                )}
+                {bottle.age && (
+                  <DetailStat label="Age" value={`${bottle.age} years`} icon={CalendarDays} />
+                )}
+                {bottle.abv && (
+                  <DetailStat label="ABV" value={`${bottle.abv}%`} icon={Sparkles} />
+                )}
+                {bottle.bottle_size && (
+                  <DetailStat label="Bottle Size" value={bottle.bottle_size} icon={Package} />
+                )}
+                {bottle.bottle_count > 1 && (
+                  <DetailStat label="Bottle Count" value={bottle.bottle_count} icon={Package} />
+                )}
+                {bottle.fill_level && (
+                  <DetailStat label="Fill Level" value={bottle.fill_level} icon={Package} />
+                )}
+              </div>
+
+              {(bottle.purchase_price || bottle.purchase_date || bottle.purchase_location || bottle.how_acquired) && (
+                <div className="rounded-2xl p-4 space-y-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
+                  <p className="text-xs uppercase tracking-wider text-[#D4A574] font-semibold mb-3">Acquisition</p>
+                  {bottle.how_acquired && <p className="text-sm text-[#E0D8C8]"><span className="text-[#D8C7A6]/60">How acquired: </span>{bottle.how_acquired}</p>}
+                  {bottle.purchase_price && <p className="text-sm text-[#E0D8C8]"><span className="text-[#D8C7A6]/60">Purchase price: </span>{formatCurrency(bottle.purchase_price)}</p>}
+                  {bottle.purchase_location && <p className="text-sm text-[#E0D8C8]"><span className="text-[#D8C7A6]/60">Location: </span>{bottle.purchase_location}</p>}
+                  {bottle.purchase_date && <p className="text-sm text-[#E0D8C8]"><span className="text-[#D8C7A6]/60">Date: </span>{formatDate(bottle.purchase_date)}</p>}
+                </div>
+              )}
+
+              {bottle.notes && (
+                <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
+                  <p className="text-xs uppercase tracking-wider text-[#D4A574] font-semibold mb-2">Notes</p>
+                  <p className="text-sm text-[#E0D8C8]/90 whitespace-pre-wrap break-words leading-relaxed">{bottle.notes}</p>
+                </div>
+              )}
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={() => { setEditingTasting(null); setShowTastingModal(true); }}
+                  style={{ background: 'linear-gradient(135deg,rgba(196,122,58,1),rgba(160,95,40,1))', color: '#1A120D' }}
+                >
+                  Log Tasting
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowInventoryManager(true)}
+                >
+                  <Package className="w-4 h-4 mr-2" />
+                  Manage Inventory
+                </Button>
+              </div>
+
+              {tastings.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-sm uppercase tracking-wider text-[#D4A574] font-semibold">Tasting Notes ({tastings.length})</h3>
+                  {tastings.map((tasting) => (
+                    <TastingRow key={tasting.id} tasting={tasting} onEdit={(t) => { setEditingTasting(t); setShowTastingModal(true); }} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

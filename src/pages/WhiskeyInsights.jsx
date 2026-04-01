@@ -394,18 +394,18 @@ export default function WhiskeyInsightsPage() {
               </h3>
               {tastingLogs.length > 0 ? (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {tastingLogs.slice(0, 20).map((log, idx) => (
-                    <div key={idx} className="p-4 rounded-lg" style={{
+                  {[...new Map(tastingLogs.map(l => [l.id, l])).values()].slice(0, 50).map((log) => (
+                    <div key={log.id} className="p-4 rounded-lg" style={{
                       background: 'rgba(180,140,75,0.05)',
                       border: '1px solid rgba(180,140,75,0.15)',
                     }}>
-                      <p style={{ color: '#F5F1E7' }}>{log.bottle_name}</p>
+                      <p style={{ color: '#F5F1E7' }} className="font-medium">{log.bottle_name}</p>
                       <p className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>
                         {log.tasting_date && !Number.isNaN(new Date(log.tasting_date).getTime())
                           ? new Date(log.tasting_date).toLocaleDateString()
-                          : 'Unknown date'}{' '}
-                        - {log.notes || ''}
+                          : 'Unknown date'}{log.rating ? ` · ★ ${log.rating}` : ''}
                       </p>
+                      {log.notes ? <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.75)' }}>{log.notes}</p> : null}
                     </div>
                   ))}
                 </div>
@@ -416,49 +416,6 @@ export default function WhiskeyInsightsPage() {
           )}
 
           {/* Stats Tab */}
-          {activeTab === 'stats' && (
-            <div className="rounded-2xl p-6" style={{
-              background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))',
-              border: '1px solid rgba(180, 140, 75, 0.15)',
-            }}>
-              <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-                {t('insights.collectionStats', 'Collection Statistics')}
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-lg" style={{ background: 'rgba(180,140,75,0.08)' }}>
-                  <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Average Consumption</p>
-                  <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{tastingPerWeek} per week</p>
-                </div>
-                <div className="p-4 rounded-lg" style={{ background: 'rgba(16,185,129,0.08)' }}>
-                  <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Whiskey Styles</p>
-                  <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>
-                    {[...new Set(bottles.map(b => b.type).filter(Boolean))].length}
-                  </p>
-                </div>
-                <div className="p-4 rounded-lg" style={{ background: 'rgba(200,121,65,0.08)' }}>
-                  <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Bottle Types</p>
-                  <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{bottleTypes}</p>
-                  <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.45)' }}>
-                    {totalBottles > bottleTypes ? `${totalBottles} total bottles` : 'distinct labels'}
-                  </p>
-                </div>
-                <div className="p-4 rounded-lg" style={{ background: 'rgba(59,130,246,0.08)' }}>
-                  <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Countries Represented</p>
-                  <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>
-                    {[...new Set(bottles.map(b => b.country))].length}
-                  </p>
-                </div>
-                <div className="p-4 rounded-lg" style={{ background: 'rgba(139,92,246,0.08)' }}>
-                  <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Rated Bottles</p>
-                  <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>
-                    {bottles.filter(b => b.rating).length} / {bottles.length}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Trends Tab */}
           {activeTab === 'trends' && (
             <WhiskeyAnalyticsTab bottles={bottles} tastingLogs={tastingLogs} />
           )}
@@ -565,12 +522,13 @@ export default function WhiskeyInsightsPage() {
                    onClick={async () => {
                      try {
                        const csv = [
-                         ['Date', 'Bottle', 'Notes'].join(','),
+                         ['Date', 'Bottle', 'Rating', 'Notes'].join(','),
                          ...tastingLogs.map(l => [
                            l.tasting_date && !Number.isNaN(new Date(l.tasting_date).getTime())
                              ? new Date(l.tasting_date).toLocaleDateString()
                              : '',
                            `"${l.bottle_name || ''}"`,
+                           l.rating || '',
                            `"${(l.notes || '').replace(/"/g, '""')}"`
                          ].join(','))
                        ].join('\n');
@@ -589,6 +547,120 @@ export default function WhiskeyInsightsPage() {
                    Export as CSV
                  </button>
                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg" style={{ background: 'rgba(46,125,92,0.08)', border: '1px solid rgba(46,125,92,0.22)' }}>
+                  <h4 className="font-semibold text-[#F5F1E7] mb-2">Insurance Report</h4>
+                  <p className="text-sm text-[#D8C7A6]/80 mb-3">Export a detailed insurance report with photos, values, and descriptions</p>
+                  <div className="flex gap-2 flex-wrap">
+                    <button
+                      onClick={async () => {
+                        try {
+                          const doc = new jsPDF();
+                          const pw = doc.internal.pageSize.getWidth();
+                          const ph = doc.internal.pageSize.getHeight();
+                          const fmtMoney = (n) => n > 0 ? `$${Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—';
+
+                          doc.setFontSize(20);
+                          doc.setTextColor(40, 20, 10);
+                          doc.text('WhiskeyKeeper — Insurance Report', pw / 2, 20, { align: 'center' });
+                          doc.setFontSize(10);
+                          doc.setTextColor(100, 80, 60);
+                          doc.text(`Generated: ${new Date().toLocaleDateString()}`, pw / 2, 28, { align: 'center' });
+                          doc.text(`Owner: ${user?.full_name || user?.email || ''}`, pw / 2, 34, { align: 'center' });
+
+                          const totalVal = bottles.reduce((sum, b) => sum + getBottleValue(b), 0);
+                          doc.setFontSize(11);
+                          doc.setTextColor(60, 40, 20);
+                          doc.text(`Total Collection Value: ${fmtMoney(totalVal)}`, 20, 44);
+                          doc.text(`Total Bottle Types: ${bottles.length}`, 20, 51);
+
+                          const loadImg = (url) => new Promise((resolve) => {
+                            const img = new Image();
+                            img.crossOrigin = 'anonymous';
+                            img.onload = () => {
+                              try {
+                                const canvas = document.createElement('canvas');
+                                canvas.width = img.naturalWidth;
+                                canvas.height = img.naturalHeight;
+                                canvas.getContext('2d').drawImage(img, 0, 0);
+                                resolve(canvas.toDataURL('image/jpeg', 0.75));
+                              } catch { resolve(null); }
+                            };
+                            img.onerror = () => resolve(null);
+                            img.src = url;
+                          });
+
+                          let y = 62;
+                          for (const [idx, bottle] of bottles.entries()) {
+                            if (y > ph - 60) { doc.addPage(); y = 20; }
+
+                            doc.setDrawColor(180, 140, 75);
+                            doc.setLineWidth(0.4);
+                            doc.line(20, y, pw - 20, y);
+                            y += 5;
+
+                            const photo = bottle.photo || (Array.isArray(bottle.photos) ? bottle.photos[0] : null);
+                            let imgX = 20;
+                            let textX = 20;
+                            if (photo) {
+                              const dataUrl = await loadImg(photo);
+                              if (dataUrl) {
+                                const imgW = 35;
+                                const imgH = 50;
+                                if (y + imgH > ph - 20) { doc.addPage(); y = 20; }
+                                doc.addImage(dataUrl, 'JPEG', imgX, y, imgW, imgH);
+                                textX = imgX + imgW + 5;
+                              }
+                            }
+
+                            const textStartY = y;
+                            doc.setFont(undefined, 'bold');
+                            doc.setFontSize(10);
+                            doc.setTextColor(40, 20, 10);
+                            doc.text(`${idx + 1}. ${bottle.name || 'Unnamed'}`, textX, textStartY + 6);
+
+                            doc.setFont(undefined, 'normal');
+                            doc.setFontSize(9);
+                            doc.setTextColor(60, 40, 20);
+                            let ty = textStartY + 12;
+
+                            const fields = [
+                              bottle.distillery ? `Distillery: ${bottle.distillery}` : null,
+                              [bottle.type, bottle.region, bottle.country].filter(Boolean).join(' | ') || null,
+                              [bottle.age ? `Age: ${bottle.age} yr` : null, bottle.abv ? `ABV: ${bottle.abv}%` : null, bottle.bottle_size || null].filter(Boolean).join(' | ') || null,
+                              `Value: ${fmtMoney(getBottleValue(bottle))}`,
+                              bottle.purchase_price ? `Purchase Price: ${fmtMoney(bottle.purchase_price)}` : null,
+                              bottle.purchase_date ? `Purchased: ${new Date(bottle.purchase_date).toLocaleDateString()}` : null,
+                            ].filter(Boolean);
+
+                            fields.forEach((line) => {
+                              if (ty > ph - 20) { doc.addPage(); ty = 20; }
+                              doc.text(line, textX, ty);
+                              ty += 5;
+                            });
+
+                            if (bottle.notes) {
+                              const notesLines = doc.splitTextToSize(`Notes: ${bottle.notes}`, pw - textX - 20);
+                              if (ty + notesLines.length * 4.5 > ph - 20) { doc.addPage(); ty = 20; }
+                              doc.text(notesLines, textX, ty);
+                              ty += notesLines.length * 4.5;
+                            }
+
+                            y = Math.max(ty, y + (photo ? 55 : 0)) + 6;
+                          }
+
+                          doc.save(`whiskey-insurance-report-${new Date().toISOString().slice(0,10)}.pdf`);
+                        } catch(err) {
+                          console.error('Insurance report failed:', err);
+                        }
+                      }}
+                      className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      style={{ background: 'rgba(46,125,92,0.3)', color: '#F5F1E7', border: '1px solid rgba(46,125,92,0.4)' }}
+                    >
+                      Export as PDF
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
