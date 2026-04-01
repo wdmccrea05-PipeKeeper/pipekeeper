@@ -341,6 +341,10 @@ export default function CombinedSessionModal({
     saveLockRef.current = true;
     setSaving(true);
 
+    if (import.meta.env.DEV) {
+      console.log('[CombinedSession] save started', { pipeMode, blendMode, bottleMode });
+    }
+
     try {
       const nowIso = new Date().toISOString();
       const sessionGroupId = buildSessionGroupId(user.email);
@@ -462,9 +466,17 @@ export default function CombinedSessionModal({
         );
       }
 
+      if (import.meta.env.DEV) {
+        console.log(`[CombinedSession] firing ${operations.length} create operation(s), ${externalItems.length} external item(s)`);
+      }
+
       await Promise.all(operations);
 
       await Promise.resolve(onSaved?.({ sessionGroupId }));
+
+      if (import.meta.env.DEV) {
+        console.log('[CombinedSession] save complete', { sessionGroupId, externalItems: externalItems.length });
+      }
 
       if (externalItems.length > 0) {
         setPostPromptItems(externalItems);
