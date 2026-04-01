@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import LogSessionSelector from '@/components/session/LogSessionSelector';
 import {
   ChevronRight,
@@ -10,6 +10,7 @@ import {
   Activity,
   TrendingUp,
   BookOpen,
+  Heart,
 } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import WhiskeyBottleIcon from '@/components/icons/WhiskeyBottleIcon';
@@ -20,7 +21,6 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import BrandLogo from '@/components/branding/BrandLogo';
-import { Heart } from 'lucide-react';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import { getPipeValue, getBottleValue } from '@/components/keeper-core/value/valueAggregation';
 import { calculateTobaccoCollectionValue } from '@/components/utils/tobaccoQuantityHelpers';
@@ -61,12 +61,19 @@ const MODULE_META = {
 
 function currency(value) {
   const amount = Number(value) || 0;
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
 function SectionTitle({ children, muted = false }) {
   return (
-    <h2 className="text-xs font-semibold uppercase tracking-[0.18em] px-1" style={{ color: muted ? 'rgba(224,216,200,0.34)' : '#8B6239' }}>
+    <h2
+      className="text-xs font-semibold uppercase tracking-[0.18em] px-1"
+      style={{ color: muted ? 'rgba(224,216,200,0.34)' : '#8B6239' }}
+    >
       {children}
     </h2>
   );
@@ -82,13 +89,30 @@ function StatCard({ icon: Icon, label, value, sub, accent = '#C89752' }) {
         boxShadow: '0 10px 26px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)',
       }}
     >
-      <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: `${accent}26`, border: `1px solid ${accent}55` }}>
+      <div
+        className="w-10 h-10 rounded-2xl flex items-center justify-center"
+        style={{ background: `${accent}26`, border: `1px solid ${accent}55` }}
+      >
         <Icon className="w-5 h-5" style={{ color: accent }} />
       </div>
       <div>
-        <p className="text-[11px] uppercase tracking-[0.18em] font-semibold mb-2" style={{ color: `${accent}D8` }}>{label}</p>
-        <div className="text-2xl sm:text-4xl font-bold leading-none break-words" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{value}</div>
-        {sub ? <p className="text-sm mt-2" style={{ color: 'rgba(224,216,200,0.68)' }}>{sub}</p> : null}
+        <p
+          className="text-[11px] uppercase tracking-[0.18em] font-semibold mb-2"
+          style={{ color: `${accent}D8` }}
+        >
+          {label}
+        </p>
+        <div
+          className="text-2xl sm:text-4xl font-bold leading-none break-words"
+          style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+        >
+          {value}
+        </div>
+        {sub ? (
+          <p className="text-sm mt-2" style={{ color: 'rgba(224,216,200,0.68)' }}>
+            {sub}
+          </p>
+        ) : null}
       </div>
     </div>
   );
@@ -114,7 +138,11 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
             style={{ background: `${meta.accent}22`, border: `1px solid ${meta.accent}44` }}
           >
             {icon ? (
-              <img src={icon} alt={meta.label} className="w-9 h-9 sm:w-10 sm:h-10 object-contain" />
+              <img
+                src={icon}
+                alt={meta.label}
+                className="w-9 h-9 sm:w-10 sm:h-10 object-contain"
+              />
             ) : moduleKey === 'pipekeeper' ? (
               <PipeIcon className="w-6 h-6 sm:w-7 sm:h-7" style={{ color: meta.accent }} />
             ) : moduleKey === 'whiskeykeeper' ? (
@@ -143,18 +171,24 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
         </div>
       </div>
 
-      <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.82)' }}>{meta.description}</p>
+      <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.82)' }}>
+        {meta.description}
+      </p>
 
-      {stats.length > 0 && (
+      {stats.length > 0 ? (
         <div className="grid grid-cols-3 gap-3 pt-4 border-t" style={{ borderColor: `${meta.accent}26` }}>
           {stats.map((s) => (
             <div key={s.label}>
-              <div className="text-xl sm:text-2xl font-bold break-words" style={{ color: '#F5F1E7' }}>{s.value}</div>
-              <div className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.62)' }}>{s.label}</div>
+              <div className="text-xl sm:text-2xl font-bold break-words" style={{ color: '#F5F1E7' }}>
+                {s.value}
+              </div>
+              <div className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.62)' }}>
+                {s.label}
+              </div>
             </div>
           ))}
         </div>
-      )}
+      ) : null}
 
       <button
         type="button"
@@ -179,17 +213,42 @@ function ExpandingSoonCard({ moduleKey }) {
   return (
     <div
       className="rounded-[24px] p-5 flex items-center gap-4"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', opacity: 0.82 }}
+      style={{
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        opacity: 0.82,
+      }}
     >
-      <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: `${meta.accent}1C`, border: `1px solid ${meta.accent}30` }}>
-        {icon ? <img src={icon} alt={meta.label} className="w-10 h-10 object-contain opacity-70" /> : null}
+      <div
+        className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+        style={{ background: `${meta.accent}1C`, border: `1px solid ${meta.accent}30` }}
+      >
+        {icon ? (
+          <img src={icon} alt={meta.label} className="w-10 h-10 object-contain opacity-70" />
+        ) : null}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1 flex-wrap">
-          <h3 className="text-xl font-bold" style={{ color: 'rgba(245,241,231,0.65)', fontFamily: "'Georgia', serif" }}>{meta.label}</h3>
-          <span className="text-[11px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(224,216,200,0.5)' }}>Expanding Soon</span>
+          <h3
+            className="text-xl font-bold"
+            style={{ color: 'rgba(245,241,231,0.65)', fontFamily: "'Georgia', serif" }}
+          >
+            {meta.label}
+          </h3>
+          <span
+            className="text-[11px] px-2.5 py-1 rounded-full"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'rgba(224,216,200,0.5)',
+            }}
+          >
+            Expanding Soon
+          </span>
         </div>
-        <p className="text-sm" style={{ color: 'rgba(224,216,200,0.42)' }}>{meta.description}</p>
+        <p className="text-sm" style={{ color: 'rgba(224,216,200,0.42)' }}>
+          {meta.description}
+        </p>
       </div>
       <Clock3 className="w-4 h-4 shrink-0" style={{ color: 'rgba(224,216,200,0.28)' }} />
     </div>
@@ -208,19 +267,27 @@ function QuickAction({ icon: Icon, label, accent, onClick }) {
         boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
       }}
     >
-      <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${accent}24`, border: `1px solid ${accent}45` }}>
+      <div
+        className="w-12 h-12 rounded-2xl flex items-center justify-center"
+        style={{ background: `${accent}24`, border: `1px solid ${accent}45` }}
+      >
         <Icon className="w-5 h-5" color={accent} />
       </div>
-      <span className="text-sm font-semibold text-left" style={{ color: '#F5F1E7' }}>{label}</span>
+      <span className="text-sm font-semibold text-left" style={{ color: '#F5F1E7' }}>
+        {label}
+      </span>
     </button>
   );
 }
 
 export default function CollectionHub() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useCurrentUser();
+
   const [showLogSelector, setShowLogSelector] = useState(false);
   const [showCombinedModal, setShowCombinedModal] = useState(false);
+
   const { enabledModuleKeys, enabled } = useEnabledModules();
   const whiskeyOpenable = enabled.whiskeykeeper;
   const pipekeeperOpenable = enabled.pipekeeper;
@@ -231,9 +298,15 @@ export default function CollectionHub() {
     staleTime: 2 * 60 * 1000,
     queryFn: async () => {
       const [pipes, blends, smokeLogs, bottles, tastings] = await Promise.all([
-        pipekeeperOpenable ? base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 500).catch(() => []) : Promise.resolve([]),
-        pipekeeperOpenable ? base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-updated_date', 500).catch(() => []) : Promise.resolve([]),
-        pipekeeperOpenable ? base44.entities.SmokingLog.filter({ created_by: user.email }, '-date', 1000).catch(() => []) : Promise.resolve([]),
+        pipekeeperOpenable
+          ? base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
+          : Promise.resolve([]),
+        pipekeeperOpenable
+          ? base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
+          : Promise.resolve([]),
+        pipekeeperOpenable
+          ? base44.entities.SmokingLog.filter({ created_by: user.email }, '-date', 1000).catch(() => [])
+          : Promise.resolve([]),
         whiskeyOpenable
           ? base44.entities.Bottle.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
           : Promise.resolve([]),
@@ -241,37 +314,49 @@ export default function CollectionHub() {
           ? base44.entities.TastingLog.filter({ created_by: user.email }, '-tasting_date', 250).catch(() => [])
           : Promise.resolve([]),
       ]);
+
       return { pipes, blends, smokeLogs, bottles, tastings };
     },
   });
 
-  const pipes = pipekeeperOpenable ? (data?.pipes || []) : [];
-  const blends = pipekeeperOpenable ? (data?.blends || []) : [];
-  const smokeLogs = pipekeeperOpenable ? (data?.smokeLogs || []) : [];
-  const bottles = whiskeyOpenable ? (data?.bottles || []) : [];
-  const tastings = whiskeyOpenable ? (data?.tastings || []) : [];
+  const pipes = pipekeeperOpenable ? data?.pipes || [] : [];
+  const blends = pipekeeperOpenable ? data?.blends || [] : [];
+  const smokeLogs = pipekeeperOpenable ? data?.smokeLogs || [] : [];
+  const bottles = whiskeyOpenable ? data?.bottles || [] : [];
+  const tastings = whiskeyOpenable ? data?.tastings || [] : [];
 
   const metrics = useMemo(() => {
-    const pipeValue = pipekeeperOpenable ? pipes.reduce((sum, p) => sum + Number(getPipeValue(p) || 0), 0) : 0;
-    const tobaccoValue = pipekeeperOpenable ? calculateTobaccoCollectionValue(blends) : 0;
-    const whiskeyValue = whiskeyOpenable ? bottles.reduce((sum, b) => sum + Number(getBottleValue(b) || 0), 0) : 0;
+    const pipeValue = pipekeeperOpenable
+      ? pipes.reduce((sum, p) => sum + Number(getPipeValue(p) || 0), 0)
+      : 0;
+    const tobaccoValue = pipekeeperOpenable
+      ? calculateTobaccoCollectionValue(blends)
+      : 0;
+    const whiskeyValue = whiskeyOpenable
+      ? bottles.reduce((sum, b) => sum + Number(getBottleValue(b) || 0), 0)
+      : 0;
+
     const totalValue = pipeValue + tobaccoValue + whiskeyValue;
 
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
     const recentSmokeCount = smokeLogs.filter((log) => {
       const dt = new Date(log.date || log.created_date || 0).getTime();
       return Number.isFinite(dt) && dt >= weekAgo;
     }).length;
+
     const recentTastingCount = tastings.filter((log) => {
       const dt = new Date(log.tasting_date || log.date || log.created_date || 0).getTime();
       return Number.isFinite(dt) && dt >= weekAgo;
     }).length;
+
     const recentSessionsCount = recentSmokeCount + recentTastingCount;
 
     const logsByPipe = smokeLogs.reduce((acc, log) => {
       if (log.pipe_id) acc[log.pipe_id] = (acc[log.pipe_id] || 0) + 1;
       return acc;
     }, {});
+
     const logsByBlend = smokeLogs.reduce((acc, log) => {
       if (log.blend_id) acc[log.blend_id] = (acc[log.blend_id] || 0) + 1;
       return acc;
@@ -326,10 +411,17 @@ export default function CollectionHub() {
   const whiskeyStats = [
     { label: 'Whiskey', value: bottles.length },
     { label: 'Tastings', value: tastings.length },
-    { label: 'Value', value: currency(bottles.reduce((s, b) => s + Number(getBottleValue(b) || 0), 0)) },
+    {
+      label: 'Value',
+      value: currency(bottles.reduce((s, b) => s + Number(getBottleValue(b) || 0), 0)),
+    },
   ];
 
-  const hasHighlights = metrics.mostSmokedPipe || metrics.favoriteBlend || metrics.mostValuablePipe || metrics.mostValuableBottle;
+  const hasHighlights =
+    metrics.mostSmokedPipe ||
+    metrics.favoriteBlend ||
+    metrics.mostValuablePipe ||
+    metrics.mostValuableBottle;
 
   const handleOpenCombinedSessionFlow = () => {
     setShowLogSelector(false);
@@ -338,7 +430,6 @@ export default function CollectionHub() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
-
       <section
         className="rounded-[28px] p-5 sm:p-8"
         style={{
@@ -348,12 +439,22 @@ export default function CollectionHub() {
         }}
       >
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
-          <BrandLogo compact showWordmark={false} imageClassName="w-14 h-14 sm:w-20 sm:h-20 flex-shrink-0" />
+          <BrandLogo
+            compact
+            showWordmark={false}
+            imageClassName="w-14 h-14 sm:w-20 sm:h-20 flex-shrink-0"
+          />
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+            <h1
+              className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight"
+              style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+            >
               CollectionKeeper
             </h1>
-            <p className="text-sm sm:text-base lg:text-lg mt-1 sm:mt-2" style={{ color: 'rgba(224,216,200,0.78)' }}>
+            <p
+              className="text-sm sm:text-base lg:text-lg mt-1 sm:mt-2"
+              style={{ color: 'rgba(224,216,200,0.78)' }}
+            >
               Your unified ecosystem for tracking, curating, and understanding your collections.
             </p>
           </div>
@@ -363,24 +464,117 @@ export default function CollectionHub() {
       <section className="space-y-4">
         <SectionTitle>Collection Overview</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <StatCard icon={TrendingUp} label="Total Value" value={isLoading ? '—' : currency(metrics.totalValue)} sub="Across active collections" accent="#C89752" />
-          {pipekeeperOpenable && <StatCard icon={PipeIcon} label="Pipes" value={isLoading ? '—' : pipes.length} sub="In collection" accent="#B48C4B" />}
-          {pipekeeperOpenable && <StatCard icon={Leaf} label="Blends" value={isLoading ? '—' : blends.length} sub="Tracked blends" accent="#6E8A57" />}
-          {(pipekeeperOpenable || whiskeyOpenable) && <StatCard icon={Flame} label="Recent Sessions" value={isLoading ? '—' : metrics.recentSessionsCount} sub="Pipe sessions + whiskey tastings this week" accent="#B56A5F" />}
-          {whiskeyOpenable && <StatCard icon={WhiskeyKeeperIcon} label="Whiskey" value={isLoading ? '—' : bottles.length} sub="In collection" accent="#B66565" />}
-          {whiskeyOpenable && <StatCard icon={Flame} label="Tastings" value={isLoading ? '—' : tastings.length} sub="Tracked tastings" accent="#A35050" />}
+          <StatCard
+            icon={TrendingUp}
+            label="Total Value"
+            value={isLoading ? '—' : currency(metrics.totalValue)}
+            sub="Across active collections"
+            accent="#C89752"
+          />
+          {pipekeeperOpenable ? (
+            <StatCard
+              icon={PipeIcon}
+              label="Pipes"
+              value={isLoading ? '—' : pipes.length}
+              sub="In collection"
+              accent="#B48C4B"
+            />
+          ) : null}
+          {pipekeeperOpenable ? (
+            <StatCard
+              icon={Leaf}
+              label="Blends"
+              value={isLoading ? '—' : blends.length}
+              sub="Tracked blends"
+              accent="#6E8A57"
+            />
+          ) : null}
+          {pipekeeperOpenable || whiskeyOpenable ? (
+            <StatCard
+              icon={Flame}
+              label="Recent Sessions"
+              value={isLoading ? '—' : metrics.recentSessionsCount}
+              sub="Pipe sessions + whiskey tastings this week"
+              accent="#B56A5F"
+            />
+          ) : null}
+          {whiskeyOpenable ? (
+            <StatCard
+              icon={WhiskeyKeeperIcon}
+              label="Whiskey"
+              value={isLoading ? '—' : bottles.length}
+              sub="In collection"
+              accent="#B66565"
+            />
+          ) : null}
+          {whiskeyOpenable ? (
+            <StatCard
+              icon={Flame}
+              label="Tastings"
+              value={isLoading ? '—' : tastings.length}
+              sub="Tracked tastings"
+              accent="#A35050"
+            />
+          ) : null}
         </div>
       </section>
 
       <section className="space-y-4">
         <SectionTitle>Quick Actions</SectionTitle>
         <div className="flex flex-wrap gap-4">
-          {pipekeeperOpenable && <QuickAction icon={PipeIcon} label="Add Pipe" accent="#C89752" onClick={() => navigate('/Pipes?action=add')} />}
-          {pipekeeperOpenable && <QuickAction icon={Leaf} label="Add Blend" accent="#8E7E60" onClick={() => navigate('/Tobacco?action=add')} />}
-          {whiskeyOpenable && <QuickAction icon={WhiskeyBottleIcon} label="Add Whiskey" accent="#B66565" onClick={() => navigate('/Whiskey?action=add')} />}
-          {(pipekeeperOpenable || whiskeyOpenable) && <QuickAction icon={BookOpen} label="Log Session" accent="#4A7C59" onClick={() => setShowLogSelector(true)} />}
-          <QuickAction icon={Heart} label="Want List" accent="#C89752" onClick={() => navigate('/WantList')} />
-          <QuickAction icon={({ className, ...props }) => <div className={`${className} rounded-lg overflow-hidden bg-white flex items-center justify-center`}><img src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png" className="w-full h-full object-cover" alt="Curator" {...props} /></div>} label="Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
+          {pipekeeperOpenable ? (
+            <QuickAction
+              icon={PipeIcon}
+              label="Add Pipe"
+              accent="#C89752"
+              onClick={() => navigate('/Pipes?action=add')}
+            />
+          ) : null}
+          {pipekeeperOpenable ? (
+            <QuickAction
+              icon={Leaf}
+              label="Add Blend"
+              accent="#8E7E60"
+              onClick={() => navigate('/Tobacco?action=add')}
+            />
+          ) : null}
+          {whiskeyOpenable ? (
+            <QuickAction
+              icon={WhiskeyBottleIcon}
+              label="Add Whiskey"
+              accent="#B66565"
+              onClick={() => navigate('/Whiskey?action=add')}
+            />
+          ) : null}
+          {pipekeeperOpenable || whiskeyOpenable ? (
+            <QuickAction
+              icon={BookOpen}
+              label="Log Session"
+              accent="#4A7C59"
+              onClick={() => setShowLogSelector(true)}
+            />
+          ) : null}
+          <QuickAction
+            icon={Heart}
+            label="Want List"
+            accent="#C89752"
+            onClick={() => navigate('/WantList')}
+          />
+          <QuickAction
+            icon={({ className, ...props }) => (
+              <div className={`${className} rounded-lg overflow-hidden bg-white flex items-center justify-center`}>
+                <img
+                  src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png"
+                  className="w-full h-full object-cover"
+                  alt="Curator"
+                  {...props}
+                />
+              </div>
+            )}
+            label="Curator"
+            accent="#B66565"
+            onClick={() => navigate(createPageUrl('Curator'))}
+          />
         </div>
       </section>
 
@@ -394,7 +588,7 @@ export default function CollectionHub() {
         onSelectCombined={handleOpenCombinedSessionFlow}
       />
 
-      {openableModuleKeys.length > 0 && (
+      {openableModuleKeys.length > 0 ? (
         <section className="space-y-4">
           <SectionTitle>Your Collections</SectionTitle>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -402,13 +596,19 @@ export default function CollectionHub() {
               <ModuleCard
                 key={moduleKey}
                 moduleKey={moduleKey}
-                stats={moduleKey === 'pipekeeper' ? pipeStats : moduleKey === 'whiskeykeeper' ? whiskeyStats : []}
+                stats={
+                  moduleKey === 'pipekeeper'
+                    ? pipeStats
+                    : moduleKey === 'whiskeykeeper'
+                    ? whiskeyStats
+                    : []
+                }
                 onOpen={() => navigate(createPageUrl(MODULE_META[moduleKey].route))}
               />
             ))}
           </div>
         </section>
-      )}
+      ) : null}
 
       <section className="space-y-4">
         <SectionTitle>Collection Intelligence</SectionTitle>
@@ -423,29 +623,50 @@ export default function CollectionHub() {
           }}
         >
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(163,92,92,0.14)', border: '1px solid rgba(163,92,92,0.30)' }}>
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+              style={{
+                background: 'rgba(163,92,92,0.14)',
+                border: '1px solid rgba(163,92,92,0.30)',
+              }}
+            >
               <div className="w-7 h-7 rounded-lg overflow-hidden bg-white flex items-center justify-center">
-                <img src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png" className="w-full h-full object-cover" alt="Curator" />
+                <img
+                  src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png"
+                  className="w-full h-full object-cover"
+                  alt="Curator"
+                />
               </div>
             </div>
             <div>
-              <div className="text-2xl font-bold mb-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>AI Curator</div>
+              <div
+                className="text-2xl font-bold mb-1"
+                style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+              >
+                AI Curator
+              </div>
               <p className="text-base leading-relaxed" style={{ color: 'rgba(224,216,200,0.72)' }}>
                 Get personalized insights, rotation advice, and collection recommendations tailored to your actual collection.
               </p>
             </div>
           </div>
-          <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(163,92,92,0.22)', border: '1px solid rgba(163,92,92,0.38)' }}>
+          <div
+            className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+            style={{
+              background: 'rgba(163,92,92,0.22)',
+              border: '1px solid rgba(163,92,92,0.38)',
+            }}
+          >
             <ChevronRight className="w-5 h-5" style={{ color: '#D47C7C' }} />
           </div>
         </button>
       </section>
 
-      {hasHighlights && (
+      {hasHighlights ? (
         <section className="space-y-4">
           <SectionTitle>Top Highlights</SectionTitle>
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-            {pipekeeperOpenable && metrics.mostSmokedPipe && (
+            {pipekeeperOpenable && metrics.mostSmokedPipe ? (
               <CatalogPlate
                 title="Most Smoked Pipe"
                 value={metrics.mostSmokedPipe.name}
@@ -455,8 +676,9 @@ export default function CollectionHub() {
                 accent="#C87941"
                 onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(metrics.mostSmokedPipe.id)}`)}
               />
-            )}
-            {pipekeeperOpenable && metrics.favoriteBlend && (
+            ) : null}
+
+            {pipekeeperOpenable && metrics.favoriteBlend ? (
               <CatalogPlate
                 title="Favorite Blend"
                 value={metrics.favoriteBlend.name}
@@ -466,8 +688,9 @@ export default function CollectionHub() {
                 accent="#5A7C5A"
                 onClick={() => navigate(`/TobaccoDetail?id=${encodeURIComponent(metrics.favoriteBlend.id)}`)}
               />
-            )}
-            {pipekeeperOpenable && metrics.mostValuablePipe && (
+            ) : null}
+
+            {pipekeeperOpenable && metrics.mostValuablePipe ? (
               <CatalogPlate
                 title="Most Valuable Pipe"
                 value={metrics.mostValuablePipe.name}
@@ -477,8 +700,9 @@ export default function CollectionHub() {
                 accent="#B4824B"
                 onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(metrics.mostValuablePipe.id)}`)}
               />
-            )}
-            {metrics.mostValuableBottle && whiskeyOpenable && (
+            ) : null}
+
+            {whiskeyOpenable && metrics.mostValuableBottle ? (
               <CatalogPlate
                 title="Top Whiskey"
                 value={metrics.mostValuableBottle.name}
@@ -488,12 +712,12 @@ export default function CollectionHub() {
                 accent="#B66565"
                 onClick={() => navigate(`/BottleDetail?id=${encodeURIComponent(metrics.mostValuableBottle.id)}`)}
               />
-            )}
+            ) : null}
           </div>
         </section>
-      )}
+      ) : null}
 
-      {metrics.recentActivity.length > 0 && (
+      {metrics.recentActivity.length > 0 ? (
         <section className="space-y-4">
           <SectionTitle>Recent Activity</SectionTitle>
           <div className="space-y-3">
@@ -505,10 +729,26 @@ export default function CollectionHub() {
                 className="w-full rounded-[22px] p-5 flex items-center gap-4 text-left"
                 style={{
                   background: 'linear-gradient(145deg, rgba(40,28,18,0.92), rgba(24,17,11,0.98))',
-                  border: `1px solid ${activity.type === 'tasting' ? 'rgba(182,101,101,0.24)' : 'rgba(180,140,75,0.18)'}`,
+                  border: `1px solid ${
+                    activity.type === 'tasting'
+                      ? 'rgba(182,101,101,0.24)'
+                      : 'rgba(180,140,75,0.18)'
+                  }`,
                 }}
               >
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: activity.type === 'tasting' ? 'rgba(182,101,101,0.14)' : 'rgba(180,140,75,0.14)', border: activity.type === 'tasting' ? '1px solid rgba(182,101,101,0.24)' : '1px solid rgba(180,140,75,0.24)' }}>
+                <div
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+                  style={{
+                    background:
+                      activity.type === 'tasting'
+                        ? 'rgba(182,101,101,0.14)'
+                        : 'rgba(180,140,75,0.14)',
+                    border:
+                      activity.type === 'tasting'
+                        ? '1px solid rgba(182,101,101,0.24)'
+                        : '1px solid rgba(180,140,75,0.24)',
+                  }}
+                >
                   {activity.type === 'tasting' ? (
                     <WhiskeyKeeperIcon className="w-5 h-5" style={{ color: '#D47C7C' }} />
                   ) : (
@@ -516,22 +756,34 @@ export default function CollectionHub() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-base font-bold break-words line-clamp-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{activity.title}</p>
-                  <p className="text-sm mt-1 break-words line-clamp-1" style={{ color: 'rgba(224,216,200,0.7)' }}>{activity.subtitle}</p>
+                  <p
+                    className="text-base font-bold break-words line-clamp-1"
+                    style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+                  >
+                    {activity.title}
+                  </p>
+                  <p className="text-sm mt-1 break-words line-clamp-1" style={{ color: 'rgba(224,216,200,0.7)' }}>
+                    {activity.subtitle}
+                  </p>
                 </div>
-                <span className="text-sm shrink-0" style={{ color: activity.type === 'tasting' ? '#D47C7C' : '#D4A574' }}>View</span>
+                <span
+                  className="text-sm shrink-0"
+                  style={{ color: activity.type === 'tasting' ? '#D47C7C' : '#D4A574' }}
+                >
+                  View
+                </span>
               </button>
             ))}
           </div>
         </section>
-      )}
+      ) : null}
 
       <section className="space-y-4">
         <SectionTitle>Collection Story</SectionTitle>
         <CollectionStoryCard />
       </section>
 
-      {expandingKeys.length > 0 && (
+      {expandingKeys.length > 0 ? (
         <section className="space-y-4">
           <SectionTitle muted>Expanding Soon</SectionTitle>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -540,7 +792,7 @@ export default function CollectionHub() {
             ))}
           </div>
         </section>
-      )}
+      ) : null}
 
       <CombinedSessionModal
         isOpen={showCombinedModal}
@@ -548,8 +800,13 @@ export default function CollectionHub() {
         pipes={pipes}
         blends={blends}
         bottles={bottles}
+        onSaved={async () => {
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ['collection-hub-dashboard'] }),
+            queryClient.invalidateQueries({ queryKey: ['smokingLogs', user?.email] }),
+          ]);
+        }}
       />
-
     </div>
   );
 }
