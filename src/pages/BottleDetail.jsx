@@ -40,26 +40,66 @@ import {
   resolveBottleValueSource,
 } from "@/components/whiskey/utils/bottleValue";
 
-function safeStr(val, fallback = "—") {
-  if (val === null || val === undefined || val === "") return fallback;
-  if (typeof val === "string" || typeof val === "number" || typeof val === "boolean") {
-    return String(val);
+function safePrimitive(value, fallback = "—") {
+  if (value === null || value === undefined || value === "") return fallback;
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return String(value);
   }
-  if (typeof val === "object") {
+  if (Array.isArray(value)) {
+    const joined = value
+      .map((entry) => safePrimitive(entry, ""))
+      .filter(Boolean)
+      .join(", ");
+    return joined || fallback;
+  }
+  if (typeof value === "object") {
     return (
-      val.label ||
-      val.name ||
-      val.title ||
-      val.value ||
+      value.label ||
+      value.name ||
+      value.title ||
+      value.value ||
+      value.display ||
       fallback
     );
   }
   return fallback;
 }
 
-function safeMaybeStr(val) {
-  const result = safeStr(val, "");
-  return result || "";
+function maybePrimitive(value) {
+  return safePrimitive(value, "");
+}
+
+function safeValueMeta(valueSource) {
+  if (!valueSource) {
+    return { label: "Value", confidence: null };
+  }
+
+  if (
+    typeof valueSource === "string" ||
+    typeof valueSource === "number" ||
+    typeof valueSource === "boolean"
+  ) {
+    return {
+      label: String(valueSource),
+      confidence: null,
+    };
+  }
+
+  if (typeof valueSource === "object") {
+    return {
+      label: safePrimitive(valueSource.label || valueSource.name || "Value", "Value"),
+      confidence:
+        valueSource.confidence === null || valueSource.confidence === undefined
+          ? null
+          : safePrimitive(valueSource.confidence, ""),
+    };
+  }
+
+  return { label: "Value", confidence: null };
 }
 
 function getBottlePhoto(bottle) {
@@ -67,6 +107,7 @@ function getBottlePhoto(bottle) {
     bottle?.photo ||
     bottle?.image ||
     bottle?.image_url ||
+    bottle?.photo_url ||
     (Array.isArray(bottle?.photos) ? bottle.photos[0] : null) ||
     null
   );
@@ -79,8 +120,9 @@ function formatDate(value) {
   return d.toLocaleDateString("en-US");
 }
 
-function DetailStat({ label, value, icon: Icon }) {
-  const displayValue = safeStr(value);
+function DetailStat({ label, value, icon: Icon, helperText = null }) {
+  const displayLabel = safePrimitive(label, "Value");
+  const displayValue = safePrimitive(value);
 
   return (
     <div
@@ -94,13 +136,18 @@ function DetailStat({ label, value, icon: Icon }) {
         <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[rgba(180,140,75,0.12)] border border-[rgba(180,140,75,0.2)]">
           <Icon className="w-4 h-4 text-[#B48C4B]" />
         </div>
-        <div>
-          <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">
-            {label}
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68 break-words">
+            {displayLabel}
           </p>
           <p className="text-lg font-semibold text-[#F5F1E7] mt-1 break-words">
             {displayValue}
           </p>
+          {helperText ? (
+            <p className="text-xs text-[#D8C7A6]/58 mt-1 break-words">
+              {safePrimitive(helperText, "")}
+            </p>
+          ) : null}
         </div>
       </div>
     </div>
@@ -119,14 +166,14 @@ function TastingRow({ tasting, onEdit }) {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-[#F5F1E7]">
-            {tasting.rating ? `⭐ ${safeStr(tasting.rating)}` : "Unrated tasting"}
+            {tasting.rating ? `⭐ ${safePrimitive(tasting.rating)}` : "Unrated tasting"}
           </p>
           <p className="text-xs text-[#D8C7A6]/70 mt-1">
             {formatDate(tasting.tasting_date)} •{" "}
-            {safeStr(tasting.serving_method, "Neat")}
+            {safePrimitive(tasting.serving_method, "Neat")}
           </p>
           <p className="text-sm text-[#E0D8C8]/84 mt-3 break-words whitespace-pre-wrap">
-            {safeStr(tasting.notes, "No notes")}
+            {safePrimitive(tasting.notes, "No notes")}
           </p>
         </div>
 
@@ -288,7 +335,10 @@ function BottleDetailInner() {
   }, [bottleId, userEmail, userLoading]);
 
   const photo = useMemo(() => getBottlePhoto(bottle), [bottle]);
-  const displayName = useMemo(() => safeStr(bottle?.name, "Untitled Bottle"), [bottle]);
+  const displayName = useMemo(
+    () => safePrimitive(bottle?.name, "Untitled Bottle"),
+    [bottle]
+  );
 
   const avgRating = useMemo(() => {
     const rated = tastings.filter(
@@ -300,9 +350,18 @@ function BottleDetailInner() {
     return avg.toFixed(1);
   }, [tastings]);
 
-  const valueSource = useMemo(() => resolveBottleValueSource(bottle), [bottle]);
+  const valueSourceMeta = useMemo(
+    () => safeValueMeta(resolveBottleValueSource(bottle)),
+    [bottle]
+  );
   const unitValue = useMemo(() => resolveBottleUnitValue(bottle), [bottle]);
   const totalValue = useMemo(() => resolveBottleTotalValue(bottle), [bottle]);
+
+  const locationLine = [
+    maybePrimitive(bottle?.distillery),
+    maybePrimitive(bottle?.region),
+    maybePrimitive(bottle?.country),
+  ].filter(Boolean);
 
   if (loading || userLoading) {
     return (
@@ -407,19 +466,9 @@ function BottleDetailInner() {
                   {displayName}
                 </h1>
 
-                {[
-                  safeMaybeStr(bottle.distillery),
-                  safeMaybeStr(bottle.region),
-                  safeMaybeStr(bottle.country),
-                ].filter(Boolean).length > 0 ? (
+                {locationLine.length > 0 ? (
                   <p className="text-[#D8C7A6]/80 mt-1 text-base">
-                    {[
-                      safeMaybeStr(bottle.distillery),
-                      safeMaybeStr(bottle.region),
-                      safeMaybeStr(bottle.country),
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
+                    {locationLine.join(" · ")}
                   </p>
                 ) : null}
 
@@ -434,7 +483,7 @@ function BottleDetailInner() {
                           color: "#C5D9FF",
                         }}
                       >
-                        {safeStr(bottle.bottle_type)}
+                        {safePrimitive(bottle.bottle_type)}
                       </span>
                     ) : null}
 
@@ -447,7 +496,7 @@ function BottleDetailInner() {
                           color: "#F5F1E7",
                         }}
                       >
-                        {safeStr(bottle.type)}
+                        {safePrimitive(bottle.type)}
                       </span>
                     ) : null}
                   </div>
@@ -457,35 +506,43 @@ function BottleDetailInner() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {unitValue > 0 ? (
                   <DetailStat
-                    label={valueSource || "Value"}
+                    label={valueSourceMeta.label || "Value"}
                     value={formatCurrency(unitValue)}
                     icon={DollarSign}
+                    helperText={
+                      valueSourceMeta.confidence
+                        ? `Confidence: ${valueSourceMeta.confidence}`
+                        : null
+                    }
                   />
                 ) : null}
                 {avgRating ? (
                   <DetailStat label="Avg Rating" value={`${avgRating} / 5`} icon={Star} />
                 ) : null}
                 {bottle.age ? (
-                  <DetailStat label="Age" value={`${safeStr(bottle.age)} years`} icon={CalendarDays} />
+                  <DetailStat label="Age" value={`${safePrimitive(bottle.age)} years`} icon={CalendarDays} />
                 ) : null}
                 {bottle.abv ? (
-                  <DetailStat label="ABV" value={`${safeStr(bottle.abv)}%`} icon={Sparkles} />
+                  <DetailStat label="ABV" value={`${safePrimitive(bottle.abv)}%`} icon={Sparkles} />
                 ) : null}
                 {bottle.bottle_size ? (
-                  <DetailStat label="Bottle Size" value={safeStr(bottle.bottle_size)} icon={Package} />
+                  <DetailStat label="Bottle Size" value={safePrimitive(bottle.bottle_size)} icon={Package} />
                 ) : null}
                 {bottle.bottle_count > 1 ? (
-                  <DetailStat label="Bottle Count" value={safeStr(bottle.bottle_count)} icon={Package} />
+                  <DetailStat label="Bottle Count" value={safePrimitive(bottle.bottle_count)} icon={Package} />
                 ) : null}
                 {bottle.fill_level ? (
-                  <DetailStat label="Fill Level" value={safeStr(bottle.fill_level)} icon={Package} />
+                  <DetailStat label="Fill Level" value={safePrimitive(bottle.fill_level)} icon={Package} />
                 ) : null}
                 {totalValue > 0 && bottle.bottle_count > 1 ? (
                   <DetailStat label="Total Value" value={formatCurrency(totalValue)} icon={WhiskeyKeeperIcon} />
                 ) : null}
               </div>
 
-              {bottle.purchase_price || bottle.purchase_date || bottle.purchase_location || bottle.how_acquired ? (
+              {bottle.purchase_price ||
+              bottle.purchase_date ||
+              bottle.purchase_location ||
+              bottle.how_acquired ? (
                 <div
                   className="rounded-2xl p-4 space-y-2"
                   style={{
@@ -499,7 +556,7 @@ function BottleDetailInner() {
                   {bottle.how_acquired ? (
                     <p className="text-sm text-[#E0D8C8]">
                       <span className="text-[#D8C7A6]/60">How acquired: </span>
-                      {safeStr(bottle.how_acquired)}
+                      {safePrimitive(bottle.how_acquired)}
                     </p>
                   ) : null}
                   {bottle.purchase_price ? (
@@ -511,7 +568,7 @@ function BottleDetailInner() {
                   {bottle.purchase_location ? (
                     <p className="text-sm text-[#E0D8C8]">
                       <span className="text-[#D8C7A6]/60">Location: </span>
-                      {safeStr(bottle.purchase_location)}
+                      {safePrimitive(bottle.purchase_location)}
                     </p>
                   ) : null}
                   {bottle.purchase_date ? (
@@ -535,7 +592,7 @@ function BottleDetailInner() {
                     Notes
                   </p>
                   <p className="text-sm text-[#E0D8C8]/90 whitespace-pre-wrap break-words leading-relaxed">
-                    {safeStr(bottle.notes)}
+                    {safePrimitive(bottle.notes)}
                   </p>
                 </div>
               ) : null}
