@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import Stripe from 'npm:stripe@14.21.0';
 
 Deno.serve(async (req) => {
   try {
@@ -26,6 +27,28 @@ Deno.serve(async (req) => {
       }
       return results;
     };
+
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'), { apiVersion: '2023-10-16' });
+
+    // Build a Stripe sub ID → amount map (fetch all active Stripe subs once)
+    const stripeAmountMap = {};
+    let stripeHasMore = true;
+    let stripeStartingAfter = undefined;
+    while (stripeHasMore) {
+      const params = { limit: 100, status: 'active', expand: ['data.plan'] };
+      if (stripeStartingAfter) params.starting_after = stripeStartingAfter;
+      const stripePage = await stripe.subscriptions.list(params);
+      for (const s of stripePage.data) {
+        const amountCents = s.plan?.amount || s.items?.data?.[0]?.price?.unit_amount || 0;
+        stripeAmountMap[s.id] = amountCents / 100;
+      }
+      stripeHasMore = stripePage.has_more;
+      if (stripeHasMore && stripePage.data.length > 0) {
+        stripeStartingAfter = stripePage.data[stripePage.data.length - 1].id;
+      } else {
+        stripeHasMore = false;
+      }
+    }
 
     const [subscriptions, allUsers] = await Promise.all([
       fetchAll(base44.asServiceRole.entities.Subscription),
@@ -93,7 +116,11 @@ Deno.serve(async (req) => {
 
     const calculateRevenue = (renewalList) => {
       return renewalList.reduce((sum, sub) => {
-        const amount = Number(sub.amount) || 0;
+        // Prefer Stripe live amount, fallback to stored amount
+        const stripeId = sub.provider_subscription_id || sub.stripe_subscription_id;
+        const stripeAmount = stripeId ? (stripeAmountMap[stripeId] || 0) : 0;
+        const storedAmount = Number(sub.amount) || 0;
+        const amount = stripeAmount > 0 ? stripeAmount : storedAmount;
         return sum + amount;
       }, 0);
     };
