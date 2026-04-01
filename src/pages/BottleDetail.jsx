@@ -40,6 +40,13 @@ import {
   resolveBottleValueSource,
 } from "@/components/whiskey/utils/bottleValue";
 
+// Safely extract a display string from a field that may be {label, confidence} or a plain value
+function safeStr(val) {
+  if (val === null || val === undefined) return null;
+  if (typeof val === 'object' && val !== null) return val.label || val.value || String(val) || null;
+  return String(val);
+}
+
 function getBottlePhoto(bottle) {
   return (
     bottle?.photo ||
@@ -382,16 +389,16 @@ function BottleDetailInner() {
                 <h1 className="text-3xl font-bold text-[#F5F1E7] break-words leading-tight">{bottle.name}</h1>
                 {(bottle.distillery || bottle.region || bottle.country) && (
                   <p className="text-[#D8C7A6]/80 mt-1 text-base">
-                    {[bottle.distillery, bottle.region, bottle.country].filter(Boolean).join(' · ')}
+                    {[bottle.distillery, bottle.region, bottle.country].map(safeStr).filter(Boolean).join(' · ')}
                   </p>
                 )}
                 {(bottle.type || bottle.bottle_type) && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {bottle.bottle_type && (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(79,120,180,0.2)', border: '1px solid rgba(79,120,180,0.3)', color: '#C5D9FF' }}>{bottle.bottle_type}</span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(79,120,180,0.2)', border: '1px solid rgba(79,120,180,0.3)', color: '#C5D9FF' }}>{safeStr(bottle.bottle_type)}</span>
                     )}
                     {bottle.type && (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(180,140,75,0.18)', border: '1px solid rgba(180,140,75,0.28)', color: '#F5F1E7' }}>{bottle.type}</span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(180,140,75,0.18)', border: '1px solid rgba(180,140,75,0.28)', color: '#F5F1E7' }}>{safeStr(bottle.type)}</span>
                     )}
                   </div>
                 )}
@@ -405,26 +412,26 @@ function BottleDetailInner() {
                   <DetailStat label="Avg Rating" value={`${avgRating} / 5`} icon={Star} />
                 )}
                 {bottle.age && (
-                  <DetailStat label="Age" value={`${bottle.age} years`} icon={CalendarDays} />
+                  <DetailStat label="Age" value={`${safeStr(bottle.age)} years`} icon={CalendarDays} />
                 )}
                 {bottle.abv && (
-                  <DetailStat label="ABV" value={`${bottle.abv}%`} icon={Sparkles} />
+                  <DetailStat label="ABV" value={`${safeStr(bottle.abv)}%`} icon={Sparkles} />
                 )}
                 {bottle.bottle_size && (
-                  <DetailStat label="Bottle Size" value={bottle.bottle_size} icon={Package} />
+                  <DetailStat label="Bottle Size" value={safeStr(bottle.bottle_size)} icon={Package} />
                 )}
                 {bottle.bottle_count > 1 && (
-                  <DetailStat label="Bottle Count" value={bottle.bottle_count} icon={Package} />
+                  <DetailStat label="Bottle Count" value={safeStr(bottle.bottle_count)} icon={Package} />
                 )}
                 {bottle.fill_level && (
-                  <DetailStat label="Fill Level" value={bottle.fill_level} icon={Package} />
+                  <DetailStat label="Fill Level" value={safeStr(bottle.fill_level)} icon={Package} />
                 )}
               </div>
 
               {(bottle.purchase_price || bottle.purchase_date || bottle.purchase_location || bottle.how_acquired) && (
                 <div className="rounded-2xl p-4 space-y-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
                   <p className="text-xs uppercase tracking-wider text-[#D4A574] font-semibold mb-3">Acquisition</p>
-                  {bottle.how_acquired && <p className="text-sm text-[#E0D8C8]"><span className="text-[#D8C7A6]/60">How acquired: </span>{bottle.how_acquired}</p>}
+                  {bottle.how_acquired && <p className="text-sm text-[#E0D8C8]"><span className="text-[#D8C7A6]/60">How acquired: </span>{safeStr(bottle.how_acquired)}</p>}
                   {bottle.purchase_price && <p className="text-sm text-[#E0D8C8]"><span className="text-[#D8C7A6]/60">Purchase price: </span>{formatCurrency(bottle.purchase_price)}</p>}
                   {bottle.purchase_location && <p className="text-sm text-[#E0D8C8]"><span className="text-[#D8C7A6]/60">Location: </span>{bottle.purchase_location}</p>}
                   {bottle.purchase_date && <p className="text-sm text-[#E0D8C8]"><span className="text-[#D8C7A6]/60">Date: </span>{formatDate(bottle.purchase_date)}</p>}
