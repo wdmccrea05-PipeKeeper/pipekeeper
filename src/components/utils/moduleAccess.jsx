@@ -16,7 +16,9 @@
  */
 
 import { KEEPER_MODULES, MODULES } from '@/components/utils/moduleRegistry';
-import { deriveModuleStates, LAUNCHED_MODULES } from '@/components/hooks/useModuleVisibility';
+
+// Derive launched module IDs from the registry (modules where enabled===true)
+const LAUNCHED_MODULES = KEEPER_MODULES.filter(m => m.enabled).map(m => m.moduleKey);
 
 // ─── A. Module EXISTS ────────────────────────────────────────────────────────
 
@@ -170,8 +172,3 @@ export function buildAIEligibleCollection(moduleStates, collections) {
     bottles: isModuleAIEligible('whiskeykeeper', moduleStates) ? bottles : [],
   };
 }
-
-/**
- * Derive module states from a raw profile object (re-export for convenience).
- */
-export { deriveModuleStates };

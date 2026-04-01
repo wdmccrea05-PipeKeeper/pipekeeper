@@ -291,7 +291,11 @@ function MessageBubble({
   onAskCuratorAboutAdvice,
 }) {
   const isUser = message.role === "user";
-  const actionItems = Array.isArray(message?.meta?.actionItems)
+  // Prefer grouped rendering (canonical); fall back to flat actionItems for legacy messages
+  const groups = Array.isArray(message?.meta?.groups) && message.meta.groups.length > 0
+    ? message.meta.groups
+    : null;
+  const actionItems = !groups && Array.isArray(message?.meta?.actionItems)
     ? message.meta.actionItems
     : [];
 
@@ -332,7 +336,38 @@ function MessageBubble({
           )}
         </div>
 
-        {!isUser && actionItems.length > 0 ? (
+        {/* Grouped rendering (canonical) */}
+        {!isUser && groups ? (
+          <div className="mt-3 space-y-4">
+            {groups.map((group) => (
+              <div key={group.groupKey || group.groupTitle}>
+                {group.groupTitle && (
+                  <p className="text-xs font-bold uppercase tracking-wider text-amber-500/70 px-1 mb-1.5">
+                    {group.groupTitle}
+                  </p>
+                )}
+                {group.description && (
+                  <p className="text-xs text-amber-50/50 px-1 mb-2">{group.description}</p>
+                )}
+                <div className="space-y-2">
+                  {(group.items || []).map((item) => (
+                    <CuratorActionResultCard
+                      key={item.id}
+                      item={item}
+                      state={message?.meta?.itemStates?.[item.id] || { status: "idle", error: null }}
+                      onAccept={() => onAcceptAdvice(item, message.id)}
+                      onReject={() => onRejectAdvice(item, message.id)}
+                      onAskCurator={() => onAskCuratorAboutAdvice(item)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {/* Flat fallback (legacy) */}
+        {!isUser && !groups && actionItems.length > 0 ? (
           <div className="mt-3 space-y-3">
             {actionItems.map((item) => (
               <CuratorActionResultCard

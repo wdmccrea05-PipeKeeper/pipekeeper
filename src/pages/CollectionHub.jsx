@@ -25,6 +25,8 @@ import CatalogPlate from '@/components/home/CatalogPlate';
 import { getPipeValue, getBottleValue } from '@/components/keeper-core/value/valueAggregation';
 import { calculateTobaccoCollectionValue } from '@/components/utils/tobaccoQuantityHelpers';
 import { buildUnifiedActivityFeed } from '@/components/utils/activityNormalizer';
+import CollectionStoryCard from '@/components/hub/CollectionStoryCard';
+import CombinedSessionModal from '@/components/session/CombinedSessionModal';
 
 const MODULE_META = {
   pipekeeper: {
@@ -218,6 +220,7 @@ export default function CollectionHub() {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
   const [showLogSelector, setShowLogSelector] = useState(false);
+  const [showCombinedModal, setShowCombinedModal] = useState(false);
   const { enabledModuleKeys, enabled } = useEnabledModules();
   const whiskeyOpenable = enabled.whiskeykeeper;
   const pipekeeperOpenable = enabled.pipekeeper;
@@ -329,13 +332,8 @@ export default function CollectionHub() {
   const hasHighlights = metrics.mostSmokedPipe || metrics.favoriteBlend || metrics.mostValuablePipe || metrics.mostValuableBottle;
 
   const handleOpenCombinedSessionFlow = () => {
-    navigate('/Curator', {
-      state: {
-        scope: 'all',
-        seedPrompt: 'Help me plan a combined pipe and whiskey session from my collection and tell me what I should log.',
-        source: 'collection-hub-log-session',
-      },
-    });
+    setShowLogSelector(false);
+    setShowCombinedModal(true);
   };
 
   return (
@@ -379,7 +377,7 @@ export default function CollectionHub() {
         <div className="flex flex-wrap gap-4">
           {pipekeeperOpenable && <QuickAction icon={PipeIcon} label="Add Pipe" accent="#C89752" onClick={() => navigate('/Pipes?action=add')} />}
           {pipekeeperOpenable && <QuickAction icon={Leaf} label="Add Blend" accent="#8E7E60" onClick={() => navigate('/Tobacco?action=add')} />}
-          {whiskeyOpenable && <QuickAction icon={WhiskeyBottleIcon} label="Add Whiskey" accent="#B66565" onClick={() => navigate('/BottleForm')} />}
+          {whiskeyOpenable && <QuickAction icon={WhiskeyBottleIcon} label="Add Whiskey" accent="#B66565" onClick={() => navigate('/Whiskey?action=add')} />}
           {(pipekeeperOpenable || whiskeyOpenable) && <QuickAction icon={BookOpen} label="Log Session" accent="#4A7C59" onClick={() => setShowLogSelector(true)} />}
           <QuickAction icon={Heart} label="Want List" accent="#C89752" onClick={() => navigate('/WantList')} />
           <QuickAction icon={({ className, ...props }) => <div className={`${className} rounded-lg overflow-hidden bg-white flex items-center justify-center`}><img src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png" className="w-full h-full object-cover" alt="Curator" {...props} /></div>} label="Curator" accent="#B66565" onClick={() => navigate(createPageUrl('Curator'))} />
@@ -528,6 +526,11 @@ export default function CollectionHub() {
         </section>
       )}
 
+      <section className="space-y-4">
+        <SectionTitle>Collection Story</SectionTitle>
+        <CollectionStoryCard />
+      </section>
+
       {expandingKeys.length > 0 && (
         <section className="space-y-4">
           <SectionTitle muted>Expanding Soon</SectionTitle>
@@ -538,6 +541,14 @@ export default function CollectionHub() {
           </div>
         </section>
       )}
+
+      <CombinedSessionModal
+        isOpen={showCombinedModal}
+        onClose={() => setShowCombinedModal(false)}
+        pipes={pipes}
+        blends={blends}
+        bottles={bottles}
+      />
 
     </div>
   );

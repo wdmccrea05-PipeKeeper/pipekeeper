@@ -37,7 +37,7 @@ export const whiskeyAdapter = {
       name: rawBottle.name ?? rawBottle.expression ?? null,
       estimated_value: resolveBottleValue(rawBottle),
       purchase_price: rawBottle.purchase_price ?? null,
-      favorite: rawBottle.is_favorite ?? false,
+      favorite: rawBottle.favorite ?? rawBottle.is_favorite ?? false,
       ai_excluded: rawBottle.ai_excluded ?? false,
       public_visibility: rawBottle.public_visibility ?? true,
       _raw: rawBottle,
@@ -51,9 +51,16 @@ export const whiskeyAdapter = {
       .join(" — ") || rawBottle.name || "Unknown Bottle";
   },
 
-  /** Primary photo URL or null. */
+  /** Primary photo URL or null. Priority: photo → photos[0] → photo_url → image → image_url */
   getPrimaryImage(rawBottle) {
-    return rawBottle.photos?.[0] ?? rawBottle.photo_url ?? null;
+    return (
+      rawBottle.photo ||
+      (Array.isArray(rawBottle.photos) ? rawBottle.photos[0] : null) ||
+      rawBottle.photo_url ||
+      rawBottle.image ||
+      rawBottle.image_url ||
+      null
+    );
   },
 
   /** Canonical value for the bottle. */
