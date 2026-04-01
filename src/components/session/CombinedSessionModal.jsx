@@ -100,6 +100,8 @@ export default function CombinedSessionModal({
 
   const [sessionNotes, setSessionNotes] = useState("");
   const [tastingRating, setTastingRating] = useState("");
+  const [pipeRating, setPipeRating] = useState("");
+  const [blendRating, setBlendRating] = useState("");
   const [saving, setSaving] = useState(false);
   const [postPromptItems, setPostPromptItems] = useState(null);
 
@@ -137,6 +139,8 @@ export default function CombinedSessionModal({
       setExternalBottle({ name: "", distillery: "", type: "" });
       setSessionNotes("");
       setTastingRating("");
+      setPipeRating("");
+      setBlendRating("");
       setSaving(false);
       setPostPromptItems(null);
     }
@@ -213,14 +217,16 @@ export default function CombinedSessionModal({
         operations.push(
           base44.entities.SmokingLog.create({
             created_by: user.email,
-            ...(pipeMode === "collection" && selectedPipe?.id ? { pipe_id: selectedPipe.id } : {}),
-            pipe_name: pipeName,
-            ...(blendMode === "collection" && selectedBlend?.id ? { blend_id: selectedBlend.id } : {}),
-            blend_name: blendName,
+            pipe_id: pipeMode === "collection" && selectedPipe?.id ? selectedPipe.id : "",
+            pipe_name: pipeName || "",
+            blend_id: blendMode === "collection" && selectedBlend?.id ? selectedBlend.id : "",
+            blend_name: blendName || "",
             bowls_used: 1,
             date: nowIso,
             notes: sharedNotes || null,
             session_group_id: sessionGroupId,
+            ...(pipeRating ? { pipe_rating: Number(pipeRating) } : {}),
+            ...(blendRating ? { blend_rating: Number(blendRating) } : {}),
 
             ...(pipeMode === "external" && pipeName
               ? {
@@ -566,6 +572,32 @@ export default function CombinedSessionModal({
               ) : null}
 
               <div className="space-y-3">
+                {getPipeDisplay() ? (
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60 mb-2">Pipe Rating</label>
+                    <select value={pipeRating} onChange={(e) => setPipeRating(e.target.value)} className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.16)] text-[#F5F1E7] outline-none">
+                      <option value="">No rating</option>
+                      <option value="1">1 — Poor</option>
+                      <option value="2">2 — Fair</option>
+                      <option value="3">3 — Good</option>
+                      <option value="4">4 — Very Good</option>
+                      <option value="5">5 — Excellent</option>
+                    </select>
+                  </div>
+                ) : null}
+                {getBlendDisplay() ? (
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60 mb-2">Blend Rating</label>
+                    <select value={blendRating} onChange={(e) => setBlendRating(e.target.value)} className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.16)] text-[#F5F1E7] outline-none">
+                      <option value="">No rating</option>
+                      <option value="1">1 — Poor</option>
+                      <option value="2">2 — Fair</option>
+                      <option value="3">3 — Good</option>
+                      <option value="4">4 — Very Good</option>
+                      <option value="5">5 — Excellent</option>
+                    </select>
+                  </div>
+                ) : null}
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60 mb-2">
                     Session Notes
@@ -581,20 +613,14 @@ export default function CombinedSessionModal({
 
                 {getBottleDisplay() ? (
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60 mb-2">
-                      Whiskey Rating
-                    </label>
-                    <select
-                      value={tastingRating}
-                      onChange={(e) => setTastingRating(e.target.value)}
-                      className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.16)] text-[#F5F1E7] outline-none"
-                    >
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60 mb-2">Whiskey Rating</label>
+                    <select value={tastingRating} onChange={(e) => setTastingRating(e.target.value)} className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.16)] text-[#F5F1E7] outline-none">
                       <option value="">No rating</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
+                      <option value="1">1 — Poor</option>
+                      <option value="2">2 — Fair</option>
+                      <option value="3">3 — Good</option>
+                      <option value="4">4 — Very Good</option>
+                      <option value="5">5 — Excellent</option>
                     </select>
                   </div>
                 ) : null}
