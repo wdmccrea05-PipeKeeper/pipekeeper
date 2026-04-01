@@ -116,11 +116,20 @@ Deno.serve(async (req) => {
 
     const calculateRevenue = (renewalList) => {
       return renewalList.reduce((sum, sub) => {
-        // Prefer Stripe live amount, fallback to stored amount
-        const stripeId = sub.provider_subscription_id || sub.stripe_subscription_id;
-        const stripeAmount = stripeId ? (stripeAmountMap[stripeId] || 0) : 0;
-        const storedAmount = Number(sub.amount) || 0;
-        const amount = stripeAmount > 0 ? stripeAmount : storedAmount;
+        const provider = String(sub.provider || 'stripe').toLowerCase();
+        let amount = 0;
+
+        if (provider === 'stripe') {
+          const stripeId = sub.provider_subscription_id || sub.stripe_subscription_id;
+          amount = stripeId ? (stripeAmountMap[stripeId] || 0) : 0;
+          if (amount === 0) amount = Number(sub.amount) || 0;
+        } else if (provider === 'apple') {
+          // For Apple, use stored amount (no live API available)
+          amount = Number(sub.amount) || 0;
+        } else {
+          amount = Number(sub.amount) || 0;
+        }
+
         return sum + amount;
       }, 0);
     };
