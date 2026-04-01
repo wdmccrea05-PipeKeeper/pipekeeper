@@ -1,3 +1,4 @@
+// TODO: Not currently wired into UI — evaluate for future integration
 import React, { useState } from 'react';
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { Button } from "@/components/ui/button";
