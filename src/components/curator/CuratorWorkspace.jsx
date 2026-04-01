@@ -37,6 +37,7 @@ import { applyCuratorRecommendation } from "./curatorApplyHandlers.js";
 import SavedSessionsPanel from "./SavedSessionsPanel.jsx";
 import FindSimilarPicker from "./FindSimilarPicker.jsx";
 import LogSessionModal from "@/components/home/LogSessionModal";
+import CombinedSessionModal from "@/components/session/CombinedSessionModal";
 import LogTastingModal from "@/components/whiskey/LogTastingModal";
 import extractActionableAdvice from "./extractActionableAdvice.js";
 
@@ -415,6 +416,7 @@ export default function CuratorWorkspace({
   const [pendingFindSimilar, setPendingFindSimilar] = useState(null); // actionType needing anchor pick
   const [logSessionModal, setLogSessionModal] = useState({ isOpen: false, pipeId: "", blendId: "" });
   const [logTastingModal, setLogTastingModal] = useState({ isOpen: false, bottle: null });
+  const [combinedModal, setCombinedModal] = useState({ isOpen: false, preFillPipe: null, preFillBlend: null, preFillBottle: null });
 
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -978,14 +980,29 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
           console.warn("Failed to save session:", e);
         }
 
-        if (item.type === "session_builder") {
-          const matchedBottle = bottles.find((b) => b.name === item.bottleName);
-          if (matchedBottle) {
-            // WhiskeyKeeper session — open tasting log
-            setLogTastingModal({ isOpen: true, bottle: matchedBottle });
+        if (item.type === "session_builder" || item.type === "pairing_recommendation") {
+          const pipeName = item.recordName || item.pipeName || null;
+          const blendName = item.blendName || null;
+          const bottleName = item.bottleName || item.pourName || null;
+
+          const matchedPipe = pipeName ? pipes.find((p) => p.name === pipeName) : null;
+          const matchedBlend = blendName ? blends.find((b) => b.name === blendName) : null;
+          const matchedBottle = bottleName ? bottles.find((b) => b.name === bottleName) : null;
+
+          const hasPipeOrBlend = matchedPipe || matchedBlend || pipeName || blendName;
+          const hasBottle = matchedBottle || bottleName;
+
+          if (hasPipeOrBlend && hasBottle) {
+            // Combined session — open real combined modal
+            setCombinedModal({
+              isOpen: true,
+              preFillPipe: matchedPipe || null,
+              preFillBlend: matchedBlend || null,
+              preFillBottle: matchedBottle || null,
+            });
+          } else if (hasBottle) {
+            setLogTastingModal({ isOpen: true, bottle: matchedBottle || { id: null, name: bottleName } });
           } else {
-            const matchedPipe = pipes.find((p) => p.name === item.recordName);
-            const matchedBlend = blends.find((b) => b.name === item.blendName);
             setLogSessionModal({
               isOpen: true,
               pipeId: matchedPipe?.id || "",
@@ -993,9 +1010,6 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
             });
           }
         } else {
-          toast.success("Session saved.");
-        }
-      } else {
         await applyCuratorRecommendation(item);
         toast.success("Recommendation applied.");
         await Promise.allSettled([
@@ -1192,6 +1206,22 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
           }}
         />
       )}
+
+      <CombinedSessionModal
+        isOpen={combinedModal.isOpen}
+        onClose={() => setCombinedModal({ isOpen: false, preFillPipe: null, preFillBlend: null, preFillBottle: null })}
+        pipes={pipes}
+        blends={blends}
+        bottles={bottles}
+        preFillPipe={combinedModal.preFillPipe}
+        preFillBlend={combinedModal.preFillBlend}
+        preFillBottle={combinedModal.preFillBottle}
+        onSaved={() => {
+          setCombinedModal({ isOpen: false, preFillPipe: null, preFillBlend: null, preFillBottle: null });
+          queryClient.invalidateQueries({ queryKey: ["smokingLogs", user?.email] });
+          queryClient.invalidateQueries({ queryKey: ["tasting-logs"] });
+        }}
+      />
 
       <div
         className="rounded-xl overflow-hidden shadow-2xl flex flex-col"

@@ -92,6 +92,9 @@ export default function CombinedSessionModal({
   pipes = [],
   blends = [],
   bottles = [],
+  preFillPipe = null,
+  preFillBlend = null,
+  preFillBottle = null,
 }) {
   const { user } = useCurrentUser();
 
@@ -136,6 +139,15 @@ export default function CombinedSessionModal({
   );
 
   const currentStep = steps[step];
+
+  // Apply prefill when modal opens with pre-selected items
+  useEffect(() => {
+    if (isOpen) {
+      if (preFillPipe) { setSelectedPipe(preFillPipe); setPipeMode("collection"); }
+      if (preFillBlend) { setSelectedBlend(preFillBlend); setBlendMode("collection"); }
+      if (preFillBottle) { setSelectedBottle(preFillBottle); setBottleMode("collection"); }
+    }
+  }, [isOpen, preFillPipe, preFillBlend, preFillBottle]);
 
   useEffect(() => {
     if (!isOpen) {
