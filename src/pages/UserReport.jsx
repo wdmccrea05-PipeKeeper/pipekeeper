@@ -391,6 +391,39 @@ export default function UserReport() {
           </CardContent>
         </Card>
 
+        {/* Pro Tier */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Pro Tier</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-[#F5F1E7]">{userMetrics?.proTierCount || 0}</p>
+          </CardContent>
+        </Card>
+
+        {/* Premium Tier */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Premium Tier</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-[#F5F1E7]">{userMetrics?.premiumTierCount || 0}</p>
+          </CardContent>
+        </Card>
+
+        {/* Total Paid */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2">
+              <Crown className="w-4 h-4" />
+              Total Paid
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-[#F5F1E7]">{consolidatedPaidUsers}</p>
+          </CardContent>
+        </Card>
+
         {report && (
           <>
             <Card className="bg-transparent">

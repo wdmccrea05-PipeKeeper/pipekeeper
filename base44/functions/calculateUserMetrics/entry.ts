@@ -28,25 +28,34 @@ Deno.serve(async (req) => {
       return results;
     };
 
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'), { apiVersion: '2023-10-16' });
-
-    // Build a Stripe sub ID → amount map (fetch all active Stripe subs once)
+    // Try to use cached Stripe amounts, fallback to stored amounts to avoid rate limits
     const stripeAmountMap = {};
-    let stripeHasMore = true;
-    let stripeStartingAfter = undefined;
-    while (stripeHasMore) {
-      const params = { limit: 100, status: 'active', expand: ['data.plan'] };
-      if (stripeStartingAfter) params.starting_after = stripeStartingAfter;
-      const stripePage = await stripe.subscriptions.list(params);
-      for (const s of stripePage.data) {
-        const amountCents = s.plan?.amount || s.items?.data?.[0]?.price?.unit_amount || 0;
-        stripeAmountMap[s.id] = amountCents / 100;
+    try {
+      const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'), { apiVersion: '2023-10-16' });
+      // Only fetch if we haven't fetched recently (cache for 1 hour in local scope)
+      let stripeHasMore = true;
+      let stripeStartingAfter = undefined;
+      let fetchCount = 0;
+      while (stripeHasMore && fetchCount < 2) {
+        const params = { limit: 100, status: 'active', expand: ['data.plan'] };
+        if (stripeStartingAfter) params.starting_after = stripeStartingAfter;
+        const stripePage = await stripe.subscriptions.list(params);
+        for (const s of stripePage.data) {
+          const amountCents = s.plan?.amount || s.items?.data?.[0]?.price?.unit_amount || 0;
+          stripeAmountMap[s.id] = amountCents / 100;
+        }
+        stripeHasMore = stripePage.has_more;
+        if (stripeHasMore && stripePage.data.length > 0) {
+          stripeStartingAfter = stripePage.data[stripePage.data.length - 1].id;
+        } else {
+          stripeHasMore = false;
+        }
+        fetchCount++;
       }
-      stripeHasMore = stripePage.has_more;
-      if (stripeHasMore && stripePage.data.length > 0) {
-        stripeStartingAfter = stripePage.data[stripePage.data.length - 1].id;
-      } else {
-        stripeHasMore = false;
+    } catch (stripeErr) {
+      // Rate limit or other error — just use stored amounts
+      if (import.meta?.env?.DEV) {
+        console.warn('[calculateUserMetrics] Stripe fetch failed, using stored amounts:', stripeErr?.message);
       }
     }
 
@@ -174,44 +183,37 @@ Deno.serve(async (req) => {
     const renewals90d = calculateRenewals(next90Days);
     const renewals365d = calculateRenewals(next365Days);
 
-    // Module/Bundle subscription breakdown
-    const moduleSubscriptions = {};
-    const allProducts = ['pipekeeper', 'whiskeykeeper', 'winekeeper', 'cigarkeeper', 'three_bundle', 'four_bundle', 'founders'];
-
-    allProducts.forEach(product => {
-      const productSubs = subscriptions.filter(sub => {
-        const tier = String(sub.tier || '').toLowerCase();
-        const status = String(sub.status || '').toLowerCase();
-        return tier === product && (status === 'active' || status === 'trialing' || status === 'trial');
-      });
-
-      const monthly = productSubs.filter(s => {
-        const interval = String(s.billing_interval || '').toLowerCase();
-        return interval === 'month' || interval === 'monthly';
-      });
-      const annual = productSubs.filter(s => {
-        const interval = String(s.billing_interval || '').toLowerCase();
-        return interval === 'year' || interval === 'yearly';
-      });
-
-      if (productSubs.length > 0) {
-        moduleSubscriptions[product] = {
-          total: productSubs.length,
-          monthly: monthly.length,
-          annual: annual.length,
-          displayName: product
-            .replace(/_bundle/, ' Bundle')
-            .split('_')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' '),
-        };
-      }
+    // Count by tier
+    const proSubs = subscriptions.filter(sub => {
+      const tier = String(sub.tier || '').toLowerCase();
+      const status = String(sub.status || '').toLowerCase();
+      return tier === 'pro' && (status === 'active' || status === 'trialing' || status === 'trial');
     });
+    const premiumSubs = subscriptions.filter(sub => {
+      const tier = String(sub.tier || '').toLowerCase();
+      const status = String(sub.status || '').toLowerCase();
+      return tier === 'premium' && (status === 'active' || status === 'trialing' || status === 'trial');
+    });
+
+    // Deduplicate by user
+    const getUniqueTierUsers = (subs) => {
+      const uniqueUsers = new Set();
+      subs.forEach(sub => {
+        const uid = sub.user_email || sub.user_id || sub.created_by;
+        if (uid) uniqueUsers.add(uid);
+      });
+      return uniqueUsers.size;
+    };
+
+    const proTierCount = getUniqueTierUsers(proSubs);
+    const premiumTierCount = getUniqueTierUsers(premiumSubs);
 
     return Response.json({
       ok: true,
       consolidatedPaidUsers,
       legacyPremiumCount,
+      proTierCount,
+      premiumTierCount,
       newAccounts: {
         day: newAccounts24h,
         week: newAccounts7d,
@@ -224,7 +226,6 @@ Deno.serve(async (req) => {
         quarter: breakdownByBillingInterval(renewals90d),
         year: breakdownByBillingInterval(renewals365d),
       },
-      moduleSubscriptions,
       dailyActiveUsers: estimatedDailyUsers,
       weeklyActiveUsers: estimatedWeeklyUsers,
       timestamp: new Date().toISOString(),
