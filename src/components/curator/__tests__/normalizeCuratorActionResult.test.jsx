@@ -1,18 +1,11 @@
-import { describe, expect, it } from "vitest";
-import normalizeCuratorActionResult from "../normalizeCuratorActionResult";
+/**
+ * Shim test file.
+ *
+ * Canonical test implementation lives in:
+ *   normalizeCuratorActionResult.test.js
+ *
+ * Keep this file only as a compatibility shim until duplicate test cleanup
+ * is fully completed across the repo/tooling.
+ */
 
-describe("normalizeCuratorActionResult", () => {
-  it("filters incomplete items", () => {
-    const result = normalizeCuratorActionResult(
-      {
-        items: [
-          { title: "ok", type: "specialization", recordId: "p1" },
-          { title: "bad" },
-        ],
-      },
-      "optimize_collection"
-    );
-
-    expect(result.items).toHaveLength(1);
-  });
-});
+import "./normalizeCuratorActionResult.test.js";
