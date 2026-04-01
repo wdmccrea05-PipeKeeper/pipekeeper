@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { X, ChevronRight, Check, Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
@@ -63,12 +63,41 @@ function SourceToggle({ value, onChange }) {
   );
 }
 
+function TextField({ label, value, onChange, placeholder }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60">
+        {label}
+      </label>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.16)] text-[#F5F1E7] outline-none"
+      />
+    </div>
+  );
+}
 
 function buildSessionGroupId(userEmail) {
   const safeUser = String(userEmail || "guest")
     .replace(/[^a-zA-Z0-9]/g, "")
     .slice(0, 24);
   return `combo_${safeUser}_${Date.now()}`;
+}
+
+function normalizeExternalItem(item, fallbackType) {
+  if (!item) return null;
+  return {
+    label:
+      item.label ||
+      item.name ||
+      item.title ||
+      item.itemData?.name ||
+      "External Item",
+    item_type: item.item_type || fallbackType,
+    itemData: item.itemData || item,
+  };
 }
 
 export default function CombinedSessionModal({
@@ -78,11 +107,11 @@ export default function CombinedSessionModal({
   pipes = [],
   blends = [],
   bottles = [],
-  preFillPipe = null,
-  preFillBlend = null,
-  preFillBottle = null,
+  initialSelection = null,
 }) {
   const { user } = useCurrentUser();
+
+  const saveLockRef = useRef(false);
 
   const [step, setStep] = useState(0);
 
@@ -94,36 +123,37 @@ export default function CombinedSessionModal({
   const [selectedBlend, setSelectedBlend] = useState(null);
   const [selectedBottle, setSelectedBottle] = useState(null);
 
-  const [externalPipe, setExternalPipe] = useState({ maker: "", model: "", shape: "" });
-  const [externalBlend, setExternalBlend] = useState({ name: "", manufacturer: "", blend_type: "" });
-  const [externalBottle, setExternalBottle] = useState({ name: "", distillery: "", type: "" });
+  const [externalPipe, setExternalPipe] = useState({
+    maker: "",
+    model: "",
+    shape: "",
+  });
+  const [externalBlend, setExternalBlend] = useState({
+    name: "",
+    manufacturer: "",
+    blend_type: "",
+  });
+  const [externalBottle, setExternalBottle] = useState({
+    name: "",
+    distillery: "",
+    type: "",
+  });
+
+  const [externalPipePicked, setExternalPipePicked] = useState(null);
+  const [externalBlendPicked, setExternalBlendPicked] = useState(null);
+  const [externalBottlePicked, setExternalBottlePicked] = useState(null);
 
   const [sessionNotes, setSessionNotes] = useState("");
   const [tastingRating, setTastingRating] = useState("");
-  const [pipeRating, setPipeRating] = useState("");
-  const [blendRating, setBlendRating] = useState("");
   const [saving, setSaving] = useState(false);
   const [postPromptItems, setPostPromptItems] = useState(null);
 
-  const hasPipe = true;
-  const hasBlend = true;
-  const hasBottle = true;
-
   const steps = useMemo(
-    () => [hasPipe ? "pipe" : null, hasBlend ? "blend" : null, hasBottle ? "bottle" : null, "confirm"].filter(Boolean),
-    [hasPipe, hasBlend, hasBottle]
+    () => ["pipe", "blend", "bottle", "confirm"],
+    []
   );
 
   const currentStep = steps[step];
-
-  // Apply prefill when modal opens with pre-selected items
-  useEffect(() => {
-    if (isOpen) {
-      if (preFillPipe) { setSelectedPipe(preFillPipe); setPipeMode("collection"); }
-      if (preFillBlend) { setSelectedBlend(preFillBlend); setBlendMode("collection"); }
-      if (preFillBottle) { setSelectedBottle(preFillBottle); setBottleMode("collection"); }
-    }
-  }, [isOpen, preFillPipe, preFillBlend, preFillBottle]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -137,43 +167,152 @@ export default function CombinedSessionModal({
       setExternalPipe({ maker: "", model: "", shape: "" });
       setExternalBlend({ name: "", manufacturer: "", blend_type: "" });
       setExternalBottle({ name: "", distillery: "", type: "" });
+      setExternalPipePicked(null);
+      setExternalBlendPicked(null);
+      setExternalBottlePicked(null);
       setSessionNotes("");
       setTastingRating("");
-      setPipeRating("");
-      setBlendRating("");
       setSaving(false);
       setPostPromptItems(null);
+      saveLockRef.current = false;
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !initialSelection) return;
+
+    if (initialSelection.pipe) {
+      const pipeId = initialSelection.pipe.id;
+      const matchedPipe =
+        (pipeId && pipes.find((p) => p.id === pipeId)) ||
+        pipes.find((p) => p.name === initialSelection.pipe.name);
+
+      if (matchedPipe) {
+        setPipeMode("collection");
+        setSelectedPipe(matchedPipe);
+      } else {
+        setPipeMode("external");
+        setExternalPipePicked(
+          normalizeExternalItem(
+            {
+              label: initialSelection.pipe.name,
+              item_type: "pipe",
+              itemData: initialSelection.pipe,
+            },
+            "pipe"
+          )
+        );
+        setExternalPipe({
+          maker: initialSelection.pipe.maker || "",
+          model: initialSelection.pipe.model || initialSelection.pipe.name || "",
+          shape: initialSelection.pipe.shape || "",
+        });
+      }
+    }
+
+    if (initialSelection.blend) {
+      const blendId = initialSelection.blend.id;
+      const matchedBlend =
+        (blendId && blends.find((b) => b.id === blendId)) ||
+        blends.find((b) => b.name === initialSelection.blend.name);
+
+      if (matchedBlend) {
+        setBlendMode("collection");
+        setSelectedBlend(matchedBlend);
+      } else {
+        setBlendMode("external");
+        setExternalBlendPicked(
+          normalizeExternalItem(
+            {
+              label: initialSelection.blend.name,
+              item_type: "blend",
+              itemData: initialSelection.blend,
+            },
+            "blend"
+          )
+        );
+        setExternalBlend({
+          name: initialSelection.blend.name || "",
+          manufacturer: initialSelection.blend.manufacturer || "",
+          blend_type: initialSelection.blend.blend_type || "",
+        });
+      }
+    }
+
+    if (initialSelection.bottle) {
+      const bottleId = initialSelection.bottle.id;
+      const matchedBottle =
+        (bottleId && bottles.find((b) => b.id === bottleId)) ||
+        bottles.find((b) => b.name === initialSelection.bottle.name);
+
+      if (matchedBottle) {
+        setBottleMode("collection");
+        setSelectedBottle(matchedBottle);
+      } else {
+        setBottleMode("external");
+        setExternalBottlePicked(
+          normalizeExternalItem(
+            {
+              label: initialSelection.bottle.name,
+              item_type: "bottle",
+              itemData: initialSelection.bottle,
+            },
+            "bottle"
+          )
+        );
+        setExternalBottle({
+          name: initialSelection.bottle.name || "",
+          distillery: initialSelection.bottle.distillery || "",
+          type: initialSelection.bottle.type || "",
+        });
+      }
+    }
+
+    if (initialSelection.notes) {
+      setSessionNotes(initialSelection.notes);
+    }
+  }, [isOpen, initialSelection, pipes, blends, bottles]);
 
   if (!isOpen) return null;
 
   function advance() {
+    if (saving) return;
     if (step < steps.length - 1) setStep((s) => s + 1);
   }
 
   function back() {
+    if (saving) return;
     if (step > 0) setStep((s) => s - 1);
   }
 
   function getPipeDisplay() {
     if (pipeMode === "external") {
-      return [externalPipe.maker, externalPipe.model].filter(Boolean).join(" ") || null;
+      return (
+        externalPipePicked?.label ||
+        [externalPipe.maker, externalPipe.model].filter(Boolean).join(" ") ||
+        null
+      );
     }
     return selectedPipe?.name || null;
   }
 
   function getBlendDisplay() {
-    if (blendMode === "external") return externalBlend.name || null;
+    if (blendMode === "external") {
+      return externalBlendPicked?.label || externalBlend.name || null;
+    }
     return selectedBlend?.name || null;
   }
 
   function getBottleDisplay() {
-    if (bottleMode === "external") return externalBottle.name || null;
+    if (bottleMode === "external") {
+      return externalBottlePicked?.label || externalBottle.name || null;
+    }
     return selectedBottle?.name || null;
   }
 
   async function handleConfirm() {
+    if (saving || saveLockRef.current) return;
+
     if (!user?.email) {
       toast.error("You must be signed in to log a session.");
       return;
@@ -199,6 +338,7 @@ export default function CombinedSessionModal({
       return;
     }
 
+    saveLockRef.current = true;
     setSaving(true);
 
     try {
@@ -217,17 +357,14 @@ export default function CombinedSessionModal({
         operations.push(
           base44.entities.SmokingLog.create({
             created_by: user.email,
-            pipe_id: pipeMode === "collection" && selectedPipe?.id ? selectedPipe.id : "",
-            pipe_name: pipeName || "",
-            blend_id: blendMode === "collection" && selectedBlend?.id ? selectedBlend.id : "",
-            blend_name: blendName || "",
+            pipe_id: pipeMode === "collection" ? selectedPipe?.id || null : null,
+            pipe_name: pipeName,
+            blend_id: blendMode === "collection" ? selectedBlend?.id || null : null,
+            blend_name: blendName,
             bowls_used: 1,
             date: nowIso,
             notes: sharedNotes || null,
             session_group_id: sessionGroupId,
-            ...(pipeRating ? { pipe_rating: Number(pipeRating) } : {}),
-            ...(blendRating ? { blend_rating: Number(blendRating) } : {}),
-
             ...(pipeMode === "external" && pipeName
               ? {
                   external_pipe_name: pipeName,
@@ -235,7 +372,6 @@ export default function CombinedSessionModal({
                   external_pipe_shape: externalPipe.shape || "",
                 }
               : {}),
-
             ...(blendMode === "external" && blendName
               ? {
                   external_blend_name: blendName,
@@ -254,7 +390,7 @@ export default function CombinedSessionModal({
         operations.push(
           base44.entities.TastingLog.create({
             created_by: user.email,
-            ...(bottleMode === "collection" && selectedBottle?.id ? { bottle_id: selectedBottle.id } : {}),
+            bottle_id: bottleMode === "collection" ? selectedBottle?.id || null : null,
             bottle_name: bottleName,
             tasting_date: nowIso,
             notes: sharedNotes || null,
@@ -263,7 +399,6 @@ export default function CombinedSessionModal({
                 ? parsedRating
                 : null,
             session_group_id: sessionGroupId,
-
             ...(bottleMode === "external" && bottleName
               ? {
                   external_bottle_name: bottleName,
@@ -276,40 +411,55 @@ export default function CombinedSessionModal({
       }
 
       if (pipeMode === "external" && pipeName) {
-        externalItems.push({
-          label: pipeName,
-          item_type: "pipe",
-          itemData: {
-            name: pipeName,
-            maker: externalPipe.maker,
-            model: externalPipe.model,
-            shape: externalPipe.shape,
-          },
-        });
+        externalItems.push(
+          normalizeExternalItem(
+            externalPipePicked || {
+              label: pipeName,
+              item_type: "pipe",
+              itemData: {
+                name: pipeName,
+                maker: externalPipe.maker,
+                model: externalPipe.model,
+                shape: externalPipe.shape,
+              },
+            },
+            "pipe"
+          )
+        );
       }
 
       if (blendMode === "external" && blendName) {
-        externalItems.push({
-          label: blendName,
-          item_type: "blend",
-          itemData: {
-            name: blendName,
-            manufacturer: externalBlend.manufacturer,
-            blend_type: externalBlend.blend_type,
-          },
-        });
+        externalItems.push(
+          normalizeExternalItem(
+            externalBlendPicked || {
+              label: blendName,
+              item_type: "blend",
+              itemData: {
+                name: blendName,
+                manufacturer: externalBlend.manufacturer,
+                blend_type: externalBlend.blend_type,
+              },
+            },
+            "blend"
+          )
+        );
       }
 
       if (bottleMode === "external" && bottleName) {
-        externalItems.push({
-          label: bottleName,
-          item_type: "bottle",
-          itemData: {
-            name: bottleName,
-            distillery: externalBottle.distillery,
-            type: externalBottle.type,
-          },
-        });
+        externalItems.push(
+          normalizeExternalItem(
+            externalBottlePicked || {
+              label: bottleName,
+              item_type: "bottle",
+              itemData: {
+                name: bottleName,
+                distillery: externalBottle.distillery,
+                type: externalBottle.type,
+              },
+            },
+            "bottle"
+          )
+        );
       }
 
       await Promise.all(operations);
@@ -318,7 +468,9 @@ export default function CombinedSessionModal({
 
       if (externalItems.length > 0) {
         setPostPromptItems(externalItems);
-        toast.success("Session logged. Choose what to do with the out-of-collection items.");
+        toast.success(
+          "Session logged. Choose what to do with the out-of-collection items."
+        );
       } else {
         toast.success("Combined session logged.");
         onClose?.();
@@ -326,6 +478,7 @@ export default function CombinedSessionModal({
     } catch (error) {
       console.error("[CombinedSessionModal] failed to save", error);
       toast.error("Failed to log combined session. Please try again.");
+      saveLockRef.current = false;
     } finally {
       setSaving(false);
     }
@@ -337,6 +490,7 @@ export default function CombinedSessionModal({
         externalItems={postPromptItems}
         onDone={() => {
           setPostPromptItems(null);
+          saveLockRef.current = false;
           onClose?.();
         }}
       />
@@ -376,7 +530,10 @@ export default function CombinedSessionModal({
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              if (saving) return;
+              onClose?.();
+            }}
             className="p-1.5 rounded-lg hover:bg-white/8 text-[#E0D8C8]/60"
           >
             <X className="w-4 h-4" />
@@ -387,7 +544,7 @@ export default function CombinedSessionModal({
           {currentStep === "pipe" ? (
             <>
               <p className="text-xs text-[#D8C7A6]/55">
-                Choose a pipe from your collection, or search / identify one out of collection.
+                Choose a pipe from your collection or log something out of collection.
               </p>
 
               <SourceToggle value={pipeMode} onChange={setPipeMode} />
@@ -422,15 +579,49 @@ export default function CombinedSessionModal({
               ) : (
                 <ExternalItemPicker
                   itemType="pipe"
-                  initialValues={externalPipe}
+                  selectedItem={externalPipePicked}
                   onSelect={(item) => {
-                    setExternalPipe({
-                      maker: item.maker || "",
-                      model: item.model || item.name || "",
-                      shape: item.shape || "",
-                    });
-                    advance();
+                    const normalized = normalizeExternalItem(item, "pipe");
+                    setExternalPipePicked(normalized);
+                    setExternalPipe((prev) => ({
+                      ...prev,
+                      maker: normalized?.itemData?.maker || prev.maker,
+                      model:
+                        normalized?.itemData?.model ||
+                        normalized?.itemData?.name ||
+                        normalized?.label ||
+                        prev.model,
+                      shape: normalized?.itemData?.shape || prev.shape,
+                    }));
                   }}
+                  manualFields={
+                    <div className="space-y-3 rounded-xl border border-[rgba(180,140,75,0.16)] bg-[rgba(255,255,255,0.03)] p-4">
+                      <TextField
+                        label="Pipe Maker"
+                        value={externalPipe.maker}
+                        onChange={(value) =>
+                          setExternalPipe((prev) => ({ ...prev, maker: value }))
+                        }
+                        placeholder="Boswell"
+                      />
+                      <TextField
+                        label="Pipe Model"
+                        value={externalPipe.model}
+                        onChange={(value) =>
+                          setExternalPipe((prev) => ({ ...prev, model: value }))
+                        }
+                        placeholder="Jumbo"
+                      />
+                      <TextField
+                        label="Shape"
+                        value={externalPipe.shape}
+                        onChange={(value) =>
+                          setExternalPipe((prev) => ({ ...prev, shape: value }))
+                        }
+                        placeholder="Billiard"
+                      />
+                    </div>
+                  }
                 />
               )}
             </>
@@ -439,7 +630,7 @@ export default function CombinedSessionModal({
           {currentStep === "blend" ? (
             <>
               <p className="text-xs text-[#D8C7A6]/55">
-                Choose a blend from your collection, or search / identify one out of collection.
+                Choose a blend from your collection or log something out of collection.
               </p>
 
               <SourceToggle value={blendMode} onChange={setBlendMode} />
@@ -476,15 +667,56 @@ export default function CombinedSessionModal({
               ) : (
                 <ExternalItemPicker
                   itemType="blend"
-                  initialValues={externalBlend}
+                  selectedItem={externalBlendPicked}
                   onSelect={(item) => {
-                    setExternalBlend({
-                      name: item.name || "",
-                      manufacturer: item.manufacturer || "",
-                      blend_type: item.blend_type || "",
-                    });
-                    advance();
+                    const normalized = normalizeExternalItem(item, "blend");
+                    setExternalBlendPicked(normalized);
+                    setExternalBlend((prev) => ({
+                      ...prev,
+                      name:
+                        normalized?.itemData?.name ||
+                        normalized?.label ||
+                        prev.name,
+                      manufacturer:
+                        normalized?.itemData?.manufacturer || prev.manufacturer,
+                      blend_type:
+                        normalized?.itemData?.blend_type || prev.blend_type,
+                    }));
                   }}
+                  manualFields={
+                    <div className="space-y-3 rounded-xl border border-[rgba(180,140,75,0.16)] bg-[rgba(255,255,255,0.03)] p-4">
+                      <TextField
+                        label="Blend Name"
+                        value={externalBlend.name}
+                        onChange={(value) =>
+                          setExternalBlend((prev) => ({ ...prev, name: value }))
+                        }
+                        placeholder="Cowboy Coffee"
+                      />
+                      <TextField
+                        label="Manufacturer"
+                        value={externalBlend.manufacturer}
+                        onChange={(value) =>
+                          setExternalBlend((prev) => ({
+                            ...prev,
+                            manufacturer: value,
+                          }))
+                        }
+                        placeholder="Cornell & Diehl"
+                      />
+                      <TextField
+                        label="Blend Type"
+                        value={externalBlend.blend_type}
+                        onChange={(value) =>
+                          setExternalBlend((prev) => ({
+                            ...prev,
+                            blend_type: value,
+                          }))
+                        }
+                        placeholder="Aromatic"
+                      />
+                    </div>
+                  }
                 />
               )}
             </>
@@ -493,7 +725,7 @@ export default function CombinedSessionModal({
           {currentStep === "bottle" ? (
             <>
               <p className="text-xs text-[#D8C7A6]/55">
-                Choose a whiskey from your collection, or search / identify one out of collection.
+                Choose a whiskey from your collection or log something out of collection.
               </p>
 
               <SourceToggle value={bottleMode} onChange={setBottleMode} />
@@ -528,15 +760,52 @@ export default function CombinedSessionModal({
               ) : (
                 <ExternalItemPicker
                   itemType="bottle"
-                  initialValues={externalBottle}
+                  selectedItem={externalBottlePicked}
                   onSelect={(item) => {
-                    setExternalBottle({
-                      name: item.name || "",
-                      distillery: item.distillery || "",
-                      type: item.type || "",
-                    });
-                    advance();
+                    const normalized = normalizeExternalItem(item, "bottle");
+                    setExternalBottlePicked(normalized);
+                    setExternalBottle((prev) => ({
+                      ...prev,
+                      name:
+                        normalized?.itemData?.name ||
+                        normalized?.label ||
+                        prev.name,
+                      distillery:
+                        normalized?.itemData?.distillery || prev.distillery,
+                      type: normalized?.itemData?.type || prev.type,
+                    }));
                   }}
+                  manualFields={
+                    <div className="space-y-3 rounded-xl border border-[rgba(180,140,75,0.16)] bg-[rgba(255,255,255,0.03)] p-4">
+                      <TextField
+                        label="Bottle Name"
+                        value={externalBottle.name}
+                        onChange={(value) =>
+                          setExternalBottle((prev) => ({ ...prev, name: value }))
+                        }
+                        placeholder="Smoke Wagon Bourbon"
+                      />
+                      <TextField
+                        label="Distillery"
+                        value={externalBottle.distillery}
+                        onChange={(value) =>
+                          setExternalBottle((prev) => ({
+                            ...prev,
+                            distillery: value,
+                          }))
+                        }
+                        placeholder="Smoke Wagon"
+                      />
+                      <TextField
+                        label="Type"
+                        value={externalBottle.type}
+                        onChange={(value) =>
+                          setExternalBottle((prev) => ({ ...prev, type: value }))
+                        }
+                        placeholder="Bourbon"
+                      />
+                    </div>
+                  }
                 />
               )}
             </>
@@ -572,32 +841,6 @@ export default function CombinedSessionModal({
               ) : null}
 
               <div className="space-y-3">
-                {getPipeDisplay() ? (
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60 mb-2">Pipe Rating</label>
-                    <select value={pipeRating} onChange={(e) => setPipeRating(e.target.value)} className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.16)] text-[#F5F1E7] outline-none">
-                      <option value="">No rating</option>
-                      <option value="1">1 — Poor</option>
-                      <option value="2">2 — Fair</option>
-                      <option value="3">3 — Good</option>
-                      <option value="4">4 — Very Good</option>
-                      <option value="5">5 — Excellent</option>
-                    </select>
-                  </div>
-                ) : null}
-                {getBlendDisplay() ? (
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60 mb-2">Blend Rating</label>
-                    <select value={blendRating} onChange={(e) => setBlendRating(e.target.value)} className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.16)] text-[#F5F1E7] outline-none">
-                      <option value="">No rating</option>
-                      <option value="1">1 — Poor</option>
-                      <option value="2">2 — Fair</option>
-                      <option value="3">3 — Good</option>
-                      <option value="4">4 — Very Good</option>
-                      <option value="5">5 — Excellent</option>
-                    </select>
-                  </div>
-                ) : null}
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60 mb-2">
                     Session Notes
@@ -613,14 +856,20 @@ export default function CombinedSessionModal({
 
                 {getBottleDisplay() ? (
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60 mb-2">Whiskey Rating</label>
-                    <select value={tastingRating} onChange={(e) => setTastingRating(e.target.value)} className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.16)] text-[#F5F1E7] outline-none">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60 mb-2">
+                      Whiskey Rating
+                    </label>
+                    <select
+                      value={tastingRating}
+                      onChange={(e) => setTastingRating(e.target.value)}
+                      className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.16)] text-[#F5F1E7] outline-none"
+                    >
                       <option value="">No rating</option>
-                      <option value="1">1 — Poor</option>
-                      <option value="2">2 — Fair</option>
-                      <option value="3">3 — Good</option>
-                      <option value="4">4 — Very Good</option>
-                      <option value="5">5 — Excellent</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
                     </select>
                   </div>
                 ) : null}
@@ -635,7 +884,7 @@ export default function CombinedSessionModal({
               type="button"
               onClick={back}
               disabled={saving}
-              className="px-4 py-2 rounded-xl text-sm font-medium text-[#E0D8C8]/75 border border-[rgba(180,140,75,0.22)] hover:bg-white/5"
+              className="px-4 py-2 rounded-xl text-sm font-medium text-[#E0D8C8]/75 border border-[rgba(180,140,75,0.22)] hover:bg-white/5 disabled:opacity-50"
             >
               Back
             </button>
@@ -645,7 +894,8 @@ export default function CombinedSessionModal({
             <button
               type="button"
               onClick={advance}
-              className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+              disabled={saving}
+              className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-50"
               style={{
                 background: "rgba(180,140,75,0.15)",
                 border: "1px solid rgba(180,140,75,0.3)",
