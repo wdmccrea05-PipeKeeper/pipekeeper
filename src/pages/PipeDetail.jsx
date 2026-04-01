@@ -29,6 +29,9 @@ import PipeSpecialization from '@/components/pipes/PipeSpecialization';
 import MaintenanceLog from '@/components/pipes/MaintenanceLog';
 import PipeConditionTracker from '@/components/pipes/PipeConditionTracker';
 import RotationPlanner from '@/components/pipes/RotationPlanner';
+import InterchangeableBowls from '@/components/pipes/InterchangeableBowls';
+import ValueLookup from '@/components/ai/ValueLookup';
+import ValuationCredibility, { computePipeValuation } from '@/components/valuation/ValuationCredibility';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -136,6 +139,7 @@ export default function PipeDetail() {
   const [similarResult, setSimilarResult] = useState(null);
   const [similarError, setSimilarError] = useState(null);
   const [detailCardOpen, setDetailCardOpen] = useState(true);
+  const [showAppraisal, setShowAppraisal] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -270,6 +274,8 @@ export default function PipeDetail() {
       collectibleOnly: firstPresent(pipe, ['collectible_only', 'collectibleOnly', 'ai_excluded']),
     };
   }, [pipe]);
+
+  const computedValuation = useMemo(() => computePipeValuation(pipe), [pipe]);
 
   if (loading) {
     return (
@@ -435,6 +441,48 @@ export default function PipeDetail() {
               />
             </div>
 
+            {/* Estimated Value / Appraisal Section */}
+            <div
+              className="rounded-2xl p-5"
+              style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(180,140,75,0.14)',
+              }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <CircleDollarSign className="w-4 h-4 text-[#D4A574]" />
+                  <p className="text-sm font-semibold text-[#F5F1E7]">Estimated Value</p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setShowAppraisal((v) => !v)}
+                  style={{
+                    background: showAppraisal
+                      ? 'rgba(180,140,75,0.2)'
+                      : 'rgba(180,140,75,0.1)',
+                    border: '1px solid rgba(180,140,75,0.3)',
+                    color: '#D4A574',
+                  }}
+                >
+                  {showAppraisal ? 'Hide Appraisal' : 'Run Appraisal'}
+                </Button>
+              </div>
+              {computedValuation && (
+                <ValuationCredibility valuation={computedValuation} />
+              )}
+              {showAppraisal && (
+                <div className="mt-4">
+                  <ValueLookup
+                    pipe={pipe}
+                    onUpdateValue={(newValue) =>
+                      handlePipeUpdate({ estimated_value: newValue })
+                    }
+                  />
+                </div>
+              )}
+            </div>
+
             <div
               className="rounded-2xl p-5"
               style={{
@@ -545,6 +593,9 @@ export default function PipeDetail() {
                 <TabsTrigger value="maintenance" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
                   Maintenance
                 </TabsTrigger>
+                <TabsTrigger value="bowls" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
+                  Bowls
+                </TabsTrigger>
                 <TabsTrigger value="details" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
                   Details
                 </TabsTrigger>
@@ -570,6 +621,10 @@ export default function PipeDetail() {
 
             <TabsContent value="maintenance" className="p-4 m-0">
               <MaintenanceLog pipeId={pipe.id} pipeName={pipe.name} />
+            </TabsContent>
+
+            <TabsContent value="bowls" className="p-4 m-0">
+              <InterchangeableBowls pipe={pipe} onUpdate={handlePipeUpdate} />
             </TabsContent>
 
             <TabsContent value="details" className="p-4 md:p-5 m-0">
@@ -605,6 +660,31 @@ export default function PipeDetail() {
                     <MetaRow label="Bowl Diameter" value={normalized.bowlDiameterValue != null ? (formatLength(Number(normalized.bowlDiameterValue)) || `${normalized.bowlDiameterValue} mm`) : '—'} />
                     <MetaRow label="Bowl Depth" value={normalized.bowlDepthValue != null ? (formatLength(Number(normalized.bowlDepthValue)) || `${normalized.bowlDepthValue} mm`) : '—'} />
                   </div>
+                </SectionCard>
+
+                <SectionCard title="Stamping" icon={Info}>
+                  {pipe.stamping ? (
+                    <div
+                      className="rounded-xl p-4 mb-4"
+                      style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(180,140,75,0.12)',
+                      }}
+                    >
+                      <p className="text-[11px] uppercase tracking-[0.14em] text-[#D8C7A6]/60 mb-2">
+                        Stamping Text
+                      </p>
+                      <p className="text-sm text-[#F5F1E7] whitespace-pre-wrap">{pipe.stamping}</p>
+                    </div>
+                  ) : null}
+                  <InlinePhotoEditor
+                    photos={pipe.stamping_photos || []}
+                    maxPhotos={5}
+                    label="Stamping Photos"
+                    onUpdate={async (updatedPhotos) => {
+                      await handlePipeUpdate({ stamping_photos: updatedPhotos });
+                    }}
+                  />
                 </SectionCard>
 
                 <SectionCard title="Value & Notes" icon={CircleDollarSign}>
