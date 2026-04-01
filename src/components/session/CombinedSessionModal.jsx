@@ -213,9 +213,9 @@ export default function CombinedSessionModal({
         operations.push(
           base44.entities.SmokingLog.create({
             created_by: user.email,
-            pipe_id: pipeMode === "collection" ? selectedPipe?.id || null : null,
+            ...(pipeMode === "collection" && selectedPipe?.id ? { pipe_id: selectedPipe.id } : {}),
             pipe_name: pipeName,
-            blend_id: blendMode === "collection" ? selectedBlend?.id || null : null,
+            ...(blendMode === "collection" && selectedBlend?.id ? { blend_id: selectedBlend.id } : {}),
             blend_name: blendName,
             bowls_used: 1,
             date: nowIso,
@@ -248,7 +248,7 @@ export default function CombinedSessionModal({
         operations.push(
           base44.entities.TastingLog.create({
             created_by: user.email,
-            bottle_id: bottleMode === "collection" ? selectedBottle?.id || null : null,
+            ...(bottleMode === "collection" && selectedBottle?.id ? { bottle_id: selectedBottle.id } : {}),
             bottle_name: bottleName,
             tasting_date: nowIso,
             notes: sharedNotes || null,
