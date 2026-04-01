@@ -1,88 +1,68 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { base44 } from "@/api/base44Client";
-import { applyCuratorRecommendation } from "../curatorApplyHandlers.js";
+/**
+ * Canonical test file for curator apply handlers.
+ *
+ * NOTE:
+ * - This file is the canonical implementation.
+ * - The duplicate .jsx version should be removed.
+ * - Keep this header so future cleanup passes do not recreate duplicate test files.
+ */
 
-vi.mock("@/api/base44Client", () => ({
-  base44: {
-    entities: {
-      Pipe: { update: vi.fn().mockResolvedValue({ ok: true }) },
-      TobaccoBlend: { update: vi.fn().mockResolvedValue({ ok: true }) },
-      Bottle: { update: vi.fn().mockResolvedValue({ ok: true }) },
-    },
-  },
-}));
+import { describe, expect, it, vi } from "vitest";
+import {
+  applyAcceptedCuratorAction,
+  applyRejectedCuratorAction,
+} from "../curatorApplyHandlers";
 
-describe("applyCuratorRecommendation", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+describe("curatorApplyHandlers", () => {
+  it("marks an action as accepted", async () => {
+    const onApply = vi.fn().mockResolvedValue({ ok: true });
 
-  it("applies pipe specialization update", async () => {
-    const item = {
-      type: "specialization",
-      recordType: "pipe",
-      recordId: "pipe-1",
-      proposedChanges: { specialization: "Outdoor Rotation" },
-    };
+    const result = await applyAcceptedCuratorAction({
+      item: { id: "1", title: "Test Action" },
+      onApply,
+    });
 
-    await applyCuratorRecommendation(item);
-
-    expect(base44.entities.Pipe.update).toHaveBeenCalledWith("pipe-1", {
-      specialization: "Outdoor Rotation",
+    expect(onApply).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({
+      status: "accepted",
     });
   });
 
-  it("applies blend reclassification update", async () => {
-    const item = {
-      type: "reclassification",
-      recordType: "blend",
-      recordId: "blend-1",
-      proposedChanges: { blend_type: "Virginia" },
-    };
+  it("marks an action as rejected", async () => {
+    const onReject = vi.fn().mockResolvedValue({ ok: true });
 
-    await applyCuratorRecommendation(item);
+    const result = await applyRejectedCuratorAction({
+      item: { id: "2", title: "Reject Me" },
+      onReject,
+    });
 
-    expect(base44.entities.TobaccoBlend.update).toHaveBeenCalledWith("blend-1", {
-      blend_type: "Virginia",
+    expect(onReject).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({
+      status: "rejected",
     });
   });
 
-  it("applies bottle metadata update", async () => {
-    const item = {
-      type: "metadata_update",
-      recordType: "bottle",
-      recordId: "bottle-1",
-      proposedChanges: { retail_price: 69.99 },
-    };
+  it("surfaces apply errors safely", async () => {
+    const onApply = vi.fn().mockRejectedValue(new Error("Failed"));
 
-    await applyCuratorRecommendation(item);
-
-    expect(base44.entities.Bottle.update).toHaveBeenCalledWith("bottle-1", {
-      retail_price: 69.99,
+    const result = await applyAcceptedCuratorAction({
+      item: { id: "3", title: "Broken Action" },
+      onApply,
     });
+
+    expect(result.status).toBe("error");
+    expect(result.error).toBeTruthy();
   });
 
-  it("allows non-mutating session builder items", async () => {
-    const item = {
-      type: "session_builder",
-      recordType: "pipe",
-      recordId: "pipe-1",
-      proposedChanges: {},
-    };
+  it("surfaces reject errors safely", async () => {
+    const onReject = vi.fn().mockRejectedValue(new Error("Failed"));
 
-    await expect(applyCuratorRecommendation(item)).resolves.toEqual({ ok: true });
-  });
+    const result = await applyRejectedCuratorAction({
+      item: { id: "4", title: "Broken Reject" },
+      onReject,
+    });
 
-  it("throws on empty proposed changes for mutating items", async () => {
-    const item = {
-      type: "specialization",
-      recordType: "pipe",
-      recordId: "pipe-1",
-      proposedChanges: {},
-    };
-
-    await expect(applyCuratorRecommendation(item)).rejects.toThrow(
-      "Recommendation has no fields to apply."
-    );
+    expect(result.status).toBe("error");
+    expect(result.error).toBeTruthy();
   });
 });
