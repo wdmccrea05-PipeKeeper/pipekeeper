@@ -25,6 +25,13 @@ function getAnchorList(anchorOverrides) {
   return [];
 }
 
+function flattenGroups(groups) {
+  if (!Array.isArray(groups)) return [];
+  return groups.flatMap((group) =>
+    Array.isArray(group?.items) ? group.items : []
+  );
+}
+
 export async function runCuratorAction({
   actionType,
   executor,
@@ -64,7 +71,11 @@ export async function runCuratorAction({
         actionType,
         status: "empty",
         summary: "No actionable recommendations returned.",
+        groups: [],
         items: [],
+        metadata: {
+          anchorCount: anchorList.length,
+        },
         error: null,
       };
     }
@@ -80,18 +91,24 @@ export async function runCuratorAction({
         actionType,
         status: "error",
         summary: "",
+        groups: [],
         items: [],
+        metadata: {
+          anchorCount: anchorList.length,
+        },
         error: "Curator could not produce usable results. Please try again.",
       };
     }
 
-    const flatItems = Array.isArray(normalized.items)
-      ? normalized.items
-      : Array.isArray(normalized.groups)
-      ? normalized.groups.flatMap((group) => group.items || [])
+    const groups = Array.isArray(normalized.groups)
+      ? normalized.groups.filter(Boolean)
       : [];
 
-    if (flatItems.length === 0) {
+    const items = Array.isArray(normalized.items)
+      ? normalized.items.filter(Boolean)
+      : flattenGroups(groups);
+
+    if (groups.length === 0 && items.length === 0) {
       return {
         requestId,
         actionType,
@@ -99,7 +116,11 @@ export async function runCuratorAction({
         summary:
           normalized.summary ||
           "Curator reviewed your collection but found no actionable recommendations right now.",
+        groups: [],
         items: [],
+        metadata: {
+          anchorCount: anchorList.length,
+        },
         error: null,
       };
     }
@@ -109,8 +130,16 @@ export async function runCuratorAction({
       actionType,
       status: "success",
       summary:
-        normalized.summary || `${flatItems.length} recommendations found`,
-      items: flatItems,
+        normalized.summary ||
+        `${items.length} recommendation${items.length === 1 ? "" : "s"} found`,
+      groups,
+      items,
+      metadata: {
+        anchorCount: anchorList.length,
+        groupCount: groups.length,
+        itemCount: items.length,
+        ...(normalized.metadata || {}),
+      },
       error: null,
     };
   } catch (error) {
@@ -123,7 +152,11 @@ export async function runCuratorAction({
       actionType,
       status: isTimeout ? "timeout" : "error",
       summary: "",
+      groups: [],
       items: [],
+      metadata: {
+        anchorCount: anchorList.length,
+      },
       error: isTimeout
         ? "Curator took too long to respond. Please try again."
         : "Curator could not complete this action. Please try again.",
