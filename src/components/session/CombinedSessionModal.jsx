@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { toast } from "sonner";
 import PostSessionPrompt from "@/components/session/PostSessionPrompt";
+import ExternalItemPicker from "@/components/session/ExternalItemPicker";
 
 function SelectItem({ item, selected, onClick, accent = "#D4A574" }) {
   return (
@@ -62,21 +63,6 @@ function SourceToggle({ value, onChange }) {
   );
 }
 
-function TextField({ label, value, onChange, placeholder }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60">
-        {label}
-      </label>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.16)] text-[#F5F1E7] outline-none"
-      />
-    </div>
-  );
-}
 
 function buildSessionGroupId(userEmail) {
   const safeUser = String(userEmail || "guest")
@@ -108,21 +94,9 @@ export default function CombinedSessionModal({
   const [selectedBlend, setSelectedBlend] = useState(null);
   const [selectedBottle, setSelectedBottle] = useState(null);
 
-  const [externalPipe, setExternalPipe] = useState({
-    maker: "",
-    model: "",
-    shape: "",
-  });
-  const [externalBlend, setExternalBlend] = useState({
-    name: "",
-    manufacturer: "",
-    blend_type: "",
-  });
-  const [externalBottle, setExternalBottle] = useState({
-    name: "",
-    distillery: "",
-    type: "",
-  });
+  const [externalPipe, setExternalPipe] = useState({ maker: "", model: "", shape: "" });
+  const [externalBlend, setExternalBlend] = useState({ name: "", manufacturer: "", blend_type: "" });
+  const [externalBottle, setExternalBottle] = useState({ name: "", distillery: "", type: "" });
 
   const [sessionNotes, setSessionNotes] = useState("");
   const [tastingRating, setTastingRating] = useState("");
@@ -186,16 +160,12 @@ export default function CombinedSessionModal({
   }
 
   function getBlendDisplay() {
-    if (blendMode === "external") {
-      return externalBlend.name || null;
-    }
+    if (blendMode === "external") return externalBlend.name || null;
     return selectedBlend?.name || null;
   }
 
   function getBottleDisplay() {
-    if (bottleMode === "external") {
-      return externalBottle.name || null;
-    }
+    if (bottleMode === "external") return externalBottle.name || null;
     return selectedBottle?.name || null;
   }
 
@@ -411,7 +381,7 @@ export default function CombinedSessionModal({
           {currentStep === "pipe" ? (
             <>
               <p className="text-xs text-[#D8C7A6]/55">
-                Choose a pipe from your collection or log something out of collection.
+                Choose a pipe from your collection, or search / identify one out of collection.
               </p>
 
               <SourceToggle value={pipeMode} onChange={setPipeMode} />
@@ -444,26 +414,17 @@ export default function CombinedSessionModal({
                   ))}
                 </>
               ) : (
-                <div className="space-y-3 rounded-xl border border-[rgba(180,140,75,0.16)] bg-[rgba(255,255,255,0.03)] p-4">
-                  <TextField
-                    label="Pipe Maker"
-                    value={externalPipe.maker}
-                    onChange={(value) => setExternalPipe((prev) => ({ ...prev, maker: value }))}
-                    placeholder="Boswell"
-                  />
-                  <TextField
-                    label="Pipe Model"
-                    value={externalPipe.model}
-                    onChange={(value) => setExternalPipe((prev) => ({ ...prev, model: value }))}
-                    placeholder="Jumbo"
-                  />
-                  <TextField
-                    label="Shape"
-                    value={externalPipe.shape}
-                    onChange={(value) => setExternalPipe((prev) => ({ ...prev, shape: value }))}
-                    placeholder="Billiard"
-                  />
-                </div>
+                <ExternalItemPicker
+                  itemType="pipe"
+                  initialValues={externalPipe}
+                  onSelect={(item) => {
+                    setExternalPipe({
+                      maker: item.maker || "",
+                      model: item.model || item.name || "",
+                      shape: item.shape || "",
+                    });
+                  }}
+                />
               )}
             </>
           ) : null}
@@ -471,7 +432,7 @@ export default function CombinedSessionModal({
           {currentStep === "blend" ? (
             <>
               <p className="text-xs text-[#D8C7A6]/55">
-                Choose a blend from your collection or log something out of collection.
+                Choose a blend from your collection, or search / identify one out of collection.
               </p>
 
               <SourceToggle value={blendMode} onChange={setBlendMode} />
@@ -506,26 +467,17 @@ export default function CombinedSessionModal({
                   ))}
                 </>
               ) : (
-                <div className="space-y-3 rounded-xl border border-[rgba(180,140,75,0.16)] bg-[rgba(255,255,255,0.03)] p-4">
-                  <TextField
-                    label="Blend Name"
-                    value={externalBlend.name}
-                    onChange={(value) => setExternalBlend((prev) => ({ ...prev, name: value }))}
-                    placeholder="Cowboy Coffee"
-                  />
-                  <TextField
-                    label="Manufacturer"
-                    value={externalBlend.manufacturer}
-                    onChange={(value) => setExternalBlend((prev) => ({ ...prev, manufacturer: value }))}
-                    placeholder="Cornell & Diehl"
-                  />
-                  <TextField
-                    label="Blend Type"
-                    value={externalBlend.blend_type}
-                    onChange={(value) => setExternalBlend((prev) => ({ ...prev, blend_type: value }))}
-                    placeholder="Aromatic"
-                  />
-                </div>
+                <ExternalItemPicker
+                  itemType="blend"
+                  initialValues={externalBlend}
+                  onSelect={(item) => {
+                    setExternalBlend({
+                      name: item.name || "",
+                      manufacturer: item.manufacturer || "",
+                      blend_type: item.blend_type || "",
+                    });
+                  }}
+                />
               )}
             </>
           ) : null}
@@ -533,7 +485,7 @@ export default function CombinedSessionModal({
           {currentStep === "bottle" ? (
             <>
               <p className="text-xs text-[#D8C7A6]/55">
-                Choose a whiskey from your collection or log something out of collection.
+                Choose a whiskey from your collection, or search / identify one out of collection.
               </p>
 
               <SourceToggle value={bottleMode} onChange={setBottleMode} />
@@ -566,26 +518,17 @@ export default function CombinedSessionModal({
                   ))}
                 </>
               ) : (
-                <div className="space-y-3 rounded-xl border border-[rgba(180,140,75,0.16)] bg-[rgba(255,255,255,0.03)] p-4">
-                  <TextField
-                    label="Bottle Name"
-                    value={externalBottle.name}
-                    onChange={(value) => setExternalBottle((prev) => ({ ...prev, name: value }))}
-                    placeholder="Smoke Wagon Bourbon"
-                  />
-                  <TextField
-                    label="Distillery"
-                    value={externalBottle.distillery}
-                    onChange={(value) => setExternalBottle((prev) => ({ ...prev, distillery: value }))}
-                    placeholder="Smoke Wagon"
-                  />
-                  <TextField
-                    label="Type"
-                    value={externalBottle.type}
-                    onChange={(value) => setExternalBottle((prev) => ({ ...prev, type: value }))}
-                    placeholder="Bourbon"
-                  />
-                </div>
+                <ExternalItemPicker
+                  itemType="bottle"
+                  initialValues={externalBottle}
+                  onSelect={(item) => {
+                    setExternalBottle({
+                      name: item.name || "",
+                      distillery: item.distillery || "",
+                      type: item.type || "",
+                    });
+                  }}
+                />
               )}
             </>
           ) : null}
