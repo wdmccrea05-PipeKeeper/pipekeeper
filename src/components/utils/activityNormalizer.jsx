@@ -79,8 +79,11 @@ function formatActivityDate(dateString) {
  * @returns {object[]}
  */
 export function buildUnifiedActivityFeed(smokingLogs = [], tastingLogs = [], { limit = 20 } = {}) {
-  const sessions = smokingLogs.map(normalizeSmokingLog);
-  const tastings = tastingLogs.map(normalizeTastingLog);
+  const dedupedSmoking = [...new Map(smokingLogs.map(l => [l.id, l])).values()];
+  const dedupedTastings = [...new Map(tastingLogs.map(l => [l.id, l])).values()];
+
+  const sessions = dedupedSmoking.map(normalizeSmokingLog);
+  const tastings = dedupedTastings.map(normalizeTastingLog);
 
   const all = [...sessions, ...tastings].sort((a, b) => {
     try {
