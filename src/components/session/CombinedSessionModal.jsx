@@ -423,6 +423,7 @@ export default function CombinedSessionModal({
                       model: item.model || item.name || "",
                       shape: item.shape || "",
                     });
+                    advance();
                   }}
                 />
               )}
@@ -476,6 +477,7 @@ export default function CombinedSessionModal({
                       manufacturer: item.manufacturer || "",
                       blend_type: item.blend_type || "",
                     });
+                    advance();
                   }}
                 />
               )}
@@ -527,6 +529,7 @@ export default function CombinedSessionModal({
                       distillery: item.distillery || "",
                       type: item.type || "",
                     });
+                    advance();
                   }}
                 />
               )}

@@ -188,6 +188,8 @@ export default function ExternalItemPicker({ itemType, initialValues, onSelect }
   function handleConfirm() {
     const primary = itemType === "pipe" ? (editValues.model || editValues.maker) : editValues.name;
     if (!primary?.trim()) return;
+    // Reset editing state so picker doesn't re-show on back/next
+    setEditing(false);
     onSelect(editValues);
   }
 
