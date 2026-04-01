@@ -63,6 +63,24 @@ export default function UserReport() {
   });
 
   useEffect(() => {
+    if (isAdmin && !report) {
+      refetch();
+    }
+  }, [isAdmin, report, refetch]);
+
+  useEffect(() => {
+    if (isAdmin && report && !adminMetrics) {
+      refetchAdminMetrics();
+    }
+  }, [isAdmin, report, adminMetrics, refetchAdminMetrics]);
+
+  useEffect(() => {
+    if (isAdmin && adminMetrics && !userMetrics) {
+      refetchUserMetrics();
+    }
+  }, [isAdmin, adminMetrics, userMetrics, refetchUserMetrics]);
+
+  useEffect(() => {
     refetchUserMetrics();
   }, [renewalsDateRange, newAccountsDateRange, refetchUserMetrics]);
 
