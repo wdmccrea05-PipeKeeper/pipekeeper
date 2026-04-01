@@ -40,11 +40,26 @@ import {
   resolveBottleValueSource,
 } from "@/components/whiskey/utils/bottleValue";
 
-// Safely extract a display string from a field that may be {label, confidence} or a plain value
-function safeStr(val) {
-  if (val === null || val === undefined) return null;
-  if (typeof val === 'object' && val !== null) return val.label || val.value || String(val) || null;
-  return String(val);
+function safeStr(val, fallback = "—") {
+  if (val === null || val === undefined || val === "") return fallback;
+  if (typeof val === "string" || typeof val === "number" || typeof val === "boolean") {
+    return String(val);
+  }
+  if (typeof val === "object") {
+    return (
+      val.label ||
+      val.name ||
+      val.title ||
+      val.value ||
+      fallback
+    );
+  }
+  return fallback;
+}
+
+function safeMaybeStr(val) {
+  const result = safeStr(val, "");
+  return result || "";
 }
 
 function getBottlePhoto(bottle) {
@@ -65,9 +80,8 @@ function formatDate(value) {
 }
 
 function DetailStat({ label, value, icon: Icon }) {
-  const displayValue = value !== null && value !== undefined && typeof value === 'object'
-    ? (value.label ?? value.value ?? JSON.stringify(value))
-    : value;
+  const displayValue = safeStr(value);
+
   return (
     <div
       className="rounded-2xl p-4"
@@ -105,14 +119,14 @@ function TastingRow({ tasting, onEdit }) {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-[#F5F1E7]">
-            {tasting.rating ? `⭐ ${tasting.rating}` : "Unrated tasting"}
+            {tasting.rating ? `⭐ ${safeStr(tasting.rating)}` : "Unrated tasting"}
           </p>
           <p className="text-xs text-[#D8C7A6]/70 mt-1">
             {formatDate(tasting.tasting_date)} •{" "}
-            {tasting.serving_method || "Neat"}
+            {safeStr(tasting.serving_method, "Neat")}
           </p>
           <p className="text-sm text-[#E0D8C8]/84 mt-3 break-words whitespace-pre-wrap">
-            {tasting.notes || "No notes"}
+            {safeStr(tasting.notes, "No notes")}
           </p>
         </div>
 
@@ -150,7 +164,7 @@ function BottleDetailInner() {
   );
 
   const updateBottle = (updates) => {
-    setBottle(prev => ({ ...prev, ...updates }));
+    setBottle((prev) => ({ ...prev, ...updates }));
   };
 
   async function handleDelete() {
@@ -197,8 +211,8 @@ function BottleDetailInner() {
       });
       const sorted = [...(rows || [])].sort(
         (a, b) =>
-          new Date(b.tasting_date || b.created_at) -
-          new Date(a.tasting_date || a.created_at)
+          new Date(b.tasting_date || b.created_at || 0) -
+          new Date(a.tasting_date || a.created_at || 0)
       );
       setTastings(sorted);
     } catch (e) {
@@ -274,6 +288,7 @@ function BottleDetailInner() {
   }, [bottleId, userEmail, userLoading]);
 
   const photo = useMemo(() => getBottlePhoto(bottle), [bottle]);
+  const displayName = useMemo(() => safeStr(bottle?.name, "Untitled Bottle"), [bottle]);
 
   const avgRating = useMemo(() => {
     const rated = tastings.filter(
@@ -370,7 +385,7 @@ function BottleDetailInner() {
               {photo ? (
                 <img
                   src={photo}
-                  alt={bottle.name}
+                  alt={displayName}
                   className="max-h-[440px] w-full object-contain"
                   style={{ filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.45))" }}
                 />
@@ -386,106 +401,197 @@ function BottleDetailInner() {
               />
             </div>
 
-            {/* Right info panel */}
             <div className="p-6 space-y-6">
               <div>
-                <h1 className="text-3xl font-bold text-[#F5F1E7] break-words leading-tight">{bottle.name}</h1>
-                {(bottle.distillery || bottle.region || bottle.country) && (
+                <h1 className="text-3xl font-bold text-[#F5F1E7] break-words leading-tight">
+                  {displayName}
+                </h1>
+
+                {[
+                  safeMaybeStr(bottle.distillery),
+                  safeMaybeStr(bottle.region),
+                  safeMaybeStr(bottle.country),
+                ].filter(Boolean).length > 0 ? (
                   <p className="text-[#D8C7A6]/80 mt-1 text-base">
-                    {[bottle.distillery, bottle.region, bottle.country].map(safeStr).filter(Boolean).join(' · ')}
+                    {[
+                      safeMaybeStr(bottle.distillery),
+                      safeMaybeStr(bottle.region),
+                      safeMaybeStr(bottle.country),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </p>
-                )}
-                {(bottle.type || bottle.bottle_type) && (
+                ) : null}
+
+                {bottle.type || bottle.bottle_type ? (
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {bottle.bottle_type && (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(79,120,180,0.2)', border: '1px solid rgba(79,120,180,0.3)', color: '#C5D9FF' }}>{safeStr(bottle.bottle_type)}</span>
-                    )}
-                    {bottle.type && (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(180,140,75,0.18)', border: '1px solid rgba(180,140,75,0.28)', color: '#F5F1E7' }}>{safeStr(bottle.type)}</span>
-                    )}
+                    {bottle.bottle_type ? (
+                      <span
+                        className="px-2 py-1 rounded-full text-xs font-medium"
+                        style={{
+                          background: "rgba(79,120,180,0.2)",
+                          border: "1px solid rgba(79,120,180,0.3)",
+                          color: "#C5D9FF",
+                        }}
+                      >
+                        {safeStr(bottle.bottle_type)}
+                      </span>
+                    ) : null}
+
+                    {bottle.type ? (
+                      <span
+                        className="px-2 py-1 rounded-full text-xs font-medium"
+                        style={{
+                          background: "rgba(180,140,75,0.18)",
+                          border: "1px solid rgba(180,140,75,0.28)",
+                          color: "#F5F1E7",
+                        }}
+                      >
+                        {safeStr(bottle.type)}
+                      </span>
+                    ) : null}
                   </div>
-                )}
+                ) : null}
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {unitValue > 0 && (
-                  <DetailStat label={valueSource || 'Value'} value={formatCurrency(unitValue)} icon={DollarSign} />
-                )}
-                {avgRating && (
+                {unitValue > 0 ? (
+                  <DetailStat
+                    label={valueSource || "Value"}
+                    value={formatCurrency(unitValue)}
+                    icon={DollarSign}
+                  />
+                ) : null}
+                {avgRating ? (
                   <DetailStat label="Avg Rating" value={`${avgRating} / 5`} icon={Star} />
-                )}
-                {bottle.age && (
+                ) : null}
+                {bottle.age ? (
                   <DetailStat label="Age" value={`${safeStr(bottle.age)} years`} icon={CalendarDays} />
-                )}
-                {bottle.abv && (
+                ) : null}
+                {bottle.abv ? (
                   <DetailStat label="ABV" value={`${safeStr(bottle.abv)}%`} icon={Sparkles} />
-                )}
-                {bottle.bottle_size && (
+                ) : null}
+                {bottle.bottle_size ? (
                   <DetailStat label="Bottle Size" value={safeStr(bottle.bottle_size)} icon={Package} />
-                )}
-                {bottle.bottle_count > 1 && (
+                ) : null}
+                {bottle.bottle_count > 1 ? (
                   <DetailStat label="Bottle Count" value={safeStr(bottle.bottle_count)} icon={Package} />
-                )}
-                {bottle.fill_level && (
+                ) : null}
+                {bottle.fill_level ? (
                   <DetailStat label="Fill Level" value={safeStr(bottle.fill_level)} icon={Package} />
-                )}
+                ) : null}
+                {totalValue > 0 && bottle.bottle_count > 1 ? (
+                  <DetailStat label="Total Value" value={formatCurrency(totalValue)} icon={WhiskeyKeeperIcon} />
+                ) : null}
               </div>
 
-              {(bottle.purchase_price || bottle.purchase_date || bottle.purchase_location || bottle.how_acquired) && (
-                <div className="rounded-2xl p-4 space-y-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
-                  <p className="text-xs uppercase tracking-wider text-[#D4A574] font-semibold mb-3">Acquisition</p>
-                  {bottle.how_acquired && <p className="text-sm text-[#E0D8C8]"><span className="text-[#D8C7A6]/60">How acquired: </span>{safeStr(bottle.how_acquired)}</p>}
-                  {bottle.purchase_price && <p className="text-sm text-[#E0D8C8]"><span className="text-[#D8C7A6]/60">Purchase price: </span>{formatCurrency(bottle.purchase_price)}</p>}
-                  {bottle.purchase_location && <p className="text-sm text-[#E0D8C8]"><span className="text-[#D8C7A6]/60">Location: </span>{bottle.purchase_location}</p>}
-                  {bottle.purchase_date && <p className="text-sm text-[#E0D8C8]"><span className="text-[#D8C7A6]/60">Date: </span>{formatDate(bottle.purchase_date)}</p>}
+              {bottle.purchase_price || bottle.purchase_date || bottle.purchase_location || bottle.how_acquired ? (
+                <div
+                  className="rounded-2xl p-4 space-y-2"
+                  style={{
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(180,140,75,0.14)",
+                  }}
+                >
+                  <p className="text-xs uppercase tracking-wider text-[#D4A574] font-semibold mb-3">
+                    Acquisition
+                  </p>
+                  {bottle.how_acquired ? (
+                    <p className="text-sm text-[#E0D8C8]">
+                      <span className="text-[#D8C7A6]/60">How acquired: </span>
+                      {safeStr(bottle.how_acquired)}
+                    </p>
+                  ) : null}
+                  {bottle.purchase_price ? (
+                    <p className="text-sm text-[#E0D8C8]">
+                      <span className="text-[#D8C7A6]/60">Purchase price: </span>
+                      {formatCurrency(bottle.purchase_price)}
+                    </p>
+                  ) : null}
+                  {bottle.purchase_location ? (
+                    <p className="text-sm text-[#E0D8C8]">
+                      <span className="text-[#D8C7A6]/60">Location: </span>
+                      {safeStr(bottle.purchase_location)}
+                    </p>
+                  ) : null}
+                  {bottle.purchase_date ? (
+                    <p className="text-sm text-[#E0D8C8]">
+                      <span className="text-[#D8C7A6]/60">Date: </span>
+                      {formatDate(bottle.purchase_date)}
+                    </p>
+                  ) : null}
                 </div>
-              )}
+              ) : null}
 
-              {bottle.notes && (
-                <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
-                  <p className="text-xs uppercase tracking-wider text-[#D4A574] font-semibold mb-2">Notes</p>
-                  <p className="text-sm text-[#E0D8C8]/90 whitespace-pre-wrap break-words leading-relaxed">{bottle.notes}</p>
+              {bottle.notes ? (
+                <div
+                  className="rounded-2xl p-4"
+                  style={{
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(180,140,75,0.14)",
+                  }}
+                >
+                  <p className="text-xs uppercase tracking-wider text-[#D4A574] font-semibold mb-2">
+                    Notes
+                  </p>
+                  <p className="text-sm text-[#E0D8C8]/90 whitespace-pre-wrap break-words leading-relaxed">
+                    {safeStr(bottle.notes)}
+                  </p>
                 </div>
-              )}
+              ) : null}
 
               <div className="flex flex-wrap gap-2">
                 <Button
-                  onClick={() => { setEditingTasting(null); setShowTastingModal(true); }}
-                  style={{ background: 'linear-gradient(135deg,rgba(196,122,58,1),rgba(160,95,40,1))', color: '#1A120D' }}
+                  onClick={() => {
+                    setEditingTasting(null);
+                    setShowTastingModal(true);
+                  }}
+                  style={{
+                    background:
+                      "linear-gradient(135deg,rgba(196,122,58,1),rgba(160,95,40,1))",
+                    color: "#1A120D",
+                  }}
                 >
                   Log Tasting
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowInventoryManager(true)}
-                >
+
+                <Button variant="outline" onClick={() => setShowInventoryManager(true)}>
                   <Package className="w-4 h-4 mr-2" />
                   Manage Inventory
                 </Button>
               </div>
 
-              {tastings.length > 0 && (
+              {tastings.length > 0 ? (
                 <div className="space-y-3">
-                  <h3 className="text-sm uppercase tracking-wider text-[#D4A574] font-semibold">Tasting Notes ({tastings.length})</h3>
+                  <h3 className="text-sm uppercase tracking-wider text-[#D4A574] font-semibold">
+                    Tasting Notes ({tastings.length})
+                  </h3>
                   {tastings.map((tasting) => (
-                    <TastingRow key={tasting.id} tasting={tasting} onEdit={(t) => { setEditingTasting(t); setShowTastingModal(true); }} />
+                    <TastingRow
+                      key={tasting.id}
+                      tasting={tasting}
+                      onEdit={(t) => {
+                        setEditingTasting(t);
+                        setShowTastingModal(true);
+                      }}
+                    />
                   ))}
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
       </div>
 
-      {showShareModal && (
+      {showShareModal ? (
         <ShareRecordModal
           record={bottle}
           recordType="bottle"
           onClose={() => setShowShareModal(false)}
         />
-      )}
+      ) : null}
 
-      {showTastingModal && (
+      {showTastingModal ? (
         <LogTastingModal
           bottle={bottle}
           editingTasting={editingTasting}
@@ -495,18 +601,18 @@ function BottleDetailInner() {
             loadTastings();
           }}
         />
-      )}
+      ) : null}
 
-      {showSimilar && (
+      {showSimilar ? (
         <SimilarItemsDrawer
           loading={similarLoading}
           result={similarResult}
           error={similarError}
           onClose={() => setShowSimilar(false)}
         />
-      )}
+      ) : null}
 
-      {showDeleteConfirm && (
+      {showDeleteConfirm ? (
         <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -517,24 +623,21 @@ function BottleDetailInner() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                disabled={deleting}
-              >
+              <AlertDialogAction onClick={handleDelete} disabled={deleting}>
                 {deleting ? "Deleting..." : "Delete"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      )}
+      ) : null}
 
-      {showInventoryManager && (
+      {showInventoryManager ? (
         <InventoryManager
           bottle={bottle}
           onClose={() => setShowInventoryManager(false)}
           onUpdate={loadBottle}
         />
-      )}
+      ) : null}
     </LockedModuleGuard>
   );
 }
