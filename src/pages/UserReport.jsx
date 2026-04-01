@@ -48,7 +48,7 @@ export default function UserReport() {
       const response = await base44.functions.invoke('getAdminMetrics', {});
       return response.data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin && !!report,
     retry: false,
   });
 
@@ -58,7 +58,7 @@ export default function UserReport() {
       const response = await base44.functions.invoke('calculateUserMetrics', {});
       return response.data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin && !!adminMetrics,
     retry: false,
   });
 
