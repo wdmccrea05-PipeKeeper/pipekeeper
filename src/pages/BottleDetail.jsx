@@ -65,6 +65,9 @@ function formatDate(value) {
 }
 
 function DetailStat({ label, value, icon: Icon }) {
+  const displayValue = value !== null && value !== undefined && typeof value === 'object'
+    ? (value.label ?? value.value ?? JSON.stringify(value))
+    : value;
   return (
     <div
       className="rounded-2xl p-4"
@@ -82,7 +85,7 @@ function DetailStat({ label, value, icon: Icon }) {
             {label}
           </p>
           <p className="text-lg font-semibold text-[#F5F1E7] mt-1 break-words">
-            {value}
+            {displayValue}
           </p>
         </div>
       </div>
