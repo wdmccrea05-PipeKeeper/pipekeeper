@@ -9,16 +9,12 @@ export function safeToString(val) {
   if (typeof val === "string") return val;
   if (typeof val === "number" || typeof val === "boolean") return String(val);
 
-  // Extract from common object shapes
+  // Extract from common object shapes (e.g. {label, confidence} from AI identification)
   if (typeof val === "object") {
-    const maybe = val?.name || val?.title || val?.label || val?.text || val?.message || val?.value;
-    if (typeof maybe === "string") return maybe;
-
-    try {
-      return JSON.stringify(val);
-    } catch {
-      return String(val);
-    }
+    const maybe = val?.label || val?.name || val?.title || val?.text || val?.message || val?.value;
+    if (typeof maybe === "string" && maybe.length > 0) return maybe;
+    // Do NOT JSON.stringify — that exposes raw AI internals in user-facing text
+    return "";
   }
 
   return String(val);
