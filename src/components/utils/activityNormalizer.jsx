@@ -81,6 +81,16 @@ export function normalizeTastingLog(log) {
 }
 
 function getSemanticDedupKey(item) {
+  // Real DB records have non-synthetic IDs — use them directly so two distinct
+  // logs for the same bottle/date never collapse into one.
+  if (
+    item.id &&
+    !item.id.startsWith("smoking_") &&
+    !item.id.startsWith("tasting_")
+  ) {
+    return item.id;
+  }
+  // Synthetic/missing id: dedupe by content so accidental duplicate saves collapse.
   const dateKey = item.date ? formatActivityDate(item.date) : "";
   return [
     item.type || "",

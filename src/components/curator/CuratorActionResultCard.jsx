@@ -43,17 +43,28 @@ function SessionLine({ label, value }) {
 }
 
 function buildSessionItemLines(item) {
+  // Only use item.recordName as a typed fallback — never assign it to the wrong slot.
+  const recordNameAsPipe =
+    item.recordType === "pipe" ? item.recordName : null;
+  const recordNameAsBlend =
+    item.recordType === "blend" || item.recordType === "tobacco"
+      ? item.recordName
+      : null;
+  const recordNameAsBottle =
+    item.recordType === "bottle" ? item.recordName : null;
+
   const pipeName =
     item.pipeName ||
-    item.recordName ||
     item.pipe?.name ||
     item.session?.pipeName ||
+    recordNameAsPipe ||
     null;
 
   const blendName =
     item.blendName ||
     item.blend?.name ||
     item.session?.blendName ||
+    recordNameAsBlend ||
     null;
 
   const bottleName =
@@ -62,6 +73,7 @@ function buildSessionItemLines(item) {
     item.whiskeyName ||
     item.bottle?.name ||
     item.session?.bottleName ||
+    recordNameAsBottle ||
     null;
 
   return { pipeName, blendName, bottleName };
