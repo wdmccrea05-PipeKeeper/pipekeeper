@@ -147,36 +147,33 @@ Deno.serve(async (req) => {
       }, 0);
     };
 
-    // Deduplicate renewals by user (a user with multiple products = 1 renewing customer)
-    const deduplicateRenewals = (renewalList) => {
-      const uniqueUsers = new Set();
-      const uniqueSubs = [];
-      renewalList.forEach(sub => {
-        const userId = sub.user_email || sub.user_id || sub.created_by;
-        if (userId && !uniqueUsers.has(userId)) {
-          uniqueUsers.add(userId);
-          uniqueSubs.push(sub);
-        }
-      });
-      return uniqueSubs;
-    };
-
-    // Returns object with `count` (matches what the UI reads) plus detailed breakdown
+    // Returns breakdown using subscription-level counts (not user-deduped) for revenue,
+    // while also exposing a deduped customer count.
     const breakdownByBillingInterval = (renewalList) => {
-      const deduped = deduplicateRenewals(renewalList);
-      const monthly = deduped.filter(sub => {
+      // Customer count: deduped by user identity
+      const uniqueCustomers = new Set();
+      renewalList.forEach(sub => {
+        const uid = sub.user_email || sub.user_id || sub.created_by;
+        if (uid) uniqueCustomers.add(uid);
+      });
+
+      // Billing-interval splits on ALL subscriptions (not deduped) for accurate revenue
+      const monthly = renewalList.filter(sub => {
         const interval = String(sub.billing_interval || '').toLowerCase();
         return interval === 'month' || interval === 'monthly';
       });
-      const annual = deduped.filter(sub => {
+      const annual = renewalList.filter(sub => {
         const interval = String(sub.billing_interval || '').toLowerCase();
         return interval === 'year' || interval === 'yearly';
       });
       return {
-        count: deduped.length,
+        customerCount: uniqueCustomers.size,
+        subscriptionCount: renewalList.length,
+        // keep `count` for any existing consumers
+        count: renewalList.length,
         monthly: monthly.length,
         annual: annual.length,
-        totalAmount: calculateRevenue(deduped),
+        totalAmount: calculateRevenue(renewalList),
         monthlyAmount: calculateRevenue(monthly),
         annualAmount: calculateRevenue(annual),
       };

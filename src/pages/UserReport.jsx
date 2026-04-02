@@ -193,18 +193,10 @@ export default function UserReport() {
   const trialMetrics = adminMetrics?.trialMetrics || {};
   const platformBreakdown = adminMetrics?.platformBreakdown || {};
   const growthLastEightWeeks = adminMetrics?.growthMetrics?.lastEightWeeks || [];
-  const churnMetrics = adminMetrics?.churnMetrics || {};
-  const userCounts = adminMetrics?.userCounts || {};
-  const subscriptionBreakdown = adminMetrics?.subscriptionBreakdown || {};
   const usageMetrics = adminMetrics?.usageMetrics || {};
   const usageAvgPipes = usageMetrics?.avgPipesPerUser || userMetrics?.avgPipesPerUser || 0;
   const usageAvgTobaccos = usageMetrics?.avgTobaccosPerUser || userMetrics?.avgTobaccoPerUser || 0;
 
-  const consolidatedPaidUsers = userMetrics?.consolidatedPaidUsers || summary.paid_users;
-  const consolidatedPaidPercentage = summary.paid_percentage;
-  const consolidatedUserCount = userMetrics?.consolidatedPaidUsers || ((userCounts.premium || 0) + (userCounts.pro || 0));
-  const consolidatedTrialCount = userMetrics?.activeOrTrialPaidUsers || ((subscriptionBreakdown.activeOrTrialPremium || 0) + (subscriptionBreakdown.activeOrTrialPro || 0));
-  const legacyPremiumCount = userMetrics?.legacyPremiumCount || (userCounts.legacyPremium || 0);
   const newAccountsData = userMetrics?.newAccounts || { day: 0, week: 0, month: 0, quarter: 0 };
   const renewalsData = userMetrics?.renewals || { week: { count: 0, totalAmount: 0 }, month: { count: 0, totalAmount: 0 }, quarter: { count: 0, totalAmount: 0 }, year: { count: 0, totalAmount: 0 } };
   const dailyActiveUsers = userMetrics?.dailyActiveUsers || 0;
@@ -409,36 +401,23 @@ export default function UserReport() {
           </CardContent>
         </Card>
 
-        {/* Pro Tier */}
+        {/* Pro Users */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Pro Tier</CardTitle>
+            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Pro Users</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-[#F5F1E7]">{userMetrics?.proTierCount || 0}</p>
+            <p className="text-3xl font-bold text-[#F5F1E7]">{summary.pro_users ?? 0}</p>
           </CardContent>
         </Card>
 
-        {/* Premium Tier */}
+        {/* Premium Users */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Premium Tier</CardTitle>
+            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Premium Users</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-[#F5F1E7]">{userMetrics?.premiumTierCount || 0}</p>
-          </CardContent>
-        </Card>
-
-        {/* Total Paid */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2">
-              <Crown className="w-4 h-4" />
-              Total Paid
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-[#F5F1E7]">{consolidatedPaidUsers}</p>
+            <p className="text-3xl font-bold text-[#F5F1E7]">{summary.premium_users ?? 0}</p>
           </CardContent>
         </Card>
 
@@ -601,7 +580,7 @@ export default function UserReport() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-[#E0D8C8]/70" />
-                Renewals
+                Renewal Forecast
               </CardTitle>
               <div className="flex gap-2">
                 {['week', 'month', 'quarter', 'year'].map((period) => (
@@ -619,19 +598,41 @@ export default function UserReport() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Count</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
+                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Renewing Customers</p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">
-                  {renewalsData[renewalsDateRange]?.count || 0}
+                  {renewalsData[renewalsDateRange]?.customerCount ?? renewalsData[renewalsDateRange]?.count ?? 0}
                 </p>
               </div>
-              <div>
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
+                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Renewing Subscriptions</p>
+                <p className="text-2xl font-bold text-[#F5F1E7]">
+                  {renewalsData[renewalsDateRange]?.subscriptionCount ?? renewalsData[renewalsDateRange]?.count ?? 0}
+                </p>
+              </div>
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
                 <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1 flex items-center gap-1">
-                  <DollarSign className="w-3 h-3" />Total
+                  <DollarSign className="w-3 h-3" />Forecasted Revenue
                 </p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">
                   ${(renewalsData[renewalsDateRange]?.totalAmount || 0).toFixed(2)}
+                </p>
+              </div>
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
+                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1 flex items-center gap-1">
+                  <DollarSign className="w-3 h-3" />Monthly Revenue
+                </p>
+                <p className="text-2xl font-bold text-[#F5F1E7]">
+                  ${(renewalsData[renewalsDateRange]?.monthlyAmount || 0).toFixed(2)}
+                </p>
+              </div>
+              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
+                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1 flex items-center gap-1">
+                  <DollarSign className="w-3 h-3" />Annual Revenue
+                </p>
+                <p className="text-2xl font-bold text-[#F5F1E7]">
+                  ${(renewalsData[renewalsDateRange]?.annualAmount || 0).toFixed(2)}
                 </p>
               </div>
             </div>
@@ -651,11 +652,11 @@ export default function UserReport() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Daily Active Users</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Daily Active Users <span className="opacity-60">(est.)</span></p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{dailyActiveUsers || 0}</p>
               </div>
               <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Weekly Active Users</p>
+                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Weekly Active Users <span className="opacity-60">(est.)</span></p>
                 <p className="text-2xl font-bold text-[#F5F1E7]">{weeklyActiveUsers || 0}</p>
               </div>
               <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
