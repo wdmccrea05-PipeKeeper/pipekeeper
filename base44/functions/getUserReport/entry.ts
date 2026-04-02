@@ -162,10 +162,13 @@ Deno.serve(async (req) => {
     const freeCount = freeUsers.length;
     const paidPercentage = totalUsers === 0 ? '0.0' : ((paidCount / totalUsers) * 100).toFixed(1);
 
+    const premiumCount = paidUsers.filter(u => (u.subscription_tier || '').toLowerCase() !== 'pro').length;
+    const proCount = paidUsers.filter(u => (u.subscription_tier || '').toLowerCase() === 'pro').length;
+
     return Response.json({
-      summary: { total_users: totalUsers, paid_users: paidCount, free_users: freeCount, paid_percentage: paidPercentage },
-      paid_users: paidUsers.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)),
-      free_users: freeUsers.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)),
+      summary: { total_users: totalUsers, paid_users: paidCount, free_users: freeCount, paid_percentage: paidPercentage, premium_users: premiumCount, pro_users: proCount },
+      paid_users: paidUsers.sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime()),
+      free_users: freeUsers.sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime()),
     });
 
   } catch (error) {
