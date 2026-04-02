@@ -1,37 +1,70 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Loader2, Users, TrendingUp, RefreshCw, Crown, UserX, Search, ChevronDown, ChevronUp, UserPlus, Clock, Zap, TrendingDown, Download, Calendar, DollarSign } from "lucide-react";
+import {
+  Loader2, Users, TrendingUp, RefreshCw, Crown, UserX, Search,
+  ChevronDown, ChevronUp, Zap, Download,
+  DollarSign, Package
+} from "lucide-react";
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+
+// ─── Small reusable components ────────────────────────────────────────────────
+
+function MetricCard({ label, value, sub }) {
+  return (
+    <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
+      <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{label}</p>
+      <p className="text-2xl font-bold text-[#F5F1E7]">{value}</p>
+      {sub && <p className="text-xs text-[#E0D8C8]/50 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+function SectionCard({ title, icon: Icon, children, className = "" }) {
+  return (
+    <Card className={`bg-transparent mb-6 ${className}`}>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
+          {Icon && <Icon className="w-5 h-5 text-[#E0D8C8]/70" />}
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function UserReport() {
   const { t } = useTranslation();
-  const [viewFilter, setViewFilter] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showPaidTable, setShowPaidTable] = useState(true);
-  const [showFreeTable, setShowFreeTable] = useState(true);
-  const [sortColumn, setSortColumn] = useState('created_date');
-  const [sortDirection, setSortDirection] = useState('desc');
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [newAccountsDateRange, setNewAccountsDateRange] = useState('week');
-  const [renewalsDateRange, setRenewalsDateRange] = useState('month');
-  
-  // All hooks MUST be called unconditionally at top level
+
+  const [viewFilter, setViewFilter]           = useState('all');
+  const [searchQuery, setSearchQuery]         = useState('');
+  const [showPaidTable, setShowPaidTable]     = useState(true);
+  const [showFreeTable, setShowFreeTable]     = useState(true);
+  const [sortColumn, setSortColumn]           = useState('created_date');
+  const [sortDirection, setSortDirection]     = useState('desc');
+  const [isSyncing, setIsSyncing]             = useState(false);
+  const [newAccountsPeriod, setNewAccountsPeriod] = useState('month');
+  const [renewalsPeriod, setRenewalsPeriod]   = useState('month');
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
   const { data: user, isLoading: isLoadingUser, error: userError } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
+    queryFn:  () => base44.auth.me(),
     retry: false,
   });
 
   const isAdmin = user?.role === 'admin';
 
+  // ── Single canonical report query ─────────────────────────────────────────
   const { data: report, isLoading, error, refetch } = useQuery({
     queryKey: ['user-report'],
     queryFn: async () => {
@@ -42,57 +75,23 @@ export default function UserReport() {
     retry: false,
   });
 
-  const { data: adminMetrics, isLoading: metricsLoading, refetch: refetchAdminMetrics } = useQuery({
-    queryKey: ['admin-metrics'],
-    queryFn: async () => {
-      const response = await base44.functions.invoke('getAdminMetrics', {});
-      return response.data;
-    },
-    enabled: isAdmin && !!report,
-    retry: false,
-  });
+  // ── Derived data ──────────────────────────────────────────────────────────
+  const accounts      = report?.accounts      || {};
+  const subscriptions = report?.subscriptions || {};
+  const revenue       = report?.revenue       || {};
+  const conversion    = report?.conversion    || {};
+  const usage         = report?.usage         || {};
+  const meta          = report?.meta          || {};
+  const trialMetrics  = subscriptions.trialMetrics || {};
 
-  const { data: userMetrics, isLoading: userMetricsLoading, refetch: refetchUserMetrics } = useQuery({
-    queryKey: ['user-metrics'],
-    queryFn: async () => {
-      const response = await base44.functions.invoke('calculateUserMetrics', {});
-      return response.data;
-    },
-    enabled: isAdmin && !!adminMetrics,
-    retry: false,
-  });
-
-  useEffect(() => {
-    if (isAdmin && !report) {
-      refetch();
-    }
-  }, [isAdmin, report, refetch]);
-
-  useEffect(() => {
-    if (isAdmin && report && !adminMetrics) {
-      refetchAdminMetrics();
-    }
-  }, [isAdmin, report, adminMetrics, refetchAdminMetrics]);
-
-  useEffect(() => {
-    if (isAdmin && adminMetrics && !userMetrics) {
-      refetchUserMetrics();
-    }
-  }, [isAdmin, adminMetrics, userMetrics, refetchUserMetrics]);
-
-  useEffect(() => {
-    refetchUserMetrics();
-  }, [renewalsDateRange, newAccountsDateRange, refetchUserMetrics]);
-
-  // All useMemos must be before any early returns
   const filteredData = useMemo(() => {
     if (!report) return { paid: [], free: [] };
     let paid = [...(report.paid_users || [])];
     let free = [...(report.free_users || [])];
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      paid = paid.filter(u => String(u.email || '').toLowerCase().includes(query) || String(u.full_name || '').toLowerCase().includes(query));
-      free = free.filter(u => String(u.email || '').toLowerCase().includes(query) || String(u.full_name || '').toLowerCase().includes(query));
+      const q = searchQuery.toLowerCase();
+      paid = paid.filter((u) => String(u.email || '').toLowerCase().includes(q) || String(u.full_name || '').toLowerCase().includes(q));
+      free = free.filter((u) => String(u.email || '').toLowerCase().includes(q) || String(u.full_name || '').toLowerCase().includes(q));
     }
     const sortFn = (a, b) => {
       let aVal = a[sortColumn];
@@ -102,7 +101,7 @@ export default function UserReport() {
         bVal = new Date(bVal || 0);
       }
       if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      if (aVal > bVal) return sortDirection === 'asc' ?  1 : -1;
       return 0;
     };
     paid.sort(sortFn);
@@ -110,115 +109,112 @@ export default function UserReport() {
     return { paid, free };
   }, [report, searchQuery, sortColumn, sortDirection]);
 
-  const computedPlatformBreakdown = useMemo(() => {
-    const breakdown = { apple: { paid: 0, free: 0 }, android: { paid: 0, free: 0 }, web: { paid: 0, free: 0 }, unknown: { paid: 0, free: 0 } };
-    (report?.paid_users || []).forEach(u => {
-      const p = (u.platform || 'web').toLowerCase();
-      const key = (p === 'ios' || p === 'apple') ? 'apple' : (p === 'android' ? 'android' : (p === 'web' ? 'web' : 'unknown'));
-      breakdown[key].paid++;
-    });
-    (report?.free_users || []).forEach(u => {
-      const p = (u.platform || 'web').toLowerCase();
-      const key = (p === 'ios' || p === 'apple') ? 'apple' : (p === 'android' ? 'android' : (p === 'web' ? 'web' : 'unknown'));
-      breakdown[key].free++;
-    });
-    return breakdown;
-  }, [report]);
-
-  // Early returns - AFTER all hooks
-  if (isLoadingUser) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-[#8b3a3a]" />
-        </div>
-      </div>
-    );
-  }
-
-  if (userError) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <Card className="border-rose-200 bg-rose-50">
-          <CardContent className="p-6">
-            <p className="text-rose-800">{t("userReport.errorLoadingUser")}: {userError.message}</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <Card className="bg-white/95 border-rose-200">
-          <CardContent className="p-6">
-            <p className="text-rose-800 font-semibold">{t("userReport.unauthorized")}</p>
-            <p className="text-rose-700 text-sm mt-2">{t("userReport.adminAccessRequired")}</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-[#8b3a3a]" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <Card className="border-rose-200 bg-rose-50">
-          <CardContent className="p-6">
-            <p className="text-rose-800">{t("userReport.errorLoadingReport")}: {error.message}</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const summary = report?.summary || {
-    total_users: 0,
-    paid_users: 0,
-    free_users: 0,
-    paid_percentage: 0,
-  };
-
-  const trialMetrics = adminMetrics?.trialMetrics || {};
-  const platformBreakdown = adminMetrics?.platformBreakdown || {};
-  const growthLastEightWeeks = adminMetrics?.growthMetrics?.lastEightWeeks || [];
-  const usageMetrics = adminMetrics?.usageMetrics || {};
-  const usageAvgPipes = usageMetrics?.avgPipesPerUser || userMetrics?.avgPipesPerUser || 0;
-  const usageAvgTobaccos = usageMetrics?.avgTobaccosPerUser || userMetrics?.avgTobaccoPerUser || 0;
-
-  const newAccountsData = userMetrics?.newAccounts || { day: 0, week: 0, month: 0, quarter: 0 };
-  const renewalsData = userMetrics?.renewals || { week: { count: 0, totalAmount: 0 }, month: { count: 0, totalAmount: 0 }, quarter: { count: 0, totalAmount: 0 }, year: { count: 0, totalAmount: 0 } };
-  const dailyActiveUsers = userMetrics?.dailyActiveUsers || 0;
-  const weeklyActiveUsers = userMetrics?.weeklyActiveUsers || 0;
+  // ── Early returns (after all hooks) ──────────────────────────────────────
+  if (isLoadingUser) return <LoadingSpinner />;
+  if (userError) return <ErrorCard message={`${t("userReport.errorLoadingUser")}: ${userError.message}`} />;
+  if (!isAdmin) return (
+    <div className="max-w-7xl mx-auto p-6">
+      <Card className="bg-white/95 border-rose-200">
+        <CardContent className="p-6">
+          <p className="text-rose-800 font-semibold">{t("userReport.unauthorized")}</p>
+          <p className="text-rose-700 text-sm mt-2">{t("userReport.adminAccessRequired")}</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+  if (isLoading) return <LoadingSpinner />;
+  if (error)     return <ErrorCard message={`${t("userReport.errorLoadingReport")}: ${error.message}`} />;
 
   const handleSort = (column) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortColumn(column);
-      setSortDirection('desc');
-    }
+    if (sortColumn === column) setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    else { setSortColumn(column); setSortDirection('desc'); }
   };
 
-  const lastUpdated = new Date().toLocaleString();
+  const lastUpdated = meta.generatedAt
+    ? new Date(meta.generatedAt).toLocaleString()
+    : new Date().toLocaleString();
 
+  // ── CSV export — same canonical data as the page ──────────────────────────
   function exportCSV() {
-    const rows = [];
-    rows.push(['tier', 'name', 'email', 'subscription_status', 'billing_interval', 'subscription_end', 'joined']);
+    const metricRows = [
+      // Accounts
+      ['Metric', 'Value'],
+      ['--- ACCOUNTS ---', ''],
+      ['Total Accounts',                  accounts.totalUsers     ?? ''],
+      ['Paid Accounts',                   accounts.paidUsers      ?? ''],
+      ['Free Accounts',                   accounts.freeUsers      ?? ''],
+      ['Paid %',                          `${accounts.paidPercentage ?? 0}%`],
+      ['Signup Source — Web',             accounts.signupSources?.web         ?? ''],
+      ['Signup Source — Apple',           accounts.signupSources?.apple       ?? ''],
+      ['Signup Source — Google Play',     accounts.signupSources?.googlePlay  ?? ''],
+      ['New Accounts (This Week)',         accounts.newAccounts?.week          ?? ''],
+      ['New Accounts (This Month)',        accounts.newAccounts?.month         ?? ''],
+      ['New Accounts (This Quarter)',      accounts.newAccounts?.quarter       ?? ''],
+      ['New Accounts (This Year)',         accounts.newAccounts?.year          ?? ''],
+      // Subscriptions
+      ['--- SUBSCRIPTIONS ---', ''],
+      ['Total Paid Subscriptions',                  subscriptions.totalPaidSubscriptions ?? ''],
+      ['Paid Subs — PipeKeeper',                    subscriptions.paidByProduct?.pipekeeper    ?? ''],
+      ['Paid Subs — WhiskeyKeeper',                 subscriptions.paidByProduct?.whiskeykeeper ?? ''],
+      ['Paid Subs — CigarKeeper',                   subscriptions.paidByProduct?.cigarkeeper   ?? ''],
+      ['Paid Subs — WineKeeper',                    subscriptions.paidByProduct?.winekeeper    ?? ''],
+      ['Paid Bundles — Founders',                   subscriptions.paidByBundle?.founders       ?? ''],
+      ['Paid Bundles — 3-Module',                   subscriptions.paidByBundle?.threeModules   ?? ''],
+      ['Paid Bundles — 4-Module',                   subscriptions.paidByBundle?.fourModules    ?? ''],
+      ['Renewing Customers (This Week)',             subscriptions.renewingCustomers?.week       ?? ''],
+      ['Renewing Customers (This Month)',            subscriptions.renewingCustomers?.month      ?? ''],
+      ['Renewing Customers (This Quarter)',          subscriptions.renewingCustomers?.quarter    ?? ''],
+      ['Renewing Customers (This Year)',             subscriptions.renewingCustomers?.year       ?? ''],
+      ['Renewing Subscriptions (This Week)',         subscriptions.renewingSubscriptions?.week    ?? ''],
+      ['Renewing Subscriptions (This Month)',        subscriptions.renewingSubscriptions?.month   ?? ''],
+      ['Renewing Subscriptions (This Quarter)',      subscriptions.renewingSubscriptions?.quarter ?? ''],
+      ['Renewing Subscriptions (This Year)',         subscriptions.renewingSubscriptions?.year    ?? ''],
+      ['Trials — Currently on Trial',               trialMetrics.currentlyOnTrial   ?? ''],
+      ['Trials — Ending in 3 Days',                 trialMetrics.endingIn3Days      ?? ''],
+      ['Trials — Ending in 7 Days',                 trialMetrics.endingIn7Days      ?? ''],
+      ['Trials — Converted (30d)',                  trialMetrics.convertedLast30d   ?? ''],
+      ['Trials — Drop-offs (30d)',                  trialMetrics.dropoffLast30d     ?? ''],
+      // Revenue
+      ['--- REVENUE ---', ''],
+      ['Forecasted Revenue (This Week)',             `$${revenue.forecasted?.week    ?? 0}`],
+      ['Forecasted Revenue (This Month)',            `$${revenue.forecasted?.month   ?? 0}`],
+      ['Forecasted Revenue (This Quarter)',          `$${revenue.forecasted?.quarter ?? 0}`],
+      ['Forecasted Revenue (This Year)',             `$${revenue.forecasted?.year    ?? 0}`],
+      ['Avg Revenue / Week (MRR-based)',             `$${revenue.average?.week    ?? 0}`],
+      ['Avg Revenue / Month (MRR)',                  `$${revenue.average?.month   ?? 0}`],
+      ['Avg Revenue / Quarter (MRR-based)',          `$${revenue.average?.quarter ?? 0}`],
+      ['Avg Revenue / Year (ARR)',                   `$${revenue.average?.year    ?? 0}`],
+      ['Revenue by Product — PipeKeeper',            `$${revenue.byProduct?.pipekeeper    ?? 0}`],
+      ['Revenue by Product — WhiskeyKeeper',         `$${revenue.byProduct?.whiskeykeeper ?? 0}`],
+      ['Revenue by Product — CigarKeeper',           `$${revenue.byProduct?.cigarkeeper   ?? 0}`],
+      ['Revenue by Product — WineKeeper',            `$${revenue.byProduct?.winekeeper    ?? 0}`],
+      ['Revenue by Bundle — Founders',               `$${revenue.byBundle?.founders     ?? 0}`],
+      ['Revenue by Bundle — 3-Module',               `$${revenue.byBundle?.threeModules ?? 0}`],
+      ['Revenue by Bundle — 4-Module',               `$${revenue.byBundle?.fourModules  ?? 0}`],
+      // Conversion
+      ['--- CONVERSION ---', ''],
+      ['Free → Paid (%)',                            `${conversion.freeToPaidPct              ?? 0}%`],
+      ['Paid → Additional Modules (%)',              `${conversion.paidToAdditionalModulesPct ?? 0}%`],
+      ['Paid → Free / Monthly Churn (%)',            `${conversion.paidToFreePct              ?? 0}%`],
+      // Usage
+      ['--- USAGE ---', ''],
+      ['DAU — PipeKeeper',    'Not available'],
+      ['DAU — WhiskeyKeeper', 'Not available'],
+      ['DAU — CigarKeeper',   'Not available'],
+      ['DAU — WineKeeper',    'Not available'],
+      ['WAU — PipeKeeper',    'Not available'],
+      ['WAU — WhiskeyKeeper', 'Not available'],
+      ['WAU — CigarKeeper',   'Not available'],
+      ['WAU — WineKeeper',    'Not available'],
+      // User detail separator
+      ['', ''],
+      ['--- USER DETAIL ---', ''],
+      ['tier', 'name', 'email', 'subscription_status', 'billing_interval', 'subscription_end', 'joined'],
+    ];
 
+    // Paid users
     (report?.paid_users || []).forEach((u) => {
-      rows.push([
+      metricRows.push([
         'paid',
         u.full_name || '',
         u.email || '',
@@ -228,9 +224,9 @@ export default function UserReport() {
         u.created_date ? new Date(u.created_date).toLocaleDateString() : '',
       ]);
     });
-
+    // Free users
     (report?.free_users || []).forEach((u) => {
-      rows.push([
+      metricRows.push([
         'free',
         u.full_name || '',
         u.email || '',
@@ -241,23 +237,31 @@ export default function UserReport() {
       ]);
     });
 
-    const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const csv = metricRows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
     a.href = url;
-    a.download = `users_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `user-report_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success('CSV exported');
   }
 
+  const periodLabels = { week: 'This Week', month: 'This Month', quarter: 'This Quarter', year: 'This Year' };
+
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* ── Header ───────────────────────────────────────────────────────── */}
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#e8d5b7]">{t("userReport.title")}</h1>
-          <p className="text-xs text-[#e8d5b7]/60 mt-1">{t("userReport.lastUpdated")}: {lastUpdated}</p>
+          <p className="text-xs text-[#e8d5b7]/60 mt-1">
+            {t("userReport.lastUpdated")}: {lastUpdated}
+            {meta.dateRangeDefinition && (
+              <span className="ml-2 opacity-60">· Date ranges: {meta.dateRangeDefinition}</span>
+            )}
+          </p>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <Button
@@ -271,7 +275,6 @@ export default function UserReport() {
                   toast.error(res?.data?.error || t("userReport.backfillFailed"));
                 }
                 await refetch();
-                await refetchUserMetrics();
               } catch (e) {
                 toast.error(e?.message || t("userReport.backfillFailed"));
               } finally {
@@ -286,397 +289,235 @@ export default function UserReport() {
             {isSyncing ? t("userReport.syncing") : t("userReport.backfillFromStripe")}
           </Button>
 
-          <Button
-            onClick={exportCSV}
-            variant="outline"
-            className="w-full gap-2 sm:w-auto"
-            disabled={!report}
-          >
+          <Button onClick={exportCSV} variant="outline" className="w-full gap-2 sm:w-auto" disabled={!report}>
             <Download className="w-4 h-4" />
             Export CSV
           </Button>
 
           <Button
-            onClick={() => {
-              refetch();
-              refetchUserMetrics();
-              toast.success(t("userReport.reportRefreshed"));
-            }}
+            onClick={() => { refetch(); toast.success(t("userReport.reportRefreshed")); }}
             variant="outline"
             className="w-full gap-2 sm:w-auto"
           >
             <RefreshCw className="w-4 h-4" />
-            {t("common.refresh")}
+            Refresh
           </Button>
         </div>
       </div>
-      <div className="mb-6" />
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card 
-          className={`cursor-pointer transition-all hover:shadow-lg ${
-            viewFilter === 'all' ? 'ring-2 ring-[#B48C4B]' : ''
-          }`}
-          onClick={() => {
-            setViewFilter('all');
-            setShowPaidTable(true);
-            setShowFreeTable(true);
-          }}
-        >
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              {t("userReport.totalUsers")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-[#F5F1E7]">{summary.total_users}</p>
-          </CardContent>
-        </Card>
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 1 — ACCOUNT METRICS
+      ═══════════════════════════════════════════════════════════════════ */}
+      <SectionCard title="Account Metrics" icon={Users}>
+        {/* Top-level counts */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <Card
+            className={`cursor-pointer transition-all hover:shadow-lg ${viewFilter === 'all'  ? 'ring-2 ring-[#B48C4B]' : ''}`}
+            onClick={() => { setViewFilter('all');  setShowPaidTable(true);  setShowFreeTable(true);  }}
+          >
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><Users className="w-4 h-4" />Total Accounts</CardTitle></CardHeader>
+            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.totalUsers ?? 0}</p></CardContent>
+          </Card>
+          <Card
+            className={`cursor-pointer transition-all hover:shadow-lg ${viewFilter === 'paid' ? 'ring-2 ring-[#B48C4B]' : ''}`}
+            onClick={() => { setViewFilter('paid'); setShowPaidTable(true);  setShowFreeTable(false); }}
+          >
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><Crown className="w-4 h-4" />Paid Accounts</CardTitle></CardHeader>
+            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.paidUsers ?? 0}</p></CardContent>
+          </Card>
+          <Card
+            className={`cursor-pointer transition-all hover:shadow-lg ${viewFilter === 'free' ? 'ring-2 ring-[#B48C4B]' : ''}`}
+            onClick={() => { setViewFilter('free'); setShowPaidTable(false); setShowFreeTable(true);  }}
+          >
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><UserX className="w-4 h-4" />Free Accounts</CardTitle></CardHeader>
+            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.freeUsers ?? 0}</p></CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><TrendingUp className="w-4 h-4" />Paid %</CardTitle></CardHeader>
+            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.paidPercentage ?? 0}%</p></CardContent>
+          </Card>
+        </div>
 
-        <Card 
-          className={`cursor-pointer transition-all hover:shadow-lg ${
-            viewFilter === 'paid' ? 'ring-2 ring-[#B48C4B]' : ''
-          }`}
-          onClick={() => {
-            setViewFilter('paid');
-            setShowPaidTable(true);
-            setShowFreeTable(false);
-          }}
-        >
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2">
-              <Crown className="w-4 h-4" />
-              {t("userReport.paidUsers")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-[#F5F1E7]">{summary.paid_users}</p>
-          </CardContent>
-        </Card>
-
-        <Card 
-          className={`cursor-pointer transition-all hover:shadow-lg ${
-            viewFilter === 'free' ? 'ring-2 ring-[#B48C4B]' : ''
-          }`}
-          onClick={() => {
-            setViewFilter('free');
-            setShowPaidTable(false);
-            setShowFreeTable(true);
-          }}
-        >
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2">
-              <UserX className="w-4 h-4" />
-              {t("userReport.freeUsers")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-[#F5F1E7]">{summary.free_users}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              {t("userReport.paidPercentage")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-[#F5F1E7]">{summary.paid_percentage}%</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2">
-              <UserPlus className="w-4 h-4" />
-              {t("userReport.new7Days")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-[#F5F1E7]">{metricsLoading ? '...' : trialMetrics.newSignupsLast7d || 0}</p>
-          </CardContent>
-        </Card>
-
-        {/* Pro Users */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Pro Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-[#F5F1E7]">{summary.pro_users ?? 0}</p>
-          </CardContent>
-        </Card>
-
-        {/* Premium Users */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-[#E0D8C8]/70">Premium Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-[#F5F1E7]">{summary.premium_users ?? 0}</p>
-          </CardContent>
-        </Card>
-
-        {report && (
-          <>
-            <Card className="bg-transparent">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-[#E0D8C8]">iOS/Apple</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.apple.paid}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.apple.free}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-transparent">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.android")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.android.paid}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.android.free}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-transparent">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.web")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.web.paid}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.web.free}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-transparent">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-[#E0D8C8]">{t("userReport.unknown")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.paid")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.unknown.paid}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#E0D8C8]/70">{t("userReport.free")}:</span>
-                    <span className="font-bold text-[#F5F1E7]">{computedPlatformBreakdown.unknown.free}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </div>
-
-      {/* Trials Panel */}
-      {adminMetrics && !metricsLoading && (
-        <Card className="bg-transparent mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
-              <Clock className="w-5 h-5 text-[#E0D8C8]/70" />
-              {t("userReport.trialMetrics")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.currentlyOnTrial")}</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">{trialMetrics.currentlyOnTrial || 0}</p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.endingIn3Days")}</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">{trialMetrics.endingIn3Days || 0}</p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.endingIn7Days")}</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">{trialMetrics.endingIn7Days || 0}</p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.avgDaysRemaining")}</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">{trialMetrics.avgDaysRemaining || 0}</p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.converted30d")}</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">{trialMetrics.convertedLast30d || 0}</p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{t("userReport.dropoffs30d")}</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">{trialMetrics.dropoffLast30d || 0}</p>
-              </div>
+        {/* New accounts by calendar period */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-medium text-[#E0D8C8]">New Accounts</p>
+            <div className="flex gap-1">
+              {['week', 'month', 'quarter', 'year'].map((p) => (
+                <Button key={p} variant={newAccountsPeriod === p ? 'default' : 'outline'} size="sm" onClick={() => setNewAccountsPeriod(p)} className="text-xs">
+                  {periodLabels[p]}
+                </Button>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+          <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50 flex items-end gap-3">
+            <p className="text-3xl font-bold text-[#F5F1E7]">{accounts.newAccounts?.[newAccountsPeriod] ?? 0}</p>
+            <p className="text-sm text-[#E0D8C8]/60 mb-1">new accounts {periodLabels[newAccountsPeriod].toLowerCase()}</p>
+          </div>
+        </div>
 
-      {/* New Accounts Panel */}
-      {userMetrics && !userMetricsLoading && (
-        <Card className="bg-transparent mb-6">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-[#E0D8C8]/70" />
-                New Accounts
-              </CardTitle>
-              <div className="flex gap-2">
-                {['day', 'week', 'month', 'quarter'].map((period) => (
-                  <Button
-                    key={period}
-                    variant={newAccountsDateRange === period ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setNewAccountsDateRange(period)}
-                    className="text-xs capitalize"
-                  >
-                    {period}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-[#F5F1E7]">
-              {newAccountsData[newAccountsDateRange] || 0}
-            </div>
-            <p className="text-sm text-[#E0D8C8]/70 mt-2">
-              New accounts in the last {newAccountsDateRange}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+        {/* Signup sources */}
+        <div>
+          <p className="text-sm font-medium text-[#E0D8C8] mb-2">Signup Sources</p>
+          <div className="grid grid-cols-3 gap-3">
+            <MetricCard label="Web"         value={accounts.signupSources?.web         ?? 0} />
+            <MetricCard label="Apple / iOS" value={accounts.signupSources?.apple       ?? 0} />
+            <MetricCard label="Google Play" value={accounts.signupSources?.googlePlay  ?? 0} />
+          </div>
+        </div>
+      </SectionCard>
 
-      {/* Renewals Panel */}
-      {userMetrics && !userMetricsLoading && (
-        <Card className="bg-transparent mb-6">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-[#E0D8C8]/70" />
-                Renewal Forecast
-              </CardTitle>
-              <div className="flex gap-2">
-                {['week', 'month', 'quarter', 'year'].map((period) => (
-                  <Button
-                    key={period}
-                    variant={renewalsDateRange === period ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setRenewalsDateRange(period)}
-                    className="text-xs capitalize"
-                  >
-                    {period}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Renewing Customers</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">
-                  {renewalsData[renewalsDateRange]?.customerCount ?? renewalsData[renewalsDateRange]?.count ?? 0}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Renewing Subscriptions</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">
-                  {renewalsData[renewalsDateRange]?.subscriptionCount ?? renewalsData[renewalsDateRange]?.count ?? 0}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1 flex items-center gap-1">
-                  <DollarSign className="w-3 h-3" />Forecasted Revenue
-                </p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">
-                  ${(renewalsData[renewalsDateRange]?.totalAmount || 0).toFixed(2)}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1 flex items-center gap-1">
-                  <DollarSign className="w-3 h-3" />Monthly Revenue
-                </p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">
-                  ${(renewalsData[renewalsDateRange]?.monthlyAmount || 0).toFixed(2)}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1 flex items-center gap-1">
-                  <DollarSign className="w-3 h-3" />Annual Revenue
-                </p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">
-                  ${(renewalsData[renewalsDateRange]?.annualAmount || 0).toFixed(2)}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 2 — SUBSCRIPTION METRICS
+      ═══════════════════════════════════════════════════════════════════ */}
+      <SectionCard title="Subscription Metrics" icon={Package}>
+        {/* Total */}
+        <div className="mb-4">
+          <MetricCard label="Total Active Paid Subscriptions" value={subscriptions.totalPaidSubscriptions ?? 0} sub="Subscription records — not deduped by account" />
+        </div>
 
-      {/* Activity & Usage Panel */}
-      {userMetrics && !userMetricsLoading && (
-        <Card className="bg-transparent mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
-              <Zap className="w-5 h-5 text-[#E0D8C8]/70" />
-              Activity & Usage
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Daily Active Users <span className="opacity-60">(est.)</span></p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">{dailyActiveUsers || 0}</p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Weekly Active Users <span className="opacity-60">(est.)</span></p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">{weeklyActiveUsers || 0}</p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Avg Pipes/User</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">
-                  {typeof usageAvgPipes === 'object' ? (usageAvgPipes?.average || 0).toFixed(1) : (usageAvgPipes || 0).toFixed(1)}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-                <p className="text-xs text-[#E0D8C8]/70 font-medium mb-1">Avg Tobacco/User</p>
-                <p className="text-2xl font-bold text-[#F5F1E7]">
-                  {typeof usageAvgTobaccos === 'object' ? (usageAvgTobaccos?.average || 0).toFixed(1) : (usageAvgTobaccos || 0).toFixed(1)}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+        {/* By product */}
+        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Product</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <MetricCard label="PipeKeeper"    value={subscriptions.paidByProduct?.pipekeeper    ?? 0} />
+          <MetricCard label="WhiskeyKeeper" value={subscriptions.paidByProduct?.whiskeykeeper ?? 0} />
+          <MetricCard label="CigarKeeper"   value={subscriptions.paidByProduct?.cigarkeeper   ?? 0} />
+          <MetricCard label="WineKeeper"    value={subscriptions.paidByProduct?.winekeeper    ?? 0} />
+        </div>
 
-      {/* Search Bar */}
+        {/* By bundle */}
+        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Bundle</p>
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <MetricCard label="Founders Bundle"  value={subscriptions.paidByBundle?.founders     ?? 0} />
+          <MetricCard label="3-Module Bundle"  value={subscriptions.paidByBundle?.threeModules ?? 0} />
+          <MetricCard label="4-Module Bundle"  value={subscriptions.paidByBundle?.fourModules  ?? 0} />
+        </div>
+
+        {/* Renewals */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-medium text-[#E0D8C8]">Renewing (upcoming in calendar period)</p>
+            <div className="flex gap-1">
+              {['week', 'month', 'quarter', 'year'].map((p) => (
+                <Button key={p} variant={renewalsPeriod === p ? 'default' : 'outline'} size="sm" onClick={() => setRenewalsPeriod(p)} className="text-xs">
+                  {periodLabels[p]}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <MetricCard label="Renewing Customers"     value={subscriptions.renewingCustomers?.[renewalsPeriod]    ?? 0} sub="Unique accounts" />
+            <MetricCard label="Renewing Subscriptions" value={subscriptions.renewingSubscriptions?.[renewalsPeriod] ?? 0} sub="Subscription records" />
+          </div>
+        </div>
+
+        {/* Trials */}
+        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Trial Metrics</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+          <MetricCard label="On Trial"           value={trialMetrics.currentlyOnTrial  ?? 0} />
+          <MetricCard label="Avg Days Left"      value={trialMetrics.avgDaysRemaining  ?? 0} />
+          <MetricCard label="Ending in 3 Days"   value={trialMetrics.endingIn3Days     ?? 0} />
+          <MetricCard label="Ending in 7 Days"   value={trialMetrics.endingIn7Days     ?? 0} />
+          <MetricCard label="Converted (30d)"    value={trialMetrics.convertedLast30d  ?? 0} />
+          <MetricCard label="Drop-offs (30d)"    value={trialMetrics.dropoffLast30d    ?? 0} />
+        </div>
+      </SectionCard>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 3 — REVENUE
+      ═══════════════════════════════════════════════════════════════════ */}
+      <SectionCard title="Revenue" icon={DollarSign}>
+        {/* Forecasted */}
+        <p className="text-sm font-medium text-[#E0D8C8] mb-2">
+          Forecasted Revenue <span className="opacity-60 text-xs font-normal">(subscriptions renewing before end of period)</span>
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          {['week', 'month', 'quarter', 'year'].map((p) => (
+            <MetricCard key={p} label={periodLabels[p]} value={`$${(revenue.forecasted?.[p] ?? 0).toFixed(2)}`} />
+          ))}
+        </div>
+
+        {/* Average (MRR-based) */}
+        <p className="text-sm font-medium text-[#E0D8C8] mb-2">
+          Average Revenue <span className="opacity-60 text-xs font-normal">(extrapolated from current MRR)</span>
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <MetricCard label="Avg / Week"    value={`$${(revenue.average?.week    ?? 0).toFixed(2)}`} />
+          <MetricCard label="Avg / Month"   value={`$${(revenue.average?.month   ?? 0).toFixed(2)}`} sub="MRR" />
+          <MetricCard label="Avg / Quarter" value={`$${(revenue.average?.quarter ?? 0).toFixed(2)}`} />
+          <MetricCard label="Avg / Year"    value={`$${(revenue.average?.year    ?? 0).toFixed(2)}`}  sub="ARR" />
+        </div>
+
+        {/* By product */}
+        <p className="text-sm font-medium text-[#E0D8C8] mb-2">
+          Revenue by Product <span className="opacity-60 text-xs font-normal">(single-module subscriptions only)</span>
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <MetricCard label="PipeKeeper"    value={`$${(revenue.byProduct?.pipekeeper    ?? 0).toFixed(2)}`} />
+          <MetricCard label="WhiskeyKeeper" value={`$${(revenue.byProduct?.whiskeykeeper ?? 0).toFixed(2)}`} />
+          <MetricCard label="CigarKeeper"   value={`$${(revenue.byProduct?.cigarkeeper   ?? 0).toFixed(2)}`} />
+          <MetricCard label="WineKeeper"    value={`$${(revenue.byProduct?.winekeeper    ?? 0).toFixed(2)}`} />
+        </div>
+
+        {/* By bundle */}
+        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Revenue by Bundle</p>
+        <div className="grid grid-cols-3 gap-3">
+          <MetricCard label="Founders Bundle" value={`$${(revenue.byBundle?.founders     ?? 0).toFixed(2)}`} />
+          <MetricCard label="3-Module Bundle" value={`$${(revenue.byBundle?.threeModules ?? 0).toFixed(2)}`} />
+          <MetricCard label="4-Module Bundle" value={`$${(revenue.byBundle?.fourModules  ?? 0).toFixed(2)}`} />
+        </div>
+      </SectionCard>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 4 — CONVERSION
+      ═══════════════════════════════════════════════════════════════════ */}
+      <SectionCard title="Conversion Metrics" icon={TrendingUp}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <MetricCard
+            label="Free → Paid"
+            value={`${conversion.freeToPaidPct ?? 0}%`}
+            sub="% of all accounts currently paid"
+          />
+          <MetricCard
+            label="Paid → Additional Modules"
+            value={`${conversion.paidToAdditionalModulesPct ?? 0}%`}
+            sub="% of paid accounts with multi-module subscription"
+          />
+          <MetricCard
+            label="Paid → Free (Monthly Churn)"
+            value={`${conversion.paidToFreePct ?? 0}%`}
+            sub="Cancellations in past 30 days / active subscriptions"
+          />
+        </div>
+      </SectionCard>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 5 — USAGE
+      ═══════════════════════════════════════════════════════════════════ */}
+      <SectionCard title="Usage Metrics" icon={Zap}>
+        <div className="mb-3 p-3 rounded-lg border border-amber-800/30 bg-amber-900/10">
+          <p className="text-xs text-amber-200/70">
+            Per-module activity events are not tracked in the current data model.
+            Daily / weekly active user counts by module are unavailable and will not be estimated.
+          </p>
+        </div>
+        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Daily Active Users by Module</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          {['PipeKeeper', 'WhiskeyKeeper', 'CigarKeeper', 'WineKeeper'].map((m) => (
+            <MetricCard key={m} label={m} value="N/A" sub="Not available" />
+          ))}
+        </div>
+        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Weekly Active Users by Module</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {['PipeKeeper', 'WhiskeyKeeper', 'CigarKeeper', 'WineKeeper'].map((m) => (
+            <MetricCard key={m} label={m} value="N/A" sub="Not available" />
+          ))}
+        </div>
+      </SectionCard>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 6 — USER DETAIL TABLES
+      ═══════════════════════════════════════════════════════════════════ */}
       <div className="mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-stone-400" />
@@ -689,7 +530,7 @@ export default function UserReport() {
         </div>
       </div>
 
-      {/* Paid Users Table */}
+      {/* Paid users table */}
       {(viewFilter === 'all' || viewFilter === 'paid') && (
         <Collapsible open={showPaidTable} onOpenChange={setShowPaidTable}>
           <Card className="bg-transparent mb-6">
@@ -706,78 +547,29 @@ export default function UserReport() {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-[#8b6239]/30">
-                        <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
-                          onClick={() => handleSort('full_name')}
-                        >
-                          {t("userReport.name")} {sortColumn === 'full_name' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </th>
-                        <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
-                          onClick={() => handleSort('email')}
-                        >
-                          {t("userReport.email")} {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </th>
-                        <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
-                          onClick={() => handleSort('subscription_status')}
-                        >
-                          {t("userReport.status")} {sortColumn === 'subscription_status' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8]">{t("userReport.billing")}</th>
-                        <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
-                          onClick={() => handleSort('subscription_end')}
-                        >
-                          {t("userReport.periodEnd")} {sortColumn === 'subscription_end' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </th>
-                        <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
-                          onClick={() => handleSort('created_date')}
-                        >
-                          {t("userReport.joined")} {sortColumn === 'created_date' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredData.paid.length === 0 ? (
-                        <tr>
-                          <td colSpan="6" className="text-center py-8 text-[#E0D8C8]/50">
-                            {searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noPaidUsersFound")}
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredData.paid.map((user) => (
-                          <tr key={user.email} className="border-b border-[#8b6239]/20 hover:bg-[#2a1f18]/40">
-                            <td className="py-3 px-4 text-sm text-[#F5F1E7]">{user.full_name || '-'}</td>
-                            <td className="py-3 px-4 text-sm text-[#E0D8C8]">{user.email}</td>
-                            <td className="py-3 px-4">
-                              <Badge className="bg-[#B48C4B]/20 text-[#F5F1E7] border border-[#B48C4B]/40">{user.subscription_status}</Badge>
-                            </td>
-                            <td className="py-3 px-4 text-sm text-[#E0D8C8] capitalize">{user.billing_interval || '-'}</td>
-                            <td className="py-3 px-4 text-sm text-[#E0D8C8]">
-                              {user.subscription_end ? new Date(user.subscription_end).toLocaleDateString() : '-'}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-[#E0D8C8]">
-                              {new Date(user.created_date).toLocaleDateString()}
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                <UserTable
+                  rows={filteredData.paid}
+                  columns={['full_name', 'email', 'subscription_status', 'billing_interval', 'subscription_end', 'created_date']}
+                  headers={[t("userReport.name"), t("userReport.email"), t("userReport.status"), t("userReport.billing"), t("userReport.periodEnd"), t("userReport.joined")]}
+                  sortColumn={sortColumn}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
+                  emptyMessage={searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noPaidUsersFound")}
+                  renderCell={(col, user) => {
+                    if (col === 'subscription_status') return <Badge className="bg-[#B48C4B]/20 text-[#F5F1E7] border border-[#B48C4B]/40">{user.subscription_status}</Badge>;
+                    if (col === 'billing_interval')    return <span className="capitalize">{user.billing_interval || '-'}</span>;
+                    if (col === 'subscription_end')    return user.subscription_end ? new Date(user.subscription_end).toLocaleDateString() : '-';
+                    if (col === 'created_date')        return new Date(user.created_date).toLocaleDateString();
+                    return user[col] || '-';
+                  }}
+                />
               </CardContent>
             </CollapsibleContent>
           </Card>
         </Collapsible>
       )}
 
-      {/* Free Users Table */}
+      {/* Free users table */}
       {(viewFilter === 'all' || viewFilter === 'free') && (
         <Collapsible open={showFreeTable} onOpenChange={setShowFreeTable}>
           <Card className="bg-transparent">
@@ -794,67 +586,88 @@ export default function UserReport() {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-[#8b6239]/30">
-                        <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
-                          onClick={() => handleSort('full_name')}
-                        >
-                          {t("userReport.name")} {sortColumn === 'full_name' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </th>
-                        <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
-                          onClick={() => handleSort('email')}
-                        >
-                          {t("userReport.email")} {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </th>
-                        <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
-                          onClick={() => handleSort('subscription_status')}
-                        >
-                          {t("userReport.status")} {sortColumn === 'subscription_status' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </th>
-                        <th 
-                          className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
-                          onClick={() => handleSort('created_date')}
-                        >
-                          {t("userReport.joined")} {sortColumn === 'created_date' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredData.free.length === 0 ? (
-                        <tr>
-                          <td colSpan="4" className="text-center py-8 text-[#E0D8C8]/50">
-                            {searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noFreeUsersFound")}
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredData.free.map((user) => (
-                          <tr key={user.email} className="border-b border-[#8b6239]/20 hover:bg-[#2a1f18]/40">
-                            <td className="py-3 px-4 text-sm text-[#F5F1E7]">{user.full_name || '-'}</td>
-                            <td className="py-3 px-4 text-sm text-[#E0D8C8]">{user.email}</td>
-                            <td className="py-3 px-4">
-                              <Badge variant="outline" className="text-[#E0D8C8]/70 border-[#8b6239]/40">
-                                {user.subscription_status}
-                              </Badge>
-                            </td>
-                            <td className="py-3 px-4 text-sm text-[#E0D8C8]">
-                              {new Date(user.created_date).toLocaleDateString()}
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                <UserTable
+                  rows={filteredData.free}
+                  columns={['full_name', 'email', 'subscription_status', 'created_date']}
+                  headers={[t("userReport.name"), t("userReport.email"), t("userReport.status"), t("userReport.joined")]}
+                  sortColumn={sortColumn}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
+                  emptyMessage={searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noFreeUsersFound")}
+                  renderCell={(col, user) => {
+                    if (col === 'subscription_status') return <Badge variant="outline" className="text-[#E0D8C8]/70 border-[#8b6239]/40">{user.subscription_status}</Badge>;
+                    if (col === 'created_date')        return new Date(user.created_date).toLocaleDateString();
+                    return user[col] || '-';
+                  }}
+                />
               </CardContent>
             </CollapsibleContent>
           </Card>
         </Collapsible>
       )}
+    </div>
+  );
+}
+
+// ─── Helper sub-components ────────────────────────────────────────────────────
+
+function LoadingSpinner() {
+  return (
+    <div className="max-w-7xl mx-auto p-6">
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-[#8b3a3a]" />
+      </div>
+    </div>
+  );
+}
+
+function ErrorCard({ message }) {
+  return (
+    <div className="max-w-7xl mx-auto p-6">
+      <Card className="border-rose-200 bg-rose-50">
+        <CardContent className="p-6">
+          <p className="text-rose-800">{message}</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function UserTable({ rows, columns, headers, sortColumn, sortDirection, onSort, emptyMessage, renderCell }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-[#8b6239]/30">
+            {columns.map((col, i) => (
+              <th
+                key={col}
+                className="text-left py-3 px-4 text-sm font-semibold text-[#E0D8C8] cursor-pointer hover:bg-[#2a1f18]/40"
+                onClick={() => onSort(col)}
+              >
+                {headers[i]} {sortColumn === col && (sortDirection === 'asc' ? '↑' : '↓')}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.length === 0 ? (
+            <tr>
+              <td colSpan={columns.length} className="text-center py-8 text-[#E0D8C8]/50">{emptyMessage}</td>
+            </tr>
+          ) : (
+            rows.map((user) => (
+              <tr key={user.email} className="border-b border-[#8b6239]/20 hover:bg-[#2a1f18]/40">
+                {columns.map((col) => (
+                  <td key={col} className="py-3 px-4 text-sm text-[#E0D8C8]">
+                    {renderCell(col, user)}
+                  </td>
+                ))}
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
