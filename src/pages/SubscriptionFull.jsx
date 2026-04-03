@@ -19,6 +19,7 @@ import { hasPaidAccess, hasProAccess } from "@/components/utils/premiumAccess";
 import { useQueryClient } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { handleManageSubscription } from "@/components/utils/manageSubscription";
+import { toast } from "sonner";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading, t }) {
   return (
@@ -197,11 +198,11 @@ export default function SubscriptionFull() {
     try {
       const result = await handleManageSubscription(user, subscription, navigate, createPageUrl);
       if (!result?.ok) {
-        setMessage(t("subscriptionFull.manageError"));
+        toast.error(t("subscriptionFull.manageError"));
         navigate(createPageUrl("Subscription"));
       }
     } catch (e) {
-      setMessage(t("subscriptionFull.manageError"));
+      toast.error(t("subscriptionFull.manageError"));
       navigate(createPageUrl("Subscription"));
     }
   };
