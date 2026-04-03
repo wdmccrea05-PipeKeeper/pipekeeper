@@ -236,7 +236,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       const result = await base44.entities.SmokingLog.create(logData);
 
       if (!result) {
-        throw new Error("Session save failed");
+        throw new Error("SmokingLog.create returned empty response");
       }
 
       if (import.meta.env.DEV) {

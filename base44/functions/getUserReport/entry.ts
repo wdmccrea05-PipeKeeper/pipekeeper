@@ -780,7 +780,7 @@ Deno.serve(async (req) => {
     return Response.json({
       validation: {
         passed: false,
-        errors: ["hard_failure", String(error?.message || error)],
+        errors: ["report_generation_failed", String(error?.message || error)],
       },
       meta: {},
       accounts: {},
