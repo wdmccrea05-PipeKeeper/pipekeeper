@@ -775,9 +775,24 @@ Deno.serve(async (req) => {
     });
 
   } catch (error: any) {
+    console.error("[getUserReport] HARD FAILURE:", error);
+
     return Response.json({
-      counts: null, revenue: null, products: null, renewals: null,
-      validation: { passed: false, errors: [error.message] },
-    }, { status: 500 });
+      validation: {
+        passed: false,
+        errors: ["hard_failure", String(error?.message || error)],
+      },
+      meta: {},
+      accounts: {},
+      counts: {},
+      products: {},
+      renewals: {},
+      revenue: {},
+      subscriptions: {},
+      conversion: {},
+      usage: {},
+      paid_users: [],
+      free_users: [],
+    }, { status: 200 });
   }
 });
