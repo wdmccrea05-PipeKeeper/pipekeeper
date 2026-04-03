@@ -60,7 +60,63 @@ function getCalendarRange(type, now) {
   return { start, end };
 }
 
-/** True if a subscription record represents an active (non-expired) paid subscription. */
+/**
+ * Classify a subscription record as belonging to a single product module.
+ * Returns the product key ('pipekeeper' | 'whiskeykeeper' | 'cigarkeeper' | 'winekeeper')
+ * or null if the subscription is a bundle or cannot be attributed to a product.
+ *
+ * Fallback order:
+ *  1. modules_csv primary entry
+ *  2. product_kind field
+ *  3. subscription_tier contains product name
+ *  4. Provider plan identifier (price_id / apple_product_id) contains product name
+ */
+function classifySubProduct(s: any): string | null {
+  const productKind  = (s.product_kind  || '').toLowerCase();
+  const bundleName   = (s.bundle_name   || '').toLowerCase();
+  const checkoutType = (s.checkout_type || '').toLowerCase();
+
+  // Exclude bundle subscriptions — those are counted separately.
+  if (
+    productKind === 'founders' ||
+    bundleName.includes('founders') ||
+    checkoutType === 'bundle_3' ||
+    checkoutType === 'bundle_4'
+  ) return null;
+
+  // 1) modules_csv — primary module
+  const modules = splitModulesCsv(s.modules_csv);
+  for (const m of modules) {
+    if (m === 'pipekeeper')    return 'pipekeeper';
+    if (m === 'whiskeykeeper') return 'whiskeykeeper';
+    if (m === 'cigarkeeper' || m === 'cigar') return 'cigarkeeper';
+    if (m === 'winekeeper'  || m === 'wine')  return 'winekeeper';
+  }
+
+  // 2) product_kind
+  if (productKind === 'pipekeeper')    return 'pipekeeper';
+  if (productKind === 'whiskeykeeper') return 'whiskeykeeper';
+  if (productKind === 'cigarkeeper' || productKind === 'cigar') return 'cigarkeeper';
+  if (productKind === 'winekeeper'  || productKind === 'wine')  return 'winekeeper';
+
+  // 3) subscription_tier contains product name
+  const tier = (s.subscription_tier || '').toLowerCase();
+  if (tier.includes('pipekeeper'))    return 'pipekeeper';
+  if (tier.includes('whiskeykeeper')) return 'whiskeykeeper';
+  if (tier.includes('cigarkeeper') || tier.includes('cigar')) return 'cigarkeeper';
+  if (tier.includes('winekeeper')  || tier.includes('wine'))  return 'winekeeper';
+
+  // 4) Provider plan identifiers (Stripe price_id / Apple product_id)
+  const planId = (s.price_id || s.stripe_price_id || s.apple_product_id || s.plan_id || '').toLowerCase();
+  if (planId.includes('pipekeeper'))    return 'pipekeeper';
+  if (planId.includes('whiskeykeeper')) return 'whiskeykeeper';
+  if (planId.includes('cigarkeeper') || planId.includes('cigar')) return 'cigarkeeper';
+  if (planId.includes('winekeeper')  || planId.includes('wine'))  return 'winekeeper';
+
+  return null;
+}
+
+
 function isActivePaidSub(sub, now) {
   const status = (sub.status || '').toLowerCase();
   if (!['active', 'trialing', 'trial'].includes(status)) return false;
@@ -287,18 +343,13 @@ Deno.serve(async (req) => {
     const totalPaidSubscriptions = activePaidSubs.length;
 
     // Paid subscriptions by product:
-    // A subscription counts toward a product if that product appears in its modules_csv.
+    // Uses classifySubProduct() which falls back through modules_csv → product_kind →
+    // subscription_tier → provider plan identifiers when modules_csv is absent.
     const paidByProduct = {
-      pipekeeper:   activePaidSubs.filter((s) => splitModulesCsv(s.modules_csv).includes('pipekeeper')).length,
-      whiskeykeeper:activePaidSubs.filter((s) => splitModulesCsv(s.modules_csv).includes('whiskeykeeper')).length,
-      cigarkeeper:  activePaidSubs.filter((s) => {
-        const m = splitModulesCsv(s.modules_csv);
-        return m.includes('cigarkeeper') || m.includes('cigar');
-      }).length,
-      winekeeper:   activePaidSubs.filter((s) => {
-        const m = splitModulesCsv(s.modules_csv);
-        return m.includes('winekeeper') || m.includes('wine');
-      }).length,
+      pipekeeper:    activePaidSubs.filter((s) => classifySubProduct(s) === 'pipekeeper').length,
+      whiskeykeeper: activePaidSubs.filter((s) => classifySubProduct(s) === 'whiskeykeeper').length,
+      cigarkeeper:   activePaidSubs.filter((s) => classifySubProduct(s) === 'cigarkeeper').length,
+      winekeeper:    activePaidSubs.filter((s) => classifySubProduct(s) === 'winekeeper').length,
     };
 
     // Paid subscriptions by bundle type
@@ -415,7 +466,6 @@ Deno.serve(async (req) => {
       const productKind = (s.product_kind || '').toLowerCase();
       const bundleName  = (s.bundle_name  || '').toLowerCase();
       const checkoutType = (s.checkout_type || '').toLowerCase();
-      const modules     = splitModulesCsv(s.modules_csv);
 
       if (productKind === 'founders' || bundleName.includes('founders')) {
         revenueByBundle.founders     += amount;
@@ -424,12 +474,12 @@ Deno.serve(async (req) => {
       } else if (checkoutType === 'bundle_4') {
         revenueByBundle.fourModules  += amount;
       } else {
-        // Single-module subscription: credit the primary module
-        const primaryModule = modules[0] || '';
-        if (primaryModule === 'pipekeeper')    revenueByProduct.pipekeeper    += amount;
-        else if (primaryModule === 'whiskeykeeper') revenueByProduct.whiskeykeeper += amount;
-        else if (primaryModule === 'cigarkeeper' || primaryModule === 'cigar') revenueByProduct.cigarkeeper += amount;
-        else if (primaryModule === 'winekeeper'  || primaryModule === 'wine')  revenueByProduct.winekeeper  += amount;
+        // Single-module: use the same multi-fallback classifier used for paidByProduct
+        const product = classifySubProduct(s);
+        if (product === 'pipekeeper')    revenueByProduct.pipekeeper    += amount;
+        else if (product === 'whiskeykeeper') revenueByProduct.whiskeykeeper += amount;
+        else if (product === 'cigarkeeper')   revenueByProduct.cigarkeeper   += amount;
+        else if (product === 'winekeeper')    revenueByProduct.winekeeper    += amount;
       }
     }
 

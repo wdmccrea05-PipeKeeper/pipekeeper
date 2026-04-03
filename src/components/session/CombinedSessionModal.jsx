@@ -273,6 +273,22 @@ export default function CombinedSessionModal({
     }
   }, [isOpen, initialSelection, pipes, blends, bottles]);
 
+  // PostSessionPrompt must render even if isOpen has been set to false by the
+  // parent's onSaved handler (e.g., CuratorWorkspace closes the modal to invalidate
+  // queries) — keep this check ABOVE the !isOpen early-return.
+  if (postPromptItems) {
+    return (
+      <PostSessionPrompt
+        externalItems={postPromptItems}
+        onDone={() => {
+          setPostPromptItems(null);
+          saveLockRef.current = false;
+          onClose?.();
+        }}
+      />
+    );
+  }
+
   if (!isOpen) return null;
 
   function advance() {
@@ -472,18 +488,22 @@ export default function CombinedSessionModal({
 
       await Promise.all(operations);
 
-      await Promise.resolve(onSaved?.({ sessionGroupId }));
-
       if (import.meta.env.DEV) {
         console.log('[CombinedSession] save complete', { sessionGroupId, externalItems: externalItems.length });
       }
 
       if (externalItems.length > 0) {
+        // Set postPromptItems BEFORE calling onSaved so the PostSessionPrompt
+        // guard (above the !isOpen check) can render even if the parent closes
+        // the modal inside its onSaved handler.
         setPostPromptItems(externalItems);
         toast.success(
           "Session logged. Choose what to do with the out-of-collection items."
         );
+        await Promise.resolve(onSaved?.({ sessionGroupId }));
+        // Do NOT call onClose here — PostSessionPrompt's onDone will call it.
       } else {
+        await Promise.resolve(onSaved?.({ sessionGroupId }));
         toast.success("Combined session logged.");
         onClose?.();
       }
@@ -494,19 +514,6 @@ export default function CombinedSessionModal({
     } finally {
       setSaving(false);
     }
-  }
-
-  if (postPromptItems) {
-    return (
-      <PostSessionPrompt
-        externalItems={postPromptItems}
-        onDone={() => {
-          setPostPromptItems(null);
-          saveLockRef.current = false;
-          onClose?.();
-        }}
-      />
-    );
   }
 
   return (

@@ -18,10 +18,10 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 function MetricCard({ label, value, sub }) {
   return (
-    <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50">
-      <p className="text-xs text-[#E0D8C8]/70 font-medium truncate">{label}</p>
+    <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50 min-w-0">
+      <p className="text-xs text-[#E0D8C8]/70 font-medium break-words">{label}</p>
       <p className="text-2xl font-bold text-[#F5F1E7]">{value}</p>
-      {sub && <p className="text-xs text-[#E0D8C8]/50 mt-0.5">{sub}</p>}
+      {sub && <p className="text-xs text-[#E0D8C8]/50 mt-0.5 break-words">{sub}</p>}
     </div>
   );
 }
@@ -342,7 +342,7 @@ export default function UserReport() {
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium text-[#E0D8C8]">New Accounts</p>
-            <div className="flex gap-1">
+            <div className="flex flex-wrap gap-1">
               {['week', 'month', 'quarter', 'year'].map((p) => (
                 <Button key={p} variant={newAccountsPeriod === p ? 'default' : 'outline'} size="sm" onClick={() => setNewAccountsPeriod(p)} className="text-xs">
                   {periodLabels[p]}
@@ -359,7 +359,7 @@ export default function UserReport() {
         {/* Signup sources */}
         <div>
           <p className="text-sm font-medium text-[#E0D8C8] mb-2">Signup Sources</p>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <MetricCard label="Web"         value={accounts.signupSources?.web         ?? 0} />
             <MetricCard label="Apple / iOS" value={accounts.signupSources?.apple       ?? 0} />
             <MetricCard label="Google Play" value={accounts.signupSources?.googlePlay  ?? 0} />
@@ -387,7 +387,7 @@ export default function UserReport() {
 
         {/* By bundle */}
         <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Bundle</p>
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           <MetricCard label="Founders Bundle"  value={subscriptions.paidByBundle?.founders     ?? 0} />
           <MetricCard label="3-Module Bundle"  value={subscriptions.paidByBundle?.threeModules ?? 0} />
           <MetricCard label="4-Module Bundle"  value={subscriptions.paidByBundle?.fourModules  ?? 0} />
@@ -395,9 +395,9 @@ export default function UserReport() {
 
         {/* Renewals */}
         <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
             <p className="text-sm font-medium text-[#E0D8C8]">Renewing (upcoming in calendar period)</p>
-            <div className="flex gap-1">
+            <div className="flex flex-wrap gap-1">
               {['week', 'month', 'quarter', 'year'].map((p) => (
                 <Button key={p} variant={renewalsPeriod === p ? 'default' : 'outline'} size="sm" onClick={() => setRenewalsPeriod(p)} className="text-xs">
                   {periodLabels[p]}
@@ -427,9 +427,9 @@ export default function UserReport() {
           SECTION 3 — REVENUE
       ═══════════════════════════════════════════════════════════════════ */}
       <SectionCard title="Revenue" icon={DollarSign}>
-        {/* Forecasted */}
+        {/* Renewal Revenue (Calendar Period) */}
         <p className="text-sm font-medium text-[#E0D8C8] mb-2">
-          Forecasted Revenue <span className="opacity-60 text-xs font-normal">(subscriptions renewing before end of period)</span>
+          Renewal Revenue (Calendar Period) <span className="opacity-60 text-xs font-normal">(subscriptions renewing before end of period)</span>
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
           {['week', 'month', 'quarter', 'year'].map((p) => (
@@ -437,9 +437,9 @@ export default function UserReport() {
           ))}
         </div>
 
-        {/* Average (MRR-based) */}
+        {/* Current Run Rate (MRR/ARR) */}
         <p className="text-sm font-medium text-[#E0D8C8] mb-2">
-          Average Revenue <span className="opacity-60 text-xs font-normal">(extrapolated from current MRR)</span>
+          Current Run Rate (MRR/ARR) <span className="opacity-60 text-xs font-normal">(extrapolated from current MRR)</span>
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
           <MetricCard label="Avg / Week"    value={`$${(revenue.average?.week    ?? 0).toFixed(2)}`} />
@@ -461,7 +461,7 @@ export default function UserReport() {
 
         {/* By bundle */}
         <p className="text-sm font-medium text-[#E0D8C8] mb-2">Revenue by Bundle</p>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <MetricCard label="Founders Bundle" value={`$${(revenue.byBundle?.founders     ?? 0).toFixed(2)}`} />
           <MetricCard label="3-Module Bundle" value={`$${(revenue.byBundle?.threeModules ?? 0).toFixed(2)}`} />
           <MetricCard label="4-Module Bundle" value={`$${(revenue.byBundle?.fourModules  ?? 0).toFixed(2)}`} />

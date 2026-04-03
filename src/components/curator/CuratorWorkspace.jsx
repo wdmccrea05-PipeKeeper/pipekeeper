@@ -1218,7 +1218,8 @@ ${selectedBottleName ? `- Selected Bottle: "${selectedBottleName}"` : ""}`;
         preFillBlend={combinedModal.preFillBlend}
         preFillBottle={combinedModal.preFillBottle}
         onSaved={() => {
-          setCombinedModal({ isOpen: false, preFillPipe: null, preFillBlend: null, preFillBottle: null });
+          // Do NOT close the modal here — let CombinedSessionModal control its
+          // full lifecycle (including PostSessionPrompt). onClose handles closing.
           queryClient.invalidateQueries({ queryKey: ["smokingLogs", user?.email] });
           queryClient.invalidateQueries({ queryKey: ["tasting-logs"] });
         }}
