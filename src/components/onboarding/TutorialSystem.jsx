@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { useNavigate } from "@/components/utils/navigation";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { safeLocalStorage, safeSetLocalStorage } from "@/components/utils/safeOperations";
 
 export default function TutorialSystem({ user, pipes = [], blends = [], forceTutorial = false, onTutorialClose }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -47,7 +49,7 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
       content: t("tutorial.quickstart.steps.addPipe.content", "Add a pipe from your collection. Take a photo and fill in details like shape, maker, and material."),
       tip: t("tutorial.quickstart.steps.addPipe.tip", "Even basic info helps. You can always add more details later."),
       action: () => {
-        window.location.href = createPageUrl("Pipes?action=add");
+        navigate(createPageUrl("Pipes?action=add"));
       },
       actionLabel: t("common.next", "Next"),
     },
@@ -58,7 +60,7 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
       content: t("tutorial.quickstart.steps.addTobacco.content", "Add a tobacco blend. Include the type, strength, and how much you have on hand."),
       tip: t("tutorial.quickstart.steps.addTobacco.tip", "Even one pipe and one blend unlocks matching recommendations."),
       action: () => {
-        window.location.href = createPageUrl("Tobacco?action=add");
+        navigate(createPageUrl("Tobacco?action=add"));
       },
       actionLabel: t("common.next", "Next"),
     },

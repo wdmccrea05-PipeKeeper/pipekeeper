@@ -216,3 +216,27 @@ export async function applyCuratorRecommendation(item) {
 }
 
 export default applyCuratorRecommendation;
+
+/**
+ * Higher-level handler that calls an onApply callback and returns a status result.
+ */
+export async function applyAcceptedCuratorAction({ item, onApply }) {
+  try {
+    await onApply(item);
+    return { status: "accepted" };
+  } catch (err) {
+    return { status: "error", error: err?.message || String(err) };
+  }
+}
+
+/**
+ * Higher-level handler that calls an onReject callback and returns a status result.
+ */
+export async function applyRejectedCuratorAction({ item, onReject }) {
+  try {
+    await onReject(item);
+    return { status: "rejected" };
+  } catch (err) {
+    return { status: "error", error: err?.message || String(err) };
+  }
+}

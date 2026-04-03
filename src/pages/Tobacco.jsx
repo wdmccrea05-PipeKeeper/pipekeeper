@@ -26,6 +26,7 @@ import { PK_THEME } from "@/components/utils/pkTheme";
 import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
 import { canCreateTobacco } from "@/components/utils/limitChecks";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useNavigate } from "@/components/utils/navigation";
 import CellarDriftAlert from "../components/tobacco/CellarDriftAlert";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { isAppleBuild } from "@/components/utils/appVariant";
@@ -65,6 +66,7 @@ export default function TobaccoPage() {
 
   const queryClient = useQueryClient();
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const { user, hasPaid, isTrial } = useCurrentUser();
 
@@ -289,7 +291,7 @@ export default function TobaccoPage() {
                  toast.error(t(limitCheck.reason, { limit: limitCheck.limit }), {
                    action: {
                      label: t("subscription.upgrade"),
-                     onClick: () => window.location.href = createPageUrl('Subscription')
+                     onClick: () => navigate(createPageUrl('Subscription'))
                    }
                  });
                  return;
@@ -504,7 +506,7 @@ export default function TobaccoPage() {
                       }
                       isFavorite={blend.is_favorite}
                       onToggleFavorite={() => handleToggleFavorite(blend)}
-                      onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}
+                      onClick={() => navigate(createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`))}
                       onEdit={() => { setEditingBlend(blend); setShowForm(true); }}
                       fallbackIcon={
                         <div className="text-[#E0D8C8]/20 text-center">
@@ -575,14 +577,14 @@ export default function TobaccoPage() {
                       {viewMode === 'grid' ? (
                         <TobaccoCard
                           blend={blend}
-                          onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}
+                          onClick={() => navigate(createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`))}
                           onToggleFavorite={handleToggleFavorite}
                           onEdit={(b) => { setEditingBlend(b); setShowForm(true); }}
                         />
                       ) : (
                         <TobaccoListItem
                           blend={blend}
-                          onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}
+                          onClick={() => navigate(createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`))}
                           onToggleFavorite={handleToggleFavorite}
                           onEdit={(b) => { setEditingBlend(b); setShowForm(true); }}
                         />

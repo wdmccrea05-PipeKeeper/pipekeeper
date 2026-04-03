@@ -26,6 +26,7 @@ import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
 import { canCreatePipe } from "@/components/utils/limitChecks";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useNavigate } from "@/components/utils/navigation";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
 import AddFlowModal from "@/components/addflow/AddFlowModal";
@@ -56,6 +57,7 @@ export default function PipesPage() {
   const queryClient = useQueryClient();
 
   const { user, hasPaid, isTrial } = useCurrentUser();
+  const navigate = useNavigate();
 
   const { data: pipes = [], isLoading } = useQuery({
     queryKey: ['pipes', user?.email],
@@ -228,7 +230,7 @@ export default function PipesPage() {
                   toast.error(t(limitCheck.reason, { limit: limitCheck.limit }), {
                     action: {
                       label: t("subscription.upgrade"),
-                      onClick: () => window.location.href = createPageUrl('Subscription')
+                      onClick: () => navigate(createPageUrl('Subscription'))
                     }
                   });
                   return;
@@ -439,7 +441,7 @@ export default function PipesPage() {
                     }
                     isFavorite={pipe.is_favorite}
                     onToggleFavorite={() => handleToggleFavorite(pipe)}
-                    onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}
+                    onClick={() => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`))}
                     onEdit={() => handleEdit(pipe)}
                     fallbackIcon={
                       <div className="text-[#E0D8C8]/25 text-center">
@@ -474,14 +476,14 @@ export default function PipesPage() {
                   {viewMode === 'grid' ? (
                     <PipeCard
                       pipe={pipe}
-                      onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}
+                      onClick={() => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`))}
                       onToggleFavorite={handleToggleFavorite}
                       onEdit={handleEdit}
                     />
                   ) : (
                     <PipeListItem
                       pipe={pipe}
-                      onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}
+                      onClick={() => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`))}
                       onToggleFavorite={handleToggleFavorite}
                       onEdit={handleEdit}
                     />

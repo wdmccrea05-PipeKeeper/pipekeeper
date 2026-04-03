@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useNavigate } from "@/components/utils/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Tags, Ruler, Layers, Info } from "lucide-react";
@@ -23,6 +24,7 @@ const isMissingGeometry = (v) => isBlank(v) || isUnknown(v);
 export default function AIUpdates() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [reclassifyBusy, setReclassifyBusy] = useState(false);
   const [showBatchProcessor, setShowBatchProcessor] = useState(false);
   const [showVerifiedLookup, setShowVerifiedLookup] = useState(false);
@@ -449,7 +451,7 @@ Return JSON with:
                             onClick={() => {
                               const pipe = measurementLookupState.results.pipe;
                               if (pipe) {
-                                window.location.href = `/PipeDetail?id=${pipe.id}`;
+                                navigate(`/PipeDetail?id=${pipe.id}`);
                               }
                             }}
                           >
