@@ -109,7 +109,6 @@ export default function LogTastingModal({ bottle, bottles = [], editLog = null, 
     setSaving(true);
     setError('');
 
-    const bottleId = bottleMode === "collection" ? form.bottle_id : `ext_${Date.now()}`;
     const bottleName = bottleMode === "collection" ? form.bottle_name : (externalBottle.name || "External Bottle");
 
     const tagsArr = form.tags
@@ -118,7 +117,7 @@ export default function LogTastingModal({ bottle, bottles = [], editLog = null, 
     if (contextTag) tagsArr.push(contextTag);
 
     const payload = {
-      bottle_id: bottleId,
+      ...(bottleMode === "collection" && form.bottle_id ? { bottle_id: form.bottle_id } : {}),
       bottle_name: bottleName,
       tasting_date: form.tasting_date,
       rating: form.rating === '' ? null : Number(form.rating),

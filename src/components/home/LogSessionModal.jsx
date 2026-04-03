@@ -301,13 +301,15 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
 
       const pipe_name = pipeMode === "collection" ? pipe.name : ([externalPipe.maker, externalPipe.model].filter(Boolean).join(" ") || "External Pipe");
       const blend_name = blendMode === "collection" ? blend.name : (externalBlend.name || "External Blend");
-      const pipe_id = pipeMode === "collection" ? formData.pipe_id : null;
-      const blend_id = blendMode === "collection" ? formData.blend_id : null;
+
+      // Destructure id fields out so they can be conditionally re-added below,
+      // preventing null values from being sent when an external item is selected.
+      const { pipe_id: formPipeId, blend_id: formBlendId, ...restFormData } = formData;
 
       const logData = prepareLogData({
-        ...formData,
-        pipe_id,
-        blend_id,
+        ...restFormData,
+        ...(pipeMode === "collection" && formPipeId ? { pipe_id: formPipeId } : {}),
+        ...(blendMode === "collection" && formBlendId ? { blend_id: formBlendId } : {}),
         pipe_name,
         blend_name,
         bowl_name,
