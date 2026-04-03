@@ -11,6 +11,105 @@ function splitModulesCsv(csv) {
   return csv.split(',').map((m) => m.trim().toLowerCase()).filter(Boolean);
 }
 
+/** Product name keywords used to match subscription fields. */
+const PRODUCT_KEYWORDS: { key: string; matches: string[] }[] = [
+  { key: 'pipekeeper',    matches: ['pipekeeper'] },
+  { key: 'whiskeykeeper', matches: ['whiskeykeeper'] },
+  { key: 'cigarkeeper',   matches: ['cigarkeeper', 'cigar'] },
+  { key: 'winekeeper',    matches: ['winekeeper', 'wine'] },
+];
+
+/** Returns true if the subscription is a bundle (Founders / 3-module / 4-module). */
+function isBundleSub(s: any): boolean {
+  const pk = (s.product_kind  || '').toLowerCase();
+  const bn = (s.bundle_name   || '').toLowerCase();
+  const ct = (s.checkout_type || '').toLowerCase();
+  return pk === 'founders' || bn.includes('founders') || ct === 'bundle_3' || ct === 'bundle_4';
+}
+
+/** Match a field value against all known product keywords; return product key or null. */
+function matchProductField(value: string): string | null {
+  const v = value.toLowerCase();
+  for (const { key, matches } of PRODUCT_KEYWORDS) {
+    if (matches.some((m) => v.includes(m))) return key;
+  }
+  return null;
+}
+
+/**
+ * Returns the product key the subscription belongs to, or null if it is a bundle.
+ *
+ * Fallback order:
+ *  1. modules_csv primary entry
+ *  2. product_kind field
+ *  3. subscription_tier contains product name
+ *  4. Provider plan identifier (price_id / apple_product_id) contains product name
+ *  5. Main tier field contains product name
+ *  6. plan_name / name / description contains product name
+ *  7. Default: 'pipekeeper' (primary product; for legacy subs without product metadata)
+ *
+ * Non-bundle subs that reach step 7 are also counted in unclassifiedFallbackCount.
+ */
+function classifySubProduct(s: any): string | null {
+  if (isBundleSub(s)) return null;
+
+  // 1) modules_csv — use first recognised module
+  for (const m of splitModulesCsv(s.modules_csv)) {
+    const product = matchProductField(m);
+    if (product) return product;
+  }
+
+  // 2–6) progressively weaker metadata fields
+  const fields = [
+    s.product_kind,
+    s.subscription_tier,
+    s.price_id || s.stripe_price_id || s.apple_product_id || s.plan_id,
+    s.tier,
+    s.plan_name || s.name || s.description,
+  ];
+  for (const f of fields) {
+    if (!f) continue;
+    const product = matchProductField(String(f));
+    if (product) return product;
+  }
+
+  // 7) Default fallback: non-bundle subscription with no product-specific metadata is
+  //    attributed to PipeKeeper — the primary product. Historical/legacy subscriptions
+  //    often predate multi-product metadata. If a subscription actually belongs to a
+  //    different product but has no identifying metadata, it will be misattributed here.
+  //    Admins should review subscriptions.unclassifiedFallbackCount to gauge how many
+  //    subs fell back to this default.
+  return 'pipekeeper';
+}
+
+/**
+ * Like classifySubProduct but returns null instead of the 'pipekeeper' default fallback.
+ * Used to count subscriptions that lacked any explicit product metadata (unclassifiedFallbackCount).
+ */
+function classifySubProductExplicit(s: any): string | null {
+  if (isBundleSub(s)) return null;
+
+  for (const m of splitModulesCsv(s.modules_csv)) {
+    const product = matchProductField(m);
+    if (product) return product;
+  }
+
+  const fields = [
+    s.product_kind,
+    s.subscription_tier,
+    s.price_id || s.stripe_price_id || s.apple_product_id || s.plan_id,
+    s.tier,
+    s.plan_name || s.name || s.description,
+  ];
+  for (const f of fields) {
+    if (!f) continue;
+    const product = matchProductField(String(f));
+    if (product) return product;
+  }
+
+  return null; // truly unclassifiable (or a bundle — already handled above)
+}
+
 /**
  * Returns { start: Date, end: Date } for the given calendar period.
  * Periods are UTC-aligned calendar periods (not rolling windows).
@@ -60,61 +159,6 @@ function getCalendarRange(type, now) {
   return { start, end };
 }
 
-/**
- * Classify a subscription record as belonging to a single product module.
- * Returns the product key ('pipekeeper' | 'whiskeykeeper' | 'cigarkeeper' | 'winekeeper')
- * or null if the subscription is a bundle or cannot be attributed to a product.
- *
- * Fallback order:
- *  1. modules_csv primary entry
- *  2. product_kind field
- *  3. subscription_tier contains product name
- *  4. Provider plan identifier (price_id / apple_product_id) contains product name
- */
-function classifySubProduct(s: any): string | null {
-  const productKind  = (s.product_kind  || '').toLowerCase();
-  const bundleName   = (s.bundle_name   || '').toLowerCase();
-  const checkoutType = (s.checkout_type || '').toLowerCase();
-
-  // Exclude bundle subscriptions — those are counted separately.
-  if (
-    productKind === 'founders' ||
-    bundleName.includes('founders') ||
-    checkoutType === 'bundle_3' ||
-    checkoutType === 'bundle_4'
-  ) return null;
-
-  // 1) modules_csv — primary module
-  const modules = splitModulesCsv(s.modules_csv);
-  for (const m of modules) {
-    if (m === 'pipekeeper')    return 'pipekeeper';
-    if (m === 'whiskeykeeper') return 'whiskeykeeper';
-    if (m === 'cigarkeeper' || m === 'cigar') return 'cigarkeeper';
-    if (m === 'winekeeper'  || m === 'wine')  return 'winekeeper';
-  }
-
-  // 2) product_kind
-  if (productKind === 'pipekeeper')    return 'pipekeeper';
-  if (productKind === 'whiskeykeeper') return 'whiskeykeeper';
-  if (productKind === 'cigarkeeper' || productKind === 'cigar') return 'cigarkeeper';
-  if (productKind === 'winekeeper'  || productKind === 'wine')  return 'winekeeper';
-
-  // 3) subscription_tier contains product name
-  const tier = (s.subscription_tier || '').toLowerCase();
-  if (tier.includes('pipekeeper'))    return 'pipekeeper';
-  if (tier.includes('whiskeykeeper')) return 'whiskeykeeper';
-  if (tier.includes('cigarkeeper') || tier.includes('cigar')) return 'cigarkeeper';
-  if (tier.includes('winekeeper')  || tier.includes('wine'))  return 'winekeeper';
-
-  // 4) Provider plan identifiers (Stripe price_id / Apple product_id)
-  const planId = (s.price_id || s.stripe_price_id || s.apple_product_id || s.plan_id || '').toLowerCase();
-  if (planId.includes('pipekeeper'))    return 'pipekeeper';
-  if (planId.includes('whiskeykeeper')) return 'whiskeykeeper';
-  if (planId.includes('cigarkeeper') || planId.includes('cigar')) return 'cigarkeeper';
-  if (planId.includes('winekeeper')  || planId.includes('wine'))  return 'winekeeper';
-
-  return null;
-}
 
 
 function isActivePaidSub(sub, now) {
@@ -342,15 +386,32 @@ Deno.serve(async (req) => {
     const activePaidSubs = allSubscriptions.filter((s) => isActivePaidSub(s, now));
     const totalPaidSubscriptions = activePaidSubs.length;
 
+    // Monthly / annual active paid subscription counts (based on billing_interval field).
+    const monthlySubscriptions = activePaidSubs.filter((s) => {
+      const interval = (s.billing_interval || s.billing_period || '').toLowerCase();
+      return interval === 'month' || interval === 'monthly';
+    }).length;
+    const annualSubscriptions = activePaidSubs.filter((s) => {
+      const interval = (s.billing_interval || s.billing_period || '').toLowerCase();
+      return interval === 'year' || interval === 'yearly' || interval === 'annual';
+    }).length;
+
     // Paid subscriptions by product:
     // Uses classifySubProduct() which falls back through modules_csv → product_kind →
-    // subscription_tier → provider plan identifiers when modules_csv is absent.
+    // subscription_tier → provider plan identifiers → tier field → plan name →
+    // pipekeeper default (for legacy / untagged non-bundle subs).
     const paidByProduct = {
       pipekeeper:    activePaidSubs.filter((s) => classifySubProduct(s) === 'pipekeeper').length,
       whiskeykeeper: activePaidSubs.filter((s) => classifySubProduct(s) === 'whiskeykeeper').length,
       cigarkeeper:   activePaidSubs.filter((s) => classifySubProduct(s) === 'cigarkeeper').length,
       winekeeper:    activePaidSubs.filter((s) => classifySubProduct(s) === 'winekeeper').length,
     };
+
+    // Count how many non-bundle subs had no explicit product-identification metadata and
+    // therefore used the pipekeeper default fallback (admin transparency).
+    const unclassifiedFallbackCount = activePaidSubs.filter(
+      (s) => !isBundleSub(s) && classifySubProductExplicit(s) === null
+    ).length;
 
     // Paid subscriptions by bundle type
     const paidByBundle = {
@@ -413,6 +474,9 @@ Deno.serve(async (req) => {
 
     const subscriptions = {
       totalPaidSubscriptions,
+      monthlySubscriptions,
+      annualSubscriptions,
+      unclassifiedFallbackCount,
       paidByProduct,
       paidByBundle,
       renewingCustomers: {
@@ -488,21 +552,18 @@ Deno.serve(async (req) => {
     for (const k of Object.keys(revenueByBundle))  revenueByBundle[k]  = parseFloat(revenueByBundle[k].toFixed(2));
 
     const revenue = {
-      // Subscriptions renewing during the remaining portion of each calendar period
-      forecasted: {
+      // Subscriptions renewing during the remaining portion of each calendar period.
+      // These amounts represent UPCOMING renewal charges, not run-rate revenue.
+      renewalRevenue: {
         week:    parseFloat(calcForecastedRevenue(calendarRanges.week.end).toFixed(2)),
         month:   parseFloat(calcForecastedRevenue(calendarRanges.month.end).toFixed(2)),
         quarter: parseFloat(calcForecastedRevenue(calendarRanges.quarter.end).toFixed(2)),
         year:    parseFloat(calcForecastedRevenue(calendarRanges.year.end).toFixed(2)),
       },
-      // Average = MRR extrapolated to each period.
-      // 4.33 = 52 weeks ÷ 12 months (average weeks per month)
-      average: {
-        week:    parseFloat((totalMRR / 4.33).toFixed(2)),
-        month:   parseFloat(totalMRR.toFixed(2)),
-        quarter: parseFloat((totalMRR * 3).toFixed(2)),
-        year:    parseFloat((totalMRR * 12).toFixed(2)),
-      },
+      // Current run rate: MRR = sum of all active subs normalised to a monthly amount.
+      // ARR = MRR × 12. These are independent of the calendar renewal revenue above.
+      mrr: parseFloat(totalMRR.toFixed(2)),
+      arr: parseFloat((totalMRR * 12).toFixed(2)),
       byProduct: revenueByProduct,
       byBundle:  revenueByBundle,
     };
