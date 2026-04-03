@@ -539,18 +539,22 @@ Deno.serve(async (req) => {
     // Normalization errors (missing user_id, invalid price) are fatal
     if (normalizationErrors.length > 0) {
       return Response.json({
-        counts: null, revenue: null, products: null, renewals: null,
+        accounts: {}, counts: {}, products: {}, renewals: {}, revenue: {},
+        subscriptions: {}, conversion: {}, usage: {}, meta: {},
+        paid_users: [], free_users: [],
         validation: { passed: false, errors: normalizationErrors },
-      }, { status: 422 });
+      }, { status: 200 });
     }
 
     // ── STEP 3: Validate — block aggregation on any unknown product or interval ─
     const validation = validateNormalized(normalizedSubs);
     if (!validation.passed) {
       return Response.json({
-        counts: null, revenue: null, products: null, renewals: null,
+        accounts: {}, counts: {}, products: {}, renewals: {}, revenue: {},
+        subscriptions: {}, conversion: {}, usage: {}, meta: {},
+        paid_users: [], free_users: [],
         validation,
-      }, { status: 422 });
+      }, { status: 200 });
     }
 
     // ── STEP 4: Aggregate from validated data only ────────────────────────────
@@ -561,9 +565,11 @@ Deno.serve(async (req) => {
       reconcileMetrics(metrics);
     } catch (e: any) {
       return Response.json({
-        counts: null, revenue: null, products: null, renewals: null,
+        accounts: {}, counts: {}, products: {}, renewals: {}, revenue: {},
+        subscriptions: {}, conversion: {}, usage: {}, meta: {},
+        paid_users: [], free_users: [],
         validation: { passed: false, errors: [e.message] },
-      }, { status: 422 });
+      }, { status: 200 });
     }
 
     // ── Classify each unique user as paid or free ─────────────────────────────

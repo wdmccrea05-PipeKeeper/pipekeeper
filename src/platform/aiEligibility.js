@@ -24,7 +24,9 @@
  */
 export function isItemAiEligible(item) {
   if (!item) return false;
-  return !item.ai_excluded;
+  if (item.ai_excluded) return false;
+  if (item.scope === "collector_only") return false;
+  return true;
 }
 
 /**
