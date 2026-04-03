@@ -342,17 +342,15 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
 
   if (isAppleBuild) return null;
 
-  if (postPromptItems) {
-    return (
-      <PostSessionPrompt
-        externalItems={postPromptItems}
-        onDone={() => { setPostPromptItems(null); onClose(); }}
-      />
-    );
-  }
-
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => { if (!open && !saving) onClose(); }}>
+    <>
+      {postPromptItems && (
+        <PostSessionPrompt
+          externalItems={postPromptItems}
+          onDone={() => { setPostPromptItems(null); onClose(); }}
+        />
+      )}
+      <Sheet open={isOpen && !postPromptItems} onOpenChange={(open) => { if (!open && !saving) onClose(); }}>
       <SheetContent className="overflow-y-auto">
         <SheetHeader className="mb-6">
         <SheetTitle>Log Pipe Session</SheetTitle>
@@ -605,5 +603,6 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
         </form>
       </SheetContent>
     </Sheet>
+    </>
   );
 }
