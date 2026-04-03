@@ -326,13 +326,25 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
         externalItems.push({ label: pipeLabel, item_type: "pipe", itemData: externalPipe });
       }
 
-      if (import.meta.env.DEV) {
-        console.log("[LogSessionModal] external items count:", externalItems.length);
+      if (import.meta?.env?.DEV) {
+        console.log("[SESSION] saved", result);
+        console.log("[SESSION] external items:", externalItems);
       }
 
       toast.success(t("smokingLog.logSession") + " " + t("common.saved", { defaultValue: "saved" }));
 
-      // Reset form state
+      // ── STEP 6: Show PostSessionPrompt or close modal cleanly ────────────
+      // 🚨 CRITICAL FIX — DO NOT CLOSE MODAL IF PROMPT NEEDED
+      if (externalItems.length > 0) {
+        postPromptPendingRef.current = true;
+        setPostPromptItems(externalItems);
+        // DO NOT call onClose
+        // DO NOT reset form state
+        setSaving(false);
+        return; // <-- THIS LINE IS CRITICAL
+      }
+
+      // Normal close — reset form state and close
       setFormData({ pipe_id: "", bowl_variant_id: "", blend_id: "", container_id: "", bowls_used: 1, is_break_in: false, date: toLocalDateYmd(), notes: "" });
       setPipeMode("collection");
       setExternalPipe(null);
@@ -341,20 +353,8 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       setExternalBlend(null);
       setShowBlendManual(false);
       setContextTag("");
-
-      // ── STEP 6: Show PostSessionPrompt or close modal cleanly ────────────
-      if (externalItems.length > 0) {
-        if (import.meta.env.DEV) {
-          console.log("[LogSessionModal] opening PostSessionPrompt for", externalItems.length, "item(s)");
-        }
-        postPromptPendingRef.current = true;
-        setPostPromptItems(externalItems);
-      } else {
-        if (import.meta.env.DEV) {
-          console.log("[LogSessionModal] closing modal cleanly");
-        }
-        onClose();
-      }
+      setSaving(false);
+      onClose();
     } catch (err) {
       console.error("[LogSessionModal] Session save error:", err);
       toast.error("Failed to log session");
