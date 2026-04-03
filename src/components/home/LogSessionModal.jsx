@@ -158,7 +158,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (saving) return; // prevent duplicate saves on repeated quick clicks
+    if (saving || postPromptItems) return; // prevent duplicate saves and re-saves while post-prompt is shown
 
     // ── STEP 1: Validate form (before setting saving=true) ───────────────
     if (entitlements.tier === "free") {

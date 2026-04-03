@@ -68,7 +68,7 @@ export default function UserReport() {
   const { data: report, isLoading, error, refetch } = useQuery({
     queryKey: ['user-report'],
     queryFn: async () => {
-      const response = await base44.functions.invoke('getUserReport');
+      const response = await base44.functions.invoke('getUserReportSafe');
       return response.data;
     },
     enabled: isAdmin,
@@ -130,8 +130,12 @@ export default function UserReport() {
     </div>
   );
   if (isLoading) return <LoadingSpinner />;
-  if (error)     return <ErrorCard message={`${t("userReport.errorLoadingReport")}: ${error.message}`} onRetry={refetch} />;
-  if (!report)   return <ErrorCard message={t("userReport.errorLoadingReport")} onRetry={refetch} />;
+  if (!report || report.validation?.passed === false) {
+    const errMsg = report?.validation?.errors?.length
+      ? report.validation.errors.join(', ')
+      : t("userReport.errorLoadingReport");
+    return <ErrorCard message={errMsg} onRetry={refetch} />;
+  }
 
   const handleSort = (column) => {
     if (sortColumn === column) setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
