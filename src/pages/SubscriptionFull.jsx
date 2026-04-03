@@ -195,9 +195,14 @@ export default function SubscriptionFull() {
   const handleManage = async () => {
     setMessage("");
     try {
-      await handleManageSubscription(user, subscription, navigate, createPageUrl);
+      const result = await handleManageSubscription(user, subscription, navigate, createPageUrl);
+      if (!result?.ok) {
+        setMessage(t("subscriptionFull.manageError"));
+        navigate(createPageUrl("Subscription"));
+      }
     } catch (e) {
       setMessage(t("subscriptionFull.manageError"));
+      navigate(createPageUrl("Subscription"));
     }
   };
 
