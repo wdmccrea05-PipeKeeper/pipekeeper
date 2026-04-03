@@ -166,7 +166,10 @@ function TastingsInner() {
           onClose={closeModal}
           onSaved={async () => {
             await loadData();
-            closeModal();
+            // Do NOT call closeModal() here — LogTastingModal manages its own
+            // close lifecycle via the onClose prop. Calling closeModal() here
+            // would unmount LogTastingModal (and any PostSessionPrompt inside
+            // it) before the user can interact with the Want List prompt.
           }}
         />
       ) : null}
