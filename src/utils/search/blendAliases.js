@@ -49,11 +49,6 @@ export const MANUFACTURER_ALIASES = {
     "von eicken",
     "voneicken",
   ],
-  "stokkebye": [
-    "stokkebye",
-    "w.o. larsen",
-    "larsen",
-  ],
   "stanwell": [
     "stanwell",
   ],
@@ -103,11 +98,6 @@ export const MANUFACTURER_ALIASES = {
     "peterson of dublin",
     "peterson's",
   ],
-  "mclelland": [
-    "mclelland",
-    "mcclelland",
-    "mc clelland",
-  ],
   "ashton": [
     "ashton",
   ],
@@ -144,9 +134,6 @@ export const MANUFACTURER_ALIASES = {
   "orlik": [
     "orlik",
   ],
-  "stokkebye": [
-    "stokkebye",
-  ],
   "sutliff": [
     "sutliff",
     "sutliff tobacco",
@@ -173,6 +160,11 @@ export const MANUFACTURER_ALIASES = {
     "tbm",
   ],
   // ── Nordic / Scandinavian ──────────────────────────────────────────────────
+  "stokkebye": [
+    "stokkebye",
+    "w.o. larsen",
+    "larsen",
+  ],
   "w.o. larsen": [
     "w.o. larsen",
     "wo larsen",
