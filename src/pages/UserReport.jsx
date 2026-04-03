@@ -297,11 +297,6 @@ export default function UserReport() {
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#e8d5b7]">{t("userReport.title")}</h1>
-          {!isReportUsable && (
-            <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
-              User Subscription Report is temporarily unavailable because some subscription records are missing required metadata.
-            </div>
-          )}
           <p className="text-xs text-[#e8d5b7]/60 mt-1">
             {t("userReport.lastUpdated")}: {lastUpdated}
             {meta.dateRangeDefinition && (
