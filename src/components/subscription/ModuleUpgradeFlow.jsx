@@ -4,11 +4,14 @@
  */
 
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from '@/components/utils/navigation';
+import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { base44 } from '@/api/base44Client';
 import { cn } from '@/lib/utils';
 import { Check, Zap, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { getModuleDisplayName } from '@/components/utils/moduleRegistry';
 import {
   getUserSubscriptionState,
@@ -89,6 +92,7 @@ function getCancelableUpgradeSubscriptions(subscriptionRows = []) {
 
 export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [selectedOption, setSelectedOption] = useState(null);
   const [billingPeriod, setBillingPeriod] = useState('monthly');
@@ -226,7 +230,11 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
         }
       }
 
-      window.location.href = checkoutUrl;
+      const opened = window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+      if (!opened || opened?.closed) {
+        toast.error("Unable to open checkout here. Please try again from the Subscription page.");
+        navigate(createPageUrl("Subscription"));
+      }
     } catch (err) {
       console.error('[ModuleUpgradeFlow]', err);
       setError(err?.message || 'An unexpected error occurred.');

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAccessSummary } from '@/components/hooks/useAccessSummary';
 import { toast } from 'sonner';
+import { createPageUrl } from '@/components/utils/createPageUrl';
 import {
   getPlanFromSelection,
   initiateCheckout,
@@ -55,10 +56,15 @@ export function usePaywall() {
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Checkout failed';
         setError(message);
-        
-        // Show user-facing toast error
-        toast.error(message || 'We couldn\'t start checkout. Please try again.');
-        
+
+        if (message === 'popup_blocked_or_redirect_disallowed') {
+          toast.error('Unable to open checkout here. Please try again from the Subscription page.');
+          navigate(createPageUrl('Subscription'));
+        } else {
+          // Show user-facing toast error
+          toast.error(message || 'We couldn\'t start checkout. Please try again.');
+        }
+
         // Log detailed error for debugging
         console.error('[usePaywall] selectPlan failed:', {
           error: err,
