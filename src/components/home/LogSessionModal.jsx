@@ -163,25 +163,26 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (saving) return; // prevent duplicate saves on repeated quick clicks
+
+    // ── STEP 1: Validate form (before setting saving=true) ───────────────
+    if (entitlements.tier === "free") {
+      if ((recentLogs || []).length >= entitlements.limits.smokingLogs) {
+        toast.error(t("smokingLog.freeLimitReached", { limit: entitlements.limits.smokingLogs }));
+        return;
+      }
+    }
+
+    const pipe = pipeMode === "collection" ? (pipes || []).find((p) => p && p.id === formData.pipe_id) : null;
+    const blend = blendMode === "collection" ? (blends || []).find((b) => b && b.id === formData.blend_id) : null;
+
+    if (pipeMode === "collection" && !pipe) { toast.error(t("smokingLog.selectBoth")); return; }
+    if (pipeMode === "external" && !externalPipe) { toast.error("Please select or add an external pipe."); return; }
+    if (blendMode === "collection" && !blend) { toast.error(t("smokingLog.selectBoth")); return; }
+    if (blendMode === "external" && !externalBlend) { toast.error("Please select or add an external blend."); return; }
+
     setSaving(true);
 
     try {
-      // ── STEP 1: Validate form ────────────────────────────────────────────
-      if (entitlements.tier === "free") {
-        if ((recentLogs || []).length >= entitlements.limits.smokingLogs) {
-          toast.error(t("smokingLog.freeLimitReached", { limit: entitlements.limits.smokingLogs }));
-          return;
-        }
-      }
-
-      const pipe = pipeMode === "collection" ? (pipes || []).find((p) => p && p.id === formData.pipe_id) : null;
-      const blend = blendMode === "collection" ? (blends || []).find((b) => b && b.id === formData.blend_id) : null;
-
-      if (pipeMode === "collection" && !pipe) { toast.error(t("smokingLog.selectBoth")); return; }
-      if (pipeMode === "external" && !externalPipe) { toast.error("Please select or add an external pipe."); return; }
-      if (blendMode === "collection" && !blend) { toast.error(t("smokingLog.selectBoth")); return; }
-      if (blendMode === "external" && !externalBlend) { toast.error("Please select or add an external blend."); return; }
-
       const bowls = parseInt(formData.bowls_used) || 1;
       let tobaccoUsed = 0;
       if (blendMode === "collection") {
