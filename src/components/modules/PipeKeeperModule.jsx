@@ -59,7 +59,8 @@ export default function PipeKeeperModule() {
   // Open LogSessionModal from URL param only after user and collection data are ready
   const actionParam = params.get('action');
   useEffect(() => {
-    if (actionParam === 'log-smoke' && !isUserLoading && user?.email && !pipesLoading && !blendsLoading) {
+    const canShowModal = actionParam === 'log-smoke' && !isUserLoading && !!user?.email && !pipesLoading && !blendsLoading;
+    if (canShowModal) {
       setShowSmokingLog(true);
     }
   }, [actionParam, isUserLoading, user?.email, pipesLoading, blendsLoading]);
