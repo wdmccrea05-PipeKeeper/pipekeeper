@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@/components/utils/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import LogSessionSelector from '@/components/session/LogSessionSelector';
 import {
@@ -9,11 +9,8 @@ import {
   Clock3,
   Activity,
   TrendingUp,
-  BookOpen,
-  Heart,
 } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
-import WhiskeyBottleIcon from '@/components/icons/WhiskeyBottleIcon';
 import PipeIcon from '@/components/icons/PipeIcon';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/components/utils/createPageUrl';
@@ -31,6 +28,9 @@ import SmokingLogEditor from '@/components/home/SmokingLogEditor';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { safeUpdate } from '@/components/utils/safeUpdate';
+import QuickActions from '@/components/home/QuickActions';
+
+const safe = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
 
 const MODULE_META = {
   pipekeeper: {
@@ -259,31 +259,6 @@ function ExpandingSoonCard({ moduleKey }) {
   );
 }
 
-function QuickAction({ icon: Icon, label, accent, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="rounded-[18px] p-4 flex flex-col items-start gap-3 min-w-[118px] transition-transform hover:translate-y-[-1px]"
-      style={{
-        background: 'linear-gradient(145deg, rgba(40,28,18,0.95), rgba(27,19,13,0.98))',
-        border: `1px solid ${accent}30`,
-        boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
-      }}
-    >
-      <div
-        className="w-12 h-12 rounded-2xl flex items-center justify-center"
-        style={{ background: `${accent}24`, border: `1px solid ${accent}45` }}
-      >
-        <Icon className="w-5 h-5" color={accent} />
-      </div>
-      <span className="text-sm font-semibold text-left" style={{ color: '#F5F1E7' }}>
-        {label}
-      </span>
-    </button>
-  );
-}
-
 export default function CollectionHub() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -350,13 +325,13 @@ export default function CollectionHub() {
 
   const metrics = useMemo(() => {
     const pipeValue = pipekeeperOpenable
-      ? pipes.reduce((sum, p) => sum + Number(getPipeValue(p) || 0), 0)
+      ? pipes.reduce((sum, p) => sum + safe(getPipeValue(p)), 0)
       : 0;
     const tobaccoValue = pipekeeperOpenable
       ? calculateTobaccoCollectionValue(blends)
       : 0;
     const whiskeyValue = whiskeyOpenable
-      ? bottles.reduce((sum, b) => sum + Number(getBottleValue(b) || 0), 0)
+      ? bottles.reduce((sum, b) => sum + safe(getBottleValue(b)), 0)
       : 0;
 
     const totalValue = pipeValue + tobaccoValue + whiskeyValue;
@@ -436,7 +411,7 @@ export default function CollectionHub() {
     { label: 'Tastings', value: tastings.length },
     {
       label: 'Value',
-      value: currency(bottles.reduce((s, b) => s + Number(getBottleValue(b) || 0), 0)),
+      value: currency(bottles.reduce((s, b) => s + safe(getBottleValue(b)), 0)),
     },
   ];
 
@@ -543,62 +518,12 @@ export default function CollectionHub() {
       </section>
 
       <section className="space-y-4">
-        <SectionTitle>Quick Actions</SectionTitle>
-        <div className="flex flex-wrap gap-4">
-          {pipekeeperOpenable ? (
-            <QuickAction
-              icon={PipeIcon}
-              label="Add Pipe"
-              accent="#C89752"
-              onClick={() => navigate('/Pipes?action=add')}
-            />
-          ) : null}
-          {pipekeeperOpenable ? (
-            <QuickAction
-              icon={Leaf}
-              label="Add Blend"
-              accent="#8E7E60"
-              onClick={() => navigate('/Tobacco?action=add')}
-            />
-          ) : null}
-          {whiskeyOpenable ? (
-            <QuickAction
-              icon={WhiskeyBottleIcon}
-              label="Add Whiskey"
-              accent="#B66565"
-              onClick={() => navigate('/Whiskey?action=add')}
-            />
-          ) : null}
-          {pipekeeperOpenable || whiskeyOpenable ? (
-            <QuickAction
-              icon={BookOpen}
-              label="Log Session"
-              accent="#4A7C59"
-              onClick={() => setShowLogSelector(true)}
-            />
-          ) : null}
-          <QuickAction
-            icon={Heart}
-            label="Want List"
-            accent="#C89752"
-            onClick={() => navigate('/WantList')}
-          />
-          <QuickAction
-            icon={({ className, ...props }) => (
-              <div className={`${className} rounded-lg overflow-hidden bg-white flex items-center justify-center`}>
-                <img
-                  src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png"
-                  className="w-full h-full object-cover"
-                  alt="Curator"
-                  {...props}
-                />
-              </div>
-            )}
-            label="Curator"
-            accent="#B66565"
-            onClick={() => navigate(createPageUrl('Curator'))}
-          />
-        </div>
+        <QuickActions
+          onLogSession={() => setShowLogSelector(true)}
+          onIdentify={() => navigate('/PipeKeeper?action=identify')}
+          onOptimize={() => navigate('/Insights')}
+          onAskCurator={() => navigate(createPageUrl('Curator'))}
+        />
       </section>
 
       <LogSessionSelector
