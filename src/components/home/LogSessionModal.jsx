@@ -24,7 +24,6 @@ import ExternalItemSearch from "@/components/session/ExternalItemSearch";
 import ExternalItemManualEntry from "@/components/session/ExternalItemManualEntry";
 import SessionContextTags from "@/components/session/SessionContextTags";
 import PostSessionPrompt from "@/components/session/PostSessionPrompt";
-import { saveSession } from "@/components/session/saveSession";
 
 const TOBACCO_DENSITY_GCM3 = 0.30;
 const BOWL_GEOMETRY_FACTOR = 0.85;
@@ -243,6 +242,10 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
         items.push({ label: pipeLabel, item_type: "pipe", itemData: externalPipe });
       }
 
+      if (import.meta.env.DEV) {
+        console.log("[LogSessionModal] save success — postPromptItems:", items);
+      }
+
       // Reset form
       setFormData({ pipe_id: "", bowl_variant_id: "", blend_id: "", container_id: "", bowls_used: 1, is_break_in: false, date: toLocalDateYmd(), notes: "" });
       setPipeMode("collection");
@@ -256,6 +259,9 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       toast.success(t("smokingLog.logSession") + " " + t("common.saved", { defaultValue: "saved" }));
 
       if (items.length > 0) {
+        if (import.meta.env.DEV) {
+          console.log("[LogSessionModal] showing PostSessionPrompt for", items.length, "item(s)");
+        }
         postPromptPendingRef.current = true;
         setPostPromptItems(items);
       } else {
@@ -335,6 +341,9 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
 
       // Use mutateAsync so the promise resolves correctly even when the
       // definition-level onSuccess calls onClose() (which unmounts the component).
+      if (import.meta.env.DEV) {
+        console.log("[LogSessionModal] submitting payload:", logData);
+      }
       await createLogMutation.mutateAsync(logData);
     } catch (err) {
       console.error("Session save error:", err);

@@ -23,6 +23,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion } from "@/components/utils/companion";
+import { handleManageSubscription } from "@/components/utils/manageSubscription";
 
 import { PK_THEME } from "@/components/utils/pkTheme";
 
@@ -449,22 +450,11 @@ export default function ProfilePage() {
                         <Button
                           className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
                           onClick={async () => {
-                            if (provider === "stripe") {
-                              try {
-                                const response = await base44.functions.invoke('createCustomerPortalSession', {});
-                                if (response.data?.url) {
-                                  window.location.href = response.data.url;
-                                } else {
-                                  toast.error(t("profile.manageSubError"));
-                                }
-                              } catch (e) {
-                                console.error("[Profile] portal session error:", e);
-                                toast.error(t("profile.manageSubError"));
-                              }
-                            } else if (provider === "apple") {
-                              window.location.href = "https://apps.apple.com/account/subscriptions";
-                            } else {
-                              navigate(createPageUrl("Subscription"));
+                            try {
+                              await handleManageSubscription(user, subscription, navigate, createPageUrl);
+                            } catch (e) {
+                              console.error("[Profile] manage subscription error:", e);
+                              toast.error(t("profile.manageSubError"));
                             }
                           }}
                         >
