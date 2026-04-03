@@ -303,7 +303,7 @@ export default function UserReport() {
             )}
           </p>
         </div>
-        <div className="flex w-full flex-wrap flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
           <Button
             onClick={async () => {
               try {

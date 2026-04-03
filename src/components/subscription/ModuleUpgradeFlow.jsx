@@ -231,7 +231,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
       }
 
       const opened = window.open(checkoutUrl, "_blank", "noopener,noreferrer");
-      if (!opened || opened.closed) {
+      if (!opened || opened?.closed) {
         toast.error("Unable to open checkout here. Please try again from the Subscription page.");
         navigate(createPageUrl("Subscription"));
       }

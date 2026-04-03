@@ -93,7 +93,7 @@ export async function initiateCheckout(planKey, selectedModules = [], successUrl
 
     if (response?.data?.sessionUrl) {
       const opened = window.open(response.data.sessionUrl, "_blank", "noopener,noreferrer");
-      if (!opened || opened.closed) {
+      if (!opened || opened?.closed) {
         throw new Error("popup_blocked_or_redirect_disallowed");
       }
     } else {
