@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@/components/utils/navigation";
 import { differenceInCalendarDays, differenceInMonths, formatDistanceToNow } from "date-fns";
 import { PKCard } from "@/components/ui/pk-surface";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -92,7 +93,7 @@ function RotationDrillDownModal({ pipes, latestLogByPipe, open, onClose }) {
     );
     const params = new URLSearchParams();
     params.set('prompt', prompt);
-    window.location.href = createPageUrl(`Curator?${params.toString()}`);
+    navigate(createPageUrl(`Curator?${params.toString()}`));
   };
 
   return (
@@ -177,7 +178,7 @@ function InsightCard({ insight, onAction }) {
     if (insight.curatorPrompt) {
       const params = new URLSearchParams();
       params.set('prompt', insight.curatorPrompt);
-      window.location.href = createPageUrl(`Curator?${params.toString()}`);
+      navigate(createPageUrl(`Curator?${params.toString()}`));
     }
   };
 
@@ -297,7 +298,7 @@ function UpdateFeedItem({ update }) {
     }
     const params = new URLSearchParams();
     params.set('prompt', prompt);
-    window.location.href = createPageUrl(`Curator?${params.toString()}`);
+    navigate(createPageUrl(`Curator?${params.toString()}`));
   };
 
   return (
@@ -345,6 +346,7 @@ function UpdateFeedItem({ update }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function CollectionIntelligencePanel({ pipes, blends, bottles = [], tastings = [], user }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const [rotationModalOpen, setRotationModalOpen] = useState(false);
 

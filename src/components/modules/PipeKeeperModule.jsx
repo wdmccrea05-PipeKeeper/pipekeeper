@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
@@ -23,7 +23,8 @@ const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc4971
 export default function PipeKeeperModule() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const params = new URLSearchParams(window.location.search);
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
 
   const { user } = useCurrentUser();
   const { hideValues, hideCollectionCounts } = useProfilePrivacy();
@@ -102,7 +103,7 @@ export default function PipeKeeperModule() {
   // Clear query param when modal closes
   const handleSmokingLogClose = () => {
     setShowSmokingLog(false);
-    window.history.replaceState({}, '', window.location.pathname);
+    navigate(location.pathname, { replace: true });
   };
 
   const quickLaunchActions = [
@@ -125,7 +126,7 @@ export default function PipeKeeperModule() {
       label: t('quickActions.logSession'),
       onClick: () => {
         setShowSmokingLog(true);
-        window.history.replaceState({}, '', window.location.pathname + '?action=log-smoke');
+        navigate(location.pathname + '?action=log-smoke', { replace: true });
       }
     },
     {
@@ -243,7 +244,7 @@ export default function PipeKeeperModule() {
                 heroImage={mostSmokedPipe.photos?.[0]}
                 bgImage={mostSmokedPipe.photos?.[0]}
                 accent="#C87941"
-                onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(mostSmokedPipe.id)}`)}
+                onClick={() => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(mostSmokedPipe.id)}`))}
               />
             )}
             {mostValuablePipe && !hideValues && (
@@ -254,7 +255,7 @@ export default function PipeKeeperModule() {
                 heroImage={mostValuablePipe.photos?.[0]}
                 bgImage={mostValuablePipe.photos?.[0]}
                 accent="#B4824B"
-                onClick={() => window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(mostValuablePipe.id)}`)}
+                onClick={() => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(mostValuablePipe.id)}`))}
               />
             )}
             {favoriteBlends.length > 0 && (
@@ -265,7 +266,7 @@ export default function PipeKeeperModule() {
                 heroImage={favoriteBlends[0].logo || favoriteBlends[0].photo}
                 bgImage={favoriteBlends[0].logo || favoriteBlends[0].photo}
                 accent="#5A7C5A"
-                onClick={() => window.location.href = createPageUrl(`TobaccoDetail?id=${encodeURIComponent(favoriteBlends[0].id)}`)}
+                onClick={() => navigate(createPageUrl(`TobaccoDetail?id=${encodeURIComponent(favoriteBlends[0].id)}`))}
               />
             )}
           </div>

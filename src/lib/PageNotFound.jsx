@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from "@/components/i18n/index.jsx";
@@ -6,6 +6,7 @@ import { useTranslation } from "@/components/i18n/index.jsx";
 
 export default function PageNotFound({}) {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const location = useLocation();
     const pageName = location.pathname.substring(1);
 
@@ -67,7 +68,7 @@ export default function PageNotFound({}) {
                     {/* Action Button */}
                     <div className="pt-6">
                         <button 
-                            onClick={() => window.location.href = '/'} 
+                            onClick={() => navigate('/')} 
                             className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 whitespace-nowrap"
                             style={{ color: '#E0D8C8', background: 'rgba(60,45,30,0.6)', border: '1px solid rgba(120,90,65,0.4)' }}
                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(80,60,40,0.7)'}

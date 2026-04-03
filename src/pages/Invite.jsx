@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { useNavigate } from "@/components/utils/navigation";
 
 function AppleInvite() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-4">
@@ -35,7 +37,7 @@ function AppleInvite() {
           </p>
 
           <div className="pt-2">
-            <Button onClick={() => window.location.replace(createPageUrl("Home"))}>
+            <Button onClick={() => navigate(createPageUrl("Home"), { replace: true })}>
               {t("invite.apple.returnHome")}
             </Button>
           </div>

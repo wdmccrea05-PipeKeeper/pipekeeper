@@ -4,13 +4,15 @@
  */
 
 /**
- * Normalizes a tier string to one of: "free", "premium", "pro"
+ * Normalizes a tier string to one of: "free", "pro"
+ * "premium" is collapsed to "pro" to match the canonical free/pro model.
  */
 export function normalizeTier(tier) {
   if (!tier) return "free";
   const lower = String(tier).toLowerCase().trim();
   if (lower === "pro") return "pro";
-  if (lower === "premium") return "premium";
+  if (lower === "premium") return "pro"; // Canonical: premium collapses to pro
+  if (["paid", "plus", "subscriber", "subscribed"].includes(lower)) return "pro";
   return "free";
 }
 
@@ -54,7 +56,7 @@ export function getEntitlementTier(user, subscription) {
  */
 export function hasPaidAccess(user, subscription) {
   const tier = getEntitlementTier(user, subscription);
-  return tier === "premium" || tier === "pro";
+  return tier === "pro";
 }
 
 /**
@@ -101,7 +103,6 @@ export function isTrialingAccess(user, subscription) {
 export function getPlanLabel(user, subscription) {
   const tier = getEntitlementTier(user, subscription);
   if (tier === "pro") return "Pro";
-  if (tier === "premium") return "Premium";
   return "Free";
 }
 
