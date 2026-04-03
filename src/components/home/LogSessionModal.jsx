@@ -98,6 +98,13 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
     }
   }, [isOpen, initialPipeId, initialBlendId]);
 
+  useEffect(() => {
+    if (!postPromptItems && postPromptPendingRef.current) {
+      postPromptPendingRef.current = false;
+      onClose?.();
+    }
+  }, [postPromptItems]);
+
   const selectedPipe = (pipes || []).find((p) => p && p.id === formData.pipe_id);
   const hasMultipleBowls = Array.isArray(selectedPipe?.interchangeable_bowls) && selectedPipe.interchangeable_bowls.length > 0;
 
@@ -337,11 +344,13 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       // 🚨 CRITICAL FIX — DO NOT CLOSE MODAL IF PROMPT NEEDED
       if (externalItems.length > 0) {
         postPromptPendingRef.current = true;
-        setPostPromptItems(externalItems);
-        // DO NOT call onClose
-        // DO NOT reset form state
+
+        setTimeout(() => {
+          setPostPromptItems(externalItems);
+        }, 0);
+
         setSaving(false);
-        return; // <-- THIS LINE IS CRITICAL
+        return;
       }
 
       // Normal close — reset form state and close

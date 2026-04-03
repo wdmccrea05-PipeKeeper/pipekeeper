@@ -131,11 +131,8 @@ export default function UserReport() {
   );
   if (isLoading) return <LoadingSpinner />;
   if (error)     return <ErrorCard message={`${t("userReport.errorLoadingReport")}: ${error.message}`} onRetry={refetch} />;
-  if (!report || report.validation?.passed === false) {
-    const errMsg = report?.validation?.errors?.length
-      ? report.validation.errors.join(', ')
-      : t("userReport.errorLoadingReport");
-    return <ErrorCard message={errMsg} onRetry={refetch} />;
+  if (!report) {
+    return null;
   }
 
   const handleSort = (column) => {
