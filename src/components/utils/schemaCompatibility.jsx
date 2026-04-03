@@ -61,20 +61,22 @@ export function getUsageCharacteristics(pipe) {
  */
 export function prepareLogData(data) {
   const bowls = Number(data.bowls_used || data.bowls_smoked) || 1;
-  const normalizeOptionalId = (value) => {
-    if (value === undefined || value === null || value === "" || value === "__none__") {
-      return null;
-    }
-    return value;
-  };
 
-  return {
+  const result = {
     ...data,
-    bowl_variant_id: normalizeOptionalId(data.bowl_variant_id),
-    container_id: normalizeOptionalId(data.container_id),
     bowls_used: bowls,
     bowls_smoked: bowls, // Keep legacy field in sync
   };
+
+  // Omit optional string IDs entirely if empty instead of sending null
+  ["pipe_id", "blend_id", "container_id", "bowl_variant_id"].forEach((key) => {
+    const value = result[key];
+    if (value === undefined || value === null || value === "" || value === "__none__") {
+      delete result[key];
+    }
+  });
+
+  return result;
 }
 
 /**

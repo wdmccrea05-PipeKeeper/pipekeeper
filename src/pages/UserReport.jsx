@@ -86,6 +86,7 @@ export default function UserReport() {
   const usage         = report?.usage         || {};
   const meta          = report?.meta          || {};
   const validation    = report?.validation    || {};
+  const isReportUsable = !!report && validation.passed !== false;
   const trialMetrics  = subscriptions.trialMetrics || {};
 
   // DATA ERROR: report loaded but validation failed — financial metrics must not be shown
@@ -296,6 +297,11 @@ export default function UserReport() {
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#e8d5b7]">{t("userReport.title")}</h1>
+          {!isReportUsable && (
+            <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+              User Subscription Report is temporarily unavailable because some subscription records are missing required metadata.
+            </div>
+          )}
           <p className="text-xs text-[#e8d5b7]/60 mt-1">
             {t("userReport.lastUpdated")}: {lastUpdated}
             {meta.dateRangeDefinition && (
@@ -346,12 +352,17 @@ export default function UserReport() {
       </div>
 
       {/* ── Inline validation error ──────────────────────────────────────── */}
-      {hasDataError && (
+      {!isReportUsable && (
         <div className="mb-6">
-          <ErrorCard message={dataErrorMessage} onRetry={refetch} />
+          <ErrorCard
+            message="Subscription data is incomplete. Add product metadata (product_kind, modules_csv, billing_interval, price_id) to affected subscriptions before using this report."
+            onRetry={refetch}
+          />
         </div>
       )}
 
+      {isReportUsable && (
+      <>
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 1 — ACCOUNT METRICS
       ═══════════════════════════════════════════════════════════════════ */}
@@ -690,6 +701,8 @@ export default function UserReport() {
             </CollapsibleContent>
           </Card>
         </Collapsible>
+      )}
+      </>
       )}
     </div>
   );
