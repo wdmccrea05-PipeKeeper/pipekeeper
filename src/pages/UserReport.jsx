@@ -68,7 +68,7 @@ export default function UserReport() {
   const { data: report, isLoading, error, refetch } = useQuery({
     queryKey: ['user-report'],
     queryFn: async () => {
-      const response = await base44.functions.invoke('getUserReport', {});
+      const response = await base44.functions.invoke('getUserReport');
       return response.data;
     },
     enabled: isAdmin,
@@ -130,7 +130,7 @@ export default function UserReport() {
     </div>
   );
   if (isLoading) return <LoadingSpinner />;
-  if (error)     return <ErrorCard message={`${t("userReport.errorLoadingReport")}: ${error.message}`} />;
+  if (error)     return <ErrorCard message={`${t("userReport.errorLoadingReport")}: ${error.message}`} onRetry={refetch} />;
 
   const handleSort = (column) => {
     if (sortColumn === column) setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -667,12 +667,22 @@ function LoadingSpinner() {
   );
 }
 
-function ErrorCard({ message }) {
+function ErrorCard({ message, onRetry }) {
+  const { t } = useTranslation();
   return (
     <div className="max-w-7xl mx-auto p-6">
       <Card className="border-rose-200 bg-rose-50">
         <CardContent className="p-6">
           <p className="text-rose-800">{message}</p>
+          {onRetry && (
+            <Button
+              type="button"
+              onClick={onRetry}
+              className="mt-4 bg-rose-700 hover:bg-rose-800 text-white"
+            >
+              {t("userReport.retry", { defaultValue: "Retry" })}
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>

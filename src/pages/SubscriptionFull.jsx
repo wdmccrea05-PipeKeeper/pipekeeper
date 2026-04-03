@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { hasPaidAccess, hasProAccess } from "@/components/utils/premiumAccess";
 import { useQueryClient } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { handleManageSubscription } from "@/components/utils/manageSubscription";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading, t }) {
   return (
@@ -54,8 +56,9 @@ function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoa
 
 export default function SubscriptionFull() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const isIOSApp = useMemo(() => isIOSWebView(), []);
-  const { user, refetch } = useCurrentUser();
+  const { user, refetch, subscription } = useCurrentUser();
   const queryClient = useQueryClient();
   const [subActive, setSubActive] = useState(false);
   const [subTier, setSubTier] = useState("");
@@ -191,19 +194,8 @@ export default function SubscriptionFull() {
 
   const handleManage = async () => {
     setMessage("");
-
-    if (isIOSApp) {
-      openAppleSubscriptions();
-      return;
-    }
-
     try {
-      const response = await base44.functions.invoke('createCustomerPortalSession', {});
-      if (response.data?.url) {
-        window.location.href = response.data.url;
-      } else {
-        setMessage(t("subscriptionFull.manageError"));
-      }
+      await handleManageSubscription(user, subscription, navigate, createPageUrl);
     } catch (e) {
       setMessage(t("subscriptionFull.manageError"));
     }

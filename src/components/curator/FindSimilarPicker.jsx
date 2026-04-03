@@ -53,7 +53,6 @@ export default function FindSimilarPicker({
   onCancel,
 }) {
   const config = CONFIG[actionType];
-  if (!config) return null;
 
   // DEFAULT: Pick mode (single-selection)
   const [mode, setMode] = useState("pick");
@@ -87,6 +86,8 @@ export default function FindSimilarPicker({
     if (mode === "top3" && topItems.length > 0) return topItems[0].id;
     return null;
   }, [selected, mode, data, topItems]);
+
+  if (!config) return null;
 
   const itemList = mode === "pick" ? data : topItems;
 
