@@ -441,7 +441,7 @@ export default function UserReport() {
                   <div className="grid grid-cols-3 gap-3">
                     <MetricCard label="Renewing Customers"     value={periodData.customers}     sub="Unique accounts" />
                     <MetricCard label="Renewing Subscriptions" value={periodData.subscriptions} sub="Subscription records" />
-                    <MetricCard label="Renewal Revenue"        value={periodData.revenue != null ? `$${periodData.revenue.toFixed(2)}` : '—'} sub="Upcoming charges" />
+                    <MetricCard label="Renewal Revenue"        value={`$${(periodData.revenue ?? 0).toFixed(2)}`} sub="Upcoming charges" />
                   </div>
                 );
               })()}

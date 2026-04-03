@@ -210,7 +210,8 @@ function isActivePaidSub(sub: any, now: Date): boolean {
   return true;
 }
 
-// ─── STEP 3 — VALIDATION ──────────────────────────────────────────────────────
+/** Tolerance for floating-point ARR vs MRR×12 comparison (cents). */
+const ARR_TOLERANCE = 0.01;
 
 /**
  * Validate that every normalized subscription has a known product and interval.
@@ -376,9 +377,9 @@ function reconcileMetrics(metrics: AggregatedMetrics): void {
     );
   }
 
-  // Check 3: ARR ≈ MRR × 12 (within $0.01 tolerance for floating-point rounding)
+  // Check 3: ARR ≈ MRR × 12 (within tolerance for floating-point rounding)
   const expectedArr = parseFloat((revenue.mrr * 12).toFixed(2));
-  if (Math.abs(revenue.arr - expectedArr) > 0.01) {
+  if (Math.abs(revenue.arr - expectedArr) > ARR_TOLERANCE) {
     throw new Error(
       `Reconciliation failed: ARR (${revenue.arr}) does not equal MRR × 12 (${expectedArr}). ` +
       `ARR must be derived from MRR.`
@@ -511,7 +512,10 @@ Deno.serve(async (req) => {
       const byEmail = subsByEmail.get(email)  || [];
       const seen    = new Set<string>();
       return [...byId, ...byEmail].filter((s) => {
-        const key = s.id || s.provider_subscription_id || Math.random().toString();
+        // Use a deterministic key; records with no identifier are kept (not skipped) since
+        // they cannot be deduplicated — duplicates here are better than lost data.
+        const key = s.id || s.provider_subscription_id || s.stripe_subscription_id;
+        if (!key) return true; // no stable id — include without dedup attempt
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
@@ -595,7 +599,7 @@ Deno.serve(async (req) => {
       const bestSub = validSubs.length > 0
         ? [...validSubs].sort((a, b) => {
             const rd = rankSub(b) - rankSub(a);
-            return rd !== 0 ? rd : new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime();
+            return rd !== 0 ? rd : new Date(b.created_date || '1970-01-01').getTime() - new Date(a.created_date || '1970-01-01').getTime();
           })[0]
         : null;
 
