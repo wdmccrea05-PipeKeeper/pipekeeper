@@ -131,6 +131,7 @@ export default function UserReport() {
   );
   if (isLoading) return <LoadingSpinner />;
   if (error)     return <ErrorCard message={`${t("userReport.errorLoadingReport")}: ${error.message}`} onRetry={refetch} />;
+  if (!report)   return <ErrorCard message={t("userReport.errorLoadingReport")} onRetry={refetch} />;
 
   const handleSort = (column) => {
     if (sortColumn === column) setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -317,7 +318,7 @@ export default function UserReport() {
       ═══════════════════════════════════════════════════════════════════ */}
       <SectionCard title="Account Metrics" icon={Users}>
         {/* Top-level counts */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <Card
             className={`cursor-pointer transition-all hover:shadow-lg ${viewFilter === 'all'  ? 'ring-2 ring-[#B48C4B]' : ''}`}
             onClick={() => { setViewFilter('all');  setShowPaidTable(true);  setShowFreeTable(true);  }}
@@ -397,7 +398,7 @@ export default function UserReport() {
         {!hasDataError && (
           <>
             {/* Total + billing interval */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <MetricCard label="Total Active Paid Subscriptions" value={counts.totalSubscriptions} sub="Subscription records — not deduped by account" />
               <MetricCard label="Unique Paying Users"   value={counts.uniquePayingUsers}    sub="Deduplicated by user identity" />
               <MetricCard label="Monthly Subscriptions" value={counts.monthlySubscriptions} sub="Active subs billed monthly" />
@@ -438,7 +439,7 @@ export default function UserReport() {
                 const periodKey = { week: 'thisWeek', month: 'thisMonth', quarter: 'thisQuarter', year: 'thisYear' }[renewalsPeriod];
                 const periodData = renewals[periodKey] || {};
                 return (
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     <MetricCard label="Renewing Customers"     value={periodData.customers}     sub="Unique accounts" />
                     <MetricCard label="Renewing Subscriptions" value={periodData.subscriptions} sub="Subscription records" />
                     <MetricCard label="Renewal Revenue"        value={`$${(periodData.revenue ?? 0).toFixed(2)}`} sub="Upcoming charges" />
@@ -482,7 +483,7 @@ export default function UserReport() {
             <p className="text-xs text-[#E0D8C8]/50 mb-3">
               Sum of amounts for subscriptions renewing before end of each calendar period. This is upcoming charges, not run-rate.
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
               <MetricCard label="Renewal Revenue — This Week"    value={`$${(renewals.thisWeek?.revenue    ?? 0).toFixed(2)}`} />
               <MetricCard label="Renewal Revenue — This Month"   value={`$${(renewals.thisMonth?.revenue   ?? 0).toFixed(2)}`} />
               <MetricCard label="Renewal Revenue — This Quarter" value={`$${(renewals.thisQuarter?.revenue ?? 0).toFixed(2)}`} />
@@ -548,13 +549,13 @@ export default function UserReport() {
           </p>
         </div>
         <p className="text-sm font-medium text-[#E0D8C8] mb-2">Daily Active Users by Module</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           {['PipeKeeper', 'WhiskeyKeeper', 'CigarKeeper', 'WineKeeper'].map((m) => (
             <MetricCard key={m} label={m} value="N/A" sub="Not available" />
           ))}
         </div>
         <p className="text-sm font-medium text-[#E0D8C8] mb-2">Weekly Active Users by Module</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {['PipeKeeper', 'WhiskeyKeeper', 'CigarKeeper', 'WineKeeper'].map((m) => (
             <MetricCard key={m} label={m} value="N/A" sub="Not available" />
           ))}
