@@ -3,12 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Crown, Loader } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { useNavigate } from '@/components/utils/navigation';
+import { createPageUrl } from '@/components/utils/createPageUrl';
 
 /**
  * Founders Bundle Offer - visible only to eligible users
  * PipeKeeper + WhiskeyKeeper for $49.99/year ($4.16/month)
  */
 export default function FoundersBundleOffer({ onSuccess }) {
+  const navigate = useNavigate();
   const [eligible, setEligible] = useState(null);
   const [loading, setLoading] = useState(false);
   const [checkingEligibility, setCheckingEligibility] = useState(true);
@@ -38,7 +41,11 @@ export default function FoundersBundleOffer({ onSuccess }) {
       });
 
       if (result?.data?.url) {
-        window.location.href = result.data.url;
+        const opened = window.open(result.data.url, "_blank", "noopener,noreferrer");
+        if (!opened || opened.closed) {
+          toast.error("Unable to open checkout here. Please try again from the Subscription page.");
+          navigate(createPageUrl("Subscription"));
+        }
       }
     } catch (e) {
       console.error('Checkout error:', e);

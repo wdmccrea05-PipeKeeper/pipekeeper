@@ -1,6 +1,5 @@
 import { base44 } from '@/api/base44Client';
 import { getStripeConfig, getRequiredStripePlan } from './stripeConfig';
-import { toast } from 'sonner';
 
 // Export config getter for compatibility
 export const PLAN_CONFIG = getStripeConfig();
@@ -93,7 +92,10 @@ export async function initiateCheckout(planKey, selectedModules = [], successUrl
     });
 
     if (response?.data?.sessionUrl) {
-      window.location.href = response.data.sessionUrl;
+      const opened = window.open(response.data.sessionUrl, "_blank", "noopener,noreferrer");
+      if (!opened || opened.closed) {
+        throw new Error("popup_blocked_or_redirect_disallowed");
+      }
     } else {
       const errorMsg = response?.data?.error || 'Could not start checkout. Please try again.';
       throw new Error(errorMsg);

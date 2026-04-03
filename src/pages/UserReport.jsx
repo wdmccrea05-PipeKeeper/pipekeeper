@@ -303,7 +303,7 @@ export default function UserReport() {
             )}
           </p>
         </div>
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+        <div className="flex w-full flex-wrap flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <Button
             onClick={async () => {
               try {
@@ -456,7 +456,7 @@ export default function UserReport() {
 
             {/* By bundle */}
             <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Bundle</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
               <MetricCard label="Founders Bundle"  value={subscriptions.paidByBundle?.founders     ?? 0} />
               <MetricCard label="3-Module Bundle"  value={subscriptions.paidByBundle?.threeModules ?? 0} />
               <MetricCard label="4-Module Bundle"  value={subscriptions.paidByBundle?.fourModules  ?? 0} />
@@ -558,7 +558,7 @@ export default function UserReport() {
           SECTION 4 — CONVERSION
       ═══════════════════════════════════════════════════════════════════ */}
       <SectionCard title="Conversion Metrics" icon={TrendingUp}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <MetricCard
             label="Free → Paid"
             value={`${conversion.freeToPaidPct ?? 0}%`}
