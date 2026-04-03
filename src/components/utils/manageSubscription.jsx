@@ -1,66 +1,81 @@
 /**
  * Canonical Manage Subscription handler
  * Routes based on subscription provider (Stripe vs Apple)
+ * Uses new-tab first to avoid app-shell white-screen behavior.
  */
 
 import { isIOSWebView, openAppleSubscriptions } from "@/components/utils/nativeIAPBridge";
 import { base44 } from "@/api/base44Client";
 import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 
-const STRIPE_PORTAL_FALLBACK = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
+const STRIPE_PORTAL_FALLBACK = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabm00";
+const APPLE_SUBSCRIPTIONS_URL = "https://apps.apple.com/account/subscriptions";
+
+function openUrlSafely(url) {
+  const popup = window.open(url, "_blank", "noopener,noreferrer");
+  if (popup && !popup.closed) {
+    return { openedInNewTab: true, redirectedInPlace: false };
+  }
+  return null;
+}
 
 export async function handleManageSubscription(user, subscription, navigate, createPageUrl) {
-  // FIX ISSUE-22: Prefer the active subscription entity's provider over user.subscription_provider
-  // to handle cases where the user switched providers (e.g., Apple → Stripe or vice versa).
-  // Stale user.subscription_provider can route to the wrong management portal.
   const provider = resolveSubscriptionProvider(subscription) || resolveProviderFromUser(user);
 
-  // Stripe subscription: create portal session
   if (provider === "stripe") {
     let portalUrl = null;
+    let portalError = null;
 
     try {
-      const result = await base44.functions.invoke('createCustomerPortalSessionForMe', {});
-      if (result?.data?.url) {
-        portalUrl = result.data.url;
-      }
+      const result = await base44.functions.invoke("createCustomerPortalSessionForMe", {});
+      portalUrl = result?.data?.url || null;
+      portalError = result?.data?.error || null;
     } catch (e) {
+      portalError = e?.message || "Failed to create portal session";
       if (import.meta?.env?.DEV) {
         console.warn("[manageSubscription] Failed to create portal session:", e);
       }
     }
 
-    // Use fallback if portal session failed
-    if (!portalUrl) {
-      portalUrl = STRIPE_PORTAL_FALLBACK;
+    if (!portalUrl && portalError) {
+      const normalized = String(portalError).toLowerCase();
+      if (
+        normalized.includes("no stripe customer") ||
+        normalized.includes("customer") ||
+        normalized.includes("subscription") ||
+        normalized.includes("portal")
+      ) {
+        navigate(createPageUrl("Subscription"));
+        return { ok: false, reason: "no_customer", redirectedToSubscription: true };
+      }
     }
 
-    // Open portal - try popup, fallback to redirect if blocked
-    try {
-      const popup = window.open(portalUrl, "_blank");
-      if (!popup || popup.closed) {
-        throw new Error("Popup blocked");
-      }
-    } catch (e) {
-      if (import.meta?.env?.DEV) {
-        console.warn("[manageSubscription] Popup blocked, using redirect:", e);
-      }
-      window.location.href = portalUrl;
+    portalUrl = portalUrl || STRIPE_PORTAL_FALLBACK;
+
+    const opened = openUrlSafely(portalUrl);
+    if (opened) {
+      return { ok: true, provider: "stripe", ...opened, url: portalUrl };
     }
-    return;
+
+    window.location.assign(portalUrl);
+    return { ok: true, provider: "stripe", openedInNewTab: false, redirectedInPlace: true, url: portalUrl };
   }
 
-  // Apple subscription: open Apple settings
   if (provider === "apple") {
     if (isIOSWebView?.()) {
       openAppleSubscriptions();
-      return;
+      return { ok: true, provider: "apple", native: true };
     }
-    // On web, direct to Apple subscription management (NOT review link)
-    window.open("https://apps.apple.com/account/subscriptions", "_blank");
-    return;
+
+    const opened = openUrlSafely(APPLE_SUBSCRIPTIONS_URL);
+    if (opened) {
+      return { ok: true, provider: "apple", ...opened, url: APPLE_SUBSCRIPTIONS_URL };
+    }
+
+    window.location.assign(APPLE_SUBSCRIPTIONS_URL);
+    return { ok: true, provider: "apple", openedInNewTab: false, redirectedInPlace: true, url: APPLE_SUBSCRIPTIONS_URL };
   }
 
-  // No provider detected: navigate to Subscribe page
   navigate(createPageUrl("Subscription"));
+  return { ok: false, reason: "no_provider", redirectedToSubscription: true };
 }

@@ -5,17 +5,14 @@ import { X } from "lucide-react";
 const CONFIG = {
   find_similar_blends: {
     label: "Select Tobacco Blend",
-    dataKey: "blends",
     itemKey: "name",
   },
   find_similar_pipes: {
     label: "Select Pipe",
-    dataKey: "pipes",
     itemKey: "name",
   },
   find_similar_bottles: {
     label: "Select Whiskey Bottle",
-    dataKey: "bottles",
     itemKey: "name",
   },
 };
@@ -31,13 +28,13 @@ function scoreItemImportance(item, logs = []) {
   const recentUsage = logs.filter(
     (log) =>
       (log.blend_id === item.id || log.pipe_id === item.id || log.bottle_id === item.id) &&
-      new Date(log.date) > thirtyDaysAgo
+      new Date(log.date || log.tasting_date || 0) > thirtyDaysAgo
   ).length;
 
   score += recentUsage * 2;
 
   // Rating: +5 per point (max 5)
-  if (item.rating) score += Math.min(item.rating, 5);
+  if (item.rating) score += Math.min(Number(item.rating) || 0, 5);
 
   return score;
 }
@@ -52,19 +49,29 @@ export default function FindSimilarPicker({
   onConfirm,
   onCancel,
 }) {
-  const config = CONFIG[actionType];
+  const config = CONFIG[actionType] || null;
 
   // DEFAULT: Pick mode (single-selection)
   const [mode, setMode] = useState("pick");
   const [selected, setSelected] = useState(null);
 
-  const data = {
-    find_similar_blends: blends,
-    find_similar_pipes: pipes,
-    find_similar_bottles: bottles,
-  }[actionType] || [];
+  const data = useMemo(() => {
+    switch (actionType) {
+      case "find_similar_blends":
+        return blends || [];
+      case "find_similar_pipes":
+        return pipes || [];
+      case "find_similar_bottles":
+        return bottles || [];
+      default:
+        return [];
+    }
+  }, [actionType, pipes, blends, bottles]);
 
-  const logs = actionType === "find_similar_blends" ? smokingLogs : tastingLogs;
+  const logs = useMemo(
+    () => (actionType === "find_similar_bottles" ? tastingLogs : smokingLogs),
+    [actionType, tastingLogs, smokingLogs]
+  );
 
   // Auto-select top 3 favorites + recently used (for top3 mode)
   const topItems = useMemo(() => {
@@ -94,12 +101,11 @@ export default function FindSimilarPicker({
   const handleConfirm = () => {
     if (mode === "pick") {
       const selectedItem = data.find((d) => d.id === displaySelected);
-      if (selectedItem) {
-        if (import.meta.env.DEV) { console.log("[FindSimilar] Pick mode: single anchor", selectedItem.name); }
-        onConfirm([selectedItem], false);
-      }
-    } else if (mode === "top3") {
-      if (import.meta.env.DEV) { console.log("[FindSimilar] Top3 mode: multiple anchors", topItems.map(t => t.name)); }
+      if (selectedItem) onConfirm([selectedItem], false);
+      return;
+    }
+
+    if (mode === "top3") {
       onConfirm(topItems, true);
     }
   };
