@@ -156,10 +156,6 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
     onSuccess: () => invalidateBlendQueries(queryClient, user?.email),
   });
 
-  const createLogMutation = useMutation({
-    mutationFn: (data) => base44.entities.SmokingLog.create(data),
-  });
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (saving) return; // prevent duplicate saves on repeated quick clicks
@@ -237,10 +233,14 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       }
 
       // ── STEP 3: Save SmokingLog ──────────────────────────────────────────
-      await createLogMutation.mutateAsync(logData);
+      const result = await base44.entities.SmokingLog.create(logData);
+
+      if (!result) {
+        throw new Error("SmokingLog.create returned empty response");
+      }
 
       if (import.meta.env.DEV) {
-        console.log("[LogSessionModal] save success");
+        console.log("[LogSessionModal] save success", result);
       }
 
       // ── STEP 4: Run post-save updates ────────────────────────────────────
