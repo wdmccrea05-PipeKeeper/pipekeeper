@@ -103,7 +103,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       postPromptPendingRef.current = false;
       onClose?.();
     }
-  }, [postPromptItems]);
+  }, [postPromptItems, onClose]);
 
   const selectedPipe = (pipes || []).find((p) => p && p.id === formData.pipe_id);
   const hasMultipleBowls = Array.isArray(selectedPipe?.interchangeable_bowls) && selectedPipe.interchangeable_bowls.length > 0;
@@ -379,7 +379,9 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       {postPromptItems && (
         <PostSessionPrompt
           externalItems={postPromptItems}
-          onDone={() => { postPromptPendingRef.current = false; setPostPromptItems(null); onClose(); }}
+          onDone={() => {
+            setPostPromptItems(null);
+          }}
         />
       )}
       <Sheet open={isOpen} onOpenChange={(open) => { if (!open && !saving && !postPromptPendingRef.current) onClose(); }}>

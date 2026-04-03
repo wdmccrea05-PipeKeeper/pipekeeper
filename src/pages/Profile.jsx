@@ -384,7 +384,7 @@ export default function ProfilePage() {
     try {
       await base44.auth.logout();
     } finally {
-      window.location.href = "/";
+      navigate(createPageUrl("Home"), { replace: true });
     }
   }
 

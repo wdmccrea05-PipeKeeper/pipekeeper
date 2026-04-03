@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
+import { useNavigate } from "@/components/utils/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidateProfileQueries } from "@/components/utils/cacheInvalidation";
@@ -55,6 +56,7 @@ const formatLogDate = (dateStr) => {
 
 export default function PublicProfilePage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const profileEmail = urlParams.get('email');
   const isPreview = urlParams.get('preview') === 'true';
@@ -225,7 +227,7 @@ export default function PublicProfilePage() {
     onSuccess: () => {
       setBlockOpen(false);
       toast.success(t("publicProfile.userBlocked"));
-      window.location.href = createPageUrl('Community');
+      navigate(createPageUrl('Community'));
     },
     onError: () => toast.error(t("publicProfile.couldNotBlockUser")),
   });
