@@ -1,9 +1,47 @@
+import { getManufacturerAliases } from './blendAliases.js';
+
+// ── Confidence levels for UX ──────────────────────────────────────────────────
+// HIGH   score >= 80  → proceed normally
+// MEDIUM score >= 45  → present top candidates for confirmation
+// LOW    score <  45  → allow manual add, do not force a match
+export const CONFIDENCE_HIGH = 'high';
+export const CONFIDENCE_MEDIUM = 'medium';
+export const CONFIDENCE_LOW = 'low';
+
+export function getSearchConfidence(score) {
+  if (score >= 80) return CONFIDENCE_HIGH;
+  if (score >= 45) return CONFIDENCE_MEDIUM;
+  return CONFIDENCE_LOW;
+}
+
+// ── Normalization helpers ─────────────────────────────────────────────────────
+
+/**
+ * Strip diacritics/accents from a string using Unicode NFD decomposition.
+ * "Kohlhase" → "Kohlhase", accented chars stripped to their base form.
+ */
+function stripDiacritics(str) {
+  if (typeof str !== 'string') return '';
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
+ * Canonical normalization:
+ * - NFD diacritic stripping
+ * - lowercase
+ * - & → and
+ * - possessive apostrophe removal (Rattray's → Rattrays)
+ * - hyphens/em-dashes → space
+ * - remaining punctuation → space
+ * - collapse whitespace
+ */
 function normalizeString(str) {
-  return (str || '')
+  return stripDiacritics(str || '')
     .toLowerCase()
     .trim()
-    .replace(/[’']/g, "'")
-    .replace(/[-–—]/g, ' ')
+    .replace(/\s*&\s*/g, ' and ')
+    .replace(/['\u2018\u2019`]/g, '')
+    .replace(/[-\u2013\u2014]/g, ' ')
     .replace(/[.,!?;:()[\]"]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -16,6 +54,22 @@ function tokens(str) {
 function joinFields(...values) {
   return normalizeString(values.filter(Boolean).join(' '));
 }
+
+/**
+ * Expand a manufacturer name to include all known aliases.
+ * Returns a deduplicated array of normalized alias strings.
+ */
+function expandManufacturerAliases(manufacturer) {
+  if (!manufacturer) return [];
+  const normalized = normalizeString(manufacturer);
+  const rawAliases = getManufacturerAliases(normalized);
+  if (rawAliases.length > 0) {
+    return [...new Set(rawAliases.map(normalizeString))];
+  }
+  return [normalized];
+}
+
+// ── Scoring ───────────────────────────────────────────────────────────────────
 
 function scoreCandidate(query, candidateFields = []) {
   const normalizedQuery = normalizeString(query);
@@ -71,6 +125,7 @@ function annotateAndSort(query, list, getFields) {
         ...item,
         _searchScore: score,
         _isExact: isExact,
+        _confidence: getSearchConfidence(score),
       };
     })
     .filter((item) => item._searchScore > 0)
@@ -81,12 +136,19 @@ function annotateAndSort(query, list, getFields) {
     });
 }
 
+// ── Public search functions ───────────────────────────────────────────────────
+
 export function searchBlends(query, blends = []) {
-  return annotateAndSort(query, blends, (blend) => [
-    blend.name,
-    blend.manufacturer,
-    `${blend.manufacturer || ''} ${blend.name || ''}`,
-  ]);
+  return annotateAndSort(query, blends, (blend) => {
+    const manufacturerAliases = expandManufacturerAliases(blend.manufacturer);
+    const aliasedCombined = manufacturerAliases.map((alias) => `${alias} ${blend.name || ''}`);
+    return [
+      blend.name,
+      blend.manufacturer,
+      `${blend.manufacturer || ''} ${blend.name || ''}`,
+      ...aliasedCombined,
+    ];
+  });
 }
 
 export function searchPipes(query, pipes = []) {
