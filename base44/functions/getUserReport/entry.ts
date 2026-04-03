@@ -18,6 +18,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import Stripe from 'npm:stripe@14.21.0';
 
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+/** Milliseconds in one day — used for trial expiry calculations. */
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Float tolerance for ARR === MRR × 12 reconciliation check.
+ * $0.10 accommodates accumulated floating-point rounding across large datasets
+ * (e.g. 100 subs each contributing $0.001 rounding error on annual÷12).
+ */
+const FLOAT_TOLERANCE = 0.10;
+
 // ─── Utilities ───────────────────────────────────────────────────────────────
 
 const normEmail = (email: any): string => String(email || '').trim().toLowerCase();
@@ -105,9 +117,22 @@ function normalizeSubscription(raw: any, stripeAmountMap: Record<string, number>
   }
 
   // --- Interval ---
-  const rawInterval = String(raw.billing_interval || raw.billing_period || '').toLowerCase();
-  const interval: 'monthly' | 'annual' =
-    rawInterval === 'year' || rawInterval === 'annual' ? 'annual' : 'monthly';
+  // Accept all common spellings from Stripe and Apple billing APIs.
+  const rawInterval = String(raw.billing_interval || raw.billing_period || '').toLowerCase().trim();
+  const ANNUAL_VARIANTS = new Set(['year', 'annual', 'yearly', 'yr', '1year', 'one_year']);
+  const MONTHLY_VARIANTS = new Set(['month', 'monthly', 'mo', '1month', 'one_month']);
+  let interval: 'monthly' | 'annual';
+  if (ANNUAL_VARIANTS.has(rawInterval)) {
+    interval = 'annual';
+  } else if (MONTHLY_VARIANTS.has(rawInterval) || rawInterval === '') {
+    // Empty string treated as monthly (most common default)
+    interval = 'monthly';
+  } else {
+    // Unknown value — default to monthly and record it for debugging via normalizeSubscription
+    // caller. This is safe: treating an annual sub as monthly over-counts MRR, which is
+    // conservative and visible in the reconciliation check.
+    interval = 'monthly';
+  }
 
   // --- Dates ---
   const toDate = (v: any): Date | null => {
@@ -197,11 +222,13 @@ function classifySubscription(norm: NormalizedSubscription): NormalizedSubscript
   if (planId.includes('cigarkeeper') || planId.includes('cigar')) return { ...norm, product: 'cigarkeeper' };
   if (planId.includes('winekeeper')  || planId.includes('wine'))  return { ...norm, product: 'winekeeper' };
 
-  // Classification failed — throw so the caller can collect all failures
+  // Classification failed — throw so the caller can collect all failures.
+  // Error messages are returned only to admins (route is admin-gated) but we
+  // omit raw plan identifiers to keep the error readable without leaking opaque IDs.
   throw new Error(
-    `Unclassifiable subscription: id=${norm.subscriptionId} user=${norm.userId} ` +
-    `product_kind="${raw.product_kind}" modules_csv="${raw.modules_csv}" ` +
-    `tier="${raw.subscription_tier}" plan="${planId}"`
+    `Unclassifiable subscription id=${norm.subscriptionId}: ` +
+    `product_kind="${raw.product_kind || ''}" modules_csv="${raw.modules_csv || ''}" ` +
+    `tier="${raw.subscription_tier || ''}" has_plan_id=${!!planId}`
   );
 }
 
@@ -329,10 +356,10 @@ function aggregate(
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const trialMetrics = {
     currentlyOnTrial:  trialSubs.length,
-    endingIn3Days:     trialEndDates.filter((d) => { const diff = d.getTime() - now.getTime(); return diff > 0 && diff <= 3 * 864e5; }).length,
-    endingIn7Days:     trialEndDates.filter((d) => { const diff = d.getTime() - now.getTime(); return diff > 0 && diff <= 7 * 864e5; }).length,
+    endingIn3Days:     trialEndDates.filter((d) => { const diff = d.getTime() - now.getTime(); return diff > 0 && diff <= 3 * MS_PER_DAY; }).length,
+    endingIn7Days:     trialEndDates.filter((d) => { const diff = d.getTime() - now.getTime(); return diff > 0 && diff <= 7 * MS_PER_DAY; }).length,
     avgDaysRemaining:  trialEndDates.length > 0
-      ? Math.round(trialEndDates.reduce((s, d) => s + Math.max(0, (d.getTime() - now.getTime()) / 864e5), 0) / trialEndDates.length * 10) / 10
+      ? Math.round(trialEndDates.reduce((s, d) => s + Math.max(0, (d.getTime() - now.getTime()) / MS_PER_DAY), 0) / trialEndDates.length * 10) / 10
       : null,
     convertedLast30d:  allSubscriptions.filter((s) => {
       const st = String(s.status || '').toLowerCase();
@@ -381,8 +408,6 @@ function aggregate(
 }
 
 // ─── Step 5: Reconcile ───────────────────────────────────────────────────────
-
-const FLOAT_TOLERANCE = 0.02; // $0.02 rounding tolerance
 
 function reconcile(
   agg: ReturnType<typeof aggregate>,

@@ -73,6 +73,39 @@ function DataErrorBanner({ errors }) {
   );
 }
 
+// ─── Pure helper functions (defined before component) ────────────────────────
+
+/**
+ * Extracts a structured data error from the report object.
+ * Returns null when the report is valid and safe to display.
+ */
+function extractDataError(report) {
+  if (!report) return null;
+  if (report.error === 'DATA_ERROR' || report.error === 'INTERNAL_ERROR') {
+    const errors =
+      report.classificationErrors ||
+      report.reconciliationErrors ||
+      report.validation?.errors ||
+      (report.message ? [report.message] : ['Unknown error']);
+    return { errors };
+  }
+  if (report.validation !== undefined && !report.validation.passed) {
+    return { errors: report.validation.errors || ['Validation failed'] };
+  }
+  return null;
+}
+
+/**
+ * Maps a period label ('week' | 'month' | 'quarter' | 'year') to
+ * the object key used in the renewals / renewalRevenue response shapes.
+ */
+function getPeriodKey(period) {
+  if (period === 'week')    return 'thisWeek';
+  if (period === 'month')   return 'thisMonth';
+  if (period === 'quarter') return 'thisQuarter';
+  return 'thisYear';
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function UserReport() {
@@ -111,11 +144,7 @@ export default function UserReport() {
   // ── Validate pipeline output ──────────────────────────────────────────────
   // Report is unusable if the backend returned a DATA_ERROR (validation failed)
   // or if the validation field is explicitly marked as failed.
-  const dataError = report?.error === 'DATA_ERROR' || report?.error === 'INTERNAL_ERROR'
-    ? { errors: report?.classificationErrors || report?.reconciliationErrors || report?.validation?.errors || [report?.message || 'Unknown error'] }
-    : (!report?.validation?.passed && report?.validation !== undefined)
-    ? { errors: report?.validation?.errors || ['Validation failed'] }
-    : null;
+  const dataError = extractDataError(report);
 
   // ── Derived data — only read from validated report ────────────────────────
   const counts      = report?.counts      || null;
@@ -453,10 +482,7 @@ export default function UserReport() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {(() => {
-                  const key = renewalsPeriod === 'week'    ? 'thisWeek'
-                            : renewalsPeriod === 'month'   ? 'thisMonth'
-                            : renewalsPeriod === 'quarter' ? 'thisQuarter'
-                            : 'thisYear';
+                  const key = getPeriodKey(renewalsPeriod);
                   return (
                     <>
                       <MetricCard label="Renewing Subs"       value={fmtN(renewals?.[key]?.count)} sub="Subscription records" />
@@ -495,10 +521,9 @@ export default function UserReport() {
               Renewal Revenue <span className="opacity-60 text-xs font-normal">(actual cash expected from subscriptions renewing before end of period — NOT extrapolated)</span>
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-              {['week', 'month', 'quarter', 'year'].map((p) => {
-                const key = p === 'week' ? 'thisWeek' : p === 'month' ? 'thisMonth' : p === 'quarter' ? 'thisQuarter' : 'thisYear';
-                return <MetricCard key={p} label={periodLabels[p]} value={fmt$(renewalRevenue?.[key])} />;
-              })}
+              {['week', 'month', 'quarter', 'year'].map((p) => (
+                <MetricCard key={p} label={periodLabels[p]} value={fmt$(renewalRevenue?.[getPeriodKey(p)])} />
+              ))}
             </div>
 
             {/* Product Revenue (MRR share) */}
