@@ -77,12 +77,19 @@ export default function UserReport() {
 
   // ── Derived data ──────────────────────────────────────────────────────────
   const accounts      = report?.accounts      || {};
-  const subscriptions = report?.subscriptions || {};
+  const counts        = report?.counts        || {};
+  const products      = report?.products      || {};
+  const renewals      = report?.renewals      || {};
   const revenue       = report?.revenue       || {};
+  const subscriptions = report?.subscriptions || {};
   const conversion    = report?.conversion    || {};
   const usage         = report?.usage         || {};
   const meta          = report?.meta          || {};
+  const validation    = report?.validation    || {};
   const trialMetrics  = subscriptions.trialMetrics || {};
+
+  // DATA ERROR: report loaded but validation failed — financial metrics must not be shown
+  const hasDataError = !!report && validation.passed === false;
 
   const filteredData = useMemo(() => {
     if (!report) return { paid: [], free: [] };
@@ -153,22 +160,26 @@ export default function UserReport() {
       ['New Accounts (This Year)',         accounts.newAccounts?.year          ?? ''],
       // Subscriptions
       ['--- SUBSCRIPTIONS ---', ''],
-      ['Total Paid Subscriptions',                  subscriptions.totalPaidSubscriptions ?? ''],
-      ['Paid Subs — PipeKeeper',                    subscriptions.paidByProduct?.pipekeeper    ?? ''],
-      ['Paid Subs — WhiskeyKeeper',                 subscriptions.paidByProduct?.whiskeykeeper ?? ''],
-      ['Paid Subs — CigarKeeper',                   subscriptions.paidByProduct?.cigarkeeper   ?? ''],
-      ['Paid Subs — WineKeeper',                    subscriptions.paidByProduct?.winekeeper    ?? ''],
+      ['Total Paid Subscriptions',                  counts.totalSubscriptions                  ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Unique Paying Users',                       counts.uniquePayingUsers                   ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Monthly Subscriptions',                     counts.monthlySubscriptions                ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Annual Subscriptions',                      counts.annualSubscriptions                 ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Paid Subs — PipeKeeper',                    products.pipekeeper                        ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Paid Subs — WhiskeyKeeper',                 products.whiskeykeeper                     ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Paid Subs — CigarKeeper',                   products.cigarkeeper                       ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Paid Subs — WineKeeper',                    products.winekeeper                        ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Paid Subs — Bundles',                       products.bundle                            ?? (hasDataError ? 'DATA ERROR' : '')],
       ['Paid Bundles — Founders',                   subscriptions.paidByBundle?.founders       ?? ''],
       ['Paid Bundles — 3-Module',                   subscriptions.paidByBundle?.threeModules   ?? ''],
       ['Paid Bundles — 4-Module',                   subscriptions.paidByBundle?.fourModules    ?? ''],
-      ['Renewing Customers (This Week)',             subscriptions.renewingCustomers?.week       ?? ''],
-      ['Renewing Customers (This Month)',            subscriptions.renewingCustomers?.month      ?? ''],
-      ['Renewing Customers (This Quarter)',          subscriptions.renewingCustomers?.quarter    ?? ''],
-      ['Renewing Customers (This Year)',             subscriptions.renewingCustomers?.year       ?? ''],
-      ['Renewing Subscriptions (This Week)',         subscriptions.renewingSubscriptions?.week    ?? ''],
-      ['Renewing Subscriptions (This Month)',        subscriptions.renewingSubscriptions?.month   ?? ''],
-      ['Renewing Subscriptions (This Quarter)',      subscriptions.renewingSubscriptions?.quarter ?? ''],
-      ['Renewing Subscriptions (This Year)',         subscriptions.renewingSubscriptions?.year    ?? ''],
+      ['Renewing Customers (This Week)',             renewals.thisWeek?.customers               ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Renewing Customers (This Month)',            renewals.thisMonth?.customers              ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Renewing Customers (This Quarter)',          renewals.thisQuarter?.customers            ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Renewing Customers (This Year)',             renewals.thisYear?.customers               ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Renewing Subscriptions (This Week)',         renewals.thisWeek?.subscriptions           ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Renewing Subscriptions (This Month)',        renewals.thisMonth?.subscriptions          ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Renewing Subscriptions (This Quarter)',      renewals.thisQuarter?.subscriptions        ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Renewing Subscriptions (This Year)',         renewals.thisYear?.subscriptions           ?? (hasDataError ? 'DATA ERROR' : '')],
       ['Trials — Currently on Trial',               trialMetrics.currentlyOnTrial   ?? ''],
       ['Trials — Ending in 3 Days',                 trialMetrics.endingIn3Days      ?? ''],
       ['Trials — Ending in 7 Days',                 trialMetrics.endingIn7Days      ?? ''],
@@ -176,19 +187,17 @@ export default function UserReport() {
       ['Trials — Drop-offs (30d)',                  trialMetrics.dropoffLast30d     ?? ''],
       // Revenue
       ['--- REVENUE ---', ''],
-      ['Renewal Revenue (This Week)',             `$${revenue.renewalRevenue?.week    ?? 0}`],
-      ['Renewal Revenue (This Month)',            `$${revenue.renewalRevenue?.month   ?? 0}`],
-      ['Renewal Revenue (This Quarter)',          `$${revenue.renewalRevenue?.quarter ?? 0}`],
-      ['Renewal Revenue (This Year)',             `$${revenue.renewalRevenue?.year    ?? 0}`],
-      ['Current MRR',                             `$${revenue.mrr ?? 0}`],
-      ['Current ARR',                             `$${revenue.arr ?? 0}`],
-      ['Revenue by Product — PipeKeeper',            `$${revenue.byProduct?.pipekeeper    ?? 0}`],
-      ['Revenue by Product — WhiskeyKeeper',         `$${revenue.byProduct?.whiskeykeeper ?? 0}`],
-      ['Revenue by Product — CigarKeeper',           `$${revenue.byProduct?.cigarkeeper   ?? 0}`],
-      ['Revenue by Product — WineKeeper',            `$${revenue.byProduct?.winekeeper    ?? 0}`],
-      ['Revenue by Bundle — Founders',               `$${revenue.byBundle?.founders     ?? 0}`],
-      ['Revenue by Bundle — 3-Module',               `$${revenue.byBundle?.threeModules ?? 0}`],
-      ['Revenue by Bundle — 4-Module',               `$${revenue.byBundle?.fourModules  ?? 0}`],
+      ['Renewal Revenue (This Week)',             hasDataError ? 'DATA ERROR' : `$${(renewals.thisWeek?.revenue    ?? 0).toFixed(2)}`],
+      ['Renewal Revenue (This Month)',            hasDataError ? 'DATA ERROR' : `$${(renewals.thisMonth?.revenue   ?? 0).toFixed(2)}`],
+      ['Renewal Revenue (This Quarter)',          hasDataError ? 'DATA ERROR' : `$${(renewals.thisQuarter?.revenue ?? 0).toFixed(2)}`],
+      ['Renewal Revenue (This Year)',             hasDataError ? 'DATA ERROR' : `$${(renewals.thisYear?.revenue    ?? 0).toFixed(2)}`],
+      ['Current MRR',                             hasDataError ? 'DATA ERROR' : `$${(revenue.mrr ?? 0).toFixed(2)}`],
+      ['Current ARR',                             hasDataError ? 'DATA ERROR' : `$${(revenue.arr ?? 0).toFixed(2)}`],
+      ['Revenue by Product — PipeKeeper',            hasDataError ? 'DATA ERROR' : `$${(revenue.byProduct?.pipekeeper    ?? 0).toFixed(2)}`],
+      ['Revenue by Product — WhiskeyKeeper',         hasDataError ? 'DATA ERROR' : `$${(revenue.byProduct?.whiskeykeeper ?? 0).toFixed(2)}`],
+      ['Revenue by Product — CigarKeeper',           hasDataError ? 'DATA ERROR' : `$${(revenue.byProduct?.cigarkeeper   ?? 0).toFixed(2)}`],
+      ['Revenue by Product — WineKeeper',            hasDataError ? 'DATA ERROR' : `$${(revenue.byProduct?.winekeeper    ?? 0).toFixed(2)}`],
+      ['Revenue by Product — Bundle',                hasDataError ? 'DATA ERROR' : `$${(revenue.byProduct?.bundle        ?? 0).toFixed(2)}`],
       // Conversion
       ['--- CONVERSION ---', ''],
       ['Free → Paid (%)',                            `${conversion.freeToPaidPct              ?? 0}%`],
@@ -369,49 +378,78 @@ export default function UserReport() {
           SECTION 2 — SUBSCRIPTION METRICS
       ═══════════════════════════════════════════════════════════════════ */}
       <SectionCard title="Subscription Metrics" icon={Package}>
-        {/* Total + billing interval */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-          <MetricCard label="Total Active Paid Subscriptions" value={subscriptions.totalPaidSubscriptions ?? 0} sub="Subscription records — not deduped by account" />
-          <MetricCard label="Monthly Subscriptions" value={subscriptions.monthlySubscriptions ?? 0} sub="Active subs billed monthly" />
-          <MetricCard label="Annual Subscriptions"  value={subscriptions.annualSubscriptions  ?? 0} sub="Active subs billed annually" />
-        </div>
+        {/* DATA ERROR guard — shown when validation fails */}
+        {hasDataError && (
+          <div className="mb-4 p-4 rounded-lg border border-red-700/60 bg-red-900/20">
+            <p className="text-red-300 font-bold text-sm mb-2">⚠ DATA ERROR — Subscription data failed validation</p>
+            <p className="text-red-300/80 text-xs mb-2">
+              Financial metrics cannot be displayed because one or more subscriptions could not be fully classified.
+              Displaying partial or defaulted numbers would be misleading.
+            </p>
+            {validation.errors?.length > 0 && (
+              <ul className="list-disc list-inside text-xs text-red-300/70 space-y-1 max-h-40 overflow-y-auto">
+                {validation.errors.map((e, i) => <li key={i}>{e}</li>)}
+              </ul>
+            )}
+          </div>
+        )}
 
-        {/* By product */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Product</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          <MetricCard label="PipeKeeper"    value={subscriptions.paidByProduct?.pipekeeper    ?? 0} />
-          <MetricCard label="WhiskeyKeeper" value={subscriptions.paidByProduct?.whiskeykeeper ?? 0} />
-          <MetricCard label="CigarKeeper"   value={subscriptions.paidByProduct?.cigarkeeper   ?? 0} />
-          <MetricCard label="WineKeeper"    value={subscriptions.paidByProduct?.winekeeper    ?? 0} />
-        </div>
-
-        {/* By bundle */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Bundle</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-          <MetricCard label="Founders Bundle"  value={subscriptions.paidByBundle?.founders     ?? 0} />
-          <MetricCard label="3-Module Bundle"  value={subscriptions.paidByBundle?.threeModules ?? 0} />
-          <MetricCard label="4-Module Bundle"  value={subscriptions.paidByBundle?.fourModules  ?? 0} />
-        </div>
-
-        {/* Renewals */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-            <p className="text-sm font-medium text-[#E0D8C8]">Renewing (upcoming in calendar period)</p>
-            <div className="flex flex-wrap gap-1">
-              {['week', 'month', 'quarter', 'year'].map((p) => (
-                <Button key={p} variant={renewalsPeriod === p ? 'default' : 'outline'} size="sm" onClick={() => setRenewalsPeriod(p)} className="text-xs">
-                  {periodLabels[p]}
-                </Button>
-              ))}
+        {!hasDataError && (
+          <>
+            {/* Total + billing interval */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+              <MetricCard label="Total Active Paid Subscriptions" value={counts.totalSubscriptions} sub="Subscription records — not deduped by account" />
+              <MetricCard label="Unique Paying Users"   value={counts.uniquePayingUsers}    sub="Deduplicated by user identity" />
+              <MetricCard label="Monthly Subscriptions" value={counts.monthlySubscriptions} sub="Active subs billed monthly" />
+              <MetricCard label="Annual Subscriptions"  value={counts.annualSubscriptions}  sub="Active subs billed annually" />
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <MetricCard label="Renewing Customers"     value={subscriptions.renewingCustomers?.[renewalsPeriod]    ?? 0} sub="Unique accounts" />
-            <MetricCard label="Renewing Subscriptions" value={subscriptions.renewingSubscriptions?.[renewalsPeriod] ?? 0} sub="Subscription records" />
-          </div>
-        </div>
 
-        {/* Trials */}
+            {/* By product */}
+            <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Product</p>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+              <MetricCard label="PipeKeeper"    value={products.pipekeeper}    />
+              <MetricCard label="WhiskeyKeeper" value={products.whiskeykeeper} />
+              <MetricCard label="CigarKeeper"   value={products.cigarkeeper}   />
+              <MetricCard label="WineKeeper"    value={products.winekeeper}    />
+              <MetricCard label="Bundles (all)" value={products.bundle}        />
+            </div>
+
+            {/* By bundle */}
+            <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Bundle</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <MetricCard label="Founders Bundle"  value={subscriptions.paidByBundle?.founders     ?? 0} />
+              <MetricCard label="3-Module Bundle"  value={subscriptions.paidByBundle?.threeModules ?? 0} />
+              <MetricCard label="4-Module Bundle"  value={subscriptions.paidByBundle?.fourModules  ?? 0} />
+            </div>
+
+            {/* Renewals */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                <p className="text-sm font-medium text-[#E0D8C8]">Renewing (upcoming in calendar period)</p>
+                <div className="flex flex-wrap gap-1">
+                  {['week', 'month', 'quarter', 'year'].map((p) => (
+                    <Button key={p} variant={renewalsPeriod === p ? 'default' : 'outline'} size="sm" onClick={() => setRenewalsPeriod(p)} className="text-xs">
+                      {periodLabels[p]}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              {(() => {
+                const periodKey = { week: 'thisWeek', month: 'thisMonth', quarter: 'thisQuarter', year: 'thisYear' }[renewalsPeriod];
+                const periodData = renewals[periodKey] || {};
+                return (
+                  <div className="grid grid-cols-3 gap-3">
+                    <MetricCard label="Renewing Customers"     value={periodData.customers}     sub="Unique accounts" />
+                    <MetricCard label="Renewing Subscriptions" value={periodData.subscriptions} sub="Subscription records" />
+                    <MetricCard label="Renewal Revenue"        value={periodData.revenue != null ? `$${periodData.revenue.toFixed(2)}` : '—'} sub="Upcoming charges" />
+                  </div>
+                );
+              })()}
+            </div>
+          </>
+        )}
+
+        {/* Trials — not part of strict financial pipeline, always shown */}
         <p className="text-sm font-medium text-[#E0D8C8] mb-2">Trial Metrics</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           <MetricCard label="On Trial"           value={trialMetrics.currentlyOnTrial  ?? 0} />
@@ -427,47 +465,53 @@ export default function UserReport() {
           SECTION 3 — REVENUE
       ═══════════════════════════════════════════════════════════════════ */}
       <SectionCard title="Revenue" icon={DollarSign}>
-        {/* Renewal Revenue (Calendar Period) */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-1">
-          Renewal Revenue (Calendar Period)
-        </p>
-        <p className="text-xs text-[#E0D8C8]/50 mb-3">
-          Sum of amounts for subscriptions renewing before end of each calendar period. This is upcoming charges, not run-rate.
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          {['week', 'month', 'quarter', 'year'].map((p) => (
-            <MetricCard key={p} label={`Renewal Revenue — ${periodLabels[p]}`} value={`$${(revenue.renewalRevenue?.[p] ?? 0).toFixed(2)}`} />
-          ))}
-        </div>
+        {hasDataError ? (
+          <div className="p-4 rounded-lg border border-red-700/60 bg-red-900/20">
+            <p className="text-red-300 font-bold text-sm">⚠ DATA ERROR</p>
+            <p className="text-red-300/80 text-xs mt-1">
+              Revenue figures are unavailable because subscription data failed validation.
+              See the Subscription Metrics section for details.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Renewal Revenue (Calendar Period) */}
+            <p className="text-sm font-medium text-[#E0D8C8] mb-1">
+              Renewal Revenue (Calendar Period)
+            </p>
+            <p className="text-xs text-[#E0D8C8]/50 mb-3">
+              Sum of amounts for subscriptions renewing before end of each calendar period. This is upcoming charges, not run-rate.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+              <MetricCard label="Renewal Revenue — This Week"    value={`$${(renewals.thisWeek?.revenue    ?? 0).toFixed(2)}`} />
+              <MetricCard label="Renewal Revenue — This Month"   value={`$${(renewals.thisMonth?.revenue   ?? 0).toFixed(2)}`} />
+              <MetricCard label="Renewal Revenue — This Quarter" value={`$${(renewals.thisQuarter?.revenue ?? 0).toFixed(2)}`} />
+              <MetricCard label="Renewal Revenue — This Year"    value={`$${(renewals.thisYear?.revenue    ?? 0).toFixed(2)}`} />
+            </div>
 
-        {/* Current Run Rate (MRR / ARR) — separate concept from renewal revenue */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-1">Current Run Rate</p>
-        <p className="text-xs text-[#E0D8C8]/50 mb-3">
-          MRR = all active subscriptions normalized to a monthly amount. ARR = MRR × 12. Independent of calendar renewal amounts above.
-        </p>
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <MetricCard label="Current MRR" value={`$${(revenue.mrr ?? 0).toFixed(2)}`} sub="Monthly Recurring Revenue" />
-          <MetricCard label="Current ARR" value={`$${(revenue.arr ?? 0).toFixed(2)}`} sub="Annual Recurring Revenue (MRR × 12)" />
-        </div>
+            {/* Current Run Rate (MRR / ARR) — separate concept from renewal revenue */}
+            <p className="text-sm font-medium text-[#E0D8C8] mb-1">Current Run Rate</p>
+            <p className="text-xs text-[#E0D8C8]/50 mb-3">
+              MRR = all active subscriptions normalized to a monthly amount. ARR = MRR × 12. Independent of calendar renewal amounts above.
+            </p>
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <MetricCard label="Current MRR" value={`$${(revenue.mrr ?? 0).toFixed(2)}`} sub="Monthly Recurring Revenue" />
+              <MetricCard label="Current ARR" value={`$${(revenue.arr ?? 0).toFixed(2)}`} sub="Annual Recurring Revenue (MRR × 12)" />
+            </div>
 
-        {/* By product */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">
-          Revenue by Product <span className="opacity-60 text-xs font-normal">(single-module subscriptions only)</span>
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          <MetricCard label="PipeKeeper"    value={`$${(revenue.byProduct?.pipekeeper    ?? 0).toFixed(2)}`} />
-          <MetricCard label="WhiskeyKeeper" value={`$${(revenue.byProduct?.whiskeykeeper ?? 0).toFixed(2)}`} />
-          <MetricCard label="CigarKeeper"   value={`$${(revenue.byProduct?.cigarkeeper   ?? 0).toFixed(2)}`} />
-          <MetricCard label="WineKeeper"    value={`$${(revenue.byProduct?.winekeeper    ?? 0).toFixed(2)}`} />
-        </div>
-
-        {/* By bundle */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Revenue by Bundle</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <MetricCard label="Founders Bundle" value={`$${(revenue.byBundle?.founders     ?? 0).toFixed(2)}`} />
-          <MetricCard label="3-Module Bundle" value={`$${(revenue.byBundle?.threeModules ?? 0).toFixed(2)}`} />
-          <MetricCard label="4-Module Bundle" value={`$${(revenue.byBundle?.fourModules  ?? 0).toFixed(2)}`} />
-        </div>
+            {/* By product */}
+            <p className="text-sm font-medium text-[#E0D8C8] mb-2">
+              Revenue by Product <span className="opacity-60 text-xs font-normal">(raw billing amounts; bundles attributed to bundle category)</span>
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <MetricCard label="PipeKeeper"    value={`$${(revenue.byProduct?.pipekeeper    ?? 0).toFixed(2)}`} />
+              <MetricCard label="WhiskeyKeeper" value={`$${(revenue.byProduct?.whiskeykeeper ?? 0).toFixed(2)}`} />
+              <MetricCard label="CigarKeeper"   value={`$${(revenue.byProduct?.cigarkeeper   ?? 0).toFixed(2)}`} />
+              <MetricCard label="WineKeeper"    value={`$${(revenue.byProduct?.winekeeper    ?? 0).toFixed(2)}`} />
+              <MetricCard label="Bundles"       value={`$${(revenue.byProduct?.bundle        ?? 0).toFixed(2)}`} />
+            </div>
+          </>
+        )}
       </SectionCard>
 
       {/* ═══════════════════════════════════════════════════════════════════

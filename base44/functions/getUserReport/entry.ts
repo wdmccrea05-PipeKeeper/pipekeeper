@@ -1,6 +1,24 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import Stripe from 'npm:stripe@14.21.0';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type ProductKey = 'pipekeeper' | 'whiskeykeeper' | 'cigarkeeper' | 'winekeeper' | 'bundle' | 'unknown';
+type IntervalKey = 'monthly' | 'annual' | 'unknown';
+
+interface NormalizedSubscription {
+  userId: string;
+  subscriptionId: string;
+  status: string;
+  price: number;
+  currency: string;
+  interval: IntervalKey;
+  product: ProductKey;
+  startDate: Date | null;
+  endDate: Date | null;
+  renewalDate: Date | null;
+}
+
 // ─── Internal helpers ────────────────────────────────────────────────────────
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
@@ -27,8 +45,8 @@ function isBundleSub(s: any): boolean {
   return pk === 'founders' || bn.includes('founders') || ct === 'bundle_3' || ct === 'bundle_4';
 }
 
-/** Match a field value against all known product keywords; return product key or null. */
-function matchProductField(value: string): string | null {
+/** Match a single field string against all known product keywords; return product key or null. */
+function matchProductKeyword(value: string): string | null {
   const v = value.toLowerCase();
   for (const { key, matches } of PRODUCT_KEYWORDS) {
     if (matches.some((m) => v.includes(m))) return key;
@@ -36,30 +54,25 @@ function matchProductField(value: string): string | null {
   return null;
 }
 
+// ─── STEP 2 — STRICT CLASSIFICATION ─────────────────────────────────────────
+
 /**
- * Returns the product key the subscription belongs to, or null if it is a bundle.
- *
- * Fallback order:
- *  1. modules_csv primary entry
- *  2. product_kind field
- *  3. subscription_tier contains product name
- *  4. Provider plan identifier (price_id / apple_product_id) contains product name
- *  5. Main tier field contains product name
- *  6. plan_name / name / description contains product name
- *  7. Default: 'pipekeeper' (primary product; for legacy subs without product metadata)
- *
- * Non-bundle subs that reach step 7 are also counted in unclassifiedFallbackCount.
+ * Classify a subscription's product STRICTLY. No silent fallbacks.
+ * Searches all available metadata fields in priority order.
+ * Returns 'bundle' for bundle subscriptions.
+ * Returns 'unknown' when no product can be determined — this is intentionally
+ * surfaced to the validation layer rather than silently defaulted.
  */
-function classifySubProduct(s: any): string | null {
-  if (isBundleSub(s)) return null;
+function classifySubscription(s: any): ProductKey {
+  if (isBundleSub(s)) return 'bundle';
 
   // 1) modules_csv — use first recognised module
   for (const m of splitModulesCsv(s.modules_csv)) {
-    const product = matchProductField(m);
-    if (product) return product;
+    const product = matchProductKeyword(m);
+    if (product) return product as ProductKey;
   }
 
-  // 2–6) progressively weaker metadata fields
+  // 2–6) progressively inspect metadata fields; first match wins
   const fields = [
     s.product_kind,
     s.subscription_tier,
@@ -69,45 +82,76 @@ function classifySubProduct(s: any): string | null {
   ];
   for (const f of fields) {
     if (!f) continue;
-    const product = matchProductField(String(f));
-    if (product) return product;
+    const product = matchProductKeyword(String(f));
+    if (product) return product as ProductKey;
   }
 
-  // 7) Default fallback: non-bundle subscription with no product-specific metadata is
-  //    attributed to PipeKeeper — the primary product. Historical/legacy subscriptions
-  //    often predate multi-product metadata. If a subscription actually belongs to a
-  //    different product but has no identifying metadata, it will be misattributed here.
-  //    Admins should review subscriptions.unclassifiedFallbackCount to gauge how many
-  //    subs fell back to this default.
-  return 'pipekeeper';
+  // No match — returned as 'unknown' to be caught by validation (STEP 3).
+  // Aggregation will not proceed while any subscription is 'unknown'.
+  return 'unknown';
+}
+
+// ─── STEP 1 — NORMALIZE SUBSCRIPTIONS ────────────────────────────────────────
+
+/**
+ * Derive the billing interval from all available fields, including provider plan identifiers.
+ * Returns 'monthly' | 'annual' | 'unknown'.
+ */
+function deriveInterval(s: any): IntervalKey {
+  const raw = (s.billing_interval || s.billing_period || '').toLowerCase();
+  if (raw === 'month' || raw === 'monthly')                       return 'monthly';
+  if (raw === 'year'  || raw === 'yearly' || raw === 'annual')    return 'annual';
+
+  // Fall through to provider plan identifiers for Apple / Stripe plan IDs
+  const planId = (s.price_id || s.stripe_price_id || s.apple_product_id || s.plan_id || '').toLowerCase();
+  if (planId.includes('annual') || planId.includes('yearly') || planId.includes('year')) return 'annual';
+  if (planId.includes('monthly') || planId.includes('month'))                            return 'monthly';
+
+  return 'unknown';
 }
 
 /**
- * Like classifySubProduct but returns null instead of the 'pipekeeper' default fallback.
- * Used to count subscriptions that lacked any explicit product metadata (unclassifiedFallbackCount).
+ * Normalize a raw subscription record into a canonical shape.
+ * Classifies product and interval; marks them 'unknown' when not determinable.
+ * Throws only for data that is structurally invalid (e.g. no user identifier).
  */
-function classifySubProductExplicit(s: any): string | null {
-  if (isBundleSub(s)) return null;
+function normalizeSubscription(s: any, getSubAmount: (s: any) => number): NormalizedSubscription {
+  const subscriptionId = String(s.id || s.provider_subscription_id || s.stripe_subscription_id || '');
+  const userId         = String(s.user_id || normEmail(s.user_email) || '');
 
-  for (const m of splitModulesCsv(s.modules_csv)) {
-    const product = matchProductField(m);
-    if (product) return product;
+  if (!userId) {
+    throw new Error(`Subscription "${subscriptionId}" has no user identifier (user_id and user_email are both absent)`);
   }
 
-  const fields = [
-    s.product_kind,
-    s.subscription_tier,
-    s.price_id || s.stripe_price_id || s.apple_product_id || s.plan_id,
-    s.tier,
-    s.plan_name || s.name || s.description,
-  ];
-  for (const f of fields) {
-    if (!f) continue;
-    const product = matchProductField(String(f));
-    if (product) return product;
+  const price = getSubAmount(s);
+  if (typeof price !== 'number' || isNaN(price) || price < 0) {
+    throw new Error(`Subscription "${subscriptionId}" has an invalid price: ${price}`);
   }
 
-  return null; // truly unclassifiable (or a bundle — already handled above)
+  const interval = deriveInterval(s);
+  const product  = classifySubscription(s);
+
+  const parseDate = (v: any): Date | null => {
+    if (!v) return null;
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  const endDate     = parseDate(s.current_period_end);
+  const renewalDate = endDate; // renewal fires at end of current billing period
+
+  return {
+    userId,
+    subscriptionId,
+    status:    (s.status || '').toLowerCase(),
+    price,
+    currency:  (s.currency || 'usd').toLowerCase(),
+    interval,
+    product,
+    startDate: parseDate(s.started_at || s.current_period_start),
+    endDate,
+    renewalDate,
+  };
 }
 
 /**
@@ -118,9 +162,9 @@ function classifySubProductExplicit(s: any): string | null {
  * - quarter: 1st day 00:00 UTC → last day 23:59:59 UTC of current calendar quarter
  * - year:    Jan 1 00:00 UTC → Dec 31 23:59:59 UTC of current year
  */
-function getCalendarRange(type, now) {
+function getCalendarRange(type: string, now: Date): { start: Date; end: Date } {
   const start = new Date(now);
-  let end;
+  let end: Date;
 
   switch (type) {
     case 'week': {
@@ -159,13 +203,196 @@ function getCalendarRange(type, now) {
   return { start, end };
 }
 
-
-
-function isActivePaidSub(sub, now) {
+function isActivePaidSub(sub: any, now: Date): boolean {
   const status = (sub.status || '').toLowerCase();
   if (!['active', 'trialing', 'trial'].includes(status)) return false;
   if (sub.current_period_end && new Date(sub.current_period_end) <= now) return false;
   return true;
+}
+
+// ─── STEP 3 — VALIDATION ──────────────────────────────────────────────────────
+
+/**
+ * Validate that every normalized subscription has a known product and interval.
+ * Returns { passed: true, errors: [] } when all subs are fully classified.
+ * Returns { passed: false, errors: [...] } listing every problematic subscription.
+ * Aggregation MUST NOT proceed when passed === false.
+ */
+function validateNormalized(subs: NormalizedSubscription[]): { passed: boolean; errors: string[] } {
+  const errors: string[] = [];
+  for (const sub of subs) {
+    if (sub.product === 'unknown') {
+      errors.push(
+        `Subscription "${sub.subscriptionId}" (user: "${sub.userId}") could not be classified to a known product. ` +
+        `Add product metadata (product_kind, modules_csv, price_id, etc.) to resolve.`
+      );
+    }
+    if (sub.interval === 'unknown') {
+      errors.push(
+        `Subscription "${sub.subscriptionId}" (user: "${sub.userId}") has no recognizable billing interval. ` +
+        `Set billing_interval to "month" or "year" to resolve.`
+      );
+    }
+  }
+  return { passed: errors.length === 0, errors };
+}
+
+// ─── STEP 4 — AGGREGATION ────────────────────────────────────────────────────
+
+interface RenewalPeriod {
+  customers: number;
+  subscriptions: number;
+  revenue: number;
+}
+
+interface AggregatedMetrics {
+  counts: {
+    totalSubscriptions: number;
+    uniquePayingUsers: number;
+    monthlySubscriptions: number;
+    annualSubscriptions: number;
+  };
+  revenue: {
+    mrr: number;
+    arr: number;
+    byProduct: Record<string, number>;
+  };
+  products: Record<string, number>;
+  renewals: {
+    thisWeek:    RenewalPeriod;
+    thisMonth:   RenewalPeriod;
+    thisQuarter: RenewalPeriod;
+    thisYear:    RenewalPeriod;
+  };
+}
+
+/**
+ * Aggregate metrics exclusively from validated normalized subscriptions.
+ * Also uses raw subscription records (for renewal revenue) and calendar ranges.
+ */
+function aggregateMetrics(
+  validatedSubs: NormalizedSubscription[],
+  allRawSubs: any[],
+  calendarRanges: Record<string, { start: Date; end: Date }>,
+  now: Date
+): AggregatedMetrics {
+  // ── Counts ────────────────────────────────────────────────────────────────
+  const totalSubscriptions   = validatedSubs.length;
+  const uniquePayingUsers    = new Set(validatedSubs.map((s) => s.userId)).size;
+  const monthlySubscriptions = validatedSubs.filter((s) => s.interval === 'monthly').length;
+  const annualSubscriptions  = validatedSubs.filter((s) => s.interval === 'annual').length;
+
+  // ── Revenue ───────────────────────────────────────────────────────────────
+  // MRR: monthly subs → full price; annual subs → price ÷ 12.
+  const totalMRR = validatedSubs.reduce((sum, s) => {
+    return sum + (s.interval === 'annual' ? s.price / 12 : s.price);
+  }, 0);
+  const mrr = parseFloat(totalMRR.toFixed(2));
+  const arr = parseFloat((totalMRR * 12).toFixed(2));
+
+  // Revenue by product (raw billing amounts, not MRR-normalised).
+  const revenueByProduct: Record<string, number> = {
+    pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundle: 0,
+  };
+  for (const s of validatedSubs) {
+    revenueByProduct[s.product] = (revenueByProduct[s.product] || 0) + s.price;
+  }
+  for (const k of Object.keys(revenueByProduct)) {
+    revenueByProduct[k] = parseFloat(revenueByProduct[k].toFixed(2));
+  }
+
+  // ── Products ─────────────────────────────────────────────────────────────
+  const products: Record<string, number> = {
+    pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundle: 0,
+  };
+  for (const s of validatedSubs) {
+    products[s.product] = (products[s.product] || 0) + 1;
+  }
+
+  // ── Renewals ─────────────────────────────────────────────────────────────
+  // Renewal = active sub with current_period_end strictly in (now, periodEnd].
+  const calcRenewalPeriod = (periodEnd: Date): RenewalPeriod => {
+    const renewingSubs = allRawSubs.filter((s) => {
+      const status = (s.status || '').toLowerCase();
+      const end    = s.current_period_end ? new Date(s.current_period_end) : null;
+      return status === 'active' && end && end > now && end <= periodEnd;
+    });
+    const uniqueCustomers = new Set(
+      renewingSubs.map((s) => s.user_id || normEmail(s.user_email)).filter(Boolean)
+    );
+    const revenue = parseFloat(
+      renewingSubs.reduce((sum, s) => {
+        // Find matching normalized sub to use its validated price
+        const norm = validatedSubs.find(
+          (n) => n.subscriptionId === (s.id || s.provider_subscription_id || s.stripe_subscription_id)
+        );
+        return sum + (norm ? norm.price : 0);
+      }, 0).toFixed(2)
+    );
+    return { customers: uniqueCustomers.size, subscriptions: renewingSubs.length, revenue };
+  };
+
+  const renewals = {
+    thisWeek:    calcRenewalPeriod(calendarRanges.week.end),
+    thisMonth:   calcRenewalPeriod(calendarRanges.month.end),
+    thisQuarter: calcRenewalPeriod(calendarRanges.quarter.end),
+    thisYear:    calcRenewalPeriod(calendarRanges.year.end),
+  };
+
+  return {
+    counts: { totalSubscriptions, uniquePayingUsers, monthlySubscriptions, annualSubscriptions },
+    revenue: { mrr, arr, byProduct: revenueByProduct },
+    products,
+    renewals,
+  };
+}
+
+// ─── STEP 5 — RECONCILIATION ─────────────────────────────────────────────────
+
+/**
+ * Run mandatory consistency checks on aggregated metrics before they are returned.
+ * Throws a descriptive error if any check fails — metrics are NOT returned when this throws.
+ */
+function reconcileMetrics(metrics: AggregatedMetrics): void {
+  const { counts, revenue, renewals } = metrics;
+
+  // Check 1: monthly + annual === totalSubscriptions
+  const intervalSum = counts.monthlySubscriptions + counts.annualSubscriptions;
+  if (intervalSum !== counts.totalSubscriptions) {
+    throw new Error(
+      `Reconciliation failed: monthly (${counts.monthlySubscriptions}) + annual (${counts.annualSubscriptions}) ` +
+      `= ${intervalSum} but totalSubscriptions = ${counts.totalSubscriptions}. ` +
+      `Every subscription must have a resolved interval.`
+    );
+  }
+
+  // Check 2: sum(product counts) === totalSubscriptions
+  const productSum = Object.values(metrics.products).reduce((a: number, b: number) => a + b, 0);
+  if (productSum !== counts.totalSubscriptions) {
+    throw new Error(
+      `Reconciliation failed: sum of product counts (${productSum}) ` +
+      `does not equal totalSubscriptions (${counts.totalSubscriptions}). ` +
+      `Every subscription must be assigned to exactly one product.`
+    );
+  }
+
+  // Check 3: ARR ≈ MRR × 12 (within $0.01 tolerance for floating-point rounding)
+  const expectedArr = parseFloat((revenue.mrr * 12).toFixed(2));
+  if (Math.abs(revenue.arr - expectedArr) > 0.01) {
+    throw new Error(
+      `Reconciliation failed: ARR (${revenue.arr}) does not equal MRR × 12 (${expectedArr}). ` +
+      `ARR must be derived from MRR.`
+    );
+  }
+
+  // Check 4: quarter renewals must be a subset of year renewals (never exceed yearly count)
+  if (renewals.thisQuarter.subscriptions > renewals.thisYear.subscriptions) {
+    throw new Error(
+      `Reconciliation failed: quarterly renewal count (${renewals.thisQuarter.subscriptions}) ` +
+      `exceeds yearly renewal count (${renewals.thisYear.subscriptions}). ` +
+      `Quarter is a subset of the year; date range calculation may be incorrect.`
+    );
+  }
 }
 
 // ─── Main handler ────────────────────────────────────────────────────────────
@@ -205,8 +432,7 @@ Deno.serve(async (req) => {
 
     const now = new Date();
 
-    // Calendar ranges (used for both "new accounts since start of period" and
-    // "renewals between now and end of period")
+    // Calendar ranges (UTC-aligned, used for renewals and new-account counts)
     const calendarRanges = {
       week:    getCalendarRange('week',    now),
       month:   getCalendarRange('month',   now),
@@ -215,16 +441,16 @@ Deno.serve(async (req) => {
     };
 
     // ── Stripe amount lookup (best-effort; falls back to stored amount) ──────
-    const stripeAmountMap = {};
+    const stripeAmountMap: Record<string, number> = {};
     try {
       const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
       if (stripeKey) {
         const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
         let hasMore = true;
-        let startingAfter = undefined;
+        let startingAfter: string | undefined = undefined;
         let fetchCount = 0;
         while (hasMore && fetchCount < 3) {
-          const params = { limit: 100, status: 'active', expand: ['data.plan'] };
+          const params: any = { limit: 100, status: 'active', expand: ['data.plan'] };
           if (startingAfter) params.starting_after = startingAfter;
           const stripePage = await stripe.subscriptions.list(params);
           for (const s of stripePage.data) {
@@ -245,7 +471,7 @@ Deno.serve(async (req) => {
     }
 
     /** Return the billing amount for a subscription record. */
-    const getSubAmount = (sub) => {
+    const getSubAmount = (sub: any): number => {
       const provider = (sub.provider || 'stripe').toLowerCase();
       if (provider === 'stripe') {
         const stripeId = sub.provider_subscription_id || sub.stripe_subscription_id;
@@ -256,7 +482,7 @@ Deno.serve(async (req) => {
     };
 
     // ── Deduplicate users by email ────────────────────────────────────────────
-    const seenEmails = new Set();
+    const seenEmails = new Set<string>();
     const uniqueUsers = allUsers.filter((u) => {
       const email = normEmail(u.email);
       if (!email || seenEmails.has(email)) return false;
@@ -265,37 +491,80 @@ Deno.serve(async (req) => {
     });
 
     // ── Subscription lookup maps ──────────────────────────────────────────────
-    const subsByUserId = new Map();
-    const subsByEmail  = new Map();
+    const subsByUserId = new Map<string, any[]>();
+    const subsByEmail  = new Map<string, any[]>();
     allSubscriptions.forEach((sub) => {
       if (sub.user_id) {
         if (!subsByUserId.has(sub.user_id)) subsByUserId.set(sub.user_id, []);
-        subsByUserId.get(sub.user_id).push(sub);
+        subsByUserId.get(sub.user_id)!.push(sub);
       }
       const email = normEmail(sub.user_email);
       if (email) {
         if (!subsByEmail.has(email)) subsByEmail.set(email, []);
-        subsByEmail.get(email).push(sub);
+        subsByEmail.get(email)!.push(sub);
       }
     });
 
-    const getUserSubs = (u) => {
-      const email = normEmail(u.email);
+    const getUserSubs = (u: any): any[] => {
+      const email   = normEmail(u.email);
       const byId    = subsByUserId.get(u.id) || [];
       const byEmail = subsByEmail.get(email)  || [];
-      const seen = new Set();
+      const seen    = new Set<string>();
       return [...byId, ...byEmail].filter((s) => {
-        const key = s.id || s.provider_subscription_id || Math.random();
+        const key = s.id || s.provider_subscription_id || Math.random().toString();
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
       });
     };
 
+    // ── STEP 1 + 2: Normalize and classify active paid subscriptions ─────────
+    const activePaidRawSubs = allSubscriptions.filter((s) => isActivePaidSub(s, now));
+
+    const normalizationErrors: string[] = [];
+    const normalizedSubs: NormalizedSubscription[] = [];
+
+    for (const s of activePaidRawSubs) {
+      try {
+        normalizedSubs.push(normalizeSubscription(s, getSubAmount));
+      } catch (e: any) {
+        normalizationErrors.push(e.message);
+      }
+    }
+
+    // Normalization errors (missing user_id, invalid price) are fatal
+    if (normalizationErrors.length > 0) {
+      return Response.json({
+        counts: null, revenue: null, products: null, renewals: null,
+        validation: { passed: false, errors: normalizationErrors },
+      }, { status: 422 });
+    }
+
+    // ── STEP 3: Validate — block aggregation on any unknown product or interval ─
+    const validation = validateNormalized(normalizedSubs);
+    if (!validation.passed) {
+      return Response.json({
+        counts: null, revenue: null, products: null, renewals: null,
+        validation,
+      }, { status: 422 });
+    }
+
+    // ── STEP 4: Aggregate from validated data only ────────────────────────────
+    const metrics = aggregateMetrics(normalizedSubs, allSubscriptions, calendarRanges, now);
+
+    // ── STEP 5: Reconcile — throw (and return error) if math is inconsistent ──
+    try {
+      reconcileMetrics(metrics);
+    } catch (e: any) {
+      return Response.json({
+        counts: null, revenue: null, products: null, renewals: null,
+        validation: { passed: false, errors: [e.message] },
+      }, { status: 422 });
+    }
+
     // ── Classify each unique user as paid or free ─────────────────────────────
-    // "Paid user" = has ≥1 active paid subscription record.
-    const paidUsersList = [];
-    const freeUsersList = [];
+    const paidUsersList: any[] = [];
+    const freeUsersList: any[] = [];
 
     for (const u of uniqueUsers) {
       const email = normEmail(u.email);
@@ -305,7 +574,7 @@ Deno.serve(async (req) => {
       const activeSubs = userSubs.filter((s) => isActivePaidSub(s, now));
       let isPaid = activeSubs.length > 0;
 
-      // Fallback: honour entitlement fields on the user record if no sub rows exist
+      // Honour entitlement fields on the user record if no subscription rows exist
       if (!isPaid && u.data) {
         const et = (u.data.entitlement_tier || '').toLowerCase();
         const st = (u.data.subscription_tier || '').toLowerCase();
@@ -314,20 +583,19 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Pick best subscription for display metadata (highest-ranked status, newest)
-      const rankSub = (s) => {
+      const rankSub = (s: any): number => {
         const st = (s.status || '').toLowerCase();
-        if (st === 'active') return 5;
-        if (st === 'trialing' || st === 'trial') return 4;
-        if (st === 'incomplete') return 3;
-        if (st === 'past_due') return 2;
+        if (st === 'active')                       return 5;
+        if (st === 'trialing' || st === 'trial')   return 4;
+        if (st === 'incomplete')                   return 3;
+        if (st === 'past_due')                     return 2;
         return 1;
       };
       const validSubs = userSubs.filter((s) => (s.status || '').toLowerCase() !== 'incomplete_expired');
       const bestSub = validSubs.length > 0
         ? [...validSubs].sort((a, b) => {
             const rd = rankSub(b) - rankSub(a);
-            return rd !== 0 ? rd : new Date(b.created_date || 0) - new Date(a.created_date || 0);
+            return rd !== 0 ? rd : new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime();
           })[0]
         : null;
 
@@ -347,9 +615,9 @@ Deno.serve(async (req) => {
       else        freeUsersList.push(userData);
     }
 
-    const totalUsers      = uniqueUsers.length;
-    const paidUsersCount  = paidUsersList.length;
-    const freeUsersCount  = freeUsersList.length;
+    const totalUsers     = uniqueUsers.length;
+    const paidUsersCount = paidUsersList.length;
+    const freeUsersCount = freeUsersList.length;
 
     // ── ACCOUNTS ─────────────────────────────────────────────────────────────
     const signupSources = { web: 0, apple: 0, googlePlay: 0 };
@@ -364,7 +632,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // New accounts = accounts whose created_date falls within [start-of-period, now]
     const newAccounts = {
       week:    uniqueUsers.filter((u) => { const d = new Date(u.created_date); return d >= calendarRanges.week.start    && d <= now; }).length,
       month:   uniqueUsers.filter((u) => { const d = new Date(u.created_date); return d >= calendarRanges.month.start   && d <= now; }).length,
@@ -381,81 +648,16 @@ Deno.serve(async (req) => {
       newAccounts,
     };
 
-    // ── SUBSCRIPTIONS ─────────────────────────────────────────────────────────
-    // All active paid subscription records (subscription-level — NOT user-deduped).
-    const activePaidSubs = allSubscriptions.filter((s) => isActivePaidSub(s, now));
-    const totalPaidSubscriptions = activePaidSubs.length;
-
-    // Monthly / annual active paid subscription counts (based on billing_interval field).
-    const monthlySubscriptions = activePaidSubs.filter((s) => {
-      const interval = (s.billing_interval || s.billing_period || '').toLowerCase();
-      return interval === 'month' || interval === 'monthly';
-    }).length;
-    const annualSubscriptions = activePaidSubs.filter((s) => {
-      const interval = (s.billing_interval || s.billing_period || '').toLowerCase();
-      return interval === 'year' || interval === 'yearly' || interval === 'annual';
-    }).length;
-
-    // Paid subscriptions by product:
-    // Uses classifySubProduct() which falls back through modules_csv → product_kind →
-    // subscription_tier → provider plan identifiers → tier field → plan name →
-    // pipekeeper default (for legacy / untagged non-bundle subs).
-    const paidByProduct = {
-      pipekeeper:    activePaidSubs.filter((s) => classifySubProduct(s) === 'pipekeeper').length,
-      whiskeykeeper: activePaidSubs.filter((s) => classifySubProduct(s) === 'whiskeykeeper').length,
-      cigarkeeper:   activePaidSubs.filter((s) => classifySubProduct(s) === 'cigarkeeper').length,
-      winekeeper:    activePaidSubs.filter((s) => classifySubProduct(s) === 'winekeeper').length,
-    };
-
-    // Count how many non-bundle subs had no explicit product-identification metadata and
-    // therefore used the pipekeeper default fallback (admin transparency).
-    const unclassifiedFallbackCount = activePaidSubs.filter(
-      (s) => !isBundleSub(s) && classifySubProductExplicit(s) === null
-    ).length;
-
-    // Paid subscriptions by bundle type
-    const paidByBundle = {
-      founders:     activePaidSubs.filter((s) =>
-        (s.product_kind || '').toLowerCase() === 'founders' ||
-        (s.bundle_name  || '').toLowerCase().includes('founders')
-      ).length,
-      threeModules: activePaidSubs.filter((s) => s.checkout_type === 'bundle_3').length,
-      fourModules:  activePaidSubs.filter((s) =>
-        s.checkout_type === 'bundle_4' &&
-        (s.product_kind || '').toLowerCase() !== 'founders'
-      ).length,
-    };
-
-    // Renewing subscriptions = active subs whose current_period_end falls in [now, end-of-period]
-    const calcRenewing = (endDate) => {
-      const renewingSubs = allSubscriptions.filter((s) => {
-        const status    = (s.status || '').toLowerCase();
-        const periodEnd = s.current_period_end ? new Date(s.current_period_end) : null;
-        return status === 'active' && periodEnd && periodEnd > now && periodEnd <= endDate;
-      });
-      const uniqueCustomers = new Set(
-        renewingSubs.map((s) => s.user_id || normEmail(s.user_email)).filter(Boolean)
-      );
-      return { customers: uniqueCustomers.size, subscriptions: renewingSubs.length };
-    };
-
-    const renewingPeriods = {
-      week:    calcRenewing(calendarRanges.week.end),
-      month:   calcRenewing(calendarRanges.month.end),
-      quarter: calcRenewing(calendarRanges.quarter.end),
-      year:    calcRenewing(calendarRanges.year.end),
-    };
-
-    // Trial metrics (operational subset, kept in subscriptions for admin use)
+    // ── Trial metrics (operational, not part of strict financial pipeline) ───
     const trialSubs = allSubscriptions.filter((s) => (s.status || '').toLowerCase() === 'trialing');
     const trialEndDates = trialSubs
       .map((s) => s.trial_end_date || s.current_period_end)
       .filter(Boolean)
       .map((d) => new Date(d));
-    const trialEndingIn3d = trialEndDates.filter((d) => { const diff = d - now; return diff > 0 && diff <= 3 * 864e5; }).length;
-    const trialEndingIn7d = trialEndDates.filter((d) => { const diff = d - now; return diff > 0 && diff <= 7 * 864e5; }).length;
+    const trialEndingIn3d = trialEndDates.filter((d) => { const diff = d.getTime() - now.getTime(); return diff > 0 && diff <= 3 * 864e5; }).length;
+    const trialEndingIn7d = trialEndDates.filter((d) => { const diff = d.getTime() - now.getTime(); return diff > 0 && diff <= 7 * 864e5; }).length;
     const avgTrialDaysRemaining = trialEndDates.length > 0
-      ? Math.round((trialEndDates.reduce((s, d) => s + Math.max(0, (d - now) / 864e5), 0) / trialEndDates.length) * 10) / 10
+      ? Math.round((trialEndDates.reduce((s, d) => s + Math.max(0, (d.getTime() - now.getTime()) / 864e5), 0) / trialEndDates.length) * 10) / 10
       : 0;
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const convertedLast30d = allSubscriptions.filter((s) => {
@@ -472,109 +674,23 @@ Deno.serve(async (req) => {
       !(subsByEmail.get(email) || []).some((s) => (s.status || '').toLowerCase() === 'active')
     ).length;
 
-    const subscriptions = {
-      totalPaidSubscriptions,
-      monthlySubscriptions,
-      annualSubscriptions,
-      unclassifiedFallbackCount,
-      paidByProduct,
-      paidByBundle,
-      renewingCustomers: {
-        week:    renewingPeriods.week.customers,
-        month:   renewingPeriods.month.customers,
-        quarter: renewingPeriods.quarter.customers,
-        year:    renewingPeriods.year.customers,
-      },
-      renewingSubscriptions: {
-        week:    renewingPeriods.week.subscriptions,
-        month:   renewingPeriods.month.subscriptions,
-        quarter: renewingPeriods.quarter.subscriptions,
-        year:    renewingPeriods.year.subscriptions,
-      },
-      trialMetrics: {
-        currentlyOnTrial:    trialSubs.length,
-        avgDaysRemaining:    avgTrialDaysRemaining,
-        endingIn3Days:       trialEndingIn3d,
-        endingIn7Days:       trialEndingIn7d,
-        convertedLast30d,
-        dropoffLast30d,
-      },
+    // ── Bundle sub-breakdown (for detailed bundle display in dashboard) ───────
+    const paidByBundle = {
+      founders:     activePaidRawSubs.filter((s) =>
+        (s.product_kind || '').toLowerCase() === 'founders' ||
+        (s.bundle_name  || '').toLowerCase().includes('founders')
+      ).length,
+      threeModules: activePaidRawSubs.filter((s) => s.checkout_type === 'bundle_3').length,
+      fourModules:  activePaidRawSubs.filter((s) =>
+        s.checkout_type === 'bundle_4' &&
+        (s.product_kind || '').toLowerCase() !== 'founders'
+      ).length,
     };
 
-    // ── REVENUE ───────────────────────────────────────────────────────────────
-    // Forecasted revenue = sum of amounts from subs renewing in [now, end-of-period].
-    const calcForecastedRevenue = (endDate) =>
-      allSubscriptions
-        .filter((s) => {
-          const status    = (s.status || '').toLowerCase();
-          const periodEnd = s.current_period_end ? new Date(s.current_period_end) : null;
-          return status === 'active' && periodEnd && periodEnd > now && periodEnd <= endDate;
-        })
-        .reduce((sum, s) => sum + getSubAmount(s), 0);
-
-    // MRR = sum of all active subs converted to monthly amounts.
-    // Monthly sub → full amount; annual sub → amount ÷ 12.
-    const totalMRR = activePaidSubs.reduce((sum, s) => {
-      const amount   = getSubAmount(s);
-      const interval = (s.billing_interval || s.billing_period || '').toLowerCase();
-      return sum + (interval === 'year' || interval === 'annual' ? amount / 12 : amount);
-    }, 0);
-
-    // Revenue by product: credit single-module subscriptions to their product.
-    // Bundle subscriptions are credited to revenueByBundle (no per-module split to avoid double-counting).
-    const revenueByProduct = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0 };
-    const revenueByBundle  = { founders: 0, threeModules: 0, fourModules: 0 };
-
-    for (const s of activePaidSubs) {
-      const amount      = getSubAmount(s);
-      const productKind = (s.product_kind || '').toLowerCase();
-      const bundleName  = (s.bundle_name  || '').toLowerCase();
-      const checkoutType = (s.checkout_type || '').toLowerCase();
-
-      if (productKind === 'founders' || bundleName.includes('founders')) {
-        revenueByBundle.founders     += amount;
-      } else if (checkoutType === 'bundle_3') {
-        revenueByBundle.threeModules += amount;
-      } else if (checkoutType === 'bundle_4') {
-        revenueByBundle.fourModules  += amount;
-      } else {
-        // Single-module: use the same multi-fallback classifier used for paidByProduct
-        const product = classifySubProduct(s);
-        if (product === 'pipekeeper')    revenueByProduct.pipekeeper    += amount;
-        else if (product === 'whiskeykeeper') revenueByProduct.whiskeykeeper += amount;
-        else if (product === 'cigarkeeper')   revenueByProduct.cigarkeeper   += amount;
-        else if (product === 'winekeeper')    revenueByProduct.winekeeper    += amount;
-      }
-    }
-
-    // Round to cents
-    for (const k of Object.keys(revenueByProduct)) revenueByProduct[k] = parseFloat(revenueByProduct[k].toFixed(2));
-    for (const k of Object.keys(revenueByBundle))  revenueByBundle[k]  = parseFloat(revenueByBundle[k].toFixed(2));
-
-    const revenue = {
-      // Subscriptions renewing during the remaining portion of each calendar period.
-      // These amounts represent UPCOMING renewal charges, not run-rate revenue.
-      renewalRevenue: {
-        week:    parseFloat(calcForecastedRevenue(calendarRanges.week.end).toFixed(2)),
-        month:   parseFloat(calcForecastedRevenue(calendarRanges.month.end).toFixed(2)),
-        quarter: parseFloat(calcForecastedRevenue(calendarRanges.quarter.end).toFixed(2)),
-        year:    parseFloat(calcForecastedRevenue(calendarRanges.year.end).toFixed(2)),
-      },
-      // Current run rate: MRR = sum of all active subs normalised to a monthly amount.
-      // ARR = MRR × 12. These are independent of the calendar renewal revenue above.
-      mrr: parseFloat(totalMRR.toFixed(2)),
-      arr: parseFloat((totalMRR * 12).toFixed(2)),
-      byProduct: revenueByProduct,
-      byBundle:  revenueByBundle,
-    };
-
-    // ── CONVERSION ────────────────────────────────────────────────────────────
-    // freeToPaidPct: % of all accounts that currently have an active paid subscription
+    // ── Conversion metrics ────────────────────────────────────────────────────
     const freeToPaidPct = accounts.paidPercentage;
-
-    // paidToAdditionalModulesPct: % of paid users who hold a multi-module subscription
     const multiModuleUsers = new Set(
-      activePaidSubs
+      activePaidRawSubs
         .filter((s) => splitModulesCsv(s.modules_csv).length > 1 || (s.checkout_type || '').startsWith('bundle_'))
         .map((s) => s.user_id || normEmail(s.user_email))
         .filter(Boolean)
@@ -582,25 +698,17 @@ Deno.serve(async (req) => {
     const paidToAdditionalModulesPct = paidUsersCount > 0
       ? parseFloat(((multiModuleUsers.size / paidUsersCount) * 100).toFixed(1))
       : 0;
-
-    // paidToFreePct: rolling 30-day churn rate = canceled subs in past 30d / active subs
     const canceledLast30d = allSubscriptions.filter((s) => {
       const status = (s.status || '').toLowerCase();
       return status === 'canceled' && s.updated_date && new Date(s.updated_date) >= thirtyDaysAgo;
     }).length;
-    const paidToFreePct = activePaidSubs.length > 0
-      ? parseFloat(((canceledLast30d / activePaidSubs.length) * 100).toFixed(1))
+    const paidToFreePct = activePaidRawSubs.length > 0
+      ? parseFloat(((canceledLast30d / activePaidRawSubs.length) * 100).toFixed(1))
       : 0;
 
-    const conversion = {
-      freeToPaidPct,
-      paidToAdditionalModulesPct,
-      paidToFreePct,
-    };
+    const conversion = { freeToPaidPct, paidToAdditionalModulesPct, paidToFreePct };
 
-    // ── USAGE ─────────────────────────────────────────────────────────────────
-    // Per-module activity events are not tracked in the current data model.
-    // Estimated percentage math is not exposed as real metrics (per requirements).
+    // ── Usage ─────────────────────────────────────────────────────────────────
     const usage = {
       dauByModule: { pipekeeper: null, whiskeykeeper: null, cigarkeeper: null, winekeeper: null },
       wauByModule: { pipekeeper: null, whiskeykeeper: null, cigarkeeper: null, winekeeper: null },
@@ -608,14 +716,31 @@ Deno.serve(async (req) => {
     };
 
     // ── Sort detail lists ─────────────────────────────────────────────────────
-    paidUsersList.sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0));
-    freeUsersList.sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0));
+    paidUsersList.sort((a, b) => new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime());
+    freeUsersList.sort((a, b) => new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime());
 
+    // ── STEP 6: Return validated metrics ─────────────────────────────────────
     return Response.json({
-      // ── Canonical reporting shape ──
+      // ── New canonical reporting shape (Steps 4–6) ──────────────────────────
+      counts:   metrics.counts,
+      revenue:  metrics.revenue,
+      products: metrics.products,
+      renewals: metrics.renewals,
+      validation: { passed: true, errors: [] },
+
+      // ── Dashboard extras (accounts, trials, bundles, conversion, usage) ────
       accounts,
-      subscriptions,
-      revenue,
+      subscriptions: {
+        paidByBundle,
+        trialMetrics: {
+          currentlyOnTrial:  trialSubs.length,
+          avgDaysRemaining:  avgTrialDaysRemaining,
+          endingIn3Days:     trialEndingIn3d,
+          endingIn7Days:     trialEndingIn7d,
+          convertedLast30d,
+          dropoffLast30d,
+        },
+      },
       conversion,
       usage,
       meta: {
@@ -628,7 +753,7 @@ Deno.serve(async (req) => {
           year:    { start: calendarRanges.year.start.toISOString(),    end: calendarRanges.year.end.toISOString()    },
         },
       },
-      // ── Legacy fields (used by detail tables in UserReport.jsx) ──
+      // ── Detail tables ──────────────────────────────────────────────────────
       summary: {
         total_users:     totalUsers,
         paid_users:      paidUsersCount,
@@ -639,7 +764,10 @@ Deno.serve(async (req) => {
       free_users: freeUsersList,
     });
 
-  } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+  } catch (error: any) {
+    return Response.json({
+      counts: null, revenue: null, products: null, renewals: null,
+      validation: { passed: false, errors: [error.message] },
+    }, { status: 500 });
   }
 });
