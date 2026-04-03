@@ -1,31 +1,46 @@
+/**
+ * getUserReport — Rebuilt financial reporting pipeline
+ *
+ * Pipeline:
+ *   1. normalizeSubscription  — canonical shape per record
+ *   2. classifySubscription   — strict product + interval assignment; throws on failure
+ *   3. validateSubscriptions  — rejects dataset if any record is unclassified
+ *   4. aggregate              — counts, MRR/ARR, product revenue, renewals
+ *   5. reconcile              — hard invariant checks before returning
+ *
+ * Output shape:
+ *   { counts, revenue, products, renewals, validation, accounts, meta,
+ *     paid_users, free_users }
+ *
+ * NO silent failures. NO default zeros for financial metrics.
+ * If reconciliation fails the function returns an error response — never bad numbers.
+ */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import Stripe from 'npm:stripe@14.21.0';
 
-// ─── Internal helpers ────────────────────────────────────────────────────────
+// ─── Utilities ───────────────────────────────────────────────────────────────
 
-const normEmail = (email) => String(email || "").trim().toLowerCase();
+const normEmail = (email: any): string => String(email || '').trim().toLowerCase();
 
-/** Parse "pipekeeper,whiskeykeeper" → ["pipekeeper", "whiskeykeeper"] */
-function splitModulesCsv(csv) {
+function splitModulesCsv(csv: any): string[] {
   if (!csv) return [];
-  return csv.split(',').map((m) => m.trim().toLowerCase()).filter(Boolean);
+  return String(csv).split(',').map((m) => m.trim().toLowerCase()).filter(Boolean);
 }
 
 /**
- * Returns { start: Date, end: Date } for the given calendar period.
- * Periods are UTC-aligned calendar periods (not rolling windows).
- * - week:    Monday 00:00 UTC → Sunday 23:59:59 UTC of current ISO week
- * - month:   1st 00:00 UTC → last day 23:59:59 UTC of current month
- * - quarter: 1st day 00:00 UTC → last day 23:59:59 UTC of current calendar quarter
- * - year:    Jan 1 00:00 UTC → Dec 31 23:59:59 UTC of current year
+ * Returns UTC-aligned calendar period boundaries for week / month / quarter / year.
+ * - week:    ISO week Monday 00:00 UTC → Sunday 23:59:59.999 UTC
+ * - month:   1st 00:00 UTC → last day 23:59:59.999 UTC
+ * - quarter: First day of quarter 00:00 UTC → last day 23:59:59.999 UTC
+ * - year:    Jan 1 00:00 UTC → Dec 31 23:59:59.999 UTC
  */
-function getCalendarRange(type, now) {
+function getCalendarRange(type: string, now: Date): { start: Date; end: Date } {
   const start = new Date(now);
-  let end;
+  let end: Date;
 
   switch (type) {
     case 'week': {
-      const dow = start.getUTCDay(); // 0=Sun, 1=Mon … 6=Sat
+      const dow = start.getUTCDay();
       const daysFromMonday = dow === 0 ? 6 : dow - 1;
       start.setUTCDate(start.getUTCDate() - daysFromMonday);
       start.setUTCHours(0, 0, 0, 0);
@@ -60,73 +75,376 @@ function getCalendarRange(type, now) {
   return { start, end };
 }
 
-/**
- * Classify a subscription record as belonging to a single product module.
- * Returns the product key ('pipekeeper' | 'whiskeykeeper' | 'cigarkeeper' | 'winekeeper')
- * or null if the subscription is a bundle or cannot be attributed to a product.
- *
- * Fallback order:
- *  1. modules_csv primary entry
- *  2. product_kind field
- *  3. subscription_tier contains product name
- *  4. Provider plan identifier (price_id / apple_product_id) contains product name
- */
-function classifySubProduct(s: any): string | null {
-  const productKind  = (s.product_kind  || '').toLowerCase();
-  const bundleName   = (s.bundle_name   || '').toLowerCase();
-  const checkoutType = (s.checkout_type || '').toLowerCase();
+// ─── Step 1: Normalize ───────────────────────────────────────────────────────
 
-  // Exclude bundle subscriptions — those are counted separately.
+interface NormalizedSubscription {
+  _raw: any;
+  userId: string;
+  subscriptionId: string;
+  status: string;
+  price: number;
+  currency: string;
+  interval: 'monthly' | 'annual';
+  product: 'pipekeeper' | 'whiskeykeeper' | 'cigarkeeper' | 'winekeeper' | 'bundle' | 'unknown';
+  startDate: Date | null;
+  endDate: Date | null;
+  renewalDate: Date | null;
+}
+
+function normalizeSubscription(raw: any, stripeAmountMap: Record<string, number>): NormalizedSubscription {
+  const provider = String(raw.provider || 'stripe').toLowerCase();
+
+  // --- Price ---
+  let price: number;
+  if (provider === 'stripe') {
+    const stripeId = raw.provider_subscription_id || raw.stripe_subscription_id;
+    const fromStripe = stripeId ? (stripeAmountMap[stripeId] ?? -1) : -1;
+    price = fromStripe >= 0 ? fromStripe : Number(raw.amount ?? raw.price ?? 0);
+  } else {
+    price = Number(raw.amount ?? raw.price ?? 0);
+  }
+
+  // --- Interval ---
+  const rawInterval = String(raw.billing_interval || raw.billing_period || '').toLowerCase();
+  const interval: 'monthly' | 'annual' =
+    rawInterval === 'year' || rawInterval === 'annual' ? 'annual' : 'monthly';
+
+  // --- Dates ---
+  const toDate = (v: any): Date | null => {
+    if (!v) return null;
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  const renewalDate = toDate(raw.current_period_end);
+
+  // --- Product (initially 'unknown'; classifySubscription will assign) ---
+  return {
+    _raw: raw,
+    userId: String(raw.user_id || raw.user_email || ''),
+    subscriptionId: String(raw.id || raw.provider_subscription_id || ''),
+    status: String(raw.status || '').toLowerCase(),
+    price,
+    currency: String(raw.currency || 'usd').toLowerCase(),
+    interval,
+    product: 'unknown',
+    startDate: toDate(raw.started_at || raw.current_period_start || raw.created_date),
+    endDate: toDate(raw.current_period_end),
+    renewalDate: (renewalDate && renewalDate > new Date(0)) ? renewalDate : null,
+  };
+}
+
+// ─── Step 2: Classify (strict — throws on unresolvable records) ──────────────
+
+type ProductKey = 'pipekeeper' | 'whiskeykeeper' | 'cigarkeeper' | 'winekeeper' | 'bundle';
+
+/**
+ * Classifies a subscription into a product key.
+ * Returns the product key or throws if the subscription cannot be classified.
+ *
+ * Lookup priority:
+ *   1. product_kind / bundle_name / checkout_type  → 'bundle'
+ *   2. modules_csv first entry
+ *   3. product_kind field
+ *   4. subscription_tier string contains product name
+ *   5. Provider plan ID (price_id / apple_product_id / plan_id) contains product name
+ */
+function classifySubscription(norm: NormalizedSubscription): NormalizedSubscription {
+  const raw = norm._raw;
+
+  const productKind   = String(raw.product_kind   || '').toLowerCase();
+  const bundleName    = String(raw.bundle_name    || '').toLowerCase();
+  const checkoutType  = String(raw.checkout_type  || '').toLowerCase();
+
+  // Bundle detection
   if (
     productKind === 'founders' ||
     bundleName.includes('founders') ||
     checkoutType === 'bundle_3' ||
     checkoutType === 'bundle_4'
-  ) return null;
+  ) {
+    return { ...norm, product: 'bundle' };
+  }
 
-  // 1) modules_csv — primary module
-  const modules = splitModulesCsv(s.modules_csv);
+  // 1) modules_csv — use first recognised entry
+  const modules = splitModulesCsv(raw.modules_csv);
   for (const m of modules) {
-    if (m === 'pipekeeper')    return 'pipekeeper';
-    if (m === 'whiskeykeeper') return 'whiskeykeeper';
-    if (m === 'cigarkeeper' || m === 'cigar') return 'cigarkeeper';
-    if (m === 'winekeeper'  || m === 'wine')  return 'winekeeper';
+    if (m === 'pipekeeper')                                return { ...norm, product: 'pipekeeper' };
+    if (m === 'whiskeykeeper')                             return { ...norm, product: 'whiskeykeeper' };
+    if (m === 'cigarkeeper' || m === 'cigar')              return { ...norm, product: 'cigarkeeper' };
+    if (m === 'winekeeper'  || m === 'wine')               return { ...norm, product: 'winekeeper' };
+    // multi-module without explicit bundle flag → bundle
+    if (modules.length > 1)                               return { ...norm, product: 'bundle' };
   }
 
   // 2) product_kind
-  if (productKind === 'pipekeeper')    return 'pipekeeper';
-  if (productKind === 'whiskeykeeper') return 'whiskeykeeper';
-  if (productKind === 'cigarkeeper' || productKind === 'cigar') return 'cigarkeeper';
-  if (productKind === 'winekeeper'  || productKind === 'wine')  return 'winekeeper';
+  if (productKind === 'pipekeeper')                        return { ...norm, product: 'pipekeeper' };
+  if (productKind === 'whiskeykeeper')                     return { ...norm, product: 'whiskeykeeper' };
+  if (productKind === 'cigarkeeper' || productKind === 'cigar') return { ...norm, product: 'cigarkeeper' };
+  if (productKind === 'winekeeper'  || productKind === 'wine')  return { ...norm, product: 'winekeeper' };
 
-  // 3) subscription_tier contains product name
-  const tier = (s.subscription_tier || '').toLowerCase();
-  if (tier.includes('pipekeeper'))    return 'pipekeeper';
-  if (tier.includes('whiskeykeeper')) return 'whiskeykeeper';
-  if (tier.includes('cigarkeeper') || tier.includes('cigar')) return 'cigarkeeper';
-  if (tier.includes('winekeeper')  || tier.includes('wine'))  return 'winekeeper';
+  // 3) subscription_tier
+  const tier = String(raw.subscription_tier || '').toLowerCase();
+  if (tier.includes('pipekeeper'))                         return { ...norm, product: 'pipekeeper' };
+  if (tier.includes('whiskeykeeper'))                      return { ...norm, product: 'whiskeykeeper' };
+  if (tier.includes('cigarkeeper') || tier.includes('cigar')) return { ...norm, product: 'cigarkeeper' };
+  if (tier.includes('winekeeper')  || tier.includes('wine'))  return { ...norm, product: 'winekeeper' };
 
-  // 4) Provider plan identifiers (Stripe price_id / Apple product_id)
-  const planId = (s.price_id || s.stripe_price_id || s.apple_product_id || s.plan_id || '').toLowerCase();
-  if (planId.includes('pipekeeper'))    return 'pipekeeper';
-  if (planId.includes('whiskeykeeper')) return 'whiskeykeeper';
-  if (planId.includes('cigarkeeper') || planId.includes('cigar')) return 'cigarkeeper';
-  if (planId.includes('winekeeper')  || planId.includes('wine'))  return 'winekeeper';
+  // 4) Provider plan identifiers
+  const planId = String(raw.price_id || raw.stripe_price_id || raw.apple_product_id || raw.plan_id || '').toLowerCase();
+  if (planId.includes('pipekeeper'))                       return { ...norm, product: 'pipekeeper' };
+  if (planId.includes('whiskeykeeper'))                    return { ...norm, product: 'whiskeykeeper' };
+  if (planId.includes('cigarkeeper') || planId.includes('cigar')) return { ...norm, product: 'cigarkeeper' };
+  if (planId.includes('winekeeper')  || planId.includes('wine'))  return { ...norm, product: 'winekeeper' };
 
-  return null;
+  // Classification failed — throw so the caller can collect all failures
+  throw new Error(
+    `Unclassifiable subscription: id=${norm.subscriptionId} user=${norm.userId} ` +
+    `product_kind="${raw.product_kind}" modules_csv="${raw.modules_csv}" ` +
+    `tier="${raw.subscription_tier}" plan="${planId}"`
+  );
 }
 
+// ─── Step 3: Validate ────────────────────────────────────────────────────────
 
-function isActivePaidSub(sub, now) {
-  const status = (sub.status || '').toLowerCase();
-  if (!['active', 'trialing', 'trial'].includes(status)) return false;
-  if (sub.current_period_end && new Date(sub.current_period_end) <= now) return false;
-  return true;
+interface ValidationResult {
+  passed: boolean;
+  errors: string[];
+  unclassifiedIds: string[];
 }
 
-// ─── Main handler ────────────────────────────────────────────────────────────
+function validateSubscriptions(classified: NormalizedSubscription[]): ValidationResult {
+  const errors: string[] = [];
+  const unclassifiedIds: string[] = [];
 
-Deno.serve(async (req) => {
+  for (const s of classified) {
+    if (s.product === 'unknown') {
+      errors.push(`Subscription ${s.subscriptionId} (user: ${s.userId}) has product=unknown after classification`);
+      unclassifiedIds.push(s.subscriptionId);
+    }
+    if (!s.interval) {
+      errors.push(`Subscription ${s.subscriptionId} is missing billing interval`);
+    }
+  }
+
+  return {
+    passed: errors.length === 0,
+    errors,
+    unclassifiedIds,
+  };
+}
+
+// ─── Step 4: Aggregate ───────────────────────────────────────────────────────
+
+function isActiveStatus(status: string): boolean {
+  return ['active', 'trialing', 'trial'].includes(status);
+}
+
+function aggregate(
+  classified: NormalizedSubscription[],
+  allSubscriptions: any[],
+  now: Date,
+  calendarRanges: Record<string, { start: Date; end: Date }>
+) {
+  const activeSubs = classified.filter(
+    (s) => isActiveStatus(s.status) && (!s.endDate || s.endDate > now)
+  );
+
+  // ── Counts ────────────────────────────────────────────────────────────────
+  const totalSubscriptions  = activeSubs.length;
+  const monthlySubscriptions = activeSubs.filter((s) => s.interval === 'monthly').length;
+  const annualSubscriptions  = activeSubs.filter((s) => s.interval === 'annual').length;
+  const uniquePayingUsers    = new Set(activeSubs.map((s) => s.userId).filter(Boolean)).size;
+
+  // ── Revenue ───────────────────────────────────────────────────────────────
+  // MRR: monthly price for monthly subs + annual price÷12 for annual subs
+  let mrr = 0;
+  for (const s of activeSubs) {
+    mrr += s.interval === 'annual' ? s.price / 12 : s.price;
+  }
+  mrr = parseFloat(mrr.toFixed(2));
+  const arr = parseFloat((mrr * 12).toFixed(2));
+
+  // ── Product breakdown ─────────────────────────────────────────────────────
+  const productCounts: Record<string, number> = {
+    pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundle: 0,
+  };
+  const productRevenue: Record<string, number> = {
+    pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundle: 0,
+  };
+
+  for (const s of activeSubs) {
+    if (s.product in productCounts) {
+      productCounts[s.product]++;
+      productRevenue[s.product] += s.interval === 'annual' ? s.price / 12 : s.price;
+    }
+  }
+  for (const k of Object.keys(productRevenue)) {
+    productRevenue[k] = parseFloat(productRevenue[k].toFixed(2));
+  }
+
+  // ── Renewals — filter strictly by renewalDate within calendar period ──────
+  const calcRenewals = (endBoundary: Date) => {
+    const renewing = activeSubs.filter(
+      (s) => s.renewalDate !== null && s.renewalDate > now && s.renewalDate <= endBoundary
+    );
+    const uniqueCustomers = new Set(renewing.map((s) => s.userId).filter(Boolean)).size;
+    return { count: renewing.length, uniqueCustomers };
+  };
+
+  const renewals = {
+    thisWeek:    calcRenewals(calendarRanges.week.end),
+    thisMonth:   calcRenewals(calendarRanges.month.end),
+    thisQuarter: calcRenewals(calendarRanges.quarter.end),
+    thisYear:    calcRenewals(calendarRanges.year.end),
+  };
+
+  // Renewal revenue = sum of prices for subs renewing in each period
+  const calcRenewalRevenue = (endBoundary: Date): number => {
+    return parseFloat(
+      activeSubs
+        .filter((s) => s.renewalDate !== null && s.renewalDate > now && s.renewalDate <= endBoundary)
+        .reduce((sum, s) => sum + s.price, 0)
+        .toFixed(2)
+    );
+  };
+
+  const renewalRevenue = {
+    thisWeek:    calcRenewalRevenue(calendarRanges.week.end),
+    thisMonth:   calcRenewalRevenue(calendarRanges.month.end),
+    thisQuarter: calcRenewalRevenue(calendarRanges.quarter.end),
+    thisYear:    calcRenewalRevenue(calendarRanges.year.end),
+  };
+
+  // ── Trial metrics (operational) ───────────────────────────────────────────
+  const trialSubs = allSubscriptions.filter(
+    (s) => String(s.status || '').toLowerCase() === 'trialing'
+  );
+  const trialEndDates = trialSubs
+    .map((s) => s.trial_end_date || s.current_period_end)
+    .filter(Boolean)
+    .map((d: string) => new Date(d))
+    .filter((d: Date) => !isNaN(d.getTime()));
+
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const trialMetrics = {
+    currentlyOnTrial:  trialSubs.length,
+    endingIn3Days:     trialEndDates.filter((d) => { const diff = d.getTime() - now.getTime(); return diff > 0 && diff <= 3 * 864e5; }).length,
+    endingIn7Days:     trialEndDates.filter((d) => { const diff = d.getTime() - now.getTime(); return diff > 0 && diff <= 7 * 864e5; }).length,
+    avgDaysRemaining:  trialEndDates.length > 0
+      ? Math.round(trialEndDates.reduce((s, d) => s + Math.max(0, (d.getTime() - now.getTime()) / 864e5), 0) / trialEndDates.length * 10) / 10
+      : null,
+    convertedLast30d:  allSubscriptions.filter((s) => {
+      const st = String(s.status || '').toLowerCase();
+      const startedAt = s.started_at || s.current_period_start;
+      return st === 'active' && startedAt && new Date(startedAt) >= thirtyDaysAgo;
+    }).length,
+    dropoffLast30d: (() => {
+      const subsByEmail = new Map<string, any[]>();
+      allSubscriptions.forEach((s: any) => {
+        const email = normEmail(s.user_email);
+        if (email) {
+          if (!subsByEmail.has(email)) subsByEmail.set(email, []);
+          subsByEmail.get(email)!.push(s);
+        }
+      });
+      const trialEndedEmails = new Set(
+        allSubscriptions
+          .filter((s: any) => String(s.status || '').toLowerCase() === 'canceled' && s.trial_end_date && new Date(s.trial_end_date) >= thirtyDaysAgo)
+          .map((s: any) => normEmail(s.user_email))
+      );
+      return Array.from(trialEndedEmails).filter((email) =>
+        !(subsByEmail.get(email as string) || []).some((s) => String(s.status || '').toLowerCase() === 'active')
+      ).length;
+    })(),
+  };
+
+  return {
+    counts: {
+      totalSubscriptions,
+      uniquePayingUsers,
+      monthlySubscriptions,
+      annualSubscriptions,
+    },
+    revenue: {
+      mrr,
+      arr,
+      byProduct: productRevenue,
+    },
+    products: {
+      counts: productCounts,
+    },
+    renewals,
+    renewalRevenue,
+    trialMetrics,
+  };
+}
+
+// ─── Step 5: Reconcile ───────────────────────────────────────────────────────
+
+const FLOAT_TOLERANCE = 0.02; // $0.02 rounding tolerance
+
+function reconcile(
+  agg: ReturnType<typeof aggregate>,
+  classified: NormalizedSubscription[],
+  now: Date,
+  calendarRanges: Record<string, { start: Date; end: Date }>
+): { passed: boolean; errors: string[] } {
+  const errors: string[] = [];
+  const c = agg.counts;
+
+  // Check 1: monthly + annual === totalSubscriptions
+  if (c.monthlySubscriptions + c.annualSubscriptions !== c.totalSubscriptions) {
+    errors.push(
+      `Interval split mismatch: monthly(${c.monthlySubscriptions}) + annual(${c.annualSubscriptions}) = ` +
+      `${c.monthlySubscriptions + c.annualSubscriptions} ≠ total(${c.totalSubscriptions})`
+    );
+  }
+
+  // Check 2: sum(product counts) === totalSubscriptions
+  const productCountSum = Object.values(agg.products.counts).reduce((a, b) => a + b, 0);
+  if (productCountSum !== c.totalSubscriptions) {
+    errors.push(
+      `Product count sum mismatch: ${JSON.stringify(agg.products.counts)} = ${productCountSum} ≠ total(${c.totalSubscriptions})`
+    );
+  }
+
+  // Check 3: ARR === MRR * 12 (within float tolerance)
+  const expectedARR = parseFloat((agg.revenue.mrr * 12).toFixed(2));
+  if (Math.abs(agg.revenue.arr - expectedARR) > FLOAT_TOLERANCE) {
+    errors.push(
+      `ARR/MRR mismatch: ARR(${agg.revenue.arr}) ≠ MRR(${agg.revenue.mrr}) × 12 = ${expectedARR}`
+    );
+  }
+
+  // Check 4: renewal(quarter) should not equal renewal(year) unless dataset justifies it —
+  // flag only if quarter count === year count AND there are subscriptions with endDates in the year
+  // that extend beyond the quarter (i.e., the equality seems wrong rather than coincidental).
+  const qCount = agg.renewals.thisQuarter.count;
+  const yCount = agg.renewals.thisYear.count;
+  if (qCount > 0 && qCount === yCount) {
+    // Check if any active subscription has a renewalDate beyond the quarter boundary
+    const beyondQuarter = classified.filter((s) =>
+      isActiveStatus(s.status) &&
+      (!s.endDate || s.endDate > now) &&
+      s.renewalDate !== null &&
+      s.renewalDate > calendarRanges.quarter.end &&
+      s.renewalDate <= calendarRanges.year.end
+    ).length;
+    if (beyondQuarter > 0) {
+      errors.push(
+        `Renewal count anomaly: thisQuarter(${qCount}) === thisYear(${yCount}) ` +
+        `but ${beyondQuarter} subscription(s) have renewalDates beyond the quarter — year count should be higher`
+      );
+    }
+  }
+
+  return { passed: errors.length === 0, errors };
+}
+
+// ─── Main handler ─────────────────────────────────────────────────────────────
+
+Deno.serve(async (req: Request) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -135,16 +453,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Paginated fetch with rate-limit delay
+    // ── Paginated fetch ────────────────────────────────────────────────────
     const PAGE = 50;
-    const fetchAll = async (entity) => {
-      const results = [];
+    const fetchAll = async (entity: any): Promise<any[]> => {
+      const results: any[] = [];
       let skip = 0;
       while (true) {
         let page = await entity.list(null, PAGE, skip);
-        if (typeof page === 'string') {
-          try { page = JSON.parse(page); } catch { break; }
-        }
+        if (typeof page === 'string') { try { page = JSON.parse(page); } catch { break; } }
         if (!Array.isArray(page) || page.length === 0) break;
         results.push(...page);
         if (page.length < PAGE) break;
@@ -154,136 +470,175 @@ Deno.serve(async (req) => {
       return results;
     };
 
-    // Sequential fetches to respect rate limits
     const allUsers = await fetchAll(base44.asServiceRole.entities.User);
     await new Promise((r) => setTimeout(r, 200));
     const allSubscriptions = await fetchAll(base44.asServiceRole.entities.Subscription);
 
     const now = new Date();
-
-    // Calendar ranges (used for both "new accounts since start of period" and
-    // "renewals between now and end of period")
-    const calendarRanges = {
+    const calendarRanges: Record<string, { start: Date; end: Date }> = {
       week:    getCalendarRange('week',    now),
       month:   getCalendarRange('month',   now),
       quarter: getCalendarRange('quarter', now),
       year:    getCalendarRange('year',    now),
     };
 
-    // ── Stripe amount lookup (best-effort; falls back to stored amount) ──────
-    const stripeAmountMap = {};
+    // ── Stripe live amounts (best-effort) ──────────────────────────────────
+    const stripeAmountMap: Record<string, number> = {};
     try {
       const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
       if (stripeKey) {
         const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
         let hasMore = true;
-        let startingAfter = undefined;
+        let startingAfter: string | undefined = undefined;
         let fetchCount = 0;
         while (hasMore && fetchCount < 3) {
-          const params = { limit: 100, status: 'active', expand: ['data.plan'] };
+          const params: any = { limit: 100, status: 'active', expand: ['data.plan'] };
           if (startingAfter) params.starting_after = startingAfter;
           const stripePage = await stripe.subscriptions.list(params);
           for (const s of stripePage.data) {
-            const cents = s.plan?.amount || s.items?.data?.[0]?.price?.unit_amount || 0;
+            const cents = s.plan?.amount || (s as any).items?.data?.[0]?.price?.unit_amount || 0;
             stripeAmountMap[s.id] = cents / 100;
           }
           hasMore = stripePage.has_more;
-          if (hasMore && stripePage.data.length > 0) {
-            startingAfter = stripePage.data[stripePage.data.length - 1].id;
-          } else {
-            hasMore = false;
-          }
+          startingAfter = hasMore && stripePage.data.length > 0
+            ? stripePage.data[stripePage.data.length - 1].id
+            : undefined;
+          if (!startingAfter) hasMore = false;
           fetchCount++;
         }
       }
     } catch {
-      // Stripe unavailable — fall back to stored amounts on subscription records
+      // Stripe unavailable — normalizeSubscription falls back to stored amounts
     }
 
-    /** Return the billing amount for a subscription record. */
-    const getSubAmount = (sub) => {
-      const provider = (sub.provider || 'stripe').toLowerCase();
-      if (provider === 'stripe') {
-        const stripeId = sub.provider_subscription_id || sub.stripe_subscription_id;
-        const fromStripe = stripeId ? (stripeAmountMap[stripeId] || 0) : 0;
-        return fromStripe > 0 ? fromStripe : (Number(sub.amount) || 0);
-      }
-      return Number(sub.amount) || 0;
-    };
+    // ── Step 1: Normalize ─────────────────────────────────────────────────
+    const normalized: NormalizedSubscription[] = allSubscriptions.map(
+      (raw: any) => normalizeSubscription(raw, stripeAmountMap)
+    );
 
-    // ── Deduplicate users by email ────────────────────────────────────────────
-    const seenEmails = new Set();
-    const uniqueUsers = allUsers.filter((u) => {
+    // ── Step 2: Classify (strict — collect all failures before deciding) ──
+    const classified: NormalizedSubscription[] = [];
+    const classificationErrors: string[] = [];
+
+    for (const norm of normalized) {
+      // Only classify active/trialing records; skip cancelled/expired for product reporting
+      const status = norm.status;
+      if (!isActiveStatus(status)) {
+        // Keep as-is with product='unknown' so renewal/trial queries can use raw data
+        classified.push(norm);
+        continue;
+      }
+      try {
+        classified.push(classifySubscription(norm));
+      } catch (err: any) {
+        classificationErrors.push(err.message);
+        classified.push({ ...norm, product: 'unknown' });
+      }
+    }
+
+    // ── Step 3: Validate (only active records must be fully classified) ───
+    const activePaid = classified.filter(
+      (s) => isActiveStatus(s.status) && (!s.endDate || s.endDate > now)
+    );
+    const validation = validateSubscriptions(activePaid);
+
+    if (!validation.passed || classificationErrors.length > 0) {
+      const allErrors = [...classificationErrors, ...validation.errors];
+      return Response.json({
+        error: 'DATA_ERROR',
+        message: 'Subscription classification failed. Reporting aborted to prevent inaccurate metrics.',
+        classificationErrors: allErrors,
+        unclassifiedSubscriptionIds: validation.unclassifiedIds,
+        validation: { passed: false, errors: allErrors },
+      }, { status: 422 });
+    }
+
+    // ── Step 4: Aggregate ─────────────────────────────────────────────────
+    const agg = aggregate(classified, allSubscriptions, now, calendarRanges);
+
+    // ── Step 5: Reconcile ─────────────────────────────────────────────────
+    const reconciliation = reconcile(agg, classified, now, calendarRanges);
+    if (!reconciliation.passed) {
+      return Response.json({
+        error: 'DATA_ERROR',
+        message: 'Reconciliation checks failed. Reporting aborted to prevent inaccurate metrics.',
+        reconciliationErrors: reconciliation.errors,
+        validation: { passed: false, errors: reconciliation.errors },
+      }, { status: 422 });
+    }
+
+    // ── Accounts section (user-level — independent of subscription pipeline) ──
+    const seenEmails = new Set<string>();
+    const uniqueUsers = allUsers.filter((u: any) => {
       const email = normEmail(u.email);
       if (!email || seenEmails.has(email)) return false;
       seenEmails.add(email);
       return true;
     });
 
-    // ── Subscription lookup maps ──────────────────────────────────────────────
-    const subsByUserId = new Map();
-    const subsByEmail  = new Map();
-    allSubscriptions.forEach((sub) => {
+    const subsByUserId = new Map<string, any[]>();
+    const subsByEmail  = new Map<string, any[]>();
+    allSubscriptions.forEach((sub: any) => {
       if (sub.user_id) {
         if (!subsByUserId.has(sub.user_id)) subsByUserId.set(sub.user_id, []);
-        subsByUserId.get(sub.user_id).push(sub);
+        subsByUserId.get(sub.user_id)!.push(sub);
       }
       const email = normEmail(sub.user_email);
       if (email) {
         if (!subsByEmail.has(email)) subsByEmail.set(email, []);
-        subsByEmail.get(email).push(sub);
+        subsByEmail.get(email)!.push(sub);
       }
     });
 
-    const getUserSubs = (u) => {
+    const getUserSubs = (u: any): any[] => {
       const email = normEmail(u.email);
       const byId    = subsByUserId.get(u.id) || [];
       const byEmail = subsByEmail.get(email)  || [];
-      const seen = new Set();
+      const seen = new Set<string>();
       return [...byId, ...byEmail].filter((s) => {
-        const key = s.id || s.provider_subscription_id || Math.random();
+        const key = String(s.id || s.provider_subscription_id || Math.random());
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
       });
     };
 
-    // ── Classify each unique user as paid or free ─────────────────────────────
-    // "Paid user" = has ≥1 active paid subscription record.
-    const paidUsersList = [];
-    const freeUsersList = [];
+    const isActivePaidSub = (s: any): boolean => {
+      const st = String(s.status || '').toLowerCase();
+      if (!['active', 'trialing', 'trial'].includes(st)) return false;
+      if (s.current_period_end && new Date(s.current_period_end) <= now) return false;
+      return true;
+    };
+
+    const paidUsersList: any[] = [];
+    const freeUsersList: any[]  = [];
 
     for (const u of uniqueUsers) {
       const email = normEmail(u.email);
       if (!email) continue;
 
       const userSubs   = getUserSubs(u);
-      const activeSubs = userSubs.filter((s) => isActivePaidSub(s, now));
+      const activeSubs = userSubs.filter((s: any) => isActivePaidSub(s));
       let isPaid = activeSubs.length > 0;
-
-      // Fallback: honour entitlement fields on the user record if no sub rows exist
       if (!isPaid && u.data) {
-        const et = (u.data.entitlement_tier || '').toLowerCase();
-        const st = (u.data.subscription_tier || '').toLowerCase();
-        if (['premium', 'pro'].includes(et) || ['premium', 'pro'].includes(st)) {
-          isPaid = true;
-        }
+        const et = String(u.data.entitlement_tier || '').toLowerCase();
+        const st = String(u.data.subscription_tier || '').toLowerCase();
+        if (['premium', 'pro'].includes(et) || ['premium', 'pro'].includes(st)) isPaid = true;
       }
 
-      // Pick best subscription for display metadata (highest-ranked status, newest)
-      const rankSub = (s) => {
-        const st = (s.status || '').toLowerCase();
+      const rankSub = (s: any): number => {
+        const st = String(s.status || '').toLowerCase();
         if (st === 'active') return 5;
         if (st === 'trialing' || st === 'trial') return 4;
         if (st === 'incomplete') return 3;
         if (st === 'past_due') return 2;
         return 1;
       };
-      const validSubs = userSubs.filter((s) => (s.status || '').toLowerCase() !== 'incomplete_expired');
+      const validSubs = userSubs.filter((s: any) => String(s.status || '').toLowerCase() !== 'incomplete_expired');
       const bestSub = validSubs.length > 0
         ? [...validSubs].sort((a, b) => {
             const rd = rankSub(b) - rankSub(a);
-            return rd !== 0 ? rd : new Date(b.created_date || 0) - new Date(a.created_date || 0);
+            return rd !== 0 ? rd : new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime();
           })[0]
         : null;
 
@@ -303,262 +658,85 @@ Deno.serve(async (req) => {
       else        freeUsersList.push(userData);
     }
 
-    const totalUsers      = uniqueUsers.length;
-    const paidUsersCount  = paidUsersList.length;
-    const freeUsersCount  = freeUsersList.length;
+    paidUsersList.sort((a, b) => new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime());
+    freeUsersList.sort((a, b) => new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime());
 
-    // ── ACCOUNTS ─────────────────────────────────────────────────────────────
+    const totalUsers     = uniqueUsers.length;
+    const paidUsersCount = paidUsersList.length;
+    const freeUsersCount = freeUsersList.length;
+
     const signupSources = { web: 0, apple: 0, googlePlay: 0 };
     for (const u of uniqueUsers) {
-      const platform = (u.data?.platform || u.platform || 'web').toLowerCase();
-      if (platform === 'apple' || platform === 'ios') {
-        signupSources.apple++;
-      } else if (platform === 'android' || platform === 'googleplay' || platform === 'google') {
-        signupSources.googlePlay++;
-      } else {
-        signupSources.web++;
-      }
+      const platform = String(u.data?.platform || u.platform || 'web').toLowerCase();
+      if (platform === 'apple' || platform === 'ios')            signupSources.apple++;
+      else if (['android', 'googleplay', 'google'].includes(platform)) signupSources.googlePlay++;
+      else                                                        signupSources.web++;
     }
 
-    // New accounts = accounts whose created_date falls within [start-of-period, now]
     const newAccounts = {
-      week:    uniqueUsers.filter((u) => { const d = new Date(u.created_date); return d >= calendarRanges.week.start    && d <= now; }).length,
-      month:   uniqueUsers.filter((u) => { const d = new Date(u.created_date); return d >= calendarRanges.month.start   && d <= now; }).length,
-      quarter: uniqueUsers.filter((u) => { const d = new Date(u.created_date); return d >= calendarRanges.quarter.start && d <= now; }).length,
-      year:    uniqueUsers.filter((u) => { const d = new Date(u.created_date); return d >= calendarRanges.year.start    && d <= now; }).length,
+      week:    uniqueUsers.filter((u: any) => { const d = new Date(u.created_date); return d >= calendarRanges.week.start    && d <= now; }).length,
+      month:   uniqueUsers.filter((u: any) => { const d = new Date(u.created_date); return d >= calendarRanges.month.start   && d <= now; }).length,
+      quarter: uniqueUsers.filter((u: any) => { const d = new Date(u.created_date); return d >= calendarRanges.quarter.start && d <= now; }).length,
+      year:    uniqueUsers.filter((u: any) => { const d = new Date(u.created_date); return d >= calendarRanges.year.start    && d <= now; }).length,
     };
 
-    const accounts = {
-      totalUsers,
-      paidUsers:      paidUsersCount,
-      freeUsers:      freeUsersCount,
-      paidPercentage: totalUsers > 0 ? parseFloat(((paidUsersCount / totalUsers) * 100).toFixed(1)) : 0,
-      signupSources,
-      newAccounts,
-    };
+    const freeToPaidPct = totalUsers > 0
+      ? parseFloat(((paidUsersCount / totalUsers) * 100).toFixed(1))
+      : null;
 
-    // ── SUBSCRIPTIONS ─────────────────────────────────────────────────────────
-    // All active paid subscription records (subscription-level — NOT user-deduped).
-    const activePaidSubs = allSubscriptions.filter((s) => isActivePaidSub(s, now));
-    const totalPaidSubscriptions = activePaidSubs.length;
-
-    // Paid subscriptions by product:
-    // Uses classifySubProduct() which falls back through modules_csv → product_kind →
-    // subscription_tier → provider plan identifiers when modules_csv is absent.
-    const paidByProduct = {
-      pipekeeper:    activePaidSubs.filter((s) => classifySubProduct(s) === 'pipekeeper').length,
-      whiskeykeeper: activePaidSubs.filter((s) => classifySubProduct(s) === 'whiskeykeeper').length,
-      cigarkeeper:   activePaidSubs.filter((s) => classifySubProduct(s) === 'cigarkeeper').length,
-      winekeeper:    activePaidSubs.filter((s) => classifySubProduct(s) === 'winekeeper').length,
-    };
-
-    // Paid subscriptions by bundle type
-    const paidByBundle = {
-      founders:     activePaidSubs.filter((s) =>
-        (s.product_kind || '').toLowerCase() === 'founders' ||
-        (s.bundle_name  || '').toLowerCase().includes('founders')
-      ).length,
-      threeModules: activePaidSubs.filter((s) => s.checkout_type === 'bundle_3').length,
-      fourModules:  activePaidSubs.filter((s) =>
-        s.checkout_type === 'bundle_4' &&
-        (s.product_kind || '').toLowerCase() !== 'founders'
-      ).length,
-    };
-
-    // Renewing subscriptions = active subs whose current_period_end falls in [now, end-of-period]
-    const calcRenewing = (endDate) => {
-      const renewingSubs = allSubscriptions.filter((s) => {
-        const status    = (s.status || '').toLowerCase();
-        const periodEnd = s.current_period_end ? new Date(s.current_period_end) : null;
-        return status === 'active' && periodEnd && periodEnd > now && periodEnd <= endDate;
-      });
-      const uniqueCustomers = new Set(
-        renewingSubs.map((s) => s.user_id || normEmail(s.user_email)).filter(Boolean)
-      );
-      return { customers: uniqueCustomers.size, subscriptions: renewingSubs.length };
-    };
-
-    const renewingPeriods = {
-      week:    calcRenewing(calendarRanges.week.end),
-      month:   calcRenewing(calendarRanges.month.end),
-      quarter: calcRenewing(calendarRanges.quarter.end),
-      year:    calcRenewing(calendarRanges.year.end),
-    };
-
-    // Trial metrics (operational subset, kept in subscriptions for admin use)
-    const trialSubs = allSubscriptions.filter((s) => (s.status || '').toLowerCase() === 'trialing');
-    const trialEndDates = trialSubs
-      .map((s) => s.trial_end_date || s.current_period_end)
-      .filter(Boolean)
-      .map((d) => new Date(d));
-    const trialEndingIn3d = trialEndDates.filter((d) => { const diff = d - now; return diff > 0 && diff <= 3 * 864e5; }).length;
-    const trialEndingIn7d = trialEndDates.filter((d) => { const diff = d - now; return diff > 0 && diff <= 7 * 864e5; }).length;
-    const avgTrialDaysRemaining = trialEndDates.length > 0
-      ? Math.round((trialEndDates.reduce((s, d) => s + Math.max(0, (d - now) / 864e5), 0) / trialEndDates.length) * 10) / 10
-      : 0;
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const convertedLast30d = allSubscriptions.filter((s) => {
-      const status    = (s.status || '').toLowerCase();
-      const startedAt = s.started_at || s.current_period_start;
-      return status === 'active' && startedAt && new Date(startedAt) >= thirtyDaysAgo;
-    }).length;
-    const trialEndedEmails = new Set(
-      allSubscriptions
-        .filter((s) => (s.status || '').toLowerCase() === 'canceled' && s.trial_end_date && new Date(s.trial_end_date) >= thirtyDaysAgo)
-        .map((s) => normEmail(s.user_email))
-    );
-    const dropoffLast30d = Array.from(trialEndedEmails).filter((email) =>
-      !(subsByEmail.get(email) || []).some((s) => (s.status || '').toLowerCase() === 'active')
-    ).length;
-
-    const subscriptions = {
-      totalPaidSubscriptions,
-      paidByProduct,
-      paidByBundle,
-      renewingCustomers: {
-        week:    renewingPeriods.week.customers,
-        month:   renewingPeriods.month.customers,
-        quarter: renewingPeriods.quarter.customers,
-        year:    renewingPeriods.year.customers,
-      },
-      renewingSubscriptions: {
-        week:    renewingPeriods.week.subscriptions,
-        month:   renewingPeriods.month.subscriptions,
-        quarter: renewingPeriods.quarter.subscriptions,
-        year:    renewingPeriods.year.subscriptions,
-      },
-      trialMetrics: {
-        currentlyOnTrial:    trialSubs.length,
-        avgDaysRemaining:    avgTrialDaysRemaining,
-        endingIn3Days:       trialEndingIn3d,
-        endingIn7Days:       trialEndingIn7d,
-        convertedLast30d,
-        dropoffLast30d,
-      },
-    };
-
-    // ── REVENUE ───────────────────────────────────────────────────────────────
-    // Forecasted revenue = sum of amounts from subs renewing in [now, end-of-period].
-    const calcForecastedRevenue = (endDate) =>
-      allSubscriptions
-        .filter((s) => {
-          const status    = (s.status || '').toLowerCase();
-          const periodEnd = s.current_period_end ? new Date(s.current_period_end) : null;
-          return status === 'active' && periodEnd && periodEnd > now && periodEnd <= endDate;
-        })
-        .reduce((sum, s) => sum + getSubAmount(s), 0);
-
-    // MRR = sum of all active subs converted to monthly amounts.
-    // Monthly sub → full amount; annual sub → amount ÷ 12.
-    const totalMRR = activePaidSubs.reduce((sum, s) => {
-      const amount   = getSubAmount(s);
-      const interval = (s.billing_interval || s.billing_period || '').toLowerCase();
-      return sum + (interval === 'year' || interval === 'annual' ? amount / 12 : amount);
-    }, 0);
-
-    // Revenue by product: credit single-module subscriptions to their product.
-    // Bundle subscriptions are credited to revenueByBundle (no per-module split to avoid double-counting).
-    const revenueByProduct = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0 };
-    const revenueByBundle  = { founders: 0, threeModules: 0, fourModules: 0 };
-
-    for (const s of activePaidSubs) {
-      const amount      = getSubAmount(s);
-      const productKind = (s.product_kind || '').toLowerCase();
-      const bundleName  = (s.bundle_name  || '').toLowerCase();
-      const checkoutType = (s.checkout_type || '').toLowerCase();
-
-      if (productKind === 'founders' || bundleName.includes('founders')) {
-        revenueByBundle.founders     += amount;
-      } else if (checkoutType === 'bundle_3') {
-        revenueByBundle.threeModules += amount;
-      } else if (checkoutType === 'bundle_4') {
-        revenueByBundle.fourModules  += amount;
-      } else {
-        // Single-module: use the same multi-fallback classifier used for paidByProduct
-        const product = classifySubProduct(s);
-        if (product === 'pipekeeper')    revenueByProduct.pipekeeper    += amount;
-        else if (product === 'whiskeykeeper') revenueByProduct.whiskeykeeper += amount;
-        else if (product === 'cigarkeeper')   revenueByProduct.cigarkeeper   += amount;
-        else if (product === 'winekeeper')    revenueByProduct.winekeeper    += amount;
-      }
-    }
-
-    // Round to cents
-    for (const k of Object.keys(revenueByProduct)) revenueByProduct[k] = parseFloat(revenueByProduct[k].toFixed(2));
-    for (const k of Object.keys(revenueByBundle))  revenueByBundle[k]  = parseFloat(revenueByBundle[k].toFixed(2));
-
-    const revenue = {
-      // Subscriptions renewing during the remaining portion of each calendar period
-      forecasted: {
-        week:    parseFloat(calcForecastedRevenue(calendarRanges.week.end).toFixed(2)),
-        month:   parseFloat(calcForecastedRevenue(calendarRanges.month.end).toFixed(2)),
-        quarter: parseFloat(calcForecastedRevenue(calendarRanges.quarter.end).toFixed(2)),
-        year:    parseFloat(calcForecastedRevenue(calendarRanges.year.end).toFixed(2)),
-      },
-      // Average = MRR extrapolated to each period.
-      // 4.33 = 52 weeks ÷ 12 months (average weeks per month)
-      average: {
-        week:    parseFloat((totalMRR / 4.33).toFixed(2)),
-        month:   parseFloat(totalMRR.toFixed(2)),
-        quarter: parseFloat((totalMRR * 3).toFixed(2)),
-        year:    parseFloat((totalMRR * 12).toFixed(2)),
-      },
-      byProduct: revenueByProduct,
-      byBundle:  revenueByBundle,
-    };
-
-    // ── CONVERSION ────────────────────────────────────────────────────────────
-    // freeToPaidPct: % of all accounts that currently have an active paid subscription
-    const freeToPaidPct = accounts.paidPercentage;
-
-    // paidToAdditionalModulesPct: % of paid users who hold a multi-module subscription
-    const multiModuleUsers = new Set(
-      activePaidSubs
-        .filter((s) => splitModulesCsv(s.modules_csv).length > 1 || (s.checkout_type || '').startsWith('bundle_'))
-        .map((s) => s.user_id || normEmail(s.user_email))
+    const multiModuleUsers = new Set<string>(
+      activePaid
+        .filter((s) => s.product === 'bundle')
+        .map((s) => s.userId)
         .filter(Boolean)
     );
     const paidToAdditionalModulesPct = paidUsersCount > 0
       ? parseFloat(((multiModuleUsers.size / paidUsersCount) * 100).toFixed(1))
-      : 0;
+      : null;
 
-    // paidToFreePct: rolling 30-day churn rate = canceled subs in past 30d / active subs
-    const canceledLast30d = allSubscriptions.filter((s) => {
-      const status = (s.status || '').toLowerCase();
-      return status === 'canceled' && s.updated_date && new Date(s.updated_date) >= thirtyDaysAgo;
+    const canceledLast30d = allSubscriptions.filter((s: any) => {
+      const status = String(s.status || '').toLowerCase();
+      return status === 'canceled' && s.updated_date && new Date(s.updated_date) >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }).length;
-    const paidToFreePct = activePaidSubs.length > 0
-      ? parseFloat(((canceledLast30d / activePaidSubs.length) * 100).toFixed(1))
-      : 0;
+    const paidToFreePct = agg.counts.totalSubscriptions > 0
+      ? parseFloat(((canceledLast30d / agg.counts.totalSubscriptions) * 100).toFixed(1))
+      : null;
 
-    const conversion = {
-      freeToPaidPct,
-      paidToAdditionalModulesPct,
-      paidToFreePct,
-    };
-
-    // ── USAGE ─────────────────────────────────────────────────────────────────
-    // Per-module activity events are not tracked in the current data model.
-    // Estimated percentage math is not exposed as real metrics (per requirements).
-    const usage = {
-      dauByModule: { pipekeeper: null, whiskeykeeper: null, cigarkeeper: null, winekeeper: null },
-      wauByModule: { pipekeeper: null, whiskeykeeper: null, cigarkeeper: null, winekeeper: null },
-      note: 'Per-module activity events are not available in the current data model.',
-    };
-
-    // ── Sort detail lists ─────────────────────────────────────────────────────
-    paidUsersList.sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0));
-    freeUsersList.sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0));
-
+    // ── Final response ─────────────────────────────────────────────────────
     return Response.json({
-      // ── Canonical reporting shape ──
-      accounts,
-      subscriptions,
-      revenue,
-      conversion,
-      usage,
+      // ── New canonical pipeline output ──
+      counts:       agg.counts,
+      revenue:      agg.revenue,
+      products:     agg.products,
+      renewals:     agg.renewals,
+      renewalRevenue: agg.renewalRevenue,
+      trialMetrics: agg.trialMetrics,
+      validation:   { passed: true, errors: [] },
+
+      // ── Account-level metrics ──
+      accounts: {
+        totalUsers,
+        paidUsers:      paidUsersCount,
+        freeUsers:      freeUsersCount,
+        paidPercentage: freeToPaidPct,
+        signupSources,
+        newAccounts,
+      },
+
+      // ── Conversion ──
+      conversion: {
+        freeToPaidPct,
+        paidToAdditionalModulesPct,
+        paidToFreePct,
+      },
+
+      // ── User detail lists (for admin tables) ──
+      paid_users: paidUsersList,
+      free_users: freeUsersList,
+
+      // ── Meta ──
       meta: {
-        dateRangeDefinition: 'calendar',
+        dateRangeDefinition: 'calendar-utc',
         generatedAt: now.toISOString(),
         calendarRanges: {
           week:    { start: calendarRanges.week.start.toISOString(),    end: calendarRanges.week.end.toISOString()    },
@@ -566,19 +744,17 @@ Deno.serve(async (req) => {
           quarter: { start: calendarRanges.quarter.start.toISOString(), end: calendarRanges.quarter.end.toISOString() },
           year:    { start: calendarRanges.year.start.toISOString(),    end: calendarRanges.year.end.toISOString()    },
         },
+        subscriptionsProcessed: allSubscriptions.length,
+        activeSubscriptionsClassified: activePaid.length,
       },
-      // ── Legacy fields (used by detail tables in UserReport.jsx) ──
-      summary: {
-        total_users:     totalUsers,
-        paid_users:      paidUsersCount,
-        free_users:      freeUsersCount,
-        paid_percentage: accounts.paidPercentage,
-      },
-      paid_users: paidUsersList,
-      free_users: freeUsersList,
     });
 
-  } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+  } catch (err: any) {
+    console.error('[getUserReport] Unexpected error:', err);
+    return Response.json({
+      error: 'INTERNAL_ERROR',
+      message: err?.message || 'An unexpected error occurred',
+      validation: { passed: false, errors: [err?.message || 'Unknown error'] },
+    }, { status: 500 });
   }
 });

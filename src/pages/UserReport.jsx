@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
-  Loader2, Users, TrendingUp, RefreshCw, Crown, UserX, Search,
+  AlertTriangle, Loader2, Users, TrendingUp, RefreshCw, Crown, UserX, Search,
   ChevronDown, ChevronUp, Zap, Download,
   DollarSign, Package
 } from "lucide-react";
@@ -16,6 +16,11 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 // ─── Small reusable components ────────────────────────────────────────────────
 
+/**
+ * MetricCard — renders a labelled metric tile.
+ * value MUST be a string or number from verified data.
+ * Never pass undefined/null here — callers must supply a meaningful display value.
+ */
 function MetricCard({ label, value, sub }) {
   return (
     <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50 min-w-0">
@@ -37,6 +42,34 @@ function SectionCard({ title, icon: Icon, children, className = "" }) {
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>
+  );
+}
+
+/**
+ * DataErrorBanner — shown whenever the backend returns validation.passed === false.
+ * Prevents the user from seeing any financial numbers when data integrity failed.
+ */
+function DataErrorBanner({ errors }) {
+  return (
+    <div className="mb-6 rounded-lg border-2 border-rose-500 bg-rose-950/60 p-5">
+      <div className="flex items-start gap-3">
+        <AlertTriangle className="w-6 h-6 text-rose-400 shrink-0 mt-0.5" />
+        <div>
+          <p className="text-rose-200 font-bold text-lg">DATA ERROR — Report Unavailable</p>
+          <p className="text-rose-300/80 text-sm mt-1">
+            One or more subscriptions could not be classified or reconciliation checks failed.
+            No financial metrics are displayed to prevent misleading data.
+          </p>
+          {errors && errors.length > 0 && (
+            <ul className="mt-3 space-y-1">
+              {errors.map((e, i) => (
+                <li key={i} className="text-rose-300 text-xs font-mono bg-rose-900/40 rounded px-2 py-1 break-all">{e}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -64,7 +97,7 @@ export default function UserReport() {
 
   const isAdmin = user?.role === 'admin';
 
-  // ── Single canonical report query ─────────────────────────────────────────
+  // ── Report query ─────────────────────────────────────────────────────────
   const { data: report, isLoading, error, refetch } = useQuery({
     queryKey: ['user-report'],
     queryFn: async () => {
@@ -75,15 +108,32 @@ export default function UserReport() {
     retry: false,
   });
 
-  // ── Derived data ──────────────────────────────────────────────────────────
-  const accounts      = report?.accounts      || {};
-  const subscriptions = report?.subscriptions || {};
-  const revenue       = report?.revenue       || {};
-  const conversion    = report?.conversion    || {};
-  const usage         = report?.usage         || {};
-  const meta          = report?.meta          || {};
-  const trialMetrics  = subscriptions.trialMetrics || {};
+  // ── Validate pipeline output ──────────────────────────────────────────────
+  // Report is unusable if the backend returned a DATA_ERROR (validation failed)
+  // or if the validation field is explicitly marked as failed.
+  const dataError = report?.error === 'DATA_ERROR' || report?.error === 'INTERNAL_ERROR'
+    ? { errors: report?.classificationErrors || report?.reconciliationErrors || report?.validation?.errors || [report?.message || 'Unknown error'] }
+    : (!report?.validation?.passed && report?.validation !== undefined)
+    ? { errors: report?.validation?.errors || ['Validation failed'] }
+    : null;
 
+  // ── Derived data — only read from validated report ────────────────────────
+  const counts      = report?.counts      || null;
+  const revenue     = report?.revenue     || null;
+  const products    = report?.products    || null;
+  const renewals    = report?.renewals    || null;
+  const renewalRevenue = report?.renewalRevenue || null;
+  const trialMetrics   = report?.trialMetrics   || null;
+  const accounts    = report?.accounts    || null;
+  const conversion  = report?.conversion  || null;
+  const meta        = report?.meta        || null;
+
+  // ── fmt helpers — never show 0 for financial data; show "—" when absent ──
+  const fmt$ = (v) => (v == null ? '—' : `$${Number(v).toFixed(2)}`);
+  const fmtN = (v) => (v == null ? '—' : String(Number(v)));
+  const fmtPct = (v) => (v == null ? '—' : `${v}%`);
+
+  // ── Filtered user detail lists ────────────────────────────────────────────
   const filteredData = useMemo(() => {
     if (!report) return { paid: [], free: [] };
     let paid = [...(report.paid_users || [])];
@@ -111,7 +161,7 @@ export default function UserReport() {
 
   // ── Early returns (after all hooks) ──────────────────────────────────────
   if (isLoadingUser) return <LoadingSpinner />;
-  if (userError) return <ErrorCard message={`${t("userReport.errorLoadingUser")}: ${userError.message}`} />;
+  if (userError)     return <ErrorCard message={`${t("userReport.errorLoadingUser")}: ${userError.message}`} />;
   if (!isAdmin) return (
     <div className="max-w-7xl mx-auto p-6">
       <Card className="bg-white/95 border-rose-200">
@@ -130,109 +180,104 @@ export default function UserReport() {
     else { setSortColumn(column); setSortDirection('desc'); }
   };
 
-  const lastUpdated = meta.generatedAt
+  const lastUpdated = meta?.generatedAt
     ? new Date(meta.generatedAt).toLocaleString()
     : new Date().toLocaleString();
 
-  // ── CSV export — same canonical data as the page ──────────────────────────
+  // ── CSV export ────────────────────────────────────────────────────────────
   function exportCSV() {
+    if (dataError) {
+      toast.error('Cannot export CSV — report contains data errors');
+      return;
+    }
+
     const metricRows = [
-      // Accounts
       ['Metric', 'Value'],
+      // Accounts
       ['--- ACCOUNTS ---', ''],
-      ['Total Accounts',                  accounts.totalUsers     ?? ''],
-      ['Paid Accounts',                   accounts.paidUsers      ?? ''],
-      ['Free Accounts',                   accounts.freeUsers      ?? ''],
-      ['Paid %',                          `${accounts.paidPercentage ?? 0}%`],
-      ['Signup Source — Web',             accounts.signupSources?.web         ?? ''],
-      ['Signup Source — Apple',           accounts.signupSources?.apple       ?? ''],
-      ['Signup Source — Google Play',     accounts.signupSources?.googlePlay  ?? ''],
-      ['New Accounts (This Week)',         accounts.newAccounts?.week          ?? ''],
-      ['New Accounts (This Month)',        accounts.newAccounts?.month         ?? ''],
-      ['New Accounts (This Quarter)',      accounts.newAccounts?.quarter       ?? ''],
-      ['New Accounts (This Year)',         accounts.newAccounts?.year          ?? ''],
+      ['Total Accounts',              fmtN(accounts?.totalUsers)],
+      ['Paid Accounts',               fmtN(accounts?.paidUsers)],
+      ['Free Accounts',               fmtN(accounts?.freeUsers)],
+      ['Paid %',                      fmtPct(accounts?.paidPercentage)],
+      ['Signup Source — Web',         fmtN(accounts?.signupSources?.web)],
+      ['Signup Source — Apple',       fmtN(accounts?.signupSources?.apple)],
+      ['Signup Source — Google Play', fmtN(accounts?.signupSources?.googlePlay)],
+      ['New Accounts (This Week)',    fmtN(accounts?.newAccounts?.week)],
+      ['New Accounts (This Month)',   fmtN(accounts?.newAccounts?.month)],
+      ['New Accounts (This Quarter)', fmtN(accounts?.newAccounts?.quarter)],
+      ['New Accounts (This Year)',    fmtN(accounts?.newAccounts?.year)],
       // Subscriptions
       ['--- SUBSCRIPTIONS ---', ''],
-      ['Total Paid Subscriptions',                  subscriptions.totalPaidSubscriptions ?? ''],
-      ['Paid Subs — PipeKeeper',                    subscriptions.paidByProduct?.pipekeeper    ?? ''],
-      ['Paid Subs — WhiskeyKeeper',                 subscriptions.paidByProduct?.whiskeykeeper ?? ''],
-      ['Paid Subs — CigarKeeper',                   subscriptions.paidByProduct?.cigarkeeper   ?? ''],
-      ['Paid Subs — WineKeeper',                    subscriptions.paidByProduct?.winekeeper    ?? ''],
-      ['Paid Bundles — Founders',                   subscriptions.paidByBundle?.founders       ?? ''],
-      ['Paid Bundles — 3-Module',                   subscriptions.paidByBundle?.threeModules   ?? ''],
-      ['Paid Bundles — 4-Module',                   subscriptions.paidByBundle?.fourModules    ?? ''],
-      ['Renewing Customers (This Week)',             subscriptions.renewingCustomers?.week       ?? ''],
-      ['Renewing Customers (This Month)',            subscriptions.renewingCustomers?.month      ?? ''],
-      ['Renewing Customers (This Quarter)',          subscriptions.renewingCustomers?.quarter    ?? ''],
-      ['Renewing Customers (This Year)',             subscriptions.renewingCustomers?.year       ?? ''],
-      ['Renewing Subscriptions (This Week)',         subscriptions.renewingSubscriptions?.week    ?? ''],
-      ['Renewing Subscriptions (This Month)',        subscriptions.renewingSubscriptions?.month   ?? ''],
-      ['Renewing Subscriptions (This Quarter)',      subscriptions.renewingSubscriptions?.quarter ?? ''],
-      ['Renewing Subscriptions (This Year)',         subscriptions.renewingSubscriptions?.year    ?? ''],
-      ['Trials — Currently on Trial',               trialMetrics.currentlyOnTrial   ?? ''],
-      ['Trials — Ending in 3 Days',                 trialMetrics.endingIn3Days      ?? ''],
-      ['Trials — Ending in 7 Days',                 trialMetrics.endingIn7Days      ?? ''],
-      ['Trials — Converted (30d)',                  trialMetrics.convertedLast30d   ?? ''],
-      ['Trials — Drop-offs (30d)',                  trialMetrics.dropoffLast30d     ?? ''],
-      // Revenue
-      ['--- REVENUE ---', ''],
-      ['Forecasted Revenue (This Week)',             `$${revenue.forecasted?.week    ?? 0}`],
-      ['Forecasted Revenue (This Month)',            `$${revenue.forecasted?.month   ?? 0}`],
-      ['Forecasted Revenue (This Quarter)',          `$${revenue.forecasted?.quarter ?? 0}`],
-      ['Forecasted Revenue (This Year)',             `$${revenue.forecasted?.year    ?? 0}`],
-      ['Avg Revenue / Week (MRR-based)',             `$${revenue.average?.week    ?? 0}`],
-      ['Avg Revenue / Month (MRR)',                  `$${revenue.average?.month   ?? 0}`],
-      ['Avg Revenue / Quarter (MRR-based)',          `$${revenue.average?.quarter ?? 0}`],
-      ['Avg Revenue / Year (ARR)',                   `$${revenue.average?.year    ?? 0}`],
-      ['Revenue by Product — PipeKeeper',            `$${revenue.byProduct?.pipekeeper    ?? 0}`],
-      ['Revenue by Product — WhiskeyKeeper',         `$${revenue.byProduct?.whiskeykeeper ?? 0}`],
-      ['Revenue by Product — CigarKeeper',           `$${revenue.byProduct?.cigarkeeper   ?? 0}`],
-      ['Revenue by Product — WineKeeper',            `$${revenue.byProduct?.winekeeper    ?? 0}`],
-      ['Revenue by Bundle — Founders',               `$${revenue.byBundle?.founders     ?? 0}`],
-      ['Revenue by Bundle — 3-Module',               `$${revenue.byBundle?.threeModules ?? 0}`],
-      ['Revenue by Bundle — 4-Module',               `$${revenue.byBundle?.fourModules  ?? 0}`],
+      ['Total Active Paid Subscriptions',    fmtN(counts?.totalSubscriptions)],
+      ['Unique Paying Users',                fmtN(counts?.uniquePayingUsers)],
+      ['Monthly Subscriptions',              fmtN(counts?.monthlySubscriptions)],
+      ['Annual Subscriptions',               fmtN(counts?.annualSubscriptions)],
+      ['PipeKeeper Subscriptions',           fmtN(products?.counts?.pipekeeper)],
+      ['WhiskeyKeeper Subscriptions',        fmtN(products?.counts?.whiskeykeeper)],
+      ['CigarKeeper Subscriptions',          fmtN(products?.counts?.cigarkeeper)],
+      ['WineKeeper Subscriptions',           fmtN(products?.counts?.winekeeper)],
+      ['Bundle Subscriptions',               fmtN(products?.counts?.bundle)],
+      // Renewals (upcoming in calendar period)
+      ['--- RENEWALS (upcoming) ---', ''],
+      ['Renewing This Week (count)',         fmtN(renewals?.thisWeek?.count)],
+      ['Renewing This Week (unique customers)', fmtN(renewals?.thisWeek?.uniqueCustomers)],
+      ['Renewing This Month (count)',        fmtN(renewals?.thisMonth?.count)],
+      ['Renewing This Month (unique customers)', fmtN(renewals?.thisMonth?.uniqueCustomers)],
+      ['Renewing This Quarter (count)',      fmtN(renewals?.thisQuarter?.count)],
+      ['Renewing This Quarter (unique customers)', fmtN(renewals?.thisQuarter?.uniqueCustomers)],
+      ['Renewing This Year (count)',         fmtN(renewals?.thisYear?.count)],
+      ['Renewing This Year (unique customers)', fmtN(renewals?.thisYear?.uniqueCustomers)],
+      // Renewal Revenue (actual cash from renewing subs)
+      ['--- RENEWAL REVENUE (actual cash from renewing subs) ---', ''],
+      ['Renewal Revenue This Week',    fmt$(renewalRevenue?.thisWeek)],
+      ['Renewal Revenue This Month',   fmt$(renewalRevenue?.thisMonth)],
+      ['Renewal Revenue This Quarter', fmt$(renewalRevenue?.thisQuarter)],
+      ['Renewal Revenue This Year',    fmt$(renewalRevenue?.thisYear)],
+      // MRR / ARR Run Rate
+      ['--- RUN RATE (extrapolated from MRR) ---', ''],
+      ['MRR',  fmt$(revenue?.mrr)],
+      ['ARR',  fmt$(revenue?.arr)],
+      // Product Revenue (MRR-share)
+      ['--- PRODUCT REVENUE (MRR share) ---', ''],
+      ['PipeKeeper MRR',    fmt$(revenue?.byProduct?.pipekeeper)],
+      ['WhiskeyKeeper MRR', fmt$(revenue?.byProduct?.whiskeykeeper)],
+      ['CigarKeeper MRR',   fmt$(revenue?.byProduct?.cigarkeeper)],
+      ['WineKeeper MRR',    fmt$(revenue?.byProduct?.winekeeper)],
+      ['Bundle MRR',        fmt$(revenue?.byProduct?.bundle)],
       // Conversion
       ['--- CONVERSION ---', ''],
-      ['Free → Paid (%)',                            `${conversion.freeToPaidPct              ?? 0}%`],
-      ['Paid → Additional Modules (%)',              `${conversion.paidToAdditionalModulesPct ?? 0}%`],
-      ['Paid → Free / Monthly Churn (%)',            `${conversion.paidToFreePct              ?? 0}%`],
+      ['Free → Paid (%)',               fmtPct(conversion?.freeToPaidPct)],
+      ['Paid → Additional Modules (%)', fmtPct(conversion?.paidToAdditionalModulesPct)],
+      ['Paid → Free / Monthly Churn (%)', fmtPct(conversion?.paidToFreePct)],
+      // Trials
+      ['--- TRIALS ---', ''],
+      ['Currently on Trial',   fmtN(trialMetrics?.currentlyOnTrial)],
+      ['Ending in 3 Days',     fmtN(trialMetrics?.endingIn3Days)],
+      ['Ending in 7 Days',     fmtN(trialMetrics?.endingIn7Days)],
+      ['Avg Days Remaining',   fmtN(trialMetrics?.avgDaysRemaining)],
+      ['Converted (30d)',      fmtN(trialMetrics?.convertedLast30d)],
+      ['Drop-offs (30d)',      fmtN(trialMetrics?.dropoffLast30d)],
       // Usage
       ['--- USAGE ---', ''],
-      ['DAU — PipeKeeper',    'Not available'],
-      ['DAU — WhiskeyKeeper', 'Not available'],
-      ['DAU — CigarKeeper',   'Not available'],
-      ['DAU — WineKeeper',    'Not available'],
-      ['WAU — PipeKeeper',    'Not available'],
-      ['WAU — WhiskeyKeeper', 'Not available'],
-      ['WAU — CigarKeeper',   'Not available'],
-      ['WAU — WineKeeper',    'Not available'],
-      // User detail separator
+      ['DAU / WAU by module', 'Not tracked in current data model'],
+      // User detail
       ['', ''],
       ['--- USER DETAIL ---', ''],
       ['tier', 'name', 'email', 'subscription_status', 'billing_interval', 'subscription_end', 'joined'],
     ];
 
-    // Paid users
     (report?.paid_users || []).forEach((u) => {
       metricRows.push([
-        'paid',
-        u.full_name || '',
-        u.email || '',
-        u.subscription_status || '',
-        u.billing_interval || '',
+        'paid', u.full_name || '', u.email || '',
+        u.subscription_status || '', u.billing_interval || '',
         u.subscription_end ? new Date(u.subscription_end).toLocaleDateString() : '',
         u.created_date ? new Date(u.created_date).toLocaleDateString() : '',
       ]);
     });
-    // Free users
     (report?.free_users || []).forEach((u) => {
       metricRows.push([
-        'free',
-        u.full_name || '',
-        u.email || '',
-        u.subscription_status || '',
-        '',
-        '',
+        'free', u.full_name || '', u.email || '',
+        u.subscription_status || '', '', '',
         u.created_date ? new Date(u.created_date).toLocaleDateString() : '',
       ]);
     });
@@ -258,8 +303,11 @@ export default function UserReport() {
           <h1 className="text-3xl font-bold text-[#e8d5b7]">{t("userReport.title")}</h1>
           <p className="text-xs text-[#e8d5b7]/60 mt-1">
             {t("userReport.lastUpdated")}: {lastUpdated}
-            {meta.dateRangeDefinition && (
+            {meta?.dateRangeDefinition && (
               <span className="ml-2 opacity-60">· Date ranges: {meta.dateRangeDefinition}</span>
+            )}
+            {meta?.activeSubscriptionsClassified != null && (
+              <span className="ml-2 opacity-60">· {meta.activeSubscriptionsClassified} active subs classified</span>
             )}
           </p>
         </div>
@@ -289,7 +337,7 @@ export default function UserReport() {
             {isSyncing ? t("userReport.syncing") : t("userReport.backfillFromStripe")}
           </Button>
 
-          <Button onClick={exportCSV} variant="outline" className="w-full gap-2 sm:w-auto" disabled={!report}>
+          <Button onClick={exportCSV} variant="outline" className="w-full gap-2 sm:w-auto" disabled={!report || !!dataError}>
             <Download className="w-4 h-4" />
             Export CSV
           </Button>
@@ -305,40 +353,41 @@ export default function UserReport() {
         </div>
       </div>
 
+      {/* ── DATA ERROR banner — blocks all financial sections ─────────────── */}
+      {dataError && <DataErrorBanner errors={dataError.errors} />}
+
       {/* ═══════════════════════════════════════════════════════════════════
-          SECTION 1 — ACCOUNT METRICS
+          SECTION 1 — ACCOUNT METRICS  (user-level; shown even on data error)
       ═══════════════════════════════════════════════════════════════════ */}
       <SectionCard title="Account Metrics" icon={Users}>
-        {/* Top-level counts */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           <Card
             className={`cursor-pointer transition-all hover:shadow-lg ${viewFilter === 'all'  ? 'ring-2 ring-[#B48C4B]' : ''}`}
             onClick={() => { setViewFilter('all');  setShowPaidTable(true);  setShowFreeTable(true);  }}
           >
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><Users className="w-4 h-4" />Total Accounts</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.totalUsers ?? 0}</p></CardContent>
+            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{fmtN(accounts?.totalUsers)}</p></CardContent>
           </Card>
           <Card
             className={`cursor-pointer transition-all hover:shadow-lg ${viewFilter === 'paid' ? 'ring-2 ring-[#B48C4B]' : ''}`}
             onClick={() => { setViewFilter('paid'); setShowPaidTable(true);  setShowFreeTable(false); }}
           >
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><Crown className="w-4 h-4" />Paid Accounts</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.paidUsers ?? 0}</p></CardContent>
+            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{fmtN(accounts?.paidUsers)}</p></CardContent>
           </Card>
           <Card
             className={`cursor-pointer transition-all hover:shadow-lg ${viewFilter === 'free' ? 'ring-2 ring-[#B48C4B]' : ''}`}
             onClick={() => { setViewFilter('free'); setShowPaidTable(false); setShowFreeTable(true);  }}
           >
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><UserX className="w-4 h-4" />Free Accounts</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.freeUsers ?? 0}</p></CardContent>
+            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{fmtN(accounts?.freeUsers)}</p></CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><TrendingUp className="w-4 h-4" />Paid %</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.paidPercentage ?? 0}%</p></CardContent>
+            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{fmtPct(accounts?.paidPercentage)}</p></CardContent>
           </Card>
         </div>
 
-        {/* New accounts by calendar period */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium text-[#E0D8C8]">New Accounts</p>
@@ -351,148 +400,145 @@ export default function UserReport() {
             </div>
           </div>
           <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50 flex items-end gap-3">
-            <p className="text-3xl font-bold text-[#F5F1E7]">{accounts.newAccounts?.[newAccountsPeriod] ?? 0}</p>
+            <p className="text-3xl font-bold text-[#F5F1E7]">{fmtN(accounts?.newAccounts?.[newAccountsPeriod])}</p>
             <p className="text-sm text-[#E0D8C8]/60 mb-1">new accounts {periodLabels[newAccountsPeriod].toLowerCase()}</p>
           </div>
         </div>
 
-        {/* Signup sources */}
         <div>
           <p className="text-sm font-medium text-[#E0D8C8] mb-2">Signup Sources</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <MetricCard label="Web"         value={accounts.signupSources?.web         ?? 0} />
-            <MetricCard label="Apple / iOS" value={accounts.signupSources?.apple       ?? 0} />
-            <MetricCard label="Google Play" value={accounts.signupSources?.googlePlay  ?? 0} />
+            <MetricCard label="Web"         value={fmtN(accounts?.signupSources?.web)} />
+            <MetricCard label="Apple / iOS" value={fmtN(accounts?.signupSources?.apple)} />
+            <MetricCard label="Google Play" value={fmtN(accounts?.signupSources?.googlePlay)} />
           </div>
         </div>
       </SectionCard>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          SECTION 2 — SUBSCRIPTION METRICS
+          SECTIONS 2–5 — FINANCIAL / SUBSCRIPTION DATA
+          Hidden behind DATA ERROR guard — never show partial metrics
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title="Subscription Metrics" icon={Package}>
-        {/* Total */}
-        <div className="mb-4">
-          <MetricCard label="Total Active Paid Subscriptions" value={subscriptions.totalPaidSubscriptions ?? 0} sub="Subscription records — not deduped by account" />
-        </div>
-
-        {/* By product */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Product</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          <MetricCard label="PipeKeeper"    value={subscriptions.paidByProduct?.pipekeeper    ?? 0} />
-          <MetricCard label="WhiskeyKeeper" value={subscriptions.paidByProduct?.whiskeykeeper ?? 0} />
-          <MetricCard label="CigarKeeper"   value={subscriptions.paidByProduct?.cigarkeeper   ?? 0} />
-          <MetricCard label="WineKeeper"    value={subscriptions.paidByProduct?.winekeeper    ?? 0} />
-        </div>
-
-        {/* By bundle */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Bundle</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-          <MetricCard label="Founders Bundle"  value={subscriptions.paidByBundle?.founders     ?? 0} />
-          <MetricCard label="3-Module Bundle"  value={subscriptions.paidByBundle?.threeModules ?? 0} />
-          <MetricCard label="4-Module Bundle"  value={subscriptions.paidByBundle?.fourModules  ?? 0} />
-        </div>
-
-        {/* Renewals */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-            <p className="text-sm font-medium text-[#E0D8C8]">Renewing (upcoming in calendar period)</p>
-            <div className="flex flex-wrap gap-1">
-              {['week', 'month', 'quarter', 'year'].map((p) => (
-                <Button key={p} variant={renewalsPeriod === p ? 'default' : 'outline'} size="sm" onClick={() => setRenewalsPeriod(p)} className="text-xs">
-                  {periodLabels[p]}
-                </Button>
-              ))}
+      {!dataError && (
+        <>
+          {/* ── SECTION 2 — SUBSCRIPTION METRICS ────────────────────────── */}
+          <SectionCard title="Subscription Metrics" icon={Package}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <MetricCard label="Total Active Paid" value={fmtN(counts?.totalSubscriptions)} sub="Subscription records" />
+              <MetricCard label="Unique Paying Users" value={fmtN(counts?.uniquePayingUsers)} />
+              <MetricCard label="Monthly Subs" value={fmtN(counts?.monthlySubscriptions)} />
+              <MetricCard label="Annual Subs" value={fmtN(counts?.annualSubscriptions)} />
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <MetricCard label="Renewing Customers"     value={subscriptions.renewingCustomers?.[renewalsPeriod]    ?? 0} sub="Unique accounts" />
-            <MetricCard label="Renewing Subscriptions" value={subscriptions.renewingSubscriptions?.[renewalsPeriod] ?? 0} sub="Subscription records" />
-          </div>
-        </div>
 
-        {/* Trials */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Trial Metrics</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-          <MetricCard label="On Trial"           value={trialMetrics.currentlyOnTrial  ?? 0} />
-          <MetricCard label="Avg Days Left"      value={trialMetrics.avgDaysRemaining  ?? 0} />
-          <MetricCard label="Ending in 3 Days"   value={trialMetrics.endingIn3Days     ?? 0} />
-          <MetricCard label="Ending in 7 Days"   value={trialMetrics.endingIn7Days     ?? 0} />
-          <MetricCard label="Converted (30d)"    value={trialMetrics.convertedLast30d  ?? 0} />
-          <MetricCard label="Drop-offs (30d)"    value={trialMetrics.dropoffLast30d    ?? 0} />
-        </div>
-      </SectionCard>
+            <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Product</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-4">
+              <MetricCard label="PipeKeeper"    value={fmtN(products?.counts?.pipekeeper)} />
+              <MetricCard label="WhiskeyKeeper" value={fmtN(products?.counts?.whiskeykeeper)} />
+              <MetricCard label="CigarKeeper"   value={fmtN(products?.counts?.cigarkeeper)} />
+              <MetricCard label="WineKeeper"    value={fmtN(products?.counts?.winekeeper)} />
+              <MetricCard label="Bundles"       value={fmtN(products?.counts?.bundle)} />
+            </div>
+
+            {/* Renewals */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                <p className="text-sm font-medium text-[#E0D8C8]">Upcoming Renewals (by renewalDate in calendar period)</p>
+                <div className="flex flex-wrap gap-1">
+                  {['week', 'month', 'quarter', 'year'].map((p) => (
+                    <Button key={p} variant={renewalsPeriod === p ? 'default' : 'outline'} size="sm" onClick={() => setRenewalsPeriod(p)} className="text-xs">
+                      {periodLabels[p]}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {(() => {
+                  const key = renewalsPeriod === 'week'    ? 'thisWeek'
+                            : renewalsPeriod === 'month'   ? 'thisMonth'
+                            : renewalsPeriod === 'quarter' ? 'thisQuarter'
+                            : 'thisYear';
+                  return (
+                    <>
+                      <MetricCard label="Renewing Subs"       value={fmtN(renewals?.[key]?.count)} sub="Subscription records" />
+                      <MetricCard label="Renewing Customers"  value={fmtN(renewals?.[key]?.uniqueCustomers)} sub="Unique accounts" />
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Trials */}
+            <p className="text-sm font-medium text-[#E0D8C8] mb-2">Trial Metrics</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+              <MetricCard label="On Trial"          value={fmtN(trialMetrics?.currentlyOnTrial)} />
+              <MetricCard label="Avg Days Left"     value={fmtN(trialMetrics?.avgDaysRemaining)} />
+              <MetricCard label="Ending in 3 Days"  value={fmtN(trialMetrics?.endingIn3Days)} />
+              <MetricCard label="Ending in 7 Days"  value={fmtN(trialMetrics?.endingIn7Days)} />
+              <MetricCard label="Converted (30d)"   value={fmtN(trialMetrics?.convertedLast30d)} />
+              <MetricCard label="Drop-offs (30d)"   value={fmtN(trialMetrics?.dropoffLast30d)} />
+            </div>
+          </SectionCard>
+
+          {/* ── SECTION 3 — REVENUE ──────────────────────────────────────── */}
+          <SectionCard title="Revenue" icon={DollarSign}>
+            {/* MRR / ARR Run Rate */}
+            <p className="text-sm font-medium text-[#E0D8C8] mb-2">
+              Current Run Rate <span className="opacity-60 text-xs font-normal">(monthly(MRR) and annual(ARR) extrapolations from live subscription data)</span>
+            </p>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <MetricCard label="MRR" value={fmt$(revenue?.mrr)} sub="Monthly Recurring Revenue" />
+              <MetricCard label="ARR" value={fmt$(revenue?.arr)} sub="Annual Run Rate = MRR × 12" />
+            </div>
+
+            {/* Renewal Revenue — clearly labelled as distinct from MRR */}
+            <p className="text-sm font-medium text-[#E0D8C8] mb-1">
+              Renewal Revenue <span className="opacity-60 text-xs font-normal">(actual cash expected from subscriptions renewing before end of period — NOT extrapolated)</span>
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              {['week', 'month', 'quarter', 'year'].map((p) => {
+                const key = p === 'week' ? 'thisWeek' : p === 'month' ? 'thisMonth' : p === 'quarter' ? 'thisQuarter' : 'thisYear';
+                return <MetricCard key={p} label={periodLabels[p]} value={fmt$(renewalRevenue?.[key])} />;
+              })}
+            </div>
+
+            {/* Product Revenue (MRR share) */}
+            <p className="text-sm font-medium text-[#E0D8C8] mb-2">
+              Revenue by Product <span className="opacity-60 text-xs font-normal">(each sub's monthly contribution to MRR)</span>
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              <MetricCard label="PipeKeeper"    value={fmt$(revenue?.byProduct?.pipekeeper)} />
+              <MetricCard label="WhiskeyKeeper" value={fmt$(revenue?.byProduct?.whiskeykeeper)} />
+              <MetricCard label="CigarKeeper"   value={fmt$(revenue?.byProduct?.cigarkeeper)} />
+              <MetricCard label="WineKeeper"    value={fmt$(revenue?.byProduct?.winekeeper)} />
+              <MetricCard label="Bundles"       value={fmt$(revenue?.byProduct?.bundle)} />
+            </div>
+          </SectionCard>
+
+          {/* ── SECTION 4 — CONVERSION ───────────────────────────────────── */}
+          <SectionCard title="Conversion Metrics" icon={TrendingUp}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <MetricCard
+                label="Free → Paid"
+                value={fmtPct(conversion?.freeToPaidPct)}
+                sub="% of all accounts currently paid"
+              />
+              <MetricCard
+                label="Paid → Additional Modules"
+                value={fmtPct(conversion?.paidToAdditionalModulesPct)}
+                sub="% of paid accounts with bundle subscription"
+              />
+              <MetricCard
+                label="Paid → Free (Monthly Churn)"
+                value={fmtPct(conversion?.paidToFreePct)}
+                sub="Cancellations in past 30 days / active subscriptions"
+              />
+            </div>
+          </SectionCard>
+        </>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════════
-          SECTION 3 — REVENUE
-      ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title="Revenue" icon={DollarSign}>
-        {/* Renewal Revenue (Calendar Period) */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">
-          Renewal Revenue (Calendar Period) <span className="opacity-60 text-xs font-normal">(subscriptions renewing before end of period)</span>
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          {['week', 'month', 'quarter', 'year'].map((p) => (
-            <MetricCard key={p} label={periodLabels[p]} value={`$${(revenue.forecasted?.[p] ?? 0).toFixed(2)}`} />
-          ))}
-        </div>
-
-        {/* Current Run Rate (MRR/ARR) */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">
-          Current Run Rate (MRR/ARR) <span className="opacity-60 text-xs font-normal">(extrapolated from current MRR)</span>
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          <MetricCard label="Avg / Week"    value={`$${(revenue.average?.week    ?? 0).toFixed(2)}`} />
-          <MetricCard label="Avg / Month"   value={`$${(revenue.average?.month   ?? 0).toFixed(2)}`} sub="MRR" />
-          <MetricCard label="Avg / Quarter" value={`$${(revenue.average?.quarter ?? 0).toFixed(2)}`} />
-          <MetricCard label="Avg / Year"    value={`$${(revenue.average?.year    ?? 0).toFixed(2)}`}  sub="ARR" />
-        </div>
-
-        {/* By product */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">
-          Revenue by Product <span className="opacity-60 text-xs font-normal">(single-module subscriptions only)</span>
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          <MetricCard label="PipeKeeper"    value={`$${(revenue.byProduct?.pipekeeper    ?? 0).toFixed(2)}`} />
-          <MetricCard label="WhiskeyKeeper" value={`$${(revenue.byProduct?.whiskeykeeper ?? 0).toFixed(2)}`} />
-          <MetricCard label="CigarKeeper"   value={`$${(revenue.byProduct?.cigarkeeper   ?? 0).toFixed(2)}`} />
-          <MetricCard label="WineKeeper"    value={`$${(revenue.byProduct?.winekeeper    ?? 0).toFixed(2)}`} />
-        </div>
-
-        {/* By bundle */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Revenue by Bundle</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <MetricCard label="Founders Bundle" value={`$${(revenue.byBundle?.founders     ?? 0).toFixed(2)}`} />
-          <MetricCard label="3-Module Bundle" value={`$${(revenue.byBundle?.threeModules ?? 0).toFixed(2)}`} />
-          <MetricCard label="4-Module Bundle" value={`$${(revenue.byBundle?.fourModules  ?? 0).toFixed(2)}`} />
-        </div>
-      </SectionCard>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          SECTION 4 — CONVERSION
-      ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title="Conversion Metrics" icon={TrendingUp}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <MetricCard
-            label="Free → Paid"
-            value={`${conversion.freeToPaidPct ?? 0}%`}
-            sub="% of all accounts currently paid"
-          />
-          <MetricCard
-            label="Paid → Additional Modules"
-            value={`${conversion.paidToAdditionalModulesPct ?? 0}%`}
-            sub="% of paid accounts with multi-module subscription"
-          />
-          <MetricCard
-            label="Paid → Free (Monthly Churn)"
-            value={`${conversion.paidToFreePct ?? 0}%`}
-            sub="Cancellations in past 30 days / active subscriptions"
-          />
-        </div>
-      </SectionCard>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          SECTION 5 — USAGE
+          SECTION 5 — USAGE  (always shown, always N/A)
       ═══════════════════════════════════════════════════════════════════ */}
       <SectionCard title="Usage Metrics" icon={Zap}>
         <div className="mb-3 p-3 rounded-lg border border-amber-800/30 bg-amber-900/10">
@@ -557,10 +603,10 @@ export default function UserReport() {
                   emptyMessage={searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noPaidUsersFound")}
                   renderCell={(col, user) => {
                     if (col === 'subscription_status') return <Badge className="bg-[#B48C4B]/20 text-[#F5F1E7] border border-[#B48C4B]/40">{user.subscription_status}</Badge>;
-                    if (col === 'billing_interval')    return <span className="capitalize">{user.billing_interval || '-'}</span>;
-                    if (col === 'subscription_end')    return user.subscription_end ? new Date(user.subscription_end).toLocaleDateString() : '-';
+                    if (col === 'billing_interval')    return <span className="capitalize">{user.billing_interval || '—'}</span>;
+                    if (col === 'subscription_end')    return user.subscription_end ? new Date(user.subscription_end).toLocaleDateString() : '—';
                     if (col === 'created_date')        return new Date(user.created_date).toLocaleDateString();
-                    return user[col] || '-';
+                    return user[col] || '—';
                   }}
                 />
               </CardContent>
@@ -597,7 +643,7 @@ export default function UserReport() {
                   renderCell={(col, user) => {
                     if (col === 'subscription_status') return <Badge variant="outline" className="text-[#E0D8C8]/70 border-[#8b6239]/40">{user.subscription_status}</Badge>;
                     if (col === 'created_date')        return new Date(user.created_date).toLocaleDateString();
-                    return user[col] || '-';
+                    return user[col] || '—';
                   }}
                 />
               </CardContent>
