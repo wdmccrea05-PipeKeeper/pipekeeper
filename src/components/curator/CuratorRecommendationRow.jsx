@@ -139,7 +139,7 @@ export default function CuratorRecommendationRow({
               <p className="font-semibold text-green-400 mb-1">Proposed Change</p>
               <p>Type: {item.proposedChange.type}</p>
               {Object.entries(item.proposedChange.payload || {}).map(([k, v]) => (
-                <p key={k}>{k}: {typeof v === 'object' ? Object.entries(v).map(([ik, iv]) => `${ik}: ${iv}`).join(', ') : String(v)}</p>
+                <p key={k}>{k}: {typeof v === 'object' && v !== null ? Object.entries(v).map(([ik, iv]) => `${ik}: ${typeof iv === 'object' ? JSON.stringify(iv) : iv}`).join(', ') : String(v)}</p>
               ))}
             </div>
           )}
