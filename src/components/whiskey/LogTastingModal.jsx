@@ -53,7 +53,7 @@ function ExternalChip({ label, onClear }) {
   );
 }
 
-export default function LogTastingModal({ bottle, bottles = [], editLog = null, onClose, onSaved, isOpen = true }) {
+export default function LogTastingModal({ bottle, bottles = [], editLog = null, onClose, onSaved, onDeleted, isOpen = true }) {
   const isEdit = Boolean(editLog);
 
   const initialDate = useMemo(() => {
@@ -303,6 +303,21 @@ export default function LogTastingModal({ bottle, bottles = [], editLog = null, 
 
         {/* Footer */}
         <div className="shrink-0 px-6 py-4 border-t border-[rgba(180,140,75,0.16)] flex gap-3">
+          {isEdit && (
+            <Button
+              type="button"
+              variant="outline"
+              className="border-red-500/40 text-red-400 hover:bg-red-500/10"
+              onClick={async () => {
+                if (!confirm('Delete this tasting log?')) return;
+                await base44.entities.TastingLog.delete(editLog.id);
+                onDeleted?.();
+                onClose?.();
+              }}
+            >
+              Delete
+            </Button>
+          )}
           <Button type="button" variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
           <Button
             type="button"
