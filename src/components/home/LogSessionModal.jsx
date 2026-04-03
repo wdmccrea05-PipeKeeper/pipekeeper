@@ -346,6 +346,9 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
         postPromptPendingRef.current = true;
 
         setTimeout(() => {
+          if (import.meta?.env?.DEV) {
+            console.log("[SESSION] prompt open", externalItems.length, "items");
+          }
           setPostPromptItems(externalItems);
         }, 0);
 
@@ -380,6 +383,9 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
         <PostSessionPrompt
           externalItems={postPromptItems}
           onDone={() => {
+            if (import.meta?.env?.DEV) {
+              console.log("[SESSION] prompt close");
+            }
             setPostPromptItems(null);
           }}
         />
