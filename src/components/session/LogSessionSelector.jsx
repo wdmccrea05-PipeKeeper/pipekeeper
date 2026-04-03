@@ -135,7 +135,7 @@ export default function LogSessionSelector({
                   <span className="block text-2xl font-semibold text-[#FFF8F0] leading-tight">
                     {option.label}
                   </span>
-                  <span className="block text-base mt-2 text-[#F1E6D8]/82 leading-snug">
+                  <span className="block text-base mt-2 text-[#F5EDD8] leading-snug">
                     {option.sublabel}
                   </span>
                 </div>
