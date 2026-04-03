@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import LogSessionSelector from '@/components/session/LogSessionSelector';
 import {
   ChevronRight,
@@ -27,6 +27,10 @@ import { calculateTobaccoCollectionValue } from '@/components/utils/tobaccoQuant
 import { buildUnifiedActivityFeed } from '@/components/utils/activityNormalizer';
 import CollectionStoryCard from '@/components/hub/CollectionStoryCard';
 import CombinedSessionModal from '@/components/session/CombinedSessionModal';
+import SmokingLogEditor from '@/components/home/SmokingLogEditor';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { safeUpdate } from '@/components/utils/safeUpdate';
 
 const MODULE_META = {
   pipekeeper: {
@@ -287,6 +291,25 @@ export default function CollectionHub() {
 
   const [showLogSelector, setShowLogSelector] = useState(false);
   const [showCombinedModal, setShowCombinedModal] = useState(false);
+  const [editingSmokingLog, setEditingSmokingLog] = useState(null);
+  const [confirmDeleteLog, setConfirmDeleteLog] = useState(null);
+
+  const updateLogMutation = useMutation({
+    mutationFn: ({ id, data }) => safeUpdate('SmokingLog', id, data, user?.email),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['collection-hub-dashboard'] });
+      setEditingSmokingLog(null);
+    },
+  });
+
+  const deleteLogMutation = useMutation({
+    mutationFn: (id) => base44.entities.SmokingLog.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['collection-hub-dashboard'] });
+      setEditingSmokingLog(null);
+      setConfirmDeleteLog(null);
+    },
+  });
 
   const { enabledModuleKeys, enabled } = useEnabledModules();
   const whiskeyOpenable = enabled.whiskeykeeper;
@@ -721,12 +744,12 @@ export default function CollectionHub() {
         <section className="space-y-4">
           <SectionTitle>Recent Activity</SectionTitle>
           <div className="space-y-3">
-            {metrics.recentActivity.map((activity) => (
-              <button
+            {metrics.recentActivity.map((activity) => {
+              const rawLog = activity.type === 'session' ? smokeLogs.find(l => l.id === activity.id) : null;
+              return (
+              <div
                 key={activity.id}
-                type="button"
-                onClick={() => navigate(activity.destination)}
-                className="w-full rounded-[22px] p-5 flex items-center gap-4 text-left"
+                className="w-full rounded-[22px] p-5 flex items-center gap-4"
                 style={{
                   background: 'linear-gradient(145deg, rgba(40,28,18,0.92), rgba(24,17,11,0.98))',
                   border: `1px solid ${
@@ -766,14 +789,29 @@ export default function CollectionHub() {
                     {activity.subtitle}
                   </p>
                 </div>
-                <span
-                  className="text-sm shrink-0"
-                  style={{ color: activity.type === 'tasting' ? '#D47C7C' : '#D4A574' }}
-                >
-                  View
-                </span>
-              </button>
-            ))}
+                <div className="flex items-center gap-2 shrink-0">
+                  {rawLog && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingSmokingLog(rawLog)}
+                      className="text-sm px-3 py-1 rounded-lg"
+                      style={{ background: 'rgba(180,140,75,0.15)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.25)' }}
+                    >
+                      Edit
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => navigate(activity.destination)}
+                    className="text-sm"
+                    style={{ color: activity.type === 'tasting' ? '#D47C7C' : '#D4A574' }}
+                  >
+                    View
+                  </button>
+                </div>
+              </div>
+              );
+            })}
           </div>
         </section>
       ) : null}
@@ -807,6 +845,45 @@ export default function CollectionHub() {
           ]);
         }}
       />
+
+      <Sheet open={!!editingSmokingLog} onOpenChange={(open) => !open && setEditingSmokingLog(null)}>
+        <SheetContent className="overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <SheetTitle>Edit Session</SheetTitle>
+          </SheetHeader>
+          {editingSmokingLog && (
+            <SmokingLogEditor
+              log={editingSmokingLog}
+              pipes={pipes}
+              blends={blends}
+              onSave={async (data) => {
+                await updateLogMutation.mutateAsync({ id: editingSmokingLog.id, data });
+              }}
+              onDelete={() => setConfirmDeleteLog(editingSmokingLog.id)}
+              onCancel={() => setEditingSmokingLog(null)}
+              isLoading={updateLogMutation.isPending || deleteLogMutation.isPending}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
+
+      <AlertDialog open={!!confirmDeleteLog} onOpenChange={(open) => !open && setConfirmDeleteLog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Session?</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently delete this session log.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-rose-600 hover:bg-rose-700"
+              onClick={() => confirmDeleteLog && deleteLogMutation.mutate(confirmDeleteLog)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
