@@ -176,14 +176,12 @@ export default function UserReport() {
       ['Trials — Drop-offs (30d)',                  trialMetrics.dropoffLast30d     ?? ''],
       // Revenue
       ['--- REVENUE ---', ''],
-      ['Forecasted Revenue (This Week)',             `$${revenue.forecasted?.week    ?? 0}`],
-      ['Forecasted Revenue (This Month)',            `$${revenue.forecasted?.month   ?? 0}`],
-      ['Forecasted Revenue (This Quarter)',          `$${revenue.forecasted?.quarter ?? 0}`],
-      ['Forecasted Revenue (This Year)',             `$${revenue.forecasted?.year    ?? 0}`],
-      ['Avg Revenue / Week (MRR-based)',             `$${revenue.average?.week    ?? 0}`],
-      ['Avg Revenue / Month (MRR)',                  `$${revenue.average?.month   ?? 0}`],
-      ['Avg Revenue / Quarter (MRR-based)',          `$${revenue.average?.quarter ?? 0}`],
-      ['Avg Revenue / Year (ARR)',                   `$${revenue.average?.year    ?? 0}`],
+      ['Renewal Revenue (This Week)',             `$${revenue.renewalRevenue?.week    ?? 0}`],
+      ['Renewal Revenue (This Month)',            `$${revenue.renewalRevenue?.month   ?? 0}`],
+      ['Renewal Revenue (This Quarter)',          `$${revenue.renewalRevenue?.quarter ?? 0}`],
+      ['Renewal Revenue (This Year)',             `$${revenue.renewalRevenue?.year    ?? 0}`],
+      ['Current MRR',                             `$${revenue.mrr ?? 0}`],
+      ['Current ARR',                             `$${revenue.arr ?? 0}`],
       ['Revenue by Product — PipeKeeper',            `$${revenue.byProduct?.pipekeeper    ?? 0}`],
       ['Revenue by Product — WhiskeyKeeper',         `$${revenue.byProduct?.whiskeykeeper ?? 0}`],
       ['Revenue by Product — CigarKeeper',           `$${revenue.byProduct?.cigarkeeper   ?? 0}`],
@@ -371,9 +369,11 @@ export default function UserReport() {
           SECTION 2 — SUBSCRIPTION METRICS
       ═══════════════════════════════════════════════════════════════════ */}
       <SectionCard title="Subscription Metrics" icon={Package}>
-        {/* Total */}
-        <div className="mb-4">
+        {/* Total + billing interval */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <MetricCard label="Total Active Paid Subscriptions" value={subscriptions.totalPaidSubscriptions ?? 0} sub="Subscription records — not deduped by account" />
+          <MetricCard label="Monthly Subscriptions" value={subscriptions.monthlySubscriptions ?? 0} sub="Active subs billed monthly" />
+          <MetricCard label="Annual Subscriptions"  value={subscriptions.annualSubscriptions  ?? 0} sub="Active subs billed annually" />
         </div>
 
         {/* By product */}
@@ -428,24 +428,26 @@ export default function UserReport() {
       ═══════════════════════════════════════════════════════════════════ */}
       <SectionCard title="Revenue" icon={DollarSign}>
         {/* Renewal Revenue (Calendar Period) */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">
-          Renewal Revenue (Calendar Period) <span className="opacity-60 text-xs font-normal">(subscriptions renewing before end of period)</span>
+        <p className="text-sm font-medium text-[#E0D8C8] mb-1">
+          Renewal Revenue (Calendar Period)
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <p className="text-xs text-[#E0D8C8]/50 mb-3">
+          Sum of amounts for subscriptions renewing before end of each calendar period. This is upcoming charges, not run-rate.
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {['week', 'month', 'quarter', 'year'].map((p) => (
-            <MetricCard key={p} label={periodLabels[p]} value={`$${(revenue.forecasted?.[p] ?? 0).toFixed(2)}`} />
+            <MetricCard key={p} label={`Renewal Revenue — ${periodLabels[p]}`} value={`$${(revenue.renewalRevenue?.[p] ?? 0).toFixed(2)}`} />
           ))}
         </div>
 
-        {/* Current Run Rate (MRR/ARR) */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">
-          Current Run Rate (MRR/ARR) <span className="opacity-60 text-xs font-normal">(extrapolated from current MRR)</span>
+        {/* Current Run Rate (MRR / ARR) — separate concept from renewal revenue */}
+        <p className="text-sm font-medium text-[#E0D8C8] mb-1">Current Run Rate</p>
+        <p className="text-xs text-[#E0D8C8]/50 mb-3">
+          MRR = all active subscriptions normalized to a monthly amount. ARR = MRR × 12. Independent of calendar renewal amounts above.
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          <MetricCard label="Avg / Week"    value={`$${(revenue.average?.week    ?? 0).toFixed(2)}`} />
-          <MetricCard label="Avg / Month"   value={`$${(revenue.average?.month   ?? 0).toFixed(2)}`} sub="MRR" />
-          <MetricCard label="Avg / Quarter" value={`$${(revenue.average?.quarter ?? 0).toFixed(2)}`} />
-          <MetricCard label="Avg / Year"    value={`$${(revenue.average?.year    ?? 0).toFixed(2)}`}  sub="ARR" />
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <MetricCard label="Current MRR" value={`$${(revenue.mrr ?? 0).toFixed(2)}`} sub="Monthly Recurring Revenue" />
+          <MetricCard label="Current ARR" value={`$${(revenue.arr ?? 0).toFixed(2)}`} sub="Annual Recurring Revenue (MRR × 12)" />
         </div>
 
         {/* By product */}
