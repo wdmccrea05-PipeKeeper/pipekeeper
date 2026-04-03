@@ -352,7 +352,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
           onDone={() => { postPromptPendingRef.current = false; setPostPromptItems(null); onClose(); }}
         />
       )}
-      <Sheet open={isOpen && !postPromptItems} onOpenChange={(open) => { if (!open && !saving && !postPromptPendingRef.current) onClose(); }}>
+      <Sheet open={isOpen} onOpenChange={(open) => { if (!open && !saving && !postPromptPendingRef.current) onClose(); }}>
       <SheetContent className="overflow-y-auto">
         <SheetHeader className="mb-6">
         <SheetTitle>Log Pipe Session</SheetTitle>
