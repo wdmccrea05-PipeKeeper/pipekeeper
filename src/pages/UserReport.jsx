@@ -129,10 +129,49 @@ export default function UserReport() {
       </Card>
     </div>
   );
-  if (isLoading) return <LoadingSpinner />;
-  if (error)     return <ErrorCard message={`${t("userReport.errorLoadingReport")}: ${error.message}`} onRetry={refetch} />;
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-48 rounded bg-white/10" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="h-24 rounded bg-white/10" />
+            <div className="h-24 rounded bg-white/10" />
+            <div className="h-24 rounded bg-white/10" />
+            <div className="h-24 rounded bg-white/10" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <ErrorCard message={t("userReport.errorLoadingReport")} onRetry={refetch} />
+      </div>
+    );
+  }
+
   if (!report) {
-    return null;
+    return (
+      <div className="p-6">
+        <ErrorCard message={t("userReport.errorLoadingReport")} onRetry={refetch} />
+      </div>
+    );
+  }
+
+  if (report.validation?.passed === false) {
+    const errMsg =
+      report.validation?.errors?.length
+        ? report.validation.errors.join(", ")
+        : t("userReport.errorLoadingReport");
+
+    return (
+      <div className="p-6">
+        <ErrorCard message={errMsg} onRetry={refetch} />
+      </div>
+    );
   }
 
   const handleSort = (column) => {
