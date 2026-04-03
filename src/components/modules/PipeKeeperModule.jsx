@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
@@ -26,19 +26,17 @@ export default function PipeKeeperModule() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
 
-  const { user } = useCurrentUser();
+  const { user, isLoading: isUserLoading } = useCurrentUser();
   const { hideValues, hideCollectionCounts } = useProfilePrivacy();
   const queryClient = useQueryClient();
   
-  const [showSmokingLog, setShowSmokingLog] = useState(params.get('action') === 'log-smoke');
+  const [showSmokingLog, setShowSmokingLog] = useState(false);
   const [showIdentifier, setShowIdentifier] = useState(params.get('action') === 'identify');
   const [addFlowOpen, setAddFlowOpen] = useState(false);
   const [addFlowType, setAddFlowType] = useState(null);
 
-
-
   // Fetch data
-  const { data: pipes = [] } = useQuery({
+  const { data: pipes = [], isLoading: pipesLoading } = useQuery({
     queryKey: ['pipes-summary', user?.email],
     queryFn: async () => {
       const result = await base44.entities.Pipe.filter({ created_by: user?.email });
@@ -48,7 +46,7 @@ export default function PipeKeeperModule() {
     staleTime: 10000,
   });
 
-  const { data: blends = [] } = useQuery({
+  const { data: blends = [], isLoading: blendsLoading } = useQuery({
     queryKey: ['blends-summary', user?.email],
     queryFn: async () => {
       const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
@@ -58,7 +56,14 @@ export default function PipeKeeperModule() {
     staleTime: 10000,
   });
 
-
+  // Open LogSessionModal from URL param only after user and collection data are ready
+  const actionParam = params.get('action');
+  useEffect(() => {
+    const canShowModal = actionParam === 'log-smoke' && !isUserLoading && !!user?.email && !pipesLoading && !blendsLoading;
+    if (canShowModal) {
+      setShowSmokingLog(true);
+    }
+  }, [actionParam, isUserLoading, user?.email, pipesLoading, blendsLoading]);
 
   const { data: smokingLogs = [] } = useQuery({
     queryKey: ['smoking-logs-summary', user?.email],

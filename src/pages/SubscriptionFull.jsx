@@ -68,8 +68,8 @@ export default function SubscriptionFull() {
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [refreshTimeout, setRefreshTimeout] = useState(null);
 
-  const alreadySubscribed = hasPaidAccess(user, null);
-  const alreadyPro = hasProAccess(user, null);
+  const alreadySubscribed = hasPaidAccess(user, subscription);
+  const alreadyPro = hasProAccess(user, subscription);
 
   useEffect(() => {
     if (!isIOSApp) return;
