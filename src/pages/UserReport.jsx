@@ -161,18 +161,11 @@ export default function UserReport() {
     );
   }
 
-  if (report.validation?.passed === false) {
-    const errMsg =
-      report.validation?.errors?.length
-        ? report.validation.errors.join(", ")
-        : t("userReport.errorLoadingReport");
-
-    return (
-      <div className="p-6">
-        <ErrorCard message={errMsg} onRetry={refetch} />
-      </div>
-    );
-  }
+  const hasDataError = report?.validation?.passed === false;
+  const dataErrorMessage =
+    report?.validation?.errors?.length
+      ? report.validation.errors.join(", ")
+      : t("userReport.errorLoadingReport");
 
   const handleSort = (column) => {
     if (sortColumn === column) setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -354,6 +347,13 @@ export default function UserReport() {
         </div>
       </div>
 
+      {/* ── Inline validation error ──────────────────────────────────────── */}
+      {hasDataError && (
+        <div className="mb-6">
+          <ErrorCard message={dataErrorMessage} onRetry={refetch} />
+        </div>
+      )}
+
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 1 — ACCOUNT METRICS
       ═══════════════════════════════════════════════════════════════════ */}
@@ -361,27 +361,27 @@ export default function UserReport() {
         {/* Top-level counts */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <Card
-            className={`cursor-pointer transition-all hover:shadow-lg ${viewFilter === 'all'  ? 'ring-2 ring-[#B48C4B]' : ''}`}
+            className={`cursor-pointer transition-all hover:shadow-lg min-w-0 break-words whitespace-normal ${viewFilter === 'all'  ? 'ring-2 ring-[#B48C4B]' : ''}`}
             onClick={() => { setViewFilter('all');  setShowPaidTable(true);  setShowFreeTable(true);  }}
           >
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><Users className="w-4 h-4" />Total Accounts</CardTitle></CardHeader>
             <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.totalUsers ?? 0}</p></CardContent>
           </Card>
           <Card
-            className={`cursor-pointer transition-all hover:shadow-lg ${viewFilter === 'paid' ? 'ring-2 ring-[#B48C4B]' : ''}`}
+            className={`cursor-pointer transition-all hover:shadow-lg min-w-0 break-words whitespace-normal ${viewFilter === 'paid' ? 'ring-2 ring-[#B48C4B]' : ''}`}
             onClick={() => { setViewFilter('paid'); setShowPaidTable(true);  setShowFreeTable(false); }}
           >
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><Crown className="w-4 h-4" />Paid Accounts</CardTitle></CardHeader>
             <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.paidUsers ?? 0}</p></CardContent>
           </Card>
           <Card
-            className={`cursor-pointer transition-all hover:shadow-lg ${viewFilter === 'free' ? 'ring-2 ring-[#B48C4B]' : ''}`}
+            className={`cursor-pointer transition-all hover:shadow-lg min-w-0 break-words whitespace-normal ${viewFilter === 'free' ? 'ring-2 ring-[#B48C4B]' : ''}`}
             onClick={() => { setViewFilter('free'); setShowPaidTable(false); setShowFreeTable(true);  }}
           >
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><UserX className="w-4 h-4" />Free Accounts</CardTitle></CardHeader>
             <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.freeUsers ?? 0}</p></CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-0 break-words whitespace-normal">
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><TrendingUp className="w-4 h-4" />Paid %</CardTitle></CardHeader>
             <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.paidPercentage ?? 0}%</p></CardContent>
           </Card>
@@ -448,7 +448,7 @@ export default function UserReport() {
 
             {/* By product */}
             <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Product</p>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
               <MetricCard label="PipeKeeper"    value={products.pipekeeper}    />
               <MetricCard label="WhiskeyKeeper" value={products.whiskeykeeper} />
               <MetricCard label="CigarKeeper"   value={products.cigarkeeper}   />
@@ -493,7 +493,7 @@ export default function UserReport() {
 
         {/* Trials — not part of strict financial pipeline, always shown */}
         <p className="text-sm font-medium text-[#E0D8C8] mb-2">Trial Metrics</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           <MetricCard label="On Trial"           value={trialMetrics.currentlyOnTrial  ?? 0} />
           <MetricCard label="Avg Days Left"      value={trialMetrics.avgDaysRemaining  ?? 0} />
           <MetricCard label="Ending in 3 Days"   value={trialMetrics.endingIn3Days     ?? 0} />
@@ -536,7 +536,7 @@ export default function UserReport() {
             <p className="text-xs text-[#E0D8C8]/50 mb-3">
               MRR = all active subscriptions normalized to a monthly amount. ARR = MRR × 12. Independent of calendar renewal amounts above.
             </p>
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
               <MetricCard label="Current MRR" value={`$${(revenue.mrr ?? 0).toFixed(2)}`} sub="Monthly Recurring Revenue" />
               <MetricCard label="Current ARR" value={`$${(revenue.arr ?? 0).toFixed(2)}`} sub="Annual Recurring Revenue (MRR × 12)" />
             </div>
@@ -545,7 +545,7 @@ export default function UserReport() {
             <p className="text-sm font-medium text-[#E0D8C8] mb-2">
               Revenue by Product <span className="opacity-60 text-xs font-normal">(raw billing amounts; bundles attributed to bundle category)</span>
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               <MetricCard label="PipeKeeper"    value={`$${(revenue.byProduct?.pipekeeper    ?? 0).toFixed(2)}`} />
               <MetricCard label="WhiskeyKeeper" value={`$${(revenue.byProduct?.whiskeykeeper ?? 0).toFixed(2)}`} />
               <MetricCard label="CigarKeeper"   value={`$${(revenue.byProduct?.cigarkeeper   ?? 0).toFixed(2)}`} />

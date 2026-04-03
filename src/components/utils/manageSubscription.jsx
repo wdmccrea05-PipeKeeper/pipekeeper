@@ -57,8 +57,12 @@ export async function handleManageSubscription(user, subscription, navigate, cre
       return { ok: true, provider: "stripe", ...opened, url: portalUrl };
     }
 
-    window.location.assign(portalUrl);
-    return { ok: true, provider: "stripe", openedInNewTab: false, redirectedInPlace: true, url: portalUrl };
+    return {
+      ok: false,
+      reason: "popup_blocked_or_redirect_disallowed",
+      provider: "stripe",
+      url: portalUrl,
+    };
   }
 
   if (provider === "apple") {
@@ -72,8 +76,12 @@ export async function handleManageSubscription(user, subscription, navigate, cre
       return { ok: true, provider: "apple", ...opened, url: APPLE_SUBSCRIPTIONS_URL };
     }
 
-    window.location.assign(APPLE_SUBSCRIPTIONS_URL);
-    return { ok: true, provider: "apple", openedInNewTab: false, redirectedInPlace: true, url: APPLE_SUBSCRIPTIONS_URL };
+    return {
+      ok: false,
+      reason: "popup_blocked_or_redirect_disallowed",
+      provider: "apple",
+      url: APPLE_SUBSCRIPTIONS_URL,
+    };
   }
 
   navigate(createPageUrl("Subscription"));

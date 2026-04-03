@@ -451,10 +451,15 @@ export default function ProfilePage() {
                           className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
                           onClick={async () => {
                             try {
-                              await handleManageSubscription(user, subscription, navigate, createPageUrl);
+                              const result = await handleManageSubscription(user, subscription, navigate, createPageUrl);
+                              if (!result?.ok) {
+                                toast.error(t("profile.manageSubError"));
+                                navigate(createPageUrl("Subscription"));
+                              }
                             } catch (e) {
                               console.error("[Profile] manage subscription error:", e);
                               toast.error(t("profile.manageSubError"));
+                              navigate(createPageUrl("Subscription"));
                             }
                           }}
                         >
