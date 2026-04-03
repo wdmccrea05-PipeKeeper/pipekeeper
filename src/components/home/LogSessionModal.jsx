@@ -66,6 +66,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
   const [autoReduceInventory, setAutoReduceInventory] = useState(true);
   const [contextTag, setContextTag] = useState("");
   const [saving, setSaving] = useState(false);
+  const postPromptPendingRef = React.useRef(false);
 
   const [pipeMode, setPipeMode] = useState("collection");
   const [externalPipe, setExternalPipe] = useState(null);
@@ -255,6 +256,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       toast.success(t("smokingLog.logSession") + " " + t("common.saved", { defaultValue: "saved" }));
 
       if (items.length > 0) {
+        postPromptPendingRef.current = true;
         setPostPromptItems(items);
       } else {
         onClose();
@@ -347,10 +349,10 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       {postPromptItems && (
         <PostSessionPrompt
           externalItems={postPromptItems}
-          onDone={() => { setPostPromptItems(null); onClose(); }}
+          onDone={() => { postPromptPendingRef.current = false; setPostPromptItems(null); onClose(); }}
         />
       )}
-      <Sheet open={isOpen && !postPromptItems} onOpenChange={(open) => { if (!open && !saving) onClose(); }}>
+      <Sheet open={isOpen && !postPromptItems} onOpenChange={(open) => { if (!open && !saving && !postPromptPendingRef.current) onClose(); }}>
       <SheetContent className="overflow-y-auto">
         <SheetHeader className="mb-6">
         <SheetTitle>Log Pipe Session</SheetTitle>
