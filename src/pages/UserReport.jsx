@@ -86,11 +86,11 @@ export default function UserReport() {
   const usage         = report?.usage         || {};
   const meta          = report?.meta          || {};
   const validation    = report?.validation    || {};
+  const isReportUsable = !!report && validation.passed !== false;
   const trialMetrics  = subscriptions.trialMetrics || {};
 
   // DATA ERROR: report loaded but validation failed — financial metrics must not be shown
   const hasDataError = !!report && validation.passed === false;
-  const isReportUsable = !!report && validation.passed !== false;
   const dataErrorMessage =
     report?.validation?.errors?.length
       ? report.validation.errors.join(" ")
@@ -297,6 +297,11 @@ export default function UserReport() {
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#e8d5b7]">{t("userReport.title")}</h1>
+          {!isReportUsable && (
+            <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+              User Subscription Report is temporarily unavailable because some subscription records are missing required metadata.
+            </div>
+          )}
           <p className="text-xs text-[#e8d5b7]/60 mt-1">
             {t("userReport.lastUpdated")}: {lastUpdated}
             {meta.dateRangeDefinition && (
@@ -365,6 +370,8 @@ export default function UserReport() {
         </div>
       )}
 
+      {isReportUsable && (
+      <>
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 1 — ACCOUNT METRICS
       ═══════════════════════════════════════════════════════════════════ */}
@@ -430,7 +437,6 @@ export default function UserReport() {
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 2 — SUBSCRIPTION METRICS
       ═══════════════════════════════════════════════════════════════════ */}
-      {isReportUsable && (
       <SectionCard title="Subscription Metrics" icon={Package}>
         <>
             {/* Total + billing interval */}
@@ -496,12 +502,10 @@ export default function UserReport() {
           <MetricCard label="Drop-offs (30d)"    value={trialMetrics.dropoffLast30d    ?? 0} />
         </div>
       </SectionCard>
-      )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 3 — REVENUE
       ═══════════════════════════════════════════════════════════════════ */}
-      {isReportUsable && (
       <SectionCard title="Revenue" icon={DollarSign}>
             {/* Renewal Revenue (Calendar Period) */}
             <p className="text-sm font-medium text-[#E0D8C8] mb-1">
@@ -539,12 +543,10 @@ export default function UserReport() {
               <MetricCard label="Bundles"       value={`$${(revenue.byProduct?.bundle        ?? 0).toFixed(2)}`} />
             </div>
       </SectionCard>
-      )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 4 — CONVERSION
       ═══════════════════════════════════════════════════════════════════ */}
-      {isReportUsable && (
       <SectionCard title="Conversion Metrics" icon={TrendingUp}>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <MetricCard
@@ -564,7 +566,6 @@ export default function UserReport() {
           />
         </div>
       </SectionCard>
-      )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 5 — USAGE
@@ -679,6 +680,8 @@ export default function UserReport() {
             </CollapsibleContent>
           </Card>
         </Collapsible>
+      )}
+      </>
       )}
     </div>
   );
