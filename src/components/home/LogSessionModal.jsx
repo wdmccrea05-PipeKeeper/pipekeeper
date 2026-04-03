@@ -203,21 +203,22 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       const pipe_name = pipeMode === "collection" ? pipe.name : ([externalPipe.maker, externalPipe.model].filter(Boolean).join(" ") || "External Pipe");
       const blend_name = blendMode === "collection" ? blend.name : (externalBlend.name || "External Blend");
 
-      // Destructure id fields out so they can be conditionally re-added below,
-      // preventing null values from being sent when an external item is selected.
-      const { pipe_id: formPipeId, blend_id: formBlendId, ...restFormData } = formData;
+      // Destructure all optional ID fields so they can be conditionally re-added
+      // below — this prevents null/empty values from being sent in the payload.
+      const { pipe_id: formPipeId, blend_id: formBlendId, bowl_variant_id: formBowlVariantId, container_id: formContainerId, ...restFormData } = formData;
 
       const logData = prepareLogData({
         ...restFormData,
         ...(pipeMode === "collection" && formPipeId ? { pipe_id: formPipeId } : {}),
         ...(blendMode === "collection" && formBlendId ? { blend_id: formBlendId } : {}),
+        ...(pipeMode === "collection" && formBowlVariantId && formBowlVariantId !== "__none__" ? { bowl_variant_id: formBowlVariantId } : {}),
+        ...(blendMode === "collection" && formContainerId && formContainerId !== "__none__" ? { container_id: formContainerId } : {}),
         pipe_name,
         blend_name,
         bowl_name,
         date: toLocalDateYmd(formData.date),
         bowls_used: bowls,
         tobaccoUsed,
-        container_id: blendMode === "collection" ? (formData.container_id || null) : null,
         notes: [
           formData.notes,
           contextTag ? `Context: ${contextTag}` : "",

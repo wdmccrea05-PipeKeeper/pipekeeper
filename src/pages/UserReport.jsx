@@ -90,9 +90,10 @@ export default function UserReport() {
 
   // DATA ERROR: report loaded but validation failed — financial metrics must not be shown
   const hasDataError = !!report && validation.passed === false;
+  const isReportUsable = !!report && validation.passed !== false;
   const dataErrorMessage =
     report?.validation?.errors?.length
-      ? report.validation.errors.join(", ")
+      ? report.validation.errors.join(" ")
       : t("userReport.errorLoadingReport");
 
   const filteredData = useMemo(() => {
@@ -345,10 +346,22 @@ export default function UserReport() {
         </div>
       </div>
 
-      {/* ── Inline validation error ──────────────────────────────────────── */}
-      {hasDataError && (
-        <div className="mb-6">
-          <ErrorCard message={dataErrorMessage} onRetry={refetch} />
+      {/* ── Validation warning — one clear message, shown instead of metrics ── */}
+      {!isReportUsable && (
+        <div className="mb-6 p-4 rounded-lg border border-red-700/50 bg-red-900/20">
+          <p className="text-red-300 font-semibold text-sm">
+            ⚠ {t("userReport.title")} {t("userReport.dataUnavailableShort", { defaultValue: "is temporarily unavailable because some subscription records are missing required metadata." })}
+          </p>
+          <p className="text-red-300/70 text-xs mt-1">{dataErrorMessage}</p>
+          <Button
+            type="button"
+            onClick={refetch}
+            size="sm"
+            variant="outline"
+            className="mt-3 border-red-700/50 text-red-300 hover:bg-red-900/30"
+          >
+            {t("userReport.retry", { defaultValue: "Retry" })}
+          </Button>
         </div>
       )}
 
@@ -417,25 +430,9 @@ export default function UserReport() {
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 2 — SUBSCRIPTION METRICS
       ═══════════════════════════════════════════════════════════════════ */}
+      {isReportUsable && (
       <SectionCard title="Subscription Metrics" icon={Package}>
-        {/* DATA ERROR guard — shown when validation fails */}
-        {hasDataError && (
-          <div className="mb-4 p-4 rounded-lg border border-red-700/60 bg-red-900/20">
-            <p className="text-red-300 font-bold text-sm mb-2">⚠ DATA ERROR — Subscription data failed validation</p>
-            <p className="text-red-300/80 text-xs mb-2">
-              Financial metrics cannot be displayed because one or more subscriptions could not be fully classified.
-              Displaying partial or defaulted numbers would be misleading.
-            </p>
-            {validation.errors?.length > 0 && (
-              <ul className="list-disc list-inside text-xs text-red-300/70 space-y-1 max-h-40 overflow-y-auto">
-                {validation.errors.map((e, i) => <li key={i}>{e}</li>)}
-              </ul>
-            )}
-          </div>
-        )}
-
-        {!hasDataError && (
-          <>
+        <>
             {/* Total + billing interval */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <MetricCard label="Total Active Paid Subscriptions" value={counts.totalSubscriptions} sub="Subscription records — not deduped by account" />
@@ -486,8 +483,7 @@ export default function UserReport() {
                 );
               })()}
             </div>
-          </>
-        )}
+        </>
 
         {/* Trials — not part of strict financial pipeline, always shown */}
         <p className="text-sm font-medium text-[#E0D8C8] mb-2">Trial Metrics</p>
@@ -500,21 +496,13 @@ export default function UserReport() {
           <MetricCard label="Drop-offs (30d)"    value={trialMetrics.dropoffLast30d    ?? 0} />
         </div>
       </SectionCard>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 3 — REVENUE
       ═══════════════════════════════════════════════════════════════════ */}
+      {isReportUsable && (
       <SectionCard title="Revenue" icon={DollarSign}>
-        {hasDataError ? (
-          <div className="p-4 rounded-lg border border-red-700/60 bg-red-900/20">
-            <p className="text-red-300 font-bold text-sm">⚠ DATA ERROR</p>
-            <p className="text-red-300/80 text-xs mt-1">
-              Revenue figures are unavailable because subscription data failed validation.
-              See the Subscription Metrics section for details.
-            </p>
-          </div>
-        ) : (
-          <>
             {/* Renewal Revenue (Calendar Period) */}
             <p className="text-sm font-medium text-[#E0D8C8] mb-1">
               Renewal Revenue (Calendar Period)
@@ -550,13 +538,13 @@ export default function UserReport() {
               <MetricCard label="WineKeeper"    value={`$${(revenue.byProduct?.winekeeper    ?? 0).toFixed(2)}`} />
               <MetricCard label="Bundles"       value={`$${(revenue.byProduct?.bundle        ?? 0).toFixed(2)}`} />
             </div>
-          </>
-        )}
       </SectionCard>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 4 — CONVERSION
       ═══════════════════════════════════════════════════════════════════ */}
+      {isReportUsable && (
       <SectionCard title="Conversion Metrics" icon={TrendingUp}>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <MetricCard
@@ -576,6 +564,7 @@ export default function UserReport() {
           />
         </div>
       </SectionCard>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 5 — USAGE

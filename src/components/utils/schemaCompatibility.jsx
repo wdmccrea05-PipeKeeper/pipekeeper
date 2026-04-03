@@ -57,24 +57,30 @@ export function getUsageCharacteristics(pipe) {
 
 /**
  * Prepare SmokingLog data for create/update
- * Ensures both new and legacy fields are set
+ * Ensures both new and legacy fields are set.
+ * Optional string ID fields are omitted entirely when empty/null to avoid
+ * validation errors on create (passing null fails required-string checks).
  */
 export function prepareLogData(data) {
   const bowls = Number(data.bowls_used || data.bowls_smoked) || 1;
-  const normalizeOptionalId = (value) => {
-    if (value === undefined || value === null || value === "" || value === "__none__") {
-      return null;
-    }
-    return value;
-  };
 
-  return {
+  const result = {
     ...data,
-    bowl_variant_id: normalizeOptionalId(data.bowl_variant_id),
-    container_id: normalizeOptionalId(data.container_id),
     bowls_used: bowls,
     bowls_smoked: bowls, // Keep legacy field in sync
   };
+
+  // Omit optional ID fields entirely instead of setting null so the backend
+  // schema validator does not reject a missing-but-optional string field.
+  const OPTIONAL_ID_FIELDS = ["pipe_id", "blend_id", "container_id", "bowl_variant_id"];
+  for (const field of OPTIONAL_ID_FIELDS) {
+    const val = result[field];
+    if (val === undefined || val === null || val === "" || val === "__none__") {
+      delete result[field];
+    }
+  }
+
+  return result;
 }
 
 /**
