@@ -5,9 +5,11 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { scopedEntities } from '@/components/api/scopedEntities';
+import { useNavigate } from '@/components/utils/navigation';
 
 export default function SelfDiagnosticPanel() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { user } = useCurrentUser();
   const userEmail = user?.email || null;
 
@@ -231,7 +233,7 @@ export default function SelfDiagnosticPanel() {
                         ? undefined
                         : () => {
                             if (issue.actionUrl) {
-                              window.location.href = issue.actionUrl;
+                              navigate(issue.actionUrl);
                             }
                           }
                     }

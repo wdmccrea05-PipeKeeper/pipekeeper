@@ -90,6 +90,10 @@ export default function UserReport() {
 
   // DATA ERROR: report loaded but validation failed — financial metrics must not be shown
   const hasDataError = !!report && validation.passed === false;
+  const dataErrorMessage =
+    report?.validation?.errors?.length
+      ? report.validation.errors.join(", ")
+      : t("userReport.errorLoadingReport");
 
   const filteredData = useMemo(() => {
     if (!report) return { paid: [], free: [] };
@@ -160,12 +164,6 @@ export default function UserReport() {
       </div>
     );
   }
-
-  const hasDataError = report?.validation?.passed === false;
-  const dataErrorMessage =
-    report?.validation?.errors?.length
-      ? report.validation.errors.join(", ")
-      : t("userReport.errorLoadingReport");
 
   const handleSort = (column) => {
     if (sortColumn === column) setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');

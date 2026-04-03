@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { useNavigate } from "@/components/utils/navigation";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { generateOptimizationAI } from "@/components/utils/aiGenerators";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const entitlements = useEntitlements();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
@@ -571,7 +573,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           <Button
             size="sm"
             disabled={anyBusy}
-            onClick={() => { window.location.href = createPageUrl("AIUpdates") + "?focus=geometry"; }}
+            onClick={() => { navigate(createPageUrl("AIUpdates") + "?focus=geometry"); }}
             className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
           >
             <Ruler className="w-3 h-3 mr-1" />

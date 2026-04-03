@@ -110,7 +110,7 @@ export default function SubscriptionFull() {
       } finally {
         const successUrl = createPageUrl("SubscriptionSuccessFlow?next=/CollectionHub");
         window.history.replaceState({}, document.title, successUrl);
-        window.location.href = successUrl;
+        navigate(successUrl, { replace: true });
       }
     })();
   }, [isIOSApp, refetch, queryClient]);
@@ -183,7 +183,11 @@ export default function SubscriptionFull() {
         interval: interval || selectedInterval,
       });
       if (response.data?.url) {
-        window.location.href = response.data.url;
+        const opened = window.open(response.data.url, "_blank", "noopener,noreferrer");
+        if (!opened || opened.closed) {
+          toast.error(t("subscriptionFull.checkoutError"));
+          navigate(createPageUrl("Subscription"));
+        }
       } else {
         setMessage(t("subscriptionFull.checkoutError"));
       }

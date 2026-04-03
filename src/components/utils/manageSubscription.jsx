@@ -1,22 +1,20 @@
-/**
- * Canonical Manage Subscription handler
- * Routes based on subscription provider (Stripe vs Apple)
- * Uses new-tab first to avoid app-shell white-screen behavior.
- */
-
 import { isIOSWebView, openAppleSubscriptions } from "@/components/utils/nativeIAPBridge";
 import { base44 } from "@/api/base44Client";
 import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 
-const STRIPE_PORTAL_FALLBACK = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabm00";
 const APPLE_SUBSCRIPTIONS_URL = "https://apps.apple.com/account/subscriptions";
 
 function openUrlSafely(url) {
-  const popup = window.open(url, "_blank", "noopener,noreferrer");
-  if (popup && !popup.closed) {
-    return { openedInNewTab: true, redirectedInPlace: false };
+  try {
+    const popup = window.open(url, "_blank", "noopener,noreferrer");
+    if (popup && !popup.closed) {
+      return { ok: true, openedInNewTab: true, url };
+    }
+    return { ok: false, reason: "popup_blocked_or_redirect_disallowed", url };
+  } catch (e) {
+    console.error("[manageSubscription] openUrlSafely failed:", e);
+    return { ok: false, reason: "popup_blocked_or_redirect_disallowed", url };
   }
-  return null;
 }
 
 export async function handleManageSubscription(user, subscription, navigate, createPageUrl) {
@@ -50,19 +48,12 @@ export async function handleManageSubscription(user, subscription, navigate, cre
       }
     }
 
-    portalUrl = portalUrl || STRIPE_PORTAL_FALLBACK;
-
-    const opened = openUrlSafely(portalUrl);
-    if (opened) {
-      return { ok: true, provider: "stripe", ...opened, url: portalUrl };
+    if (!portalUrl) {
+      navigate(createPageUrl("Subscription"));
+      return { ok: false, reason: "missing_portal_url", redirectedToSubscription: true };
     }
 
-    return {
-      ok: false,
-      reason: "popup_blocked_or_redirect_disallowed",
-      provider: "stripe",
-      url: portalUrl,
-    };
+    return openUrlSafely(portalUrl);
   }
 
   if (provider === "apple") {
@@ -71,17 +62,7 @@ export async function handleManageSubscription(user, subscription, navigate, cre
       return { ok: true, provider: "apple", native: true };
     }
 
-    const opened = openUrlSafely(APPLE_SUBSCRIPTIONS_URL);
-    if (opened) {
-      return { ok: true, provider: "apple", ...opened, url: APPLE_SUBSCRIPTIONS_URL };
-    }
-
-    return {
-      ok: false,
-      reason: "popup_blocked_or_redirect_disallowed",
-      provider: "apple",
-      url: APPLE_SUBSCRIPTIONS_URL,
-    };
+    return openUrlSafely(APPLE_SUBSCRIPTIONS_URL);
   }
 
   navigate(createPageUrl("Subscription"));
