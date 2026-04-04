@@ -153,9 +153,10 @@ export default function WhiskeyInsightsPage() {
   const valueConcentration = useMemo(() => getValueConcentration(bottles), [bottles]);
 
   const sealedValue = useMemo(() => {
+    if (inventoryUnits.length === 0) return 0;
     const sealedBottleIds = new Set(inventoryUnits.filter(u => u.status === 'reserve' || u.status === 'drinking').map(u => u.bottle_id));
     return bottles
-      .filter(b => sealedBottleIds.has(b.id) || inventoryUnits.length === 0)
+      .filter(b => sealedBottleIds.has(b.id))
       .reduce((sum, b) => sum + computeCurrentValue(b, 'whiskeykeeper'), 0);
   }, [bottles, inventoryUnits]);
 

@@ -357,7 +357,7 @@ export function computeOpenVsHoldDecision(item, moduleKey, collectionContext = {
     else if (openSignals >= 2 && holdSignals === 0) holdRecommendation = 'open';
     else holdRecommendation = 'either';
 
-    if (holdRecommendation === 'hold' && rationale.filter(r => r.toLowerCase().includes('hold') || r.toLowerCase().includes('preserv') || r.toLowerCase().includes('scarcet') || r.toLowerCase().includes('replac')).length === 0) {
+    if (holdRecommendation === 'hold' && rationale.filter(r => r.toLowerCase().includes('hold') || r.toLowerCase().includes('preserv') || r.toLowerCase().includes('scarce') || r.toLowerCase().includes('replac')).length === 0) {
       rationale.push('Overall profile favors holding this bottle');
     }
     if (holdRecommendation === 'open' && rationale.filter(r => r.toLowerCase().includes('open') || r.toLowerCase().includes('enjoy')).length === 0) {
