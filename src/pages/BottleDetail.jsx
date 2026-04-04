@@ -47,6 +47,7 @@ import {
   resolveBottleUnitValue,
   resolveBottleValueSource,
 } from "@/components/whiskey/utils/bottleValue";
+import ValueStrategySection from "@/components/whiskey/ValueStrategySection";
 import {
   buildValuationSnapshot,
   DIFFICULTY_LABELS,
@@ -858,149 +859,15 @@ function BottleDetailInner() {
               ) : null}
 
               {/* VALUE & STRATEGY SECTION */}
-              {valuationSnapshot ? (
-                <div
-                  className="rounded-2xl p-4 space-y-4"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(40,28,18,0.7), rgba(28,18,12,0.85))",
-                    border: "1px solid rgba(180,140,75,0.22)",
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-[#B48C4B]" />
-                      <p className="text-xs uppercase tracking-wider text-[#D4A574] font-semibold">
-                        Value &amp; Strategy
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setShowSnapshotModal(true)}
-                        className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors"
-                        style={{ background: "rgba(180,140,75,0.15)", color: "#D4A574", border: "1px solid rgba(180,140,75,0.25)" }}
-                      >
-                        <PlusCircle className="w-3 h-3" />
-                        <span className="hidden sm:inline">Add Snapshot</span>
-                      </button>
-                      <button
-                        onClick={() => setShowObservationModal(true)}
-                        className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors"
-                        style={{ background: "rgba(59,130,246,0.12)", color: "#93C5FD", border: "1px solid rgba(59,130,246,0.25)" }}
-                      >
-                        <Eye className="w-3 h-3" />
-                        <span className="hidden sm:inline">Add Observation</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {valuationSnapshot.currentValue > 0 && (
-                      <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.14)" }}>
-                        <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-1">Current Value</p>
-                        <p className="text-lg font-bold text-[#F5F1E7]">{formatCurrency(valuationSnapshot.currentValue)}</p>
-                      </div>
-                    )}
-                    <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.14)" }}>
-                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-1">Source</p>
-                      <p className="text-sm font-medium text-[#E0D8C8]">{valuationSnapshot.source}</p>
-                    </div>
-                    <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.14)" }}>
-                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-1">Confidence</p>
-                      <p className="text-sm font-medium" style={{ color: valuationSnapshot.confidence === 'high' ? '#4ade80' : valuationSnapshot.confidence === 'medium' ? '#fbbf24' : '#f87171' }}>
-                        {capitalize(valuationSnapshot.confidence)}
-                      </p>
-                    </div>
-                    <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.14)" }}>
-                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-1">Rarity</p>
-                      <p className="text-sm font-medium text-[#E0D8C8]">{valuationSnapshot.rarityScore}/100</p>
-                    </div>
-                    <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.14)" }}>
-                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-1">Replacement</p>
-                      <p className="text-sm font-medium text-[#E0D8C8]">{DIFFICULTY_LABELS[valuationSnapshot.replacementDifficulty] || '—'}</p>
-                    </div>
-                    <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.14)" }}>
-                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-1">Trend</p>
-                      <p className="text-sm font-medium text-[#E0D8C8]">{TREND_LABELS[valueTrend] || '—'}</p>
-                    </div>
-                  </div>
-
-                  {/* Open vs Hold */}
-                  <div
-                    className="rounded-xl p-4"
-                    style={{
-                      background: valuationSnapshot.holdRecommendation === 'hold'
-                        ? "rgba(239,68,68,0.07)"
-                        : valuationSnapshot.holdRecommendation === 'open'
-                        ? "rgba(16,185,129,0.07)"
-                        : "rgba(180,140,75,0.07)",
-                      border: valuationSnapshot.holdRecommendation === 'hold'
-                        ? "1px solid rgba(239,68,68,0.25)"
-                        : valuationSnapshot.holdRecommendation === 'open'
-                        ? "1px solid rgba(16,185,129,0.25)"
-                        : "1px solid rgba(180,140,75,0.2)",
-                    }}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      {valuationSnapshot.holdRecommendation === 'hold' ? (
-                        <ShieldCheck className="w-4 h-4 text-red-400" />
-                      ) : valuationSnapshot.holdRecommendation === 'open' ? (
-                        <Sparkles className="w-4 h-4 text-emerald-400" />
-                      ) : (
-                        <AlertTriangle className="w-4 h-4 text-[#D4A574]" />
-                      )}
-                      <span className="text-sm font-semibold" style={{
-                        color: valuationSnapshot.holdRecommendation === 'hold' ? '#fca5a5'
-                          : valuationSnapshot.holdRecommendation === 'open' ? '#6ee7b7'
-                          : '#D4A574'
-                      }}>
-                        Recommendation: {HOLD_RECOMMENDATION_LABELS[valuationSnapshot.holdRecommendation] || '—'}
-                      </span>
-                    </div>
-                    {valuationSnapshot.rationale && valuationSnapshot.rationale.length > 0 && (
-                      <ul className="space-y-1">
-                        {valuationSnapshot.rationale.map((r, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "rgba(180,140,75,0.6)" }} />
-                            <span className="text-xs text-[#E0D8C8]/80">{r}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-
-                  {/* Value History Preview */}
-                  {valueSnapshots.length > 0 && (
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-2">Value History</p>
-                      <div className="space-y-2">
-                        {valueSnapshots.slice(0, 3).map((snap, i) => (
-                          <div key={snap.id || i} className="flex items-center justify-between text-xs px-3 py-2 rounded-lg" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.1)" }}>
-                            <span className="text-[#D8C7A6]/70">{snap.snapshot_date || '—'}</span>
-                            <span className="font-semibold text-[#F5F1E7]">{snap.computed_current_value > 0 ? formatCurrency(snap.computed_current_value) : '—'}</span>
-                            <span className="text-[#D8C7A6]/50">{snap.source || '—'}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Price Observations Preview */}
-                  {priceObservations.length > 0 && (
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-2">Market Observations</p>
-                      <div className="space-y-2">
-                        {priceObservations.slice(0, 3).map((obs, i) => (
-                          <div key={obs.id || i} className="flex items-center justify-between text-xs px-3 py-2 rounded-lg" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(59,130,246,0.12)" }}>
-                            <span className="text-[#D8C7A6]/70">{obs.observed_date || '—'}</span>
-                            <span className="font-semibold text-[#F5F1E7]">{obs.observed_price > 0 ? formatCurrency(obs.observed_price) : '—'}</span>
-                            <span className="text-[#D8C7A6]/50">{obs.source_name || obs.price_type || '—'}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : null}
+              <ValueStrategySection
+                valuationSnapshot={valuationSnapshot}
+                valueTrend={valueTrend}
+                valueSnapshots={valueSnapshots}
+                priceObservations={priceObservations}
+                bottle={bottle}
+                onAddSnapshot={() => setShowSnapshotModal(true)}
+                onAddObservation={() => setShowObservationModal(true)}
+              />
 
               <div className="flex flex-wrap gap-2">
                 <Button

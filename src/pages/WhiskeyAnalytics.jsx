@@ -8,6 +8,7 @@ import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import { getBottleUnitValue } from '@/components/utils/whiskeyValueHelpers';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import { BarChart3 } from 'lucide-react';
+import WhiskeyValueIntelligence from '@/components/whiskey/WhiskeyValueIntelligence';
 
 function WhiskeyAnalyticsInner() {
   const { t } = useTranslation();
@@ -52,6 +53,7 @@ function WhiskeyAnalyticsInner() {
       </div>
 
       {bottles.length > 0 ? (
+        <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div
             className="rounded-lg p-6"
@@ -113,6 +115,9 @@ function WhiskeyAnalyticsInner() {
             </p>
           </div>
         </div>
+
+        <WhiskeyValueIntelligence bottles={bottles} />
+        </>
       ) : (
         <div
           className="rounded-2xl p-12 text-center"
