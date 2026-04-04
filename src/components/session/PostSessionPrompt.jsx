@@ -4,18 +4,6 @@ import { CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
-/**
- * PostSessionPrompt
- * After saving a session with external items, prompts user what to do with each.
- *
- * Props:
- *   externalItems: Array of { label, item_type, itemData }
- *     label: display string e.g. "Dalmore 15"
- *     item_type: "blend" | "bottle" | "pipe"
- *     itemData: raw external item object { name, manufacturer, ... }
- *   onDone: () => void
- */
-
 const ITEM_TYPE_MAP = {
   blend: "blend",
   bottle: "bottle",
@@ -112,13 +100,12 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
 
   const [decisions, setDecisions] = useState({});
   const [saving, setSaving] = useState(false);
-  const [done, setDone] = useState(false);
 
-  if (!externalItems.length || done) return null;
+  if (!externalItems.length) return null;
 
   const allDecided = externalItems.every((ei) => decisions[ei.label] !== undefined);
 
-  const handleSave = async () => {
+  const handleConfirm = async () => {
     if (saving) return;
     if (!userEmail) {
       toast.error("Unable to identify the current user");
@@ -127,21 +114,26 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
 
     setSaving(true);
 
-    for (const ei of externalItems) {
-      const choice = decisions[ei.label];
-      if (!choice || choice === "ignore") continue;
+    try {
+      for (const ei of externalItems) {
+        const choice = decisions[ei.label];
+        if (!choice || choice === "ignore") continue;
 
-      try {
-        const acqItem = buildAcquisitionItem(ei.item_type, ei.itemData, choice, userEmail);
-        await base44.entities.AcquisitionItem.create(acqItem);
-      } catch (e) {
-        console.error("PostSessionPrompt: failed to create AcquisitionItem", e);
+        const item = buildAcquisitionItem(ei.item_type, ei.itemData, choice, userEmail);
+        await base44.entities.AcquisitionItem.create(item);
       }
-    }
 
-    setSaving(false);
-    setDone(true);
-    toast.success("Want list updated");
+      toast.success("Want list updated");
+      onDone?.();
+    } catch (e) {
+      console.error("[PostSessionPrompt] failed:", e);
+      toast.error("Failed to update want list");
+      setSaving(false);
+      return;
+    }
+  };
+
+  const handleSkip = () => {
     onDone?.();
   };
 
@@ -194,17 +186,14 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
         <div className="px-5 py-4 border-t border-[rgba(180,140,75,0.14)] flex gap-3">
           <button
             type="button"
-            onClick={() => {
-              setDone(true);
-              onDone?.();
-            }}
+            onClick={handleSkip}
             className="flex-1 h-9 rounded-lg text-sm text-[#E0D8C8]/50 border border-white/10"
           >
             Skip
           </button>
           <button
             type="button"
-            onClick={handleSave}
+            onClick={handleConfirm}
             disabled={!allDecided || saving || !userEmail}
             className="flex-1 h-9 rounded-lg text-sm font-semibold text-white disabled:opacity-40 transition-all"
             style={{ background: "linear-gradient(135deg,#a35c5c,#8f4e4e)" }}
