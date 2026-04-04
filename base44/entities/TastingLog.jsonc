@@ -1,0 +1,51 @@
+{
+  "name": "TastingLog",
+  "type": "object",
+  "properties": {
+    "bottle_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the bottle being tasted (null for external bottles)"
+    },
+    "bottle_name": {
+      "type": "string",
+      "description": "Name of the bottle for quick reference"
+    },
+    "tasting_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time of the tasting"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Tasting notes and observations"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Rating for this tasting session"
+    },
+    "serving_method": {
+      "type": "string",
+      "description": "How the whiskey was served (Neat, With Ice, etc.)"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for this tasting"
+    },
+    "pairing": {
+      "type": "string",
+      "description": "What this whiskey was paired with"
+    }
+  },
+  "required": [
+    "bottle_name",
+    "tasting_date"
+  ]
+}
