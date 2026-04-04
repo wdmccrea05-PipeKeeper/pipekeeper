@@ -318,12 +318,7 @@ Use only my actual collection data and tasting history. Be specific, concise, an
     icon: Sparkles,
     modules: ['pipe', 'tobacco', 'whiskey'],
     sourceExpert: 'expert_session_builder',
-    visibility: (ctx) => {
-      const hasPipes = (ctx?.pipes?.length || 0) > 0;
-      const hasBlends = (ctx?.blends?.length || 0) > 0;
-      const hasBottles = (ctx?.bottles?.length || 0) > 0;
-      return hasPipes || hasBlends || hasBottles;
-    },
+    visibility: (ctx) => true, // Always visible; prompt handles empty collection gracefully
     buildPrompt: (ctx) => {
       const { pipes = [], blends = [], bottles = [], smokingLogs = [], tastingLogs = [], curatorScope = 'all' } = ctx;
       const hasPipeData = pipes.length > 0 || blends.length > 0;
