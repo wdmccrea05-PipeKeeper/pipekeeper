@@ -1,13 +1,25 @@
 import { base44 } from "@/api/base44Client";
 
-const OPTIONAL_ID_FIELDS = ["pipe_id", "blend_id", "container_id", "bowl_variant_id"];
+const OMIT_IF_EMPTY = [
+  "pipe_id",
+  "blend_id",
+  "container_id",
+  "bowl_variant_id",
+  "bowl_name",
+  "notes",
+];
 
-function omitEmptyIds(payload) {
+function cleanPayload(payload) {
   const cleaned = { ...payload };
 
-  for (const key of OPTIONAL_ID_FIELDS) {
+  for (const key of OMIT_IF_EMPTY) {
     const value = cleaned[key];
-    if (value === undefined || value === null || value === "" || value === "__none__") {
+    if (
+      value === undefined ||
+      value === null ||
+      value === "" ||
+      value === "__none__"
+    ) {
       delete cleaned[key];
     }
   }
@@ -16,13 +28,17 @@ function omitEmptyIds(payload) {
 }
 
 export function buildSmokingLogPayload({ user, session }) {
-  if (!user?.email) throw new Error("No authenticated user");
-  if (!session || typeof session !== "object") throw new Error("Invalid session payload");
+  if (!user?.email) {
+    throw new Error("No authenticated user");
+  }
 
-  // Keep this payload minimal and canonical.
-  // Do NOT send external_* fields or extra bookkeeping fields that may not exist in SmokingLog.
-  const payload = omitEmptyIds({
+  if (!session || typeof session !== "object") {
+    throw new Error("Invalid session payload");
+  }
+
+  return cleanPayload({
     created_by: user.email,
+    user_email: user.email,
     pipe_id: session.pipe_id,
     blend_id: session.blend_id,
     container_id: session.container_id,
@@ -36,12 +52,11 @@ export function buildSmokingLogPayload({ user, session }) {
     is_break_in: !!session.is_break_in,
     notes: session.notes || "",
   });
-
-  return payload;
 }
 
 export async function saveSession({ user, session }) {
   const payload = buildSmokingLogPayload({ user, session });
+
   const result = await base44.entities.SmokingLog.create(payload);
 
   if (!result) {
