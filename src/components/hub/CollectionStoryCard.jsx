@@ -260,14 +260,18 @@ export default function CollectionStoryCard() {
       </div>
 
       <div className="px-6 py-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-        <div className="rounded-xl p-4 border border-[rgba(200,121,65,0.22)] bg-[rgba(200,121,65,0.10)]">
-          <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.pipes', 'Pipes')}</p>
-          <p className="text-2xl font-bold mt-2 text-[#C87941]">{m.pipes || 0}</p>
-        </div>
-        <div className="rounded-xl p-4 border border-[rgba(74,156,106,0.22)] bg-[rgba(74,156,106,0.10)]">
-          <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.blends', 'Blends')}</p>
-          <p className="text-2xl font-bold mt-2 text-[#4A9C6A]">{m.blends || 0}</p>
-        </div>
+        {isModuleEnabled('pipekeeper') && (
+          <div className="rounded-xl p-4 border border-[rgba(200,121,65,0.22)] bg-[rgba(200,121,65,0.10)]">
+            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.pipes', 'Pipes')}</p>
+            <p className="text-2xl font-bold mt-2 text-[#C87941]">{m.pipes || 0}</p>
+          </div>
+        )}
+        {isModuleEnabled('pipekeeper') && (
+          <div className="rounded-xl p-4 border border-[rgba(74,156,106,0.22)] bg-[rgba(74,156,106,0.10)]">
+            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.blends', 'Blends')}</p>
+            <p className="text-2xl font-bold mt-2 text-[#4A9C6A]">{m.blends || 0}</p>
+          </div>
+        )}
         {!WHISKEYKEEPER_BLOCKED && isModuleEnabled('whiskeykeeper') && (
           <>
             <div className="rounded-xl p-4 border border-[rgba(200,121,65,0.22)] bg-[rgba(200,121,65,0.10)]">
