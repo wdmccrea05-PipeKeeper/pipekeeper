@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
-import { Leaf, BookOpen, TrendingUp, Sparkles } from 'lucide-react';
+import { Leaf, BookOpen, TrendingUp, Sparkles, List } from 'lucide-react';
 import PipeIdentifier from '@/components/ai/PipeIdentifier';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
@@ -154,7 +154,7 @@ export default function PipeKeeperModule() {
     },
     {
       key: 'wantList',
-      Icon: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+      Icon: List,
       label: 'Want List',
       onClick: () => navigate(createPageUrl('WantList'))
     }
