@@ -416,7 +416,7 @@ export default function WhiskeyInsightsPage() {
           )}
 
           {/* Stats Tab */}
-          {activeTab === 'trends' && (
+          {activeTab === 'stats' && (
             <WhiskeyAnalyticsTab bottles={bottles} tastingLogs={tastingLogs} />
           )}
 

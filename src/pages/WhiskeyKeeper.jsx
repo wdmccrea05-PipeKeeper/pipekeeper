@@ -123,9 +123,9 @@ function WhiskeyKeeperInner() {
 
   return (
     <div className="space-y-8 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 120px)' }}>
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 mb-2">
             <img
               src="/branding/whiskeykeeper-logo.png?v=3"
               alt="WhiskeyKeeper"
@@ -137,21 +137,22 @@ function WhiskeyKeeperInner() {
               draggable={false}
             />
             <h1
-              className="text-4xl font-bold tracking-tight"
+              className="text-2xl sm:text-4xl font-bold tracking-tight"
               style={{
                 color: '#F5F1E7',
                 fontFamily: "'Georgia', serif",
-                textShadow: '0 2px 6px rgba(0,0,0,0.7)'
+                textShadow: '0 2px 6px rgba(0,0,0,0.7)',
+                whiteSpace: 'nowrap'
               }}
             >
               {t('whiskeykeeper.title', 'WhiskeyKeeper')}
             </h1>
           </div>
-          <p className="text-base pl-14" style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
+          <p className="text-sm sm:text-base" style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
             {t('whiskeykeeper.description', 'Track bottles, inventory, value, and tasting notes')}
           </p>
         </div>
-        <Button onClick={() => navigate('/CollectionHub')} variant="outline" className="text-sm">
+        <Button onClick={() => navigate('/CollectionHub')} variant="outline" className="text-sm shrink-0">
           {t('common.backToHub', 'Back to Hub')}
         </Button>
       </div>

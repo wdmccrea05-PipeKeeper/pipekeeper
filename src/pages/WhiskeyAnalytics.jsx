@@ -6,6 +6,8 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import { getBottleUnitValue } from '@/components/utils/whiskeyValueHelpers';
+import { formatCurrency } from '@/components/utils/localeFormatters';
+import { BarChart3 } from 'lucide-react';
 
 function WhiskeyAnalyticsInner() {
   const { t } = useTranslation();
