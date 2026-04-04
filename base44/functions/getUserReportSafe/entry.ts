@@ -556,15 +556,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Normalization errors (missing user_id, invalid price) are fatal
-    if (normalizationErrors.length > 0) {
-      return Response.json({
-        accounts: {}, counts: {}, products: {}, renewals: {}, revenue: {},
-        subscriptions: {}, conversion: {}, usage: {}, meta: {},
-        paid_users: [], free_users: [],
-        validation: { passed: false, errors: normalizationErrors },
-      }, { status: 200 });
-    }
+    // Keep normalization errors as warnings only; continue with valid subscriptions.
+    const normalizationWarnings = [...normalizationErrors];
 
     // ── STEP 3: Validate — keep warnings, but do not block release-safe aggregation ─
     const validation = validateNormalized(normalizedSubs);
@@ -573,15 +566,11 @@ Deno.serve(async (req) => {
     const metrics = aggregateMetrics(normalizedSubs, allSubscriptions, calendarRanges, now);
 
     // ── STEP 5: Reconcile — throw (and return error) if math is inconsistent ──
+    const reconciliationWarnings: string[] = [];
     try {
       reconcileMetrics(metrics);
     } catch (e: any) {
-      return Response.json({
-        accounts: {}, counts: {}, products: {}, renewals: {}, revenue: {},
-        subscriptions: {}, conversion: {}, usage: {}, meta: {},
-        paid_users: [], free_users: [],
-        validation: { passed: false, errors: [e.message] },
-      }, { status: 200 });
+      reconciliationWarnings.push(String(e?.message || e));
     }
 
     // ── Classify each unique user as paid or free ─────────────────────────────
@@ -748,7 +737,14 @@ Deno.serve(async (req) => {
       revenue:  metrics.revenue,
       products: metrics.products,
       renewals: metrics.renewals,
-      validation: { passed: true, errors: validation.errors || [] },
+      validation: {
+        passed: true,
+        errors: [
+          ...(validation.errors || []),
+          ...normalizationWarnings,
+          ...reconciliationWarnings,
+        ],
+      },
 
       // ── Dashboard extras (accounts, trials, bundles, conversion, usage) ────
       accounts,

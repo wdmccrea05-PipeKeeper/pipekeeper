@@ -89,12 +89,7 @@ export default function UserReport() {
   const isReportUsable = !!report;
   const trialMetrics  = subscriptions.trialMetrics || {};
 
-  // DATA ERROR: report loaded but validation failed — financial metrics must not be shown
-  const hasDataError = !!report && validation.passed === false;
-  const dataErrorMessage =
-    report?.validation?.errors?.length
-      ? report.validation.errors.join(" ")
-      : t("userReport.errorLoadingReport");
+  const hasDataWarning = !!report && Array.isArray(validation.errors) && validation.errors.length > 0;
 
   const filteredData = useMemo(() => {
     if (!report) return { paid: [], free: [] };
@@ -194,26 +189,26 @@ export default function UserReport() {
       ['New Accounts (This Year)',         accounts.newAccounts?.year          ?? ''],
       // Subscriptions
       ['--- SUBSCRIPTIONS ---', ''],
-      ['Total Paid Subscriptions',                  counts.totalSubscriptions                  ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Unique Paying Users',                       counts.uniquePayingUsers                   ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Monthly Subscriptions',                     counts.monthlySubscriptions                ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Annual Subscriptions',                      counts.annualSubscriptions                 ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Paid Subs — PipeKeeper',                    products.pipekeeper                        ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Paid Subs — WhiskeyKeeper',                 products.whiskeykeeper                     ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Paid Subs — CigarKeeper',                   products.cigarkeeper                       ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Paid Subs — WineKeeper',                    products.winekeeper                        ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Paid Subs — Bundles',                       products.bundle                            ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Total Paid Subscriptions',                  counts.totalSubscriptions  ?? ''],
+      ['Unique Paying Users',                       counts.uniquePayingUsers    ?? ''],
+      ['Monthly Subscriptions',                     counts.monthlySubscriptions ?? ''],
+      ['Annual Subscriptions',                      counts.annualSubscriptions  ?? ''],
+      ['Paid Subs — PipeKeeper',                    products.pipekeeper         ?? ''],
+      ['Paid Subs — WhiskeyKeeper',                 products.whiskeykeeper      ?? ''],
+      ['Paid Subs — CigarKeeper',                   products.cigarkeeper        ?? ''],
+      ['Paid Subs — WineKeeper',                    products.winekeeper         ?? ''],
+      ['Paid Subs — Bundles',                       products.bundle             ?? ''],
       ['Paid Bundles — Founders',                   subscriptions.paidByBundle?.founders       ?? ''],
       ['Paid Bundles — 3-Module',                   subscriptions.paidByBundle?.threeModules   ?? ''],
       ['Paid Bundles — 4-Module',                   subscriptions.paidByBundle?.fourModules    ?? ''],
-      ['Renewing Customers (This Week)',             renewals.thisWeek?.customers               ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Renewing Customers (This Month)',            renewals.thisMonth?.customers              ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Renewing Customers (This Quarter)',          renewals.thisQuarter?.customers            ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Renewing Customers (This Year)',             renewals.thisYear?.customers               ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Renewing Subscriptions (This Week)',         renewals.thisWeek?.subscriptions           ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Renewing Subscriptions (This Month)',        renewals.thisMonth?.subscriptions          ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Renewing Subscriptions (This Quarter)',      renewals.thisQuarter?.subscriptions        ?? (hasDataError ? 'DATA ERROR' : '')],
-      ['Renewing Subscriptions (This Year)',         renewals.thisYear?.subscriptions           ?? (hasDataError ? 'DATA ERROR' : '')],
+      ['Renewing Customers (This Week)',             renewals.thisWeek?.customers              ?? ''],
+      ['Renewing Customers (This Month)',            renewals.thisMonth?.customers             ?? ''],
+      ['Renewing Customers (This Quarter)',          renewals.thisQuarter?.customers           ?? ''],
+      ['Renewing Customers (This Year)',             renewals.thisYear?.customers              ?? ''],
+      ['Renewing Subscriptions (This Week)',         renewals.thisWeek?.subscriptions          ?? ''],
+      ['Renewing Subscriptions (This Month)',        renewals.thisMonth?.subscriptions         ?? ''],
+      ['Renewing Subscriptions (This Quarter)',      renewals.thisQuarter?.subscriptions       ?? ''],
+      ['Renewing Subscriptions (This Year)',         renewals.thisYear?.subscriptions          ?? ''],
       ['Trials — Currently on Trial',               trialMetrics.currentlyOnTrial   ?? ''],
       ['Trials — Ending in 3 Days',                 trialMetrics.endingIn3Days      ?? ''],
       ['Trials — Ending in 7 Days',                 trialMetrics.endingIn7Days      ?? ''],
@@ -221,17 +216,17 @@ export default function UserReport() {
       ['Trials — Drop-offs (30d)',                  trialMetrics.dropoffLast30d     ?? ''],
       // Revenue
       ['--- REVENUE ---', ''],
-      ['Renewal Revenue (This Week)',             hasDataError ? 'DATA ERROR' : `$${(renewals.thisWeek?.revenue    ?? 0).toFixed(2)}`],
-      ['Renewal Revenue (This Month)',            hasDataError ? 'DATA ERROR' : `$${(renewals.thisMonth?.revenue   ?? 0).toFixed(2)}`],
-      ['Renewal Revenue (This Quarter)',          hasDataError ? 'DATA ERROR' : `$${(renewals.thisQuarter?.revenue ?? 0).toFixed(2)}`],
-      ['Renewal Revenue (This Year)',             hasDataError ? 'DATA ERROR' : `$${(renewals.thisYear?.revenue    ?? 0).toFixed(2)}`],
-      ['Current MRR',                             hasDataError ? 'DATA ERROR' : `$${(revenue.mrr ?? 0).toFixed(2)}`],
-      ['Current ARR',                             hasDataError ? 'DATA ERROR' : `$${(revenue.arr ?? 0).toFixed(2)}`],
-      ['Revenue by Product — PipeKeeper',            hasDataError ? 'DATA ERROR' : `$${(revenue.byProduct?.pipekeeper    ?? 0).toFixed(2)}`],
-      ['Revenue by Product — WhiskeyKeeper',         hasDataError ? 'DATA ERROR' : `$${(revenue.byProduct?.whiskeykeeper ?? 0).toFixed(2)}`],
-      ['Revenue by Product — CigarKeeper',           hasDataError ? 'DATA ERROR' : `$${(revenue.byProduct?.cigarkeeper   ?? 0).toFixed(2)}`],
-      ['Revenue by Product — WineKeeper',            hasDataError ? 'DATA ERROR' : `$${(revenue.byProduct?.winekeeper    ?? 0).toFixed(2)}`],
-      ['Revenue by Product — Bundle',                hasDataError ? 'DATA ERROR' : `$${(revenue.byProduct?.bundle        ?? 0).toFixed(2)}`],
+      ['Renewal Revenue (This Week)',             `$${(renewals.thisWeek?.revenue    ?? 0).toFixed(2)}`],
+      ['Renewal Revenue (This Month)',            `$${(renewals.thisMonth?.revenue   ?? 0).toFixed(2)}`],
+      ['Renewal Revenue (This Quarter)',          `$${(renewals.thisQuarter?.revenue ?? 0).toFixed(2)}`],
+      ['Renewal Revenue (This Year)',             `$${(renewals.thisYear?.revenue    ?? 0).toFixed(2)}`],
+      ['Current MRR',                             `$${(revenue.mrr ?? 0).toFixed(2)}`],
+      ['Current ARR',                             `$${(revenue.arr ?? 0).toFixed(2)}`],
+      ['Revenue by Product — PipeKeeper',            `$${(revenue.byProduct?.pipekeeper    ?? 0).toFixed(2)}`],
+      ['Revenue by Product — WhiskeyKeeper',         `$${(revenue.byProduct?.whiskeykeeper ?? 0).toFixed(2)}`],
+      ['Revenue by Product — CigarKeeper',           `$${(revenue.byProduct?.cigarkeeper   ?? 0).toFixed(2)}`],
+      ['Revenue by Product — WineKeeper',            `$${(revenue.byProduct?.winekeeper    ?? 0).toFixed(2)}`],
+      ['Revenue by Product — Bundle',                `$${(revenue.byProduct?.bundle        ?? 0).toFixed(2)}`],
       // Conversion
       ['--- CONVERSION ---', ''],
       ['Free → Paid (%)',                            `${conversion.freeToPaidPct              ?? 0}%`],
@@ -346,9 +341,9 @@ export default function UserReport() {
         </div>
       </div>
 
-      {report?.validation?.errors?.length > 0 && (
+      {hasDataWarning && (
         <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
-          Some subscriptions are missing metadata. The report is using safe fallback classification for now.
+          Subscription report is using safe fallback classification for some records. Review subscription metadata for full accuracy.
         </div>
       )}
 

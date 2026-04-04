@@ -227,6 +227,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       const logData = prepareLogData({
         ...restFormData,
         created_by: user?.email,
+        user_email: user?.email,
         ...(pipeMode === "collection" && formPipeId ? { pipe_id: formPipeId } : {}),
         ...(blendMode === "collection" && formBlendId ? { blend_id: formBlendId } : {}),
         ...(pipeMode === "collection" && formBowlVariantId && formBowlVariantId !== "__none__" ? { bowl_variant_id: formBowlVariantId } : {}),
@@ -241,17 +242,9 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
           formData.notes,
           contextTag ? `Context: ${contextTag}` : "",
         ].filter(Boolean).join("\n"),
-        ...(pipeMode === "external" && externalPipe ? {
-          external_pipe_name: [externalPipe.maker, externalPipe.model || externalPipe.name].filter(Boolean).join(" ") || pipe_name,
-          external_pipe_maker: externalPipe.maker || "",
-          external_pipe_shape: externalPipe.shape || "",
-        } : {}),
-        ...(blendMode === "external" && externalBlend ? {
-          external_blend_name: externalBlend.name || blend_name,
-          external_blend_manufacturer: externalBlend.manufacturer || "",
-          external_blend_type: externalBlend.blend_type || "",
-        } : {}),
       });
+
+
 
       // ── STEP 2: Build payload ────────────────────────────────────────────
       if (import.meta.env.DEV) {
@@ -340,6 +333,9 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       }
 
       queryClient.invalidateQueries({ queryKey: ["smoking-logs"] });
+      queryClient.invalidateQueries({ queryKey: ["smoking-logs-summary", user?.email] });
+      queryClient.invalidateQueries({ queryKey: ["pipes-summary", user?.email] });
+      queryClient.invalidateQueries({ queryKey: ["blends-summary", user?.email] });
       invalidateBlendQueries(queryClient, user?.email);
 
       // ── STEP 5: Build external items for Want List prompt ─────────────────
