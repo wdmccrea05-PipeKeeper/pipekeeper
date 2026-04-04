@@ -181,9 +181,9 @@ function getSubAmount(sub: any): number {
 
 function isActivePaidSub(sub: any, now: Date): boolean {
   const status = norm(sub.status);
-  // 'trial' is the app's default status for new subscriptions (including paying ones).
-  // The amount > 0 check below is the real paid gate.
-  if (!['active', 'trialing', 'trial'].includes(status)) return false;
+  // 'trial' = free 7-day access period, never a paid subscription.
+  // Only 'active', 'trialing' (Stripe pending), and 'past_due' (grace period) count as paid.
+  if (!['active', 'trialing', 'past_due'].includes(status)) return false;
   const amount = getSubAmount(sub);
   if (amount <= 0) return false;
   const end = parseDate(sub.current_period_end);
