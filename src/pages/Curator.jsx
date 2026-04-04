@@ -345,7 +345,7 @@ export default function Curator() {
           </div>
         )}
 
-        <CardContent className="p-0 sm:p-2" key={`curator-${curatorScope}`}>
+        <CardContent className="p-0 sm:p-2">
           <div className="space-y-4 sm:space-y-5">
             {/* Expert Action Buttons */}
             <CuratorActionBar
@@ -356,10 +356,12 @@ export default function Curator() {
               smokingLogs={scopedSmokingLogs}
               userProfile={userProfile}
               curatorScope={curatorScope}
+              enabledModules={enabled}
               onActionSelect={handleExpertAction}
             />
 
             {/* Main Workspace */}
+            <div key={`curator-workspace-${curatorScope}`}>
             <CuratorWorkspace
           pipes={scopedPipes}
           blends={scopedBlends}
@@ -373,6 +375,7 @@ export default function Curator() {
           onPromptConsumed={handlePromptConsumed}
           curatorScope={curatorScope}
         />
+            </div>
           </div>
         </CardContent>
       </Card>

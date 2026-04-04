@@ -17,11 +17,13 @@ export default function CuratorActionBar({
   smokingLogs = [],
   userProfile = null,
   curatorScope = "all",
+  enabledModules = null,
   onActionSelect = null,
   disabled = false,
 }) {
   const { t } = useTranslation();
-  const { enabled } = useEnabledModules();
+  const { enabled: hookEnabled } = useEnabledModules();
+  const enabled = enabledModules || hookEnabled;
 
   const collectionContext = useMemo(
     () => ({
