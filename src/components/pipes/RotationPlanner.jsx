@@ -90,12 +90,25 @@ function SinglePipeRotation({ pipe }) {
 }
 
 // ─── Collection-wide rotation view ──────────────────────────────────────────
-export default function RotationPlanner({ user, pipe, blends }) {
+export default function RotationPlanner({ user, pipe }) {
   const { t } = useTranslation();
   const [expandedNeedsRotation, setExpandedNeedsRotation] = useState(false);
   const [expandedNeverSmoked, setExpandedNeverSmoked] = useState(false);
   const [expandedRecentlySmoked, setExpandedRecentlySmoked] = useState(false);
   const [expandedInRegularRotation, setExpandedInRegularRotation] = useState(false);
+
+  // ALL hooks run unconditionally before any early return
+  const { data: allPipes = [] } = useQuery({
+    queryKey: ['pipes-rotation', user?.email],
+    queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-updated_date', 500),
+    enabled: !!user?.email && !pipe,
+  });
+
+  const { data: logs = [] } = useQuery({
+    queryKey: ['smoking-logs', user?.email],
+    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 1000),
+    enabled: !!user?.email && !pipe,
+  });
 
   // If a specific pipe is passed, render single-pipe mode
   if (pipe) {
@@ -110,18 +123,6 @@ export default function RotationPlanner({ user, pipe, blends }) {
     );
   }
 
-  const { data: allPipes = [] } = useQuery({
-    queryKey: ['pipes-rotation', user?.email],
-    queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-updated_date', 500),
-    enabled: !!user?.email,
-  });
-
-  const { data: logs = [] } = useQuery({
-    queryKey: ['smoking-logs', user?.email],
-    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 1000),
-    enabled: !!user?.email,
-  });
-
   const getBowlsUsed = (log) => {
     if (!log) return 0;
     return log.bowls_used || log.bowls_smoked || 1;
@@ -130,9 +131,9 @@ export default function RotationPlanner({ user, pipe, blends }) {
   // Exclude collection-only (ai_excluded) pipes from rotation analytics
   const activePipes = (allPipes || []).filter(p => !p.ai_excluded);
 
-  const pipeRotation = activePipes.map(pipe => {
+  const pipeRotation = activePipes.map(p => {
     try {
-      const pipeLogs = (logs || []).filter(log => log && log.pipe_id === pipe.id);
+      const pipeLogs = (logs || []).filter(log => log && log.pipe_id === p.id);
       const lastLog = pipeLogs.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
       let lastSmoked = null;
       let daysSince = null;
@@ -150,13 +151,13 @@ export default function RotationPlanner({ user, pipe, blends }) {
       }
 
       return {
-        ...pipe,
+        ...p,
         lastSmoked,
         daysSince,
         totalSessions: pipeLogs.reduce((sum, log) => sum + getBowlsUsed(log), 0),
       };
     } catch {
-      return { ...pipe, lastSmoked: null, daysSince: null, totalSessions: 0 };
+      return { ...p, lastSmoked: null, daysSince: null, totalSessions: 0 };
     }
   });
 
@@ -212,10 +213,10 @@ export default function RotationPlanner({ user, pipe, blends }) {
                   )}
                 </div>
                 <div className="space-y-2">
-                  {needsRotation.slice(0, expandedNeedsRotation ? needsRotation.length : 5).map(pipe => (
-                    <Link 
-                      key={pipe.id} 
-                      to={createPageUrl('PipeDetail') + `?id=${pipe.id}`}
+                  {needsRotation.slice(0, expandedNeedsRotation ? needsRotation.length : 5).map(p => (
+                    <Link
+                      key={p.id}
+                      to={createPageUrl('PipeDetail') + `?id=${p.id}`}
                       className="block"
                     >
                       <div className="flex items-center justify-between p-3 rounded-lg transition-colors" style={{
@@ -223,13 +224,13 @@ export default function RotationPlanner({ user, pipe, blends }) {
                         border: "1px solid rgba(200,120,60,0.3)"
                       }}>
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-sm truncate" style={{ color: "#E0D8C8" }}>{pipe.name}</p>
+                          <p className="font-medium text-sm truncate" style={{ color: "#E0D8C8" }}>{p.name}</p>
                           <p className="text-xs truncate" style={{ color: "rgba(200,140,80,0.8)" }}>
-                            {t("tobacconist.lastSmokedDaysAgo", {days: pipe.daysSince})}
-                            </p>
-                            </div>
-                            <Badge variant="outline" style={{ color: "rgba(220,140,80,0.9)", borderColor: "rgba(200,120,60,0.4)" }} className="flex-shrink-0">
-                          {pipe.daysSince}d
+                            {t("tobacconist.lastSmokedDaysAgo", { days: p.daysSince })}
+                          </p>
+                        </div>
+                        <Badge variant="outline" style={{ color: "rgba(220,140,80,0.9)", borderColor: "rgba(200,120,60,0.4)" }} className="flex-shrink-0">
+                          {p.daysSince}d
                         </Badge>
                       </div>
                     </Link>
@@ -261,10 +262,10 @@ export default function RotationPlanner({ user, pipe, blends }) {
                   )}
                 </div>
                 <div className="space-y-2">
-                  {neverSmoked.slice(0, expandedNeverSmoked ? neverSmoked.length : 3).map(pipe => (
-                    <Link 
-                      key={pipe.id} 
-                      to={createPageUrl('PipeDetail') + `?id=${pipe.id}`}
+                  {neverSmoked.slice(0, expandedNeverSmoked ? neverSmoked.length : 3).map(p => (
+                    <Link
+                      key={p.id}
+                      to={createPageUrl('PipeDetail') + `?id=${p.id}`}
                       className="block"
                     >
                       <div className="flex items-center justify-between p-3 rounded-lg transition-colors" style={{
@@ -272,7 +273,7 @@ export default function RotationPlanner({ user, pipe, blends }) {
                         border: "1px solid rgba(180,80,80,0.3)"
                       }}>
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-sm truncate" style={{ color: "#E0D8C8" }}>{pipe.name}</p>
+                          <p className="font-medium text-sm truncate" style={{ color: "#E0D8C8" }}>{p.name}</p>
                           <p className="text-xs truncate" style={{ color: "rgba(200,120,120,0.8)" }}>{t("tobacconist.noUsageSessionsRecorded")}</p>
                         </div>
                         <Badge variant="outline" style={{ color: "rgba(200,120,120,0.9)", borderColor: "rgba(180,80,80,0.4)" }} className="flex-shrink-0">
@@ -308,9 +309,9 @@ export default function RotationPlanner({ user, pipe, blends }) {
                   )}
                 </div>
                 <div className="space-y-2">
-                  {recentlySmoked.slice(0, expandedRecentlySmoked ? 10 : 3).map(pipe => (
-                    <div 
-                      key={pipe.id} 
+                  {recentlySmoked.slice(0, expandedRecentlySmoked ? 10 : 3).map(p => (
+                    <div
+                      key={p.id}
                       className="flex items-center justify-between p-3 rounded-lg"
                       style={{
                         background: "linear-gradient(135deg, rgba(35,60,35,0.3), rgba(28,50,28,0.5))",
@@ -318,9 +319,9 @@ export default function RotationPlanner({ user, pipe, blends }) {
                       }}
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm truncate" style={{ color: "#E0D8C8" }}>{pipe.name}</p>
+                        <p className="font-medium text-sm truncate" style={{ color: "#E0D8C8" }}>{p.name}</p>
                         <p className="text-xs truncate" style={{ color: "rgba(100,180,100,0.8)" }}>
-                          {pipe.daysSince === 0 ? t("tobacconist.today") : `${pipe.daysSince} ${pipe.daysSince > 1 ? t("tobacconist.days") : t("tobacconist.day")} ${t("common.ago")}`}
+                          {p.daysSince === 0 ? t("tobacconist.today") : `${p.daysSince} ${p.daysSince > 1 ? t("tobacconist.days") : t("tobacconist.day")} ${t("common.ago")}`}
                         </p>
                       </div>
                       <Badge variant="outline" style={{ color: "rgba(100,180,100,0.9)", borderColor: "rgba(80,160,80,0.4)" }} className="flex-shrink-0">
@@ -355,10 +356,10 @@ export default function RotationPlanner({ user, pipe, blends }) {
                   )}
                 </div>
                 <div className="space-y-2">
-                  {inRegularRotation.slice(0, expandedInRegularRotation ? inRegularRotation.length : 3).map(pipe => (
+                  {inRegularRotation.slice(0, expandedInRegularRotation ? inRegularRotation.length : 3).map(p => (
                     <Link
-                      key={pipe.id}
-                      to={createPageUrl('PipeDetail') + `?id=${pipe.id}`}
+                      key={p.id}
+                      to={createPageUrl('PipeDetail') + `?id=${p.id}`}
                       className="block"
                     >
                       <div className="flex items-center justify-between p-3 rounded-lg transition-colors" style={{
@@ -366,13 +367,13 @@ export default function RotationPlanner({ user, pipe, blends }) {
                         border: "1px solid rgba(140,105,65,0.3)"
                       }}>
                         <div>
-                          <p className="font-medium text-sm" style={{ color: "#E0D8C8" }}>{pipe.name}</p>
+                          <p className="font-medium text-sm" style={{ color: "#E0D8C8" }}>{p.name}</p>
                           <p className="text-xs" style={{ color: "rgba(180,140,75,0.7)" }}>
-                            {t("tobacconist.lastSmokedDaysAgo", {days: pipe.daysSince})}
-                            </p>
-                            </div>
-                            <Badge variant="outline" style={{ color: "rgba(180,140,75,0.9)", borderColor: "rgba(140,105,65,0.4)" }}>
-                          {pipe.daysSince}d
+                            {t("tobacconist.lastSmokedDaysAgo", { days: p.daysSince })}
+                          </p>
+                        </div>
+                        <Badge variant="outline" style={{ color: "rgba(180,140,75,0.9)", borderColor: "rgba(140,105,65,0.4)" }}>
+                          {p.daysSince}d
                         </Badge>
                       </div>
                     </Link>

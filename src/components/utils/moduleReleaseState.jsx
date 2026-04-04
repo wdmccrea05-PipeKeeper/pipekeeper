@@ -9,7 +9,7 @@
 
 export const MODULE_RELEASE_STATES = {
   pipekeeper: 'launched',
-  whiskeykeeper: 'internal',
+  whiskeykeeper: 'launched',
   cigarkeeper: 'blocked',
   winekeeper: 'blocked',
 };
