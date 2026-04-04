@@ -16,14 +16,19 @@ import { Star, Leaf, TrendingUp, Award, Sparkles, BarChart3, Heart, Flame, Dropl
 /**
  * @param {Object} story - enriched story object with .highlights, .metrics, .narrative
  * @param {Function} [formatCurrency] - optional formatter, defaults to $x,xxx
+ * @param {Array} [enabledModules] - optional list of enabled module keys (e.g. ['pipekeeper', 'whiskeykeeper'])
  * @returns {Array} card objects compatible with CollectionStoryViewer / StoryCard
  */
-export function generateCollectionStoryCards(story, formatCurrency) {
+export function generateCollectionStoryCards(story, formatCurrency, enabledModules = []) {
   if (!story) return [];
 
   const h = story.highlights || {};
   const m = story.metrics || {};
   const fmt = formatCurrency || ((v) => `$${Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`);
+
+  // If no modules specified, include all by default
+  const hasWhiskey = enabledModules.length === 0 || enabledModules.includes('whiskeykeeper');
+  const hasPipe = enabledModules.length === 0 || enabledModules.includes('pipekeeper');
 
   const cards = [];
 
@@ -41,7 +46,7 @@ export function generateCollectionStoryCards(story, formatCurrency) {
   });
 
   // 2. Most used pipe
-  if (h.mostUsedPipe) {
+  if (hasPipe && h.mostUsedPipe) {
     const record = h.mostUsedPipe._record || null;
     const photo = record?.photos?.[0] || record?.photo || record?.image || null;
     cards.push({
@@ -58,7 +63,7 @@ export function generateCollectionStoryCards(story, formatCurrency) {
   }
 
   // 3. Favourite blend
-  if (h.favoriteBlend) {
+  if (hasPipe && h.favoriteBlend) {
     const record = h.favoriteBlend._record || null;
     const photo = record?.logo || record?.photo || record?.photos?.[0] || null;
     cards.push({
@@ -75,7 +80,7 @@ export function generateCollectionStoryCards(story, formatCurrency) {
   }
 
   // 4. Most tasted bottle
-  if (h.mostTastedBottle) {
+  if (hasWhiskey && h.mostTastedBottle) {
     const record = h.mostTastedBottle._record || null;
     const photo = record?.photo || record?.image || record?.photos?.[0] || null;
     cards.push({
@@ -95,6 +100,12 @@ export function generateCollectionStoryCards(story, formatCurrency) {
   if (h.mostValuableItem) {
     const record = h.mostValuableItem._record || null;
     const rt = h.mostValuableItem.recordType || 'bottle';
+    // Filter out disabled module items
+    const isWhiskeyItem = rt === 'bottle';
+    const isPipeItem = rt === 'pipe' || rt === 'blend';
+    if ((isWhiskeyItem && !hasWhiskey) || (isPipeItem && !hasPipe)) {
+      // Skip this item if its module is disabled
+    } else {
     const photo =
       rt === 'pipe'
         ? record?.photos?.[0] || record?.photo || null
@@ -112,7 +123,8 @@ export function generateCollectionStoryCards(story, formatCurrency) {
       silhouetteType: 'pipe',
       label: 'Crown Jewel',
     });
-  }
+    }
+    }
 
   // 6. Collection by the numbers
   const hasCounts = (m.pipes || 0) + (m.blends || 0) + (m.totalBottles || 0) > 0;

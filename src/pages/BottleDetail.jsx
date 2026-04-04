@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   PlusCircle,
   Eye,
+  RefreshCw,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -55,6 +56,10 @@ import {
   HOLD_RECOMMENDATION_LABELS,
   resolveValueTrend,
 } from "@/components/valuation/valueEngine";
+import {
+  seedInitialSnapshotIfMissing,
+  refreshItemValue,
+} from "@/components/valuation/valueRefreshService";
 
 function safePrimitive(value, fallback = "—") {
   if (value === null || value === undefined || value === "") return fallback;
@@ -252,7 +257,7 @@ function AddValueSnapshotModal({ bottle, valuationSnapshot, userEmail, onClose, 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(180,140,75,0.25)' }}>
-        <h3 className="text-lg font-bold text-[#F5F1E7]">Add Value Snapshot</h3>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">Save Value Checkpoint</h3>
         <div className="space-y-3">
           {[
             { label: 'Snapshot Date', field: 'snapshot_date', type: 'date' },
@@ -301,7 +306,7 @@ function AddValueSnapshotModal({ bottle, valuationSnapshot, userEmail, onClose, 
         <div className="flex gap-3 justify-end pt-2">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSave} disabled={saving} style={{ background: 'linear-gradient(135deg,rgba(163,92,92,1),rgba(140,74,74,1))', color: '#F5F1E7' }}>
-            {saving ? 'Saving…' : 'Save Snapshot'}
+            {saving ? 'Saving…' : 'Save Checkpoint'}
           </Button>
         </div>
       </div>
@@ -430,6 +435,7 @@ function BottleDetailInner() {
   const [priceObservations, setPriceObservations] = useState([]);
   const [showSnapshotModal, setShowSnapshotModal] = useState(false);
   const [showObservationModal, setShowObservationModal] = useState(false);
+  const [isRefreshingValue, setIsRefreshingValue] = useState(false);
 
   const updateBottle = (updates) => {
     setBottle((prev) => ({ ...prev, ...updates }));
@@ -451,7 +457,7 @@ function BottleDetailInner() {
   async function loadBottle() {
     if (!bottleId || !userEmail) {
       setBottle(null);
-      return;
+      return null;
     }
 
     try {
@@ -459,10 +465,13 @@ function BottleDetailInner() {
         id: bottleId,
         created_by: userEmail,
       });
-      setBottle(rows?.[0] || null);
+      const bottleData = rows?.[0] || null;
+      setBottle(bottleData);
+      return bottleData;
     } catch (e) {
       console.error("[BottleDetail] failed to load bottle", e);
       setBottle(null);
+      return null;
     }
   }
 
@@ -572,6 +581,33 @@ function BottleDetailInner() {
     }
   }
 
+  /**
+   * Manually triggered "Refresh Value Now" — recomputes value and creates a
+   * new snapshot immediately, then refreshes Value History on screen.
+   */
+  async function handleRefreshValueNow() {
+    if (!bottle || !userEmail || isRefreshingValue) return;
+    setIsRefreshingValue(true);
+    try {
+      const newSnap = await refreshItemValue(
+        bottle,
+        'whiskeykeeper',
+        'bottle',
+        userEmail,
+        base44,
+        { bottles: allBottles, valueHistory: valueSnapshots }
+      );
+      if (newSnap) {
+        // Optimistically prepend the new snapshot so UI updates immediately
+        setValueSnapshots((prev) => [newSnap, ...prev]);
+        // Then reload to get the server-assigned id
+        await loadValueSnapshots();
+      }
+    } finally {
+      setIsRefreshingValue(false);
+    }
+  }
+
   useEffect(() => {
     if (userLoading) return;
 
@@ -579,14 +615,45 @@ function BottleDetailInner() {
 
     (async () => {
       setLoading(true);
-      await Promise.all([loadBottle(), loadTastings(), loadAllBottles(), loadValueSnapshots(), loadPriceObservations()]);
-      if (mounted) setLoading(false);
+      const [bottleData, , allBottlesData, snapshotRows] = await Promise.all([
+        loadBottle(),
+        loadTastings(),
+        loadAllBottles(),
+        base44.entities.BottleValueSnapshot.filter(
+          { bottle_id: bottleId, created_by: userEmail },
+          '-snapshot_date',
+          20
+        ).catch(() => []),
+        loadPriceObservations(),
+      ]);
+      if (mounted) {
+        const snapshots = snapshotRows || [];
+        setValueSnapshots(snapshots);
+        setLoading(false);
+
+        // Auto-seed first snapshot using the bottle data returned directly
+        // from loadBottle() — no re-fetch or setTimeout needed
+        if (bottleData && userEmail && snapshots.length === 0) {
+          const seeded = await seedInitialSnapshotIfMissing(
+            bottleData,
+            'whiskeykeeper',
+            'bottle',
+            userEmail,
+            base44,
+            snapshots,
+            { bottles: allBottlesData || [] }
+          );
+          if (seeded && mounted) {
+            await loadValueSnapshots();
+          }
+        }
+      }
     })();
 
     return () => {
       mounted = false;
     };
-  }, [bottleId, userEmail, userLoading]);
+  }, [bottleId, userEmail, userLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const photo = useMemo(() => getBottlePhoto(bottle), [bottle]);
   const displayName = useMemo(
@@ -870,6 +937,8 @@ function BottleDetailInner() {
                 itemType="bottle"
                 onAddSnapshot={() => setShowSnapshotModal(true)}
                 onAddObservation={() => setShowObservationModal(true)}
+                onRefreshNow={handleRefreshValueNow}
+                isRefreshing={isRefreshingValue}
               />
 
               <div className="flex flex-wrap gap-2">

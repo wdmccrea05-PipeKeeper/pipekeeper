@@ -11,7 +11,7 @@
     "item_type": {
       "type": "string",
       "enum": ["pipe", "tobacco", "bottle", "cigar", "wine", "other"],
-      "description": "The type of item this observation relates to within the module"
+      "description": "The type of item this observation relates to within the module (e.g. bottle for whiskeykeeper, pipe or tobacco for pipekeeper)"
     },
     "item_id": {
       "type": "string",
@@ -62,6 +62,7 @@
     },
     "is_manual": {
       "type": "boolean",
+      "default": true,
       "description": "True if this observation was entered manually by the user rather than imported automatically"
     }
   },

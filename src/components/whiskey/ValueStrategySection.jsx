@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import {
   TrendingUp, TrendingDown, Minus, ShieldCheck, Unlock, HelpCircle,
-  PlusCircle, Eye, ChevronDown, ChevronUp, Lock, Zap, AlertTriangle, RotateCw, Settings,
+  PlusCircle, Eye, ChevronDown, ChevronUp, Lock, Zap, AlertTriangle, RefreshCw, Settings,
 } from 'lucide-react';
 import {
   DIFFICULTY_LABELS,
@@ -321,6 +321,8 @@ function ObservationList({ observations }) {
  *  onAddSnapshot      — callback to open save-checkpoint modal
  *  onAddObservation   — callback to open add-observation modal
  *  onEditValuation    — callback to open edit-valuation-inputs modal (optional)
+ *  onRefreshNow       — callback to recompute and save a new snapshot immediately (optional)
+ *  isRefreshing       — true while a refresh is in progress (shows spinner)
  */
 export default function ValueStrategySection({
   valuationSnapshot,
@@ -334,6 +336,8 @@ export default function ValueStrategySection({
   onAddSnapshot,
   onAddObservation,
   onEditValuation,
+  onRefreshNow,
+  isRefreshing = false,
 }) {
   if (!valuationSnapshot) return null;
 
@@ -429,13 +433,14 @@ export default function ValueStrategySection({
             )}
             <button
               type="button"
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
-              style={{ background: 'rgba(139,92,246,0.12)', color: '#c4b5fd', border: '1px solid rgba(139,92,246,0.25)' }}
-              title="Refresh valuation now (coming soon)"
-              disabled
+              onClick={onRefreshNow}
+              disabled={isRefreshing || !onRefreshNow}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-50"
+              style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.28)' }}
+              title="Recompute and save a new value snapshot now"
             >
-              <RotateCw className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Refresh Now</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{isRefreshing ? 'Refreshing…' : 'Refresh Now'}</span>
             </button>
             <button
               type="button"
