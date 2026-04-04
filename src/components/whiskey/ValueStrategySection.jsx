@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import {
   TrendingUp, TrendingDown, Minus, ShieldCheck, Unlock, HelpCircle,
-  PlusCircle, Eye, ChevronDown, ChevronUp, Lock, Zap, AlertTriangle,
+  PlusCircle, Eye, ChevronDown, ChevronUp, Lock, Zap, AlertTriangle, RefreshCw,
 } from 'lucide-react';
 import {
   DIFFICULTY_LABELS,
@@ -162,8 +162,8 @@ function SnapshotHistoryList({ snapshots }) {
   if (snapshots.length === 0) {
     return (
       <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.1)' }}>
-        <p className="text-xs text-[#D8C7A6]/50">No value snapshots yet</p>
-        <p className="text-xs text-[#D8C7A6]/40 mt-1">Add a snapshot to start tracking value over time</p>
+        <p className="text-xs text-[#D8C7A6]/50">No value checkpoints yet</p>
+        <p className="text-xs text-[#D8C7A6]/40 mt-1">A checkpoint will be created automatically on first view. Use "Save Value Checkpoint" to record manually.</p>
       </div>
     );
   }
@@ -236,6 +236,8 @@ export default function ValueStrategySection({
   bottle,
   onAddSnapshot,
   onAddObservation,
+  onRefreshNow,
+  isRefreshing = false,
 }) {
   if (!valuationSnapshot) return null;
 
@@ -258,6 +260,18 @@ export default function ValueStrategySection({
           <p className="text-sm font-bold text-[#D4A574] uppercase tracking-[0.12em]">Value &amp; Strategy</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {onRefreshNow && (
+            <button
+              type="button"
+              onClick={onRefreshNow}
+              disabled={isRefreshing}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-50"
+              style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.28)' }}
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Refreshing…' : 'Refresh Value Now'}</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onAddSnapshot}
@@ -265,7 +279,7 @@ export default function ValueStrategySection({
             style={{ background: 'rgba(180,140,75,0.15)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.28)' }}
           >
             <PlusCircle className="w-3.5 h-3.5" />
-            <span>Add Snapshot</span>
+            <span>Save Value Checkpoint</span>
           </button>
           <button
             type="button"
@@ -339,7 +353,7 @@ export default function ValueStrategySection({
 
         {/* E — Value History */}
         <div>
-          <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2.5">Value History</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2.5">Value History (Checkpoints)</p>
           <SnapshotHistoryList snapshots={valueSnapshots} />
         </div>
 

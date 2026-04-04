@@ -8,6 +8,11 @@
       "enum": ["whiskeykeeper", "pipekeeper", "cigarkeeper", "winekeeper", "other"],
       "description": "Module this snapshot belongs to (e.g. pipekeeper, whiskeykeeper)"
     },
+    "item_type": {
+      "type": "string",
+      "enum": ["bottle", "pipe", "tobacco", "cigar", "wine", "other"],
+      "description": "Type of item within the module (e.g. bottle for whiskeykeeper, pipe or tobacco for pipekeeper)"
+    },
     "item_id": {
       "type": "string",
       "description": "ID of the item (pipe, tobacco blend, bottle, etc.) this snapshot belongs to"
@@ -21,18 +26,39 @@
       "format": "date",
       "description": "Date of the valuation snapshot (YYYY-MM-DD)"
     },
+    "retail_value": {
+      "type": "number",
+      "description": "Known retail price at time of snapshot"
+    },
+    "market_value": {
+      "type": "number",
+      "description": "Secondary / aftermarket price at time of snapshot"
+    },
+    "collector_value": {
+      "type": "number",
+      "description": "Collector-community value estimate at time of snapshot"
+    },
+    "computed_current_value": {
+      "type": "number",
+      "description": "Engine-computed canonical current value at time of snapshot (preferred field)"
+    },
     "computed_value": {
       "type": "number",
-      "description": "Engine-computed canonical current value at time of snapshot"
+      "description": "Alias for computed_current_value — kept for backward compatibility"
     },
-    "source": {
+    "value_confidence": {
       "type": "string",
-      "description": "What data source drove the primary value (e.g. Manual Market Value, Price Per Oz, Collector Value)"
+      "enum": ["high", "medium", "low"],
+      "description": "Confidence level of the computed value (preferred field)"
     },
     "confidence": {
       "type": "string",
       "enum": ["high", "medium", "low"],
-      "description": "Confidence level of the computed value"
+      "description": "Alias for value_confidence — kept for backward compatibility"
+    },
+    "source": {
+      "type": "string",
+      "description": "What data source drove the primary value (e.g. Manual Market Value, Price Per Oz, Collector Value)"
     },
     "rarity_score": {
       "type": "number",
@@ -43,9 +69,19 @@
       "enum": ["easy", "moderate", "hard", "very_hard"],
       "description": "Estimated difficulty of replacing this item at time of snapshot"
     },
+    "trend_basis": {
+      "type": "string",
+      "enum": ["up", "down", "flat", "unknown"],
+      "description": "Value trend at time of snapshot based on recent snapshot history"
+    },
     "recommendation": {
       "type": "string",
-      "description": "Strategy recommendation at time of snapshot (e.g. use, rotate, preserve, insure for pipes; smoke_now, smoke_later, cellar, hold_for_trade for tobacco)"
+      "description": "Strategy recommendation at time of snapshot (e.g. use, rotate, preserve, insure for pipes; smoke_now, smoke_later, cellar, hold_for_trade for tobacco; hold, open, either for whiskey)"
+    },
+    "is_auto_generated": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this snapshot was created automatically by the system (scheduled refresh or first-view seed), false if created manually by the user"
     },
     "notes": {
       "type": "string",
