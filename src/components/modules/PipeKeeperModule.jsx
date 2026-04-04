@@ -149,7 +149,7 @@ export default function PipeKeeperModule() {
       key: 'insights',
       Icon: TrendingUp,
       label: t('quickActions.insights'),
-      onClick: () => navigate('/Insights')
+      onClick: () => navigate('/PipeKeeperInsights')
     },
     {
       key: 'wantList',
