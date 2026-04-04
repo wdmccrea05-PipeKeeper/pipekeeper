@@ -50,6 +50,11 @@
       "enum": ["easy", "moderate", "hard", "very_hard"],
       "description": "Estimated difficulty of replacing this bottle at time of snapshot"
     },
+    "is_auto_generated": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this snapshot was created automatically by the system (scheduled refresh or first-view seed), false if created manually by the user"
+    },
     "notes": {
       "type": "string",
       "description": "Optional free-text notes about this valuation"
