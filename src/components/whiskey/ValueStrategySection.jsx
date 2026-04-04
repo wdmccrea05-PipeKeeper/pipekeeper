@@ -1,6 +1,6 @@
 /**
  * ValueStrategySection
- * Polished "Value & Strategy" block for BottleDetail.
+ * Polished "Value & Strategy" block for any item type.
  * Consumes canonical valueEngine output — NO local valuation logic.
  */
 import React, { useState } from 'react';
@@ -12,6 +12,8 @@ import {
   DIFFICULTY_LABELS,
   TREND_LABELS,
   HOLD_RECOMMENDATION_LABELS,
+  PIPE_RECOMMENDATION_LABELS,
+  TOBACCO_RECOMMENDATION_LABELS,
 } from '@/components/valuation/valueEngine';
 import { formatCurrency } from '@/components/whiskey/utils/bottleValue';
 
@@ -71,6 +73,7 @@ function TrendChip({ trend }) {
 }
 
 const RECOMMENDATION_CONFIG = {
+  // Whiskey
   hold: {
     icon: ShieldCheck,
     bg: 'rgba(239,68,68,0.07)',
@@ -78,7 +81,7 @@ const RECOMMENDATION_CONFIG = {
     iconColor: '#fca5a5',
     textColor: '#fca5a5',
     label: 'Hold',
-    sublabel: 'Strategic value — preserve this bottle',
+    sublabel: 'Strategic value — preserve this item',
   },
   open: {
     icon: Unlock,
@@ -107,9 +110,83 @@ const RECOMMENDATION_CONFIG = {
     label: 'Your Call',
     sublabel: 'Mixed signals — personal preference applies',
   },
+  // Pipes
+  use: {
+    icon: Unlock,
+    bg: 'rgba(16,185,129,0.07)',
+    border: 'rgba(16,185,129,0.28)',
+    iconColor: '#6ee7b7',
+    textColor: '#6ee7b7',
+    label: 'Use Freely',
+    sublabel: 'Available and replaceable — enjoy your pipe',
+  },
+  rotate: {
+    icon: HelpCircle,
+    bg: 'rgba(180,140,75,0.07)',
+    border: 'rgba(180,140,75,0.22)',
+    iconColor: '#D4A574',
+    textColor: '#D4A574',
+    label: 'Include in Rotation',
+    sublabel: 'Moderately rare — smoke thoughtfully and maintain well',
+  },
+  preserve: {
+    icon: ShieldCheck,
+    bg: 'rgba(239,68,68,0.07)',
+    border: 'rgba(239,68,68,0.28)',
+    iconColor: '#fca5a5',
+    textColor: '#fca5a5',
+    label: 'Preserve — Limit Use',
+    sublabel: 'Rare or vintage pipe — minimize use to protect collector value',
+  },
+  insure: {
+    icon: ShieldCheck,
+    bg: 'rgba(139,92,246,0.07)',
+    border: 'rgba(139,92,246,0.28)',
+    iconColor: '#c4b5fd',
+    textColor: '#c4b5fd',
+    label: 'Preserve & Insure',
+    sublabel: 'Extremely rare and irreplaceable — formal coverage recommended',
+  },
+  // Tobacco
+  smoke_now: {
+    icon: Unlock,
+    bg: 'rgba(16,185,129,0.07)',
+    border: 'rgba(16,185,129,0.28)',
+    iconColor: '#6ee7b7',
+    textColor: '#6ee7b7',
+    label: 'Smoke Now',
+    sublabel: 'Widely available — enjoy at your own pace',
+  },
+  smoke_later: {
+    icon: HelpCircle,
+    bg: 'rgba(180,140,75,0.07)',
+    border: 'rgba(180,140,75,0.22)',
+    iconColor: '#D4A574',
+    textColor: '#D4A574',
+    label: 'Save for Later',
+    sublabel: 'Limited availability — save for special occasions',
+  },
+  cellar: {
+    icon: ShieldCheck,
+    bg: 'rgba(59,130,246,0.07)',
+    border: 'rgba(59,130,246,0.28)',
+    iconColor: '#93C5FD',
+    textColor: '#93C5FD',
+    label: 'Cellar for Aging',
+    sublabel: 'Age remaining stock for enhanced flavor',
+  },
+  hold_for_trade: {
+    icon: Zap,
+    bg: 'rgba(239,68,68,0.07)',
+    border: 'rgba(239,68,68,0.28)',
+    iconColor: '#fca5a5',
+    textColor: '#fca5a5',
+    label: 'Hold for Trade',
+    sublabel: 'Scarce blend — secondary value may appreciate',
+  },
 };
 
-function RecommendationBlock({ holdRecommendation, rationale }) {
+function RecommendationBlock({ holdRecommendation, rationale, moduleKey, itemType }) {
   const cfg = RECOMMENDATION_CONFIG[holdRecommendation] || RECOMMENDATION_CONFIG.either;
   const Icon = cfg.icon;
   return (
@@ -228,26 +305,57 @@ function ObservationList({ observations }) {
 
 // ── Main exported component ───────────────────────────────────────────────────
 
+/**
+ * ValueStrategySection — universal "Value & Strategy" block.
+ * Works for bottles (whiskeykeeper), pipes, and tobacco blends (pipekeeper).
+ *
+ * Props:
+ *  valuationSnapshot  — output of buildValuationSnapshot()
+ *  valueTrend         — 'up' | 'down' | 'flat' | 'unknown'
+ *  valueSnapshots     — array of ItemValueSnapshot records for this item
+ *  priceObservations  — array of PriceObservation records for this item
+ *  item               — the raw item record (replaces old `bottle` prop)
+ *  bottle             — alias for item; kept for backward compatibility
+ *  moduleKey          — 'pipekeeper' | 'whiskeykeeper' | ...
+ *  itemType           — 'pipe' | 'tobacco' | 'bottle' | ...
+ *  onAddSnapshot      — callback to open save-checkpoint modal
+ *  onAddObservation   — callback to open add-observation modal
+ *  onEditValuation    — callback to open edit-valuation-inputs modal (optional)
+ *  onRefreshNow       — callback to recompute and save a new snapshot immediately (optional)
+ *  isRefreshing       — true while a refresh is in progress (shows spinner)
+ */
 export default function ValueStrategySection({
   valuationSnapshot,
   valueTrend,
   valueSnapshots = [],
   priceObservations = [],
-  bottle,
+  item,
+  bottle,           // backward compat alias
+  moduleKey = 'whiskeykeeper',
+  itemType = 'bottle',
   onAddSnapshot,
   onAddObservation,
+  onEditValuation,
   onRefreshNow,
   isRefreshing = false,
 }) {
   if (!valuationSnapshot) return null;
 
+  const resolvedItem = item || bottle;
+
   const [showSettings, setShowSettings] = useState(false);
 
   const { currentValue, source, confidence, rarityScore, replacementDifficulty, holdRecommendation, rationale } = valuationSnapshot;
 
-  const isAllocated = bottle?.production_status === 'Allocated' || bottle?.allocated;
-  const isDiscontinued = bottle?.production_status === 'Discontinued' || bottle?.discontinued;
-  const isExclusive = bottle?.production_status === 'Exclusive' || bottle?.exclusive;
+  // Determine status badges to show based on item type and data
+  const isAllocated = !!(resolvedItem?.production_status === 'Allocated' || resolvedItem?.allocated);
+  const isDiscontinued = !!(resolvedItem?.production_status === 'Discontinued' || resolvedItem?.discontinued);
+  const isExclusive = !!(resolvedItem?.production_status === 'Exclusive' || resolvedItem?.exclusive);
+  // Pipe / tobacco specific badges
+  const isOneOfAKind = !!(resolvedItem?.one_of_a_kind || resolvedItem?.is_one_of_a_kind);
+  const isMakerDeceased = !!(resolvedItem?.maker_deceased || (resolvedItem?.maker_status || '').toLowerCase().includes('deceased'));
+  const isMakerRetired = !!(resolvedItem?.maker_retired || (resolvedItem?.maker_status || '').toLowerCase().includes('retired') || (resolvedItem?.maker_status || '').toLowerCase().includes('no longer'));
+  const isSeasonal = !!(resolvedItem?.seasonal || resolvedItem?.is_seasonal || (resolvedItem?.production_status || '').toLowerCase().includes('seasonal'));
 
   const latestSnapshot = valueSnapshots[0];
 
@@ -311,6 +419,18 @@ export default function ValueStrategySection({
               <Eye className="w-3.5 h-3.5" />
               <span>Add Observation</span>
             </button>
+            {onEditValuation && (
+              <button
+                type="button"
+                onClick={onEditValuation}
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
+                style={{ background: 'rgba(251,191,36,0.10)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.22)' }}
+                title="Edit valuation inputs"
+              >
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Edit Valuation</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={onRefreshNow}
@@ -327,7 +447,7 @@ export default function ValueStrategySection({
               className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
               style={{ background: 'rgba(180,140,75,0.08)', color: 'rgba(212,165,116,0.65)', border: '1px solid rgba(180,140,75,0.18)' }}
               onClick={() => setShowSettings(!showSettings)}
-              title="Valuation settings (Auto-refresh cadence)"
+              title="Valuation settings"
             >
               <Settings className="w-3.5 h-3.5" />
             </button>
@@ -359,7 +479,7 @@ export default function ValueStrategySection({
           </div>
 
           {/* Special badges */}
-          {(isAllocated || isDiscontinued || isExclusive) && (
+          {(isAllocated || isDiscontinued || isExclusive || isOneOfAKind || isMakerDeceased || isMakerRetired || isSeasonal) && (
             <div className="flex flex-wrap gap-2">
               {isDiscontinued && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.28)', color: '#fca5a5' }}>
@@ -376,11 +496,31 @@ export default function ValueStrategySection({
                   <Zap className="w-3 h-3" /> Exclusive
                 </span>
               )}
+              {isOneOfAKind && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.28)', color: '#6ee7b7' }}>
+                  <ShieldCheck className="w-3 h-3" /> One of a Kind
+                </span>
+              )}
+              {isMakerDeceased && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.28)', color: '#fca5a5' }}>
+                  <Lock className="w-3 h-3" /> Maker Deceased
+                </span>
+              )}
+              {isMakerRetired && !isMakerDeceased && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.28)', color: '#fde68a' }}>
+                  <AlertTriangle className="w-3 h-3" /> Maker Retired
+                </span>
+              )}
+              {isSeasonal && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.28)', color: '#D4A574' }}>
+                  <Zap className="w-3 h-3" /> Seasonal
+                </span>
+              )}
             </div>
           )}
 
           {/* C — Strategy */}
-          <RecommendationBlock holdRecommendation={holdRecommendation} rationale={rationale} />
+          <RecommendationBlock holdRecommendation={holdRecommendation} rationale={rationale} moduleKey={moduleKey} itemType={itemType} />
 
           {/* D — Risk & Rarity grid */}
           <div className="grid grid-cols-2 gap-3 min-w-0">

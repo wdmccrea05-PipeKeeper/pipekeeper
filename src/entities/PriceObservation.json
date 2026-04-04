@@ -10,8 +10,8 @@
     },
     "item_type": {
       "type": "string",
-      "enum": ["bottle", "pipe", "tobacco", "cigar", "wine", "other"],
-      "description": "Type of item within the module (e.g. bottle for whiskeykeeper, pipe or tobacco for pipekeeper)"
+      "enum": ["pipe", "tobacco", "bottle", "cigar", "wine", "other"],
+      "description": "The type of item this observation relates to within the module (e.g. bottle for whiskeykeeper, pipe or tobacco for pipekeeper)"
     },
     "item_id": {
       "type": "string",
@@ -63,7 +63,7 @@
     "is_manual": {
       "type": "boolean",
       "default": true,
-      "description": "True if this observation was entered manually by the user, false if sourced automatically"
+      "description": "True if this observation was entered manually by the user rather than imported automatically"
     }
   },
   "required": ["module_key", "item_id", "created_by", "observed_price", "observed_date"]

@@ -24,6 +24,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
 import PipeSpecialization from '@/components/pipes/PipeSpecialization';
 import MaintenanceLog from '@/components/pipes/MaintenanceLog';
@@ -32,8 +34,12 @@ import RotationPlanner from '@/components/pipes/RotationPlanner';
 import InterchangeableBowls from '@/components/pipes/InterchangeableBowls';
 import ValueLookup from '@/components/ai/ValueLookup';
 import ValuationCredibility, { computePipeValuation } from '@/components/valuation/ValuationCredibility';
+import ValueStrategySection from '@/components/whiskey/ValueStrategySection';
 import {
   buildValuationSnapshot,
+  buildItemValueSnapshotRecord,
+  buildPriceObservationRecord,
+  resolveValueTrend,
   DIFFICULTY_LABELS,
   PIPE_RECOMMENDATION_LABELS,
 } from '@/components/valuation/valueEngine';
@@ -125,6 +131,339 @@ function showBool(value) {
   return '—';
 }
 
+// ── Valuation modals ──────────────────────────────────────────────────────────
+
+function AddItemValueSnapshotModal({ item, itemType, moduleKey, valuationSnapshot, userEmail, onClose, onSaved }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [form, setForm] = useState({
+    snapshot_date: today,
+    computed_current_value: String(valuationSnapshot?.currentValue || ''),
+    retail_value: '',
+    market_value: '',
+    collector_value: '',
+    value_confidence: valuationSnapshot?.confidence || 'medium',
+    source: valuationSnapshot?.source || '',
+    rarity_score: String(valuationSnapshot?.rarityScore || ''),
+    replacement_difficulty: valuationSnapshot?.replacementDifficulty || 'moderate',
+    notes: '',
+  });
+  const [saving, setSaving] = useState(false);
+
+  const toN = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : null; };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await base44.entities.ItemValueSnapshot.create({
+        module_key: moduleKey,
+        item_type: itemType,
+        item_id: item.id,
+        created_by: userEmail,
+        snapshot_date: form.snapshot_date,
+        computed_current_value: toN(form.computed_current_value),
+        retail_value: toN(form.retail_value),
+        market_value: toN(form.market_value),
+        collector_value: toN(form.collector_value),
+        value_confidence: form.value_confidence,
+        source: form.source || null,
+        rarity_score: toN(form.rarity_score),
+        replacement_difficulty: form.replacement_difficulty,
+        notes: form.notes || null,
+        is_auto_generated: false,
+      });
+      onSaved();
+    } catch (e) {
+      console.error('[PipeDetail] failed to save snapshot', e);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(180,140,75,0.25)' }}>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">Save Value Checkpoint</h3>
+        <div className="space-y-3">
+          {[
+            { label: 'Snapshot Date', field: 'snapshot_date', type: 'date' },
+            { label: 'Current Value', field: 'computed_current_value', type: 'number' },
+            { label: 'Retail Value', field: 'retail_value', type: 'number' },
+            { label: 'Market Value', field: 'market_value', type: 'number' },
+            { label: 'Collector Value', field: 'collector_value', type: 'number' },
+            { label: 'Source', field: 'source', type: 'text' },
+            { label: 'Rarity Score (0–100)', field: 'rarity_score', type: 'number' },
+            { label: 'Notes', field: 'notes', type: 'text' },
+          ].map(({ label, field, type }) => (
+            <div key={field}>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{label}</label>
+              <Input
+                type={type}
+                value={form[field]}
+                onChange={e => setForm(prev => ({ ...prev, [field]: e.target.value }))}
+                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+              />
+            </div>
+          ))}
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Confidence</label>
+            <Select value={form.value_confidence} onValueChange={v => setForm(prev => ({ ...prev, value_confidence: v }))}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Replacement Difficulty</label>
+            <Select value={form.replacement_difficulty} onValueChange={v => setForm(prev => ({ ...prev, replacement_difficulty: v }))}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="easy">Easy</SelectItem>
+                <SelectItem value="moderate">Moderate</SelectItem>
+                <SelectItem value="hard">Hard</SelectItem>
+                <SelectItem value="very_hard">Very Hard</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="flex gap-3 justify-end pt-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving} style={{ background: 'linear-gradient(135deg,rgba(163,92,92,1),rgba(140,74,74,1))', color: '#F5F1E7' }}>
+            {saving ? 'Saving…' : 'Save Checkpoint'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddPriceObservationModal({ itemId, itemType, moduleKey, userEmail, onClose, onSaved }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [form, setForm] = useState({
+    observed_date: today,
+    observed_price: '',
+    price_type: 'retail',
+    source_name: '',
+    source_url: '',
+    condition_note: '',
+    region: '',
+    currency: 'USD',
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!form.observed_price) return;
+    setSaving(true);
+    try {
+      await base44.entities.PriceObservation.create({
+        module_key: moduleKey,
+        item_type: itemType,
+        item_id: itemId,
+        created_by: userEmail,
+        observed_price: Number(form.observed_price),
+        price_type: form.price_type,
+        source_name: form.source_name || null,
+        source_url: form.source_url || null,
+        observed_date: form.observed_date,
+        condition_note: form.condition_note || null,
+        region: form.region || null,
+        currency: form.currency || 'USD',
+        is_manual: true,
+      });
+      onSaved();
+    } catch (e) {
+      console.error('[PipeDetail] failed to save observation', e);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(59,130,246,0.25)' }}>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">Add Market Observation</h3>
+        <div className="space-y-3">
+          {[
+            { label: 'Observed Date', field: 'observed_date', type: 'date' },
+            { label: 'Price *', field: 'observed_price', type: 'number' },
+            { label: 'Source Name', field: 'source_name', type: 'text' },
+            { label: 'Source URL', field: 'source_url', type: 'text' },
+            { label: 'Condition Note', field: 'condition_note', type: 'text' },
+            { label: 'Region', field: 'region', type: 'text' },
+            { label: 'Currency', field: 'currency', type: 'text' },
+          ].map(({ label, field, type }) => (
+            <div key={field}>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{label}</label>
+              <Input
+                type={type}
+                value={form[field]}
+                onChange={e => setForm(prev => ({ ...prev, [field]: e.target.value }))}
+                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+              />
+            </div>
+          ))}
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Price Type</label>
+            <Select value={form.price_type} onValueChange={v => setForm(prev => ({ ...prev, price_type: v }))}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="retail">Retail</SelectItem>
+                <SelectItem value="aftermarket">Aftermarket</SelectItem>
+                <SelectItem value="auction">Auction</SelectItem>
+                <SelectItem value="collector">Collector</SelectItem>
+                <SelectItem value="estimate">Estimate</SelectItem>
+                <SelectItem value="private_sale">Private Sale</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="flex gap-3 justify-end pt-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving || !form.observed_price} style={{ background: 'linear-gradient(135deg,rgba(59,130,246,0.8),rgba(37,99,235,0.9))', color: '#F5F1E7' }}>
+            {saving ? 'Saving…' : 'Save Observation'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditPipeValuationModal({ pipe, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    estimated_value: String(pipe?.estimated_value || ''),
+    maker_status: pipe?.maker_status || '',
+    production_type: pipe?.production_type || '',
+    artisan_tier: pipe?.artisan_tier || '',
+    is_limited_run: !!(pipe?.limited_run || pipe?.is_limited_run),
+    one_of_a_kind: !!(pipe?.one_of_a_kind || pipe?.is_one_of_a_kind),
+    provenance_notes: pipe?.provenance_notes || '',
+    replacement_difficulty_override: pipe?.replacement_difficulty_override || '',
+    rarity_score_override: String(pipe?.rarity_score_override || ''),
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const updates = {
+        estimated_value: form.estimated_value ? Number(form.estimated_value) : null,
+        maker_status: form.maker_status || null,
+        production_type: form.production_type || null,
+        artisan_tier: form.artisan_tier || null,
+        limited_run: form.is_limited_run,
+        one_of_a_kind: form.one_of_a_kind,
+        provenance_notes: form.provenance_notes || null,
+        replacement_difficulty_override: form.replacement_difficulty_override || null,
+        rarity_score_override: form.rarity_score_override ? Number(form.rarity_score_override) : null,
+      };
+      await base44.entities.Pipe.update(pipe.id, updates);
+      onSaved(updates);
+    } catch (e) {
+      console.error('[PipeDetail] failed to save valuation inputs', e);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(251,191,36,0.25)' }}>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">Edit Valuation Inputs</h3>
+        <p className="text-xs text-[#D8C7A6]/60">These fields feed directly into the shared valuation engine.</p>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Estimated Value ($)</label>
+            <Input type="number" value={form.estimated_value} onChange={e => setForm(p => ({ ...p, estimated_value: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" />
+          </div>
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Maker Status</label>
+            <Select value={form.maker_status} onValueChange={v => setForm(p => ({ ...p, maker_status: v }))}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">— Not set —</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="limited_production">Limited Production</SelectItem>
+                <SelectItem value="retired">Retired / No Longer Producing</SelectItem>
+                <SelectItem value="inactive">Inactive / Company Closed</SelectItem>
+                <SelectItem value="deceased">Deceased</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Production Type</label>
+            <Select value={form.production_type} onValueChange={v => setForm(p => ({ ...p, production_type: v }))}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">— Not set —</SelectItem>
+                <SelectItem value="factory">Factory Production</SelectItem>
+                <SelectItem value="standard_artisan">Standard Artisan</SelectItem>
+                <SelectItem value="limited_artisan_batch">Limited Artisan Batch</SelectItem>
+                <SelectItem value="one_off">One-off / Commissioned</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Artisan Tier</label>
+            <Select value={form.artisan_tier} onValueChange={v => setForm(p => ({ ...p, artisan_tier: v }))}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">— Not set —</SelectItem>
+                <SelectItem value="factory">Factory / Mass Production</SelectItem>
+                <SelectItem value="emerging">Emerging Artisan</SelectItem>
+                <SelectItem value="established">Established Artisan</SelectItem>
+                <SelectItem value="master">Master Carver</SelectItem>
+                <SelectItem value="prestige">Prestige / Collector Tier</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-sm text-[#E0D8C8] cursor-pointer">
+              <input type="checkbox" checked={form.one_of_a_kind} onChange={e => setForm(p => ({ ...p, one_of_a_kind: e.target.checked }))} className="rounded" />
+              <span>One of a Kind / Commissioned</span>
+            </label>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-sm text-[#E0D8C8] cursor-pointer">
+              <input type="checkbox" checked={form.is_limited_run} onChange={e => setForm(p => ({ ...p, is_limited_run: e.target.checked }))} className="rounded" />
+              <span>Limited Run / Special Edition</span>
+            </label>
+          </div>
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Provenance / Certification Notes</label>
+            <Input type="text" value={form.provenance_notes} onChange={e => setForm(p => ({ ...p, provenance_notes: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="e.g. original box, dated receipt…" />
+          </div>
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Replacement Difficulty Override</label>
+            <Select value={form.replacement_difficulty_override} onValueChange={v => setForm(p => ({ ...p, replacement_difficulty_override: v }))}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Engine auto-computes" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">— Auto (engine) —</SelectItem>
+                <SelectItem value="easy">Easy</SelectItem>
+                <SelectItem value="moderate">Moderate</SelectItem>
+                <SelectItem value="hard">Hard</SelectItem>
+                <SelectItem value="very_hard">Very Hard</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Rarity Score Override (0–100, blank = auto)</label>
+            <Input type="number" min="0" max="100" value={form.rarity_score_override} onChange={e => setForm(p => ({ ...p, rarity_score_override: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="Leave blank for auto" />
+          </div>
+        </div>
+        <div className="flex gap-3 justify-end pt-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving} style={{ background: 'linear-gradient(135deg,rgba(251,191,36,0.8),rgba(217,160,32,0.9))', color: '#1a120d' }}>
+            {saving ? 'Saving…' : 'Save Inputs'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PipeDetail() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -145,6 +484,12 @@ export default function PipeDetail() {
   const [similarError, setSimilarError] = useState(null);
   const [detailCardOpen, setDetailCardOpen] = useState(true);
   const [showAppraisal, setShowAppraisal] = useState(false);
+  // Valuation history & observations
+  const [valueSnapshots, setValueSnapshots] = useState([]);
+  const [priceObservations, setPriceObservations] = useState([]);
+  const [showSnapshotModal, setShowSnapshotModal] = useState(false);
+  const [showObservationModal, setShowObservationModal] = useState(false);
+  const [showEditValuationModal, setShowEditValuationModal] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -158,11 +503,8 @@ export default function PipeDetail() {
       setLoading(true);
 
       try {
-        // getForUser uses filter({ id, created_by }) — explicit and ownership-scoped
-        // fallback to direct .get() in case filter-by-id behaves unexpectedly
         let pipeRecord = await scopedEntities.Pipe.getForUser(user.email, pipeId).catch(() => null);
         if (!pipeRecord) {
-          // Fallback: direct primary key lookup, then verify ownership
           const direct = await base44.entities.Pipe.get(pipeId).catch(() => null);
           if (direct && direct.created_by === user.email) {
             pipeRecord = direct;
@@ -171,9 +513,22 @@ export default function PipeDetail() {
 
         const blendsList = await scopedEntities.TobaccoBlend.listForUser(user.email, '-updated_date', 500).catch(() => []);
 
+        const [snapshots, observations] = await Promise.all([
+          base44.entities.ItemValueSnapshot.filter(
+            { module_key: 'pipekeeper', item_type: 'pipe', item_id: pipeId, created_by: user.email },
+            '-snapshot_date', 20
+          ).catch(() => []),
+          base44.entities.PriceObservation.filter(
+            { module_key: 'pipekeeper', item_type: 'pipe', item_id: pipeId, created_by: user.email },
+            '-observed_date', 20
+          ).catch(() => []),
+        ]);
+
         if (mounted) {
           setPipe(pipeRecord);
           setBlends(Array.isArray(blendsList) ? blendsList : []);
+          setValueSnapshots(snapshots || []);
+          setPriceObservations(observations || []);
         }
       } catch (e) {
         console.error('[PipeDetail] failed to load data', e);
@@ -188,6 +543,24 @@ export default function PipeDetail() {
       mounted = false;
     };
   }, [pipeId, user?.email]);
+
+  async function reloadSnapshots() {
+    if (!pipeId || !user?.email) return;
+    const rows = await base44.entities.ItemValueSnapshot.filter(
+      { module_key: 'pipekeeper', item_type: 'pipe', item_id: pipeId, created_by: user.email },
+      '-snapshot_date', 20
+    ).catch(() => []);
+    setValueSnapshots(rows || []);
+  }
+
+  async function reloadObservations() {
+    if (!pipeId || !user?.email) return;
+    const rows = await base44.entities.PriceObservation.filter(
+      { module_key: 'pipekeeper', item_type: 'pipe', item_id: pipeId, created_by: user.email },
+      '-observed_date', 20
+    ).catch(() => []);
+    setPriceObservations(rows || []);
+  }
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -281,7 +654,11 @@ export default function PipeDetail() {
   }, [pipe]);
 
   const computedValuation = useMemo(() => computePipeValuation(pipe), [pipe]);
-  const pipeStrategy = useMemo(() => pipe ? buildValuationSnapshot(pipe, 'pipekeeper') : null, [pipe]);
+  const pipeStrategy = useMemo(
+    () => pipe ? buildValuationSnapshot(pipe, 'pipekeeper', { valueHistory: valueSnapshots }) : null,
+    [pipe, valueSnapshots]
+  );
+  const valueTrend = useMemo(() => resolveValueTrend(valueSnapshots), [valueSnapshots]);
 
   if (loading) {
     return (
@@ -489,53 +866,20 @@ export default function PipeDetail() {
               )}
             </div>
 
-            {/* Value & Strategy Section */}
+            {/* Value & Strategy Section — full feature parity with BottleDetail */}
             {pipeStrategy && (
-              <div
-                className="rounded-2xl p-5 space-y-4"
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(180,140,75,0.14)',
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <CircleDollarSign className="w-4 h-4 text-[#D4A574]" />
-                  <p className="text-sm font-semibold text-[#F5F1E7]">Value &amp; Strategy</p>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="rounded-xl p-3" style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.15)' }}>
-                    <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/60">Rarity</p>
-                    <p className="text-lg font-bold text-[#F5F1E7] mt-1">{pipeStrategy.rarityScore ?? '—'}<span className="text-xs text-[#D8C7A6]/50">/100</span></p>
-                  </div>
-                  <div className="rounded-xl p-3" style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.15)' }}>
-                    <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/60">Replacement</p>
-                    <p className="text-sm font-semibold text-[#F5F1E7] mt-1 leading-snug">
-                      {pipeStrategy.replacementDifficulty ? DIFFICULTY_LABELS[pipeStrategy.replacementDifficulty] : '—'}
-                    </p>
-                  </div>
-                  <div className="rounded-xl p-3 col-span-2" style={{ background: 'rgba(74,222,128,0.07)', border: '1px solid rgba(74,222,128,0.18)' }}>
-                    <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/60">Recommendation</p>
-                    <p className="text-sm font-bold mt-1" style={{ color: '#4ade80' }}>
-                      {pipeStrategy.holdRecommendation ? (PIPE_RECOMMENDATION_LABELS[pipeStrategy.holdRecommendation] || pipeStrategy.holdRecommendation) : '—'}
-                    </p>
-                  </div>
-                </div>
-
-                {pipeStrategy.rationale && pipeStrategy.rationale.length > 0 && (
-                  <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.1)' }}>
-                    <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/60 mb-2">Rationale</p>
-                    <ul className="space-y-1.5">
-                      {pipeStrategy.rationale.map((point, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: 'rgba(180,140,75,0.6)' }} />
-                          <span className="text-xs text-[#E0D8C8]/75">{point}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+              <ValueStrategySection
+                valuationSnapshot={pipeStrategy}
+                valueTrend={valueTrend}
+                valueSnapshots={valueSnapshots}
+                priceObservations={priceObservations}
+                item={pipe}
+                moduleKey="pipekeeper"
+                itemType="pipe"
+                onAddSnapshot={() => setShowSnapshotModal(true)}
+                onAddObservation={() => setShowObservationModal(true)}
+                onEditValuation={() => setShowEditValuationModal(true)}
+              />
             )}
 
             <div
@@ -828,6 +1172,41 @@ export default function PipeDetail() {
         recordType="pipe"
         anchorName={pipe?.name}
       />
+
+      {showSnapshotModal && (
+        <AddItemValueSnapshotModal
+          item={pipe}
+          itemType="pipe"
+          moduleKey="pipekeeper"
+          valuationSnapshot={pipeStrategy}
+          userEmail={user?.email}
+          onClose={() => setShowSnapshotModal(false)}
+          onSaved={() => { setShowSnapshotModal(false); reloadSnapshots(); toast.success('Value checkpoint saved'); }}
+        />
+      )}
+
+      {showObservationModal && (
+        <AddPriceObservationModal
+          itemId={pipe.id}
+          itemType="pipe"
+          moduleKey="pipekeeper"
+          userEmail={user?.email}
+          onClose={() => setShowObservationModal(false)}
+          onSaved={() => { setShowObservationModal(false); reloadObservations(); toast.success('Observation saved'); }}
+        />
+      )}
+
+      {showEditValuationModal && (
+        <EditPipeValuationModal
+          pipe={pipe}
+          onClose={() => setShowEditValuationModal(false)}
+          onSaved={(updates) => {
+            setPipe(prev => ({ ...prev, ...updates }));
+            setShowEditValuationModal(false);
+            toast.success('Valuation inputs updated');
+          }}
+        />
+      )}
     </div>
   );
 }

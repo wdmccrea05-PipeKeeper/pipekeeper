@@ -931,7 +931,10 @@ function BottleDetailInner() {
                 valueTrend={valueTrend}
                 valueSnapshots={valueSnapshots}
                 priceObservations={priceObservations}
+                item={bottle}
                 bottle={bottle}
+                moduleKey="whiskeykeeper"
+                itemType="bottle"
                 onAddSnapshot={() => setShowSnapshotModal(true)}
                 onAddObservation={() => setShowObservationModal(true)}
                 onRefreshNow={handleRefreshValueNow}

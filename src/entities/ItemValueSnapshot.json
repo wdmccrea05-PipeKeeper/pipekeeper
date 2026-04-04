@@ -1,7 +1,7 @@
 {
   "name": "ItemValueSnapshot",
   "type": "object",
-  "description": "A point-in-time valuation snapshot for any collectible item. Generalizes BottleValueSnapshot to support all modules (pipekeeper, whiskeykeeper, cigarkeeper, winekeeper). Works for pipes, tobacco blends, bottles, cigars, and wine.",
+  "description": "A point-in-time valuation snapshot for any collectible item. Supports all modules (pipekeeper, whiskeykeeper, cigarkeeper, winekeeper) and all item types (pipe, tobacco, bottle, cigar, wine).",
   "properties": {
     "module_key": {
       "type": "string",
@@ -10,8 +10,8 @@
     },
     "item_type": {
       "type": "string",
-      "enum": ["bottle", "pipe", "tobacco", "cigar", "wine", "other"],
-      "description": "Type of item within the module (e.g. bottle for whiskeykeeper, pipe or tobacco for pipekeeper)"
+      "enum": ["pipe", "tobacco", "bottle", "cigar", "wine", "other"],
+      "description": "The type of item this snapshot belongs to within the module (e.g. bottle for whiskeykeeper, pipe or tobacco for pipekeeper)"
     },
     "item_id": {
       "type": "string",
@@ -28,11 +28,11 @@
     },
     "retail_value": {
       "type": "number",
-      "description": "Known retail price at time of snapshot"
+      "description": "Known retail/list price at time of snapshot"
     },
     "market_value": {
       "type": "number",
-      "description": "Secondary / aftermarket price at time of snapshot"
+      "description": "Secondary market / aftermarket price at time of snapshot"
     },
     "collector_value": {
       "type": "number",
@@ -78,14 +78,14 @@
       "type": "string",
       "description": "Strategy recommendation at time of snapshot (e.g. use, rotate, preserve, insure for pipes; smoke_now, smoke_later, cellar, hold_for_trade for tobacco; hold, open, either for whiskey)"
     },
+    "notes": {
+      "type": "string",
+      "description": "Optional free-text notes about this valuation"
+    },
     "is_auto_generated": {
       "type": "boolean",
       "default": false,
       "description": "True if this snapshot was created automatically by the system (scheduled refresh or first-view seed), false if created manually by the user"
-    },
-    "notes": {
-      "type": "string",
-      "description": "Optional free-text notes about this valuation"
     }
   },
   "required": ["module_key", "item_id", "created_by", "snapshot_date"]
