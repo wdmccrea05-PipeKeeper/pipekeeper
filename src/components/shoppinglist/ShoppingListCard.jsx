@@ -4,8 +4,6 @@ import { Trash2, Share2, Archive, Tag, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 
-
-
 const SHOPPING_TYPE_LABEL = {
   restock: "Restock",
   buy_new_item: "Buy New Item",

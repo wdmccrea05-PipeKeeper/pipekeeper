@@ -85,7 +85,7 @@ export default function ExpertTobacconistChat({
 
   useEffect(() => {
     initializeChat();
-     
+
   }, []);
 
   const loadThread = async () => {
@@ -113,7 +113,7 @@ export default function ExpertTobacconistChat({
 
   useEffect(() => {
     loadThread();
-     
+
   }, [threadId]);
 
   const sendMessage = async () => {

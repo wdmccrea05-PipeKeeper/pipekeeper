@@ -59,7 +59,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     if (!userEmail) return;
 
     let cancelled = false;
-    
+
     const updateLastSeen = async () => {
       try {
         const profiles = await base44.entities.UserProfile.filter({ user_email: userEmail });
@@ -154,7 +154,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
   const handleSendMessage = () => {
     if (!messageText.trim() || !selectedFriend || !userEmail) return;
-    
+
     sendMessageMutation.mutate({
       sender_email: userEmail,
       recipient_email: selectedFriend,
@@ -165,7 +165,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   // Mark messages as read when viewing conversation
   useEffect(() => {
     if (!selectedFriend || !userEmail) return;
-    
+
     const unreadMessages = messages.filter(m => 
       m.sender_email === selectedFriend && 
       m.recipient_email === userEmail && 
@@ -191,7 +191,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     return () => {
       cancelled = true;
     };
-     
+
   }, [selectedFriend, messages, userEmail]);
 
   // Auto scroll to bottom of chat
@@ -302,7 +302,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                 const online = isOnline(friendEmail);
                 const unread = getUnreadCount(friendEmail);
                 const modules = getModuleTags(profile);
-                
+
                 return (
                   <button
                     key={friendship.id}
@@ -393,7 +393,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
               {getConversation(selectedFriend).map((message) => {
                 const isSent = message.sender_email === userEmail;
                 const isEditing = editingMessageId === message.id;
-                
+
                 return (
                   <div key={message.id} className={`flex ${isSent ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[80%] rounded-lg p-3 ${

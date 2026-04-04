@@ -60,7 +60,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
       // Defer to next tick so regenPairings is guaranteed to be defined
       setTimeout(() => regenPairings(), 0);
     }
-   
+
   }, [user?.email, allPipes.length, allBlends.length, activePairings, hasAutoRegenerated, regenerating]);
 
   const pairingsByVariant = useMemo(() => {
@@ -99,7 +99,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
       try {
         const pipe = (allPipes || []).find((p) => p && String(p.id) === String(pv.id));
         const variant = pipe ? getVariantFromPipe(pipe, pv.bowl_variant_id || null) : null;
-        
+
         // Lookup using ONLY pipe_id + bowl_variant_id
         const tileKey = keyOf(pv.id, pv.bowl_variant_id || null);
         const pairing = pairingsByVariant.get(tileKey);

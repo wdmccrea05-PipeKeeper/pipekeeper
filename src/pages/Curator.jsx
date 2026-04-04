@@ -156,7 +156,7 @@ export default function Curator() {
         else if (enabled.pipekeeper && !enabled.whiskeykeeper) setCuratorScope("pipekeeper");
       }
     }
-   
+
   }, [enabled.pipekeeper, enabled.whiskeykeeper]);
 
   const handleScopeChange = (newScope) => {
