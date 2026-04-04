@@ -1,5 +1,4 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
 
 const moduleColors = {
   pipekeeper: { bg: '#8B5A2B', text: '#F5F1E7' },

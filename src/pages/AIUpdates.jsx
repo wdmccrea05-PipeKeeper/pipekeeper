@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { isAppleBuild } from "@/components/utils/appVariant";
-import FeatureGate from "@/components/subscription/FeatureGate";
 import PipeGeometryAnalyzer from "@/components/ai/PipeGeometryAnalyzer";
 import BatchPipeMeasurements from "@/components/ai/BatchPipeMeasurements";
 import TobaccoValueEstimator from "@/components/ai/TobaccoValueEstimator";

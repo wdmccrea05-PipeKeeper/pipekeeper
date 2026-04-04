@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { FileText, FileSpreadsheet, Shield, Crown } from "lucide-react";
+import { FileSpreadsheet, Shield, Crown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import PhotoUploader from '@/components/PhotoUploader';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 

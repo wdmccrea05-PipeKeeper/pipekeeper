@@ -20,7 +20,6 @@
  */
 
 import { Sparkles, Ruler, Droplet, Tags, Target, SearchCheck } from 'lucide-react';
-import { isInternalModuleTester } from '@/components/utils/moduleReleaseState';
 import {
   getTobaccoReclassificationCandidates,
   buildReclassificationCandidatesContext,
@@ -29,7 +28,6 @@ import {
   buildExpertTobacconistContext,
 } from './expertTobacconistHelpers';
 import {
-  analyzeBottlePreferences,
   buildBottleAdditionContext,
   createActionExecutionContext,
 } from './actionExecutionHelpers';

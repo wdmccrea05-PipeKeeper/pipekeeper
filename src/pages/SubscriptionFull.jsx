@@ -7,7 +7,6 @@ import { CheckCircle2 } from "lucide-react";
 import {
   isIOSWebView,
   openNativePaywall,
-  openAppleSubscriptions,
   requestNativeSubscriptionStatus,
   registerNativeSubscriptionListener,
   startApplePurchaseFlow,

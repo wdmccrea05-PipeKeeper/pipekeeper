@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Search, Check, Upload, Loader2, Trash2 } from "lucide-react";
 import { getAvailableBrands } from "@/components/tobacco/TobaccoLogoLibrary";
 import { base44 } from "@/api/base44Client";

@@ -3,12 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Share2, Archive, Tag, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const SHOPPING_TYPE_LABEL = {
   restock: "Restock",

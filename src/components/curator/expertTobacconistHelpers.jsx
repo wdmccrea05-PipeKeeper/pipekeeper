@@ -14,14 +14,11 @@
  */
 
 import {
-  normalizeBlendType,
   needsNormalization,
   suggestBlendTypeNormalization,
   getBlendFamilyGroup,
-  getCellarCharacteristics,
   isAgingWorthy,
   CANONICAL_BLEND_FAMILIES,
-  CANONICAL_BLEND_FAMILIES_LIST,
   BLEND_FAMILY_GROUPS,
 } from '@/components/tobacco/tobaccoClassificationConstants';
 

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
-import { AlertCircle, CheckCircle, XCircle, Search } from "lucide-react";
+import { AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SubscriptionEventsLog() {

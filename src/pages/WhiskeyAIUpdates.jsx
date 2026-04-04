@@ -6,7 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
-import { Loader2, Wand2, Globe, Tags, DollarSign, Beaker, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Loader2, Wand2, Globe, Tags, DollarSign, Beaker, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 

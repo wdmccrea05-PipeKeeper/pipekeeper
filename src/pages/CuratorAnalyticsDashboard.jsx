@@ -3,7 +3,6 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { TrendingUp, Users, Target, RefreshCw, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 

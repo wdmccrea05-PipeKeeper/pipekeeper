@@ -85,7 +85,7 @@ export default function ExpertTobacconistChat({
 
   useEffect(() => {
     initializeChat();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   const loadThread = async () => {
@@ -113,7 +113,7 @@ export default function ExpertTobacconistChat({
 
   useEffect(() => {
     loadThread();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [threadId]);
 
   const sendMessage = async () => {

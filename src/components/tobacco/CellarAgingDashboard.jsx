@@ -14,7 +14,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 export default function CellarAgingDashboard({ user }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  
+
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ["tobacco-blends", user?.email],
     queryFn: () => scopedEntities.TobaccoBlend.listForUser(user?.email),
@@ -69,7 +69,7 @@ export default function CellarAgingDashboard({ user }) {
       map[b.id] = getCellarDataFromLogs(b.id);
     });
     return map;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [cellarLogs, blends]);
 
   const cellarBlends = blends.filter(b => {
@@ -100,42 +100,42 @@ export default function CellarAgingDashboard({ user }) {
          return oldest;
        }
      }) : null;
-    
+
     if (!oldestDate) return { months: 0, days: 0, oldestDate: null };
-    
+
     const now = new Date();
     const parsedOldest = new Date(oldestDate);
     const months = differenceInMonths(now, parsedOldest);
     const days = differenceInDays(now, parsedOldest);
-    
+
     return { months, days, oldestDate: parsedOldest };
   };
 
   const getAgingRecommendation = (blend) => {
     const aging = getAgingInfo(blend);
     const potential = blend.aging_potential;
-    
+
     if (!potential) return { status: "unknown", message: t("tobacconist.noAgingPotential"), color: "gray" };
-    
+
     const months = aging.months;
-    
+
     if (potential === "Excellent") {
       if (months < 6) return { status: "young", message: t("tobacconist.agingExcellentYoung"), color: "blue" };
       if (months < 24) return { status: "developing", message: t("tobacconist.agingExcellentDeveloping"), color: "yellow" };
       return { status: "peak", message: t("tobacconist.agingExcellentPeak"), color: "green" };
     }
-    
+
     if (potential === "Good") {
       if (months < 3) return { status: "young", message: t("tobacconist.agingGoodYoung"), color: "blue" };
       if (months < 12) return { status: "developing", message: t("tobacconist.agingGoodDeveloping"), color: "yellow" };
       return { status: "peak", message: t("tobacconist.agingGoodPeak"), color: "green" };
     }
-    
+
     if (potential === "Fair") {
       if (months < 3) return { status: "young", message: t("tobacconist.agingFairYoung"), color: "blue" };
       return { status: "ready", message: t("tobacconist.agingFairReady"), color: "green" };
     }
-    
+
     return { status: "ready", message: t("tobacconist.agingBestFresh"), color: "green" };
   };
 
@@ -197,7 +197,7 @@ export default function CellarAgingDashboard({ user }) {
             </div>
           </div>
         </Card>
-        
+
         <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 p-4">
           <div className="flex items-center gap-3">
             <TrendingUp className="w-8 h-8 text-[#E0D8C8]" />
@@ -207,7 +207,7 @@ export default function CellarAgingDashboard({ user }) {
             </div>
           </div>
         </Card>
-        
+
         <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 p-4">
           <div className="flex items-center gap-3">
             <Clock className="w-8 h-8 text-[#E0D8C8]" />
@@ -227,12 +227,12 @@ export default function CellarAgingDashboard({ user }) {
             const aging = blend._aging;
             const recommendation = blend._recommendation;
             const totalOz = blend._logData.net;
-            
+
             const maxMonths = blend.aging_potential === "Excellent" ? 24 :
                              blend.aging_potential === "Good" ? 12 :
                              blend.aging_potential === "Fair" ? 3 : 3;
             const progress = Math.min((aging.months / maxMonths) * 100, 100);
-            
+
             return (
               <Card 
                 key={blend.id} 
@@ -254,7 +254,7 @@ export default function CellarAgingDashboard({ user }) {
                       )}
                     </div>
                   </div>
-                  
+
                   <Badge 
                     className={
                       recommendation.color === "green" ? "bg-green-500/20 text-white border-green-500/30" :
@@ -266,7 +266,7 @@ export default function CellarAgingDashboard({ user }) {
                     {recommendation.message}
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs text-white/80 font-medium">
                     <span>{t("tobacconist.agingProgress")}</span>

@@ -8,7 +8,6 @@ import {
   ArrowRight, ArrowLeft, Check, X, Sparkles, 
   Camera, Search, Star, Users, ChevronRight, Leaf, HelpCircle, Layers
 } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import ModuleSelectionStep from './ModuleSelectionStep';

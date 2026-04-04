@@ -1,6 +1,5 @@
 import { useMemo, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { CURATOR_ACTIONS, getVisibleActions, buildActionLaunchContext } from './curatorActions';
+import { getVisibleActions, buildActionLaunchContext } from './curatorActions';
 import { filterCuratorActions } from './curatorActionVisibility';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import { useTranslation } from '@/components/i18n/safeTranslation';

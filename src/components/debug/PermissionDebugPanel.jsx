@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
-import { CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { canCreatePipe, canCreateTobacco } from "@/components/utils/limitChecks";
 import { hasPaidAccess, hasProAccess, hasPremiumAccess } from "@/components/utils/premiumAccess"; // used in JSX below
 import { useTranslation } from "@/components/i18n/safeTranslation";

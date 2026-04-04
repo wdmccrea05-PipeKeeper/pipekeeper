@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, ArrowDownToLine, ArrowUpFromLine, Calendar, Package, Trash2, Crown } from "lucide-react";
+import { Plus, ArrowDownToLine, ArrowUpFromLine, Calendar, Package, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useTranslation } from "@/components/i18n/safeTranslation";

@@ -1,11 +1,11 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, RefreshCw } from "lucide-react";
-import { expandPipesToVariants, getPipeVariantKey, getVariantFromPipe } from "@/components/utils/pipeVariants";
+import { expandPipesToVariants, getVariantFromPipe } from "@/components/utils/pipeVariants";
 import { toast } from "sonner";
 import { regeneratePairingsConsistent } from "@/components/utils/pairingRegeneration";
 import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
@@ -60,7 +60,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
       // Defer to next tick so regenPairings is guaranteed to be defined
       setTimeout(() => regenPairings(), 0);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [user?.email, allPipes.length, allBlends.length, activePairings, hasAutoRegenerated, regenerating]);
 
   const pairingsByVariant = useMemo(() => {
@@ -99,7 +99,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
       try {
         const pipe = (allPipes || []).find((p) => p && String(p.id) === String(pv.id));
         const variant = pipe ? getVariantFromPipe(pipe, pv.bowl_variant_id || null) : null;
-        
+
         // Lookup using ONLY pipe_id + bowl_variant_id
         const tileKey = keyOf(pv.id, pv.bowl_variant_id || null);
         const pairing = pairingsByVariant.get(tileKey);

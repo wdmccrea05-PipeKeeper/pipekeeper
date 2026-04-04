@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { Leaf, TrendingUp, Plus, Search } from "lucide-react";
+import { Leaf, TrendingUp } from "lucide-react";
 import PipeIcon from "@/components/icons/PipeIcon";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";

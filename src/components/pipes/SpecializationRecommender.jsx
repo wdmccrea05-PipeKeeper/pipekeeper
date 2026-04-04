@@ -9,7 +9,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Target, CheckCircle2, AlertCircle, Lightbulb, Crown, TrendingUp } from "lucide-react";
+import { Sparkles, Target, CheckCircle2, AlertCircle, Lightbulb, TrendingUp } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { useEntitlements } from "@/components/hooks/useEntitlements";

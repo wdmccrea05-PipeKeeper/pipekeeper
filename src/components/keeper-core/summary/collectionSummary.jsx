@@ -6,7 +6,6 @@
  */
 
 import { aggregateCollection } from '../aggregation/collectionAggregation';
-import { getHubContributorModules } from '../modules/keeperModules';
 import { isModuleAIEligible } from '@/components/utils/moduleAccess';
 
 /**

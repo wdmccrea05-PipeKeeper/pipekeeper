@@ -2,7 +2,7 @@ import React from 'react';
 import { HeritageCard } from "@/components/ui/HeritageCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Star, Package, Pencil } from "lucide-react";
+import { Heart, Star, Pencil } from "lucide-react";
 import { BLEND_TYPE_COLORS } from "@/components/tobacco/tobaccoConstants";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { getAgingRecommendation } from "@/components/utils/agingRecommendation";

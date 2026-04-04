@@ -4,14 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
-import { CheckCircle2, XCircle, AlertTriangle, RefreshCw, Loader2, Users } from "lucide-react";
+import { CheckCircle2, XCircle, AlertTriangle, RefreshCw, Loader2 } from "lucide-react";
 import AllUsersPermissionTest from "@/components/debug/AllUsersPermissionTest";
 import { canCreatePipe, canCreateTobacco } from "@/components/utils/limitChecks";
 import { 
   getEntitlementTier, 
   hasPaidAccess, 
-  hasProAccess, 
-  hasPremiumAccess,
+  hasProAccess,
   isTrialingAccess,
   getPlanLabel 
 } from "@/components/utils/premiumAccess";

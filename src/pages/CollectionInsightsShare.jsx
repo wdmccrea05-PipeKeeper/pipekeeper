@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Share2, ChevronLeft, ChevronRight, Download, Copy, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Copy, ArrowLeft } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
 import { aggregateCollection } from '@/components/keeper-core/aggregation/collectionAggregation';

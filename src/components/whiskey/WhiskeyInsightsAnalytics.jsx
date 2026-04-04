@@ -16,7 +16,7 @@ import {
   Line,
 } from 'recharts';
 import { formatCurrency } from '@/components/utils/localeFormatters';
-import { subMonths, parseISO, format, differenceInCalendarMonths } from 'date-fns';
+import { subMonths, format } from 'date-fns';
 
 /**
  * WhiskeyInsightsAnalytics

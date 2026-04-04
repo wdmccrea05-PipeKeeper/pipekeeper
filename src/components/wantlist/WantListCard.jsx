@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, Share2, Edit2, CheckCircle2, ChevronDown, Archive } from "lucide-react";
+import { Trash2, Share2, Edit2, ChevronDown, Archive } from "lucide-react";
 import { toast } from "sonner";
 import {
   DropdownMenu,

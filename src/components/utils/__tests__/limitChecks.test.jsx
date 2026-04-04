@@ -29,7 +29,6 @@ import {
   canCreatePipe,
   canCreateTobacco,
   FREE_TIER_LIMITS,
-  shouldApplyTrialRestrictions,
 } from '../limitChecks';
 
 const PIPE_LIMIT = FREE_TIER_LIMITS.PIPES;           // 5

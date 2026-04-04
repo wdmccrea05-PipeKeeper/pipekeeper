@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@/components/utils/navigation";
 import { differenceInCalendarDays, differenceInMonths, formatDistanceToNow } from "date-fns";
-import { PKCard } from "@/components/ui/pk-surface";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { base44 } from "@/api/base44Client";
 import { filterAiEligibleItems } from "@/components/platform/aiEligibility";

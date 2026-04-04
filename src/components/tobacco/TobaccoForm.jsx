@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +14,6 @@ import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLo
 import ImageCropper from "@/components/pipes/ImageCropper";
 import FieldWithInfo from "@/components/forms/FieldWithInfo";
 import PhotoUploader from "@/components/PhotoUploader";
-import OnlineImageSearchModal from "@/components/search/OnlineImageSearchModal";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEntitlements } from "@/components/hooks/useEntitlements";

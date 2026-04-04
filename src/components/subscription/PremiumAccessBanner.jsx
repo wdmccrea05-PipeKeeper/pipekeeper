@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const BANNER_DISMISSED_KEY = 'pk_premium_access_banner_dismissed';

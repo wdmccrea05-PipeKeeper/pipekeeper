@@ -13,7 +13,6 @@ import { buildEnabledCuratorScopes } from "@/components/curator/curatorActionVis
 import { Sparkles } from "lucide-react";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 
-import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 import PipeIcon from "@/components/icons/PipeIcon";
 
 const CURATOR_ICON =
@@ -157,7 +156,7 @@ export default function Curator() {
         else if (enabled.pipekeeper && !enabled.whiskeykeeper) setCuratorScope("pipekeeper");
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [enabled.pipekeeper, enabled.whiskeykeeper]);
 
   const handleScopeChange = (newScope) => {

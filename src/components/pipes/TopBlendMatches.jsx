@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Sparkles, RefreshCw } from "lucide-react";
-import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 // Simple string similarity function (Levenshtein-based)

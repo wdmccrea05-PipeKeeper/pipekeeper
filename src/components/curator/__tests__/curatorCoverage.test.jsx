@@ -18,7 +18,6 @@ import {
   recordRecommendationsShown,
   recordRecommendationAction,
   getRecentHistory,
-  getExcludedItemIds,
   buildNoveltyPromptAddendum,
   buildBroadenPromptAddendum,
   clearWorkflowHistory,
