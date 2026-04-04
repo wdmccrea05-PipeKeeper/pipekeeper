@@ -290,11 +290,11 @@ export async function runScheduledRefreshForUser(userEmail, moduleKey, base44) {
   try {
     let items = [];
     if (moduleKey === 'whiskeykeeper') {
-      items = await base44.entities.Bottle.filter({ created_by: userEmail }, '-created_date', 500).catch(() => []);
+      items = await base44.entities.Bottle.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []);
     } else if (moduleKey === 'pipekeeper') {
       const [pipes, tobaccos] = await Promise.all([
-        base44.entities.Pipe.filter({ created_by: userEmail }, '-created_date', 500).catch(() => []),
-        base44.entities.TobaccoBlend.filter({ created_by: userEmail }, '-created_date', 500).catch(() => []),
+        base44.entities.Pipe.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []),
+        base44.entities.TobaccoBlend.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []),
       ]);
       items = [
         ...pipes.map((p) => ({ ...p, _itemType: 'pipe' })),

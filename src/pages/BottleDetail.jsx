@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -457,7 +457,7 @@ function BottleDetailInner() {
   async function loadBottle() {
     if (!bottleId || !userEmail) {
       setBottle(null);
-      return;
+      return null;
     }
 
     try {
@@ -465,10 +465,13 @@ function BottleDetailInner() {
         id: bottleId,
         created_by: userEmail,
       });
-      setBottle(rows?.[0] || null);
+      const bottleData = rows?.[0] || null;
+      setBottle(bottleData);
+      return bottleData;
     } catch (e) {
       console.error("[BottleDetail] failed to load bottle", e);
       setBottle(null);
+      return null;
     }
   }
 
@@ -579,26 +582,6 @@ function BottleDetailInner() {
   }
 
   /**
-   * Auto-seeds the first BottleValueSnapshot when none exist for this bottle.
-   * Called automatically after initial data load.
-   */
-  const autoSeedSnapshotIfMissing = useCallback(async (bottleData, currentSnapshots, allBottlesData) => {
-    if (!bottleData || !userEmail || currentSnapshots.length > 0) return;
-    const seeded = await seedInitialSnapshotIfMissing(
-      bottleData,
-      'whiskeykeeper',
-      'bottle',
-      userEmail,
-      base44,
-      currentSnapshots,
-      { bottles: allBottlesData }
-    );
-    if (seeded) {
-      await loadValueSnapshots();
-    }
-  }, [bottleId, userEmail]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  /**
    * Manually triggered "Refresh Value Now" — recomputes value and creates a
    * new snapshot immediately, then refreshes Value History on screen.
    */
@@ -632,7 +615,7 @@ function BottleDetailInner() {
 
     (async () => {
       setLoading(true);
-      const [, , allBottlesData, snapshotRows] = await Promise.all([
+      const [bottleData, , allBottlesData, snapshotRows] = await Promise.all([
         loadBottle(),
         loadTastings(),
         loadAllBottles(),
@@ -644,22 +627,25 @@ function BottleDetailInner() {
         loadPriceObservations(),
       ]);
       if (mounted) {
+        const snapshots = snapshotRows || [];
+        setValueSnapshots(snapshots);
         setLoading(false);
-        // Auto-seed first snapshot if none exist yet
-        if (bottleId && userEmail) {
-          const snapshots = snapshotRows || [];
-          setValueSnapshots(snapshots);
-          // We need the bottle data — re-read from state after load
-          // Use a short timeout to allow bottle state to settle before seeding
-          setTimeout(async () => {
-            const bottleRows = await base44.entities.Bottle.filter(
-              { id: bottleId, created_by: userEmail }
-            ).catch(() => []);
-            const bottleData = bottleRows?.[0] || null;
-            if (bottleData) {
-              await autoSeedSnapshotIfMissing(bottleData, snapshots, allBottlesData || []);
-            }
-          }, 0);
+
+        // Auto-seed first snapshot using the bottle data returned directly
+        // from loadBottle() — no re-fetch or setTimeout needed
+        if (bottleData && userEmail && snapshots.length === 0) {
+          const seeded = await seedInitialSnapshotIfMissing(
+            bottleData,
+            'whiskeykeeper',
+            'bottle',
+            userEmail,
+            base44,
+            snapshots,
+            { bottles: allBottlesData || [] }
+          );
+          if (seeded && mounted) {
+            await loadValueSnapshots();
+          }
         }
       }
     })();
