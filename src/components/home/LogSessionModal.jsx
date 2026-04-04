@@ -499,7 +499,7 @@ export default function LogSessionModal({
       )}
 
       <Sheet
-        open={isOpen || postPromptPendingRef.current || !!postPromptItems}
+        open={isOpen && !postPromptItems}
         onOpenChange={(open) => {
           if (!open && !saving && !postPromptPendingRef.current && !postPromptItems) {
             onClose?.();
