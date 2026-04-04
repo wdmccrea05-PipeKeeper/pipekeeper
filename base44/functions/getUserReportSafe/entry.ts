@@ -181,14 +181,21 @@ function getSubAmount(sub: any): number {
 
 function isActivePaidSub(sub: any, now: Date): boolean {
   const status = norm(sub.status);
-  // 'trial' = free 7-day access period, never a paid subscription.
-  // Only 'active', 'trialing' (Stripe pending), and 'past_due' (grace period) count as paid.
-  if (!['active', 'trialing', 'past_due'].includes(status)) return false;
-  const amount = getSubAmount(sub);
-  if (amount <= 0) return false;
-  const end = parseDate(sub.current_period_end);
-  if (end && end <= now) return false;
-  return true;
+  // 'trial' = free 7-day access, never paid.
+  // 'active' status from Stripe IS paid — don't require amount > 0 (field may be unpopulated).
+  // For 'trialing' / 'past_due' we do require amount > 0 as a safeguard.
+  if (status === 'active') {
+    const end = parseDate(sub.current_period_end);
+    if (end && end <= now) return false;
+    return true;
+  }
+  if (['trialing', 'past_due'].includes(status)) {
+    if (getSubAmount(sub) <= 0) return false;
+    const end = parseDate(sub.current_period_end);
+    if (end && end <= now) return false;
+    return true;
+  }
+  return false;
 }
 
 function toUserRow(user: any, bestSub: any, isPaid: boolean) {
