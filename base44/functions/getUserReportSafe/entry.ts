@@ -182,17 +182,25 @@ function getSubAmount(sub: any): number {
 function isActivePaidSub(sub: any, now: Date): boolean {
   const status = norm(sub.status);
   // 'trial' = free 7-day access, never paid.
-  // 'active' status from Stripe IS paid — don't require amount > 0 (field may be unpopulated).
-  // For 'trialing' / 'past_due' we do require amount > 0 as a safeguard.
+  if (!['active', 'trialing', 'past_due'].includes(status)) return false;
+
+  const provider = norm(sub.provider || '');
+  const isApple = provider === 'apple' || !!sub.apple_product_id;
+
   if (status === 'active') {
-    const end = parseDate(sub.current_period_end);
-    if (end && end <= now) return false;
+    // Apple doesn't reliably update current_period_end — skip expiry check for Apple subs.
+    if (!isApple) {
+      const end = parseDate(sub.current_period_end);
+      if (end && end <= now) return false;
+    }
     return true;
   }
   if (['trialing', 'past_due'].includes(status)) {
     if (getSubAmount(sub) <= 0) return false;
-    const end = parseDate(sub.current_period_end);
-    if (end && end <= now) return false;
+    if (!isApple) {
+      const end = parseDate(sub.current_period_end);
+      if (end && end <= now) return false;
+    }
     return true;
   }
   return false;
