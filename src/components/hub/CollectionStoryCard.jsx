@@ -336,7 +336,7 @@ export default function CollectionStoryCard() {
 
       {showStoryViewer && story && (
         <CollectionStoryViewer
-          cards={generateCollectionStoryCards(story)}
+          cards={generateCollectionStoryCards(story, undefined, enabledModules)}
           onClose={() => setShowStoryViewer(false)}
         />
       )}
