@@ -205,115 +205,15 @@ const CHART_TOOLTIP = {
   itemStyle: { color: '#E0D8C8' },
 };
 
-export function WhiskeyAnalyticsTab({ bottles, tastingLogs }) {
+export function WhiskeyTrendsTab({ bottles, tastingLogs }) {
   const { t } = useTranslation();
 
-  const typeDistribution = useMemo(() => getBottleTypeDistribution(bottles), [bottles]);
-  const countryDistribution = useMemo(() => getCountryDistribution(bottles), [bottles]);
-  const collectionValue = useMemo(() => getCollectionValue(bottles), [bottles]);
   const tastingTrends = useMemo(() => getTastingTrends(tastingLogs, bottles), [tastingLogs, bottles]);
   const purchaseTrends = useMemo(() => getPurchaseTrends(bottles), [bottles]);
-  const ratingTrends = useMemo(() => getRatingTrends(bottles), [bottles]);
   const growthTrends = useMemo(() => getCollectionGrowth(bottles), [bottles]);
 
   return (
     <div className="space-y-8">
-      {/* Type Distribution */}
-      <div className="rounded-2xl p-6" style={{
-        background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))',
-        border: '1px solid rgba(180, 140, 75, 0.15)',
-      }}>
-        <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-          {t('whiskeykeeper.bottleTypeDistribution', 'Bottle Type Distribution')}
-        </h3>
-        <ResponsiveContainer width="100%" height={360}>
-          <PieChart>
-            <Pie
-              data={typeDistribution}
-              cx="38%"
-              cy="50%"
-              outerRadius={96}
-              innerRadius={30}
-              paddingAngle={2}
-              labelLine={false}
-              dataKey="value"
-            >
-              {typeDistribution.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={{
-                background: 'rgba(28,18,10,0.95)',
-                border: '1px solid rgba(180,140,75,0.3)',
-                color: '#F5F1E7',
-              }}
-            />
-            <Legend
-              layout="vertical"
-              align="right"
-              verticalAlign="middle"
-              wrapperStyle={{
-                color: '#E0D8C8',
-                fontSize: 12,
-                lineHeight: '18px',
-                paddingLeft: 12,
-              }}
-              formatter={(value) => <span style={{ color: '#E0D8C8' }}>{value}</span>}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Country Distribution */}
-      <div className="rounded-2xl p-6" style={{
-        background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))',
-        border: '1px solid rgba(180, 140, 75, 0.15)',
-      }}>
-        <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-          {t('whiskeykeeper.countryDistribution', 'Country Distribution')}
-        </h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={countryDistribution}>
-            <CartesianGrid stroke="rgba(180,140,75,0.15)" />
-            <XAxis dataKey="name" tick={CHART_TICK} />
-            <YAxis tick={CHART_TICK} />
-            <Tooltip {...CHART_TOOLTIP} />
-            <Bar dataKey="value" fill="#C87941" radius={[8, 8, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Collection Value Breakdown */}
-      <div className="rounded-2xl p-6" style={{
-        background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))',
-        border: '1px solid rgba(180, 140, 75, 0.15)',
-      }}>
-        <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-          {t('whiskeykeeper.collectionValueBreakdown', 'Collection Value Breakdown')}
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-4 rounded-lg" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.15)' }}>
-            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Retail Value</p>
-            <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>
-              {formatCurrency(Math.round(collectionValue.retail))}
-            </p>
-          </div>
-          <div className="p-4 rounded-lg" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)' }}>
-            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Aftermarket Value</p>
-            <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>
-              {formatCurrency(Math.round(collectionValue.aftermarket))}
-            </p>
-          </div>
-          <div className="p-4 rounded-lg" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)' }}>
-            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Collector Value</p>
-            <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>
-              {formatCurrency(Math.round(collectionValue.collector))}
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Tasting Trends */}
       {tastingTrends.length > 0 && (
         <div className="rounded-2xl p-6" style={{
@@ -356,27 +256,6 @@ export function WhiskeyAnalyticsTab({ bottles, tastingLogs }) {
         </div>
       )}
 
-      {/* Rating Trends */}
-      {ratingTrends.length > 0 && (
-        <div className="rounded-2xl p-6" style={{
-          background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))',
-          border: '1px solid rgba(180, 140, 75, 0.15)',
-        }}>
-          <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-            {t('whiskeykeeper.ratingTrends', 'Average Rating by Country')}
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={ratingTrends}>
-              <CartesianGrid stroke="rgba(180,140,75,0.15)" />
-              <XAxis dataKey="country" tick={CHART_TICK_SM} angle={-45} />
-              <YAxis tick={CHART_TICK} domain={[0, 5]} />
-              <Tooltip {...CHART_TOOLTIP} />
-              <Bar dataKey="avgRating" fill="#8B5CF6" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
       {/* Collection Growth */}
       {growthTrends.length > 0 && (
         <div className="rounded-2xl p-6" style={{
@@ -394,6 +273,108 @@ export function WhiskeyAnalyticsTab({ bottles, tastingLogs }) {
               <Tooltip {...CHART_TOOLTIP} />
               <Line type="monotone" dataKey="bottles" stroke="#F59E0B" strokeWidth={2} dot={{ fill: '#F59E0B' }} />
             </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {!tastingTrends.some(m => m.tastings > 0) && !purchaseTrends.some(m => m.purchases > 0) && (
+        <p style={{ color: 'rgba(224,216,200,0.6)' }}>No trend data available yet. Add purchase dates and log tastings to see trends.</p>
+      )}
+    </div>
+  );
+}
+
+export function WhiskeyAnalyticsTab({ bottles }) {
+  const { t } = useTranslation();
+
+  const typeDistribution = useMemo(() => getBottleTypeDistribution(bottles), [bottles]);
+  const countryDistribution = useMemo(() => getCountryDistribution(bottles), [bottles]);
+  const collectionValue = useMemo(() => getCollectionValue(bottles), [bottles]);
+  const ratingTrends = useMemo(() => getRatingTrends(bottles), [bottles]);
+
+  return (
+    <div className="space-y-8">
+      {/* Type Distribution */}
+      <div className="rounded-2xl p-6" style={{
+        background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))',
+        border: '1px solid rgba(180, 140, 75, 0.15)',
+      }}>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
+          {t('whiskeykeeper.bottleTypeDistribution', 'Bottle Type Distribution')}
+        </h3>
+        <ResponsiveContainer width="100%" height={360}>
+          <PieChart>
+            <Pie data={typeDistribution} cx="38%" cy="50%" outerRadius={96} innerRadius={30} paddingAngle={2} labelLine={false} dataKey="value">
+              {typeDistribution.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip contentStyle={{ background: 'rgba(28,18,10,0.95)', border: '1px solid rgba(180,140,75,0.3)', color: '#F5F1E7' }} />
+            <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ color: '#E0D8C8', fontSize: 12, lineHeight: '18px', paddingLeft: 12 }} formatter={(value) => <span style={{ color: '#E0D8C8' }}>{value}</span>} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Country Distribution */}
+      <div className="rounded-2xl p-6" style={{
+        background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))',
+        border: '1px solid rgba(180, 140, 75, 0.15)',
+      }}>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
+          {t('whiskeykeeper.countryDistribution', 'Country Distribution')}
+        </h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={countryDistribution}>
+            <CartesianGrid stroke="rgba(180,140,75,0.15)" />
+            <XAxis dataKey="name" tick={CHART_TICK} />
+            <YAxis tick={CHART_TICK} />
+            <Tooltip {...CHART_TOOLTIP} />
+            <Bar dataKey="value" fill="#C87941" radius={[8, 8, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Collection Value Breakdown */}
+      <div className="rounded-2xl p-6" style={{
+        background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))',
+        border: '1px solid rgba(180, 140, 75, 0.15)',
+      }}>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
+          {t('whiskeykeeper.collectionValueBreakdown', 'Collection Value Breakdown')}
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="p-4 rounded-lg" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.15)' }}>
+            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Retail Value</p>
+            <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{formatCurrency(Math.round(collectionValue.retail))}</p>
+          </div>
+          <div className="p-4 rounded-lg" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)' }}>
+            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Aftermarket Value</p>
+            <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{formatCurrency(Math.round(collectionValue.aftermarket))}</p>
+          </div>
+          <div className="p-4 rounded-lg" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)' }}>
+            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Collector Value</p>
+            <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{formatCurrency(Math.round(collectionValue.collector))}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Rating by Country */}
+      {ratingTrends.length > 0 && (
+        <div className="rounded-2xl p-6" style={{
+          background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))',
+          border: '1px solid rgba(180, 140, 75, 0.15)',
+        }}>
+          <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
+            {t('whiskeykeeper.ratingTrends', 'Average Rating by Country')}
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={ratingTrends}>
+              <CartesianGrid stroke="rgba(180,140,75,0.15)" />
+              <XAxis dataKey="country" tick={CHART_TICK_SM} angle={-45} />
+              <YAxis tick={CHART_TICK} domain={[0, 5]} />
+              <Tooltip {...CHART_TOOLTIP} />
+              <Bar dataKey="avgRating" fill="#8B5CF6" radius={[8, 8, 0, 0]} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       )}

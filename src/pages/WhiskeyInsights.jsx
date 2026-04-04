@@ -6,7 +6,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
-import { WhiskeyAnalyticsTab } from '@/components/whiskey/WhiskeyInsightsAnalytics';
+import { WhiskeyAnalyticsTab, WhiskeyTrendsTab } from '@/components/whiskey/WhiskeyInsightsAnalytics';
 import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
 import { TrendingUp, Award, Trophy, Star, Zap } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
@@ -417,7 +417,12 @@ export default function WhiskeyInsightsPage() {
 
           {/* Stats Tab */}
           {activeTab === 'stats' && (
-            <WhiskeyAnalyticsTab bottles={bottles} tastingLogs={tastingLogs} />
+            <WhiskeyAnalyticsTab bottles={bottles} />
+          )}
+
+          {/* Trends Tab */}
+          {activeTab === 'trends' && (
+            <WhiskeyTrendsTab bottles={bottles} tastingLogs={tastingLogs} />
           )}
 
           {/* Reports Tab */}
