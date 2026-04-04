@@ -6,21 +6,19 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
-import { WhiskeyAnalyticsTab, WhiskeyTrendsTab } from '@/components/whiskey/WhiskeyInsightsAnalytics';
+import { WhiskeyAnalyticsTab, WhiskeyTrendsTab, getTopBottlesToHold, getBottlesSafeToOpen, getReplacementRiskBottles, getValueConcentration } from '@/components/whiskey/WhiskeyInsightsAnalytics';
 import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
-import { TrendingUp, Award, Trophy, Star, Zap } from 'lucide-react';
+import { TrendingUp, Award, Trophy, Star, Zap, ShieldCheck, Sparkles, AlertTriangle, DollarSign } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import { toast } from 'sonner';
 import { differenceInCalendarDays, parseISO, subDays, isWithinInterval } from 'date-fns';
 import { StatusCard, CATEGORY_COLORS } from '@/components/ui/HeroCard';
+import { computeCurrentValue, DIFFICULTY_LABELS } from '@/components/valuation/valueEngine';
 
 function sumBottleCollectionValue(bottles) {
   if (!Array.isArray(bottles)) return 0;
-  return bottles.reduce((sum, b) => {
-    const v = Number(b?.collector_value) || Number(b?.aftermarket_price) || Number(b?.retail_price) || Number(b?.purchase_price) || 0;
-    return sum + v;
-  }, 0);
+  return bottles.reduce((sum, b) => sum + computeCurrentValue(b, 'whiskeykeeper'), 0);
 }
 
 export default function WhiskeyInsightsPage() {
@@ -92,13 +90,8 @@ export default function WhiskeyInsightsPage() {
       : 0;
   }, [bottles]);
 
-  // Canonical single-bottle value: collector_value > aftermarket_price > retail_price > purchase_price
-  const getBottleValue = (b) =>
-    Number(b.collector_value) ||
-    Number(b.aftermarket_price) ||
-    Number(b.retail_price) ||
-    Number(b.purchase_price) ||
-    0;
+  // Canonical single-bottle value via shared engine
+  const getBottleValue = (b) => computeCurrentValue(b, 'whiskeykeeper');
 
   const mostValuedBottle = useMemo(() => {
     if (!bottles.length) return null;
@@ -153,6 +146,26 @@ export default function WhiskeyInsightsPage() {
     const weeks = Math.max(1, Math.ceil(differenceInCalendarDays(now, new Date(oldestLog.tasting_date)) / 7));
     return (tastingLogs.length / weeks).toFixed(1);
   }, [tastingLogs]);
+
+  const topBottlesToHold = useMemo(() => getTopBottlesToHold(bottles, 5), [bottles]);
+  const bottlesSafeToOpen = useMemo(() => getBottlesSafeToOpen(bottles, 5), [bottles]);
+  const replacementRiskBottles = useMemo(() => getReplacementRiskBottles(bottles, 5), [bottles]);
+  const valueConcentration = useMemo(() => getValueConcentration(bottles), [bottles]);
+
+  const sealedValue = useMemo(() => {
+    if (inventoryUnits.length === 0) return 0;
+    const sealedBottleIds = new Set(inventoryUnits.filter(u => u.status === 'reserve' || u.status === 'drinking').map(u => u.bottle_id));
+    return bottles
+      .filter(b => sealedBottleIds.has(b.id))
+      .reduce((sum, b) => sum + computeCurrentValue(b, 'whiskeykeeper'), 0);
+  }, [bottles, inventoryUnits]);
+
+  const openValue = useMemo(() => {
+    const openBottleIds = new Set(inventoryUnits.filter(u => u.status === 'open').map(u => u.bottle_id));
+    return bottles
+      .filter(b => openBottleIds.has(b.id))
+      .reduce((sum, b) => sum + computeCurrentValue(b, 'whiskeykeeper'), 0);
+  }, [bottles, inventoryUnits]);
 
   const hasData = bottles.length > 0 || tastingLogs.length > 0;
 
@@ -273,6 +286,7 @@ export default function WhiskeyInsightsPage() {
           <div className="flex gap-2 flex-wrap" style={{ borderBottom: '1px solid rgba(180,140,75,0.2)' }}>
             {[
               { key: 'summary', label: t('insights.tabSummary', 'Summary') },
+              { key: 'value', label: t('insights.tabValue', 'Value') },
               { key: 'usage', label: t('insights.tabUsage', 'Usage') },
               { key: 'stats', label: t('insights.tabStats', 'Statistics') },
               { key: 'trends', label: t('insights.tabTrends', 'Trends') },
@@ -411,6 +425,120 @@ export default function WhiskeyInsightsPage() {
                 </div>
               ) : (
                 <p style={{ color: 'rgba(224,216,200,0.6)' }}>No tastings logged</p>
+              )}
+            </div>
+          )}
+
+          {/* Value Tab */}
+          {activeTab === 'value' && (
+            <div className="space-y-6">
+              {/* Value exposure overview */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <StatusCard
+                  icon={TrendingUp}
+                  label="Canonical Collection Value"
+                  value={formatCurrency(Math.round(totalValue))}
+                  sub="Engine-computed (canonical priority)"
+                  accent={CATEGORY_COLORS.value}
+                />
+                {inventoryUnits.length > 0 && (
+                  <>
+                    <StatusCard
+                      icon={ShieldCheck}
+                      label="Sealed / Reserve Value"
+                      value={formatCurrency(Math.round(sealedValue))}
+                      sub="Value held in sealed bottles"
+                      accent="#10B981"
+                    />
+                    <StatusCard
+                      icon={Zap}
+                      label="Open Bottle Exposure"
+                      value={formatCurrency(Math.round(openValue))}
+                      sub="Value at risk in open bottles"
+                      accent="#EF4444"
+                    />
+                  </>
+                )}
+                {valueConcentration.topPct > 0 && (
+                  <StatusCard
+                    icon={DollarSign}
+                    label="Value Concentration"
+                    value={`${valueConcentration.topPct}%`}
+                    sub={`Top 20% of bottles hold ${valueConcentration.topPct}% of value`}
+                    accent="#8B5CF6"
+                  />
+                )}
+              </div>
+
+              {/* Top bottles to hold */}
+              {topBottlesToHold.length > 0 && (
+                <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))', border: '1px solid rgba(239,68,68,0.2)' }}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <ShieldCheck className="w-4 h-4 text-red-400" />
+                    <h3 className="text-lg font-semibold text-[#F5F1E7]">Top Bottles to Hold</h3>
+                  </div>
+                  <div className="space-y-2">
+                    {topBottlesToHold.map((b, i) => (
+                      <div key={b.id || i} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
+                        <div>
+                          <p className="text-sm font-medium text-[#F5F1E7]">{b.name || '—'}</p>
+                          <p className="text-xs text-[#D8C7A6]/60">{b.distillery || b.type || '—'}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(computeCurrentValue(b, 'whiskeykeeper'))}</p>
+                          <p className="text-xs text-[#D8C7A6]/60">Rarity {b._rarityScore}/100</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Bottles safe to open */}
+              {bottlesSafeToOpen.length > 0 && (
+                <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))', border: '1px solid rgba(16,185,129,0.2)' }}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Sparkles className="w-4 h-4 text-emerald-400" />
+                    <h3 className="text-lg font-semibold text-[#F5F1E7]">Safe to Open</h3>
+                  </div>
+                  <div className="space-y-2">
+                    {bottlesSafeToOpen.map((b, i) => (
+                      <div key={b.id || i} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)' }}>
+                        <div>
+                          <p className="text-sm font-medium text-[#F5F1E7]">{b.name || '—'}</p>
+                          <p className="text-xs text-[#D8C7A6]/60">{b.type || '—'} · {b.country || '—'}</p>
+                        </div>
+                        <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(computeCurrentValue(b, 'whiskeykeeper'))}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Replacement risk */}
+              {replacementRiskBottles.length > 0 && (
+                <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))', border: '1px solid rgba(251,191,36,0.2)' }}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                    <h3 className="text-lg font-semibold text-[#F5F1E7]">Replacement Risk</h3>
+                    <span className="text-xs text-[#D8C7A6]/60">Hard to replace if opened</span>
+                  </div>
+                  <div className="space-y-2">
+                    {replacementRiskBottles.map((b, i) => (
+                      <div key={b.id || i} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)' }}>
+                        <div>
+                          <p className="text-sm font-medium text-[#F5F1E7]">{b.name || '—'}</p>
+                          <p className="text-xs text-[#D8C7A6]/60">{b._difficulty ? DIFFICULTY_LABELS[b._difficulty] : '—'}</p>
+                        </div>
+                        <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(computeCurrentValue(b, 'whiskeykeeper'))}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {topBottlesToHold.length === 0 && bottlesSafeToOpen.length === 0 && replacementRiskBottles.length === 0 && (
+                <p style={{ color: 'rgba(224,216,200,0.6)' }}>Add bottle details (age, type, production status) to enable value strategy insights.</p>
               )}
             </div>
           )}

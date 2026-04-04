@@ -1,18 +1,18 @@
+import {
+  computeCurrentValue,
+  buildValuationSnapshot,
+} from '@/components/valuation/valueEngine';
+
 export function toNumber(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
 }
 
+/**
+ * Returns the canonical unit value for a bottle, delegating to the shared engine.
+ */
 export function resolveBottleUnitValue(bottle) {
-  if (!bottle) return 0;
-
-  return (
-    toNumber(bottle.collector_value) ||
-    toNumber(bottle.aftermarket_price) ||
-    toNumber(bottle.retail_price) ||
-    toNumber(bottle.purchase_price) ||
-    0
-  );
+  return computeCurrentValue(bottle, 'whiskeykeeper');
 }
 
 export function resolveBottleQuantity(bottle) {
@@ -33,26 +33,20 @@ export function resolveBottleTotalValue(bottle) {
   return resolveBottleUnitValue(bottle) * resolveBottleQuantity(bottle);
 }
 
+/**
+ * Returns { label, confidence } describing the value source.
+ * Delegates to the shared engine for consistent source determination.
+ */
 export function resolveBottleValueSource(bottle) {
   if (!bottle) return { label: 'Unknown', confidence: 'low' };
 
-  if (toNumber(bottle.collector_value) > 0) {
-    return { label: 'Collector Value', confidence: 'high' };
-  }
+  const snapshot = buildValuationSnapshot(bottle, 'whiskeykeeper');
+  if (!snapshot) return { label: 'Unknown', confidence: 'low' };
 
-  if (toNumber(bottle.aftermarket_price) > 0) {
-    return { label: 'Aftermarket Value', confidence: 'medium' };
-  }
-
-  if (toNumber(bottle.retail_price) > 0) {
-    return { label: 'Retail Value', confidence: 'medium' };
-  }
-
-  if (toNumber(bottle.purchase_price) > 0) {
-    return { label: 'Purchase Price', confidence: 'low' };
-  }
-
-  return { label: 'Unknown', confidence: 'low' };
+  return {
+    label: snapshot.source,
+    confidence: snapshot.confidence,
+  };
 }
 
 export function formatCurrency(value) {

@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, TrendingUp, AlertCircle } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/components/utils/localeFormatters';
+import {
+  buildValuationSnapshot,
+  computeRarityScore,
+  computeReplacementDifficulty,
+} from '@/components/valuation/valueEngine';
 
 /**
  * ValuationCredibility - Transparent valuation display with reference signals,
@@ -127,67 +132,45 @@ export function computePipeValuation(pipe) {
 }
 
 /**
- * Calculates a whiskey bottle valuation from available bottle data.
+ * Calculates a whiskey bottle valuation score from available bottle data.
+ * Delegates to the shared valueEngine for canonical computation.
  */
 export function computeBottleValuation(bottle) {
   if (!bottle) return null;
 
+  const snapshot = buildValuationSnapshot(bottle, 'whiskeykeeper');
+  if (!snapshot) return null;
+
+  // Build legacy-compatible signal list for display
   const signals = [];
-  let score = 0;
-  let signalCount = 0;
 
-  // Purchase price as primary signal
-  if (bottle.purchase_price && bottle.purchase_price > 0) {
-    score = bottle.purchase_price;
-    signals.push('Purchase price baseline');
-    signalCount++;
-  }
+  if (Number(bottle.purchase_price) > 0) signals.push('Purchase price baseline');
+  if (Number(bottle.retail_price) > 0) signals.push('Retail price reference');
+  if (Number(bottle.aftermarket_price) > 0) signals.push('Aftermarket / secondary market data');
+  if (Number(bottle.collector_value) > 0) signals.push('Collector value estimate');
 
-  // Age factor
-  if (bottle.age && bottle.age > 0) {
-    const ageFactor = bottle.age >= 25 ? 1.6 : bottle.age >= 18 ? 1.35 : bottle.age >= 12 ? 1.15 : 1.0;
-    score *= ageFactor;
-    signalCount++;
-    if (bottle.age >= 12) signals.push(`Age premium (${bottle.age} yr)`);
-  }
+  if (bottle.age && bottle.age >= 12) signals.push(`Age premium (${bottle.age} yr)`);
+  if (bottle.type === 'Single Malt' || bottle.type === 'Single Grain') signals.push(`Type: ${bottle.type}`);
+  if (bottle.abv && bottle.abv >= 55) signals.push('Cask-strength premium');
+  if (bottle.fill_level && bottle.fill_level !== 'Full') signals.push(`Fill level: ${bottle.fill_level}`);
 
-  // Type / distillery prestige
-  const premiumTypes = ['Single Malt', 'Single Grain'];
-  if (premiumTypes.includes(bottle.type)) {
-    score *= 1.1;
-    signals.push(`Type: ${bottle.type}`);
-    signalCount++;
-  }
+  const status = (bottle.production_status || '').toLowerCase();
+  if (status === 'discontinued') signals.push('Discontinued production');
+  if (status === 'limited edition' || status === 'allocated') signals.push('Limited / allocated release');
 
-  // Fill level depreciation
-  const fillFactors = { Full: 1.0, High: 0.92, Medium: 0.75, Low: 0.5, Empty: 0.1 };
-  const fillMult = fillFactors[bottle.fill_level] || 1.0;
-  if (bottle.fill_level && bottle.fill_level !== 'Full') {
-    score *= fillMult;
-    signals.push(`Fill level: ${bottle.fill_level}`);
-  }
-
-  // ABV factor (cask strength = premium)
-  if (bottle.abv && bottle.abv >= 55) {
-    score *= 1.1;
-    signals.push('Cask-strength premium');
-    signalCount++;
-  }
-
-  const baseValue = Math.max(Math.round(score), 0);
-
-  let confidence = 'Low';
-  if (signalCount >= 3) confidence = 'High';
-  else if (signalCount >= 2) confidence = 'Medium';
-
-  if (!bottle.purchase_price) confidence = 'Low';
+  // Confidence: normalize from engine output
+  const confMap = { high: 'High', medium: 'Medium', low: 'Low' };
+  const confidence = confMap[snapshot.confidence] || 'Low';
 
   return {
-    value: baseValue,
+    value: snapshot.currentValue,
     confidence,
     signals,
     lastUpdated: bottle.updated_date || bottle.created_date || null,
-    isManual: false,
+    isManual: !!(bottle.manual_value_override && Number(bottle.manual_value_override) > 0),
+    rarityScore: snapshot.rarityScore,
+    replacementDifficulty: snapshot.replacementDifficulty,
+    holdRecommendation: snapshot.holdRecommendation,
   };
 }
 

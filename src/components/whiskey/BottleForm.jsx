@@ -34,6 +34,16 @@ const DEFAULT_FORM = (defaultBottleType = 'whiskey') => ({
   rating: '',
   favorite: false,
   photo: '',
+  // Strategy / value fields
+  production_status: '',
+  edition: '',
+  discontinued: false,
+  allocated: false,
+  availability_note: '',
+  manual_value_override: '',
+  valuation_notes: '',
+  value_source_notes: '',
+  replacement_difficulty: '',
 });
 
 function toNumberOrNull(value) {
@@ -158,9 +168,10 @@ export default function BottleForm({
       retail_price: toNumberOrNull(formData.retail_price),
       aftermarket_price: toNumberOrNull(formData.aftermarket_price),
       collector_value: toNumberOrNull(formData.collector_value),
+      manual_value_override: toNumberOrNull(formData.manual_value_override),
       rating: toNumberOrNull(formData.rating),
       value_last_updated:
-        formData.retail_price || formData.aftermarket_price || formData.collector_value
+        formData.retail_price || formData.aftermarket_price || formData.collector_value || formData.manual_value_override
           ? new Date().toISOString()
           : null,
     };
@@ -532,6 +543,150 @@ export default function BottleForm({
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+            </div>
+
+            {/* STRATEGY & AVAILABILITY SECTION */}
+            <div className="pt-2">
+              <p className="text-xs uppercase tracking-wider font-semibold text-[#B48C4B] mb-3">
+                Strategy & Availability
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="min-w-0">
+                  <label className="text-sm text-[#D8C7A6] block mb-2">
+                    {t('whiskey.productionStatus', 'Production Status')}
+                  </label>
+                  <Select
+                    value={formData.production_status || ''}
+                    onValueChange={(value) => handleChange('production_status', value)}
+                  >
+                    <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
+                      <SelectValue placeholder={t('whiskey.productionStatusPlaceholder', 'e.g. Discontinued')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Unknown</SelectItem>
+                      <SelectItem value="Active">Active / Ongoing</SelectItem>
+                      <SelectItem value="Limited Edition">Limited Edition</SelectItem>
+                      <SelectItem value="Allocated">Allocated</SelectItem>
+                      <SelectItem value="Single Cask">Single Cask</SelectItem>
+                      <SelectItem value="Discontinued">Discontinued</SelectItem>
+                      <SelectItem value="Vintage">Vintage</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="min-w-0">
+                  <label className="text-sm text-[#D8C7A6] block mb-2">
+                    {t('whiskey.edition', 'Edition / Release')}
+                  </label>
+                  <Input
+                    value={formData.edition || ''}
+                    onChange={(e) => handleChange('edition', e.target.value)}
+                    placeholder={t('whiskey.editionPlaceholder', 'e.g. Batch #4, 2020 Release')}
+                    className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="min-w-0">
+                  <label className="text-sm text-[#D8C7A6] block mb-2">
+                    {t('whiskey.replacementDifficulty', 'Replacement Difficulty')}
+                  </label>
+                  <Select
+                    value={formData.replacement_difficulty || ''}
+                    onValueChange={(value) => handleChange('replacement_difficulty', value)}
+                  >
+                    <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
+                      <SelectValue placeholder={t('whiskey.replacementDifficultyPlaceholder', 'Auto-computed if blank')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Auto-Compute</SelectItem>
+                      <SelectItem value="easy">Easy to Replace</SelectItem>
+                      <SelectItem value="moderate">Moderately Available</SelectItem>
+                      <SelectItem value="hard">Hard to Replace</SelectItem>
+                      <SelectItem value="very_hard">Very Hard to Replace</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="min-w-0">
+                  <label className="text-sm text-[#D8C7A6] block mb-2">
+                    {t('whiskey.manualValueOverride', 'Manual Value Override')}
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formData.manual_value_override || ''}
+                    onChange={(e) => handleChange('manual_value_override', e.target.value)}
+                    placeholder={t('whiskey.manualValueOverridePlaceholder', 'Override engine value')}
+                    className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+                  />
+                  <p className="text-xs mt-1" style={{ color: 'rgba(224,200,160,0.5)' }}>
+                    Takes precedence over all computed values when set.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-6">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.discontinued || false}
+                    onChange={(e) => handleChange('discontinued', e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm text-[#D8C7A6]">
+                    {t('whiskey.discontinued', 'Discontinued')}
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.allocated || false}
+                    onChange={(e) => handleChange('allocated', e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm text-[#D8C7A6]">
+                    {t('whiskey.allocated', 'Allocated / Lottery')}
+                  </span>
+                </label>
+              </div>
+
+              <div className="mt-4">
+                <label className="text-sm text-[#D8C7A6] block mb-2">
+                  {t('whiskey.availabilityNote', 'Availability Note')}
+                </label>
+                <Input
+                  value={formData.availability_note || ''}
+                  onChange={(e) => handleChange('availability_note', e.target.value)}
+                  placeholder={t('whiskey.availabilityNotePlaceholder', 'e.g. Distillery exclusive, regional allocation')}
+                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+                />
+              </div>
+
+              <div className="mt-4">
+                <label className="text-sm text-[#D8C7A6] block mb-2">
+                  {t('whiskey.valuationNotes', 'Valuation Notes')}
+                </label>
+                <Textarea
+                  value={formData.valuation_notes || ''}
+                  onChange={(e) => handleChange('valuation_notes', e.target.value)}
+                  placeholder={t('whiskey.valuationNotesPlaceholder', 'Notes on value reasoning, sources, or context')}
+                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] h-20"
+                />
+              </div>
+
+              <div className="mt-4">
+                <label className="text-sm text-[#D8C7A6] block mb-2">
+                  {t('whiskey.valueSourceNotes', 'Value Source Notes')}
+                </label>
+                <Input
+                  value={formData.value_source_notes || ''}
+                  onChange={(e) => handleChange('value_source_notes', e.target.value)}
+                  placeholder={t('whiskey.valueSourceNotesPlaceholder', 'e.g. Whisky Auctioneer Oct 2024')}
+                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+                />
               </div>
             </div>
 
