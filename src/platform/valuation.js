@@ -96,3 +96,82 @@ export function getMultiModuleValueSummary(itemsByModule) {
   result.combined = getValueSummary(allItems);
   return result;
 }
+
+// ---------------------------------------------------------------------------
+// Shared valuation action helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Save a value checkpoint (ItemValueSnapshot) for any item.
+ *
+ * @param {object} entities - base44.entities (pass in to avoid circular import)
+ * @param {object} item - Raw item record
+ * @param {string} moduleKey - 'pipekeeper' | 'whiskeykeeper' | ...
+ * @param {string} itemType - 'pipe' | 'tobacco' | 'bottle' | ...
+ * @param {string} createdBy - User email
+ * @param {object} [opts] - Optional: { valuationSnapshot, note }
+ * @returns {Promise<object>} Created snapshot record
+ */
+export async function saveItemValueCheckpoint(entities, item, moduleKey, itemType, createdBy, opts = {}) {
+  const today = new Date().toISOString().slice(0, 10);
+  const snap = opts.valuationSnapshot || {};
+  return entities.ItemValueSnapshot.create({
+    module_key: moduleKey,
+    item_type: itemType,
+    item_id: item.id,
+    created_by: createdBy,
+    snapshot_date: today,
+    computed_current_value: snap.currentValue || null,
+    value_confidence: snap.confidence || 'low',
+    source: snap.source || null,
+    rarity_score: snap.rarityScore ?? null,
+    replacement_difficulty: snap.replacementDifficulty || null,
+    recommendation: snap.holdRecommendation || null,
+    notes: opts.note || null,
+    is_auto_generated: false,
+  });
+}
+
+/**
+ * Add a price observation for any item.
+ *
+ * @param {object} entities - base44.entities
+ * @param {string} moduleKey
+ * @param {string} itemType - 'pipe' | 'tobacco' | 'bottle' | ...
+ * @param {string} itemId
+ * @param {string} createdBy
+ * @param {object} observation - { observed_price, price_type, source_name, ... }
+ * @returns {Promise<object>} Created observation record
+ */
+export async function addPriceObservation(entities, moduleKey, itemType, itemId, createdBy, observation) {
+  const today = new Date().toISOString().slice(0, 10);
+  return entities.PriceObservation.create({
+    module_key: moduleKey,
+    item_type: itemType,
+    item_id: itemId,
+    created_by: createdBy,
+    observed_price: Number(observation.observed_price),
+    price_type: observation.price_type || 'retail',
+    source_name: observation.source_name || null,
+    source_url: observation.source_url || null,
+    observed_date: observation.observed_date || today,
+    condition_note: observation.condition_note || null,
+    fill_level: observation.fill_level || null,
+    region: observation.region || null,
+    currency: observation.currency || 'USD',
+    is_manual: true,
+  });
+}
+
+/**
+ * Update manual valuation inputs on an item record.
+ * Works for pipes, tobacco blends, and bottles via the appropriate entity.
+ *
+ * @param {object} entityHandle - base44.entities.Pipe / TobaccoBlend / Bottle etc.
+ * @param {string} itemId
+ * @param {object} fields - Key/value pairs of valuation-driving fields to update
+ * @returns {Promise<void>}
+ */
+export async function updateManualValuationInputs(entityHandle, itemId, fields) {
+  return entityHandle.update(itemId, fields);
+}

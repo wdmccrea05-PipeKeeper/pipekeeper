@@ -57,6 +57,11 @@ export function normalizeValuationInputs(item, moduleKey) {
       edition: item.edition || '',
       isDiscontinued: !!(item.discontinued || item.production_status === 'Discontinued'),
       isAllocated: !!(item.allocated || item.production_status === 'Allocated'),
+      isUnicorn: !!(item.unicorn || item.is_unicorn),
+      batchType: item.batch_type || '',
+      isExportOnly: !!(item.export_only || item.travel_retail || item.is_travel_retail),
+      isExclusive: !!(item.exclusive || item.production_status === 'Exclusive'),
+      producerStatus: item.producer_status || '',
       valuationNotes: item.valuation_notes || '',
       manualValueOverride: item.manual_value_override ? toNum(item.manual_value_override) : null,
       valueSourceNotes: item.value_source_notes || '',
@@ -76,7 +81,8 @@ export function normalizeValuationInputs(item, moduleKey) {
         toNum(item.pouch_total_quantity_oz);
       const pricePerOz = toNum(item.price_per_oz);
       const aiEstimatedValue = toNum(item.ai_estimated_value);
-      // Manual market value → collectorValue; AI est * oz → estimatedValue; price/oz * oz → marketValue; cost_basis → purchaseValue
+      const manualValueOverride = toNum(item.manual_market_value) || toNum(item.manual_value_override);
+      const makerStatusRaw = (item.manufacturer_status || item.maker_status || '').toLowerCase();
       return {
         ...base,
         itemType: 'tobacco',
@@ -92,17 +98,64 @@ export function normalizeValuationInputs(item, moduleKey) {
         ),
         productionStatus: item.production_status || '',
         agingPotential: item.aging_potential || '',
-        isLimitedBatch: !!(item.limited_batch || item.is_limited),
-        isRegionalExclusive: !!(item.regional_exclusive || item.region_exclusive),
+        isLimitedBatch: !!(item.limited_batch || item.is_limited || item.is_limited_release),
+        isRegionalExclusive: !!(item.regional_exclusive || item.region_exclusive || item.regional_exclusivity),
+        isSeasonal: !!(item.seasonal || item.is_seasonal || (item.production_status || '').toLowerCase().includes('seasonal')),
+        isMakerInactive: !!(
+          item.manufacturer_inactive ||
+          makerStatusRaw === 'inactive' ||
+          makerStatusRaw === 'defunct' ||
+          makerStatusRaw.includes('closed') ||
+          makerStatusRaw.includes('no longer')
+        ),
+        manufacturerStatus: item.manufacturer_status || '',
+        cellarAgeYears: toNum(item.cellar_age_years || item.cellar_age),
+        rarityOverride: toNum(item.rarity_score_override || item.rarity_override),
         // Remap to canonical base fields for shared engine
-        collectorValue: toNum(item.manual_market_value),
+        collectorValue: manualValueOverride > 0 ? manualValueOverride : toNum(item.manual_market_value),
         estimatedValue: aiEstimatedValue > 0 && totalOz > 0 ? aiEstimatedValue * totalOz : 0,
         marketValue: pricePerOz > 0 && totalOz > 0 ? pricePerOz * totalOz : 0,
         purchaseValue: toNum(item.cost_basis),
+        manualValueOverride: manualValueOverride > 0 ? manualValueOverride : null,
       };
     }
 
     // Pipe item
+    const makerStatusRaw = (item.maker_status || '').toLowerCase();
+    const isMakerDeceased = !!(
+      item.maker_deceased ||
+      makerStatusRaw.includes('deceased') ||
+      makerStatusRaw.includes('passed')
+    );
+    const isMakerRetired = !!(
+      item.maker_retired ||
+      makerStatusRaw === 'retired' ||
+      makerStatusRaw.includes('no longer producing') ||
+      makerStatusRaw.includes('no longer making') ||
+      makerStatusRaw.includes('stopped making')
+    );
+    const isMakerInactive = !!(
+      item.maker_inactive ||
+      makerStatusRaw === 'inactive' ||
+      makerStatusRaw === 'defunct' ||
+      makerStatusRaw.includes('closed')
+    );
+    const isOneOfAKind = !!(
+      item.one_of_a_kind ||
+      item.is_one_of_a_kind ||
+      item.unique ||
+      item.commissioned ||
+      (item.production_type || '').toLowerCase() === 'one_off' ||
+      (item.production_type || '').toLowerCase() === 'one-off'
+    );
+    const isCustom = !!(
+      item.is_custom ||
+      item.custom ||
+      item.artisan ||
+      item.is_handmade ||
+      item.handmade
+    );
+    const productionTypeLower = (item.production_type || '').toLowerCase();
     return {
       ...base,
       itemType: 'pipe',
@@ -111,10 +164,37 @@ export function normalizeValuationInputs(item, moduleKey) {
       condition: item.condition || '',
       yearMade: item.year_made || '',
       shape: item.shape || '',
-      isHandmade: !!(item.is_handmade || item.handmade),
-      isLimitedRun: !!(item.limited_run || item.is_limited_run),
+      isHandmade: isCustom,
+      isLimitedRun: !!(item.limited_run || item.is_limited_run || item.is_limited),
       productionStatus: item.production_status || '',
       artisanGrade: item.artisan_grade || '',
+      // New enhanced fields
+      isOneOfAKind,
+      isCustom,
+      productionType: item.production_type || '',
+      artisanTier: item.artisan_tier || '',
+      makerStatus: item.maker_status || '',
+      isMakerDeceased,
+      isMakerRetired,
+      isMakerInactive,
+      hasProvenance: !!(
+        item.provenance ||
+        item.provenance_notes ||
+        item.has_provenance ||
+        item.stamped ||
+        item.certified ||
+        item.graded
+      ),
+      isGraded: !!(item.graded || item.is_graded || item.grade),
+      replacementDifficultyOverride: item.replacement_difficulty_override || item.replacement_difficulty || null,
+      // Resolve effective production type
+      _effectiveProdType: isOneOfAKind || productionTypeLower === 'one_off' || productionTypeLower === 'one-off'
+        ? 'one_off'
+        : productionTypeLower === 'limited_artisan_batch' || productionTypeLower === 'limited_artisan'
+          ? 'limited_artisan_batch'
+          : productionTypeLower === 'standard_artisan' || isCustom
+            ? 'standard_artisan'
+            : 'factory',
     };
   }
 
@@ -206,6 +286,13 @@ export function computeCurrentValue(item, moduleKey) {
 /**
  * Returns a rarity score from 0 to 100.
  * Higher = rarer.
+ *
+ * Pipe scoring targets:
+ *   very common factory:                5–25
+ *   respected artisan/factory special:  25–50
+ *   scarce / retired maker / ltd run:   50–75
+ *   one-off / dead maker / highly rare: 75–95+
+ *   truly unique with provenance:       90–100
  */
 export function computeRarityScore(item, moduleKey) {
   if (!item) return 0;
@@ -217,7 +304,7 @@ export function computeRarityScore(item, moduleKey) {
   if (moduleKey === 'whiskeykeeper') {
     // Type premium
     if (inputs.type === 'Single Malt' || inputs.type === 'Single Grain') score += 20;
-    if (inputs.type === 'Scotch Whisky' || inputs.type === 'Blended Malt') score += 10;
+    else if (inputs.type === 'Scotch Whisky' || inputs.type === 'Blended Malt') score += 10;
 
     // Age premium
     if (inputs.age >= 30) score += 35;
@@ -233,6 +320,19 @@ export function computeRarityScore(item, moduleKey) {
 
     if (inputs.isDiscontinued) score += 10;
     if (inputs.isAllocated) score += 8;
+    if (inputs.isUnicorn) score += 20;
+    if (inputs.isExportOnly) score += 10;
+    if (inputs.isExclusive) score += 12;
+
+    // Batch type
+    const batchType = (inputs.batchType || '').toLowerCase();
+    if (batchType === 'single_barrel' || batchType === 'single barrel') score += 12;
+    else if (batchType === 'small_batch' || batchType === 'small batch') score += 6;
+
+    // Producer status
+    const producerStatus = (inputs.producerStatus || '').toLowerCase();
+    if (producerStatus.includes('closed') || producerStatus.includes('defunct')) score += 20;
+    else if (producerStatus.includes('silent') || producerStatus.includes('mothballed')) score += 15;
 
     // ABV / cask strength
     if (inputs.abv >= 60) score += 12;
@@ -248,60 +348,118 @@ export function computeRarityScore(item, moduleKey) {
       const fillPenalties = { High: -5, Medium: -12, Low: -20, Empty: -30 };
       score += fillPenalties[inputs.fillLevel] || 0;
     }
+
   } else if (moduleKey === 'pipekeeper') {
+
     if (inputs.itemType === 'tobacco') {
+      // Apply rarity override if manually set
+      if (inputs.rarityOverride > 0) return Math.min(100, Math.max(0, Math.round(inputs.rarityOverride)));
+
       // Discontinued blends are increasingly scarce
-      if (inputs.isDiscontinued) score += 35;
+      if (inputs.isDiscontinued) score += 38;
+
+      // Manufacturer status
+      if (inputs.isMakerInactive) score += 18;
 
       // Limited batch or small-run production
       if (inputs.isLimitedBatch) score += 20;
 
-      // Regional exclusivity (hard to import)
-      if (inputs.isRegionalExclusive) score += 15;
+      // Seasonal release
+      if (inputs.isSeasonal) score += 14;
 
-      // Cellar age premium — if priced above a typical blend
-      if (inputs.pricePerOz >= 8) score += 15;
-      else if (inputs.pricePerOz >= 4) score += 8;
+      // Regional exclusivity (hard to import)
+      if (inputs.isRegionalExclusive) score += 16;
+
+      // Cellar age premium — aged stock that can no longer be easily replicated
+      if (inputs.cellarAgeYears >= 10) score += 20;
+      else if (inputs.cellarAgeYears >= 5) score += 12;
+      else if (inputs.cellarAgeYears >= 2) score += 6;
+
+      // Price signal — premium per-oz pricing indicates specialty/scarce blend
+      if (inputs.pricePerOz >= 10) score += 15;
+      else if (inputs.pricePerOz >= 6) score += 10;
+      else if (inputs.pricePerOz >= 4) score += 5;
 
       // Blend type premiums (rare/specialty tobaccos)
-      const rareBlendTypes = ['latakia', 'oriental', 'perique', 'virginia flake', 'navy flake'];
-      if (rareBlendTypes.some(t => (inputs.blendType || '').toLowerCase().includes(t))) score += 10;
+      const rareBlendTypes = ['latakia', 'oriental', 'perique', 'virginia flake', 'navy flake', 'flake'];
+      if (rareBlendTypes.some(t => (inputs.blendType || '').toLowerCase().includes(t))) score += 8;
 
-      // Production status
+      // Production status signals
       const status = (inputs.productionStatus || '').toLowerCase();
-      if (status.includes('limited') || status.includes('seasonal')) score += 12;
-    } else {
-      // Pipe rarity
-      const premiumMakers = ['dunhill', 'barling', 'comoy', 'sasieni', 'charatan', 'castello', 'ardor', 'ser jacopo', 'radice'];
-      const makerLower = (inputs.maker || '').toLowerCase();
-      if (premiumMakers.some(m => makerLower.includes(m))) score += 25;
+      if (status.includes('limited') || status.includes('seasonal')) score += 10;
 
-      const materialScores = { Meerschaum: 20, Morta: 18, Briar: 8, Clay: 5 };
+    } else {
+      // ── PIPE RARITY ──────────────────────────────────────────────────────────
+
+      // 1. Production type is the primary driver
+      const prodType = inputs._effectiveProdType || 'factory';
+      if (prodType === 'one_off') {
+        // One-of-a-kind: set a guaranteed floor of 70; other factors stack on top
+        score = 70;
+      } else if (prodType === 'limited_artisan_batch') {
+        score += 35;
+      } else if (prodType === 'standard_artisan') {
+        score += 18;
+      }
+      // factory: 0
+
+      // 2. Maker status (deceased/retired adds substantial rarity)
+      if (inputs.isMakerDeceased) score += 20;
+      else if (inputs.isMakerRetired) score += 18;
+      else if (inputs.isMakerInactive) score += 12;
+
+      // 3. Artisan tier / collectibility
+      const artisanTier = (inputs.artisanTier || '').toLowerCase();
+      if (artisanTier === 'prestige' || artisanTier === 'master') score += 12;
+      else if (artisanTier === 'established') score += 8;
+      else if (artisanTier === 'emerging') score += 4;
+
+      // 4. Premium maker recognition (expanded list)
+      const premiumMakers = [
+        'dunhill', 'barling', 'comoy', 'sasieni', 'charatan', 'castello',
+        'ardor', 'ser jacopo', 'radice', 'jirsa', 'jan zaloudek', 'kapet',
+        'lars ivarsson', 'sixten ivarsson', 'w.o. larsen', 'bing & grondahl',
+      ];
+      const makerLower = (inputs.maker || '').toLowerCase();
+      if (premiumMakers.some(m => makerLower.includes(m))) score += 14;
+
+      // 5. Material
+      const materialScores = { Meerschaum: 15, Morta: 12, Briar: 6, Clay: 3 };
       score += materialScores[inputs.bowlMaterial] || 0;
 
+      // 6. Age / era
       const yearNum = parseInt(inputs.yearMade, 10);
       if (!isNaN(yearNum)) {
-        if (yearNum < 1960) score += 30;
-        else if (yearNum < 1980) score += 20;
-        else if (yearNum < 2000) score += 10;
+        if (yearNum < 1940) score += 18;
+        else if (yearNum < 1960) score += 12;
+        else if (yearNum < 1980) score += 8;
+        else if (yearNum < 2000) score += 4;
       }
 
-      const conditionScores = { Mint: 15, Excellent: 10, 'Very Good': 5 };
-      score += conditionScores[inputs.condition] || 0;
+      // 7. Condition bonus (well-preserved examples are rarer)
+      const conditionUpper = (inputs.condition || '').toLowerCase();
+      if (conditionUpper.includes('mint') || conditionUpper.includes('nos')) score += 6;
+      else if (conditionUpper.includes('excellent')) score += 4;
+      else if (conditionUpper.includes('very good')) score += 2;
 
-      // Handmade or limited-run pipes are inherently rarer
-      if (inputs.isHandmade) score += 10;
-      if (inputs.isLimitedRun) score += 12;
+      // 8. Provenance / certification / grading
+      if (inputs.hasProvenance || inputs.isGraded) score += 8;
+
+      // 9. Factory limited run (when not already a one-off or artisan batch)
+      if (inputs.isLimitedRun && prodType === 'factory') score += 10;
     }
+
   } else if (moduleKey === 'cigarkeeper') {
     if (inputs.vintage > 0 && inputs.vintage < new Date().getFullYear() - 10) score += 25;
     score += Math.min(toNum(inputs.rating) * 8, 40);
+
   } else if (moduleKey === 'winekeeper') {
     const age = new Date().getFullYear() - inputs.vintage;
     if (age >= 20) score += 30;
     else if (age >= 10) score += 18;
     else if (age >= 5) score += 8;
     score += Math.min(toNum(inputs.rating) * 8, 40);
+
   } else {
     // Generic: value-based rarity proxy
     const cv = computeCurrentValue(item, moduleKey);
@@ -326,6 +484,10 @@ const DIFFICULTY_LEVELS = {
 
 /**
  * Returns 'easy' | 'moderate' | 'hard' | 'very_hard'.
+ *
+ * Replacement difficulty is computed separately from rarity.
+ * A rare item is not automatically very hard to replace — current availability,
+ * substitutability, and market frequency are separate variables.
  */
 export function computeReplacementDifficulty(item, moduleKey) {
   if (!item) return DIFFICULTY_LEVELS.EASY;
@@ -342,10 +504,15 @@ export function computeReplacementDifficulty(item, moduleKey) {
     const isDiscontinued = inputs.isDiscontinued || status === 'discontinued' || status === 'vintage';
     const isLimited = status === 'limited edition' || status === 'allocated' || inputs.isAllocated;
 
+    // Unicorn / ultra-limited with no current production: near-impossible to replace
+    if (inputs.isUnicorn) return DIFFICULTY_LEVELS.VERY_HARD;
+    if (isDiscontinued && inputs.producerStatus && inputs.producerStatus.toLowerCase().includes('closed')) return DIFFICULTY_LEVELS.VERY_HARD;
     if (isDiscontinued && (inputs.age >= 20 || rarity >= 75)) return DIFFICULTY_LEVELS.VERY_HARD;
     if (isDiscontinued || (inputs.age >= 25)) return DIFFICULTY_LEVELS.HARD;
     if (isLimited || (inputs.age >= 18)) return DIFFICULTY_LEVELS.HARD;
+    if (inputs.isExportOnly || inputs.isExclusive) return DIFFICULTY_LEVELS.HARD;
     if (inputs.age >= 12 || rarity >= 50) return DIFFICULTY_LEVELS.MODERATE;
+    if (inputs.isAllocated) return DIFFICULTY_LEVELS.MODERATE;
     return DIFFICULTY_LEVELS.EASY;
   }
 
@@ -355,24 +522,53 @@ export function computeReplacementDifficulty(item, moduleKey) {
       const isDiscontinued = inputs.isDiscontinued || status.includes('discontinue');
       const isLimited = inputs.isLimitedBatch || status.includes('limited') || status.includes('seasonal');
 
+      // Discontinued from an inactive manufacturer with no substitutes: very hard
+      if (isDiscontinued && inputs.isMakerInactive) return DIFFICULTY_LEVELS.VERY_HARD;
       if (isDiscontinued && inputs.isRegionalExclusive) return DIFFICULTY_LEVELS.VERY_HARD;
+      // Discontinued: hard (still findable on secondary market)
       if (isDiscontinued) return DIFFICULTY_LEVELS.HARD;
-      if (isLimited || inputs.isRegionalExclusive) return DIFFICULTY_LEVELS.MODERATE;
+      // Inactive maker with limited stock still circulating
+      if (inputs.isMakerInactive && isLimited) return DIFFICULTY_LEVELS.HARD;
+      // Seasonal, limited, regional, or inactive maker still in business
+      if (isLimited || inputs.isRegionalExclusive || inputs.isSeasonal) return DIFFICULTY_LEVELS.MODERATE;
+      if (inputs.isMakerInactive) return DIFFICULTY_LEVELS.MODERATE;
       return DIFFICULTY_LEVELS.EASY;
     }
 
-    // Pipe replacement difficulty
+    // ── PIPE replacement difficulty ───────────────────────────────────────────
+    const prodType = inputs._effectiveProdType || 'factory';
+
+    // One-of-a-kind: by definition cannot be replaced
+    if (prodType === 'one_off' || inputs.isOneOfAKind) return DIFFICULTY_LEVELS.VERY_HARD;
+
+    // Deceased maker + artisan work: no more supply possible
+    if (inputs.isMakerDeceased && (prodType === 'limited_artisan_batch' || prodType === 'standard_artisan')) {
+      return DIFFICULTY_LEVELS.VERY_HARD;
+    }
+
+    // Deceased maker (factory work may have surplus stock)
+    if (inputs.isMakerDeceased) return DIFFICULTY_LEVELS.HARD;
+
+    // Limited artisan batch from active/retired maker
+    if (prodType === 'limited_artisan_batch') return DIFFICULTY_LEVELS.HARD;
+
+    // Retired maker: their pipes are still findable but increasingly rare
+    if (inputs.isMakerRetired && (prodType === 'standard_artisan' || inputs.isHandmade)) {
+      return DIFFICULTY_LEVELS.HARD;
+    }
+    if (inputs.isMakerRetired) return DIFFICULTY_LEVELS.MODERATE;
+    // Inactive maker (company closed but not retired/deceased artisan)
+    if (inputs.isMakerInactive) return DIFFICULTY_LEVELS.MODERATE;
+
+    // Premium maker or artisan-grade without the above flags
     const premiumMakers = ['dunhill', 'barling', 'comoy', 'sasieni', 'charatan', 'castello', 'ardor'];
     const makerLower = (inputs.maker || '').toLowerCase();
     const isPremium = premiumMakers.some(m => makerLower.includes(m));
-    const yearNum = parseInt(inputs.yearMade, 10);
-    const isVintage = !isNaN(yearNum) && yearNum < 1980;
-    const isCollector = !isNaN(yearNum) && yearNum < 2000;
+    if (isPremium || prodType === 'standard_artisan' || inputs.isHandmade) return DIFFICULTY_LEVELS.MODERATE;
 
-    if (isVintage && isPremium) return DIFFICULTY_LEVELS.VERY_HARD;
-    if (isVintage || (isCollector && isPremium)) return DIFFICULTY_LEVELS.HARD;
-    if (isPremium || inputs.bowlMaterial === 'Meerschaum' || inputs.bowlMaterial === 'Morta') return DIFFICULTY_LEVELS.MODERATE;
-    if (inputs.isHandmade) return DIFFICULTY_LEVELS.MODERATE;
+    // Special materials: inherently limited supply
+    if (inputs.bowlMaterial === 'Meerschaum' || inputs.bowlMaterial === 'Morta') return DIFFICULTY_LEVELS.MODERATE;
+
     return DIFFICULTY_LEVELS.EASY;
   }
 
@@ -698,3 +894,74 @@ export const TOBACCO_RECOMMENDATION_LABELS = {
   cellar: 'Cellar for Aging',
   hold_for_trade: 'Hold for Trade',
 };
+
+// ---------------------------------------------------------------------------
+// 8. Shared valuation action helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a snapshot record for saving to ItemValueSnapshot entity.
+ * Call this from any detail page before creating the record.
+ *
+ * @param {object} item - The raw item record (pipe, blend, bottle, etc.)
+ * @param {string} moduleKey - 'pipekeeper' | 'whiskeykeeper' | ...
+ * @param {string} itemType - 'pipe' | 'tobacco' | 'bottle' | ...
+ * @param {string} createdBy - User email
+ * @param {object} [opts] - Optional overrides: { note, collectionContext, isAutoGenerated }
+ * @returns {object} Record ready to pass to base44.entities.ItemValueSnapshot.create()
+ */
+export function buildItemValueSnapshotRecord(item, moduleKey, itemType, createdBy, opts = {}) {
+  const snapshot = buildValuationSnapshot(item, moduleKey, opts.collectionContext || {});
+  if (!snapshot) return null;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const inputs = normalizeValuationInputs(item, moduleKey);
+
+  return {
+    module_key: moduleKey,
+    item_type: itemType,
+    item_id: item.id,
+    created_by: createdBy,
+    snapshot_date: opts.snapshotDate || today,
+    computed_current_value: snapshot.currentValue || null,
+    retail_value: inputs?.retailValue > 0 ? inputs.retailValue : null,
+    market_value: inputs?.marketValue > 0 ? inputs.marketValue : null,
+    collector_value: inputs?.collectorValue > 0 ? inputs.collectorValue : null,
+    value_confidence: snapshot.confidence || 'low',
+    source: snapshot.source || null,
+    rarity_score: snapshot.rarityScore ?? null,
+    replacement_difficulty: snapshot.replacementDifficulty || null,
+    recommendation: snapshot.holdRecommendation || null,
+    notes: opts.note || null,
+    is_auto_generated: opts.isAutoGenerated || false,
+  };
+}
+
+/**
+ * Build a price observation record for saving to PriceObservation entity.
+ * @param {string} moduleKey
+ * @param {string} itemType - 'pipe' | 'tobacco' | 'bottle' | ...
+ * @param {string} itemId
+ * @param {string} createdBy
+ * @param {object} observation - { observed_price, price_type, source_name, source_url, observed_date, condition_note, region, currency, ... }
+ * @returns {object} Record ready to pass to base44.entities.PriceObservation.create()
+ */
+export function buildPriceObservationRecord(moduleKey, itemType, itemId, createdBy, observation) {
+  const today = new Date().toISOString().slice(0, 10);
+  return {
+    module_key: moduleKey,
+    item_type: itemType,
+    item_id: itemId,
+    created_by: createdBy,
+    observed_price: Number(observation.observed_price),
+    price_type: observation.price_type || 'retail',
+    source_name: observation.source_name || null,
+    source_url: observation.source_url || null,
+    observed_date: observation.observed_date || today,
+    condition_note: observation.condition_note || null,
+    fill_level: observation.fill_level || null,
+    region: observation.region || null,
+    currency: observation.currency || 'USD',
+    is_manual: true,
+  };
+}
