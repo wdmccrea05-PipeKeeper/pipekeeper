@@ -181,7 +181,9 @@ function getSubAmount(sub: any): number {
 
 function isActivePaidSub(sub: any, now: Date): boolean {
   const status = norm(sub.status);
-  if (!['active', 'trialing', 'trial'].includes(status)) return false;
+  // 'trial' is the app's custom free-trial status — not a paid subscription.
+  // 'trialing' is Stripe's status meaning a payment method is attached and billing starts soon — count as paid.
+  if (!['active', 'trialing'].includes(status)) return false;
   const amount = getSubAmount(sub);
   if (amount <= 0) return false;
   const end = parseDate(sub.current_period_end);
@@ -385,8 +387,9 @@ Deno.serve(async (req) => {
       },
     };
 
-    const calcRenewalPeriod = (endDate: Date) => {
-      const subs = normalized.filter((s) => s.renewalDate && s.renewalDate > now && s.renewalDate <= endDate);
+    const calcRenewalPeriod = (start: Date, end: Date) => {
+      // Capture all renewals within the calendar period (including ones already past today within the period)
+      const subs = normalized.filter((s) => s.renewalDate && s.renewalDate >= start && s.renewalDate <= end);
       const customers = new Set(subs.map((s) => s.userId || s.userEmail).filter(Boolean)).size;
       const subscriptions = subs.length;
       const revenueAmount = Number(subs.reduce((sum, s) => sum + s.amount, 0).toFixed(2));
@@ -394,10 +397,10 @@ Deno.serve(async (req) => {
     };
 
     const renewals = {
-      thisWeek: calcRenewalPeriod(ranges.week.end),
-      thisMonth: calcRenewalPeriod(ranges.month.end),
-      thisQuarter: calcRenewalPeriod(ranges.quarter.end),
-      thisYear: calcRenewalPeriod(ranges.year.end),
+      thisWeek:    calcRenewalPeriod(ranges.week.start,    ranges.week.end),
+      thisMonth:   calcRenewalPeriod(ranges.month.start,   ranges.month.end),
+      thisQuarter: calcRenewalPeriod(ranges.quarter.start, ranges.quarter.end),
+      thisYear:    calcRenewalPeriod(ranges.year.start,    ranges.year.end),
     };
 
     const signupSources = { web: 0, apple: 0, googlePlay: 0 };
@@ -472,22 +475,91 @@ Deno.serve(async (req) => {
       newAccounts,
     };
 
+    // ── Trial metrics from actual subscription data ───────────────────────────
+    const trialSubs = allSubscriptions.filter((s) => norm(s.status) === 'trial' || norm(s.status) === 'trialing');
+    const now30dAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const now3dOut  = new Date(now.getTime() + 3  * 24 * 60 * 60 * 1000);
+    const now7dOut  = new Date(now.getTime() + 7  * 24 * 60 * 60 * 1000);
+
+    const currentlyOnTrial = trialSubs.filter((s) => {
+      const end = parseDate(s.trial_end_date || s.current_period_end);
+      return end && end > now;
+    });
+
+    const daysRemaining = currentlyOnTrial.map((s) => {
+      const end = parseDate(s.trial_end_date || s.current_period_end)!;
+      return Math.max(0, Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+    });
+    const avgDaysRemaining = daysRemaining.length > 0
+      ? Math.round(daysRemaining.reduce((a, b) => a + b, 0) / daysRemaining.length)
+      : 0;
+
+    const endingIn3Days = currentlyOnTrial.filter((s) => {
+      const end = parseDate(s.trial_end_date || s.current_period_end)!;
+      return end <= now3dOut;
+    }).length;
+
+    const endingIn7Days = currentlyOnTrial.filter((s) => {
+      const end = parseDate(s.trial_end_date || s.current_period_end)!;
+      return end <= now7dOut;
+    }).length;
+
+    // Converted = was trial in last 30d and is now active (amount > 0)
+    const convertedLast30d = allSubscriptions.filter((s) => {
+      const created = parseDate(s.created_date);
+      return created && created >= now30dAgo && norm(s.status) === 'active' && Number(s.amount || 0) > 0;
+    }).length;
+
+    // Drop-offs = trial ended in last 30d (trial_end_date passed) and still trial/expired/canceled
+    const dropoffLast30d = allSubscriptions.filter((s) => {
+      const trialEnd = parseDate(s.trial_end_date);
+      const status = norm(s.status);
+      return trialEnd && trialEnd >= now30dAgo && trialEnd <= now &&
+        ['trial', 'expired', 'canceled'].includes(status);
+    }).length;
+
     const subscriptions = {
       paidByBundle,
       trialMetrics: {
-        currentlyOnTrial: 0,
-        avgDaysRemaining: 0,
-        endingIn3Days: 0,
-        endingIn7Days: 0,
-        convertedLast30d: 0,
-        dropoffLast30d: 0,
+        currentlyOnTrial: currentlyOnTrial.length,
+        avgDaysRemaining,
+        endingIn3Days,
+        endingIn7Days,
+        convertedLast30d,
+        dropoffLast30d,
       },
     };
 
+    // Paid users with more than one active subscription (multi-module)
+    const multiModuleUserCount = (() => {
+      const subCountByUser = new Map<string, number>();
+      for (const s of normalized) {
+        const key = s.userId || s.userEmail;
+        if (!key) continue;
+        subCountByUser.set(key, (subCountByUser.get(key) || 0) + 1);
+      }
+      let count = 0;
+      for (const v of subCountByUser.values()) { if (v > 1) count++; }
+      return count;
+    })();
+
+    const paidToAdditionalModulesPct = counts.uniquePayingUsers > 0
+      ? Number(((multiModuleUserCount / counts.uniquePayingUsers) * 100).toFixed(1))
+      : 0;
+
+    // Monthly churn: cancellations in past 30d / active subs
+    const canceledLast30d = allSubscriptions.filter((s) => {
+      const updated = parseDate(s.updated_date);
+      return updated && updated >= now30dAgo && ['canceled', 'expired'].includes(norm(s.status));
+    }).length;
+    const paidToFreePct = counts.totalSubscriptions > 0
+      ? Number(((canceledLast30d / counts.totalSubscriptions) * 100).toFixed(1))
+      : 0;
+
     const conversion = {
       freeToPaidPct: accounts.paidPercentage,
-      paidToAdditionalModulesPct: 0,
-      paidToFreePct: 0,
+      paidToAdditionalModulesPct,
+      paidToFreePct,
     };
 
     const usage = {
