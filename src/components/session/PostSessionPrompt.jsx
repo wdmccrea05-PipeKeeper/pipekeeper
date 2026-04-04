@@ -104,22 +104,8 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-
-    const stop = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    };
-
-    const opts = { capture: true };
-    document.addEventListener("pointerdown", stop, opts);
-    document.addEventListener("mousedown", stop, opts);
-    document.addEventListener("touchstart", stop, opts);
-
     return () => {
       document.body.style.overflow = originalOverflow;
-      document.removeEventListener("pointerdown", stop, opts);
-      document.removeEventListener("mousedown", stop, opts);
-      document.removeEventListener("touchstart", stop, opts);
     };
   }, []);
 
@@ -196,16 +182,16 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
               <p className="text-sm font-semibold text-[#F5F1E7] mb-2">{ei.label}</p>
               <p className="text-xs text-[#D4A574]/70 mb-3 uppercase tracking-wide">{ei.item_type}</p>
               <div className="grid grid-cols-2 gap-2">
-                {CHOICES.map((c) => (
-                  <button
-                    key={c.key}
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setDecisions((prev) => ({ ...prev, [ei.label]: c.key }));
-                    }}
-                    className="h-9 px-3 rounded-lg text-sm font-medium transition-all relative"
+               {CHOICES.map((c) => (
+                 <button
+                   key={c.key}
+                   type="button"
+                   onClick={(e) => {
+                     e.preventDefault();
+                     e.stopPropagation();
+                     setDecisions((prev) => ({ ...prev, [ei.label]: c.key }));
+                   }}
+                   className="min-h-[2.25rem] px-3 py-2 rounded-lg text-xs font-medium transition-all relative whitespace-normal leading-tight"
                     style={{
                       ...c.style,
                       opacity: decisions[ei.label] && decisions[ei.label] !== c.key ? 0.4 : 1,

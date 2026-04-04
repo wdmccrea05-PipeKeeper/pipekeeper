@@ -48,8 +48,8 @@ function estimateTobaccoUsage(pipe, bowls) {
 
 function ExternalItemChip({ label, onClear }) {
   return (
-    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[rgba(180,140,75,0.15)] border border-[rgba(180,140,75,0.3)] text-xs text-[#D4A574]">
-      <span className="font-medium truncate max-w-[160px]">{label}</span>
+    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[rgba(180,140,75,0.15)] border border-[rgba(180,140,75,0.3)] text-xs text-[#D4A574] min-w-0">
+      <span className="font-medium break-words min-w-0 flex-1">{label}</span>
       <button type="button" onClick={onClear} className="shrink-0 hover:text-white">
         <X className="w-3 h-3" />
       </button>
@@ -876,11 +876,12 @@ export default function LogSessionModal({
             })()}
 
             <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
+              <Button type="button" variant="outline" onClick={onClose} disabled={saving} className="flex-1">
                 {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
+                className="flex-1"
                 disabled={
                   saving ||
                   (pipeMode === "collection" && !formData.pipe_id) ||
