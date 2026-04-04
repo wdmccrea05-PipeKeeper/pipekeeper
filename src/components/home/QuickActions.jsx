@@ -1,11 +1,11 @@
 import React from "react";
-import { BookOpen, Camera, TrendingUp, Sparkles } from "lucide-react";
+import { BookOpen, Camera, TrendingUp, Sparkles, List } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const CURATOR_ICON =
   "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
-function getActions(hasStoryData) {
+function getActions(hasStoryData, hasWantList) {
   const actions = [];
 
   if (hasStoryData) {
@@ -53,10 +53,21 @@ function getActions(hasStoryData) {
     }
   );
 
+  if (hasWantList) {
+    actions.push({
+      key: "wantList",
+      Icon: List,
+      accent: "#7B6FAA",
+      iconColor: "text-[#a89ed4]",
+      hoverColor: "hover:bg-[#7B6FAA]/20",
+      borderColor: "border-[#7B6FAA]/30",
+    });
+  }
+
   return actions;
 }
 
-export default function QuickActions({ onLogSession, onIdentify, onOptimize, onAskCurator, onViewStory, hasStoryData }) {
+export default function QuickActions({ onLogSession, onIdentify, onOptimize, onAskCurator, onViewStory, onWantList, hasStoryData }) {
   const { t } = useTranslation();
 
   const handlers = {
@@ -65,9 +76,10 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
     optimize: onOptimize,
     collectionCurator: onAskCurator,
     viewStory: onViewStory,
+    wantList: onWantList,
   };
 
-  const actions = getActions(hasStoryData);
+  const actions = getActions(hasStoryData, !!onWantList);
 
   return (
     <div
@@ -100,7 +112,7 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
       >
         {t("quickActions.sectionTitle")}
       </h3>
-      <div className={`grid gap-3.5 relative ${hasStoryData ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-2 md:grid-cols-4'}`}>
+      <div className={`grid gap-3.5 relative ${actions.length <= 4 ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-2 md:grid-cols-5'}`}>
         {actions.map(({ key, Icon, accent, iconColor, hoverColor, borderColor }) => (
           <button
             key={key}
@@ -146,7 +158,7 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
                 textShadow: "0 1px 2px rgba(0,0,0,0.5)"
               }}
             >
-              {t(`quickActions.${key}`)}
+              {key === "wantList" ? "Want List" : t(`quickActions.${key}`)}
             </span>
           </button>
         ))}

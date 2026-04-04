@@ -523,6 +523,7 @@ export default function CollectionHub() {
           onIdentify={() => navigate('/PipeKeeper?action=identify')}
           onOptimize={() => navigate('/Insights')}
           onAskCurator={() => navigate(createPageUrl('Curator'))}
+          onWantList={() => navigate(createPageUrl('WantList'))}
         />
       </section>
 

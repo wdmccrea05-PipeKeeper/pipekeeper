@@ -14,6 +14,7 @@ import {
   FileBarChart2,
   BarChart3,
   TestTube2,
+  List,
 } from "lucide-react";
 import PipeIcon from "@/components/icons/PipeIcon";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
@@ -84,6 +85,7 @@ export default function ModuleNav({ currentPageName, user }) {
   const baseItems = [
     { page: "CollectionHub", label: "Hub", icon: Home, path: "/" },
     ...moduleItems,
+    { page: "WantList", label: "Want List", icon: List, path: "/WantList" },
     { page: "Curator", label: "Curator", icon: Target, path: "/Curator" },
     { page: "Community", label: "Community", icon: Users, path: "/Community" },
     { page: "Profile", label: "Profile", icon: User, path: "/Profile" },
