@@ -159,11 +159,17 @@ function generateQuickPrompts({
   logs = [],
   bottles = [],
   userProfile = null,
+  curatorScope = "all",
   t,
 }) {
   const prompts = [];
+  const isPipeScope = curatorScope === "pipekeeper" || (curatorScope === "all" && (pipes.length > 0 || blends.length > 0));
+  const isWhiskeyScope = curatorScope === "whiskeykeeper" || (curatorScope === "all" && bottles.length > 0);
+  // If only whiskeykeeper is scoped, skip all pipe/tobacco prompts
+  const showPipe = curatorScope !== "whiskeykeeper";
+  const showWhiskey = curatorScope !== "pipekeeper";
 
-  if (pipes.length > 10) {
+  if (showPipe && pipes.length > 10) {
     prompts.push(
       t("curator.quickPrompt.underused", {
         defaultValue: "Which pipes in my collection are the most underused right now?",
@@ -171,13 +177,13 @@ function generateQuickPrompts({
     );
   }
 
-  if (pipes.length === 0) {
+  if (showPipe && pipes.length === 0) {
     prompts.push(
       t("curator.quickPrompt.startBuilding", {
         defaultValue: "How should I start building my first pipe collection?",
       })
     );
-  } else if (pipes.length < 5) {
+  } else if (showPipe && pipes.length < 5) {
     prompts.push(
       t("curator.quickPrompt.nextPipe", {
         defaultValue: "What type of pipe would best round out what I already own?",
@@ -187,7 +193,7 @@ function generateQuickPrompts({
 
   const blendTypes = new Set(blends.map((b) => b?.blend_type).filter(Boolean));
 
-  if (blends.length >= 5 && blendTypes.size < 3) {
+  if (showPipe && blends.length >= 5 && blendTypes.size < 3) {
     prompts.push(
       t("curator.quickPrompt.cellarDiversity", {
         defaultValue: "How balanced is my tobacco cellar right now?",
@@ -195,7 +201,7 @@ function generateQuickPrompts({
     );
   }
 
-  if (logs.length > 5) {
+  if (showPipe && logs.length > 5) {
     prompts.push(
       t("curator.quickPrompt.tonightPipe", {
         defaultValue: "Based on my collection, what should I smoke tonight?",
@@ -203,7 +209,7 @@ function generateQuickPrompts({
     );
   }
 
-  if (pipes.length >= 3 && logs.length > 0) {
+  if (showPipe && pipes.length >= 3 && logs.length > 0) {
     prompts.push(
       t("curator.quickPrompt.rotation", {
         defaultValue: "Help me build a better rotation from my current pipes.",
@@ -211,7 +217,7 @@ function generateQuickPrompts({
     );
   }
 
-  if (pipes.length >= 5) {
+  if (showPipe && pipes.length >= 5) {
     prompts.push(
       t("curator.quickPrompt.value", {
         defaultValue: "What stands out as most valuable or overlooked in my collection?",
@@ -219,7 +225,31 @@ function generateQuickPrompts({
     );
   }
 
-  if (bottles.length > 0 && blends.length > 0) {
+  if (showWhiskey && bottles.length > 3) {
+    prompts.push(
+      t("curator.quickPrompt.whiskeyTonght", {
+        defaultValue: "Which bottle in my collection should I open tonight?",
+      })
+    );
+  }
+
+  if (showWhiskey && bottles.length > 0) {
+    prompts.push(
+      t("curator.quickPrompt.whiskeyGaps", {
+        defaultValue: "What whiskey styles am I missing from my collection?",
+      })
+    );
+  }
+
+  if (showWhiskey && bottles.length > 5) {
+    prompts.push(
+      t("curator.quickPrompt.whiskeyValue", {
+        defaultValue: "Which bottles in my whiskey collection are most valuable or underrated?",
+      })
+    );
+  }
+
+  if (showPipe && showWhiskey && bottles.length > 0 && blends.length > 0) {
     prompts.push(
       t("curator.quickPrompt.crossPairing", {
         defaultValue: "Which of my whiskey bottles pairs best with my tobacco collection?",
@@ -228,17 +258,19 @@ function generateQuickPrompts({
   }
 
   if (prompts.length === 0) {
-    prompts.push(
-      t("curator.quickPrompt.default1", {
-        defaultValue: "What should I focus on first in my collection?",
-      }),
-      t("curator.quickPrompt.default2", {
-        defaultValue: "What are the biggest strengths of my collection right now?",
-      }),
-      t("curator.quickPrompt.default3", {
-        defaultValue: "What should I improve next?",
-      })
-    );
+    if (showWhiskey && !showPipe) {
+      prompts.push(
+        t("curator.quickPrompt.whiskeyDefault1", { defaultValue: "What should I focus on in my whiskey collection?" }),
+        t("curator.quickPrompt.whiskeyDefault2", { defaultValue: "What are the biggest strengths of my whiskey collection?" }),
+        t("curator.quickPrompt.whiskeyDefault3", { defaultValue: "What bottle should I add next to my collection?" })
+      );
+    } else {
+      prompts.push(
+        t("curator.quickPrompt.default1", { defaultValue: "What should I focus on first in my collection?" }),
+        t("curator.quickPrompt.default2", { defaultValue: "What are the biggest strengths of my collection right now?" }),
+        t("curator.quickPrompt.default3", { defaultValue: "What should I improve next?" })
+      );
+    }
   }
 
   return prompts.slice(0, 4);
@@ -398,6 +430,7 @@ export default function CuratorWorkspace({
   routedContext,
   launchContext,
   onPromptConsumed,
+  curatorScope = "all",
 }) {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
@@ -490,9 +523,10 @@ export default function CuratorWorkspace({
         logs: effectiveSmokingLogs,
         bottles,
         userProfile,
+        curatorScope,
         t,
       }),
-    [pipes, blends, effectiveSmokingLogs, bottles, userProfile, t]
+    [pipes, blends, effectiveSmokingLogs, bottles, userProfile, curatorScope, t]
   );
 
   const scrollToBottom = useCallback((behavior = "smooth") => {
