@@ -381,7 +381,6 @@ const enUI = {
     value: "Value",
     name: "Name",
     description: "Description",
-    close: "Close",
     moreInfo: "More info",
     viewDetails: "View Details",
     backToHome: "Back to Home",

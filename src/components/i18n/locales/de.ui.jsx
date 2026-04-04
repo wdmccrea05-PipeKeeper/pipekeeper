@@ -326,7 +326,6 @@ const deUI = {
     value: "Wert",
     name: "Name",
     description: "Beschreibung",
-    close: "Schließen",
   },
   layout: {
     appTitle: "PipeKeeper",

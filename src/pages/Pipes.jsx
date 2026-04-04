@@ -385,7 +385,6 @@ export default function PipesPage() {
                     image={pipe.photos?.[0]}
                     title={pipe.name}
                     subtitle={pipe.maker || t("pipesExtended.unknownMaker")}
-                    onEdit={() => handleEdit(pipe)}
                     badges={
                       <>
                         {pipe.shape && (

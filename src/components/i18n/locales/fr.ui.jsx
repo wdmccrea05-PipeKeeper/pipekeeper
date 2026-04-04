@@ -326,7 +326,6 @@ const frUI = {
     value: "Valeur",
     name: "Nom",
     description: "Description",
-    close: "Fermer",
   },
   layout: {
     appTitle: "PipeKeeper",
