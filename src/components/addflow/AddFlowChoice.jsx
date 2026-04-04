@@ -1,7 +1,9 @@
 import React from 'react';
-import { X, Search, PenLine } from 'lucide-react';
+import { X, Search, PenLine, ScanLine } from 'lucide-react';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
-export default function AddFlowChoice({ typeLabel, onQuickAdd, onManualAdd, onClose }) {
+export default function AddFlowChoice({ typeLabel, onQuickAdd, onManualAdd, onIdentify, onClose }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col">
       {/* Header */}
@@ -85,6 +87,35 @@ export default function AddFlowChoice({ typeLabel, onQuickAdd, onManualAdd, onCl
             </div>
           </div>
         </button>
+
+        {/* Scan / Photo Identify */}
+        {onIdentify && (
+          <button
+            onClick={onIdentify}
+            className="w-full text-left rounded-2xl p-5 transition-all hover:scale-[1.01] active:scale-[0.99]"
+            style={{
+              background: 'rgba(255,255,255,0.025)',
+              border: '1px solid rgba(86,122,160,0.25)',
+            }}
+          >
+            <div className="flex items-start gap-4">
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                style={{ background: 'rgba(86,122,160,0.12)', border: '1px solid rgba(86,122,160,0.28)' }}
+              >
+                <ScanLine className="w-5 h-5" style={{ color: 'rgba(140,180,220,0.85)' }} />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-base mb-1" style={{ color: '#F5F1E7' }}>
+                  {t('addFlowChoice.scanOrIdentify', 'Scan or Photo Identify')}
+                </p>
+                <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.6)' }}>
+                  {t('addFlowChoice.scanOrIdentifyDesc', 'Use a barcode or photo to identify and prefill the item automatically.')}
+                </p>
+              </div>
+            </div>
+          </button>
+        )}
       </div>
 
       <div className="pb-4" />
