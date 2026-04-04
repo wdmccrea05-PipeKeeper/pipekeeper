@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { CheckCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -101,6 +101,28 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
   const [decisions, setDecisions] = useState({});
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const stop = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const opts = { capture: true };
+    document.addEventListener("pointerdown", stop, opts);
+    document.addEventListener("mousedown", stop, opts);
+    document.addEventListener("touchstart", stop, opts);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.removeEventListener("pointerdown", stop, opts);
+      document.removeEventListener("mousedown", stop, opts);
+      document.removeEventListener("touchstart", stop, opts);
+    };
+  }, []);
+
   if (!externalItems.length) return null;
 
   const allDecided = externalItems.every((ei) => decisions[ei.label] !== undefined);
@@ -129,23 +151,37 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
       console.error("[PostSessionPrompt] failed:", e);
       toast.error("Failed to update want list");
       setSaving(false);
-      return;
     }
   };
 
-  const handleSkip = () => {
-    onDone?.();
-  };
-
   return (
-    <div className="fixed inset-0 z-[1400] bg-black/75 flex items-end sm:items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.82)", pointerEvents: "auto" }}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onTouchStart={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
       <div
         className="w-full max-w-md rounded-2xl overflow-hidden"
         style={{
           background: "linear-gradient(145deg,rgba(38,26,18,0.98),rgba(24,16,12,1))",
           border: "1px solid rgba(180,140,75,0.24)",
           boxShadow: "0 18px 48px rgba(0,0,0,0.55)",
+          pointerEvents: "auto",
         }}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
       >
         <div className="px-5 py-4 border-b border-[rgba(180,140,75,0.14)]">
           <h3 className="font-bold text-[#F5F1E7] text-lg">What do you want to do with these?</h3>
@@ -164,7 +200,11 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
                   <button
                     key={c.key}
                     type="button"
-                    onClick={() => setDecisions((prev) => ({ ...prev, [ei.label]: c.key }))}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setDecisions((prev) => ({ ...prev, [ei.label]: c.key }));
+                    }}
                     className="h-9 px-3 rounded-lg text-sm font-medium transition-all relative"
                     style={{
                       ...c.style,
@@ -186,14 +226,22 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
         <div className="px-5 py-4 border-t border-[rgba(180,140,75,0.14)] flex gap-3">
           <button
             type="button"
-            onClick={handleSkip}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDone?.();
+            }}
             className="flex-1 h-9 rounded-lg text-sm text-[#E0D8C8]/50 border border-white/10"
           >
             Skip
           </button>
           <button
             type="button"
-            onClick={handleConfirm}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleConfirm();
+            }}
             disabled={!allDecided || saving || !userEmail}
             className="flex-1 h-9 rounded-lg text-sm font-semibold text-white disabled:opacity-40 transition-all"
             style={{ background: "linear-gradient(135deg,#a35c5c,#8f4e4e)" }}
