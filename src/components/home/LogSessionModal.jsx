@@ -269,42 +269,59 @@ export default function LogSessionModal({
         bowl_name = bowl?.name || undefined;
       }
 
-      const pipe_name =
-        pipeMode === "collection"
-          ? pipe?.name
-          : [externalPipe?.maker, externalPipe?.model || externalPipe?.name]
-              .filter(Boolean)
-              .join(" ") || "External Pipe";
 
-      const blend_name =
-        blendMode === "collection"
-          ? blend?.name
-          : externalBlend?.name || "External Blend";
 
       const savePayload = {
-        pipe_id: pipeMode === "collection" ? formData.pipe_id : undefined,
-        blend_id: blendMode === "collection" ? formData.blend_id : undefined,
+        pipe_id: pipeMode === "collection" ? formData.pipe_id : null,
+        blend_id: blendMode === "collection" ? formData.blend_id : null,
         bowl_variant_id:
           pipeMode === "collection" &&
           formData.bowl_variant_id &&
           formData.bowl_variant_id !== "__none__"
             ? formData.bowl_variant_id
-            : undefined,
+            : null,
         container_id:
           blendMode === "collection" &&
           formData.container_id &&
           formData.container_id !== "__none__"
             ? formData.container_id
-            : undefined,
-        pipe_name,
-        blend_name,
+            : null,
+        pipe_name:
+          pipeMode === "collection"
+            ? pipe?.name || null
+            : [externalPipe?.maker, externalPipe?.model || externalPipe?.name]
+                .filter(Boolean)
+                .join(" ") || "External Pipe",
+        blend_name:
+          blendMode === "collection"
+            ? blend?.name || null
+            : externalBlend?.name || "External Blend",
         bowl_name,
         date: toLocalDateYmd(formData.date),
         bowls_used: bowls,
         is_break_in: !!formData.is_break_in,
         notes: [formData.notes, contextTag ? `Context: ${contextTag}` : ""]
           .filter(Boolean)
-          .join("\n"),
+          .join("\n") || null,
+
+        ...(pipeMode === "external"
+          ? {
+              external_pipe_name:
+                [externalPipe?.maker, externalPipe?.model || externalPipe?.name]
+                  .filter(Boolean)
+                  .join(" ") || "External Pipe",
+              external_pipe_maker: externalPipe?.maker || "",
+              external_pipe_shape: externalPipe?.shape || "",
+            }
+          : {}),
+
+        ...(blendMode === "external"
+          ? {
+              external_blend_name: externalBlend?.name || "External Blend",
+              external_blend_manufacturer: externalBlend?.manufacturer || "",
+              external_blend_type: externalBlend?.blend_type || "",
+            }
+          : {}),
       };
 
       if (import.meta?.env?.DEV) {
