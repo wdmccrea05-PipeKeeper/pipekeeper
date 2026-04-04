@@ -2,8 +2,6 @@ import { base44 } from "@/api/base44Client";
 import { 
   getEntitlementTier, 
   hasPaidAccess, 
-  hasProAccess, 
-  hasPremiumAccess, 
   isTrialingAccess, 
   getPlanLabel,
   isFoundingMember

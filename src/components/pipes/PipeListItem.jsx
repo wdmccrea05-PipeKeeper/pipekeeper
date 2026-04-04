@@ -2,7 +2,7 @@ import React from 'react';
 import { HeritageCard } from "@/components/ui/HeritageCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Calendar, MapPin, DollarSign, Pencil } from "lucide-react";
+import { Heart, Calendar, MapPin, Pencil } from "lucide-react";
 import PipeShapeIcon from "./PipeShapeIcon";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";

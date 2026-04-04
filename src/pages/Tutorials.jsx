@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getModuleDocumentation, getAllDocumentedModules } from '@/components/help/documentationRegistry';
 import { useTranslation } from '@/components/i18n/safeTranslation';

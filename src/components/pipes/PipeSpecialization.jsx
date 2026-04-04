@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Target, Plus, X } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";

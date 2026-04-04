@@ -83,10 +83,10 @@ export default function UserReport() {
   const revenue       = report?.revenue       || {};
   const subscriptions = report?.subscriptions || {};
   const conversion    = report?.conversion    || {};
-  const usage         = report?.usage         || {};
+  const _usage         = report?.usage         || {};
   const meta          = report?.meta          || {};
   const validation    = report?.validation    || {};
-  const isReportUsable = !!report;
+  const _isReportUsable = !!report;
   const trialMetrics  = subscriptions.trialMetrics || {};
 
   const hasDataWarning = !!report && Array.isArray(validation.errors) && validation.errors.length > 0;

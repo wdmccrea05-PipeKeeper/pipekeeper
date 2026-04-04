@@ -191,7 +191,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [selectedFriend, messages, userEmail]);
 
   // Auto scroll to bottom of chat

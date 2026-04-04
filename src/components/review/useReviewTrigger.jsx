@@ -20,7 +20,6 @@ import {
   resolveReviewEligibility,
   isIOSDevice,
   isNativeIOSApp,
-  POSITIVE_TRIGGERS,
 } from './reviewEligibility';
 import {
   trackReviewPromptEligible,

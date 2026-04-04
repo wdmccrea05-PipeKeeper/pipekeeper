@@ -6,7 +6,7 @@
  * TobaccoBlend.tin_tins_cellared/bulk_cellared/pouch_pouches_cellared are DERIVED
  */
 
-import { calculateCellaredOzFromLogs, calculateCellaredOzFromBlend, detectCellarDrift } from './tobaccoQuantityHelpers';
+import { detectCellarDrift } from './tobaccoQuantityHelpers';
 import { formatNumber } from '@/components/utils/localeFormatters';
 
 /**

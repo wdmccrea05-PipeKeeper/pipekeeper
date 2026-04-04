@@ -3,7 +3,7 @@
  * Covers: duplicate-save prevention, save lock lifecycle,
  * PostSessionPrompt path, and activity normalizer dedupe.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { buildUnifiedActivityFeed } from "@/components/utils/activityNormalizer";
 
 // ─── Activity Normalizer ────────────────────────────────────────────────────

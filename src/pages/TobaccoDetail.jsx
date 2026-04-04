@@ -19,7 +19,6 @@ import TobaccoInventoryManager from '@/components/tobacco/TobaccoInventoryManage
 import CellarLog from '@/components/tobacco/CellarLog';
 import { scorePipeBlend } from '@/components/utils/pairingScoreCanonical';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
-import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { formatWeight } from '@/components/utils/localeFormatters';
 import InlinePhotoEditor from '@/components/shared/InlinePhotoEditor';

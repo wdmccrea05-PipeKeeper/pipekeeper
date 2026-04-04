@@ -2,8 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { isAppleBuild } from "@/components/utils/appVariant";
-import { safeUpdate } from "@/components/utils/safeUpdate";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +16,7 @@ import MessagingPanel from "@/components/community/MessagingPanel";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { SafeText, SafeLabel } from "@/components/ui/SafeText";
+import { SafeText } from "@/components/ui/SafeText";
 
 function CommunityPageInner() {
   const { t } = useTranslation();

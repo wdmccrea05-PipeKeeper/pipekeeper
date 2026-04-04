@@ -10,10 +10,7 @@
 
 import React, { useState } from 'react';
 import { X, Send, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { base44 } from '@/api/base44Client';
 import { trackFeedbackSubmitted } from './reviewAnalytics';
-import { isIOSDevice, isNativeIOSApp } from './reviewEligibility';
 
 // Feedback categories with user-facing labels
 const FEEDBACK_CATEGORIES = [

@@ -5,7 +5,6 @@ import { ChevronDown, Info, Wrench } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import TutorialSystemPreview from "@/components/onboarding/TutorialSystem";
 
 export default function HowTo() {
   const { t } = useTranslation();

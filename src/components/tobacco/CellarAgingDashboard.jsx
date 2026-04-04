@@ -69,7 +69,7 @@ export default function CellarAgingDashboard({ user }) {
       map[b.id] = getCellarDataFromLogs(b.id);
     });
     return map;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [cellarLogs, blends]);
 
   const cellarBlends = blends.filter(b => {

@@ -15,7 +15,7 @@
  * Single source of truth — import from here, not from scattered local checks.
  */
 
-import { KEEPER_MODULES, MODULES } from '@/components/utils/moduleRegistry';
+import { KEEPER_MODULES } from '@/components/utils/moduleRegistry';
 
 // Derive launched module IDs from the registry (modules where enabled===true)
 const LAUNCHED_MODULES = KEEPER_MODULES.filter(m => m.enabled).map(m => m.moduleKey);

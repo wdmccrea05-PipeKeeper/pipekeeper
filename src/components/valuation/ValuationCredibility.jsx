@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Info, TrendingUp, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, TrendingUp, AlertCircle } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/components/utils/localeFormatters';
 
 /**

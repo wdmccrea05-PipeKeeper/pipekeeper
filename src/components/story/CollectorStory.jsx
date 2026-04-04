@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 import { X, ChevronLeft, ChevronRight, Share2 } from "lucide-react";

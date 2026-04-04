@@ -13,7 +13,6 @@ import { calculateCellaredOzFromBlend } from '@/components/utils/tobaccoQuantity
 import PipeKeeperModuleNav from './PipeKeeperModuleNav';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import ModuleQuickLaunch from './ModuleQuickLaunch';
-import SmokingLogPanel from '@/components/home/SmokingLogPanel';
 import { useProfilePrivacy } from '@/components/hooks/useProfilePrivacy';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import LogSessionModal from '@/components/home/LogSessionModal';

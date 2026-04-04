@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Check, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { MODULES, getModuleDisplayName, getActiveModules } from '@/components/utils/moduleRegistry';
+import { getModuleDisplayName, getActiveModules } from '@/components/utils/moduleRegistry';
 import { detectBundleTier, calculatePrice, formatPrice, getBundleSavings } from '@/components/utils/bundlePricingEngine';
 
 /**

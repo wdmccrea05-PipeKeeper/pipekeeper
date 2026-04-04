@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { ChevronRight, BookOpen } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { detectActiveModules } from './moduleDetection';
-import { HELP_ARTICLES, getArticleById } from './documentationRegistry';
+import { getArticleById } from './documentationRegistry';
 
 const MODULE_COLOR = {
   hub: 'text-[#D4A574] border-[rgba(212,165,116,0.25)] bg-[rgba(212,165,116,0.07)]',

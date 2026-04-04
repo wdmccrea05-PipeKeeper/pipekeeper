@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { invalidatePipeQueries, invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";

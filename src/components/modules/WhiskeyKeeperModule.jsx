@@ -24,7 +24,6 @@ import {
   getBottleTotalValue,
   getBottleUnitValue,
   getEffectiveBottleCount,
-  getInventoryStatusSummary,
 } from '@/components/utils/whiskeyValueHelpers';
 
 function normalizeText(value) {
