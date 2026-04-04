@@ -1,7 +1,9 @@
 import React from 'react';
 import { X, Search, PenLine, ScanLine } from 'lucide-react';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function AddFlowChoice({ typeLabel, onQuickAdd, onManualAdd, onIdentify, onClose }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col">
       {/* Header */}
@@ -104,9 +106,11 @@ export default function AddFlowChoice({ typeLabel, onQuickAdd, onManualAdd, onId
                 <ScanLine className="w-5 h-5" style={{ color: 'rgba(140,180,220,0.85)' }} />
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-base mb-1" style={{ color: '#F5F1E7' }}>Scan or Photo Identify</p>
+                <p className="font-semibold text-base mb-1" style={{ color: '#F5F1E7' }}>
+                  {t('addFlowChoice.scanOrIdentify', 'Scan or Photo Identify')}
+                </p>
                 <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                  Use a barcode or photo to identify and prefill the item automatically.
+                  {t('addFlowChoice.scanOrIdentifyDesc', 'Use a barcode or photo to identify and prefill the item automatically.')}
                 </p>
               </div>
             </div>

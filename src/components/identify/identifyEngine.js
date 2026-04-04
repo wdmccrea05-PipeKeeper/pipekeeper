@@ -4,7 +4,7 @@
  * Canonical shared identification layer for PipeKeeper, WhiskeyKeeper, and
  * TobaccoKeeper.  All UPC/barcode and photo identification routes through here.
  *
- * Re-exports the core normalisation utilities so consumers only need to import
+ * Re-exports the core normalization utilities so consumers only need to import
  * from this single module.
  *
  * Required exports (per problem statement):
