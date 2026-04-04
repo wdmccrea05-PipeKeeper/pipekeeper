@@ -17,6 +17,7 @@ import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries, invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 import { prepareLogData, parseLocalCalendarDate, toLocalDateYmd } from "@/components/utils/schemaCompatibility";
+import { saveSession } from "@/components/session/saveSession";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from "sonner";
 import { isAppleBuild } from "@/components/utils/appVariant";
@@ -182,9 +183,8 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (saving || postPromptItems || postPromptPendingRef.current) return; // prevent duplicate saves and re-saves while post-prompt is shown
+    if (saving || postPromptItems || postPromptPendingRef.current) return;
 
-    // ── STEP 1: Validate form (before setting saving=true) ───────────────
     if (entitlements.tier === "free") {
       if ((recentLogs || []).length >= entitlements.limits.smokingLogs) {
         toast.error(t("smokingLog.freeLimitReached", { limit: entitlements.limits.smokingLogs }));
@@ -192,144 +192,205 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       }
     }
 
-    const pipe = pipeMode === "collection" ? (pipes || []).find((p) => p && p.id === formData.pipe_id) : null;
-    const blend = blendMode === "collection" ? (blends || []).find((b) => b && b.id === formData.blend_id) : null;
+    const pipe = pipeMode === "collection"
+      ? (pipes || []).find((p) => p && p.id === formData.pipe_id)
+      : null;
 
-    if (pipeMode === "collection" && !pipe) { toast.error(t("smokingLog.selectBoth")); return; }
-    if (pipeMode === "external" && !externalPipe) { toast.error("Please select or add an external pipe."); return; }
-    if (blendMode === "collection" && !blend) { toast.error(t("smokingLog.selectBoth")); return; }
-    if (blendMode === "external" && !externalBlend) { toast.error("Please select or add an external blend."); return; }
+    const blend = blendMode === "collection"
+      ? (blends || []).find((b) => b && b.id === formData.blend_id)
+      : null;
+
+    if (pipeMode === "collection" && !pipe) {
+      toast.error(t("smokingLog.selectBoth"));
+      return;
+    }
+    if (pipeMode === "external" && !externalPipe) {
+      toast.error("Please select or add an external pipe.");
+      return;
+    }
+    if (blendMode === "collection" && !blend) {
+      toast.error(t("smokingLog.selectBoth"));
+      return;
+    }
+    if (blendMode === "external" && !externalBlend) {
+      toast.error("Please select or add an external blend.");
+      return;
+    }
 
     setSaving(true);
 
     try {
-      const bowls = parseInt(formData.bowls_used) || 1;
-      let tobaccoUsed = 0;
-      if (blendMode === "collection") {
-        tobaccoUsed = pipe ? estimateTobaccoUsage(pipe, bowls) : (bowls * 0.75 * 0.035274);
-      }
+      const bowls = parseInt(formData.bowls_used, 10) || 1;
+      const tobaccoUsed =
+        blendMode === "collection"
+          ? pipe
+            ? estimateTobaccoUsage(pipe, bowls)
+            : bowls * 0.75 * 0.035274
+          : 0;
 
       let bowl_name = null;
       if (pipeMode === "collection" && formData.bowl_variant_id && hasMultipleBowls) {
-        const bowl = selectedPipe.interchangeable_bowls.find(
-          (b) => (b.bowl_variant_id || `bowl_${selectedPipe.interchangeable_bowls.indexOf(b)}`) === formData.bowl_variant_id
+        const bowl = selectedPipe?.interchangeable_bowls?.find(
+          (b) =>
+            (b.bowl_variant_id || `bowl_${selectedPipe.interchangeable_bowls.indexOf(b)}`) ===
+            formData.bowl_variant_id
         );
         bowl_name = bowl?.name || null;
       }
 
-      const pipe_name = pipeMode === "collection" ? pipe.name : ([externalPipe.maker, externalPipe.model].filter(Boolean).join(" ") || "External Pipe");
-      const blend_name = blendMode === "collection" ? blend.name : (externalBlend.name || "External Blend");
+      const pipe_name =
+        pipeMode === "collection"
+          ? pipe?.name
+          : [externalPipe?.maker, externalPipe?.model || externalPipe?.name].filter(Boolean).join(" ") || "External Pipe";
 
-      // Destructure all optional ID fields so they can be conditionally re-added
-      // below — this prevents null/empty values from being sent in the payload.
-      const { pipe_id: formPipeId, blend_id: formBlendId, bowl_variant_id: formBowlVariantId, container_id: formContainerId, ...restFormData } = formData;
+      const blend_name =
+        blendMode === "collection"
+          ? blend?.name
+          : externalBlend?.name || "External Blend";
 
-      const logData = prepareLogData({
-        ...restFormData,
-        created_by: user?.email,
-        user_email: user?.email,
-        ...(pipeMode === "collection" && formPipeId ? { pipe_id: formPipeId } : {}),
-        ...(blendMode === "collection" && formBlendId ? { blend_id: formBlendId } : {}),
-        ...(pipeMode === "collection" && formBowlVariantId && formBowlVariantId !== "__none__" ? { bowl_variant_id: formBowlVariantId } : {}),
-        ...(blendMode === "collection" && formContainerId && formContainerId !== "__none__" ? { container_id: formContainerId } : {}),
+      const savePayload = {
+        pipe_id: pipeMode === "collection" ? formData.pipe_id : undefined,
+        blend_id: blendMode === "collection" ? formData.blend_id : undefined,
+        bowl_variant_id:
+          pipeMode === "collection" &&
+          formData.bowl_variant_id &&
+          formData.bowl_variant_id !== "__none__"
+            ? formData.bowl_variant_id
+            : undefined,
+        container_id:
+          blendMode === "collection" &&
+          formData.container_id &&
+          formData.container_id !== "__none__"
+            ? formData.container_id
+            : undefined,
         pipe_name,
         blend_name,
         bowl_name,
         date: toLocalDateYmd(formData.date),
         bowls_used: bowls,
-        tobaccoUsed,
-        notes: [
-          formData.notes,
-          contextTag ? `Context: ${contextTag}` : "",
-        ].filter(Boolean).join("\n"),
-      });
+        is_break_in: !!formData.is_break_in,
+        notes: [formData.notes, contextTag ? `Context: ${contextTag}` : ""]
+          .filter(Boolean)
+          .join("\n"),
+      };
 
-
-
-      // ── STEP 2: Build payload ────────────────────────────────────────────
-      if (import.meta.env.DEV) {
-        console.log("[LogSessionModal] submitting payload:", logData);
+      if (import.meta?.env?.DEV) {
+        console.log("[LogSessionModal] save payload:", savePayload);
       }
 
-      // ── STEP 3: Save SmokingLog ──────────────────────────────────────────
-      const result = await base44.entities.SmokingLog.create(logData);
+      const result = await saveSession({ user, session: savePayload });
 
-      if (!result) {
-        throw new Error("SmokingLog.create returned empty response");
+      if (import.meta?.env?.DEV) {
+        console.log("[LogSessionModal] save success:", result);
       }
 
-      if (import.meta.env.DEV) {
-        console.log("[LogSessionModal] save success", result);
-      }
-
-      // ── STEP 4: Run post-save updates ────────────────────────────────────
       // Container deduction (owned blend only)
-      if (logData.container_id && blendMode === "collection") {
+      if (savePayload.container_id && blendMode === "collection") {
         try {
-          const containerRes = await base44.entities.TobaccoContainer.filter({ id: logData.container_id });
+          const containerRes = await base44.entities.TobaccoContainer.filter({ id: savePayload.container_id });
           const container = containerRes?.[0];
           if (container?.id) {
-            const gramsUsed = logData.tobaccoUsed * 28.35;
-            await safeUpdate("TobaccoContainer", container.id, {
-              quantity_grams: Math.max(0, Number(container.quantity_grams || 0) - gramsUsed),
-              updated_date: new Date().toISOString(),
-            }, user?.email);
-            queryClient.invalidateQueries({ queryKey: ["containers", user?.email, logData.blend_id] });
+            const gramsUsed = tobaccoUsed * 28.35;
+            await safeUpdate(
+              "TobaccoContainer",
+              container.id,
+              {
+                quantity_grams: Math.max(0, Number(container.quantity_grams || 0) - gramsUsed),
+                updated_date: new Date().toISOString(),
+              },
+              user?.email
+            );
+            queryClient.invalidateQueries({ queryKey: ["containers", user?.email, savePayload.blend_id] });
           }
-        } catch (err) { console.error("[LogSessionModal] Failed to update container:", err); }
+        } catch (err) {
+          console.error("[LogSessionModal] Failed to update container:", err);
+        }
       }
 
       // Auto-reduce inventory only for owned blends
-      if (autoReduceInventory && logData.tobaccoUsed > 0 && hasPaid && blendMode === "collection") {
-        const blendToReduce = (blends || []).find((b) => b.id === logData.blend_id);
+      if (autoReduceInventory && tobaccoUsed > 0 && hasPaid && blendMode === "collection") {
+        const blendToReduce = (blends || []).find((b) => b.id === savePayload.blend_id);
         if (blendToReduce) {
-          let remaining = Number(logData.tobaccoUsed);
+          let remaining = Number(tobaccoUsed);
           const updateData = {};
+
           if ((blendToReduce.bulk_open || 0) > 0 && remaining > 0) {
             const toReduce = Math.min(blendToReduce.bulk_open, remaining);
             updateData.bulk_open = Math.max(0, (blendToReduce.bulk_open || 0) - toReduce);
-            updateData.bulk_total_quantity_oz = Math.max(0, (blendToReduce.bulk_total_quantity_oz || 0) - toReduce);
+            updateData.bulk_total_quantity_oz = Math.max(
+              0,
+              (blendToReduce.bulk_total_quantity_oz || 0) - toReduce
+            );
             remaining -= toReduce;
           }
+
           if ((blendToReduce.tin_tins_open || 0) > 0 && remaining > 0 && blendToReduce.tin_size_oz) {
             const tinsToOpen = Math.ceil(remaining / blendToReduce.tin_size_oz);
             const actualTinReduction = Math.min(tinsToOpen, blendToReduce.tin_tins_open);
             const actualOzReduction = Math.min(actualTinReduction * blendToReduce.tin_size_oz, remaining);
+
             updateData.tin_tins_open = Math.max(0, (blendToReduce.tin_tins_open || 0) - actualTinReduction);
             updateData.tin_total_tins = Math.max(0, (blendToReduce.tin_total_tins || 0) - actualTinReduction);
-            updateData.tin_total_quantity_oz = Math.max(0, (blendToReduce.tin_total_quantity_oz || 0) - actualOzReduction);
-            remaining -= actualOzReduction;
+            updateData.tin_total_quantity_oz = Math.max(
+              0,
+              (blendToReduce.tin_total_quantity_oz || 0) - actualOzReduction
+            );
           }
+
           if (Object.keys(updateData).length > 0) {
-            try { await updateBlendMutation.mutateAsync({ id: blendToReduce.id, data: updateData }); }
-            catch (err) { console.error("[LogSessionModal] Failed to update blend inventory:", err); }
+            try {
+              await updateBlendMutation.mutateAsync({ id: blendToReduce.id, data: updateData });
+            } catch (err) {
+              console.error("[LogSessionModal] Failed to update blend inventory:", err);
+            }
           }
         }
       }
 
-      // Break-in update (only for owned pipe)
-      if (logData.is_break_in && logData.pipe_id && logData.blend_id && pipeMode === "collection") {
+      // Break-in update
+      if (savePayload.is_break_in && savePayload.pipe_id && savePayload.blend_id && pipeMode === "collection") {
         try {
-          const freshPipes = await base44.entities.Pipe.filter({ id: logData.pipe_id });
-          const freshPipe = freshPipes[0];
+          const freshPipes = await base44.entities.Pipe.filter({ id: savePayload.pipe_id });
+          const freshPipe = freshPipes?.[0];
           if (freshPipe?.id) {
-            const bowlsToAdd = Number(logData.bowls_used || 1);
+            const bowlsToAdd = Number(savePayload.bowls_used || 1);
             const schedule = Array.isArray(freshPipe.break_in_schedule) ? freshPipe.break_in_schedule : [];
-            const resolvedBlendName = logData.blend_name || (blends || []).find((b) => b.id === logData.blend_id)?.name || "";
-            const matchIndex = schedule.findIndex((item) => scheduleMatches(item, logData.blend_id, resolvedBlendName));
+            const resolvedBlendName =
+              savePayload.blend_name ||
+              (blends || []).find((b) => b.id === savePayload.blend_id)?.name ||
+              "";
+
+            const matchIndex = schedule.findIndex((item) =>
+              scheduleMatches(item, savePayload.blend_id, resolvedBlendName)
+            );
+
             let updatedSchedule;
             if (matchIndex >= 0) {
               updatedSchedule = schedule.map((item, idx) =>
-                idx !== matchIndex ? item : { ...item, bowls_completed: (item.bowls_completed || 0) + bowlsToAdd }
+                idx !== matchIndex
+                  ? item
+                  : { ...item, bowls_completed: (item.bowls_completed || 0) + bowlsToAdd }
               );
             } else {
-              updatedSchedule = [...schedule, { blend_id: logData.blend_id, blend_name: resolvedBlendName || t("common.unknownBlend"), suggested_bowls: 5, bowls_completed: bowlsToAdd, reasoning: t("smokingLog.autoAddedReasoning") }];
+              updatedSchedule = [
+                ...schedule,
+                {
+                  blend_id: savePayload.blend_id,
+                  blend_name: resolvedBlendName || t("common.unknownBlend"),
+                  suggested_bowls: 5,
+                  bowls_completed: bowlsToAdd,
+                  reasoning: t("smokingLog.autoAddedReasoning"),
+                },
+              ];
             }
+
             await safeUpdate("Pipe", freshPipe.id, { break_in_schedule: updatedSchedule }, user?.email);
             invalidatePipeQueries(queryClient, user?.email);
-            queryClient.invalidateQueries({ queryKey: ["pipe", logData.pipe_id] });
+            queryClient.invalidateQueries({ queryKey: ["pipe", savePayload.pipe_id] });
           }
-        } catch (err) { console.error("[LogSessionModal] Failed to update break-in schedule:", err); }
+        } catch (err) {
+          console.error("[LogSessionModal] Failed to update break-in schedule:", err);
+        }
       }
 
       queryClient.invalidateQueries({ queryKey: ["smoking-logs"] });
@@ -338,40 +399,39 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       queryClient.invalidateQueries({ queryKey: ["blends-summary", user?.email] });
       invalidateBlendQueries(queryClient, user?.email);
 
-      // ── STEP 5: Build external items for Want List prompt ─────────────────
       const externalItems = [];
       if (blendMode === "external" && externalBlend) {
-        externalItems.push({ label: externalBlend.name || "Unknown Blend", item_type: "blend", itemData: externalBlend });
+        externalItems.push({
+          label: externalBlend.name || "Unknown Blend",
+          item_type: "blend",
+          itemData: externalBlend,
+        });
       }
       if (pipeMode === "external" && externalPipe) {
-        const pipeLabel = [externalPipe.maker, externalPipe.model].filter(Boolean).join(" ") || "Unknown Pipe";
-        externalItems.push({ label: pipeLabel, item_type: "pipe", itemData: externalPipe });
+        externalItems.push({
+          label: [externalPipe.maker, externalPipe.model || externalPipe.name]
+            .filter(Boolean)
+            .join(" ") || "Unknown Pipe",
+          item_type: "pipe",
+          itemData: externalPipe,
+        });
       }
 
       if (import.meta?.env?.DEV) {
-        console.log("[SESSION] saved", result);
-        console.log("[SESSION] external items:", externalItems);
+        console.log("[LogSessionModal] external items:", externalItems.length);
       }
 
       toast.success(t("smokingLog.logSession") + " " + t("common.saved", { defaultValue: "saved" }));
 
-      // ── STEP 6: Show PostSessionPrompt or close modal cleanly ────────────
-      // 🚨 CRITICAL FIX — DO NOT CLOSE MODAL IF PROMPT NEEDED
       if (externalItems.length > 0) {
         postPromptPendingRef.current = true;
-
         setTimeout(() => {
-          if (import.meta?.env?.DEV) {
-            console.log("[SESSION] prompt open", externalItems.length, "items");
-          }
           setPostPromptItems(externalItems);
         }, 0);
-
         setSaving(false);
         return;
       }
 
-      // Normal close — reset form state and close
       setFormData({ ...BLANK_FORM_DATA, date: toLocalDateYmd() });
       setPipeMode("collection");
       setExternalPipe(null);
@@ -381,11 +441,10 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       setShowBlendManual(false);
       setContextTag("");
       setSaving(false);
-      onClose();
+      onClose?.();
     } catch (err) {
-      console.error("[LogSessionModal] Session save error:", err);
+      console.error("[LogSessionModal] save failed:", err);
       toast.error("Failed to log session");
-    } finally {
       setSaving(false);
     }
   };
