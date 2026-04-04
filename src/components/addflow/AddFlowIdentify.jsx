@@ -230,6 +230,8 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
       toast.error(t('addFlowIdentify.uploadError', 'Failed to upload photos'));
     } finally {
       setUploading(false);
+      // reset so same file can be re-selected
+      e.target.value = '';
     }
   };
 
@@ -266,7 +268,7 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
             {t('addFlowIdentify.photoTitle', 'Photo Identify')} {typeLabel}
           </h2>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-            {t('addFlowIdentify.photoSubtitle', 'Upload photos for AI-powered identification')}
+            {t('addFlowIdentify.photoSubtitle', 'Upload or take a photo — AI identifies and prefills details')}
           </p>
         </div>
       </div>
@@ -274,58 +276,78 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
       <div className="mx-6" style={{ height: 1, background: 'rgba(180,140,75,0.12)' }} />
 
       <div className="px-6 py-5 flex flex-col gap-4">
-        {/* Photo grid */}
-        <div className="grid grid-cols-4 gap-2">
-          {photoUrls.map((url, idx) => (
-            <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-stone-700 relative group">
-              <img src={url} alt="" className="w-full h-full object-cover" />
-              <button
-                onClick={() => removePhoto(idx)}
-                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="w-3 h-3 text-white" />
-              </button>
-            </div>
-          ))}
-          {/* Upload button */}
+        {/* Large mobile-friendly camera + upload buttons */}
+        <div className="grid grid-cols-2 gap-3">
           <label
-            className="aspect-square rounded-lg border-2 border-dashed border-stone-600 hover:border-amber-600 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
-            style={{ color: 'rgba(180,140,75,0.6)' }}
+            className="rounded-2xl border-2 border-dashed cursor-pointer flex flex-col items-center justify-center gap-2 py-7 transition-colors"
+            style={{
+              borderColor: uploading ? 'rgba(180,140,75,0.2)' : 'rgba(86,122,160,0.45)',
+              background: 'rgba(86,122,160,0.06)',
+              color: 'rgba(140,180,220,0.85)',
+            }}
           >
-            {uploading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                <Upload className="w-5 h-5" />
-                <span className="text-xs">{t('common.upload', 'Upload')}</span>
-              </>
-            )}
-            <input type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} disabled={uploading || analyzing} />
+            {uploading ? <Loader2 className="w-7 h-7 animate-spin" /> : <Camera className="w-7 h-7" />}
+            <span className="text-sm font-medium">
+              {uploading ? t('common.uploading', 'Uploading…') : t('common.takePhoto', 'Take Photo')}
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={uploading || analyzing}
+            />
           </label>
-          {/* Camera button */}
           <label
-            className="aspect-square rounded-lg border-2 border-dashed border-stone-600 hover:border-amber-600 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
-            style={{ color: 'rgba(180,140,75,0.6)' }}
+            className="rounded-2xl border-2 border-dashed cursor-pointer flex flex-col items-center justify-center gap-2 py-7 transition-colors"
+            style={{
+              borderColor: uploading ? 'rgba(180,140,75,0.2)' : 'rgba(180,140,75,0.4)',
+              background: 'rgba(180,140,75,0.06)',
+              color: 'rgba(212,165,116,0.85)',
+            }}
           >
-            {uploading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                <Camera className="w-5 h-5" />
-                <span className="text-xs">{t('common.camera', 'Camera')}</span>
-              </>
-            )}
-            <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} disabled={uploading || analyzing} />
+            {uploading ? <Loader2 className="w-7 h-7 animate-spin" /> : <Upload className="w-7 h-7" />}
+            <span className="text-sm font-medium">
+              {uploading ? t('common.uploading', 'Uploading…') : t('common.uploadPhoto', 'Upload Photo')}
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={uploading || analyzing}
+            />
           </label>
         </div>
+
+        {/* Uploaded photo thumbnails */}
+        {photoUrls.length > 0 && (
+          <div className="grid grid-cols-4 gap-2">
+            {photoUrls.map((url, idx) => (
+              <div key={idx} className="aspect-square rounded-xl overflow-hidden relative" style={{ border: '1px solid rgba(180,140,75,0.3)' }}>
+                <img src={url} alt="" className="w-full h-full object-cover" />
+                {/* Always-visible remove on mobile */}
+                <button
+                  onClick={() => removePhoto(idx)}
+                  className="absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center"
+                  style={{ background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.2)' }}
+                >
+                  <X className="w-3 h-3 text-white" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         {photoUrls.length > 0 && (
           <Button
             onClick={handleAnalyze}
             disabled={analyzing || uploading}
-            className="w-full"
+            className="w-full h-12 text-base"
             style={{
-              background: 'linear-gradient(135deg, rgba(86,122,160,0.9), rgba(66,100,140,0.9))',
+              background: 'linear-gradient(135deg, rgba(86,122,160,1), rgba(66,100,140,1))',
               color: '#F5F1E7',
               fontWeight: 600,
             }}
@@ -333,21 +355,15 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
             {analyzing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {t('addFlowIdentify.analyzing', 'Analyzing photos…')}
+                {t('addFlowIdentify.analyzing', 'Analyzing…')}
               </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
-                {t('addFlowIdentify.identifyPhotos', 'Identify from Photos')}
+                {t('addFlowIdentify.identifyPhotos', `Identify ${photoUrls.length} Photo${photoUrls.length !== 1 ? 's' : ''}`)}
               </>
             )}
           </Button>
-        )}
-
-        {!photoUrls.length && !uploading && (
-          <p className="text-xs text-center" style={{ color: 'rgba(224,216,200,0.35)' }}>
-            {t('addFlowIdentify.uploadHint', 'Upload or take photos of the item to identify it')}
-          </p>
         )}
 
         <button
@@ -366,112 +382,26 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
 
 // ── Results panel ─────────────────────────────────────────────────────────────
 
-function ResultsPanel({ result, onSelect, onBack, onManual }) {
-  const { t } = useTranslation();
-  const { confidence, candidates = [], selected } = result || {};
-
-  const isLow = confidence === 'low' || !candidates.length;
-  const isHigh = confidence === 'high' && candidates.length === 1;
-
-  return (
-    <div className="flex flex-col">
-      <div className="flex items-center gap-3 px-6 pt-6 pb-5">
-        <button
-          onClick={onBack}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
-          style={{ color: 'rgba(224,216,200,0.6)' }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <h2 className="text-lg font-bold min-w-0" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-          {t('addFlowIdentify.resultsTitle', 'Identification Results')}
-        </h2>
-      </div>
-
-      <div className="mx-6" style={{ height: 1, background: 'rgba(180,140,75,0.12)' }} />
-
-      <div className="px-6 py-5 flex flex-col gap-4">
-        {/* Confidence badge */}
-        <div
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm"
-          style={{
-            background: isLow
-              ? 'rgba(180,60,60,0.12)'
-              : isHigh
-              ? 'rgba(46,125,92,0.12)'
-              : 'rgba(180,140,75,0.1)',
-            border: `1px solid ${isLow ? 'rgba(180,60,60,0.25)' : isHigh ? 'rgba(46,125,92,0.25)' : 'rgba(180,140,75,0.25)'}`,
-            color: isLow ? 'rgba(220,140,140,0.9)' : isHigh ? 'rgba(100,200,150,0.9)' : 'rgba(212,165,116,0.9)',
-          }}
-        >
-          <Sparkles className="w-4 h-4 flex-shrink-0" />
-          {isLow
-            ? t('addFlowIdentify.lowConfidence', 'No confident match found — you can still add manually')
-            : isHigh
-            ? t('addFlowIdentify.highConfidence', 'High confidence match found')
-            : t('addFlowIdentify.mediumConfidence', 'Possible matches found — select one to confirm')}
-        </div>
-
-        {/* Candidate list */}
-        {candidates.length > 0 && (
-          <div className="flex flex-col gap-2">
-            {candidates.slice(0, 5).map((candidate, idx) => (
-              <button
-                key={`${candidate.name}-${idx}`}
-                onClick={() => onSelect(candidate)}
-                className="w-full text-left flex items-start justify-between gap-3 px-4 py-3.5 rounded-xl transition-colors hover:bg-white/[0.05] active:bg-white/[0.07]"
-                style={{
-                  border: idx === 0
-                    ? '1px solid rgba(180,140,75,0.35)'
-                    : '1px solid rgba(255,255,255,0.07)',
-                }}
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-semibold text-sm break-words" style={{ color: '#F5F1E7' }}>
-                      {candidate.name}
-                    </p>
-                    {idx === 0 && (
-                      <span
-                        className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
-                        style={{ background: 'rgba(180,140,75,0.18)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.3)' }}
-                      >
-                        {isHigh ? t('addFlowIdentify.bestMatch', 'Best Match') : t('addFlowIdentify.topMatch', 'Top Match')}
-                      </span>
-                    )}
-                  </div>
-                  {candidate.maker && (
-                    <p className="text-xs mt-0.5" style={{ color: 'rgba(212,165,116,0.75)' }}>
-                      {candidate.maker}
-                    </p>
-                  )}
-                  {candidate.category && (
-                    <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
-                      {candidate.category}
-                    </p>
-                  )}
-                </div>
-                <ChevronRight className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'rgba(180,140,75,0.5)' }} />
-              </button>
-            ))}
-          </div>
-        )}
-
-        <button
-          onClick={onManual}
-          className="flex items-center gap-2 justify-center w-full py-3 rounded-xl transition-colors hover:bg-white/5"
-          style={{ border: '1px dashed rgba(180,140,75,0.25)', color: 'rgba(180,140,75,0.7)' }}
-        >
-          <PenLine className="w-3.5 h-3.5" />
-          <span className="text-sm">{t('addFlow.addManually', 'Add Manually Instead')}</span>
-        </button>
-      </div>
-      <div className="pb-2" />
-    </div>
-  );
+function candidateSubtitle(c) {
+  const parts = [c.maker, c.manufacturer, c.distillery].filter(Boolean);
+  return parts[0] || '';
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+function candidateMeta(c) {
+  const chips = [];
+  if (c.whiskey_type || c.type) chips.push(c.whiskey_type || c.type);
+  if (c.age) chips.push(`${c.age} yr`);
+  if (c.abv) chips.push(`${Number(c.abv).toFixed(1)}%`);
+  if (c.blend_type) chips.push(c.blend_type);
+  if (c.strength) chips.push(c.strength);
+  if (c.shape) chips.push(c.shape);
+  if (c.bowl_material) chips.push(c.bowl_material);
+  return chips.filter(Boolean).slice(0, 3);
+}
+
+function ResultsPanel({ result, onSelect, onBack, onManual }) {
+  const { t } = useTranslation();
+  const { confidence, candidates = [] } = result || {};
 
 /**
  * AddFlowIdentify — the "Scan or Photo Identify" step within the add flow.
@@ -483,19 +413,24 @@ function ResultsPanel({ result, onSelect, onBack, onManual }) {
  *   onManual   () => void  — fall through to manual add
  *   onSelected (candidate, identifyResult) => void  — user confirmed a candidate
  */
-export default function AddFlowIdentify({ itemType, typeLabel, onBack, onManual, onSelected }) {
+export default function AddFlowIdentify({ itemType, typeLabel, onBack, onManual, onSelected, initialMode = 'selector' }) {
   const { t } = useTranslation();
-  const [subMode, setSubMode] = useState('selector'); // 'selector' | 'upc' | 'photo' | 'results'
+  const [subMode, setSubMode] = useState(initialMode); // 'selector' | 'upc' | 'photo' | 'results'
   const [identifyResult, setIdentifyResult] = useState(null);
 
   const handleResult = (result) => {
     setIdentifyResult(result);
-    // High confidence with exactly one candidate → skip candidate list, go straight to confirm
-    if (result.confidence === 'high' && result.candidates.length === 1) {
+    if (result?.confidence === 'high' && result?.candidates?.length === 1) {
       onSelected(result.candidates[0], result);
     } else {
       setSubMode('results');
     }
+  };
+
+  const backToSelector = () => {
+    // If we came from a direct-launch mode (upc/photo), go all the way back
+    if (initialMode !== 'selector') onBack();
+    else setSubMode('selector');
   };
 
   const handleSelectCandidate = (candidate) => {
@@ -526,7 +461,7 @@ export default function AddFlowIdentify({ itemType, typeLabel, onBack, onManual,
         itemType={itemType}
         typeLabel={typeLabel}
         onResult={handleResult}
-        onBack={() => setSubMode('selector')}
+        onBack={backToSelector}
         onManual={onManual}
       />
     );
@@ -538,7 +473,7 @@ export default function AddFlowIdentify({ itemType, typeLabel, onBack, onManual,
         itemType={itemType}
         typeLabel={typeLabel}
         onResult={handleResult}
-        onBack={() => setSubMode('selector')}
+        onBack={backToSelector}
         onManual={onManual}
       />
     );
@@ -549,7 +484,7 @@ export default function AddFlowIdentify({ itemType, typeLabel, onBack, onManual,
       <ResultsPanel
         result={identifyResult}
         onSelect={handleSelectCandidate}
-        onBack={() => setSubMode('selector')}
+        onBack={backToSelector}
         onManual={onManual}
       />
     );

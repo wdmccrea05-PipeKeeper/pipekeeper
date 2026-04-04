@@ -111,7 +111,8 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
               {...sharedProps}
               onQuickAdd={() => setStep('quickSearch')}
               onManualAdd={() => setStep('manualBasic')}
-              onIdentify={() => setStep('identify')}
+              onScanUPC={() => { setStep('identify'); saveStepData({ _identifyInitialMode: 'upc' }); }}
+              onPhotoIdentify={() => { setStep('identify'); saveStepData({ _identifyInitialMode: 'photo' }); }}
             />
           )}
 
@@ -130,10 +131,10 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
           {step === 'identify' && (
             <AddFlowIdentify
               {...sharedProps}
+              initialMode={wizardData._identifyInitialMode || 'selector'}
               onBack={goBack}
               onManual={() => setStep('manualBasic')}
               onSelected={(candidate, identifyResult) => {
-                // Build prefill payload and valuation seed from the identified candidate
                 const payload = buildQuickAddPayload(candidate, itemType);
                 const valuationSeed = buildValuationSeedData(candidate, itemType);
                 setSearchResult({ ...payload, _fromIdentify: true });
