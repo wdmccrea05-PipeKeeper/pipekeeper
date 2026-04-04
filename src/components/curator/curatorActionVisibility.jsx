@@ -67,6 +67,17 @@ export function getCuratorActionModule(action) {
 }
 
 export function shouldShowCuratorAction(action, enabledModules) {
+  // Multi-module actions (both pipe and whiskey) always show if either module is enabled
+  if (Array.isArray(action?.modules) && action.modules.length > 0) {
+    const hasPipe = action.modules.some(m => m === 'pipe' || m === 'tobacco');
+    const hasWhiskey = action.modules.includes('whiskey');
+    if (hasPipe && hasWhiskey) {
+      // Show if any of the relevant modules is enabled
+      return !!(enabledModules?.pipekeeper || enabledModules?.whiskeykeeper);
+    }
+    if (hasWhiskey) return !!enabledModules?.whiskeykeeper;
+    if (hasPipe) return !!(enabledModules?.pipekeeper);
+  }
   const moduleKey = getCuratorActionModule(action);
   if (!moduleKey) return true;
   return !!enabledModules?.[moduleKey];
