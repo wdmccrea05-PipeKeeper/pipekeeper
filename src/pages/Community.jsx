@@ -41,6 +41,14 @@ function CommunityPageInner() {
 
   const { user, isLoading: userLoading, hasPaid } = useCurrentUser();
 
+  const communitySubtitle = useMemo(() => {
+    const pipe = userProfile?.pipekeeper_enabled !== false;
+    const whiskey = userProfile?.whiskeykeeper_enabled === true;
+    if (pipe && whiskey) return t('communityExtended.connectPipeAndWhiskey', 'Connect with pipe & whiskey enthusiasts');
+    if (whiskey) return t('communityExtended.connectWhiskey', 'Connect with whiskey enthusiasts');
+    return t('communityExtended.connectEnthusiasts', 'Connect with pipe enthusiasts');
+  }, [userProfile, t]);
+
   const { data: userProfile, isLoading: profileLoading, isFetching: profileFetching } = useQuery({
     // Key must match Profile page so cache is shared and invalidated together
     queryKey: ['user-profile', user?.id, user?.email],
@@ -265,7 +273,7 @@ function CommunityPageInner() {
             {t("nav.community")}
           </h1>
           <p className="text-base" style={{ color: "rgba(224, 216, 200, 0.75)" }}>
-            {t("communityExtended.connectEnthusiasts")}
+            {communitySubtitle}
           </p>
         </div>
 
