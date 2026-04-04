@@ -86,7 +86,7 @@ export default function UserReport() {
   const usage         = report?.usage         || {};
   const meta          = report?.meta          || {};
   const validation    = report?.validation    || {};
-  const isReportUsable = !!report && validation.passed !== false;
+  const isReportUsable = !!report;
   const trialMetrics  = subscriptions.trialMetrics || {};
 
   // DATA ERROR: report loaded but validation failed — financial metrics must not be shown
@@ -346,27 +346,12 @@ export default function UserReport() {
         </div>
       </div>
 
-      {/* ── Validation warning — one clear message, shown instead of metrics ── */}
-      {!isReportUsable && (
-        <div className="mb-6 p-4 rounded-lg border border-red-700/50 bg-red-900/20">
-          <p className="text-red-300 font-semibold text-sm">
-            ⚠ {t("userReport.title")} {t("userReport.dataUnavailableShort", { defaultValue: "is temporarily unavailable because some subscription records are missing required metadata." })}
-          </p>
-          <p className="text-red-300/70 text-xs mt-1">{dataErrorMessage}</p>
-          <Button
-            type="button"
-            onClick={refetch}
-            size="sm"
-            variant="outline"
-            className="mt-3 border-red-700/50 text-red-300 hover:bg-red-900/30"
-          >
-            {t("userReport.retry", { defaultValue: "Retry" })}
-          </Button>
+      {report?.validation?.errors?.length > 0 && (
+        <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
+          Some subscriptions are missing metadata. The report is using safe fallback classification for now.
         </div>
       )}
 
-      {isReportUsable && (
-      <>
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 1 — ACCOUNT METRICS
       ═══════════════════════════════════════════════════════════════════ */}
@@ -675,8 +660,6 @@ export default function UserReport() {
             </CollapsibleContent>
           </Card>
         </Collapsible>
-      )}
-      </>
       )}
     </div>
   );

@@ -105,8 +105,19 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
   }, [isOpen, initialPipeId, initialBlendId]);
 
   useEffect(() => {
-    if (!postPromptItems && postPromptPendingRef.current) {
+    if (postPromptItems === null && postPromptPendingRef.current) {
       postPromptPendingRef.current = false;
+
+      setFormData({ ...BLANK_FORM_DATA, date: toLocalDateYmd() });
+      setPipeMode("collection");
+      setExternalPipe(null);
+      setShowPipeManual(false);
+      setBlendMode("collection");
+      setExternalBlend(null);
+      setShowBlendManual(false);
+      setContextTag("");
+      setSaving(false);
+
       onClose?.();
     }
   }, [postPromptItems, onClose]);
@@ -215,6 +226,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
 
       const logData = prepareLogData({
         ...restFormData,
+        created_by: user?.email,
         ...(pipeMode === "collection" && formPipeId ? { pipe_id: formPipeId } : {}),
         ...(blendMode === "collection" && formBlendId ? { blend_id: formBlendId } : {}),
         ...(pipeMode === "collection" && formBowlVariantId && formBowlVariantId !== "__none__" ? { bowl_variant_id: formBowlVariantId } : {}),
@@ -393,14 +405,6 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
             if (import.meta?.env?.DEV) {
               console.log("[SESSION] prompt close");
             }
-            setFormData({ ...BLANK_FORM_DATA, date: toLocalDateYmd() });
-            setPipeMode("collection");
-            setExternalPipe(null);
-            setShowPipeManual(false);
-            setBlendMode("collection");
-            setExternalBlend(null);
-            setShowBlendManual(false);
-            setContextTag("");
             setPostPromptItems(null);
           }}
         />
