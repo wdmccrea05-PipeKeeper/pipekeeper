@@ -1,63 +1,52 @@
 import { base44 } from "@/api/base44Client";
 
-/**
- * Canonical saveSession helper for direct PipeKeeper smoking-log saves.
- * Omits nullable string id fields instead of sending null.
- */
+const OPTIONAL_ID_FIELDS = ["pipe_id", "blend_id", "container_id", "bowl_variant_id"];
 
-function omitEmptyStringIds(payload) {
+function omitEmptyIds(payload) {
   const cleaned = { ...payload };
 
-  ["pipe_id", "blend_id", "container_id", "bowl_variant_id"].forEach((key) => {
-    if (
-      cleaned[key] === undefined ||
-      cleaned[key] === null ||
-      cleaned[key] === "" ||
-      cleaned[key] === "__none__"
-    ) {
+  for (const key of OPTIONAL_ID_FIELDS) {
+    const value = cleaned[key];
+    if (value === undefined || value === null || value === "" || value === "__none__") {
       delete cleaned[key];
     }
-  });
+  }
 
   return cleaned;
 }
 
-export function buildSmokingLogPayload({
-  user,
-  session,
-  moduleKey,
-}) {
-  if (!user?.email) throw new Error("No user authenticated");
-  if (!session || typeof session !== "object") throw new Error("Invalid session data");
+export function buildSmokingLogPayload({ user, session }) {
+  if (!user?.email) throw new Error("No authenticated user");
+  if (!session || typeof session !== "object") throw new Error("Invalid session payload");
 
-  const payload = omitEmptyStringIds({
-    ...session,
-    module: moduleKey || "pipekeeper",
-    user_email: user.email,
-    created_at: new Date().toISOString(),
+  // Keep this payload minimal and canonical.
+  // Do NOT send external_* fields or extra bookkeeping fields that may not exist in SmokingLog.
+  const payload = omitEmptyIds({
+    created_by: user.email,
+    pipe_id: session.pipe_id,
+    blend_id: session.blend_id,
+    container_id: session.container_id,
+    bowl_variant_id: session.bowl_variant_id,
+    pipe_name: session.pipe_name,
+    blend_name: session.blend_name,
+    bowl_name: session.bowl_name,
+    bowls_used: Number(session.bowls_used || 1),
+    bowls_smoked: Number(session.bowls_used || 1),
+    date: session.date,
+    is_break_in: !!session.is_break_in,
+    notes: session.notes || "",
   });
 
   return payload;
 }
 
-export async function saveSession({
-  user,
-  session,
-  moduleKey,
-  onSuccess,
-  onError,
-}) {
-  try {
-    const payload = buildSmokingLogPayload({ user, session, moduleKey });
-    const result = await base44.entities.SmokingLog.create(payload);
+export async function saveSession({ user, session }) {
+  const payload = buildSmokingLogPayload({ user, session });
+  const result = await base44.entities.SmokingLog.create(payload);
 
-    if (!result) throw new Error("Session save returned no result");
-
-    if (onSuccess) onSuccess(result);
-    return result;
-  } catch (err) {
-    console.error("[saveSession] SESSION SAVE ERROR:", err);
-    if (onError) onError(err);
-    throw err;
+  if (!result) {
+    throw new Error("SmokingLog.create returned empty response");
   }
+
+  return result;
 }
