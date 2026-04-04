@@ -1,0 +1,332 @@
+/**
+ * normalizeIdentifiedItem.js
+ *
+ * Converts raw LLM identification results into the canonical shared output
+ * shape used across UPC lookups, photo identification, and quick-add flows.
+ *
+ * Canonical output shape:
+ * {
+ *   itemType: "pipe" | "blend" | "bottle",
+ *   confidence: "low" | "medium" | "high",
+ *   confidenceScore: number,        // 0–100
+ *   candidates: Array<NormalizedCandidate>,
+ *   selected: NormalizedCandidate | null,
+ * }
+ *
+ * NormalizedCandidate:
+ * {
+ *   name:          string,
+ *   maker:         string,
+ *   category:      string,
+ *   details:       object,   // item-type-specific detail fields
+ *   valuationSeed: object,   // fields usable by the shared valuation engine
+ *   source:        "upc" | "photo" | "search",
+ * }
+ */
+
+// ── Confidence helpers ────────────────────────────────────────────────────────
+
+/**
+ * Convert a textual or numeric confidence descriptor from the LLM into the
+ * three-tier system used throughout the app.
+ */
+export function resolveConfidenceLevel(rawConfidence) {
+  if (typeof rawConfidence === 'number') {
+    if (rawConfidence >= 80) return 'high';
+    if (rawConfidence >= 45) return 'medium';
+    return 'low';
+  }
+  if (typeof rawConfidence === 'string') {
+    const lower = rawConfidence.toLowerCase();
+    if (lower === 'high' || lower === 'certain' || lower === 'confirmed') return 'high';
+    if (lower === 'medium' || lower === 'moderate' || lower === 'likely') return 'medium';
+  }
+  return 'low';
+}
+
+export function confidenceToScore(level) {
+  if (level === 'high') return 90;
+  if (level === 'medium') return 60;
+  return 20;
+}
+
+// ── Per-type normalization ────────────────────────────────────────────────────
+
+function normalizePipe(raw, source) {
+  const maker = raw.identified_maker || raw.maker || '';
+  const model = raw.model_or_series || raw.model || raw.name || '';
+  const name = model ? `${maker} ${model}`.trim() : maker;
+
+  const details = {
+    shape: raw.shape || '',
+    bowlStyle: raw.bowlStyle || raw.bowl_style || '',
+    shankShape: raw.shankShape || raw.shank_shape || '',
+    bend: raw.bend || '',
+    sizeClass: raw.sizeClass || raw.size_class || '',
+    bowl_material: raw.bowl_material || '',
+    stem_material: raw.stem_material || '',
+    finish: raw.finish || '',
+    stamping: Array.isArray(raw.stampings)
+      ? raw.stampings.join(', ')
+      : raw.stamping_text || raw.stamping || '',
+    year_made: raw.estimated_era || raw.year_made || '',
+    condition: raw.condition || '',
+    country_of_origin: raw.country_of_origin || raw.country || '',
+    notes: raw.identification_notes || raw.notes || '',
+    photos: Array.isArray(raw.photos) ? raw.photos : [],
+  };
+
+  const valuationSeed = {
+    estimated_value: raw.estimated_value ?? null,
+    estimated_value_range: raw.estimated_value_range || null,
+    handmade_hint: raw.handmade_hint || null,
+    line_series: raw.model_or_series || raw.model || null,
+    maker,
+    purchase_price: raw.original_price ?? raw.purchase_price ?? null,
+  };
+
+  return { name, maker, category: details.shape, details, valuationSeed, source };
+}
+
+function normalizeBlend(raw, source) {
+  const maker = raw.manufacturer || raw.maker || '';
+  const name = raw.name || raw.blend_name || '';
+
+  const details = {
+    blend_type: raw.blend_type || raw.blend_family || '',
+    strength: raw.strength || '',
+    cut: raw.cut || '',
+    flavor_notes: Array.isArray(raw.flavor_notes) ? raw.flavor_notes : [],
+    production_status: raw.production_status || raw.discontinued_hint || '',
+    packaging_size: raw.packaging_size || raw.size || '',
+    region: raw.region || raw.country || '',
+    country: raw.country || '',
+  };
+
+  const valuationSeed = {
+    retail_price: raw.retail_price ?? raw.estimated_price ?? raw.purchase_price ?? null,
+    discontinued_hint: raw.discontinued_hint || raw.production_status || null,
+    packaging_size: details.packaging_size || null,
+    region_exclusivity: raw.region_exclusivity || null,
+    maker,
+  };
+
+  return { name, maker, category: details.blend_type, details, valuationSeed, source };
+}
+
+function normalizeBottle(raw, source) {
+  const maker = raw.distillery || raw.maker || '';
+  const name = raw.name || raw.bottle_name || '';
+
+  const details = {
+    type: raw.type || raw.whiskey_type || '',
+    age: raw.age ?? null,
+    abv: raw.abv ?? null,
+    region: raw.region || '',
+    country: raw.country || '',
+    bottle_size: raw.bottle_size || '750ml',
+    edition: raw.special_edition || raw.edition || '',
+    batch: raw.batch || '',
+    tasting_notes: raw.tasting_notes || '',
+  };
+
+  const valuationSeed = {
+    retail_price: raw.estimated_price ?? raw.retail_price ?? null,
+    edition: details.edition || null,
+    rarity_hint: raw.rarity_hint || null,
+    replacement_hint: raw.replacement_hint || null,
+    maker,
+    purchase_price: raw.purchase_price ?? null,
+  };
+
+  return { name, maker, category: details.type, details, valuationSeed, source };
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
+
+/**
+ * Normalize a raw LLM result into the canonical candidate shape.
+ *
+ * @param {object} rawResult - Raw LLM response object for a single item
+ * @param {"pipe"|"blend"|"bottle"} itemType
+ * @param {"upc"|"photo"|"search"} source
+ * @returns {NormalizedCandidate}
+ */
+export function normalizeSingleCandidate(rawResult, itemType, source = 'search') {
+  if (!rawResult) return null;
+  if (itemType === 'pipe') return normalizePipe(rawResult, source);
+  if (itemType === 'blend') return normalizeBlend(rawResult, source);
+  if (itemType === 'bottle') return normalizeBottle(rawResult, source);
+  return { name: rawResult.name || '', maker: '', category: '', details: rawResult, valuationSeed: {}, source };
+}
+
+/**
+ * Normalize a full LLM identification response into the canonical output shape.
+ *
+ * @param {object} rawResult   - Raw LLM response (single item or {candidates:[...]})
+ * @param {"pipe"|"blend"|"bottle"} itemType
+ * @param {"upc"|"photo"|"search"} source
+ * @returns {IdentifyResult}
+ */
+export function normalizeIdentifiedItem(rawResult, itemType, source = 'search') {
+  if (!rawResult) {
+    return {
+      itemType,
+      confidence: 'low',
+      confidenceScore: 0,
+      candidates: [],
+      selected: null,
+    };
+  }
+
+  // Support both single-item and multi-candidate responses
+  const rawCandidates = Array.isArray(rawResult.candidates)
+    ? rawResult.candidates
+    : Array.isArray(rawResult.items)
+    ? rawResult.items
+    : [rawResult];
+
+  const candidates = rawCandidates
+    .filter(Boolean)
+    .map((c) => normalizeSingleCandidate(c, itemType, source));
+
+  const confidence = resolveConfidenceLevel(rawResult.confidence);
+  const confidenceScore = typeof rawResult.confidence_score === 'number'
+    ? rawResult.confidence_score
+    : confidenceToScore(confidence);
+
+  return {
+    itemType,
+    confidence,
+    confidenceScore,
+    candidates,
+    selected: candidates[0] || null,
+  };
+}
+
+// ── Quick-add payload builder ─────────────────────────────────────────────────
+
+/**
+ * Convert a normalized identified item (or candidate) into a flat object
+ * ready to prefill a quick-add or manual form.
+ *
+ * @param {NormalizedCandidate} identifiedItem
+ * @param {"pipe"|"blend"|"bottle"} itemType
+ * @returns {object}
+ */
+export function buildQuickAddPayload(identifiedItem, itemType) {
+  if (!identifiedItem) return {};
+  const { name, maker, details = {}, valuationSeed = {} } = identifiedItem;
+
+  const base = { name };
+
+  if (itemType === 'pipe') {
+    return {
+      ...base,
+      maker,
+      shape: details.shape,
+      bowlStyle: details.bowlStyle,
+      shankShape: details.shankShape,
+      bend: details.bend,
+      sizeClass: details.sizeClass,
+      bowl_material: details.bowl_material,
+      stem_material: details.stem_material,
+      finish: details.finish,
+      stamping: details.stamping,
+      year_made: details.year_made,
+      condition: details.condition,
+      country_of_origin: details.country_of_origin,
+      notes: details.notes,
+      photos: details.photos,
+      estimated_value: valuationSeed.estimated_value ?? undefined,
+      purchase_price: valuationSeed.purchase_price ?? undefined,
+    };
+  }
+
+  if (itemType === 'blend') {
+    return {
+      ...base,
+      manufacturer: maker,
+      blend_type: details.blend_type,
+      strength: details.strength,
+      cut: details.cut,
+      flavor_notes: details.flavor_notes,
+      production_status: details.production_status,
+      notes: details.notes,
+      purchase_price: valuationSeed.retail_price ?? undefined,
+    };
+  }
+
+  if (itemType === 'bottle') {
+    return {
+      ...base,
+      distillery: maker,
+      type: details.type,
+      age: details.age,
+      abv: details.abv,
+      region: details.region,
+      country: details.country,
+      bottle_size: details.bottle_size,
+      notes: details.tasting_notes,
+      purchase_price: valuationSeed.retail_price ?? undefined,
+    };
+  }
+
+  return base;
+}
+
+// ── Valuation seed builder ────────────────────────────────────────────────────
+
+/**
+ * Extract fields from an identified item that can be consumed by the shared
+ * valuation engine (platform/valuation.js) or module-specific value engines.
+ *
+ * Does NOT introduce new valuation formulas — only surfaces recognized data.
+ *
+ * @param {NormalizedCandidate} identifiedItem
+ * @param {"pipe"|"blend"|"bottle"} itemType
+ * @returns {object}
+ */
+export function buildValuationSeedData(identifiedItem, itemType) {
+  if (!identifiedItem) return {};
+  const { valuationSeed = {}, details = {} } = identifiedItem;
+
+  if (itemType === 'pipe') {
+    return {
+      estimated_value: valuationSeed.estimated_value ?? null,
+      purchase_price: valuationSeed.purchase_price ?? null,
+      value_source: 'identify',
+      value_confidence: valuationSeed.estimated_value ? 'medium' : 'low',
+      // Extra context fields the pipe value engine can use
+      maker: valuationSeed.maker || null,
+      line_series: valuationSeed.line_series || null,
+      handmade_hint: valuationSeed.handmade_hint || null,
+    };
+  }
+
+  if (itemType === 'blend') {
+    return {
+      purchase_price: valuationSeed.retail_price ?? null,
+      value_source: 'identify',
+      value_confidence: valuationSeed.retail_price ? 'medium' : 'low',
+      // Extra context
+      discontinued_hint: valuationSeed.discontinued_hint || null,
+      packaging_size: valuationSeed.packaging_size || null,
+      region_exclusivity: valuationSeed.region_exclusivity || null,
+    };
+  }
+
+  if (itemType === 'bottle') {
+    return {
+      purchase_price: valuationSeed.retail_price ?? valuationSeed.purchase_price ?? null,
+      value_source: 'identify',
+      value_confidence: valuationSeed.retail_price ? 'medium' : 'low',
+      // Extra context
+      edition: valuationSeed.edition || null,
+      rarity_hint: valuationSeed.rarity_hint || null,
+      replacement_hint: valuationSeed.replacement_hint || null,
+    };
+  }
+
+  return {};
+}
