@@ -71,6 +71,7 @@ import Invite from './pages/Invite';
 import InviteFull from './pages/InviteFull';
 import PipeDetail from './pages/PipeDetail';
 import PipeKeeper from './pages/PipeKeeper';
+import PipeKeeperInsights from './pages/PipeKeeperInsights';
 import Pipes from './pages/Pipes';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Profile from './pages/Profile';
@@ -127,6 +128,7 @@ export const PAGES = {
     "InviteFull": InviteFull,
     "PipeDetail": PipeDetail,
     "PipeKeeper": PipeKeeper,
+    "PipeKeeperInsights": PipeKeeperInsights,
     "Pipes": Pipes,
     "PrivacyPolicy": PrivacyPolicy,
     "Profile": Profile,

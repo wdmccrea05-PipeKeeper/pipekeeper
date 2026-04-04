@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, TrendingUp, AlertCircle } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/components/utils/localeFormatters';
-import {
-  buildValuationSnapshot,
-  computeRarityScore,
-  computeReplacementDifficulty,
-} from '@/components/valuation/valueEngine';
+import { buildValuationSnapshot } from '@/components/valuation/valueEngine';
 
 /**
  * ValuationCredibility - Transparent valuation display with reference signals,
@@ -35,99 +31,87 @@ const CONFIDENCE_CONFIG = {
 
 /**
  * Calculates a pipe valuation score from available pipe data.
- * Returns { value, confidence, signals, lastUpdated }
+ * Delegates to the shared valueEngine for all value, rarity, difficulty, and recommendation logic.
+ * Returns { value, confidence, signals, lastUpdated, rarityScore, replacementDifficulty, holdRecommendation, rationale }
  */
 export function computePipeValuation(pipe) {
   if (!pipe) return null;
 
-  const signals = [];
-  let score = 0;
-  let signalCount = 0;
+  const snapshot = buildValuationSnapshot(pipe, 'pipekeeper');
+  if (!snapshot) return null;
 
-  // Brand/maker factor
+  // Build UI signal strings for display
+  const signals = [];
   const premiumMakers = ['dunhill', 'dunhill era', 'barling', 'comoy', 'sasieni', 'charatan', 'savinelli', 'stanwell', 'peterson', 'castello', 'ardor', 'brebbia', 'ser jacopo', 'radice', 'astley'];
   const makerLower = (pipe.maker || '').toLowerCase();
   const isPremiumMaker = premiumMakers.some(m => makerLower.includes(m));
-  if (pipe.maker) {
-    const brandFactor = isPremiumMaker ? 80 : 20;
-    score += brandFactor;
-    signalCount++;
-    signals.push(isPremiumMaker ? 'Premium brand index' : 'Brand baseline');
+
+  if (pipe.maker) signals.push(isPremiumMaker ? 'Premium brand index' : 'Brand baseline');
+  if (pipe.bowl_material) signals.push(`Material: ${pipe.bowl_material}`);
+  if (pipe.condition) signals.push(`Condition: ${pipe.condition}`);
+  if (Number(pipe.purchase_price) > 0) signals.push('Purchase price reference');
+
+  const yearNum = parseInt(pipe.year_made, 10);
+  if (!isNaN(yearNum)) {
+    if (yearNum < 1980) signals.push('Vintage era premium');
+    else if (yearNum < 2000) signals.push('Collector-era age factor');
   }
+  if (Number(pipe.estimated_value) > 0) signals.push('Manual valuation entry');
 
-  // Material factor
-  const materialFactors = {
-    'Meerschaum': 60,
-    'Morta': 50,
-    'Briar': 30,
-    'Cherry Wood': 15,
-    'Corn Cob': 5,
-    'Clay': 10,
-  };
-  const materialBonus = materialFactors[pipe.bowl_material] || 0;
-  if (pipe.bowl_material) {
-    score += materialBonus;
-    signalCount++;
-    signals.push(`Material: ${pipe.bowl_material}`);
-  }
-
-  // Condition factor
-  const conditionMultipliers = {
-    'Mint': 1.3,
-    'Excellent': 1.2,
-    'Very Good': 1.1,
-    'Good': 1.0,
-    'Fair': 0.85,
-    'Poor': 0.6,
-    'Estate - Unrestored': 0.75,
-  };
-  const conditionMult = conditionMultipliers[pipe.condition] || 1.0;
-  if (pipe.condition) {
-    score = score * conditionMult;
-    signals.push(`Condition: ${pipe.condition}`);
-  }
-
-  // Purchase price as anchor
-  if (pipe.purchase_price && pipe.purchase_price > 0) {
-    signals.push('Purchase price reference');
-    signalCount++;
-    // Blend purchase price with score
-    score = (score + pipe.purchase_price) / 2;
-  }
-
-  // Year / age factor
-  if (pipe.year_made) {
-    const yearNum = parseInt(pipe.year_made);
-    if (!isNaN(yearNum) && yearNum < 1980) {
-      score *= 1.4;
-      signals.push('Vintage era premium');
-    } else if (!isNaN(yearNum) && yearNum < 2000) {
-      score *= 1.15;
-      signals.push('Collector-era age factor');
-    }
-  }
-
-  // Use manual estimated value if set
-  const baseValue = pipe.estimated_value && pipe.estimated_value > 0
-    ? pipe.estimated_value
-    : Math.max(Math.round(score), 0);
-
-  // Confidence based on data completeness
-  let confidence = 'Low';
-  if (signalCount >= 4) confidence = 'High';
-  else if (signalCount >= 2) confidence = 'Medium';
-
-  if (pipe.estimated_value && pipe.estimated_value > 0) {
-    confidence = 'Medium'; // Manual value = medium confidence
-    if (!signals.includes('Purchase price reference')) signals.push('Manual valuation entry');
-  }
+  const confMap = { high: 'High', medium: 'Medium', low: 'Low' };
+  const confidence = confMap[snapshot.confidence] || 'Low';
 
   return {
-    value: baseValue,
+    value: snapshot.currentValue,
     confidence,
     signals,
     lastUpdated: pipe.updated_date || pipe.created_date || null,
-    isManual: !!(pipe.estimated_value && pipe.estimated_value > 0),
+    isManual: !!(Number(pipe.estimated_value) > 0),
+    rarityScore: snapshot.rarityScore,
+    replacementDifficulty: snapshot.replacementDifficulty,
+    holdRecommendation: snapshot.holdRecommendation,
+    rationale: snapshot.rationale,
+  };
+}
+
+/**
+ * Calculates a tobacco blend valuation from available blend data.
+ * Delegates to the shared valueEngine for all value, rarity, difficulty, and recommendation logic.
+ * Returns { value, confidence, signals, totalOz, rarityScore, replacementDifficulty, recommendation, rationale }
+ */
+export function computeTobaccoValuation(blend) {
+  if (!blend) return null;
+
+  const snapshot = buildValuationSnapshot(blend, 'pipekeeper');
+  if (!snapshot) return null;
+
+  const totalOz =
+    (Number(blend.tin_total_quantity_oz) || 0) +
+    (Number(blend.bulk_total_quantity_oz) || 0) +
+    (Number(blend.pouch_total_quantity_oz) || 0);
+
+  const signals = [];
+  if (Number(blend.manual_market_value) > 0) signals.push('Manual market value');
+  if (Number(blend.ai_estimated_value) > 0) signals.push('AI-estimated value per oz');
+  if (Number(blend.price_per_oz) > 0) signals.push(`Price per oz: $${Number(blend.price_per_oz).toFixed(2)}`);
+  if (totalOz > 0) signals.push(`Total quantity: ${totalOz.toFixed(1)} oz`);
+  if (blend.production_status) signals.push(`Production: ${blend.production_status}`);
+  if (blend.aging_potential) signals.push(`Aging potential: ${blend.aging_potential}`);
+
+  const confMap = { high: 'High', medium: 'Medium', low: 'Low' };
+  const confidence = confMap[snapshot.confidence] || 'Low';
+
+  return {
+    value: snapshot.currentValue,
+    confidence,
+    signals,
+    lastUpdated: blend.updated_date || blend.created_date || null,
+    isManual: !!(Number(blend.manual_market_value) > 0),
+    totalOz,
+    rarityScore: snapshot.rarityScore,
+    replacementDifficulty: snapshot.replacementDifficulty,
+    recommendation: snapshot.holdRecommendation,
+    rationale: snapshot.rationale,
   };
 }
 

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Pencil, Leaf, Share2, Search, Trash2 } from 'lucide-react';
+import { ArrowLeft, CircleDollarSign, Leaf, Pencil, Share2, Search, Trash2 } from 'lucide-react';
 import EnrichButton from '@/components/shared/EnrichButton';
 import {
   AlertDialog,
@@ -20,13 +20,18 @@ import CellarLog from '@/components/tobacco/CellarLog';
 import { scorePipeBlend } from '@/components/utils/pairingScoreCanonical';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { Button } from '@/components/ui/button';
-import { formatWeight } from '@/components/utils/localeFormatters';
+import { formatCurrency, formatWeight } from '@/components/utils/localeFormatters';
 import InlinePhotoEditor from '@/components/shared/InlinePhotoEditor';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { scopedEntities } from '@/components/api/scopedEntities';
+import { computeTobaccoValuation } from '@/components/valuation/ValuationCredibility';
+import {
+  DIFFICULTY_LABELS,
+  TOBACCO_RECOMMENDATION_LABELS,
+} from '@/components/valuation/valueEngine';
 
 function getOwnershipLabel(blend) {
   const parts = [];
@@ -80,6 +85,8 @@ export default function TobaccoDetail() {
   const [bestPipesLoading, setBestPipesLoading] = useState(false);
   const [bestPipesResults, setBestPipesResults] = useState(null);
   const [bestPipesError, setBestPipesError] = useState(null);
+
+  const tobaccoStrategy = useMemo(() => blend ? computeTobaccoValuation(blend) : null, [blend]);
 
   useEffect(() => {
     let mounted = true;
@@ -402,6 +409,78 @@ export default function TobaccoDetail() {
 
       <TobaccoInventoryManager blend={blend} onUpdate={handleBlendUpdate} isUpdating={isUpdatingInventory} />
       <CellarLog blend={blend} />
+
+      {/* Value & Strategy Section */}
+      {tobaccoStrategy && (
+        <div
+          className="rounded-2xl p-5 space-y-4"
+          style={{
+            background: 'linear-gradient(145deg, rgba(38,26,18,0.98), rgba(25,17,12,1))',
+            border: '1px solid rgba(180,140,75,0.18)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+          }}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <CircleDollarSign className="w-4 h-4 text-[#D4A574]" />
+            <p className="text-sm font-semibold text-[#F5F1E7]">Value &amp; Strategy</p>
+          </div>
+
+          {/* Discontinued badge */}
+          {(blend.production_status || '').toLowerCase().includes('discontinue') && (
+            <div
+              className="flex items-center gap-2 px-3 py-2 rounded-xl w-fit"
+              style={{ background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.3)' }}
+            >
+              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#f87171' }} />
+              <span className="text-xs font-semibold" style={{ color: '#f87171' }}>Discontinued Blend</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {tobaccoStrategy.value > 0 && (
+              <div className="rounded-xl p-3 col-span-2 md:col-span-1" style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.15)' }}>
+                <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/60">Cellar Value</p>
+                <p className="text-lg font-bold text-[#F5F1E7] mt-1">{formatCurrency(tobaccoStrategy.value)}</p>
+                {tobaccoStrategy.totalOz > 0 && (
+                  <p className="text-xs text-[#D8C7A6]/50 mt-0.5">{tobaccoStrategy.totalOz.toFixed(1)} oz</p>
+                )}
+              </div>
+            )}
+            <div className="rounded-xl p-3" style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.15)' }}>
+              <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/60">Rarity</p>
+              <p className="text-lg font-bold text-[#F5F1E7] mt-1">{tobaccoStrategy.rarityScore ?? '—'}<span className="text-xs text-[#D8C7A6]/50">/100</span></p>
+            </div>
+            <div className="rounded-xl p-3" style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.15)' }}>
+              <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/60">Replacement</p>
+              <p className="text-sm font-semibold text-[#F5F1E7] mt-1 leading-snug">
+                {tobaccoStrategy.replacementDifficulty ? DIFFICULTY_LABELS[tobaccoStrategy.replacementDifficulty] : '—'}
+              </p>
+            </div>
+            <div className="rounded-xl p-3" style={{ background: 'rgba(74,222,128,0.07)', border: '1px solid rgba(74,222,128,0.18)' }}>
+              <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/60">Recommendation</p>
+              <p className="text-sm font-bold mt-1" style={{ color: '#4ade80' }}>
+                {tobaccoStrategy.recommendation
+                  ? (TOBACCO_RECOMMENDATION_LABELS[tobaccoStrategy.recommendation] || tobaccoStrategy.recommendation)
+                  : '—'}
+              </p>
+            </div>
+          </div>
+
+          {tobaccoStrategy.rationale && tobaccoStrategy.rationale.length > 0 && (
+            <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.1)' }}>
+              <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/60 mb-2">Rationale</p>
+              <ul className="space-y-1.5">
+                {tobaccoStrategy.rationale.map((point, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: 'rgba(180,140,75,0.6)' }} />
+                    <span className="text-xs text-[#E0D8C8]/75">{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
 
       <ShareRecordModal
         isOpen={showShareModal}
