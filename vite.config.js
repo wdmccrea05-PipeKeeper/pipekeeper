@@ -15,6 +15,19 @@ export default defineConfig({
     },
   },
   logLevel: 'warn',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-recharts': ['recharts'],
+          'vendor-framer': ['framer-motion'],
+          'vendor-pdf': ['jspdf', 'html2canvas'],
+          'vendor-three': ['three'],
+        },
+      },
+    },
+  },
   plugins: [
     base44({
       // Support for legacy code that imports the base44 SDK with @/integrations, @/entities, etc.

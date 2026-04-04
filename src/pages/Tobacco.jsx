@@ -463,7 +463,6 @@ export default function TobaccoPage() {
                       image={blend.logo || blend.photo}
                       title={blend.name}
                       subtitle={blend.manufacturer || t("tobaccoExtended.unknownMaker")}
-                      onEdit={() => { setEditingBlend(blend); setShowForm(true); }}
                       badges={
                         <>
                           {blend.blend_type && (
