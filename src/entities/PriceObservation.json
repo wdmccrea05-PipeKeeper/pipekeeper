@@ -1,0 +1,60 @@
+{
+  "name": "PriceObservation",
+  "type": "object",
+  "description": "A single market price observation for any collectible item. Reusable across modules (pipekeeper, whiskeykeeper, cigarkeeper, winekeeper).",
+  "properties": {
+    "module_key": {
+      "type": "string",
+      "description": "Module this observation belongs to (e.g. whiskeykeeper, pipekeeper)",
+      "enum": ["whiskeykeeper", "pipekeeper", "cigarkeeper", "winekeeper", "other"]
+    },
+    "item_id": {
+      "type": "string",
+      "description": "ID of the item (bottle, pipe, cigar, etc.) this observation relates to"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who logged this observation"
+    },
+    "observed_price": {
+      "type": "number",
+      "description": "The price observed"
+    },
+    "price_type": {
+      "type": "string",
+      "enum": ["retail", "aftermarket", "auction", "collector", "estimate", "private_sale", "other"],
+      "description": "Type of price observation"
+    },
+    "source_name": {
+      "type": "string",
+      "description": "Name of the source (e.g. 'Total Wine', 'Whisky Auctioneer', 'Reddit')"
+    },
+    "source_url": {
+      "type": "string",
+      "description": "Optional URL of the source listing"
+    },
+    "observed_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date price was observed (YYYY-MM-DD)"
+    },
+    "condition_note": {
+      "type": "string",
+      "description": "Notes about the item condition at time of observation"
+    },
+    "fill_level": {
+      "type": "string",
+      "description": "Fill level of bottle if applicable (Full, High, Medium, Low, Empty)"
+    },
+    "region": {
+      "type": "string",
+      "description": "Geographic market region where the price was observed"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "description": "Currency code for the observed price (ISO 4217)"
+    }
+  },
+  "required": ["module_key", "item_id", "created_by", "observed_price", "observed_date"]
+}

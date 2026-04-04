@@ -17,6 +17,7 @@ import {
 } from 'recharts';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import { subMonths, format } from 'date-fns';
+import { computeCurrentValue, computeRarityScore, computeReplacementDifficulty, computeOpenVsHoldDecision } from '@/components/valuation/valueEngine';
 
 /**
  * WhiskeyInsightsAnalytics
@@ -64,9 +65,8 @@ export function getCountryDistribution(bottles) {
 
 /**
  * Auto-compute aftermarket and collector values when explicit fields are absent.
- * - aftermarket: use aftermarket_price if present; else estimate as retail_price * 1.2 for bottles > 12yr age
- * - collector: use collector_value if present; else use best available price signal
- * This ensures values never show $0 when data exists.
+ * Delegates to the canonical engine for current value; only falls back to
+ * heuristics for the analytical breakdown.
  */
 function computeBottleAftermarket(b) {
   if (Number(b.aftermarket_price) > 0) return Number(b.aftermarket_price);
@@ -91,7 +91,64 @@ export function getCollectionValue(bottles) {
     retail: bottles.reduce((sum, b) => sum + (Number(b.retail_price) || Number(b.purchase_price) || 0), 0),
     aftermarket: bottles.reduce((sum, b) => sum + computeBottleAftermarket(b), 0),
     collector: bottles.reduce((sum, b) => sum + computeBottleCollector(b), 0),
+    // Engine-canonical total using the shared priority logic
+    canonical: bottles.reduce((sum, b) => sum + computeCurrentValue(b, 'whiskeykeeper'), 0),
   };
+}
+
+/**
+ * Returns bottles sorted by rarity score descending — prime "hold" candidates.
+ */
+export function getTopBottlesToHold(bottles, limit = 5) {
+  return [...bottles]
+    .map(b => ({ ...b, _rarityScore: computeRarityScore(b, 'whiskeykeeper') }))
+    .sort((a, b) => b._rarityScore - a._rarityScore)
+    .slice(0, limit);
+}
+
+/**
+ * Returns bottles with low rarity + easy replacement — safe to open.
+ */
+export function getBottlesSafeToOpen(bottles, limit = 5) {
+  return [...bottles]
+    .filter(b => {
+      const difficulty = computeReplacementDifficulty(b, 'whiskeykeeper');
+      const rarity = computeRarityScore(b, 'whiskeykeeper');
+      return difficulty === 'easy' && rarity <= 30;
+    })
+    .slice(0, limit);
+}
+
+/**
+ * Returns bottles with high replacement difficulty — replacement risk.
+ */
+export function getReplacementRiskBottles(bottles, limit = 5) {
+  return [...bottles]
+    .filter(b => {
+      const difficulty = computeReplacementDifficulty(b, 'whiskeykeeper');
+      return difficulty === 'hard' || difficulty === 'very_hard';
+    })
+    .map(b => ({ ...b, _difficulty: computeReplacementDifficulty(b, 'whiskeykeeper') }))
+    .slice(0, limit);
+}
+
+/**
+ * Returns collections stats useful for the "Value" insight cards.
+ */
+export function getValueConcentration(bottles) {
+  if (!bottles.length) return { topBottles: [], topPct: 0, totalValue: 0 };
+
+  const sorted = [...bottles]
+    .map(b => ({ ...b, _value: computeCurrentValue(b, 'whiskeykeeper') }))
+    .sort((a, b) => b._value - a._value);
+
+  const totalValue = sorted.reduce((sum, b) => sum + b._value, 0);
+  const top20Pct = Math.ceil(sorted.length * 0.2);
+  const topBottles = sorted.slice(0, top20Pct);
+  const topValue = topBottles.reduce((sum, b) => sum + b._value, 0);
+  const topPct = totalValue > 0 ? Math.round((topValue / totalValue) * 100) : 0;
+
+  return { topBottles, topPct, totalValue };
 }
 
 export function getTastingTrends(tastingLogs, bottles) {

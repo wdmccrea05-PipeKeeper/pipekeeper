@@ -11,6 +11,11 @@ import {
   Package,
   Search,
   Trash2,
+  TrendingUp,
+  ShieldCheck,
+  AlertTriangle,
+  PlusCircle,
+  Eye,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -27,6 +32,9 @@ import { runFindSimilar } from "@/components/recommendations/FindSimilarEngine";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LogTastingModal from "@/components/whiskey/LogTastingModal";
 import InlinePhotoEditor from "@/components/shared/InlinePhotoEditor";
 import ShareRecordModal from "@/components/share/ShareRecordModal";
@@ -39,6 +47,13 @@ import {
   resolveBottleUnitValue,
   resolveBottleValueSource,
 } from "@/components/whiskey/utils/bottleValue";
+import {
+  buildValuationSnapshot,
+  DIFFICULTY_LABELS,
+  TREND_LABELS,
+  HOLD_RECOMMENDATION_LABELS,
+  resolveValueTrend,
+} from "@/components/valuation/valueEngine";
 
 function safePrimitive(value, fallback = "—") {
   if (value === null || value === undefined || value === "") return fallback;
@@ -185,6 +200,207 @@ function TastingRow({ tasting, onEdit }) {
   );
 }
 
+function capitalize(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+function AddValueSnapshotModal({ bottle, valuationSnapshot, userEmail, onClose, onSaved }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [form, setForm] = useState({
+    snapshot_date: today,
+    retail_price: String(bottle?.retail_price || ''),
+    aftermarket_price: String(bottle?.aftermarket_price || ''),
+    collector_value: String(bottle?.collector_value || ''),
+    computed_current_value: String(valuationSnapshot?.currentValue || ''),
+    value_confidence: valuationSnapshot?.confidence || 'medium',
+    source: valuationSnapshot?.source || '',
+    rarity_score: String(valuationSnapshot?.rarityScore || ''),
+    replacement_difficulty: valuationSnapshot?.replacementDifficulty || 'moderate',
+    notes: '',
+  });
+  const [saving, setSaving] = useState(false);
+
+  const toN = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : null; };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await base44.entities.BottleValueSnapshot.create({
+        bottle_id: bottle.id,
+        created_by: userEmail,
+        snapshot_date: form.snapshot_date,
+        retail_price: toN(form.retail_price),
+        aftermarket_price: toN(form.aftermarket_price),
+        collector_value: toN(form.collector_value),
+        computed_current_value: toN(form.computed_current_value),
+        value_confidence: form.value_confidence,
+        source: form.source || null,
+        rarity_score: toN(form.rarity_score),
+        replacement_difficulty: form.replacement_difficulty,
+        notes: form.notes || null,
+      });
+      onSaved();
+    } catch (e) {
+      console.error('[BottleDetail] failed to save snapshot', e);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(180,140,75,0.25)' }}>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">Add Value Snapshot</h3>
+        <div className="space-y-3">
+          {[
+            { label: 'Snapshot Date', field: 'snapshot_date', type: 'date' },
+            { label: 'Retail Price', field: 'retail_price', type: 'number' },
+            { label: 'Aftermarket Price', field: 'aftermarket_price', type: 'number' },
+            { label: 'Collector Value', field: 'collector_value', type: 'number' },
+            { label: 'Computed Current Value', field: 'computed_current_value', type: 'number' },
+            { label: 'Source', field: 'source', type: 'text' },
+            { label: 'Rarity Score (0–100)', field: 'rarity_score', type: 'number' },
+            { label: 'Notes', field: 'notes', type: 'text' },
+          ].map(({ label, field, type }) => (
+            <div key={field}>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{label}</label>
+              <Input
+                type={type}
+                value={form[field]}
+                onChange={e => setForm(prev => ({ ...prev, [field]: e.target.value }))}
+                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+              />
+            </div>
+          ))}
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Confidence</label>
+            <Select value={form.value_confidence} onValueChange={v => setForm(prev => ({ ...prev, value_confidence: v }))}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Replacement Difficulty</label>
+            <Select value={form.replacement_difficulty} onValueChange={v => setForm(prev => ({ ...prev, replacement_difficulty: v }))}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="easy">Easy</SelectItem>
+                <SelectItem value="moderate">Moderate</SelectItem>
+                <SelectItem value="hard">Hard</SelectItem>
+                <SelectItem value="very_hard">Very Hard</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="flex gap-3 justify-end pt-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving} style={{ background: 'linear-gradient(135deg,rgba(163,92,92,1),rgba(140,74,74,1))', color: '#F5F1E7' }}>
+            {saving ? 'Saving…' : 'Save Snapshot'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddPriceObservationModal({ bottle, userEmail, onClose, onSaved }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [form, setForm] = useState({
+    observed_date: today,
+    observed_price: '',
+    price_type: 'retail',
+    source_name: '',
+    source_url: '',
+    condition_note: '',
+    fill_level: '',
+    region: '',
+    currency: 'USD',
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!form.observed_price) return;
+    setSaving(true);
+    try {
+      await base44.entities.PriceObservation.create({
+        module_key: 'whiskeykeeper',
+        item_id: bottle.id,
+        created_by: userEmail,
+        observed_price: Number(form.observed_price),
+        price_type: form.price_type,
+        source_name: form.source_name || null,
+        source_url: form.source_url || null,
+        observed_date: form.observed_date,
+        condition_note: form.condition_note || null,
+        fill_level: form.fill_level || null,
+        region: form.region || null,
+        currency: form.currency || 'USD',
+      });
+      onSaved();
+    } catch (e) {
+      console.error('[BottleDetail] failed to save observation', e);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(59,130,246,0.25)' }}>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">Add Market Observation</h3>
+        <div className="space-y-3">
+          {[
+            { label: 'Observed Date', field: 'observed_date', type: 'date' },
+            { label: 'Price *', field: 'observed_price', type: 'number' },
+            { label: 'Source Name', field: 'source_name', type: 'text' },
+            { label: 'Source URL', field: 'source_url', type: 'text' },
+            { label: 'Condition Note', field: 'condition_note', type: 'text' },
+            { label: 'Fill Level', field: 'fill_level', type: 'text' },
+            { label: 'Region', field: 'region', type: 'text' },
+            { label: 'Currency', field: 'currency', type: 'text' },
+          ].map(({ label, field, type }) => (
+            <div key={field}>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{label}</label>
+              <Input
+                type={type}
+                value={form[field]}
+                onChange={e => setForm(prev => ({ ...prev, [field]: e.target.value }))}
+                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+              />
+            </div>
+          ))}
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Price Type</label>
+            <Select value={form.price_type} onValueChange={v => setForm(prev => ({ ...prev, price_type: v }))}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="retail">Retail</SelectItem>
+                <SelectItem value="aftermarket">Aftermarket</SelectItem>
+                <SelectItem value="auction">Auction</SelectItem>
+                <SelectItem value="collector">Collector</SelectItem>
+                <SelectItem value="estimate">Estimate</SelectItem>
+                <SelectItem value="private_sale">Private Sale</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="flex gap-3 justify-end pt-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving || !form.observed_price} style={{ background: 'linear-gradient(135deg,rgba(59,130,246,0.8),rgba(37,99,235,0.9))', color: '#F5F1E7' }}>
+            {saving ? 'Saving…' : 'Save Observation'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BottleDetailInner() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -209,6 +425,10 @@ function BottleDetailInner() {
   const [showInventoryManager, setShowInventoryManager] = useState(
     params.get("inventory") === "1"
   );
+  const [valueSnapshots, setValueSnapshots] = useState([]);
+  const [priceObservations, setPriceObservations] = useState([]);
+  const [showSnapshotModal, setShowSnapshotModal] = useState(false);
+  const [showObservationModal, setShowObservationModal] = useState(false);
 
   const updateBottle = (updates) => {
     setBottle((prev) => ({ ...prev, ...updates }));
@@ -287,6 +507,39 @@ function BottleDetailInner() {
     }
   }
 
+  async function loadValueSnapshots() {
+    if (!bottleId || !userEmail) {
+      setValueSnapshots([]);
+      return;
+    }
+    try {
+      const rows = await base44.entities.BottleValueSnapshot.filter({
+        bottle_id: bottleId,
+        created_by: userEmail,
+      }, "-snapshot_date", 20);
+      setValueSnapshots(rows || []);
+    } catch {
+      setValueSnapshots([]);
+    }
+  }
+
+  async function loadPriceObservations() {
+    if (!bottleId || !userEmail) {
+      setPriceObservations([]);
+      return;
+    }
+    try {
+      const rows = await base44.entities.PriceObservation.filter({
+        item_id: bottleId,
+        created_by: userEmail,
+        module_key: "whiskeykeeper",
+      }, "-observed_date", 20);
+      setPriceObservations(rows || []);
+    } catch {
+      setPriceObservations([]);
+    }
+  }
+
   async function handleFindSimilar() {
     if (!bottle || !userEmail) return;
 
@@ -325,7 +578,7 @@ function BottleDetailInner() {
 
     (async () => {
       setLoading(true);
-      await Promise.all([loadBottle(), loadTastings(), loadAllBottles()]);
+      await Promise.all([loadBottle(), loadTastings(), loadAllBottles(), loadValueSnapshots(), loadPriceObservations()]);
       if (mounted) setLoading(false);
     })();
 
@@ -356,6 +609,13 @@ function BottleDetailInner() {
   );
   const unitValue = useMemo(() => resolveBottleUnitValue(bottle), [bottle]);
   const totalValue = useMemo(() => resolveBottleTotalValue(bottle), [bottle]);
+
+  const valuationSnapshot = useMemo(
+    () => buildValuationSnapshot(bottle, "whiskeykeeper", { bottles: allBottles, valueHistory: valueSnapshots }),
+    [bottle, allBottles, valueSnapshots]
+  );
+
+  const valueTrend = useMemo(() => resolveValueTrend(valueSnapshots), [valueSnapshots]);
 
   const locationLine = [
     maybePrimitive(bottle?.distillery),
@@ -597,6 +857,151 @@ function BottleDetailInner() {
                 </div>
               ) : null}
 
+              {/* VALUE & STRATEGY SECTION */}
+              {valuationSnapshot ? (
+                <div
+                  className="rounded-2xl p-4 space-y-4"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(40,28,18,0.7), rgba(28,18,12,0.85))",
+                    border: "1px solid rgba(180,140,75,0.22)",
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-[#B48C4B]" />
+                      <p className="text-xs uppercase tracking-wider text-[#D4A574] font-semibold">
+                        Value &amp; Strategy
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowSnapshotModal(true)}
+                        className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors"
+                        style={{ background: "rgba(180,140,75,0.15)", color: "#D4A574", border: "1px solid rgba(180,140,75,0.25)" }}
+                      >
+                        <PlusCircle className="w-3 h-3" />
+                        <span className="hidden sm:inline">Add Snapshot</span>
+                      </button>
+                      <button
+                        onClick={() => setShowObservationModal(true)}
+                        className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors"
+                        style={{ background: "rgba(59,130,246,0.12)", color: "#93C5FD", border: "1px solid rgba(59,130,246,0.25)" }}
+                      >
+                        <Eye className="w-3 h-3" />
+                        <span className="hidden sm:inline">Add Observation</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {valuationSnapshot.currentValue > 0 && (
+                      <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.14)" }}>
+                        <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-1">Current Value</p>
+                        <p className="text-lg font-bold text-[#F5F1E7]">{formatCurrency(valuationSnapshot.currentValue)}</p>
+                      </div>
+                    )}
+                    <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.14)" }}>
+                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-1">Source</p>
+                      <p className="text-sm font-medium text-[#E0D8C8]">{valuationSnapshot.source}</p>
+                    </div>
+                    <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.14)" }}>
+                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-1">Confidence</p>
+                      <p className="text-sm font-medium" style={{ color: valuationSnapshot.confidence === 'high' ? '#4ade80' : valuationSnapshot.confidence === 'medium' ? '#fbbf24' : '#f87171' }}>
+                        {capitalize(valuationSnapshot.confidence)}
+                      </p>
+                    </div>
+                    <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.14)" }}>
+                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-1">Rarity</p>
+                      <p className="text-sm font-medium text-[#E0D8C8]">{valuationSnapshot.rarityScore}/100</p>
+                    </div>
+                    <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.14)" }}>
+                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-1">Replacement</p>
+                      <p className="text-sm font-medium text-[#E0D8C8]">{DIFFICULTY_LABELS[valuationSnapshot.replacementDifficulty] || '—'}</p>
+                    </div>
+                    <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.14)" }}>
+                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-1">Trend</p>
+                      <p className="text-sm font-medium text-[#E0D8C8]">{TREND_LABELS[valueTrend] || '—'}</p>
+                    </div>
+                  </div>
+
+                  {/* Open vs Hold */}
+                  <div
+                    className="rounded-xl p-4"
+                    style={{
+                      background: valuationSnapshot.holdRecommendation === 'hold'
+                        ? "rgba(239,68,68,0.07)"
+                        : valuationSnapshot.holdRecommendation === 'open'
+                        ? "rgba(16,185,129,0.07)"
+                        : "rgba(180,140,75,0.07)",
+                      border: valuationSnapshot.holdRecommendation === 'hold'
+                        ? "1px solid rgba(239,68,68,0.25)"
+                        : valuationSnapshot.holdRecommendation === 'open'
+                        ? "1px solid rgba(16,185,129,0.25)"
+                        : "1px solid rgba(180,140,75,0.2)",
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      {valuationSnapshot.holdRecommendation === 'hold' ? (
+                        <ShieldCheck className="w-4 h-4 text-red-400" />
+                      ) : valuationSnapshot.holdRecommendation === 'open' ? (
+                        <Sparkles className="w-4 h-4 text-emerald-400" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-[#D4A574]" />
+                      )}
+                      <span className="text-sm font-semibold" style={{
+                        color: valuationSnapshot.holdRecommendation === 'hold' ? '#fca5a5'
+                          : valuationSnapshot.holdRecommendation === 'open' ? '#6ee7b7'
+                          : '#D4A574'
+                      }}>
+                        Recommendation: {HOLD_RECOMMENDATION_LABELS[valuationSnapshot.holdRecommendation] || '—'}
+                      </span>
+                    </div>
+                    {valuationSnapshot.rationale && valuationSnapshot.rationale.length > 0 && (
+                      <ul className="space-y-1">
+                        {valuationSnapshot.rationale.map((r, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "rgba(180,140,75,0.6)" }} />
+                            <span className="text-xs text-[#E0D8C8]/80">{r}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  {/* Value History Preview */}
+                  {valueSnapshots.length > 0 && (
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-2">Value History</p>
+                      <div className="space-y-2">
+                        {valueSnapshots.slice(0, 3).map((snap, i) => (
+                          <div key={snap.id || i} className="flex items-center justify-between text-xs px-3 py-2 rounded-lg" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(180,140,75,0.1)" }}>
+                            <span className="text-[#D8C7A6]/70">{snap.snapshot_date || '—'}</span>
+                            <span className="font-semibold text-[#F5F1E7]">{snap.computed_current_value > 0 ? formatCurrency(snap.computed_current_value) : '—'}</span>
+                            <span className="text-[#D8C7A6]/50">{snap.source || '—'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Price Observations Preview */}
+                  {priceObservations.length > 0 && (
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/60 mb-2">Market Observations</p>
+                      <div className="space-y-2">
+                        {priceObservations.slice(0, 3).map((obs, i) => (
+                          <div key={obs.id || i} className="flex items-center justify-between text-xs px-3 py-2 rounded-lg" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(59,130,246,0.12)" }}>
+                            <span className="text-[#D8C7A6]/70">{obs.observed_date || '—'}</span>
+                            <span className="font-semibold text-[#F5F1E7]">{obs.observed_price > 0 ? formatCurrency(obs.observed_price) : '—'}</span>
+                            <span className="text-[#D8C7A6]/50">{obs.source_name || obs.price_type || '—'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+
               <div className="flex flex-wrap gap-2">
                 <Button
                   onClick={() => {
@@ -693,6 +1098,25 @@ function BottleDetailInner() {
           bottle={bottle}
           onClose={() => setShowInventoryManager(false)}
           onUpdate={loadBottle}
+        />
+      ) : null}
+
+      {showSnapshotModal ? (
+        <AddValueSnapshotModal
+          bottle={bottle}
+          valuationSnapshot={valuationSnapshot}
+          userEmail={userEmail}
+          onClose={() => setShowSnapshotModal(false)}
+          onSaved={() => { setShowSnapshotModal(false); loadValueSnapshots(); }}
+        />
+      ) : null}
+
+      {showObservationModal ? (
+        <AddPriceObservationModal
+          bottle={bottle}
+          userEmail={userEmail}
+          onClose={() => setShowObservationModal(false)}
+          onSaved={() => { setShowObservationModal(false); loadPriceObservations(); }}
         />
       ) : null}
     </LockedModuleGuard>
