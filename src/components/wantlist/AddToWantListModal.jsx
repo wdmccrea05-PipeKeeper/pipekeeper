@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useWantListActions } from "./useWantListActions";
+import { toast } from "sonner";
 
 export default function AddToWantListModal({
   open,
@@ -21,9 +22,10 @@ export default function AddToWantListModal({
   item,
   itemType,
 }) {
-  const [status, setStatus] = useState("wishlist");
+  const [category, setCategory] = useState("wishlist");
   const [priority, setPriority] = useState("medium");
-  const { addToWantList, addToShoppingList, markNotForMe } =
+  const [saving, setSaving] = useState(false);
+  const { addToWantList, addToShoppingList, addTriedNotOwned, markNotForMe } =
     useWantListActions();
 
   const handleAdd = async () => {
@@ -31,8 +33,7 @@ export default function AddToWantListModal({
       item_type: itemType,
       name: item.name,
       brand_or_maker: item.maker || item.brand || item.manufacturer,
-      source_type: "manual",
-      status,
+      is_manual: true,
       priority,
       image: item.image || item.photos?.[0],
     };
@@ -55,15 +56,24 @@ export default function AddToWantListModal({
       payload.pipe_material = item.bowl_material;
     }
 
-    if (status === "shopping_list") {
-      await addToShoppingList(payload);
-    } else if (status === "do_not_buy_again") {
-      await markNotForMe(payload, "");
-    } else {
-      await addToWantList(payload);
+    setSaving(true);
+    try {
+      if (category === "shopping_list") {
+        await addToShoppingList(payload);
+      } else if (category === "do_not_buy_again") {
+        await markNotForMe(payload, "");
+      } else if (category === "tried_not_owned") {
+        await addTriedNotOwned(payload);
+      } else {
+        await addToWantList(payload);
+      }
+      toast.success("Added to your want list");
+      onOpenChange(false);
+    } catch (err) {
+      toast.error("Failed to add item");
+    } finally {
+      setSaving(false);
     }
-
-    onOpenChange(false);
   };
 
   return (
@@ -75,8 +85,8 @@ export default function AddToWantListModal({
 
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Status</label>
-            <Select value={status} onValueChange={setStatus}>
+            <label className="text-sm font-medium">Category</label>
+            <Select value={category} onValueChange={setCategory}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -106,12 +116,14 @@ export default function AddToWantListModal({
           <div className="flex gap-3 pt-4">
             <Button
               onClick={handleAdd}
+              disabled={saving}
               className="flex-1"
             >
-              Add
+              {saving ? "Adding…" : "Add"}
             </Button>
             <Button
               onClick={() => onOpenChange(false)}
+              disabled={saving}
               variant="outline"
               className="flex-1"
             >

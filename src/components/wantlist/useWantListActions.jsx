@@ -50,6 +50,14 @@ export function useWantListActions() {
     });
   };
 
+  const addTriedNotOwned = async (item) => {
+    return await base44.entities.AcquisitionItem.create({
+      ...buildBasePayload(item, userEmail),
+      category: "tried_not_owned",
+      status: "active",
+    });
+  };
+
   const addRestock = async (collectionItem) => {
     return await base44.entities.AcquisitionItem.create({
       ...buildBasePayload(collectionItem, userEmail),
@@ -135,6 +143,7 @@ export function useWantListActions() {
   return {
     addToWantList,
     addToShoppingList,
+    addTriedNotOwned,
     addRestock,
     markNotForMe,
     updateStatus,

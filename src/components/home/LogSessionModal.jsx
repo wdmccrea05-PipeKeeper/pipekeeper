@@ -56,6 +56,16 @@ function ExternalItemChip({ label, onClear }) {
   );
 }
 
+const BLANK_FORM_DATA = {
+  pipe_id: "",
+  bowl_variant_id: "",
+  blend_id: "",
+  container_id: "",
+  bowls_used: 1,
+  is_break_in: false,
+  notes: "",
+};
+
 export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = [], user, initialPipeId = "", initialBlendId = "" }) {
   const { t } = useTranslation();
   const { hasPaid } = useCurrentUser();
@@ -78,14 +88,10 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
   const [postPromptItems, setPostPromptItems] = useState(null);
 
   const [formData, setFormData] = useState({
+    ...BLANK_FORM_DATA,
     pipe_id: initialPipeId || "",
-    bowl_variant_id: "",
     blend_id: initialBlendId || "",
-    container_id: "",
-    bowls_used: 1,
-    is_break_in: false,
     date: toLocalDateYmd(),
-    notes: "",
   });
 
   React.useEffect(() => {
@@ -358,7 +364,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       }
 
       // Normal close — reset form state and close
-      setFormData({ pipe_id: "", bowl_variant_id: "", blend_id: "", container_id: "", bowls_used: 1, is_break_in: false, date: toLocalDateYmd(), notes: "" });
+      setFormData({ ...BLANK_FORM_DATA, date: toLocalDateYmd() });
       setPipeMode("collection");
       setExternalPipe(null);
       setShowPipeManual(false);
@@ -387,6 +393,14 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
             if (import.meta?.env?.DEV) {
               console.log("[SESSION] prompt close");
             }
+            setFormData({ ...BLANK_FORM_DATA, date: toLocalDateYmd() });
+            setPipeMode("collection");
+            setExternalPipe(null);
+            setShowPipeManual(false);
+            setBlendMode("collection");
+            setExternalBlend(null);
+            setShowBlendManual(false);
+            setContextTag("");
             setPostPromptItems(null);
           }}
         />
