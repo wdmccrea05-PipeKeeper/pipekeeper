@@ -29,20 +29,28 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
   // If no modules specified, include all by default
   const hasWhiskey = enabledModules.length === 0 || enabledModules.includes('whiskeykeeper');
   const hasPipe = enabledModules.length === 0 || enabledModules.includes('pipekeeper');
+  const isCombined = hasWhiskey && hasPipe;
 
   const cards = [];
 
-  // 1. Opening snapshot
+  // 1. Opening snapshot — module-aware
+  const openingLabel = isCombined
+    ? 'Collection Snapshot'
+    : hasPipe
+      ? 'Pipe & Tobacco Snapshot'
+      : 'Whiskey Snapshot';
+  const openingSubtitle = isCombined
+    ? 'A curated collection across pipes, tobacco & whiskey.'
+    : hasPipe
+      ? 'A curated pipe and tobacco collection.'
+      : 'A curated whiskey collection.';
+
   cards.push({
-    title: 'Collection Snapshot',
+    title: openingLabel,
     value: "Your Collector's Story",
     sub: story.narrative
       ? story.narrative.slice(0, 120) + (story.narrative.length > 120 ? '…' : '')
-      : hasPipe && hasWhiskey
-        ? 'A curated collection across pipes, tobacco & whiskey.'
-        : hasPipe
-          ? 'A curated pipe and tobacco collection.'
-          : 'A curated whiskey collection.',
+      : openingSubtitle,
     accent: '#D4A574',
     icon: Sparkles,
     bgImage: null,
@@ -139,8 +147,9 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     if (hasPipe && m.pipes) parts.push(`${m.pipes} pipe${m.pipes !== 1 ? 's' : ''}`);
     if (hasPipe && m.blends) parts.push(`${m.blends} blend${m.blends !== 1 ? 's' : ''}`);
     if (hasWhiskey && m.totalBottles) parts.push(`${m.totalBottles} bottle${m.totalBottles !== 1 ? 's' : ''}`);
+    const countLabel = isCombined ? 'By the Numbers' : hasPipe ? 'Collection Count' : 'Bottle Count';
     cards.push({
-      title: 'By the Numbers',
+      title: countLabel,
       value: parts[0] || 'Your Collection',
       sub: parts.slice(1).join(' · ') || 'A growing collection',
       accent: '#22D3EE',
@@ -172,8 +181,9 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
       sessions > 0 ? `${sessions} session${sessions !== 1 ? 's' : ''}` : null,
       tastings > 0 ? `${tastings} tasting${tastings !== 1 ? 's' : ''}` : null,
     ].filter(Boolean).join(' · ');
+    const expLabel = isCombined ? 'Experiences Logged' : hasPipe ? 'Smoking Sessions' : 'Tastings Logged';
     cards.push({
-      title: 'Experiences Logged',
+      title: expLabel,
       value: sessions + tastings,
       sub: desc,
       accent: '#8B5CF6',
