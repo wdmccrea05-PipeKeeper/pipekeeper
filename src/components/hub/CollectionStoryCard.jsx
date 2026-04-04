@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, RotateCcw, Share2, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
@@ -8,7 +8,6 @@ import BrandLogo from '@/components/branding/BrandLogo';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModules';
 import { WHISKEYKEEPER_BLOCKED } from '@/components/utils/moduleReleaseState';
-import { getAIEligibleModuleIds } from '@/components/utils/moduleAccess';
 import CollectionStoryViewer from '@/components/story/CollectionStoryViewer';
 import { generateCollectionStoryCards } from '@/components/story/generateCollectionStoryCards';
 
@@ -177,17 +176,16 @@ function StoryCard({ title, label, item, navigate }) {
 export default function CollectionStoryCard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { moduleStates, isModuleEnabled } = useEnabledKeeperModules();
+  const { isModuleEnabled, enabledModuleKeys } = useEnabledKeeperModules();
   const whiskeyVisible = !WHISKEYKEEPER_BLOCKED && isModuleEnabled('whiskeykeeper'); // gated
+  const pipeVisible = isModuleEnabled('pipekeeper');
 
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showStoryViewer, setShowStoryViewer] = useState(false);
 
-  const enabledModules = useMemo(
-    () => getAIEligibleModuleIds(moduleStates),
-    [moduleStates]
-  );
+  // Only pass the modules the user has actually enabled/visible — never include hidden modules.
+  const enabledModules = enabledModuleKeys;
 
   async function loadStory() {
     setLoading(true);
@@ -297,7 +295,7 @@ export default function CollectionStoryCard() {
       </div>
 
       <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-        {h.mostUsedPipe ? (
+        {pipeVisible && h.mostUsedPipe ? (
           <StoryCard
             label={t('hub.mostUsedPipe', 'Most Used Pipe')}
             title={h.mostUsedPipe.name}
@@ -306,7 +304,7 @@ export default function CollectionStoryCard() {
           />
         ) : null}
 
-        {h.favoriteBlend ? (
+        {pipeVisible && h.favoriteBlend ? (
           <StoryCard
             label={t('hub.topBlend', 'Top Blend')}
             title={h.favoriteBlend.name}
@@ -324,14 +322,20 @@ export default function CollectionStoryCard() {
           />
         ) : null}
 
-        {h.mostValuableItem && (h.mostValuableItem.recordType !== 'bottle' || whiskeyVisible) ? (
-          <StoryCard
-            label={t('hub.crownJewel', 'Crown Jewel')}
-            title={h.mostValuableItem.name}
-            item={h.mostValuableItem}
-            navigate={navigate}
-          />
-        ) : null}
+        {(() => {
+          if (!h.mostValuableItem) return null;
+          const rt = h.mostValuableItem.recordType;
+          const crownVisible = rt === 'bottle' ? whiskeyVisible : pipeVisible;
+          if (!crownVisible) return null;
+          return (
+            <StoryCard
+              label={t('hub.crownJewel', 'Crown Jewel')}
+              title={h.mostValuableItem.name}
+              item={h.mostValuableItem}
+              navigate={navigate}
+            />
+          );
+        })()}
       </div>
 
       {showStoryViewer && story && (

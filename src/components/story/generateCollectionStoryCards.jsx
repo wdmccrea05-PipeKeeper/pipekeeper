@@ -38,7 +38,11 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     value: "Your Collector's Story",
     sub: story.narrative
       ? story.narrative.slice(0, 120) + (story.narrative.length > 120 ? '…' : '')
-      : 'A curated collection across pipes, tobacco & whiskey.',
+      : hasPipe && hasWhiskey
+        ? 'A curated collection across pipes, tobacco & whiskey.'
+        : hasPipe
+          ? 'A curated pipe and tobacco collection.'
+          : 'A curated whiskey collection.',
     accent: '#D4A574',
     icon: Sparkles,
     bgImage: null,
@@ -127,12 +131,14 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     }
 
   // 6. Collection by the numbers
-  const hasCounts = (m.pipes || 0) + (m.blends || 0) + (m.totalBottles || 0) > 0;
+  const pipeCount = hasPipe ? (m.pipes || 0) + (m.blends || 0) : 0;
+  const bottleCount = hasWhiskey ? (m.totalBottles || 0) : 0;
+  const hasCounts = pipeCount + bottleCount > 0;
   if (hasCounts) {
     const parts = [];
-    if (m.pipes) parts.push(`${m.pipes} pipe${m.pipes !== 1 ? 's' : ''}`);
-    if (m.blends) parts.push(`${m.blends} blend${m.blends !== 1 ? 's' : ''}`);
-    if (m.totalBottles) parts.push(`${m.totalBottles} bottle${m.totalBottles !== 1 ? 's' : ''}`);
+    if (hasPipe && m.pipes) parts.push(`${m.pipes} pipe${m.pipes !== 1 ? 's' : ''}`);
+    if (hasPipe && m.blends) parts.push(`${m.blends} blend${m.blends !== 1 ? 's' : ''}`);
+    if (hasWhiskey && m.totalBottles) parts.push(`${m.totalBottles} bottle${m.totalBottles !== 1 ? 's' : ''}`);
     cards.push({
       title: 'By the Numbers',
       value: parts[0] || 'Your Collection',
@@ -159,8 +165,8 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
   }
 
   // 8. Sessions / tastings
-  const sessions = Number(m.sessions || 0);
-  const tastings = Number(m.tastings || 0);
+  const sessions = hasPipe ? Number(m.sessions || 0) : 0;
+  const tastings = hasWhiskey ? Number(m.tastings || 0) : 0;
   if (sessions + tastings > 0) {
     const desc = [
       sessions > 0 ? `${sessions} session${sessions !== 1 ? 's' : ''}` : null,
