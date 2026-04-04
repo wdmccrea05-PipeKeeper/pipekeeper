@@ -111,7 +111,8 @@ export function normalizeValuationInputs(item, moduleKey) {
         manufacturerStatus: item.manufacturer_status || '',
         cellarAgeYears: toNum(item.cellar_age_years || item.cellar_age),
         rarityOverride: toNum(item.rarity_score_override || item.rarity_override),
-        // Remap to canonical base fields for shared engine
+        // Remap to canonical base fields for shared engine.
+        // manualValueOverride is the highest-priority value source; it also doubles as collectorValue.
         collectorValue: manualValueOverride > 0 ? manualValueOverride : toNum(item.manual_market_value),
         estimatedValue: aiEstimatedValue > 0 && totalOz > 0 ? aiEstimatedValue * totalOz : 0,
         marketValue: pricePerOz > 0 && totalOz > 0 ? pricePerOz * totalOz : 0,
@@ -355,6 +356,14 @@ export function computeRarityScore(item, moduleKey) {
       // Apply rarity override if manually set
       if (inputs.rarityOverride > 0) return Math.min(100, Math.max(0, Math.round(inputs.rarityOverride)));
 
+      // ── TOBACCO RARITY ─────────────────────────────────────────────────────
+      // Additive scoring. Typical ranges:
+      //   common in-production blend:                  0–15
+      //   seasonal / limited / regional:              25–50
+      //   discontinued (active manufacturer):         30–50
+      //   discontinued from inactive manufacturer:   50–75
+      //   multiple scarcity signals combined:        60–90+
+
       // Discontinued blends are increasingly scarce
       if (inputs.isDiscontinued) score += 38;
 
@@ -391,10 +400,20 @@ export function computeRarityScore(item, moduleKey) {
     } else {
       // ── PIPE RARITY ──────────────────────────────────────────────────────────
 
-      // 1. Production type is the primary driver
+      // 1. Production type is the primary driver.
+      //    Target ranges:
+      //      factory:                        5–25
+      //      standard_artisan:              25–50
+      //      limited_artisan_batch:         50–75
+      //      one_off/one_of_a_kind:         75–95+  (floor of 70 guarantees the target range
+      //                                              even without other signals; additional
+      //                                              factors push the score into 75–100)
+      //      truly unique with provenance:  90–100
       const prodType = inputs._effectiveProdType || 'factory';
       if (prodType === 'one_off') {
-        // One-of-a-kind: set a guaranteed floor of 70; other factors stack on top
+        // A one-of-a-kind pipe is definitionally very rare regardless of other signals.
+        // A floor of 70 ensures any small additional factor (material, maker) puts the
+        // score solidly in the 75–95+ range.
         score = 70;
       } else if (prodType === 'limited_artisan_batch') {
         score += 35;
