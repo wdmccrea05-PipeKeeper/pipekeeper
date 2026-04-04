@@ -403,6 +403,88 @@ function ResultsPanel({ result, onSelect, onBack, onManual }) {
   const { t } = useTranslation();
   const { confidence, candidates = [] } = result || {};
 
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center gap-3 px-6 pt-6 pb-5">
+        <button
+          onClick={onBack}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+          style={{ color: 'rgba(224,216,200,0.6)' }}
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <div className="min-w-0">
+          <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+            {t('addFlowIdentify.resultsTitle', 'Select the Best Match')}
+          </h2>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
+            {candidates.length} {t('addFlowIdentify.candidatesFound', 'candidate(s) found')}
+          </p>
+        </div>
+      </div>
+
+      <div className="mx-6" style={{ height: 1, background: 'rgba(180,140,75,0.12)' }} />
+
+      <div className="px-6 py-5 flex flex-col gap-3">
+        {candidates.map((c, idx) => (
+          <button
+            key={idx}
+            onClick={() => onSelect(c)}
+            className="w-full text-left rounded-2xl p-4 transition-all hover:scale-[1.01] active:scale-[0.99]"
+            style={{
+              background: idx === 0 ? 'linear-gradient(135deg, rgba(180,140,75,0.1), rgba(180,140,75,0.05))' : 'rgba(255,255,255,0.03)',
+              border: idx === 0 ? '1px solid rgba(180,140,75,0.3)' : '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <span
+                className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
+                style={{ background: 'rgba(180,140,75,0.2)', color: '#D4A574' }}
+              >
+                {idx + 1}
+              </span>
+              <div className="min-w-0">
+                <p className="font-semibold text-sm" style={{ color: '#F5F1E7' }}>{c.name}</p>
+                {candidateSubtitle(c) && (
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(212,165,116,0.75)' }}>{candidateSubtitle(c)}</p>
+                )}
+                {candidateMeta(c).length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {candidateMeta(c).map((chip, i) => (
+                      <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(224,216,200,0.65)' }}>{chip}</span>
+                    ))}
+                  </div>
+                )}
+                {c.description && (
+                  <p className="text-xs mt-1.5 leading-relaxed" style={{ color: 'rgba(224,216,200,0.45)' }}>
+                    {c.description.slice(0, 120)}{c.description.length > 120 ? '…' : ''}
+                  </p>
+                )}
+              </div>
+            </div>
+          </button>
+        ))}
+
+        {candidates.length === 0 && (
+          <p className="text-sm text-center py-6" style={{ color: 'rgba(224,216,200,0.4)' }}>
+            {t('addFlowIdentify.noMatches', 'No matches found.')}
+          </p>
+        )}
+
+        <button
+          onClick={onManual}
+          className="flex items-center gap-2 justify-center w-full py-3 rounded-xl transition-colors hover:bg-white/5 mt-1"
+          style={{ border: '1px dashed rgba(180,140,75,0.25)', color: 'rgba(180,140,75,0.7)' }}
+        >
+          <PenLine className="w-3.5 h-3.5" />
+          <span className="text-sm">{t('addFlow.addManually', 'Add Manually Instead')}</span>
+        </button>
+      </div>
+      <div className="pb-2" />
+    </div>
+  );
+}
+
 /**
  * AddFlowIdentify — the "Scan or Photo Identify" step within the add flow.
  *
