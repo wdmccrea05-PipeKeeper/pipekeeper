@@ -1,0 +1,127 @@
+{
+  "name": "SmokingLog",
+  "type": "object",
+  "properties": {
+    "pipe_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the pipe used (null for external pipes)"
+    },
+    "pipe_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Name of the pipe"
+    },
+    "bowl_variant_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID/variant of interchangeable bowl used (if applicable)"
+    },
+    "bowl_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Name of the interchangeable bowl used"
+    },
+    "blend_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the tobacco blend (null for external blends)"
+    },
+    "blend_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Name of the tobacco blend"
+    },
+    "bowls_used": {
+      "type": "number",
+      "default": 1,
+      "description": "Number of bowls used in this session"
+    },
+    "bowls_smoked": {
+      "type": "number",
+      "default": 1,
+      "description": "Legacy field - use bowls_used instead"
+    },
+    "is_break_in": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is part of a break-in schedule"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date of the session"
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Session notes"
+    },
+    "external_pipe_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Name of external pipe (not in collection)"
+    },
+    "external_pipe_maker": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Maker of external pipe"
+    },
+    "external_pipe_shape": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Shape of external pipe"
+    },
+    "external_blend_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Name of external blend (not in collection)"
+    },
+    "external_blend_manufacturer": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Manufacturer of external blend"
+    },
+    "external_blend_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Type of external blend"
+    },
+    "container_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the tobacco container used"
+    }
+  },
+  "required": [
+    "date"
+  ]
+}
