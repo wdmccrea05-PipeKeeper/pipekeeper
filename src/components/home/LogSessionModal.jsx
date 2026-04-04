@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries, invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
-import { prepareLogData, parseLocalCalendarDate, toLocalDateYmd } from "@/components/utils/schemaCompatibility";
+import { parseLocalCalendarDate, toLocalDateYmd } from "@/components/utils/schemaCompatibility";
 import { saveSession } from "@/components/session/saveSession";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from "sonner";
@@ -67,16 +67,24 @@ const BLANK_FORM_DATA = {
   notes: "",
 };
 
-export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = [], user, initialPipeId = "", initialBlendId = "" }) {
+export default function LogSessionModal({
+  isOpen,
+  onClose,
+  pipes = [],
+  blends = [],
+  user: passedUser,
+  initialPipeId = "",
+  initialBlendId = "",
+}) {
   const { t } = useTranslation();
-  const { hasPaid } = useCurrentUser();
+  const { user: currentUser, hasPaid } = useCurrentUser();
+  const user = passedUser || currentUser;
   const entitlements = useEntitlements();
   const queryClient = useQueryClient();
 
   const [autoReduceInventory, setAutoReduceInventory] = useState(true);
   const [contextTag, setContextTag] = useState("");
   const [saving, setSaving] = useState(false);
-  const postPromptPendingRef = React.useRef(false);
 
   const [pipeMode, setPipeMode] = useState("collection");
   const [externalPipe, setExternalPipe] = useState(null);
@@ -87,6 +95,7 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
   const [showBlendManual, setShowBlendManual] = useState(false);
 
   const [postPromptItems, setPostPromptItems] = useState(null);
+  const postPromptPendingRef = useRef(false);
 
   const [formData, setFormData] = useState({
     ...BLANK_FORM_DATA,
@@ -95,8 +104,8 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
     date: toLocalDateYmd(),
   });
 
-  React.useEffect(() => {
-    if (isOpen && (initialPipeId || initialBlendId)) {
+  useEffect(() => {
+    if (isOpen) {
       setFormData((prev) => ({
         ...prev,
         pipe_id: initialPipeId || prev.pipe_id,
@@ -108,7 +117,6 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
   useEffect(() => {
     if (postPromptItems === null && postPromptPendingRef.current) {
       postPromptPendingRef.current = false;
-
       setFormData({ ...BLANK_FORM_DATA, date: toLocalDateYmd() });
       setPipeMode("collection");
       setExternalPipe(null);
@@ -118,17 +126,21 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       setShowBlendManual(false);
       setContextTag("");
       setSaving(false);
-
       onClose?.();
     }
   }, [postPromptItems, onClose]);
 
-  const selectedPipe = (pipes || []).find((p) => p && p.id === formData.pipe_id);
-  const hasMultipleBowls = Array.isArray(selectedPipe?.interchangeable_bowls) && selectedPipe.interchangeable_bowls.length > 0;
+  const selectedPipe = (pipes || []).find((p) => p?.id === formData.pipe_id);
+  const hasMultipleBowls =
+    Array.isArray(selectedPipe?.interchangeable_bowls) &&
+    selectedPipe.interchangeable_bowls.length > 0;
 
   const sortedBlends = useMemo(() => {
     return [...(blends || [])].sort((a, b) =>
-      String(a?.name || "").localeCompare(String(b?.name || ""), undefined, { sensitivity: "base", numeric: true })
+      String(a?.name || "").localeCompare(String(b?.name || ""), undefined, {
+        sensitivity: "base",
+        numeric: true,
+      })
     );
   }, [blends]);
 
@@ -137,8 +149,16 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
     enabled: !!user?.email && !!formData.blend_id && blendMode === "collection",
     queryFn: async () => {
       try {
-        return (await base44.entities.TobaccoContainer.filter({ user_email: user.email, blend_id: formData.blend_id }, "-updated_date", 50)) || [];
-      } catch { return []; }
+        return (
+          (await base44.entities.TobaccoContainer.filter(
+            { user_email: user.email, blend_id: formData.blend_id },
+            "-updated_date",
+            50
+          )) || []
+        );
+      } catch {
+        return [];
+      }
     },
   });
 
@@ -155,10 +175,18 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
     (item?.blend_name && blendName && norm(item.blend_name) === norm(blendName));
 
   const getPipeRestStatus = (pipeId) => {
-    const pipeLogs = (recentLogs || []).filter((l) => l && l.pipe_id === pipeId).sort((a, b) => {
-      try { return parseLocalCalendarDate(b.date).getTime() - parseLocalCalendarDate(a.date).getTime(); } catch { return 0; }
-    });
+    const pipeLogs = (recentLogs || [])
+      .filter((l) => l && l.pipe_id === pipeId)
+      .sort((a, b) => {
+        try {
+          return parseLocalCalendarDate(b.date).getTime() - parseLocalCalendarDate(a.date).getTime();
+        } catch {
+          return 0;
+        }
+      });
+
     if (pipeLogs.length === 0) return { ready: true, message: t("smokingLog.noUsageLogged") };
+
     try {
       const lastSmoked = parseLocalCalendarDate(pipeLogs[0].date);
       if (Number.isNaN(lastSmoked.getTime())) return { ready: true, message: t("smokingLog.noUsageLogged") };
@@ -167,12 +195,16 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       if (hoursSince >= 24) return { ready: true, message: t("smokingLog.restedDays", { days: daysRested }) };
       const hoursLeft = Math.max(0, 24 - hoursSince);
       return { ready: false, message: t("smokingLog.needsHours", { hours: hoursLeft.toFixed(1) }) };
-    } catch { return { ready: true, message: t("smokingLog.noUsageLogged") }; }
+    } catch {
+      return { ready: true, message: t("smokingLog.noUsageLogged") };
+    }
   };
 
   const pipeRestStatusMap = useMemo(() => {
     const map = {};
-    for (const p of pipes || []) { if (p?.id) map[p.id] = getPipeRestStatus(p.id); }
+    for (const p of pipes || []) {
+      if (p?.id) map[p.id] = getPipeRestStatus(p.id);
+    }
     return map;
   }, [pipes, recentLogs]);
 
@@ -185,20 +217,20 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
     e.preventDefault();
     if (saving || postPromptItems || postPromptPendingRef.current) return;
 
-    if (entitlements.tier === "free") {
-      if ((recentLogs || []).length >= entitlements.limits.smokingLogs) {
-        toast.error(t("smokingLog.freeLimitReached", { limit: entitlements.limits.smokingLogs }));
-        return;
-      }
+    if (entitlements.tier === "free" && (recentLogs || []).length >= entitlements.limits.smokingLogs) {
+      toast.error(t("smokingLog.freeLimitReached", { limit: entitlements.limits.smokingLogs }));
+      return;
     }
 
-    const pipe = pipeMode === "collection"
-      ? (pipes || []).find((p) => p && p.id === formData.pipe_id)
-      : null;
+    const pipe =
+      pipeMode === "collection"
+        ? (pipes || []).find((p) => p && p.id === formData.pipe_id)
+        : null;
 
-    const blend = blendMode === "collection"
-      ? (blends || []).find((b) => b && b.id === formData.blend_id)
-      : null;
+    const blend =
+      blendMode === "collection"
+        ? (blends || []).find((b) => b && b.id === formData.blend_id)
+        : null;
 
     if (pipeMode === "collection" && !pipe) {
       toast.error(t("smokingLog.selectBoth"));
@@ -228,20 +260,21 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
             : bowls * 0.75 * 0.035274
           : 0;
 
-      let bowl_name = null;
+      let bowl_name = undefined;
       if (pipeMode === "collection" && formData.bowl_variant_id && hasMultipleBowls) {
         const bowl = selectedPipe?.interchangeable_bowls?.find(
-          (b) =>
-            (b.bowl_variant_id || `bowl_${selectedPipe.interchangeable_bowls.indexOf(b)}`) ===
-            formData.bowl_variant_id
+          (b, idx) =>
+            (b.bowl_variant_id || `bowl_${idx}`) === formData.bowl_variant_id
         );
-        bowl_name = bowl?.name || null;
+        bowl_name = bowl?.name || undefined;
       }
 
       const pipe_name =
         pipeMode === "collection"
           ? pipe?.name
-          : [externalPipe?.maker, externalPipe?.model || externalPipe?.name].filter(Boolean).join(" ") || "External Pipe";
+          : [externalPipe?.maker, externalPipe?.model || externalPipe?.name]
+              .filter(Boolean)
+              .join(" ") || "External Pipe";
 
       const blend_name =
         blendMode === "collection"
@@ -278,13 +311,15 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
         console.log("[LogSessionModal] save payload:", savePayload);
       }
 
-      const result = await saveSession({ user, session: savePayload });
+      const result = await saveSession({
+        user,
+        session: savePayload,
+      });
 
       if (import.meta?.env?.DEV) {
         console.log("[LogSessionModal] save success:", result);
       }
 
-      // Container deduction (owned blend only)
       if (savePayload.container_id && blendMode === "collection") {
         try {
           const containerRes = await base44.entities.TobaccoContainer.filter({ id: savePayload.container_id });
@@ -300,14 +335,15 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
               },
               user?.email
             );
-            queryClient.invalidateQueries({ queryKey: ["containers", user?.email, savePayload.blend_id] });
+            queryClient.invalidateQueries({
+              queryKey: ["containers", user?.email, savePayload.blend_id],
+            });
           }
         } catch (err) {
           console.error("[LogSessionModal] Failed to update container:", err);
         }
       }
 
-      // Auto-reduce inventory only for owned blends
       if (autoReduceInventory && tobaccoUsed > 0 && hasPaid && blendMode === "collection") {
         const blendToReduce = (blends || []).find((b) => b.id === savePayload.blend_id);
         if (blendToReduce) {
@@ -347,7 +383,6 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
         }
       }
 
-      // Break-in update
       if (savePayload.is_break_in && savePayload.pipe_id && savePayload.blend_id && pipeMode === "collection") {
         try {
           const freshPipes = await base44.entities.Pipe.filter({ id: savePayload.pipe_id });
@@ -409,9 +444,10 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
       }
       if (pipeMode === "external" && externalPipe) {
         externalItems.push({
-          label: [externalPipe.maker, externalPipe.model || externalPipe.name]
-            .filter(Boolean)
-            .join(" ") || "Unknown Pipe",
+          label:
+            [externalPipe.maker, externalPipe.model || externalPipe.name]
+              .filter(Boolean)
+              .join(" ") || "Unknown Pipe",
           item_type: "pipe",
           itemData: externalPipe,
         });
@@ -457,266 +493,391 @@ export default function LogSessionModal({ isOpen, onClose, pipes = [], blends = 
         <PostSessionPrompt
           externalItems={postPromptItems}
           onDone={() => {
-            if (import.meta?.env?.DEV) {
-              console.log("[SESSION] prompt close");
-            }
             setPostPromptItems(null);
           }}
         />
       )}
-      <Sheet open={isOpen} onOpenChange={(open) => { if (!open && !saving && !postPromptPendingRef.current) onClose(); }}>
-      <SheetContent className="overflow-y-auto">
-        <SheetHeader className="mb-6">
-        <SheetTitle>Log Pipe Session</SheetTitle>
-        </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-5">
 
-          {/* ── PIPE ── */}
-          <div className="space-y-3">
-            <div>
-              <Label className="text-[#E0D8C8] text-sm font-semibold block mb-2">Pipe Source</Label>
-              <div className="flex rounded-xl overflow-hidden border border-[rgba(180,140,75,0.25)]">
-                <button
-                  type="button"
-                  disabled={saving}
-                  onClick={() => { setPipeMode("collection"); setExternalPipe(null); setFormData((f) => ({ ...f, pipe_id: "", bowl_variant_id: "" })); }}
-                  className={`flex-1 py-2 text-sm font-medium transition-all ${
-                    pipeMode === "collection"
-                      ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
-                      : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
-                  } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  From Collection
-                </button>
-                <button
-                  type="button"
-                  disabled={saving}
-                  onClick={() => { setPipeMode("external"); setFormData((f) => ({ ...f, pipe_id: "", bowl_variant_id: "" })); }}
-                  className={`flex-1 py-2 text-sm font-medium transition-all ${
-                    pipeMode === "external"
-                      ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
-                      : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
-                  } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  Other Pipe
-                </button>
+      <Sheet
+        open={isOpen || postPromptPendingRef.current || !!postPromptItems}
+        onOpenChange={(open) => {
+          if (!open && !saving && !postPromptPendingRef.current && !postPromptItems) {
+            onClose?.();
+          }
+        }}
+      >
+        <SheetContent className="overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <SheetTitle>Log Pipe Session</SheetTitle>
+          </SheetHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-3">
+              <div>
+                <Label className="text-[#E0D8C8] text-sm font-semibold block mb-2">Pipe Source</Label>
+                <div className="flex rounded-xl overflow-hidden border border-[rgba(180,140,75,0.25)]">
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => {
+                      setPipeMode("collection");
+                      setExternalPipe(null);
+                      setFormData((f) => ({ ...f, pipe_id: "", bowl_variant_id: "" }));
+                    }}
+                    className={`flex-1 py-2 text-sm font-medium transition-all ${
+                      pipeMode === "collection"
+                        ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
+                        : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
+                    } ${saving ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    From Collection
+                  </button>
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => {
+                      setPipeMode("external");
+                      setFormData((f) => ({ ...f, pipe_id: "", bowl_variant_id: "" }));
+                    }}
+                    className={`flex-1 py-2 text-sm font-medium transition-all ${
+                      pipeMode === "external"
+                        ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
+                        : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
+                    } ${saving ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    Other Pipe
+                  </button>
+                </div>
               </div>
+
+              {pipeMode === "collection" ? (
+                <>
+                  <Select
+                    value={formData.pipe_id}
+                    onValueChange={(v) => setFormData({ ...formData, pipe_id: v, bowl_variant_id: "" })}
+                    disabled={saving}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("smokingLog.selectPipe")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(pipes || []).map((p) => {
+                        const restStatus = pipeRestStatusMap[p.id] || { ready: true, message: "" };
+                        return (
+                          <SelectItem key={p.id} value={p.id}>
+                            <div className="flex items-center gap-2 w-full">
+                              <span>{p.name}</span>
+                              {restStatus.ready ? (
+                                <CheckCircle className="w-3 h-3 text-green-600 ml-auto" />
+                              ) : (
+                                <Badge variant="outline" className="text-xs ml-auto">
+                                  {t("smokingLog.resting")}
+                                </Badge>
+                              )}
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                  {formData.pipe_id && (
+                    <Alert className="mt-2">
+                      <Info className="w-4 h-4" />
+                      <AlertDescription className="text-xs">
+                        {(pipeRestStatusMap[formData.pipe_id] || {}).message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </>
+              ) : externalPipe ? (
+                <ExternalItemChip
+                  label={
+                    [externalPipe.maker, externalPipe.model || externalPipe.name]
+                      .filter(Boolean)
+                      .join(" ") || "External Pipe"
+                  }
+                  onClear={() => {
+                    setExternalPipe(null);
+                    setShowPipeManual(false);
+                  }}
+                />
+              ) : showPipeManual ? (
+                <ExternalItemManualEntry
+                  itemType="pipe"
+                  onCancel={() => setShowPipeManual(false)}
+                  onSave={(item) => {
+                    setExternalPipe(item);
+                    setShowPipeManual(false);
+                  }}
+                />
+              ) : (
+                <>
+                  <ExternalItemSearch
+                    itemType="pipe"
+                    onSelect={setExternalPipe}
+                    onManualAdd={() => setShowPipeManual(true)}
+                  />
+                  <p className="text-xs text-amber-400/80 mt-1">
+                    Select a search result or add the item manually to continue.
+                  </p>
+                </>
+              )}
             </div>
 
-            {pipeMode === "collection" ? (
-              <>
-                <Select value={formData.pipe_id} onValueChange={(v) => setFormData({ ...formData, pipe_id: v, bowl_variant_id: "" })} disabled={saving}>
-                  <SelectTrigger><SelectValue placeholder={t("smokingLog.selectPipe")} /></SelectTrigger>
+            {pipeMode === "collection" && hasMultipleBowls && (
+              <div className="space-y-2">
+                <Label className="text-[#E0D8C8]">{t("smokingLog.bowlUsed")}</Label>
+                <Select
+                  value={formData.bowl_variant_id}
+                  onValueChange={(v) => setFormData({ ...formData, bowl_variant_id: v })}
+                  disabled={saving}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("smokingLog.selectBowl")} />
+                  </SelectTrigger>
                   <SelectContent>
-                    {(pipes || []).map((p) => {
-                      const restStatus = pipeRestStatusMap[p.id] || { ready: true, message: "" };
+                    <SelectItem value="__none__">{t("smokingLog.noSpecificBowl")}</SelectItem>
+                    {(selectedPipe?.interchangeable_bowls || []).map((bowl, idx) => {
+                      const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
                       return (
-                        <SelectItem key={p.id} value={p.id}>
-                          <div className="flex items-center gap-2 w-full">
-                            <span>{p.name}</span>
-                            {restStatus.ready
-                              ? <CheckCircle className="w-3 h-3 text-green-600 ml-auto" />
-                              : <Badge variant="outline" className="text-xs ml-auto">{t("smokingLog.resting")}</Badge>
-                            }
-                          </div>
+                        <SelectItem key={bowlId} value={bowlId}>
+                          {bowl.name || t("smokingLog.bowlNumber", { number: idx + 1 })}
                         </SelectItem>
                       );
                     })}
                   </SelectContent>
                 </Select>
-                {formData.pipe_id && (
-                  <Alert className="mt-2">
-                    <Info className="w-4 h-4" />
-                    <AlertDescription className="text-xs">{(pipeRestStatusMap[formData.pipe_id] || {}).message}</AlertDescription>
-                  </Alert>
-                )}
-              </>
-            ) : externalPipe ? (
-              <ExternalItemChip label={[externalPipe.maker, externalPipe.model || externalPipe.name].filter(Boolean).join(" ") || "External Pipe"} onClear={() => { setExternalPipe(null); setShowPipeManual(false); }} />
-            ) : showPipeManual ? (
-              <ExternalItemManualEntry
-                itemType="pipe"
-                onCancel={() => setShowPipeManual(false)}
-                onSave={(item) => { setExternalPipe(item); setShowPipeManual(false); }}
-              />
-            ) : (
-              <>
-                <ExternalItemSearch itemType="pipe" onSelect={setExternalPipe} onManualAdd={() => setShowPipeManual(true)} />
-                <p className="text-xs text-amber-400/80 mt-1">Select a search result or add the item manually to continue.</p>
-              </>
+              </div>
             )}
-          </div>
 
-          {/* Bowl variant (only if owned pipe with multiple bowls) */}
-          {pipeMode === "collection" && hasMultipleBowls && (
-            <div className="space-y-2">
-              <Label className="text-[#E0D8C8]">{t("smokingLog.bowlUsed")}</Label>
-              <Select value={formData.bowl_variant_id} onValueChange={(v) => setFormData({ ...formData, bowl_variant_id: v })} disabled={saving}>
-                <SelectTrigger><SelectValue placeholder={t("smokingLog.selectBowl")} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">{t("smokingLog.noSpecificBowl")}</SelectItem>
-                  {(selectedPipe?.interchangeable_bowls || []).map((bowl, idx) => {
-                    const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
-                    return <SelectItem key={bowlId} value={bowlId}>{bowl.name || t("smokingLog.bowlNumber", { number: idx + 1 })}</SelectItem>;
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+            <div className="space-y-3">
+              <div>
+                <Label className="text-[#E0D8C8] text-sm font-semibold block mb-2">Blend Source</Label>
+                <div className="flex rounded-xl overflow-hidden border border-[rgba(180,140,75,0.25)]">
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => {
+                      setBlendMode("collection");
+                      setExternalBlend(null);
+                      setFormData((f) => ({ ...f, blend_id: "", container_id: "" }));
+                    }}
+                    className={`flex-1 py-2 text-sm font-medium transition-all ${
+                      blendMode === "collection"
+                        ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
+                        : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
+                    } ${saving ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    From Collection
+                  </button>
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => {
+                      setBlendMode("external");
+                      setFormData((f) => ({ ...f, blend_id: "", container_id: "" }));
+                    }}
+                    className={`flex-1 py-2 text-sm font-medium transition-all ${
+                      blendMode === "external"
+                        ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
+                        : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
+                    } ${saving ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    Something New
+                  </button>
+                </div>
+              </div>
 
-          {/* ── BLEND ── */}
-          <div className="space-y-3">
-            <div>
-              <Label className="text-[#E0D8C8] text-sm font-semibold block mb-2">Blend Source</Label>
-              <div className="flex rounded-xl overflow-hidden border border-[rgba(180,140,75,0.25)]">
-                <button
-                  type="button"
+              {blendMode === "collection" ? (
+                <Select
+                  value={formData.blend_id}
+                  onValueChange={(v) => setFormData({ ...formData, blend_id: v, container_id: "" })}
                   disabled={saving}
-                  onClick={() => { setBlendMode("collection"); setExternalBlend(null); setFormData((f) => ({ ...f, blend_id: "", container_id: "" })); }}
-                  className={`flex-1 py-2 text-sm font-medium transition-all ${
-                    blendMode === "collection"
-                      ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
-                      : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
-                  } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  From Collection
-                </button>
-                <button
-                  type="button"
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("smokingLog.selectBlend")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortedBlends.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : externalBlend ? (
+                <ExternalItemChip
+                  label={externalBlend.name || "External Blend"}
+                  onClear={() => {
+                    setExternalBlend(null);
+                    setShowBlendManual(false);
+                  }}
+                />
+              ) : showBlendManual ? (
+                <ExternalItemManualEntry
+                  itemType="blend"
+                  onCancel={() => setShowBlendManual(false)}
+                  onSave={(item) => {
+                    setExternalBlend(item);
+                    setShowBlendManual(false);
+                  }}
+                />
+              ) : (
+                <>
+                  <ExternalItemSearch
+                    itemType="blend"
+                    onSelect={setExternalBlend}
+                    onManualAdd={() => setShowBlendManual(true)}
+                  />
+                  <p className="text-xs text-amber-400/80 mt-1">
+                    Select a search result or add the item manually to continue.
+                  </p>
+                </>
+              )}
+            </div>
+
+            {blendMode === "collection" && formData.blend_id && containers.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-[#E0D8C8]">{t("smokingLog.container")}</Label>
+                <Select
+                  value={formData.container_id || ""}
+                  onValueChange={(v) => setFormData({ ...formData, container_id: v })}
                   disabled={saving}
-                  onClick={() => { setBlendMode("external"); setFormData((f) => ({ ...f, blend_id: "", container_id: "" })); }}
-                  className={`flex-1 py-2 text-sm font-medium transition-all ${
-                    blendMode === "external"
-                      ? "bg-[rgba(180,140,75,0.25)] text-[#F5F1E7]"
-                      : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
-                  } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  Something New
-                </button>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("smokingLog.autoNone")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">{t("smokingLog.autoNone")}</SelectItem>
+                    {containers.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.container_name} — {c.quantity_grams ?? 0}g
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-
-            {blendMode === "collection" ? (
-              <Select value={formData.blend_id} onValueChange={(v) => setFormData({ ...formData, blend_id: v, container_id: "" })} disabled={saving}>
-                <SelectTrigger><SelectValue placeholder={t("smokingLog.selectBlend")} /></SelectTrigger>
-                <SelectContent>
-                  {sortedBlends.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            ) : externalBlend ? (
-              <ExternalItemChip label={externalBlend.name || "External Blend"} onClear={() => { setExternalBlend(null); setShowBlendManual(false); }} />
-            ) : showBlendManual ? (
-              <ExternalItemManualEntry
-                itemType="blend"
-                onCancel={() => setShowBlendManual(false)}
-                onSave={(item) => { setExternalBlend(item); setShowBlendManual(false); }}
-              />
-            ) : (
-              <>
-                <ExternalItemSearch itemType="blend" onSelect={setExternalBlend} onManualAdd={() => setShowBlendManual(true)} />
-                <p className="text-xs text-amber-400/80 mt-1">Select a search result or add the item manually to continue.</p>
-              </>
             )}
-          </div>
 
-          {/* Container (owned blend only) */}
-          {blendMode === "collection" && formData.blend_id && containers.length > 0 && (
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8]">{t("smokingLog.container")}</Label>
-              <Select value={formData.container_id || ""} onValueChange={(v) => setFormData({ ...formData, container_id: v })} disabled={saving}>
-                <SelectTrigger><SelectValue placeholder={t("smokingLog.autoNone")} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">{t("smokingLog.autoNone")}</SelectItem>
-                  {containers.map((c) => <SelectItem key={c.id} value={c.id}>{c.container_name} — {c.quantity_grams ?? 0}g</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Label className="text-[#E0D8C8]">{t("smokingLog.numberOfBowls")}</Label>
+              <Input
+                type="number"
+                min="1"
+                value={formData.bowls_used}
+                onChange={(e) => setFormData({ ...formData, bowls_used: e.target.value })}
+                disabled={saving}
+              />
+              {pipeMode === "collection" && formData.pipe_id && formData.bowls_used && (
+                <p className="text-xs text-[#A4B0C4]">
+                  {t("smokingLog.estUsage")}: ~
+                  {Number(
+                    estimateTobaccoUsage(selectedPipe, parseInt(formData.bowls_used) || 1)
+                  ).toFixed(2)}{" "}
+                  {t("units.oz")}
+                </p>
+              )}
             </div>
-          )}
 
-          {/* Bowls used */}
-          <div className="space-y-2">
-            <Label className="text-[#E0D8C8]">{t("smokingLog.numberOfBowls")}</Label>
-            <Input type="number" min="1" value={formData.bowls_used} onChange={(e) => setFormData({ ...formData, bowls_used: e.target.value })} disabled={saving} />
-            {pipeMode === "collection" && formData.pipe_id && formData.bowls_used && (
-              <p className="text-xs text-[#A4B0C4]">
-                {t("smokingLog.estUsage")}: ~{Number(estimateTobaccoUsage(selectedPipe, parseInt(formData.bowls_used) || 1)).toFixed(2)} {t("units.oz")}
-              </p>
-            )}
-          </div>
+            <div className="space-y-2">
+              <Label className="text-[#E0D8C8]">{t("smokingLog.date")}</Label>
+              <Input
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                disabled={saving}
+              />
+            </div>
 
-          {/* Date */}
-          <div className="space-y-2">
-            <Label className="text-[#E0D8C8]">{t("smokingLog.date")}</Label>
-            <Input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} disabled={saving} />
-          </div>
+            <SessionContextTags value={contextTag} onChange={setContextTag} />
 
-          {/* Context tags */}
-          <SessionContextTags value={contextTag} onChange={setContextTag} />
+            <div className="space-y-3">
+              {pipeMode === "collection" && (
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={formData.is_break_in}
+                    onCheckedChange={(v) => setFormData({ ...formData, is_break_in: v })}
+                    disabled={saving}
+                  />
+                  <Label className="text-[#E0D8C8]">{t("smokingLog.partOfBreakIn")}</Label>
+                </div>
+              )}
 
-          {/* Toggles */}
-          <div className="space-y-3">
-            {pipeMode === "collection" && (
-              <div className="flex items-center gap-3">
-                <Switch checked={formData.is_break_in} onCheckedChange={(v) => setFormData({ ...formData, is_break_in: v })} disabled={saving} />
-                <Label className="text-[#E0D8C8]">{t("smokingLog.partOfBreakIn")}</Label>
-              </div>
-            )}
-            {blendMode === "collection" && (
-              <div className="flex items-center gap-3">
-                <Switch checked={autoReduceInventory} onCheckedChange={setAutoReduceInventory} disabled={saving} />
-                <Label className="flex items-center gap-2 text-[#E0D8C8]">
-                  {t("smokingLog.autoReduce")}
-                  <Badge className="bg-[#A35C5C] text-[#F3EBDD] text-xs">
-                    <Crown className="w-3 h-3 mr-1" />
-                    {t("subscription.premium")}
-                  </Badge>
-                </Label>
-              </div>
-            )}
-          </div>
+              {blendMode === "collection" && (
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={autoReduceInventory}
+                    onCheckedChange={setAutoReduceInventory}
+                    disabled={saving}
+                  />
+                  <Label className="flex items-center gap-2 text-[#E0D8C8]">
+                    {t("smokingLog.autoReduce")}
+                    <Badge className="bg-[#A35C5C] text-[#F3EBDD] text-xs">
+                      <Crown className="w-3 h-3 mr-1" />
+                      {t("subscription.premium")}
+                    </Badge>
+                  </Label>
+                </div>
+              )}
+            </div>
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label className="text-[#E0D8C8]">{t("smokingLog.notes")}</Label>
-            <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder={t("smokingLog.notesPlaceholder")} rows={3} disabled={saving} />
-          </div>
+            <div className="space-y-2">
+              <Label className="text-[#E0D8C8]">{t("smokingLog.notes")}</Label>
+              <Textarea
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                placeholder={t("smokingLog.notesPlaceholder")}
+                rows={3}
+                disabled={saving}
+              />
+            </div>
 
-          {/* Inline save requirements guidance */}
-          {(() => {
-            const msgs = [];
-            if (pipeMode === "collection" && !formData.pipe_id) msgs.push("Select a pipe from your collection to continue.");
-            if (pipeMode === "external" && !externalPipe) msgs.push("Select a search result or add the pipe manually to continue.");
-            if (blendMode === "collection" && !formData.blend_id) msgs.push("Select a blend from your collection to continue.");
-            if (blendMode === "external" && !externalBlend) msgs.push("Select a search result or add the blend manually to continue.");
-            if (msgs.length === 0) return null;
-            return (
-              <div className="rounded-xl px-3 py-2.5 space-y-1" style={{ background: "rgba(180,140,75,0.10)", border: "1px solid rgba(180,140,75,0.22)" }}>
-                {msgs.map((m) => (
-                  <p key={m} className="text-xs" style={{ color: "rgba(212,165,116,0.9)" }}>⚠ {m}</p>
-                ))}
-              </div>
-            );
-          })()}
+            {(() => {
+              const msgs = [];
+              if (pipeMode === "collection" && !formData.pipe_id) msgs.push("Select a pipe from your collection to continue.");
+              if (pipeMode === "external" && !externalPipe) msgs.push("Select a search result or add the pipe manually to continue.");
+              if (blendMode === "collection" && !formData.blend_id) msgs.push("Select a blend from your collection to continue.");
+              if (blendMode === "external" && !externalBlend) msgs.push("Select a search result or add the blend manually to continue.");
 
-          <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} disabled={saving} className="flex-1">{t("common.cancel")}</Button>
-            <Button
-              type="submit"
-              disabled={
-                saving ||
-                (pipeMode === "collection" && !formData.pipe_id) ||
-                (pipeMode === "external" && !externalPipe) ||
-                (blendMode === "collection" && !formData.blend_id) ||
-                (blendMode === "external" && !externalBlend)
-              }
-              className="flex-1"
-            >
-              {saving ? "Saving..." : t("smokingLog.logSession")}
-            </Button>
-          </div>
-        </form>
-      </SheetContent>
-    </Sheet>
+              if (msgs.length === 0) return null;
+
+              return (
+                <div
+                  className="rounded-xl px-3 py-2.5 space-y-1"
+                  style={{
+                    background: "rgba(180,140,75,0.10)",
+                    border: "1px solid rgba(180,140,75,0.22)",
+                  }}
+                >
+                  {msgs.map((m) => (
+                    <p key={m} className="text-xs" style={{ color: "rgba(212,165,116,0.9)" }}>
+                      ⚠ {m}
+                    </p>
+                  ))}
+                </div>
+              );
+            })()}
+
+            <div className="flex gap-3 pt-4">
+              <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
+                {t("common.cancel")}
+              </Button>
+              <Button
+                type="submit"
+                disabled={
+                  saving ||
+                  (pipeMode === "collection" && !formData.pipe_id) ||
+                  (pipeMode === "external" && !externalPipe) ||
+                  (blendMode === "collection" && !formData.blend_id) ||
+                  (blendMode === "external" && !externalBlend)
+                }
+              >
+                {saving ? "Saving..." : t("smokingLog.logSession")}
+              </Button>
+            </div>
+          </form>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }
