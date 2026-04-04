@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import {
   TrendingUp, TrendingDown, Minus, ShieldCheck, Unlock, HelpCircle,
-  PlusCircle, Eye, ChevronDown, ChevronUp, Lock, Zap, AlertTriangle, RefreshCw,
+  PlusCircle, Eye, ChevronDown, ChevronUp, Lock, Zap, AlertTriangle, RefreshCw, Settings,
 } from 'lucide-react';
 import {
   DIFFICULTY_LABELS,
@@ -162,8 +162,8 @@ function SnapshotHistoryList({ snapshots }) {
   if (snapshots.length === 0) {
     return (
       <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.1)' }}>
-        <p className="text-xs text-[#D8C7A6]/50">No value checkpoints yet</p>
-        <p className="text-xs text-[#D8C7A6]/40 mt-1">A checkpoint will be created automatically on first view. Use "Save Value Checkpoint" to record manually.</p>
+        <p className="text-xs text-[#D8C7A6]/50">No checkpoints yet</p>
+        <p className="text-xs text-[#D8C7A6]/40 mt-1">Save a checkpoint to start tracking value history</p>
       </div>
     );
   }
@@ -197,8 +197,8 @@ function ObservationList({ observations }) {
   if (observations.length === 0) {
     return (
       <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(59,130,246,0.12)' }}>
-        <p className="text-xs text-[#D8C7A6]/50">No market observations yet</p>
-        <p className="text-xs text-[#D8C7A6]/40 mt-1">Add a market observation to track real-world prices</p>
+        <p className="text-xs text-[#D8C7A6]/50">No observations yet</p>
+        <p className="text-xs text-[#D8C7A6]/40 mt-1">Add observations to track real-world market prices</p>
       </div>
     );
   }
@@ -241,6 +241,8 @@ export default function ValueStrategySection({
 }) {
   if (!valuationSnapshot) return null;
 
+  const [showSettings, setShowSettings] = useState(false);
+
   const { currentValue, source, confidence, rarityScore, replacementDifficulty, holdRecommendation, rationale } = valuationSnapshot;
 
   const isAllocated = bottle?.production_status === 'Allocated' || bottle?.allocated;
@@ -250,119 +252,159 @@ export default function ValueStrategySection({
   const latestSnapshot = valueSnapshots[0];
 
   return (
-    <div className="rounded-2xl overflow-hidden min-w-0" style={{ background: 'linear-gradient(145deg, rgba(34,24,16,0.97), rgba(22,15,10,1))', border: '1px solid rgba(180,140,75,0.22)' }}>
-      {/* Header */}
-      <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(180,140,75,0.12)]">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(180,140,75,0.12)', border: '1px solid rgba(180,140,75,0.22)' }}>
-            <TrendingUp className="w-4 h-4 text-[#B48C4B]" />
+    <>
+      {showSettings && (
+        <div className="rounded-2xl p-4 mb-4 space-y-3" style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.18)' }}>
+          <p className="text-xs uppercase tracking-[0.12em] text-[#c4b5fd]/70 font-semibold">Auto-Refresh Settings</p>
+          <div className="space-y-2.5">
+            <label className="flex items-center gap-2 text-sm text-[#E0D8C8]">
+              <input type="checkbox" defaultChecked className="rounded" />
+              <span>Auto-Refresh Value</span>
+            </label>
+            <div className="text-xs text-[#D8C7A6]/55 space-y-1.5 ml-6">
+              <label className="flex items-center gap-2">
+                <input type="radio" name="refresh-cadence" value="weekly" defaultChecked />
+                <span>Weekly</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input type="radio" name="refresh-cadence" value="monthly" />
+                <span>Monthly</span>
+              </label>
+            </div>
+            <label className="flex items-center gap-2 text-sm text-[#E0D8C8] mt-2">
+              <input type="checkbox" defaultChecked className="rounded" />
+              <span>Auto-generate Value History</span>
+            </label>
           </div>
-          <p className="text-sm font-bold text-[#D4A574] uppercase tracking-[0.12em]">Value &amp; Strategy</p>
+          <p className="text-xs text-[#D8C7A6]/45 italic">Settings persist in your profile.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {onRefreshNow && (
+      )}
+      <div className="rounded-2xl overflow-hidden min-w-0" style={{ background: 'linear-gradient(145deg, rgba(34,24,16,0.97), rgba(22,15,10,1))', border: '1px solid rgba(180,140,75,0.22)' }}>
+        {/* Header */}
+        <div className="px-5 py-4 space-y-3 border-b border-[rgba(180,140,75,0.12)]">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(180,140,75,0.12)', border: '1px solid rgba(180,140,75,0.22)' }}>
+                <TrendingUp className="w-4 h-4 text-[#B48C4B]" />
+              </div>
+              <p className="text-sm font-bold text-[#D4A574] uppercase tracking-[0.12em]">Value &amp; Strategy</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={onAddSnapshot}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
+              style={{ background: 'rgba(180,140,75,0.15)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.28)' }}
+              title="Save today's value as a history checkpoint"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>Save Value Checkpoint</span>
+            </button>
+            <button
+              type="button"
+              onClick={onAddObservation}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
+              style={{ background: 'rgba(59,130,246,0.12)', color: '#93C5FD', border: '1px solid rgba(59,130,246,0.25)' }}
+              title="Add a real-world market price observation"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Add Observation</span>
+            </button>
             <button
               type="button"
               onClick={onRefreshNow}
-              disabled={isRefreshing}
+              disabled={isRefreshing || !onRefreshNow}
               className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-50"
               style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.28)' }}
+              title="Recompute and save a new value snapshot now"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span>{isRefreshing ? 'Refreshing…' : 'Refresh Value Now'}</span>
+              <span className="hidden sm:inline">{isRefreshing ? 'Refreshing…' : 'Refresh Now'}</span>
             </button>
-          )}
-          <button
-            type="button"
-            onClick={onAddSnapshot}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
-            style={{ background: 'rgba(180,140,75,0.15)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.28)' }}
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>Save Value Checkpoint</span>
-          </button>
-          <button
-            type="button"
-            onClick={onAddObservation}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
-            style={{ background: 'rgba(59,130,246,0.12)', color: '#93C5FD', border: '1px solid rgba(59,130,246,0.25)' }}
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Add Observation</span>
-          </button>
+            <button
+              type="button"
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
+              style={{ background: 'rgba(180,140,75,0.08)', color: 'rgba(212,165,116,0.65)', border: '1px solid rgba(180,140,75,0.18)' }}
+              onClick={() => setShowSettings(!showSettings)}
+              title="Valuation settings (Auto-refresh cadence)"
+            >
+              <Settings className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="px-5 py-5 space-y-5">
-        {/* A — Current Value + Badges */}
-        <div className="flex flex-wrap items-start gap-4 min-w-0">
-          <div className="min-w-0 flex-1">
-            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-1">Current Value</p>
-            <p className="text-3xl font-bold text-[#F5F1E7] break-words tabular-nums">
-              {currentValue > 0 ? formatCurrency(currentValue) : '—'}
-            </p>
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span className="text-xs text-[#D8C7A6]/65">{source}</span>
-              <ConfidenceBadge level={confidence} />
+        <div className="px-5 py-5 space-y-5">
+          {/* A — Current Value + Badges */}
+          <div className="flex flex-wrap items-start gap-4 min-w-0">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-1">Current Value</p>
+              <p className="text-3xl font-bold text-[#F5F1E7] break-words tabular-nums">
+                {currentValue > 0 ? formatCurrency(currentValue) : '—'}
+              </p>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <span className="text-xs text-[#D8C7A6]/65">{source}</span>
+                <ConfidenceBadge level={confidence} />
+              </div>
+              {latestSnapshot && (
+                <p className="text-xs text-[#D8C7A6]/45 mt-1">Last checkpoint: {formatDate(latestSnapshot.snapshot_date)}</p>
+              )}
             </div>
-            {latestSnapshot && (
-              <p className="text-xs text-[#D8C7A6]/45 mt-1">Last snapshot: {formatDate(latestSnapshot.snapshot_date)}</p>
-            )}
+
+            {/* B — Trend */}
+            <div className="shrink-0 rounded-xl px-4 py-3 text-center min-w-[110px]" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
+              <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2">Trend</p>
+              <TrendChip trend={valueTrend || valuationSnapshot.trend} />
+            </div>
           </div>
 
-          {/* B — Trend */}
-          <div className="shrink-0 rounded-xl px-4 py-3 text-center min-w-[110px]" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
-            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2">Trend</p>
-            <TrendChip trend={valueTrend || valuationSnapshot.trend} />
+          {/* Special badges */}
+          {(isAllocated || isDiscontinued || isExclusive) && (
+            <div className="flex flex-wrap gap-2">
+              {isDiscontinued && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.28)', color: '#fca5a5' }}>
+                  <Lock className="w-3 h-3" /> Discontinued
+                </span>
+              )}
+              {isAllocated && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.28)', color: '#fde68a' }}>
+                  <AlertTriangle className="w-3 h-3" /> Allocated
+                </span>
+              )}
+              {isExclusive && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.28)', color: '#c4b5fd' }}>
+                  <Zap className="w-3 h-3" /> Exclusive
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* C — Strategy */}
+          <RecommendationBlock holdRecommendation={holdRecommendation} rationale={rationale} />
+
+          {/* D — Risk & Rarity grid */}
+          <div className="grid grid-cols-2 gap-3 min-w-0">
+            <MiniCard label="Rarity Score">
+              <RarityBar score={rarityScore} />
+            </MiniCard>
+            <MiniCard label="Replacement">
+              <p className="text-sm font-semibold text-[#F5F1E7] break-words">{DIFFICULTY_LABELS[replacementDifficulty] || '—'}</p>
+            </MiniCard>
           </div>
-        </div>
 
-        {/* Special badges */}
-        {(isAllocated || isDiscontinued || isExclusive) && (
-          <div className="flex flex-wrap gap-2">
-            {isDiscontinued && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.28)', color: '#fca5a5' }}>
-                <Lock className="w-3 h-3" /> Discontinued
-              </span>
-            )}
-            {isAllocated && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.28)', color: '#fde68a' }}>
-                <AlertTriangle className="w-3 h-3" /> Allocated
-              </span>
-            )}
-            {isExclusive && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.28)', color: '#c4b5fd' }}>
-                <Zap className="w-3 h-3" /> Exclusive
-              </span>
-            )}
+          {/* E — Value History */}
+          <div>
+            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2.5">Value History</p>
+            <SnapshotHistoryList snapshots={valueSnapshots} />
           </div>
-        )}
 
-        {/* C — Strategy */}
-        <RecommendationBlock holdRecommendation={holdRecommendation} rationale={rationale} />
-
-        {/* D — Risk & Rarity grid */}
-        <div className="grid grid-cols-2 gap-3 min-w-0">
-          <MiniCard label="Rarity Score">
-            <RarityBar score={rarityScore} />
-          </MiniCard>
-          <MiniCard label="Replacement">
-            <p className="text-sm font-semibold text-[#F5F1E7] break-words">{DIFFICULTY_LABELS[replacementDifficulty] || '—'}</p>
-          </MiniCard>
-        </div>
-
-        {/* E — Value History */}
-        <div>
-          <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2.5">Value History (Checkpoints)</p>
-          <SnapshotHistoryList snapshots={valueSnapshots} />
-        </div>
-
-        {/* F — Market Observations */}
-        <div>
-          <p className="text-xs uppercase tracking-[0.12em] text-[#93C5FD]/60 mb-2.5">Market Observations</p>
-          <ObservationList observations={priceObservations} />
+          {/* F — Market Observations */}
+          <div>
+            <p className="text-xs uppercase tracking-[0.12em] text-[#93C5FD]/60 mb-2.5">Market Observations</p>
+            <ObservationList observations={priceObservations} />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -140,33 +140,33 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
         <Button
           onClick={handleCreate}
           disabled={saving}
-          className="w-full py-3"
-          style={{ background: 'linear-gradient(135deg, rgba(46,125,92,1), rgba(36,105,76,1))', color: '#fff', fontWeight: 600 }}
+          className="w-full h-12 text-base"
+          style={{ background: 'linear-gradient(135deg, rgba(46,125,92,1), rgba(36,105,76,1))', color: '#fff', fontWeight: 700 }}
         >
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
-          Create Record
+          Add to Collection
         </Button>
 
         <div className="flex gap-3">
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 h-10"
             onClick={onSearchAgain}
             disabled={saving}
             style={{ borderColor: 'rgba(180,140,75,0.25)', color: 'rgba(224,216,200,0.7)', background: 'transparent' }}
           >
             <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
-            Search Again
+            Try Again
           </Button>
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 h-10"
             onClick={onManual}
             disabled={saving}
             style={{ borderColor: 'rgba(180,140,75,0.25)', color: 'rgba(224,216,200,0.7)', background: 'transparent' }}
           >
             <PenLine className="w-3.5 h-3.5 mr-1.5" />
-            Add Manually
+            Edit Details
           </Button>
         </div>
       </div>

@@ -1055,10 +1055,10 @@ function BottleDetailInner() {
           onSaved={() => { setShowObservationModal(false); loadPriceObservations(); }}
         />
       ) : null}
-    </LockedModuleGuard>
-  );
-}
+      </LockedModuleGuard>
+      );
+      }
 
-export default function BottleDetail() {
-  return <BottleDetailInner />;
-}
+      export default function BottleDetail() {
+      return <BottleDetailInner />;
+      }

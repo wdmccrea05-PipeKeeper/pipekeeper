@@ -7,7 +7,9 @@ import AddFlowQuickConfirm from './AddFlowQuickConfirm';
 import AddFlowManualBasic from './AddFlowManualBasic';
 import AddFlowManualDetails from './AddFlowManualDetails';
 import AddFlowManualImages from './AddFlowManualImages';
+import AddFlowIdentify from './AddFlowIdentify';
 import InventoryStep from '@/components/inventory/InventoryStep';
+import { buildQuickAddPayload, buildValuationSeedData } from '@/components/identify/identifyEngine';
 
 const TYPE_LABELS = {
   pipe: 'Pipe',
@@ -64,6 +66,8 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
     const previous = {
       quickSearch: 'choice',
       quickConfirm: 'quickSearch',
+      identify: 'choice',
+      identifyConfirm: 'identify',
       inventoryQuick: 'quickConfirm',
       manualBasic: 'choice',
       manualDetails: 'manualBasic',
@@ -107,6 +111,8 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
               {...sharedProps}
               onQuickAdd={() => setStep('quickSearch')}
               onManualAdd={() => setStep('manualBasic')}
+              onScanUPC={() => { setStep('identify'); saveStepData({ _identifyInitialMode: 'upc' }); }}
+              onPhotoIdentify={() => { setStep('identify'); saveStepData({ _identifyInitialMode: 'photo' }); }}
             />
           )}
 
@@ -119,6 +125,44 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
                 setStep('quickConfirm');
               }}
               onManual={() => setStep('manualBasic')}
+            />
+          )}
+
+          {step === 'identify' && (
+            <AddFlowIdentify
+              {...sharedProps}
+              initialMode={wizardData._identifyInitialMode || 'selector'}
+              onBack={goBack}
+              onManual={() => setStep('manualBasic')}
+              onSelected={(candidate, identifyResult) => {
+                const payload = buildQuickAddPayload(candidate, itemType);
+                const valuationSeed = buildValuationSeedData(candidate, itemType);
+                setSearchResult({ ...payload, _fromIdentify: true });
+                saveStepData({ ...payload, ...valuationSeed, _identifyResult: identifyResult });
+                setStep('identifyConfirm');
+              }}
+            />
+          )}
+
+          {step === 'identifyConfirm' && (
+            <AddFlowQuickConfirm
+              {...sharedProps}
+              onBack={goBack}
+              result={searchResult}
+              onSearchAgain={() => setStep('identify')}
+              onManual={() => setStep('manualBasic')}
+              onCreated={(record) => {
+                const nextInventory = getInventoryStepName(itemType, 'quick');
+                if (!nextInventory) {
+                  goToRecord(record);
+                  return;
+                }
+                saveStepData({
+                  _quickRecord: { id: record.id, name: record.name },
+                  ...searchResult,
+                });
+                setStep(nextInventory);
+              }}
             />
           )}
 
