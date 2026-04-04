@@ -32,6 +32,11 @@ import RotationPlanner from '@/components/pipes/RotationPlanner';
 import InterchangeableBowls from '@/components/pipes/InterchangeableBowls';
 import ValueLookup from '@/components/ai/ValueLookup';
 import ValuationCredibility, { computePipeValuation } from '@/components/valuation/ValuationCredibility';
+import {
+  buildValuationSnapshot,
+  DIFFICULTY_LABELS,
+  PIPE_RECOMMENDATION_LABELS,
+} from '@/components/valuation/valueEngine';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -276,6 +281,7 @@ export default function PipeDetail() {
   }, [pipe]);
 
   const computedValuation = useMemo(() => computePipeValuation(pipe), [pipe]);
+  const pipeStrategy = useMemo(() => pipe ? buildValuationSnapshot(pipe, 'pipekeeper') : null, [pipe]);
 
   if (loading) {
     return (
@@ -482,6 +488,55 @@ export default function PipeDetail() {
                 </div>
               )}
             </div>
+
+            {/* Value & Strategy Section */}
+            {pipeStrategy && (
+              <div
+                className="rounded-2xl p-5 space-y-4"
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(180,140,75,0.14)',
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <CircleDollarSign className="w-4 h-4 text-[#D4A574]" />
+                  <p className="text-sm font-semibold text-[#F5F1E7]">Value &amp; Strategy</p>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.15)' }}>
+                    <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/60">Rarity</p>
+                    <p className="text-lg font-bold text-[#F5F1E7] mt-1">{pipeStrategy.rarityScore ?? '—'}<span className="text-xs text-[#D8C7A6]/50">/100</span></p>
+                  </div>
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.15)' }}>
+                    <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/60">Replacement</p>
+                    <p className="text-sm font-semibold text-[#F5F1E7] mt-1 leading-snug">
+                      {pipeStrategy.replacementDifficulty ? DIFFICULTY_LABELS[pipeStrategy.replacementDifficulty] : '—'}
+                    </p>
+                  </div>
+                  <div className="rounded-xl p-3 col-span-2" style={{ background: 'rgba(74,222,128,0.07)', border: '1px solid rgba(74,222,128,0.18)' }}>
+                    <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/60">Recommendation</p>
+                    <p className="text-sm font-bold mt-1" style={{ color: '#4ade80' }}>
+                      {pipeStrategy.holdRecommendation ? (PIPE_RECOMMENDATION_LABELS[pipeStrategy.holdRecommendation] || pipeStrategy.holdRecommendation) : '—'}
+                    </p>
+                  </div>
+                </div>
+
+                {pipeStrategy.rationale && pipeStrategy.rationale.length > 0 && (
+                  <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.1)' }}>
+                    <p className="text-[10px] uppercase tracking-wider text-[#D8C7A6]/60 mb-2">Rationale</p>
+                    <ul className="space-y-1.5">
+                      {pipeStrategy.rationale.map((point, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: 'rgba(180,140,75,0.6)' }} />
+                          <span className="text-xs text-[#E0D8C8]/75">{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div
               className="rounded-2xl p-5"

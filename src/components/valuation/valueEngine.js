@@ -66,13 +66,55 @@ export function normalizeValuationInputs(item, moduleKey) {
   }
 
   if (moduleKey === 'pipekeeper') {
+    // Detect tobacco blend by presence of blend_type or manufacturer without maker
+    const isTobacco = !!(item.blend_type || (item.manufacturer && !item.maker));
+
+    if (isTobacco) {
+      const totalOz =
+        toNum(item.tin_total_quantity_oz) +
+        toNum(item.bulk_total_quantity_oz) +
+        toNum(item.pouch_total_quantity_oz);
+      const pricePerOz = toNum(item.price_per_oz);
+      const aiEstimatedValue = toNum(item.ai_estimated_value);
+      // Manual market value → collectorValue; AI est * oz → estimatedValue; price/oz * oz → marketValue; cost_basis → purchaseValue
+      return {
+        ...base,
+        itemType: 'tobacco',
+        manufacturer: item.manufacturer || '',
+        blendType: item.blend_type || '',
+        pricePerOz,
+        totalOz,
+        totalTins: toNum(item.tin_total_tins),
+        totalPouches: toNum(item.pouch_total_pouches),
+        isDiscontinued: !!(
+          item.discontinued ||
+          (item.production_status || '').toLowerCase().includes('discontinue')
+        ),
+        productionStatus: item.production_status || '',
+        agingPotential: item.aging_potential || '',
+        isLimitedBatch: !!(item.limited_batch || item.is_limited),
+        isRegionalExclusive: !!(item.regional_exclusive || item.region_exclusive),
+        // Remap to canonical base fields for shared engine
+        collectorValue: toNum(item.manual_market_value),
+        estimatedValue: aiEstimatedValue > 0 && totalOz > 0 ? aiEstimatedValue * totalOz : 0,
+        marketValue: pricePerOz > 0 && totalOz > 0 ? pricePerOz * totalOz : 0,
+        purchaseValue: toNum(item.cost_basis),
+      };
+    }
+
+    // Pipe item
     return {
       ...base,
+      itemType: 'pipe',
       maker: item.maker || '',
       bowlMaterial: item.bowl_material || '',
       condition: item.condition || '',
       yearMade: item.year_made || '',
       shape: item.shape || '',
+      isHandmade: !!(item.is_handmade || item.handmade),
+      isLimitedRun: !!(item.limited_run || item.is_limited_run),
+      productionStatus: item.production_status || '',
+      artisanGrade: item.artisan_grade || '',
     };
   }
 
@@ -127,6 +169,17 @@ export function computeCurrentValue(item, moduleKey) {
   }
 
   if (moduleKey === 'pipekeeper') {
+    if (inputs.itemType === 'tobacco') {
+      // Priority: manual market value → AI estimate * oz → price/oz * oz → cost basis
+      return (
+        inputs.collectorValue ||
+        inputs.estimatedValue ||
+        inputs.marketValue ||
+        inputs.purchaseValue ||
+        0
+      );
+    }
+    // Pipe priority: estimated (manual) → collector → purchase
     return (
       inputs.estimatedValue ||
       inputs.collectorValue ||
@@ -196,22 +249,50 @@ export function computeRarityScore(item, moduleKey) {
       score += fillPenalties[inputs.fillLevel] || 0;
     }
   } else if (moduleKey === 'pipekeeper') {
-    const premiumMakers = ['dunhill', 'barling', 'comoy', 'sasieni', 'charatan', 'castello', 'ardor', 'ser jacopo', 'radice'];
-    const makerLower = (inputs.maker || '').toLowerCase();
-    if (premiumMakers.some(m => makerLower.includes(m))) score += 25;
+    if (inputs.itemType === 'tobacco') {
+      // Discontinued blends are increasingly scarce
+      if (inputs.isDiscontinued) score += 35;
 
-    const materialScores = { Meerschaum: 20, Morta: 18, Briar: 8, Clay: 5 };
-    score += materialScores[inputs.bowlMaterial] || 0;
+      // Limited batch or small-run production
+      if (inputs.isLimitedBatch) score += 20;
 
-    const yearNum = parseInt(inputs.yearMade, 10);
-    if (!isNaN(yearNum)) {
-      if (yearNum < 1960) score += 30;
-      else if (yearNum < 1980) score += 20;
-      else if (yearNum < 2000) score += 10;
+      // Regional exclusivity (hard to import)
+      if (inputs.isRegionalExclusive) score += 15;
+
+      // Cellar age premium — if priced above a typical blend
+      if (inputs.pricePerOz >= 8) score += 15;
+      else if (inputs.pricePerOz >= 4) score += 8;
+
+      // Blend type premiums (rare/specialty tobaccos)
+      const rareBlendTypes = ['latakia', 'oriental', 'perique', 'virginia flake', 'navy flake'];
+      if (rareBlendTypes.some(t => (inputs.blendType || '').toLowerCase().includes(t))) score += 10;
+
+      // Production status
+      const status = (inputs.productionStatus || '').toLowerCase();
+      if (status.includes('limited') || status.includes('seasonal')) score += 12;
+    } else {
+      // Pipe rarity
+      const premiumMakers = ['dunhill', 'barling', 'comoy', 'sasieni', 'charatan', 'castello', 'ardor', 'ser jacopo', 'radice'];
+      const makerLower = (inputs.maker || '').toLowerCase();
+      if (premiumMakers.some(m => makerLower.includes(m))) score += 25;
+
+      const materialScores = { Meerschaum: 20, Morta: 18, Briar: 8, Clay: 5 };
+      score += materialScores[inputs.bowlMaterial] || 0;
+
+      const yearNum = parseInt(inputs.yearMade, 10);
+      if (!isNaN(yearNum)) {
+        if (yearNum < 1960) score += 30;
+        else if (yearNum < 1980) score += 20;
+        else if (yearNum < 2000) score += 10;
+      }
+
+      const conditionScores = { Mint: 15, Excellent: 10, 'Very Good': 5 };
+      score += conditionScores[inputs.condition] || 0;
+
+      // Handmade or limited-run pipes are inherently rarer
+      if (inputs.isHandmade) score += 10;
+      if (inputs.isLimitedRun) score += 12;
     }
-
-    const conditionScores = { Mint: 15, Excellent: 10, 'Very Good': 5 };
-    score += conditionScores[inputs.condition] || 0;
   } else if (moduleKey === 'cigarkeeper') {
     if (inputs.vintage > 0 && inputs.vintage < new Date().getFullYear() - 10) score += 25;
     score += Math.min(toNum(inputs.rating) * 8, 40);
@@ -269,6 +350,18 @@ export function computeReplacementDifficulty(item, moduleKey) {
   }
 
   if (moduleKey === 'pipekeeper') {
+    if (inputs.itemType === 'tobacco') {
+      const status = (inputs.productionStatus || '').toLowerCase();
+      const isDiscontinued = inputs.isDiscontinued || status.includes('discontinue');
+      const isLimited = inputs.isLimitedBatch || status.includes('limited') || status.includes('seasonal');
+
+      if (isDiscontinued && inputs.isRegionalExclusive) return DIFFICULTY_LEVELS.VERY_HARD;
+      if (isDiscontinued) return DIFFICULTY_LEVELS.HARD;
+      if (isLimited || inputs.isRegionalExclusive) return DIFFICULTY_LEVELS.MODERATE;
+      return DIFFICULTY_LEVELS.EASY;
+    }
+
+    // Pipe replacement difficulty
     const premiumMakers = ['dunhill', 'barling', 'comoy', 'sasieni', 'charatan', 'castello', 'ardor'];
     const makerLower = (inputs.maker || '').toLowerCase();
     const isPremium = premiumMakers.some(m => makerLower.includes(m));
@@ -279,6 +372,7 @@ export function computeReplacementDifficulty(item, moduleKey) {
     if (isVintage && isPremium) return DIFFICULTY_LEVELS.VERY_HARD;
     if (isVintage || (isCollector && isPremium)) return DIFFICULTY_LEVELS.HARD;
     if (isPremium || inputs.bowlMaterial === 'Meerschaum' || inputs.bowlMaterial === 'Morta') return DIFFICULTY_LEVELS.MODERATE;
+    if (inputs.isHandmade) return DIFFICULTY_LEVELS.MODERATE;
     return DIFFICULTY_LEVELS.EASY;
   }
 
@@ -371,17 +465,82 @@ export function computeOpenVsHoldDecision(item, moduleKey, collectionContext = {
   }
 
   if (moduleKey === 'pipekeeper') {
+    if (inputs.itemType === 'tobacco') {
+      // Tobacco decision: smoke_now / smoke_later / cellar / hold_for_trade
+      const rationale = [];
+      const status = (inputs.productionStatus || '').toLowerCase();
+
+      if (isVeryHard || (inputs.isDiscontinued && rarity >= 65)) {
+        rationale.push('Discontinued and scarce — secondary market value may appreciate');
+        if (hasDuplicates) rationale.push('You have duplicates — consider trading one for premium');
+        rationale.push('Hold unopened stock for potential trade or future premium value');
+        return { holdRecommendation: 'hold_for_trade', rationale };
+      }
+
+      if (inputs.isDiscontinued || (isHard && rarity >= 50)) {
+        rationale.push('Discontinued blend — limited remaining supply');
+        if (inputs.totalOz > 16) {
+          rationale.push(`You have ${inputs.totalOz.toFixed(1)} oz — enough to cellar and smoke`);
+          rationale.push('Age remaining stock for enhanced flavor development');
+          return { holdRecommendation: 'cellar', rationale };
+        }
+        rationale.push('Smoke slowly and enjoy — replacement will be difficult');
+        return { holdRecommendation: 'smoke_later', rationale };
+      }
+
+      const agingPotential = (inputs.agingPotential || '').toLowerCase();
+      if (agingPotential.includes('excellent') || agingPotential.includes('high') || agingPotential.includes('great')) {
+        rationale.push('High aging potential — cellaring will improve this blend');
+        if (inputs.totalOz > 8) rationale.push(`${inputs.totalOz.toFixed(1)} oz gives room to smoke and cellar`);
+        return { holdRecommendation: 'cellar', rationale };
+      }
+
+      if (inputs.isLimitedBatch || status.includes('limited') || status.includes('seasonal')) {
+        rationale.push('Limited batch or seasonal release');
+        rationale.push('Save for special occasions — replenishment may not be possible');
+        return { holdRecommendation: 'smoke_later', rationale };
+      }
+
+      // Low rarity, widely available
+      if (rarity <= 25 && isEasy) {
+        rationale.push('Widely available and easy to replenish');
+        rationale.push('Enjoy freely — no reason to hold back');
+        return { holdRecommendation: 'smoke_now', rationale };
+      }
+
+      rationale.push('Readily available — smoke and enjoy at your pace');
+      return { holdRecommendation: 'smoke_now', rationale };
+    }
+
+    // Pipe decision: use / rotate / preserve / insure
+    const rationale = [];
+
+    if (isVeryHard && rarity >= 75) {
+      rationale.push('Extremely rare and irreplaceable — insure against loss or damage');
+      rationale.push('Consider professional appraisal and proper storage');
+      if (currentValue > 0) rationale.push(`Current value (~$${Math.round(currentValue)}) justifies formal coverage`);
+      return { holdRecommendation: 'insure', rationale };
+    }
+
     if (isVeryHard || rarity >= 70) {
       rationale.push('Rare or vintage pipe — preserve display quality');
-      rationale.push('Restoration or active use may reduce collector value');
-      return { holdRecommendation: 'hold', rationale };
+      rationale.push('Active use may reduce collector value or risk damage');
+      if (hasDuplicates) rationale.push('You have similar pipes — smoke those instead');
+      return { holdRecommendation: 'preserve', rationale };
     }
-    if (isEasy || rarity <= 30) {
-      rationale.push('Widely available — use and enjoy freely');
-      return { holdRecommendation: 'open', rationale };
+
+    if (isHard || rarity >= 45) {
+      rationale.push('Moderately rare — include thoughtfully in rotation');
+      rationale.push('Enjoy it, but clean and maintain carefully after each use');
+      if (currentValue > 0 && medianValue > 0 && currentValue >= medianValue * 1.5) {
+        rationale.push('Above-median value — be mindful of wear');
+      }
+      return { holdRecommendation: 'rotate', rationale };
     }
-    rationale.push('Moderate collector interest — enjoy thoughtfully');
-    return { holdRecommendation: 'either', rationale };
+
+    rationale.push('Widely available — use and enjoy freely');
+    if (hasDuplicates) rationale.push('You have similar pipes — rotate them to prevent ghosting');
+    return { holdRecommendation: 'use', rationale };
   }
 
   // Generic
@@ -524,4 +683,18 @@ export const HOLD_RECOMMENDATION_LABELS = {
   hold: 'Hold',
   open: 'Safe to Open',
   either: 'Either',
+};
+
+export const PIPE_RECOMMENDATION_LABELS = {
+  use: 'Use Freely',
+  rotate: 'Include in Rotation',
+  preserve: 'Preserve — Limit Use',
+  insure: 'Preserve & Insure',
+};
+
+export const TOBACCO_RECOMMENDATION_LABELS = {
+  smoke_now: 'Smoke Now',
+  smoke_later: 'Save for Later',
+  cellar: 'Cellar for Aging',
+  hold_for_trade: 'Hold for Trade',
 };
