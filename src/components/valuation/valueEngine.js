@@ -452,13 +452,12 @@ export function computeRarityScore(item, moduleKey) {
     //   allocated / discontinued:                    60–85  → hard cap 85
     //   unicorn / extremely scarce:                  85–98  → hard cap 98
     {
-      const _batchLower = (inputs.batchType || '').toLowerCase();
-      const _producerLower = (inputs.producerStatus || '').toLowerCase();
+      const batchLower = (inputs.batchType || '').toLowerCase();
       const hasBottleScarcity =
         inputs.isDiscontinued || inputs.isAllocated || inputs.isUnicorn ||
         inputs.isExportOnly || inputs.isExclusive ||
-        _batchLower === 'single_barrel' || _batchLower === 'single barrel' ||
-        _batchLower === 'small_batch' || _batchLower === 'small batch';
+        batchLower === 'single_barrel' || batchLower === 'single barrel' ||
+        batchLower === 'small_batch' || batchLower === 'small batch';
       const isAllocatedOrDiscontinued = inputs.isDiscontinued || inputs.isAllocated;
 
       if (!hasBottleScarcity && inputs.age < 18) {
@@ -1284,6 +1283,7 @@ export function applyRarityCaps(rawScore, moduleKey, itemType, inputs = {}) {
   } else if (moduleKey === 'pipekeeper' && itemType === 'pipe') {
     const isMakerActive =
       !inputs.isMakerDeceased && !inputs.isMakerRetired && !inputs.isMakerInactive;
+    // _effectiveProdType is computed by normalizeValuationInputs; underscore marks it as engine-internal
     const prodType = inputs._effectiveProdType || 'factory';
 
     if (prodType === 'factory') {
