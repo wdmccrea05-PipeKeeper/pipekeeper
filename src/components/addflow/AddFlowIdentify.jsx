@@ -123,6 +123,18 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
   const cameraInputRef = React.useRef(null);
+  // Reuse the same BarcodeDetector instance across scans for efficiency
+  const detectorRef = React.useRef(null);
+
+  const getDetector = () => {
+    if (typeof BarcodeDetector === 'undefined') return null;
+    if (!detectorRef.current) {
+      detectorRef.current = new BarcodeDetector({
+        formats: ['upc_a', 'upc_e', 'ean_13', 'ean_8', 'code_128', 'code_39', 'qr_code'],
+      });
+    }
+    return detectorRef.current;
+  };
 
   const handleLookup = async () => {
     const trimmed = code.trim();
@@ -148,9 +160,11 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    e.target.value = ''; // reset so same file can trigger again
+    // Reset so the same image can be re-scanned if needed
+    e.target.value = '';
 
-    if (typeof BarcodeDetector === 'undefined') {
+    const detector = getDetector();
+    if (!detector) {
       toast.info(
         t('addFlowIdentify.barcodeDetectorUnavailable', 'Camera barcode detection is not supported in this browser. Please type the barcode number below.'),
         { duration: 5000 }
@@ -160,7 +174,6 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
 
     setScanning(true);
     try {
-      const detector = new BarcodeDetector({ formats: ['upc_a', 'upc_e', 'ean_13', 'ean_8', 'code_128', 'code_39', 'qr_code'] });
       const bitmap = await createImageBitmap(file);
       const barcodes = await detector.detect(bitmap);
 

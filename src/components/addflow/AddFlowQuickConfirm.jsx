@@ -258,7 +258,7 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
                 <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.6)' }}>
                   {duplicates.length === 1
                     ? `"${duplicates[0].name}" already has this barcode.`
-                    : `${duplicates.length} existing records share this barcode.`}
+                    : `${duplicates.length} existing records share this barcode. "Use Existing" will open the first match.`}
                 </p>
               </div>
             </div>
@@ -270,7 +270,7 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
                 style={{ background: 'rgba(180,140,75,0.22)', color: '#F5F1E7', border: '1px solid rgba(180,140,75,0.35)' }}
               >
                 <ArrowRight className="w-3 h-3 mr-1" />
-                Use Existing
+                {duplicates.length > 1 ? 'Use First Match' : 'Use Existing'}
               </Button>
               <Button
                 size="sm"
