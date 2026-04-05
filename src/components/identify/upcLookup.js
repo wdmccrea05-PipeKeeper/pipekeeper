@@ -4,7 +4,7 @@
  * Looks up an item by UPC/barcode code using the Base44 LLM with internet
  * context. Routes the result through the shared normalizeIdentifiedItem layer.
  *
- * Supports: pipe, blend (tobacco), bottle (whiskey)
+ * Supports: pipe, blend (tobacco), bottle (whiskey), cigar
  */
 
 import { base44 } from '@/api/base44Client';
@@ -180,8 +180,11 @@ export async function identifyByUPC(code, itemTypeHint = null) {
     response_json_schema: UPC_RESPONSE_SCHEMA,
   });
 
+  // Inject the original scanned/typed code so normalizers can preserve it
+  const rawWithCode = { ...raw, _inputBarcode: trimmedCode };
+
   // Resolve final item type — cigar falls back to 'blend' only when no hint and can't detect
   const resolvedType = itemTypeHint || detectItemTypeFromResult(raw) || 'blend';
 
-  return normalizeIdentifiedItem(raw, resolvedType, 'upc');
+  return normalizeIdentifiedItem(rawWithCode, resolvedType, 'upc');
 }

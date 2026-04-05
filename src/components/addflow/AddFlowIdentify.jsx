@@ -121,6 +121,8 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
   const { t } = useTranslation();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const cameraInputRef = React.useRef(null);
 
   const handleLookup = async () => {
     const trimmed = code.trim();
@@ -134,6 +136,59 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
       toast.error(t('addFlowIdentify.upcError', 'UPC lookup failed. Please try again or add manually.'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * Attempt to extract a barcode from a captured image file.
+   * Uses the BarcodeDetector API where available (Chrome/Edge/Android),
+   * falls back to asking the user to type the code.
+   */
+  const handleCameraCapture = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    e.target.value = ''; // reset so same file can trigger again
+
+    if (typeof BarcodeDetector === 'undefined') {
+      toast.info(
+        t('addFlowIdentify.barcodeDetectorUnavailable', 'Camera barcode detection is not supported in this browser. Please type the barcode number below.'),
+        { duration: 5000 }
+      );
+      return;
+    }
+
+    setScanning(true);
+    try {
+      const detector = new BarcodeDetector({ formats: ['upc_a', 'upc_e', 'ean_13', 'ean_8', 'code_128', 'code_39', 'qr_code'] });
+      const bitmap = await createImageBitmap(file);
+      const barcodes = await detector.detect(bitmap);
+
+      if (!barcodes.length) {
+        toast.error(t('addFlowIdentify.noBarcodeFound', 'No barcode detected in the photo. Please type the code manually.'));
+        return;
+      }
+
+      const detected = barcodes[0].rawValue;
+      setCode(detected);
+
+      // Auto-lookup the detected code
+      setScanning(false);
+      setLoading(true);
+      try {
+        const result = await identifyByUPC(detected, itemType);
+        onResult(result);
+      } catch (err) {
+        console.error('UPC lookup error after camera detect:', err);
+        toast.error(t('addFlowIdentify.upcError', 'UPC lookup failed. Please try again or add manually.'));
+      } finally {
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('BarcodeDetector error:', err);
+      toast.error(t('addFlowIdentify.scanError', 'Scanning failed. Please type the barcode manually.'));
+    } finally {
+      setScanning(false);
     }
   };
 
@@ -160,6 +215,45 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
       <div className="mx-6" style={{ height: 1, background: 'rgba(180,140,75,0.12)' }} />
 
       <div className="px-6 py-5 flex flex-col gap-4">
+        {/* Camera scan button */}
+        <label
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl cursor-pointer transition-colors"
+          style={{
+            background: 'rgba(86,122,160,0.1)',
+            border: '1px solid rgba(86,122,160,0.35)',
+            color: 'rgba(140,180,220,0.85)',
+            opacity: scanning || loading ? 0.6 : 1,
+            pointerEvents: scanning || loading ? 'none' : 'auto',
+          }}
+        >
+          {scanning ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm font-medium">{t('addFlowIdentify.scanning', 'Scanning…')}</span>
+            </>
+          ) : (
+            <>
+              <Camera className="w-4 h-4" />
+              <span className="text-sm font-medium">{t('addFlowIdentify.scanBarcode', 'Scan Barcode with Camera')}</span>
+            </>
+          )}
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleCameraCapture}
+            disabled={scanning || loading}
+          />
+        </label>
+
+        <div className="flex items-center gap-3">
+          <div style={{ flex: 1, height: 1, background: 'rgba(180,140,75,0.12)' }} />
+          <span className="text-xs" style={{ color: 'rgba(224,216,200,0.35)' }}>or type manually</span>
+          <div style={{ flex: 1, height: 1, background: 'rgba(180,140,75,0.12)' }} />
+        </div>
+
         <div className="flex gap-2">
           <Input
             value={code}
