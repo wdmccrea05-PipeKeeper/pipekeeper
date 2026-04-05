@@ -179,17 +179,17 @@ export default function InlinePhotoEditor({ photos = [], onUpdate, maxPhotos = 5
         {cleanPhotos.map((url, idx) => (
           <div
             key={idx}
-            className="relative group w-20 h-20 rounded-xl overflow-hidden flex-shrink-0"
+            className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0"
             style={{ border: '1px solid rgba(180,140,75,0.22)' }}
           >
             <img src={url} alt="" className="w-full h-full object-cover" />
 
-            {/* Hover overlay with Edit + Remove */}
-            <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            {/* Always-visible controls (works on touch + desktop) */}
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-2">
               <button
                 type="button"
                 onClick={() => editPhoto(idx)}
-                className="p-1.5 rounded-lg bg-white/15 hover:bg-white/25 transition-colors"
+                className="p-1.5 rounded-lg bg-white/20 hover:bg-white/35 active:scale-90 transition-all"
                 aria-label="Edit photo"
               >
                 <Pencil className="w-3.5 h-3.5 text-white" />
@@ -197,7 +197,7 @@ export default function InlinePhotoEditor({ photos = [], onUpdate, maxPhotos = 5
               <button
                 type="button"
                 onClick={() => removePhoto(idx)}
-                className="p-1.5 rounded-lg bg-white/15 hover:bg-red-500/60 transition-colors"
+                className="p-1.5 rounded-lg bg-white/20 hover:bg-red-500/70 active:scale-90 transition-all"
                 aria-label="Remove photo"
               >
                 <X className="w-3.5 h-3.5 text-white" />
