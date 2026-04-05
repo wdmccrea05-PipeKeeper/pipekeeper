@@ -5,9 +5,8 @@
 // It normalizes collection items through the module adapter layer, enforces AI
 // eligibility rules, and attaches structured reasoning to all AI outputs.
 //
-// Current active modules: pipe, tobacco.
-// Future modules (whiskey, cigar, coffee) register adapters in moduleAdapters/index.js
-// and will automatically gain AI reasoning support without changes here.
+// Active modules: pipe, tobacco, whiskey, cigar.
+// WineKeeper groundwork: adapter registered when wine module launches.
 //
 // Structured AI output shape:
 //   recommendation  — the primary suggestion or result
@@ -23,14 +22,6 @@ import { getAdapter } from "./moduleAdapters/index.js";
 
 /**
  * Wrap a raw AI result in the standard structured reasoning envelope.
- *
- * @param {object} params
- * @param {string} params.recommendation - Primary AI suggestion.
- * @param {string} params.reason         - Explanation for the recommendation.
- * @param {number} [params.confidence]   - Optional 0–1 confidence score.
- * @param {string} [params.suggestedAction] - What the user should do next.
- * @param {object} [params.data]         - Additional module-specific data.
- * @returns {object}
  */
 export function buildStructuredResult({ recommendation, reason, confidence, suggestedAction, data }) {
   return {
@@ -52,6 +43,7 @@ export function buildStructuredResult({ recommendation, reason, confidence, sugg
  * @param {object} params
  * @param {object[]} [params.pipes]   - Raw Pipe records.
  * @param {object[]} [params.blends]  - Raw TobaccoBlend records.
+ * @param {object[]} [params.cigars]  - Raw Cigar records.
  * @returns {{
  *   activeModules: string[],
  *   itemsByModule: Record<string, object[]>,
@@ -60,13 +52,15 @@ export function buildStructuredResult({ recommendation, reason, confidence, sugg
  *   totalItemCount: number,
  * }}
  */
-export function buildAIContext({ pipes = [], blends = [] } = {}) {
+export function buildAIContext({ pipes = [], blends = [], cigars = [] } = {}) {
   const pipeAdapter = getAdapter(MODULE_TYPES.PIPE);
   const tobaccoAdapter = getAdapter(MODULE_TYPES.TOBACCO);
+  const cigarAdapter = getAdapter(MODULE_TYPES.CIGAR);
 
   // Enforce AI exclusion at the platform level
   const eligiblePipes = filterAiEligibleItems(pipes);
   const eligibleBlends = filterAiEligibleItems(blends);
+  const eligibleCigars = filterAiEligibleItems(cigars);
 
   const normalizedPipes = pipeAdapter
     ? eligiblePipes.map((p) => pipeAdapter.normalizeItem(p))
@@ -76,6 +70,10 @@ export function buildAIContext({ pipes = [], blends = [] } = {}) {
     ? eligibleBlends.map((b) => tobaccoAdapter.normalizeItem(b))
     : eligibleBlends;
 
+  const normalizedCigars = cigarAdapter
+    ? eligibleCigars.map((c) => cigarAdapter.normalizeItem(c))
+    : eligibleCigars;
+
   const pipeUsageProfiles = pipeAdapter
     ? eligiblePipes.map((p) => ({ id: p.id, ...pipeAdapter.getUsageProfile(p) }))
     : [];
@@ -84,18 +82,24 @@ export function buildAIContext({ pipes = [], blends = [] } = {}) {
     ? eligibleBlends.map((b) => ({ id: b.id, ...tobaccoAdapter.getUsageProfile(b) }))
     : [];
 
-  const totalItemCount = pipes.length + blends.length;
-  const eligibleItemCount = eligiblePipes.length + eligibleBlends.length;
+  const cigarUsageProfiles = cigarAdapter
+    ? eligibleCigars.map((c) => ({ id: c.id, ...cigarAdapter.getUsageProfile(c) }))
+    : [];
+
+  const totalItemCount = pipes.length + blends.length + cigars.length;
+  const eligibleItemCount = eligiblePipes.length + eligibleBlends.length + eligibleCigars.length;
 
   return {
     activeModules: ACTIVE_MODULES,
     itemsByModule: {
       [MODULE_TYPES.PIPE]: normalizedPipes,
       [MODULE_TYPES.TOBACCO]: normalizedBlends,
+      [MODULE_TYPES.CIGAR]: normalizedCigars,
     },
     usageProfilesByModule: {
       [MODULE_TYPES.PIPE]: pipeUsageProfiles,
       [MODULE_TYPES.TOBACCO]: tobaccoUsageProfiles,
+      [MODULE_TYPES.CIGAR]: cigarUsageProfiles,
     },
     eligibleItemCount,
     totalItemCount,
@@ -107,10 +111,6 @@ export function buildAIContext({ pipes = [], blends = [] } = {}) {
 
 /**
  * Build the module-context preamble that all Collection Curator AI prompts should include.
- * Makes the AI aware of which modules are active and what types of items it is reasoning about.
- *
- * @param {object} aiContext - Output of buildAIContext().
- * @returns {string}
  */
 export function buildModuleAwarePromptPreamble(aiContext) {
   const moduleList = (aiContext.activeModules || [])
@@ -119,7 +119,10 @@ export function buildModuleAwarePromptPreamble(aiContext) {
 
   const pipeCount = aiContext.itemsByModule?.[MODULE_TYPES.PIPE]?.length ?? 0;
   const tobaccoCount = aiContext.itemsByModule?.[MODULE_TYPES.TOBACCO]?.length ?? 0;
+  const cigarCount = aiContext.itemsByModule?.[MODULE_TYPES.CIGAR]?.length ?? 0;
   const excludedCount = aiContext.excludedItemCount ?? 0;
+
+  const cigarNote = cigarCount > 0 ? `, ${cigarCount} cigar(s)` : "";
 
   const exclusionNote =
     excludedCount > 0
@@ -129,7 +132,7 @@ export function buildModuleAwarePromptPreamble(aiContext) {
   return (
     `You are the Collection Curator AI, an expert advisor for the CollectionKeeper platform.\n` +
     `Active modules: ${moduleList}.\n` +
-    `Collection context: ${pipeCount} pipe(s), ${tobaccoCount} tobacco blend(s) available for AI analysis.` +
+    `Collection context: ${pipeCount} pipe(s), ${tobaccoCount} tobacco blend(s)${cigarNote} available for AI analysis.` +
     exclusionNote +
     `\n\nFor every recommendation you must provide:\n` +
     `- Recommendation: clear, specific suggestion\n` +
@@ -140,10 +143,6 @@ export function buildModuleAwarePromptPreamble(aiContext) {
 
 // ─── Optimize Scope Descriptors ──────────────────────────────────────────────
 
-/**
- * Canonical list of optimization scope options available in the current build.
- * Future modules add entries here when their adapters are registered.
- */
 export const OPTIMIZE_SCOPES = [
   {
     id: "pipe_rotation",
@@ -163,16 +162,19 @@ export const OPTIMIZE_SCOPES = [
     description: "Maximize pairing compatibility across your full collection.",
     modules: [MODULE_TYPES.PIPE, MODULE_TYPES.TOBACCO],
   },
+  {
+    id: "cigar_collection",
+    label: "Optimize Cigar Collection",
+    description: "Review humidor balance, aging readiness, and smoking patterns.",
+    modules: [MODULE_TYPES.CIGAR],
+  },
   // Future scopes (inactive until modules launch):
   // { id: "whiskey_collection", label: "Optimize Whiskey Collection", modules: [MODULE_TYPES.WHISKEY] },
-  // { id: "cross_collection", label: "Optimize Cross-Collection Pairings", modules: [MODULE_TYPES.PIPE, MODULE_TYPES.WHISKEY] },
+  // { id: "wine_cellar", label: "Optimize Wine Cellar", modules: [MODULE_TYPES.WINE] },
 ];
 
 /**
  * Return the active optimization scopes for the current build.
- * Only scopes whose modules are all in ACTIVE_MODULES are included.
- *
- * @returns {typeof OPTIMIZE_SCOPES}
  */
 export function getActiveOptimizeScopes() {
   return OPTIMIZE_SCOPES.filter((scope) =>
@@ -182,23 +184,17 @@ export function getActiveOptimizeScopes() {
 
 // ─── Identify Item Types ─────────────────────────────────────────────────────
 
-/**
- * Item type options for the AI Identify tab.
- * Currently only pipe and tobacco are active.
- * Future types (whiskey_bottle, cigar_band, coffee_label) will be enabled when their modules launch.
- */
 export const IDENTIFY_ITEM_TYPES = [
   { id: "pipe", label: "Pipe", active: true, module: MODULE_TYPES.PIPE },
   { id: "tobacco_tin", label: "Tobacco Tin", active: true, module: MODULE_TYPES.TOBACCO },
+  { id: "cigar_band", label: "Cigar Band", active: true, module: MODULE_TYPES.CIGAR },
   // Future (inactive):
   // { id: "whiskey_bottle", label: "Whiskey Bottle", active: false, module: MODULE_TYPES.WHISKEY },
-  // { id: "cigar_band", label: "Cigar Band", active: false, module: MODULE_TYPES.CIGAR },
-  // { id: "coffee_label", label: "Coffee Label", active: false, module: MODULE_TYPES.COFFEE },
+  // { id: "wine_bottle", label: "Wine Bottle", active: false, module: MODULE_TYPES.WINE },
 ];
 
 /**
  * Return the currently active identify item types.
- * @returns {typeof IDENTIFY_ITEM_TYPES}
  */
 export function getActiveIdentifyTypes() {
   return IDENTIFY_ITEM_TYPES.filter((t) => t.active);
@@ -206,10 +202,6 @@ export function getActiveIdentifyTypes() {
 
 // ─── AI Update Insight Types ──────────────────────────────────────────────────
 
-/**
- * Structured insight categories shown in the AI Updates panel.
- * Maps to the kinds of background recalculation the AI performs.
- */
 export const AI_INSIGHT_TYPES = {
   PAIRING_REFRESH: "pairing_matrix_refreshed",
   OPTIMIZATION_RECALC: "collection_optimization_recalculated",
@@ -219,10 +211,6 @@ export const AI_INSIGHT_TYPES = {
 
 /**
  * Build a structured insight summary for an AI update event.
- *
- * @param {string} insightType - One of AI_INSIGHT_TYPES values.
- * @param {object} [details]   - Optional details to include.
- * @returns {{ type: string, label: string, details: object|null }}
  */
 export function buildInsightSummary(insightType, details = null) {
   const labels = {

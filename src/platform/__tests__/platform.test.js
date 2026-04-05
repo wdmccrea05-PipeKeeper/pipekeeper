@@ -89,7 +89,7 @@ describe("moduleTypes — constants", () => {
 
   test("ACTIVE_MODULES contains launched platform modules and excludes blocked future modules", () => {
     expect(ACTIVE_MODULES).toContain("whiskey");
-    expect(ACTIVE_MODULES).not.toContain("cigar");
+    expect(ACTIVE_MODULES).toContain("cigar");
     expect(ACTIVE_MODULES).not.toContain("coffee");
   });
 

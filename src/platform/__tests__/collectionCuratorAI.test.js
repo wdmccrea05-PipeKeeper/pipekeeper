@@ -242,7 +242,7 @@ describe("getActiveIdentifyTypes", () => {
   test("does not include inactive future types", () => {
     const types = getActiveIdentifyTypes();
     expect(types.some((t) => t.id === "whiskey_bottle")).toBe(false);
-    expect(types.some((t) => t.id === "cigar_band")).toBe(false);
+    expect(types.some((t) => t.id === "cigar_band")).toBe(true);
   });
 });
 

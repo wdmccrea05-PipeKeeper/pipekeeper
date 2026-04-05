@@ -20,6 +20,17 @@ const UPC_SCHEMA = {
       type: { type: "string" },
     },
   },
+  cigar: {
+    type: "object",
+    properties: {
+      name: { type: "string" },
+      brand: { type: "string" },
+      line: { type: "string" },
+      vitola: { type: "string" },
+      wrapper: { type: "string" },
+      country_of_origin: { type: "string" },
+    },
+  },
 };
 
 const PHOTO_SCHEMA = {
@@ -47,6 +58,17 @@ const PHOTO_SCHEMA = {
       shape: { type: "string" },
     },
   },
+  cigar: {
+    type: "object",
+    properties: {
+      brand: { type: "string" },
+      name: { type: "string" },
+      line: { type: "string" },
+      vitola: { type: "string" },
+      wrapper: { type: "string" },
+      country_of_origin: { type: "string" },
+    },
+  },
 };
 
 /**
@@ -60,7 +82,7 @@ const PHOTO_SCHEMA = {
  *   manualFields: optional ReactNode rendered below the tabs for manual text entry
  */
 export default function ExternalItemPicker({ itemType, selectedItem, onSelect, manualFields }) {
-  const hasUPC = itemType === "blend" || itemType === "bottle";
+  const hasUPC = itemType === "blend" || itemType === "bottle" || itemType === "cigar";
   const [tab, setTab] = useState("search");
 
   // UPC state
@@ -79,14 +101,18 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
     setUpcError("");
     try {
       const productType =
-        itemType === "blend" ? "pipe tobacco blend" : "whiskey or spirits bottle";
+        itemType === "blend"
+          ? "pipe tobacco blend"
+          : itemType === "cigar"
+          ? "premium cigar (brand, vitola, and line)"
+          : "whiskey or spirits bottle";
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `Look up UPC/EAN barcode "${code}" for a ${productType}. Return the product name and details if found.`,
         add_context_from_internet: true,
         response_json_schema: UPC_SCHEMA[itemType] || UPC_SCHEMA.bottle,
         model: "gemini_3_flash",
       });
-      if (result?.name) {
+      if (result?.name || result?.brand) {
         onSelect({ ...result, item_type: itemType });
       } else {
         setUpcError("No product found for this code. Try searching by name.");
@@ -110,13 +136,15 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
           ? "pipe tobacco blend (tin or pouch label)"
           : itemType === "bottle"
           ? "whiskey or spirits bottle label"
+          : itemType === "cigar"
+          ? "premium cigar (band label, showing brand, line, and vitola)"
           : "pipe (maker, model, and shape)";
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `Identify this ${productType} from the photo. Return the product details you can see or infer.`,
         file_urls: [file_url],
         response_json_schema: PHOTO_SCHEMA[itemType] || PHOTO_SCHEMA.bottle,
       });
-      if (result && (result.name || result.maker || result.model)) {
+      if (result && (result.name || result.maker || result.model || result.brand)) {
         onSelect({ ...result, item_type: itemType });
       } else {
         setPhotoError("Could not identify from photo. Try another image or add manually below.");

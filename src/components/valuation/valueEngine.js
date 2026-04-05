@@ -96,7 +96,7 @@ function pipeMakersByTier(tiers) {
 
 // Derived premium maker list (prestige + master tier) — single source of truth.
 // Used in both rarity scoring and replacement difficulty.
-const PIPE_PREMIUM_MAKERS = pipeMakersByTier(['prestige', 'master']);
+export const PIPE_PREMIUM_MAKERS = pipeMakersByTier(['prestige', 'master']);
 
 // ---------------------------------------------------------------------------
 // 1. normalizeValuationInputs
