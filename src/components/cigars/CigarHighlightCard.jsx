@@ -1,7 +1,8 @@
-import React from 'react';
-import { Cigarette, DollarSign, Box, Heart, Clock, Flame, ShieldAlert, AlertTriangle } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Cigarette, DollarSign, Box, Heart, Clock, Flame, TrendingDown, ShieldAlert, AlertTriangle } from 'lucide-react';
 import { getCigarRiskFlags, summarizeCigarReadiness } from '@/platform/agingReadiness';
 import { humidorNeedsAttention } from './humidorMaintenanceUtils';
+import { getCollectionInsights } from '@/platform/cigarInsights';
 
 function StatCard({ icon: Icon, label, value, sub, alert }) {
   return (
@@ -46,17 +47,9 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
     return sum + price * qty;
   }, 0);
 
-  // Use the shared readiness engine for consistency with CigarDetail
-  const readinessSummary = summarizeCigarReadiness(cigars, today);
-  const readyCount = readinessSummary.readyNow;
-
-  // Build humidor lookup for risk flags
-  const humidorMap = {};
-  humidors.forEach((h) => { humidorMap[h.id] = h; });
-
-  const atRiskCount = cigars.filter((c) => {
-    const humidor = c.humidor_id ? humidorMap[c.humidor_id] : null;
-    return getCigarRiskFlags(c, humidor).some((f) => f.severity === 'warning');
+  const readyCount = cigars.filter((c) => {
+    if (!c.ready_to_smoke_date) return true;
+    return new Date(c.ready_to_smoke_date) <= today;
   }).length;
 
   const thirtyDaysAgo = new Date(today);
@@ -64,6 +57,12 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
   const recentSessions = sessions.filter((s) => s.date && new Date(s.date) >= thirtyDaysAgo).length;
 
   const alertHumidorCount = humidors.filter(humidorNeedsAttention).length;
+
+  // Intelligence metrics (memoized for performance)
+  const insights = useMemo(
+    () => getCollectionInsights(cigars, humidors, sessions),
+    [cigars, humidors, sessions]
+  );
 
   // Top 3 brands
   const brandCounts = {};
@@ -104,6 +103,14 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
         <StatCard icon={Heart} label="Favorites" value={favoriteCount} />
         <StatCard icon={Flame} label="Ready to Smoke" value={readyCount} />
         <StatCard icon={Clock} label="Recent Sessions" value={recentSessions} sub="Last 30 days" />
+        {insights.runningLow.length > 0 && (
+          <StatCard
+            icon={TrendingDown}
+            label="Running Low"
+            value={insights.runningLow.length}
+            sub="≤3 sticks"
+          />
+        )}
         {atRiskCount > 0 && (
           <StatCard icon={ShieldAlert} label="At Risk" value={atRiskCount} sub="Needs attention" />
         )}

@@ -111,6 +111,10 @@
       "type": "number",
       "description": "Current estimated market value"
     },
+    "initial_quantity": {
+      "type": "number",
+      "description": "Starting quantity when first added to collection (for depletion tracking)"
+    },
     "quantity": {
       "type": "number",
       "description": "Number of package units owned (e.g. 2 boxes, 5 singles)"

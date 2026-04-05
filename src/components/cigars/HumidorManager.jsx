@@ -3,14 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  Plus, Pencil, Trash2, Thermometer, Droplets, Box, AlertTriangle,
+import { Plus, Pencil, Trash2, Thermometer, Droplets, Box, AlertTriangle,
   CheckCircle, Clock, ChevronDown, ChevronUp, PackagePlus, Settings2,
+  ShieldCheck, AlertCircle,
 } from 'lucide-react';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { getHumidorHealth } from '@/platform/agingReadiness';
 import HumidorMaintenanceLog from './HumidorMaintenanceLog';
 import {
   daysBetween,
@@ -34,6 +35,10 @@ const EMPTY_FORM = {
   capacity_count: '',
   target_humidity_rh: '',
   target_temp_f: '',
+  last_humidity_reading: '',
+  last_temperature_reading: '',
+  last_reading_date: '',
+  last_maintenance_date: '',
   notes: '',
   aid_type: '',
   aid_brand: '',
@@ -137,6 +142,35 @@ function UtilizationBar({ current, capacity }) {
   );
 }
 
+function HumidorHealthBadge({ humidor }) {
+  const health = getHumidorHealth(humidor);
+
+  const colorMap = {
+    stable: { bg: 'rgba(76,175,130,0.18)', border: 'rgba(76,175,130,0.4)', text: '#4CAF82', Icon: ShieldCheck },
+    acceptable: { bg: 'rgba(180,140,75,0.18)', border: 'rgba(180,140,75,0.35)', text: '#D4A574', Icon: ShieldCheck },
+    monitor: { bg: 'rgba(180,140,75,0.12)', border: 'rgba(180,140,75,0.28)', text: '#D4A574', Icon: AlertCircle },
+    no_readings: { bg: 'rgba(180,180,180,0.1)', border: 'rgba(180,180,180,0.2)', text: 'rgba(224,216,200,0.5)', Icon: AlertCircle },
+    neglected: { bg: 'rgba(224,130,50,0.15)', border: 'rgba(224,130,50,0.35)', text: '#E08232', Icon: AlertTriangle },
+    dry_risk: { bg: 'rgba(224,85,85,0.15)', border: 'rgba(224,85,85,0.4)', text: '#E05555', Icon: AlertTriangle },
+    over_humid_risk: { bg: 'rgba(224,85,85,0.15)', border: 'rgba(224,85,85,0.4)', text: '#E05555', Icon: AlertTriangle },
+    unmanaged: { bg: 'rgba(180,180,180,0.08)', border: 'rgba(180,180,180,0.15)', text: 'rgba(224,216,200,0.35)', Icon: AlertCircle },
+  };
+
+  const style = colorMap[health.state] ?? colorMap.unmanaged;
+  const { Icon } = style;
+
+  return (
+    <div
+      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+      style={{ background: style.bg, border: `1px solid ${style.border}`, color: style.text }}
+      title={health.detail}
+    >
+      <Icon className="w-3 h-3" />
+      {health.label}
+    </div>
+  );
+}
+
 function HumidorFormInline({ initial, onSave, onCancel, saving }) {
   const [form, setForm] = useState({ ...EMPTY_FORM, ...initial });
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -195,6 +229,25 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
       <div>
         <label className={labelCls} style={labelColor}>Notes</label>
         <Textarea value={form.notes} onChange={set('notes')} placeholder="Optional notes…" rows={2} className="resize-none" style={inputStyle} />
+      </div>
+
+      {/* Current readings */}
+      <div>
+        <label className={labelCls} style={labelColor}>Current Readings</label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div>
+            <label className="block text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>Humidity %</label>
+            <Input type="number" value={form.last_humidity_reading} onChange={set('last_humidity_reading')} placeholder="e.g. 65" style={inputStyle} />
+          </div>
+          <div>
+            <label className="block text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>Temp °F</label>
+            <Input type="number" value={form.last_temperature_reading} onChange={set('last_temperature_reading')} placeholder="e.g. 68" style={inputStyle} />
+          </div>
+          <div>
+            <label className="block text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>Reading Date</label>
+            <Input type="date" value={form.last_reading_date} onChange={set('last_reading_date')} style={inputStyle} />
+          </div>
+        </div>
       </div>
 
       {/* Advanced toggle */}
@@ -325,6 +378,7 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete }) {
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold text-[#F5F1E7]">{humidor.name}</h3>
             <MaintenanceStatusBadge status={status} />
+            <HumidorHealthBadge humidor={humidor} />
           </div>
           <div className="flex items-center gap-3 mt-1 flex-wrap">
             {humidor.humidor_type && (

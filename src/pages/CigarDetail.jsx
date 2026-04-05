@@ -31,6 +31,7 @@ import { toast } from 'sonner';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import CigarSessionModal from '@/components/cigars/CigarSessionModal';
 import { getCigarReadinessWithContext } from '@/platform/agingReadiness';
+import { getCigarInventoryMetrics } from '@/platform/cigarInventory';
 
 function safePrimitive(value, fallback = '—') {
   if (value === null || value === undefined || value === '') return fallback;
@@ -323,6 +324,10 @@ function CigarDetailInner() {
     const v = cigar?.estimated_value || cigar?.purchase_price;
     return v ? formatCurrency(v) : '—';
   }, [cigar]);
+  const inventoryMetrics = useMemo(
+    () => (cigar ? getCigarInventoryMetrics(cigar, sessions) : null),
+    [cigar, sessions]
+  );
 
   const handleDelete = async () => {
     try {
@@ -548,6 +553,31 @@ function CigarDetailInner() {
             <InfoRow label="Unit Type" value={cigar.unit_type} />
             <InfoRow label="Cigars per Package" value={cigar.cigars_per_package} />
             <InfoRow label={cigar.unit_type === 'partial_box' ? 'Remaining Sticks' : 'Total Sticks'} value={cigar.singles_equivalent} />
+            {inventoryMetrics && (
+              <>
+                <InfoRow
+                  label="Last Smoked"
+                  value={inventoryMetrics.lastSmokedDate ? formatDate(inventoryMetrics.lastSmokedDate) : 'Not yet'}
+                />
+                <InfoRow label="Times Smoked" value={inventoryMetrics.totalSmoked || 0} />
+                {inventoryMetrics.consumptionRatePerMonth > 0 && (
+                  <InfoRow
+                    label="Consumption Rate"
+                    value={`~${inventoryMetrics.consumptionRatePerMonth.toFixed(1)}/mo`}
+                  />
+                )}
+                {inventoryMetrics.estimatedMonthsRemaining != null && (
+                  <InfoRow
+                    label="Est. Months Remaining"
+                    value={
+                      inventoryMetrics.estimatedMonthsRemaining === 0
+                        ? 'Depleted'
+                        : `~${inventoryMetrics.estimatedMonthsRemaining} month${inventoryMetrics.estimatedMonthsRemaining !== 1 ? 's' : ''}`
+                    }
+                  />
+                )}
+              </>
+            )}
             <InfoRow label="Purchase Source" value={cigar.purchase_source} />
             <InfoRow label="Purchase Date" value={formatDate(cigar.purchase_date)} />
             <InfoRow label="Purchase Price" value={cigar.purchase_price ? formatCurrency(cigar.purchase_price) : ''} />

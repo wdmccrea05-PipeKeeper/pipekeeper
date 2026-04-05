@@ -44,7 +44,7 @@
     "last_reading_date": {
       "type": "string",
       "format": "date",
-      "description": "Date of the most recent humidity/temperature reading"
+      "description": "Date of the most recent humidity/temperature reading (YYYY-MM-DD)"
     },
 
     "aid_type": {
@@ -94,7 +94,7 @@
     "last_maintenance_date": {
       "type": "string",
       "format": "date",
-      "description": "Date of the most recent maintenance action of any kind"
+      "description": "Date of the most recent maintenance action of any kind (YYYY-MM-DD)"
     },
 
     "created_by": {

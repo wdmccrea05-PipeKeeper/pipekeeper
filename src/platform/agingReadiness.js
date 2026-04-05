@@ -9,22 +9,9 @@
 //   aging           — still developing, not yet at peak
 //   past_peak       — likely over the hill (use soon)
 //   no_data         — no aging information available
-//
-// Confidence levels:
-//   high   — strong signals, trust the output
-//   medium — partial data or minor humidor concerns
-//   low    — insufficient data or poor storage conditions
-//
-// Humidor health states:
-//   stable        — target humidity within ideal range (65–72% RH)
-//   dry_risk      — target humidity below 60% RH
-//   humid_risk    — target humidity above 75% RH
-//   unmonitored   — no humidor assigned or no target set
 
 /**
  * @typedef {'ready_now'|'aging'|'past_peak'|'no_data'} ReadinessState
- * @typedef {'high'|'medium'|'low'} ConfidenceLevel
- * @typedef {'stable'|'dry_risk'|'humid_risk'|'unmonitored'} HumidorHealthState
  */
 
 /**
@@ -233,7 +220,6 @@ export function getAgingCigars(cigars) {
  * Summarize readiness across a cigar collection.
  *
  * @param {object[]} cigars
- * @param {Date} [now]
  * @returns {{ readyNow: number, aging: number, pastPeak: number, noData: number }}
  */
 export function summarizeCigarReadiness(cigars, now = new Date()) {
@@ -252,16 +238,14 @@ export function summarizeCigarReadiness(cigars, now = new Date()) {
   );
 }
 
-// ─── Phase 4: Humidor Impact Model ───────────────────────────────────────────
+
+// ─── Humidor health — simple target-based model (used by readiness context layer) ──
 
 /**
- * Evaluate the health of a humidor based on its stored settings.
- * Returns a state, human-readable labels, and a confidence modifier applied
- * when this humidor's context is used in readiness calculations.
- *
- * @param {object|null|undefined} humidor - HumidorLocation record or null.
- * @returns {{ state: HumidorHealthState, label: string, detail: string, confidenceModifier: number }}
+ * @typedef {'stable'|'dry_risk'|'humid_risk'|'unmonitored'} HumidorHealthState
+ * @typedef {'high'|'medium'|'low'} ConfidenceLevel
  */
+
 export function getHumidorHealth(humidor) {
   if (!humidor) {
     return {
@@ -316,6 +300,214 @@ export function getHumidorHealth(humidor) {
     label: 'Stable',
     detail: `${rh}% RH target — adequate conditions.`,
     confidenceModifier: 0,
+  };
+}
+
+
+// ─── Humidor health — detailed readings-based model (used by cigarInsights) ─────────
+
+/**
+ * @typedef {'stable'|'acceptable'|'monitor'|'dry_risk'|'over_humid_risk'|'neglected'|'no_readings'|'unmanaged'} HumidorDetailedState
+ */
+
+export function getDetailedHumidorHealth(humidor, now = new Date()) {
+  if (!humidor) {
+    return { state: 'unmanaged', label: 'No humidor', detail: '', confidence: 'none' };
+  }
+
+  const {
+    target_humidity_rh,
+    last_humidity_reading: rh,
+    last_temperature_reading,
+    last_reading_date,
+    last_maintenance_date,
+    check_interval_days = 30,
+  } = humidor;
+
+  const daysSinceReading = last_reading_date
+    ? Math.floor((now - new Date(last_reading_date)) / (1000 * 60 * 60 * 24))
+    : null;
+
+  const daysSinceMaintenance = last_maintenance_date
+    ? Math.floor((now - new Date(last_maintenance_date)) / (1000 * 60 * 60 * 24))
+    : null;
+
+  const maintenanceOverdue =
+    daysSinceMaintenance !== null &&
+    daysSinceMaintenance > Math.floor(check_interval_days * 1.5);
+
+  const readingStale = daysSinceReading !== null && daysSinceReading > 21;
+
+  // ── No data at all ──────────────────────────────────────────────────────────
+  if (rh == null && daysSinceMaintenance == null) {
+    if (target_humidity_rh) {
+      return {
+        state: 'no_readings',
+        label: 'No readings logged',
+        detail: 'Add humidity readings to enable health tracking.',
+        confidence: 'low',
+      };
+    }
+    return {
+      state: 'unmanaged',
+      label: 'Unmanaged',
+      detail: 'No environment data available.',
+      confidence: 'none',
+    };
+  }
+
+  // ── Humidity reading available ──────────────────────────────────────────────
+  if (rh != null) {
+    // Critical humidity deviations take highest priority
+    if (rh < 55) {
+      return {
+        state: 'dry_risk',
+        label: 'Dry risk',
+        detail: `Humidity at ${rh}% — below safe range. Cigars may be drying out.`,
+        confidence: 'high',
+      };
+    }
+
+    if (rh > 80) {
+      return {
+        state: 'over_humid_risk',
+        label: 'Over-humid risk',
+        detail: `Humidity at ${rh}% — too high. Risk of mold or flavor damage.`,
+        confidence: 'high',
+      };
+    }
+
+    if (maintenanceOverdue) {
+      return {
+        state: 'neglected',
+        label: 'Overdue maintenance',
+        detail: `Last maintained ${daysSinceMaintenance} days ago — check humidor.`,
+        confidence: 'medium',
+      };
+    }
+
+    const targetRh = target_humidity_rh ?? 70;
+    const rhDeviation = Math.abs(rh - targetRh);
+
+    if (rhDeviation > 8 || readingStale) {
+      return {
+        state: 'monitor',
+        label: 'Monitor',
+        detail: readingStale
+          ? `Readings are ${daysSinceReading} days old — verify current conditions.`
+          : `Humidity (${rh}%) deviating from target (${targetRh}%).`,
+        confidence: 'medium',
+      };
+    }
+
+    if (rhDeviation <= 3) {
+      return {
+        state: 'stable',
+        label: 'Stable',
+        detail: `Humidity at ${rh}% — on target.`,
+        confidence: 'high',
+      };
+    }
+
+    return {
+      state: 'acceptable',
+      label: 'Acceptable',
+      detail: `Humidity at ${rh}% — within acceptable range.`,
+      confidence: 'medium',
+    };
+  }
+
+  // ── Maintenance data only (no readings) ────────────────────────────────────
+  if (maintenanceOverdue) {
+    return {
+      state: 'neglected',
+      label: 'Overdue',
+      detail: `No maintenance in ${daysSinceMaintenance} days.`,
+      confidence: 'medium',
+    };
+  }
+
+  return {
+    state: 'no_readings',
+    label: 'No readings',
+    detail: 'Log humidity readings to track humidor health.',
+    confidence: 'low',
+  };
+}
+
+
+export function getHumidorConfidenceMultiplier(humidorHealth) {
+  if (!humidorHealth) return 0.75;
+  switch (humidorHealth.state) {
+    case 'stable': return 1.0;
+    case 'acceptable': return 0.85;
+    case 'no_readings': return 0.70;
+    case 'monitor': return 0.65;
+    case 'unmanaged': return 0.55;
+    case 'neglected': return 0.45;
+    case 'dry_risk':
+    case 'over_humid_risk': return 0.30;
+    default: return 0.70;
+  }
+}
+
+
+// ─── Confidence-aware cigar readiness ─────────────────────────────────────────
+
+export function getEnhancedCigarReadiness(cigar, humidor = null, now = new Date()) {
+  const base = getCigarReadiness(cigar, now);
+
+  const humidorHealth = humidor ? getDetailedHumidorHealth(humidor, now) : null;
+  const multiplier = getHumidorConfidenceMultiplier(humidorHealth);
+
+  // Determine base confidence from data quality
+  let baseConfidence;
+  if (cigar.aging_start_date && cigar.ready_to_smoke_date) {
+    baseConfidence = 'high';
+  } else if (cigar.aging_start_date || cigar.ready_to_smoke_date) {
+    baseConfidence = 'medium';
+  } else {
+    baseConfidence = 'low';
+  }
+
+  // Apply humidor penalty to confidence
+  let confidence = baseConfidence;
+  if (multiplier < 0.40) {
+    confidence = 'low';
+  } else if (multiplier < 0.70 && baseConfidence === 'high') {
+    confidence = 'medium';
+  } else if (multiplier < 0.50 && baseConfidence === 'medium') {
+    confidence = 'low';
+  }
+
+  const humidorRisk =
+    humidorHealth != null &&
+    ['dry_risk', 'over_humid_risk', 'neglected'].includes(humidorHealth.state);
+
+  const humidorLabel =
+    humidorHealth &&
+    !['stable', 'unmanaged', 'no_data'].includes(humidorHealth.state)
+      ? humidorHealth.label
+      : null;
+
+  // If humidor is at risk, downgrade a ready cigar to 'at_risk'
+  if (humidorRisk && base.state === 'ready_now') {
+    return {
+      state: 'at_risk',
+      confidence: 'medium',
+      label: 'At risk',
+      detail: `${base.detail} — but humidor conditions may be affecting quality.`,
+      monthsAged: base.monthsAged,
+      humidorRisk: true,
+      humidorLabel,
+    };
+  }
+
+  return {
+    ...base,
+    confidence,
+    humidorRisk,
+    humidorLabel,
   };
 }
 
