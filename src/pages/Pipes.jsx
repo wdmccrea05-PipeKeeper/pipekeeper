@@ -16,9 +16,9 @@ import PipeKeeperModuleNav from "@/components/modules/PipeKeeperModuleNav";
 import PipeCard from "@/components/pipes/PipeCard";
 import PipeListItem from "@/components/pipes/PipeListItem";
 import PipeForm from "@/components/pipes/PipeForm";
-
 import PipeExporter from "@/components/export/PipeExporter";
 import CollectorDisplayCard from "@/components/ui/CollectorDisplayCard";
+import CollectorGridView from "@/components/ui/CollectorGridView";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { Badge } from "@/components/ui/badge";
 import { PK_THEME } from "@/components/utils/pkTheme";
@@ -372,89 +372,68 @@ export default function PipesPage() {
             onSecondaryAction={() => { setSearchQuery(''); setShapeFilter(''); setMaterialFilter(''); }}
           />
         ) : displayMode && viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <AnimatePresence>
-              {filteredPipes.map(pipe => (
-                <motion.div
-                  key={pipe.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                >
-                  <CollectorDisplayCard
-                    image={pipe.photos?.[0]}
-                    title={pipe.name}
-                    subtitle={pipe.maker || t("pipesExtended.unknownMaker")}
-                    badges={
-                      <>
-                        {pipe.shape && (
-                          <Badge 
-                            className="text-[10px] px-2 py-0.5"
-                            style={{
-                              background: "rgba(180, 140, 75, 0.15)",
-                              color: "rgba(180, 140, 75, 0.9)",
-                              border: "1px solid rgba(180, 140, 75, 0.25)"
-                            }}
-                          >
-                            {t(`shapes.${pipe.shape}`, pipe.shape)}
-                          </Badge>
-                        )}
-                        {pipe.bowl_material && (
-                          <Badge 
-                            className="text-[10px] px-2 py-0.5"
-                            style={{
-                              background: "rgba(100, 80, 60, 0.15)",
-                              color: "rgba(200, 180, 160, 0.9)",
-                              border: "1px solid rgba(120, 100, 80, 0.25)"
-                            }}
-                          >
-                            {t(`materials.${pipe.bowl_material}`, pipe.bowl_material)}
-                          </Badge>
-                        )}
-                        {pipe.chamber_volume && (
-                          <Badge 
-                            className="text-[10px] px-2 py-0.5"
-                            style={{
-                              background: "rgba(180, 140, 75, 0.15)",
-                              color: "rgba(180, 140, 75, 0.9)",
-                              border: "1px solid rgba(180, 140, 75, 0.25)"
-                            }}
-                          >
-                            {t(`sizes.${pipe.chamber_volume}`, pipe.chamber_volume)}
-                          </Badge>
-                        )}
-                      </>
-                    }
-                    valueDisplay={
-                      pipe.estimated_value ? (
-                        <Badge 
-                          className="border-0 backdrop-blur-md font-semibold shadow-lg text-sm"
-                          style={{
-                            background: "linear-gradient(135deg, rgba(46, 125, 92, 0.9), rgba(40, 110, 80, 0.95))",
-                            color: "#fff"
-                          }}
-                        >
-                          {formatCurrency(+pipe.estimated_value)}
-                        </Badge>
-                      ) : null
-                    }
-                    isFavorite={pipe.is_favorite}
-                    onToggleFavorite={() => handleToggleFavorite(pipe)}
-                    onClick={() => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`))}
-                    onEdit={() => handleEdit(pipe)}
-                    fallbackIcon={
-                      <div className="text-[#E0D8C8]/25 text-center">
-                        <PipeShapeIcon shape={pipe.shape} className="w-16 h-16 mx-auto mb-2" style={{ color: "rgba(180,140,75,0.3)" }} />
-                        <p className="text-xs uppercase tracking-wider" style={{ color: "rgba(180,140,75,0.4)" }}>
-                          {pipe.shape || t("pipesExtended.noPhoto")}
-                        </p>
-                      </div>
-                    }
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+          <CollectorGridView
+            items={filteredPipes}
+            getImage={(pipe) => pipe.photos?.[0]}
+            getTitle={(pipe) => pipe.name}
+            getSubtitle={(pipe) => pipe.maker || t("pipesExtended.unknownMaker")}
+            getBadges={(pipe) => (
+              <>
+                {pipe.shape && (
+                  <Badge
+                    className="text-[10px] px-2 py-0.5"
+                    style={{
+                      background: "rgba(180, 140, 75, 0.15)",
+                      color: "rgba(180, 140, 75, 0.9)",
+                      border: "1px solid rgba(180, 140, 75, 0.25)"
+                    }}
+                  >
+                    {t(`shapes.${pipe.shape}`, pipe.shape)}
+                  </Badge>
+                )}
+                {pipe.bowl_material && (
+                  <Badge
+                    className="text-[10px] px-2 py-0.5"
+                    style={{
+                      background: "rgba(100, 80, 60, 0.15)",
+                      color: "rgba(200, 180, 160, 0.9)",
+                      border: "1px solid rgba(120, 100, 80, 0.25)"
+                    }}
+                  >
+                    {t(`materials.${pipe.bowl_material}`, pipe.bowl_material)}
+                  </Badge>
+                )}
+                {pipe.chamber_volume && (
+                  <Badge
+                    className="text-[10px] px-2 py-0.5"
+                    style={{
+                      background: "rgba(180, 140, 75, 0.15)",
+                      color: "rgba(180, 140, 75, 0.9)",
+                      border: "1px solid rgba(180, 140, 75, 0.25)"
+                    }}
+                  >
+                    {t(`sizes.${pipe.chamber_volume}`, pipe.chamber_volume)}
+                  </Badge>
+                )}
+              </>
+            )}
+            getValue={(pipe) => pipe.estimated_value}
+            getIsFavorite={(pipe) => pipe.is_favorite}
+            getKey={(pipe) => pipe.id}
+            onToggleFavorite={(pipe) => handleToggleFavorite(pipe)}
+            onClick={(pipe) => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`))} 
+            onEdit={(pipe) => handleEdit(pipe)}
+            fallbackIcon={
+              <div className="text-[#E0D8C8]/25 text-center">
+                <PipeShapeIcon shape={filteredPipes[0]?.shape} className="w-16 h-16 mx-auto mb-2" style={{ color: "rgba(180,140,75,0.3)" }} />
+                <p className="text-xs uppercase tracking-wider" style={{ color: "rgba(180,140,75,0.4)" }}>
+                  {t("pipesExtended.noPhoto")}
+                </p>
+              </div>
+            }
+            columns="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+            gap="gap-8"
+          />
         ) : (
           <motion.div 
             className={viewMode === 'grid' 
