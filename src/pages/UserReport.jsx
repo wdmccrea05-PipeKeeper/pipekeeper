@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import {
   Loader2, Users, TrendingUp, RefreshCw, Crown, UserX, Search,
   ChevronDown, ChevronUp, Zap, Download,
-  DollarSign, Package
+  DollarSign, Package, AlertTriangle, Info
 } from "lucide-react";
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -16,27 +16,73 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 // ─── Small reusable components ────────────────────────────────────────────────
 
-function MetricCard({ label, value, sub }) {
+function MetricCard({ label, value, sub, uncertain = false }) {
   return (
     <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50 min-w-0">
-      <p className="text-xs text-[#E0D8C8]/70 font-medium break-words">{label}</p>
-      <p className="text-2xl font-bold text-[#F5F1E7]">{value}</p>
+      <p className="text-xs text-[#E0D8C8]/70 font-medium break-words flex items-center gap-1">
+        {label}
+        {uncertain && <AlertTriangle className="w-3 h-3 text-amber-400/70 shrink-0" />}
+      </p>
+      <p className={`text-2xl font-bold ${uncertain ? 'text-[#F5F1E7]/70' : 'text-[#F5F1E7]'}`}>{value}</p>
       {sub && <p className="text-xs text-[#E0D8C8]/50 mt-0.5 break-words">{sub}</p>}
     </div>
   );
 }
 
-function SectionCard({ title, icon: Icon, children, className = "" }) {
+// Monthly vs annual side-by-side pair
+function BillingIntervalBar({ monthly, annual }) {
+  const total = (monthly || 0) + (annual || 0);
+  const monthlyPct = total > 0 ? Math.round((monthly / total) * 100) : 0;
+  const annualPct  = total > 0 ? 100 - monthlyPct : 0;
   return (
-    <Card className={`bg-transparent mb-6 ${className}`}>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
-          {Icon && <Icon className="w-5 h-5 text-[#E0D8C8]/70" />}
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
+    <div className="rounded-xl border border-[#8b6239]/30 bg-[#2a1f18]/50 p-4">
+      <p className="text-xs font-semibold text-[#E0D8C8]/70 uppercase tracking-wider mb-3">Billing Interval Split</p>
+      <div className="flex gap-4 mb-3">
+        <div className="flex-1 rounded-lg bg-[#2563eb]/15 border border-[#2563eb]/25 p-3 text-center">
+          <p className="text-2xl font-bold text-[#93C5FD]">{monthly ?? 0}</p>
+          <p className="text-xs text-[#93C5FD]/70 mt-0.5">Monthly</p>
+        </div>
+        <div className="flex-1 rounded-lg bg-[#16a34a]/15 border border-[#16a34a]/25 p-3 text-center">
+          <p className="text-2xl font-bold text-[#86EFAC]">{annual ?? 0}</p>
+          <p className="text-xs text-[#86EFAC]/70 mt-0.5">Annual</p>
+        </div>
+      </div>
+      {total > 0 && (
+        <div className="h-2 rounded-full overflow-hidden flex bg-white/10">
+          <div className="h-full bg-[#3B82F6] transition-all" style={{ width: `${monthlyPct}%` }} />
+          <div className="h-full bg-[#22C55E] transition-all" style={{ width: `${annualPct}%` }} />
+        </div>
+      )}
+      {total > 0 && (
+        <div className="flex justify-between mt-1">
+          <span className="text-xs text-[#93C5FD]/60">{monthlyPct}% monthly</span>
+          <span className="text-xs text-[#86EFAC]/60">{annualPct}% annual</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SectionCard({ title, icon: Icon, children, accentColor = '#8b6239', className = '' }) {
+  return (
+    <div className={`mb-6 rounded-xl border border-[#8b6239]/25 bg-[#1a1208]/60 overflow-hidden ${className}`}
+         style={{ borderLeft: `3px solid ${accentColor}55` }}>
+      <div className="px-5 py-4 border-b border-[#8b6239]/20 flex items-center gap-2">
+        {Icon && <Icon className="w-4 h-4" style={{ color: accentColor }} />}
+        <h2 className="text-sm font-bold text-[#F5F1E7] uppercase tracking-wider">{title}</h2>
+      </div>
+      <div className="p-5">{children}</div>
+    </div>
+  );
+}
+
+function SectionDivider({ label }) {
+  return (
+    <div className="flex items-center gap-3 mb-4 mt-2">
+      <div className="h-px flex-1 bg-[#8b6239]/20" />
+      <span className="text-xs text-[#E0D8C8]/40 font-semibold uppercase tracking-widest">{label}</span>
+      <div className="h-px flex-1 bg-[#8b6239]/20" />
+    </div>
   );
 }
 
@@ -364,28 +410,13 @@ export default function UserReport() {
       </div>
 
       {hasDataWarning && (
-        <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200 space-y-1">
-          <p className="font-semibold">⚠ Subscription data quality warnings</p>
-          {warnings.unclassifiedSubscriptions > 0 && (
-            <p>• {warnings.unclassifiedSubscriptions} subscription(s) could not be classified to a known product — excluded from product and revenue metrics.</p>
-          )}
-          {warnings.unknownIntervals > 0 && (
-            <p>• {warnings.unknownIntervals} subscription(s) have an unresolvable billing interval — excluded from MRR/ARR.</p>
-          )}
-          {warnings.missingAmounts > 0 && (
-            <p>• {warnings.missingAmounts} subscription(s) have a missing or zero amount — contributing $0 to revenue.</p>
-          )}
-          {warnings.recordsExcluded > 0 && (
-            <p>• {warnings.recordsExcluded} record(s) excluded entirely: no user identity found.</p>
-          )}
-          <p className="text-amber-200/60 text-xs mt-1">Revenue and product metrics only include confidently classified subscriptions. Counts above reflect all active records.</p>
-        </div>
+        <WarningsPanel warnings={warnings} />
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 1 — ACCOUNT METRICS
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title="Account Metrics" icon={Users}>
+      <SectionCard title="Accounts" icon={Users} accentColor="#60A5FA">
         {/* Top-level counts */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <Card
@@ -447,18 +478,18 @@ export default function UserReport() {
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 2 — SUBSCRIPTION METRICS
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title="Subscription Metrics" icon={Package}>
+      <SectionCard title="Subscriptions" icon={Package} accentColor="#A78BFA">
         <>
-            {/* Total + billing interval */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              <MetricCard label="Total Active Paid Subscriptions" value={counts.totalSubscriptions} sub="Subscription records — not deduped by account" />
-              <MetricCard label="Unique Paying Users"   value={counts.uniquePayingUsers}    sub="Deduplicated by user identity" />
-              <MetricCard label="Monthly Subscriptions" value={counts.monthlySubscriptions} sub="Active subs billed monthly" />
-              <MetricCard label="Annual Subscriptions"  value={counts.annualSubscriptions}  sub="Active subs billed annually" />
+            {/* Total counts + billing interval visual */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <MetricCard label="Total Active Paid Subscriptions" value={counts.totalSubscriptions ?? 0} sub="Subscription records — not deduped by account" />
+              <MetricCard label="Unique Paying Users" value={counts.uniquePayingUsers ?? 0} sub="Deduplicated by user identity" />
+            </div>
+            <div className="mb-4">
+              <BillingIntervalBar monthly={counts.monthlySubscriptions} annual={counts.annualSubscriptions} />
             </div>
 
-            {/* By product */}
-            <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Product</p>
+            <SectionDivider label="By Product" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
               <MetricCard label="PipeKeeper"    value={products.pipekeeper    ?? 0} />
               <MetricCard label="WhiskeyKeeper" value={products.whiskeykeeper ?? 0} />
@@ -470,18 +501,17 @@ export default function UserReport() {
               />
             </div>
 
-            {/* By bundle — V2: uses subscriptions.byBundle */}
-            <p className="text-sm font-medium text-[#E0D8C8] mb-2">Paid Subscriptions by Bundle</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+            <SectionDivider label="By Bundle" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
               <MetricCard label="Founders Bundle"  value={subscriptions.byBundle?.founders     ?? 0} />
               <MetricCard label="3-Module Bundle"  value={subscriptions.byBundle?.threeModules ?? 0} />
               <MetricCard label="4-Module Bundle"  value={subscriptions.byBundle?.fourModules  ?? 0} />
             </div>
 
-            {/* Renewals — V2: uses renewals.week/month/quarter/year */}
+            <SectionDivider label="Renewals" />
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-                <p className="text-sm font-medium text-[#E0D8C8]">Renewing (upcoming in calendar period)</p>
+                <p className="text-sm font-medium text-[#E0D8C8]">Upcoming Renewals</p>
                 <div className="flex flex-wrap gap-1">
                   {['week', 'month', 'quarter', 'year'].map((p) => (
                     <Button key={p} variant={renewalsPeriod === p ? 'default' : 'outline'} size="sm" onClick={() => setRenewalsPeriod(p)} className="text-xs">
@@ -505,8 +535,7 @@ export default function UserReport() {
             </div>
         </>
 
-        {/* Trials — not part of strict financial pipeline, always shown */}
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Trial Metrics</p>
+        <SectionDivider label="Trials" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           <MetricCard label="On Trial"           value={trialMetrics.currentlyOnTrial  ?? 0} />
           <MetricCard label="Avg Days Left"      value={trialMetrics.avgDaysRemaining  ?? 0} />
@@ -520,13 +549,16 @@ export default function UserReport() {
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 3 — REVENUE
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title="Revenue" icon={DollarSign}>
-            {/* Renewal Revenue (Calendar Period) — V2: revenue.renewalRevenue */}
-            <p className="text-sm font-medium text-[#E0D8C8] mb-1">
-              Renewal Revenue (Calendar Period)
-            </p>
+      <SectionCard title="Revenue" icon={DollarSign} accentColor="#34D399">
+            {/* MRR / ARR — run rate, most prominent */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <MetricCard label="Current MRR" value={`$${(revenue.mrr ?? 0).toFixed(2)}`} sub="Monthly Recurring Revenue — classified subs only" uncertain={hasDataWarning} />
+              <MetricCard label="Current ARR" value={`$${(revenue.arr ?? 0).toFixed(2)}`} sub="MRR × 12" uncertain={hasDataWarning} />
+            </div>
+
+            <SectionDivider label="Renewal Revenue" />
             <p className="text-xs text-[#E0D8C8]/50 mb-3">
-              Sum of amounts for classified subscriptions renewing within each calendar period. Upcoming charges, not run-rate.
+              Sum of amounts for subscriptions renewing within each calendar period. Upcoming charges — not run-rate.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
               <MetricCard label="Renewal Revenue — This Week"    value={`$${(revenue.renewalRevenue?.week    ?? 0).toFixed(2)}`} />
@@ -535,20 +567,7 @@ export default function UserReport() {
               <MetricCard label="Renewal Revenue — This Year"    value={`$${(revenue.renewalRevenue?.year    ?? 0).toFixed(2)}`} />
             </div>
 
-            {/* Current Run Rate (MRR / ARR) — separate concept from renewal revenue */}
-            <p className="text-sm font-medium text-[#E0D8C8] mb-1">Current Run Rate</p>
-            <p className="text-xs text-[#E0D8C8]/50 mb-3">
-              MRR = classified active subscriptions normalized to a monthly amount. ARR = MRR × 12. Independent of calendar renewal amounts above.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-              <MetricCard label="Current MRR" value={`$${(revenue.mrr ?? 0).toFixed(2)}`} sub="Monthly Recurring Revenue" />
-              <MetricCard label="Current ARR" value={`$${(revenue.arr ?? 0).toFixed(2)}`} sub="Annual Recurring Revenue (MRR × 12)" />
-            </div>
-
-            {/* By product — V2: revenue.byProduct (excludes bundles) */}
-            <p className="text-sm font-medium text-[#E0D8C8] mb-2">
-              Revenue by Product <span className="opacity-60 text-xs font-normal">(raw billing amounts; bundles are in separate bundle section)</span>
-            </p>
+            <SectionDivider label="By Product" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
               <MetricCard label="PipeKeeper"    value={`$${(revenue.byProduct?.pipekeeper    ?? 0).toFixed(2)}`} />
               <MetricCard label="WhiskeyKeeper" value={`$${(revenue.byProduct?.whiskeykeeper ?? 0).toFixed(2)}`} />
@@ -556,10 +575,7 @@ export default function UserReport() {
               <MetricCard label="WineKeeper"    value={`$${(revenue.byProduct?.winekeeper    ?? 0).toFixed(2)}`} />
             </div>
 
-            {/* By bundle — V2: revenue.byBundle */}
-            <p className="text-sm font-medium text-[#E0D8C8] mb-2">
-              Revenue by Bundle <span className="opacity-60 text-xs font-normal">(raw billing amounts)</span>
-            </p>
+            <SectionDivider label="By Bundle" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <MetricCard label="Founders Bundle" value={`$${(revenue.byBundle?.founders     ?? 0).toFixed(2)}`} />
               <MetricCard label="3-Module Bundle"  value={`$${(revenue.byBundle?.threeModules ?? 0).toFixed(2)}`} />
@@ -570,7 +586,7 @@ export default function UserReport() {
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 4 — CONVERSION
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title="Conversion Metrics" icon={TrendingUp}>
+      <SectionCard title="Conversion" icon={TrendingUp} accentColor="#F59E0B">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <MetricCard
             label="Free → Paid"
@@ -593,24 +609,13 @@ export default function UserReport() {
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 5 — USAGE
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title="Usage Metrics" icon={Zap}>
-        <div className="mb-3 p-3 rounded-lg border border-amber-800/30 bg-amber-900/10">
-          <p className="text-xs text-amber-200/70">
-            Per-module activity events are not tracked in the current data model.
-            Daily / weekly active user counts by module are unavailable and will not be estimated.
+      <SectionCard title="Usage" icon={Zap} accentColor="#94A3B8">
+        <div className="flex items-start gap-3 p-4 rounded-lg border border-[#8b6239]/20 bg-[#2a1f18]/40">
+          <Info className="w-4 h-4 text-[#E0D8C8]/40 shrink-0 mt-0.5" />
+          <p className="text-sm text-[#E0D8C8]/55 leading-relaxed">
+            Per-module activity events (DAU / WAU) are not tracked in the current data model.
+            These metrics are intentionally omitted rather than estimated.
           </p>
-        </div>
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Daily Active Users by Module</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          {['PipeKeeper', 'WhiskeyKeeper', 'CigarKeeper', 'WineKeeper'].map((m) => (
-            <MetricCard key={m} label={m} value="N/A" sub="Not available" />
-          ))}
-        </div>
-        <p className="text-sm font-medium text-[#E0D8C8] mb-2">Weekly Active Users by Module</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {['PipeKeeper', 'WhiskeyKeeper', 'CigarKeeper', 'WineKeeper'].map((m) => (
-            <MetricCard key={m} label={m} value="N/A" sub="Not available" />
-          ))}
         </div>
       </SectionCard>
 
@@ -703,6 +708,47 @@ export default function UserReport() {
             </CollapsibleContent>
           </Card>
         </Collapsible>
+      )}
+    </div>
+  );
+}
+
+// ─── Warnings panel ──────────────────────────────────────────────────────────
+
+function WarningsPanel({ warnings }) {
+  const [expanded, setExpanded] = useState(false);
+  const items = [
+    warnings.unclassifiedSubscriptions > 0 && `${warnings.unclassifiedSubscriptions} subscription(s) unclassified — excluded from product and revenue metrics`,
+    warnings.unknownIntervals > 0 && `${warnings.unknownIntervals} subscription(s) have unresolvable billing interval — excluded from MRR/ARR`,
+    warnings.missingAmounts > 0 && `${warnings.missingAmounts} subscription(s) have missing/zero amount — contributing $0 to revenue`,
+    warnings.recordsExcluded > 0 && `${warnings.recordsExcluded} record(s) excluded: no user identity found`,
+    ...(Array.isArray(warnings.messages) ? warnings.messages : []),
+  ].filter(Boolean);
+
+  return (
+    <div className="mb-6 rounded-xl border border-amber-500/25 bg-amber-950/20 overflow-hidden">
+      <button
+        type="button"
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
+        onClick={() => setExpanded(e => !e)}
+      >
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+          <span className="text-sm font-semibold text-amber-200">Data quality warnings</span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">{items.length}</span>
+        </div>
+        {expanded ? <ChevronUp className="w-4 h-4 text-amber-400/60" /> : <ChevronDown className="w-4 h-4 text-amber-400/60" />}
+      </button>
+      {expanded && (
+        <div className="px-4 pb-4 space-y-1.5 border-t border-amber-500/15">
+          <p className="text-xs text-amber-200/50 pt-3 pb-1">Revenue and product metrics only include confidently classified records. Counts reflect all active subscriptions.</p>
+          {items.map((item, i) => (
+            <div key={i} className="flex items-start gap-2">
+              <span className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-400/50 shrink-0" />
+              <p className="text-sm text-amber-200/75">{item}</p>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
