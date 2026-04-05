@@ -10,6 +10,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useQuery } from '@tanstack/react-query';
 import PhotoUploader from '@/components/PhotoUploader';
 import { toast } from 'sonner';
+import { normalizeCigarPayload } from '@/platform/normalizeCigarPayload';
 
 const DEFAULT_FORM = {
   name: '',
@@ -311,6 +312,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
   const set = (field) => (e) =>
     setForm((f) => ({ ...f, [field]: e?.target ? e.target.value : e }));
 
+  // Humidor select: 'none' sentinel maps to empty string in form state.
+  // Empty string is then cleaned to undefined by normalizeCigarPayload at submit time.
+  const handleHumidorChange = (v) => setForm((f) => ({ ...f, humidor_id: v === 'none' ? '' : v }));
+
   const handleAliasBlur = () => {
     const arr = aliasInput
       .split(',')
@@ -331,27 +336,11 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
     }
     setSaving(true);
     try {
-      const payload = {
-        ...form,
-        // Numeric conversions
-        purchase_price: form.purchase_price !== '' ? Number(form.purchase_price) : undefined,
-        estimated_value: form.estimated_value !== '' ? Number(form.estimated_value) : undefined,
-        quantity: form.quantity !== '' ? Number(form.quantity) : undefined,
-        cigars_per_package: form.cigars_per_package !== '' ? Number(form.cigars_per_package) : undefined,
-        singles_equivalent: form.singles_equivalent !== '' ? Number(form.singles_equivalent) : undefined,
-        length_inches: form.length_inches !== '' ? Number(form.length_inches) : undefined,
-        ring_gauge: form.ring_gauge !== '' ? Number(form.ring_gauge) : undefined,
-        rating: form.rating || undefined,
-        // Clean empty enum/string fields so we don't send invalid values
-        body: form.body || undefined,
-        strength: form.strength || undefined,
-        unit_type: form.unit_type || undefined,
-        production_status: form.production_status || undefined,
-        release_type: form.release_type || undefined,
-        humidor_id: form.humidor_id || undefined,
-      };
+      const isCreate = !cigar?.id;
+      const payload = normalizeCigarPayload(form, { isCreate });
+
       let result;
-      if (cigar?.id) {
+      if (!isCreate) {
         result = await base44.entities.Cigar.update(cigar.id, {
           ...payload,
           created_by: cigar.created_by || user?.email,
@@ -522,8 +511,8 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             />
           </FormField>
           <FormField label="Humidor">
-            <StyledSelect value={form.humidor_id} onValueChange={set('humidor_id')} placeholder="Select humidor">
-              <SelectItem value="" style={selectItemStyle}>None</SelectItem>
+            <StyledSelect value={form.humidor_id || 'none'} onValueChange={handleHumidorChange} placeholder="Select humidor">
+              <SelectItem value="none" style={selectItemStyle}>None</SelectItem>
               {humidors.map((h) => (
                 <SelectItem key={h.id} value={h.id} style={selectItemStyle}>
                   {h.name}

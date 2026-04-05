@@ -257,7 +257,7 @@ function CigarsInner() {
       </div>
 
       {activeTab === 'humidors' ? (
-        <HumidorManager />
+        <HumidorManager cigars={cigars} />
       ) : (
         <>
           {/* Search + sort + view controls */}
