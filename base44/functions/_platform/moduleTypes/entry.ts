@@ -13,7 +13,7 @@ export const MODULE_TYPES = {
 export type ModuleType = (typeof MODULE_TYPES)[keyof typeof MODULE_TYPES];
 
 // Modules currently active in the PipeKeeper build.
-export const ACTIVE_MODULES: ModuleType[] = [MODULE_TYPES.PIPE, MODULE_TYPES.TOBACCO];
+export const ACTIVE_MODULES: ModuleType[] = [MODULE_TYPES.PIPE, MODULE_TYPES.TOBACCO, MODULE_TYPES.WHISKEY];
 
 // Human-readable display names keyed by module type.
 export const MODULE_DISPLAY_NAMES: Record<ModuleType, string> = {
