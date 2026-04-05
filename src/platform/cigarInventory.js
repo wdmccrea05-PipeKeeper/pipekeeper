@@ -17,7 +17,7 @@ const CRITICAL_THRESHOLD = 1;
 const RUNNING_LOW_THRESHOLD = 3;
 
 /** Rolling window for consumption rate calculation (months) */
-const CONSUMPTION_WINDOW_MONTHS = 6;
+const CONSUMPTION_RATE_WINDOW_MONTHS = 6;
 
 /** Days without a smoke before a previously-enjoyed cigar is flagged as neglected */
 const NEGLECT_THRESHOLD_DAYS = 90;
@@ -112,7 +112,7 @@ export function getTotalSmokedCount(cigar, allSessions) {
  * @param {number} [windowMonths]
  * @returns {number} sessions per month (0 if no history)
  */
-export function getConsumptionRate(cigar, allSessions, windowMonths = CONSUMPTION_WINDOW_MONTHS) {
+export function getConsumptionRate(cigar, allSessions, windowMonths = CONSUMPTION_RATE_WINDOW_MONTHS) {
   const linked = getLinkedSessions(cigar, allSessions);
   if (linked.length === 0) return 0;
 
