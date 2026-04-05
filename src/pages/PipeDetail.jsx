@@ -600,7 +600,6 @@ export default function PipeDetail() {
         { valueHistory: valueSnapshots }
       );
       if (newSnap) {
-        setValueSnapshots((prev) => [newSnap, ...prev]);
         await reloadSnapshots();
       }
     } finally {

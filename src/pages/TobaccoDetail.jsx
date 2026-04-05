@@ -492,7 +492,6 @@ export default function TobaccoDetail() {
         { valueHistory: valueSnapshots }
       );
       if (newSnap) {
-        setValueSnapshots((prev) => [newSnap, ...prev]);
         await reloadSnapshots();
       }
     } finally {
