@@ -36,7 +36,7 @@ function humanizeRecordType(recordType) {
 function SessionLine({ label, value }) {
   if (!value) return null;
   return (
-    <div className="text-xs uppercase tracking-wide text-amber-500/78">
+    <div className="text-xs uppercase tracking-wide text-amber-400/80">
       {label}: {value}
     </div>
   );
