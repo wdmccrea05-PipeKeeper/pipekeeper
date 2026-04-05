@@ -136,7 +136,9 @@ export function normalizeCigarPayload(form, { isCreate = false } = {}) {
     }
   }
 
-  // Ensure rating is not 0 (treat 0 as unset)
+  // Ensure rating 0 is omitted rather than stored as a value.
+  // The schema allows minimum: 0, but in practice 0 means "not yet rated".
+  // Sending 0 would display as a 0/5 score rather than an unrated state.
   if (out.rating === 0) out.rating = undefined;
 
   // Derive and set singles_equivalent if we can compute it
