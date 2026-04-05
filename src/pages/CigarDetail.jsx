@@ -22,11 +22,15 @@ import {
   Package,
   BookOpen,
   Flame,
+  ShieldAlert,
+  Thermometer,
+  Clock3,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import CigarSessionModal from '@/components/cigars/CigarSessionModal';
+import { getCigarReadinessWithContext } from '@/platform/agingReadiness';
 
 function safePrimitive(value, fallback = '—') {
   if (value === null || value === undefined || value === '') return fallback;
@@ -63,11 +67,111 @@ function calcAgeMonths(startDate) {
   return Math.floor((now - start) / (1000 * 60 * 60 * 24 * 30.44));
 }
 
-function readinessStatus(readyDate) {
-  if (!readyDate) return null;
-  const d = new Date(readyDate);
-  if (Number.isNaN(d.getTime())) return null;
-  return d <= new Date() ? 'Ready to Smoke' : `Ready ${formatDate(readyDate)}`;
+const READINESS_STYLE = {
+  ready_now: { bg: 'rgba(76,175,130,0.12)', border: 'rgba(76,175,130,0.4)', color: '#6FCF97' },
+  aging:     { bg: 'rgba(212,165,116,0.1)', border: 'rgba(212,165,116,0.4)', color: '#D4A574' },
+  past_peak: { bg: 'rgba(224,100,80,0.1)',  border: 'rgba(224,100,80,0.35)', color: '#E07060' },
+  no_data:   { bg: 'rgba(255,255,255,0.04)', border: 'rgba(180,140,75,0.2)', color: 'rgba(224,216,200,0.55)' },
+};
+
+const CONFIDENCE_LABEL = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' };
+const CONFIDENCE_COLOR = { high: '#6FCF97', medium: '#D4A574', low: 'rgba(224,216,200,0.55)' };
+
+const HUMIDOR_HEALTH_STYLE = {
+  stable:      { bg: 'rgba(76,175,130,0.1)',  border: 'rgba(76,175,130,0.3)',  color: '#6FCF97' },
+  dry_risk:    { bg: 'rgba(224,180,80,0.1)',  border: 'rgba(224,180,80,0.35)', color: '#E0B450' },
+  humid_risk:  { bg: 'rgba(224,100,80,0.1)',  border: 'rgba(224,100,80,0.35)', color: '#E07060' },
+  unmonitored: { bg: 'rgba(255,255,255,0.04)', border: 'rgba(180,140,75,0.2)', color: 'rgba(224,216,200,0.55)' },
+};
+
+const RISK_FLAG_STYLE = {
+  warning: { bg: 'rgba(224,100,80,0.1)', border: 'rgba(224,100,80,0.3)', color: '#E07060' },
+  info:    { bg: 'rgba(180,140,75,0.08)', border: 'rgba(180,140,75,0.2)', color: 'rgba(224,216,200,0.65)' },
+};
+
+function AgingTabContent({ cigar, humidor }) {
+  const readiness = getCigarReadinessWithContext(cigar, humidor);
+  const rstyle = READINESS_STYLE[readiness.state] || READINESS_STYLE.no_data;
+  const hstyle = HUMIDOR_HEALTH_STYLE[readiness.humidorHealth.state] || HUMIDOR_HEALTH_STYLE.unmonitored;
+
+  return (
+    <div className="space-y-4">
+      {/* Readiness state */}
+      <div
+        className="rounded-xl p-4"
+        style={{ background: rstyle.bg, border: `1px solid ${rstyle.border}` }}
+      >
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Clock3 className="w-4 h-4 flex-shrink-0" style={{ color: rstyle.color }} />
+            <span className="text-base font-semibold" style={{ color: rstyle.color }}>
+              {readiness.label}
+            </span>
+          </div>
+          <span
+            className="text-xs px-2 py-0.5 rounded-full font-medium"
+            style={{ background: 'rgba(255,255,255,0.06)', color: CONFIDENCE_COLOR[readiness.confidence] }}
+          >
+            {CONFIDENCE_LABEL[readiness.confidence] || 'Unknown confidence'}
+          </span>
+        </div>
+        {readiness.detail && (
+          <p className="text-sm mt-2" style={{ color: 'rgba(224,216,200,0.75)' }}>
+            {readiness.detail}
+          </p>
+        )}
+        {readiness.monthsAged !== null && (
+          <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.45)' }}>
+            {readiness.monthsAged} month{readiness.monthsAged !== 1 ? 's' : ''} in cellar
+          </p>
+        )}
+      </div>
+
+      {/* Humidor health */}
+      <div
+        className="rounded-xl p-4"
+        style={{ background: hstyle.bg, border: `1px solid ${hstyle.border}` }}
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <Thermometer className="w-4 h-4 flex-shrink-0" style={{ color: hstyle.color }} />
+          <span className="text-sm font-semibold" style={{ color: hstyle.color }}>
+            {readiness.humidorHealth.label}
+          </span>
+        </div>
+        <p className="text-xs" style={{ color: 'rgba(224,216,200,0.65)' }}>
+          {readiness.humidorHealth.detail}
+        </p>
+      </div>
+
+      {/* Risk flags */}
+      {readiness.riskFlags.filter((f) => f.severity === 'warning').length > 0 && (
+        <div className="space-y-2">
+          {readiness.riskFlags.filter((f) => f.severity === 'warning').map((flag) => {
+            const fs = RISK_FLAG_STYLE[flag.severity];
+            return (
+              <div
+                key={flag.type}
+                className="flex items-center gap-2 rounded-xl px-4 py-3"
+                style={{ background: fs.bg, border: `1px solid ${fs.border}` }}
+              >
+                <ShieldAlert className="w-4 h-4 flex-shrink-0" style={{ color: fs.color }} />
+                <span className="text-sm font-medium" style={{ color: fs.color }}>
+                  {flag.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Raw aging data */}
+      <div className="space-y-1 pt-1">
+        <InfoRow label="Aging Start" value={formatDate(cigar.aging_start_date)} />
+        <InfoRow label="Ready to Smoke" value={formatDate(cigar.ready_to_smoke_date)} />
+        <InfoRow label="Storage" value={cigar.storage_notes} />
+      </div>
+    </div>
+  );
 }
 
 function DetailStat({ label, value, icon: Icon }) {
@@ -219,9 +323,6 @@ function CigarDetailInner() {
     const v = cigar?.estimated_value || cigar?.purchase_price;
     return v ? formatCurrency(v) : '—';
   }, [cigar]);
-
-  const ageMonths = useMemo(() => calcAgeMonths(cigar?.aging_start_date), [cigar?.aging_start_date]);
-  const readiness = useMemo(() => readinessStatus(cigar?.ready_to_smoke_date), [cigar?.ready_to_smoke_date]);
 
   const handleDelete = async () => {
     try {
@@ -474,12 +575,7 @@ function CigarDetailInner() {
         )}
 
         {activeTab === 'aging' && (
-          <div className="space-y-1">
-            <InfoRow label="Aging Start" value={formatDate(cigar.aging_start_date)} />
-            <InfoRow label="Ready to Smoke" value={formatDate(cigar.ready_to_smoke_date)} />
-            <InfoRow label="Age" value={ageMonths !== null ? `${ageMonths} month${ageMonths !== 1 ? 's' : ''}` : ''} />
-            <InfoRow label="Readiness" value={readiness} />
-          </div>
+          <AgingTabContent cigar={cigar} humidor={humidor} />
         )}
 
         {activeTab === 'details' && (

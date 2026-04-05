@@ -1,5 +1,6 @@
 import React from 'react';
-import { Cigarette, DollarSign, Box, Heart, Clock, Flame, AlertTriangle } from 'lucide-react';
+import { Cigarette, DollarSign, Box, Heart, Clock, Flame, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { getCigarRiskFlags, summarizeCigarReadiness } from '@/platform/agingReadiness';
 import { humidorNeedsAttention } from './humidorMaintenanceUtils';
 
 function StatCard({ icon: Icon, label, value, sub, alert }) {
@@ -45,9 +46,17 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
     return sum + price * qty;
   }, 0);
 
-  const readyCount = cigars.filter((c) => {
-    if (!c.ready_to_smoke_date) return true;
-    return new Date(c.ready_to_smoke_date) <= today;
+  // Use the shared readiness engine for consistency with CigarDetail
+  const readinessSummary = summarizeCigarReadiness(cigars, today);
+  const readyCount = readinessSummary.readyNow;
+
+  // Build humidor lookup for risk flags
+  const humidorMap = {};
+  humidors.forEach((h) => { humidorMap[h.id] = h; });
+
+  const atRiskCount = cigars.filter((c) => {
+    const humidor = c.humidor_id ? humidorMap[c.humidor_id] : null;
+    return getCigarRiskFlags(c, humidor).some((f) => f.severity === 'warning');
   }).length;
 
   const thirtyDaysAgo = new Date(today);
@@ -95,6 +104,9 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
         <StatCard icon={Heart} label="Favorites" value={favoriteCount} />
         <StatCard icon={Flame} label="Ready to Smoke" value={readyCount} />
         <StatCard icon={Clock} label="Recent Sessions" value={recentSessions} sub="Last 30 days" />
+        {atRiskCount > 0 && (
+          <StatCard icon={ShieldAlert} label="At Risk" value={atRiskCount} sub="Needs attention" />
+        )}
         {alertHumidorCount > 0 && (
           <StatCard
             icon={AlertTriangle}

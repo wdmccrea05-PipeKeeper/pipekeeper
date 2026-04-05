@@ -280,6 +280,27 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
         created_by: user?.email,
       };
       await base44.entities.CigarSession.create(payload);
+
+      // Decrement inventory when logging a session against a collection cigar
+      if (!isExternal && selectedCigar?.id) {
+        const currentQty =
+          selectedCigar.singles_equivalent != null
+            ? selectedCigar.singles_equivalent
+            : (selectedCigar.quantity ?? 0);
+        if (currentQty > 0) {
+          const newQty = currentQty - 1;
+          const inventoryUpdate =
+            selectedCigar.singles_equivalent != null
+              ? { singles_equivalent: newQty }
+              : { quantity: newQty };
+          // Best-effort update: session is already saved; a failed decrement
+          // is non-fatal and the user can manually correct inventory.
+          await base44.entities.Cigar.update(selectedCigar.id, inventoryUpdate).catch((err) => {
+            console.warn('[CigarKeeper] Inventory decrement failed after session log:', err?.message || err);
+          });
+        }
+      }
+
       toast.success('Session logged!');
       if (typeof onSessionSaved === 'function') onSessionSaved();
       onClose();
