@@ -94,7 +94,7 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
   const [showAll, setShowAll] = useState(false);
   const [form, setForm] = useState({ ...EMPTY_FORM });
 
-  const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e?.target ? e.target.value : e }));
+  const set = (field) => (value) => setForm((f) => ({ ...f, [field]: value }));
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['humidor-maintenance-logs', humidorId],
