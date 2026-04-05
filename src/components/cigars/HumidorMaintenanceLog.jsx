@@ -105,26 +105,32 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
   const createMutation = useMutation({
     mutationFn: async (data) => {
       const payload = {
-        ...data,
         humidor_id: humidorId,
         humidor_name: humidorName,
         created_by: user?.email,
-        humidity_reading: data.humidity_reading ? parseFloat(data.humidity_reading) : null,
-        temperature_reading: data.temperature_reading ? parseFloat(data.temperature_reading) : null,
+        event_type: data.event_type,
+        date: data.date,
+        ...(data.humidity_reading ? { humidity_reading: parseFloat(data.humidity_reading) } : {}),
+        ...(data.temperature_reading ? { temperature_reading: parseFloat(data.temperature_reading) } : {}),
+        ...(data.aid_type ? { aid_type: data.aid_type } : {}),
+        ...(data.aid_brand ? { aid_brand: data.aid_brand } : {}),
+        ...(data.aid_specification ? { aid_specification: data.aid_specification } : {}),
+        ...(data.notes ? { notes: data.notes } : {}),
       };
-      Object.keys(payload).forEach((k) => { if (payload[k] === '' || payload[k] === null) delete payload[k]; });
       const created = await base44.entities.HumidorMaintenanceLog.create(payload);
 
       // Mirror readings back to the humidor record
-      const humidorPatch = {
-        last_maintenance_date: data.date,
-      };
-      if (data.humidity_reading) {
+      const humidorPatch = { last_maintenance_date: data.date };
+      const hasHumidityReading = !!data.humidity_reading;
+      const hasTempReading = !!data.temperature_reading;
+
+      if (hasHumidityReading) {
         humidorPatch.last_humidity_reading = parseFloat(data.humidity_reading);
-        humidorPatch.last_reading_date = data.date;
       }
-      if (data.temperature_reading) {
+      if (hasTempReading) {
         humidorPatch.last_temperature_reading = parseFloat(data.temperature_reading);
+      }
+      if (hasHumidityReading || hasTempReading) {
         humidorPatch.last_reading_date = data.date;
       }
       if (data.event_type === 'aid_replaced') {

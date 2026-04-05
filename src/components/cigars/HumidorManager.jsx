@@ -12,6 +12,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import HumidorMaintenanceLog from './HumidorMaintenanceLog';
+import {
+  daysBetween,
+  getNextCheckDate,
+  getNextReplacementDate,
+  getHumidorMaintenanceStatus,
+} from './humidorMaintenanceUtils';
 
 const AID_TYPE_LABELS = {
   boveda: 'Boveda Pack',
@@ -48,51 +54,12 @@ function formatDate(val) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function daysBetween(dateStr, now = new Date()) {
-  if (!dateStr) return null;
-  const d = new Date(dateStr + 'T12:00:00');
-  if (Number.isNaN(d.getTime())) return null;
-  return Math.round((d - now) / (1000 * 60 * 60 * 24));
+function selectValue(val) {
+  return val || 'none';
 }
 
-function getNextCheckDate(humidor) {
-  if (!humidor.last_reading_date || !humidor.check_interval_days) return null;
-  const d = new Date(humidor.last_reading_date + 'T12:00:00');
-  d.setDate(d.getDate() + Number(humidor.check_interval_days));
-  return d.toISOString().split('T')[0];
-}
-
-function getNextReplacementDate(humidor) {
-  const base = humidor.aid_date_last_replaced || humidor.aid_date_installed;
-  if (!base || !humidor.aid_replacement_interval_days) return null;
-  const d = new Date(base + 'T12:00:00');
-  d.setDate(d.getDate() + Number(humidor.aid_replacement_interval_days));
-  return d.toISOString().split('T')[0];
-}
-
-function getMaintenanceStatus(humidor) {
-  if (humidor.alerts_enabled === false) return 'disabled';
-  const now = new Date();
-  now.setHours(12, 0, 0, 0);
-  const DUE_SOON_DAYS = 3;
-
-  const nextCheck = getNextCheckDate(humidor);
-  const nextReplacement = getNextReplacementDate(humidor);
-
-  const checkDays = daysBetween(nextCheck, now);
-  const replaceDays = daysBetween(nextReplacement, now);
-
-  let isOverdue = false;
-  let isDueSoon = false;
-
-  if (checkDays !== null && checkDays < 0) isOverdue = true;
-  if (replaceDays !== null && replaceDays < 0) isOverdue = true;
-  if (!isOverdue && checkDays !== null && checkDays <= DUE_SOON_DAYS) isDueSoon = true;
-  if (!isOverdue && replaceDays !== null && replaceDays <= DUE_SOON_DAYS) isDueSoon = true;
-
-  if (isOverdue) return 'overdue';
-  if (isDueSoon) return 'due_soon';
-  return 'on_track';
+function fromSelectValue(v) {
+  return v === 'none' ? '' : v;
 }
 
 function MaintenanceStatusBadge({ status }) {
@@ -174,7 +141,7 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
         </div>
         <div>
           <label className={labelCls} style={labelColor}>Type</label>
-          <Select value={form.humidor_type || 'none'} onValueChange={(v) => set('humidor_type')(v === 'none' ? '' : v)}>
+          <Select value={selectValue(form.humidor_type)} onValueChange={(v) => set('humidor_type')(fromSelectValue(v))}>
             <SelectTrigger style={{ ...inputStyle, color: form.humidor_type ? '#F5F1E7' : 'rgba(224,216,200,0.4)' }}>
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
@@ -229,7 +196,7 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={labelCls} style={labelColor}>Aid Type</label>
-              <Select value={form.aid_type || 'none'} onValueChange={(v) => set('aid_type')(v === 'none' ? '' : v)}>
+              <Select value={selectValue(form.aid_type)} onValueChange={(v) => set('aid_type')(fromSelectValue(v))}>
                 <SelectTrigger style={{ ...inputStyle, color: form.aid_type ? '#F5F1E7' : 'rgba(224,216,200,0.4)' }}>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -321,7 +288,7 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
 function HumidorCard({ humidor, assignedCount, onEdit, onDelete }) {
   const [showMaintenance, setShowMaintenance] = useState(false);
   const capacity = humidor.capacity_count || 0;
-  const status = getMaintenanceStatus(humidor);
+  const status = getHumidorMaintenanceStatus(humidor);
   const nextCheck = getNextCheckDate(humidor);
   const nextReplacement = getNextReplacementDate(humidor);
   const now = new Date();

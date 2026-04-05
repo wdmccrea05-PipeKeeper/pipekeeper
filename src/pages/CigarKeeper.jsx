@@ -11,46 +11,19 @@ import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import CigarHighlightCard from '@/components/cigars/CigarHighlightCard';
 import CigarSessionModal from '@/components/cigars/CigarSessionModal';
+import {
+  daysBetween,
+  getNextCheckDate,
+  getNextReplacementDate,
+  getHumidorMaintenanceStatus,
+  humidorNeedsAttention,
+} from '@/components/cigars/humidorMaintenanceUtils';
 
 function formatDate(value) {
   if (!value) return '—';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function daysBetween(dateStr, now = new Date()) {
-  if (!dateStr) return null;
-  const d = new Date(dateStr + 'T12:00:00');
-  if (Number.isNaN(d.getTime())) return null;
-  return Math.round((d - now) / (1000 * 60 * 60 * 24));
-}
-
-function getNextCheckDate(h) {
-  if (!h.last_reading_date || !h.check_interval_days) return null;
-  const d = new Date(h.last_reading_date + 'T12:00:00');
-  d.setDate(d.getDate() + Number(h.check_interval_days));
-  return d.toISOString().split('T')[0];
-}
-
-function getNextReplacementDate(h) {
-  const base = h.aid_date_last_replaced || h.aid_date_installed;
-  if (!base || !h.aid_replacement_interval_days) return null;
-  const d = new Date(base + 'T12:00:00');
-  d.setDate(d.getDate() + Number(h.aid_replacement_interval_days));
-  return d.toISOString().split('T')[0];
-}
-
-function getHumidorMaintenanceStatus(h) {
-  if (h.alerts_enabled === false) return 'disabled';
-  const now = new Date();
-  now.setHours(12, 0, 0, 0);
-  const DUE_SOON = 3;
-  const checkDays = daysBetween(getNextCheckDate(h), now);
-  const replaceDays = daysBetween(getNextReplacementDate(h), now);
-  if ((checkDays !== null && checkDays < 0) || (replaceDays !== null && replaceDays < 0)) return 'overdue';
-  if ((checkDays !== null && checkDays <= DUE_SOON) || (replaceDays !== null && replaceDays <= DUE_SOON)) return 'due_soon';
-  return 'on_track';
 }
 
 function RecentSessionCard({ session }) {
@@ -189,10 +162,7 @@ function CigarKeeperInner() {
 
   const recentSessions = sessions.slice(0, 5);
 
-  const alertHumidors = humidors.filter((h) => {
-    const s = getHumidorMaintenanceStatus(h);
-    return s === 'overdue' || s === 'due_soon';
-  }).sort((a, b) => {
+  const alertHumidors = humidors.filter(humidorNeedsAttention).sort((a, b) => {
     const sa = getHumidorMaintenanceStatus(a);
     const sb = getHumidorMaintenanceStatus(b);
     if (sa === 'overdue' && sb !== 'overdue') return -1;

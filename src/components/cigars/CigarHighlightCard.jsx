@@ -1,36 +1,6 @@
 import React from 'react';
 import { Cigarette, DollarSign, Box, Heart, Clock, Flame, AlertTriangle } from 'lucide-react';
-
-function daysBetween(dateStr, now = new Date()) {
-  if (!dateStr) return null;
-  const d = new Date(dateStr + 'T12:00:00');
-  if (Number.isNaN(d.getTime())) return null;
-  return Math.round((d - now) / (1000 * 60 * 60 * 24));
-}
-
-function getNextCheckDate(h) {
-  if (!h.last_reading_date || !h.check_interval_days) return null;
-  const d = new Date(h.last_reading_date + 'T12:00:00');
-  d.setDate(d.getDate() + Number(h.check_interval_days));
-  return d.toISOString().split('T')[0];
-}
-
-function getNextReplacementDate(h) {
-  const base = h.aid_date_last_replaced || h.aid_date_installed;
-  if (!base || !h.aid_replacement_interval_days) return null;
-  const d = new Date(base + 'T12:00:00');
-  d.setDate(d.getDate() + Number(h.aid_replacement_interval_days));
-  return d.toISOString().split('T')[0];
-}
-
-function needsAttention(h) {
-  if (h.alerts_enabled === false) return false;
-  const now = new Date();
-  now.setHours(12, 0, 0, 0);
-  const checkDays = daysBetween(getNextCheckDate(h), now);
-  const replaceDays = daysBetween(getNextReplacementDate(h), now);
-  return (checkDays !== null && checkDays <= 3) || (replaceDays !== null && replaceDays <= 3);
-}
+import { humidorNeedsAttention } from './humidorMaintenanceUtils';
 
 function StatCard({ icon: Icon, label, value, sub, alert }) {
   return (
@@ -84,7 +54,7 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const recentSessions = sessions.filter((s) => s.date && new Date(s.date) >= thirtyDaysAgo).length;
 
-  const alertHumidorCount = humidors.filter(needsAttention).length;
+  const alertHumidorCount = humidors.filter(humidorNeedsAttention).length;
 
   // Top 3 brands
   const brandCounts = {};
