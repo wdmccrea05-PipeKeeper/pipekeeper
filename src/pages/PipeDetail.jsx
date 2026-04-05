@@ -380,10 +380,9 @@ function EditPipeValuationModal({ pipe, onClose, onSaved }) {
           </div>
           <div>
             <label className="text-xs text-[#D8C7A6] block mb-1">Maker Status</label>
-            <Select value={form.maker_status} onValueChange={v => setForm(p => ({ ...p, maker_status: v }))}>
-              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
+            <Select value={form.maker_status || '__none__'} onValueChange={v => setForm(p => ({ ...p, maker_status: v === '__none__' ? '' : v }))}>              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">— Not set —</SelectItem>
+                <SelectItem value="__none__">— Not set —</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="limited_production">Limited Production</SelectItem>
                 <SelectItem value="retired">Retired / No Longer Producing</SelectItem>
@@ -394,10 +393,10 @@ function EditPipeValuationModal({ pipe, onClose, onSaved }) {
           </div>
           <div>
             <label className="text-xs text-[#D8C7A6] block mb-1">Production Type</label>
-            <Select value={form.production_type} onValueChange={v => setForm(p => ({ ...p, production_type: v }))}>
+            <Select value={form.production_type || '__none__'} onValueChange={v => setForm(p => ({ ...p, production_type: v === '__none__' ? '' : v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">— Not set —</SelectItem>
+                <SelectItem value="__none__">— Not set —</SelectItem>
                 <SelectItem value="factory">Factory Production</SelectItem>
                 <SelectItem value="standard_artisan">Standard Artisan</SelectItem>
                 <SelectItem value="limited_artisan_batch">Limited Artisan Batch</SelectItem>
@@ -407,10 +406,10 @@ function EditPipeValuationModal({ pipe, onClose, onSaved }) {
           </div>
           <div>
             <label className="text-xs text-[#D8C7A6] block mb-1">Artisan Tier</label>
-            <Select value={form.artisan_tier} onValueChange={v => setForm(p => ({ ...p, artisan_tier: v }))}>
+            <Select value={form.artisan_tier || '__none__'} onValueChange={v => setForm(p => ({ ...p, artisan_tier: v === '__none__' ? '' : v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">— Not set —</SelectItem>
+                <SelectItem value="__none__">— Not set —</SelectItem>
                 <SelectItem value="factory">Factory / Mass Production</SelectItem>
                 <SelectItem value="emerging">Emerging Artisan</SelectItem>
                 <SelectItem value="established">Established Artisan</SelectItem>
@@ -437,10 +436,10 @@ function EditPipeValuationModal({ pipe, onClose, onSaved }) {
           </div>
           <div>
             <label className="text-xs text-[#D8C7A6] block mb-1">Replacement Difficulty Override</label>
-            <Select value={form.replacement_difficulty_override} onValueChange={v => setForm(p => ({ ...p, replacement_difficulty_override: v }))}>
+            <Select value={form.replacement_difficulty_override || '__none__'} onValueChange={v => setForm(p => ({ ...p, replacement_difficulty_override: v === '__none__' ? '' : v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Engine auto-computes" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">— Auto (engine) —</SelectItem>
+                <SelectItem value="__none__">— Auto (engine) —</SelectItem>
                 <SelectItem value="easy">Easy</SelectItem>
                 <SelectItem value="moderate">Moderate</SelectItem>
                 <SelectItem value="hard">Hard</SelectItem>
