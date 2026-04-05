@@ -138,6 +138,7 @@ export default function InventoryManager({ bottle, onClose }) {
   const [addFill, setAddFill] = useState('Full');
   const [addPrice, setAddPrice] = useState('');
   const [addDate, setAddDate] = useState('');
+  const [addQty, setAddQty] = useState('1');
   const [adding, setAdding] = useState(false);
 
   const { data: units = [], isLoading } = useQuery({
@@ -156,20 +157,25 @@ export default function InventoryManager({ bottle, onClose }) {
   };
 
   const handleAdd = async () => {
+    const qty = Math.max(1, Math.min(99, parseInt(addQty) || 1));
     setAdding(true);
-    await base44.entities.WhiskeyInventoryUnit.create({
-      bottle_id: bottle.id,
-      bottle_name: bottle.name,
-      status: addStatus,
-      fill_level: addStatus === 'open' ? addFill : null,
-      purchase_price: addPrice ? Number(addPrice) : null,
-      purchase_date: addDate || null,
-    });
+    const creates = Array.from({ length: qty }, () =>
+      base44.entities.WhiskeyInventoryUnit.create({
+        bottle_id: bottle.id,
+        bottle_name: bottle.name,
+        status: addStatus,
+        fill_level: addStatus === 'open' ? addFill : null,
+        purchase_price: addPrice ? Number(addPrice) : null,
+        purchase_date: addDate || null,
+      })
+    );
+    await Promise.all(creates);
     invalidate();
     setAdding(false);
     setAddPrice('');
     setAddDate('');
-    toast.success('Bottle unit added');
+    setAddQty('1');
+    toast.success(qty === 1 ? 'Bottle unit added' : `${qty} bottle units added`);
   };
 
   const handleDelete = async (unitId) => {
@@ -275,6 +281,18 @@ export default function InventoryManager({ bottle, onClose }) {
       >
         <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(180,140,75,0.7)' }}>Add Bottle Unit</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>Quantity</label>
+            <Input
+              type="number"
+              min="1"
+              max="99"
+              placeholder="1"
+              value={addQty}
+              onChange={e => setAddQty(e.target.value)}
+              className="text-sm"
+            />
+          </div>
           <div>
             <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>Status</label>
             <Select value={addStatus} onValueChange={setAddStatus}>
