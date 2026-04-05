@@ -199,21 +199,10 @@ function CigarsInner() {
     }
   };
 
-  const handleFormSubmit = async (data) => {
-    try {
-      if (editingCigar?.id) {
-        await base44.entities.Cigar.update(editingCigar.id, data);
-        toast.success('Cigar updated');
-      } else {
-        await base44.entities.Cigar.create({ ...data, created_by: user?.email });
-        toast.success('Cigar added');
-      }
-      queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
-      setAddDialogOpen(false);
-      setEditingCigar(null);
-    } catch {
-      toast.error('Failed to save cigar');
-    }
+  const handleFormSubmit = () => {
+    queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
+    setAddDialogOpen(false);
+    setEditingCigar(null);
   };
 
   const openAdd = () => {

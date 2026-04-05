@@ -113,16 +113,20 @@
     },
     "quantity": {
       "type": "number",
-      "description": "Number of units in inventory"
+      "description": "Number of package units owned (e.g. 2 boxes, 5 singles)"
     },
     "unit_type": {
       "type": "string",
       "enum": ["single", "5pack", "pack", "box", "bundle", "partial_box"],
       "description": "How the quantity is packaged or counted"
     },
+    "cigars_per_package": {
+      "type": "number",
+      "description": "Number of cigars in each package unit (e.g. 20 for a box of 20, 1 for singles)"
+    },
     "singles_equivalent": {
       "type": "number",
-      "description": "Calculated number of individual sticks represented by quantity + unit_type"
+      "description": "Total individual stick count (quantity * cigars_per_package, or remaining sticks for a partial box)"
     },
     "humidor_id": {
       "type": "string",
@@ -202,5 +206,5 @@
       "description": "ISO timestamp when this record was last updated"
     }
   },
-  "required": ["name", "brand", "created_by"]
+  "required": ["name", "created_by"]
 }
