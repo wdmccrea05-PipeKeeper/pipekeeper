@@ -50,6 +50,7 @@ import {
   seedInitialSnapshotIfMissing,
   refreshItemValue,
 } from "@/components/valuation/valueRefreshService";
+import { toast } from "sonner";
 
 function safePrimitive(value, fallback = "—") {
   if (value === null || value === undefined || value === "") return fallback;
@@ -239,6 +240,7 @@ function AddValueSnapshotModal({ bottle, valuationSnapshot, userEmail, onClose, 
       onSaved();
     } catch (e) {
       console.error('[BottleDetail] failed to save snapshot', e);
+      toast.error('Failed to save value checkpoint. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -340,6 +342,7 @@ function AddPriceObservationModal({ bottle, userEmail, onClose, onSaved }) {
       onSaved();
     } catch (e) {
       console.error('[BottleDetail] failed to save observation', e);
+      toast.error('Failed to save price observation. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -440,6 +443,7 @@ function BottleDetailInner() {
       navigate("/Whiskey");
     } catch (e) {
       console.error(e);
+      toast.error('Failed to delete bottle. Please try again.');
       setDeleting(false);
     }
   }

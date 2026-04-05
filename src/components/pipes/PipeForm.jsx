@@ -562,7 +562,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             label={t("pipesExtended.condition")} 
             helpText={t("pipesExtended.conditionHelp")}
           >
-            <Select value={formData.condition} onValueChange={(v) => handleChange('condition', v)}>
+            <Select value={formData.condition || ''} onValueChange={(v) => handleChange('condition', v)}>
               <SelectTrigger>
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
@@ -703,7 +703,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             label={t("pipesExtended.finish")} 
             helpText={t("pipesExtended.finishHelp")}
           >
-            <Select value={formData.finish} onValueChange={(v) => handleChange('finish', v)}>
+            <Select value={formData.finish || ''} onValueChange={(v) => handleChange('finish', v)}>
               <SelectTrigger>
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
@@ -716,7 +716,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             label={t("pipesExtended.chamberVolume")} 
             helpText={t("pipesExtended.chamberVolumeHelp")}
           >
-            <Select value={formData.chamber_volume} onValueChange={(v) => handleChange('chamber_volume', v)}>
+            <Select value={formData.chamber_volume || ''} onValueChange={(v) => handleChange('chamber_volume', v)}>
               <SelectTrigger>
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
@@ -729,7 +729,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             label={t("pipesExtended.filterType")} 
             helpText={t("pipesExtended.filterTypeHelp")}
           >
-            <Select value={formData.filter_type} onValueChange={(v) => handleChange('filter_type', v)}>
+            <Select value={formData.filter_type || ''} onValueChange={(v) => handleChange('filter_type', v)}>
               <SelectTrigger>
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>

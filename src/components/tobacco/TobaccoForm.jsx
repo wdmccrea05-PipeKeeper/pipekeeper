@@ -660,7 +660,7 @@ Return complete and accurate information based on the blend name or description 
             label={t("tobaccoExtended.blendType")} 
             helpText={t("tobaccoExtended.blendTypeHelp")}
           >
-            <Select value={formData.blend_type} onValueChange={(v) => handleChange('blend_type', v)}>
+            <Select value={formData.blend_type || ''} onValueChange={(v) => handleChange('blend_type', v)}>
               <SelectTrigger className="border-[rgba(140,105,65,0.28)]">
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
@@ -673,7 +673,7 @@ Return complete and accurate information based on the blend name or description 
             label={t("tobaccoExtended.cut")} 
             helpText={t("tobaccoExtended.cutHelp")}
           >
-            <Select value={formData.cut} onValueChange={(v) => handleChange('cut', v)}>
+            <Select value={formData.cut || ''} onValueChange={(v) => handleChange('cut', v)}>
               <SelectTrigger className="border-[rgba(140,105,65,0.28)]">
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
@@ -686,7 +686,7 @@ Return complete and accurate information based on the blend name or description 
             label={t("tobaccoExtended.strength")} 
             helpText={t("tobaccoExtended.strengthHelp")}
           >
-            <Select value={formData.strength} onValueChange={(v) => handleChange('strength', v)}>
+            <Select value={formData.strength || ''} onValueChange={(v) => handleChange('strength', v)}>
               <SelectTrigger className="border-[rgba(140,105,65,0.28)]">
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
@@ -699,7 +699,7 @@ Return complete and accurate information based on the blend name or description 
             label={t("tobaccoExtended.roomNote")} 
             helpText={t("tobaccoExtended.roomNoteHelp")}
           >
-            <Select value={formData.room_note} onValueChange={(v) => handleChange('room_note', v)}>
+            <Select value={formData.room_note || ''} onValueChange={(v) => handleChange('room_note', v)}>
               <SelectTrigger className="border-[rgba(140,105,65,0.28)]">
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
@@ -1035,7 +1035,7 @@ Return complete and accurate information based on the blend name or description 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t">
             <div className="space-y-2">
               <Label className="break-words">{t("tobaccoExtended.productionStatus")}</Label>
-              <Select value={formData.production_status} onValueChange={(v) => handleChange('production_status', v)}>
+              <Select value={formData.production_status || ''} onValueChange={(v) => handleChange('production_status', v)}>
                 <SelectTrigger className="border-[rgba(140,105,65,0.28)]">
                   <SelectValue placeholder={t("common.selectPlaceholder")} />
                 </SelectTrigger>
@@ -1046,7 +1046,7 @@ Return complete and accurate information based on the blend name or description 
             </div>
             <div className="space-y-2">
               <Label className="break-words">{t("tobaccoExtended.agingPotential")}</Label>
-              <Select value={formData.aging_potential} onValueChange={(v) => handleChange('aging_potential', v)}>
+              <Select value={formData.aging_potential || ''} onValueChange={(v) => handleChange('aging_potential', v)}>
                 <SelectTrigger className="border-[rgba(140,105,65,0.28)]">
                   <SelectValue placeholder={t("common.selectPlaceholder")} />
                 </SelectTrigger>
