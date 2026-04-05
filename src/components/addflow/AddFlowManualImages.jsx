@@ -267,8 +267,14 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
       // If we have a quick record ID, update it instead of creating a new one
       if (finalData._quickRecord?.id) {
+        // For bottles: only update fields that exist in the Bottle entity schema
+        // (bottle_status, bottle_storage, bottles_owned etc. are not Bottle entity fields)
+        const bottleSafeInventory = itemType === 'bottle'
+          ? cleanObject({ purchase_price: inventoryPayload.purchase_price })
+          : inventoryPayload;
+
         const updateData = cleanObject({
-          ...inventoryPayload,
+          ...bottleSafeInventory,
           ...(itemType === 'blend' ? { logo: finalData.logo } : {}),
           ...(itemType === 'pipe' ? { photos: finalData.photos } : {}),
           ...(itemType === 'bottle' ? { photo: finalData.photo } : {}),
