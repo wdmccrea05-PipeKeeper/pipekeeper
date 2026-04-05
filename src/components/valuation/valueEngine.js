@@ -65,6 +65,8 @@ export const PIPE_MAKER_CONFIG = {
 
 /**
  * Look up maker config by name (case-insensitive, partial match).
+ * Keys are sorted longest-first so more specific names ('lars ivarsson')
+ * match before shorter substrings ('ivarsson' if it were a key).
  * Returns the first matching config entry, or null if not found.
  * @param {string} makerName
  * @returns {{ tier: string, productionStatus: string, isHandmade: boolean } | null}
@@ -72,11 +74,29 @@ export const PIPE_MAKER_CONFIG = {
 function resolvePipeMakerConfig(makerName) {
   if (!makerName) return null;
   const lower = makerName.toLowerCase();
-  for (const [key, cfg] of Object.entries(PIPE_MAKER_CONFIG)) {
+  const sortedEntries = Object.entries(PIPE_MAKER_CONFIG).sort((a, b) => b[0].length - a[0].length);
+  for (const [key, cfg] of sortedEntries) {
     if (lower.includes(key)) return cfg;
   }
   return null;
 }
+
+/**
+ * Returns an array of maker name keys from PIPE_MAKER_CONFIG whose tier
+ * matches any of the provided tiers. Used to derive premium-maker lookup
+ * lists from a single source of truth.
+ * @param {string[]} tiers - e.g. ['prestige', 'master']
+ * @returns {string[]}
+ */
+function pipeMakersByTier(tiers) {
+  return Object.entries(PIPE_MAKER_CONFIG)
+    .filter(([, cfg]) => tiers.includes(cfg.tier))
+    .map(([key]) => key);
+}
+
+// Derived premium maker list (prestige + master tier) — single source of truth.
+// Used in both rarity scoring and replacement difficulty.
+const PIPE_PREMIUM_MAKERS = pipeMakersByTier(['prestige', 'master']);
 
 // ---------------------------------------------------------------------------
 // 1. normalizeValuationInputs
@@ -551,13 +571,8 @@ export function computeRarityScore(item, moduleKey) {
       else if (effectiveArtisanTier === 'emerging') score += 2;
 
       // 4. Premium maker recognition (applied independently of artisan-tier flag).
-      const PREMIUM_MAKERS = [
-        'dunhill', 'barling', 'comoy', 'sasieni', 'charatan', 'castello',
-        'ardor', 'ser jacopo', 'radice', 'jirsa', 'jan zaloudek', 'kapet',
-        'lars ivarsson', 'sixten ivarsson', 'w.o. larsen', 'bing & grondahl',
-      ];
       const makerLower = (inputs.maker || '').toLowerCase();
-      if (PREMIUM_MAKERS.some(m => makerLower.includes(m))) score += 6;
+      if (PIPE_PREMIUM_MAKERS.some(m => makerLower.includes(m))) score += 6;
 
       // 5. Material premium (rare materials are harder to source / replace).
       const materialBoosts = { Meerschaum: 7, Morta: 5, Briar: 2, Clay: 1 };
@@ -719,9 +734,8 @@ export function computeReplacementDifficulty(item, moduleKey) {
     if (effMakerInactive) return DIFFICULTY_LEVELS.MODERATE;
 
     // Premium maker or artisan-grade without the above flags
-    const PREMIUM_MAKERS_DIFF = ['dunhill', 'barling', 'comoy', 'sasieni', 'charatan', 'castello', 'ardor'];
     const makerLower = (inputs.maker || '').toLowerCase();
-    const isPremium = PREMIUM_MAKERS_DIFF.some(m => makerLower.includes(m));
+    const isPremium = PIPE_PREMIUM_MAKERS.some(m => makerLower.includes(m));
     if (isPremium || effProdType === 'standard_artisan' || inputs.isHandmade) return DIFFICULTY_LEVELS.MODERATE;
 
     // Special materials: inherently limited supply
