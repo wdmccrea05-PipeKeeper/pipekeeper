@@ -8,11 +8,12 @@ export const MODULE_TYPES = {
   TOBACCO: "tobacco",
   WHISKEY: "whiskey",
   CIGAR: "cigar",
+  WINE: "wine",
   COFFEE: "coffee",
 };
 
 // Modules that are active in the current build.
-export const ACTIVE_MODULES = [MODULE_TYPES.PIPE, MODULE_TYPES.TOBACCO, MODULE_TYPES.WHISKEY];
+export const ACTIVE_MODULES = [MODULE_TYPES.PIPE, MODULE_TYPES.TOBACCO, MODULE_TYPES.WHISKEY, MODULE_TYPES.CIGAR];
 
 // Human-readable display names keyed by module type.
 export const MODULE_DISPLAY_NAMES = {
@@ -20,6 +21,7 @@ export const MODULE_DISPLAY_NAMES = {
   [MODULE_TYPES.TOBACCO]: "Tobacco",
   [MODULE_TYPES.WHISKEY]: "Whiskey",
   [MODULE_TYPES.CIGAR]: "Cigars",
+  [MODULE_TYPES.WINE]: "Wine",
   [MODULE_TYPES.COFFEE]: "Coffee",
 };
 

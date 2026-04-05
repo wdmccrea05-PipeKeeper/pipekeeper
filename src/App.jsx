@@ -31,6 +31,11 @@ import Support from "@/pages/Support";
 import WantList from "@/pages/WantList";
 import ShoppingList from "@/pages/ShoppingList";
 import SupportPublic from "@/pages/SupportPublic";
+import CigarKeeper from "@/pages/CigarKeeper";
+import Cigars from "@/pages/Cigars";
+import CigarDetail from "@/pages/CigarDetail";
+import CigarFormPage from "@/pages/CigarFormPage";
+import CigarInsights from "@/pages/CigarInsights";
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
 
@@ -44,6 +49,14 @@ const LayoutWrapper = ({ children, currentPageName }) =>
 const WhiskeyReleaseRoute = ({ currentPageName, children }) => (
   <LayoutWrapper currentPageName={currentPageName}>
     <LockedModuleGuard moduleKey="whiskeykeeper">
+      {children}
+    </LockedModuleGuard>
+  </LayoutWrapper>
+);
+
+const CigarReleaseRoute = ({ currentPageName, children }) => (
+  <LayoutWrapper currentPageName={currentPageName}>
+    <LockedModuleGuard moduleKey="cigarkeeper">
       {children}
     </LockedModuleGuard>
   </LayoutWrapper>
@@ -202,6 +215,51 @@ const AuthenticatedApp = () => {
           <WhiskeyReleaseRoute currentPageName="BottleForm">
             <BottleFormPage />
           </WhiskeyReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/CigarKeeper"
+        element={
+          <CigarReleaseRoute currentPageName="CigarKeeper">
+            <CigarKeeper />
+          </CigarReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/Cigars"
+        element={
+          <CigarReleaseRoute currentPageName="Cigars">
+            <Cigars />
+          </CigarReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/CigarDetail"
+        element={
+          <CigarReleaseRoute currentPageName="CigarDetail">
+            <CigarDetail />
+          </CigarReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/CigarForm"
+        element={
+          <CigarReleaseRoute currentPageName="CigarForm">
+            <CigarFormPage />
+          </CigarReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/CigarInsights"
+        element={
+          <CigarReleaseRoute currentPageName="CigarInsights">
+            <CigarInsights />
+          </CigarReleaseRoute>
         }
       />
 

@@ -1,0 +1,60 @@
+{
+  "name": "StorageLocation",
+  "type": "object",
+  "description": "A shared storage location entity for cigars (humidors) and wine (cellars, racks). Replaces module-specific location entities with a single unified record.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name or label for this storage location"
+    },
+    "location_type": {
+      "type": "string",
+      "enum": ["humidor", "cellar", "rack", "bin", "cabinet", "other"],
+      "description": "Type of storage location"
+    },
+    "module": {
+      "type": "string",
+      "enum": ["cigars", "wine", "shared"],
+      "description": "Which module this location belongs to, or shared if used by multiple"
+    },
+    "capacity_count": {
+      "type": "number",
+      "description": "Maximum number of items (cigars or bottles) this location can hold"
+    },
+    "current_count": {
+      "type": "number",
+      "description": "Current number of items stored in this location"
+    },
+    "target_humidity_rh": {
+      "type": "number",
+      "description": "Target relative humidity percentage (e.g. 65 for 65% RH) — relevant for humidors"
+    },
+    "target_temp_f": {
+      "type": "number",
+      "description": "Target storage temperature in degrees Fahrenheit"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short description of this storage location"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text notes about this location (equipment, quirks, maintenance history)"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who created this record"
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when this record was created"
+    },
+    "updated_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when this record was last updated"
+    }
+  },
+  "required": ["name", "created_by"]
+}

@@ -451,6 +451,183 @@ ${recentTastings || '- None logged yet'}`;
     }),
     eventName: 'curator_action_find_similar_bottles',
   },
+
+  {
+    id: 'cigar_smoke_now',
+    label: 'What to Smoke Now',
+    description: 'Get personalized recommendations from your current humidor',
+    icon: Sparkles,
+    modules: ['cigar'],
+    sourceExpert: 'expert_cigar_advisor',
+    visibility: (ctx) => {
+      const { cigars = [] } = ctx;
+      return cigars.length > 0;
+    },
+    buildPrompt: (ctx) => {
+      const { cigars = [], cigarSessions = [] } = ctx;
+      const owned = cigars.filter(c => (c.quantity ?? 0) > 0 || c.unit_type);
+      const recentBrands = cigarSessions.slice(0, 10).map(s => s.cigar_name).filter(Boolean);
+
+      return `You are a knowledgeable cigar advisor helping a collector choose what to smoke today.
+
+OWNED CIGARS (${owned.length}):
+${owned.slice(0, 20).map(c =>
+  `- ${c.brand || ''} ${c.name || ''} ${c.vitola ? `(${c.vitola})` : ''} | ` +
+  `Wrapper: ${c.wrapper || '?'} | Body: ${c.body || '?'} | Qty: ${c.quantity || 1} | ` +
+  `Ready: ${c.ready_to_smoke_date ? new Date(c.ready_to_smoke_date).toLocaleDateString() : 'now'}`
+).join('\n')}
+
+RECENT SESSIONS (last 10 cigars smoked):
+${recentBrands.length > 0 ? recentBrands.join(', ') : 'No recent sessions recorded'}
+
+Recommend 3-5 cigars from the owned collection to smoke today. For each:
+1. Name the specific cigar
+2. Why it's ready now (construction, flavor profile, occasion match)
+3. Best pairing suggestion (drink or food)
+4. Ideal occasion/setting
+
+Be specific. Reference actual collection data. Avoid generic advice.`;
+    },
+    buildContext: (ctx) => ({
+      type: 'cigar_smoke_now',
+      dataRequirement: ['cigars', 'cigarSessions'],
+      sourceExpert: 'expert_cigar_advisor',
+    }),
+    eventName: 'curator_action_cigar_smoke_now',
+  },
+
+  {
+    id: 'cigar_rest_longer',
+    label: 'What Needs More Rest',
+    description: 'Identify cigars that would benefit from additional aging',
+    icon: Tags,
+    modules: ['cigar'],
+    sourceExpert: 'expert_cigar_advisor',
+    visibility: (ctx) => {
+      const { cigars = [] } = ctx;
+      return cigars.some(c => c.aging_start_date || c.box_date);
+    },
+    buildPrompt: (ctx) => {
+      const { cigars = [] } = ctx;
+      const agingCigars = cigars.filter(c => c.aging_start_date || c.box_date);
+
+      return `You are a cigar aging expert advising on optimal smoking windows.
+
+CIGARS WITH AGING DATA (${agingCigars.length}):
+${agingCigars.slice(0, 20).map(c => {
+  const ageStart = c.aging_start_date || c.box_date;
+  const monthsAged = ageStart
+    ? Math.floor((Date.now() - new Date(ageStart).getTime()) / (1000 * 60 * 60 * 24 * 30))
+    : null;
+  return `- ${c.brand || ''} ${c.name || ''} ${c.vitola ? `(${c.vitola})` : ''} | ` +
+    `Wrapper: ${c.wrapper || '?'} | Body: ${c.body || '?'} | ` +
+    `Months aged: ${monthsAged ?? 'unknown'} | Ready date: ${c.ready_to_smoke_date || 'not set'}`;
+}).join('\n')}
+
+For each cigar, assess:
+1. Current estimated readiness (ready now / needs 6 months / needs 1+ year)
+2. What will improve with more rest (construction tightening, strength mellowing, flavor integration)
+3. Recommended smoking window
+
+Prioritize cigars that clearly benefit from waiting. Be honest about cigars that are already past peak.`;
+    },
+    buildContext: (ctx) => ({
+      type: 'cigar_rest_longer',
+      dataRequirement: ['cigars'],
+      sourceExpert: 'expert_cigar_advisor',
+    }),
+    eventName: 'curator_action_cigar_rest_longer',
+  },
+
+  {
+    id: 'cigar_buy_again',
+    label: 'What to Buy Again',
+    description: 'Find your top performers worth restocking based on session history',
+    icon: Target,
+    modules: ['cigar'],
+    sourceExpert: 'expert_cigar_advisor',
+    visibility: (ctx) => {
+      const { cigarSessions = [] } = ctx;
+      return cigarSessions.length >= 3;
+    },
+    buildPrompt: (ctx) => {
+      const { cigars = [], cigarSessions = [] } = ctx;
+      const highRated = cigarSessions
+        .filter(s => (s.overall_enjoyment ?? 0) >= 4 || s.would_buy_again === 'yes')
+        .slice(0, 20);
+
+      return `You are helping a collector identify their best-performing cigars worth restocking.
+
+TOP SESSIONS (rated 4+ or "would buy again"):
+${highRated.map(s =>
+  `- ${s.cigar_name || s.external_cigar_brand + ' ' + s.external_cigar_name || 'Unknown'} | ` +
+  `Enjoyment: ${s.overall_enjoyment || '?'}/5 | ` +
+  `Would buy again: ${s.would_buy_again || '?'} | ` +
+  `Vitola: ${s.external_cigar_vitola || '?'}`
+).join('\n')}
+
+CURRENT INVENTORY:
+${cigars.filter(c => (c.quantity ?? 0) > 0).slice(0, 10).map(c =>
+  `- ${c.brand || ''} ${c.name || ''}: ${c.quantity || 0} remaining`
+).join('\n')}
+
+Recommend:
+1. Top 3-5 cigars to restock immediately (low or zero inventory of proven winners)
+2. Any cigars worth trying in different vitolas based on enjoyment patterns
+3. One new acquisition based on demonstrated taste preferences
+
+Be specific. Name actual brands and lines where you can infer them.`;
+    },
+    buildContext: (ctx) => ({
+      type: 'cigar_buy_again',
+      dataRequirement: ['cigars', 'cigarSessions'],
+      sourceExpert: 'expert_cigar_advisor',
+    }),
+    eventName: 'curator_action_cigar_buy_again',
+  },
+
+  {
+    id: 'cigar_pairing_suggestions',
+    label: 'Pairing Suggestions',
+    description: 'Get drink and food pairing ideas tailored to your collection',
+    icon: Droplet,
+    modules: ['cigar'],
+    sourceExpert: 'expert_cigar_advisor',
+    visibility: (ctx) => {
+      const { cigars = [] } = ctx;
+      return cigars.length > 0;
+    },
+    buildPrompt: (ctx) => {
+      const { cigars = [], bottles = [] } = ctx;
+      const smokeable = cigars.filter(c => (c.quantity ?? 0) > 0 || c.unit_type).slice(0, 10);
+
+      return `You are a pairing expert for premium cigars.
+
+CIGARS AVAILABLE TO SMOKE:
+${smokeable.map(c =>
+  `- ${c.brand || ''} ${c.name || ''} ${c.vitola ? `(${c.vitola})` : ''} | ` +
+  `Wrapper: ${c.wrapper || '?'} | Body: ${c.body || '?'} | ` +
+  `Flavor notes: ${Array.isArray(c.flavor_notes) ? c.flavor_notes.join(', ') : (c.flavor_notes || '?')}`
+).join('\n')}
+
+${bottles.length > 0 ? `WHISKEY COLLECTION (for cross-module pairing):
+${bottles.slice(0, 8).map(b => `- ${b.distillery || ''} ${b.name || ''} ${b.whiskey_type || ''}`).join('\n')}` : ''}
+
+For each cigar (or group by profile):
+1. Best spirit pairing (whiskey, rum, cognac, etc.) with rationale
+2. Best non-alcoholic pairing
+3. Optional food pairing
+4. Ideal occasion
+
+${bottles.length > 0 ? 'Also recommend specific whiskey+cigar pairings from the owned collection.' : ''}`;
+    },
+    buildContext: (ctx) => ({
+      type: 'cigar_pairing_suggestions',
+      dataRequirement: ['cigars', 'bottles'],
+      sourceExpert: 'expert_cigar_advisor',
+    }),
+    eventName: 'curator_action_cigar_pairing_suggestions',
+  },
 ];
 
 /**
@@ -467,6 +644,10 @@ function actionMatchesScope(action, curatorScope) {
 
   if (curatorScope === "whiskeykeeper") {
     return modules.includes("whiskey");
+  }
+
+  if (curatorScope === "cigarkeeper") {
+    return modules.includes("cigar");
   }
 
   return true;

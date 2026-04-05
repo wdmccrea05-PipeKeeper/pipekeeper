@@ -1,0 +1,51 @@
+{
+  "name": "HumidorLocation",
+  "type": "object",
+  "description": "A humidor or storage location used to track cigars in a user's CigarKeeper collection.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name or label for this humidor location"
+    },
+    "humidor_type": {
+      "type": "string",
+      "enum": ["desktop", "cabinet", "coolerdor", "tupperdor", "travel", "other"],
+      "description": "Type of humidor or storage container"
+    },
+    "capacity_count": {
+      "type": "number",
+      "description": "Maximum number of cigars this humidor can hold"
+    },
+    "current_count": {
+      "type": "number",
+      "description": "Current number of cigars stored in this humidor"
+    },
+    "target_humidity_rh": {
+      "type": "number",
+      "description": "Target relative humidity percentage (e.g. 65 for 65% RH)"
+    },
+    "target_temp_f": {
+      "type": "number",
+      "description": "Target storage temperature in degrees Fahrenheit"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text notes about this humidor location"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who created this record"
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when this record was created"
+    },
+    "updated_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when this record was last updated"
+    }
+  },
+  "required": ["name", "created_by"]
+}
