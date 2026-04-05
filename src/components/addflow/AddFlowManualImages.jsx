@@ -10,6 +10,7 @@ const ENTITIES = {
   blend: 'TobaccoBlend',
   pipe: 'Pipe',
   bottle: 'Bottle',
+  cigar: 'Cigar',
 };
 
 function cleanObject(obj) {
@@ -54,6 +55,25 @@ function buildBaseRecord(itemType, data) {
       abv: data.abv ? Number(data.abv) : undefined,
       notes: data.notes,
       photo: data.photo,
+    });
+  }
+
+  if (itemType === 'cigar') {
+    return cleanObject({
+      name: data.name,
+      brand: data.brand,
+      line: data.line,
+      vitola: data.vitola,
+      wrapper: data.wrapper,
+      binder: data.binder,
+      filler: data.filler,
+      country_of_origin: data.country_of_origin,
+      body: data.body,
+      strength: data.strength,
+      production_status: data.production_status,
+      flavor_notes: Array.isArray(data.flavor_notes) && data.flavor_notes.length ? data.flavor_notes : undefined,
+      personal_notes: data.personal_notes || data.notes,
+      photos: Array.isArray(data.photos) && data.photos.length ? data.photos : undefined,
     });
   }
 
@@ -199,7 +219,7 @@ async function createCellarLogsForBlend(blendId, data, blendName) {
 
 export default function AddFlowManualImages({ itemType, typeLabel, data, onBack, onCreated }) {
   const [imageUrl, setImageUrl] = useState(
-    itemType === 'blend' ? data.logo || '' : itemType === 'pipe' ? data.photos?.[0] || '' : data.photo || ''
+    itemType === 'blend' ? data.logo || '' : (itemType === 'pipe' || itemType === 'cigar') ? data.photos?.[0] || '' : data.photo || ''
   );
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -211,7 +231,9 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
       ? 'Tin / Label Photo'
       : itemType === 'pipe'
         ? 'Pipe Photo'
-        : 'Bottle Photo';
+        : itemType === 'cigar'
+          ? 'Cigar Photo'
+          : 'Bottle Photo';
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
@@ -238,6 +260,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         if (itemType === 'blend') finalData.logo = imageUrl;
         if (itemType === 'pipe') finalData.photos = [imageUrl];
         if (itemType === 'bottle') finalData.photo = imageUrl;
+        if (itemType === 'cigar') finalData.photos = [imageUrl];
       }
 
       const inventoryPayload = finalData._inventoryPayload || createInventoryEngine(itemType).buildUpdatePayload(finalData);
@@ -249,6 +272,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
           ...(itemType === 'blend' ? { logo: finalData.logo } : {}),
           ...(itemType === 'pipe' ? { photos: finalData.photos } : {}),
           ...(itemType === 'bottle' ? { photo: finalData.photo } : {}),
+          ...(itemType === 'cigar' ? { photos: finalData.photos } : {}),
         });
 
         await base44.entities[ENTITIES[itemType]].update(finalData._quickRecord.id, updateData);

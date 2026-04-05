@@ -142,13 +142,48 @@ function normalizeBottle(raw, source) {
   return { name, maker, category: details.type, details, valuationSeed, source };
 }
 
+function normalizeCigar(raw, source) {
+  const maker = raw.brand || raw.manufacturer || raw.maker || '';
+  const name = raw.name || raw.cigar_name || '';
+
+  const details = {
+    brand: raw.brand || raw.manufacturer || '',
+    line: raw.line || raw.series || '',
+    vitola: raw.vitola || raw.size || '',
+    wrapper: raw.wrapper || '',
+    binder: raw.binder || '',
+    filler: raw.filler || '',
+    country_of_origin: raw.country_of_origin || raw.country || '',
+    factory: raw.factory || '',
+    body: raw.body || '',
+    strength: raw.strength || '',
+    flavor_notes: Array.isArray(raw.flavor_notes) ? raw.flavor_notes : [],
+    production_status: raw.production_status || '',
+    release_type: raw.release_type || '',
+    length_inches: raw.length_inches ?? null,
+    ring_gauge: raw.ring_gauge ?? null,
+    box_date: raw.box_date || '',
+    barcode: raw.barcode || '',
+  };
+
+  const valuationSeed = {
+    retail_price: raw.retail_price ?? raw.estimated_price ?? null,
+    production_status: details.production_status || null,
+    release_type: details.release_type || null,
+    rarity_hint: raw.rarity_hint || raw.limited_hint || null,
+    maker,
+  };
+
+  return { name, maker, category: details.vitola || details.line, details, valuationSeed, source };
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
  * Normalize a raw LLM result into the canonical candidate shape.
  *
  * @param {object} rawResult - Raw LLM response object for a single item
- * @param {"pipe"|"blend"|"bottle"} itemType
+ * @param {"pipe"|"blend"|"bottle"|"cigar"} itemType
  * @param {"upc"|"photo"|"search"} source
  * @returns {NormalizedCandidate}
  */
@@ -157,6 +192,7 @@ export function normalizeSingleCandidate(rawResult, itemType, source = 'search')
   if (itemType === 'pipe') return normalizePipe(rawResult, source);
   if (itemType === 'blend') return normalizeBlend(rawResult, source);
   if (itemType === 'bottle') return normalizeBottle(rawResult, source);
+  if (itemType === 'cigar') return normalizeCigar(rawResult, source);
   return { name: rawResult.name || '', maker: '', category: '', details: rawResult, valuationSeed: {}, source };
 }
 
@@ -164,7 +200,7 @@ export function normalizeSingleCandidate(rawResult, itemType, source = 'search')
  * Normalize a full LLM identification response into the canonical output shape.
  *
  * @param {object} rawResult   - Raw LLM response (single item or {candidates:[...]})
- * @param {"pipe"|"blend"|"bottle"} itemType
+ * @param {"pipe"|"blend"|"bottle"|"cigar"} itemType
  * @param {"upc"|"photo"|"search"} source
  * @returns {IdentifyResult}
  */
@@ -211,7 +247,7 @@ export function normalizeIdentifiedItem(rawResult, itemType, source = 'search') 
  * ready to prefill a quick-add or manual form.
  *
  * @param {NormalizedCandidate} identifiedItem
- * @param {"pipe"|"blend"|"bottle"} itemType
+ * @param {"pipe"|"blend"|"bottle"|"cigar"} itemType
  * @returns {object}
  */
 export function buildQuickAddPayload(identifiedItem, itemType) {
@@ -272,6 +308,27 @@ export function buildQuickAddPayload(identifiedItem, itemType) {
     };
   }
 
+  if (itemType === 'cigar') {
+    return {
+      ...base,
+      brand: maker,
+      line: details.line,
+      vitola: details.vitola,
+      wrapper: details.wrapper,
+      binder: details.binder,
+      filler: details.filler,
+      country_of_origin: details.country_of_origin,
+      factory: details.factory,
+      body: details.body,
+      strength: details.strength,
+      flavor_notes: details.flavor_notes,
+      production_status: details.production_status,
+      release_type: details.release_type,
+      barcode: details.barcode,
+      purchase_price: valuationSeed.retail_price ?? undefined,
+    };
+  }
+
   return base;
 }
 
@@ -284,7 +341,7 @@ export function buildQuickAddPayload(identifiedItem, itemType) {
  * Does NOT introduce new valuation formulas — only surfaces recognized data.
  *
  * @param {NormalizedCandidate} identifiedItem
- * @param {"pipe"|"blend"|"bottle"} itemType
+ * @param {"pipe"|"blend"|"bottle"|"cigar"} itemType
  * @returns {object}
  */
 export function buildValuationSeedData(identifiedItem, itemType) {
@@ -325,6 +382,19 @@ export function buildValuationSeedData(identifiedItem, itemType) {
       edition: valuationSeed.edition || null,
       rarity_hint: valuationSeed.rarity_hint || null,
       replacement_hint: valuationSeed.replacement_hint || null,
+    };
+  }
+
+  if (itemType === 'cigar') {
+    return {
+      purchase_price: valuationSeed.retail_price ?? null,
+      value_source: 'identify',
+      value_confidence: valuationSeed.retail_price ? 'medium' : 'low',
+      // Extra context
+      production_status: valuationSeed.production_status || null,
+      release_type: valuationSeed.release_type || null,
+      rarity_hint: valuationSeed.rarity_hint || null,
+      maker: valuationSeed.maker || null,
     };
   }
 

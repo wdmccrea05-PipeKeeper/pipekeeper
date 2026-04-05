@@ -9,6 +9,7 @@ const PLACEHOLDERS = {
   blend: 'e.g. Carter Hall, Orlik Golden Sliced…',
   pipe: 'e.g. Falcon Standard, Peterson 312…',
   bottle: "e.g. Blanton's Single Barrel, Eagle Rare…",
+  cigar: 'e.g. Oliva Serie V, Arturo Fuente Hemingway…',
 };
 
 const SEARCH_PROMPTS = {
@@ -57,6 +58,26 @@ Each item:
 - age
 - abv
 - description`,
+  cigar: (query) => `Find exact premium cigar matches for "${query}".
+Rules:
+1. If the exact cigar exists, return it first.
+2. Do not put merely similar cigars ahead of the searched cigar.
+3. Return up to 8 cigar results.
+
+Return JSON with "items" array.
+Each item:
+- name
+- brand
+- line
+- vitola
+- wrapper
+- binder
+- filler
+- country_of_origin
+- body (mild / mild_medium / medium / medium_full / full)
+- strength (mild / mild_medium / medium / medium_full / full)
+- production_status (regular_production / limited / discontinued / seasonal / unknown)
+- description`,
 };
 
 const SEARCH_SCHEMA = {
@@ -84,6 +105,16 @@ const SEARCH_SCHEMA = {
           abv: { type: 'number' },
           flavor_notes: { type: 'array', items: { type: 'string' } },
           description: { type: 'string' },
+          // cigar fields
+          brand: { type: 'string' },
+          line: { type: 'string' },
+          vitola: { type: 'string' },
+          wrapper: { type: 'string' },
+          binder: { type: 'string' },
+          filler: { type: 'string' },
+          country_of_origin: { type: 'string' },
+          body: { type: 'string' },
+          production_status: { type: 'string' },
         },
       },
     },
@@ -94,6 +125,7 @@ function subtitleFor(itemType, item) {
   if (itemType === 'blend') return item.manufacturer;
   if (itemType === 'pipe') return item.maker || item.model;
   if (itemType === 'bottle') return item.distillery;
+  if (itemType === 'cigar') return item.brand;
   return '';
 }
 
@@ -146,7 +178,9 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
               ? 'Search by blend name or manufacturer'
               : itemType === 'pipe'
                 ? 'Search by maker, model, or shape'
-                : 'Search by bottle name, distillery, or expression'}
+                : itemType === 'cigar'
+                  ? 'Search by cigar name, brand, or line'
+                  : 'Search by bottle name, distillery, or expression'}
           </p>
         </div>
       </div>

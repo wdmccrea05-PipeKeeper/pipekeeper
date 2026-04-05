@@ -62,9 +62,25 @@ Look for:
 Search for this product to provide retail price and rarity context.
 Note if this is a limited release, allocated expression, or easy-to-find standard release.`;
 
+const CIGAR_PHOTO_PROMPT = `Analyze the provided image(s) of a premium cigar, cigar band, or cigar box. Identify the product and extract all visible details.
+
+Look for:
+1. Brand name on the band or box
+2. Line / series name (e.g. "Serie V", "Anejo", "Hemingway")
+3. Vitola / size format (e.g. Robusto, Toro, Churchill, Lancero, Gordo)
+4. Wrapper leaf color and origin if visible or stated on band (Colorado Claro, Maduro, Habano, Connecticut, etc.)
+5. Country of origin or factory name if shown
+6. Any edition / release markings (Limited Edition, Annual Release, etc.)
+7. Ring gauge and length if printed
+8. Band design or logo details that help identify the maker
+
+Search for this cigar to provide additional details such as binder, filler, body profile, and approximate retail price.
+Note if this is a limited release, a regular production vitola, or a special collaboration.`;
+
 function promptForType(itemType) {
   if (itemType === 'pipe') return PIPE_PHOTO_PROMPT;
   if (itemType === 'blend') return BLEND_PHOTO_PROMPT;
+  if (itemType === 'cigar') return CIGAR_PHOTO_PROMPT;
   return BOTTLE_PHOTO_PROMPT;
 }
 
@@ -139,9 +155,37 @@ const BOTTLE_SCHEMA = {
   },
 };
 
+const CIGAR_SCHEMA = {
+  type: 'object',
+  properties: {
+    name: { type: 'string' },
+    brand: { type: 'string' },
+    line: { type: 'string' },
+    vitola: { type: 'string' },
+    wrapper: { type: 'string' },
+    binder: { type: 'string' },
+    filler: { type: 'string' },
+    country_of_origin: { type: 'string' },
+    factory: { type: 'string' },
+    body: { type: 'string' },
+    strength: { type: 'string' },
+    flavor_notes: { type: 'array', items: { type: 'string' } },
+    production_status: { type: 'string' },
+    release_type: { type: 'string' },
+    length_inches: { type: 'number' },
+    ring_gauge: { type: 'number' },
+    retail_price: { type: 'number' },
+    rarity_hint: { type: 'string' },
+    limited_hint: { type: 'string' },
+    confidence: { type: 'string' },
+    confidence_score: { type: 'number' },
+  },
+};
+
 function schemaForType(itemType) {
   if (itemType === 'pipe') return PIPE_SCHEMA;
   if (itemType === 'blend') return BLEND_SCHEMA;
+  if (itemType === 'cigar') return CIGAR_SCHEMA;
   return BOTTLE_SCHEMA;
 }
 

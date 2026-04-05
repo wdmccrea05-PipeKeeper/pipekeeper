@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { TrendingUp, BookOpen, Plus, Cigarette } from 'lucide-react';
+import { TrendingUp, Plus, Cigarette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function CigarKeeperModuleNav({ currentPageName, onAddCigar, onLogSession }) {
@@ -11,7 +11,6 @@ export default function CigarKeeperModuleNav({ currentPageName, onAddCigar, onLo
 
   const items = [
     { page: 'Cigars', label: t('cigars.cigars', 'Cigars'), Icon: Cigarette },
-    { page: 'CigarSessions', label: t('cigars.sessions', 'Sessions'), Icon: BookOpen },
     { page: 'CigarInsights', label: t('nav.insights', 'Insights'), Icon: TrendingUp },
   ];
 
