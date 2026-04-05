@@ -603,6 +603,235 @@ export default {
     noTransactionsYet: "No cellar transactions yet. Add your first entry above.",
   },
 
+  howTo: {
+    pageTitle: "How-To Guides",
+    pageSubtitle: "Step-by-step instructions for every feature in CollectionKeeper.",
+
+    // Section headings
+    managingPipes: "Managing Pipes",
+    managingTobacco: "Managing Tobacco",
+    loggingSessions: "Logging Sessions",
+    measurements: "Pipe Measurements",
+    insights: "Insights & Analytics",
+    aiFeatures: "AI Features",
+    sharing: "Sharing & Exporting",
+    subscriptions: "Subscriptions",
+
+    // Pipes
+    addPipeQ: "How do I add a pipe?",
+    addPipeBasicSteps: [
+      "Tap 'Add Pipe' from PipeKeeper, or use Quick Access (⚡ in the header) from any page.",
+      "Optionally use AI Search to pre-fill details by maker or model name.",
+      "Fill in the required Name field, then add maker, shape, material, and condition.",
+      "Upload up to 5 photos and up to 2 stamping photos.",
+      "Enter physical measurements (length, weight, bowl dimensions) using the metric/imperial toggle.",
+      "Set purchase price, estimated value, and any notes.",
+      "Tap 'Save Pipe' at the bottom."
+    ],
+    updatePipeQ: "How do I update a pipe record?",
+    updatePipeSteps: [
+      "Open the pipe from your PipeKeeper list.",
+      "Tap the Edit button (pencil icon) at the top of the detail page.",
+      "Change any fields you need to update.",
+      "Tap 'Save Pipe' to confirm."
+    ],
+    markFavoriteQ: "How do I mark a pipe as a favourite?",
+    markFavoriteSteps: [
+      "Open the pipe's detail page.",
+      "Tap the Edit button.",
+      "Toggle the 'Favourite' switch on.",
+      "Save the pipe.",
+      "Favourited pipes are highlighted in your collection list."
+    ],
+    deletePipeQ: "How do I delete a pipe?",
+    deletePipeSteps: [
+      "Open the pipe's detail page.",
+      "Tap the Delete button (available near the top or in the edit form).",
+      "Confirm the deletion when prompted.",
+      "The pipe and its associated session data will be removed permanently."
+    ],
+
+    // Tobacco
+    addTobaccoQ: "How do I add a tobacco blend?",
+    addTobaccoSteps: [
+      "Tap 'Add Blend' from PipeKeeper, or use Quick Access (⚡ in the header).",
+      "Search for the blend name to auto-fill details, or add manually.",
+      "Fill in manufacturer, blend type, cut, strength, and flavor notes.",
+      "Set your inventory: number of tins, bulk ounces, or pouches.",
+      "Enter purchase details and any notes.",
+      "Tap 'Save Blend' to add it to your cellar."
+    ],
+    updateTobaccoQ: "How do I update a tobacco blend?",
+    updateTobaccoSteps: [
+      "Open the blend from your Tobacco list.",
+      "Tap the Edit button on the detail page.",
+      "Update any fields — including inventory counts as you smoke or acquire more.",
+      "Save the changes."
+    ],
+    manageCellarQ: "How do I manage my cellar inventory?",
+    manageCellarSteps: [
+      "Open a tobacco blend's detail page.",
+      "The inventory section shows your current tins, bulk ounces, and pouches.",
+      "Edit the blend to update quantities — reduce as you smoke, increase when you restock.",
+      "Use the Cellar Log tab to record formal additions and removals with dates.",
+      "Cellared blends with a cellared date are tracked separately from open inventory."
+    ],
+    deleteTobaccoQ: "How do I delete a tobacco blend?",
+    deleteTobaccoSteps: [
+      "Open the blend's detail page.",
+      "Tap the Delete button.",
+      "Confirm the deletion.",
+      "All associated session and cellar log records referencing this blend will remain but the blend record itself will be removed."
+    ],
+
+    // Sessions
+    logSessionQ: "How do I log a smoking session?",
+    logSessionSteps: [
+      "Tap 'Log Session' from PipeKeeper or use Quick Launch from the Hub.",
+      "Select the pipe you used (or choose an external pipe).",
+      "Select the tobacco blend you smoked (or choose an external blend).",
+      "For system pipes (e.g. Falcon), select which interchangeable bowl was used.",
+      "Set the date and number of bowls.",
+      "Add optional notes about the session.",
+      "Tap Save to record the session."
+    ],
+    viewLogsQ: "How do I view my smoking history?",
+    viewLogsSteps: [
+      "Go to PipeKeeper → Insights tab.",
+      "Scroll down to the Smoking Log section.",
+      "All logged sessions are listed with pipe, blend, date, and notes.",
+      "Use the filters to narrow by pipe, blend, or date range."
+    ],
+    streaksQ: "How does session tracking work?",
+    streaksSteps: [
+      "Every session you log is added to your history.",
+      "The Insights page shows your total session count and most-used combinations.",
+      "Session data also powers AI pairing recommendations and the Curator's Plan Session action.",
+      "The more sessions you log, the more accurate your personalized recommendations become."
+    ],
+
+    // Measurements
+    measurePipeQ: "How do I enter pipe measurements?",
+    measurePipeSteps: [
+      "When adding or editing a pipe, open the Physical Characteristics section.",
+      "Use the metric/imperial toggle to switch between mm/g and inches/oz.",
+      "Enter length, weight, bowl height, bowl width, internal chamber diameter, and bowl depth.",
+      "Values are automatically stored in metric regardless of the display unit selected.",
+      "Your measurement preference is saved in your Profile and applied to all future forms."
+    ],
+
+    // Insights
+    insights: "How do I view collection insights?",
+    insightsSteps: [
+      "Go to PipeKeeper → Insights tab, or WhiskeyKeeper → Insights.",
+      "Insights show your collection totals, value breakdown, favourite items, and trends.",
+      "The AI Pairings section shows recommended pipe-tobacco combinations.",
+      "For WhiskeyKeeper, Insights shows bottle type distribution, country breakdown, and tasting trends."
+    ],
+    curator: "How do I use the Curator?",
+    curatorSteps: [
+      "Tap 'Curator' in the top navigation.",
+      "Type any question about your collection in the chat box and press Send.",
+      "The Curator knows your pipes, blends, bottles, and session history.",
+      "Use Expert Actions (below the chat) to run structured workflows like Plan Session or Optimize Collection.",
+      "Expert Action results appear as recommendation cards — tap Apply to confirm, Skip to dismiss."
+    ],
+    storyCard: "How do I view my Collector's Snapshot?",
+    storyCardSteps: [
+      "Go to the Hub.",
+      "Find the Collection Story card and tap 'View Story' or the story card preview.",
+      "A fullscreen slideshow opens showing your collection highlights.",
+      "Swipe left/right or tap the sides to navigate between cards.",
+      "Tap X or press Escape to close.",
+      "Tap 'Regenerate' on the Hub to rebuild the story from your latest data."
+    ],
+
+    // AI Features
+    generatePairingsQ: "How do I generate AI pipe-tobacco pairings?",
+    generatePairingsSteps: [
+      "Go to PipeKeeper → Insights → Pairings.",
+      "If pairings show 'out of date', tap 'Regenerate Pairings'.",
+      "The AI analyses your pipes, blends, session history, and preferences.",
+      "Pairings are displayed as cards with a pipe, recommended blend, and explanation.",
+      "Tap any card to open the pipe or blend detail page."
+    ],
+    identifyPipeQ: "How do I identify a pipe using AI?",
+    identifyPipeSteps: [
+      "When adding a new pipe, tap 'Photo Identifier' in the add flow.",
+      "Upload a photo of the pipe (front and stamping recommended).",
+      "The AI will suggest the likely maker, shape, country, and model based on the image.",
+      "Review the suggestions and apply the fields you want to keep.",
+      "You can also use the Identify button from the Hub Quick Access menu."
+    ],
+    optimizeQ: "How do I optimize my collection with the Curator?",
+    optimizeSteps: [
+      "Go to the Curator page.",
+      "In the Expert Actions panel, tap 'Optimize Collection' (for pipes) or 'Optimize Whiskey Collection'.",
+      "The AI analyses your collection for gaps, redundancies, and diversification opportunities.",
+      "Review the recommendation cards returned.",
+      "Tap Apply on any card to confirm the suggested change, or Skip to dismiss it."
+    ],
+    geometryQ: "How does the AI pipe geometry analyzer work?",
+    geometrySteps: [
+      "Open a pipe's detail page and navigate to the Details tab.",
+      "If measurements are recorded, the geometry analyzer estimates bowl volume and smoking characteristics.",
+      "The analysis considers chamber diameter, depth, and overall pipe length.",
+      "Results are shown as a read-only summary — they do not overwrite your stored fields."
+    ],
+
+    // Sharing
+    shareQ: "How do I share a pipe, blend, or bottle?",
+    shareSteps: [
+      "Open the item's detail page.",
+      "Tap the Share button (share icon near the top).",
+      "Choose whether to show or hide value and inventory data in the shared view.",
+      "Copy the shareable link, or generate a visual card to save or post.",
+      "Recipients can view the shared card without needing an account."
+    ],
+    exportQ: "How do I export my collection data?",
+    exportSteps: [
+      "Go to PipeKeeper or WhiskeyKeeper Insights.",
+      "Look for the Export button (available to Pro subscribers).",
+      "Choose the export format (CSV or PDF report).",
+      "The file will download to your device."
+    ],
+    profileQ: "How do I make my profile public?",
+    profileSteps: [
+      "Go to Profile (your avatar or Profile link in the navigation).",
+      "Find the Privacy section.",
+      "Toggle 'Public Profile' on.",
+      "Optionally set a display name, bio, and location.",
+      "Your public profile URL can be shared with friends."
+    ],
+
+    // Subscriptions
+    upgradeQ: "How do I upgrade to Pro?",
+    upgradeSteps: [
+      "Go to the Subscription page (accessible from Profile or the upgrade prompts).",
+      "Choose the module(s) you want to unlock: PipeKeeper, WhiskeyKeeper, CigarKeeper, or WineKeeper.",
+      "Select a monthly or annual plan (annual saves ~17%).",
+      "Consider a bundle plan if you use 3 or 4 modules.",
+      "Complete payment via the secure checkout.",
+      "Your Pro features activate immediately."
+    ],
+    cancelQ: "How do I cancel my subscription?",
+    cancelSteps: [
+      "Go to Profile → Subscription.",
+      "Tap 'Manage Plan' to open the billing portal.",
+      "Select 'Cancel Subscription'.",
+      "Your Pro features remain active until the end of the current billing period.",
+      "For Apple in-app subscriptions, manage cancellation via the iOS App Store → Subscriptions."
+    ],
+    tierDiffQ: "What is the difference between Free and Pro?",
+    tierDiffSteps: [
+      "Free: limited item counts (up to 5 pipes, 10 blends), basic features, no AI pairings or valuations.",
+      "Pro: unlimited items, AI pairings, collection optimization, AI pipe identification, break-in schedules, valuation tools, Value & Strategy section, export reports, and priority support.",
+      "Each module (PipeKeeper, WhiskeyKeeper, CigarKeeper, WineKeeper) requires its own subscription.",
+      "Bundle plans unlock 3 or 4 modules at a discounted rate.",
+      "Founding members have grandfathered lifetime Pro access."
+    ],
+  },
+
   subscription: {
     // Pricing labels
     moduleMonthly: "{{module}} Pro Monthly",
