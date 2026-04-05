@@ -267,10 +267,10 @@ function EditTobaccoValuationModal({ blend, onClose, onSaved }) {
           </div>
           <div>
             <label className="text-xs text-[#D8C7A6] block mb-1">Production Status</label>
-            <Select value={form.production_status} onValueChange={v => setForm(p => ({ ...p, production_status: v }))}>
+            <Select value={form.production_status || 'none'} onValueChange={v => setForm(p => ({ ...p, production_status: v === 'none' ? '' : v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">— Not set —</SelectItem>
+                <SelectItem value="none">— Not set —</SelectItem>
                 <SelectItem value="In Production">In Production</SelectItem>
                 <SelectItem value="Discontinued">Discontinued</SelectItem>
                 <SelectItem value="Limited Release">Limited Release</SelectItem>
@@ -280,10 +280,10 @@ function EditTobaccoValuationModal({ blend, onClose, onSaved }) {
           </div>
           <div>
             <label className="text-xs text-[#D8C7A6] block mb-1">Manufacturer Status</label>
-            <Select value={form.manufacturer_status} onValueChange={v => setForm(p => ({ ...p, manufacturer_status: v }))}>
+            <Select value={form.manufacturer_status || 'none'} onValueChange={v => setForm(p => ({ ...p, manufacturer_status: v === 'none' ? '' : v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">— Not set —</SelectItem>
+                <SelectItem value="none">— Not set —</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="limited_production">Limited Production</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
