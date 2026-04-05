@@ -507,6 +507,7 @@ export default {
 
   help: {
     howTo: "How-To",
+    faq: "FAQ",
     troubleshooting: "Troubleshooting",
     launchTutorial: "Launch Tutorial",
     tutorialModalTitle: "Start Your Tutorial?",
