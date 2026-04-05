@@ -22,6 +22,63 @@ function capitalize(str) {
 }
 
 // ---------------------------------------------------------------------------
+// Pipe maker configuration — data-driven enrichment
+// ---------------------------------------------------------------------------
+
+/**
+ * Known pipe maker metadata.
+ * These are conservative defaults consulted when no explicit maker-status
+ * fields are stored on the item. Item-level fields always take precedence.
+ *
+ * tier: 'prestige' | 'master' | 'established' | 'emerging'
+ * productionStatus: 'active' | 'retired' | 'deceased' | 'inactive'
+ * isHandmade: true if the maker is known for individual handmade work
+ *
+ * Keys are lowercase and matched with String.includes() so partial names
+ * (e.g. 'ivarsson') also resolve correctly.
+ */
+export const PIPE_MAKER_CONFIG = {
+  // ── Classic English makers (largely inactive / historic) ──
+  'dunhill':         { tier: 'prestige',    productionStatus: 'inactive',  isHandmade: false },
+  'barling':         { tier: 'prestige',    productionStatus: 'inactive',  isHandmade: true  },
+  'comoy':           { tier: 'prestige',    productionStatus: 'inactive',  isHandmade: false },
+  'sasieni':         { tier: 'prestige',    productionStatus: 'inactive',  isHandmade: true  },
+  'charatan':        { tier: 'prestige',    productionStatus: 'inactive',  isHandmade: true  },
+  // ── Italian artisan makers ──
+  'castello':        { tier: 'prestige',    productionStatus: 'active',    isHandmade: true  },
+  'ardor':           { tier: 'prestige',    productionStatus: 'active',    isHandmade: true  },
+  'ser jacopo':      { tier: 'prestige',    productionStatus: 'active',    isHandmade: true  },
+  'radice':          { tier: 'master',      productionStatus: 'active',    isHandmade: true  },
+  'moretti':         { tier: 'master',      productionStatus: 'deceased',  isHandmade: true  },
+  // ── Nordic / Scandinavian makers ──
+  'lars ivarsson':   { tier: 'prestige',    productionStatus: 'deceased',  isHandmade: true  },
+  'sixten ivarsson': { tier: 'prestige',    productionStatus: 'deceased',  isHandmade: true  },
+  'nording':         { tier: 'established', productionStatus: 'retired',   isHandmade: false },
+  'w.o. larsen':     { tier: 'established', productionStatus: 'inactive',  isHandmade: false },
+  // ── Czech / Eastern European makers ──
+  'jirsa':           { tier: 'master',      productionStatus: 'active',    isHandmade: true  },
+  'jan zaloudek':    { tier: 'prestige',    productionStatus: 'deceased',  isHandmade: true  },
+  'kapet':           { tier: 'established', productionStatus: 'active',    isHandmade: true  },
+  // ── American artisan makers ──
+  'boswell':         { tier: 'established', productionStatus: 'active',    isHandmade: true  },
+};
+
+/**
+ * Look up maker config by name (case-insensitive, partial match).
+ * Returns the first matching config entry, or null if not found.
+ * @param {string} makerName
+ * @returns {{ tier: string, productionStatus: string, isHandmade: boolean } | null}
+ */
+function resolvePipeMakerConfig(makerName) {
+  if (!makerName) return null;
+  const lower = makerName.toLowerCase();
+  for (const [key, cfg] of Object.entries(PIPE_MAKER_CONFIG)) {
+    if (lower.includes(key)) return cfg;
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // 1. normalizeValuationInputs
 // ---------------------------------------------------------------------------
 
@@ -290,12 +347,24 @@ export function computeCurrentValue(item, moduleKey) {
  * Returns a rarity score from 0 to 100.
  * Higher = rarer.
  *
- * Pipe scoring targets:
- *   very common factory:                5–25
- *   respected artisan/factory special:  25–50
- *   scarce / retired maker / ltd run:   50–75
- *   one-off / dead maker / highly rare: 75–95+
- *   truly unique with provenance:       90–100
+ * Pipe scoring targets (floor: 50 — no pipe may score below 50):
+ *   common factory / standard production:              50–60
+ *   respected but currently available artisan:         60–75
+ *   limited artisan / special line / harder-to-find:   70–85
+ *   one-of-a-kind custom artisan:                      80–95
+ *   one-of-a-kind + deceased/retired maker/provenance: 90–100
+ *
+ * Tobacco scoring targets (floor: 10):
+ *   common in-production blend:                        10–20
+ *   seasonal / limited / regional:                     30–55
+ *   discontinued (active manufacturer):                45–65
+ *   discontinued + inactive manufacturer:              60–80
+ *   multiple scarcity signals combined:                70–90+
+ *
+ * Bottle scoring targets (floor: 5):
+ *   basic in-production, no age statement:             5–25
+ *   limited / allocated / aged:                        25–60
+ *   discontinued + aged + closed producer:             70–90+
  */
 export function computeRarityScore(item, moduleKey) {
   if (!item) return 0;
@@ -305,6 +374,9 @@ export function computeRarityScore(item, moduleKey) {
   let score = 0;
 
   if (moduleKey === 'whiskeykeeper') {
+    // Base floor — even a basic in-production bottle has some collectible signal
+    score = 5;
+
     // Type premium
     if (inputs.type === 'Single Malt' || inputs.type === 'Single Grain') score += 20;
     else if (inputs.type === 'Scotch Whisky' || inputs.type === 'Blended Malt') score += 10;
@@ -359,12 +431,16 @@ export function computeRarityScore(item, moduleKey) {
       if (inputs.rarityOverride > 0) return Math.min(100, Math.max(0, Math.round(inputs.rarityOverride)));
 
       // ── TOBACCO RARITY ─────────────────────────────────────────────────────
-      // Additive scoring. Typical ranges:
-      //   common in-production blend:                  0–15
-      //   seasonal / limited / regional:              25–50
-      //   discontinued (active manufacturer):         30–50
-      //   discontinued from inactive manufacturer:   50–75
-      //   multiple scarcity signals combined:        60–90+
+      // Additive scoring with a base floor of 10.
+      // Typical ranges:
+      //   common in-production blend:                 10–20
+      //   seasonal / limited / regional:              30–55
+      //   discontinued (active manufacturer):         45–65
+      //   discontinued from inactive manufacturer:   60–80
+      //   multiple scarcity signals combined:        70–90+
+
+      // Base floor for all tobacco blends
+      score = 10;
 
       // Discontinued blends are increasingly scarce
       if (inputs.isDiscontinued) score += 38;
@@ -405,72 +481,111 @@ export function computeRarityScore(item, moduleKey) {
       // Apply rarity override if manually set
       if (inputs.rarityScoreOverride > 0) return Math.min(100, Math.max(0, Math.round(inputs.rarityScoreOverride)));
 
-      // 1. Production type is the primary driver.
-      //    Target ranges:
-      //      factory:                        5–25
-      //      standard_artisan:              25–50
-      //      limited_artisan_batch:         50–75
-      //      one_off/one_of_a_kind:         75–95+  (floor of 70 guarantees the target range
-      //                                              even without other signals; additional
-      //                                              factors push the score into 75–100)
-      //      truly unique with provenance:  90–100
+      // ── PIPE RARITY (rewritten) ─────────────────────────────────────────────
+      //
+      // ALL pipes have a minimum floor of 50.  Scoring is layered:
+      //   base floor + production type + maker status + characteristics.
+      //
+      // Target bands:
+      //   common factory / standard production:              50–60
+      //   respected but currently available artisan:         60–75
+      //   limited artisan / special line / harder-to-find:   70–85
+      //   one-of-a-kind custom artisan:                      80–95
+      //   one-of-a-kind + deceased/retired maker/provenance: 90–100
+      //
+      // Rarity and replaceability are distinct — replaceability is handled
+      // separately in computeReplacementDifficulty.
+      const PIPE_RARITY_FLOOR = 50;
+
+      // 1. Production type sets the starting base above the floor.
+      //    Maker-config enrichment can upgrade 'factory' to 'standard_artisan'
+      //    when the maker is known for handmade/artisan work.
       const prodType = inputs._effectiveProdType || 'factory';
-      if (prodType === 'one_off') {
-        // A one-of-a-kind pipe is definitionally very rare regardless of other signals.
-        // A floor of 70 ensures any small additional factor (material, maker) puts the
-        // score solidly in the 75–95+ range.
-        score = 70;
-      } else if (prodType === 'limited_artisan_batch') {
-        score += 35;
-      } else if (prodType === 'standard_artisan') {
-        score += 18;
+      const makerCfg = resolvePipeMakerConfig(inputs.maker);
+
+      // If maker config says this is a handmade maker but no explicit
+      // production type was set, treat as standard_artisan for scoring.
+      let effectiveProdType = prodType;
+      if (makerCfg?.isHandmade && effectiveProdType === 'factory') {
+        effectiveProdType = 'standard_artisan';
       }
-      // factory: 0
 
-      // 2. Maker status (deceased/retired adds substantial rarity)
-      if (inputs.isMakerDeceased) score += 20;
-      else if (inputs.isMakerRetired) score += 18;
-      else if (inputs.isMakerInactive) score += 12;
+      if (effectiveProdType === 'one_off') {
+        // A one-of-a-kind pipe is definitionally rare.
+        // Base of 82 means even without additional factors the score lands in
+        // the 80–95 target band.
+        score = 82;
+      } else if (effectiveProdType === 'limited_artisan_batch') {
+        // Additional factors bring this into the 70–85 band.
+        score = 68;
+      } else if (effectiveProdType === 'standard_artisan') {
+        // Additional factors bring this into the 60–75 band.
+        score = 60;
+      } else {
+        // Factory / unknown: floor only.
+        score = PIPE_RARITY_FLOOR;
+      }
 
-      // 3. Artisan tier / collectibility
-      const artisanTier = (inputs.artisanTier || '').toLowerCase();
-      if (artisanTier === 'prestige' || artisanTier === 'master') score += 12;
-      else if (artisanTier === 'established') score += 8;
-      else if (artisanTier === 'emerging') score += 4;
+      // 2. Maker status — strongest secondary driver.
+      //    Item-level fields take precedence; fall back to maker config.
+      const effectiveMakerDeceased = inputs.isMakerDeceased || makerCfg?.productionStatus === 'deceased';
+      const effectiveMakerRetired  = inputs.isMakerRetired  || makerCfg?.productionStatus === 'retired';
+      const effectiveMakerInactive = inputs.isMakerInactive || makerCfg?.productionStatus === 'inactive';
 
-      // 4. Premium maker recognition (expanded list)
-      const premiumMakers = [
+      if (effectiveMakerDeceased) {
+        score += 15;
+        // Artisan work from a deceased maker is doubly non-reproducible
+        if (effectiveProdType !== 'factory') score += 5;
+      } else if (effectiveMakerRetired) {
+        score += 12;
+        if (effectiveProdType !== 'factory') score += 3;
+      } else if (effectiveMakerInactive) {
+        score += 8;
+      }
+
+      // 3. Artisan tier / collectibility.
+      //    Use explicit artisan_tier field; fall back to maker config.
+      const effectiveArtisanTier = (inputs.artisanTier || makerCfg?.tier || '').toLowerCase();
+      if (effectiveArtisanTier === 'prestige' || effectiveArtisanTier === 'master') score += 7;
+      else if (effectiveArtisanTier === 'established') score += 4;
+      else if (effectiveArtisanTier === 'emerging') score += 2;
+
+      // 4. Premium maker recognition (applied independently of artisan-tier flag).
+      const PREMIUM_MAKERS = [
         'dunhill', 'barling', 'comoy', 'sasieni', 'charatan', 'castello',
         'ardor', 'ser jacopo', 'radice', 'jirsa', 'jan zaloudek', 'kapet',
         'lars ivarsson', 'sixten ivarsson', 'w.o. larsen', 'bing & grondahl',
       ];
       const makerLower = (inputs.maker || '').toLowerCase();
-      if (premiumMakers.some(m => makerLower.includes(m))) score += 14;
+      if (PREMIUM_MAKERS.some(m => makerLower.includes(m))) score += 6;
 
-      // 5. Material
-      const materialScores = { Meerschaum: 15, Morta: 12, Briar: 6, Clay: 3 };
-      score += materialScores[inputs.bowlMaterial] || 0;
+      // 5. Material premium (rare materials are harder to source / replace).
+      const materialBoosts = { Meerschaum: 7, Morta: 5, Briar: 2, Clay: 1 };
+      score += materialBoosts[inputs.bowlMaterial] || 0;
 
-      // 6. Age / era
+      // 6. Age / era premium.
       const yearNum = parseInt(inputs.yearMade, 10);
       if (!isNaN(yearNum)) {
-        if (yearNum < 1940) score += 18;
-        else if (yearNum < 1960) score += 12;
-        else if (yearNum < 1980) score += 8;
-        else if (yearNum < 2000) score += 4;
+        if (yearNum < 1940) score += 10;
+        else if (yearNum < 1960) score += 7;
+        else if (yearNum < 1980) score += 4;
+        else if (yearNum < 2000) score += 2;
       }
 
-      // 7. Condition bonus (well-preserved examples are rarer)
-      const conditionUpper = (inputs.condition || '').toLowerCase();
-      if (conditionUpper.includes('mint') || conditionUpper.includes('nos')) score += 6;
-      else if (conditionUpper.includes('excellent')) score += 4;
-      else if (conditionUpper.includes('very good')) score += 2;
+      // 7. Condition bonus (well-preserved examples are rarer).
+      const conditionLower = (inputs.condition || '').toLowerCase();
+      if (conditionLower.includes('mint') || conditionLower.includes('nos')) score += 4;
+      else if (conditionLower.includes('excellent')) score += 2;
+      else if (conditionLower.includes('very good')) score += 1;
 
-      // 8. Provenance / certification / grading
-      if (inputs.hasProvenance || inputs.isGraded) score += 8;
+      // 8. Provenance / certification / grading.
+      if (inputs.hasProvenance || inputs.isGraded) score += 5;
 
-      // 9. Factory limited run (when not already a one-off or artisan batch)
-      if (inputs.isLimitedRun && prodType === 'factory') score += 10;
+      // 9. Factory limited run (small boost for factory items with a limited release).
+      if (inputs.isLimitedRun && effectiveProdType === 'factory') score += 5;
+
+      // Enforce floor: no pipe may score below 50.
+      score = Math.max(PIPE_RARITY_FLOOR, score);
     }
 
   } else if (moduleKey === 'cigarkeeper') {
@@ -560,35 +675,54 @@ export function computeReplacementDifficulty(item, moduleKey) {
     }
 
     // ── PIPE replacement difficulty ───────────────────────────────────────────
+    // Rarity and replaceability are distinct concepts.
+    // Rules:
+    //   - one-of-a-kind → very_hard (by definition)
+    //   - deceased/retired maker + artisan → very_hard / hard
+    //   - factory pipes remain easier to replace
+    //   - a handmade artisan pipe should never be "easy to replace"
     const prodType = inputs._effectiveProdType || 'factory';
+    const makerCfgForDiff = resolvePipeMakerConfig(inputs.maker);
+
+    // Effective maker status: item fields take precedence over config defaults.
+    const effMakerDeceased = inputs.isMakerDeceased || makerCfgForDiff?.productionStatus === 'deceased';
+    const effMakerRetired  = inputs.isMakerRetired  || makerCfgForDiff?.productionStatus === 'retired';
+    const effMakerInactive = inputs.isMakerInactive || makerCfgForDiff?.productionStatus === 'inactive';
+
+    // Effective production type: upgrade factory → standard_artisan when
+    // the maker is known for handmade work and no explicit type is set.
+    let effProdType = prodType;
+    if (makerCfgForDiff?.isHandmade && effProdType === 'factory') {
+      effProdType = 'standard_artisan';
+    }
 
     // One-of-a-kind: by definition cannot be replaced
-    if (prodType === 'one_off' || inputs.isOneOfAKind) return DIFFICULTY_LEVELS.VERY_HARD;
+    if (effProdType === 'one_off' || inputs.isOneOfAKind) return DIFFICULTY_LEVELS.VERY_HARD;
 
-    // Deceased maker + artisan work: no more supply possible
-    if (inputs.isMakerDeceased && (prodType === 'limited_artisan_batch' || prodType === 'standard_artisan')) {
+    // Deceased maker + artisan work: no more supply is possible
+    if (effMakerDeceased && (effProdType === 'limited_artisan_batch' || effProdType === 'standard_artisan')) {
       return DIFFICULTY_LEVELS.VERY_HARD;
     }
 
-    // Deceased maker (factory work may have surplus stock)
-    if (inputs.isMakerDeceased) return DIFFICULTY_LEVELS.HARD;
+    // Deceased maker (factory work may still have surplus stock)
+    if (effMakerDeceased) return DIFFICULTY_LEVELS.HARD;
 
     // Limited artisan batch from active/retired maker
-    if (prodType === 'limited_artisan_batch') return DIFFICULTY_LEVELS.HARD;
+    if (effProdType === 'limited_artisan_batch') return DIFFICULTY_LEVELS.HARD;
 
-    // Retired maker: their pipes are still findable but increasingly rare
-    if (inputs.isMakerRetired && (prodType === 'standard_artisan' || inputs.isHandmade)) {
+    // Retired maker: their pipes are still findable but increasingly scarce
+    if (effMakerRetired && (effProdType === 'standard_artisan' || inputs.isHandmade)) {
       return DIFFICULTY_LEVELS.HARD;
     }
-    if (inputs.isMakerRetired) return DIFFICULTY_LEVELS.MODERATE;
-    // Inactive maker (company closed but not retired/deceased artisan)
-    if (inputs.isMakerInactive) return DIFFICULTY_LEVELS.MODERATE;
+    if (effMakerRetired) return DIFFICULTY_LEVELS.MODERATE;
+    // Inactive maker (company closed but not a retired/deceased artisan)
+    if (effMakerInactive) return DIFFICULTY_LEVELS.MODERATE;
 
     // Premium maker or artisan-grade without the above flags
-    const premiumMakers = ['dunhill', 'barling', 'comoy', 'sasieni', 'charatan', 'castello', 'ardor'];
+    const PREMIUM_MAKERS_DIFF = ['dunhill', 'barling', 'comoy', 'sasieni', 'charatan', 'castello', 'ardor'];
     const makerLower = (inputs.maker || '').toLowerCase();
-    const isPremium = premiumMakers.some(m => makerLower.includes(m));
-    if (isPremium || prodType === 'standard_artisan' || inputs.isHandmade) return DIFFICULTY_LEVELS.MODERATE;
+    const isPremium = PREMIUM_MAKERS_DIFF.some(m => makerLower.includes(m));
+    if (isPremium || effProdType === 'standard_artisan' || inputs.isHandmade) return DIFFICULTY_LEVELS.MODERATE;
 
     // Special materials: inherently limited supply
     if (inputs.bowlMaterial === 'Meerschaum' || inputs.bowlMaterial === 'Morta') return DIFFICULTY_LEVELS.MODERATE;
@@ -596,10 +730,10 @@ export function computeReplacementDifficulty(item, moduleKey) {
     return DIFFICULTY_LEVELS.EASY;
   }
 
-  // Generic: rarity-based
-  if (rarity >= 75) return DIFFICULTY_LEVELS.VERY_HARD;
-  if (rarity >= 50) return DIFFICULTY_LEVELS.HARD;
-  if (rarity >= 25) return DIFFICULTY_LEVELS.MODERATE;
+  // Generic: rarity-based (adjusted for modules that may have a rarity floor)
+  if (rarity >= 80) return DIFFICULTY_LEVELS.VERY_HARD;
+  if (rarity >= 60) return DIFFICULTY_LEVELS.HARD;
+  if (rarity >= 35) return DIFFICULTY_LEVELS.MODERATE;
   return DIFFICULTY_LEVELS.EASY;
 }
 
@@ -735,21 +869,21 @@ export function computeOpenVsHoldDecision(item, moduleKey, collectionContext = {
     // Pipe decision: use / rotate / preserve / insure
     const rationale = [];
 
-    if (isVeryHard && rarity >= 75) {
+    if (isVeryHard && rarity >= 85) {
       rationale.push('Extremely rare and irreplaceable — insure against loss or damage');
       rationale.push('Consider professional appraisal and proper storage');
       if (currentValue > 0) rationale.push(`Current value (~$${Math.round(currentValue)}) justifies formal coverage`);
       return { holdRecommendation: 'insure', rationale };
     }
 
-    if (isVeryHard || rarity >= 70) {
+    if (isVeryHard || rarity >= 80) {
       rationale.push('Rare or vintage pipe — preserve display quality');
       rationale.push('Active use may reduce collector value or risk damage');
       if (hasDuplicates) rationale.push('You have similar pipes — smoke those instead');
       return { holdRecommendation: 'preserve', rationale };
     }
 
-    if (isHard || rarity >= 45) {
+    if (isHard || rarity >= 65) {
       rationale.push('Moderately rare — include thoughtfully in rotation');
       rationale.push('Enjoy it, but clean and maintain carefully after each use');
       if (currentValue > 0 && medianValue > 0 && currentValue >= medianValue * 1.5) {
