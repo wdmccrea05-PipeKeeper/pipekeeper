@@ -341,12 +341,12 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
                 </p>
                 <div>
                    <label style={labelStyle}>Aid Type</label>
-                   <Select value={form.aid_type || ''} onValueChange={(v) => setForm((f) => ({ ...f, aid_type: v }))}>
-                    <SelectTrigger style={{ ...inputStyle, color: form.aid_type ? '#F5F1E7' : 'rgba(224,216,200,0.4)' }}>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent style={{ background: 'rgba(40,28,18,0.98)', border: '1px solid rgba(180,140,75,0.3)' }}>
-                      <SelectItem value={null} style={{ color: 'rgba(224,216,200,0.5)' }}>— None specified —</SelectItem>
+                   <Select value={form.aid_type || 'none'} onValueChange={(v) => setForm((f) => ({ ...f, aid_type: v === 'none' ? '' : v }))}>
+                     <SelectTrigger style={{ ...inputStyle, color: form.aid_type ? '#F5F1E7' : 'rgba(224,216,200,0.4)' }}>
+                       <SelectValue placeholder="Select type" />
+                     </SelectTrigger>
+                     <SelectContent style={{ background: 'rgba(40,28,18,0.98)', border: '1px solid rgba(180,140,75,0.3)' }}>
+                       <SelectItem value="none" style={{ color: 'rgba(224,216,200,0.5)' }}>— None specified —</SelectItem>
                       {AID_TYPES.map((a) => (
                         <SelectItem key={a.value} value={a.value} style={{ color: '#F5F1E7' }}>{a.label}</SelectItem>
                       ))}
