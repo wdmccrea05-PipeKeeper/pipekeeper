@@ -160,6 +160,28 @@ export function isModuleAllowedInRelease(moduleKey) {
   return getModuleReleaseState(moduleKey) === 'launched';
 }
 
+// Generic admin/internal override API — supports any module key.
+
+export function getAdminModuleOverride(moduleKey) {
+  return getLocalOverride(moduleKey);
+}
+
+export function setAdminModuleOverride(moduleKey, state) {
+  const key = normalizeModuleKey(moduleKey);
+  if (state === null || state === undefined) {
+    safeLocalStorageRemove(`${LOCAL_OVERRIDE_PREFIX}${key}`);
+  } else {
+    safeLocalStorageSet(`${LOCAL_OVERRIDE_PREFIX}${key}`, state);
+  }
+}
+
+export function clearAdminModuleOverride(moduleKey) {
+  safeLocalStorageRemove(`${LOCAL_OVERRIDE_PREFIX}${normalizeModuleKey(moduleKey)}`);
+}
+
+// Legacy whiskey-specific helpers — kept for backward compatibility.
+// Prefer the generic API above for new code.
+
 export function isAdminWhiskeyUnlocked() {
   return getLocalOverride('whiskeykeeper') === 'internal' || getLocalOverride('whiskeykeeper') === 'launched';
 }

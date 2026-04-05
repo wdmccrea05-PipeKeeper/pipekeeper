@@ -6,7 +6,7 @@ import { Eye, Lock } from "lucide-react";
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { MODULE_ICONS } from "@/components/branding/moduleAssets";
-import { isModuleLaunched, isInternalModuleTester } from "@/components/utils/moduleReleaseState";
+import { isModuleLaunched, isModuleInternal, isInternalModuleTester } from "@/components/utils/moduleReleaseState";
 
 function ModuleIcon({ src, alt, className }) {
   return (
@@ -29,7 +29,6 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
   const [saving, setSaving] = useState(null);
 
   const effectiveUser = passedUser || user;
-  const isAdmin = effectiveUser?.role === "admin";
   const isTester = isInternalModuleTester(effectiveUser);
 
   const MODULE_CONFIG = [
@@ -47,6 +46,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
       description: t("whiskeykeeper.description", "Whiskey collection, tasting notes, and inventory."),
       icon: MODULE_ICONS.whiskeykeeper,
       launched: isModuleLaunched("whiskeykeeper"),
+      internalModule: isModuleInternal("whiskeykeeper"),
       allowToggle: true,
       alcoholRelated: true,
       hidden: !isTester,
@@ -66,7 +66,9 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
       description: t("profile.cigarkeeperDescription", "Cigar collection curation and tasting."),
       icon: MODULE_ICONS.cigarkeeper,
       launched: isModuleLaunched("cigarkeeper"),
-      allowToggle: false,
+      internalModule: isModuleInternal("cigarkeeper"),
+      allowToggle: isTester,
+      hidden: !isTester,
     },
   ].filter((mod) => !mod.hidden);
 
@@ -134,14 +136,13 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-stone-100 text-sm">{mod.label}</span>
-                    {!mod.launched ? (
+                    {mod.internalModule && isTester ? (
+                      <Badge className="text-[10px] bg-purple-100 text-purple-700 border-0 px-1.5 py-0">
+                        {t("profile.internalPreview", "Internal Preview")}
+                      </Badge>
+                    ) : !mod.launched ? (
                       <Badge className="text-[10px] bg-stone-200 text-stone-600 border-0 px-1.5 py-0">
                         {t("hub.comingSoon", "Coming Soon")}
-                      </Badge>
-                    ) : null}
-                    {!mod.launched && isAdmin ? (
-                      <Badge className="text-[10px] bg-purple-100 text-purple-700 border-0 px-1.5 py-0">
-                        {t("profile.adminOverride", "Admin Override")}
                       </Badge>
                     ) : null}
                     {mod.alcoholRelated ? (
@@ -151,7 +152,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                     ) : null}
                   </div>
                   <p className="text-xs text-stone-400 mt-0.5 line-clamp-1">
-                    {mod.launched
+                    {mod.launched || (mod.internalModule && isTester)
                       ? mod.description
                       : `${mod.description} (${t("hub.comingSoon", "Coming Soon")})`}
                   </p>
@@ -166,7 +167,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                     disabled={isSaving}
                   />
                 ) : (
-                  <Lock className="w-3.5 h-3.5 text-stone-500" title="Coming Soon" />
+                  <Lock className="w-3.5 h-3.5 text-stone-500" title={mod.internalModule ? "Internal Module" : "Coming Soon"} />
                 )}
               </div>
             </div>
