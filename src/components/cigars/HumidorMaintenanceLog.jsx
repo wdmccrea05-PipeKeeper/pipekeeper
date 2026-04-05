@@ -117,9 +117,11 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
         ...(data.aid_specification ? { aid_specification: data.aid_specification } : {}),
         ...(data.notes ? { notes: data.notes } : {}),
       };
+      // Step 1: Create the log entry — this is the critical step.
       const created = await base44.entities.HumidorMaintenanceLog.create(payload);
 
-      // Update humidor record with latest readings from this event
+      // Step 2: Update humidor summary fields with latest readings.
+      // This is a best-effort update — if it fails, the log entry is still saved.
       const humidorPatch = { last_maintenance_date: data.date };
       const hasHumidityReading = !!data.humidity_reading;
       const hasTempReading = !!data.temperature_reading;
@@ -139,7 +141,15 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
         if (data.aid_brand) humidorPatch.aid_brand = data.aid_brand;
         if (data.aid_specification) humidorPatch.aid_specification = data.aid_specification;
       }
-      await base44.entities.HumidorLocation.update(humidorId, humidorPatch);
+
+      try {
+        await base44.entities.HumidorLocation.update(humidorId, humidorPatch);
+      } catch (updateErr) {
+        // Humidor summary update failed, but the log entry was saved.
+        // Log the error for diagnostics but do not surface it as a save failure.
+        console.warn('[HumidorMaintenanceLog] humidor summary update failed (log was saved):', updateErr);
+      }
+
       return created;
     },
     onSuccess: () => {
