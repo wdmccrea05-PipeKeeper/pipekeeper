@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -49,7 +49,7 @@ function StyledSelect({ value, onChange, options, placeholder, labelMap }) {
   );
 }
 
-export default function AddFlowManualDetails({ itemType, onBack, onNext, data }) {
+export default function AddFlowManualDetails({ itemType, onBack, onNext, onClose, data }) {
   const [values, setValues] = useState({
     strength: data?.strength || '',
     cut: data?.cut || '',
@@ -87,12 +87,21 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, data })
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
             Details
           </h2>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>Step 2 of 4</p>
         </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+            style={{ color: 'rgba(224,216,200,0.5)' }}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       <div className="mx-6" style={{ height: 1, background: 'rgba(180,140,75,0.12)' }} />

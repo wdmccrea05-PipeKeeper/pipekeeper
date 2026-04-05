@@ -209,6 +209,7 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
             <AddFlowManualBasic
               {...sharedProps}
               onBack={goBack}
+              onClose={close}
               data={wizardData}
               onNext={(data) => {
                 saveStepData(data);
@@ -221,6 +222,7 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
             <AddFlowManualDetails
               {...sharedProps}
               onBack={goBack}
+              onClose={close}
               data={wizardData}
               onNext={(data) => {
                 saveStepData(data);
