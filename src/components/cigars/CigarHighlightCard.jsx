@@ -75,6 +75,7 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
     .map(([name]) => name);
 
   const favoriteCount = cigars.filter((c) => c.is_favorite).length;
+  const atRiskCount = insights.atRisk?.length || 0;
 
   return (
     <div
