@@ -178,7 +178,7 @@ function CigarKeeperInner() {
         </Button>
       </div>
 
-      <CigarKeeperModuleNav currentPageName={null} />
+      <CigarKeeperModuleNav currentPageName={null} onLogSession={() => setSessionModalOpen(true)} />
 
       <CigarHighlightCard cigars={cigars} sessions={sessions} humidors={humidors} />
 

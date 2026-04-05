@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { TrendingUp, Plus, Cigarette } from 'lucide-react';
+import { TrendingUp, Plus, Cigarette, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function CigarKeeperModuleNav({ currentPageName, onAddCigar, onLogSession }) {
@@ -52,7 +52,7 @@ export default function CigarKeeperModuleNav({ currentPageName, onAddCigar, onLo
           <span className="hidden sm:inline">{t('cigars.addCigar', 'Add Cigar')}</span>
         </Button>
         <Button
-          onClick={typeof onLogSession === 'function' ? onLogSession : () => navigate('/CigarSessions')}
+          onClick={typeof onLogSession === 'function' ? onLogSession : () => navigate('/CigarKeeper')}
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
