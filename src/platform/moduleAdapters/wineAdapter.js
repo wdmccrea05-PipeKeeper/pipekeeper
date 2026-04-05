@@ -92,6 +92,8 @@ export const wineAdapter = {
 
   /**
    * Most recent activity date (updated_date → created_date).
+   * Wine does not expose a standalone purchase_date field; updated_date is
+   * the best proxy for collection activity.
    * @param {object} rawWine
    * @returns {string|null}
    */
@@ -100,7 +102,8 @@ export const wineAdapter = {
   },
 
   /**
-   * Alias for getActivityDate — satisfies platform getUpdatedDate contract.
+   * Most recent record write date (updated_date → created_date).
+   * Satisfies the platform getUpdatedDate contract.
    * @param {object} rawWine
    * @returns {string|null}
    */

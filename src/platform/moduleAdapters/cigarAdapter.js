@@ -100,7 +100,9 @@ export const cigarAdapter = {
   },
 
   /**
-   * Alias for getActivityDate — satisfies platform getUpdatedDate contract.
+   * Most recent record write date (updated_date → created_date).
+   * Distinct from getActivityDate which includes purchase_date as a proxy for
+   * collection activity. Satisfies the platform getUpdatedDate contract.
    * @param {object} rawCigar
    * @returns {string|null}
    */
