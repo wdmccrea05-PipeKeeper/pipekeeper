@@ -1,0 +1,518 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { useTranslation } from '@/components/i18n/safeTranslation';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Plus, Search, Grid3X3, List, Cigarette, SortAsc, Filter } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
+import CigarKeeperModuleNav from '@/components/modules/CigarKeeperModuleNav';
+import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
+import CigarCard from '@/components/cigars/CigarCard';
+import CigarListItem from '@/components/cigars/CigarListItem';
+import CigarForm from '@/components/cigars/CigarForm';
+import HumidorManager from '@/components/cigars/HumidorManager';
+
+const TABS = ['collection', 'humidors', 'wishlist', 'restock'];
+
+const TAB_LABELS = {
+  collection: 'Collection',
+  humidors: 'Humidors',
+  wishlist: 'Wishlist',
+  restock: 'Restock',
+};
+
+const SORT_OPTIONS = [
+  { value: 'name', label: 'Name' },
+  { value: 'brand', label: 'Brand' },
+  { value: 'created_date', label: 'Added Date' },
+  { value: 'estimated_value', label: 'Value' },
+  { value: 'quantity', label: 'Quantity' },
+];
+
+const BODY_OPTIONS = ['mild', 'mild_medium', 'medium', 'medium_full', 'full'];
+const STRENGTH_OPTIONS = ['mild', 'medium', 'full'];
+
+function sortCigars(cigars, sortBy) {
+  return [...cigars].sort((a, b) => {
+    const aVal = a[sortBy] ?? '';
+    const bVal = b[sortBy] ?? '';
+    if (typeof aVal === 'number' && typeof bVal === 'number') return bVal - aVal;
+    return String(aVal).localeCompare(String(bVal));
+  });
+}
+
+function matchesSearch(cigar, q) {
+  if (!q) return true;
+  const haystack = [
+    cigar.name,
+    cigar.brand,
+    cigar.vitola,
+    cigar.wrapper,
+    cigar.line,
+    cigar.country_of_origin,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return haystack.includes(q.toLowerCase().trim());
+}
+
+function TabButton({ label, active, badge, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
+      style={{
+        background: active ? 'rgba(140,107,63,0.35)' : 'rgba(255,255,255,0.04)',
+        border: active ? '1px solid rgba(140,107,63,0.5)' : '1px solid rgba(140,107,63,0.18)',
+        color: active ? '#F5F1E7' : 'rgba(224,216,200,0.7)',
+      }}
+    >
+      {label}
+      {badge > 0 && (
+        <span
+          className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+          style={{
+            background: 'rgba(140,107,63,0.4)',
+            color: '#D4A574',
+          }}
+        >
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function CigarsInner() {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const { user } = useCurrentUser();
+  const queryClient = useQueryClient();
+
+  const searchParams = new URLSearchParams(location.search);
+  const actionParam = searchParams.get('action');
+  const tabParam = searchParams.get('tab');
+
+  const [activeTab, setActiveTab] = useState(tabParam || 'collection');
+  const [viewMode, setViewMode] = useState('grid');
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('name');
+  const [filterBody, setFilterBody] = useState('');
+  const [filterStrength, setFilterStrength] = useState('');
+  const [filterOrigin, setFilterOrigin] = useState('');
+  const [filterHumidor, setFilterHumidor] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editingCigar, setEditingCigar] = useState(null);
+
+  useEffect(() => {
+    if (actionParam === 'add') {
+      setActiveTab('collection');
+      setAddDialogOpen(true);
+    }
+    if (tabParam && TABS.includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [actionParam, tabParam]);
+
+  const { data: cigars = [], isLoading } = useQuery({
+    queryKey: ['cigars', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      const result = await base44.entities.Cigar.filter(
+        { created_by: user?.email },
+        '-created_date',
+        500
+      ).catch(() => []);
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
+  const { data: humidors = [] } = useQuery({
+    queryKey: ['humidors', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      const result = await base44.entities.HumidorLocation.filter(
+        { created_by: user?.email }
+      ).catch(() => []);
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
+  const origins = useMemo(() => {
+    const set = new Set(cigars.map((c) => c.country_of_origin).filter(Boolean));
+    return Array.from(set).sort();
+  }, [cigars]);
+
+  const filteredCigars = useMemo(() => {
+    let list = cigars;
+
+    if (activeTab === 'wishlist') {
+      list = list.filter((c) => c.wishlist);
+    } else if (activeTab === 'restock') {
+      list = list.filter((c) => c.restock_flag);
+    }
+
+    if (search) list = list.filter((c) => matchesSearch(c, search));
+    if (filterBody) list = list.filter((c) => c.body === filterBody);
+    if (filterStrength) list = list.filter((c) => c.strength === filterStrength);
+    if (filterOrigin) list = list.filter((c) => c.country_of_origin === filterOrigin);
+    if (filterHumidor) list = list.filter((c) => c.humidor_id === filterHumidor);
+
+    return sortCigars(list, sortBy);
+  }, [cigars, activeTab, search, sortBy, filterBody, filterStrength, filterOrigin, filterHumidor]);
+
+  const wishlistCount = useMemo(() => cigars.filter((c) => c.wishlist).length, [cigars]);
+  const restockCount = useMemo(() => cigars.filter((c) => c.restock_flag).length, [cigars]);
+
+  const handleToggleFavorite = async (cigar) => {
+    try {
+      await base44.entities.Cigar.update(cigar.id, { is_favorite: !cigar.is_favorite });
+      queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
+    } catch {
+      toast.error('Failed to update favorite');
+    }
+  };
+
+  const handleFormSubmit = async (data) => {
+    try {
+      if (editingCigar?.id) {
+        await base44.entities.Cigar.update(editingCigar.id, data);
+        toast.success('Cigar updated');
+      } else {
+        await base44.entities.Cigar.create({ ...data, created_by: user?.email });
+        toast.success('Cigar added');
+      }
+      queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
+      setAddDialogOpen(false);
+      setEditingCigar(null);
+    } catch {
+      toast.error('Failed to save cigar');
+    }
+  };
+
+  const openAdd = () => {
+    setEditingCigar(null);
+    setAddDialogOpen(true);
+  };
+
+  return (
+    <div className="space-y-6 text-[#F5F1E7]">
+      <CigarKeeperModuleNav currentPageName="Cigars" />
+
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold" style={{ fontFamily: "'Georgia', serif" }}>
+            {t('cigars.collection', 'Cigar Collection')}
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.65)' }}>
+            {cigars.length} cigar{cigars.length !== 1 ? 's' : ''} in your collection
+          </p>
+        </div>
+        <Button
+          onClick={openAdd}
+          style={{
+            background: 'linear-gradient(135deg, rgba(140,107,63,1), rgba(100,74,45,1))',
+            color: '#F5F1E7',
+          }}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          {t('cigars.addCigar', 'Add Cigar')}
+        </Button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {TABS.map((tab) => (
+          <TabButton
+            key={tab}
+            label={TAB_LABELS[tab]}
+            active={activeTab === tab}
+            badge={
+              tab === 'wishlist'
+                ? wishlistCount
+                : tab === 'restock'
+                ? restockCount
+                : tab === 'collection'
+                ? cigars.length
+                : 0
+            }
+            onClick={() => setActiveTab(tab)}
+          />
+        ))}
+      </div>
+
+      {activeTab === 'humidors' ? (
+        <HumidorManager />
+      ) : (
+        <>
+          {/* Search + sort + view controls */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <div
+              className="flex items-center gap-2 rounded-xl px-3 py-2 flex-1 min-w-[160px]"
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(140,107,63,0.2)',
+              }}
+            >
+              <Search className="w-4 h-4 shrink-0" style={{ color: 'rgba(224,216,200,0.5)' }} />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by name, brand, vitola, wrapper…"
+                className="bg-transparent outline-none text-sm w-full"
+                style={{ color: '#F5F1E7' }}
+              />
+            </div>
+
+            <div className="w-40">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger
+                  className="h-9"
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(140,107,63,0.2)',
+                    color: '#F5F1E7',
+                  }}
+                >
+                  <SortAsc className="w-3.5 h-3.5 mr-1.5" style={{ color: 'rgba(224,216,200,0.5)' }} />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SORT_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowFilters((v) => !v)}
+              className="px-3 py-2 rounded-xl text-sm flex items-center gap-1.5 transition-all"
+              style={{
+                background: showFilters ? 'rgba(140,107,63,0.3)' : 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(140,107,63,0.2)',
+                color: 'rgba(224,216,200,0.8)',
+              }}
+            >
+              <Filter className="w-4 h-4" />
+              Filter
+            </button>
+
+            <div
+              className="flex rounded-xl overflow-hidden"
+              style={{ border: '1px solid rgba(140,107,63,0.2)' }}
+            >
+              {['grid', 'list'].map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setViewMode(mode)}
+                  className="px-3 py-2"
+                  style={{
+                    background: viewMode === mode ? 'rgba(140,107,63,0.25)' : 'rgba(255,255,255,0.03)',
+                    color: '#F5F1E7',
+                  }}
+                >
+                  {mode === 'grid' ? <Grid3X3 className="w-4 h-4" /> : <List className="w-4 h-4" />}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Filters panel */}
+          {showFilters && (
+            <div
+              className="rounded-xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3"
+              style={{
+                background: 'rgba(40,28,18,0.7)',
+                border: '1px solid rgba(140,107,63,0.2)',
+              }}
+            >
+              <div>
+                <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
+                  Body
+                </label>
+                <Select value={filterBody || 'all'} onValueChange={(v) => setFilterBody(v === 'all' ? '' : v)}>
+                  <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
+                    <SelectValue placeholder="Any" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any</SelectItem>
+                    {BODY_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o.replace('_', '-')}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
+                  Strength
+                </label>
+                <Select value={filterStrength || 'all'} onValueChange={(v) => setFilterStrength(v === 'all' ? '' : v)}>
+                  <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
+                    <SelectValue placeholder="Any" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any</SelectItem>
+                    {STRENGTH_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
+                  Origin
+                </label>
+                <Select value={filterOrigin || 'all'} onValueChange={(v) => setFilterOrigin(v === 'all' ? '' : v)}>
+                  <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
+                    <SelectValue placeholder="Any" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any</SelectItem>
+                    {origins.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
+                  Humidor
+                </label>
+                <Select value={filterHumidor || 'all'} onValueChange={(v) => setFilterHumidor(v === 'all' ? '' : v)}>
+                  <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
+                    <SelectValue placeholder="Any" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any</SelectItem>
+                    {humidors.map((h) => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          {/* Results count */}
+          {(search || filterBody || filterStrength || filterOrigin || filterHumidor) && (
+            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.55)' }}>
+              {filteredCigars.length} result{filteredCigars.length !== 1 ? 's' : ''}
+            </p>
+          )}
+
+          {/* Content */}
+          {isLoading ? (
+            <p style={{ color: 'rgba(224,216,200,0.6)' }}>Loading…</p>
+          ) : filteredCigars.length === 0 ? (
+            <div
+              className="rounded-2xl p-10 text-center"
+              style={{
+                background: 'rgba(42,31,24,0.55)',
+                border: '1px solid rgba(140,107,63,0.18)',
+              }}
+            >
+              <Cigarette className="w-10 h-10 mx-auto mb-4" style={{ color: '#8C6B3F' }} />
+              <p className="text-2xl font-semibold" style={{ color: '#F5F1E7' }}>
+                {activeTab === 'wishlist'
+                  ? 'No wishlist cigars'
+                  : activeTab === 'restock'
+                  ? 'No restock alerts'
+                  : 'No cigars yet'}
+              </p>
+              <p className="mt-2 text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>
+                {activeTab === 'collection'
+                  ? 'Add your first cigar to start tracking your collection'
+                  : activeTab === 'wishlist'
+                  ? 'Mark cigars as wishlist to see them here'
+                  : 'Mark cigars for restock to see them here'}
+              </p>
+              {activeTab === 'collection' && (
+                <Button className="mt-5" onClick={openAdd}>
+                  Add your first cigar
+                </Button>
+              )}
+            </div>
+          ) : viewMode === 'grid' ? (
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+              {filteredCigars.map((cigar) => (
+                <CigarCard
+                  key={cigar.id}
+                  cigar={cigar}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {filteredCigars.map((cigar) => (
+                <CigarListItem
+                  key={cigar.id}
+                  cigar={cigar}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Add / Edit dialog */}
+      <Dialog
+        open={addDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAddDialogOpen(false);
+            setEditingCigar(null);
+          }
+        }}
+      >
+        <DialogContent
+          className="max-w-2xl max-h-[90vh] overflow-y-auto"
+          style={{
+            background: 'linear-gradient(145deg, rgba(40,28,18,0.98), rgba(27,19,13,0.99))',
+            border: '1px solid rgba(140,107,63,0.35)',
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+              {editingCigar ? 'Edit Cigar' : 'Add Cigar'}
+            </DialogTitle>
+          </DialogHeader>
+          <CigarForm
+            cigar={editingCigar || undefined}
+            onSubmit={handleFormSubmit}
+            onCancel={() => {
+              setAddDialogOpen(false);
+              setEditingCigar(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+export default function Cigars() {
+  return (
+    <LockedModuleGuard moduleKey="cigarkeeper">
+      <CigarsInner />
+    </LockedModuleGuard>
+  );
+}
