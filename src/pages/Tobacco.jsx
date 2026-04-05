@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { scopedEntities } from "@/components/api/scopedEntities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,7 @@ export default function TobaccoPage() {
   });
   const [showAddFlow, setShowAddFlow] = useState(false);
   const [quickEditMode, setQuickEditMode] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedForEdit, setSelectedForEdit] = useState([]);
   const [showQuickEditPanel, setShowQuickEditPanel] = useState(false);
 
@@ -97,13 +99,12 @@ export default function TobaccoPage() {
 
   // Handle URL action parameter
   React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const action = urlParams.get('action');
+    const action = searchParams.get('action');
     if (action === 'add') {
       setShowAddFlow(true);
-      window.history.replaceState({}, '', '/Tobacco');
+      setSearchParams({}, { replace: true });
     }
-  }, []);
+  }, [searchParams]);
 
   // Handle URL edit parameter
   React.useEffect(() => {

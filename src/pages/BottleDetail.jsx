@@ -774,8 +774,16 @@ function BottleDetailInner() {
               )}
 
               <InlinePhotoEditor
-                photos={bottle.photos?.length ? bottle.photos : []}
-                onPhotosChange={(newPhotos) => updateBottle({ photos: newPhotos })}
+                photos={bottle.photos?.length ? bottle.photos : (bottle.photo ? [bottle.photo] : [])}
+                maxPhotos={2}
+                label="Photos"
+                onUpdate={async (newPhotos) => {
+                  await base44.entities.Bottle.update(bottle.id, {
+                    photos: newPhotos,
+                    photo: newPhotos[0] || null,
+                  });
+                  updateBottle({ photos: newPhotos, photo: newPhotos[0] || null });
+                }}
               />
             </div>
 

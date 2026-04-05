@@ -1,0 +1,119 @@
+{
+  "name": "CigarSession",
+  "type": "object",
+  "description": "A recorded smoking session for a cigar, whether from the user's collection or smoked externally.",
+  "properties": {
+    "cigar_id": {
+      "type": "string",
+      "description": "Foreign key to a Cigar record. Optional \u2014 session may be for an out-of-collection cigar."
+    },
+    "cigar_name": {
+      "type": "string",
+      "description": "Name of the cigar smoked during this session"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the smoking session (YYYY-MM-DD)"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Approximate duration of the session in minutes"
+    },
+    "pairing": {
+      "type": "string",
+      "description": "Description of any drink or food pairing during the session"
+    },
+    "construction_notes": {
+      "type": "string",
+      "description": "Notes on construction quality"
+    },
+    "burn_notes": {
+      "type": "string",
+      "description": "Notes on burn quality"
+    },
+    "draw_notes": {
+      "type": "string",
+      "description": "Notes on draw resistance and smoke production"
+    },
+    "flavor_progression": {
+      "type": "string",
+      "description": "Description of how flavors evolved from first third to final third"
+    },
+    "strength_impression": {
+      "type": "string",
+      "enum": [
+        "mild",
+        "mild_medium",
+        "medium",
+        "medium_full",
+        "full"
+      ],
+      "description": "User's perceived strength level during this specific session"
+    },
+    "overall_enjoyment": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Overall enjoyment score for this session from 1 to 5"
+    },
+    "would_buy_again": {
+      "type": "string",
+      "enum": [
+        "yes",
+        "maybe",
+        "no"
+      ],
+      "description": "Whether the user would purchase this cigar again"
+    },
+    "occasion": {
+      "type": "string",
+      "description": "Occasion or event associated with this session"
+    },
+    "location": {
+      "type": "string",
+      "description": "Where the session took place"
+    },
+    "notes": {
+      "type": "string",
+      "description": "General free-text notes about this session"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Numeric rating for this cigar based on this session"
+    },
+    "is_out_of_collection": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the cigar smoked is not in the user's collection"
+    },
+    "external_cigar_brand": {
+      "type": "string",
+      "description": "Brand of the cigar when smoked outside the collection"
+    },
+    "external_cigar_name": {
+      "type": "string",
+      "description": "Blend name of the cigar when smoked outside the collection"
+    },
+    "external_cigar_vitola": {
+      "type": "string",
+      "description": "Vitola of the cigar when smoked outside the collection"
+    },
+    "wishlist_after": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user wants to add this cigar to their wishlist after the session"
+    },
+    "not_for_me": {
+      "type": "boolean",
+      "default": false,
+      "description": "Preference signal for AI \u2014 user does not want recommendations for this cigar"
+    }
+  },
+  "required": [
+    "cigar_name",
+    "date"
+  ]
+}

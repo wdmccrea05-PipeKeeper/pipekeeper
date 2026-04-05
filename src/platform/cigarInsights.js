@@ -11,7 +11,7 @@
 
 import {
   getEnhancedCigarReadiness,
-  getHumidorHealth,
+  getDetailedHumidorHealth,
   summarizeCigarReadiness,
 } from './agingReadiness.js';
 
@@ -157,7 +157,7 @@ export function getCigarInsight(cigar, humidor, sessions) {
  * }}
  */
 export function getHumidorInsight(humidor, assignedCigars = []) {
-  const health = getHumidorHealth(humidor);
+  const health = getDetailedHumidorHealth(humidor);
   const affectedCount = assignedCigars.length;
 
   const baseResult = { health, affectedCount };
@@ -265,7 +265,7 @@ export function getCollectionInsights(cigars, humidors, sessions) {
   const humidorHealthMap = {};
   if (Array.isArray(humidors)) {
     humidors.forEach((h) => {
-      humidorHealthMap[h.id] = getHumidorHealth(h);
+      humidorHealthMap[h.id] = getDetailedHumidorHealth(h);
     });
   }
 

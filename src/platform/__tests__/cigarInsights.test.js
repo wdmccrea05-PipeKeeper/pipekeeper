@@ -6,7 +6,7 @@
 import { describe, test, expect } from 'vitest';
 
 import {
-  getHumidorHealth,
+  getDetailedHumidorHealth,
   getHumidorConfidenceMultiplier,
   getEnhancedCigarReadiness,
 } from '../agingReadiness.js';
@@ -43,19 +43,19 @@ function monthsAgo(n) {
 
 describe('getHumidorHealth', () => {
   test('returns unmanaged when no data at all', () => {
-    const result = getHumidorHealth({ id: 'h1', name: 'Test' });
+    const result = getDetailedHumidorHealth({ id: 'h1', name: 'Test' });
     expect(result.state).toBe('unmanaged');
     expect(result.confidence).toBe('none');
   });
 
   test('returns no_readings when target set but no readings', () => {
-    const result = getHumidorHealth({ id: 'h1', name: 'Test', target_humidity_rh: 65 });
+    const result = getDetailedHumidorHealth({ id: 'h1', name: 'Test', target_humidity_rh: 65 });
     expect(result.state).toBe('no_readings');
     expect(result.confidence).toBe('low');
   });
 
   test('returns stable for on-target humidity', () => {
-    const result = getHumidorHealth({
+    const result = getDetailedHumidorHealth({
       id: 'h1',
       target_humidity_rh: 65,
       last_humidity_reading: 65,
@@ -66,7 +66,7 @@ describe('getHumidorHealth', () => {
   });
 
   test('returns acceptable for within-range humidity', () => {
-    const result = getHumidorHealth({
+    const result = getDetailedHumidorHealth({
       id: 'h1',
       target_humidity_rh: 65,
       last_humidity_reading: 70,
@@ -76,7 +76,7 @@ describe('getHumidorHealth', () => {
   });
 
   test('returns dry_risk for humidity below 55%', () => {
-    const result = getHumidorHealth({
+    const result = getDetailedHumidorHealth({
       id: 'h1',
       last_humidity_reading: 50,
       last_reading_date: daysAgo(1),
@@ -86,7 +86,7 @@ describe('getHumidorHealth', () => {
   });
 
   test('returns over_humid_risk for humidity above 80%', () => {
-    const result = getHumidorHealth({
+    const result = getDetailedHumidorHealth({
       id: 'h1',
       last_humidity_reading: 85,
       last_reading_date: daysAgo(1),
@@ -96,7 +96,7 @@ describe('getHumidorHealth', () => {
   });
 
   test('returns monitor for stale readings', () => {
-    const result = getHumidorHealth({
+    const result = getDetailedHumidorHealth({
       id: 'h1',
       target_humidity_rh: 65,
       last_humidity_reading: 65,
@@ -106,7 +106,7 @@ describe('getHumidorHealth', () => {
   });
 
   test('returns monitor for significant deviation', () => {
-    const result = getHumidorHealth({
+    const result = getDetailedHumidorHealth({
       id: 'h1',
       target_humidity_rh: 65,
       last_humidity_reading: 75, // 10% deviation > 8% threshold
@@ -116,7 +116,7 @@ describe('getHumidorHealth', () => {
   });
 
   test('returns neglected when maintenance overdue', () => {
-    const result = getHumidorHealth({
+    const result = getDetailedHumidorHealth({
       id: 'h1',
       target_humidity_rh: 65,
       last_humidity_reading: 65,
@@ -128,7 +128,7 @@ describe('getHumidorHealth', () => {
   });
 
   test('returns unmanaged for null input', () => {
-    expect(getHumidorHealth(null).state).toBe('unmanaged');
+    expect(getDetailedHumidorHealth(null).state).toBe('unmanaged');
   });
 });
 

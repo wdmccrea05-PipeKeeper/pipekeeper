@@ -557,20 +557,20 @@ export default function BottleForm({
                     {t('whiskey.productionStatus', 'Production Status')}
                   </label>
                   <Select
-                    value={formData.production_status || ''}
-                    onValueChange={(value) => handleChange('production_status', value)}
+                    value={formData.production_status || '_none'}
+                    onValueChange={(value) => handleChange('production_status', value === '_none' ? '' : value)}
                   >
                     <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
                       <SelectValue placeholder={t('whiskey.productionStatusPlaceholder', 'e.g. Discontinued')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Unknown</SelectItem>
-                      <SelectItem value="Active">Active / Ongoing</SelectItem>
-                      <SelectItem value="Limited Edition">Limited Edition</SelectItem>
-                      <SelectItem value="Allocated">Allocated</SelectItem>
-                      <SelectItem value="Single Cask">Single Cask</SelectItem>
-                      <SelectItem value="Discontinued">Discontinued</SelectItem>
-                      <SelectItem value="Vintage">Vintage</SelectItem>
+                    <SelectItem value="_none">Unknown</SelectItem>
+                    <SelectItem value="Active">Active / Ongoing</SelectItem>
+                    <SelectItem value="Limited Edition">Limited Edition</SelectItem>
+                    <SelectItem value="Allocated">Allocated</SelectItem>
+                    <SelectItem value="Single Cask">Single Cask</SelectItem>
+                    <SelectItem value="Discontinued">Discontinued</SelectItem>
+                    <SelectItem value="Vintage">Vintage</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -594,18 +594,18 @@ export default function BottleForm({
                     {t('whiskey.replacementDifficulty', 'Replacement Difficulty')}
                   </label>
                   <Select
-                    value={formData.replacement_difficulty || ''}
-                    onValueChange={(value) => handleChange('replacement_difficulty', value)}
+                    value={formData.replacement_difficulty || '_auto'}
+                    onValueChange={(value) => handleChange('replacement_difficulty', value === '_auto' ? '' : value)}
                   >
                     <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
                       <SelectValue placeholder={t('whiskey.replacementDifficultyPlaceholder', 'Auto-computed if blank')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Auto-Compute</SelectItem>
-                      <SelectItem value="easy">Easy to Replace</SelectItem>
-                      <SelectItem value="moderate">Moderately Available</SelectItem>
-                      <SelectItem value="hard">Hard to Replace</SelectItem>
-                      <SelectItem value="very_hard">Very Hard to Replace</SelectItem>
+                    <SelectItem value="_auto">Auto-Compute</SelectItem>
+                    <SelectItem value="easy">Easy to Replace</SelectItem>
+                    <SelectItem value="moderate">Moderately Available</SelectItem>
+                    <SelectItem value="hard">Hard to Replace</SelectItem>
+                    <SelectItem value="very_hard">Very Hard to Replace</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

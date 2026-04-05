@@ -1,88 +1,106 @@
 /**
  * Keeper Intelligence: Cigars Module
- * Provides structured collection analysis for the intelligence layer.
- * Delegates to the platform cigarInsights service for real calculations.
+ *
+ * Provides collection analysis and actionable insights for CigarKeeper.
+ * Uses the shared agingReadiness engine so the same logic can be reused
+ * by WineKeeper and other future modules.
  */
 
-import { getCollectionInsights } from '@/platform/cigarInsights';
-import { getCigarReadiness } from '@/platform/agingReadiness';
+import {
+  summarizeCigarReadiness,
+  generateCollectionInsights,
+  getHumidorHealth,
+  INSIGHT_TYPES,
+} from '../../platform/agingReadiness.js';
 
 export const CigarsModule = {
-  analyzeCollection({ cigars = [], humidors = [], sessions = [] }) {
-    const insights = getCollectionInsights(cigars, humidors, sessions);
+  /**
+   * Analyze a cigar collection and return summary metrics.
+   *
+   * @param {{ cigars: object[], sessions: object[], humidors: object[] }} data
+   * @returns {object} Analysis result
+   */
+  analyzeCollection(data) {
+    const { cigars = [], sessions = [], humidors = [] } = data;
 
-    const wrapperTypes = new Set(cigars.map((c) => c.wrapper).filter(Boolean)).size;
-    const bodyDistribution = {};
-    cigars.forEach((c) => {
-      if (c.body) bodyDistribution[c.body] = (bodyDistribution[c.body] || 0) + 1;
-    });
+    if (cigars.length === 0) {
+      return {
+        cigarCount: 0,
+        humidorCount: 0,
+        humidorHealth: 'unknown',
+        wrapperTypes: 0,
+        readiness: { readyNow: 0, aging: 0, pastPeak: 0, noData: 0 },
+        sessionCount: sessions.length,
+        insights: [],
+      };
+    }
+
+    const readiness = summarizeCigarReadiness(cigars);
+    const wrapperSet = new Set(cigars.map((c) => c.wrapper).filter(Boolean));
+
+    // Overall humidor health across all humidors
+    const humidorHealthStates = humidors.map((h) => getHumidorHealth(h).state);
+    let overallHumidorHealth = 'unknown';
+    if (humidors.length === 0) {
+      overallHumidorHealth = 'unmonitored';
+    } else if (humidorHealthStates.every((s) => s === 'stable')) {
+      overallHumidorHealth = 'stable';
+    } else if (humidorHealthStates.some((s) => s === 'dry_risk' || s === 'humid_risk')) {
+      overallHumidorHealth = 'at_risk';
+    } else {
+      overallHumidorHealth = 'mixed';
+    }
 
     return {
       cigarCount: cigars.length,
-      readyNow: insights.readyNow,
-      aging: insights.aging,
-      pastPeak: insights.pastPeak,
-      runningLowCount: insights.runningLow.length,
-      neglectedCount: insights.neglected.length,
-      atRiskCount: insights.atRiskCigars.length,
-      humidorsNeedingAttention: insights.humidorsNeedingAttention.length,
-      humidorHealthMap: insights.humidorHealthMap,
-      wrapperTypes,
-      bodyDistribution,
+      humidorCount: humidors.length,
+      humidorHealth: overallHumidorHealth,
+      wrapperTypes: wrapperSet.size,
+      readiness,
+      sessionCount: sessions.length,
+      insights: generateCollectionInsights(cigars, sessions, humidors),
     };
   },
 
+  /**
+   * Convert an analysis result into a prioritized list of user-facing insights.
+   *
+   * @param {object} analysis - Output of analyzeCollection.
+   * @returns {Array<{ type: string, label: string, detail: string, priority: number }>}
+   */
   generateInsights(analysis) {
+    if (!analysis || analysis.cigarCount === 0) return [];
+
     const insights = [];
 
-    if (analysis.readyNow > 0) {
-      insights.push({
-        type: 'ready_to_smoke',
-        label: `${analysis.readyNow} cigar${analysis.readyNow !== 1 ? 's' : ''} ready to smoke`,
-        severity: 'positive',
+    // Surface the top pre-computed per-cigar insights
+    if (Array.isArray(analysis.insights)) {
+      insights.push(...analysis.insights.slice(0, 10));
+    }
+
+    // Collection-level readiness summary insight
+    const { readiness } = analysis;
+    if (readiness && readiness.readyNow > 0) {
+      insights.unshift({
+        type: 'collection_ready',
+        label: `${readiness.readyNow} cigar${readiness.readyNow !== 1 ? 's' : ''} ready to smoke`,
+        detail: readiness.aging > 0
+          ? `${readiness.aging} still aging`
+          : 'Your collection is in great shape',
+        priority: -1,
       });
     }
 
-    if (analysis.pastPeak > 0) {
-      insights.push({
-        type: 'past_peak',
-        label: `${analysis.pastPeak} cigar${analysis.pastPeak !== 1 ? 's' : ''} past peak window — smoke soon`,
-        severity: 'warning',
+    // Humidor alert
+    if (analysis.humidorHealth === 'at_risk') {
+      insights.unshift({
+        type: 'humidor_alert',
+        label: 'Humidor needs attention',
+        detail: 'One or more humidors have conditions outside the ideal range.',
+        priority: -2,
       });
     }
 
-    if (analysis.humidorsNeedingAttention > 0) {
-      insights.push({
-        type: 'humidor_attention',
-        label: `${analysis.humidorsNeedingAttention} humidor${analysis.humidorsNeedingAttention !== 1 ? 's' : ''} need${analysis.humidorsNeedingAttention === 1 ? 's' : ''} attention`,
-        severity: 'warning',
-      });
-    }
-
-    if (analysis.atRiskCount > 0) {
-      insights.push({
-        type: 'at_risk',
-        label: `${analysis.atRiskCount} cigar${analysis.atRiskCount !== 1 ? 's' : ''} at storage risk`,
-        severity: 'danger',
-      });
-    }
-
-    if (analysis.runningLowCount > 0) {
-      insights.push({
-        type: 'running_low',
-        label: `${analysis.runningLowCount} cigar${analysis.runningLowCount !== 1 ? 's' : ''} running low on inventory`,
-        severity: 'info',
-      });
-    }
-
-    if (analysis.neglectedCount > 0) {
-      insights.push({
-        type: 'neglected',
-        label: `${analysis.neglectedCount} favorite${analysis.neglectedCount !== 1 ? 's' : ''} haven't been smoked recently`,
-        severity: 'info',
-      });
-    }
-
-    return insights;
+    return insights.sort((a, b) => a.priority - b.priority);
   },
 };

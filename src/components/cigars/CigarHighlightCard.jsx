@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Cigarette, DollarSign, Box, Heart, Clock, Flame, TrendingDown, AlertTriangle } from 'lucide-react';
+import { Cigarette, DollarSign, Box, Heart, Clock, Flame, TrendingDown, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { getCigarRiskFlags, summarizeCigarReadiness } from '@/platform/agingReadiness';
 import { humidorNeedsAttention } from './humidorMaintenanceUtils';
 import { getCollectionInsights } from '@/platform/cigarInsights';
 
@@ -109,6 +110,9 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
             value={insights.runningLow.length}
             sub="≤3 sticks"
           />
+        )}
+        {atRiskCount > 0 && (
+          <StatCard icon={ShieldAlert} label="At Risk" value={atRiskCount} sub="Needs attention" />
         )}
         {alertHumidorCount > 0 && (
           <StatCard

@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Search, Grid3X3, List, Cigarette, SortAsc, Filter } from 'lucide-react';
+import { Plus, Search, Grid3X3, List, Cigarette, SortAsc, Filter, Package2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import CigarKeeperModuleNav from '@/components/modules/CigarKeeperModuleNav';
@@ -26,6 +26,7 @@ import CigarCard from '@/components/cigars/CigarCard';
 import CigarListItem from '@/components/cigars/CigarListItem';
 import CigarForm from '@/components/cigars/CigarForm';
 import HumidorManager from '@/components/cigars/HumidorManager';
+import CollectorGridView from '@/components/ui/CollectorGridView';
 
 const TABS = ['collection', 'humidors', 'wishlist', 'restock'];
 
@@ -121,6 +122,9 @@ function CigarsInner() {
   const [showFilters, setShowFilters] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editingCigar, setEditingCigar] = useState(null);
+  const [displayMode, setDisplayMode] = useState(() => {
+    return localStorage.getItem('cigarsDisplayMode') === 'collector';
+  });
 
   useEffect(() => {
     if (actionParam === 'add') {
@@ -286,26 +290,26 @@ function CigarsInner() {
               />
             </div>
 
-            <div className="w-40">
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger
-                  className="h-9"
-                  style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(140,107,63,0.2)',
-                    color: '#F5F1E7',
-                  }}
-                >
-                  <SortAsc className="w-3.5 h-3.5 mr-1.5" style={{ color: 'rgba(224,216,200,0.5)' }} />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SORT_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger
+                className="w-40 h-9"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(140,107,63,0.2)',
+                  color: '#F5F1E7',
+                }}
+              >
+                <SortAsc className="w-3.5 h-3.5 mr-1.5" style={{ color: 'rgba(224,216,200,0.5)' }} />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent style={{ background: 'rgba(25,17,11,0.98)', border: '1px solid rgba(140,107,63,0.35)' }}>
+                <SelectItem value="created_date">Added Date</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="brand">Brand</SelectItem>
+                <SelectItem value="estimated_value">Value</SelectItem>
+                <SelectItem value="quantity">Quantity</SelectItem>
+              </SelectContent>
+            </Select>
 
             <button
               type="button"
@@ -340,6 +344,24 @@ function CigarsInner() {
                 </button>
               ))}
             </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const newMode = !displayMode;
+                setDisplayMode(newMode);
+                localStorage.setItem('cigarsDisplayMode', newMode ? 'collector' : 'standard');
+              }}
+              className="px-3 py-2 rounded-xl text-sm transition-all"
+              style={{
+                background: displayMode ? 'rgba(140,107,63,0.25)' : 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(140,107,63,0.2)',
+                color: displayMode ? 'rgba(140, 107, 63, 1)' : 'rgba(224, 216, 200, 0.7)',
+              }}
+              title="Collector Display Mode"
+            >
+              <Package2 className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Filters panel */}
@@ -449,6 +471,27 @@ function CigarsInner() {
                 </Button>
               )}
             </div>
+          ) : displayMode && viewMode === 'grid' ? (
+            <CollectorGridView
+              items={filteredCigars}
+              getImage={(cigar) => cigar.photos?.[0]}
+              getTitle={(cigar) => cigar.name}
+              getSubtitle={(cigar) => [cigar.brand, cigar.vitola].filter(Boolean).join(' · ')}
+              getValue={(cigar) => cigar.estimated_value}
+              getIsFavorite={(cigar) => cigar.is_favorite}
+              getKey={(cigar) => cigar.id}
+              onToggleFavorite={(cigar) => handleToggleFavorite(cigar)}
+              onClick={(cigar) => {
+                setEditingCigar(cigar);
+                setAddDialogOpen(true);
+              }}
+              onEdit={(cigar) => {
+                setEditingCigar(cigar);
+                setAddDialogOpen(true);
+              }}
+              columns="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+              gap="gap-8"
+            />
           ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
               {filteredCigars.map((cigar) => (
