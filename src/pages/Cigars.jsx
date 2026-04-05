@@ -290,26 +290,26 @@ function CigarsInner() {
               />
             </div>
 
-            <div className="w-40">
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger
-                  className="h-9"
-                  style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(140,107,63,0.2)',
-                    color: '#F5F1E7',
-                  }}
-                >
-                  <SortAsc className="w-3.5 h-3.5 mr-1.5" style={{ color: 'rgba(224,216,200,0.5)' }} />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SORT_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger
+                className="w-40 h-9"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(140,107,63,0.2)',
+                  color: '#F5F1E7',
+                }}
+              >
+                <SortAsc className="w-3.5 h-3.5 mr-1.5" style={{ color: 'rgba(224,216,200,0.5)' }} />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent style={{ background: 'rgba(25,17,11,0.98)', border: '1px solid rgba(140,107,63,0.35)' }}>
+                <SelectItem value="created_date">Added Date</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="brand">Brand</SelectItem>
+                <SelectItem value="estimated_value">Value</SelectItem>
+                <SelectItem value="quantity">Quantity</SelectItem>
+              </SelectContent>
+            </Select>
 
             <button
               type="button"
