@@ -16,23 +16,11 @@ Deno.serve(async (req) => {
     const email = user.email.toLowerCase().trim();
     const FOUNDERS_CUTOFF = new Date('2026-02-01T00:00:00.000Z');
 
-    // Check for active or past PipeKeeper subscription started before cutoff
-    const subscriptions = await base44.entities.Subscription.filter({
-      user_email: email,
-    });
+    // Any account (free or paid) created before the founders cutoff is eligible
+    const accountCreatedDate = new Date(user.created_date);
+    const isEligible = accountCreatedDate < FOUNDERS_CUTOFF;
 
-    let isEligible = false;
-
-    for (const sub of subscriptions) {
-      const startDate = new Date(sub.subscriptionStartedAt || sub.started_at || sub.current_period_start);
-      
-      // Eligible only if subscription is currently active (not canceled) and started before founders cutoff
-      if (startDate < FOUNDERS_CUTOFF && 
-          (sub.status === 'active' || sub.status === 'trialing' || sub.status === 'past_due')) {
-        isEligible = true;
-        break;
-      }
-    }
+    const subscriptions = await base44.entities.Subscription.filter({ user_email: email });
 
     return Response.json({
       isEligible,

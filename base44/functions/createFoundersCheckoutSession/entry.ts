@@ -22,21 +22,10 @@ Deno.serve(async (req) => {
     const FOUNDERS_CUTOFF = new Date('2026-02-01T00:00:00.000Z');
     const email = user.email.toLowerCase().trim();
 
-    // Verify eligibility
-    const subscriptions = await base44.entities.Subscription.filter({
-      user_email: email,
-    });
-
-    let isEligible = false;
-    for (const sub of subscriptions) {
-      const startDate = new Date(sub.subscriptionStartedAt || sub.started_at || sub.current_period_start);
-      // Require a currently active account — canceled accounts are not eligible
-      if (startDate < FOUNDERS_CUTOFF && 
-          (sub.status === 'active' || sub.status === 'trialing' || sub.status === 'past_due')) {
-        isEligible = true;
-        break;
-      }
-    }
+    // Any account (free or paid) created before the founders cutoff is eligible
+    const FOUNDERS_CUTOFF_CHECK = new Date('2026-02-01T00:00:00.000Z');
+    const accountCreatedDate = new Date(user.created_date);
+    const isEligible = accountCreatedDate < FOUNDERS_CUTOFF_CHECK;
 
     if (!isEligible) {
       return Response.json({ error: 'Not eligible for Founders Bundle' }, { status: 403 });
