@@ -266,10 +266,10 @@ export function getHumidorHealth(humidor, now = new Date()) {
   const {
     target_humidity_rh,
     last_humidity_reading: rh,
-    last_temp_reading,
+    last_temperature_reading,
     last_reading_date,
     last_maintenance_date,
-    maintenance_interval_days = 30,
+    check_interval_days = 30,
   } = humidor;
 
   const daysSinceReading = last_reading_date
@@ -282,7 +282,7 @@ export function getHumidorHealth(humidor, now = new Date()) {
 
   const maintenanceOverdue =
     daysSinceMaintenance !== null &&
-    daysSinceMaintenance > Math.floor(maintenance_interval_days * 1.5);
+    daysSinceMaintenance > Math.floor(check_interval_days * 1.5);
 
   const readingStale = daysSinceReading !== null && daysSinceReading > 21;
 

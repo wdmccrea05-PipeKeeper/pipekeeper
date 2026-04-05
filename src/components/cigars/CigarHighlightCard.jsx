@@ -1,24 +1,27 @@
 import React, { useMemo } from 'react';
 import { Cigarette, DollarSign, Box, Heart, Clock, Flame, TrendingDown, AlertTriangle } from 'lucide-react';
+import { humidorNeedsAttention } from './humidorMaintenanceUtils';
 import { getCollectionInsights } from '@/platform/cigarInsights';
 
-function StatCard({ icon: Icon, label, value, sub }) {
+function StatCard({ icon: Icon, label, value, sub, alert }) {
   return (
     <div
       className="rounded-xl p-4 flex items-start gap-3"
       style={{
-        background: 'rgba(255,255,255,0.035)',
-        border: '1px solid rgba(180,140,75,0.18)',
+        background: alert ? 'rgba(224,85,85,0.08)' : 'rgba(255,255,255,0.035)',
+        border: alert ? '1px solid rgba(224,85,85,0.28)' : '1px solid rgba(180,140,75,0.18)',
       }}
     >
       <div
         className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
         style={{
-          background: 'linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))',
-          border: '1px solid rgba(120,90,65,0.45)',
+          background: alert
+            ? 'linear-gradient(135deg, rgba(180,50,50,0.5), rgba(140,40,40,0.6))'
+            : 'linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))',
+          border: alert ? '1px solid rgba(200,80,80,0.45)' : '1px solid rgba(120,90,65,0.45)',
         }}
       >
-        <Icon className="w-4 h-4" style={{ color: '#D4A574' }} />
+        <Icon className="w-4 h-4" style={{ color: alert ? '#E07070' : '#D4A574' }} />
       </div>
       <div className="min-w-0">
         <div className="text-xl font-bold text-[#F5F1E7]">{value}</div>
@@ -51,6 +54,8 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
   const thirtyDaysAgo = new Date(today);
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const recentSessions = sessions.filter((s) => s.date && new Date(s.date) >= thirtyDaysAgo).length;
+
+  const alertHumidorCount = humidors.filter(humidorNeedsAttention).length;
 
   // Intelligence metrics (memoized for performance)
   const insights = useMemo(
@@ -105,12 +110,12 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
             sub="≤3 sticks"
           />
         )}
-        {(insights.atRiskCigars.length > 0 || insights.humidorsNeedingAttention.length > 0) && (
+        {alertHumidorCount > 0 && (
           <StatCard
             icon={AlertTriangle}
-            label="Needs Attention"
-            value={insights.atRiskCigars.length + insights.humidorsNeedingAttention.length}
-            sub="Cigars or humidors"
+            label="Humidors Need Attention"
+            value={alertHumidorCount}
+            alert
           />
         )}
       </div>

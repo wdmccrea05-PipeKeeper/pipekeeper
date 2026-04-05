@@ -122,7 +122,7 @@ describe('getHumidorHealth', () => {
       last_humidity_reading: 65,
       last_reading_date: daysAgo(3),
       last_maintenance_date: daysAgo(60), // 60 days, default 30 * 1.5 = 45 threshold
-      maintenance_interval_days: 30,
+      check_interval_days: 30,
     });
     expect(result.state).toBe('neglected');
   });
@@ -192,7 +192,7 @@ describe('getEnhancedCigarReadiness', () => {
     };
     const humidor = {
       last_maintenance_date: daysAgo(90),
-      maintenance_interval_days: 30,
+      check_interval_days: 30,
       last_humidity_reading: 68,
       last_reading_date: daysAgo(1),
     };
