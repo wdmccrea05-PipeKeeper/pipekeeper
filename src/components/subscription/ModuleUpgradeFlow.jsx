@@ -177,7 +177,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
       const moduleRouteMap = {
         pipekeeper: '/PipeKeeper',
         whiskeykeeper: '/WhiskeyKeeper',
-        cigarkeeper: '/CollectionHub',
+        cigarkeeper: '/CigarKeeper',
         winekeeper: '/CollectionHub',
       };
 
