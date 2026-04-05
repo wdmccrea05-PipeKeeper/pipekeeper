@@ -37,11 +37,7 @@ import ValuationCredibility, { computePipeValuation } from '@/components/valuati
 import ValueStrategySection from '@/components/whiskey/ValueStrategySection';
 import {
   buildValuationSnapshot,
-  buildItemValueSnapshotRecord,
-  buildPriceObservationRecord,
   resolveValueTrend,
-  DIFFICULTY_LABELS,
-  PIPE_RECOMMENDATION_LABELS,
 } from '@/components/valuation/valueEngine';
 import {
   seedInitialSnapshotIfMissing,

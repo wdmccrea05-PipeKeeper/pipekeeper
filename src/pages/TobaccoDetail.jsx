@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, CircleDollarSign, Leaf, Pencil, Share2, Search, Trash2 } from 'lucide-react';
+import { ArrowLeft, Leaf, Pencil, Share2, Search, Trash2 } from 'lucide-react';
 import EnrichButton from '@/components/shared/EnrichButton';
 import {
   AlertDialog,
@@ -22,7 +22,7 @@ import CellarLog from '@/components/tobacco/CellarLog';
 import { scorePipeBlend } from '@/components/utils/pairingScoreCanonical';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { Button } from '@/components/ui/button';
-import { formatCurrency, formatWeight } from '@/components/utils/localeFormatters';
+import { formatWeight } from '@/components/utils/localeFormatters';
 import InlinePhotoEditor from '@/components/shared/InlinePhotoEditor';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
 import { useTranslation } from '@/components/i18n/safeTranslation';
@@ -34,8 +34,6 @@ import ValueStrategySection from '@/components/whiskey/ValueStrategySection';
 import {
   buildValuationSnapshot,
   resolveValueTrend,
-  DIFFICULTY_LABELS,
-  TOBACCO_RECOMMENDATION_LABELS,
 } from '@/components/valuation/valueEngine';
 import {
   seedInitialSnapshotIfMissing,

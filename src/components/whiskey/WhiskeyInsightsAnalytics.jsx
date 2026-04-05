@@ -17,7 +17,7 @@ import {
 } from 'recharts';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import { subMonths, format } from 'date-fns';
-import { computeCurrentValue, computeRarityScore, computeReplacementDifficulty, computeOpenVsHoldDecision } from '@/components/valuation/valueEngine';
+import { computeCurrentValue, computeRarityScore, computeReplacementDifficulty } from '@/components/valuation/valueEngine';
 
 /**
  * WhiskeyInsightsAnalytics

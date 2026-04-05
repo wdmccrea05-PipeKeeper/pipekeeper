@@ -10,10 +10,6 @@ import {
 } from 'lucide-react';
 import {
   DIFFICULTY_LABELS,
-  TREND_LABELS,
-  HOLD_RECOMMENDATION_LABELS,
-  PIPE_RECOMMENDATION_LABELS,
-  TOBACCO_RECOMMENDATION_LABELS,
 } from '@/components/valuation/valueEngine';
 import { formatCurrency } from '@/components/whiskey/utils/bottleValue';
 
@@ -339,11 +335,11 @@ export default function ValueStrategySection({
   onRefreshNow,
   isRefreshing = false,
 }) {
+  const [showSettings, setShowSettings] = useState(false);
+
   if (!valuationSnapshot) return null;
 
   const resolvedItem = item || bottle;
-
-  const [showSettings, setShowSettings] = useState(false);
 
   const { currentValue, source, confidence, rarityScore, replacementDifficulty, holdRecommendation, rationale } = valuationSnapshot;
 
