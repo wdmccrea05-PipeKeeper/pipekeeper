@@ -1,0 +1,114 @@
+{
+  "name": "HumidorLocation",
+  "type": "object",
+  "description": "A humidor or storage location used to track cigars in a user's CigarKeeper collection.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name or label for this humidor location"
+    },
+    "humidor_type": {
+      "type": "string",
+      "enum": [
+        "desktop",
+        "cabinet",
+        "coolerdor",
+        "tupperdor",
+        "travel",
+        "other"
+      ],
+      "description": "Type of humidor or storage container"
+    },
+    "capacity_count": {
+      "type": "number",
+      "description": "Maximum number of cigars this humidor can hold"
+    },
+    "current_count": {
+      "type": "number",
+      "description": "Current number of cigars stored in this humidor"
+    },
+    "target_humidity_rh": {
+      "type": "number",
+      "description": "Target relative humidity percentage (e.g. 65 for 65% RH)"
+    },
+    "target_temp_f": {
+      "type": "number",
+      "description": "Target storage temperature in degrees Fahrenheit"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text notes about this humidor location"
+    },
+    "last_humidity_reading": {
+      "type": "number",
+      "description": "Most recent recorded relative humidity percentage"
+    },
+    "last_temperature_reading": {
+      "type": "number",
+      "description": "Most recent recorded temperature in degrees Fahrenheit"
+    },
+    "last_reading_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the most recent humidity/temperature reading"
+    },
+    "aid_type": {
+      "type": "string",
+      "enum": [
+        "boveda",
+        "gel_jar",
+        "beads",
+        "electronic",
+        "sponge",
+        "other"
+      ],
+      "description": "Type of active humidity aid in this humidor"
+    },
+    "aid_brand": {
+      "type": "string",
+      "description": "Brand of the active humidity aid (e.g. Boveda, Xikar)"
+    },
+    "aid_specification": {
+      "type": "string",
+      "description": "Size or specification of the humidity aid (e.g. '60g', '69%', '320g')"
+    },
+    "aid_quantity": {
+      "type": "number",
+      "description": "Number of humidity aid units in use"
+    },
+    "aid_date_installed": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the current humidity aid was first installed"
+    },
+    "aid_date_last_replaced": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the humidity aid was most recently replaced or recharged"
+    },
+    "aid_replacement_interval_days": {
+      "type": "number",
+      "description": "Expected number of days between humidity aid replacements"
+    },
+    "aid_notes": {
+      "type": "string",
+      "description": "Optional notes about the humidity aid setup"
+    },
+    "check_interval_days": {
+      "type": "number",
+      "description": "How often the user wants to be reminded to check humidity, in days"
+    },
+    "alerts_enabled": {
+      "type": "boolean",
+      "description": "Whether to show maintenance reminders and due/overdue indicators for this humidor"
+    },
+    "last_maintenance_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the most recent maintenance action of any kind"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
