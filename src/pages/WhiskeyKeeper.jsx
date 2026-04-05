@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import AddFlowModal from '@/components/addflow/AddFlowModal';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
@@ -24,6 +25,7 @@ function WhiskeyKeeperInner() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useCurrentUser();
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const { data: bottles = [] } = useQuery({
     queryKey: ['bottles-summary', user?.email],
@@ -93,7 +95,7 @@ function WhiskeyKeeperInner() {
       key: 'addBottle',
       Icon: Plus,
       label: t('whiskey.addBottle', 'Add Bottle'),
-      onClick: () => navigate('/Whiskey?action=add')
+      onClick: () => setShowAddModal(true)
     },
     {
       key: 'browseCollection',
@@ -123,39 +125,11 @@ function WhiskeyKeeperInner() {
 
   return (
     <div className="space-y-8 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 120px)' }}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <img
-              src="/branding/whiskeykeeper-logo.png?v=3"
-              alt="WhiskeyKeeper"
-              className="w-11 h-11 object-contain bg-transparent"
-              style={{
-                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.28))',
-                backgroundColor: 'transparent',
-              }}
-              draggable={false}
-            />
-            <h1
-              className="text-2xl sm:text-4xl font-bold tracking-tight"
-              style={{
-                color: '#F5F1E7',
-                fontFamily: "'Georgia', serif",
-                textShadow: '0 2px 6px rgba(0,0,0,0.7)',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              {t('whiskeykeeper.title', 'WhiskeyKeeper')}
-            </h1>
-          </div>
-          <p className="text-sm sm:text-base" style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
-            {t('whiskeykeeper.description', 'Track bottles, inventory, value, and tasting notes')}
-          </p>
-        </div>
-        <Button onClick={() => navigate('/CollectionHub')} variant="outline" className="text-sm shrink-0">
-          {t('common.backToHub', 'Back to Hub')}
-        </Button>
-      </div>
+      <AddFlowModal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        initialItemType="bottle"
+      />
 
       <WhiskeyKeeperModuleNav currentPageName={null} />
 
