@@ -150,7 +150,16 @@ export function buildCanonicalEntitlements(user, subscription) {
     tier,
     hasPro: isPro,
     isFree: !isPro,
-    paidModules: isPro ? ["pipekeeper", "whiskeykeeper", "cigarkeeper", "winekeeper"].filter(isModuleLaunched) : [],
+    paidModules: isPro
+      ? (() => {
+          const csv = String(user?.paid_modules_csv || '').trim().toLowerCase();
+          if (!csv) {
+            // Legacy: paid but no per-module tracking yet → grant all launched
+            return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'].filter(isModuleLaunched);
+          }
+          return csv.split(',').map((m) => m.trim()).filter((m) => m && isModuleLaunched(m));
+        })()
+      : [],
     limits,
     canUse,
     isLegacyPremium: subscription ? isLegacyPremium(subscription) : false,

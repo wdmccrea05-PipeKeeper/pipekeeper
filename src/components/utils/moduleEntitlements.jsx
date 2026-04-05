@@ -25,10 +25,33 @@ export const ENTITLEMENTS = {
 };
 
 /**
- * True if user has Pro access (any module). Pro = all modules.
+ * True if user has paid Pro access for the specified module.
+ * Checks user.paid_modules_csv so a PipeKeeper-only subscriber
+ * does NOT appear to own WhiskeyKeeper.
+ *
+ * Falls back to any-paid-access when paid_modules_csv is absent
+ * (legacy accounts created before per-module tracking was added).
  */
-export function hasModuleProAccess(user, _module) {
-  return hasPaidAccess(user);
+export function hasModuleProAccess(user, moduleKey) {
+  if (!user) return false;
+
+  // Admins always have access
+  const role = String(user.role || '').toLowerCase();
+  if (role === 'admin' || role === 'owner' || user.is_admin === true) return true;
+
+  // Must have paid access at all
+  if (!hasPaidAccess(user)) return false;
+
+  // No specific module requested — just confirm paid access
+  if (!moduleKey) return true;
+
+  const paidCsv = String(user.paid_modules_csv || '').trim().toLowerCase();
+
+  // Legacy fallback: has_paid_access=true but no csv stored → grant all launched modules
+  if (!paidCsv) return true;
+
+  const paidModules = paidCsv.split(',').map((m) => m.trim()).filter(Boolean);
+  return paidModules.includes(String(moduleKey || '').trim().toLowerCase());
 }
 
 /**

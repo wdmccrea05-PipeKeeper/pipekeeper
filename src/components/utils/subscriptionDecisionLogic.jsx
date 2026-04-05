@@ -3,7 +3,7 @@
  * Determines user's current state and recommends next upgrade path
  */
 
-import { MODULES, getActiveModules } from './moduleRegistry';
+import { MODULES, getActiveModules, getModuleDisplayName } from './moduleRegistry';
 import { hasModuleProAccess } from './moduleEntitlements';
 import { detectBundleTier, getUpgradeSuggestion } from './bundlePricingEngine';
 
@@ -133,10 +133,11 @@ export function getAvailableUpgradePaths(user) {
 
   // Add remaining single modules
   freeModules.forEach(module => {
+    const displayName = getModuleDisplayName(module);
     paths.push({
       type: 'single',
       modules: [module],
-      description: `Add ${module}`,
+      description: `Add ${displayName} to your collection`,
       fromState: 'single',
     });
   });
