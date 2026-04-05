@@ -18,32 +18,82 @@
  * }
  */
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { getStripeClient, safeStripeError } from './_utils/stripe.ts';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import Stripe from 'npm:stripe@13.11.0';
+
+function getStripeClient() {
+  const key = Deno.env.get('STRIPE_SECRET_KEY');
+  if (!key) throw new Error('STRIPE_SECRET_KEY not set');
+  return new Stripe(key);
+}
+
+function safeStripeError(e: any): string {
+  if (!e) return 'Unknown Stripe error';
+  if (typeof e === 'string') return e;
+  if (e.message) return e.message;
+  try { return JSON.stringify(e); } catch { return String(e); }
+}
 
 type CheckoutType = 'single' | 'bundle_2' | 'bundle_3' | 'bundle_4';
 type BillingPeriod = 'monthly' | 'annual';
 
-const ALLOWED_MODULES = ['pipe', 'whiskey', 'cigar', 'coffee'] as const;
+// Accept both short ('whiskey') and full ('whiskeykeeper') module keys
+const ALLOWED_MODULES = [
+  'pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper',
+  'pipe', 'whiskey', 'cigar', 'wine',
+] as const;
 
-const PRICE_IDS: Record<CheckoutType, Record<BillingPeriod, string | undefined>> = {
-  single: {
-    monthly: Deno.env.get('STRIPE_PRICE_SINGLE_MONTHLY'),
-    annual: Deno.env.get('STRIPE_PRICE_SINGLE_ANNUAL'),
+// Normalize module key to canonical keeper form
+function canonicalModule(m: string): string {
+  const map: Record<string, string> = {
+    pipe: 'pipekeeper',
+    whiskey: 'whiskeykeeper',
+    cigar: 'cigarkeeper',
+    wine: 'winekeeper',
+    coffee: 'pipekeeper', // fallback
+  };
+  return map[m] || m;
+}
+
+// Per-module single price IDs
+const SINGLE_MODULE_PRICES: Record<string, Record<BillingPeriod, string | undefined>> = {
+  pipekeeper: {
+    monthly: Deno.env.get('VITE_STRIPE_PIPEKEEPER_MONTHLY'),
+    annual: Deno.env.get('VITE_STRIPE_PIPEKEEPER_ANNUAL'),
   },
-  bundle_2: {
-    monthly: Deno.env.get('STRIPE_PRICE_BUNDLE_2_MONTHLY'),
-    annual: Deno.env.get('STRIPE_PRICE_BUNDLE_2_ANNUAL'),
+  whiskeykeeper: {
+    monthly: Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_MONTHLY'),
+    annual: Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_ANNUAL'),
   },
-  bundle_3: {
-    monthly: Deno.env.get('STRIPE_PRICE_BUNDLE_3_MONTHLY'),
-    annual: Deno.env.get('STRIPE_PRICE_BUNDLE_3_ANNUAL'),
+  cigarkeeper: {
+    monthly: Deno.env.get('VITE_STRIPE_CIGARKEEPER_MONTHLY'),
+    annual: Deno.env.get('VITE_STRIPE_CIGARKEEPER_ANNUAL'),
   },
-  bundle_4: {
-    monthly: Deno.env.get('STRIPE_PRICE_BUNDLE_4_MONTHLY'),
-    annual: Deno.env.get('STRIPE_PRICE_BUNDLE_4_ANNUAL'),
+  winekeeper: {
+    monthly: Deno.env.get('VITE_STRIPE_WINEKEEPER_MONTHLY'),
+    annual: Deno.env.get('VITE_STRIPE_WINEKEEPER_ANNUAL'),
   },
 };
+
+// Bundle price IDs
+const BUNDLE_PRICES: Partial<Record<CheckoutType, Record<BillingPeriod, string | undefined>>> = {
+  bundle_3: {
+    monthly: Deno.env.get('VITE_STRIPE_THREE_BUNDLE_MONTHLY'),
+    annual: Deno.env.get('VITE_STRIPE_THREE_BUNDLE_ANNUAL'),
+  },
+  bundle_4: {
+    monthly: Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_MONTHLY'),
+    annual: Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_ANNUAL'),
+  },
+};
+
+function resolvePriceId(type: CheckoutType, billingPeriod: BillingPeriod, modules: string[]): string | undefined {
+  if (type === 'single') {
+    const moduleKey = canonicalModule(modules[0] || '');
+    return SINGLE_MODULE_PRICES[moduleKey]?.[billingPeriod];
+  }
+  return BUNDLE_PRICES[type]?.[billingPeriod];
+}
 
 function normEmail(email: unknown): string {
   return String(email || '').trim().toLowerCase();
@@ -64,9 +114,9 @@ function normalizeModules(modules: unknown): string[] {
   if (!Array.isArray(modules)) return [];
   return unique(
     modules
-      .map((m) => String(m || '').trim().toLowerCase())
+      .map((m) => canonicalModule(String(m || '').trim().toLowerCase()))
       .filter(Boolean)
-      .filter((m) => ALLOWED_MODULES.includes(m as any))
+      .filter((m) => Object.keys(SINGLE_MODULE_PRICES).includes(m))
   );
 }
 
@@ -203,7 +253,11 @@ async function findOrCreateStripeCustomer(base44: any, stripe: any, user: any) {
 
 async function logCheckoutEvent(base44: any, payload: Record<string, unknown>) {
   try {
-    await base44.asServiceRole.entities.SubscriptionIntegrationEvent.create(payload);
+    await base44.asServiceRole.entities.SubscriptionIntegrationEvent.create({
+      success: true,
+      event_source: 'createModuleCheckoutSession',
+      ...payload,
+    });
   } catch (err) {
     console.warn('[createModuleCheckoutSession] Failed to log event:', err);
   }
@@ -216,7 +270,7 @@ Deno.serve(async (req) => {
     }
 
     const base44 = createClientFromRequest(req);
-    const stripe = await getStripeClient(req);
+    const stripe = getStripeClient();
     const user = await base44.auth.me();
 
     if (!user?.email) {
@@ -250,7 +304,7 @@ Deno.serve(async (req) => {
     assertSafeRedirectUrl(successUrl, cancelUrl);
 
     const moduleDescriptor = getModuleDescriptor(type, modules);
-    const priceId = PRICE_IDS[type]?.[billingPeriod];
+    const priceId = resolvePriceId(type, billingPeriod, modules);
 
     if (!priceId) {
       return Response.json(
