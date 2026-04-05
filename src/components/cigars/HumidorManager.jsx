@@ -52,6 +52,27 @@ const EMPTY_FORM = {
   alerts_enabled: true,
 };
 
+const NUMERIC_HUMIDOR_FIELDS = [
+  'capacity_count', 'target_humidity_rh', 'target_temp_f',
+  'aid_quantity', 'aid_replacement_interval_days', 'check_interval_days',
+];
+const ENUM_HUMIDOR_FIELDS = ['humidor_type', 'aid_type'];
+
+function cleanHumidorPayload(data) {
+  const out = { ...data };
+  for (const field of NUMERIC_HUMIDOR_FIELDS) {
+    if (out[field] === '' || out[field] === null || out[field] === undefined) {
+      out[field] = undefined;
+    } else {
+      out[field] = Number(out[field]);
+    }
+  }
+  for (const field of ENUM_HUMIDOR_FIELDS) {
+    if (!out[field]) out[field] = undefined;
+  }
+  return out;
+}
+
 function formatDate(val) {
   if (!val) return null;
   const d = new Date(val + 'T12:00:00');
@@ -181,7 +202,7 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
             </SelectTrigger>
             <SelectContent style={{ background: 'rgba(40,28,18,0.98)', border: '1px solid rgba(180,140,75,0.3)' }}>
               <SelectItem value="none" style={{ color: 'rgba(224,216,200,0.5)' }}>— None —</SelectItem>
-              {['desktop', 'travel', 'cabinet', 'tupperdor', 'coolidor', 'other'].map((v) => (
+              {['desktop', 'travel', 'cabinet', 'tupperdor', 'coolerdor', 'other'].map((v) => (
                 <SelectItem key={v} value={v} style={{ color: '#F5F1E7' }}>
                   {v.charAt(0).toUpperCase() + v.slice(1)}
                 </SelectItem>
@@ -522,13 +543,13 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
   };
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.HumidorLocation.create({ ...data, created_by: user?.email }),
+    mutationFn: (data) => base44.entities.HumidorLocation.create({ ...cleanHumidorPayload(data), created_by: user?.email }),
     onSuccess: () => { toast.success('Humidor added'); invalidate(); setShowForm(false); },
     onError: () => toast.error('Failed to add humidor'),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.HumidorLocation.update(id, data),
+    mutationFn: ({ id, data }) => base44.entities.HumidorLocation.update(id, cleanHumidorPayload(data)),
     onSuccess: () => { toast.success('Humidor updated'); invalidate(); setEditTarget(null); },
     onError: () => toast.error('Failed to update humidor'),
   });
