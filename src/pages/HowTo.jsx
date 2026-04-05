@@ -184,7 +184,7 @@ export default function HowTo() {
         </Section>
 
         <Section title={t("howTo.insights")}>
-          <Q id="insights-general" q={t("howTo.insights")}>
+          <Q id="insights-general" q={t("howTo.insightsQ")}>
             <ol className="list-decimal list-inside space-y-2">
               {tArray("howTo.insightsSteps").map((step, i) => (
                 <li key={i}>{step}</li>

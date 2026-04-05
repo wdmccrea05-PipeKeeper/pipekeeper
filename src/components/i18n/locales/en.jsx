@@ -722,7 +722,7 @@ export default {
     ],
 
     // Insights
-    insights: "How do I view collection insights?",
+    insightsQ: "How do I view collection insights?",
     insightsSteps: [
       "Go to PipeKeeper → Insights tab, or WhiskeyKeeper → Insights.",
       "Insights show your collection totals, value breakdown, favourite items, and trends.",

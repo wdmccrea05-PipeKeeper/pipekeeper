@@ -1,9 +1,8 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ArrowLeft,
   Barcode,
   Camera,
-  ChevronRight,
   Loader2,
   PenLine,
   Sparkles,

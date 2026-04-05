@@ -11,12 +11,6 @@ import {
   Package,
   Search,
   Trash2,
-  TrendingUp,
-  ShieldCheck,
-  AlertTriangle,
-  PlusCircle,
-  Eye,
-  RefreshCw,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -34,7 +28,6 @@ import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LogTastingModal from "@/components/whiskey/LogTastingModal";
 import InlinePhotoEditor from "@/components/shared/InlinePhotoEditor";
@@ -51,9 +44,6 @@ import {
 import ValueStrategySection from "@/components/whiskey/ValueStrategySection";
 import {
   buildValuationSnapshot,
-  DIFFICULTY_LABELS,
-  TREND_LABELS,
-  HOLD_RECOMMENDATION_LABELS,
   resolveValueTrend,
 } from "@/components/valuation/valueEngine";
 import {
