@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, TrendingUp, AlertCircle } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/components/utils/localeFormatters';
-import { buildValuationSnapshot } from '@/components/valuation/valueEngine';
+import { buildValuationSnapshot, PIPE_PREMIUM_MAKERS } from '@/components/valuation/valueEngine';
 
 /**
  * ValuationCredibility - Transparent valuation display with reference signals,
@@ -40,11 +40,10 @@ export function computePipeValuation(pipe) {
   const snapshot = buildValuationSnapshot(pipe, 'pipekeeper');
   if (!snapshot) return null;
 
-  // Build UI signal strings for display
+  // Build UI signal strings for display — use canonical PIPE_PREMIUM_MAKERS list
   const signals = [];
-  const premiumMakers = ['dunhill', 'dunhill era', 'barling', 'comoy', 'sasieni', 'charatan', 'savinelli', 'stanwell', 'peterson', 'castello', 'ardor', 'brebbia', 'ser jacopo', 'radice', 'astley'];
   const makerLower = (pipe.maker || '').toLowerCase();
-  const isPremiumMaker = premiumMakers.some(m => makerLower.includes(m));
+  const isPremiumMaker = PIPE_PREMIUM_MAKERS.some(m => makerLower.includes(m));
 
   if (pipe.maker) signals.push(isPremiumMaker ? 'Premium brand index' : 'Brand baseline');
   if (pipe.bowl_material) signals.push(`Material: ${pipe.bowl_material}`);
