@@ -155,6 +155,10 @@ export function HeroCard({
             style={{
               width: "3.5rem",
               height: "3.5rem",
+              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.48) 0%, rgba(80, 55, 35, 0.58) 100%)`,
+              border: `1px solid rgba(120, 90, 65, 0.45)`,
+              boxShadow: `0 3px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180, 140, 100, 0.2)`,
+            }}
           >
             <Icon
               className="w-5 h-5"

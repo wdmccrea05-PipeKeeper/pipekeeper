@@ -157,8 +157,11 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
           <div className="flex-1 min-w-0">
             <h3
               className="text-xl sm:text-3xl font-bold leading-tight truncate"
-              {meta.tagline}
-            </p>
+              style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+            >
+              {meta.label}
+            </h3>
+            <p className="text-sm mt-0.5" style={{ color: meta.accent }}>{meta.tagline}</p>
           </div>
         </div>
 
