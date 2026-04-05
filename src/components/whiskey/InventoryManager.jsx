@@ -48,7 +48,7 @@ const FILL_MULTIPLIER = {
 
 function UnitRow({ unit, marketValue, onDelete, onUpdate }) {
   const [editing, setEditing] = useState(false);
-  const [status, setStatus] = useState(unit.status);
+  const [status, setStatus] = useState(unit.status || 'drinking');
   const [fillLevel, setFillLevel] = useState(unit.fill_level || 'Full');
   const cfg = STATUS_CONFIG[unit.status] || STATUS_CONFIG.drinking;
   const Icon = cfg.Icon;
@@ -159,35 +159,51 @@ export default function InventoryManager({ bottle, onClose }) {
   const handleAdd = async () => {
     const qty = Math.max(1, Math.min(99, parseInt(addQty) || 1));
     setAdding(true);
-    const creates = Array.from({ length: qty }, () =>
-      base44.entities.WhiskeyInventoryUnit.create({
-        bottle_id: bottle.id,
-        bottle_name: bottle.name,
-        status: addStatus,
-        fill_level: addStatus === 'open' ? addFill : null,
-        purchase_price: addPrice ? Number(addPrice) : null,
-        purchase_date: addDate || null,
-      })
-    );
-    await Promise.all(creates);
-    invalidate();
-    setAdding(false);
-    setAddPrice('');
-    setAddDate('');
-    setAddQty('1');
-    toast.success(qty === 1 ? 'Bottle unit added' : `${qty} bottle units added`);
+    try {
+      const creates = Array.from({ length: qty }, () =>
+        base44.entities.WhiskeyInventoryUnit.create({
+          bottle_id: bottle.id,
+          bottle_name: bottle.name,
+          status: addStatus,
+          fill_level: addStatus === 'open' ? addFill : null,
+          purchase_price: addPrice ? Number(addPrice) : null,
+          purchase_date: addDate || null,
+        })
+      );
+      await Promise.all(creates);
+      invalidate();
+      setAddPrice('');
+      setAddDate('');
+      setAddQty('1');
+      toast.success(qty === 1 ? 'Bottle unit added' : `${qty} bottle units added`);
+    } catch (e) {
+      console.error('[InventoryManager] failed to add units', e);
+      toast.error('Failed to add bottle unit. Please try again.');
+    } finally {
+      setAdding(false);
+    }
   };
 
   const handleDelete = async (unitId) => {
-    await base44.entities.WhiskeyInventoryUnit.delete(unitId);
-    invalidate();
-    toast.success('Bottle unit removed');
+    try {
+      await base44.entities.WhiskeyInventoryUnit.delete(unitId);
+      invalidate();
+      toast.success('Bottle unit removed');
+    } catch (e) {
+      console.error('[InventoryManager] failed to delete unit', e);
+      toast.error('Failed to remove bottle unit. Please try again.');
+    }
   };
 
   const handleUpdate = async (unitId, data) => {
-    await base44.entities.WhiskeyInventoryUnit.update(unitId, data);
-    invalidate();
-    toast.success('Updated');
+    try {
+      await base44.entities.WhiskeyInventoryUnit.update(unitId, data);
+      invalidate();
+      toast.success('Updated');
+    } catch (e) {
+      console.error('[InventoryManager] failed to update unit', e);
+      toast.error('Failed to update bottle unit. Please try again.');
+    }
   };
 
   const marketValue = getBottleUnitValue(bottle);

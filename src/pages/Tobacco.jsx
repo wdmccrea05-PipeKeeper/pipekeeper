@@ -167,15 +167,24 @@ export default function TobaccoPage() {
 
       const results = await safeBatchUpdate('TobaccoBlend', updates, user?.email);
       const failures = results.filter(r => !r?.success);
-      if (failures.length) throw new Error(failures[0]?.error || 'Bulk update failed');
-      return updates.length;
+      const successCount = results.filter(r => r?.success).length;
+      // Return outcome instead of throwing — caller decides how to surface partial failures
+      return { successCount, failureCount: failures.length, total: updates.length };
     },
-    onSuccess: (count) => {
+    onSuccess: ({ successCount, failureCount, total }) => {
       invalidateBlendQueries(queryClient, user?.email);
-      toast.success(t("tobaccoPage.successfullyUpdated", { count }));
+      if (failureCount > 0 && successCount > 0) {
+        toast.warning(`Updated ${successCount} of ${total} blends (${failureCount} failed)`);
+      } else if (failureCount > 0) {
+        toast.error(t("tobaccoPage.failedToUpdateBlends"));
+      } else {
+        toast.success(t("tobaccoPage.successfullyUpdated", { count: successCount }));
+      }
       exitQuickEdit();
     },
     onError: (error) => {
+      // Always refresh from server on unexpected error so cache stays consistent
+      invalidateBlendQueries(queryClient, user?.email);
       toast.error(t("tobaccoPage.failedToUpdateBlends"));
       console.error('Bulk update error:', error);
     }
