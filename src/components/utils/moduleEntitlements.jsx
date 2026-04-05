@@ -55,11 +55,14 @@ export function hasModuleProAccess(user, moduleKey) {
 }
 
 /**
- * Returns all active module keys for Pro users, empty array for free.
+ * Returns the module keys the user has actually paid for.
+ * Respects paid_modules_csv; falls back to all launched modules for legacy accounts.
  */
 export function getModulesWithProAccess(user) {
   if (!hasPaidAccess(user)) return [];
-  return getLaunchedActiveModules();
+  const csv = String(user?.paid_modules_csv || '').trim().toLowerCase();
+  if (!csv) return getLaunchedActiveModules(); // legacy fallback
+  return csv.split(',').map((m) => m.trim()).filter((m) => m && isModuleLaunched(m));
 }
 
 /**

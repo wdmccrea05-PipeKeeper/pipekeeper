@@ -29,6 +29,17 @@ export function useEntitlements() {
       };
     }
 
-    return buildCanonicalEntitlements(user, subscription);
+    const base = buildCanonicalEntitlements(user, subscription);
+    return {
+      ...base,
+      // Per-module access check — use paidModules list already computed from paid_modules_csv
+      hasModuleAccess: (moduleKey) => {
+        if (!base.hasPro) return false;
+        if (!moduleKey) return true;
+        // paidModules is [] when free, or the csv-derived list when paid
+        if (!base.paidModules || base.paidModules.length === 0) return true; // legacy fallback
+        return base.paidModules.includes(String(moduleKey).trim().toLowerCase());
+      },
+    };
   }, [user, subscription, isLoading]);
 }

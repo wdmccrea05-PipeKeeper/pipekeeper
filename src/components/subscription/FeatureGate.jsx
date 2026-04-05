@@ -10,16 +10,18 @@ import UpgradePrompt from "./UpgradePrompt";
  *   - While loading (tier === null), render nothing — never show upgrade prompt to loading users.
  *   - Pro users always see children.
  *   - Free users see UpgradePrompt.
- *   - "premium" requiredTier is treated as "pro" (no premium tier exists).
+ *   - When moduleKey is provided, checks per-module access via paid_modules_csv.
  *
  * @param {string}    feature      - Feature key to check via canUse()
+ * @param {string}    moduleKey    - Module key (e.g. 'whiskeykeeper') for per-module locking
  * @param {ReactNode} children     - Content to show if access granted
  * @param {string}    featureName  - Display name for upgrade prompt
  * @param {string}    description  - Description for upgrade prompt
- * @param {string}    requiredTier - 'pro' (default). 'premium' also treated as 'pro'.
+ * @param {string}    requiredTier - 'pro' (default).
  */
 export default function FeatureGate({
   feature,
+  moduleKey,
   children,
   featureName,
   description,
@@ -35,14 +37,20 @@ export default function FeatureGate({
     <UpgradePrompt
       featureName={featureName || t("featureGate.proFeature", "Pro Feature")}
       description={description || t("featureGate.requiresProTier", "Upgrade to Pro to unlock this feature.")}
+      moduleKey={moduleKey}
     />
   );
+
+  // Per-module check takes priority when provided
+  if (moduleKey) {
+    return entitlements.hasModuleAccess(moduleKey) ? <>{children}</> : upgradePrompt;
+  }
 
   // Feature key check
   if (feature) {
     return entitlements.canUse(feature) ? <>{children}</> : upgradePrompt;
   }
 
-  // Tier check (pro or premium both require hasPro)
+  // Tier check
   return entitlements.hasPro ? <>{children}</> : upgradePrompt;
 }
