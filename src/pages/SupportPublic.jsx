@@ -76,30 +76,40 @@ export default function SupportPublic() {
         <span className="text-[#D4A574] font-bold text-lg tracking-tight">CollectionKeeper</span>
       </div>
 
-      <div className="max-w-xl mx-auto px-4 pt-8">
+      {/* ══ APPLE GUIDELINE 1.5 — CONTACT SUPPORT BLOCK (above the fold, no scroll) ══ */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, rgba(44,28,20,0.98), rgba(28,18,12,0.99))',
+          borderBottom: '2px solid rgba(180,140,75,0.35)',
+        }}
+        className="px-4 py-6"
+      >
+        <div className="max-w-xl mx-auto">
+          <h1 className="text-2xl font-bold text-[#F5F1E7] mb-1">Contact Support</h1>
+          <p className="text-[#E0D8C8]/75 text-sm mb-5">Need help with CollectionKeeper? We're here to help.</p>
 
-        {/* ── ABOVE THE FOLD: Contact ── */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#F5F1E7] mb-2">Contact Support</h1>
-          <p className="text-[#E0D8C8]/70 text-base">We're here to help with your CollectionKeeper experience.</p>
-        </div>
-
-        <div className="rounded-2xl border border-[rgba(180,140,75,0.25)] bg-[rgba(255,255,255,0.04)] p-6 mb-8">
           <a
-            href="mailto:admin@pipekeeperapp.com?subject=CollectionKeeper Support Request"
-            className="flex items-center justify-center gap-2 w-full py-4 px-6 rounded-xl font-semibold text-white text-base transition-all"
-            style={{ background: "linear-gradient(135deg, #a35c5c, #8f4e4e)" }}
+            href="mailto:admin@pipekeeperapp.com?subject=CollectionKeeper Support"
+            className="flex items-center justify-center gap-2 w-full py-4 px-6 rounded-xl font-bold text-white text-base mb-3"
+            style={{ background: 'linear-gradient(135deg, #a35c5c, #8f4e4e)', fontSize: '1rem' }}
           >
             <Mail className="w-5 h-5" />
             Email Support
           </a>
-          <p className="text-center text-[#D4A574] text-sm mt-3 font-medium">
+
+          <p
+            className="text-center font-semibold text-base mb-1"
+            style={{ color: '#D4A574', letterSpacing: '0.01em' }}
+          >
             admin@pipekeeperapp.com
           </p>
-          <p className="text-center text-[#E0D8C8]/50 text-xs mt-1">
+          <p className="text-center text-[#E0D8C8]/55 text-sm">
             We typically respond within 24–48 hours.
           </p>
         </div>
+      </div>
+
+      <div className="max-w-xl mx-auto px-4 pt-8">
 
         {/* ── SUPPORT FORM ── */}
         <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(255,255,255,0.03)] p-6 mb-8">
