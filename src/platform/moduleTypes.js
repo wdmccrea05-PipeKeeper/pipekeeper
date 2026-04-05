@@ -13,7 +13,7 @@ export const MODULE_TYPES = {
 };
 
 // Modules that are active in the current build.
-export const ACTIVE_MODULES = [MODULE_TYPES.PIPE, MODULE_TYPES.TOBACCO, MODULE_TYPES.WHISKEY];
+export const ACTIVE_MODULES = [MODULE_TYPES.PIPE, MODULE_TYPES.TOBACCO, MODULE_TYPES.WHISKEY, MODULE_TYPES.CIGAR];
 
 // Human-readable display names keyed by module type.
 export const MODULE_DISPLAY_NAMES = {

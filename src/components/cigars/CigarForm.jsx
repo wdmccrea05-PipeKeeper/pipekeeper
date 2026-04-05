@@ -400,7 +400,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           </FormField>
           <FormField label="Production Status">
             <StyledSelect value={form.production_status} onValueChange={set('production_status')} placeholder="Select status">
-              {['in_production', 'limited', 'seasonal', 'regional', 'discontinued', 'on_hiatus', 'reformulated'].map((v) => (
+              {['regular_production', 'limited', 'seasonal', 'discontinued', 'unknown'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                 </SelectItem>
@@ -409,7 +409,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           </FormField>
           <FormField label="Release Type">
             <StyledSelect value={form.release_type} onValueChange={set('release_type')} placeholder="Select release type">
-              {['regular', 'limited', 'special_edition', 'vintage', 'single_farm', 'cabinet_selection'].map((v) => (
+              {['regular', 'limited_edition', 'annual_release', 'special_release', 'collaboration'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                 </SelectItem>

@@ -7,6 +7,7 @@
 
 import { pipeAdapter, tobaccoAdapter } from "./pipeAdapter.js";
 import { whiskeyAdapter } from "./whiskeyAdapter.js";
+import { cigarAdapter } from "./cigarAdapter.js";
 import { MODULE_TYPES } from "../moduleTypes.js";
 
 /**
@@ -17,8 +18,8 @@ const adapterRegistry = {
   [MODULE_TYPES.PIPE]: pipeAdapter,
   [MODULE_TYPES.TOBACCO]: tobaccoAdapter,
   [MODULE_TYPES.WHISKEY]: whiskeyAdapter,
+  [MODULE_TYPES.CIGAR]: cigarAdapter,
   // Future modules register here:
-  // [MODULE_TYPES.CIGAR]: cigarAdapter,
   // [MODULE_TYPES.COFFEE]: coffeeAdapter,
 };
 
@@ -74,4 +75,4 @@ export function isItemAiEligibleViaAdapter(rawItem, moduleType) {
   return adapter.isAiEligible(rawItem);
 }
 
-export { pipeAdapter, tobaccoAdapter, whiskeyAdapter };
+export { pipeAdapter, tobaccoAdapter, whiskeyAdapter, cigarAdapter };
