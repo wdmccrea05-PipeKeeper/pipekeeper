@@ -14,9 +14,16 @@ Deno.serve(async (req) => {
     }
 
     const email = user.email.toLowerCase().trim();
-    const FOUNDERS_CUTOFF = new Date('2026-02-01T00:00:00.000Z');
 
-    // Any account (free or paid) created before the founders cutoff is eligible
+    // FOUNDERS_CUTOFF_DATE is set at the moment WhiskeyKeeper officially launches.
+    // Any account created before that date qualifies for founders pricing.
+    // If the env var is not set, the offer is not yet available.
+    const cutoffStr = Deno.env.get('FOUNDERS_CUTOFF_DATE');
+    if (!cutoffStr) {
+      return Response.json({ isEligible: false, reason: 'offer_not_yet_active' });
+    }
+
+    const FOUNDERS_CUTOFF = new Date(cutoffStr);
     const accountCreatedDate = new Date(user.created_date);
     const isEligible = accountCreatedDate < FOUNDERS_CUTOFF;
 

@@ -22,8 +22,13 @@ Deno.serve(async (req) => {
     const FOUNDERS_CUTOFF = new Date('2026-02-01T00:00:00.000Z');
     const email = user.email.toLowerCase().trim();
 
-    // Any account (free or paid) created before the founders cutoff is eligible
-    const FOUNDERS_CUTOFF_CHECK = new Date('2026-02-01T00:00:00.000Z');
+    // FOUNDERS_CUTOFF_DATE is set at WhiskeyKeeper launch — accounts created before it qualify.
+    const cutoffStr = Deno.env.get('FOUNDERS_CUTOFF_DATE');
+    if (!cutoffStr) {
+      return Response.json({ error: 'Founders Bundle offer is not yet active' }, { status: 403 });
+    }
+
+    const FOUNDERS_CUTOFF_CHECK = new Date(cutoffStr);
     const accountCreatedDate = new Date(user.created_date);
     const isEligible = accountCreatedDate < FOUNDERS_CUTOFF_CHECK;
 
