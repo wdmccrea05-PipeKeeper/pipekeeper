@@ -119,7 +119,7 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
       };
       const created = await base44.entities.HumidorMaintenanceLog.create(payload);
 
-      // Mirror readings back to the humidor record
+      // Update humidor record with latest readings from this event
       const humidorPatch = { last_maintenance_date: data.date };
       const hasHumidityReading = !!data.humidity_reading;
       const hasTempReading = !!data.temperature_reading;
