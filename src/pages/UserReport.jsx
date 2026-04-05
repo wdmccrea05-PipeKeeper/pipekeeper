@@ -198,7 +198,7 @@ export default function UserReport() {
       ['Paid %',                          `${accounts.paidPercentage ?? 0}%`],
       ['Signup Source — Web',             accounts.signupSources?.web         ?? ''],
       ['Signup Source — Apple',           accounts.signupSources?.apple       ?? ''],
-      ['Signup Source — Google Play',     accounts.signupSources?.google      ?? ''],
+      ['Signup Source — Google Play',     accounts.signupSources?.googlePlay  ?? ''],
       ['Signup Source — Unknown',         accounts.signupSources?.unknown     ?? ''],
       ['New Accounts (This Week)',         accounts.newAccounts?.week          ?? ''],
       ['New Accounts (This Month)',        accounts.newAccounts?.month         ?? ''],
@@ -538,7 +538,7 @@ export default function UserReport() {
             {/* Current Run Rate (MRR / ARR) — separate concept from renewal revenue */}
             <p className="text-sm font-medium text-[#E0D8C8] mb-1">Current Run Rate</p>
             <p className="text-xs text-[#E0D8C8]/50 mb-3">
-              MRR = classified active subscriptions normalised to a monthly amount. ARR = MRR × 12. Independent of calendar renewal amounts above.
+              MRR = classified active subscriptions normalized to a monthly amount. ARR = MRR × 12. Independent of calendar renewal amounts above.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
               <MetricCard label="Current MRR" value={`$${(revenue.mrr ?? 0).toFixed(2)}`} sub="Monthly Recurring Revenue" />

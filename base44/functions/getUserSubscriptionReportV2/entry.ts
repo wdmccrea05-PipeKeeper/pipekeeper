@@ -757,13 +757,13 @@ Deno.serve(async (req) => {
     const freeUsersCount = freeUsersList.length;
 
     // ── Signup sources ────────────────────────────────────────────────────────
-    const signupSources = { web: 0, apple: 0, google: 0, unknown: 0 };
+    const signupSources = { web: 0, apple: 0, googlePlay: 0, unknown: 0 };
     for (const u of uniqueUsers) {
       const platform = norm(u.data?.platform || u.platform || '');
       if (platform === 'apple' || platform === 'ios') {
         signupSources.apple++;
       } else if (platform === 'android' || platform === 'googleplay' || platform === 'google') {
-        signupSources.google++;
+        signupSources.googlePlay++;
       } else if (!platform) {
         signupSources.unknown++;
       } else {
