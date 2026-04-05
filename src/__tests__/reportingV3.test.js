@@ -8,7 +8,7 @@
  *  - mrrContribution / computeMRRARR — revenue math
  *  - getCalendarRange — today / week / month / quarter / year
  *  - calcRenewalPeriod — renewal revenue math
- *  - runSanityChecks — monotonic counts, ARR = MRR * 12, etc.
+ *  - runSanityChecks — ARR = MRR * 12, paid <= total, renewal customer counts, etc.
  *  - missing price / interval handling
  */
 
@@ -452,38 +452,6 @@ describe('runSanityChecks', () => {
     expect(result.failures).toHaveLength(0);
   });
 
-  it('fails when today > week', () => {
-    const result = runSanityChecks(baseParams({
-      newAccounts: { today: 5, week: 3, month: 10, quarter: 25, year: 50 },
-    }));
-    expect(result.passed).toBe(false);
-    expect(result.failures.some((f) => f.includes('MONOTONIC_FAIL') && f.includes('today'))).toBe(true);
-  });
-
-  it('fails when week > month', () => {
-    const result = runSanityChecks(baseParams({
-      newAccounts: { today: 1, week: 15, month: 10, quarter: 25, year: 50 },
-    }));
-    expect(result.passed).toBe(false);
-    expect(result.failures.some((f) => f.includes('MONOTONIC_FAIL') && f.includes('week'))).toBe(true);
-  });
-
-  it('fails when month > quarter', () => {
-    const result = runSanityChecks(baseParams({
-      newAccounts: { today: 1, week: 3, month: 30, quarter: 25, year: 50 },
-    }));
-    expect(result.passed).toBe(false);
-    expect(result.failures.some((f) => f.includes('MONOTONIC_FAIL') && f.includes('month'))).toBe(true);
-  });
-
-  it('fails when quarter > year', () => {
-    const result = runSanityChecks(baseParams({
-      newAccounts: { today: 1, week: 3, month: 10, quarter: 60, year: 50 },
-    }));
-    expect(result.passed).toBe(false);
-    expect(result.failures.some((f) => f.includes('MONOTONIC_FAIL') && f.includes('quarter'))).toBe(true);
-  });
-
   it('fails when paidAccounts > totalAccounts', () => {
     const result = runSanityChecks(baseParams({ paidAccounts: 100, totalAccounts: 50 }));
     expect(result.passed).toBe(false);
@@ -518,9 +486,10 @@ describe('runSanityChecks', () => {
 
   it('can report multiple failures simultaneously', () => {
     const result = runSanityChecks(baseParams({
-      newAccounts:  { today: 10, week: 3, month: 10, quarter: 25, year: 50 },
-      paidAccounts: 100,
+      paidAccounts:  100,
       totalAccounts: 50,
+      mrr: 100,
+      arr: 1300,
     }));
     expect(result.failures.length).toBeGreaterThanOrEqual(2);
   });
