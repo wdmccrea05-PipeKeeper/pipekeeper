@@ -142,14 +142,14 @@ export default function BottleCard({
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <div
             className="rounded-xl p-3.5"
             style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(180,140,75,0.15)' }}
           >
-            <div className="flex items-center gap-2 text-[#D4A574] text-xs font-semibold uppercase tracking-wide">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              {valueLabel}
+            <div className="flex items-center gap-1.5 text-[#D4A574] text-[10px] sm:text-xs font-semibold uppercase tracking-wide">
+              <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+              <span className="truncate">{valueLabel}</span>
             </div>
             <div className="text-xl font-bold text-[#F5F1E7] mt-1">
               {formatCurrency(unitValue)}
@@ -163,9 +163,9 @@ export default function BottleCard({
             className="rounded-xl p-3.5"
             style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(180,140,75,0.15)' }}
           >
-            <div className="flex items-center gap-2 text-[#D4A574] text-xs font-semibold uppercase tracking-wide">
-              <Package className="w-3.5 h-3.5" />
-              Inventory
+            <div className="flex items-center gap-1.5 text-[#D4A574] text-[10px] sm:text-xs font-semibold uppercase tracking-wide">
+              <Package className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+              <span className="truncate">Inventory</span>
             </div>
             <div className="text-xl font-bold text-[#F5F1E7] mt-1">
               {totalCount}

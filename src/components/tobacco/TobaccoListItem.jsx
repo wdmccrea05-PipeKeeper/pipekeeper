@@ -84,7 +84,7 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite, onEd
                 <h3 className="font-semibold text-[#E0D8C8] text-lg break-words line-clamp-2">{blend.name}</h3>
                 <p className="text-sm text-[#E0D8C8]/60 break-words">{blend.manufacturer || t("tobaccoExtended.unknownMaker")}</p>
               </div>
-              <div className="shrink-0 flex items-center gap-3">
+              <div className="shrink-0 flex items-center gap-2 flex-wrap justify-end">
                 {blend.rating && (
                   <div className="flex items-center gap-0.5">
                     <Star className="w-4 h-4 fill-amber-400 text-amber-400" />

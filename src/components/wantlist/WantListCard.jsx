@@ -77,7 +77,7 @@ export default function WantListCard({ item, onStatusChange, onArchive, onShare,
     >
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-base text-[#F5F1E7] leading-snug">{item.name}</h3>
+          <h3 className="font-semibold text-base text-[#F5F1E7] leading-snug break-words line-clamp-2">{item.name}</h3>
           {item.brand && <p className="text-sm text-[#D4A574]/80 mt-0.5">{item.brand}</p>}
           <p className="text-xs text-[#E0D8C8]/45 mt-1 uppercase tracking-wide">{typeLabel}</p>
         </div>

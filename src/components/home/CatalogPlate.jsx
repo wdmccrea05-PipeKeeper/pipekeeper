@@ -132,7 +132,7 @@ export default function CatalogPlate({
       />
 
       {/* Content */}
-      <div className="relative p-7 flex flex-col justify-start h-full">
+      <div className="relative p-4 sm:p-7 flex flex-col justify-start h-full">
         {/* Category label */}
         <div
           className="text-[10px] uppercase tracking-[0.15em] font-bold mb-3"

@@ -20,7 +20,7 @@ export default function PipeListItem({ pipe, onClick, onToggleFavorite, onEdit }
       <div className="p-4">
         <div className="flex items-center gap-4">
           {/* Photo */}
-          <div className="relative w-32 h-20 rounded-lg overflow-hidden shrink-0" style={{
+          <div className="relative w-20 h-16 sm:w-32 sm:h-20 rounded-lg overflow-hidden shrink-0" style={{
             background: "linear-gradient(135deg, rgba(42, 30, 20, 0.5), rgba(35, 24, 16, 0.7))"
           }}>
             {mainPhoto ? (
@@ -52,7 +52,7 @@ export default function PipeListItem({ pipe, onClick, onToggleFavorite, onEdit }
 
           {/* Details */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-4 mb-2">
+            <div className="flex items-start justify-between gap-2 mb-2">
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-[#E0D8C8] text-lg break-words">{pipe.name}</h3>
                 <p className="text-sm text-[#E0D8C8]/75 break-words">{pipe.maker || t("pipesExtended.unknownMaker")}</p>

@@ -86,7 +86,7 @@ function SectionTitle({ children, muted = false }) {
 function StatCard({ icon: Icon, label, value, sub, accent = '#C89752' }) {
   return (
     <div
-      className="rounded-[22px] p-5 min-h-[132px] flex flex-col justify-between"
+      className="rounded-[22px] p-4 sm:p-5 min-h-[120px] sm:min-h-[132px] flex flex-col justify-between"
       style={{
         background: 'linear-gradient(145deg, rgba(39,27,18,0.96), rgba(25,17,11,0.98))',
         border: `1px solid ${accent}40`,
@@ -107,7 +107,7 @@ function StatCard({ icon: Icon, label, value, sub, accent = '#C89752' }) {
           {label}
         </p>
         <div
-          className="text-2xl sm:text-4xl font-bold leading-none break-words"
+          className="text-xl sm:text-3xl font-bold leading-none break-words"
           style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
         >
           {value}
@@ -156,12 +156,7 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
 
           <div className="flex-1 min-w-0">
             <h3
-              className="text-2xl sm:text-3xl font-bold leading-tight whitespace-nowrap"
-              style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
-            >
-              {meta.label}
-            </h3>
-            <p className="text-sm sm:text-base mt-2 break-words" style={{ color: meta.accent }}>
+              className="text-xl sm:text-3xl font-bold leading-tight truncate"
               {meta.tagline}
             </p>
           </div>

@@ -147,18 +147,14 @@ export function HeroCard({
       />
 
       {/* Main content */}
-      <div className="relative p-6 pb-4 flex flex-col gap-4 flex-1">
+      <div className="relative p-4 sm:p-6 pb-3 sm:pb-4 flex flex-col gap-3 sm:gap-4 flex-1">
         {/* Icon badge */}
         {Icon && (
           <div
-            className="rounded-2xl flex items-center justify-center shrink-0"
+            className="hidden sm:flex rounded-2xl items-center justify-center shrink-0"
             style={{
               width: "3.5rem",
               height: "3.5rem",
-              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.48) 0%, rgba(80, 55, 35, 0.58) 100%)`,
-              border: `1px solid rgba(120, 90, 65, 0.45)`,
-              boxShadow: `0 3px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180, 140, 100, 0.2)`,
-            }}
           >
             <Icon
               className="w-5 h-5"
@@ -181,7 +177,7 @@ export function HeroCard({
             {title}
           </div>
           <div
-            className="text-[2.25rem] font-extrabold leading-tight tracking-tight"
+            className="text-2xl sm:text-[2.25rem] font-extrabold leading-tight tracking-tight line-clamp-2"
             style={{
               color: "#F5F1E7",
               textShadow: `0 2px 10px rgba(0,0,0,0.8), 0 1px 3px rgba(0,0,0,0.95)`,

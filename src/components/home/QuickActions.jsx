@@ -121,7 +121,7 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
               if (handler) handler();
             }}
             disabled={!handlers[key]}
-            className="flex flex-col items-center justify-center gap-3 p-5 transition-all duration-200 min-h-[100px] w-full focus-visible:outline-none group hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex flex-col items-center justify-center gap-2 sm:gap-3 p-3.5 sm:p-5 transition-all duration-200 min-h-[88px] sm:min-h-[100px] w-full focus-visible:outline-none group hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label={t(`quickActions.${key}`)}
             style={{
               background: "linear-gradient(145deg, rgba(58, 42, 28, 0.65), rgba(48, 34, 24, 0.78))",
@@ -152,7 +152,7 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
               )}
             </div>
             <span 
-              className="text-xs font-semibold leading-tight text-center"
+              className="text-[10px] sm:text-xs font-semibold leading-tight text-center line-clamp-2 max-w-full"
               style={{ 
                 color: "#F5F1E7",
                 textShadow: "0 1px 2px rgba(0,0,0,0.5)"
