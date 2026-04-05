@@ -26,9 +26,9 @@ Deno.serve(async (req) => {
     for (const sub of subscriptions) {
       const startDate = new Date(sub.subscriptionStartedAt || sub.started_at || sub.current_period_start);
       
-      // Eligible if subscription started before founders cutoff
+      // Eligible only if subscription is currently active (not canceled) and started before founders cutoff
       if (startDate < FOUNDERS_CUTOFF && 
-          (sub.status === 'active' || sub.status === 'past_due' || sub.status === 'canceled')) {
+          (sub.status === 'active' || sub.status === 'trialing' || sub.status === 'past_due')) {
         isEligible = true;
         break;
       }

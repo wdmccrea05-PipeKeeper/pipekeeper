@@ -30,8 +30,9 @@ Deno.serve(async (req) => {
     let isEligible = false;
     for (const sub of subscriptions) {
       const startDate = new Date(sub.subscriptionStartedAt || sub.started_at || sub.current_period_start);
+      // Require a currently active account — canceled accounts are not eligible
       if (startDate < FOUNDERS_CUTOFF && 
-          (sub.status === 'active' || sub.status === 'past_due' || sub.status === 'canceled')) {
+          (sub.status === 'active' || sub.status === 'trialing' || sub.status === 'past_due')) {
         isEligible = true;
         break;
       }
