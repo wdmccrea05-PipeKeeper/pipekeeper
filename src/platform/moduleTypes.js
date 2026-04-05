@@ -8,6 +8,7 @@ export const MODULE_TYPES = {
   TOBACCO: "tobacco",
   WHISKEY: "whiskey",
   CIGAR: "cigar",
+  WINE: "wine",
   COFFEE: "coffee",
 };
 
@@ -20,6 +21,7 @@ export const MODULE_DISPLAY_NAMES = {
   [MODULE_TYPES.TOBACCO]: "Tobacco",
   [MODULE_TYPES.WHISKEY]: "Whiskey",
   [MODULE_TYPES.CIGAR]: "Cigars",
+  [MODULE_TYPES.WINE]: "Wine",
   [MODULE_TYPES.COFFEE]: "Coffee",
 };
 

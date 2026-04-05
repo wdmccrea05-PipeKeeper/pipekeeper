@@ -1,0 +1,206 @@
+{
+  "name": "Cigar",
+  "type": "object",
+  "description": "A cigar in a user's CigarKeeper collection.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the cigar (e.g. blend or product name)"
+    },
+    "brand": {
+      "type": "string",
+      "description": "Brand or manufacturer of the cigar"
+    },
+    "line": {
+      "type": "string",
+      "description": "Series or line within the brand (e.g. Oliva Serie V)"
+    },
+    "vitola": {
+      "type": "string",
+      "description": "Size/shape format of the cigar (e.g. Robusto, Toro, Churchill)"
+    },
+    "wrapper": {
+      "type": "string",
+      "description": "Wrapper leaf origin or descriptor (e.g. Connecticut Shade, Maduro)"
+    },
+    "binder": {
+      "type": "string",
+      "description": "Binder leaf origin or descriptor"
+    },
+    "filler": {
+      "type": "string",
+      "description": "Filler blend description or country/region"
+    },
+    "country_of_origin": {
+      "type": "string",
+      "description": "Country where the cigar was manufactured"
+    },
+    "factory": {
+      "type": "string",
+      "description": "Factory or tabacalera where the cigar was made"
+    },
+    "body": {
+      "type": "string",
+      "enum": ["mild", "mild_medium", "medium", "medium_full", "full"],
+      "description": "Overall body profile of the cigar"
+    },
+    "strength": {
+      "type": "string",
+      "enum": ["mild", "mild_medium", "medium", "medium_full", "full"],
+      "description": "Nicotine/strength profile of the cigar"
+    },
+    "flavor_notes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Tasting / flavor note tags (e.g. cedar, leather, coffee)"
+    },
+    "production_status": {
+      "type": "string",
+      "enum": ["regular_production", "limited", "discontinued", "seasonal", "unknown"],
+      "description": "Production availability status"
+    },
+    "release_type": {
+      "type": "string",
+      "enum": ["regular", "limited_edition", "annual_release", "special_release", "collaboration"],
+      "description": "Type of release"
+    },
+    "length_inches": {
+      "type": "number",
+      "description": "Length of the cigar in inches"
+    },
+    "ring_gauge": {
+      "type": "number",
+      "description": "Ring gauge (diameter in 64ths of an inch)"
+    },
+    "box_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Box date code (YYYY-MM-DD) if known"
+    },
+    "barcode": {
+      "type": "string",
+      "description": "Generic barcode value"
+    },
+    "upc": {
+      "type": "string",
+      "description": "Universal Product Code"
+    },
+    "ean": {
+      "type": "string",
+      "description": "European Article Number"
+    },
+    "aliases": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Alternative names or regional names for this cigar"
+    },
+    "purchase_source": {
+      "type": "string",
+      "description": "Where the cigar was purchased (retailer, website, etc.)"
+    },
+    "purchase_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the cigar was purchased (YYYY-MM-DD)"
+    },
+    "purchase_price": {
+      "type": "number",
+      "description": "Price paid at purchase"
+    },
+    "estimated_value": {
+      "type": "number",
+      "description": "Current estimated market value"
+    },
+    "quantity": {
+      "type": "number",
+      "description": "Number of units in inventory"
+    },
+    "unit_type": {
+      "type": "string",
+      "enum": ["single", "5pack", "pack", "box", "bundle", "partial_box"],
+      "description": "How the quantity is packaged or counted"
+    },
+    "singles_equivalent": {
+      "type": "number",
+      "description": "Calculated number of individual sticks represented by quantity + unit_type"
+    },
+    "humidor_id": {
+      "type": "string",
+      "description": "Foreign key to a HumidorLocation record"
+    },
+    "storage_notes": {
+      "type": "string",
+      "description": "Notes about storage, position, or special handling"
+    },
+    "aging_start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date aging / resting began (YYYY-MM-DD)"
+    },
+    "ready_to_smoke_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Estimated date this cigar will be ready to smoke (YYYY-MM-DD)"
+    },
+    "is_favorite": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this cigar is marked as a favorite"
+    },
+    "wishlist": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this cigar is on the user's wishlist"
+    },
+    "shopping_list": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this cigar is on the user's shopping list"
+    },
+    "restock_flag": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this cigar should be flagged for restock"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "User rating from 0 to 5"
+    },
+    "personal_notes": {
+      "type": "string",
+      "description": "Free-text personal notes about this cigar"
+    },
+    "photos": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Array of photo URLs"
+    },
+    "ai_excluded": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this cigar is excluded from AI recommendations"
+    },
+    "public_visibility": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this cigar is visible to other users on public profiles"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who created this record"
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when this record was created"
+    },
+    "updated_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when this record was last updated"
+    }
+  },
+  "required": ["name", "brand", "created_by"]
+}
