@@ -12,7 +12,7 @@ const FINISHES = ['Smooth', 'Sandblast', 'Rusticated', 'Partially Rusticated', '
 const MATERIALS = ['Briar', 'Meerschaum', 'Corn Cob', 'Clay', 'Morta', 'Cherry Wood', 'Olive Wood', 'Other'];
 const CONDITIONS = ['Mint', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor', 'Estate - Unrestored'];
 const CIGAR_BODY = ['mild', 'mild_medium', 'medium', 'medium_full', 'full'];
-const CIGAR_BODY_LABELS = { mild: 'Mild', mild_medium: 'Mild-Medium', medium: 'Medium', medium_full: 'Medium-Full', full: 'Full' };
+const CIGAR_INTENSITY_LABELS = { mild: 'Mild', mild_medium: 'Mild-Medium', medium: 'Medium', medium_full: 'Medium-Full', full: 'Full' };
 const WRAPPERS = ['Colorado Claro', 'Colorado', 'Colorado Maduro', 'Maduro', 'Oscuro', 'Natural', 'Claro', 'Double Claro (Candela)', 'Connecticut Shade', 'Connecticut Broadleaf', 'Ecuadorian Connecticut', 'Habano', 'San Andres Maduro', 'Cameroon', 'Sumatra', 'Indonesian', 'Other'];
 
 const inputStyle = {
@@ -168,7 +168,7 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, data })
                 onChange={v => set('body', v)}
                 options={CIGAR_BODY}
                 placeholder="Select body…"
-                labelMap={CIGAR_BODY_LABELS}
+                labelMap={CIGAR_INTENSITY_LABELS}
               />
             </FieldRow>
             <FieldRow label="Strength">
@@ -177,7 +177,7 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, data })
                 onChange={v => set('strength', v)}
                 options={CIGAR_BODY}
                 placeholder="Select strength…"
-                labelMap={CIGAR_BODY_LABELS}
+                labelMap={CIGAR_INTENSITY_LABELS}
               />
             </FieldRow>
             <FieldRow label="Flavor Notes">
