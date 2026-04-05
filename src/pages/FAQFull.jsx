@@ -231,6 +231,47 @@ export default function FAQFull() {
           </Q>
         </Section>
 
+        <Section title="Value &amp; Strategy">
+          <Q id="value-strategy-what" q="What is the Value &amp; Strategy section?">
+            <p className="mb-2">Every item detail page (bottles, pipes, and tobacco blends) includes a <strong>Value &amp; Strategy</strong> section that shows computed valuation data and a strategic recommendation tailored to that item type.</p>
+            <p>It displays: Current Value with a confidence badge (High / Medium / Low), a Value Trend indicator, a Rarity Score from 0–100, a Replacement Difficulty rating, and a Strategy Recommendation (e.g. Hold, Safe to Open, Cellar for Aging, Preserve &amp; Insure) with a bullet-point rationale explaining why.</p>
+          </Q>
+          <Q id="value-strategy-checkpoint" q="How do I save a value checkpoint?">
+            <p>From any item’s detail page, open the Value &amp; Strategy section and click <strong>Save Checkpoint</strong>. This records the item’s current computed value as a timestamped history entry. Value History shows all past checkpoints so you can track how your item’s value changes over time.</p>
+          </Q>
+          <Q id="value-strategy-observation" q="How do I add a market price observation?">
+            <p>Click <strong>Add Observation</strong> in the Value &amp; Strategy section. You can record a real-world price you found (e.g. an auction result, a retailer listing, a secondary market price), along with the source name, URL, and price type (retail, auction, secondary market, etc.). Observations provide evidence for valuation and are stored separately from computed checkpoints.</p>
+          </Q>
+          <Q id="value-strategy-rarity" q="How is the Rarity Score calculated?">
+            <p>The Rarity Score (0–100) is computed automatically from the item’s data. For whiskey bottles it considers age statement, production status (Discontinued, Allocated, Limited Edition), producer status (closed/silent distillery), ABV, export exclusivity, and whether the bottle is a unicorn or single cask release. For pipes it considers production type (one-off, limited artisan batch, standard artisan, or factory), maker status (deceased/retired/inactive), material, provenance, and age. For tobacco blends it considers discontinuation, manufacturer status, limited batches, regional exclusivity, and cellar age.</p>
+            <p className="mt-2">A score of 0–25 is Common, 25–50 is Moderate, and above 50 is Rare. Scores above 70 are highlighted in red as high-rarity items.</p>
+          </Q>
+          <Q id="value-strategy-badges" q="What do the status badges mean?">
+            <ul className="list-disc list-inside space-y-1">
+              <li><strong>Discontinued</strong> — production has ended; supply is finite.</li>
+              <li><strong>Allocated</strong> — supply is restricted or rationed by the producer.</li>
+              <li><strong>Seasonal</strong> — only available at certain times of year.</li>
+              <li><strong>One of a Kind</strong> — unique pipe; irreplaceable.</li>
+              <li><strong>Maker Deceased</strong> — the artisan is no longer alive; no new supply possible.</li>
+              <li><strong>Maker Retired</strong> — the maker no longer produces; existing pieces are the final supply.</li>
+              <li><strong>Exclusive</strong> — market or retailer exclusive release.</li>
+            </ul>
+            <p className="mt-2">Badges appear automatically when the corresponding field is set on the item record.</p>
+          </Q>
+        </Section>
+
+        <Section title="Collector's Snapshot">
+          <Q id="snapshot-what" q="What is the Collector's Snapshot?">
+            <p>The Collector’s Snapshot is a fullscreen story slideshow accessible from the Hub. It generates a curated set of visual highlight cards from your collection data. It is <strong>module-aware</strong>: if you only use PipeKeeper it shows pipe and tobacco-specific cards; if you only use WhiskeyKeeper it shows whiskey-focused cards; if both are active it combines highlights from both modules with no placeholder gaps.</p>
+          </Q>
+          <Q id="snapshot-navigate" q="How do I navigate the Snapshot?">
+            <p>Tap the right or left side of the current card, swipe left or right on mobile, or use the arrow keys on a keyboard. A progress bar along the bottom tracks your position. Tap the X button or press Escape to close. Navigation buttons at the bottom also let you step forward and back.</p>
+          </Q>
+          <Q id="snapshot-regenerate" q="How do I regenerate my Collection Story?">
+            <p>On the Hub, find the Collection Story card and click <strong>Regenerate</strong>. The story is rebuilt from your current collection data, reflecting your newest acquisitions, most-used items, and updated values. It also regenerates automatically when significant changes are detected in your collection.</p>
+          </Q>
+        </Section>
+
         <Section title={t("helpCenter.topicSupport")}>
           <Q id="contact-support" q={t("help.contactSupport")}>
             <div className="space-y-3">
