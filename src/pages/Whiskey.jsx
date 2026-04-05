@@ -7,6 +7,7 @@ import {
   List,
   Star,
   Sparkles,
+  ArrowUpDown,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,13 @@ import WhiskeyKeeperModuleNav from "@/components/modules/WhiskeyKeeperModuleNav"
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { formatCurrency, resolveBottleUnitValue } from "@/components/whiskey/utils/bottleValue";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 function getBottlePhoto(bottle) {
   return (
@@ -161,6 +169,7 @@ function WhiskeyInner() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState('date');
 
   const userEmail = user?.email || null;
   const shouldOpenAdd = new URLSearchParams(location.search).get("action") === "add";
@@ -207,23 +216,38 @@ function WhiskeyInner() {
   }, [shouldOpenAdd, navigate]);
 
   const filteredBottles = useMemo(() => {
+    let results = bottles;
     const q = search.trim().toLowerCase();
-    if (!q) return bottles;
+    
+    if (q) {
+      results = results.filter((bottle) => {
+        const haystack = [
+          safeText(bottle.name, ""),
+          safeText(bottle.distillery, ""),
+          safeText(bottle.region, ""),
+          safeText(bottle.type, ""),
+          safeText(bottle.country, ""),
+        ]
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(q);
+      });
+    }
 
-    return bottles.filter((bottle) => {
-      const haystack = [
-        safeText(bottle.name, ""),
-        safeText(bottle.distillery, ""),
-        safeText(bottle.region, ""),
-        safeText(bottle.type, ""),
-        safeText(bottle.country, ""),
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return haystack.includes(q);
+    return [...results].sort((a, b) => {
+      if (sortBy === 'name') {
+        return (a.name || '').localeCompare(b.name || '');
+      } else if (sortBy === 'distillery') {
+        return (a.distillery || '').localeCompare(b.distillery || '');
+      } else if (sortBy === 'value') {
+        return (resolveBottleUnitValue(b) || 0) - (resolveBottleUnitValue(a) || 0);
+      } else if (sortBy === 'type') {
+        return (a.type || '').localeCompare(b.type || '');
+      } else {
+        return new Date(b.updated_date || 0).getTime() - new Date(a.updated_date || 0).getTime();
+      }
     });
-  }, [bottles, search]);
+  }, [bottles, search, sortBy]);
 
   function openBottleDetail(bottle) {
     navigate(`/BottleDetail?id=${encodeURIComponent(bottle.id)}`);
@@ -247,20 +271,43 @@ function WhiskeyInner() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <div
-            className="flex items-center gap-2 rounded-xl px-3 py-2"
-            style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(180,140,75,0.16)",
-            }}
-          >
-            <Search className="w-4 h-4 text-[#D8C7A6]/65" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search bottles"
-              className="bg-transparent outline-none text-sm text-[#F5F1E7] placeholder:text-[#D8C7A6]/45"
-            />
+          <div className="flex flex-wrap gap-2 items-center flex-1">
+            <div
+              className="flex items-center gap-2 rounded-xl px-3 py-2 flex-1 min-w-[200px]"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(180,140,75,0.16)",
+              }}
+            >
+              <Search className="w-4 h-4 text-[#D8C7A6]/65" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search bottles"
+                className="bg-transparent outline-none text-sm text-[#F5F1E7] placeholder:text-[#D8C7A6]/45 w-full"
+              />
+            </div>
+
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger
+                className="w-40 h-10"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(180,140,75,0.16)",
+                  color: "#F5F1E7",
+                }}
+              >
+                <ArrowUpDown className="w-4 h-4 mr-2 text-[#D8C7A6]/65" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent style={{ background: "rgba(25,17,11,0.98)", border: "1px solid rgba(180,140,75,0.35)" }}>
+                <SelectItem value="date">Newest First</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="distillery">Distillery</SelectItem>
+                <SelectItem value="type">Type</SelectItem>
+                <SelectItem value="value">Value</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div
