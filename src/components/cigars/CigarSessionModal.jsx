@@ -295,7 +295,9 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
               : { quantity: newQty };
           // Best-effort update: session is already saved; a failed decrement
           // is non-fatal and the user can manually correct inventory.
-          await base44.entities.Cigar.update(selectedCigar.id, inventoryUpdate).catch(() => null);
+          await base44.entities.Cigar.update(selectedCigar.id, inventoryUpdate).catch((err) => {
+            console.warn('[CigarKeeper] Inventory decrement failed after session log:', err?.message || err);
+          });
         }
       }
 

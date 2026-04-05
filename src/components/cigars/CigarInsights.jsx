@@ -273,13 +273,13 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
         >
           <SectionHeading>Collection Insights</SectionHeading>
           <div className="space-y-2">
-            {collectionInsights.map((insight, idx) => {
+            {collectionInsights.map((insight) => {
               const cfg = INSIGHT_CONFIG[insight.type];
               const Icon = cfg?.icon || Cigarette;
               const color = cfg?.color || '#D4A574';
               return (
                 <div
-                  key={`${insight.cigarId}-${insight.type}-${idx}`}
+                  key={`${insight.cigarId}-${insight.type}`}
                   className="flex items-start gap-3 rounded-xl px-3 py-2.5"
                   style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}
                 >
