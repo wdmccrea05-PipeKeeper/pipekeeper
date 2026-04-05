@@ -140,7 +140,7 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
               onSelected={(candidate, identifyResult) => {
                 const payload = buildQuickAddPayload(candidate, itemType);
                 const valuationSeed = buildValuationSeedData(candidate, itemType);
-                setSearchResult({ ...payload, _fromIdentify: true });
+                setSearchResult({ ...payload, ...valuationSeed, _fromIdentify: true });
                 saveStepData({ ...payload, ...valuationSeed, _identifyResult: identifyResult });
                 setStep('identifyConfirm');
               }}

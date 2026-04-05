@@ -74,6 +74,9 @@ function normalizePipe(raw, source) {
     country_of_origin: raw.country_of_origin || raw.country || '',
     notes: raw.identification_notes || raw.notes || '',
     photos: Array.isArray(raw.photos) ? raw.photos : [],
+    barcode: raw._inputBarcode || raw.barcode || '',
+    upc: raw.upc || '',
+    ean: raw.ean || '',
   };
 
   const valuationSeed = {
@@ -101,6 +104,9 @@ function normalizeBlend(raw, source) {
     packaging_size: raw.packaging_size || raw.size || '',
     region: raw.region || raw.country || '',
     country: raw.country || '',
+    barcode: raw._inputBarcode || raw.barcode || '',
+    upc: raw.upc || '',
+    ean: raw.ean || '',
   };
 
   const valuationSeed = {
@@ -128,6 +134,9 @@ function normalizeBottle(raw, source) {
     edition: raw.special_edition || raw.edition || '',
     batch: raw.batch || '',
     tasting_notes: raw.tasting_notes || '',
+    barcode: raw._inputBarcode || raw.barcode || '',
+    upc: raw.upc || '',
+    ean: raw.ean || '',
   };
 
   const valuationSeed = {
@@ -163,7 +172,9 @@ function normalizeCigar(raw, source) {
     length_inches: raw.length_inches ?? null,
     ring_gauge: raw.ring_gauge ?? null,
     box_date: raw.box_date || '',
-    barcode: raw.barcode || '',
+    barcode: raw._inputBarcode || raw.barcode || '',
+    upc: raw.upc || '',
+    ean: raw.ean || '',
   };
 
   const valuationSeed = {
@@ -276,6 +287,9 @@ export function buildQuickAddPayload(identifiedItem, itemType) {
       photos: details.photos,
       estimated_value: valuationSeed.estimated_value ?? undefined,
       purchase_price: valuationSeed.purchase_price ?? undefined,
+      barcode: details.barcode || undefined,
+      upc: details.upc || undefined,
+      ean: details.ean || undefined,
     };
   }
 
@@ -290,6 +304,9 @@ export function buildQuickAddPayload(identifiedItem, itemType) {
       production_status: details.production_status,
       notes: details.notes,
       purchase_price: valuationSeed.retail_price ?? undefined,
+      barcode: details.barcode || undefined,
+      upc: details.upc || undefined,
+      ean: details.ean || undefined,
     };
   }
 
@@ -305,6 +322,9 @@ export function buildQuickAddPayload(identifiedItem, itemType) {
       bottle_size: details.bottle_size,
       notes: details.tasting_notes,
       purchase_price: valuationSeed.retail_price ?? undefined,
+      barcode: details.barcode || undefined,
+      upc: details.upc || undefined,
+      ean: details.ean || undefined,
     };
   }
 
@@ -324,7 +344,9 @@ export function buildQuickAddPayload(identifiedItem, itemType) {
       flavor_notes: details.flavor_notes,
       production_status: details.production_status,
       release_type: details.release_type,
-      barcode: details.barcode,
+      barcode: details.barcode || undefined,
+      upc: details.upc || undefined,
+      ean: details.ean || undefined,
       purchase_price: valuationSeed.retail_price ?? undefined,
     };
   }
