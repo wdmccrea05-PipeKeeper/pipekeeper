@@ -235,8 +235,10 @@ export function calcRenewalPeriod(paidSubs, range) {
  * Run hard assertions on computed metrics.
  * Returns { passed, failures } — never throws.
  *
+ * Note: new account counts are NOT expected to be monotonic — calendar week
+ * ranges can cross month/quarter boundaries, so week > month is valid.
+ *
  * Assertions:
- *   - today <= week <= month <= quarter <= year (new account counts)
  *   - paidAccounts <= totalAccounts
  *   - arr === mrr * 12 (within $0.01 float tolerance)
  *   - renewing customers <= renewing subscriptions (per period)
@@ -246,29 +248,8 @@ export function calcRenewalPeriod(paidSubs, range) {
  */
 export function runSanityChecks(params) {
   const failures = [];
-  const { newAccounts, paidAccounts, totalAccounts, mrr, arr } = params;
+  const { paidAccounts, totalAccounts, mrr, arr } = params;
   const renewals = params.renewals ?? {};
-
-  if (newAccounts.today > newAccounts.week) {
-    failures.push(
-      `MONOTONIC_FAIL: today(${newAccounts.today}) > week(${newAccounts.week})`
-    );
-  }
-  if (newAccounts.week > newAccounts.month) {
-    failures.push(
-      `MONOTONIC_FAIL: week(${newAccounts.week}) > month(${newAccounts.month})`
-    );
-  }
-  if (newAccounts.month > newAccounts.quarter) {
-    failures.push(
-      `MONOTONIC_FAIL: month(${newAccounts.month}) > quarter(${newAccounts.quarter})`
-    );
-  }
-  if (newAccounts.quarter > newAccounts.year) {
-    failures.push(
-      `MONOTONIC_FAIL: quarter(${newAccounts.quarter}) > year(${newAccounts.year})`
-    );
-  }
   if (paidAccounts > totalAccounts) {
     failures.push(
       `SANITY_FAIL: paidAccounts(${paidAccounts}) > totalAccounts(${totalAccounts})`

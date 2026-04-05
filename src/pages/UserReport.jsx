@@ -318,6 +318,9 @@ export default function UserReport() {
             {meta.reportVersion && (
               <span className="ml-2 opacity-60">· Report: {meta.reportVersion}</span>
             )}
+            {meta.timezoneNote && (
+              <span className="ml-2 opacity-60">· Date ranges: {meta.timezoneNote}</span>
+            )}
           </p>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
@@ -402,10 +405,11 @@ export default function UserReport() {
         {/* Signup sources */}
         <div>
           <p className="text-sm font-medium text-[#E0D8C8] mb-2">Signup Sources</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <MetricCard label="Web"         value={accounts.signupSources?.web         ?? 0} />
             <MetricCard label="Apple / iOS" value={accounts.signupSources?.apple       ?? 0} />
             <MetricCard label="Google Play" value={accounts.signupSources?.googlePlay  ?? 0} />
+            <MetricCard label="Unknown"     value={accounts.signupSources?.unknown     ?? 0} />
           </div>
         </div>
       </SectionCard>
@@ -416,7 +420,7 @@ export default function UserReport() {
       <SectionCard title="New Accounts" icon={CalendarDays} accentColor="#818CF8">
         <p className="text-xs text-[#E0D8C8]/50 mb-4">
           Based on account <code className="text-[#E0D8C8]/70">created_at</code> only.
-          Counts are monotonic: today ≤ week ≤ month ≤ quarter ≤ year.
+          Each period is an independent UTC calendar window — counts are not necessarily cumulative.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
           <MetricCard label="Today"        value={accounts.newAccounts?.today   ?? 0} />

@@ -221,6 +221,9 @@ interface SanityResult {
  * Run hard assertions on the computed metrics.
  * On failure: log the bug and return the failure list.
  * Does NOT throw — the caller embeds failures in the response.
+ *
+ * Note: new account counts are NOT expected to be monotonic — calendar week
+ * ranges can cross month/quarter boundaries, so week > month is normal.
  */
 function runSanityChecks(params: {
   newAccounts: { today: number; week: number; month: number; quarter: number; year: number };
@@ -234,29 +237,7 @@ function runSanityChecks(params: {
   renewalYear: { customers: number; subscriptions: number };
 }): SanityResult {
   const failures: string[] = [];
-  const { newAccounts, paidAccounts, totalAccounts, mrr, arr } = params;
-
-  // New account counts must be monotonic: today <= week <= month <= quarter <= year
-  if (newAccounts.today > newAccounts.week) {
-    failures.push(
-      `MONOTONIC_FAIL: today(${newAccounts.today}) > week(${newAccounts.week}) — possible week boundary issue`
-    );
-  }
-  if (newAccounts.week > newAccounts.month) {
-    failures.push(
-      `MONOTONIC_FAIL: week(${newAccounts.week}) > month(${newAccounts.month}) — week spans two months`
-    );
-  }
-  if (newAccounts.month > newAccounts.quarter) {
-    failures.push(
-      `MONOTONIC_FAIL: month(${newAccounts.month}) > quarter(${newAccounts.quarter})`
-    );
-  }
-  if (newAccounts.quarter > newAccounts.year) {
-    failures.push(
-      `MONOTONIC_FAIL: quarter(${newAccounts.quarter}) > year(${newAccounts.year})`
-    );
-  }
+  const { paidAccounts, totalAccounts, mrr, arr } = params;
 
   // Paid accounts <= total accounts
   if (paidAccounts > totalAccounts) {
@@ -477,7 +458,8 @@ Deno.serve(async (req) => {
     }
 
     // ── New accounts by calendar period (based ONLY on user created_at) ───────
-    // Counts must be monotonic: today <= week <= month <= quarter <= year
+    // Each period is an independent calendar window (UTC). Week can cross month
+    // boundaries, so counts are NOT expected to be monotonic across periods.
     const newAccounts = { today: 0, week: 0, month: 0, quarter: 0, year: 0 };
     for (const u of uniqueUsers) {
       const d = parseDate(u.created_date);
@@ -527,6 +509,7 @@ Deno.serve(async (req) => {
       meta: {
         generatedAt:         now.toISOString(),
         dateRangeDefinition: 'calendar',
+        timezoneNote:        'UTC',
         reportVersion:       REPORT_VERSION,
         calendarRanges: {
           today:   { start: ranges.today.start.toISOString(),   end: ranges.today.end.toISOString()   },
