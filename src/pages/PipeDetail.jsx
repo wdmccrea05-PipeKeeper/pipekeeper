@@ -43,6 +43,10 @@ import {
   DIFFICULTY_LABELS,
   PIPE_RECOMMENDATION_LABELS,
 } from '@/components/valuation/valueEngine';
+import {
+  seedInitialSnapshotIfMissing,
+  refreshItemValue,
+} from '@/components/valuation/valueRefreshService';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -490,6 +494,7 @@ export default function PipeDetail() {
   const [showSnapshotModal, setShowSnapshotModal] = useState(false);
   const [showObservationModal, setShowObservationModal] = useState(false);
   const [showEditValuationModal, setShowEditValuationModal] = useState(false);
+  const [isRefreshingValue, setIsRefreshingValue] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -529,6 +534,26 @@ export default function PipeDetail() {
           setBlends(Array.isArray(blendsList) ? blendsList : []);
           setValueSnapshots(snapshots || []);
           setPriceObservations(observations || []);
+
+          // Auto-seed the first value snapshot if none exist yet
+          if (pipeRecord && user?.email && (snapshots || []).length === 0) {
+            const seeded = await seedInitialSnapshotIfMissing(
+              pipeRecord,
+              'pipekeeper',
+              'pipe',
+              user.email,
+              base44,
+              snapshots || [],
+              {}
+            );
+            if (seeded && mounted) {
+              const fresh = await base44.entities.ItemValueSnapshot.filter(
+                { module_key: 'pipekeeper', item_type: 'pipe', item_id: pipeId, created_by: user.email },
+                '-snapshot_date', 20
+              ).catch(() => []);
+              if (mounted) setValueSnapshots(fresh || []);
+            }
+          }
         }
       } catch (e) {
         console.error('[PipeDetail] failed to load data', e);
@@ -560,6 +585,27 @@ export default function PipeDetail() {
       '-observed_date', 20
     ).catch(() => []);
     setPriceObservations(rows || []);
+  }
+
+  async function handleRefreshValueNow() {
+    if (!pipe || !user?.email || isRefreshingValue) return;
+    setIsRefreshingValue(true);
+    try {
+      const newSnap = await refreshItemValue(
+        pipe,
+        'pipekeeper',
+        'pipe',
+        user.email,
+        base44,
+        { valueHistory: valueSnapshots }
+      );
+      if (newSnap) {
+        setValueSnapshots((prev) => [newSnap, ...prev]);
+        await reloadSnapshots();
+      }
+    } finally {
+      setIsRefreshingValue(false);
+    }
   }
 
   const handleDelete = async () => {
@@ -879,6 +925,8 @@ export default function PipeDetail() {
                 onAddSnapshot={() => setShowSnapshotModal(true)}
                 onAddObservation={() => setShowObservationModal(true)}
                 onEditValuation={() => setShowEditValuationModal(true)}
+                onRefreshNow={handleRefreshValueNow}
+                isRefreshing={isRefreshingValue}
               />
             )}
 
@@ -1204,6 +1252,8 @@ export default function PipeDetail() {
             setPipe(prev => ({ ...prev, ...updates }));
             setShowEditValuationModal(false);
             toast.success('Valuation inputs updated');
+            // Reload snapshots so Value History reflects the new inputs
+            reloadSnapshots();
           }}
         />
       )}
