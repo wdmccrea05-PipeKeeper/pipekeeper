@@ -444,6 +444,37 @@ export function computeRarityScore(item, moduleKey) {
       score += fillPenalties[inputs.fillLevel] || 0;
     }
 
+    // ── Anti-runaway caps for whiskey bottles ────────────────────────────────
+    // Target rarity bands:
+    //   standard shelfer (no scarcity, age < 18):   10–30  → hard cap 45
+    //   quality but available:                       25–45  → hard cap 45
+    //   limited / regional / single barrel:          40–65  → hard cap 65
+    //   allocated / discontinued:                    60–85  → hard cap 85
+    //   unicorn / extremely scarce:                  85–98  → hard cap 98
+    {
+      const _batchLower = (inputs.batchType || '').toLowerCase();
+      const _producerLower = (inputs.producerStatus || '').toLowerCase();
+      const hasBottleScarcity =
+        inputs.isDiscontinued || inputs.isAllocated || inputs.isUnicorn ||
+        inputs.isExportOnly || inputs.isExclusive ||
+        _batchLower === 'single_barrel' || _batchLower === 'single barrel' ||
+        _batchLower === 'small_batch' || _batchLower === 'small batch';
+      const isAllocatedOrDiscontinued = inputs.isDiscontinued || inputs.isAllocated;
+
+      if (!hasBottleScarcity && inputs.age < 18) {
+        // Young ordinary bottle with no special production status
+        score = Math.min(score, 45);
+      } else if (!isAllocatedOrDiscontinued && inputs.age < 25) {
+        // Limited/single-barrel/exclusive but not discontinued or allocated, and not aged 25+
+        score = Math.min(score, 65);
+      } else if (!inputs.isUnicorn) {
+        // Allocated, discontinued, or aged 25+ — but not a unicorn
+        score = Math.min(score, 85);
+      }
+      // Unicorn: hard cap at 98 (avoid perfect 100 except for truly canonical collectibles)
+      if (score >= 99) score = Math.min(score, 98);
+    }
+
   } else if (moduleKey === 'pipekeeper') {
 
     if (inputs.itemType === 'tobacco') {
@@ -494,6 +525,37 @@ export function computeRarityScore(item, moduleKey) {
       // Production status signals
       const status = (inputs.productionStatus || '').toLowerCase();
       if (status.includes('limited') || status.includes('seasonal')) score += 10;
+
+      // ── Anti-runaway caps for tobacco ────────────────────────────────────────
+      // Target bands:
+      //   common in-production (no scarcity flags):     10–45
+      //   limited/seasonal/regional (in production):    40–65
+      //   discontinued (active manufacturer):           45–72
+      //   discontinued + inactive manufacturer:         60–85
+      //   highly scarce cult blend (top conditions):    80–95
+      const hasAnyTobaccoScarcity =
+        inputs.isDiscontinued || inputs.isLimitedBatch || inputs.isSeasonal ||
+        inputs.isRegionalExclusive || inputs.isMakerInactive;
+
+      if (!hasAnyTobaccoScarcity) {
+        // Common in-production blend — cannot inflate past "quality but regular" ceiling
+        score = Math.min(score, 45);
+      } else if (!inputs.isDiscontinued && !inputs.isMakerInactive) {
+        // Still in production, limited/seasonal/regional only
+        score = Math.min(score, 65);
+      } else if (inputs.isDiscontinued && !inputs.isMakerInactive) {
+        // Discontinued but maker is still active — findable on secondary market
+        score = Math.min(score, 72);
+      }
+      // Discontinued + inactive maker: uncapped below 85 via final Math.min(100, …)
+
+      // Gate for 95+: requires discontinued + inactive maker + (regional exclusivity OR meaningful cellar age)
+      if (score >= 95) {
+        const qualifiesFor95Plus =
+          inputs.isDiscontinued && inputs.isMakerInactive &&
+          (inputs.isRegionalExclusive || inputs.cellarAgeYears >= 5);
+        if (!qualifiesFor95Plus) score = Math.min(score, 94);
+      }
 
     } else {
       // ── PIPE RARITY ──────────────────────────────────────────────────────────
@@ -601,6 +663,37 @@ export function computeRarityScore(item, moduleKey) {
 
       // Enforce floor: no pipe may score below 50.
       score = Math.max(PIPE_RARITY_FLOOR, score);
+
+      // ── D. Anti-runaway caps ────────────────────────────────────────────────
+      // These prevent a handful of positive signals from producing unrealistic
+      // 95-100 scores without strong evidence.
+      //
+      // An "active" maker is one that is not deceased, retired, or inactive.
+      const isActiveMakerForCap = !effectiveMakerDeceased && !effectiveMakerRetired && !effectiveMakerInactive;
+
+      if (effectiveProdType === 'factory') {
+        // Factory pipes are catalogue items — cap firmly at 70
+        score = Math.min(score, 70);
+      } else {
+        // Artisan / custom / one-off pipes
+        if (isActiveMakerForCap) {
+          if (inputs.isOneOfAKind) {
+            // One-of-a-kind from an active maker: scarce but replaceable via commission — cap 92
+            score = Math.min(score, 92);
+          } else if (!inputs.hasProvenance) {
+            // Active maker, not one-of-a-kind, no special provenance — cap 82
+            score = Math.min(score, 82);
+          }
+          // Active maker + has provenance but not one_of_a_kind: uncapped below 95
+        }
+        // Gate for 95+: requires one_of_a_kind AND (deceased/retired/inactive OR exceptional provenance)
+        if (score >= 95) {
+          const qualifiesFor95Plus =
+            inputs.isOneOfAKind &&
+            (effectiveMakerDeceased || effectiveMakerRetired || effectiveMakerInactive || inputs.hasProvenance);
+          if (!qualifiesFor95Plus) score = Math.min(score, 94);
+        }
+      }
     }
 
   } else if (moduleKey === 'cigarkeeper') {
@@ -1136,4 +1229,132 @@ export function buildPriceObservationRecord(moduleKey, itemType, itemId, created
     currency: observation.currency || 'USD',
     is_manual: true,
   };
+}
+
+// ---------------------------------------------------------------------------
+// 9. Shared cap / gate helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Apply the canonical anti-runaway rarity caps for a given module and item type.
+ * This is the same logic that computeRarityScore applies internally; it is
+ * exported here so that tests and external tools can invoke caps independently.
+ *
+ * @param {number} rawScore  - score before capping (0–100 range)
+ * @param {string} moduleKey - 'whiskeykeeper' | 'pipekeeper'
+ * @param {string} itemType  - 'pipe' | 'tobacco' | 'bottle' (use 'bottle' for whiskeykeeper)
+ * @param {object} inputs    - normalized valuation inputs (from normalizeValuationInputs)
+ * @returns {number} capped score
+ */
+export function applyRarityCaps(rawScore, moduleKey, itemType, inputs = {}) {
+  let score = rawScore;
+
+  if (moduleKey === 'whiskeykeeper' || itemType === 'bottle') {
+    const batchLower = (inputs.batchType || '').toLowerCase();
+    const hasScarcity =
+      inputs.isDiscontinued || inputs.isAllocated || inputs.isUnicorn ||
+      inputs.isExportOnly || inputs.isExclusive ||
+      batchLower === 'single_barrel' || batchLower === 'single barrel' ||
+      batchLower === 'small_batch' || batchLower === 'small batch';
+    const isAllocatedOrDiscontinued = inputs.isDiscontinued || inputs.isAllocated;
+
+    if (!hasScarcity && inputs.age < 18) score = Math.min(score, 45);
+    else if (!isAllocatedOrDiscontinued && inputs.age < 25) score = Math.min(score, 65);
+    else if (!inputs.isUnicorn) score = Math.min(score, 85);
+    if (score >= 99) score = Math.min(score, 98);
+
+  } else if (moduleKey === 'pipekeeper' && itemType === 'tobacco') {
+    const hasAnyScarcity =
+      inputs.isDiscontinued || inputs.isLimitedBatch || inputs.isSeasonal ||
+      inputs.isRegionalExclusive || inputs.isMakerInactive;
+
+    if (!hasAnyScarcity) {
+      score = Math.min(score, 45);
+    } else if (!inputs.isDiscontinued && !inputs.isMakerInactive) {
+      score = Math.min(score, 65);
+    } else if (inputs.isDiscontinued && !inputs.isMakerInactive) {
+      score = Math.min(score, 72);
+    }
+    if (score >= 95) {
+      const qualifies = inputs.isDiscontinued && inputs.isMakerInactive &&
+        (inputs.isRegionalExclusive || inputs.cellarAgeYears >= 5);
+      if (!qualifies) score = Math.min(score, 94);
+    }
+
+  } else if (moduleKey === 'pipekeeper' && itemType === 'pipe') {
+    const isMakerActive =
+      !inputs.isMakerDeceased && !inputs.isMakerRetired && !inputs.isMakerInactive;
+    const prodType = inputs._effectiveProdType || 'factory';
+
+    if (prodType === 'factory') {
+      score = Math.min(score, 70);
+    } else {
+      if (isMakerActive) {
+        if (inputs.isOneOfAKind) score = Math.min(score, 92);
+        else if (!inputs.hasProvenance) score = Math.min(score, 82);
+      }
+      if (score >= 95) {
+        const qualifies =
+          inputs.isOneOfAKind &&
+          (inputs.isMakerDeceased || inputs.isMakerRetired || inputs.isMakerInactive || inputs.hasProvenance);
+        if (!qualifies) score = Math.min(score, 94);
+      }
+    }
+  }
+
+  return Math.min(100, Math.max(0, score));
+}
+
+/**
+ * Map a numeric rarity score to a human-readable label.
+ * Pass itemType = 'pipe' for pipe-specific labels.
+ *
+ * @param {number} score     - rarity score 0–100
+ * @param {string} [itemType] - 'pipe' | 'tobacco' | 'bottle' | undefined (generic)
+ * @returns {string}
+ */
+export function mapRarityLabel(score, itemType) {
+  if (itemType === 'pipe') {
+    if (score >= 93) return 'Exceptional / Collectible';
+    if (score >= 80) return 'One-of-a-Kind / Highly Rare';
+    if (score >= 70) return 'Limited Artisan / Scarce';
+    if (score >= 60) return 'Quality Artisan';
+    return 'Standard Factory';
+  }
+  if (itemType === 'tobacco') {
+    if (score >= 80) return 'Highly Scarce / Cult Blend';
+    if (score >= 60) return 'Discontinued / Scarce';
+    if (score >= 40) return 'Seasonal / Limited / Regional';
+    if (score >= 25) return 'Respected but Regular';
+    return 'Common / In-Production';
+  }
+  // Bottle / generic
+  if (score >= 85) return 'Unicorn / Extremely Scarce';
+  if (score >= 60) return 'Allocated / Discontinued';
+  if (score >= 40) return 'Limited / Regional / Single Barrel';
+  if (score >= 25) return 'Quality / Available';
+  return 'Common / Standard';
+}
+
+/**
+ * Return the display label for a replacement difficulty value.
+ * Thin wrapper around DIFFICULTY_LABELS for consistent naming.
+ *
+ * @param {string} difficulty - 'easy' | 'moderate' | 'hard' | 'very_hard'
+ * @returns {string}
+ */
+export function mapReplacementDifficultyLabel(difficulty) {
+  return DIFFICULTY_LABELS[difficulty] || DIFFICULTY_LABELS.easy;
+}
+
+/**
+ * Convert a replacement difficulty label to a numeric score (0–3).
+ * Useful for sorting, comparison, and charting.
+ *
+ * @param {string} difficulty - 'easy' | 'moderate' | 'hard' | 'very_hard'
+ * @returns {number} 0 = easy, 1 = moderate, 2 = hard, 3 = very_hard
+ */
+export function computeReplacementDifficultyScore(difficulty) {
+  const map = { easy: 0, moderate: 1, hard: 2, very_hard: 3 };
+  return map[difficulty] ?? 0;
 }
