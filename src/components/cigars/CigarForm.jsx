@@ -281,7 +281,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
       const perPkg = val && PACKAGE_DEFAULTS[val] != null ? String(PACKAGE_DEFAULTS[val]) : f.cigars_per_package;
       const qty = f.quantity !== '' ? Number(f.quantity) : null;
       const cpp = perPkg !== '' ? Number(perPkg) : null;
-      const autoSingles = val !== 'partial_box' && qty != null && cpp != null ? String(qty * cpp) : f.singles_equivalent;
+      const autoSingles = val !== 'partial_box' && qty !== null && cpp !== null ? String(qty * cpp) : f.singles_equivalent;
       return { ...f, unit_type: val, cigars_per_package: perPkg, singles_equivalent: autoSingles };
     });
   };
@@ -294,7 +294,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
       if (updated.unit_type && updated.unit_type !== 'partial_box') {
         const qty = updated.quantity !== '' ? Number(updated.quantity) : null;
         const cpp = updated.cigars_per_package !== '' ? Number(updated.cigars_per_package) : null;
-        if (qty != null && cpp != null && !Number.isNaN(qty) && !Number.isNaN(cpp)) {
+        if (qty !== null && cpp !== null && !Number.isNaN(qty) && !Number.isNaN(cpp)) {
           updated.singles_equivalent = String(qty * cpp);
         }
       }

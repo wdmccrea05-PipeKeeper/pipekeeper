@@ -56,7 +56,7 @@ const ENUM_HUMIDOR_FIELDS = ['humidor_type', 'aid_type'];
 function cleanHumidorPayload(data) {
   const out = { ...data };
   for (const field of NUMERIC_HUMIDOR_FIELDS) {
-    if (out[field] === '' || out[field] == null) {
+    if (out[field] === '' || out[field] === null || out[field] === undefined) {
       out[field] = undefined;
     } else {
       out[field] = Number(out[field]);
