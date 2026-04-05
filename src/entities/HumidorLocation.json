@@ -28,6 +28,33 @@
       "type": "number",
       "description": "Target storage temperature in degrees Fahrenheit"
     },
+    "last_humidity_reading": {
+      "type": "number",
+      "description": "Most recent actual humidity reading (% RH)"
+    },
+    "last_temp_reading": {
+      "type": "number",
+      "description": "Most recent actual temperature reading (°F)"
+    },
+    "last_reading_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the most recent humidity/temperature reading (YYYY-MM-DD)"
+    },
+    "last_maintenance_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date humidor was last maintained or checked (YYYY-MM-DD)"
+    },
+    "last_humidity_aid_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date humidification aid (Boveda, beads, etc.) was last replaced or recharged (YYYY-MM-DD)"
+    },
+    "maintenance_interval_days": {
+      "type": "number",
+      "description": "Target maintenance interval in days (e.g. 30 for monthly checks)"
+    },
     "notes": {
       "type": "string",
       "description": "Free-text notes about this humidor location"

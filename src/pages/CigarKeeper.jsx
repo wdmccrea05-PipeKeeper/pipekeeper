@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
-import { Cigarette, Plus, BarChart3, BookOpen, Grid3X3 } from 'lucide-react';
+import { Cigarette, Plus, BarChart3, BookOpen, Grid3X3, AlertTriangle, TrendingDown, Clock, Flame } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import CigarKeeperModuleNav from '@/components/modules/CigarKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import CigarHighlightCard from '@/components/cigars/CigarHighlightCard';
 import CigarSessionModal from '@/components/cigars/CigarSessionModal';
+import { getCollectionInsights } from '@/platform/cigarInsights';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -84,7 +85,7 @@ function CigarKeeperInner() {
       const result = await base44.entities.CigarSession.filter(
         { created_by: user?.email },
         '-date',
-        10
+        100
       ).catch(() => []);
       return Array.isArray(result) ? result : [];
     },
@@ -105,6 +106,41 @@ function CigarKeeperInner() {
   });
 
   const recentSessions = sessions.slice(0, 5);
+
+  const insights = useMemo(
+    () => getCollectionInsights(cigars, humidors, sessions),
+    [cigars, humidors, sessions]
+  );
+
+  const actionItems = [
+    insights.humidorsNeedingAttention.length > 0 && {
+      key: 'humidors',
+      icon: AlertTriangle,
+      color: '#E06432',
+      bg: 'rgba(224,100,50,0.1)',
+      border: 'rgba(224,100,50,0.25)',
+      label: `${insights.humidorsNeedingAttention.length} humidor${insights.humidorsNeedingAttention.length !== 1 ? 's' : ''} need attention`,
+      onClick: () => navigate('/Cigars?tab=humidors'),
+    },
+    insights.runningLow.length > 0 && {
+      key: 'runningLow',
+      icon: TrendingDown,
+      color: '#D4A574',
+      bg: 'rgba(180,140,75,0.1)',
+      border: 'rgba(180,140,75,0.25)',
+      label: `${insights.runningLow.length} cigar${insights.runningLow.length !== 1 ? 's' : ''} running low`,
+      onClick: () => navigate('/Cigars'),
+    },
+    insights.neglected.length > 0 && {
+      key: 'neglected',
+      icon: Clock,
+      color: 'rgba(224,216,200,0.6)',
+      bg: 'rgba(255,255,255,0.04)',
+      border: 'rgba(140,107,63,0.2)',
+      label: `${insights.neglected.length} neglected favorite${insights.neglected.length !== 1 ? 's' : ''} — time to smoke`,
+      onClick: () => navigate('/Cigars'),
+    },
+  ].filter(Boolean);
 
   const quickLaunchActions = [
     {
@@ -181,6 +217,23 @@ function CigarKeeperInner() {
       <CigarKeeperModuleNav currentPageName={null} onLogSession={() => setSessionModalOpen(true)} />
 
       <CigarHighlightCard cigars={cigars} sessions={sessions} humidors={humidors} />
+
+      {actionItems.length > 0 && (
+        <div className="space-y-2">
+          {actionItems.map(({ key, icon: Icon, color, bg, border, label, onClick }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={onClick}
+              className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all hover:brightness-110"
+              style={{ background: bg, border: `1px solid ${border}` }}
+            >
+              <Icon className="w-4 h-4 shrink-0" style={{ color }} />
+              <span className="text-sm font-medium" style={{ color: '#F5F1E7' }}>{label}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <ModuleQuickLaunch actions={quickLaunchActions} />
 

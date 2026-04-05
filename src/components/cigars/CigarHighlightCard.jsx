@@ -1,5 +1,6 @@
-import React from 'react';
-import { Cigarette, DollarSign, Box, Heart, Clock, Flame } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Cigarette, DollarSign, Box, Heart, Clock, Flame, TrendingDown, AlertTriangle } from 'lucide-react';
+import { getCollectionInsights } from '@/platform/cigarInsights';
 
 function StatCard({ icon: Icon, label, value, sub }) {
   return (
@@ -51,6 +52,12 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const recentSessions = sessions.filter((s) => s.date && new Date(s.date) >= thirtyDaysAgo).length;
 
+  // Intelligence metrics (memoized for performance)
+  const insights = useMemo(
+    () => getCollectionInsights(cigars, humidors, sessions),
+    [cigars, humidors, sessions]
+  );
+
   // Top 3 brands
   const brandCounts = {};
   cigars.forEach((c) => {
@@ -90,6 +97,22 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
         <StatCard icon={Heart} label="Favorites" value={favoriteCount} />
         <StatCard icon={Flame} label="Ready to Smoke" value={readyCount} />
         <StatCard icon={Clock} label="Recent Sessions" value={recentSessions} sub="Last 30 days" />
+        {insights.runningLow.length > 0 && (
+          <StatCard
+            icon={TrendingDown}
+            label="Running Low"
+            value={insights.runningLow.length}
+            sub="≤3 sticks"
+          />
+        )}
+        {(insights.atRiskCigars.length > 0 || insights.humidorsNeedingAttention.length > 0) && (
+          <StatCard
+            icon={AlertTriangle}
+            label="Needs Attention"
+            value={insights.atRiskCigars.length + insights.humidorsNeedingAttention.length}
+            sub="Cigars or humidors"
+          />
+        )}
       </div>
 
       {topBrands.length > 0 && (

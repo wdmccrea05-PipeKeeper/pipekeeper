@@ -6,9 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { X, Star, Search, Cigarette, Check } from 'lucide-react';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { computeSessionDecrement, getAvailableQuantity } from '@/platform/cigarInventory';
 
 const TODAY = new Date().toISOString().split('T')[0];
 
@@ -238,9 +239,11 @@ function CheckToggle({ label, checked, onChange }) {
 
 export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSessionSaved }) {
   const { user } = useCurrentUser();
+  const queryClient = useQueryClient();
   const [cigarMode, setCigarMode] = useState('collection');
   const [selectedCigar, setSelectedCigar] = useState(defaultCigar || null);
   const [form, setForm] = useState({ ...DEFAULT_SESSION });
+  const [shouldDecrement, setShouldDecrement] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const { data: cigars = [] } = useQuery({
@@ -254,6 +257,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
       setForm({ ...DEFAULT_SESSION });
       setCigarMode('collection');
       setSelectedCigar(defaultCigar || null);
+      setShouldDecrement(true);
       setSaving(false);
     } else if (defaultCigar) {
       setSelectedCigar(defaultCigar);
@@ -280,6 +284,22 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
         created_by: user?.email,
       };
       await base44.entities.CigarSession.create(payload);
+
+      // Optionally decrement inventory for collection cigars
+      if (!isExternal && selectedCigar && shouldDecrement) {
+        const decrementFields = computeSessionDecrement(selectedCigar);
+        if (decrementFields) {
+          try {
+            await base44.entities.Cigar.update(selectedCigar.id, decrementFields);
+            queryClient.invalidateQueries({ queryKey: ['cigars'] });
+            queryClient.invalidateQueries({ queryKey: ['cigars-summary'] });
+            queryClient.invalidateQueries({ queryKey: ['cigar-detail'] });
+          } catch {
+            // Non-fatal: session was saved; inventory update failed silently
+          }
+        }
+      }
+
       toast.success('Session logged!');
       if (typeof onSessionSaved === 'function') onSessionSaved();
       onClose();
@@ -441,6 +461,31 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
               />
             )}
           </div>
+
+          {/* Inventory decrement (collection mode only, when cigar has inventory) */}
+          {cigarMode === 'collection' && selectedCigar && getAvailableQuantity(selectedCigar) > 0 && (
+            <div
+              className="flex items-center justify-between rounded-xl px-4 py-3"
+              style={{
+                background: 'rgba(140,107,63,0.08)',
+                border: '1px solid rgba(180,140,75,0.18)',
+              }}
+            >
+              <div className="min-w-0">
+                <p className="text-sm font-medium" style={{ color: '#F5F1E7' }}>
+                  Deduct from inventory
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.55)' }}>
+                  Removes 1 stick from "{selectedCigar.name}" · {getAvailableQuantity(selectedCigar)} remaining
+                </p>
+              </div>
+              <CheckToggle
+                label=""
+                checked={shouldDecrement}
+                onChange={setShouldDecrement}
+              />
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-3 justify-end pt-2 border-t border-[rgba(180,140,75,0.12)]">
