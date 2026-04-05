@@ -11,6 +11,9 @@ const CUTS = ['Ribbon', 'Flake', 'Broken Flake', 'Ready Rubbed', 'Plug', 'Rope',
 const FINISHES = ['Smooth', 'Sandblast', 'Rusticated', 'Partially Rusticated', 'Carved', 'Natural', 'Other'];
 const MATERIALS = ['Briar', 'Meerschaum', 'Corn Cob', 'Clay', 'Morta', 'Cherry Wood', 'Olive Wood', 'Other'];
 const CONDITIONS = ['Mint', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor', 'Estate - Unrestored'];
+const CIGAR_BODY = ['mild', 'mild_medium', 'medium', 'medium_full', 'full'];
+const CIGAR_BODY_LABELS = { mild: 'Mild', mild_medium: 'Mild-Medium', medium: 'Medium', medium_full: 'Medium-Full', full: 'Full' };
+const WRAPPERS = ['Colorado Claro', 'Colorado', 'Colorado Maduro', 'Maduro', 'Oscuro', 'Natural', 'Claro', 'Double Claro (Candela)', 'Connecticut Shade', 'Connecticut Broadleaf', 'Ecuadorian Connecticut', 'Habano', 'San Andres Maduro', 'Cameroon', 'Sumatra', 'Indonesian', 'Other'];
 
 const inputStyle = {
   background: 'rgba(20,13,8,0.7)',
@@ -29,14 +32,18 @@ function FieldRow({ label, children }) {
   );
 }
 
-function StyledSelect({ value, onChange, options, placeholder }) {
+function StyledSelect({ value, onChange, options, placeholder, labelMap }) {
   return (
     <Select value={value || ''} onValueChange={onChange}>
       <SelectTrigger style={{ ...inputStyle, height: 40 }}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {options.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+        {options.map(opt => (
+          <SelectItem key={opt} value={opt}>
+            {labelMap ? (labelMap[opt] || opt) : opt}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );
@@ -53,6 +60,9 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, data })
     condition: data?.condition || '',
     abv: data?.abv || '',
     age: data?.age || '',
+    wrapper: data?.wrapper || '',
+    binder: data?.binder || '',
+    body: data?.body || '',
   });
 
   const set = (key, val) => setValues(prev => ({ ...prev, [key]: val }));
@@ -140,6 +150,41 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, data })
                 value={values.age}
                 onChange={e => set('age', e.target.value)}
                 placeholder="e.g. 12"
+                style={inputStyle}
+                className="placeholder:text-[rgba(224,216,200,0.3)]"
+              />
+            </FieldRow>
+          </>
+        )}
+
+        {itemType === 'cigar' && (
+          <>
+            <FieldRow label="Wrapper">
+              <StyledSelect value={values.wrapper} onChange={v => set('wrapper', v)} options={WRAPPERS} placeholder="Select wrapper…" />
+            </FieldRow>
+            <FieldRow label="Body">
+              <StyledSelect
+                value={values.body}
+                onChange={v => set('body', v)}
+                options={CIGAR_BODY}
+                placeholder="Select body…"
+                labelMap={CIGAR_BODY_LABELS}
+              />
+            </FieldRow>
+            <FieldRow label="Strength">
+              <StyledSelect
+                value={values.strength}
+                onChange={v => set('strength', v)}
+                options={CIGAR_BODY}
+                placeholder="Select strength…"
+                labelMap={CIGAR_BODY_LABELS}
+              />
+            </FieldRow>
+            <FieldRow label="Flavor Notes">
+              <Input
+                value={values.flavor_notes_raw}
+                onChange={e => set('flavor_notes_raw', e.target.value)}
+                placeholder="e.g. Cedar, Leather, Coffee (comma separated)…"
                 style={inputStyle}
                 className="placeholder:text-[rgba(224,216,200,0.3)]"
               />

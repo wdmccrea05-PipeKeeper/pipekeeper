@@ -15,6 +15,7 @@ const TYPE_LABELS = {
   pipe: 'Pipe',
   blend: 'Blend',
   bottle: 'Bottle',
+  cigar: 'Cigar',
 };
 
 function getInventoryStepName(itemType, mode) {
@@ -57,7 +58,9 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
         ? '/TobaccoDetail'
         : itemType === 'pipe'
           ? '/PipeDetail'
-          : '/BottleDetail';
+          : itemType === 'cigar'
+            ? '/CigarDetail'
+            : '/BottleDetail';
 
     navigate(`${route}?id=${encodeURIComponent(record.id)}`);
   };

@@ -13,9 +13,12 @@ import { normalizeIdentifiedItem } from './normalizeIdentifiedItem';
 // ── LLM prompts per item type ─────────────────────────────────────────────────
 
 function buildUPCPrompt(code, itemType) {
-  const typeHint = itemType
-    ? `The item is expected to be a ${itemType === 'blend' ? 'tobacco blend' : itemType === 'bottle' ? 'whiskey/spirits bottle' : 'tobacco pipe'}.`
-    : 'The item may be a tobacco pipe, tobacco blend, or whiskey/spirits bottle.';
+  let typeHint;
+  if (itemType === 'blend') typeHint = 'The item is expected to be a tobacco blend.';
+  else if (itemType === 'bottle') typeHint = 'The item is expected to be a whiskey/spirits bottle.';
+  else if (itemType === 'cigar') typeHint = 'The item is expected to be a premium cigar.';
+  else if (itemType === 'pipe') typeHint = 'The item is expected to be a tobacco pipe.';
+  else typeHint = 'The item may be a tobacco pipe, tobacco blend, whiskey/spirits bottle, or premium cigar.';
 
   return `Look up this UPC/barcode code and identify the product: ${code}
 
@@ -25,7 +28,7 @@ Search product databases, retailer listings, and any available sources to identi
 
 Return a JSON object with:
 - name: exact product name
-- maker: manufacturer / distillery / pipe maker
+- maker: manufacturer / distillery / pipe maker / cigar brand
 - category: product category or type
 - confidence: "high" | "medium" | "low" (how certain the identification is)
 - confidence_score: number 0-100
@@ -63,6 +66,22 @@ For pipes also include:
 - country_of_origin
 - estimated_value (approximate market value in USD if known)
 - handmade_hint ("handmade", "factory", or null)
+
+For premium cigars also include:
+- brand
+- line (series within the brand)
+- vitola (size/format e.g. Robusto, Toro, Churchill)
+- wrapper (e.g. Connecticut Shade, Maduro, Habano)
+- binder
+- filler
+- country_of_origin
+- factory
+- body (mild / mild_medium / medium / medium_full / full)
+- strength (mild / mild_medium / medium / medium_full / full)
+- production_status (regular_production / limited / discontinued / seasonal / unknown)
+- release_type (regular / limited_edition / annual_release / special_release)
+- retail_price (approximate MSRP in USD if known)
+- rarity_hint (e.g. "limited release", "standard", or null)
 
 If the UPC cannot be identified, return confidence "low" and leave fields empty.`;
 }
@@ -109,6 +128,18 @@ const UPC_RESPONSE_SCHEMA = {
     country_of_origin: { type: 'string' },
     estimated_value: { type: 'number' },
     handmade_hint: { type: 'string' },
+
+    // Cigar fields
+    brand: { type: 'string' },
+    line: { type: 'string' },
+    vitola: { type: 'string' },
+    wrapper: { type: 'string' },
+    binder: { type: 'string' },
+    filler: { type: 'string' },
+    factory: { type: 'string' },
+    body: { type: 'string' },
+    release_type: { type: 'string' },
+    limited_hint: { type: 'string' },
   },
 };
 
@@ -118,6 +149,7 @@ function detectItemTypeFromResult(raw) {
   if (raw.distillery || raw.abv || raw.bottle_size) return 'bottle';
   if (raw.manufacturer || raw.blend_type || raw.cut || raw.packaging_size) return 'blend';
   if (raw.identified_maker || raw.bowl_material || raw.stem_material) return 'pipe';
+  if (raw.brand || raw.vitola || raw.wrapper || raw.binder) return 'cigar';
   return null;
 }
 
@@ -148,7 +180,7 @@ export async function identifyByUPC(code, itemTypeHint = null) {
     response_json_schema: UPC_RESPONSE_SCHEMA,
   });
 
-  // Resolve final item type
+  // Resolve final item type — cigar falls back to 'blend' only when no hint and can't detect
   const resolvedType = itemTypeHint || detectItemTypeFromResult(raw) || 'blend';
 
   return normalizeIdentifiedItem(raw, resolvedType, 'upc');

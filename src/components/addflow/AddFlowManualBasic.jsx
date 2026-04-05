@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 const BLEND_TYPES = ['Virginia', 'Virginia/Perique', 'Virginia/Burley', 'English', 'Balkan', 'Aromatic', 'Burley', 'Burley-based', 'Latakia Blend', 'Oriental/Turkish', 'American', 'Cavendish', 'Kentucky', 'Dark Fired Kentucky', 'Perique', 'Lakeland', 'Codger Blend', 'Other'];
 const SHAPES = ['Billiard', 'Apple', 'Bent Billiard', 'Dublin', 'Bulldog', 'Rhodesian', 'Canadian', 'Lovat', 'Poker', 'Freehand', 'Churchwarden', 'Calabash', 'Volcano', 'Horn', 'Other', 'Unknown'];
 const WHISKEY_TYPES = ['Single Malt Scotch', 'Blended Scotch', 'Bourbon', 'Rye', 'Irish', 'Japanese', 'Canadian', 'Tennessee', 'Single Grain', 'Other'];
+const VITOLAS = ['Robusto', 'Toro', 'Churchill', 'Corona', 'Lancero', 'Panatela', 'Belicoso', 'Torpedo', 'Figurado', 'Perfecto', 'Gordo', 'Gigante', 'Short Robusto', 'Petite Corona', 'Lonsdale', 'Other'];
 
 const FIELDS = {
   blend: [
@@ -25,6 +26,11 @@ const FIELDS = {
     { key: 'name', label: 'Bottle Name / Expression', required: true, type: 'input' },
     { key: 'distillery', label: 'Distillery / Brand', required: false, type: 'input' },
     { key: 'type', label: 'Category / Type', required: false, type: 'select', options: WHISKEY_TYPES },
+  ],
+  cigar: [
+    { key: 'name', label: 'Cigar Name', required: true, type: 'input' },
+    { key: 'brand', label: 'Brand', required: false, type: 'input' },
+    { key: 'vitola', label: 'Vitola / Size', required: false, type: 'select', options: VITOLAS },
   ],
 };
 

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
-const ENTITIES = { blend: 'TobaccoBlend', pipe: 'Pipe', bottle: 'Bottle' };
+const ENTITIES = { blend: 'TobaccoBlend', pipe: 'Pipe', bottle: 'Bottle', cigar: 'Cigar' };
 
 function buildRecord(itemType, result) {
   const clean = (v) => (v !== null && v !== undefined && v !== '') ? v : undefined;
@@ -34,6 +34,20 @@ function buildRecord(itemType, result) {
     abv: clean(result.abv),
     notes: clean(result.description),
   };
+  if (itemType === 'cigar') return {
+    name: result.name,
+    brand: clean(result.brand),
+    line: clean(result.line),
+    vitola: clean(result.vitola),
+    wrapper: clean(result.wrapper),
+    binder: clean(result.binder),
+    filler: clean(result.filler),
+    country_of_origin: clean(result.country_of_origin),
+    body: clean(result.body),
+    strength: clean(result.strength),
+    production_status: clean(result.production_status),
+    personal_notes: clean(result.description),
+  };
   return { name: result.name };
 }
 
@@ -58,6 +72,7 @@ function getChips(itemType, result) {
     if (result.abv) parts.push(`${result.abv}%`);
     return parts.filter(Boolean);
   }
+  if (itemType === 'cigar') return [result.vitola, result.wrapper, result.body].filter(Boolean);
   return [];
 }
 
@@ -65,6 +80,7 @@ function getSubtitle(itemType, result) {
   if (itemType === 'blend') return result.manufacturer;
   if (itemType === 'pipe') return result.maker;
   if (itemType === 'bottle') return result.distillery;
+  if (itemType === 'cigar') return result.brand;
   return '';
 }
 

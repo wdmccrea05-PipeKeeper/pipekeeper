@@ -56,10 +56,10 @@ const MODULE_META = {
   },
   cigarkeeper: {
     label: 'CigarKeeper',
-    route: null,
-    accent: '#7F9156',
-    description: 'Cigar humidor curation and collection tracking.',
-    tagline: 'Expanding Soon',
+    route: 'CigarKeeper',
+    accent: '#8C6B3F',
+    description: 'Curate and track your cigar collection with humidor management and session logs.',
+    tagline: 'Your complete cigar collection platform',
   },
 };
 
@@ -289,13 +289,14 @@ export default function CollectionHub() {
   const { enabledModuleKeys, enabled } = useEnabledModules();
   const whiskeyOpenable = enabled.whiskeykeeper;
   const pipekeeperOpenable = enabled.pipekeeper;
+  const cigarOpenable = enabled.cigarkeeper;
 
   const { data, isLoading } = useQuery({
-    queryKey: ['collection-hub-dashboard', user?.email, pipekeeperOpenable, whiskeyOpenable],
+    queryKey: ['collection-hub-dashboard', user?.email, pipekeeperOpenable, whiskeyOpenable, cigarOpenable],
     enabled: !!user?.email,
     staleTime: 2 * 60 * 1000,
     queryFn: async () => {
-      const [pipes, blends, smokeLogs, bottles, tastings] = await Promise.all([
+      const [pipes, blends, smokeLogs, bottles, tastings, cigars, cigarSessions] = await Promise.all([
         pipekeeperOpenable
           ? base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
           : Promise.resolve([]),
@@ -311,9 +312,15 @@ export default function CollectionHub() {
         whiskeyOpenable
           ? base44.entities.TastingLog.filter({ created_by: user.email }, '-tasting_date', 250).catch(() => [])
           : Promise.resolve([]),
+        cigarOpenable
+          ? base44.entities.Cigar.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
+          : Promise.resolve([]),
+        cigarOpenable
+          ? base44.entities.CigarSession.filter({ created_by: user.email }, '-date', 250).catch(() => [])
+          : Promise.resolve([]),
       ]);
 
-      return { pipes, blends, smokeLogs, bottles, tastings };
+      return { pipes, blends, smokeLogs, bottles, tastings, cigars, cigarSessions };
     },
   });
 
@@ -322,6 +329,8 @@ export default function CollectionHub() {
   const smokeLogs = pipekeeperOpenable ? data?.smokeLogs || [] : [];
   const bottles = whiskeyOpenable ? data?.bottles || [] : [];
   const tastings = whiskeyOpenable ? data?.tastings || [] : [];
+  const cigars = cigarOpenable ? data?.cigars || [] : [];
+  const cigarSessions = cigarOpenable ? data?.cigarSessions || [] : [];
 
   const metrics = useMemo(() => {
     const pipeValue = pipekeeperOpenable
@@ -348,7 +357,12 @@ export default function CollectionHub() {
       return Number.isFinite(dt) && dt >= weekAgo;
     }).length;
 
-    const recentSessionsCount = recentSmokeCount + recentTastingCount;
+    const recentCigarSessionCount = cigarSessions.filter((log) => {
+      const dt = new Date(log.date || log.created_date || 0).getTime();
+      return Number.isFinite(dt) && dt >= weekAgo;
+    }).length;
+
+    const recentSessionsCount = recentSmokeCount + recentTastingCount + recentCigarSessionCount;
 
     const logsByPipe = smokeLogs.reduce((acc, log) => {
       if (log.pipe_id) acc[log.pipe_id] = (acc[log.pipe_id] || 0) + 1;
@@ -357,6 +371,11 @@ export default function CollectionHub() {
 
     const logsByBlend = smokeLogs.reduce((acc, log) => {
       if (log.blend_id) acc[log.blend_id] = (acc[log.blend_id] || 0) + 1;
+      return acc;
+    }, {});
+
+    const logsByCigar = cigarSessions.reduce((acc, log) => {
+      if (log.cigar_id) acc[log.cigar_id] = (acc[log.cigar_id] || 0) + 1;
       return acc;
     }, {});
 
@@ -382,6 +401,13 @@ export default function CollectionHub() {
       ? [...bottles].sort((a, b) => Number(getBottleValue(b) || 0) - Number(getBottleValue(a) || 0))[0] || null
       : null;
 
+    const mostSmokedCigar = cigarOpenable
+      ? [...cigars]
+          .map((c) => ({ ...c, __count: logsByCigar[c.id] || 0 }))
+          .sort((a, b) => b.__count - a.__count)
+          .find((c) => c.__count > 0) || null
+      : null;
+
     const recentActivity = buildUnifiedActivityFeed(smokeLogs, tastings, { limit: 5 });
 
     return {
@@ -389,13 +415,15 @@ export default function CollectionHub() {
       recentSessionsCount,
       recentSmokeCount,
       recentTastingCount,
+      recentCigarSessionCount,
       mostSmokedPipe,
       favoriteBlend,
       mostValuablePipe,
       mostValuableBottle,
+      mostSmokedCigar,
       recentActivity,
     };
-  }, [pipes, blends, bottles, smokeLogs, tastings, pipekeeperOpenable, whiskeyOpenable]);
+  }, [pipes, blends, bottles, smokeLogs, tastings, cigars, cigarSessions, pipekeeperOpenable, whiskeyOpenable, cigarOpenable]);
 
   const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route);
   const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route);
@@ -415,11 +443,18 @@ export default function CollectionHub() {
     },
   ];
 
+  const cigarStats = [
+    { label: 'Cigars', value: cigars.length },
+    { label: 'Sessions', value: cigarSessions.length },
+    { label: 'This Week', value: isLoading ? '—' : metrics.recentCigarSessionCount },
+  ];
+
   const hasHighlights =
     metrics.mostSmokedPipe ||
     metrics.favoriteBlend ||
     metrics.mostValuablePipe ||
-    metrics.mostValuableBottle;
+    metrics.mostValuableBottle ||
+    metrics.mostSmokedCigar;
 
   const handleOpenCombinedSessionFlow = () => {
     setShowLogSelector(false);
@@ -487,12 +522,12 @@ export default function CollectionHub() {
               accent="#6E8A57"
             />
           ) : null}
-          {pipekeeperOpenable || whiskeyOpenable ? (
+          {pipekeeperOpenable || whiskeyOpenable || cigarOpenable ? (
             <StatCard
               icon={Flame}
               label="Recent Sessions"
               value={isLoading ? '—' : metrics.recentSessionsCount}
-              sub="Pipe sessions + whiskey tastings this week"
+              sub="Sessions across all modules this week"
               accent="#B56A5F"
             />
           ) : null}
@@ -512,6 +547,15 @@ export default function CollectionHub() {
               value={isLoading ? '—' : tastings.length}
               sub="Tracked tastings"
               accent="#A35050"
+            />
+          ) : null}
+          {cigarOpenable ? (
+            <StatCard
+              icon={Flame}
+              label="Cigars"
+              value={isLoading ? '—' : cigars.length}
+              sub="In humidor"
+              accent="#8C6B3F"
             />
           ) : null}
         </div>
@@ -550,6 +594,8 @@ export default function CollectionHub() {
                     ? pipeStats
                     : moduleKey === 'whiskeykeeper'
                     ? whiskeyStats
+                    : moduleKey === 'cigarkeeper'
+                    ? cigarStats
                     : []
                 }
                 onOpen={() => navigate(createPageUrl(MODULE_META[moduleKey].route))}
@@ -660,6 +706,18 @@ export default function CollectionHub() {
                 bgImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
                 accent="#B66565"
                 onClick={() => navigate(`/BottleDetail?id=${encodeURIComponent(metrics.mostValuableBottle.id)}`)}
+              />
+            ) : null}
+
+            {cigarOpenable && metrics.mostSmokedCigar ? (
+              <CatalogPlate
+                title="Most Smoked Cigar"
+                value={metrics.mostSmokedCigar.name}
+                subtitle={`${metrics.mostSmokedCigar.__count || 0} sessions`}
+                heroImage={metrics.mostSmokedCigar.photos?.[0]}
+                bgImage={metrics.mostSmokedCigar.photos?.[0]}
+                accent="#8C6B3F"
+                onClick={() => navigate(`/CigarDetail?id=${encodeURIComponent(metrics.mostSmokedCigar.id)}`)}
               />
             ) : null}
           </div>
