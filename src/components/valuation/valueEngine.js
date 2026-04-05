@@ -196,6 +196,8 @@ export function normalizeValuationInputs(item, moduleKey) {
           : productionTypeLower === 'standard_artisan' || isCustom
             ? 'standard_artisan'
             : 'factory',
+      // Manual rarity score override (bypasses computed score)
+      rarityScoreOverride: toNum(item.rarity_score_override || item.rarity_override),
     };
   }
 
@@ -399,6 +401,9 @@ export function computeRarityScore(item, moduleKey) {
 
     } else {
       // ── PIPE RARITY ──────────────────────────────────────────────────────────
+
+      // Apply rarity override if manually set
+      if (inputs.rarityScoreOverride > 0) return Math.min(100, Math.max(0, Math.round(inputs.rarityScoreOverride)));
 
       // 1. Production type is the primary driver.
       //    Target ranges:

@@ -37,6 +37,10 @@ import {
   DIFFICULTY_LABELS,
   TOBACCO_RECOMMENDATION_LABELS,
 } from '@/components/valuation/valueEngine';
+import {
+  seedInitialSnapshotIfMissing,
+  refreshItemValue,
+} from '@/components/valuation/valueRefreshService';
 
 // ── Valuation modals ──────────────────────────────────────────────────────────
 
@@ -386,6 +390,7 @@ export default function TobaccoDetail() {
   const [showSnapshotModal, setShowSnapshotModal] = useState(false);
   const [showObservationModal, setShowObservationModal] = useState(false);
   const [showEditValuationModal, setShowEditValuationModal] = useState(false);
+  const [isRefreshingValue, setIsRefreshingValue] = useState(false);
 
   const tobaccoStrategy = useMemo(
     () => blend ? buildValuationSnapshot(blend, 'pipekeeper', { valueHistory: valueSnapshots }) : null,
@@ -421,6 +426,26 @@ export default function TobaccoDetail() {
           setBlend(record);
           setValueSnapshots(snapshots || []);
           setPriceObservations(observations || []);
+
+          // Auto-seed the first value snapshot if none exist yet
+          if (record && userEmail && (snapshots || []).length === 0) {
+            const seeded = await seedInitialSnapshotIfMissing(
+              record,
+              'pipekeeper',
+              'tobacco',
+              userEmail,
+              base44,
+              snapshots || [],
+              {}
+            );
+            if (seeded && mounted) {
+              const fresh = await base44.entities.ItemValueSnapshot.filter(
+                { module_key: 'pipekeeper', item_type: 'tobacco', item_id: blendId, created_by: userEmail },
+                '-snapshot_date', 20
+              ).catch(() => []);
+              if (mounted) setValueSnapshots(fresh || []);
+            }
+          }
         }
       } catch (e) {
         console.error('[TobaccoDetail] failed to load blend', e);
@@ -452,6 +477,26 @@ export default function TobaccoDetail() {
       '-observed_date', 20
     ).catch(() => []);
     setPriceObservations(rows || []);
+  }
+
+  async function handleRefreshValueNow() {
+    if (!blend || !userEmail || isRefreshingValue) return;
+    setIsRefreshingValue(true);
+    try {
+      const newSnap = await refreshItemValue(
+        blend,
+        'pipekeeper',
+        'tobacco',
+        userEmail,
+        base44,
+        { valueHistory: valueSnapshots }
+      );
+      if (newSnap) {
+        await reloadSnapshots();
+      }
+    } finally {
+      setIsRefreshingValue(false);
+    }
   }
 
   const handleDelete = async () => {
@@ -760,6 +805,8 @@ export default function TobaccoDetail() {
           onAddSnapshot={() => setShowSnapshotModal(true)}
           onAddObservation={() => setShowObservationModal(true)}
           onEditValuation={() => setShowEditValuationModal(true)}
+          onRefreshNow={handleRefreshValueNow}
+          isRefreshing={isRefreshingValue}
         />
       )}
 
@@ -843,6 +890,8 @@ export default function TobaccoDetail() {
             setBlend(prev => ({ ...prev, ...updates }));
             setShowEditValuationModal(false);
             toast.success('Valuation inputs updated');
+            // Reload snapshots so Value History reflects the new inputs
+            reloadSnapshots();
           }}
         />
       )}

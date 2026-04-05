@@ -615,7 +615,7 @@ function BottleDetailInner() {
 
     (async () => {
       setLoading(true);
-      const [bottleData, , allBottlesData, snapshotRows] = await Promise.all([
+      const [bottleData, , , snapshotRows] = await Promise.all([
         loadBottle(),
         loadTastings(),
         loadAllBottles(),
@@ -632,7 +632,8 @@ function BottleDetailInner() {
         setLoading(false);
 
         // Auto-seed first snapshot using the bottle data returned directly
-        // from loadBottle() — no re-fetch or setTimeout needed
+        // from loadBottle() — no re-fetch or setTimeout needed.
+        // Use `allBottles` state (set by loadAllBottles) for collection context.
         if (bottleData && userEmail && snapshots.length === 0) {
           const seeded = await seedInitialSnapshotIfMissing(
             bottleData,
@@ -641,7 +642,7 @@ function BottleDetailInner() {
             userEmail,
             base44,
             snapshots,
-            { bottles: allBottlesData || [] }
+            { bottles: allBottles }
           );
           if (seeded && mounted) {
             await loadValueSnapshots();
