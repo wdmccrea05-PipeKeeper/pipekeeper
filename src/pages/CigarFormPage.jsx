@@ -54,26 +54,12 @@ function CigarFormPageInner() {
     return () => { cancelled = true; };
   }, [cigarId, user?.email]);
 
-  const handleSubmit = async (data) => {
-    try {
-      let savedId = cigar?.id;
-
-      if (cigar?.id) {
-        await base44.entities.Cigar.update(cigar.id, {
-          ...data,
-          created_by: cigar.created_by || user?.email,
-        });
-      } else {
-        const created = await base44.entities.Cigar.create({
-          ...data,
-          created_by: user?.email,
-        });
-        savedId = created.id;
-      }
-
-      navigate(`/CigarDetail?id=${encodeURIComponent(savedId)}`);
-    } catch (error) {
-      console.error('[CigarFormPage] save error:', error);
+  const handleSubmit = (savedRecord) => {
+    const id = savedRecord?.id || cigar?.id;
+    if (id) {
+      navigate(`/CigarDetail?id=${encodeURIComponent(id)}`);
+    } else {
+      navigate('/Cigars');
     }
   };
 

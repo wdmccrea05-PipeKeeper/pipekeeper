@@ -34,6 +34,7 @@ const DEFAULT_FORM = {
   estimated_value: '',
   quantity: '',
   unit_type: '',
+  cigars_per_package: '',
   singles_equivalent: '',
   humidor_id: '',
   storage_notes: '',
@@ -272,6 +273,35 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
     Array.isArray(cigar?.aliases) ? cigar.aliases.join(', ') : ''
   );
 
+  // Smart defaults: set cigars_per_package when unit_type changes
+  const PACKAGE_DEFAULTS = { single: 1, '5pack': 5, pack: 5, box: 20, bundle: 25, partial_box: 20 };
+
+  const handleUnitTypeChange = (val) => {
+    setForm((f) => {
+      const perPkg = val && PACKAGE_DEFAULTS[val] != null ? String(PACKAGE_DEFAULTS[val]) : f.cigars_per_package;
+      const qty = f.quantity !== '' ? Number(f.quantity) : null;
+      const cpp = perPkg !== '' ? Number(perPkg) : null;
+      const autoSingles = val !== 'partial_box' && qty != null && cpp != null ? String(qty * cpp) : f.singles_equivalent;
+      return { ...f, unit_type: val, cigars_per_package: perPkg, singles_equivalent: autoSingles };
+    });
+  };
+
+  // Auto-recalculate singles_equivalent when quantity or cigars_per_package changes (except partial_box)
+  const handleQuantityOrCppChange = (field) => (e) => {
+    const raw = e?.target ? e.target.value : e;
+    setForm((f) => {
+      const updated = { ...f, [field]: raw };
+      if (updated.unit_type && updated.unit_type !== 'partial_box') {
+        const qty = updated.quantity !== '' ? Number(updated.quantity) : null;
+        const cpp = updated.cigars_per_package !== '' ? Number(updated.cigars_per_package) : null;
+        if (qty != null && cpp != null && !Number.isNaN(qty) && !Number.isNaN(cpp)) {
+          updated.singles_equivalent = String(qty * cpp);
+        }
+      }
+      return updated;
+    });
+  };
+
   const { data: humidors = [] } = useQuery({
     queryKey: ['humidors', user?.email],
     queryFn: () => base44.entities.HumidorLocation.filter({ created_by: user?.email }),
@@ -303,23 +333,40 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
     try {
       const payload = {
         ...form,
+        // Numeric conversions
         purchase_price: form.purchase_price !== '' ? Number(form.purchase_price) : undefined,
         estimated_value: form.estimated_value !== '' ? Number(form.estimated_value) : undefined,
         quantity: form.quantity !== '' ? Number(form.quantity) : undefined,
+        cigars_per_package: form.cigars_per_package !== '' ? Number(form.cigars_per_package) : undefined,
         singles_equivalent: form.singles_equivalent !== '' ? Number(form.singles_equivalent) : undefined,
         length_inches: form.length_inches !== '' ? Number(form.length_inches) : undefined,
         ring_gauge: form.ring_gauge !== '' ? Number(form.ring_gauge) : undefined,
         rating: form.rating || undefined,
+        // Clean empty enum/string fields so we don't send invalid values
+        body: form.body || undefined,
+        strength: form.strength || undefined,
+        unit_type: form.unit_type || undefined,
+        production_status: form.production_status || undefined,
+        release_type: form.release_type || undefined,
+        humidor_id: form.humidor_id || undefined,
       };
+      let result;
       if (cigar?.id) {
-        await base44.entities.Cigar.update(cigar.id, payload);
+        result = await base44.entities.Cigar.update(cigar.id, {
+          ...payload,
+          created_by: cigar.created_by || user?.email,
+        });
         toast.success('Cigar updated');
       } else {
-        await base44.entities.Cigar.create(payload);
+        result = await base44.entities.Cigar.create({
+          ...payload,
+          created_by: user?.email,
+        });
         toast.success('Cigar added to collection');
       }
-      if (typeof onSubmit === 'function') onSubmit(payload);
+      if (typeof onSubmit === 'function') onSubmit(result || payload);
     } catch (err) {
+      console.error('[CigarForm] save error:', err);
       toast.error('Failed to save cigar');
     } finally {
       setSaving(false);
@@ -446,11 +493,8 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
       {/* Section 5: Inventory */}
       <SectionBlock title="Inventory">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField label="Quantity">
-            <StyledInput type="number" value={form.quantity} onChange={set('quantity')} placeholder="1" />
-          </FormField>
           <FormField label="Unit Type">
-            <StyledSelect value={form.unit_type} onValueChange={set('unit_type')} placeholder="Select unit">
+            <StyledSelect value={form.unit_type} onValueChange={handleUnitTypeChange} placeholder="Select unit">
               {['single', '5pack', 'pack', 'box', 'bundle', 'partial_box'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -458,8 +502,24 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
               ))}
             </StyledSelect>
           </FormField>
-          <FormField label="Singles Equivalent">
-            <StyledInput type="number" value={form.singles_equivalent} onChange={set('singles_equivalent')} placeholder="e.g. 25" />
+          <FormField label="Quantity">
+            <StyledInput type="number" value={form.quantity} onChange={handleQuantityOrCppChange('quantity')} placeholder="1" />
+          </FormField>
+          <FormField label="Cigars per Package">
+            <StyledInput
+              type="number"
+              value={form.cigars_per_package}
+              onChange={handleQuantityOrCppChange('cigars_per_package')}
+              placeholder={form.unit_type === 'single' ? '1' : form.unit_type === '5pack' ? '5' : 'e.g. 20'}
+            />
+          </FormField>
+          <FormField label={form.unit_type === 'partial_box' ? 'Remaining Sticks' : 'Total Sticks'}>
+            <StyledInput
+              type="number"
+              value={form.singles_equivalent}
+              onChange={set('singles_equivalent')}
+              placeholder={form.unit_type === 'partial_box' ? 'e.g. 8' : 'Auto-calculated'}
+            />
           </FormField>
           <FormField label="Humidor">
             <StyledSelect value={form.humidor_id} onValueChange={set('humidor_id')} placeholder="Select humidor">

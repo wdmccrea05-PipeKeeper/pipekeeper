@@ -485,7 +485,7 @@ function CigarDetailInner() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <DetailStat
-          label="Quantity"
+          label="Sticks"
           value={cigar.singles_equivalent ?? cigar.quantity ?? '—'}
           icon={Package}
         />
@@ -546,7 +546,8 @@ function CigarDetailInner() {
           <div className="space-y-1">
             <InfoRow label="Quantity" value={cigar.quantity} />
             <InfoRow label="Unit Type" value={cigar.unit_type} />
-            <InfoRow label="Singles Equiv." value={cigar.singles_equivalent} />
+            <InfoRow label="Cigars per Package" value={cigar.cigars_per_package} />
+            <InfoRow label={cigar.unit_type === 'partial_box' ? 'Remaining Sticks' : 'Total Sticks'} value={cigar.singles_equivalent} />
             <InfoRow label="Purchase Source" value={cigar.purchase_source} />
             <InfoRow label="Purchase Date" value={formatDate(cigar.purchase_date)} />
             <InfoRow label="Purchase Price" value={cigar.purchase_price ? formatCurrency(cigar.purchase_price) : ''} />
