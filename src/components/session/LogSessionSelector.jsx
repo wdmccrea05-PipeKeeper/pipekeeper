@@ -1,17 +1,19 @@
 import React from "react";
-import { X, BookOpen, GlassWater, Sparkles } from "lucide-react";
+import { X, BookOpen, GlassWater, Sparkles, Cigarette } from "lucide-react";
 
 /**
  * LogSessionSelector
- * Module-aware modal for launching Pipe, Whiskey, or combined session flows.
+ * Module-aware modal for launching Pipe, Whiskey, Cigar, or combined session flows.
  */
 export default function LogSessionSelector({
   isOpen,
   onClose,
   pipeEnabled = false,
   whiskeyEnabled = false,
+  cigarEnabled = false,
   onSelectPipe,
   onSelectWhiskey,
+  onSelectCigar,
   onSelectCombined,
 }) {
   if (!isOpen) return null;
@@ -50,6 +52,24 @@ export default function LogSessionSelector({
       onClick: () => {
         onClose?.();
         onSelectWhiskey?.();
+      },
+    });
+  }
+
+  if (cigarEnabled) {
+    options.push({
+      key: "cigar",
+      label: "Cigar Session",
+      sublabel: "Log a cigar smoke session",
+      Icon: Cigarette,
+      accent: "#C49A6C",
+      background:
+        "linear-gradient(135deg,rgba(140,107,63,0.20),rgba(100,74,45,0.10))",
+      border: "1px solid rgba(140,107,63,0.38)",
+      iconBackground: "rgba(140,107,63,0.18)",
+      onClick: () => {
+        onClose?.();
+        onSelectCigar?.();
       },
     });
   }

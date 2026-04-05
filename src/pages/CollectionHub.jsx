@@ -425,8 +425,8 @@ export default function CollectionHub() {
     };
   }, [pipes, blends, bottles, smokeLogs, tastings, cigars, cigarSessions, pipekeeperOpenable, whiskeyOpenable, cigarOpenable]);
 
-  const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route);
-  const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route);
+  const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route && k !== 'winekeeper');
+  const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route && k !== 'winekeeper');
 
   const pipeStats = [
     { label: 'Pipes', value: pipes.length },
@@ -576,8 +576,10 @@ export default function CollectionHub() {
         onClose={() => setShowLogSelector(false)}
         pipeEnabled={pipekeeperOpenable}
         whiskeyEnabled={whiskeyOpenable}
+        cigarEnabled={cigarOpenable}
         onSelectPipe={() => navigate('/PipeKeeper?action=log-smoke')}
         onSelectWhiskey={() => navigate('/Tastings?action=log')}
+        onSelectCigar={() => navigate('/CigarKeeper')}
         onSelectCombined={handleOpenCombinedSessionFlow}
       />
 
