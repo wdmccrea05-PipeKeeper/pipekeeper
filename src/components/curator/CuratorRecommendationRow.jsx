@@ -106,9 +106,12 @@ export default function CuratorRecommendationRow({
     if (onAccept) await onAccept(item);
   };
 
-  /** Fallback: ask the Curator with a context-specific prompt */
-  const handleClarify = (prompt) => {
-    if (onClarify) onClarify(typeof prompt === 'string' ? { ...item, _clarifyPrompt: prompt } : item);
+  /** Ask Curator with an optional custom prompt string, or pass the item as-is. */
+  const handleClarifyWithPrompt = (promptStr) => {
+    if (onClarify) onClarify({ ...item, _clarifyPrompt: promptStr });
+  };
+  const handleClarifyDefault = () => {
+    if (onClarify) onClarify(item);
   };
 
   if (dismissed || excluded) {
@@ -238,7 +241,7 @@ export default function CuratorRecommendationRow({
               )}
               {onClarify && (
                 <Button
-                  onClick={() => handleClarify(item)}
+                  onClick={handleClarifyDefault}
                   disabled={isLoading}
                   variant="outline"
                   size="sm"
@@ -314,7 +317,7 @@ export default function CuratorRecommendationRow({
                 </Button>
               )}
               <Button
-                onClick={() => handleClarify(`Show me the specific items related to: "${item.itemName || item.issue}"`)}
+                onClick={() => handleClarifyWithPrompt(`Show me the specific items related to: "${item.itemName || item.issue}"`)}
                 disabled={isLoading}
                 variant="outline"
                 size="sm"
@@ -326,7 +329,7 @@ export default function CuratorRecommendationRow({
               </Button>
               {onClarify && (
                 <Button
-                  onClick={() => handleClarify(item)}
+                  onClick={handleClarifyDefault}
                   disabled={isLoading}
                   variant="outline"
                   size="sm"
@@ -353,7 +356,7 @@ export default function CuratorRecommendationRow({
             <div className="flex flex-wrap items-center gap-2">
               {onClarify && (
                 <Button
-                  onClick={() => handleClarify(`Explain what will change for: "${item.itemName || item.issue}". ${item.recommendation || ''}`)}
+                  onClick={() => handleClarifyWithPrompt(`Explain what will change for: "${item.itemName || item.issue}". ${item.recommendation || ''}`)}
                   disabled={isLoading}
                   variant="outline"
                   size="sm"
@@ -382,7 +385,7 @@ export default function CuratorRecommendationRow({
               )}
               {onClarify && (
                 <Button
-                  onClick={() => handleClarify(item)}
+                  onClick={handleClarifyDefault}
                   disabled={isLoading}
                   variant="outline"
                   size="sm"
@@ -424,7 +427,7 @@ export default function CuratorRecommendationRow({
                 </Button>
               )}
               <Button
-                onClick={() => handleClarify(`Explain the rationale and evidence behind: "${item.itemName || item.issue}". ${item.recommendation || ''}`)}
+                onClick={() => handleClarifyWithPrompt(`Explain the rationale and evidence behind: "${item.itemName || item.issue}". ${item.recommendation || ''}`)}
                 disabled={isLoading}
                 variant="outline"
                 size="sm"
@@ -435,7 +438,7 @@ export default function CuratorRecommendationRow({
                 Ask for More Info
               </Button>
               <Button
-                onClick={() => handleClarify(`Walk me through each item individually for: "${item.itemName || item.issue}". ${item.recommendation || ''}`)}
+                onClick={() => handleClarifyWithPrompt(`Walk me through each item individually for: "${item.itemName || item.issue}". ${item.recommendation || ''}`)}
                 disabled={isLoading}
                 variant="outline"
                 size="sm"
@@ -479,7 +482,7 @@ export default function CuratorRecommendationRow({
               )}
               {onClarify && (
                 <Button
-                  onClick={() => handleClarify(item)}
+                  onClick={handleClarifyDefault}
                   disabled={isLoading}
                   variant="outline"
                   size="sm"
