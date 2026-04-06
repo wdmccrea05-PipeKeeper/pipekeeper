@@ -193,6 +193,14 @@ export function mrrContribution(sub) {
  * Compute MRR and ARR from an array of normalized paid subscriptions.
  * Only subs with known billing interval and non-null price contribute.
  *
+ * Canonical formula:
+ *   totalMRR = Σ mrrContribution(s)   (unrounded internal accumulator)
+ *   mrr      = round(totalMRR, 2)     (displayed MRR — single canonical source of truth)
+ *   arr      = round(mrr * 12, 2)     (derived from rounded MRR — guarantees display consistency)
+ *
+ * ARR is always derived from the ROUNDED mrr so that displayed ARR == displayed MRR × 12
+ * within normal currency rounding rules (±$0.01).
+ *
  * @param {object[]} paidSubs  Normalized subscriptions
  * @returns {{ mrr: number, arr: number }}
  */
@@ -200,7 +208,7 @@ export function computeMRRARR(paidSubs) {
   const eligible = paidSubs.filter((s) => s.billingInterval !== null && s.price !== null);
   const totalMRR = eligible.reduce((sum, s) => sum + mrrContribution(s), 0);
   const mrr = parseFloat(totalMRR.toFixed(2));
-  const arr = parseFloat((totalMRR * 12).toFixed(2));
+  const arr = parseFloat((mrr * 12).toFixed(2)); // derived from rounded mrr — ensures display consistency
   return { mrr, arr };
 }
 

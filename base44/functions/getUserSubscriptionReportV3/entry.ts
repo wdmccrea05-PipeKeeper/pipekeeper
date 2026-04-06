@@ -472,11 +472,18 @@ Deno.serve(async (req) => {
     }
 
     // ── MRR / ARR ─────────────────────────────────────────────────────────────
-    // Only subs with a known billing interval and non-null price contribute.
+    // Canonical formula:
+    //   totalMRR = Σ mrrContribution(s)   (unrounded internal accumulator)
+    //   mrr      = round(totalMRR, 2)     (displayed MRR — single source of truth)
+    //   arr      = round(mrr * 12, 2)     (derived from rounded mrr — guarantees display consistency)
+    //
+    // ARR must be derived from the ROUNDED mrr so that displayed ARR == displayed MRR × 12.
+    // Using the unrounded totalMRR for arr would cause the sanity check (arr === mrr*12) to
+    // fail whenever totalMRR has sub-cent decimals, because rounding error is amplified 12×.
     const mrrSubs    = paidSubs.filter((s) => s.billingInterval !== null && s.price !== null);
     const totalMRR   = mrrSubs.reduce((sum, s) => sum + mrrContribution(s), 0);
     const mrr        = parseFloat(totalMRR.toFixed(2));
-    const arr        = parseFloat((totalMRR * 12).toFixed(2));
+    const arr        = parseFloat((mrr * 12).toFixed(2)); // derived from rounded mrr
 
     // ── Renewal revenue by calendar period ────────────────────────────────────
     // Uses ACTUAL billed price — not MRR/ARR.
@@ -521,6 +528,8 @@ Deno.serve(async (req) => {
       },
       sanityChecks: sanity,
       warnings: {
+        // Data-quality issues: paid subscriptions with missing fields.
+        // These are source-data problems — the subscription record itself is incomplete.
         missingPrice:    warningMissingPrice.length,
         missingInterval: warningMissingInterval.length,
         missingRenewal:  warningMissingRenewal.length,
@@ -528,7 +537,8 @@ Deno.serve(async (req) => {
           ...warningMissingPrice,
           ...warningMissingInterval,
           ...warningMissingRenewal,
-          ...sanity.failures,
+          // Note: sanity failures are NOT included here — they live in sanityChecks.failures.
+          // Mixing them caused every sanity failure to appear twice in the warnings panel.
         ],
       },
       accounts: {

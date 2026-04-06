@@ -292,6 +292,23 @@ describe('computeMRRARR', () => {
     expect(arr).toBeCloseTo(mrr * 12, 2);
   });
 
+  it('displayed ARR == displayed MRR * 12 exactly (regression: sub-cent totalMRR)', () => {
+    // Scenario that triggered the confirmed bug:
+    // multiple annual subs whose price/12 produces a totalMRR with sub-cent decimals.
+    // e.g. 3 × annual $459 → mrrContribution each = 459/12 = 38.25 → totalMRR = 114.75 (clean)
+    // Use a price where price/12 is non-terminating to force the rounding issue:
+    // $137.65 / 12 = 11.47083... × 10 subs = 114.7083...
+    // Old behaviour: mrr = 114.71, arr = round(114.7083... * 12, 2) = 1376.50  ≠ 114.71 * 12 = 1376.52
+    const subs = [];
+    for (let i = 0; i < 10; i++) {
+      subs.push(normalizeSub(makeSub({ id: `sub_${i}`, billing_interval: 'annual', amount: 137.65 })));
+    }
+    const { mrr, arr } = computeMRRARR(subs);
+    // arr must equal round(mrr * 12, 2) exactly — no sub-cent drift
+    const expectedArr = parseFloat((mrr * 12).toFixed(2));
+    expect(arr).toBe(expectedArr);
+  });
+
   it('counts multiple paid subs for one user correctly', () => {
     const subs = [
       normalizeSub(makeSub({ id: 'a', user_id: 'u1', billing_interval: 'monthly', amount: 10 })),
