@@ -775,6 +775,228 @@ function truncatePill(text) {
   return text.length > PILL_MAX_CHARS ? text.slice(0, PILL_MAX_CHARS - 1) + '…' : text;
 }
 
+// ─── Grouped card collapse helper ────────────────────────────────────────────
+
+/**
+ * Within a section's card list, collapse AUTO_FIX cards that share the same
+ * module into a single grouped card. Cards for modules that appear only once
+ * are left as-is. Non-AUTO_FIX cards are always left as-is.
+ */
+function collapseToGroupedCards(cards) {
+  const moduleGroups = new Map(); // moduleKey -> card[]
+  const ungroupable = [];
+
+  for (const card of cards) {
+    if (card.recommendationClass === RECOMMENDATION_CLASS.AUTO_FIX && card.module) {
+      const mk = card.module;
+      if (!moduleGroups.has(mk)) moduleGroups.set(mk, []);
+      moduleGroups.get(mk).push(card);
+    } else {
+      ungroupable.push(card);
+    }
+  }
+
+  const result = [];
+
+  for (const [moduleKey, moduleCards] of moduleGroups) {
+    if (moduleCards.length === 1) {
+      result.push(moduleCards[0]);
+    } else {
+      const allSuggestions = [...new Set(moduleCards.flatMap((c) => c.suggestions || []))];
+      const highestSeverity = moduleCards.reduce((best, c) => {
+        const rank = SEVERITY_PRIORITY_MAP[c.severity] ?? 3;
+        const bestRank = SEVERITY_PRIORITY_MAP[best] ?? 3;
+        return rank < bestRank ? c.severity : best;
+      }, moduleCards[0].severity);
+      const moduleName = getModuleName(moduleKey);
+      result.push({
+        id: `grouped_autofix_${moduleKey}`,
+        isGrouped: true,
+        title: `${moduleName} — ${moduleCards.length} ${plural(moduleCards.length, 'Issue')} to Fix`,
+        whyItMatters: `${moduleCards.length} ${plural(moduleCards.length, 'issue')} found in your ${moduleName.toLowerCase()} data. Fixing these improves Curator recommendation quality and enables better suggestions.`,
+        module: moduleKey,
+        section: moduleCards[0].section,
+        severity: highestSeverity,
+        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+        suggestions: allSuggestions,
+        subCards: moduleCards,
+        subCardIds: moduleCards.map((c) => c.id),
+        subIssues: moduleCards.map((c) => ({ id: c.id, title: c.title })),
+        navigateTo: moduleCards.find((c) => c.navigateTo)?.navigateTo || null,
+      });
+    }
+  }
+
+  for (const card of ungroupable) {
+    result.push(card);
+  }
+
+  result.sort((a, b) => {
+    const classDiff =
+      (RECCLASS_PRIORITY[a.recommendationClass] ?? 4) -
+      (RECCLASS_PRIORITY[b.recommendationClass] ?? 4);
+    if (classDiff !== 0) return classDiff;
+    return (SEVERITY_PRIORITY_MAP[a.severity] ?? 3) - (SEVERITY_PRIORITY_MAP[b.severity] ?? 3);
+  });
+
+  return result;
+}
+
+// ─── GroupedRecommendationCard ────────────────────────────────────────────────
+
+function GroupedRecommendationCard({ card, onApplyFix, onReviewDetails, onAskCurator }) {
+  const [localApplied, setLocalApplied] = useState(false);
+
+  const color = severityColor(card.severity);
+  const bg = severityBg(card.severity);
+  const impact = impactLabel(card.severity);
+  const classLabel = getRecommendationClassLabel(card.recommendationClass);
+  const classColor = getRecommendationClassColor(card.recommendationClass);
+  const classBg = getRecommendationClassBg(card.recommendationClass);
+
+  const previewItems = (card.suggestions || []).slice(0, PREVIEW_ITEM_MAX);
+  const overflowCount = Math.max(0, (card.suggestions?.length || 0) - PREVIEW_ITEM_MAX);
+
+  if (localApplied) {
+    return (
+      <div
+        className="rounded-xl px-4 py-2.5 flex items-center justify-between gap-3"
+        style={{ background: 'rgba(20,14,10,0.5)', border: '1px solid rgba(74,124,92,0.2)' }}
+      >
+        <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(224,216,200,0.45)' }}>
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(74,124,92,0.6)' }} />
+          <span>{card.title} — opening {getModuleName(card.module)}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setLocalApplied(false)}
+          className="text-xs hover:opacity-80 underline shrink-0"
+          style={{ color: 'rgba(180,140,75,0.5)' }}
+        >
+          Undo
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{ background: 'rgba(36,24,15,0.9)', border: `1px solid ${color}28` }}
+    >
+      {/* Header */}
+      <div className="px-4 pt-3.5 pb-2.5">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          {classLabel && (
+            <span
+              className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{ background: classBg, color: classColor, border: `1px solid ${classColor}40` }}
+            >
+              {classLabel}
+            </span>
+          )}
+          {card.module && (
+            <span
+              className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize"
+              style={{ background: 'rgba(120,90,65,0.15)', color: 'rgba(212,165,116,0.8)', border: '1px solid rgba(120,90,65,0.22)' }}
+            >
+              {getModuleName(card.module)}
+            </span>
+          )}
+          <span
+            className="ml-auto inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded"
+            style={{ background: bg, color, border: `1px solid ${color}40` }}
+          >
+            {impact}
+          </span>
+        </div>
+
+        <h3 className="text-sm font-semibold leading-snug mb-1" style={{ color: '#F5F1E7' }}>
+          {card.title}
+        </h3>
+
+        {card.whyItMatters && (
+          <p className="text-xs leading-relaxed mb-2" style={{ color: 'rgba(224,216,200,0.58)' }}>
+            {card.whyItMatters}
+          </p>
+        )}
+
+        {/* Sub-issue list */}
+        {card.subIssues?.length > 0 && (
+          <div className="space-y-0.5 mt-1">
+            {card.subIssues.map((issue) => (
+              <div
+                key={issue.id}
+                className="flex items-center gap-1.5 text-xs"
+                style={{ color: 'rgba(224,216,200,0.5)' }}
+              >
+                <span style={{ color: 'rgba(180,140,75,0.45)' }}>·</span>
+                {issue.title}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Item preview pills */}
+      {previewItems.length > 0 && (
+        <div className="px-4 pb-2.5 flex flex-wrap gap-1.5">
+          {previewItems.map((s, i) => (
+            <span
+              key={i}
+              className="inline-flex items-center text-xs px-2.5 py-1 rounded-lg"
+              style={{ background: 'rgba(0,0,0,0.22)', border: '1px solid rgba(140,105,65,0.15)', color: 'rgba(224,216,200,0.72)' }}
+            >
+              {truncatePill(s)}
+            </span>
+          ))}
+          {overflowCount > 0 && (
+            <span
+              className="inline-flex items-center text-xs px-2.5 py-1 rounded-lg"
+              style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.15)', color: 'rgba(180,140,75,0.65)' }}
+            >
+              +{overflowCount} more
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Action row — rendered once for the whole group */}
+      <div
+        className="px-4 py-2.5 flex items-center gap-2 flex-wrap"
+        style={{ borderTop: '1px solid rgba(140,105,65,0.1)', background: 'rgba(0,0,0,0.14)' }}
+      >
+        <button
+          type="button"
+          onClick={() => { setLocalApplied(true); onApplyFix(); }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+          style={{ background: 'rgba(74,124,92,0.28)', border: '1px solid rgba(74,124,92,0.5)', color: '#6aab80' }}
+        >
+          <CheckCircle2 className="w-3 h-3" /> Apply Fix
+        </button>
+        <button
+          type="button"
+          onClick={onReviewDetails}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+          style={{ background: 'rgba(74,124,156,0.18)', border: '1px solid rgba(74,124,156,0.4)', color: '#6aabc0' }}
+        >
+          <Eye className="w-3 h-3" /> Review Details
+        </button>
+        <button
+          type="button"
+          onClick={onAskCurator}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+          style={{ background: 'rgba(139,94,58,0.18)', border: '1px solid rgba(139,94,58,0.38)', color: '#D4956A' }}
+        >
+          <MessageCircle className="w-3 h-3" /> Ask Curator
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── RecommendationCard ───────────────────────────────────────────────────────
+
 function RecommendationCard({
   card,
   onApplyFix,
@@ -786,6 +1008,7 @@ function RecommendationCard({
   onAskCurator,
 }) {
   const [localAcknowledged, setLocalAcknowledged] = useState(false);
+  const [localApplied, setLocalApplied] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
 
   const color = severityColor(card.severity);
@@ -798,6 +1021,28 @@ function RecommendationCard({
 
   const previewItems = card.suggestions?.slice(0, PREVIEW_ITEM_MAX) || [];
   const overflowCount = Math.max(0, (card.suggestions?.length || 0) - PREVIEW_ITEM_MAX);
+
+  if (localApplied) {
+    return (
+      <div
+        className="rounded-xl px-4 py-2.5 flex items-center justify-between gap-3"
+        style={{ background: 'rgba(20,14,10,0.5)', border: '1px solid rgba(74,124,92,0.2)' }}
+      >
+        <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(224,216,200,0.45)' }}>
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(74,124,92,0.6)' }} />
+          <span>{card.title} — opening {getModuleName(getModuleKey(card))}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setLocalApplied(false)}
+          className="text-xs hover:opacity-80 underline shrink-0"
+          style={{ color: 'rgba(180,140,75,0.5)' }}
+        >
+          Undo
+        </button>
+      </div>
+    );
+  }
 
   if (localAcknowledged) {
     return (
@@ -942,11 +1187,11 @@ function RecommendationCard({
         {/* AUTO_FIX */}
         {recClass === RECOMMENDATION_CLASS.AUTO_FIX && (
           <>
-            <button type="button" onClick={onApplyFix}
+            <button type="button" onClick={() => { setLocalApplied(true); onApplyFix(); }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
               style={{ background: 'rgba(74,124,92,0.28)', border: '1px solid rgba(74,124,92,0.5)', color: '#6aab80' }}
             >
-              <CheckCircle2 className="w-3 h-3" /> Review &amp; Apply Fix
+              <CheckCircle2 className="w-3 h-3" /> Apply Fix
             </button>
             <button type="button" onClick={onReviewDetails}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
@@ -1188,6 +1433,8 @@ function SectionGroup({
   onAskForMoreInfo,
   onTreatIndividually,
 }) {
+  const displayCards = useMemo(() => collapseToGroupedCards(cards), [cards]);
+
   if (!cards.length) return null;
   return (
     <div className="space-y-3">
@@ -1203,26 +1450,36 @@ function SectionGroup({
           className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
           style={{ background: 'rgba(180,140,75,0.12)', color: 'rgba(180,140,75,0.75)', border: '1px solid rgba(180,140,75,0.18)' }}
         >
-          {cards.length}
+          {displayCards.length}
         </span>
         <span className="text-xs hidden sm:inline" style={{ color: 'rgba(224,216,200,0.32)' }}>
           {section.desc}
         </span>
       </div>
       <div className="space-y-2.5">
-        {cards.map((card) => (
-          <RecommendationCard
-            key={card.id}
-            card={card}
-            onApplyFix={() => onApplyFix(card)}
-            onReviewDetails={() => onReviewDetails(card)}
-            onAskCurator={() => onAskCurator(card)}
-            onAcknowledge={() => onAcknowledge && onAcknowledge(card)}
-            onViewItems={() => onViewItems && onViewItems(card)}
-            onAskForMoreInfo={() => onAskForMoreInfo && onAskForMoreInfo(card)}
-            onTreatIndividually={() => onTreatIndividually && onTreatIndividually(card)}
-          />
-        ))}
+        {displayCards.map((card) =>
+          card.isGrouped ? (
+            <GroupedRecommendationCard
+              key={card.id}
+              card={card}
+              onApplyFix={() => onApplyFix(card)}
+              onReviewDetails={() => onReviewDetails(card)}
+              onAskCurator={() => onAskCurator(card)}
+            />
+          ) : (
+            <RecommendationCard
+              key={card.id}
+              card={card}
+              onApplyFix={() => onApplyFix(card)}
+              onReviewDetails={() => onReviewDetails(card)}
+              onAskCurator={() => onAskCurator(card)}
+              onAcknowledge={() => onAcknowledge && onAcknowledge(card)}
+              onViewItems={() => onViewItems && onViewItems(card)}
+              onAskForMoreInfo={() => onAskForMoreInfo && onAskForMoreInfo(card)}
+              onTreatIndividually={() => onTreatIndividually && onTreatIndividually(card)}
+            />
+          )
+        )}
       </div>
     </div>
   );
@@ -1399,6 +1656,17 @@ export default function CuratorOptimizePanel({
 
   // Handlers
   function handleApplyFix(card) {
+    // AUTO_FIX: navigate immediately — no confirmation dialog
+    if (card.recommendationClass === RECOMMENDATION_CLASS.AUTO_FIX) {
+      if (card.navigateTo) {
+        navigate(card.navigateTo);
+      } else {
+        const route = getModuleRoute(getModuleKey(card));
+        if (route) navigate(route);
+      }
+      return;
+    }
+    // REVIEW_REQUIRED: keep the confirmation dialog
     setConfirmCard(card);
   }
 
