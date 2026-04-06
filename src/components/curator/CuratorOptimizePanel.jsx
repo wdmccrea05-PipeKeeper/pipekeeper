@@ -2,8 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from '@/components/utils/navigation';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import {
-  AlertTriangle,
-  Info,
   CheckCircle2,
   X,
   MessageCircle,
@@ -12,12 +10,6 @@ import {
   HelpCircle,
   SplitSquareVertical,
   ExternalLink,
-  ShoppingCart,
-  RotateCcw,
-  Target,
-  Wine,
-  Database,
-  Heart,
 } from 'lucide-react';
 import {
   generateProactiveInsights,
@@ -776,6 +768,13 @@ function getConfirmationDetails(card) {
 
 // ─── RecommendationCard ───────────────────────────────────────────────────────
 
+const PREVIEW_ITEM_MAX = 4;
+const PILL_MAX_CHARS = 38;
+
+function truncatePill(text) {
+  return text.length > PILL_MAX_CHARS ? text.slice(0, PILL_MAX_CHARS - 1) + '…' : text;
+}
+
 function RecommendationCard({
   card,
   onApplyFix,
@@ -787,6 +786,7 @@ function RecommendationCard({
   onAskCurator,
 }) {
   const [localAcknowledged, setLocalAcknowledged] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
 
   const color = severityColor(card.severity);
   const bg = severityBg(card.severity);
@@ -796,10 +796,13 @@ function RecommendationCard({
   const classColor = getRecommendationClassColor(recClass);
   const classBg = getRecommendationClassBg(recClass);
 
+  const previewItems = card.suggestions?.slice(0, PREVIEW_ITEM_MAX) || [];
+  const overflowCount = Math.max(0, (card.suggestions?.length || 0) - PREVIEW_ITEM_MAX);
+
   if (localAcknowledged) {
     return (
       <div
-        className="rounded-2xl p-4 flex items-center justify-between gap-3"
+        className="rounded-xl px-4 py-2.5 flex items-center justify-between gap-3"
         style={{ background: 'rgba(20,14,10,0.5)', border: '1px solid rgba(140,105,65,0.1)' }}
       >
         <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(224,216,200,0.45)' }}>
@@ -820,216 +823,219 @@ function RecommendationCard({
 
   return (
     <div
-      className="rounded-2xl p-5 sm:p-6 space-y-4"
+      className="rounded-xl overflow-hidden"
       style={{
-        background: 'linear-gradient(145deg, rgba(42,30,20,0.97), rgba(28,19,13,0.99))',
-        border: `1px solid ${color}30`,
-        boxShadow: '0 6px 20px rgba(0,0,0,0.35)',
+        background: 'rgba(36,24,15,0.9)',
+        border: `1px solid ${color}28`,
       }}
     >
-      {/* Title row */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-            style={{ background: bg, border: `1px solid ${color}40` }}
+      {/* ── Card header: badges + title + rationale ── */}
+      <div className="px-4 pt-3.5 pb-2.5">
+        {/* Badge row */}
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          {classLabel && (
+            <span
+              className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{ background: classBg, color: classColor, border: `1px solid ${classColor}40` }}
+            >
+              {classLabel}
+            </span>
+          )}
+          {card.module && (
+            <span
+              className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize"
+              style={{ background: 'rgba(120,90,65,0.15)', color: 'rgba(212,165,116,0.8)', border: '1px solid rgba(120,90,65,0.22)' }}
+            >
+              {getModuleName(card.module)}
+            </span>
+          )}
+          <span
+            className="ml-auto inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded"
+            style={{ background: bg, color, border: `1px solid ${color}40` }}
           >
-            {card.severity === INSIGHT_SEVERITY.HIGH || card.severity === INSIGHT_SEVERITY.MEDIUM ? (
-              <AlertTriangle className="w-4 h-4" style={{ color }} />
-            ) : (
-              <Info className="w-4 h-4" style={{ color }} />
-            )}
-          </div>
-          <div className="min-w-0">
-            <h3
-              className="text-base sm:text-lg font-bold leading-tight"
-              style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
-            >
-              {card.title}
-            </h3>
-            {classLabel && (
-              <span
-                className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full mt-1"
-                style={{ background: classBg, color: classColor, border: `1px solid ${classColor}40` }}
-              >
-                {classLabel}
-              </span>
-            )}
-          </div>
+            {impact}
+          </span>
         </div>
-        <span
-          className="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-lg flex-shrink-0"
-          style={{ background: bg, color, border: `1px solid ${color}40` }}
-          aria-label={`${impact} impact`}
+
+        {/* Title */}
+        <h3 className="text-sm font-semibold leading-snug mb-1" style={{ color: '#F5F1E7' }}>
+          {card.title}
+        </h3>
+
+        {/* One-liner rationale */}
+        <p className="text-xs leading-relaxed" style={{ color: 'rgba(224,216,200,0.58)' }}>
+          {card.whyItMatters || card.whatWeFound}
+        </p>
+      </div>
+
+      {/* ── Item preview pills ── */}
+      {previewItems.length > 0 && (
+        <div className="px-4 pb-2.5 flex flex-wrap gap-1.5">
+          {previewItems.map((s, i) => (
+            <span
+              key={i}
+              className="inline-flex items-center text-xs px-2.5 py-1 rounded-lg"
+              style={{ background: 'rgba(0,0,0,0.22)', border: '1px solid rgba(140,105,65,0.15)', color: 'rgba(224,216,200,0.72)' }}
+            >
+              {truncatePill(s)}
+            </span>
+          ))}
+          {overflowCount > 0 && (
+            <span
+              className="inline-flex items-center text-xs px-2.5 py-1 rounded-lg"
+              style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.15)', color: 'rgba(180,140,75,0.65)' }}
+            >
+              +{overflowCount} more
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* ── Expandable detail section ── */}
+      {showDetail && (
+        <div
+          className="px-4 pb-3 pt-3 space-y-2.5"
+          style={{ borderTop: '1px solid rgba(140,105,65,0.1)' }}
         >
-          {impact} Impact
-        </span>
-      </div>
-
-      {/* What We Found */}
-      <div className="space-y-1.5">
-        <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.7)' }}>
-          What We Found
-        </p>
-        <p className="text-sm sm:text-base leading-relaxed" style={{ color: 'rgba(240,230,210,0.9)' }}>
-          {card.whatWeFound}
-        </p>
-      </div>
-
-      {/* Why It Matters */}
-      {card.whyItMatters && (
-        <div className="space-y-1.5">
-          <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.7)' }}>
-            Why It Matters
-          </p>
-          <p className="text-sm sm:text-base leading-relaxed" style={{ color: 'rgba(224,216,200,0.8)' }}>
-            {card.whyItMatters}
-          </p>
-        </div>
-      )}
-
-      {/* Recommended Action */}
-      <div
-        className="p-4 rounded-xl space-y-1.5"
-        style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.18)' }}
-      >
-        <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.7)' }}>
-          Recommended Action
-        </p>
-        <p className="text-sm sm:text-base leading-relaxed font-medium" style={{ color: '#F5F1E7' }}>
-          {card.recommendedAction}
-        </p>
-      </div>
-
-      {/* Specific items identified */}
-      {card.suggestions?.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.7)' }}>
-            {card.suggestions.length === 1 ? '1 Item' : `${card.suggestions.length} Items`} Identified
-          </p>
-          <ul className="space-y-1.5">
-            {card.suggestions.map((s, i) => (
-              <li key={i} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(224,216,200,0.85)' }}>
-                <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'rgba(180,140,75,0.6)' }} />
-                {s}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* ── Action Buttons ── */}
-      {recClass === RECOMMENDATION_CLASS.AUTO_FIX && (
-        <>
-          <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
-            <button type="button" onClick={onApplyFix}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, rgba(74,124,92,0.4), rgba(74,124,92,0.22))', border: '1px solid rgba(74,124,92,0.55)', color: '#6aab80' }}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'rgba(180,140,75,0.6)' }}>
+              What We Found
+            </p>
+            <p className="text-xs leading-relaxed" style={{ color: 'rgba(240,230,210,0.82)' }}>
+              {card.whatWeFound}
+            </p>
+          </div>
+          {card.recommendedAction && (
+            <div
+              className="p-3 rounded-lg"
+              style={{ background: 'rgba(180,140,75,0.06)', border: '1px solid rgba(180,140,75,0.14)' }}
             >
-              <span>✅</span> Review &amp; Apply Fix
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'rgba(180,140,75,0.6)' }}>
+                Recommended Action
+              </p>
+              <p className="text-xs leading-relaxed font-medium" style={{ color: '#F5F1E7' }}>
+                {card.recommendedAction}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Action footer ── */}
+      <div
+        className="px-4 py-2.5 flex items-center gap-2 flex-wrap"
+        style={{ borderTop: '1px solid rgba(140,105,65,0.1)', background: 'rgba(0,0,0,0.14)' }}
+      >
+        {/* AUTO_FIX */}
+        {recClass === RECOMMENDATION_CLASS.AUTO_FIX && (
+          <>
+            <button type="button" onClick={onApplyFix}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(74,124,92,0.28)', border: '1px solid rgba(74,124,92,0.5)', color: '#6aab80' }}
+            >
+              <CheckCircle2 className="w-3 h-3" /> Review &amp; Apply Fix
             </button>
             <button type="button" onClick={onReviewDetails}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))', border: '1px solid rgba(74,124,156,0.45)', color: '#6aabc0' }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(74,124,156,0.18)', border: '1px solid rgba(74,124,156,0.4)', color: '#6aabc0' }}
             >
-              <Eye className="w-4 h-4" /> Review Details
+              <Eye className="w-3 h-3" /> Review Details
             </button>
             <button type="button" onClick={onAskCurator}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, rgba(139,94,58,0.3), rgba(100,65,40,0.18))', border: '1px solid rgba(139,94,58,0.45)', color: '#D4956A' }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(139,94,58,0.18)', border: '1px solid rgba(139,94,58,0.38)', color: '#D4956A' }}
             >
-              <MessageCircle className="w-4 h-4" /> Ask Curator
+              <MessageCircle className="w-3 h-3" /> Ask Curator
             </button>
-          </div>
-          <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
-            Review &amp; Apply Fix navigates to the relevant module where you complete the change. Review Details asks Curator to explain what will change before you act.
-          </p>
-        </>
-      )}
+          </>
+        )}
 
-      {recClass === RECOMMENDATION_CLASS.ADVISORY && (
-        <>
-          <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+        {/* ADVISORY */}
+        {recClass === RECOMMENDATION_CLASS.ADVISORY && (
+          <>
             <button type="button" onClick={() => { setLocalAcknowledged(true); if (onAcknowledge) onAcknowledge(card); }}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, rgba(74,124,92,0.35), rgba(74,124,92,0.18))', border: '1px solid rgba(74,124,92,0.5)', color: '#6aab80' }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(74,124,92,0.25)', border: '1px solid rgba(74,124,92,0.45)', color: '#6aab80' }}
             >
-              <CheckCircle2 className="w-4 h-4" /> Acknowledge
+              <CheckCircle2 className="w-3 h-3" /> Acknowledge
             </button>
             <button type="button" onClick={onViewItems}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))', border: '1px solid rgba(74,124,156,0.45)', color: '#6aabc0' }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(74,124,156,0.18)', border: '1px solid rgba(74,124,156,0.4)', color: '#6aabc0' }}
             >
-              <Eye className="w-4 h-4" /> View Items
+              <Eye className="w-3 h-3" /> View Items
             </button>
             <button type="button" onClick={onAskCurator}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, rgba(139,94,58,0.3), rgba(100,65,40,0.18))', border: '1px solid rgba(139,94,58,0.45)', color: '#D4956A' }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(139,94,58,0.18)', border: '1px solid rgba(139,94,58,0.38)', color: '#D4956A' }}
             >
-              <MessageCircle className="w-4 h-4" /> Ask Curator
+              <MessageCircle className="w-3 h-3" /> Ask Curator
             </button>
-          </div>
-          <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
-            Acknowledge marks this insight as reviewed — no data changes. View Items opens the relevant module so you can act on your own terms.
-          </p>
-        </>
-      )}
+          </>
+        )}
 
-      {recClass === RECOMMENDATION_CLASS.MULTI_PATH && (
-        <>
-          <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+        {/* MULTI_PATH */}
+        {recClass === RECOMMENDATION_CLASS.MULTI_PATH && (
+          <>
             <button type="button" onClick={() => { setLocalAcknowledged(true); if (onAcknowledge) onAcknowledge(card); }}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, rgba(80,65,50,0.35), rgba(65,50,38,0.2))', border: '1px solid rgba(120,90,65,0.45)', color: 'rgba(224,200,170,0.8)' }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(80,65,50,0.28)', border: '1px solid rgba(120,90,65,0.42)', color: 'rgba(224,200,170,0.8)' }}
             >
-              <CheckCircle2 className="w-4 h-4" /> Acknowledge
+              <CheckCircle2 className="w-3 h-3" /> Acknowledge
             </button>
             <button type="button" onClick={onAskForMoreInfo}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))', border: '1px solid rgba(74,124,156,0.45)', color: '#6aabc0' }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(74,124,156,0.18)', border: '1px solid rgba(74,124,156,0.4)', color: '#6aabc0' }}
             >
-              <HelpCircle className="w-4 h-4" /> Ask for More Info
+              <HelpCircle className="w-3 h-3" /> Ask for More Info
             </button>
             <button type="button" onClick={onTreatIndividually}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, rgba(139,94,58,0.35), rgba(100,65,40,0.2))', border: '1px solid rgba(139,94,58,0.5)', color: '#D4956A' }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(139,94,58,0.22)', border: '1px solid rgba(139,94,58,0.42)', color: '#D4956A' }}
             >
-              <SplitSquareVertical className="w-4 h-4" /> Treat Individually
+              <SplitSquareVertical className="w-3 h-3" /> Treat Individually
             </button>
-          </div>
-          <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
-            Acknowledge defers without action. Ask for More Info explains why this was suggested. Treat Individually opens a per-item review so you can decide on each one separately.
-          </p>
-        </>
-      )}
+          </>
+        )}
 
-      {recClass === RECOMMENDATION_CLASS.REVIEW_REQUIRED && (
-        <>
-          <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+        {/* REVIEW_REQUIRED */}
+        {recClass === RECOMMENDATION_CLASS.REVIEW_REQUIRED && (
+          <>
             <button type="button" onClick={onReviewDetails}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))', border: '1px solid rgba(74,124,156,0.45)', color: '#6aabc0' }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(74,124,156,0.18)', border: '1px solid rgba(74,124,156,0.4)', color: '#6aabc0' }}
             >
-              <Eye className="w-4 h-4" /> Review Details
+              <Eye className="w-3 h-3" /> Review Details
             </button>
             <button type="button" onClick={onApplyFix}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, rgba(180,100,50,0.4), rgba(150,75,30,0.25))', border: '1px solid rgba(180,100,50,0.55)', color: '#e0a070' }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(180,100,50,0.28)', border: '1px solid rgba(180,100,50,0.48)', color: '#e0a070' }}
             >
-              <CheckCircle2 className="w-4 h-4" /> Approve Changes
+              <CheckCircle2 className="w-3 h-3" /> Approve Changes
             </button>
             <button type="button" onClick={onAskCurator}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, rgba(139,94,58,0.3), rgba(100,65,40,0.18))', border: '1px solid rgba(139,94,58,0.45)', color: '#D4956A' }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(139,94,58,0.18)', border: '1px solid rgba(139,94,58,0.38)', color: '#D4956A' }}
             >
-              <MessageCircle className="w-4 h-4" /> Ask Curator
+              <MessageCircle className="w-3 h-3" /> Ask Curator
             </button>
-          </div>
-          <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
-            Review Details asks Curator to explain what will change. Approve Changes{card.navigateTo ? ' opens your Want List to take action.' : ' applies the listed changes to your collection.'}
-          </p>
-        </>
-      )}
+          </>
+        )}
+
+        {/* Details toggle — always rightmost */}
+        <button
+          type="button"
+          onClick={() => setShowDetail((v) => !v)}
+          className="ml-auto flex items-center gap-1 text-xs transition-opacity hover:opacity-80"
+          style={{ color: 'rgba(180,140,75,0.55)' }}
+        >
+          <ChevronRight
+            className="w-3.5 h-3.5 transition-transform duration-200"
+            style={{ transform: showDetail ? 'rotate(90deg)' : 'rotate(0deg)' }}
+          />
+          {showDetail ? 'Less' : 'Details'}
+        </button>
+      </div>
     </div>
   );
 }
@@ -1172,27 +1178,26 @@ function SectionGroup({
 }) {
   if (!cards.length) return null;
   return (
-    <div className="space-y-4">
-      <div className="flex items-start gap-2">
-        <span className="text-lg leading-tight mt-0.5">{section.emoji}</span>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-base sm:text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-              {section.title}
-            </h2>
-            <span
-              className="text-xs font-semibold px-2 py-0.5 rounded-full"
-              style={{ background: 'rgba(180,140,75,0.12)', color: 'rgba(180,140,75,0.8)', border: '1px solid rgba(180,140,75,0.2)' }}
-            >
-              {cards.length}
-            </span>
-          </div>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.4)' }}>
-            {section.desc}
-          </p>
-        </div>
+    <div className="space-y-3">
+      <div
+        className="flex items-center gap-2 pb-2"
+        style={{ borderBottom: '1px solid rgba(140,105,65,0.14)' }}
+      >
+        <span className="text-base leading-none">{section.emoji}</span>
+        <h2 className="text-sm font-bold" style={{ color: '#F5F1E7' }}>
+          {section.title}
+        </h2>
+        <span
+          className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+          style={{ background: 'rgba(180,140,75,0.12)', color: 'rgba(180,140,75,0.75)', border: '1px solid rgba(180,140,75,0.18)' }}
+        >
+          {cards.length}
+        </span>
+        <span className="text-xs hidden sm:inline" style={{ color: 'rgba(224,216,200,0.32)' }}>
+          {section.desc}
+        </span>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-2.5">
         {cards.map((card) => (
           <RecommendationCard
             key={card.id}
@@ -1557,7 +1562,7 @@ export default function CuratorOptimizePanel({
       )}
 
       {/* ── Recommendation Sections ────────────────────────────────────── */}
-      <div className="px-5 py-6 space-y-10">
+      <div className="px-5 py-5 space-y-6">
         {totalCount === 0 ? (
           <div
             className="rounded-2xl p-8 text-center"
