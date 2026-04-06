@@ -21,7 +21,8 @@ import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import BrandLogo from '@/components/branding/BrandLogo';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import { getPipeValue, getBottleValue } from '@/components/keeper-core/value/valueAggregation';
-import { calculateTobaccoCollectionValue } from '@/components/utils/tobaccoQuantityHelpers';
+import { calculateTobaccoCollectionValue, calculateTotalOzFromBlend } from '@/components/utils/tobaccoQuantityHelpers';
+import { getAvailableQuantity } from '@/platform/cigarInventory';
 import { buildUnifiedActivityFeed } from '@/components/utils/activityNormalizer';
 import CollectionStoryCard from '@/components/hub/CollectionStoryCard';
 import CombinedSessionModal from '@/components/session/CombinedSessionModal';
@@ -411,6 +412,15 @@ export default function CollectionHub() {
 
     const recentActivity = buildUnifiedActivityFeed(smokeLogs, tastings, { limit: 5 });
 
+    // Cigar sticks: sum singles_equivalent ?? quantity per record (canonical inventory math)
+    const totalCigarSticks = cigars.reduce((sum, c) => sum + getAvailableQuantity(c), 0);
+
+    // Blend quantity: sum tin + bulk + pouch oz per blend record
+    const totalBlendOz = blends.reduce((sum, b) => sum + calculateTotalOzFromBlend(b), 0);
+
+    // Bottle count: bottle_count field (defaults to 1 per record)
+    const totalBottleCount = bottles.reduce((sum, b) => sum + (Number(b.bottle_count) || 1), 0);
+
     return {
       totalValue,
       recentSessionsCount,
@@ -423,31 +433,33 @@ export default function CollectionHub() {
       mostValuableBottle,
       mostSmokedCigar,
       recentActivity,
+      totalCigarSticks,
+      totalBlendOz,
+      totalBottleCount,
     };
   }, [pipes, blends, bottles, smokeLogs, tastings, cigars, cigarSessions, pipekeeperOpenable, whiskeyOpenable, cigarOpenable]);
 
   const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route && k !== 'winekeeper');
   const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route && k !== 'winekeeper');
 
+  const totalBlendOzDisplay = isLoading ? '—' : (metrics.totalBlendOz % 1 === 0 ? String(metrics.totalBlendOz) : metrics.totalBlendOz.toFixed(1)) + ' oz';
+
   const pipeStats = [
-    { label: 'Pipes', value: pipes.length },
-    { label: 'Blends', value: blends.length },
-    { label: 'This Week', value: isLoading ? '—' : metrics.recentSmokeCount },
+    { label: 'Pipes', value: isLoading ? '—' : pipes.length },
+    { label: 'Blend types', value: isLoading ? '—' : blends.length },
+    { label: 'Blend qty', value: totalBlendOzDisplay },
   ];
 
   const whiskeyStats = [
-    { label: 'Whiskey', value: bottles.length },
-    { label: 'Tastings', value: tastings.length },
-    {
-      label: 'Value',
-      value: currency(bottles.reduce((s, b) => s + safe(getBottleValue(b)), 0)),
-    },
+    { label: 'Bottle types', value: isLoading ? '—' : bottles.length },
+    { label: 'Bottles owned', value: isLoading ? '—' : metrics.totalBottleCount },
+    { label: 'Est. value', value: currency(bottles.reduce((s, b) => s + safe(getBottleValue(b)), 0)) },
   ];
 
   const cigarStats = [
-    { label: 'Cigars', value: cigars.length },
-    { label: 'Sessions', value: cigarSessions.length },
-    { label: 'This Week', value: isLoading ? '—' : metrics.recentCigarSessionCount },
+    { label: 'Cigar types', value: isLoading ? '—' : cigars.length },
+    { label: 'Sticks owned', value: isLoading ? '—' : metrics.totalCigarSticks },
+    { label: 'Sessions', value: isLoading ? '—' : cigarSessions.length },
   ];
 
   const hasHighlights =
@@ -510,7 +522,7 @@ export default function CollectionHub() {
               icon={PipeIcon}
               label={t('hub.pipes')}
               value={isLoading ? '—' : pipes.length}
-              sub={t('hub.inCollection')}
+              sub="Pipe records"
               accent="#B48C4B"
             />
           ) : null}
@@ -519,7 +531,7 @@ export default function CollectionHub() {
               icon={Leaf}
               label={t('hub.blends')}
               value={isLoading ? '—' : blends.length}
-              sub={t('hub.trackedBlends')}
+              sub={isLoading ? '' : `${totalBlendOzDisplay} total`}
               accent="#6E8A57"
             />
           ) : null}
@@ -537,7 +549,7 @@ export default function CollectionHub() {
               icon={WhiskeyKeeperIcon}
               label={t('hub.whiskey')}
               value={isLoading ? '—' : bottles.length}
-              sub={t('hub.inCollection')}
+              sub={isLoading ? '' : `${metrics.totalBottleCount} bottles owned`}
               accent="#B66565"
             />
           ) : null}
@@ -546,16 +558,16 @@ export default function CollectionHub() {
               icon={Flame}
               label={t('hub.tastings')}
               value={isLoading ? '—' : tastings.length}
-              sub={t('hub.trackedTastings')}
+              sub="Tasting logs"
               accent="#A35050"
             />
           ) : null}
           {cigarOpenable ? (
             <StatCard
-              icon={Flame}
+              icon={Cigarette}
               label={t('hub.cigars')}
               value={isLoading ? '—' : cigars.length}
-              sub={t('hub.inHumidor')}
+              sub={isLoading ? '' : `${metrics.totalCigarSticks} sticks owned`}
               accent="#8C6B3F"
             />
           ) : null}
