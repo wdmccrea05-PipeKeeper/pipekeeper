@@ -52,8 +52,8 @@ const OPTIMIZE_SECTIONS = [
   },
   {
     key: 'collection_health',
-    emoji: '🏛️',
-    title: 'Collection Health',
+    emoji: '⚖️',
+    title: 'Collection Balance',
     desc: 'Diversity, balance, and composition across your collection',
   },
   {
@@ -1493,11 +1493,13 @@ export default function CuratorOptimizePanel({
             <button
               type="button"
               onClick={handleClose}
-              className="p-2 rounded-lg transition-all hover:opacity-80 flex-shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all hover:opacity-80 flex-shrink-0 text-xs font-medium"
               style={{ background: 'rgba(120,90,65,0.15)', border: '1px solid rgba(120,90,65,0.25)', color: 'rgba(224,216,200,0.6)' }}
-              aria-label="Close optimize panel"
+              aria-label="Switch to Curator chat"
             >
-              <X className="w-4 h-4" />
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Switch to Chat</span>
+              <X className="w-3.5 h-3.5 sm:hidden" />
             </button>
           )}
         </div>
