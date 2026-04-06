@@ -6,15 +6,18 @@ import {
   Info,
   CheckCircle2,
   X,
-  Zap,
-  Lightbulb,
   MessageCircle,
   ChevronRight,
-  Sparkles,
   Eye,
   HelpCircle,
   SplitSquareVertical,
   ExternalLink,
+  ShoppingCart,
+  RotateCcw,
+  Target,
+  Wine,
+  Database,
+  Heart,
 } from 'lucide-react';
 import {
   generateProactiveInsights,
@@ -46,6 +49,49 @@ import {
   getRecommendationClassBg,
 } from './recommendationActionTypes';
 
+// ─── Section definitions ──────────────────────────────────────────────────────
+
+const OPTIMIZE_SECTIONS = [
+  {
+    key: 'data_metadata',
+    emoji: '📊',
+    title: 'Data & Metadata',
+    desc: 'Missing fields, classification gaps, and valuation data',
+  },
+  {
+    key: 'collection_health',
+    emoji: '🏛️',
+    title: 'Collection Health',
+    desc: 'Diversity, balance, and composition across your collection',
+  },
+  {
+    key: 'utilization',
+    emoji: '🔄',
+    title: 'Utilization & Rotation',
+    desc: 'Underused items, aging opportunities, and rotation gaps',
+  },
+  {
+    key: 'purchase_restock',
+    emoji: '🛒',
+    title: 'Purchase & Restock',
+    desc: 'Low stock, wishlist promotions, and gap-filling next purchases',
+  },
+  {
+    key: 'specialization',
+    emoji: '🎯',
+    title: 'Specialization & Strategy',
+    desc: 'Pipe specialization suggestions and collection strategy',
+  },
+  {
+    key: 'pairing',
+    emoji: '🍷',
+    title: 'Pairing & Experience',
+    desc: 'Pairing coverage, session planning, and cross-module opportunities',
+  },
+];
+
+const DEFAULT_SECTION = 'collection_health';
+
 // ─── Module filter definitions ────────────────────────────────────────────────
 
 const MODULE_PILLS = [
@@ -61,36 +107,9 @@ const MODULE_PILLS = [
 function plural(count, singular, pluralForm) {
   return count === 1 ? singular : (pluralForm || singular + 's');
 }
-
-function has(count) {
-  return count === 1 ? 'has' : 'have';
-}
-
-function is(count) {
-  return count === 1 ? 'is' : 'are';
-}
-
-function uses(count) {
-  return count === 1 ? 'uses' : 'use';
-}
-
-function insightToCard(insight) {
-  return {
-    id: insight.id,
-    title: insight.title,
-    whatWeFound: insight.summary,
-    whyItMatters: insight.reason,
-    recommendedAction: insight.suggested_action,
-    severity: insight.severity,
-    scope: insight.scope,
-    module: null,
-    suggestions: insight.suggestions || [],
-    // All proactive insights are advisory — they surface awareness, not direct data fixes
-    recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
-    category: insight.category,
-    relatedItems: insight.related_items || [],
-  };
-}
+function has(count) { return count === 1 ? 'has' : 'have'; }
+function is(count) { return count === 1 ? 'is' : 'are'; }
+function uses(count) { return count === 1 ? 'uses' : 'use'; }
 
 function getModuleKey(card) {
   if (card.module) return card.module;
@@ -103,56 +122,21 @@ function getModuleKey(card) {
 
 function getModuleName(moduleKey) {
   switch (moduleKey) {
-    case 'pipekeeper':
-    case 'pipe': return 'PipeKeeper';
+    case 'pipekeeper': case 'pipe': return 'PipeKeeper';
     case 'tobacco': return 'your tobacco collection';
-    case 'cigarkeeper':
-    case 'cigar': return 'CigarKeeper';
-    case 'whiskeykeeper':
-    case 'whiskey': return 'WhiskeyKeeper';
+    case 'cigarkeeper': case 'cigar': return 'CigarKeeper';
+    case 'whiskeykeeper': case 'whiskey': return 'WhiskeyKeeper';
     default: return 'your collection';
   }
 }
 
 function getModuleRoute(moduleKey) {
   switch (moduleKey) {
-    case 'pipekeeper':
-    case 'pipe':
-    case 'tobacco': return createPageUrl('PipeKeeper');
-    case 'cigarkeeper':
-    case 'cigar': return createPageUrl('CigarKeeper');
-    case 'whiskeykeeper':
-    case 'whiskey': return createPageUrl('WhiskeyKeeper');
+    case 'pipekeeper': case 'pipe': case 'tobacco': return createPageUrl('PipeKeeper');
+    case 'cigarkeeper': case 'cigar': return createPageUrl('CigarKeeper');
+    case 'whiskeykeeper': case 'whiskey': return createPageUrl('WhiskeyKeeper');
     default: return null;
   }
-}
-
-function getConfirmationDetails(card) {
-  const moduleName = getModuleName(getModuleKey(card));
-  const isQuickWin = card.id?.startsWith('qw_');
-  const isReclassify = card.id?.startsWith('rc_');
-
-  let changes = [];
-  let affectedModule = moduleName;
-
-  if (isQuickWin || isReclassify) {
-    changes = [
-      `Open ${moduleName} to the relevant section`,
-      `Review and complete: ${card.recommendedAction}`,
-    ];
-  } else if (card.suggestions?.length > 0) {
-    changes = [
-      `Navigate to ${moduleName}`,
-      `Review the ${card.suggestions.length} specific suggestion${card.suggestions.length > 1 ? 's' : ''} listed`,
-    ];
-  } else {
-    changes = [
-      `Open ${moduleName}`,
-      `Apply the recommended action: ${card.recommendedAction}`,
-    ];
-  }
-
-  return { changes, affectedModule };
 }
 
 function severityColor(severity) {
@@ -173,20 +157,528 @@ function impactLabel(severity) {
   return 'Low';
 }
 
+/** Map a proactive insight category to a section key */
+function insightToSectionKey(insight) {
+  switch (insight.category) {
+    case INSIGHT_CATEGORIES.ROTATION:
+    case INSIGHT_CATEGORIES.USAGE_PATTERN:
+    case INSIGHT_CATEGORIES.AGING:
+      return 'utilization';
+    case INSIGHT_CATEGORIES.DIVERSITY:
+    case INSIGHT_CATEGORIES.COLLECTION_HEALTH:
+      return 'collection_health';
+    case INSIGHT_CATEGORIES.PAIRING:
+      return 'pairing';
+    case INSIGHT_CATEGORIES.INVENTORY:
+    case INSIGHT_CATEGORIES.ACQUISITION:
+      return 'purchase_restock';
+    case INSIGHT_CATEGORIES.VALUE:
+    case INSIGHT_CATEGORIES.MAINTENANCE:
+      return 'data_metadata';
+    default:
+      return DEFAULT_SECTION;
+  }
+}
+
+/** Convert a proactive insight to a card object */
+function insightToCard(insight) {
+  return {
+    id: insight.id,
+    title: insight.title,
+    whatWeFound: insight.summary,
+    whyItMatters: insight.reason,
+    recommendedAction: insight.suggested_action,
+    severity: insight.severity,
+    scope: insight.scope,
+    module: null,
+    suggestions: insight.suggestions || [],
+    recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
+    category: insight.category,
+    relatedItems: insight.related_items || [],
+    section: insightToSectionKey(insight),
+  };
+}
+
+// ─── Data & Metadata generators ───────────────────────────────────────────────
+
+function buildDataMetadataCards(pipes, blends, cigars, bottles) {
+  const cards = [];
+
+  // --- Pipes ---
+  const pipesNoPhoto = pipes.filter((p) => !p.photos?.length && !p.photo);
+  if (pipesNoPhoto.length > 0) {
+    cards.push({
+      id: 'qw_pipes_no_photo',
+      title: `${pipesNoPhoto.length} ${plural(pipesNoPhoto.length, 'Pipe')} Without Photos`,
+      whatWeFound: `${pipesNoPhoto.length} ${plural(pipesNoPhoto.length, 'pipe')} in your collection ${has(pipesNoPhoto.length)} no photos. Review & Apply Fix will open PipeKeeper so you can add them.`,
+      whyItMatters: 'Photos improve collection presentation, help the AI identification feature, and make records more useful when reviewing your collection.',
+      recommendedAction: 'Open PipeKeeper and add at least one photo per affected pipe. Each pipe benefits from a photo of the bowl and one of the full pipe.',
+      severity: INSIGHT_SEVERITY.LOW,
+      module: 'pipe',
+      section: 'data_metadata',
+      suggestions: pipesNoPhoto.slice(0, 5).map((p) => p.name || 'Unnamed Pipe'),
+      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+    });
+  }
+
+  const pipesNoShape = pipes.filter((p) => !p.shape && !p.pipe_shape);
+  if (pipesNoShape.length > 0) {
+    cards.push({
+      id: 'rc_pipe_shape',
+      title: `${pipesNoShape.length} ${plural(pipesNoShape.length, 'Pipe')} Missing Shape Classification`,
+      whatWeFound: `${pipesNoShape.length} ${plural(pipesNoShape.length, 'pipe')} ${is(pipesNoShape.length)} missing a shape classification. Shape affects pairing recommendations and session planning.`,
+      whyItMatters: 'Shape classification lets the Curator match pipes to appropriate tobacco types and session lengths. Billiards, bent pipes, and Canadians each have different characteristics.',
+      recommendedAction: 'Open PipeKeeper and assign the correct shape (billiard, bent, bulldog, Canadian, etc.) to each pipe. Review & Apply Fix navigates there.',
+      severity: INSIGHT_SEVERITY.LOW,
+      module: 'pipe',
+      section: 'data_metadata',
+      suggestions: pipesNoShape.slice(0, 5).map((p) => p.name || 'Unnamed Pipe'),
+      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+    });
+  }
+
+  const pipesGeneric = pipes.filter((p) => p.pipe_type === 'Other' || p.material === 'Other');
+  if (pipesGeneric.length > 0) {
+    cards.push({
+      id: 'rc_pipe_generic',
+      title: `${pipesGeneric.length} ${plural(pipesGeneric.length, 'Pipe')} Using Generic "Other" Classification`,
+      whatWeFound: `${pipesGeneric.length} ${plural(pipesGeneric.length, 'pipe')} ${uses(pipesGeneric.length)} a generic "Other" type or material. This reduces the Curator's ability to make specific recommendations.`,
+      whyItMatters: 'Specific material values (briar, meerschaum, clay, morta) enable better pairing and aging advice. "Other" is a placeholder that should be updated.',
+      recommendedAction: 'Update these pipes with more specific type or material values. Review & Apply Fix opens PipeKeeper.',
+      severity: INSIGHT_SEVERITY.LOW,
+      module: 'pipe',
+      section: 'data_metadata',
+      suggestions: pipesGeneric.slice(0, 5).map((p) => p.name || 'Unnamed Pipe'),
+      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+    });
+  }
+
+  // --- Blends ---
+  const blendsNoType = blends.filter((b) => !b.blend_type && !b.blend_family);
+  if (blendsNoType.length > 0) {
+    cards.push({
+      id: 'qw_blends_no_type',
+      title: `${blendsNoType.length} ${plural(blendsNoType.length, 'Blend')} Without Family Classification`,
+      whatWeFound: `${blendsNoType.length} ${plural(blendsNoType.length, 'blend')} ${has(blendsNoType.length)} no blend family assigned. Examples: ${blendsNoType.slice(0, 3).map((b) => b.name || 'Unnamed').join(', ')}${blendsNoType.length > 3 ? ` and ${blendsNoType.length - 3} more` : ''}.`,
+      whyItMatters: 'Blend family (Virginia, Burley, English/Latakia, Aromatic, etc.) is required for diversity analysis, pipe pairing suggestions, and rotation planning.',
+      recommendedAction: 'Applying this opens PipeKeeper where you can assign blend families to the affected blends. Review Details asks the Curator to help classify them.',
+      severity: INSIGHT_SEVERITY.MEDIUM,
+      module: 'tobacco',
+      section: 'data_metadata',
+      suggestions: blendsNoType.slice(0, 5).map((b) => b.name || 'Unnamed Blend'),
+      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+    });
+  }
+
+  const blendsUnknown = blends.filter((b) => b.blend_type === 'Unknown' || b.blend_family === 'Unknown');
+  if (blendsUnknown.length > 0) {
+    cards.push({
+      id: 'rc_blend_unknown',
+      title: `${blendsUnknown.length} ${plural(blendsUnknown.length, 'Blend')} Classified as "Unknown"`,
+      whatWeFound: `${blendsUnknown.length} ${plural(blendsUnknown.length, 'blend')} ${is(blendsUnknown.length)} classified as "Unknown" type. This is a placeholder that weakens diversity calculations and pairing suggestions.`,
+      whyItMatters: '"Unknown" classifications are treated as unclassified — excluded from diversity scoring and pairing recommendations, making your collection appear less rich than it is.',
+      recommendedAction: 'Research and update the blend family for these blends. Review Details asks the Curator to help identify the correct type for each one.',
+      severity: INSIGHT_SEVERITY.MEDIUM,
+      module: 'tobacco',
+      section: 'data_metadata',
+      suggestions: blendsUnknown.slice(0, 5).map((b) => b.name || 'Unnamed Blend'),
+      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+    });
+  }
+
+  const blendsNoStrength = blends.filter((b) => !b.strength && !b.nicotine_strength);
+  if (blendsNoStrength.length > 0 && blends.length >= 3) {
+    cards.push({
+      id: 'rc_blend_no_strength',
+      title: `${blendsNoStrength.length} ${plural(blendsNoStrength.length, 'Blend')} Missing Strength Rating`,
+      whatWeFound: `${blendsNoStrength.length} ${plural(blendsNoStrength.length, 'blend')} ${has(blendsNoStrength.length)} no strength rating. Adding strength data enables better session matching and Curator recommendations.`,
+      whyItMatters: 'Strength data (mild, medium, full) lets the Curator suggest appropriate blends for different session types and helps build your preference profile.',
+      recommendedAction: 'Open PipeKeeper and add a strength rating to each affected blend. Review & Apply Fix navigates there.',
+      severity: INSIGHT_SEVERITY.LOW,
+      module: 'tobacco',
+      section: 'data_metadata',
+      suggestions: blendsNoStrength.slice(0, 5).map((b) => b.name || 'Unnamed Blend'),
+      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+    });
+  }
+
+  // --- Cigars ---
+  const cigarsNoSize = cigars.filter((c) => !c.vitola && !c.size && !c.ring_gauge);
+  if (cigarsNoSize.length > 0) {
+    cards.push({
+      id: 'qw_cigars_no_size',
+      title: `${cigarsNoSize.length} ${plural(cigarsNoSize.length, 'Cigar')} Missing Size Details`,
+      whatWeFound: `${cigarsNoSize.length} ${plural(cigarsNoSize.length, 'cigar')} ${is(cigarsNoSize.length)} missing vitola or size information. Vitola and ring gauge are required for proper categorization.`,
+      whyItMatters: 'Size details enable better categorization and balance analysis. They also affect smoke time estimates and pairing suggestions for sessions.',
+      recommendedAction: 'Add vitola or size data to each affected cigar. Review & Apply Fix opens CigarKeeper.',
+      severity: INSIGHT_SEVERITY.LOW,
+      module: 'cigar',
+      section: 'data_metadata',
+      suggestions: cigarsNoSize.slice(0, 5).map((c) => c.name || 'Unnamed Cigar'),
+      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+    });
+  }
+
+  const cigarsNoWrapper = cigars.filter((c) => !c.wrapper && !c.wrapper_country);
+  if (cigarsNoWrapper.length > 0) {
+    cards.push({
+      id: 'rc_cigar_wrapper',
+      title: `${cigarsNoWrapper.length} ${plural(cigarsNoWrapper.length, 'Cigar')} Missing Wrapper Details`,
+      whatWeFound: `${cigarsNoWrapper.length} ${plural(cigarsNoWrapper.length, 'cigar')} ${is(cigarsNoWrapper.length)} missing wrapper leaf or country of origin — key fields for flavor profile analysis.`,
+      whyItMatters: 'Wrapper information drives flavor profile analysis, regional pairing suggestions, and diversity scoring. Colorado Claro, Maduro, and Natural wrappers have very different profiles.',
+      recommendedAction: 'Add wrapper details to each affected cigar. Review & Apply Fix opens CigarKeeper.',
+      severity: INSIGHT_SEVERITY.LOW,
+      module: 'cigar',
+      section: 'data_metadata',
+      suggestions: cigarsNoWrapper.slice(0, 5).map((c) => c.name || 'Unnamed Cigar'),
+      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+    });
+  }
+
+  // --- Bottles ---
+  const bottlesNoType = bottles.filter(
+    (b) => !b.whiskey_type && !b.spirit_type && !b.category && !b.type
+  );
+  if (bottlesNoType.length > 0) {
+    cards.push({
+      id: 'qw_bottles_no_type',
+      title: `${bottlesNoType.length} ${plural(bottlesNoType.length, 'Bottle')} Without Spirit Type`,
+      whatWeFound: `${bottlesNoType.length} ${plural(bottlesNoType.length, 'bottle')} ${is(bottlesNoType.length)} missing spirit type. Examples: ${bottlesNoType.slice(0, 3).map((b) => b.name || 'Unnamed').join(', ')}${bottlesNoType.length > 3 ? ` and ${bottlesNoType.length - 3} more` : ''}.`,
+      whyItMatters: 'Spirit type (Scotch, Bourbon, Irish, Japanese, etc.) is essential for collection diversity analysis, flavor profiling, and cross-module pairing with cigars or tobacco.',
+      recommendedAction: 'Classify each bottle with its spirit type. Review & Apply Fix opens WhiskeyKeeper.',
+      severity: INSIGHT_SEVERITY.LOW,
+      module: 'whiskey',
+      section: 'data_metadata',
+      suggestions: bottlesNoType.slice(0, 5).map((b) => b.name || 'Unnamed Bottle'),
+      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+    });
+  }
+
+  const bottlesNoDistillery = bottles.filter((b) => !b.distillery && !b.producer && !b.brand);
+  if (bottlesNoDistillery.length > 0) {
+    cards.push({
+      id: 'rc_bottle_distillery',
+      title: `${bottlesNoDistillery.length} ${plural(bottlesNoDistillery.length, 'Bottle')} Missing Producer/Distillery`,
+      whatWeFound: `${bottlesNoDistillery.length} ${plural(bottlesNoDistillery.length, 'bottle')} ${is(bottlesNoDistillery.length)} missing distillery or producer details. This weakens your whiskey collection profile.`,
+      whyItMatters: 'Distillery data enables regional analysis, helps build a producer-level view of your collection, and improves the accuracy of pairing and acquisition recommendations.',
+      recommendedAction: 'Add the distillery or producer name for each bottle. Review & Apply Fix opens WhiskeyKeeper.',
+      severity: INSIGHT_SEVERITY.LOW,
+      module: 'whiskey',
+      section: 'data_metadata',
+      suggestions: bottlesNoDistillery.slice(0, 5).map((b) => b.name || 'Unnamed Bottle'),
+      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+    });
+  }
+
+  const bottlesNoValue = bottles.filter(
+    (b) => !b.purchase_price && !b.retail_price && !b.aftermarket_price && !b.collector_value
+  );
+  if (bottlesNoValue.length > 0) {
+    cards.push({
+      id: 'rc_bottle_no_value',
+      title: `${bottlesNoValue.length} ${plural(bottlesNoValue.length, 'Bottle')} Missing Valuation Data`,
+      whatWeFound: `${bottlesNoValue.length} ${plural(bottlesNoValue.length, 'bottle')} ${has(bottlesNoValue.length)} no price or value data (no purchase price, retail price, or collector value). Portfolio valuation reports are incomplete without this.`,
+      whyItMatters: 'Valuation data enables portfolio analysis, insurance estimates, and identification of which bottles represent the highest value in your collection.',
+      recommendedAction: 'Open WhiskeyKeeper and add at least a purchase price for each affected bottle. Review & Apply Fix navigates there.',
+      severity: INSIGHT_SEVERITY.LOW,
+      module: 'whiskey',
+      section: 'data_metadata',
+      suggestions: bottlesNoValue.slice(0, 5).map((b) => b.name || 'Unnamed Bottle'),
+      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+    });
+  }
+
+  return cards;
+}
+
+// ─── Restock & low-stock generators ──────────────────────────────────────────
+
+function buildRestockCards(blends, bottles) {
+  const cards = [];
+
+  const lowBlends = blends.filter((b) => {
+    const totalOz =
+      Number(b.tin_total_quantity_oz || 0) +
+      Number(b.bulk_total_quantity_oz || 0) +
+      Number(b.pouch_total_quantity_oz || 0);
+    return totalOz > 0 && totalOz < 2;
+  });
+  if (lowBlends.length > 0) {
+    cards.push({
+      id: 'rst_low_blend_stock',
+      title: `${lowBlends.length} ${plural(lowBlends.length, 'Blend')} Running Low (Under 2oz)`,
+      whatWeFound: `${lowBlends.length} ${plural(lowBlends.length, 'blend')} in your cellar ${has(lowBlends.length)} under 2oz remaining: ${lowBlends.slice(0, 3).map((b) => b.name).join(', ')}${lowBlends.length > 3 ? ` and ${lowBlends.length - 3} more` : ''}.`,
+      whyItMatters: 'Running out of preferred blends without a plan breaks your rotation. Early action is especially important for discontinued or seasonal blends.',
+      recommendedAction: 'View Items opens PipeKeeper so you can review these blends and add restock reminders or shopping list entries.',
+      severity: INSIGHT_SEVERITY.MEDIUM,
+      module: 'tobacco',
+      section: 'purchase_restock',
+      suggestions: lowBlends.slice(0, 5).map((b) => {
+        const oz = (
+          Number(b.tin_total_quantity_oz || 0) + Number(b.bulk_total_quantity_oz || 0)
+        ).toFixed(1);
+        return `${b.name} — ${oz}oz remaining`;
+      }),
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
+    });
+  }
+
+  const openNoBackup = blends.filter((b) => {
+    const hasOpen =
+      Number(b.tin_tins_open || 0) > 0 || Number(b.bulk_open || 0) > 0;
+    const hasCellared =
+      Number(b.tin_tins_cellared || 0) > 0 || Number(b.bulk_cellared || 0) > 0;
+    return hasOpen && !hasCellared;
+  });
+  if (openNoBackup.length > 0) {
+    cards.push({
+      id: 'rst_open_no_cellar',
+      title: `${openNoBackup.length} Open ${plural(openNoBackup.length, 'Blend')} Without Cellar Backup`,
+      whatWeFound: `${openNoBackup.length} ${plural(openNoBackup.length, 'blend')} ${has(openNoBackup.length)} an open tin or bulk pouch but no cellared backup. Once this runs out, there is no ready replacement.`,
+      whyItMatters: 'Open blends with no cellared reserve are at risk of depleting completely. Cellar depth protects your rotation and provides aging stock for long-term enjoyment.',
+      recommendedAction: 'View Items opens PipeKeeper so you can see which blends need backup. Consider adding a tin or bulk supply to the cellar for each.',
+      severity: INSIGHT_SEVERITY.MEDIUM,
+      module: 'tobacco',
+      section: 'purchase_restock',
+      suggestions: openNoBackup.slice(0, 5).map((b) => b.name),
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
+    });
+  }
+
+  return cards;
+}
+
+// ─── Wishlist promotion generators ───────────────────────────────────────────
+
+function buildWishlistPromotionCards(wantListItems, blends, bottles, pipes) {
+  const cards = [];
+  const wishlistItems = (wantListItems || []).filter((i) => i.category === 'wishlist');
+  if (wishlistItems.length === 0) return cards;
+
+  const blendFamilies = new Set(
+    blends.map((b) => b.blend_type || b.blend_family).filter(Boolean)
+  );
+  const bottleTypes = new Set(
+    bottles.map((b) => b.whiskey_type || b.spirit_type || b.type).filter(Boolean)
+  );
+
+  const blendWishlist = wishlistItems.filter(
+    (i) => i.item_type === 'blend' || i.item_type === 'tobacco_tin' || i.item_type === 'tobacco_bulk'
+  );
+  const bottleWishlist = wishlistItems.filter((i) => i.item_type === 'bottle');
+  const pipeWishlist = wishlistItems.filter((i) => i.item_type === 'pipe');
+
+  if (blendWishlist.length > 0) {
+    const hasBlendDiversityGap = blendFamilies.size < 3 && blends.length >= 3;
+    const gapNote = hasBlendDiversityGap
+      ? ` Your cellar has limited blend diversity (${blendFamilies.size} ${plural(blendFamilies.size, 'family', 'families')} represented) — these wishlist blends could improve coverage.`
+      : '';
+    cards.push({
+      id: 'wl_blend_wishlist',
+      title: `${blendWishlist.length} Wishlist ${plural(blendWishlist.length, 'Blend')} Ready to Prioritize`,
+      whatWeFound: `You have ${blendWishlist.length} ${plural(blendWishlist.length, 'blend')} on your wishlist.${gapNote} Approve Changes opens your Want List where you can move items to shopping list.`,
+      whyItMatters: hasBlendDiversityGap
+        ? 'Filling blend diversity gaps improves your rotation variety, pairing options, and the quality of Curator recommendations.'
+        : 'Keeping your wishlist and shopping list current ensures your acquisition pipeline reflects your actual priorities.',
+      recommendedAction: `Review these ${blendWishlist.length} wishlist ${plural(blendWishlist.length, 'blend')} and move gap-filling or high-priority candidates to your shopping list. Approve Changes opens your Want List.`,
+      severity: hasBlendDiversityGap ? INSIGHT_SEVERITY.MEDIUM : INSIGHT_SEVERITY.LOW,
+      module: 'tobacco',
+      section: 'purchase_restock',
+      suggestions: blendWishlist.slice(0, 5).map((i) => i.name),
+      recommendationClass: hasBlendDiversityGap
+        ? RECOMMENDATION_CLASS.REVIEW_REQUIRED
+        : RECOMMENDATION_CLASS.ADVISORY,
+      navigateTo: createPageUrl('WantList'),
+    });
+  }
+
+  if (bottleWishlist.length > 0) {
+    const hasBottleTypeGap = bottleTypes.size < 3 && bottles.length >= 3;
+    const gapNote = hasBottleTypeGap
+      ? ` Your whiskey collection has limited type diversity (${bottleTypes.size} ${plural(bottleTypes.size, 'type')} represented) — these bottles could fill gaps.`
+      : '';
+    cards.push({
+      id: 'wl_bottle_wishlist',
+      title: `${bottleWishlist.length} Wishlist ${plural(bottleWishlist.length, 'Bottle')} Ready to Prioritize`,
+      whatWeFound: `You have ${bottleWishlist.length} ${plural(bottleWishlist.length, 'whiskey bottle')} on your wishlist.${gapNote} Approve Changes opens your Want List.`,
+      whyItMatters: hasBottleTypeGap
+        ? 'Filling whiskey type gaps broadens your tasting and pairing options, especially for cross-module sessions with cigars.'
+        : 'A current shopping list signals active acquisition intent and helps you plan purchases strategically.',
+      recommendedAction: `Review these ${bottleWishlist.length} wishlist ${plural(bottleWishlist.length, 'bottle')} and move appropriate ones to your shopping list. Approve Changes opens your Want List.`,
+      severity: hasBottleTypeGap ? INSIGHT_SEVERITY.MEDIUM : INSIGHT_SEVERITY.LOW,
+      module: 'whiskey',
+      section: 'purchase_restock',
+      suggestions: bottleWishlist.slice(0, 5).map((i) => i.name),
+      recommendationClass: hasBottleTypeGap
+        ? RECOMMENDATION_CLASS.REVIEW_REQUIRED
+        : RECOMMENDATION_CLASS.ADVISORY,
+      navigateTo: createPageUrl('WantList'),
+    });
+  }
+
+  if (pipeWishlist.length > 0) {
+    cards.push({
+      id: 'wl_pipe_wishlist',
+      title: `${pipeWishlist.length} Wishlist ${plural(pipeWishlist.length, 'Pipe')} Ready to Review`,
+      whatWeFound: `You have ${pipeWishlist.length} ${plural(pipeWishlist.length, 'pipe')} on your wishlist. Acknowledge or Approve Changes opens your Want List to review and promote items.`,
+      whyItMatters: 'Reviewing your pipe wishlist periodically keeps your acquisition strategy aligned with your collection goals and budget.',
+      recommendedAction: `Review these ${pipeWishlist.length} wishlist ${plural(pipeWishlist.length, 'pipe')} and move high-priority ones to your shopping list. View Items opens your Want List.`,
+      severity: INSIGHT_SEVERITY.LOW,
+      module: 'pipe',
+      section: 'purchase_restock',
+      suggestions: pipeWishlist.slice(0, 5).map((i) => i.name),
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
+      navigateTo: createPageUrl('WantList'),
+    });
+  }
+
+  return cards;
+}
+
+// ─── Next purchase / gap-filler generators ────────────────────────────────────
+
+function buildNextPurchaseCards(blends, bottles) {
+  const cards = [];
+
+  const COMMON_BLEND_FAMILIES = [
+    { key: 'virginia', label: 'Virginia' },
+    { key: 'burley', label: 'Burley' },
+    { key: 'english', label: 'English/Latakia' },
+    { key: 'aromatic', label: 'Aromatic' },
+  ];
+
+  if (blends.length >= 3) {
+    const existingFamilies = blends.map((b) =>
+      (b.blend_type || b.blend_family || '').toLowerCase()
+    );
+    const missingFamilies = COMMON_BLEND_FAMILIES.filter(
+      (f) => !existingFamilies.some((ef) => ef.includes(f.key))
+    );
+    if (missingFamilies.length > 0) {
+      const familyCount = new Set(blends.map((b) => b.blend_type || b.blend_family).filter(Boolean)).size;
+      cards.push({
+        id: 'np_blend_family_gaps',
+        title: 'Blend Family Gaps in Your Cellar',
+        whatWeFound: `Your cellar is missing ${missingFamilies.length} common blend ${plural(missingFamilies.length, 'family', 'families')}: ${missingFamilies.map((f) => f.label).join(', ')}. You currently have ${familyCount} ${plural(familyCount, 'family', 'families')} represented.`,
+        whyItMatters: 'A balanced cellar with diverse blend families gives you more pairing options, better rotation variety, and richer Curator recommendations. Each family has a distinct character.',
+        recommendedAction: 'Consider adding a blend from each missing family. Ask Curator will suggest specific blends that complement your current collection profile.',
+        severity: INSIGHT_SEVERITY.LOW,
+        module: 'tobacco',
+        section: 'purchase_restock',
+        suggestions: missingFamilies.map((f) => `Add a ${f.label} blend to fill this gap`),
+        recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
+      });
+    }
+  }
+
+  const COMMON_WHISKEY_TYPES = [
+    { key: 'scotch', label: 'Scotch' },
+    { key: 'bourbon', label: 'Bourbon' },
+    { key: 'irish', label: 'Irish' },
+    { key: 'japanese', label: 'Japanese' },
+  ];
+
+  if (bottles.length >= 3) {
+    const existingTypes = bottles.map((b) =>
+      (b.whiskey_type || b.spirit_type || b.type || '').toLowerCase()
+    );
+    const missingTypes = COMMON_WHISKEY_TYPES.filter(
+      (t) => !existingTypes.some((et) => et.includes(t.key))
+    );
+    if (missingTypes.length > 0 && missingTypes.length < COMMON_WHISKEY_TYPES.length) {
+      cards.push({
+        id: 'np_whiskey_type_gaps',
+        title: 'Whiskey Type Gaps in Your Collection',
+        whatWeFound: `Your whiskey collection is missing ${missingTypes.length} common ${plural(missingTypes.length, 'type')}: ${missingTypes.map((t) => t.label).join(', ')}. These types are not currently owned.`,
+        whyItMatters: 'Different whiskey types pair differently with cigars and tobacco. Coverage across major regions gives you more options for cross-module pairing sessions.',
+        recommendedAction: 'Consider adding a bottle from a missing type. Ask Curator provides specific recommendations based on your collection profile.',
+        severity: INSIGHT_SEVERITY.LOW,
+        module: 'whiskey',
+        section: 'purchase_restock',
+        suggestions: missingTypes.map((t) => `Add a ${t.label} bottle (not currently owned)`),
+        recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
+      });
+    }
+  }
+
+  return cards;
+}
+
+// ─── Specialization generators ────────────────────────────────────────────────
+
+function buildSpecializationCards(pipes) {
+  const cards = [];
+  if (pipes.length === 0) return cards;
+
+  const pipesWithoutSpecialization = pipes.filter(
+    (p) => !p.focus || (Array.isArray(p.focus) && p.focus.length === 0)
+  );
+
+  if (pipesWithoutSpecialization.length > 0) {
+    cards.push({
+      id: 'spec_pipes_no_focus',
+      title: `${pipesWithoutSpecialization.length} ${plural(pipesWithoutSpecialization.length, 'Pipe')} Without Specialization`,
+      whatWeFound: `${pipesWithoutSpecialization.length} ${plural(pipesWithoutSpecialization.length, 'pipe')} ${has(pipesWithoutSpecialization.length)} no specialization set. Treat Individually lets you review and assign a focus for each one based on how you use it.`,
+      whyItMatters: 'Pipe specialization (Aromatic, English, Virginia, etc.) guides pairing recommendations, session planning, and collection strategy. It significantly improves Curator suggestion quality.',
+      recommendedAction: 'Review each pipe and assign a specialization that reflects the tobacco types you enjoy in it. Treat Individually reviews each pipe one at a time.',
+      severity: INSIGHT_SEVERITY.LOW,
+      module: 'pipe',
+      section: 'specialization',
+      suggestions: [],
+      recommendationClass: RECOMMENDATION_CLASS.MULTI_PATH,
+      candidateItems: pipesWithoutSpecialization.map((p) => ({
+        id: p.id,
+        name: p.name || 'Unnamed Pipe',
+        type: 'Pipe',
+        currentSpecialization:
+          Array.isArray(p.focus) ? p.focus.join(', ') : (p.focus || null),
+        suggestedSpecialization: null,
+        rationale:
+          'No specialization is currently set. Use the pipe detail page to assign a focus based on the tobacco types you enjoy in this pipe.',
+        detailUrl: createPageUrl(`PipeDetail?id=${encodeURIComponent(p.id)}`),
+      })),
+    });
+  }
+
+  return cards;
+}
+
+// ─── Confirmation details builder ─────────────────────────────────────────────
+
+function getConfirmationDetails(card) {
+  const moduleName = getModuleName(getModuleKey(card));
+  let changes = [];
+
+  if (card.navigateTo) {
+    changes = [
+      'Open your Want List to review and prioritize wishlist items',
+      'Move appropriate items from wishlist to shopping list',
+    ];
+  } else if (card.suggestions?.length > 0) {
+    changes = [
+      `Navigate to ${moduleName}`,
+      `Review the ${card.suggestions.length} specific ${plural(card.suggestions.length, 'item')} listed`,
+    ];
+  } else {
+    changes = [
+      `Open ${moduleName}`,
+      `Apply the recommended action: ${card.recommendedAction}`,
+    ];
+  }
+
+  return { changes, affectedModule: card.navigateTo ? 'Want List' : moduleName };
+}
+
 // ─── RecommendationCard ───────────────────────────────────────────────────────
 
 function RecommendationCard({
   card,
-  // AUTO_FIX handlers
   onApplyFix,
   onReviewDetails,
-  // ADVISORY handlers
   onAcknowledge,
   onViewItems,
-  // MULTI_PATH handlers
   onAskForMoreInfo,
   onTreatIndividually,
-  // Shared
   onAskCurator,
 }) {
   const [localAcknowledged, setLocalAcknowledged] = useState(false);
@@ -203,10 +695,7 @@ function RecommendationCard({
     return (
       <div
         className="rounded-2xl p-4 flex items-center justify-between gap-3"
-        style={{
-          background: 'rgba(20,14,10,0.5)',
-          border: '1px solid rgba(140,105,65,0.1)',
-        }}
+        style={{ background: 'rgba(20,14,10,0.5)', border: '1px solid rgba(140,105,65,0.1)' }}
       >
         <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(224,216,200,0.45)' }}>
           <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(74,124,92,0.6)' }} />
@@ -253,7 +742,6 @@ function RecommendationCard({
             >
               {card.title}
             </h3>
-            {/* Recommendation type badge */}
             {classLabel && (
               <span
                 className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full mt-1"
@@ -264,10 +752,10 @@ function RecommendationCard({
             )}
           </div>
         </div>
-        {/* Impact badge */}
         <span
           className="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-lg flex-shrink-0"
           style={{ background: bg, color, border: `1px solid ${color}40` }}
+          aria-label={`${impact} impact`}
         >
           {impact} Impact
         </span>
@@ -275,133 +763,81 @@ function RecommendationCard({
 
       {/* What We Found */}
       <div className="space-y-1.5">
-        <p
-          className="text-[11px] font-bold uppercase tracking-widest"
-          style={{ color: 'rgba(180,140,75,0.7)' }}
-        >
+        <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.7)' }}>
           What We Found
         </p>
-        <p
-          className="text-sm sm:text-base leading-relaxed"
-          style={{ color: 'rgba(240,230,210,0.9)' }}
-        >
+        <p className="text-sm sm:text-base leading-relaxed" style={{ color: 'rgba(240,230,210,0.9)' }}>
           {card.whatWeFound}
         </p>
       </div>
 
       {/* Why It Matters */}
-      {card.whyItMatters ? (
+      {card.whyItMatters && (
         <div className="space-y-1.5">
-          <p
-            className="text-[11px] font-bold uppercase tracking-widest"
-            style={{ color: 'rgba(180,140,75,0.7)' }}
-          >
+          <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.7)' }}>
             Why It Matters
           </p>
-          <p
-            className="text-sm sm:text-base leading-relaxed"
-            style={{ color: 'rgba(224,216,200,0.8)' }}
-          >
+          <p className="text-sm sm:text-base leading-relaxed" style={{ color: 'rgba(224,216,200,0.8)' }}>
             {card.whyItMatters}
           </p>
         </div>
-      ) : null}
+      )}
 
       {/* Recommended Action */}
       <div
         className="p-4 rounded-xl space-y-1.5"
-        style={{
-          background: 'rgba(180,140,75,0.07)',
-          border: '1px solid rgba(180,140,75,0.18)',
-        }}
+        style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.18)' }}
       >
-        <p
-          className="text-[11px] font-bold uppercase tracking-widest"
-          style={{ color: 'rgba(180,140,75,0.7)' }}
-        >
+        <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.7)' }}>
           Recommended Action
         </p>
-        <p
-          className="text-sm sm:text-base leading-relaxed font-medium"
-          style={{ color: '#F5F1E7' }}
-        >
+        <p className="text-sm sm:text-base leading-relaxed font-medium" style={{ color: '#F5F1E7' }}>
           {card.recommendedAction}
         </p>
       </div>
 
-      {/* Specific Suggestions */}
-      {card.suggestions?.length > 0 ? (
+      {/* Specific items identified */}
+      {card.suggestions?.length > 0 && (
         <div className="space-y-2">
-          <p
-            className="text-[11px] font-bold uppercase tracking-widest"
-            style={{ color: 'rgba(180,140,75,0.7)' }}
-          >
-            Specific Suggestions
+          <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.7)' }}>
+            {card.suggestions.length === 1 ? '1 Item' : `${card.suggestions.length} Items`} Identified
           </p>
           <ul className="space-y-1.5">
             {card.suggestions.map((s, i) => (
-              <li
-                key={i}
-                className="flex items-center gap-2 text-sm"
-                style={{ color: 'rgba(224,216,200,0.85)' }}
-              >
+              <li key={i} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(224,216,200,0.85)' }}>
                 <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'rgba(180,140,75,0.6)' }} />
                 {s}
               </li>
             ))}
           </ul>
         </div>
-      ) : null}
+      )}
 
-      {/* ── Action Buttons — vary by recommendation class ────────────────── */}
+      {/* ── Action Buttons ── */}
       {recClass === RECOMMENDATION_CLASS.AUTO_FIX && (
         <>
           <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
-            <button
-              type="button"
-              onClick={onApplyFix}
-              title="Opens the relevant module — apply the fix there"
+            <button type="button" onClick={onApplyFix}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(74,124,92,0.4), rgba(74,124,92,0.22))',
-                border: '1px solid rgba(74,124,92,0.55)',
-                color: '#6aab80',
-              }}
+              style={{ background: 'linear-gradient(135deg, rgba(74,124,92,0.4), rgba(74,124,92,0.22))', border: '1px solid rgba(74,124,92,0.55)', color: '#6aab80' }}
             >
-              <span>✅</span>
-              Review &amp; Apply Fix
+              <span>✅</span> Review &amp; Apply Fix
             </button>
-            <button
-              type="button"
-              onClick={onReviewDetails}
-              title="Ask Curator for a detailed explanation of this recommendation"
+            <button type="button" onClick={onReviewDetails}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))',
-                border: '1px solid rgba(74,124,156,0.45)',
-                color: '#6aabc0',
-              }}
+              style={{ background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))', border: '1px solid rgba(74,124,156,0.45)', color: '#6aabc0' }}
             >
-              <Eye className="w-4 h-4" />
-              Review Details
+              <Eye className="w-4 h-4" /> Review Details
             </button>
-            <button
-              type="button"
-              onClick={onAskCurator}
-              title="Open a conversation about this recommendation"
+            <button type="button" onClick={onAskCurator}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(139,94,58,0.3), rgba(100,65,40,0.18))',
-                border: '1px solid rgba(139,94,58,0.45)',
-                color: '#D4956A',
-              }}
+              style={{ background: 'linear-gradient(135deg, rgba(139,94,58,0.3), rgba(100,65,40,0.18))', border: '1px solid rgba(139,94,58,0.45)', color: '#D4956A' }}
             >
-              <MessageCircle className="w-4 h-4" />
-              Ask Curator
+              <MessageCircle className="w-4 h-4" /> Ask Curator
             </button>
           </div>
           <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
-            Review &amp; Apply Fix navigates to the relevant module where you can complete the change. Review Details asks the Curator to explain what will change before you act.
+            Review &amp; Apply Fix navigates to the relevant module where you complete the change. Review Details asks Curator to explain what will change before you act.
           </p>
         </>
       )}
@@ -409,51 +845,27 @@ function RecommendationCard({
       {recClass === RECOMMENDATION_CLASS.ADVISORY && (
         <>
           <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
-            <button
-              type="button"
-              onClick={() => { setLocalAcknowledged(true); if (onAcknowledge) onAcknowledge(card); }}
-              title="Mark this insight as reviewed — no data will change"
+            <button type="button" onClick={() => { setLocalAcknowledged(true); if (onAcknowledge) onAcknowledge(card); }}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(74,124,92,0.35), rgba(74,124,92,0.18))',
-                border: '1px solid rgba(74,124,92,0.5)',
-                color: '#6aab80',
-              }}
+              style={{ background: 'linear-gradient(135deg, rgba(74,124,92,0.35), rgba(74,124,92,0.18))', border: '1px solid rgba(74,124,92,0.5)', color: '#6aab80' }}
             >
-              <CheckCircle2 className="w-4 h-4" />
-              Acknowledge
+              <CheckCircle2 className="w-4 h-4" /> Acknowledge
             </button>
-            <button
-              type="button"
-              onClick={onViewItems}
-              title="Open the relevant section of your collection"
+            <button type="button" onClick={onViewItems}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))',
-                border: '1px solid rgba(74,124,156,0.45)',
-                color: '#6aabc0',
-              }}
+              style={{ background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))', border: '1px solid rgba(74,124,156,0.45)', color: '#6aabc0' }}
             >
-              <Eye className="w-4 h-4" />
-              View Items
+              <Eye className="w-4 h-4" /> View Items
             </button>
-            <button
-              type="button"
-              onClick={onAskCurator}
-              title="Discuss this insight with the Curator"
+            <button type="button" onClick={onAskCurator}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(139,94,58,0.3), rgba(100,65,40,0.18))',
-                border: '1px solid rgba(139,94,58,0.45)',
-                color: '#D4956A',
-              }}
+              style={{ background: 'linear-gradient(135deg, rgba(139,94,58,0.3), rgba(100,65,40,0.18))', border: '1px solid rgba(139,94,58,0.45)', color: '#D4956A' }}
             >
-              <MessageCircle className="w-4 h-4" />
-              Ask Curator
+              <MessageCircle className="w-4 h-4" /> Ask Curator
             </button>
           </div>
           <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
-            Acknowledge marks this insight as reviewed — no data in your collection will change. View Items opens the relevant module so you can act on your own terms.
+            Acknowledge marks this insight as reviewed — no data changes. View Items opens the relevant module so you can act on your own terms.
           </p>
         </>
       )}
@@ -461,47 +873,23 @@ function RecommendationCard({
       {recClass === RECOMMENDATION_CLASS.MULTI_PATH && (
         <>
           <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
-            <button
-              type="button"
-              onClick={() => { setLocalAcknowledged(true); if (onAcknowledge) onAcknowledge(card); }}
-              title="Defer this recommendation without taking action"
+            <button type="button" onClick={() => { setLocalAcknowledged(true); if (onAcknowledge) onAcknowledge(card); }}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(80,65,50,0.35), rgba(65,50,38,0.2))',
-                border: '1px solid rgba(120,90,65,0.45)',
-                color: 'rgba(224,200,170,0.8)',
-              }}
+              style={{ background: 'linear-gradient(135deg, rgba(80,65,50,0.35), rgba(65,50,38,0.2))', border: '1px solid rgba(120,90,65,0.45)', color: 'rgba(224,200,170,0.8)' }}
             >
-              <CheckCircle2 className="w-4 h-4" />
-              Acknowledge
+              <CheckCircle2 className="w-4 h-4" /> Acknowledge
             </button>
-            <button
-              type="button"
-              onClick={onAskForMoreInfo}
-              title="Ask Curator to explain the rationale and evidence behind this suggestion"
+            <button type="button" onClick={onAskForMoreInfo}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))',
-                border: '1px solid rgba(74,124,156,0.45)',
-                color: '#6aabc0',
-              }}
+              style={{ background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))', border: '1px solid rgba(74,124,156,0.45)', color: '#6aabc0' }}
             >
-              <HelpCircle className="w-4 h-4" />
-              Ask for More Info
+              <HelpCircle className="w-4 h-4" /> Ask for More Info
             </button>
-            <button
-              type="button"
-              onClick={onTreatIndividually}
-              title="Review and decide on each item one by one"
+            <button type="button" onClick={onTreatIndividually}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(139,94,58,0.35), rgba(100,65,40,0.2))',
-                border: '1px solid rgba(139,94,58,0.5)',
-                color: '#D4956A',
-              }}
+              style={{ background: 'linear-gradient(135deg, rgba(139,94,58,0.35), rgba(100,65,40,0.2))', border: '1px solid rgba(139,94,58,0.5)', color: '#D4956A' }}
             >
-              <SplitSquareVertical className="w-4 h-4" />
-              Treat Individually
+              <SplitSquareVertical className="w-4 h-4" /> Treat Individually
             </button>
           </div>
           <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
@@ -513,51 +901,27 @@ function RecommendationCard({
       {recClass === RECOMMENDATION_CLASS.REVIEW_REQUIRED && (
         <>
           <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
-            <button
-              type="button"
-              onClick={onReviewDetails}
-              title="Ask Curator to explain what will change before you commit"
+            <button type="button" onClick={onReviewDetails}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))',
-                border: '1px solid rgba(74,124,156,0.45)',
-                color: '#6aabc0',
-              }}
+              style={{ background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))', border: '1px solid rgba(74,124,156,0.45)', color: '#6aabc0' }}
             >
-              <Eye className="w-4 h-4" />
-              Review Details
+              <Eye className="w-4 h-4" /> Review Details
             </button>
-            <button
-              type="button"
-              onClick={onApplyFix}
-              title="Approve and apply the recommended changes"
+            <button type="button" onClick={onApplyFix}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(180,100,50,0.4), rgba(150,75,30,0.25))',
-                border: '1px solid rgba(180,100,50,0.55)',
-                color: '#e0a070',
-              }}
+              style={{ background: 'linear-gradient(135deg, rgba(180,100,50,0.4), rgba(150,75,30,0.25))', border: '1px solid rgba(180,100,50,0.55)', color: '#e0a070' }}
             >
-              <CheckCircle2 className="w-4 h-4" />
-              Approve Changes
+              <CheckCircle2 className="w-4 h-4" /> Approve Changes
             </button>
-            <button
-              type="button"
-              onClick={onAskCurator}
-              title="Discuss this recommendation with the Curator before deciding"
+            <button type="button" onClick={onAskCurator}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(139,94,58,0.3), rgba(100,65,40,0.18))',
-                border: '1px solid rgba(139,94,58,0.45)',
-                color: '#D4956A',
-              }}
+              style={{ background: 'linear-gradient(135deg, rgba(139,94,58,0.3), rgba(100,65,40,0.18))', border: '1px solid rgba(139,94,58,0.45)', color: '#D4956A' }}
             >
-              <MessageCircle className="w-4 h-4" />
-              Ask Curator
+              <MessageCircle className="w-4 h-4" /> Ask Curator
             </button>
           </div>
           <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
-            Review Details asks the Curator to explain exactly what will change before you commit. Approve Changes applies the listed changes to your collection.
+            Review Details asks Curator to explain what will change. Approve Changes{card.navigateTo ? ' opens your Want List to take action.' : ' applies the listed changes to your collection.'}
           </p>
         </>
       )}
@@ -583,10 +947,7 @@ function TreatIndividuallyModal({ card, onClose, onAskCurator, navigate }) {
         }}
       >
         <DialogHeader>
-          <DialogTitle
-            className="text-lg font-bold"
-            style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
-          >
+          <DialogTitle className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
             Treat Individually — {card.title}
           </DialogTitle>
           <DialogDescription className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>
@@ -614,9 +975,7 @@ function TreatIndividuallyModal({ card, onClose, onAskCurator, navigate }) {
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div>
-                      <p className="font-semibold text-sm" style={{ color: '#F5F1E7' }}>
-                        {item.name}
-                      </p>
+                      <p className="font-semibold text-sm" style={{ color: '#F5F1E7' }}>{item.name}</p>
                       {item.currentSpecialization != null && (
                         <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
                           Current specialization: {item.currentSpecialization || 'None set'}
@@ -638,47 +997,27 @@ function TreatIndividuallyModal({ card, onClose, onAskCurator, navigate }) {
                   {!isSkipped && (
                     <div className="flex flex-wrap gap-2 mt-3">
                       {item.detailUrl && (
-                        <button
-                          type="button"
-                          onClick={() => { onClose(); navigate(item.detailUrl); }}
+                        <button type="button" onClick={() => { onClose(); navigate(item.detailUrl); }}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
-                          style={{
-                            background: 'rgba(74,124,92,0.25)',
-                            border: '1px solid rgba(74,124,92,0.45)',
-                            color: '#6aab80',
-                          }}
+                          style={{ background: 'rgba(74,124,92,0.25)', border: '1px solid rgba(74,124,92,0.45)', color: '#6aab80' }}
                         >
-                          <ExternalLink className="w-3 h-3" />
-                          Go to {item.type || 'Item'}
+                          <ExternalLink className="w-3 h-3" /> Go to {item.type || 'Item'}
                         </button>
                       )}
-                      <button
-                        type="button"
+                      <button type="button"
                         onClick={() => {
-                          if (onAskCurator) {
-                            onAskCurator(`Tell me more about the ${card.title} suggestion for "${item.name}". ${item.rationale || ''}`);
-                          }
+                          if (onAskCurator) onAskCurator(`Tell me more about the ${card.title} suggestion for "${item.name}". ${item.rationale || ''}`);
                           onClose();
                         }}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
-                        style={{
-                          background: 'rgba(139,94,58,0.2)',
-                          border: '1px solid rgba(139,94,58,0.4)',
-                          color: '#D4956A',
-                        }}
+                        style={{ background: 'rgba(139,94,58,0.2)', border: '1px solid rgba(139,94,58,0.4)', color: '#D4956A' }}
                       >
-                        <MessageCircle className="w-3 h-3" />
-                        Ask Curator
+                        <MessageCircle className="w-3 h-3" /> Ask Curator
                       </button>
-                      <button
-                        type="button"
+                      <button type="button"
                         onClick={() => setSkipped((prev) => ({ ...prev, [item.id]: true }))}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
-                        style={{
-                          background: 'rgba(80,60,45,0.18)',
-                          border: '1px solid rgba(120,90,65,0.3)',
-                          color: 'rgba(224,216,200,0.5)',
-                        }}
+                        style={{ background: 'rgba(80,60,45,0.18)', border: '1px solid rgba(120,90,65,0.3)', color: 'rgba(224,216,200,0.5)' }}
                       >
                         Skip
                       </button>
@@ -686,8 +1025,7 @@ function TreatIndividuallyModal({ card, onClose, onAskCurator, navigate }) {
                   )}
 
                   {isSkipped && (
-                    <button
-                      type="button"
+                    <button type="button"
                       onClick={() => setSkipped((prev) => { const n = { ...prev }; delete n[item.id]; return n; })}
                       className="text-xs underline mt-1 hover:opacity-80"
                       style={{ color: 'rgba(180,140,75,0.5)' }}
@@ -702,15 +1040,9 @@ function TreatIndividuallyModal({ card, onClose, onAskCurator, navigate }) {
         </div>
 
         <div className="mt-4 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
+          <button type="button" onClick={onClose}
             className="px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{
-              background: 'rgba(120,90,65,0.2)',
-              border: '1px solid rgba(120,90,65,0.35)',
-              color: 'rgba(224,216,200,0.75)',
-            }}
+            style={{ background: 'rgba(120,90,65,0.2)', border: '1px solid rgba(120,90,65,0.35)', color: 'rgba(224,216,200,0.75)' }}
           >
             Close
           </button>
@@ -723,8 +1055,7 @@ function TreatIndividuallyModal({ card, onClose, onAskCurator, navigate }) {
 // ─── SectionGroup ─────────────────────────────────────────────────────────────
 
 function SectionGroup({
-  emoji,
-  title,
+  section,
   cards,
   onApplyFix,
   onReviewDetails,
@@ -737,20 +1068,24 @@ function SectionGroup({
   if (!cards.length) return null;
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <span className="text-lg">{emoji}</span>
-        <h2
-          className="text-base sm:text-lg font-bold"
-          style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
-        >
-          {title}
-        </h2>
-        <span
-          className="text-xs font-semibold px-2 py-0.5 rounded-full"
-          style={{ background: 'rgba(180,140,75,0.12)', color: 'rgba(180,140,75,0.8)', border: '1px solid rgba(180,140,75,0.2)' }}
-        >
-          {cards.length}
-        </span>
+      <div className="flex items-start gap-2">
+        <span className="text-lg leading-tight mt-0.5">{section.emoji}</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-base sm:text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+              {section.title}
+            </h2>
+            <span
+              className="text-xs font-semibold px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(180,140,75,0.12)', color: 'rgba(180,140,75,0.8)', border: '1px solid rgba(180,140,75,0.2)' }}
+            >
+              {cards.length}
+            </span>
+          </div>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.4)' }}>
+            {section.desc}
+          </p>
+        </div>
       </div>
       <div className="space-y-4">
         {cards.map((card) => (
@@ -779,6 +1114,9 @@ export default function CuratorOptimizePanel({
   cigars = [],
   bottles = [],
   smokeLogs = [],
+  tastingLogs = [],
+  cigarSessions = [],
+  wantListItems = [],
   onClose,
   onAskCurator,
 }) {
@@ -788,8 +1126,6 @@ export default function CuratorOptimizePanel({
   const [treatIndividuallyCard, setTreatIndividuallyCard] = useState(null);
   const triggerElementRef = React.useRef(null);
 
-  // Capture the element that had focus when the panel mounted so we can
-  // restore focus to it when the panel is dismissed.
   React.useEffect(() => {
     triggerElementRef.current = document.activeElement;
   }, []);
@@ -797,14 +1133,13 @@ export default function CuratorOptimizePanel({
   function handleClose() {
     if (onClose) {
       onClose();
-      // Restore focus to the element that opened the panel
       if (triggerElementRef.current && typeof triggerElementRef.current.focus === 'function') {
         requestAnimationFrame(() => triggerElementRef.current.focus());
       }
     }
   }
 
-  // Build latest log map (same as OptimizeModal)
+  // Latest log map for pipe rotation insights
   const latestLogByPipe = useMemo(() => {
     const map = {};
     for (const log of smokeLogs) {
@@ -817,198 +1152,59 @@ export default function CuratorOptimizePanel({
     return map;
   }, [smokeLogs]);
 
-  // Core insights
+  // Core proactive insights (rotation, diversity, aging, pairing, collection health)
   const allInsights = useMemo(
     () => generateProactiveInsights({ pipes, blends, latestLogByPipe }),
     [pipes, blends, latestLogByPipe]
   );
 
-  // Quick Win cards
-  const quickWinCards = useMemo(() => {
-    const cards = [];
-    const pipesNoPhoto = pipes.filter((p) => !p.photos?.length && !p.photo);
-    if (pipesNoPhoto.length > 0) {
-      cards.push({
-        id: 'qw_pipes_no_photo',
-        title: 'Pipes Missing Photos',
-        whatWeFound: `${pipesNoPhoto.length} ${plural(pipesNoPhoto.length, 'pipe')} in your collection ${has(pipesNoPhoto.length)} no photos.`,
-        whyItMatters: 'Photos improve collection presentation and help the AI identification feature work better.',
-        recommendedAction: "Add photos to capture each pipe's visual details and condition.",
-        severity: INSIGHT_SEVERITY.LOW,
-        module: 'pipe',
-        suggestions: [],
-        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
-      });
-    }
-    const blendsNoType = blends.filter((b) => !b.blend_type && !b.blend_family);
-    if (blendsNoType.length > 0) {
-      cards.push({
-        id: 'qw_blends_no_type',
-        title: 'Blends Without Family Classification',
-        whatWeFound: `${blendsNoType.length} ${plural(blendsNoType.length, 'blend')} ${has(blendsNoType.length)} no blend family assigned.`,
-        whyItMatters: 'Blend family is required for diversity analysis and pairing suggestions.',
-        recommendedAction: 'Open each blend and set the blend family (Virginia, Burley, Latakia, etc.).',
-        severity: INSIGHT_SEVERITY.MEDIUM,
-        module: 'tobacco',
-        suggestions: [],
-        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
-      });
-    }
-    const cigarsNoSize = cigars.filter((c) => !c.vitola && !c.size && !c.ring_gauge);
-    if (cigarsNoSize.length > 0) {
-      cards.push({
-        id: 'qw_cigars_no_size',
-        title: 'Cigars Missing Size Details',
-        whatWeFound: `${cigarsNoSize.length} ${plural(cigarsNoSize.length, 'cigar')} ${is(cigarsNoSize.length)} missing vitola or size information.`,
-        whyItMatters: 'Vitola and ring gauge data enable better categorization and balance analysis.',
-        recommendedAction: 'Add vitola or size data to complete your cigar profiles.',
-        severity: INSIGHT_SEVERITY.LOW,
-        module: 'cigar',
-        suggestions: [],
-        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
-      });
-    }
-    const bottlesNoType = bottles.filter((b) => !b.whiskey_type && !b.spirit_type && !b.category);
-    if (bottlesNoType.length > 0) {
-      cards.push({
-        id: 'qw_bottles_no_type',
-        title: 'Bottles Without Spirit Type',
-        whatWeFound: `${bottlesNoType.length} ${plural(bottlesNoType.length, 'bottle')} ${is(bottlesNoType.length)} missing spirit type classification.`,
-        whyItMatters: 'Spirit type is needed for whiskey collection diversity and flavor analysis.',
-        recommendedAction: 'Classify each bottle with its spirit type (Scotch, Bourbon, Irish, etc.).',
-        severity: INSIGHT_SEVERITY.LOW,
-        module: 'whiskey',
-        suggestions: [],
-        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
-      });
-    }
-    return cards;
-  }, [pipes, blends, cigars, bottles]);
-
-  // Reclassify cards
-  const reclassifyCards = useMemo(() => {
-    const cards = [];
-    const pipesNoShape = pipes.filter((p) => !p.shape && !p.pipe_shape);
-    if (pipesNoShape.length > 0) {
-      cards.push({
-        id: 'rc_pipe_shape',
-        title: 'Pipe Shapes Not Specified',
-        whatWeFound: `${pipesNoShape.length} ${plural(pipesNoShape.length, 'pipe')} ${is(pipesNoShape.length)} missing a shape classification.`,
-        whyItMatters: 'Pipe shape affects pairing recommendations — certain shapes suit specific tobacco types.',
-        recommendedAction: 'Review these pipes and assign their correct shape (billiard, bent, bulldog, etc.).',
-        severity: INSIGHT_SEVERITY.LOW,
-        module: 'pipe',
-        suggestions: [],
-        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
-      });
-    }
-    const pipesGeneric = pipes.filter((p) => p.pipe_type === 'Other' || p.material === 'Other');
-    if (pipesGeneric.length > 0) {
-      cards.push({
-        id: 'rc_pipe_generic',
-        title: 'Pipes Using Generic "Other" Classification',
-        whatWeFound: `${pipesGeneric.length} ${plural(pipesGeneric.length, 'pipe')} ${uses(pipesGeneric.length)} a generic "Other" type or material.`,
-        whyItMatters: "Specific classifications improve the Curator's ability to make tailored recommendations.",
-        recommendedAction: 'Update these pipes with more specific type or material values.',
-        severity: INSIGHT_SEVERITY.LOW,
-        module: 'pipe',
-        suggestions: [],
-        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
-      });
-    }
-    const blendsUnknown = blends.filter(
-      (b) => b.blend_type === 'Unknown' || b.blend_family === 'Unknown'
-    );
-    if (blendsUnknown.length > 0) {
-      cards.push({
-        id: 'rc_blend_unknown',
-        title: 'Blends Classified as Unknown',
-        whatWeFound: `${blendsUnknown.length} ${plural(blendsUnknown.length, 'blend')} ${is(blendsUnknown.length)} classified as "Unknown" type.`,
-        whyItMatters: 'Unknown classifications reduce the effectiveness of diversity and rotation analysis.',
-        recommendedAction: 'Research and update the blend family for these blends.',
-        severity: INSIGHT_SEVERITY.MEDIUM,
-        module: 'tobacco',
-        suggestions: [],
-        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
-      });
-    }
-    const cigarsNoWrapper = cigars.filter((c) => !c.wrapper && !c.wrapper_country);
-    if (cigarsNoWrapper.length > 0) {
-      cards.push({
-        id: 'rc_cigar_wrapper',
-        title: 'Cigars Missing Wrapper Details',
-        whatWeFound: `${cigarsNoWrapper.length} ${plural(cigarsNoWrapper.length, 'cigar')} ${is(cigarsNoWrapper.length)} missing wrapper leaf or country of origin.`,
-        whyItMatters: 'Wrapper information is key for flavor profile analysis and regional recommendations.',
-        recommendedAction: 'Add wrapper details to enable complete flavor and region analysis.',
-        severity: INSIGHT_SEVERITY.LOW,
-        module: 'cigar',
-        suggestions: [],
-        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
-      });
-    }
-    const bottlesNoDistillery = bottles.filter((b) => !b.distillery && !b.producer && !b.brand);
-    if (bottlesNoDistillery.length > 0) {
-      cards.push({
-        id: 'rc_bottle_distillery',
-        title: 'Bottles Missing Producer/Distillery',
-        whatWeFound: `${bottlesNoDistillery.length} ${plural(bottlesNoDistillery.length, 'bottle')} ${is(bottlesNoDistillery.length)} missing distillery or producer details.`,
-        whyItMatters: 'Distillery data helps build a more accurate profile of your whiskey collection.',
-        recommendedAction: 'Add the distillery or producer name for each bottle.',
-        severity: INSIGHT_SEVERITY.LOW,
-        module: 'whiskey',
-        suggestions: [],
-        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
-      });
-    }
-    return cards;
-  }, [pipes, blends, cigars, bottles]);
-
-  // Pipe specialization cards — MULTI_PATH (needs user judgment)
-  const specializationCards = useMemo(() => {
-    const cards = [];
-    if (pipes.length === 0) return cards;
-
-    const pipesWithoutSpecialization = pipes.filter(
-      (p) => !p.focus || (Array.isArray(p.focus) && p.focus.length === 0)
-    );
-
-    if (pipesWithoutSpecialization.length > 0) {
-      cards.push({
-        id: 'spec_pipes_no_focus',
-        title: 'Pipe Specialization Opportunities',
-        whatWeFound: `${pipesWithoutSpecialization.length} ${plural(pipesWithoutSpecialization.length, 'pipe')} ${has(pipesWithoutSpecialization.length)} no specialization set. Specialization helps the Curator match pipes to the right blends and sessions.`,
-        whyItMatters: 'Pipe specialization guides pairing recommendations, session planning, and collection strategy. Assigning a focus (e.g. Aromatic, English, Virginia) improves suggestion quality.',
-        recommendedAction: 'Review each pipe and consider assigning a specialization that reflects how you use it.',
-        severity: INSIGHT_SEVERITY.LOW,
-        module: 'pipe',
-        suggestions: [],
-        recommendationClass: RECOMMENDATION_CLASS.MULTI_PATH,
-        // Candidate items for Treat Individually workflow
-        candidateItems: pipesWithoutSpecialization.map((p) => ({
-          id: p.id,
-          name: p.name || 'Unnamed Pipe',
-          type: 'Pipe',
-          currentSpecialization: Array.isArray(p.focus) ? p.focus.join(', ') : (p.focus || null),
-          suggestedSpecialization: null,
-          rationale: 'No specialization is currently set. Use the pipe detail page to assign a focus based on the tobacco types you enjoy in this pipe.',
-          detailUrl: createPageUrl(`PipeDetail?id=${encodeURIComponent(p.id)}`),
-        })),
-      });
-    }
-
-    return cards;
-  }, [pipes]);
-
-  // All cards combined
-  const allCards = useMemo(
-    () => [
-      ...allInsights.map(insightToCard),
-      ...quickWinCards,
-      ...reclassifyCards,
-      ...specializationCards,
-    ],
-    [allInsights, quickWinCards, reclassifyCards, specializationCards]
+  // Generated card sets per category
+  const dataMetadataCards = useMemo(
+    () => buildDataMetadataCards(pipes, blends, cigars, bottles),
+    [pipes, blends, cigars, bottles]
   );
+
+  const restockCards = useMemo(
+    () => buildRestockCards(blends, bottles),
+    [blends, bottles]
+  );
+
+  const wishlistPromotionCards = useMemo(
+    () => buildWishlistPromotionCards(wantListItems, blends, bottles, pipes),
+    [wantListItems, blends, bottles, pipes]
+  );
+
+  const nextPurchaseCards = useMemo(
+    () => buildNextPurchaseCards(blends, bottles),
+    [blends, bottles]
+  );
+
+  const specializationCards = useMemo(
+    () => buildSpecializationCards(pipes),
+    [pipes]
+  );
+
+  // Aggregate all cards with deduplication — generated cards take priority over proactive insights
+  const allCards = useMemo(() => {
+    const seenIds = new Set();
+    const result = [];
+
+    function addCard(card) {
+      if (!card?.id || seenIds.has(card.id)) return;
+      seenIds.add(card.id);
+      result.push(card);
+    }
+
+    for (const card of dataMetadataCards) addCard({ ...card, section: card.section || 'data_metadata' });
+    for (const card of restockCards) addCard({ ...card, section: card.section || 'purchase_restock' });
+    for (const card of wishlistPromotionCards) addCard({ ...card, section: 'purchase_restock' });
+    for (const card of nextPurchaseCards) addCard({ ...card, section: 'purchase_restock' });
+    for (const card of specializationCards) addCard({ ...card, section: 'specialization' });
+    // Proactive insights mapped to correct section — deduplicated against generated cards
+    for (const insight of allInsights) addCard(insightToCard(insight));
+
+    return result;
+  }, [dataMetadataCards, restockCards, wishlistPromotionCards, nextPurchaseCards, specializationCards, allInsights]);
 
   // Filter by active module
   const filteredCards = useMemo(() => {
@@ -1019,17 +1215,22 @@ export default function CuratorOptimizePanel({
     });
   }, [allCards, activeModule]);
 
-  // Group into sections
-  const highImpactCards = filteredCards.filter((c) => c.severity === INSIGHT_SEVERITY.HIGH);
-  const quickWinsFiltered = filteredCards.filter((c) => c.severity === INSIGHT_SEVERITY.MEDIUM);
-  const optimizationCards = filteredCards.filter(
-    (c) => !c.severity || c.severity === INSIGHT_SEVERITY.LOW
-  );
+  // Group by section
+  const cardsBySection = useMemo(() => {
+    const map = {};
+    for (const s of OPTIMIZE_SECTIONS) map[s.key] = [];
+    for (const card of filteredCards) {
+      const key = card.section || DEFAULT_SECTION;
+      if (map[key]) map[key].push(card);
+      else map[DEFAULT_SECTION].push(card);
+    }
+    return map;
+  }, [filteredCards]);
 
   // Summary stats
   const totalCount = filteredCards.length;
-  const highPriorityCount = highImpactCards.length;
-  const quickWinsCount = quickWinsFiltered.length;
+  const highCount = filteredCards.filter((c) => c.severity === INSIGHT_SEVERITY.HIGH).length;
+  const mediumCount = filteredCards.filter((c) => c.severity === INSIGHT_SEVERITY.MEDIUM).length;
 
   // Handlers
   function handleApplyFix(card) {
@@ -1039,41 +1240,50 @@ export default function CuratorOptimizePanel({
   function handleConfirmApplyFix() {
     const card = confirmCard;
     setConfirmCard(null);
+    if (card.navigateTo) {
+      navigate(card.navigateTo);
+      return;
+    }
     const moduleKey = getModuleKey(card);
     const route = getModuleRoute(moduleKey);
-    if (route) {
-      navigate(route);
-    }
+    if (route) navigate(route);
   }
 
   function handleReviewDetails(card) {
     if (onAskCurator) {
-      onAskCurator(`Tell me more about this recommendation: "${card.title}". ${card.whatWeFound}`);
+      onAskCurator(
+        `Tell me more about this recommendation: "${card.title}". ${card.whatWeFound} What exactly should I do to address this and what will have the most impact?`
+      );
     }
   }
 
   function handleAskCuratorCard(card) {
     if (onAskCurator) {
-      onAskCurator(`I'd like to discuss: "${card.title}". ${card.whatWeFound} What should I prioritize?`);
+      onAskCurator(
+        `I want to discuss: "${card.title}". ${card.whatWeFound} What should I prioritize and what impact will it have on my collection?`
+      );
     }
   }
 
   function handleAcknowledge(_card) {
-    // Acknowledgement is handled locally inside RecommendationCard (localAcknowledged state).
-    // This callback is a hook for future persistence if needed.
+    // Handled locally via localAcknowledged state inside RecommendationCard.
   }
 
   function handleViewItems(card) {
+    if (card.navigateTo) {
+      navigate(card.navigateTo);
+      return;
+    }
     const moduleKey = getModuleKey(card);
     const route = getModuleRoute(moduleKey);
-    if (route) {
-      navigate(route);
-    }
+    if (route) navigate(route);
   }
 
   function handleAskForMoreInfo(card) {
     if (onAskCurator) {
-      onAskCurator(`Explain the rationale and evidence behind this suggestion: "${card.title}". ${card.whatWeFound} Why is this important for my collection?`);
+      onAskCurator(
+        `Explain the rationale and evidence behind: "${card.title}". ${card.whatWeFound} Why is this important and what are my options for addressing it?`
+      );
     }
   }
 
@@ -1082,6 +1292,7 @@ export default function CuratorOptimizePanel({
   }
 
   const confirmDetails = confirmCard ? getConfirmationDetails(confirmCard) : null;
+  const activeSections = OPTIMIZE_SECTIONS.filter((s) => (cardsBySection[s.key] || []).length > 0);
 
   return (
     <div
@@ -1092,7 +1303,7 @@ export default function CuratorOptimizePanel({
         boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
       }}
     >
-      {/* ── Sticky Header ─────────────────────────────────────────────────── */}
+      {/* ── Sticky Header ─────────────────────────────────────────────── */}
       <div
         className="sticky top-0 z-10 px-5 pt-5 pb-4"
         style={{
@@ -1109,11 +1320,8 @@ export default function CuratorOptimizePanel({
             >
               Optimize Your Collection
             </h1>
-            <p
-              className="text-sm mt-1"
-              style={{ color: 'rgba(224,216,200,0.6)' }}
-            >
-              AI-driven insights across your entire collection
+            <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.6)' }}>
+              Structured improvement across data, health, rotation, acquisitions, and strategy
             </p>
           </div>
           {onClose && (
@@ -1121,11 +1329,7 @@ export default function CuratorOptimizePanel({
               type="button"
               onClick={handleClose}
               className="p-2 rounded-lg transition-all hover:opacity-80 flex-shrink-0"
-              style={{
-                background: 'rgba(120,90,65,0.15)',
-                border: '1px solid rgba(120,90,65,0.25)',
-                color: 'rgba(224,216,200,0.6)',
-              }}
+              style={{ background: 'rgba(120,90,65,0.15)', border: '1px solid rgba(120,90,65,0.25)', color: 'rgba(224,216,200,0.6)' }}
               aria-label="Close optimize panel"
             >
               <X className="w-4 h-4" />
@@ -1144,12 +1348,8 @@ export default function CuratorOptimizePanel({
                 onClick={() => setActiveModule(pill.key)}
                 className="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all"
                 style={{
-                  background: isActive
-                    ? 'rgba(163,92,92,0.28)'
-                    : 'rgba(255,255,255,0.05)',
-                  border: isActive
-                    ? '1px solid rgba(163,92,92,0.55)'
-                    : '1px solid rgba(120,90,65,0.2)',
+                  background: isActive ? 'rgba(163,92,92,0.28)' : 'rgba(255,255,255,0.05)',
+                  border: isActive ? '1px solid rgba(163,92,92,0.55)' : '1px solid rgba(120,90,65,0.2)',
                   color: isActive ? '#F5F1E7' : 'rgba(224,216,200,0.5)',
                 }}
               >
@@ -1160,26 +1360,23 @@ export default function CuratorOptimizePanel({
         </div>
       </div>
 
-      {/* ── Summary Bar ───────────────────────────────────────────────────── */}
+      {/* ── Summary Bar ───────────────────────────────────────────────── */}
       {totalCount > 0 && (
         <div
           className="px-5 py-4 grid grid-cols-3 gap-3"
           style={{ borderBottom: '1px solid rgba(140,105,65,0.12)' }}
         >
           {[
-            { label: 'Total Recommendations', value: totalCount, color: 'rgba(224,216,200,0.8)' },
-            { label: 'High Priority', value: highPriorityCount, color: '#E05252' },
-            { label: 'Quick Wins', value: quickWinsCount, color: '#C89752' },
+            { label: 'Total Optimizations', value: totalCount, color: 'rgba(224,216,200,0.8)' },
+            { label: 'High Priority', value: highCount, color: '#E05252' },
+            { label: 'Medium Priority', value: mediumCount, color: '#C89752' },
           ].map(({ label, value, color }) => (
             <div
               key={label}
               className="text-center py-3 rounded-xl"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.1)' }}
             >
-              <div
-                className="text-2xl sm:text-3xl font-bold mb-1"
-                style={{ color, fontFamily: "'Georgia', serif" }}
-              >
+              <div className="text-2xl sm:text-3xl font-bold mb-1" style={{ color, fontFamily: "'Georgia', serif" }}>
                 {value}
               </div>
               <div className="text-[10px] sm:text-xs font-medium" style={{ color: 'rgba(224,216,200,0.5)' }}>
@@ -1190,8 +1387,29 @@ export default function CuratorOptimizePanel({
         </div>
       )}
 
-      {/* ── Recommendation Sections ────────────────────────────────────────── */}
-      <div className="px-5 py-6 space-y-8">
+      {/* ── Section index ─────────────────────────────────────────────── */}
+      {activeSections.length > 1 && (
+        <div
+          className="px-5 py-3 flex flex-wrap gap-2"
+          style={{ borderBottom: '1px solid rgba(140,105,65,0.08)' }}
+        >
+          {activeSections.map((s) => (
+            <span
+              key={s.key}
+              className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full"
+              style={{ background: 'rgba(140,105,65,0.08)', color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(140,105,65,0.12)' }}
+            >
+              {s.emoji} {s.title}
+              <span className="font-bold" style={{ color: 'rgba(180,140,75,0.7)' }}>
+                {cardsBySection[s.key].length}
+              </span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* ── Recommendation Sections ────────────────────────────────────── */}
+      <div className="px-5 py-6 space-y-10">
         {totalCount === 0 ? (
           <div
             className="rounded-2xl p-8 text-center"
@@ -1201,10 +1419,7 @@ export default function CuratorOptimizePanel({
             }}
           >
             <CheckCircle2 className="w-10 h-10 mx-auto mb-3" style={{ color: '#4A7C59' }} />
-            <p
-              className="text-base font-semibold mb-1"
-              style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
-            >
+            <p className="text-base font-semibold mb-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
               Collection Well Optimized
             </p>
             <p className="text-sm" style={{ color: 'rgba(224,216,200,0.55)' }}>
@@ -1212,48 +1427,28 @@ export default function CuratorOptimizePanel({
             </p>
           </div>
         ) : (
-          <>
-            <SectionGroup
-              emoji="🔴"
-              title="High Impact Fixes"
-              cards={highImpactCards}
-              onApplyFix={handleApplyFix}
-              onReviewDetails={handleReviewDetails}
-              onAskCurator={handleAskCuratorCard}
-              onAcknowledge={handleAcknowledge}
-              onViewItems={handleViewItems}
-              onAskForMoreInfo={handleAskForMoreInfo}
-              onTreatIndividually={handleTreatIndividually}
-            />
-            <SectionGroup
-              emoji="🟡"
-              title="Quick Wins"
-              cards={quickWinsFiltered}
-              onApplyFix={handleApplyFix}
-              onReviewDetails={handleReviewDetails}
-              onAskCurator={handleAskCuratorCard}
-              onAcknowledge={handleAcknowledge}
-              onViewItems={handleViewItems}
-              onAskForMoreInfo={handleAskForMoreInfo}
-              onTreatIndividually={handleTreatIndividually}
-            />
-            <SectionGroup
-              emoji="🧠"
-              title="Optimization Opportunities"
-              cards={optimizationCards}
-              onApplyFix={handleApplyFix}
-              onReviewDetails={handleReviewDetails}
-              onAskCurator={handleAskCuratorCard}
-              onAcknowledge={handleAcknowledge}
-              onViewItems={handleViewItems}
-              onAskForMoreInfo={handleAskForMoreInfo}
-              onTreatIndividually={handleTreatIndividually}
-            />
-          </>
+          OPTIMIZE_SECTIONS.map((section) => {
+            const cards = cardsBySection[section.key] || [];
+            if (!cards.length) return null;
+            return (
+              <SectionGroup
+                key={section.key}
+                section={section}
+                cards={cards}
+                onApplyFix={handleApplyFix}
+                onReviewDetails={handleReviewDetails}
+                onAskCurator={handleAskCuratorCard}
+                onAcknowledge={handleAcknowledge}
+                onViewItems={handleViewItems}
+                onAskForMoreInfo={handleAskForMoreInfo}
+                onTreatIndividually={handleTreatIndividually}
+              />
+            );
+          })
         )}
       </div>
 
-      {/* ── Apply Fix Confirmation Modal ───────────────────────────────────── */}
+      {/* ── Confirmation Modal ─────────────────────────────────────────── */}
       <AlertDialog open={!!confirmCard} onOpenChange={(open) => !open && setConfirmCard(null)}>
         <AlertDialogContent
           style={{
@@ -1262,11 +1457,10 @@ export default function CuratorOptimizePanel({
           }}
         >
           <AlertDialogHeader>
-            <AlertDialogTitle
-              className="text-lg font-bold"
-              style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
-            >
-              Apply Recommendation?
+            <AlertDialogTitle className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+              {confirmCard?.recommendationClass === RECOMMENDATION_CLASS.REVIEW_REQUIRED
+                ? 'Approve Recommendation?'
+                : 'Apply Recommendation?'}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-4 mt-2">
@@ -1277,34 +1471,26 @@ export default function CuratorOptimizePanel({
                     </p>
                     <div
                       className="rounded-xl p-4 space-y-2"
-                      style={{
-                        background: 'rgba(180,140,75,0.07)',
-                        border: '1px solid rgba(180,140,75,0.2)',
-                      }}
+                      style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.2)' }}
                     >
-                      <p
-                        className="text-xs font-bold uppercase tracking-widest mb-2"
-                        style={{ color: 'rgba(180,140,75,0.7)' }}
-                      >
+                      <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'rgba(180,140,75,0.7)' }}>
                         This will:
                       </p>
                       {confirmDetails?.changes.map((change, i) => (
                         <div key={i} className="flex items-start gap-2">
                           <span style={{ color: 'rgba(180,140,75,0.7)' }}>•</span>
-                          <p className="text-sm" style={{ color: 'rgba(224,216,200,0.85)' }}>
-                            {change}
-                          </p>
+                          <p className="text-sm" style={{ color: 'rgba(224,216,200,0.85)' }}>{change}</p>
                         </div>
                       ))}
                       <div className="flex items-start gap-2 pt-1">
                         <span style={{ color: 'rgba(180,140,75,0.7)' }}>•</span>
                         <p className="text-sm" style={{ color: 'rgba(224,216,200,0.85)' }}>
-                          Module affected: <span style={{ color: '#F5F1E7', fontWeight: 600 }}>{confirmDetails?.affectedModule}</span>
+                          Affected: <span style={{ color: '#F5F1E7', fontWeight: 600 }}>{confirmDetails?.affectedModule}</span>
                         </p>
                       </div>
                     </div>
                     <p className="text-xs" style={{ color: 'rgba(224,216,200,0.45)' }}>
-                      This will open the relevant section of your collection. You make the actual edits there — no data is modified automatically by clicking Confirm.
+                      Confirming opens the relevant {confirmCard.navigateTo ? 'page' : 'section of your collection'}. You make the actual edits there — no data is modified automatically.
                     </p>
                   </>
                 )}
@@ -1314,30 +1500,22 @@ export default function CuratorOptimizePanel({
           <AlertDialogFooter className="gap-2">
             <AlertDialogCancel
               className="rounded-xl text-sm"
-              style={{
-                background: 'rgba(120,90,65,0.2)',
-                border: '1px solid rgba(120,90,65,0.35)',
-                color: 'rgba(224,216,200,0.75)',
-              }}
+              style={{ background: 'rgba(120,90,65,0.2)', border: '1px solid rgba(120,90,65,0.35)', color: 'rgba(224,216,200,0.75)' }}
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmApplyFix}
               className="rounded-xl text-sm font-semibold"
-              style={{
-                background: 'linear-gradient(135deg, rgba(74,124,92,0.5), rgba(74,124,92,0.3))',
-                border: '1px solid rgba(74,124,92,0.6)',
-                color: '#6aab80',
-              }}
+              style={{ background: 'linear-gradient(135deg, rgba(74,124,92,0.5), rgba(74,124,92,0.3))', border: '1px solid rgba(74,124,92,0.6)', color: '#6aab80' }}
             >
-              Confirm & Continue
+              Confirm &amp; Continue
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ── Treat Individually Modal ───────────────────────────────────────── */}
+      {/* ── Treat Individually Modal ───────────────────────────────────── */}
       {treatIndividuallyCard && (
         <TreatIndividuallyModal
           card={treatIndividuallyCard}

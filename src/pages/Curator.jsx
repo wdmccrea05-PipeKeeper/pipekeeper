@@ -232,6 +232,16 @@ export default function Curator() {
     staleTime: 10000,
   });
 
+  const { data: wantListItems = [] } = useQuery({
+    queryKey: ["want-list-curator", user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.AcquisitionItem.filter({ created_by: user?.email });
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 30000,
+  });
+
   const { data: userProfile = null } = useQuery({
     queryKey: ["user-profile-curator", user?.email],
     queryFn: async () => {
@@ -322,6 +332,9 @@ export default function Curator() {
           cigars={scopedCigars}
           bottles={scopedBottles}
           smokeLogs={scopedSmokingLogs}
+          tastingLogs={scopedTastingLogs}
+          cigarSessions={scopedCigarSessions}
+          wantListItems={wantListItems}
           onClose={() => setIsOptimizeMode(false)}
           onAskCurator={handleOptimizeAskCurator}
         />
