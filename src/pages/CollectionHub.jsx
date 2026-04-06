@@ -564,7 +564,7 @@ export default function CollectionHub() {
           ) : null}
           {cigarOpenable ? (
             <StatCard
-              icon={Cigarette}
+              icon={Flame}
               label={t('hub.cigars')}
               value={isLoading ? '—' : cigars.length}
               sub={isLoading ? '' : `${metrics.totalCigarSticks} sticks owned`}
