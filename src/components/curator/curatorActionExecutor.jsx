@@ -204,7 +204,14 @@ function inferRecordType(item, fallbackType = null) {
 }
 
 function resolveTargetRecord(item, context = {}, fallbackType = null) {
-  if (item?.recordId && item?.recordType) return item;
+  if (item?.recordId && item?.recordType) {
+    // Already resolved — classify ownership based on whether recordId matches collection
+    const isInCollection = isRecordInCollection(item.recordId, context);
+    return {
+      ...item,
+      ownershipStatus: isInCollection ? "owned" : (item.ownershipStatus || "not_owned"),
+    };
+  }
 
   const inferredType = inferRecordType(item, fallbackType);
   const { pipeIndex, blendIndex, bottleIndex } = buildRecordIndexes(context);
@@ -249,6 +256,7 @@ function resolveTargetRecord(item, context = {}, fallbackType = null) {
     return {
       ...item,
       recordType: inferredType || item?.recordType || "collection",
+      ownershipStatus: item?.ownershipStatus || "not_owned",
     };
   }
 
@@ -259,7 +267,41 @@ function resolveTargetRecord(item, context = {}, fallbackType = null) {
     itemId: item?.itemId || matched.record?.id || null,
     recordName: item?.recordName || matched.record?.name || item?.itemName || item?.title || null,
     itemName: item?.itemName || matched.record?.name || item?.recordName || item?.title || null,
+    ownershipStatus: "owned",
   };
+}
+
+function isRecordInCollection(recordId, context = {}) {
+  if (!recordId) return false;
+  const allIds = new Set([
+    ...(context?.pipes || []).map((p) => p?.id),
+    ...(context?.blends || []).map((b) => b?.id),
+    ...(context?.bottles || []).map((b) => b?.id),
+  ]);
+  return allIds.has(recordId);
+}
+
+function deduplicateItems(items) {
+  if (!Array.isArray(items)) return items;
+  const seen = new Map();
+  for (const item of items) {
+    const nameKey = normalizeString(
+      item?.recordName || item?.itemName || item?.title || item?.id || ""
+    );
+    if (!nameKey) continue;
+    if (!seen.has(nameKey)) {
+      seen.set(nameKey, item);
+    } else {
+      // Keep the one with higher priority: owned > not_owned, then prefer the one with more detail
+      const existing = seen.get(nameKey);
+      const incomingIsOwned = item?.ownershipStatus === "owned";
+      const existingIsOwned = existing?.ownershipStatus === "owned";
+      if (incomingIsOwned && !existingIsOwned) {
+        seen.set(nameKey, item);
+      }
+    }
+  }
+  return Array.from(seen.values());
 }
 
 /** Maximum number of items returned across all groups to avoid oversized payloads. */
@@ -274,9 +316,10 @@ function enrichCanonicalResult(result, context = {}, fallbackType = null) {
       ...result,
       groups: result.groups.map((group) => {
         const remaining = Math.max(0, MAX_RESULT_ITEMS - totalItems);
-        const items = (group.items || [])
+        const resolved = (group.items || [])
           .slice(0, remaining)
           .map((item) => resolveTargetRecord(item, context, fallbackType));
+        const items = deduplicateItems(resolved);
         totalItems += items.length;
         return { ...group, items };
       }),
@@ -284,11 +327,12 @@ function enrichCanonicalResult(result, context = {}, fallbackType = null) {
   }
 
   if (Array.isArray(result.items)) {
+    const resolved = result.items
+      .slice(0, MAX_RESULT_ITEMS)
+      .map((item) => resolveTargetRecord(item, context, fallbackType));
     return {
       ...result,
-      items: result.items
-        .slice(0, MAX_RESULT_ITEMS)
-        .map((item) => resolveTargetRecord(item, context, fallbackType)),
+      items: deduplicateItems(resolved),
     };
   }
 
@@ -407,6 +451,17 @@ IMPORTANT:
   - "recordName"
 - Use exact record ids from the provided collection context whenever the recommendation targets a specific collection item.`;
 
+  // Ownership rules — prevent the LLM from treating owned items as acquisitions
+  const ownershipRules = `
+OWNERSHIP RULES (MANDATORY):
+- ALL pipes, blends, and bottles listed in COLLECTION CONTEXT are items the user ALREADY OWNS
+- For owned items (any item whose name appears in the collection context), you MUST use ownership-appropriate language:
+  FORBIDDEN words/phrases for owned items: acquire, prioritize acquisition, add to collection, potential addition, consider adding, explore as an addition, add to want list, consider buying
+  REQUIRED language for owned items: revisit, rotate back in, prioritize from your collection, use in your next session, compare against similar items you already own, restock soon if quantity is low, underused, hasn't been used recently
+- Acquisition language (acquire, consider buying, add to want list, explore as a potential addition) is ONLY valid for items you suggest that do NOT appear in the provided collection context
+- For every recommendation item, include "ownershipStatus": "owned" if the item is from the collection context, or "ownershipStatus": "not_owned" for external suggestions
+- NEVER frame an owned item as if it is missing from the collection or needs to be acquired`;
+
   // Pairing rules — prevent the LLM from generating invalid pairing combinations
   const pairingRules = `
 PAIRING RULES (MANDATORY):
@@ -434,6 +489,7 @@ TASK:
 ${actionPrompt}
 
 ${extraMeasurementInstructions}
+${ownershipRules}
 ${pairingRules}
 
 CRITICAL RULES FOR RECOMMENDATIONS:
@@ -447,6 +503,8 @@ CRITICAL RULES FOR RECOMMENDATIONS:
    - "multi_path" = requires user judgment between options (e.g. pipe specialization)
 5. Advisory items must NEVER include proposedChange.payload with actual field mutations
 6. Limit total items to 8 maximum
+7. NEVER return two or more items that refer to the same item name — each item must appear at most once across all groups
+8. For owned items, use "ownershipStatus": "owned" and ownership-appropriate language as specified in OWNERSHIP RULES
 
 Return JSON in this exact structure:
 {

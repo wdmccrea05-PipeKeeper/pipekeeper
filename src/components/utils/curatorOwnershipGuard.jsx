@@ -6,10 +6,11 @@ function normalizeName(value) {
     .replace(/\s+/g, " ");
 }
 
-export function buildVerifiedOwnedSets(pipes = [], blends = []) {
+export function buildVerifiedOwnedSets(pipes = [], blends = [], bottles = []) {
   return {
     pipeNames: new Set(pipes.map((p) => normalizeName(p?.name)).filter(Boolean)),
     blendNames: new Set(blends.map((b) => normalizeName(b?.name)).filter(Boolean)),
+    bottleNames: new Set(bottles.map((b) => normalizeName(b?.name)).filter(Boolean)),
   };
 }
 
@@ -17,7 +18,8 @@ function isVerifiedOwned(itemName, verifiedSets) {
   const normalized = normalizeName(itemName);
   return (
     verifiedSets?.pipeNames?.has(normalized) ||
-    verifiedSets?.blendNames?.has(normalized)
+    verifiedSets?.blendNames?.has(normalized) ||
+    verifiedSets?.bottleNames?.has(normalized)
   );
 }
 
@@ -61,7 +63,7 @@ export function sanitizeOwnershipClaims(responseText, verifiedSets) {
   return sanitized;
 }
 
-export function validateOwnershipIntegrity(responseText, pipes, blends) {
-  const verifiedSets = buildVerifiedOwnedSets(pipes, blends);
+export function validateOwnershipIntegrity(responseText, pipes, blends, bottles = []) {
+  const verifiedSets = buildVerifiedOwnedSets(pipes, blends, bottles);
   return sanitizeOwnershipClaims(responseText, verifiedSets);
 }
