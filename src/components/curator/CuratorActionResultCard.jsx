@@ -104,9 +104,19 @@ function buildSessionItemLines(item) {
 
 /**
  * Resolve the recommendation class for an item.
- * Checks item.recommendationClass, then item.actionType, then falls back to
- * behaviour-based inference (for legacy / LLM-generated items without an
- * explicit class field).
+ *
+ * @param {object} item - Curator recommendation item
+ * @param {boolean} hasProposedEntries - true when item.proposedChanges has at least one field
+ * @param {boolean} isNonMutating - true for pairing/session/similar items that never mutate data
+ * @returns {string|null} One of RECOMMENDATION_CLASS values, or null for non-mutating items
+ *
+ * Priority:
+ * 1. item.recommendationClass (explicit, set by LLM or Optimize panel)
+ * 2. item.actionType (legacy field name for the same concept)
+ * 3. Behaviour-based inference:
+ *    - non-mutating → null (handled by isNonMutating branch in ActionButtons)
+ *    - has proposed entries → AUTO_FIX (safe to apply)
+ *    - no proposed entries → ADVISORY (informational only)
  */
 function resolveRecommendationClass(item, hasProposedEntries, isNonMutating) {
   // Explicit field always wins
@@ -357,6 +367,23 @@ function ActionExplainer({ recClass, isNonMutating, hasProposedEntries }) {
   }
 }
 
+/**
+ * Whether to show the "Fields That Will Change" section for this item.
+ * Only shown for AUTO_FIX and REVIEW_REQUIRED classes — advisory and
+ * multi-path cards should never display proposed field mutations.
+ *
+ * @param {boolean} hasProposedEntries
+ * @param {boolean} isNonMutating
+ * @param {string|null} recClass
+ * @returns {boolean}
+ */
+function shouldShowProposedChanges(hasProposedEntries, isNonMutating, recClass) {
+  if (!hasProposedEntries || isNonMutating) return false;
+  if (recClass === RECOMMENDATION_CLASS.ADVISORY) return false;
+  if (recClass === RECOMMENDATION_CLASS.MULTI_PATH) return false;
+  return true;
+}
+
 export default function CuratorActionResultCard({
   item,
   state,
@@ -509,10 +536,8 @@ export default function CuratorActionResultCard({
         )}
       </div>
 
-      {/* Proposed changes — only shown for auto_fix / review_required and not non-mutating */}
-      {hasProposedEntries && !isNonMutating &&
-        recClass !== RECOMMENDATION_CLASS.ADVISORY &&
-        recClass !== RECOMMENDATION_CLASS.MULTI_PATH && (
+      {/* Proposed changes — only shown when the class supports it and item is not non-mutating */}
+      {shouldShowProposedChanges(hasProposedEntries, isNonMutating, recClass) && (
         <div className="mt-3 rounded-lg bg-amber-500/5 p-3">
           <div className="mb-2 text-xs uppercase tracking-wide text-amber-500/70">
             Fields That Will Change

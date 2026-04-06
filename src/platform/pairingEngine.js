@@ -203,7 +203,11 @@ export function validatePairingModules(moduleIds = []) {
  * @returns {{
  *   valid: boolean,
  *   reason?: string,
- *   pairings: Array<{ module: string, moduleName: string, items: Array }>
+ *   pairings: Array<{
+ *     module: string,
+ *     moduleName: string,
+ *     items: Array<{ id: string, name: string, rating: number|null }>
+ *   }>
  * }}
  */
 export function getPairingRecommendationsFromContext(
