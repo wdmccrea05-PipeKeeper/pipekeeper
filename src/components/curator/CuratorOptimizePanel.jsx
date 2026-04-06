@@ -369,7 +369,7 @@ function RecommendationCard({
               }}
             >
               <span>✅</span>
-              Apply Fix
+              Review &amp; Apply Fix
             </button>
             <button
               type="button"
@@ -401,7 +401,7 @@ function RecommendationCard({
             </button>
           </div>
           <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
-            Apply Fix navigates to the relevant module where you can complete the change. Review Details asks the Curator to explain what will change before you act.
+            Review &amp; Apply Fix navigates to the relevant module where you can complete the change. Review Details asks the Curator to explain what will change before you act.
           </p>
         </>
       )}
@@ -1252,7 +1252,7 @@ export default function CuratorOptimizePanel({
                       </div>
                     </div>
                     <p className="text-xs" style={{ color: 'rgba(224,216,200,0.45)' }}>
-                      No data will be modified without your confirmation in the destination view.
+                      This will open the relevant section of your collection. You make the actual edits there — no data is modified automatically by clicking Confirm.
                     </p>
                   </>
                 )}

@@ -181,7 +181,7 @@ export default function CuratorRecommendationRow({
                 className="w-3.5 h-3.5 transition-transform duration-200"
                 style={{ transform: showWhy ? 'rotate(0deg)' : 'rotate(-90deg)' }}
               />
-              {showWhy ? "Hide changes" : "What would change"}
+              {showWhy ? "Hide what will change" : "See what will change"}
             </button>
             {showWhy && (
               <div className="mt-2">
@@ -257,12 +257,12 @@ export default function CuratorRecommendationRow({
 
         {onAccept && hasProposedChange && (
           <p className="w-full text-xs mt-1" style={{ color: "rgba(224,216,200,0.38)" }}>
-            Accepting will apply the changes shown above to this record in your collection.
+            <span style={{ color: "rgba(74,200,130,0.7)", fontWeight: 600 }}>Accept &amp; Apply Changes</span> will immediately save the changes listed above to this record in your collection.
           </p>
         )}
         {onAccept && !hasProposedChange && (
           <p className="w-full text-xs mt-1" style={{ color: "rgba(224,216,200,0.38)" }}>
-            Accepting acknowledges this recommendation — no automatic data change will occur.
+            <span style={{ color: "rgba(212,165,116,0.7)", fontWeight: 600 }}>Accept</span> marks this recommendation as acknowledged — no data in your collection will be automatically changed.
           </p>
         )}
       </div>
