@@ -102,6 +102,21 @@ const MODULE_PILLS = [
   { key: 'whiskey', label: 'Whiskey' },
 ];
 
+// ─── Section-level card ranking priorities ────────────────────────────────────
+
+const RECCLASS_PRIORITY = {
+  [RECOMMENDATION_CLASS.AUTO_FIX]: 0,
+  [RECOMMENDATION_CLASS.MULTI_PATH]: 1,
+  [RECOMMENDATION_CLASS.REVIEW_REQUIRED]: 2,
+  [RECOMMENDATION_CLASS.ADVISORY]: 3,
+};
+
+const SEVERITY_PRIORITY_MAP = {
+  [INSIGHT_SEVERITY.HIGH]: 0,
+  [INSIGHT_SEVERITY.MEDIUM]: 1,
+  [INSIGHT_SEVERITY.LOW]: 2,
+};
+
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
 function plural(count, singular, pluralForm) {
@@ -604,39 +619,125 @@ function buildNextPurchaseCards(blends, bottles) {
   return cards;
 }
 
+// ─── Specialization helpers ────────────────────────────────────────────────────
+
+/**
+ * Build a map of pipe_id → most-common blend type smoked in that pipe.
+ * Uses smoking logs joined to blend records.
+ */
+function computeSuggestedSpecByPipe(smokeLogs, blends) {
+  if (!smokeLogs?.length || !blends?.length) return {};
+  const blendById = Object.fromEntries(blends.map((b) => [b.id, b]));
+  const typeCounts = {};
+  for (const log of smokeLogs) {
+    if (!log.pipe_id || !log.blend_id) continue;
+    const blend = blendById[log.blend_id];
+    if (!blend) continue;
+    const type = blend.blend_type || blend.blend_family;
+    if (!type || type === 'Unknown') continue;
+    if (!typeCounts[log.pipe_id]) typeCounts[log.pipe_id] = {};
+    typeCounts[log.pipe_id][type] = (typeCounts[log.pipe_id][type] || 0) + 1;
+  }
+  const result = {};
+  for (const [pipeId, counts] of Object.entries(typeCounts)) {
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    if (sorted.length > 0) result[pipeId] = sorted[0][0];
+  }
+  return result;
+}
+
 // ─── Specialization generators ────────────────────────────────────────────────
 
-function buildSpecializationCards(pipes) {
+function buildSpecializationCards(pipes, smokeLogs, blends) {
   const cards = [];
   if (pipes.length === 0) return cards;
+
+  const suggestedByPipe = computeSuggestedSpecByPipe(smokeLogs, blends);
 
   const pipesWithoutSpecialization = pipes.filter(
     (p) => !p.focus || (Array.isArray(p.focus) && p.focus.length === 0)
   );
 
   if (pipesWithoutSpecialization.length > 0) {
+    const withSuggestion = pipesWithoutSpecialization.filter((p) => !!suggestedByPipe[p.id]);
+    const hasSuggestions = withSuggestion.length > 0;
+
     cards.push({
       id: 'spec_pipes_no_focus',
       title: `${pipesWithoutSpecialization.length} ${plural(pipesWithoutSpecialization.length, 'Pipe')} Without Specialization`,
-      whatWeFound: `${pipesWithoutSpecialization.length} ${plural(pipesWithoutSpecialization.length, 'pipe')} ${has(pipesWithoutSpecialization.length)} no specialization set. Treat Individually lets you review and assign a focus for each one based on how you use it.`,
+      whatWeFound: hasSuggestions
+        ? `We found ${pipesWithoutSpecialization.length} ${plural(pipesWithoutSpecialization.length, 'pipe')} with no specialization set. Based on your smoking logs, we have a suggested specialization for ${withSuggestion.length} of them. Treat Individually lets you review and apply each suggestion pipe by pipe.`
+        : `We found ${pipesWithoutSpecialization.length} ${plural(pipesWithoutSpecialization.length, 'pipe')} with no specialization set. Treat Individually lets you review and assign a focus for each one based on how you use it.`,
       whyItMatters: 'Pipe specialization (Aromatic, English, Virginia, etc.) guides pairing recommendations, session planning, and collection strategy. It significantly improves Curator suggestion quality.',
-      recommendedAction: 'Review each pipe and assign a specialization that reflects the tobacco types you enjoy in it. Treat Individually reviews each pipe one at a time.',
-      severity: INSIGHT_SEVERITY.LOW,
+      recommendedAction: hasSuggestions
+        ? `We have specialization suggestions for ${withSuggestion.length} of these pipes based on your smoking logs. Treat Individually shows the suggested type for each pipe so you can confirm or adjust.`
+        : 'Review each pipe and assign a specialization that reflects the tobacco types you enjoy in it. Treat Individually reviews each pipe one at a time.',
+      severity: pipesWithoutSpecialization.length >= Math.ceil(pipes.length * 0.5) ? INSIGHT_SEVERITY.MEDIUM : INSIGHT_SEVERITY.LOW,
       module: 'pipe',
       section: 'specialization',
-      suggestions: [],
+      suggestions: hasSuggestions
+        ? withSuggestion.slice(0, 5).map((p) => `${p.name || 'Unnamed'} → ${suggestedByPipe[p.id]}`)
+        : pipesWithoutSpecialization.slice(0, 5).map((p) => p.name || 'Unnamed Pipe'),
       recommendationClass: RECOMMENDATION_CLASS.MULTI_PATH,
-      candidateItems: pipesWithoutSpecialization.map((p) => ({
-        id: p.id,
-        name: p.name || 'Unnamed Pipe',
-        type: 'Pipe',
-        currentSpecialization:
-          Array.isArray(p.focus) ? p.focus.join(', ') : (p.focus || null),
-        suggestedSpecialization: null,
-        rationale:
-          'No specialization is currently set. Use the pipe detail page to assign a focus based on the tobacco types you enjoy in this pipe.',
-        detailUrl: createPageUrl(`PipeDetail?id=${encodeURIComponent(p.id)}`),
-      })),
+      candidateItems: pipesWithoutSpecialization.map((p) => {
+        const suggested = suggestedByPipe[p.id] || null;
+        return {
+          id: p.id,
+          name: p.name || 'Unnamed Pipe',
+          type: 'Pipe',
+          currentSpecialization:
+            Array.isArray(p.focus) ? p.focus.join(', ') : (p.focus || null),
+          suggestedSpecialization: suggested,
+          rationale: suggested
+            ? `Based on your smoking logs, this pipe is most often used with ${suggested} blends. Setting its specialization to ${suggested} will improve pairing and session recommendations.`
+            : 'No specialization is currently set. Use the pipe detail page to assign a focus based on the tobacco types you enjoy in this pipe.',
+          detailUrl: createPageUrl(`PipeDetail?id=${encodeURIComponent(p.id)}`),
+        };
+      }),
+    });
+  }
+
+  return cards;
+}
+
+// ─── Utilization generators ───────────────────────────────────────────────────
+
+function buildUtilizationCards(blends, smokeLogs) {
+  const cards = [];
+  if (blends.length < 3) return cards;
+
+  // Blends with stock that have no smoking log entry in the most recent 50 sessions
+  const recentBlendIds = new Set(
+    (smokeLogs || [])
+      .filter((l) => l.blend_id)
+      .slice(0, 50)
+      .map((l) => l.blend_id)
+  );
+
+  const blendsWithStock = blends.filter((b) => {
+    const oz =
+      Number(b.tin_total_quantity_oz || 0) +
+      Number(b.bulk_total_quantity_oz || 0) +
+      Number(b.pouch_total_quantity_oz || 0);
+    return oz > 0;
+  });
+
+  const underusedBlends = blendsWithStock.filter((b) => !recentBlendIds.has(b.id));
+
+  // Only surface if there are underused blends but not ALL blends are underused
+  // (if no smoke logs exist, we don't want to flag everything)
+  if (underusedBlends.length > 0 && underusedBlends.length < blendsWithStock.length) {
+    cards.push({
+      id: 'util_underused_blends',
+      title: `${underusedBlends.length} Cellared ${plural(underusedBlends.length, 'Blend')} Not Recently Smoked`,
+      whatWeFound: `We found ${underusedBlends.length} ${plural(underusedBlends.length, 'blend')} with stock in your cellar that ${has(underusedBlends.length)} no entry in your recent smoking sessions: ${underusedBlends.slice(0, 3).map((b) => b.name).join(', ')}${underusedBlends.length > 3 ? ` and ${underusedBlends.length - 3} more` : ''}. View Items will open PipeKeeper so you can choose candidates for your next session.`,
+      whyItMatters: 'Blends sitting unsmoked can be forgotten cellar gems or candidates for gifting, trading, or prioritized sessions. Reviewing your rotation periodically prevents cellar blindness.',
+      recommendedAction: 'Review the listed blends and consider adding one to your next session plan. Ask Curator can suggest which to prioritize based on type, age, and your taste profile.',
+      severity: underusedBlends.length >= Math.ceil(blendsWithStock.length * 0.5) ? INSIGHT_SEVERITY.MEDIUM : INSIGHT_SEVERITY.LOW,
+      module: 'tobacco',
+      section: 'utilization',
+      suggestions: underusedBlends.slice(0, 5).map((b) => b.name),
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
     });
   }
 
@@ -1180,11 +1281,18 @@ export default function CuratorOptimizePanel({
   );
 
   const specializationCards = useMemo(
-    () => buildSpecializationCards(pipes),
-    [pipes]
+    () => buildSpecializationCards(pipes, smokeLogs, blends),
+    [pipes, smokeLogs, blends]
   );
 
-  // Aggregate all cards with deduplication — generated cards take priority over proactive insights
+  const utilizationCards = useMemo(
+    () => buildUtilizationCards(blends, smokeLogs),
+    [blends, smokeLogs]
+  );
+
+  // Aggregate all cards — generated cards take priority over proactive insights.
+  // Semantic deduplication suppresses proactive insight IDs when a generated
+  // card already covers the same optimization goal.
   const allCards = useMemo(() => {
     const seenIds = new Set();
     const result = [];
@@ -1195,16 +1303,40 @@ export default function CuratorOptimizePanel({
       result.push(card);
     }
 
+    // Build suppression set: avoid proactive insight cards that duplicate
+    // a generated card's optimization goal
+    const suppressedInsightIds = new Set();
+
+    // rst_open_no_cellar (open blends without backup) covers the same
+    // population as inventory_open_at_risk (open blends 6+ months)
+    if (restockCards.some((c) => c.id === 'rst_open_no_cellar')) {
+      suppressedInsightIds.add('inventory_open_at_risk');
+    }
+    // np_blend_family_gaps (actionable gap fill) covers the same issue as
+    // diversity_low_blend_variety (limited blend variety)
+    if (nextPurchaseCards.some((c) => c.id === 'np_blend_family_gaps')) {
+      suppressedInsightIds.add('diversity_low_blend_variety');
+    }
+    // util_underused_blends covers the same rotation signal as
+    // rotation_underused_pipes — only suppress if both exist and overlap
+    // (they target different item types so keep both if both trigger)
+
+    // Priority order: data fixes first → specialization → restock/purchases → utilization → insights
     for (const card of dataMetadataCards) addCard({ ...card, section: card.section || 'data_metadata' });
+    for (const card of specializationCards) addCard({ ...card, section: 'specialization' });
     for (const card of restockCards) addCard({ ...card, section: card.section || 'purchase_restock' });
     for (const card of wishlistPromotionCards) addCard({ ...card, section: 'purchase_restock' });
     for (const card of nextPurchaseCards) addCard({ ...card, section: 'purchase_restock' });
-    for (const card of specializationCards) addCard({ ...card, section: 'specialization' });
-    // Proactive insights mapped to correct section — deduplicated against generated cards
-    for (const insight of allInsights) addCard(insightToCard(insight));
+    for (const card of utilizationCards) addCard({ ...card, section: 'utilization' });
+    // Proactive insights last — deduplicated against generated cards + semantic suppression
+    for (const insight of allInsights) {
+      if (!suppressedInsightIds.has(insight.id)) {
+        addCard(insightToCard(insight));
+      }
+    }
 
     return result;
-  }, [dataMetadataCards, restockCards, wishlistPromotionCards, nextPurchaseCards, specializationCards, allInsights]);
+  }, [dataMetadataCards, specializationCards, restockCards, wishlistPromotionCards, nextPurchaseCards, utilizationCards, allInsights]);
 
   // Filter by active module
   const filteredCards = useMemo(() => {
@@ -1215,7 +1347,9 @@ export default function CuratorOptimizePanel({
     });
   }, [allCards, activeModule]);
 
-  // Group by section
+  // Group by section, then sort within each section by recommendation class priority
+  // Priority: AUTO_FIX > MULTI_PATH > REVIEW_REQUIRED > ADVISORY, then by severity
+
   const cardsBySection = useMemo(() => {
     const map = {};
     for (const s of OPTIMIZE_SECTIONS) map[s.key] = [];
@@ -1223,6 +1357,16 @@ export default function CuratorOptimizePanel({
       const key = card.section || DEFAULT_SECTION;
       if (map[key]) map[key].push(card);
       else map[DEFAULT_SECTION].push(card);
+    }
+    // Sort within each section: operational fixes first, then by severity
+    for (const key of Object.keys(map)) {
+      map[key].sort((a, b) => {
+        const classDiff =
+          (RECCLASS_PRIORITY[a.recommendationClass] ?? 4) -
+          (RECCLASS_PRIORITY[b.recommendationClass] ?? 4);
+        if (classDiff !== 0) return classDiff;
+        return (SEVERITY_PRIORITY_MAP[a.severity] ?? 3) - (SEVERITY_PRIORITY_MAP[b.severity] ?? 3);
+      });
     }
     return map;
   }, [filteredCards]);
