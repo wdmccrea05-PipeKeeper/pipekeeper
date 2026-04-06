@@ -131,7 +131,7 @@ function StyledTextarea({ value, onChange, placeholder, rows = 3 }) {
 
 function StyledSelect({ value, onValueChange, placeholder, children }) {
   return (
-    <Select value={value} onValueChange={onValueChange}>
+    <Select value={value || undefined} onValueChange={onValueChange}>
       <SelectTrigger
         style={{
           background: 'rgba(255,255,255,0.05)',
