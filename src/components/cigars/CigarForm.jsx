@@ -222,14 +222,23 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
 
-  const [form, setForm] = useState(() => ({
-    ...DEFAULT_FORM,
-    ...(cigar || {}),
-    flavor_notes: Array.isArray(cigar?.flavor_notes) ? cigar.flavor_notes : [],
-    aliases: Array.isArray(cigar?.aliases) ? cigar.aliases : [],
-    photos: Array.isArray(cigar?.photos) ? cigar.photos : [],
-    rating: cigar?.rating ?? 0,
-  }));
+  const [form, setForm] = useState(() => {
+    // Normalize cigar data: replace null values with empty strings to prevent
+    // React's uncontrolled/controlled input warnings and save failures
+    const sanitized = cigar
+      ? Object.fromEntries(
+          Object.entries(cigar).map(([k, v]) => [k, v === null ? '' : v])
+        )
+      : {};
+    return {
+      ...DEFAULT_FORM,
+      ...sanitized,
+      flavor_notes: Array.isArray(cigar?.flavor_notes) ? cigar.flavor_notes : [],
+      aliases: Array.isArray(cigar?.aliases) ? cigar.aliases : [],
+      photos: Array.isArray(cigar?.photos) ? cigar.photos : [],
+      rating: cigar?.rating ?? 0,
+    };
+  });
 
   const [saving, setSaving] = useState(false);
   const [aliasInput, setAliasInput] = useState(
