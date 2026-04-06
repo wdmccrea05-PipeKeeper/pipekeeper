@@ -94,7 +94,7 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <StatCard icon={Cigarette} label="Total Cigars" value={totalQty} />
+        <StatCard icon={Cigarette} label="Cigar Types" value={cigars.length} sub={`${totalQty} sticks total`} />
         <StatCard
           icon={DollarSign}
           label="Est. Value"

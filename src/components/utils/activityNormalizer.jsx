@@ -74,6 +74,25 @@ export function normalizeTastingLog(log) {
   };
 }
 
+export function normalizeCigarSession(log) {
+  const date = log.date || log.created_date || log.created_at || "";
+  const cigarName = safeText(log.cigar_name, safeText(log.cigar_id, "Cigar Session"));
+
+  return {
+    id: log.id || `cigar_session_${log.cigar_id || "none"}_${getTimeKey(date)}`,
+    type: "cigar_session",
+    date,
+    title: cigarName || "Cigar Session",
+    subtitle: `Cigar session${date ? ` · ${formatActivityDate(date)}` : ""}`,
+    recordId: log.cigar_id || null,
+    blendId: null,
+    destination: log.cigar_id
+      ? `/CigarDetail?id=${encodeURIComponent(log.cigar_id)}`
+      : "/CigarKeeper",
+    sessionGroupId: log.session_group_id || null,
+  };
+}
+
 function getSemanticDedupKey(item) {
   return [
     item.type || "",
@@ -86,7 +105,8 @@ function getSemanticDedupKey(item) {
 }
 
 /**
- * Merge and sort SmokingLogs + TastingLogs into a unified chronological feed.
+ * Merge and sort SmokingLogs + TastingLogs + CigarSessions into a unified
+ * chronological feed.
  * Dedupe strategy:
  * 1. unique by explicit activity id
  * 2. unique by semantic key to suppress accidental duplicate save rows
@@ -95,11 +115,26 @@ function getSemanticDedupKey(item) {
 export function buildUnifiedActivityFeed(
   smokingLogs = [],
   tastingLogs = [],
-  { limit = 20 } = {}
+  cigarSessionsOrOptions = [],
+  optionsArg = {}
 ) {
+  // Back-compat: old callers pass (smokingLogs, tastingLogs, { limit })
+  let cigarSessions = cigarSessionsOrOptions;
+  let options = optionsArg;
+  if (
+    cigarSessionsOrOptions &&
+    !Array.isArray(cigarSessionsOrOptions) &&
+    typeof cigarSessionsOrOptions === "object"
+  ) {
+    cigarSessions = [];
+    options = cigarSessionsOrOptions;
+  }
+  const { limit = 20 } = options;
+
   const normalized = [
     ...(smokingLogs || []).map(normalizeSmokingLog),
     ...(tastingLogs || []).map(normalizeTastingLog),
+    ...(cigarSessions || []).map(normalizeCigarSession),
   ].sort((a, b) => {
     const aTime = new Date(a.date || 0).getTime() || 0;
     const bTime = new Date(b.date || 0).getTime() || 0;
