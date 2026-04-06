@@ -284,7 +284,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
         external_cigar_vitola: editSession.external_cigar_vitola || '',
       });
       setCigarMode(editSession.is_out_of_collection ? 'external' : 'collection');
-      setShouldDecrement(false); // Never decrement when editing
+      setShouldDecrement(false); // Never decrement when editing — inventory was already decremented when the session was originally created
     } else if (defaultCigar) {
       setSelectedCigar(defaultCigar);
     }

@@ -181,7 +181,7 @@ export default function CuratorRecommendationRow({
                 className="w-3.5 h-3.5 transition-transform duration-200"
                 style={{ transform: showWhy ? 'rotate(0deg)' : 'rotate(-90deg)' }}
               />
-              {showWhy ? "Hide what will change" : "See exactly what will change if accepted"}
+              {showWhy ? "Hide what will change" : "See what will change"}
             </button>
             {showWhy && (
               <div className="mt-2">
