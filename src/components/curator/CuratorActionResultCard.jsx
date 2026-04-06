@@ -473,6 +473,36 @@ export default function CuratorActionResultCard({
           </div>
         )}
 
+        {/* Ownership status badge */}
+        {item.ownershipStatus === "owned" && (
+          <div className="mb-2">
+            <span
+              className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{
+                background: "rgba(74,124,92,0.15)",
+                color: "rgba(80,180,130,1)",
+                border: "1px solid rgba(74,124,92,0.3)",
+              }}
+            >
+              In Your Collection
+            </span>
+          </div>
+        )}
+        {item.ownershipStatus === "not_owned" && (
+          <div className="mb-2">
+            <span
+              className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{
+                background: "rgba(74,124,156,0.15)",
+                color: "rgba(130,180,210,1)",
+                border: "1px solid rgba(74,124,156,0.3)",
+              }}
+            >
+              External Suggestion
+            </span>
+          </div>
+        )}
+
         <div className="text-base font-semibold text-amber-100">
           {displayTitle}
         </div>
