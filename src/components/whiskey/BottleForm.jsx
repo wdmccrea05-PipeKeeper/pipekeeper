@@ -7,6 +7,7 @@ import { X } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { base44 } from '@/api/base44Client';
 import ImageCropper from '@/components/pipes/ImageCropper';
+import FormSection from '@/components/forms/FormSection';
 
 import PhotoUploader from '@/components/PhotoUploader';
 import { toast } from 'sonner';
@@ -250,10 +251,11 @@ export default function BottleForm({
             </div>
 
             {/* IDENTITY SECTION */}
-            <div className="pt-2">
-              <p className="text-xs uppercase tracking-wider font-semibold text-[#B48C4B] mb-3">
-                Identity
-              </p>
+            <FormSection
+              title="Identity"
+              defaultOpen={true}
+              summary={[formData.name, formData.distillery].filter(Boolean).join(' · ')}
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
@@ -341,13 +343,10 @@ export default function BottleForm({
                   </Select>
                 </div>
               </div>
-            </div>
+            </FormSection>
 
-            {/* SPECS SECTION */}
-            <div className="pt-2">
-              <p className="text-xs uppercase tracking-wider font-semibold text-[#B48C4B] mb-3">
-                Specifications
-              </p>
+            {/* DISTILLERY & DETAILS SECTION */}
+            <FormSection title="Distillery & Details" defaultOpen={false}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
@@ -404,13 +403,10 @@ export default function BottleForm({
                   </Select>
                 </div>
               </div>
-            </div>
+            </FormSection>
 
-            {/* ACQUISITION SECTION */}
-            <div className="pt-2">
-              <p className="text-xs uppercase tracking-wider font-semibold text-[#B48C4B] mb-3">
-                Acquisition & Ownership
-              </p>
+            {/* INVENTORY & PURCHASE SECTION */}
+            <FormSection title="Inventory & Purchase" defaultOpen={false}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
@@ -473,14 +469,9 @@ export default function BottleForm({
                   />
                 </div>
               </div>
-            </div>
 
-            {/* VALUE SECTION */}
-            <div className="pt-2">
-              <p className="text-xs uppercase tracking-wider font-semibold text-[#B48C4B] mb-3">
-                Value & Pricing
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Value & Pricing */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
                     {t('whiskey.collectorValue', 'Collector Value')}
@@ -544,13 +535,10 @@ export default function BottleForm({
                   </Select>
                 </div>
               </div>
-            </div>
+            </FormSection>
 
-            {/* STRATEGY & AVAILABILITY SECTION */}
-            <div className="pt-2">
-              <p className="text-xs uppercase tracking-wider font-semibold text-[#B48C4B] mb-3">
-                Strategy & Availability
-              </p>
+            {/* NOTES & TAGS SECTION */}
+            <FormSection title="Notes & Tags" defaultOpen={false}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
@@ -688,13 +676,10 @@ export default function BottleForm({
                   className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                 />
               </div>
-            </div>
+            </FormSection>
 
-            {/* RATING & MEDIA SECTION */}
-            <div className="pt-2">
-              <p className="text-xs uppercase tracking-wider font-semibold text-[#B48C4B] mb-3">
-                Rating & Media
-              </p>
+            {/* TASTING PROFILE SECTION */}
+            <FormSection title="Tasting Profile" defaultOpen={false}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
@@ -727,7 +712,40 @@ export default function BottleForm({
                 </div>
               </div>
 
-              <div className="mt-4">
+              <div className="mb-4">
+                <label className="text-sm text-[#D8C7A6] block mb-2">
+                  {t('whiskey.flavorNotes', 'Flavor Notes')}
+                </label>
+                <input
+                  value={formData.flavor_notes || ''}
+                  onChange={(e) => handleChange('flavor_notes', e.target.value)}
+                  placeholder={t('whiskey.flavorNotesPlaceholder', 'e.g. Vanilla, caramel, smoke, dried fruit, oak…')}
+                  className="w-full rounded-xl px-4 py-3 bg-[rgba(255,255,255,0.05)] border border-[rgba(180,140,75,0.2)] text-[#F5F1E7] outline-none"
+                />
+                <p className="text-xs mt-1" style={{ color: 'rgba(224,200,160,0.5)' }}>
+                  Comma-separated tasting descriptors used for AI recommendations.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-sm text-[#D8C7A6] block mb-2">
+                  {t('whiskey.tastingNotes', 'Tasting Notes')}
+                </label>
+                <Textarea
+                  value={formData.notes || ''}
+                  onChange={(e) => handleChange('notes', e.target.value)}
+                  placeholder={t(
+                    'whiskey.notesPlaceholder',
+                    'Describe the flavor profile, aromas, finish, or collector notes.'
+                  )}
+                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] h-24"
+                />
+              </div>
+            </FormSection>
+
+            {/* PHOTOS SECTION */}
+            <FormSection title="Photos" defaultOpen={false}>
+              <div>
                 <label className="text-sm text-[#D8C7A6] block mb-2">
                   {t('whiskey.photo', 'Bottle Photo')}
                 </label>
@@ -764,44 +782,7 @@ export default function BottleForm({
                   </p>
                 ) : null}
               </div>
-            </div>
-
-            {/* NOTES SECTION */}
-            <div className="pt-2">
-              <p className="text-xs uppercase tracking-wider font-semibold text-[#B48C4B] mb-3">
-                Notes
-              </p>
-
-              <div className="mb-4">
-                <label className="text-sm text-[#D8C7A6] block mb-2">
-                  {t('whiskey.flavorNotes', 'Flavor Notes')}
-                </label>
-                <input
-                  value={formData.flavor_notes || ''}
-                  onChange={(e) => handleChange('flavor_notes', e.target.value)}
-                  placeholder={t('whiskey.flavorNotesPlaceholder', 'e.g. Vanilla, caramel, smoke, dried fruit, oak…')}
-                  className="w-full rounded-xl px-4 py-3 bg-[rgba(255,255,255,0.05)] border border-[rgba(180,140,75,0.2)] text-[#F5F1E7] outline-none"
-                />
-                <p className="text-xs mt-1" style={{ color: 'rgba(224,200,160,0.5)' }}>
-                  Comma-separated tasting descriptors used for AI recommendations.
-                </p>
-              </div>
-
-              <div>
-                <label className="text-sm text-[#D8C7A6] block mb-2">
-                  {t('whiskey.tastingNotes', 'Tasting Notes')}
-                </label>
-                <Textarea
-                  value={formData.notes || ''}
-                  onChange={(e) => handleChange('notes', e.target.value)}
-                  placeholder={t(
-                    'whiskey.notesPlaceholder',
-                    'Describe the flavor profile, aromas, finish, or collector notes.'
-                  )}
-                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] h-24"
-                />
-              </div>
-            </div>
+            </FormSection>
           </form>
         </div>
 

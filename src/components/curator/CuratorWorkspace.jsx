@@ -43,7 +43,7 @@ import extractActionableAdvice from "./extractActionableAdvice.js";
 
 const AGENT_NAME = "expert_tobacconist";
 
-function buildSafeCollectionContext({ pipes = [], blends = [], bottles = [], smokingLogs = [], tastingLogs = [], userProfile = null }) {
+function buildSafeCollectionContext({ pipes = [], blends = [], bottles = [], smokingLogs = [], tastingLogs = [], cigars = [], cigarSessions = [], userProfile = null }) {
   return {
     pipes: pipes.map((p) => ({
       id: p.id,
@@ -75,6 +75,26 @@ function buildSafeCollectionContext({ pipes = [], blends = [], bottles = [], smo
       age_statement: bt.age_statement,
       is_favorite: bt.is_favorite,
     })),
+    cigars: cigars.map((c) => ({
+      id: c.id,
+      name: c.name,
+      brand: c.brand,
+      vitola: c.vitola,
+      wrapper: c.wrapper,
+      body: c.body,
+      strength: c.strength,
+      quantity: c.quantity,
+      aging_start_date: c.aging_start_date,
+      ready_to_smoke_date: c.ready_to_smoke_date,
+      is_favorite: c.is_favorite,
+      ai_excluded: c.ai_excluded,
+    })),
+    cigarSessions: cigarSessions.slice(-30).map((s) => ({
+      cigar_id: s.cigar_id,
+      cigar_name: s.cigar_name,
+      date: s.date,
+      rating: s.rating,
+    })),
     smokingLogs: smokingLogs.slice(-30).map((l) => ({
       pipe_id: l.pipe_id,
       pipe_name: l.pipe_name,
@@ -94,6 +114,7 @@ function buildSafeCollectionContext({ pipes = [], blends = [], bottles = [], smo
       smoke_duration_preference: userProfile.smoke_duration_preference,
       notes: userProfile.notes,
       whiskey_notes: userProfile.whiskey_notes,
+      cigar_notes: userProfile.cigar_notes,
     } : null,
   };
 }
@@ -122,6 +143,21 @@ function buildPromptBlock(ctx) {
     });
   }
 
+  if (ctx.cigars?.length) {
+    lines.push(`\nCIGARS (${ctx.cigars.length}):`);
+    ctx.cigars.forEach((c) => {
+      const qty = c.quantity != null ? ` [qty: ${c.quantity}]` : "";
+      lines.push(`  - ${c.name}${c.brand ? ` by ${c.brand}` : ""}${c.vitola ? `, ${c.vitola}` : ""}${c.wrapper ? `, ${c.wrapper} wrapper` : ""}${c.body ? `, ${c.body} body` : ""}${qty}${c.is_favorite ? " [favorite]" : ""}`);
+    });
+  }
+
+  if (ctx.cigarSessions?.length) {
+    lines.push(`\nRECENT CIGAR SESSIONS (last ${ctx.cigarSessions.length}):`);
+    ctx.cigarSessions.forEach((s) => {
+      lines.push(`  - ${s.cigar_name || s.cigar_id}${s.rating ? ` rated ${s.rating}/5` : ""} on ${s.date?.slice(0, 10) || "unknown"}`);
+    });
+  }
+
   if (ctx.smokingLogs?.length) {
     lines.push(`\nRECENT SMOKING SESSIONS (last ${ctx.smokingLogs.length}):`);
     ctx.smokingLogs.forEach((l) => {
@@ -144,6 +180,7 @@ function buildPromptBlock(ctx) {
       p.smoke_duration_preference && `duration: ${p.smoke_duration_preference}`,
       p.notes && `notes: ${p.notes}`,
       p.whiskey_notes && `whiskey notes: ${p.whiskey_notes}`,
+      p.cigar_notes && `cigar notes: ${p.cigar_notes}`,
     ].filter(Boolean);
     if (prefs.length) {
       lines.push(`\nUSER PREFERENCES: ${prefs.join(" | ")}`);
@@ -158,16 +195,55 @@ function generateQuickPrompts({
   blends = [],
   logs = [],
   bottles = [],
+  cigars = [],
+  cigarSessions = [],
   userProfile = null,
   curatorScope = "all",
   t,
 }) {
   const prompts = [];
-  const isPipeScope = curatorScope === "pipekeeper" || (curatorScope === "all" && (pipes.length > 0 || blends.length > 0));
-  const isWhiskeyScope = curatorScope === "whiskeykeeper" || (curatorScope === "all" && bottles.length > 0);
-  // If only whiskeykeeper is scoped, skip all pipe/tobacco prompts
-  const showPipe = curatorScope !== "whiskeykeeper";
-  const showWhiskey = curatorScope !== "pipekeeper";
+  const isCigarScope = curatorScope === "cigarkeeper";
+  const showPipe = curatorScope !== "whiskeykeeper" && curatorScope !== "cigarkeeper";
+  const showWhiskey = curatorScope !== "pipekeeper" && curatorScope !== "cigarkeeper";
+  const showCigar = curatorScope === "cigarkeeper" || (curatorScope === "all" && cigars.length > 0);
+
+  // Cigar-scope prompts
+  if (isCigarScope) {
+    if (cigars.length > 0) {
+      prompts.push(
+        t("curator.quickPrompt.cigarSmoke", { defaultValue: "What should I smoke from my humidor today?" })
+      );
+    }
+    if (cigars.some(c => c.aging_start_date || c.ready_to_smoke_date)) {
+      prompts.push(
+        t("curator.quickPrompt.cigarAging", { defaultValue: "Which cigars in my collection need more rest before smoking?" })
+      );
+    }
+    if (cigars.length > 3) {
+      prompts.push(
+        t("curator.quickPrompt.cigarOptimize", { defaultValue: "How can I optimize my cigar collection?" })
+      );
+    }
+    if (cigars.length === 0) {
+      prompts.push(
+        t("curator.quickPrompt.cigarStart", { defaultValue: "How should I start building my first cigar collection?" })
+      );
+    }
+    if (prompts.length === 0) {
+      prompts.push(
+        t("curator.quickPrompt.cigarDefault1", { defaultValue: "What should I focus on in my cigar collection?" }),
+        t("curator.quickPrompt.cigarDefault2", { defaultValue: "What cigars pair well together for a themed session?" })
+      );
+    }
+    return prompts.slice(0, 4);
+  }
+
+  // Cross-module cigar prompts when in "all" scope
+  if (showCigar && cigars.length > 0) {
+    prompts.push(
+      t("curator.quickPrompt.cigarSmoke", { defaultValue: "What should I smoke from my humidor today?" })
+    );
+  }
 
   if (showPipe && pipes.length > 10) {
     prompts.push(
@@ -425,6 +501,8 @@ export default function CuratorWorkspace({
   bottles = [],
   smokingLogs = [],
   tastingLogs = [],
+  cigars = [],
+  cigarSessions = [],
   userProfile = null,
   preFilledPrompt,
   routedContext,
@@ -484,13 +562,15 @@ export default function CuratorWorkspace({
       pipes: pipes || [],
       blends: blends || [],
       bottles: bottles || [],
+      cigars: cigars || [],
+      cigarSessions: cigarSessions || [],
       smokingLogs: effectiveSmokingLogs || [],
       tastingLogs: tastingLogs || [],
       userProfile: userProfile || null,
       tasteProfile: tasteProfile || null,
       activeModule: "curator",
     }),
-    [pipes, blends, bottles, effectiveSmokingLogs, tastingLogs, userProfile, tasteProfile]
+    [pipes, blends, bottles, cigars, cigarSessions, effectiveSmokingLogs, tastingLogs, userProfile, tasteProfile]
   );
 
   const logCuratorAuditEvent = useCallback(async (payload) => {
@@ -522,11 +602,13 @@ export default function CuratorWorkspace({
         blends,
         logs: effectiveSmokingLogs,
         bottles,
+        cigars,
+        cigarSessions,
         userProfile,
         curatorScope,
         t,
       }),
-    [pipes, blends, effectiveSmokingLogs, bottles, userProfile, curatorScope, t]
+    [pipes, blends, effectiveSmokingLogs, bottles, cigars, cigarSessions, userProfile, curatorScope, t]
   );
 
   const scrollToBottom = useCallback((behavior = "smooth") => {
@@ -644,6 +726,8 @@ export default function CuratorWorkspace({
           pipes,
           blends,
           bottles,
+          cigars,
+          cigarSessions,
           smokingLogs: effectiveSmokingLogs,
           tastingLogs,
           userProfile,
@@ -657,6 +741,8 @@ export default function CuratorWorkspace({
           pipes,
           blends,
           bottles,
+          cigars,
+          cigarSessions,
           smokingLogs: effectiveSmokingLogs,
           tastingLogs,
         });

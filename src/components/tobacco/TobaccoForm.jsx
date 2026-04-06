@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { useRecentValues } from "@/components/hooks/useRecentValues";
 import { Combobox } from "@/components/ui/combobox";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import FormSection from '@/components/forms/FormSection';
 
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -499,16 +500,12 @@ Return complete and accurate information based on the blend name or description 
       )}
 
       {/* Photo & Logo */}
-      <Card className="border-[rgba(140,105,65,0.28)]">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.images")}</CardTitle>
+      <FormSection title="Photos & Logo" defaultOpen={false}>
           {formData.logo && !uploading && !uploadingLogo && (
             <p className="text-xs text-[#D7C9B2]/70">
               {t("tobaccoExtended.logoAutoPopulated")}
             </p>
           )}
-        </CardHeader>
-        <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Tin Photo */}
             <div className="space-y-2">
@@ -620,15 +617,15 @@ Return complete and accurate information based on the blend name or description 
                </div>
                </div>
           </div>
-        </CardContent>
-      </Card>
+      </FormSection>
 
-      {/* Basic Info */}
-      <Card className="border-[rgba(140,105,65,0.28)]">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.basicInfo")}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Identity */}
+      <FormSection
+        title="Identity"
+        defaultOpen={true}
+        summary={[blend?.name, blend?.manufacturer].filter(Boolean).join(' · ') || undefined}
+      >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWithInfo 
             label={t("tobaccoExtended.blendName")} 
             required 
@@ -708,16 +705,17 @@ Return complete and accurate information based on the blend name or description 
               </SelectContent>
             </Select>
           </FieldWithInfo>
-        </CardContent>
-      </Card>
+          </div>
+      </FormSection>
 
       {/* Tobacco Components */}
-      <Card className="border-[rgba(140,105,65,0.28)]">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.tobaccoComponents")}</CardTitle>
+      <FormSection
+        title="Components"
+        defaultOpen={false}
+        summary={formData.tobacco_components?.length ? formData.tobacco_components.slice(0, 3).join(', ') : undefined}
+      >
+          <div className="space-y-3">
           <p className="text-sm text-[#D7C9B2]/70">{t("tobaccoExtended.tobaccoComponentsDesc")}</p>
-        </CardHeader>
-        <CardContent className="space-y-3">
           <div className="flex gap-2">
             <Input
               value={newComponent}
@@ -740,16 +738,12 @@ Return complete and accurate information based on the blend name or description 
               </Badge>
             ))}
           </div>
-        </CardContent>
-      </Card>
+          </div>
+      </FormSection>
 
       {/* Flavor Notes */}
-      <Card className="border-[rgba(140,105,65,0.28)]">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.flavorNotes")}</CardTitle>
+      <FormSection title="Flavor Profile" defaultOpen={false}>
           <p className="text-sm text-[#D7C9B2]/70">{t("tobaccoExtended.flavorNotesDesc")}</p>
-        </CardHeader>
-        <CardContent>
           <div className="flex flex-wrap gap-2">
             {COMMON_FLAVOR_NOTES.map(note => (
               <Badge
@@ -766,16 +760,12 @@ Return complete and accurate information based on the blend name or description 
               </Badge>
             ))}
           </div>
-        </CardContent>
-      </Card>
+      </FormSection>
 
       {/* Inventory & Status */}
-      <Card className="border-[rgba(140,105,65,0.28)]">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.inventoryStatus")}</CardTitle>
+      <FormSection title="Inventory & Purchase" defaultOpen={false}>
           <p className="text-sm text-[#D7C9B2]/70">{t("tobaccoExtended.inventoryStatusDesc")}</p>
-        </CardHeader>
-        <CardContent className="space-y-6">
+          <div className="space-y-6">
           <Tabs defaultValue="tins" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="tins">{t("tobaccoExtended.tins")}</TabsTrigger>
@@ -1079,15 +1069,12 @@ Return complete and accurate information based on the blend name or description 
               />
             </div>
           </div>
-        </CardContent>
-      </Card>
+          </div>
+      </FormSection>
 
       {/* Notes */}
-      <Card className="border-[rgba(140,105,65,0.28)]">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("common.notes")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <FormSection title="Notes & Tags" defaultOpen={false}>
+          <div className="space-y-4">
           <div className="space-y-2">
             <Textarea
               value={formData.notes}
@@ -1118,8 +1105,8 @@ Return complete and accurate information based on the blend name or description 
               </div>
             </FieldWithInfo>
           </div>
-        </CardContent>
-      </Card>
+          </div>
+      </FormSection>
 
       {/* Actions */}
       <div className="flex gap-3 justify-end pt-2">
