@@ -633,6 +633,8 @@ function computeSuggestedSpecByPipe(smokeLogs, blends) {
     if (!log.pipe_id || !log.blend_id) continue;
     const blend = blendById[log.blend_id];
     if (!blend) continue;
+    // blend_type is the primary classification field; blend_family is the legacy fallback.
+    // Both are used across the app — see buildDataMetadataCards and buildNextPurchaseCards.
     const type = blend.blend_type || blend.blend_family;
     if (!type || type === 'Unknown') continue;
     if (!typeCounts[log.pipe_id]) typeCounts[log.pipe_id] = {};
@@ -727,10 +729,12 @@ function buildUtilizationCards(blends, smokeLogs) {
   // Only surface if there are underused blends but not ALL blends are underused
   // (if no smoke logs exist, we don't want to flag everything)
   if (underusedBlends.length > 0 && underusedBlends.length < blendsWithStock.length) {
+    const topNames = underusedBlends.slice(0, 3).map((b) => b.name).join(', ');
+    const overflowNote = underusedBlends.length > 3 ? ` and ${underusedBlends.length - 3} more` : '';
     cards.push({
       id: 'util_underused_blends',
       title: `${underusedBlends.length} Cellared ${plural(underusedBlends.length, 'Blend')} Not Recently Smoked`,
-      whatWeFound: `We found ${underusedBlends.length} ${plural(underusedBlends.length, 'blend')} with stock in your cellar that ${has(underusedBlends.length)} no entry in your recent smoking sessions: ${underusedBlends.slice(0, 3).map((b) => b.name).join(', ')}${underusedBlends.length > 3 ? ` and ${underusedBlends.length - 3} more` : ''}. View Items will open PipeKeeper so you can choose candidates for your next session.`,
+      whatWeFound: `We found ${underusedBlends.length} ${plural(underusedBlends.length, 'blend')} with stock in your cellar that ${has(underusedBlends.length)} no entry in your recent smoking sessions: ${topNames}${overflowNote}. View Items will open PipeKeeper so you can choose candidates for your next session.`,
       whyItMatters: 'Blends sitting unsmoked can be forgotten cellar gems or candidates for gifting, trading, or prioritized sessions. Reviewing your rotation periodically prevents cellar blindness.',
       recommendedAction: 'Review the listed blends and consider adding one to your next session plan. Ask Curator can suggest which to prioritize based on type, age, and your taste profile.',
       severity: underusedBlends.length >= Math.ceil(blendsWithStock.length * 0.5) ? INSIGHT_SEVERITY.MEDIUM : INSIGHT_SEVERITY.LOW,
@@ -1317,9 +1321,9 @@ export default function CuratorOptimizePanel({
     if (nextPurchaseCards.some((c) => c.id === 'np_blend_family_gaps')) {
       suppressedInsightIds.add('diversity_low_blend_variety');
     }
-    // util_underused_blends covers the same rotation signal as
-    // rotation_underused_pipes — only suppress if both exist and overlap
-    // (they target different item types so keep both if both trigger)
+    // util_underused_blends (tobacco) and rotation_underused_pipes (pipes) target
+    // different item types — they are complementary, not duplicates, so no
+    // suppression is needed between them.
 
     // Priority order: data fixes first → specialization → restock/purchases → utilization → insights
     for (const card of dataMetadataCards) addCard({ ...card, section: card.section || 'data_metadata' });
