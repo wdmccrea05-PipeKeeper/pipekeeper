@@ -599,27 +599,40 @@ Be specific. Name actual brands and lines where you can infer them.`;
     },
     buildPrompt: (ctx) => {
       const { cigars = [], bottles = [] } = ctx;
-      const smokeable = cigars.filter(c => (c.quantity ?? 0) > 0 || c.unit_type).slice(0, 10);
+      // Cap items to keep prompt fast and deterministic
+      const smokeable = cigars.filter(c => (c.quantity ?? 0) > 0 || c.unit_type).slice(0, 5);
+      const bottleList = bottles.slice(0, 5);
+      const hasBottles = bottleList.length > 0;
 
-      return `You are a pairing expert for premium cigars.
+      return `You are a pairing expert for premium cigars. Generate focused pairing recommendations.
 
-CIGARS AVAILABLE TO SMOKE:
+PAIRING RULES:
+- "direct_pairing": one cigar paired with one specific drink for tonight
+- "collection_mix_match": a set of cigar+drink options from the full collection
+- NEVER suggest smoking a pipe and a cigar at the same time
+- NEVER suggest drinking whiskey and wine simultaneously
+- NEVER combine all items into one simultaneous experience
+- Each individual recommendation pairs exactly TWO things: one cigar + one drink (even within a mix-and-match set, each entry is a two-item pairing)
+
+CIGARS (${smokeable.length} available):
 ${smokeable.map(c =>
-  `- ${c.brand || ''} ${c.name || ''} ${c.vitola ? `(${c.vitola})` : ''} | ` +
-  `Wrapper: ${c.wrapper || '?'} | Body: ${c.body || '?'} | ` +
-  `Flavor notes: ${Array.isArray(c.flavor_notes) ? c.flavor_notes.join(', ') : (c.flavor_notes || '?')}`
+  `- ${c.brand || ''} ${c.name || ''} | Body: ${c.body || '?'} | Wrapper: ${c.wrapper || '?'}`
 ).join('\n')}
 
-${bottles.length > 0 ? `WHISKEY COLLECTION (for cross-module pairing):
-${bottles.slice(0, 8).map(b => `- ${b.distillery || ''} ${b.name || ''} ${b.whiskey_type || ''}`).join('\n')}` : ''}
+${hasBottles ? `WHISKEY COLLECTION (${bottleList.length} bottles):
+${bottleList.map(b => `- ${b.distillery || b.brand || ''} ${b.name || ''} ${b.whiskey_type || ''}`).join('\n')}
 
-For each cigar (or group by profile):
-1. Best spirit pairing (whiskey, rum, cognac, etc.) with rationale
-2. Best non-alcoholic pairing
-3. Optional food pairing
-4. Ideal occasion
+` : ''}Generate exactly these recommendations:
+1. Best direct pairing for tonight (one cigar + one spirit)
+${hasBottles ? '2. Best cigar + specific whiskey match from owned bottles (direct_pairing)' : '2. Best cigar + non-alcoholic pairing (direct_pairing)'}
+3. Top 2-3 mix-and-match options across the collection (collection_mix_match)
+4. Any cigars currently lacking strong pairing options
 
-${bottles.length > 0 ? 'Also recommend specific whiskey+cigar pairings from the owned collection.' : ''}`;
+For each recommendation set:
+- pairingMode: "direct_pairing" or "collection_mix_match"
+- what is being paired (specific items from the collection above)
+- why they go together (1 sentence)
+- what inventory was considered`;
     },
     buildContext: (ctx) => ({
       type: 'cigar_pairing_suggestions',
