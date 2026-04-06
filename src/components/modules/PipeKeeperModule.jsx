@@ -129,6 +129,8 @@ export default function PipeKeeperModule() {
       Icon: BookOpen,
       label: t('quickActions.logSession'),
       onClick: () => {
+        // Wait until collection data is loaded before opening the session modal.
+        // If still loading, open anyway — the modal will show a loading state.
         setShowSmokingLog(true);
         navigate(location.pathname + '?action=log-smoke', { replace: true });
       }
@@ -306,6 +308,7 @@ export default function PipeKeeperModule() {
         pipes={pipes}
         blends={blends}
         user={user}
+        isLoading={pipesLoading || blendsLoading}
       />
 
       {/* Add Flow Modal */}

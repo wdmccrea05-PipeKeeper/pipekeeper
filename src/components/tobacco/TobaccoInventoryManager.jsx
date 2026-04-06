@@ -14,6 +14,17 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [addingToCellar, setAddingToCellar] = useState(null);
+  const [sharedDate, setSharedDate] = useState('');
+
+  const applySharedDate = (date) => {
+    setSharedDate(date);
+    setFormData(prev => ({
+      ...prev,
+      tin_cellared_date: date,
+      bulk_cellared_date: date,
+      pouch_cellared_date: date,
+    }));
+  };
 
   const [formData, setFormData] = useState({
     tin_size_oz: blend?.tin_size_oz ?? '',
@@ -197,6 +208,24 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
         {t("inventory.trackDesc")}
       </p>
 
+      {/* Shared cellared date — applies to all tabs at once */}
+      <div className="flex items-end gap-3 p-3 rounded-xl" style={{ background: "rgba(180,140,75,0.07)", border: "1px solid rgba(180,140,75,0.18)" }}>
+        <div className="flex-1 space-y-1">
+          <Label className="text-xs text-[#D4A574] font-semibold uppercase tracking-wide">
+            {t("inventory.sharedCellaredDate") || "Shared Cellared Date"}
+          </Label>
+          <Input
+            type="date"
+            value={sharedDate}
+            onChange={(e) => applySharedDate(e.target.value)}
+            style={{ borderColor: "rgba(180,140,75,0.4)", color: "#E0D8C8", background: "rgba(30,20,12,0.8)", fontSize: '16px' }}
+          />
+        </div>
+        <p className="text-xs text-[#E0D8C8]/50 pb-1 max-w-[140px]">
+          {t("inventory.sharedDateHint") || "Sets date for all tabs"}
+        </p>
+      </div>
+
       <Tabs defaultValue="tins" className="w-full">
         <TabsList className="grid w-full grid-cols-3" style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(180,140,75,0.2)" }}>
           <TabsTrigger value="tins" className="flex items-center gap-1.5" style={{ color: "#E0D8C8" }}>
@@ -222,7 +251,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.tin_size_oz != null && formData.tin_size_oz !== '' ? parseFloat(formData.tin_size_oz).toFixed(2) : ''}
+                value={formData.tin_size_oz ?? ''}
                 onChange={(e) => handleChange('tin_size_oz', e.target.value)}
                 placeholder={t("inventory.tinSizePlaceholder")}
                 style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
@@ -245,7 +274,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.tin_total_quantity_oz != null && formData.tin_total_quantity_oz !== '' ? parseFloat(formData.tin_total_quantity_oz).toFixed(2) : ''}
+                value={formData.tin_total_quantity_oz ?? ''}
                 placeholder={t("tobaccoExtended.autoCalculated")}
                 style={{ borderColor: "rgba(140,105,65,0.2)", background: "rgba(255,255,255,0.03)", color: "rgba(224,216,200,0.5)" }}
                 readOnly
@@ -289,7 +318,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="date"
                 value={formData.tin_cellared_date}
                 onChange={(e) => handleChange('tin_cellared_date', e.target.value)}
-                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
+                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))", fontSize: '16px' }}
               />
             </div>
           </div>
@@ -304,7 +333,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.bulk_total_quantity_oz != null && formData.bulk_total_quantity_oz !== '' ? parseFloat(formData.bulk_total_quantity_oz).toFixed(2) : ''}
+                value={formData.bulk_total_quantity_oz ?? ''}
                 onChange={(e) => handleChange('bulk_total_quantity_oz', e.target.value)}
                 placeholder={t("inventory.bulkTotalPlaceholder")}
                 style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
@@ -316,7 +345,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.bulk_open != null && formData.bulk_open !== '' ? parseFloat(formData.bulk_open).toFixed(2) : ''}
+                value={formData.bulk_open ?? ''}
                 onChange={(e) => handleChange('bulk_open', e.target.value)}
                 placeholder={t("inventory.bulkOpenPlaceholder")}
                 style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
@@ -329,7 +358,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                   type="number"
                   step="0.01"
                   min="0"
-                  value={formData.bulk_cellared != null && formData.bulk_cellared !== '' ? parseFloat(formData.bulk_cellared).toFixed(2) : ''}
+                  value={formData.bulk_cellared ?? ''}
                   onChange={(e) => handleChange('bulk_cellared', e.target.value)}
                   placeholder={t("inventory.bulkToCellarPlaceholder")}
                   style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))", flex: 1 }}
@@ -350,7 +379,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="date"
                 value={formData.bulk_cellared_date}
                 onChange={(e) => handleChange('bulk_cellared_date', e.target.value)}
-                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
+                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))", fontSize: '16px' }}
               />
             </div>
           </div>
@@ -365,7 +394,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.pouch_size_oz != null && formData.pouch_size_oz !== '' ? parseFloat(formData.pouch_size_oz).toFixed(2) : ''}
+                value={formData.pouch_size_oz ?? ''}
                 onChange={(e) => handleChange('pouch_size_oz', e.target.value)}
                 placeholder={t("inventory.pouchSizePlaceholder")}
                 style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
@@ -388,7 +417,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.pouch_total_quantity_oz != null && formData.pouch_total_quantity_oz !== '' ? parseFloat(formData.pouch_total_quantity_oz).toFixed(2) : ''}
+                value={formData.pouch_total_quantity_oz ?? ''}
                 placeholder={t("tobaccoExtended.autoCalculated")}
                 style={{ borderColor: "rgba(140,105,65,0.2)", background: "rgba(255,255,255,0.03)", color: "rgba(224,216,200,0.5)" }}
                 readOnly
@@ -432,7 +461,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="date"
                 value={formData.pouch_cellared_date}
                 onChange={(e) => handleChange('pouch_cellared_date', e.target.value)}
-                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))" }}
+                style={{ borderColor: "rgba(140,105,65,0.4)", color: "#E0D8C8", background: "linear-gradient(135deg, rgba(60,45,30,0.6), rgba(50,35,25,0.8))", fontSize: '16px' }}
               />
             </div>
           </div>

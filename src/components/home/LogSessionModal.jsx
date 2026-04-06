@@ -75,6 +75,7 @@ export default function LogSessionModal({
   user: passedUser,
   initialPipeId = "",
   initialBlendId = "",
+  isLoading = false,
 }) {
   const { t } = useTranslation();
   const { user: currentUser, hasPaid } = useCurrentUser();
@@ -528,6 +529,12 @@ export default function LogSessionModal({
             <SheetTitle>Log Pipe Session</SheetTitle>
           </SheetHeader>
 
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <div className="w-8 h-8 border-2 border-[#A35C5C] border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm text-[#E0D8C8]/60">Loading your collection…</p>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-3">
               <div>
@@ -894,6 +901,7 @@ export default function LogSessionModal({
               </Button>
             </div>
           </form>
+          )}
         </SheetContent>
       </Sheet>
     </>
