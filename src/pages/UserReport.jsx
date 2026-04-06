@@ -129,16 +129,16 @@ export default function UserReport() {
   const warnings      = report?.warnings      || {};
   const sanityChecks  = report?.sanityChecks  || {};
 
-  // Show the warnings panel when there are data-quality issues OR sanity failures.
-  // warnings.messages (data-quality detail strings) and sanityChecks.failures are now
-  // kept separate; we rely on the explicit counts rather than the flat messages array.
+  // Show the warnings panel when there are excluded-record counts.
+  // warnings contains: missingPrice, missingInterval, missingPlatform, duplicatesRemoved.
+  // Sanity check failures are internal-only and not surfaced here.
   const hasDataWarning =
     !!report &&
     (
       (warnings.missingPrice    > 0) ||
       (warnings.missingInterval > 0) ||
-      (warnings.missingRenewal  > 0) ||
-      (sanityChecks.passed === false)
+      (warnings.missingPlatform > 0) ||
+      (warnings.duplicatesRemoved > 0)
     );
 
   const filteredData = useMemo(() => {
@@ -267,10 +267,16 @@ export default function UserReport() {
       ['Renewal Revenue — This Year (customers)',      renewalRevenue.year?.customers     ?? 0],
       ['Renewal Revenue — This Year (subs)',           renewalRevenue.year?.subscriptions ?? 0],
       ['Renewal Revenue — This Year ($)',             `$${(renewalRevenue.year?.revenue   ?? 0).toFixed(2)}`],
+      // Excluded records
+      ['--- EXCLUDED RECORDS ---', ''],
+      ['Missing Price',          warnings.missingPrice      ?? 0],
+      ['Missing Billing Interval', warnings.missingInterval ?? 0],
+      ['Missing Platform',       warnings.missingPlatform   ?? 0],
+      ['Duplicates Removed',     warnings.duplicatesRemoved ?? 0],
       // User detail
       ['', ''],
       ['--- USER DETAIL ---', ''],
-      ['tier', 'name', 'email', 'subscription_status', 'billing_interval', 'subscription_end', 'joined'],
+      ['tier', 'name', 'email', 'subscription_status', 'billing_interval', 'subscription_end', 'joined', 'platform'],
     ];
 
     (report?.paid_users || []).forEach((u) => {
@@ -282,6 +288,7 @@ export default function UserReport() {
         u.billing_interval || '',
         u.subscription_end ? new Date(u.subscription_end).toLocaleDateString() : '',
         u.created_date ? new Date(u.created_date).toLocaleDateString() : '',
+        u.platform || '',
       ]);
     });
     (report?.free_users || []).forEach((u) => {
@@ -293,6 +300,7 @@ export default function UserReport() {
         '',
         '',
         u.created_date ? new Date(u.created_date).toLocaleDateString() : '',
+        '',
       ]);
     });
 
@@ -368,7 +376,7 @@ export default function UserReport() {
       </div>
 
       {hasDataWarning && (
-        <WarningsPanel warnings={warnings} sanityChecks={sanityChecks} />
+        <WarningsPanel warnings={warnings} />
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
@@ -608,20 +616,18 @@ export default function UserReport() {
 
 // ─── Warnings panel ──────────────────────────────────────────────────────────
 
-function WarningsPanel({ warnings, sanityChecks }) {
+function WarningsPanel({ warnings }) {
   const [expanded, setExpanded] = useState(false);
 
-  // Category A: Data-quality issues — incomplete source records
+  // Excluded-record counts — source-data quality issues after dedup.
   const dataQualityItems = [
-    warnings.missingPrice    > 0 && `${warnings.missingPrice} paid sub(s) missing price — excluded from revenue`,
-    warnings.missingInterval > 0 && `${warnings.missingInterval} paid sub(s) missing billing interval — excluded from MRR/ARR`,
-    warnings.missingRenewal  > 0 && `${warnings.missingRenewal} paid sub(s) missing renewal date — excluded from renewal metrics`,
+    warnings.missingPrice      > 0 && `${warnings.missingPrice} paid sub(s) missing price — excluded from revenue`,
+    warnings.missingInterval   > 0 && `${warnings.missingInterval} paid sub(s) missing billing interval — excluded from MRR/ARR`,
+    warnings.missingPlatform   > 0 && `${warnings.missingPlatform} paid sub(s) missing platform — excluded from platform breakdown`,
+    warnings.duplicatesRemoved > 0 && `${warnings.duplicatesRemoved} duplicate sub(s) removed (kept most recent per account per module)`,
   ].filter(Boolean);
 
-  // Category B: Report logic / sanity issues — calculation or aggregate inconsistencies
-  const sanityItems = (sanityChecks?.failures ?? []).filter(Boolean);
-
-  const totalCount = dataQualityItems.length + sanityItems.length;
+  const totalCount = dataQualityItems.length;
 
   return (
     <div className="mb-6 rounded-xl border border-amber-500/25 bg-amber-950/20 overflow-hidden">
@@ -632,7 +638,7 @@ function WarningsPanel({ warnings, sanityChecks }) {
       >
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-          <span className="text-sm font-semibold text-amber-200">Report warnings</span>
+          <span className="text-sm font-semibold text-amber-200">Excluded records</span>
           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">{totalCount}</span>
         </div>
         {expanded ? <ChevronUp className="w-4 h-4 text-amber-400/60" /> : <ChevronDown className="w-4 h-4 text-amber-400/60" />}
@@ -642,36 +648,17 @@ function WarningsPanel({ warnings, sanityChecks }) {
           {dataQualityItems.length > 0 && (
             <div className="mt-3">
               <p className="text-xs font-semibold text-amber-300/70 uppercase tracking-wider mb-1.5">
-                Data Quality Issues
+                Incomplete Source Records
               </p>
               <p className="text-xs text-amber-200/40 mb-2">
-                Subs with missing price are excluded from revenue.
-                Subs with missing interval are excluded from MRR/ARR.
-                These reflect incomplete source records.
+                These records are missing required fields and have been excluded from the relevant metrics.
+                No values are guessed or inferred.
               </p>
               <div className="space-y-1.5">
                 {dataQualityItems.map((item, i) => (
                   <div key={i} className="flex items-start gap-2">
                     <span className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-400/50 shrink-0" />
                     <p className="text-sm text-amber-200/75">{item}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {sanityItems.length > 0 && (
-            <div className="mt-3">
-              <p className="text-xs font-semibold text-rose-300/70 uppercase tracking-wider mb-1.5">
-                Report Logic / Sanity Failures
-              </p>
-              <p className="text-xs text-amber-200/40 mb-2">
-                These are calculation or aggregate inconsistencies in the report itself.
-              </p>
-              <div className="space-y-1.5">
-                {sanityItems.map((item, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <span className="mt-1 w-1.5 h-1.5 rounded-full bg-rose-400/50 shrink-0" />
-                    <p className="text-sm text-rose-200/75">{item}</p>
                   </div>
                 ))}
               </div>

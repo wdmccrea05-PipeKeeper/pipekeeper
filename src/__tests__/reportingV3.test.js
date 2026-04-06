@@ -21,6 +21,7 @@ import {
   normalizeInterval,
   isActivePaid,
   normalizeSub,
+  normalizePlatform,
   mrrContribution,
   computeMRRARR,
   calcRenewalPeriod,
@@ -136,7 +137,7 @@ describe('normalizeSub', () => {
     expect(sub.isPaid).toBe(true);
     expect(sub.billingInterval).toBe('monthly');
     expect(sub.price).toBe(9.99);
-    expect(sub.product).toBe('pipekeeper');
+    expect(sub.module).toBe('pipekeeper');
     expect(sub.renewalAt).toBeInstanceOf(Date);
   });
 
@@ -145,7 +146,7 @@ describe('normalizeSub', () => {
     const sub = normalizeSub(raw);
     expect(sub.billingInterval).toBe('annual');
     expect(sub.price).toBe(99.99);
-    expect(sub.product).toBe('pipekeeper');
+    expect(sub.module).toBe('pipekeeper');
   });
 
   it('sets price to null when amount is 0', () => {
@@ -172,11 +173,11 @@ describe('normalizeSub', () => {
     expect(sub.renewalAt).toBeNull();
   });
 
-  it('always sets product to pipekeeper', () => {
+  it('always sets module to pipekeeper', () => {
     // Even if product_kind were set to something else, V3 ignores it
     const raw = makeSub({ product_kind: 'whiskeykeeper' });
     const sub = normalizeSub(raw);
-    expect(sub.product).toBe('pipekeeper');
+    expect(sub.module).toBe('pipekeeper');
   });
 
   it('uses started_at for createdAt when available', () => {
@@ -189,6 +190,69 @@ describe('normalizeSub', () => {
     const raw = makeSub({ started_at: undefined, created_date: '2024-03-01T00:00:00Z' });
     const sub = normalizeSub(raw);
     expect(sub.createdAt?.toISOString()).toBe('2024-03-01T00:00:00.000Z');
+  });
+
+  it('sets platform from subscription provider', () => {
+    expect(normalizeSub(makeSub({ provider: 'apple' })).platform).toBe('ios');
+    expect(normalizeSub(makeSub({ provider: 'stripe' })).platform).toBe('web');
+    expect(normalizeSub(makeSub({ provider: 'google' })).platform).toBe('google');
+  });
+
+  it('sets platform to null when provider is unknown and no user', () => {
+    const sub = normalizeSub(makeSub({ provider: undefined }));
+    expect(sub.platform).toBeNull();
+  });
+
+  it('falls back to user platform when provider is missing', () => {
+    const user = { platform: 'ios' };
+    const sub = normalizeSub(makeSub({ provider: undefined }), user);
+    expect(sub.platform).toBe('ios');
+  });
+});
+
+// ─── normalizePlatform ────────────────────────────────────────────────────────
+
+describe('normalizePlatform', () => {
+  it('returns ios for apple provider', () => {
+    expect(normalizePlatform({ provider: 'apple' })).toBe('ios');
+    expect(normalizePlatform({ provider: 'ios' })).toBe('ios');
+  });
+
+  it('returns google for android/google provider', () => {
+    expect(normalizePlatform({ provider: 'google' })).toBe('google');
+    expect(normalizePlatform({ provider: 'android' })).toBe('google');
+    expect(normalizePlatform({ provider: 'googleplay' })).toBe('google');
+  });
+
+  it('returns web for stripe provider', () => {
+    expect(normalizePlatform({ provider: 'stripe' })).toBe('web');
+    expect(normalizePlatform({ provider: 'web' })).toBe('web');
+  });
+
+  it('is case-insensitive for provider', () => {
+    expect(normalizePlatform({ provider: 'Apple' })).toBe('ios');
+    expect(normalizePlatform({ provider: 'STRIPE' })).toBe('web');
+  });
+
+  it('falls back to user.platform when provider is missing', () => {
+    expect(normalizePlatform({}, { platform: 'ios' })).toBe('ios');
+    expect(normalizePlatform({}, { platform: 'android' })).toBe('google');
+    expect(normalizePlatform({}, { platform: 'web' })).toBe('web');
+  });
+
+  it('falls back to user.data.platform when user.platform is missing', () => {
+    expect(normalizePlatform({}, { data: { platform: 'apple' } })).toBe('ios');
+  });
+
+  it('returns null when provider is empty and user platform is empty', () => {
+    expect(normalizePlatform({})).toBeNull();
+    expect(normalizePlatform({}, null)).toBeNull();
+    expect(normalizePlatform({}, { platform: '' })).toBeNull();
+    expect(normalizePlatform({}, { platform: 'unknown' })).toBeNull();
+  });
+
+  it('provider takes precedence over user platform', () => {
+    expect(normalizePlatform({ provider: 'stripe' }, { platform: 'ios' })).toBe('web');
   });
 });
 
