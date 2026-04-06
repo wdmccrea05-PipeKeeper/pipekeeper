@@ -709,22 +709,26 @@ export default function ProfilePage() {
             </FormSection>
 
             {/* Pipe / Tobacco Preferences */}
-            <FormSection title="Pipe & Tobacco Preferences">
+            <FormSection title={t("profile.pipeTobaccoPreferences", "Pipe & Tobacco Preferences")}>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label className="ck-field-label">{t("profileExtended.clenchingPreference")}</Label>
                   <div className="flex flex-wrap gap-2">
-                    {["Yes", "No", "Sometimes"].map((pref) => {
-                      const active = formData.clenching_preference === pref;
+                    {[
+                      { value: "Yes", label: t("profilePreferences.yes", "Yes") },
+                      { value: "No", label: t("profilePreferences.no", "No") },
+                      { value: "Sometimes", label: t("profilePreferences.sometimes", "Sometimes") },
+                    ].map(({ value, label }) => {
+                      const active = formData.clenching_preference === value;
                       return (
                         <Button
-                          key={pref}
-                          onClick={() => setFormData((p) => ({ ...p, clenching_preference: pref }))}
+                          key={value}
+                          onClick={() => setFormData((p) => ({ ...p, clenching_preference: value }))}
                           variant={active ? "default" : "outline"}
                           size="sm"
                           className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
                         >
-                          {pref}
+                          {label}
                         </Button>
                       );
                     })}
@@ -734,17 +738,22 @@ export default function ProfilePage() {
                 <div className="space-y-2">
                   <Label className="ck-field-label">{t("profileExtended.smokeDurationPreference")}</Label>
                   <div className="flex flex-wrap gap-2">
-                    {["Short (15-30 min)", "Medium (30-60 min)", "Long (60+ min)", "No Preference"].map((pref) => {
-                      const active = formData.smoke_duration_preference === pref;
+                    {[
+                      { value: "Short (15-30 min)", label: t("profilePreferences.durationShort", "Short (15-30 min)") },
+                      { value: "Medium (30-60 min)", label: t("profilePreferences.durationMedium", "Medium (30-60 min)") },
+                      { value: "Long (60+ min)", label: t("profilePreferences.durationLong", "Long (60+ min)") },
+                      { value: "No Preference", label: t("profilePreferences.noPreference", "No Preference") },
+                    ].map(({ value, label }) => {
+                      const active = formData.smoke_duration_preference === value;
                       return (
                         <Button
-                          key={pref}
-                          onClick={() => setFormData((p) => ({ ...p, smoke_duration_preference: pref }))}
+                          key={value}
+                          onClick={() => setFormData((p) => ({ ...p, smoke_duration_preference: value }))}
                           variant={active ? "default" : "outline"}
                           size="sm"
                           className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
                         >
-                          {pref}
+                          {label}
                         </Button>
                       );
                     })}
@@ -754,17 +763,23 @@ export default function ProfilePage() {
                 <div className="space-y-2">
                   <Label className="ck-field-label">{t("profileExtended.pipeSizePreference")}</Label>
                   <div className="flex flex-wrap gap-2">
-                    {["Small", "Medium", "Large", "Extra Large", "No Preference"].map((pref) => {
-                      const active = formData.pipe_size_preference === pref;
+                    {[
+                      { value: "Small", label: t("profilePreferences.sizeSmall", "Small") },
+                      { value: "Medium", label: t("profilePreferences.sizeMedium", "Medium") },
+                      { value: "Large", label: t("profilePreferences.sizeLarge", "Large") },
+                      { value: "Extra Large", label: t("profilePreferences.sizeExtraLarge", "Extra Large") },
+                      { value: "No Preference", label: t("profilePreferences.noPreference", "No Preference") },
+                    ].map(({ value, label }) => {
+                      const active = formData.pipe_size_preference === value;
                       return (
                         <Button
-                          key={pref}
-                          onClick={() => setFormData((p) => ({ ...p, pipe_size_preference: pref }))}
+                          key={value}
+                          onClick={() => setFormData((p) => ({ ...p, pipe_size_preference: value }))}
                           variant={active ? "default" : "outline"}
                           size="sm"
                           className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
                         >
-                          {pref}
+                          {label}
                         </Button>
                       );
                     })}
@@ -774,17 +789,24 @@ export default function ProfilePage() {
                 <div className="space-y-2">
                   <Label className="ck-field-label">{t("profileExtended.strengthPreference")}</Label>
                   <div className="flex flex-wrap gap-2">
-                    {["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full", "No Preference"].map((pref) => {
-                      const active = formData.strength_preference === pref;
+                    {[
+                      { value: "Mild", label: t("profilePreferences.strengthMild", "Mild") },
+                      { value: "Mild-Medium", label: t("profilePreferences.strengthMildMedium", "Mild-Medium") },
+                      { value: "Medium", label: t("profilePreferences.strengthMedium", "Medium") },
+                      { value: "Medium-Full", label: t("profilePreferences.strengthMediumFull", "Medium-Full") },
+                      { value: "Full", label: t("profilePreferences.strengthFull", "Full") },
+                      { value: "No Preference", label: t("profilePreferences.noPreference", "No Preference") },
+                    ].map(({ value, label }) => {
+                      const active = formData.strength_preference === value;
                       return (
                         <Button
-                          key={pref}
-                          onClick={() => setFormData((p) => ({ ...p, strength_preference: pref }))}
+                          key={value}
+                          onClick={() => setFormData((p) => ({ ...p, strength_preference: value }))}
                           variant={active ? "default" : "outline"}
                           size="sm"
                           className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
                         >
-                          {pref}
+                          {label}
                         </Button>
                       );
                     })}
@@ -833,51 +855,51 @@ export default function ProfilePage() {
                     value={formData.notes}
                     onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
                     rows={3}
-                    placeholder="Any guidance for pipe and tobacco recommendations..."
+                    placeholder={t("profile.pipeNotesPlaceholder", "Any guidance for pipe and tobacco recommendations...")}
                   />
                 </div>
               </div>
             </FormSection>
 
             {/* Whiskey Preferences */}
-            <FormSection title="Whiskey Preferences">
+            <FormSection title={t("profile.whiskeyPreferences", "Whiskey Preferences")}>
               <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.48)' }}>
-                Used by Curator to personalize pairing recommendations and cross-collection insights.
+                {t("profile.usedByCuratorWhiskey", "Used by Curator to personalize pairing recommendations and cross-collection insights.")}
               </p>
               <WhiskeyPreferencesSection
                 preferences={formData.whiskey_preferences}
                 onChange={(updated) => setFormData((p) => ({ ...p, whiskey_preferences: updated }))}
               />
               <div className="mt-4">
-                <Label className="ck-field-label">Whiskey Notes for Recommendations</Label>
+                <Label className="ck-field-label">{t("profile.whiskeyNotesLabel", "Whiskey Notes for Recommendations")}</Label>
                 <Textarea
                   value={formData.whiskey_notes}
                   onChange={(e) => setFormData((p) => ({ ...p, whiskey_notes: e.target.value }))}
                   rows={3}
-                  placeholder="e.g. Love smoky Islays, prefer aged single malts, enjoy pairing with dark chocolate or cigars..."
+                  placeholder={t("profile.whiskeyNotesPlaceholder", "e.g. Love smoky Islays, prefer aged single malts, enjoy pairing with dark chocolate or cigars...")}
                 />
                 <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.4)' }}>
-                  This note is shared with the Curator AI to improve whiskey recommendations.
+                  {t("profile.whiskeyNotesHint", "This note is shared with the Curator AI to improve whiskey recommendations.")}
                 </p>
               </div>
             </FormSection>
 
             {/* Cigar Preferences */}
-            <FormSection title="Cigar Preferences">
+            <FormSection title={t("profile.cigarPreferences", "Cigar Preferences")}>
               <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.48)' }}>
-                Used by Curator to personalize cigar recommendations, humidor guidance, and cross-collection pairing suggestions.
+                {t("profile.usedByCuratorCigar", "Used by Curator to personalize cigar recommendations, humidor guidance, and cross-collection pairing suggestions.")}
               </p>
               <CigarPreferencesSection
                 preferences={formData.cigar_preferences}
                 onChange={(updated) => setFormData((p) => ({ ...p, cigar_preferences: updated }))}
               />
               <div className="mt-4">
-                <Label className="ck-field-label">Cigar Notes for Recommendations</Label>
+                <Label className="ck-field-label">{t("profile.cigarNotesLabel", "Cigar Notes for Recommendations")}</Label>
                 <Textarea
                   value={formData.cigar_notes}
                   onChange={(e) => setFormData((p) => ({ ...p, cigar_notes: e.target.value }))}
                   rows={3}
-                  placeholder="e.g. Love full-bodied Nicaraguans, prefer maduro wrappers, enjoy pairing with coffee or Bourbon..."
+                  placeholder={t("profile.cigarNotesPlaceholder", "e.g. Love full-bodied Nicaraguans, prefer maduro wrappers, enjoy pairing with coffee or Bourbon...")}
                 />
               </div>
             </FormSection>

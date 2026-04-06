@@ -31,19 +31,12 @@ import CollectorGridView from '@/components/ui/CollectorGridView';
 
 const TABS = ['collection', 'humidors', 'wishlist', 'restock'];
 
-const TAB_LABELS = {
-  collection: 'Collection',
-  humidors: 'Humidors',
-  wishlist: 'Wishlist',
-  restock: 'Restock',
-};
-
-const SORT_OPTIONS = [
-  { value: 'name', label: 'Name' },
-  { value: 'brand', label: 'Brand' },
-  { value: 'created_date', label: 'Added Date' },
-  { value: 'estimated_value', label: 'Value' },
-  { value: 'quantity', label: 'Quantity' },
+const SORT_VALUES = [
+  { value: 'name' },
+  { value: 'brand' },
+  { value: 'created_date' },
+  { value: 'estimated_value' },
+  { value: 'quantity' },
 ];
 
 const BODY_OPTIONS = ['mild', 'mild_medium', 'medium', 'medium_full', 'full'];
@@ -107,6 +100,21 @@ function CigarsInner() {
   const location = useLocation();
   const { user } = useCurrentUser();
   const queryClient = useQueryClient();
+
+  const TAB_LABELS = {
+    collection: t('cigars.tabCollection', 'Collection'),
+    humidors: t('cigars.tabHumidors', 'Humidors'),
+    wishlist: t('cigars.tabWishlist', 'Wishlist'),
+    restock: t('cigars.tabRestock', 'Restock'),
+  };
+
+  const SORT_OPTIONS = [
+    { value: 'name', label: t('cigars.sortName', 'Name') },
+    { value: 'brand', label: t('cigars.sortBrand', 'Brand') },
+    { value: 'created_date', label: t('cigars.sortAddedDate', 'Added Date') },
+    { value: 'estimated_value', label: t('cigars.sortValue', 'Value') },
+    { value: 'quantity', label: t('cigars.sortQuantity', 'Quantity') },
+  ];
 
   const searchParams = new URLSearchParams(location.search);
   const actionParam = searchParams.get('action');
@@ -221,7 +229,7 @@ function CigarsInner() {
             {t('cigars.collection', 'Cigar Collection')}
           </h1>
           <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.65)' }}>
-            {cigars.length} cigar{cigars.length !== 1 ? 's' : ''} in your collection
+          {cigars.length} {t('cigars.inCollection', 'in your collection')}
           </p>
         </div>
         <Button
@@ -274,7 +282,7 @@ function CigarsInner() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name, brand, vitola, wrapper…"
+                placeholder={t('cigars.searchPlaceholder', 'Search by name, brand, vitola, wrapper…')}
                 className="bg-transparent outline-none text-sm w-full"
                 style={{ color: '#F5F1E7' }}
               />
@@ -293,11 +301,9 @@ function CigarsInner() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent style={{ background: 'rgba(25,17,11,0.98)', border: '1px solid rgba(140,107,63,0.35)' }}>
-                <SelectItem value="created_date">Added Date</SelectItem>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="brand">Brand</SelectItem>
-                <SelectItem value="estimated_value">Value</SelectItem>
-                <SelectItem value="quantity">Quantity</SelectItem>
+                {SORT_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
@@ -312,7 +318,7 @@ function CigarsInner() {
               }}
             >
               <Filter className="w-4 h-4" />
-              Filter
+              {t('common.filter', 'Filter')}
             </button>
 
             <div
@@ -365,56 +371,56 @@ function CigarsInner() {
             >
               <div>
                 <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  Body
+                  {t('cigars.filterBody', 'Body')}
                 </label>
                 <Select value={filterBody || 'all'} onValueChange={(v) => setFilterBody(v === 'all' ? '' : v)}>
                   <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
-                    <SelectValue placeholder="Any" />
+                    <SelectValue placeholder={t('cigars.filterAny', 'Any')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Any</SelectItem>
+                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
                     {BODY_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o.replace('_', '-')}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  Strength
+                  {t('cigars.filterStrength', 'Strength')}
                 </label>
                 <Select value={filterStrength || 'all'} onValueChange={(v) => setFilterStrength(v === 'all' ? '' : v)}>
                   <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
-                    <SelectValue placeholder="Any" />
+                    <SelectValue placeholder={t('cigars.filterAny', 'Any')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Any</SelectItem>
+                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
                     {STRENGTH_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  Origin
+                  {t('cigars.filterOrigin', 'Origin')}
                 </label>
                 <Select value={filterOrigin || 'all'} onValueChange={(v) => setFilterOrigin(v === 'all' ? '' : v)}>
                   <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
-                    <SelectValue placeholder="Any" />
+                    <SelectValue placeholder={t('cigars.filterAny', 'Any')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Any</SelectItem>
+                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
                     {origins.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  Humidor
+                  {t('cigars.filterHumidor', 'Humidor')}
                 </label>
                 <Select value={filterHumidor || 'all'} onValueChange={(v) => setFilterHumidor(v === 'all' ? '' : v)}>
                   <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
-                    <SelectValue placeholder="Any" />
+                    <SelectValue placeholder={t('cigars.filterAny', 'Any')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Any</SelectItem>
+                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
                     {humidors.map((h) => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -425,13 +431,13 @@ function CigarsInner() {
           {/* Results count */}
           {(search || filterBody || filterStrength || filterOrigin || filterHumidor) && (
             <p className="text-sm" style={{ color: 'rgba(224,216,200,0.55)' }}>
-              {filteredCigars.length} result{filteredCigars.length !== 1 ? 's' : ''}
+              {filteredCigars.length} {filteredCigars.length !== 1 ? t('cigars.results', 'results') : t('cigars.result', 'result')}
             </p>
           )}
 
           {/* Content */}
           {isLoading ? (
-            <p style={{ color: 'rgba(224,216,200,0.6)' }}>Loading…</p>
+            <p style={{ color: 'rgba(224,216,200,0.6)' }}>{t('common.loading')}</p>
           ) : filteredCigars.length === 0 ? (
             <div
               className="rounded-2xl p-10 text-center"
@@ -443,21 +449,21 @@ function CigarsInner() {
               <Cigarette className="w-10 h-10 mx-auto mb-4" style={{ color: '#8C6B3F' }} />
               <p className="text-2xl font-semibold" style={{ color: '#F5F1E7' }}>
                 {activeTab === 'wishlist'
-                  ? 'No wishlist cigars'
+                  ? t('cigars.noWishlist', 'No wishlist cigars')
                   : activeTab === 'restock'
-                  ? 'No restock alerts'
-                  : 'No cigars yet'}
+                  ? t('cigars.noRestock', 'No restock alerts')
+                  : t('cigars.noCigars', 'No cigars yet')}
               </p>
               <p className="mt-2 text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>
                 {activeTab === 'collection'
-                  ? 'Add your first cigar to start tracking your collection'
+                  ? t('cigars.addFirstCigar', 'Add your first cigar to start tracking your collection')
                   : activeTab === 'wishlist'
-                  ? 'Mark cigars as wishlist to see them here'
-                  : 'Mark cigars for restock to see them here'}
+                  ? t('cigars.markAsWishlist', 'Mark cigars as wishlist to see them here')
+                  : t('cigars.markAsRestock', 'Mark cigars for restock to see them here')}
               </p>
               {activeTab === 'collection' && (
                 <Button className="mt-5" onClick={openAdd}>
-                  Add your first cigar
+                  {t('cigars.addFirstCigarBtn', 'Add your first cigar')}
                 </Button>
               )}
             </div>
@@ -531,7 +537,7 @@ function CigarsInner() {
         >
           <DialogHeader>
             <DialogTitle style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-              Edit Cigar
+              {t('cigars.editCigar', 'Edit Cigar')}
             </DialogTitle>
           </DialogHeader>
           <CigarForm

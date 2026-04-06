@@ -97,11 +97,11 @@ function clearRouteState() {
   } catch {}
 }
 
-const SCOPE_OPTIONS = [
-  { value: "all", label: "All Modules", icon: Sparkles, isPipeIcon: false },
-  { value: "pipekeeper", label: "PipeKeeper", isPipeIcon: true },
-  { value: "whiskeykeeper", label: "WhiskeyKeeper", icon: WhiskeyKeeperIcon, isPipeIcon: false },
-  { value: "cigarkeeper", label: "CigarKeeper", icon: Cigarette, isPipeIcon: false },
+const SCOPE_OPTION_DEFS = [
+  { value: "all", icon: Sparkles, isPipeIcon: false, labelKey: "hub.allModules", labelFallback: "All Modules" },
+  { value: "pipekeeper", isPipeIcon: true, labelKey: "hub.pipekeeper", labelFallback: "PipeKeeper" },
+  { value: "whiskeykeeper", icon: WhiskeyKeeperIcon, isPipeIcon: false, labelKey: "hub.whiskeykeeper", labelFallback: "WhiskeyKeeper" },
+  { value: "cigarkeeper", icon: Cigarette, isPipeIcon: false, labelKey: "hub.cigarkeeper", labelFallback: "CigarKeeper" },
 ];
 
 export default function Curator() {
@@ -256,10 +256,13 @@ export default function Curator() {
   // If only PipeKeeper is enabled, skip the "All Modules" option to keep UI clean
   const availableScopes = useMemo(() => {
     return buildEnabledCuratorScopes(enabled).map((s) => {
-      const opt = SCOPE_OPTIONS.find((o) => o.value === s.key);
-      return opt || { value: s.key, label: s.label, isPipeIcon: false };
+      const def = SCOPE_OPTION_DEFS.find((o) => o.value === s.key);
+      if (def) {
+        return { ...def, label: t(def.labelKey, def.labelFallback) };
+      }
+      return { value: s.key, label: s.label, isPipeIcon: false };
     });
-  }, [enabled]);
+  }, [enabled, t]);
 
   const handlePromptConsumed = () => {
     clearRouteState();
