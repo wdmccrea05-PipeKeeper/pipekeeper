@@ -10,6 +10,9 @@ import {
   Clock3,
   Activity,
   TrendingUp,
+  GlassWater,
+  Cigarette,
+  ClipboardList,
 } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import PipeIcon from '@/components/icons/PipeIcon';
@@ -27,6 +30,7 @@ import { buildUnifiedActivityFeed } from '@/components/utils/activityNormalizer'
 import CollectionStoryCard from '@/components/hub/CollectionStoryCard';
 import CombinedSessionModal from '@/components/session/CombinedSessionModal';
 import SmokingLogEditor from '@/components/home/SmokingLogEditor';
+import LogTastingModal from '@/components/whiskey/LogTastingModal';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { safeUpdate } from '@/components/utils/safeUpdate';
@@ -269,6 +273,7 @@ export default function CollectionHub() {
   const [showLogSelector, setShowLogSelector] = useState(false);
   const [showCombinedModal, setShowCombinedModal] = useState(false);
   const [editingSmokingLog, setEditingSmokingLog] = useState(null);
+  const [editingTastingLog, setEditingTastingLog] = useState(null);
   const [confirmDeleteLog, setConfirmDeleteLog] = useState(null);
 
   const updateLogMutation = useMutation({
@@ -410,7 +415,7 @@ export default function CollectionHub() {
           .find((c) => c.__count > 0) || null
       : null;
 
-    const recentActivity = buildUnifiedActivityFeed(smokeLogs, tastings, { limit: 5 });
+    const recentActivity = buildUnifiedActivityFeed(smokeLogs, tastings, cigarSessions, { limit: 5 });
 
     // Cigar sticks: sum singles_equivalent ?? quantity per record (canonical inventory math)
     const totalCigarSticks = cigars.reduce((sum, c) => sum + getAvailableQuantity(c), 0);
@@ -555,7 +560,7 @@ export default function CollectionHub() {
           ) : null}
           {whiskeyOpenable ? (
             <StatCard
-              icon={Flame}
+              icon={GlassWater}
               label={t('hub.tastings')}
               value={isLoading ? '—' : tastings.length}
               sub="Tasting logs"
@@ -564,7 +569,7 @@ export default function CollectionHub() {
           ) : null}
           {cigarOpenable ? (
             <StatCard
-              icon={Flame}
+              icon={Cigarette}
               label={t('hub.cigars')}
               value={isLoading ? '—' : cigars.length}
               sub={isLoading ? '' : `${metrics.totalCigarSticks} sticks owned`}
@@ -749,7 +754,13 @@ export default function CollectionHub() {
           <SectionTitle>Recent Activity</SectionTitle>
           <div className="space-y-3">
             {metrics.recentActivity.map((activity) => {
-              const rawLog = activity.type === 'session' ? smokeLogs.find(l => l.id === activity.id) : null;
+              const rawSmokingLog = activity.type === 'session'
+                ? smokeLogs.find(l => l.id === activity.id)
+                : null;
+              const rawTastingLog = activity.type === 'tasting'
+                ? tastings.find(l => l.id === activity.id)
+                : null;
+              const isCigar = activity.type === 'cigar_session';
               return (
               <div
                 key={activity.id}
@@ -759,6 +770,8 @@ export default function CollectionHub() {
                   border: `1px solid ${
                     activity.type === 'tasting'
                       ? 'rgba(182,101,101,0.24)'
+                      : isCigar
+                      ? 'rgba(140,107,63,0.24)'
                       : 'rgba(180,140,75,0.18)'
                   }`,
                 }}
@@ -769,15 +782,21 @@ export default function CollectionHub() {
                     background:
                       activity.type === 'tasting'
                         ? 'rgba(182,101,101,0.14)'
+                        : isCigar
+                        ? 'rgba(140,107,63,0.14)'
                         : 'rgba(180,140,75,0.14)',
                     border:
                       activity.type === 'tasting'
                         ? '1px solid rgba(182,101,101,0.24)'
+                        : isCigar
+                        ? '1px solid rgba(140,107,63,0.24)'
                         : '1px solid rgba(180,140,75,0.24)',
                   }}
                 >
                   {activity.type === 'tasting' ? (
                     <WhiskeyKeeperIcon className="w-5 h-5" style={{ color: '#D47C7C' }} />
+                  ) : isCigar ? (
+                    <Cigarette className="w-5 h-5" style={{ color: '#C4956A' }} />
                   ) : (
                     <Activity className="w-5 h-5" style={{ color: '#D4A574' }} />
                   )}
@@ -794,12 +813,22 @@ export default function CollectionHub() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  {rawLog && (
+                  {rawSmokingLog && (
                     <button
                       type="button"
-                      onClick={() => setEditingSmokingLog(rawLog)}
+                      onClick={() => setEditingSmokingLog(rawSmokingLog)}
                       className="text-sm px-3 py-1 rounded-lg"
                       style={{ background: 'rgba(180,140,75,0.15)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.25)' }}
+                    >
+                      Edit
+                    </button>
+                  )}
+                  {rawTastingLog && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingTastingLog(rawTastingLog)}
+                      className="text-sm px-3 py-1 rounded-lg"
+                      style={{ background: 'rgba(182,101,101,0.15)', color: '#D47C7C', border: '1px solid rgba(182,101,101,0.25)' }}
                     >
                       Edit
                     </button>
@@ -808,7 +837,7 @@ export default function CollectionHub() {
                     type="button"
                     onClick={() => navigate(activity.destination)}
                     className="text-sm"
-                    style={{ color: activity.type === 'tasting' ? '#D47C7C' : '#D4A574' }}
+                    style={{ color: activity.type === 'tasting' ? '#D47C7C' : isCigar ? '#C4956A' : '#D4A574' }}
                   >
                     View
                   </button>
@@ -870,6 +899,19 @@ export default function CollectionHub() {
           )}
         </SheetContent>
       </Sheet>
+
+      {editingTastingLog && (
+        <LogTastingModal
+          isOpen={!!editingTastingLog}
+          editLog={editingTastingLog}
+          bottles={bottles}
+          onClose={() => setEditingTastingLog(null)}
+          onSaved={() => {
+            setEditingTastingLog(null);
+            queryClient.invalidateQueries({ queryKey: ['collection-hub-dashboard'] });
+          }}
+        />
+      )}
 
       <AlertDialog open={!!confirmDeleteLog} onOpenChange={(open) => !open && setConfirmDeleteLog(null)}>
         <AlertDialogContent>

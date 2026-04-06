@@ -210,7 +210,7 @@ export default function CuratorRecommendationRow({
             }}
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            Accept
+            {hasProposedChange ? "Accept & Apply Changes" : "Accept"}
           </Button>
         )}
 
@@ -254,6 +254,17 @@ export default function CuratorRecommendationRow({
             Exclude
           </Button>
         </div>
+
+        {onAccept && hasProposedChange && (
+          <p className="w-full text-xs mt-1" style={{ color: "rgba(224,216,200,0.38)" }}>
+            Accepting will apply the changes shown above to this record in your collection.
+          </p>
+        )}
+        {onAccept && !hasProposedChange && (
+          <p className="w-full text-xs mt-1" style={{ color: "rgba(224,216,200,0.38)" }}>
+            Accepting logs that you acknowledge this recommendation — no automatic data change will occur.
+          </p>
+        )}
       </div>
     </div>
   );

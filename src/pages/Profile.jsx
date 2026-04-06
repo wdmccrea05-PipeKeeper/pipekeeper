@@ -848,6 +848,18 @@ export default function ProfilePage() {
                 preferences={formData.whiskey_preferences}
                 onChange={(updated) => setFormData((p) => ({ ...p, whiskey_preferences: updated }))}
               />
+              <div className="mt-4">
+                <Label className="ck-field-label">Whiskey Notes for Recommendations</Label>
+                <Textarea
+                  value={formData.whiskey_notes}
+                  onChange={(e) => setFormData((p) => ({ ...p, whiskey_notes: e.target.value }))}
+                  rows={3}
+                  placeholder="e.g. Love smoky Islays, prefer aged single malts, enjoy pairing with dark chocolate or cigars..."
+                />
+                <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.4)' }}>
+                  This note is shared with the Curator AI to improve whiskey recommendations.
+                </p>
+              </div>
             </FormSection>
 
             {/* Cigar Preferences */}
