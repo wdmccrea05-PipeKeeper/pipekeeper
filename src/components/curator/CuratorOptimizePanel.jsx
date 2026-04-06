@@ -862,10 +862,12 @@ function RecommendationCard({
           {card.title}
         </h3>
 
-        {/* One-liner rationale */}
-        <p className="text-xs leading-relaxed" style={{ color: 'rgba(224,216,200,0.58)' }}>
-          {card.whyItMatters || card.whatWeFound}
-        </p>
+        {/* One-liner rationale — prefer whyItMatters; fall back only if absent */}
+        {(card.whyItMatters || card.whatWeFound) && (
+          <p className="text-xs leading-relaxed" style={{ color: 'rgba(224,216,200,0.58)' }}>
+            {card.whyItMatters || card.whatWeFound}
+          </p>
+        )}
       </div>
 
       {/* ── Item preview pills ── */}
@@ -905,6 +907,17 @@ function RecommendationCard({
               {card.whatWeFound}
             </p>
           </div>
+          {/* Show whyItMatters in details only if it differs from the one-liner above */}
+          {card.whyItMatters && card.whyItMatters !== card.whatWeFound && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'rgba(180,140,75,0.6)' }}>
+                Why It Matters
+              </p>
+              <p className="text-xs leading-relaxed" style={{ color: 'rgba(224,216,200,0.75)' }}>
+                {card.whyItMatters}
+              </p>
+            </div>
+          )}
           {card.recommendedAction && (
             <div
               className="p-3 rounded-lg"
@@ -1030,8 +1043,7 @@ function RecommendationCard({
           style={{ color: 'rgba(180,140,75,0.55)' }}
         >
           <ChevronRight
-            className="w-3.5 h-3.5 transition-transform duration-200"
-            style={{ transform: showDetail ? 'rotate(90deg)' : 'rotate(0deg)' }}
+            className={`w-3.5 h-3.5 transition-transform duration-200 ${showDetail ? 'rotate-90' : 'rotate-0'}`}
           />
           {showDetail ? 'Less' : 'Details'}
         </button>
