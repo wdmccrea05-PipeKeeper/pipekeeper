@@ -129,10 +129,12 @@ export default function UserReport() {
   const warnings      = report?.warnings      || {};
   const sanityChecks  = report?.sanityChecks  || {};
 
+  // Show the warnings panel when there are data-quality issues OR sanity failures.
+  // warnings.messages (data-quality detail strings) and sanityChecks.failures are now
+  // kept separate; we rely on the explicit counts rather than the flat messages array.
   const hasDataWarning =
     !!report &&
     (
-      (Array.isArray(warnings.messages) && warnings.messages.length > 0) ||
       (warnings.missingPrice    > 0) ||
       (warnings.missingInterval > 0) ||
       (warnings.missingRenewal  > 0) ||
@@ -609,12 +611,17 @@ export default function UserReport() {
 function WarningsPanel({ warnings, sanityChecks }) {
   const [expanded, setExpanded] = useState(false);
 
-  const items = [
+  // Category A: Data-quality issues — incomplete source records
+  const dataQualityItems = [
     warnings.missingPrice    > 0 && `${warnings.missingPrice} paid sub(s) missing price — excluded from revenue`,
     warnings.missingInterval > 0 && `${warnings.missingInterval} paid sub(s) missing billing interval — excluded from MRR/ARR`,
     warnings.missingRenewal  > 0 && `${warnings.missingRenewal} paid sub(s) missing renewal date — excluded from renewal metrics`,
-    ...(sanityChecks?.failures ?? []),
   ].filter(Boolean);
+
+  // Category B: Report logic / sanity issues — calculation or aggregate inconsistencies
+  const sanityItems = (sanityChecks?.failures ?? []).filter(Boolean);
+
+  const totalCount = dataQualityItems.length + sanityItems.length;
 
   return (
     <div className="mb-6 rounded-xl border border-amber-500/25 bg-amber-950/20 overflow-hidden">
@@ -625,23 +632,51 @@ function WarningsPanel({ warnings, sanityChecks }) {
       >
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-          <span className="text-sm font-semibold text-amber-200">Data quality warnings</span>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">{items.length}</span>
+          <span className="text-sm font-semibold text-amber-200">Report warnings</span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">{totalCount}</span>
         </div>
         {expanded ? <ChevronUp className="w-4 h-4 text-amber-400/60" /> : <ChevronDown className="w-4 h-4 text-amber-400/60" />}
       </button>
       {expanded && (
-        <div className="px-4 pb-4 space-y-1.5 border-t border-amber-500/15">
-          <p className="text-xs text-amber-200/50 pt-3 pb-1">
-            Subs with missing price are counted but excluded from revenue.
-            Subs with missing interval are counted but excluded from MRR/ARR.
-          </p>
-          {items.map((item, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <span className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-400/50 shrink-0" />
-              <p className="text-sm text-amber-200/75">{item}</p>
+        <div className="px-4 pb-4 border-t border-amber-500/15">
+          {dataQualityItems.length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs font-semibold text-amber-300/70 uppercase tracking-wider mb-1.5">
+                Data Quality Issues
+              </p>
+              <p className="text-xs text-amber-200/40 mb-2">
+                Subs with missing price are excluded from revenue.
+                Subs with missing interval are excluded from MRR/ARR.
+                These reflect incomplete source records.
+              </p>
+              <div className="space-y-1.5">
+                {dataQualityItems.map((item, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-400/50 shrink-0" />
+                    <p className="text-sm text-amber-200/75">{item}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+          )}
+          {sanityItems.length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs font-semibold text-rose-300/70 uppercase tracking-wider mb-1.5">
+                Report Logic / Sanity Failures
+              </p>
+              <p className="text-xs text-amber-200/40 mb-2">
+                These are calculation or aggregate inconsistencies in the report itself.
+              </p>
+              <div className="space-y-1.5">
+                {sanityItems.map((item, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="mt-1 w-1.5 h-1.5 rounded-full bg-rose-400/50 shrink-0" />
+                    <p className="text-sm text-rose-200/75">{item}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
