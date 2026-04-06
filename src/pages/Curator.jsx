@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import CuratorWorkspace from "@/components/curator/CuratorWorkspace";
 import CuratorActionBar from "@/components/curator/CuratorActionBar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
 import { useEnabledModules } from "@/components/hooks/useEnabledModules";
@@ -102,28 +102,6 @@ const SCOPE_OPTIONS = [
   { value: "whiskeykeeper", label: "WhiskeyKeeper", icon: WhiskeyKeeperIcon, isPipeIcon: false },
   { value: "cigarkeeper", label: "CigarKeeper", icon: Cigarette, isPipeIcon: false },
 ];
-
-function ScopeChip({ value, label, selected, onClick, isPipeIcon, icon: IconComponent }) {
-   return (
-     <button
-       type="button"
-       onClick={() => onClick(value)}
-       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
-       style={{
-         background: selected ? "rgba(163,92,92,0.2)" : "rgba(255,255,255,0.04)",
-         border: selected ? "1px solid rgba(163,92,92,0.55)" : "1px solid rgba(120,90,65,0.25)",
-         color: selected ? "rgba(240,200,185,1)" : "rgba(224,216,200,0.55)",
-       }}
-     >
-       {isPipeIcon ? (
-         <PipeIcon className="w-3 h-3" color={selected ? "rgba(240,200,185,1)" : "rgba(224,216,200,0.55)"} />
-       ) : IconComponent ? (
-         <IconComponent className="w-3 h-3" />
-       ) : null}
-       {label}
-     </button>
-   );
- }
 
 export default function Curator() {
   const { user } = useCurrentUser();
@@ -302,110 +280,114 @@ export default function Curator() {
 
   return (
     <div className="space-y-5">
-      {/* Internal Module Navigation */}
-      {availableScopes.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          {availableScopes.map((opt) => {
-            const selected = curatorScope === opt.value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => handleScopeChange(opt.value)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-                style={{
-                  background: selected ? "rgba(163,92,92,0.22)" : "rgba(255,255,255,0.04)",
-                  border: selected ? "1px solid rgba(163,92,92,0.55)" : "1px solid rgba(120,90,65,0.2)",
-                  color: selected ? "#F5F1E7" : "rgba(224,216,200,0.55)",
-                }}
-              >
-                {opt.isPipeIcon ? (
-                  <PipeIcon className="w-4 h-4" color={selected ? "#F5F1E7" : "rgba(224,216,200,0.55)"} />
-                ) : opt.icon ? (
-                  <opt.icon className="w-4 h-4" />
-                ) : null}
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      <Card>
-        <CardHeader className="border-b border-[#8b6239]/20">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+      {/* Hero Section */}
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{
+          background: 'linear-gradient(145deg, rgba(35,24,15,0.97), rgba(22,15,10,0.98))',
+          border: '1px solid rgba(140,105,65,0.25)',
+        }}
+      >
+        {/* Top bar: icon + title + scope chips */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 pt-5 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
               <img
                 src={CURATOR_ICON}
                 alt={t("curator.workspaceTitle", { defaultValue: "Curator" })}
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="flex-1 min-w-0">
-              <CardTitle className="text-base sm:text-xl text-[#E0D8C8] leading-tight mb-1">
+            <div>
+              <h2
+                className="text-lg sm:text-xl font-bold leading-tight"
+                style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+              >
                 {t("curator.workspaceTitle", { defaultValue: "Curator" })}
-              </CardTitle>
-              <p className="text-sm text-[#E0D8C8]/70">{subtitle}</p>
+              </h2>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.6)' }}>
+                {t("curator.heroTagline", { defaultValue: "Your personal collection intelligence" })}
+              </p>
             </div>
           </div>
-        </CardHeader>
 
-        {false && availableScopes.length > 1 && (
-          <div className="px-6 py-3 border-b flex items-center gap-3 flex-wrap" style={{ borderColor: 'rgba(139,98,57,0.2)' }}>
-            <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(180,140,75,0.6)' }}>
-              {t("curator.adviceScope", "Advice Scope")}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {availableScopes.map((opt) => (
-                <ScopeChip
-                  key={opt.value}
-                  value={opt.value}
-                  label={opt.label}
-                  selected={curatorScope === opt.value}
-                  onClick={handleScopeChange}
-                  isPipeIcon={opt.isPipeIcon}
-                  icon={opt.icon}
-                />
-              ))}
+          {/* Scope selector chips — inline with header */}
+          {availableScopes.length > 1 && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {availableScopes.map((opt) => {
+                const selected = curatorScope === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => handleScopeChange(opt.value)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                    style={{
+                      background: selected ? "rgba(163,92,92,0.25)" : "rgba(255,255,255,0.05)",
+                      border: selected ? "1px solid rgba(163,92,92,0.55)" : "1px solid rgba(120,90,65,0.2)",
+                      color: selected ? "#F5F1E7" : "rgba(224,216,200,0.5)",
+                    }}
+                  >
+                    {opt.isPipeIcon ? (
+                      <PipeIcon className="w-3 h-3" color={selected ? "#F5F1E7" : "rgba(224,216,200,0.5)"} />
+                    ) : opt.icon ? (
+                      <opt.icon className="w-3 h-3" />
+                    ) : null}
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
+          )}
+        </div>
+
+        {/* Subtitle / prompt state */}
+        {subtitle !== t("curator.workspaceSubtitle", { defaultValue: "Ask questions, follow up on recommendations, and get collection-specific guidance." }) && (
+          <div
+            className="mx-5 mb-4 px-3 py-2 rounded-lg text-xs"
+            style={{ background: 'rgba(163,92,92,0.12)', border: '1px solid rgba(163,92,92,0.25)', color: 'rgba(240,200,185,0.85)' }}
+          >
+            {subtitle}
           </div>
         )}
 
+        {/* Expert action area — grouped layout */}
+        <div className="px-4 pb-5">
+          <CuratorActionBar
+            pipes={scopedPipes}
+            blends={scopedBlends}
+            bottles={scopedBottles}
+            tastingLogs={scopedTastingLogs}
+            smokingLogs={scopedSmokingLogs}
+            cigars={scopedCigars}
+            cigarSessions={scopedCigarSessions}
+            userProfile={userProfile}
+            curatorScope={curatorScope}
+            enabledModules={enabled}
+            onActionSelect={handleExpertAction}
+          />
+        </div>
+      </div>
+
+      {/* Main Workspace */}
+      <Card>
         <CardContent className="p-0 sm:p-2">
-          <div className="space-y-4 sm:space-y-5">
-            {/* Expert Action Buttons */}
-            <CuratorActionBar
+          <div key={`curator-workspace-${curatorScope}`}>
+            <CuratorWorkspace
               pipes={scopedPipes}
               blends={scopedBlends}
               bottles={scopedBottles}
-              tastingLogs={scopedTastingLogs}
               smokingLogs={scopedSmokingLogs}
+              tastingLogs={scopedTastingLogs}
               cigars={scopedCigars}
               cigarSessions={scopedCigarSessions}
               userProfile={userProfile}
+              launchContext={launchContext}
+              preFilledPrompt={launchContext?.initialPrompt || ""}
+              routedContext={launchContext?.recommendationContext || null}
+              onPromptConsumed={handlePromptConsumed}
               curatorScope={curatorScope}
-              enabledModules={enabled}
-              onActionSelect={handleExpertAction}
             />
-
-            {/* Main Workspace */}
-            <div key={`curator-workspace-${curatorScope}`}>
-            <CuratorWorkspace
-          pipes={scopedPipes}
-          blends={scopedBlends}
-          bottles={scopedBottles}
-          smokingLogs={scopedSmokingLogs}
-          tastingLogs={scopedTastingLogs}
-          cigars={scopedCigars}
-          cigarSessions={scopedCigarSessions}
-          userProfile={userProfile}
-          launchContext={launchContext}
-          preFilledPrompt={launchContext?.initialPrompt || ""}
-          routedContext={launchContext?.recommendationContext || null}
-          onPromptConsumed={handlePromptConsumed}
-          curatorScope={curatorScope}
-        />
-            </div>
           </div>
         </CardContent>
       </Card>
