@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-// NOTE: This component is intentionally large (~900 lines). Each Card section is a
-// logical form section. Future refactor: split each Card into a sub-component.
+// NOTE: This component is intentionally large (~900 lines). Each FormSection is a
+// collapsible accordion section. Future refactor: split each section into a sub-component.
 // See section comments below for boundaries.
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, Loader2, Search, Edit, ArrowLeftRight } from "lucide-react";
+import FormSection from '@/components/forms/FormSection';
 import { base44 } from "@/api/base44Client";
 import PipeSearch from "@/components/ai/PipeSearch";
 import PhotoIdentifier from "@/components/ai/PhotoIdentifier";
@@ -361,125 +362,121 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       )}
 
       {/* ===== SECTION: Pipe Photos ===== */}
-      {/* Photos Section */}
-      <Card className="border-[#E0D8C8]/15">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("pipesExtended.pipePhotos")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {formData.photos?.map((photo, idx) => (
-              <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-[#E0D8C8]/15 group">
-                <img src={photo} alt="" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
-                  <button
-                    type="button"
-                    onClick={() => editPhoto(idx, false)}
-                    className="bg-[#A35C5C]/80 rounded-full p-1.5 hover:bg-[#A35C5C]"
-                  >
-                    <Edit className="w-3.5 h-3.5 text-[#E0D8C8]" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(idx)}
-                    className="bg-[#E05D5D]/80 rounded-full p-1.5 hover:bg-[#E05D5D]"
-                  >
-                    <X className="w-3.5 h-3.5 text-[#E0D8C8]" />
-                  </button>
-                </div>
+      <FormSection
+        title={t("pipesExtended.pipePhotos")}
+        summary={formData.photos?.length ? `${formData.photos.length} photo(s)` : undefined}
+        defaultOpen={false}
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          {formData.photos?.map((photo, idx) => (
+            <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-[#E0D8C8]/15 group">
+              <img src={photo} alt="" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                <button
+                  type="button"
+                  onClick={() => editPhoto(idx, false)}
+                  className="bg-[#A35C5C]/80 rounded-full p-1.5 hover:bg-[#A35C5C]"
+                >
+                  <Edit className="w-3.5 h-3.5 text-[#E0D8C8]" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removePhoto(idx)}
+                  className="bg-[#E05D5D]/80 rounded-full p-1.5 hover:bg-[#E05D5D]"
+                >
+                  <X className="w-3.5 h-3.5 text-[#E0D8C8]" />
+                </button>
               </div>
-            ))}
-            <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors flex items-center justify-center p-3">
-              <PhotoUploader 
-                onPhotosSelected={(files) => {
-                  const file = files?.[0];
-                  if (!file) return;
-                  try {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      setCropperImage(event.target.result);
-                      setCropperType('photo');
-                    };
-                    reader.readAsDataURL(file);
-                  } catch (err) {
-                    console.error('Error reading file:', err);
-                  }
-                }}
-                showSearchOption={false}
-                recordType="pipe"
-                recordData={formData}
-                existingPhotos={[]}
-                hideExisting
-                />
-                </div>
-                </div>
-                </CardContent>
-                </Card>
-
-                {/* ===== SECTION: Stamping Photos ===== */}
-      {/* Stamping Photos */}
-      <Card className="border-[#E0D8C8]/15">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("pipesExtended.stampingPhotos")}</CardTitle>
-          <p className="text-sm text-[#E0D8C8]/70">{t("pipesExtended.stampingPhotosDesc")}</p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {formData.stamping_photos?.map((photo, idx) => (
-              <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-[#E0D8C8]/15 group">
-                <img src={photo} alt="" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
-                  <button
-                    type="button"
-                    onClick={() => editPhoto(idx, true)}
-                    className="bg-[#A35C5C]/80 rounded-full p-1.5 hover:bg-[#A35C5C]"
-                  >
-                    <Edit className="w-3.5 h-3.5 text-[#E0D8C8]" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(idx, true)}
-                    className="bg-[#E05D5D]/80 rounded-full p-1.5 hover:bg-[#E05D5D]"
-                  >
-                    <X className="w-3.5 h-3.5 text-[#E0D8C8]" />
-                  </button>
-                </div>
-              </div>
-            ))}
-            <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors flex items-center justify-center p-3">
-              <PhotoUploader 
-                onPhotosSelected={(files) => {
-                  const file = files?.[0];
-                  if (!file) return;
-                  try {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      setCropperImage(event.target.result);
-                      setCropperType('stamping');
-                    };
-                    reader.readAsDataURL(file);
-                  } catch (err) {
-                    console.error('Error reading file:', err);
-                  }
-                }}
-                showSearchOption={false}
-                recordType="pipe"
-                recordData={formData}
-                existingPhotos={[]}
-                hideExisting
-                />
             </div>
+          ))}
+          <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors flex items-center justify-center p-3">
+            <PhotoUploader
+              onPhotosSelected={(files) => {
+                const file = files?.[0];
+                if (!file) return;
+                try {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    setCropperImage(event.target.result);
+                    setCropperType('photo');
+                  };
+                  reader.readAsDataURL(file);
+                } catch (err) {
+                  console.error('Error reading file:', err);
+                }
+              }}
+              showSearchOption={false}
+              recordType="pipe"
+              recordData={formData}
+              existingPhotos={[]}
+              hideExisting
+            />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </FormSection>
+
+      {/* ===== SECTION: Stamping Photos ===== */}
+      <FormSection
+        title={t("pipesExtended.stampingPhotos")}
+        summary={formData.stamping_photos?.length ? `${formData.stamping_photos.length} photo(s)` : undefined}
+        defaultOpen={false}
+      >
+        <p className="text-sm text-[#E0D8C8]/70">{t("pipesExtended.stampingPhotosDesc")}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          {formData.stamping_photos?.map((photo, idx) => (
+            <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-[#E0D8C8]/15 group">
+              <img src={photo} alt="" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                <button
+                  type="button"
+                  onClick={() => editPhoto(idx, true)}
+                  className="bg-[#A35C5C]/80 rounded-full p-1.5 hover:bg-[#A35C5C]"
+                >
+                  <Edit className="w-3.5 h-3.5 text-[#E0D8C8]" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removePhoto(idx, true)}
+                  className="bg-[#E05D5D]/80 rounded-full p-1.5 hover:bg-[#E05D5D]"
+                >
+                  <X className="w-3.5 h-3.5 text-[#E0D8C8]" />
+                </button>
+              </div>
+            </div>
+          ))}
+          <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors flex items-center justify-center p-3">
+            <PhotoUploader
+              onPhotosSelected={(files) => {
+                const file = files?.[0];
+                if (!file) return;
+                try {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    setCropperImage(event.target.result);
+                    setCropperType('stamping');
+                  };
+                  reader.readAsDataURL(file);
+                } catch (err) {
+                  console.error('Error reading file:', err);
+                }
+              }}
+              showSearchOption={false}
+              recordType="pipe"
+              recordData={formData}
+              existingPhotos={[]}
+              hideExisting
+            />
+          </div>
+        </div>
+      </FormSection>
 
       {/* ===== SECTION: Pipe Identity ===== */}
-      {/* Basic Info */}
-      <Card className="border-[#E0D8C8]/15">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.basicInfo")}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <FormSection
+        title="Identity"
+        summary={[formData.name, formData.maker].filter(Boolean).join(' · ') || undefined}
+        defaultOpen={true}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWithInfo 
             label={t("pipesExtended.name")} 
             required 
@@ -571,19 +568,18 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               </SelectContent>
             </Select>
           </FieldWithInfo>
-        </CardContent>
-      </Card>
+        </div>
+      </FormSection>
 
       {/* ===== SECTION: Geometry & Dimensions ===== */}
-      {/* Pipe Geometry */}
-      <Card className="border-[#E0D8C8]/15">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("pipesExtended.pipeGeometry")}</CardTitle>
-          <p className="text-sm text-[#E0D8C8]/70">{t("pipesExtended.pipeGeometryDesc")}</p>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FieldWithInfo 
-            label={t("pipesExtended.shape")} 
+      <FormSection
+        title="Geometry & Measurements"
+        defaultOpen={false}
+      >
+        <p className="text-sm text-[#E0D8C8]/70">{t("pipesExtended.pipeGeometryDesc")}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FieldWithInfo
+            label={t("pipesExtended.shape")}
             required
             helpText={t("pipesExtended.shapeHelp")}
           >
@@ -648,33 +644,33 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               </SelectContent>
             </Select>
           </FieldWithInfo>
-        </CardContent>
-      </Card>
+        </div>
+      </FormSection>
 
       {/* ===== SECTION: Materials & Finish ===== */}
-      {/* Physical Characteristics */}
-      <Card className="border-[#E0D8C8]/15">
-        <CardHeader className="pb-3 flex flex-row items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.physicalCharacteristics")}</CardTitle>
-            {dataSource && (
-              <p className="text-xs text-[#E0D8C8]/70 mt-1">{t("formsExtended.dataSource")}: {dataSource}</p>
-            )}
-          </div>
+      <FormSection
+        title="Construction & Finish"
+        summary={[formData.shape, formData.bowl_material].filter(Boolean).join(', ') || undefined}
+        defaultOpen={false}
+      >
+        <div className="flex flex-row items-center justify-between gap-2 mb-2">
+          {dataSource && (
+            <p className="text-xs text-[#E0D8C8]/70">{t("formsExtended.dataSource")}: {dataSource}</p>
+          )}
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={() => setUseImperial(!useImperial)}
-            className="whitespace-nowrap shrink-0"
+            className="whitespace-nowrap shrink-0 ml-auto"
           >
             <ArrowLeftRight className="w-4 h-4 mr-2" />
             {useImperial ? t("pipesExtended.showMetric") : t("pipesExtended.showImperial")}
           </Button>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <FieldWithInfo 
-            label={t("pipesExtended.bowlMaterial")} 
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <FieldWithInfo
+            label={t("pipesExtended.bowlMaterial")}
             helpText={t("pipesExtended.bowlMaterialHelp")}
           >
             <Combobox
@@ -686,8 +682,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               allowCustom={false}
             />
           </FieldWithInfo>
-          <FieldWithInfo 
-            label={t("pipesExtended.stemMaterial")} 
+          <FieldWithInfo
+            label={t("pipesExtended.stemMaterial")}
             helpText={t("pipesExtended.stemMaterialHelp")}
           >
             <Combobox
@@ -699,8 +695,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               allowCustom={false}
             />
           </FieldWithInfo>
-          <FieldWithInfo 
-            label={t("pipesExtended.finish")} 
+          <FieldWithInfo
+            label={t("pipesExtended.finish")}
             helpText={t("pipesExtended.finishHelp")}
           >
             <Select value={formData.finish || ''} onValueChange={(v) => handleChange('finish', v)}>
@@ -870,124 +866,114 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               placeholder={useImperial ? "e.g., 1.6" : "e.g., 40"}
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </FormSection>
 
       {/* ===== SECTION: Value & Notes ===== */}
-      {/* Value & Notes */}
-      <Card className="border-[#E0D8C8]/15">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.valueNotes")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="break-words">{t("pipesExtended.purchasePrice")}</Label>
-              <Input
-                type="number"
-                value={formData.purchase_price}
-                onChange={(e) => handleChange('purchase_price', e.target.value)}
-                placeholder={t("pipesExtended.purchasePricePlaceholder")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="break-words">{t("pipesExtended.estimatedValue")}</Label>
-              <Input
-                type="number"
-                value={formData.estimated_value}
-                onChange={(e) => handleChange('estimated_value', e.target.value)}
-                placeholder={t("pipesExtended.estimatedValuePlaceholder")}
-              />
-            </div>
-          </div>
+      <FormSection
+        title="Value & Notes"
+        defaultOpen={false}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="break-words">{t("pipesExtended.usageCharacteristics")}</Label>
-            <Textarea
-              value={formData.usage_characteristics || formData.smoking_characteristics}
-              onChange={(e) => {
-                handleChange('usage_characteristics', e.target.value);
-                handleChange('smoking_characteristics', '');
-              }}
-              placeholder={t("pipesExtended.usageCharacteristicsPlaceholder")}
-              rows={2}
+            <Label className="break-words">{t("pipesExtended.purchasePrice")}</Label>
+            <Input
+              type="number"
+              value={formData.purchase_price}
+              onChange={(e) => handleChange('purchase_price', e.target.value)}
+              placeholder={t("pipesExtended.purchasePricePlaceholder")}
             />
           </div>
           <div className="space-y-2">
-            <Label className="break-words">{t("common.notes")}</Label>
-            <Textarea
-              value={formData.notes}
-              onChange={(e) => handleChange('notes', e.target.value)}
-              placeholder={t("pipesExtended.notesPlaceholder")}
-              rows={3}
+            <Label className="break-words">{t("pipesExtended.estimatedValue")}</Label>
+            <Input
+              type="number"
+              value={formData.estimated_value}
+              onChange={(e) => handleChange('estimated_value', e.target.value)}
+              placeholder={t("pipesExtended.estimatedValuePlaceholder")}
             />
           </div>
-          <div className="flex items-center gap-3">
-            <Switch
-              checked={formData.is_favorite}
-              onCheckedChange={(v) => handleChange('is_favorite', v)}
-            />
-            <Label className="break-words">{t("formsExtended.markAsFavorite")}</Label>
-          </div>
-          <div className="pt-4 border-t border-[#E0D8C8]/20">
-            <FieldWithInfo 
-              label={t("formsExtended.collectibleOnly", "Collectible Only")}
-              helpText={t("formsExtended.collectibleOnlyHelp", "Exclude this pipe from AI matching, rotation, and recommendation logic. It will still remain in your collection, valuation totals, exports, and insurance documentation.")}
-            >
-              <div className="flex items-center gap-3">
-                <Switch
-                  checked={formData.ai_excluded || false}
-                  onCheckedChange={(v) => {
-                    handleChange('ai_excluded', v);
-                    // Log collectible toggle event
-                    CuratorEvents.collectibleToggled({
-                      metadata: {
-                        item_type: 'pipe',
-                        item_id: pipe?.id || 'new',
-                        ai_excluded: v,
-                      },
-                    });
-                  }}
-                />
-                <span className="text-sm text-[#E0D8C8]/70">{formData.ai_excluded ? t("formsExtended.aiExcluded", "Excluded from AI") : t("formsExtended.aiIncluded", "Included in AI")}</span>
-              </div>
-            </FieldWithInfo>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="space-y-2">
+          <Label className="break-words">{t("pipesExtended.usageCharacteristics")}</Label>
+          <Textarea
+            value={formData.usage_characteristics || formData.smoking_characteristics}
+            onChange={(e) => {
+              handleChange('usage_characteristics', e.target.value);
+              handleChange('smoking_characteristics', '');
+            }}
+            placeholder={t("pipesExtended.usageCharacteristicsPlaceholder")}
+            rows={2}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label className="break-words">{t("common.notes")}</Label>
+          <Textarea
+            value={formData.notes}
+            onChange={(e) => handleChange('notes', e.target.value)}
+            placeholder={t("pipesExtended.notesPlaceholder")}
+            rows={3}
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <Switch
+            checked={formData.is_favorite}
+            onCheckedChange={(v) => handleChange('is_favorite', v)}
+          />
+          <Label className="break-words">{t("formsExtended.markAsFavorite")}</Label>
+        </div>
+        <div className="pt-4 border-t border-[#E0D8C8]/20">
+          <FieldWithInfo
+            label={t("formsExtended.collectibleOnly", "Collectible Only")}
+            helpText={t("formsExtended.collectibleOnlyHelp", "Exclude this pipe from AI matching, rotation, and recommendation logic. It will still remain in your collection, valuation totals, exports, and insurance documentation.")}
+          >
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={formData.ai_excluded || false}
+                onCheckedChange={(v) => {
+                  handleChange('ai_excluded', v);
+                  CuratorEvents.collectibleToggled({
+                    metadata: {
+                      item_type: 'pipe',
+                      item_id: pipe?.id || 'new',
+                      ai_excluded: v,
+                    },
+                  });
+                }}
+              />
+              <span className="text-sm text-[#E0D8C8]/70">{formData.ai_excluded ? t("formsExtended.aiExcluded", "Excluded from AI") : t("formsExtended.aiIncluded", "Included in AI")}</span>
+            </div>
+          </FieldWithInfo>
+        </div>
+      </FormSection>
 
       {/* ===== SECTION: Interchangeable Bowls ===== */}
-      {/* Interchangeable Bowls */}
-      <Card className="border-[#E0D8C8]/15">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8] flex items-center gap-2">
-            <ArrowLeftRight className="w-5 h-5 flex-shrink-0" />
-            {t("formsExtended.interchangeableBowls")}
-          </CardTitle>
-          <p className="text-sm text-[#E0D8C8]/70">{t("formsExtended.interchangeableBowlsDesc")}</p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Switch
-              checked={hasInterchangeableBowls}
-              onCheckedChange={(checked) => {
-                setHasInterchangeableBowls(checked);
-                if (!checked) {
-                  handleChange('interchangeable_bowls', []);
-                }
-              }}
+      <FormSection
+        title="Interchangeable Bowls"
+        defaultOpen={false}
+      >
+        <p className="text-sm text-[#E0D8C8]/70">{t("formsExtended.interchangeableBowlsDesc")}</p>
+        <div className="flex items-center gap-3">
+          <Switch
+            checked={hasInterchangeableBowls}
+            onCheckedChange={(checked) => {
+              setHasInterchangeableBowls(checked);
+              if (!checked) {
+                handleChange('interchangeable_bowls', []);
+              }
+            }}
+          />
+          <Label className="break-words">{t("pipesExtended.hasInterchangeableBowls")}</Label>
+        </div>
+        {hasInterchangeableBowls && (
+          <div className="pt-2">
+            <InterchangeableBowls
+              pipe={formData}
+              onUpdate={(updates) => setFormData({ ...formData, ...updates })}
             />
-            <Label className="break-words">{t("pipesExtended.hasInterchangeableBowls")}</Label>
           </div>
-          {hasInterchangeableBowls && (
-            <div className="pt-2">
-              <InterchangeableBowls
-                pipe={formData}
-                onUpdate={(updates) => setFormData({ ...formData, ...updates })}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        )}
+      </FormSection>
 
       {/* ===== SECTION: Form Actions ===== */}
       {/* Actions */}
