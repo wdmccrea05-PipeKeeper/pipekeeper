@@ -11,6 +11,10 @@ import {
   MessageCircle,
   ChevronRight,
   Sparkles,
+  Eye,
+  HelpCircle,
+  SplitSquareVertical,
+  ExternalLink,
 } from 'lucide-react';
 import {
   generateProactiveInsights,
@@ -28,6 +32,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  RECOMMENDATION_CLASS,
+  getRecommendationClassLabel,
+  getRecommendationClassColor,
+  getRecommendationClassBg,
+} from './recommendationActionTypes';
 
 // ─── Module filter definitions ────────────────────────────────────────────────
 
@@ -68,6 +85,10 @@ function insightToCard(insight) {
     scope: insight.scope,
     module: null,
     suggestions: insight.suggestions || [],
+    // All proactive insights are advisory — they surface awareness, not direct data fixes
+    recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
+    category: insight.category,
+    relatedItems: insight.related_items || [],
   };
 }
 
@@ -154,10 +175,54 @@ function impactLabel(severity) {
 
 // ─── RecommendationCard ───────────────────────────────────────────────────────
 
-function RecommendationCard({ card, onApplyFix, onReviewDetails, onAskCurator }) {
+function RecommendationCard({
+  card,
+  // AUTO_FIX handlers
+  onApplyFix,
+  onReviewDetails,
+  // ADVISORY handlers
+  onAcknowledge,
+  onViewItems,
+  // MULTI_PATH handlers
+  onAskForMoreInfo,
+  onTreatIndividually,
+  // Shared
+  onAskCurator,
+}) {
+  const [localAcknowledged, setLocalAcknowledged] = useState(false);
+
   const color = severityColor(card.severity);
   const bg = severityBg(card.severity);
   const impact = impactLabel(card.severity);
+  const recClass = card.recommendationClass || RECOMMENDATION_CLASS.AUTO_FIX;
+  const classLabel = getRecommendationClassLabel(recClass);
+  const classColor = getRecommendationClassColor(recClass);
+  const classBg = getRecommendationClassBg(recClass);
+
+  if (localAcknowledged) {
+    return (
+      <div
+        className="rounded-2xl p-4 flex items-center justify-between gap-3"
+        style={{
+          background: 'rgba(20,14,10,0.5)',
+          border: '1px solid rgba(140,105,65,0.1)',
+        }}
+      >
+        <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(224,216,200,0.45)' }}>
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(74,124,92,0.6)' }} />
+          <span>{card.title} — acknowledged</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setLocalAcknowledged(false)}
+          className="text-xs hover:opacity-80 underline shrink-0"
+          style={{ color: 'rgba(180,140,75,0.5)' }}
+        >
+          Undo
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -181,13 +246,22 @@ function RecommendationCard({ card, onApplyFix, onReviewDetails, onAskCurator })
               <Info className="w-4 h-4" style={{ color }} />
             )}
           </div>
-          <div>
+          <div className="min-w-0">
             <h3
               className="text-base sm:text-lg font-bold leading-tight"
               style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
             >
               {card.title}
             </h3>
+            {/* Recommendation type badge */}
+            {classLabel && (
+              <span
+                className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full mt-1"
+                style={{ background: classBg, color: classColor, border: `1px solid ${classColor}40` }}
+              >
+                {classLabel}
+              </span>
+            )}
           </div>
         </div>
         {/* Impact badge */}
@@ -279,56 +353,335 @@ function RecommendationCard({ card, onApplyFix, onReviewDetails, onAskCurator })
         </div>
       ) : null}
 
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
-        <button
-          type="button"
-          onClick={onApplyFix}
-          title="Review what will change before confirming"
-          className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-          style={{
-            background: 'linear-gradient(135deg, rgba(74,124,92,0.4), rgba(74,124,92,0.22))',
-            border: '1px solid rgba(74,124,92,0.55)',
-            color: '#6aab80',
-          }}
-        >
-          <span>✅</span>
-          Review &amp; Apply Fix
-        </button>
-        <button
-          type="button"
-          onClick={onReviewDetails}
-          className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-          style={{
-            background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))',
-            border: '1px solid rgba(74,124,156,0.45)',
-            color: '#6aabc0',
-          }}
-        >
-          <span>🔍</span>
-          Review Details
-        </button>
-        <button
-          type="button"
-          onClick={onAskCurator}
-          className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-          style={{
-            background: 'linear-gradient(135deg, rgba(139,94,58,0.3), rgba(100,65,40,0.18))',
-            border: '1px solid rgba(139,94,58,0.45)',
-            color: '#D4956A',
-          }}
-        >
-          <span>💬</span>
-          Ask Curator
-        </button>
-      </div>
+      {/* ── Action Buttons — vary by recommendation class ────────────────── */}
+      {recClass === RECOMMENDATION_CLASS.AUTO_FIX && (
+        <>
+          <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+            <button
+              type="button"
+              onClick={onApplyFix}
+              title="Opens the relevant module — apply the fix there"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(74,124,92,0.4), rgba(74,124,92,0.22))',
+                border: '1px solid rgba(74,124,92,0.55)',
+                color: '#6aab80',
+              }}
+            >
+              <span>✅</span>
+              Review &amp; Apply Fix
+            </button>
+            <button
+              type="button"
+              onClick={onReviewDetails}
+              title="Ask Curator for a detailed explanation of this recommendation"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))',
+                border: '1px solid rgba(74,124,156,0.45)',
+                color: '#6aabc0',
+              }}
+            >
+              <Eye className="w-4 h-4" />
+              Review Details
+            </button>
+            <button
+              type="button"
+              onClick={onAskCurator}
+              title="Open a conversation about this recommendation"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(139,94,58,0.3), rgba(100,65,40,0.18))',
+                border: '1px solid rgba(139,94,58,0.45)',
+                color: '#D4956A',
+              }}
+            >
+              <MessageCircle className="w-4 h-4" />
+              Ask Curator
+            </button>
+          </div>
+          <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
+            Review &amp; Apply Fix navigates to the relevant module where you can complete the change. Review Details asks the Curator to explain what will change before you act.
+          </p>
+        </>
+      )}
+
+      {recClass === RECOMMENDATION_CLASS.ADVISORY && (
+        <>
+          <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+            <button
+              type="button"
+              onClick={() => { setLocalAcknowledged(true); if (onAcknowledge) onAcknowledge(card); }}
+              title="Mark this insight as reviewed — no data will change"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(74,124,92,0.35), rgba(74,124,92,0.18))',
+                border: '1px solid rgba(74,124,92,0.5)',
+                color: '#6aab80',
+              }}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              Acknowledge
+            </button>
+            <button
+              type="button"
+              onClick={onViewItems}
+              title="Open the relevant section of your collection"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))',
+                border: '1px solid rgba(74,124,156,0.45)',
+                color: '#6aabc0',
+              }}
+            >
+              <Eye className="w-4 h-4" />
+              View Items
+            </button>
+            <button
+              type="button"
+              onClick={onAskCurator}
+              title="Discuss this insight with the Curator"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(139,94,58,0.3), rgba(100,65,40,0.18))',
+                border: '1px solid rgba(139,94,58,0.45)',
+                color: '#D4956A',
+              }}
+            >
+              <MessageCircle className="w-4 h-4" />
+              Ask Curator
+            </button>
+          </div>
+          <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
+            Acknowledge marks this insight as reviewed — no data in your collection will change. View Items opens the relevant module so you can act on your own terms.
+          </p>
+        </>
+      )}
+
+      {recClass === RECOMMENDATION_CLASS.MULTI_PATH && (
+        <>
+          <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+            <button
+              type="button"
+              onClick={() => { setLocalAcknowledged(true); if (onAcknowledge) onAcknowledge(card); }}
+              title="Defer this recommendation without taking action"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(80,65,50,0.35), rgba(65,50,38,0.2))',
+                border: '1px solid rgba(120,90,65,0.45)',
+                color: 'rgba(224,200,170,0.8)',
+              }}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              Acknowledge
+            </button>
+            <button
+              type="button"
+              onClick={onAskForMoreInfo}
+              title="Ask Curator to explain the rationale and evidence behind this suggestion"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))',
+                border: '1px solid rgba(74,124,156,0.45)',
+                color: '#6aabc0',
+              }}
+            >
+              <HelpCircle className="w-4 h-4" />
+              Ask for More Info
+            </button>
+            <button
+              type="button"
+              onClick={onTreatIndividually}
+              title="Review and decide on each item one by one"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(139,94,58,0.35), rgba(100,65,40,0.2))',
+                border: '1px solid rgba(139,94,58,0.5)',
+                color: '#D4956A',
+              }}
+            >
+              <SplitSquareVertical className="w-4 h-4" />
+              Treat Individually
+            </button>
+          </div>
+          <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
+            Acknowledge defers without action. Ask for More Info explains why this was suggested. Treat Individually opens a per-item review so you can decide on each one separately.
+          </p>
+        </>
+      )}
     </div>
+  );
+}
+
+// ─── TreatIndividuallyModal ───────────────────────────────────────────────────
+
+function TreatIndividuallyModal({ card, onClose, onAskCurator, navigate }) {
+  const items = card?.candidateItems || [];
+  const [skipped, setSkipped] = useState({});
+
+  if (!card) return null;
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="max-w-xl max-h-[85vh] overflow-y-auto"
+        style={{
+          background: 'linear-gradient(145deg, rgba(38,26,16,0.99), rgba(28,19,12,0.99))',
+          border: '1px solid rgba(140,105,65,0.3)',
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle
+            className="text-lg font-bold"
+            style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+          >
+            Treat Individually — {card.title}
+          </DialogTitle>
+          <DialogDescription className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>
+            Review each item below and decide individually. No changes are applied until you act on each one.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3 mt-2">
+          {items.length === 0 ? (
+            <p className="text-sm text-center py-6" style={{ color: 'rgba(224,216,200,0.5)' }}>
+              No individual items available for this recommendation.
+            </p>
+          ) : (
+            items.map((item) => {
+              const isSkipped = !!skipped[item.id];
+              return (
+                <div
+                  key={item.id}
+                  className="rounded-xl p-4"
+                  style={{
+                    background: isSkipped ? 'rgba(20,14,10,0.4)' : 'rgba(42,30,20,0.7)',
+                    border: `1px solid ${isSkipped ? 'rgba(140,105,65,0.08)' : 'rgba(140,105,65,0.22)'}`,
+                    opacity: isSkipped ? 0.5 : 1,
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div>
+                      <p className="font-semibold text-sm" style={{ color: '#F5F1E7' }}>
+                        {item.name}
+                      </p>
+                      {item.currentSpecialization != null && (
+                        <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
+                          Current specialization: {item.currentSpecialization || 'None set'}
+                        </p>
+                      )}
+                      {item.suggestedSpecialization && (
+                        <p className="text-xs mt-0.5" style={{ color: 'rgba(212,165,116,0.85)' }}>
+                          Suggested: {item.suggestedSpecialization}
+                        </p>
+                      )}
+                      {item.rationale && (
+                        <p className="text-xs mt-1 leading-relaxed" style={{ color: 'rgba(224,216,200,0.6)' }}>
+                          {item.rationale}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {!isSkipped && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {item.detailUrl && (
+                        <button
+                          type="button"
+                          onClick={() => { onClose(); navigate(item.detailUrl); }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+                          style={{
+                            background: 'rgba(74,124,92,0.25)',
+                            border: '1px solid rgba(74,124,92,0.45)',
+                            color: '#6aab80',
+                          }}
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          Go to {item.type || 'Item'}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (onAskCurator) {
+                            onAskCurator(`Tell me more about the ${card.title} suggestion for "${item.name}". ${item.rationale || ''}`);
+                          }
+                          onClose();
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+                        style={{
+                          background: 'rgba(139,94,58,0.2)',
+                          border: '1px solid rgba(139,94,58,0.4)',
+                          color: '#D4956A',
+                        }}
+                      >
+                        <MessageCircle className="w-3 h-3" />
+                        Ask Curator
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSkipped((prev) => ({ ...prev, [item.id]: true }))}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+                        style={{
+                          background: 'rgba(80,60,45,0.18)',
+                          border: '1px solid rgba(120,90,65,0.3)',
+                          color: 'rgba(224,216,200,0.5)',
+                        }}
+                      >
+                        Skip
+                      </button>
+                    </div>
+                  )}
+
+                  {isSkipped && (
+                    <button
+                      type="button"
+                      onClick={() => setSkipped((prev) => { const n = { ...prev }; delete n[item.id]; return n; })}
+                      className="text-xs underline mt-1 hover:opacity-80"
+                      style={{ color: 'rgba(180,140,75,0.5)' }}
+                    >
+                      Undo skip
+                    </button>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl text-sm font-semibold"
+            style={{
+              background: 'rgba(120,90,65,0.2)',
+              border: '1px solid rgba(120,90,65,0.35)',
+              color: 'rgba(224,216,200,0.75)',
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 // ─── SectionGroup ─────────────────────────────────────────────────────────────
 
-function SectionGroup({ emoji, title, cards, onApplyFix, onReviewDetails, onAskCurator }) {
+function SectionGroup({
+  emoji,
+  title,
+  cards,
+  onApplyFix,
+  onReviewDetails,
+  onAskCurator,
+  onAcknowledge,
+  onViewItems,
+  onAskForMoreInfo,
+  onTreatIndividually,
+}) {
   if (!cards.length) return null;
   return (
     <div className="space-y-4">
@@ -355,6 +708,10 @@ function SectionGroup({ emoji, title, cards, onApplyFix, onReviewDetails, onAskC
             onApplyFix={() => onApplyFix(card)}
             onReviewDetails={() => onReviewDetails(card)}
             onAskCurator={() => onAskCurator(card)}
+            onAcknowledge={() => onAcknowledge && onAcknowledge(card)}
+            onViewItems={() => onViewItems && onViewItems(card)}
+            onAskForMoreInfo={() => onAskForMoreInfo && onAskForMoreInfo(card)}
+            onTreatIndividually={() => onTreatIndividually && onTreatIndividually(card)}
           />
         ))}
       </div>
@@ -376,6 +733,7 @@ export default function CuratorOptimizePanel({
   const navigate = useNavigate();
   const [activeModule, setActiveModule] = useState('all');
   const [confirmCard, setConfirmCard] = useState(null);
+  const [treatIndividuallyCard, setTreatIndividuallyCard] = useState(null);
   const triggerElementRef = React.useRef(null);
 
   // Capture the element that had focus when the panel mounted so we can
@@ -427,6 +785,7 @@ export default function CuratorOptimizePanel({
         severity: INSIGHT_SEVERITY.LOW,
         module: 'pipe',
         suggestions: [],
+        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
       });
     }
     const blendsNoType = blends.filter((b) => !b.blend_type && !b.blend_family);
@@ -440,6 +799,7 @@ export default function CuratorOptimizePanel({
         severity: INSIGHT_SEVERITY.MEDIUM,
         module: 'tobacco',
         suggestions: [],
+        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
       });
     }
     const cigarsNoSize = cigars.filter((c) => !c.vitola && !c.size && !c.ring_gauge);
@@ -453,6 +813,7 @@ export default function CuratorOptimizePanel({
         severity: INSIGHT_SEVERITY.LOW,
         module: 'cigar',
         suggestions: [],
+        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
       });
     }
     const bottlesNoType = bottles.filter((b) => !b.whiskey_type && !b.spirit_type && !b.category);
@@ -466,6 +827,7 @@ export default function CuratorOptimizePanel({
         severity: INSIGHT_SEVERITY.LOW,
         module: 'whiskey',
         suggestions: [],
+        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
       });
     }
     return cards;
@@ -485,6 +847,7 @@ export default function CuratorOptimizePanel({
         severity: INSIGHT_SEVERITY.LOW,
         module: 'pipe',
         suggestions: [],
+        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
       });
     }
     const pipesGeneric = pipes.filter((p) => p.pipe_type === 'Other' || p.material === 'Other');
@@ -498,6 +861,7 @@ export default function CuratorOptimizePanel({
         severity: INSIGHT_SEVERITY.LOW,
         module: 'pipe',
         suggestions: [],
+        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
       });
     }
     const blendsUnknown = blends.filter(
@@ -513,6 +877,7 @@ export default function CuratorOptimizePanel({
         severity: INSIGHT_SEVERITY.MEDIUM,
         module: 'tobacco',
         suggestions: [],
+        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
       });
     }
     const cigarsNoWrapper = cigars.filter((c) => !c.wrapper && !c.wrapper_country);
@@ -526,6 +891,7 @@ export default function CuratorOptimizePanel({
         severity: INSIGHT_SEVERITY.LOW,
         module: 'cigar',
         suggestions: [],
+        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
       });
     }
     const bottlesNoDistillery = bottles.filter((b) => !b.distillery && !b.producer && !b.brand);
@@ -539,10 +905,47 @@ export default function CuratorOptimizePanel({
         severity: INSIGHT_SEVERITY.LOW,
         module: 'whiskey',
         suggestions: [],
+        recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
       });
     }
     return cards;
   }, [pipes, blends, cigars, bottles]);
+
+  // Pipe specialization cards — MULTI_PATH (needs user judgment)
+  const specializationCards = useMemo(() => {
+    const cards = [];
+    if (pipes.length === 0) return cards;
+
+    const pipesWithoutSpecialization = pipes.filter(
+      (p) => !p.focus || (Array.isArray(p.focus) && p.focus.length === 0)
+    );
+
+    if (pipesWithoutSpecialization.length > 0) {
+      cards.push({
+        id: 'spec_pipes_no_focus',
+        title: 'Pipe Specialization Opportunities',
+        whatWeFound: `${pipesWithoutSpecialization.length} ${plural(pipesWithoutSpecialization.length, 'pipe')} ${has(pipesWithoutSpecialization.length)} no specialization set. Specialization helps the Curator match pipes to the right blends and sessions.`,
+        whyItMatters: 'Pipe specialization guides pairing recommendations, session planning, and collection strategy. Assigning a focus (e.g. Aromatic, English, Virginia) improves suggestion quality.',
+        recommendedAction: 'Review each pipe and consider assigning a specialization that reflects how you use it.',
+        severity: INSIGHT_SEVERITY.LOW,
+        module: 'pipe',
+        suggestions: [],
+        recommendationClass: RECOMMENDATION_CLASS.MULTI_PATH,
+        // Candidate items for Treat Individually workflow
+        candidateItems: pipesWithoutSpecialization.map((p) => ({
+          id: p.id,
+          name: p.name || 'Unnamed Pipe',
+          type: 'Pipe',
+          currentSpecialization: Array.isArray(p.focus) ? p.focus.join(', ') : (p.focus || null),
+          suggestedSpecialization: null,
+          rationale: 'No specialization is currently set. Use the pipe detail page to assign a focus based on the tobacco types you enjoy in this pipe.',
+          detailUrl: createPageUrl(`PipeDetail?id=${encodeURIComponent(p.id)}`),
+        })),
+      });
+    }
+
+    return cards;
+  }, [pipes]);
 
   // All cards combined
   const allCards = useMemo(
@@ -550,8 +953,9 @@ export default function CuratorOptimizePanel({
       ...allInsights.map(insightToCard),
       ...quickWinCards,
       ...reclassifyCards,
+      ...specializationCards,
     ],
-    [allInsights, quickWinCards, reclassifyCards]
+    [allInsights, quickWinCards, reclassifyCards, specializationCards]
   );
 
   // Filter by active module
@@ -600,6 +1004,29 @@ export default function CuratorOptimizePanel({
     if (onAskCurator) {
       onAskCurator(`I'd like to discuss: "${card.title}". ${card.whatWeFound} What should I prioritize?`);
     }
+  }
+
+  function handleAcknowledge(_card) {
+    // Acknowledgement is handled locally inside RecommendationCard (localAcknowledged state).
+    // This callback is a hook for future persistence if needed.
+  }
+
+  function handleViewItems(card) {
+    const moduleKey = getModuleKey(card);
+    const route = getModuleRoute(moduleKey);
+    if (route) {
+      navigate(route);
+    }
+  }
+
+  function handleAskForMoreInfo(card) {
+    if (onAskCurator) {
+      onAskCurator(`Explain the rationale and evidence behind this suggestion: "${card.title}". ${card.whatWeFound} Why is this important for my collection?`);
+    }
+  }
+
+  function handleTreatIndividually(card) {
+    setTreatIndividuallyCard(card);
   }
 
   const confirmDetails = confirmCard ? getConfirmationDetails(confirmCard) : null;
@@ -741,6 +1168,10 @@ export default function CuratorOptimizePanel({
               onApplyFix={handleApplyFix}
               onReviewDetails={handleReviewDetails}
               onAskCurator={handleAskCuratorCard}
+              onAcknowledge={handleAcknowledge}
+              onViewItems={handleViewItems}
+              onAskForMoreInfo={handleAskForMoreInfo}
+              onTreatIndividually={handleTreatIndividually}
             />
             <SectionGroup
               emoji="🟡"
@@ -749,6 +1180,10 @@ export default function CuratorOptimizePanel({
               onApplyFix={handleApplyFix}
               onReviewDetails={handleReviewDetails}
               onAskCurator={handleAskCuratorCard}
+              onAcknowledge={handleAcknowledge}
+              onViewItems={handleViewItems}
+              onAskForMoreInfo={handleAskForMoreInfo}
+              onTreatIndividually={handleTreatIndividually}
             />
             <SectionGroup
               emoji="🧠"
@@ -757,6 +1192,10 @@ export default function CuratorOptimizePanel({
               onApplyFix={handleApplyFix}
               onReviewDetails={handleReviewDetails}
               onAskCurator={handleAskCuratorCard}
+              onAcknowledge={handleAcknowledge}
+              onViewItems={handleViewItems}
+              onAskForMoreInfo={handleAskForMoreInfo}
+              onTreatIndividually={handleTreatIndividually}
             />
           </>
         )}
@@ -845,6 +1284,16 @@ export default function CuratorOptimizePanel({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ── Treat Individually Modal ───────────────────────────────────────── */}
+      {treatIndividuallyCard && (
+        <TreatIndividuallyModal
+          card={treatIndividuallyCard}
+          onClose={() => setTreatIndividuallyCard(null)}
+          onAskCurator={onAskCurator}
+          navigate={navigate}
+        />
+      )}
     </div>
   );
 }
