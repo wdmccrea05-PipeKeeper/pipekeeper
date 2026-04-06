@@ -47,7 +47,6 @@ export default function PhotoUploader({
   };
 
   const handleCropSave = async (croppedDataUrl) => {
-    setCropImageUrl(null);
     setUploading(true);
     try {
       // Convert data URL to blob
@@ -62,6 +61,8 @@ export default function PhotoUploader({
       toast.error('Failed to upload photo');
     } finally {
       setUploading(false);
+      // Close cropper modal after upload completes
+      setCropImageUrl(null);
     }
   };
 
