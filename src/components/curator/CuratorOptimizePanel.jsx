@@ -917,7 +917,7 @@ export default function CuratorOptimizePanel({
     if (pipes.length === 0) return cards;
 
     const pipesWithoutSpecialization = pipes.filter(
-      (p) => !p.focus || (Array.isArray(p.focus) ? p.focus.length === 0 : !p.focus)
+      (p) => !p.focus || (Array.isArray(p.focus) && p.focus.length === 0)
     );
 
     if (pipesWithoutSpecialization.length > 0) {
