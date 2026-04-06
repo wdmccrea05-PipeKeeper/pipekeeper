@@ -1,6 +1,4 @@
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 
 const WHISKEY_TYPES = [
   'Scotch', 'Bourbon', 'Rye', 'Irish', 'Japanese', 'Blended', 'Single Malt', 'Canadian', 'Other',
@@ -23,22 +21,37 @@ const COCKTAILS = [
 function MultiSelectGroup({ label, options, selected = [], onToggle }) {
   return (
     <div className="space-y-2">
-      <Label className="text-stone-700 font-medium">{label}</Label>
+      <p
+        className="text-xs font-semibold uppercase tracking-wide"
+        style={{ color: 'rgba(212,165,116,0.75)' }}
+      >
+        {label}
+      </p>
       <div className="flex flex-wrap gap-2">
         {options.map((opt) => {
           const active = selected.includes(opt);
           return (
-            <Badge
+            <button
               key={opt}
+              type="button"
               onClick={() => onToggle(opt)}
-              className={`cursor-pointer border transition-colors ${
+              className="cursor-pointer rounded-full px-3 py-1 text-xs font-medium border transition-colors"
+              style={
                 active
-                  ? 'bg-amber-600 text-white border-amber-600 hover:bg-amber-700'
-                  : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'
-              }`}
+                  ? {
+                      background: 'rgba(163,92,92,0.28)',
+                      border: '1px solid rgba(163,92,92,0.6)',
+                      color: '#F5F1E7',
+                    }
+                  : {
+                      background: 'rgba(60,45,30,0.45)',
+                      border: '1px solid rgba(140,105,65,0.25)',
+                      color: 'rgba(224,216,200,0.65)',
+                    }
+              }
             >
               {opt}
-            </Badge>
+            </button>
           );
         })}
       </div>

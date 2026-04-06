@@ -225,7 +225,7 @@ export default function CuratorActionResultCard({
       {proposedEntries.length > 0 && !isNonMutating && (
         <div className="mt-3 rounded-lg bg-amber-500/5 p-3">
           <div className="mb-2 text-xs uppercase tracking-wide text-amber-500/70">
-            Proposed Changes
+            Fields That Will Change
           </div>
           <div className="space-y-2">
             {proposedEntries.map(([key, value]) => (
@@ -247,13 +247,19 @@ export default function CuratorActionResultCard({
 
       {!isNonMutating && proposedEntries.length > 0 && !isAccepted && !isRejected && (
         <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/8 px-3 py-2.5 text-xs text-amber-50/75">
-          <span className="font-semibold text-amber-400">Accepting this</span> will immediately save the field changes listed above to this record in your collection. This action can be undone by editing the record directly.
+          <span className="font-semibold text-amber-400">Apply Changes</span> will immediately save the field changes listed above to this record in your collection. You can undo by editing the record directly.
+        </div>
+      )}
+
+      {!isNonMutating && proposedEntries.length === 0 && !isAccepted && !isRejected && (
+        <div className="mt-3 rounded-lg border border-amber-500/15 bg-amber-500/5 px-3 py-2 text-xs text-amber-50/70">
+          <span className="font-semibold text-amber-400/90">Acknowledge</span> marks this recommendation as reviewed — no data in your collection will be changed automatically.
         </div>
       )}
 
       {isNonMutating && !isAccepted && !isRejected && (
         <div className="mt-3 rounded-lg border border-amber-500/15 bg-amber-500/5 px-3 py-2 text-xs text-amber-50/70">
-          <span className="font-semibold text-amber-400/90">Trying this</span>{' '}
+          <span className="font-semibold text-amber-400/90">Try This</span>{' '}
           is for exploration only — no data in your collection will be changed or saved.
         </div>
       )}
@@ -269,14 +275,20 @@ export default function CuratorActionResultCard({
       )}
 
       {!isAccepted && !isRejected && (
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"
             onClick={onAccept}
             disabled={isApplying}
             className="whitespace-nowrap rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-black disabled:opacity-50"
           >
-            {isApplying ? "Applying..." : isNonMutating ? "Try This" : "Accept"}
+            {isApplying
+              ? "Applying..."
+              : isNonMutating
+              ? "Try This"
+              : proposedEntries.length > 0
+              ? "Apply Changes"
+              : "Acknowledge"}
           </button>
 
           <button
@@ -285,7 +297,7 @@ export default function CuratorActionResultCard({
             disabled={isApplying}
             className="whitespace-nowrap rounded-lg border border-amber-500/30 px-3 py-1.5 text-sm text-amber-100 disabled:opacity-50"
           >
-            {isNonMutating ? "Skip" : "Reject"}
+            {isNonMutating ? "Skip" : "Dismiss"}
           </button>
 
           <button
