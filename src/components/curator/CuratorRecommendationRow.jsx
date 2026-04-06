@@ -1,16 +1,22 @@
 /**
  * Curator Recommendation Row
  *
- * Single recommendation item with full workflow controls:
- * Accept, Dismiss, Exclude This Item, Show Why, Ask Curator to Clarify
+ * Single recommendation item with full workflow controls.
+ * Button sets are determined entirely by item.recommendationClass:
  *
- * Button labels and behavior are driven by item.recommendationClass so that
- * advisory items never show an "Apply Changes" button.
+ *   AUTO_FIX       → Apply Fix | Ask Curator | Dismiss | Exclude
+ *   ADVISORY       → Acknowledge | View Items | Ask Curator
+ *   REVIEW_REQUIRED → Review Details | Approve Changes | Ask Curator
+ *   MULTI_PATH     → Acknowledge | Ask for More Info | Treat Individually
+ *   (default)      → Accept | Ask Curator | Dismiss | Exclude
+ *
+ * Advisory and multi-path cards must never show Apply Fix or Dismiss/Exclude
+ * in the primary row — they are not data mutations.
  */
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, HelpCircle, XCircle, Ban, ChevronDown, ArrowRight } from "lucide-react";
+import { CheckCircle2, HelpCircle, XCircle, Ban, ChevronDown, ArrowRight, Eye, SplitSquareVertical } from "lucide-react";
 import { recordRecommendationAction } from "./curatorRecommendationHistory";
 import { RECOMMENDATION_CLASS } from "./recommendationActionTypes";
 
@@ -81,15 +87,7 @@ export default function CuratorRecommendationRow({
   const hasProposedChange =
     item.proposedChange?.payload && Object.keys(item.proposedChange.payload).length > 0;
 
-  // Derive accept button label from recommendation class
   const recClass = item.recommendationClass || item.actionType || null;
-  function getAcceptLabel() {
-    if (recClass === RECOMMENDATION_CLASS.ADVISORY) return "Acknowledge";
-    if (recClass === RECOMMENDATION_CLASS.MULTI_PATH) return "Acknowledge";
-    if (recClass === RECOMMENDATION_CLASS.REVIEW_REQUIRED) return "Approve Changes";
-    if (hasProposedChange) return "Accept & Apply Changes";
-    return "Accept";
-  }
 
   const handleDismiss = () => {
     recordRecommendationAction(item.id, 'dismissed');
@@ -106,6 +104,14 @@ export default function CuratorRecommendationRow({
   const handleAccept = async () => {
     recordRecommendationAction(item.id, 'accepted');
     if (onAccept) await onAccept(item);
+  };
+
+  /** Ask Curator with an optional custom prompt string, or pass the item as-is. */
+  const handleClarifyWithPrompt = (promptStr) => {
+    if (onClarify) onClarify({ ...item, _clarifyPrompt: promptStr });
+  };
+  const handleClarifyDefault = () => {
+    if (onClarify) onClarify(item);
   };
 
   if (dismissed || excluded) {
@@ -183,8 +189,10 @@ export default function CuratorRecommendationRow({
           </div>
         </div>
 
-        {/* "What changes" disclosure */}
-        {hasProposedChange && (
+        {/* "What changes" disclosure — only for AUTO_FIX / REVIEW_REQUIRED */}
+        {hasProposedChange &&
+          recClass !== RECOMMENDATION_CLASS.ADVISORY &&
+          recClass !== RECOMMENDATION_CLASS.MULTI_PATH && (
           <div className="mt-3">
             <button
               onClick={() => setShowWhy(v => !v)}
@@ -206,93 +214,325 @@ export default function CuratorRecommendationRow({
         )}
       </div>
 
-      {/* Action footer */}
+      {/* ── Action footer — button set varies by recommendation class ─────── */}
       <div
-        className="flex flex-wrap items-center gap-2 px-4 py-3"
+        className="px-4 py-3"
         style={{ borderTop: "1px solid rgba(140,105,65,0.1)", background: "rgba(0,0,0,0.12)" }}
       >
-        {onAccept && (
-          <Button
-            onClick={handleAccept}
-            disabled={isLoading}
-            size="sm"
-            className="text-xs h-8 gap-1.5 font-medium"
-            style={{
-              background: "linear-gradient(135deg, rgba(46,125,92,0.9), rgba(38,100,73,1))",
-              border: "1px solid rgba(46,125,92,0.3)",
-              color: "#e8f5ee",
-            }}
-          >
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            {getAcceptLabel()}
-          </Button>
+        {/* AUTO_FIX: Apply Fix | Ask Curator | Dismiss | Exclude */}
+        {recClass === RECOMMENDATION_CLASS.AUTO_FIX && (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              {onAccept && (
+                <Button
+                  onClick={handleAccept}
+                  disabled={isLoading}
+                  size="sm"
+                  className="text-xs h-8 gap-1.5 font-medium"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(46,125,92,0.9), rgba(38,100,73,1))",
+                    border: "1px solid rgba(46,125,92,0.3)",
+                    color: "#e8f5ee",
+                  }}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  {hasProposedChange ? "Apply Fix" : "Accept"}
+                </Button>
+              )}
+              {onClarify && (
+                <Button
+                  onClick={handleClarifyDefault}
+                  disabled={isLoading}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-8 gap-1.5"
+                  style={{ borderColor: "rgba(180,140,75,0.22)", color: "rgba(212,165,116,0.9)" }}
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  Ask Curator
+                </Button>
+              )}
+              <div className="ml-auto flex gap-1">
+                <Button
+                  onClick={handleDismiss}
+                  disabled={isLoading}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-8 gap-1"
+                  style={{ color: "rgba(224,216,200,0.38)" }}
+                >
+                  <XCircle className="w-3.5 h-3.5" />
+                  Dismiss
+                </Button>
+                <Button
+                  onClick={handleExclude}
+                  disabled={isLoading}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-8 gap-1"
+                  style={{ color: "rgba(200,100,100,0.5)" }}
+                  title="Exclude this item from future suggestions"
+                >
+                  <Ban className="w-3.5 h-3.5" />
+                  Exclude
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs mt-2" style={{ color: "rgba(224,216,200,0.38)" }}>
+              {hasProposedChange ? (
+                <>
+                  <span style={{ color: "rgba(74,200,130,0.7)", fontWeight: 600 }}>Apply Fix</span>
+                  {" "}will immediately save the changes listed above to this record.{" "}
+                  <span style={{ color: "rgba(212,165,116,0.7)", fontWeight: 600 }}>Ask Curator</span>
+                  {" "}lets you clarify before committing.
+                </>
+              ) : (
+                <>
+                  <span style={{ color: "rgba(74,200,130,0.7)", fontWeight: 600 }}>Accept</span>
+                  {" "}marks this recommendation as acknowledged.
+                </>
+              )}
+            </p>
+          </>
         )}
 
-        {onClarify && (
-          <Button
-            onClick={() => onClarify(item)}
-            disabled={isLoading}
-            variant="outline"
-            size="sm"
-            className="text-xs h-8 gap-1.5"
-            style={{ borderColor: "rgba(180,140,75,0.22)", color: "rgba(212,165,116,0.9)" }}
-          >
-            <HelpCircle className="w-3.5 h-3.5" />
-            Ask Curator
-          </Button>
+        {/* ADVISORY: Acknowledge | View Items | Ask Curator — NO Apply Fix, NO Dismiss */}
+        {recClass === RECOMMENDATION_CLASS.ADVISORY && (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              {onAccept && (
+                <Button
+                  onClick={handleAccept}
+                  disabled={isLoading}
+                  size="sm"
+                  className="text-xs h-8 gap-1.5 font-medium"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(74,124,92,0.4), rgba(74,124,92,0.22))",
+                    border: "1px solid rgba(74,124,92,0.5)",
+                    color: "#6aab80",
+                  }}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Acknowledge
+                </Button>
+              )}
+              <Button
+                onClick={() => handleClarifyWithPrompt(`Show me the specific items related to: "${item.itemName || item.issue}"`)}
+                disabled={isLoading}
+                variant="outline"
+                size="sm"
+                className="text-xs h-8 gap-1.5"
+                style={{ borderColor: "rgba(74,124,156,0.3)", color: "rgba(130,180,210,0.9)" }}
+              >
+                <Eye className="w-3.5 h-3.5" />
+                View Items
+              </Button>
+              {onClarify && (
+                <Button
+                  onClick={handleClarifyDefault}
+                  disabled={isLoading}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-8 gap-1.5"
+                  style={{ borderColor: "rgba(180,140,75,0.22)", color: "rgba(212,165,116,0.9)" }}
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  Ask Curator
+                </Button>
+              )}
+            </div>
+            <p className="text-xs mt-2" style={{ color: "rgba(224,216,200,0.38)" }}>
+              <span style={{ color: "rgba(74,200,130,0.7)", fontWeight: 600 }}>Acknowledge</span>
+              {" "}marks this insight as reviewed — no data in your collection will change.{" "}
+              <span style={{ color: "rgba(130,180,210,0.7)", fontWeight: 600 }}>View Items</span>
+              {" "}asks the Curator to list the specific items.
+            </p>
+          </>
         )}
 
-        <div className="ml-auto flex gap-1">
-          <Button
-            onClick={handleDismiss}
-            disabled={isLoading}
-            variant="ghost"
-            size="sm"
-            className="text-xs h-8 gap-1"
-            style={{ color: "rgba(224,216,200,0.38)" }}
-          >
-            <XCircle className="w-3.5 h-3.5" />
-            Dismiss
-          </Button>
+        {/* REVIEW_REQUIRED: Review Details | Approve Changes | Ask Curator */}
+        {recClass === RECOMMENDATION_CLASS.REVIEW_REQUIRED && (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              {onClarify && (
+                <Button
+                  onClick={() => handleClarifyWithPrompt(`Explain what will change for: "${item.itemName || item.issue}". ${item.recommendation || ''}`)}
+                  disabled={isLoading}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-8 gap-1.5"
+                  style={{ borderColor: "rgba(74,124,156,0.3)", color: "rgba(130,180,210,0.9)" }}
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  Review Details
+                </Button>
+              )}
+              {onAccept && (
+                <Button
+                  onClick={handleAccept}
+                  disabled={isLoading}
+                  size="sm"
+                  className="text-xs h-8 gap-1.5 font-medium"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(180,100,50,0.5), rgba(150,75,30,0.35))",
+                    border: "1px solid rgba(180,100,50,0.5)",
+                    color: "#e0a070",
+                  }}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Approve Changes
+                </Button>
+              )}
+              {onClarify && (
+                <Button
+                  onClick={handleClarifyDefault}
+                  disabled={isLoading}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-8 gap-1.5"
+                  style={{ borderColor: "rgba(180,140,75,0.22)", color: "rgba(212,165,116,0.9)" }}
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  Ask Curator
+                </Button>
+              )}
+            </div>
+            <p className="text-xs mt-2" style={{ color: "rgba(224,216,200,0.38)" }}>
+              <span style={{ color: "rgba(130,180,210,0.7)", fontWeight: 600 }}>Review Details</span>
+              {" "}explains what will change before you commit.{" "}
+              <span style={{ color: "rgba(224,160,112,0.7)", fontWeight: 600 }}>Approve Changes</span>
+              {" "}applies the listed changes to your collection.
+            </p>
+          </>
+        )}
 
-          <Button
-            onClick={handleExclude}
-            disabled={isLoading}
-            variant="ghost"
-            size="sm"
-            className="text-xs h-8 gap-1"
-            style={{ color: "rgba(200,100,100,0.5)" }}
-            title="Exclude this item from future suggestions"
-          >
-            <Ban className="w-3.5 h-3.5" />
-            Exclude
-          </Button>
-        </div>
+        {/* MULTI_PATH: Acknowledge | Ask for More Info | Treat Individually */}
+        {recClass === RECOMMENDATION_CLASS.MULTI_PATH && (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              {onAccept && (
+                <Button
+                  onClick={handleAccept}
+                  disabled={isLoading}
+                  size="sm"
+                  className="text-xs h-8 gap-1.5 font-medium"
+                  style={{
+                    background: "rgba(80,65,50,0.35)",
+                    border: "1px solid rgba(120,90,65,0.45)",
+                    color: "rgba(224,200,170,0.8)",
+                  }}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Acknowledge
+                </Button>
+              )}
+              <Button
+                onClick={() => handleClarifyWithPrompt(`Explain the rationale and evidence behind: "${item.itemName || item.issue}". ${item.recommendation || ''}`)}
+                disabled={isLoading}
+                variant="outline"
+                size="sm"
+                className="text-xs h-8 gap-1.5"
+                style={{ borderColor: "rgba(74,124,156,0.3)", color: "rgba(130,180,210,0.9)" }}
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                Ask for More Info
+              </Button>
+              <Button
+                onClick={() => handleClarifyWithPrompt(`Walk me through each item individually for: "${item.itemName || item.issue}". ${item.recommendation || ''}`)}
+                disabled={isLoading}
+                variant="outline"
+                size="sm"
+                className="text-xs h-8 gap-1.5"
+                style={{ borderColor: "rgba(139,94,58,0.35)", color: "rgba(212,149,106,0.9)" }}
+              >
+                <SplitSquareVertical className="w-3.5 h-3.5" />
+                Treat Individually
+              </Button>
+            </div>
+            <p className="text-xs mt-2" style={{ color: "rgba(224,216,200,0.38)" }}>
+              <span style={{ color: "rgba(212,165,116,0.7)", fontWeight: 600 }}>Acknowledge</span>
+              {" "}defers without action.{" "}
+              <span style={{ color: "rgba(130,180,210,0.7)", fontWeight: 600 }}>Ask for More Info</span>
+              {" "}explains why this was suggested.{" "}
+              <span style={{ color: "rgba(212,149,106,0.7)", fontWeight: 600 }}>Treat Individually</span>
+              {" "}asks the Curator to walk through each item one by one.
+            </p>
+          </>
+        )}
 
-        {onAccept && (
-          <p className="w-full text-xs mt-1" style={{ color: "rgba(224,216,200,0.38)" }}>
-            {recClass === RECOMMENDATION_CLASS.ADVISORY ? (
-              <>
-                <span style={{ color: "rgba(212,165,116,0.7)", fontWeight: 600 }}>Acknowledge</span>
-                {" "}marks this insight as reviewed — no data in your collection will change automatically.
-              </>
-            ) : recClass === RECOMMENDATION_CLASS.MULTI_PATH ? (
-              <>
-                <span style={{ color: "rgba(212,165,116,0.7)", fontWeight: 600 }}>Acknowledge</span>
-                {" "}defers this recommendation without taking action.
-              </>
-            ) : hasProposedChange ? (
-              <>
-                <span style={{ color: "rgba(74,200,130,0.7)", fontWeight: 600 }}>Accept &amp; Apply Changes</span>
-                {" "}will immediately save the changes listed above to this record in your collection.
-              </>
-            ) : (
-              <>
-                <span style={{ color: "rgba(212,165,116,0.7)", fontWeight: 600 }}>Accept</span>
-                {" "}marks this recommendation as acknowledged — no data in your collection will be automatically changed.
-              </>
-            )}
-          </p>
+        {/* Default fallback (no class set) */}
+        {!recClass && (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              {onAccept && (
+                <Button
+                  onClick={handleAccept}
+                  disabled={isLoading}
+                  size="sm"
+                  className="text-xs h-8 gap-1.5 font-medium"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(46,125,92,0.9), rgba(38,100,73,1))",
+                    border: "1px solid rgba(46,125,92,0.3)",
+                    color: "#e8f5ee",
+                  }}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  {hasProposedChange ? "Accept & Apply" : "Accept"}
+                </Button>
+              )}
+              {onClarify && (
+                <Button
+                  onClick={handleClarifyDefault}
+                  disabled={isLoading}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-8 gap-1.5"
+                  style={{ borderColor: "rgba(180,140,75,0.22)", color: "rgba(212,165,116,0.9)" }}
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  Ask Curator
+                </Button>
+              )}
+              <div className="ml-auto flex gap-1">
+                <Button
+                  onClick={handleDismiss}
+                  disabled={isLoading}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-8 gap-1"
+                  style={{ color: "rgba(224,216,200,0.38)" }}
+                >
+                  <XCircle className="w-3.5 h-3.5" />
+                  Dismiss
+                </Button>
+                <Button
+                  onClick={handleExclude}
+                  disabled={isLoading}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-8 gap-1"
+                  style={{ color: "rgba(200,100,100,0.5)" }}
+                  title="Exclude this item from future suggestions"
+                >
+                  <Ban className="w-3.5 h-3.5" />
+                  Exclude
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs mt-2" style={{ color: "rgba(224,216,200,0.38)" }}>
+              {hasProposedChange ? (
+                <>
+                  <span style={{ color: "rgba(74,200,130,0.7)", fontWeight: 600 }}>Accept &amp; Apply</span>
+                  {" "}will immediately save the changes listed above to this record.
+                </>
+              ) : (
+                <>
+                  <span style={{ color: "rgba(212,165,116,0.7)", fontWeight: 600 }}>Accept</span>
+                  {" "}marks this recommendation as acknowledged — no data will change automatically.
+                </>
+              )}
+            </p>
+          </>
         )}
       </div>
     </div>
