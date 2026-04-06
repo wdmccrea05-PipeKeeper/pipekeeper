@@ -51,6 +51,7 @@ import {
   refreshItemValue,
 } from "@/components/valuation/valueRefreshService";
 import { toast } from "sonner";
+import EnrichButton from "@/components/shared/EnrichButton";
 
 function safePrimitive(value, fallback = "—") {
   if (value === null || value === undefined || value === "") return fallback;
@@ -727,6 +728,7 @@ function BottleDetailInner() {
               <Share2 className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">Share</span>
             </Button>
+            <EnrichButton itemType="bottle" record={bottle} onEnriched={setBottle} />
             <Button
               onClick={() =>
                 navigate(`/BottleForm?id=${encodeURIComponent(bottle.id)}`)
