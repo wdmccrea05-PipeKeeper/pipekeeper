@@ -276,9 +276,9 @@ export function normalizeSub(raw, user = null) {
   const fieldInterval = normalizeInterval(raw);
   const billingInterval = fieldInterval ?? (catalog?.billingInterval ?? null);
 
-  // Module(s): use catalog when available, fall back to primary_module field
+  // Module(s): use catalog when available, fall back to primary_module field, then 'pipekeeper'
   const modules = catalog?.modules ?? (norm(raw.primary_module || '') ? [norm(raw.primary_module)] : ['pipekeeper']);
-  const module  = modules[0] ?? 'pipekeeper';
+  const module  = modules[0];
 
   return {
     rawId:           String(raw.id || raw.stripe_subscription_id || ''),
