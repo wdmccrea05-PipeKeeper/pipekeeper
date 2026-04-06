@@ -220,9 +220,7 @@ export default function CuratorActionResultCard({
 
       {isNonMutating && !isAccepted && !isRejected && (
         <div className="mt-3 rounded-lg border border-amber-500/15 bg-amber-500/5 px-3 py-2 text-xs text-amber-50/70">
-          <span className="font-semibold text-amber-400/90">
-            {isPairing ? 'Trying this' : isSession ? 'Trying this' : 'Trying this'}
-          </span>{' '}
+          <span className="font-semibold text-amber-400/90">Trying this</span>{' '}
           is for exploration — no data in your collection will be changed.
         </div>
       )}

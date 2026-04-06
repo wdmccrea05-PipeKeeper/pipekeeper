@@ -262,7 +262,7 @@ export default function CuratorRecommendationRow({
         )}
         {onAccept && !hasProposedChange && (
           <p className="w-full text-xs mt-1" style={{ color: "rgba(224,216,200,0.38)" }}>
-            Accepting logs that you acknowledge this recommendation — no automatic data change will occur.
+            Accepting acknowledges this recommendation — no automatic data change will occur.
           </p>
         )}
       </div>
