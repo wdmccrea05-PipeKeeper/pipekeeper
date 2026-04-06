@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +25,8 @@ import {
   Thermometer,
   Clock3,
   DollarSign,
+  Check,
+  X,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -177,6 +179,66 @@ function AgingTabContent({ cigar, humidor }) {
   );
 }
 
+function EditableStatCard({ label, value, icon: Icon, onSave, type = 'number', placeholder }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const inputRef = useRef(null);
+
+  const start = () => {
+    setDraft(value === '—' || value == null ? '' : String(value).replace(/[^0-9.]/g, ''));
+    setEditing(true);
+  };
+
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+
+  const save = async () => {
+    const num = draft !== '' ? Number(draft) : null;
+    await onSave(num);
+    setEditing(false);
+  };
+
+  const cancel = () => setEditing(false);
+
+  return (
+    <div
+      className="rounded-2xl p-4 cursor-pointer"
+      style={{ background: 'rgba(255,255,255,0.035)', border: editing ? '1px solid rgba(140,107,63,0.55)' : '1px solid rgba(140,107,63,0.22)' }}
+      onClick={!editing ? start : undefined}
+    >
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: 'rgba(140,107,63,0.18)', border: '1px solid rgba(140,107,63,0.3)' }}>
+          <Icon className="w-4 h-4" style={{ color: '#B48C4B' }} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs uppercase tracking-[0.14em]" style={{ color: 'rgba(224,216,200,0.6)' }}>{label}</p>
+          {editing ? (
+            <div className="flex items-center gap-1 mt-1">
+              <input
+                ref={inputRef}
+                type={type}
+                value={draft}
+                onChange={e => setDraft(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') cancel(); }}
+                placeholder={placeholder}
+                className="w-full rounded-lg px-2 py-1 text-base font-semibold bg-transparent border"
+                style={{ color: '#F5F1E7', borderColor: 'rgba(140,107,63,0.5)', outline: 'none' }}
+              />
+              <button type="button" onClick={e => { e.stopPropagation(); save(); }} className="p-1 rounded" style={{ color: '#6FCF97' }}><Check className="w-4 h-4" /></button>
+              <button type="button" onClick={e => { e.stopPropagation(); cancel(); }} className="p-1 rounded" style={{ color: '#E07060' }}><X className="w-4 h-4" /></button>
+            </div>
+          ) : (
+            <p className="text-lg font-semibold mt-1 break-words" style={{ color: '#F5F1E7' }}>
+              {safePrimitive(value)}
+              <span className="ml-2 text-xs" style={{ color: 'rgba(140,107,63,0.5)' }}>tap to edit</span>
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DetailStat({ label, value, icon: Icon }) {
   return (
     <div
@@ -205,6 +267,73 @@ function DetailStat({ label, value, icon: Icon }) {
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+function EditableInfoRow({ label, value, onSave, type = 'text', options }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const inputRef = useRef(null);
+
+  const display = safePrimitive(value);
+
+  const start = () => {
+    setDraft(value == null ? '' : String(value));
+    setEditing(true);
+  };
+
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+
+  const save = async () => {
+    const val = type === 'number' ? (draft !== '' ? Number(draft) : null) : (draft || null);
+    await onSave(val);
+    setEditing(false);
+  };
+
+  const cancel = () => setEditing(false);
+
+  return (
+    <div className="flex gap-3 py-2 items-center" style={{ borderBottom: '1px solid rgba(140,107,63,0.1)' }}>
+      <span className="text-xs uppercase tracking-wider w-36 shrink-0 pt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{label}</span>
+      {editing ? (
+        <div className="flex items-center gap-1 flex-1">
+          {options ? (
+            <select
+              ref={inputRef}
+              value={draft}
+              onChange={e => setDraft(e.target.value)}
+              className="flex-1 rounded-lg px-2 py-1 text-sm bg-[rgba(20,15,12,0.8)] border"
+              style={{ color: '#F5F1E7', borderColor: 'rgba(140,107,63,0.4)', outline: 'none' }}
+            >
+              <option value="">—</option>
+              {options.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          ) : (
+            <input
+              ref={inputRef}
+              type={type}
+              value={draft}
+              onChange={e => setDraft(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') cancel(); }}
+              className="flex-1 rounded-lg px-2 py-1 text-sm bg-[rgba(20,15,12,0.8)] border"
+              style={{ color: '#F5F1E7', borderColor: 'rgba(140,107,63,0.4)', outline: 'none' }}
+            />
+          )}
+          <button type="button" onClick={save} className="p-1 rounded" style={{ color: '#6FCF97' }}><Check className="w-4 h-4" /></button>
+          <button type="button" onClick={cancel} className="p-1 rounded" style={{ color: '#E07060' }}><X className="w-4 h-4" /></button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={start}
+          className="flex-1 text-sm text-left group"
+          style={{ color: display === '—' ? 'rgba(224,216,200,0.35)' : '#E0D8C8' }}
+        >
+          {display}
+          <Pencil className="inline-block w-3 h-3 ml-2 opacity-0 group-hover:opacity-60 transition-opacity" style={{ color: 'rgba(140,107,63,0.8)' }} />
+        </button>
+      )}
     </div>
   );
 }
@@ -283,6 +412,12 @@ function CigarDetailInner() {
   const [activeTab, setActiveTab] = useState('overview');
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [sessionModalOpen, setSessionModalOpen] = useState(false);
+
+  const saveField = async (field, value) => {
+    await base44.entities.Cigar.update(cigar.id, { [field]: value });
+    queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
+    toast.success('Updated');
+  };
 
   const { data: cigar, isLoading: cigarLoading } = useQuery({
     queryKey: ['cigar-detail', id, user?.email],
@@ -498,43 +633,39 @@ function CigarDetailInner() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <DetailStat
+        <EditableStatCard
           label="Sticks"
           value={cigar.singles_equivalent ?? cigar.quantity ?? '—'}
           icon={Package}
-        />
-        <div
-          className="rounded-2xl p-4"
-          style={{
-            background: 'rgba(255,255,255,0.035)',
-            border: '1px solid rgba(140,107,63,0.22)',
+          placeholder="# sticks"
+          onSave={async (val) => {
+            await base44.entities.Cigar.update(cigar.id, { singles_equivalent: val, quantity: val });
+            queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
+            toast.success('Sticks updated');
           }}
-        >
-          <div className="flex items-start gap-3">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: 'rgba(140,107,63,0.18)', border: '1px solid rgba(140,107,63,0.3)' }}
-            >
-              <DollarSign className="w-4 h-4" style={{ color: '#B48C4B' }} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs uppercase tracking-[0.14em]" style={{ color: 'rgba(224,216,200,0.6)' }}>Value</p>
-              <p className="text-lg font-semibold mt-1" style={{ color: '#F5F1E7' }}>{displayValue}</p>
-              {valuation?.perStickValue && valuation?.totalValue && valuation.perStickValue !== valuation.totalValue && (
-                <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
-                  {formatCurrency(valuation.perStickValue)}/stick
-                </p>
-              )}
-              {valuation?.confidenceScore === 'low' && displayValue !== '—' && (
-                <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.35)' }}>Est.</p>
-              )}
-            </div>
-          </div>
-        </div>
-        <DetailStat
+        />
+        <EditableStatCard
+          label="Value (est.)"
+          value={cigar.estimated_value ? Number(cigar.estimated_value) : '—'}
+          icon={DollarSign}
+          placeholder="0.00"
+          onSave={async (val) => {
+            await base44.entities.Cigar.update(cigar.id, { estimated_value: val });
+            queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
+            toast.success('Value updated');
+          }}
+        />
+        <EditableStatCard
           label="Rating"
-          value={cigar.rating ? `${cigar.rating}/5` : '—'}
+          value={cigar.rating ?? '—'}
           icon={Star}
+          placeholder="1–5"
+          onSave={async (val) => {
+            const clamped = val != null ? Math.min(5, Math.max(0, val)) : null;
+            await base44.entities.Cigar.update(cigar.id, { rating: clamped });
+            queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
+            toast.success('Rating updated');
+          }}
         />
         <DetailStat
           label="Humidor"
@@ -584,11 +715,25 @@ function CigarDetailInner() {
         )}
 
         {activeTab === 'inventory' && (
-          <div className="space-y-1">
-            <InfoRow label="Quantity" value={cigar.quantity} />
-            <InfoRow label="Unit Type" value={cigar.unit_type} />
-            <InfoRow label="Cigars per Package" value={cigar.cigars_per_package} />
-            <InfoRow label={cigar.unit_type === 'partial_box' ? 'Remaining Sticks' : 'Total Sticks'} value={cigar.singles_equivalent} />
+          <div className="space-y-0">
+            <EditableInfoRow
+              label="Quantity"
+              value={cigar.quantity}
+              type="number"
+              onSave={(v) => saveField('quantity', v)}
+            />
+            <EditableInfoRow
+              label="Unit Type"
+              value={cigar.unit_type}
+              options={['single', '5pack', 'pack', 'box', 'bundle', 'partial_box']}
+              onSave={(v) => saveField('unit_type', v)}
+            />
+            <EditableInfoRow
+              label={cigar.unit_type === 'partial_box' ? 'Remaining Sticks' : 'Total Sticks'}
+              value={cigar.singles_equivalent}
+              type="number"
+              onSave={(v) => saveField('singles_equivalent', v)}
+            />
             {inventoryMetrics && (
               <>
                 <InfoRow
@@ -614,12 +759,35 @@ function CigarDetailInner() {
                 )}
               </>
             )}
-            <InfoRow label="Purchase Source" value={cigar.purchase_source} />
-            <InfoRow label="Purchase Date" value={formatDate(cigar.purchase_date)} />
-            <InfoRow label="Purchase Price" value={cigar.purchase_price ? formatCurrency(cigar.purchase_price) : ''} />
-            <InfoRow label="Est. Value" value={cigar.estimated_value ? formatCurrency(cigar.estimated_value) : ''} />
+            <EditableInfoRow
+              label="Purchase Source"
+              value={cigar.purchase_source}
+              onSave={(v) => saveField('purchase_source', v)}
+            />
+            <EditableInfoRow
+              label="Purchase Date"
+              value={cigar.purchase_date || ''}
+              type="date"
+              onSave={(v) => saveField('purchase_date', v)}
+            />
+            <EditableInfoRow
+              label="Purchase Price"
+              value={cigar.purchase_price}
+              type="number"
+              onSave={(v) => saveField('purchase_price', v)}
+            />
+            <EditableInfoRow
+              label="Est. Value"
+              value={cigar.estimated_value}
+              type="number"
+              onSave={(v) => saveField('estimated_value', v)}
+            />
+            <EditableInfoRow
+              label="Storage Notes"
+              value={cigar.storage_notes}
+              onSave={(v) => saveField('storage_notes', v)}
+            />
             <InfoRow label="Humidor" value={humidor?.name} />
-            <InfoRow label="Storage Notes" value={cigar.storage_notes} />
           </div>
         )}
 
