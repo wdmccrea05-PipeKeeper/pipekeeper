@@ -42,32 +42,32 @@ const safe = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
 
 const MODULE_META = {
   pipekeeper: {
-    label: 'PipeKeeper',
+    labelKey: 'hub.pipekeeper',
     route: 'PipeKeeper',
     accent: '#C89752',
-    description: 'Manage your pipe collection, tobacco cellar, smoking logs, and AI-powered pairings.',
-    tagline: 'Your complete pipe & tobacco platform',
+    descriptionKey: 'hub.pipekeeperDescription',
+    taglineKey: 'hub.pipekeeperTagline',
   },
   whiskeykeeper: {
-    label: 'WhiskeyKeeper',
+    labelKey: 'hub.whiskeykeeper',
     route: 'WhiskeyKeeper',
     accent: '#B66565',
-    description: 'Track your whiskey collection with tasting notes, bottle inventory, and valuations.',
-    tagline: 'Whiskey collection intelligence',
+    descriptionKey: 'hub.whiskeyDescription',
+    taglineKey: 'hub.whiskeyTagline',
   },
   winekeeper: {
-    label: 'WineKeeper',
+    labelKey: 'hub.winekeeper',
     route: null,
     accent: '#8F6BAA',
-    description: 'Wine cellar management — curate, age, and value your collection.',
-    tagline: 'Expanding Soon',
+    descriptionKey: 'hub.winekeeperDescription',
+    taglineKey: 'hub.comingSoon',
   },
   cigarkeeper: {
-    label: 'CigarKeeper',
+    labelKey: 'hub.cigarkeeper',
     route: 'CigarKeeper',
     accent: '#8C6B3F',
-    description: 'Curate and track your cigar collection with humidor management and session logs.',
-    tagline: 'Your complete cigar collection platform',
+    descriptionKey: 'hub.cigarkeeperDescription',
+    taglineKey: 'hub.cigarkeeperTagline',
   },
 };
 
@@ -133,6 +133,7 @@ function StatCard({ icon: Icon, label, value, sub, accent = '#C89752' }) {
 function ModuleCard({ moduleKey, stats = [], onOpen }) {
   const meta = MODULE_META[moduleKey];
   const icon = MODULE_ICONS?.[moduleKey];
+  const { t } = useTranslation();
 
   return (
     <div
@@ -152,7 +153,7 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
             {icon ? (
               <img
                 src={icon}
-                alt={meta.label}
+                alt={t(meta.labelKey)}
                 className="w-9 h-9 sm:w-10 sm:h-10 object-contain"
               />
             ) : moduleKey === 'pipekeeper' ? (
@@ -167,9 +168,9 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
               className="text-xl sm:text-3xl font-bold leading-tight truncate"
               style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
             >
-              {meta.label}
+              {t(meta.labelKey)}
             </h3>
-            <p className="text-sm mt-0.5" style={{ color: meta.accent }}>{meta.tagline}</p>
+            <p className="text-sm mt-0.5" style={{ color: meta.accent }}>{t(meta.taglineKey)}</p>
           </div>
         </div>
 
@@ -182,7 +183,7 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
       </div>
 
       <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.82)' }}>
-        {meta.description}
+        {t(meta.descriptionKey)}
       </p>
 
       {stats.length > 0 ? (
@@ -210,7 +211,7 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
           color: meta.accent,
         }}
       >
-        Open {meta.label}
+        {t('common.openModule', { module: t(meta.labelKey) })}
       </button>
     </div>
   );
@@ -219,6 +220,7 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
 function ExpandingSoonCard({ moduleKey }) {
   const meta = MODULE_META[moduleKey];
   const icon = MODULE_ICONS?.[moduleKey];
+  const { t } = useTranslation();
 
   return (
     <div
@@ -234,7 +236,7 @@ function ExpandingSoonCard({ moduleKey }) {
         style={{ background: `${meta.accent}1C`, border: `1px solid ${meta.accent}30` }}
       >
         {icon ? (
-          <img src={icon} alt={meta.label} className="w-10 h-10 object-contain opacity-70" />
+          <img src={icon} alt={t(meta.labelKey)} className="w-10 h-10 object-contain opacity-70" />
         ) : null}
       </div>
       <div className="flex-1 min-w-0">
@@ -243,7 +245,7 @@ function ExpandingSoonCard({ moduleKey }) {
             className="text-xl font-bold"
             style={{ color: 'rgba(245,241,231,0.65)', fontFamily: "'Georgia', serif" }}
           >
-            {meta.label}
+            {t(meta.labelKey)}
           </h3>
           <span
             className="text-[11px] px-2.5 py-1 rounded-full"
@@ -253,11 +255,11 @@ function ExpandingSoonCard({ moduleKey }) {
               color: 'rgba(224,216,200,0.5)',
             }}
           >
-            Expanding Soon
+            {t('hub.comingSoon')}
           </span>
         </div>
         <p className="text-sm" style={{ color: 'rgba(224,216,200,0.42)' }}>
-          {meta.description}
+          {t(meta.descriptionKey)}
         </p>
       </div>
       <Clock3 className="w-4 h-4 shrink-0" style={{ color: 'rgba(224,216,200,0.28)' }} />
@@ -452,21 +454,21 @@ export default function CollectionHub() {
   const totalBlendOzDisplay = isLoading ? '—' : (metrics.totalBlendOz % 1 === 0 ? String(metrics.totalBlendOz) : metrics.totalBlendOz.toFixed(1)) + ' oz';
 
   const pipeStats = [
-    { label: 'Pipes', value: isLoading ? '—' : pipes.length },
-    { label: 'Blend types', value: isLoading ? '—' : blends.length },
-    { label: 'Blend qty', value: totalBlendOzDisplay },
+    { label: t('hub.pipes'), value: isLoading ? '—' : pipes.length },
+    { label: t('hub.blendTypesLabel'), value: isLoading ? '—' : blends.length },
+    { label: t('hub.blendQtyLabel'), value: totalBlendOzDisplay },
   ];
 
   const whiskeyStats = [
-    { label: 'Bottle types', value: isLoading ? '—' : bottles.length },
-    { label: 'Bottles owned', value: isLoading ? '—' : metrics.totalBottleCount },
-    { label: 'Est. value', value: currency(bottles.reduce((s, b) => s + safe(getBottleValue(b)), 0)) },
+    { label: t('hub.bottleTypes'), value: isLoading ? '—' : bottles.length },
+    { label: t('hub.totalBottles'), value: isLoading ? '—' : metrics.totalBottleCount },
+    { label: t('whiskey.collectionValue', 'Est. value'), value: currency(bottles.reduce((s, b) => s + safe(getBottleValue(b)), 0)) },
   ];
 
   const cigarStats = [
-    { label: 'Cigar types', value: isLoading ? '—' : cigars.length },
-    { label: 'Sticks owned', value: isLoading ? '—' : metrics.totalCigarSticks },
-    { label: 'Sessions', value: isLoading ? '—' : cigarSessions.length },
+    { label: t('hub.cigarTypesLabel'), value: isLoading ? '—' : cigars.length },
+    { label: t('hub.sticksOwnedLabel'), value: isLoading ? '—' : metrics.totalCigarSticks },
+    { label: t('hub.sessionsLoggedLabel'), value: isLoading ? '—' : cigarSessions.length },
   ];
 
   const hasHighlights =
@@ -502,13 +504,13 @@ export default function CollectionHub() {
               className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight"
               style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
             >
-              CollectionKeeper
+              {t('hub.title')}
             </h1>
             <p
               className="text-sm sm:text-base lg:text-lg mt-1 sm:mt-2"
               style={{ color: 'rgba(224,216,200,0.78)' }}
             >
-              Your unified ecosystem for tracking, curating, and understanding your collections.
+              {t('hub.hubDescription')}
             </p>
           </div>
         </div>
@@ -529,7 +531,7 @@ export default function CollectionHub() {
               icon={PipeIcon}
               label={t('hub.pipes')}
               value={isLoading ? '—' : pipes.length}
-              sub="Pipe records"
+              sub={t('hub.pipeRecords')}
               accent="#B48C4B"
             />
           ) : null}
@@ -538,7 +540,7 @@ export default function CollectionHub() {
               icon={Leaf}
               label={t('hub.blends')}
               value={isLoading ? '—' : blends.length}
-              sub={isLoading ? '' : `${totalBlendOzDisplay} total`}
+              sub={isLoading ? '' : `${totalBlendOzDisplay} ${t('hub.blendTotal', 'total')}`}
               accent="#6E8A57"
             />
           ) : null}
@@ -556,7 +558,7 @@ export default function CollectionHub() {
               icon={WhiskeyKeeperIcon}
               label={t('hub.whiskey')}
               value={isLoading ? '—' : bottles.length}
-              sub={isLoading ? '' : `${metrics.totalBottleCount} bottles owned`}
+              sub={isLoading ? '' : `${metrics.totalBottleCount} ${t('hub.bottlesOwnedLabel')}`}
               accent="#B66565"
             />
           ) : null}
@@ -565,7 +567,7 @@ export default function CollectionHub() {
               icon={GlassWater}
               label={t('hub.tastings')}
               value={isLoading ? '—' : tastings.length}
-              sub="Tasting logs"
+              sub={t('hub.tastingLogsLabel')}
               accent="#A35050"
             />
           ) : null}
@@ -574,7 +576,7 @@ export default function CollectionHub() {
               icon={Cigarette}
               label={t('hub.cigars')}
               value={isLoading ? '—' : cigars.length}
-              sub={isLoading ? '' : `${metrics.totalCigarSticks} sticks owned`}
+              sub={isLoading ? '' : `${metrics.totalCigarSticks} ${t('hub.sticksOwnedLabel')}`}
               accent="#8C6B3F"
             />
           ) : null}
@@ -633,7 +635,7 @@ export default function CollectionHub() {
       ) : null}
 
       <section className="space-y-4">
-        <SectionTitle>Collection Intelligence</SectionTitle>
+        <SectionTitle>{t('hub.collectionIntelligence')}</SectionTitle>
         <button
           type="button"
           onClick={() => navigate(createPageUrl('Curator'))}
@@ -656,7 +658,7 @@ export default function CollectionHub() {
                 <img
                   src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png"
                   className="w-full h-full object-cover"
-                  alt="Curator"
+                  alt={t('hub.curatorTitle')}
                 />
               </div>
             </div>
@@ -665,10 +667,10 @@ export default function CollectionHub() {
                 className="text-2xl font-bold mb-1"
                 style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
               >
-                AI Curator
+                {t('hub.curatorTitle')}
               </div>
               <p className="text-base leading-relaxed" style={{ color: 'rgba(224,216,200,0.72)' }}>
-                Get personalized insights, rotation advice, and collection recommendations tailored to your actual collection.
+                {t('hub.aiCuratorDescription')}
               </p>
             </div>
           </div>
@@ -686,13 +688,13 @@ export default function CollectionHub() {
 
       {hasHighlights ? (
         <section className="space-y-4">
-          <SectionTitle>Top Highlights</SectionTitle>
+          <SectionTitle>{t('hub.topHighlights')}</SectionTitle>
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
             {pipekeeperOpenable && metrics.mostSmokedPipe ? (
               <CatalogPlate
-                title="Most Smoked Pipe"
+                title={t('hub.mostSmokedPipe')}
                 value={metrics.mostSmokedPipe.name}
-                subtitle={`${metrics.mostSmokedPipe.__count || 0} bowls`}
+                subtitle={`${metrics.mostSmokedPipe.__count || 0} ${t('hub.sessions')}`}
                 heroImage={metrics.mostSmokedPipe.photos?.[0]}
                 bgImage={metrics.mostSmokedPipe.photos?.[0]}
                 accent="#C87941"
@@ -702,9 +704,9 @@ export default function CollectionHub() {
 
             {pipekeeperOpenable && metrics.favoriteBlend ? (
               <CatalogPlate
-                title="Favorite Blend"
+                title={t('hub.favoriteBlend')}
                 value={metrics.favoriteBlend.name}
-                subtitle={`${metrics.favoriteBlend.__count || 0} bowls`}
+                subtitle={`${metrics.favoriteBlend.__count || 0} ${t('hub.sessions')}`}
                 heroImage={metrics.favoriteBlend.logo || metrics.favoriteBlend.photo}
                 bgImage={metrics.favoriteBlend.logo || metrics.favoriteBlend.photo}
                 accent="#5A7C5A"
@@ -714,7 +716,7 @@ export default function CollectionHub() {
 
             {pipekeeperOpenable && metrics.mostValuablePipe ? (
               <CatalogPlate
-                title="Most Valuable Pipe"
+                title={t('hub.mostValuablePipe')}
                 value={metrics.mostValuablePipe.name}
                 subtitle={currency(getPipeValue(metrics.mostValuablePipe))}
                 heroImage={metrics.mostValuablePipe.photos?.[0]}
@@ -726,7 +728,7 @@ export default function CollectionHub() {
 
             {whiskeyOpenable && metrics.mostValuableBottle ? (
               <CatalogPlate
-                title="Top Whiskey"
+                title={t('hub.topWhiskey')}
                 value={metrics.mostValuableBottle.name}
                 subtitle={currency(getBottleValue(metrics.mostValuableBottle))}
                 heroImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
@@ -738,9 +740,9 @@ export default function CollectionHub() {
 
             {cigarOpenable && metrics.mostSmokedCigar ? (
               <CatalogPlate
-                title="Most Smoked Cigar"
+                title={t('hub.mostSmokedCigar')}
                 value={metrics.mostSmokedCigar.name}
-                subtitle={`${metrics.mostSmokedCigar.__count || 0} sessions`}
+                subtitle={`${metrics.mostSmokedCigar.__count || 0} ${t('hub.sessions')}`}
                 heroImage={metrics.mostSmokedCigar.photos?.[0]}
                 bgImage={metrics.mostSmokedCigar.photos?.[0]}
                 accent="#8C6B3F"
@@ -753,7 +755,7 @@ export default function CollectionHub() {
 
       {metrics.recentActivity.length > 0 ? (
         <section className="space-y-4">
-          <SectionTitle>Recent Activity</SectionTitle>
+          <SectionTitle>{t('hub.recentActivity')}</SectionTitle>
           <div className="space-y-3">
             {metrics.recentActivity.map((activity) => {
               const rawSmokingLog = activity.type === 'session'
@@ -825,7 +827,7 @@ export default function CollectionHub() {
                       className="text-sm px-3 py-1 rounded-lg"
                       style={{ background: 'rgba(180,140,75,0.15)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.25)' }}
                     >
-                      Edit
+                      {t('common.edit')}
                     </button>
                   )}
                   {rawTastingLog && (
@@ -835,7 +837,7 @@ export default function CollectionHub() {
                       className="text-sm px-3 py-1 rounded-lg"
                       style={{ background: 'rgba(182,101,101,0.15)', color: '#D47C7C', border: '1px solid rgba(182,101,101,0.25)' }}
                     >
-                      Edit
+                      {t('common.edit')}
                     </button>
                   )}
                   {rawCigarSession && (
@@ -845,7 +847,7 @@ export default function CollectionHub() {
                       className="text-sm px-3 py-1 rounded-lg"
                       style={{ background: 'rgba(140,107,63,0.15)', color: '#C4956A', border: '1px solid rgba(140,107,63,0.25)' }}
                     >
-                      Edit
+                      {t('common.edit')}
                     </button>
                   )}
                   <button
@@ -854,7 +856,7 @@ export default function CollectionHub() {
                     className="text-sm"
                     style={{ color: activity.type === 'tasting' ? '#D47C7C' : isCigar ? '#C4956A' : '#D4A574' }}
                   >
-                    View
+                    {t('common.view')}
                   </button>
                 </div>
               </div>
@@ -865,13 +867,13 @@ export default function CollectionHub() {
       ) : null}
 
       <section className="space-y-4">
-        <SectionTitle>Collection Story</SectionTitle>
+        <SectionTitle>{t('hub.collectionStory')}</SectionTitle>
         <CollectionStoryCard />
       </section>
 
       {expandingKeys.length > 0 ? (
         <section className="space-y-4">
-          <SectionTitle muted>Expanding Soon</SectionTitle>
+          <SectionTitle muted>{t('hub.comingSoon')}</SectionTitle>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {expandingKeys.map((moduleKey) => (
               <ExpandingSoonCard key={moduleKey} moduleKey={moduleKey} />
@@ -897,7 +899,7 @@ export default function CollectionHub() {
       <Sheet open={!!editingSmokingLog} onOpenChange={(open) => !open && setEditingSmokingLog(null)}>
         <SheetContent className="overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle>Edit Session</SheetTitle>
+            <SheetTitle>{t('hub.editSession')}</SheetTitle>
           </SheetHeader>
           {editingSmokingLog && (
             <SmokingLogEditor
@@ -941,16 +943,16 @@ export default function CollectionHub() {
       <AlertDialog open={!!confirmDeleteLog} onOpenChange={(open) => !open && setConfirmDeleteLog(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Session?</AlertDialogTitle>
-            <AlertDialogDescription>This will permanently delete this session log.</AlertDialogDescription>
+            <AlertDialogTitle>{t('hub.deleteSession')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('hub.deleteSessionConfirm')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-rose-600 hover:bg-rose-700"
               onClick={() => confirmDeleteLog && deleteLogMutation.mutate(confirmDeleteLog)}
             >
-              Delete
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -137,7 +137,7 @@ export default function QuickLaunch() {
         accent: "#7C9A6D",
       },
       {
-        label: "Identify Pipe",
+        label: t("quickActions.identifyPipe", "Identify Pipe"),
         icon: Sparkles,
         path: "/PipeKeeper?action=identify",
         accent: "#F0C58A",

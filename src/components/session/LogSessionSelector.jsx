@@ -80,8 +80,8 @@ export default function LogSessionSelector({
   if (pipeEnabled && whiskeyEnabled) {
     options.push({
       key: "combined",
-      label: "Pipe + Whiskey",
-      sublabel: "Log a combined session across both modules",
+      label: t('session.combinedSession', 'Pipe + Whiskey'),
+      sublabel: t('session.combinedSessionDesc', 'Log a combined session across both modules'),
       Icon: Sparkles,
       accent: "#E39A9A",
       background:
@@ -112,10 +112,10 @@ export default function LogSessionSelector({
         <div className="px-5 py-4 flex items-center justify-between border-b border-[rgba(180,140,75,0.14)]">
           <div>
             <h3 className="font-bold text-[#F8F2E8] text-3xl sm:text-4xl leading-tight">
-              Log Session
+              {t('session.logSession', 'Log Session')}
             </h3>
             <p className="text-base mt-2 text-[#EADFCF]/85">
-              Choose the session flow you want to launch.
+              {t('session.chooseFlow', 'Choose the session flow you want to launch.')}
             </p>
           </div>
 
