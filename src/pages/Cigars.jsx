@@ -25,6 +25,7 @@ import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import CigarCard from '@/components/cigars/CigarCard';
 import CigarListItem from '@/components/cigars/CigarListItem';
 import CigarForm from '@/components/cigars/CigarForm';
+import AddCigarModal from '@/components/cigars/AddCigarModal';
 import HumidorManager from '@/components/cigars/HumidorManager';
 import CollectorGridView from '@/components/ui/CollectorGridView';
 
@@ -120,7 +121,8 @@ function CigarsInner() {
   const [filterOrigin, setFilterOrigin] = useState('');
   const [filterHumidor, setFilterHumidor] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addFlowOpen, setAddFlowOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingCigar, setEditingCigar] = useState(null);
   const [displayMode, setDisplayMode] = useState(() => {
     return localStorage.getItem('cigarsDisplayMode') === 'collector';
@@ -129,7 +131,7 @@ function CigarsInner() {
   useEffect(() => {
     if (actionParam === 'add') {
       setActiveTab('collection');
-      setAddDialogOpen(true);
+      setAddFlowOpen(true);
     }
     if (tabParam && TABS.includes(tabParam)) {
       setActiveTab(tabParam);
@@ -201,13 +203,12 @@ function CigarsInner() {
 
   const handleFormSubmit = () => {
     queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
-    setAddDialogOpen(false);
+    setEditDialogOpen(false);
     setEditingCigar(null);
   };
 
   const openAdd = () => {
-    setEditingCigar(null);
-    setAddDialogOpen(true);
+    setAddFlowOpen(true);
   };
 
   return (
@@ -472,11 +473,11 @@ function CigarsInner() {
               onToggleFavorite={(cigar) => handleToggleFavorite(cigar)}
               onClick={(cigar) => {
                 setEditingCigar(cigar);
-                setAddDialogOpen(true);
+                setEditDialogOpen(true);
               }}
               onEdit={(cigar) => {
                 setEditingCigar(cigar);
-                setAddDialogOpen(true);
+                setEditDialogOpen(true);
               }}
               columns="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
               gap="gap-8"
@@ -506,11 +507,17 @@ function CigarsInner() {
       )}
 
       {/* Add / Edit dialog */}
+      <AddCigarModal
+        open={addFlowOpen}
+        onClose={() => setAddFlowOpen(false)}
+      />
+
+      {/* Edit dialog — only opened when editing an existing cigar */}
       <Dialog
-        open={addDialogOpen}
+        open={editDialogOpen}
         onOpenChange={(open) => {
           if (!open) {
-            setAddDialogOpen(false);
+            setEditDialogOpen(false);
             setEditingCigar(null);
           }
         }}
@@ -524,14 +531,14 @@ function CigarsInner() {
         >
           <DialogHeader>
             <DialogTitle style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-              {editingCigar ? 'Edit Cigar' : 'Add Cigar'}
+              Edit Cigar
             </DialogTitle>
           </DialogHeader>
           <CigarForm
             cigar={editingCigar || undefined}
             onSubmit={handleFormSubmit}
             onCancel={() => {
-              setAddDialogOpen(false);
+              setEditDialogOpen(false);
               setEditingCigar(null);
             }}
           />

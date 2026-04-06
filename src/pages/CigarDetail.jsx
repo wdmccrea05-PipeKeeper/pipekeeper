@@ -32,6 +32,7 @@ import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import CigarSessionModal from '@/components/cigars/CigarSessionModal';
 import { getCigarReadinessWithContext } from '@/platform/agingReadiness';
 import { getCigarInventoryMetrics } from '@/platform/cigarInventory';
+import EnrichButton from '@/components/shared/EnrichButton';
 
 function safePrimitive(value, fallback = '—') {
   if (value === null || value === undefined || value === '') return fallback;
@@ -422,6 +423,11 @@ function CigarDetailInner() {
             <Flame className="w-4 h-4" />
             Log Session
           </Button>
+          <EnrichButton
+            itemType="cigar"
+            record={cigar}
+            onEnriched={() => queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] })}
+          />
           <Button
             variant="outline"
             size="sm"

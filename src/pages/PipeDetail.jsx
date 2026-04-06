@@ -54,6 +54,7 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { scopedEntities } from '@/components/api/scopedEntities';
+import EnrichButton from '@/components/shared/EnrichButton';
 
 function DetailStat({ label, value, icon: Icon }) {
   return (
@@ -759,6 +760,8 @@ export default function PipeDetail() {
             <Share2 className="w-4 h-4 mr-2" />
             Share
           </Button>
+
+          <EnrichButton itemType="pipe" record={pipe} onEnriched={setPipe} />
 
           <Button
             onClick={() => navigate(`/Pipes?edit=${encodeURIComponent(pipe.id)}`)}
