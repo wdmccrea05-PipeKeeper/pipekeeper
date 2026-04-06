@@ -1,5 +1,6 @@
 import React from "react";
 import { X, BookOpen, GlassWater, Sparkles, Cigarette } from "lucide-react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 /**
  * LogSessionSelector
@@ -16,6 +17,8 @@ export default function LogSessionSelector({
   onSelectCigar,
   onSelectCombined,
 }) {
+  const { t } = useTranslation();
+
   if (!isOpen) return null;
 
   const options = [];
@@ -23,8 +26,8 @@ export default function LogSessionSelector({
   if (pipeEnabled) {
     options.push({
       key: "pipe",
-      label: "Pipe Session",
-      sublabel: "Log a pipe and tobacco session",
+      label: t('session.pipeSession', 'Pipe Session'),
+      sublabel: t('session.pipeSessionDesc', 'Log a pipe and tobacco session'),
       Icon: BookOpen,
       accent: "#E0B36D",
       background:
@@ -41,8 +44,8 @@ export default function LogSessionSelector({
   if (whiskeyEnabled) {
     options.push({
       key: "whiskey",
-      label: "Whiskey Tasting",
-      sublabel: "Log a tasting note or pour",
+      label: t('session.whiskeyTasting', 'Whiskey Tasting'),
+      sublabel: t('session.whiskeyTastingDesc', 'Log a tasting note or pour'),
       Icon: GlassWater,
       accent: "#E39A5A",
       background:
@@ -59,8 +62,8 @@ export default function LogSessionSelector({
   if (cigarEnabled) {
     options.push({
       key: "cigar",
-      label: "Cigar Session",
-      sublabel: "Log a cigar smoke session",
+      label: t('session.cigarSession', 'Cigar Session'),
+      sublabel: t('session.cigarSessionDesc', 'Log a cigar smoke session'),
       Icon: Cigarette,
       accent: "#C49A6C",
       background:

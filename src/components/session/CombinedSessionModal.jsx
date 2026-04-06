@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { X, ChevronRight, Check, Loader2 } from "lucide-react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { toast } from "sonner";
@@ -86,7 +87,7 @@ function buildSessionGroupId(userEmail) {
   return `combo_${safeUser}_${Date.now()}`;
 }
 
-function normalizeExternalItem(item, fallbackType) {
+function normalizeExternalItem(item, fallbackType, defaultLabel = "External Item") {
   if (!item) return null;
   return {
     label:
@@ -94,7 +95,7 @@ function normalizeExternalItem(item, fallbackType) {
       item.name ||
       item.title ||
       item.itemData?.name ||
-      "External Item",
+      defaultLabel,
     item_type: item.item_type || fallbackType,
     itemData: item.itemData || item,
   };
@@ -109,6 +110,7 @@ export default function CombinedSessionModal({
   bottles = [],
   initialSelection = null,
 }) {
+  const { t } = useTranslation();
   const { user } = useCurrentUser();
 
   const saveLockRef = useRef(false);
@@ -538,10 +540,10 @@ export default function CombinedSessionModal({
               {currentStep !== "confirm"
                 ? ` — ${
                     currentStep === "pipe"
-                      ? "Select Pipe"
+                      ? t('session.selectPipe', 'Select Pipe')
                       : currentStep === "blend"
-                      ? "Select Blend"
-                      : "Select Whiskey"
+                      ? t('session.selectBlend', 'Select Blend')
+                      : t('session.selectWhiskey', 'Select Whiskey')
                   }`
                 : " — Confirm"}
             </p>
@@ -600,7 +602,7 @@ export default function CombinedSessionModal({
                   itemType="pipe"
                   selectedItem={externalPipePicked}
                   onSelect={(item) => {
-                    const normalized = normalizeExternalItem(item, "pipe");
+                    const normalized = normalizeExternalItem(item, "pipe", t('session.externalItem', 'External Item'));
                     setExternalPipePicked(normalized);
                     setExternalPipe((prev) => ({
                       ...prev,
@@ -616,7 +618,7 @@ export default function CombinedSessionModal({
                   manualFields={
                     <div className="space-y-3 rounded-xl border border-[rgba(180,140,75,0.16)] bg-[rgba(255,255,255,0.03)] p-4">
                       <TextField
-                        label="Pipe Maker"
+                        label={t('session.pipeMaker', 'Pipe Maker')}
                         value={externalPipe.maker}
                         onChange={(value) =>
                           setExternalPipe((prev) => ({ ...prev, maker: value }))
@@ -624,7 +626,7 @@ export default function CombinedSessionModal({
                         placeholder="Boswell"
                       />
                       <TextField
-                        label="Pipe Model"
+                        label={t('session.pipeModel', 'Pipe Model')}
                         value={externalPipe.model}
                         onChange={(value) =>
                           setExternalPipe((prev) => ({ ...prev, model: value }))
@@ -632,7 +634,7 @@ export default function CombinedSessionModal({
                         placeholder="Jumbo"
                       />
                       <TextField
-                        label="Shape"
+                        label={t('common.shape', 'Shape')}
                         value={externalPipe.shape}
                         onChange={(value) =>
                           setExternalPipe((prev) => ({ ...prev, shape: value }))
@@ -688,7 +690,7 @@ export default function CombinedSessionModal({
                   itemType="blend"
                   selectedItem={externalBlendPicked}
                   onSelect={(item) => {
-                    const normalized = normalizeExternalItem(item, "blend");
+                    const normalized = normalizeExternalItem(item, "blend", t('session.externalItem', 'External Item'));
                     setExternalBlendPicked(normalized);
                     setExternalBlend((prev) => ({
                       ...prev,
@@ -705,7 +707,7 @@ export default function CombinedSessionModal({
                   manualFields={
                     <div className="space-y-3 rounded-xl border border-[rgba(180,140,75,0.16)] bg-[rgba(255,255,255,0.03)] p-4">
                       <TextField
-                        label="Blend Name"
+                        label={t('session.blendName', 'Blend Name')}
                         value={externalBlend.name}
                         onChange={(value) =>
                           setExternalBlend((prev) => ({ ...prev, name: value }))
@@ -713,7 +715,7 @@ export default function CombinedSessionModal({
                         placeholder="Cowboy Coffee"
                       />
                       <TextField
-                        label="Manufacturer"
+                        label={t('common.manufacturer', 'Manufacturer')}
                         value={externalBlend.manufacturer}
                         onChange={(value) =>
                           setExternalBlend((prev) => ({
@@ -724,7 +726,7 @@ export default function CombinedSessionModal({
                         placeholder="Cornell & Diehl"
                       />
                       <TextField
-                        label="Blend Type"
+                        label={t('session.blendType', 'Blend Type')}
                         value={externalBlend.blend_type}
                         onChange={(value) =>
                           setExternalBlend((prev) => ({
@@ -781,7 +783,7 @@ export default function CombinedSessionModal({
                   itemType="bottle"
                   selectedItem={externalBottlePicked}
                   onSelect={(item) => {
-                    const normalized = normalizeExternalItem(item, "bottle");
+                    const normalized = normalizeExternalItem(item, "bottle", t('session.externalItem', 'External Item'));
                     setExternalBottlePicked(normalized);
                     setExternalBottle((prev) => ({
                       ...prev,
@@ -797,7 +799,7 @@ export default function CombinedSessionModal({
                   manualFields={
                     <div className="space-y-3 rounded-xl border border-[rgba(180,140,75,0.16)] bg-[rgba(255,255,255,0.03)] p-4">
                       <TextField
-                        label="Bottle Name"
+                        label={t('session.bottleName', 'Bottle Name')}
                         value={externalBottle.name}
                         onChange={(value) =>
                           setExternalBottle((prev) => ({ ...prev, name: value }))
@@ -805,7 +807,7 @@ export default function CombinedSessionModal({
                         placeholder="Smoke Wagon Bourbon"
                       />
                       <TextField
-                        label="Distillery"
+                        label={t('whiskey.distillery', 'Distillery')}
                         value={externalBottle.distillery}
                         onChange={(value) =>
                           setExternalBottle((prev) => ({
@@ -816,7 +818,7 @@ export default function CombinedSessionModal({
                         placeholder="Smoke Wagon"
                       />
                       <TextField
-                        label="Type"
+                        label={t('common.type', 'Type')}
                         value={externalBottle.type}
                         onChange={(value) =>
                           setExternalBottle((prev) => ({ ...prev, type: value }))
