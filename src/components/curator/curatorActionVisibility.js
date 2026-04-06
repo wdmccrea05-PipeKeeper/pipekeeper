@@ -42,10 +42,33 @@ function matchesWhiskeyAction(action) {
   );
 }
 
+function matchesCigarAction(action) {
+  const modules = Array.isArray(action?.modules) ? action.modules : [];
+  if (modules.includes("cigar")) return true;
+
+  const text = [
+    action?.id,
+    action?.key,
+    action?.title,
+    action?.label,
+    action?.description,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return (
+    text.includes("cigar") ||
+    text.includes("humidor") ||
+    text.includes("stogie")
+  );
+}
+
 export function getCuratorActionModule(action) {
   const inferred = getItemModule(action);
   if (inferred) return inferred;
 
+  if (matchesCigarAction(action)) return "cigarkeeper";
   if (matchesPipekeeperAction(action)) return "pipekeeper";
   if (matchesWhiskeyAction(action)) return "whiskeykeeper";
 
@@ -65,7 +88,14 @@ export function filterCuratorActions(actions, enabledModules) {
 export function buildEnabledCuratorScopes(enabledModules) {
   const scopes = [];
 
-  if ((enabledModules?.pipekeeper && enabledModules?.whiskeykeeper) || (!enabledModules?.pipekeeper && !enabledModules?.whiskeykeeper)) {
+  const activeCount = [
+    enabledModules?.pipekeeper,
+    enabledModules?.whiskeykeeper,
+    enabledModules?.cigarkeeper,
+  ].filter(Boolean).length;
+
+  // Show "All Modules" when more than one module is active, or none are active
+  if (activeCount !== 1) {
     scopes.push({ key: "all", label: "All Modules" });
   }
 
@@ -77,12 +107,12 @@ export function buildEnabledCuratorScopes(enabledModules) {
     scopes.push({ key: "whiskeykeeper", label: "WhiskeyKeeper" });
   }
 
-  if (enabledModules?.winekeeper) {
-    scopes.push({ key: "winekeeper", label: "WineKeeper" });
-  }
-
   if (enabledModules?.cigarkeeper) {
     scopes.push({ key: "cigarkeeper", label: "CigarKeeper" });
+  }
+
+  if (enabledModules?.winekeeper) {
+    scopes.push({ key: "winekeeper", label: "WineKeeper" });
   }
 
   if (scopes.length === 0) {

@@ -36,6 +36,8 @@ export function buildCuratorActivitySummary({
   pipes = [],
   blends = [],
   bottles = [],
+  cigars = [],
+  cigarSessions = [],
   smokingLogs = [],
   tastingLogs = [],
 }) {
@@ -44,8 +46,10 @@ COLLECTION SUMMARY:
 - Pipes: ${pipes.length}
 - Blends: ${blends.length}
 - Bottles: ${bottles.length}
+- Cigars: ${cigars.length}
 - Smoking Logs: ${smokingLogs.length}
 - Tasting Logs: ${tastingLogs.length}
+- Cigar Sessions: ${cigarSessions.length}
 
 INSTRUCTION:
 Reference the user's actual collection and logs whenever giving advice.

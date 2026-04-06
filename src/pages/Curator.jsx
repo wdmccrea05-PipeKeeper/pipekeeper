@@ -10,7 +10,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
 import { useEnabledModules } from "@/components/hooks/useEnabledModules";
 import { buildEnabledCuratorScopes } from "@/components/curator/curatorActionVisibility";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Cigarette } from "lucide-react";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 
 import PipeIcon from "@/components/icons/PipeIcon";
@@ -100,6 +100,7 @@ const SCOPE_OPTIONS = [
   { value: "all", label: "All Modules", icon: Sparkles, isPipeIcon: false },
   { value: "pipekeeper", label: "PipeKeeper", isPipeIcon: true },
   { value: "whiskeykeeper", label: "WhiskeyKeeper", icon: WhiskeyKeeperIcon, isPipeIcon: false },
+  { value: "cigarkeeper", label: "CigarKeeper", icon: Cigarette, isPipeIcon: false },
 ];
 
 function ScopeChip({ value, label, selected, onClick, isPipeIcon, icon: IconComponent }) {
@@ -150,14 +151,17 @@ export default function Curator() {
   // Once enabled modules are known, correct the default scope if needed
   useEffect(() => {
     if (!location?.state?.scope) {
-      const enabledCount = [enabled.pipekeeper, enabled.whiskeykeeper].filter(Boolean).length;
-      if (enabledCount === 1) {
-        if (enabled.whiskeykeeper && !enabled.pipekeeper) setCuratorScope("whiskeykeeper");
-        else if (enabled.pipekeeper && !enabled.whiskeykeeper) setCuratorScope("pipekeeper");
+      const activeModules = [
+        enabled.pipekeeper && "pipekeeper",
+        enabled.whiskeykeeper && "whiskeykeeper",
+        enabled.cigarkeeper && "cigarkeeper",
+      ].filter(Boolean);
+      if (activeModules.length === 1) {
+        setCuratorScope(activeModules[0]);
       }
     }
 
-  }, [enabled.pipekeeper, enabled.whiskeykeeper]);
+  }, [enabled.pipekeeper, enabled.whiskeykeeper, enabled.cigarkeeper]);
 
   const handleScopeChange = (newScope) => {
     setCuratorScope(newScope);
@@ -213,6 +217,26 @@ export default function Curator() {
     staleTime: 10000,
   });
 
+  const { data: cigars = [] } = useQuery({
+    queryKey: ["cigars", user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.Cigar.filter({ created_by: user?.email });
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email && isModuleEnabled('cigarkeeper'),
+    staleTime: 10000,
+  });
+
+  const { data: cigarSessions = [] } = useQuery({
+    queryKey: ["cigar-sessions-curator", user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.CigarSession.filter({ created_by: user?.email }, '-date', 50);
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email && isModuleEnabled('cigarkeeper'),
+    staleTime: 10000,
+  });
+
   const { data: userProfile = null } = useQuery({
     queryKey: ["user-profile-curator", user?.email],
     queryFn: async () => {
@@ -225,11 +249,13 @@ export default function Curator() {
   });
 
   // Filter data based on selected scope
-  const scopedPipes = curatorScope === "whiskeykeeper" ? [] : (pipes || []);
-  const scopedBlends = curatorScope === "whiskeykeeper" ? [] : blends;
-  const scopedBottles = curatorScope === "pipekeeper" ? [] : bottles;
-  const scopedTastingLogs = curatorScope === "pipekeeper" ? [] : tastingLogs;
-  const scopedSmokingLogs = curatorScope === "whiskeykeeper" ? [] : smokingLogs;
+  const scopedPipes = (curatorScope === "whiskeykeeper" || curatorScope === "cigarkeeper") ? [] : (pipes || []);
+  const scopedBlends = (curatorScope === "whiskeykeeper" || curatorScope === "cigarkeeper") ? [] : blends;
+  const scopedBottles = (curatorScope === "pipekeeper" || curatorScope === "cigarkeeper") ? [] : bottles;
+  const scopedTastingLogs = (curatorScope === "pipekeeper" || curatorScope === "cigarkeeper") ? [] : tastingLogs;
+  const scopedSmokingLogs = (curatorScope === "whiskeykeeper" || curatorScope === "cigarkeeper") ? [] : smokingLogs;
+  const scopedCigars = (curatorScope === "pipekeeper" || curatorScope === "whiskeykeeper") ? [] : cigars;
+  const scopedCigarSessions = (curatorScope === "pipekeeper" || curatorScope === "whiskeykeeper") ? [] : cigarSessions;
 
   // Available scope options based on enabled modules
   // If only PipeKeeper is enabled, skip the "All Modules" option to keep UI clean
@@ -354,6 +380,8 @@ export default function Curator() {
               bottles={scopedBottles}
               tastingLogs={scopedTastingLogs}
               smokingLogs={scopedSmokingLogs}
+              cigars={scopedCigars}
+              cigarSessions={scopedCigarSessions}
               userProfile={userProfile}
               curatorScope={curatorScope}
               enabledModules={enabled}
@@ -368,6 +396,8 @@ export default function Curator() {
           bottles={scopedBottles}
           smokingLogs={scopedSmokingLogs}
           tastingLogs={scopedTastingLogs}
+          cigars={scopedCigars}
+          cigarSessions={scopedCigarSessions}
           userProfile={userProfile}
           launchContext={launchContext}
           preFilledPrompt={launchContext?.initialPrompt || ""}

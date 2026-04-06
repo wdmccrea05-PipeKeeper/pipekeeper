@@ -15,6 +15,8 @@ export default function CuratorActionBar({
   bottles = [],
   tastingLogs = [],
   smokingLogs = [],
+  cigars = [],
+  cigarSessions = [],
   userProfile = null,
   curatorScope = "all",
   enabledModules = null,
@@ -32,10 +34,12 @@ export default function CuratorActionBar({
       bottles,
       tastingLogs,
       smokingLogs,
+      cigars,
+      cigarSessions,
       userProfile,
       curatorScope,
     }),
-    [pipes, blends, bottles, tastingLogs, smokingLogs, userProfile, curatorScope]
+    [pipes, blends, bottles, tastingLogs, smokingLogs, cigars, cigarSessions, userProfile, curatorScope]
   );
 
   const visibleActions = useMemo(() => {
@@ -63,6 +67,7 @@ export default function CuratorActionBar({
               pipes: pipes.length,
               blends: blends.length,
               bottles: bottles.length,
+              cigars: cigars.length,
               smokingLogs: smokingLogs.length,
             },
           },
@@ -73,7 +78,7 @@ export default function CuratorActionBar({
 
       onActionSelect(launchContext);
     },
-    [collectionContext, pipes.length, blends.length, bottles.length, smokingLogs.length, onActionSelect]
+    [collectionContext, pipes.length, blends.length, bottles.length, cigars.length, smokingLogs.length, onActionSelect]
   );
 
   if (visibleActions.length === 0) {
