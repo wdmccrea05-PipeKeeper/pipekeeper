@@ -530,8 +530,8 @@ export default function LogSessionModal({
           </SheetHeader>
 
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <div className="w-8 h-8 border-2 border-[#A35C5C] border-t-transparent rounded-full animate-spin" />
+            <div role="status" aria-live="polite" className="flex flex-col items-center justify-center py-16 gap-4">
+              <div aria-hidden="true" className="w-8 h-8 border-2 border-[#A35C5C] border-t-transparent rounded-full animate-spin" />
               <p className="text-sm text-[#E0D8C8]/60">Loading your collection…</p>
             </div>
           ) : (
