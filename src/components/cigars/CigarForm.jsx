@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import PhotoUploader from '@/components/PhotoUploader';
 import { toast } from 'sonner';
 import { normalizeCigarPayload } from '@/platform/normalizeCigarPayload';
+import FormSection from '@/components/forms/FormSection';
 
 const DEFAULT_FORM = {
   name: '',
@@ -55,29 +56,9 @@ const DEFAULT_FORM = {
   public_visibility: false,
 };
 
-const SECTION_HEADING = {
-  color: '#F5F1E7',
-  fontFamily: "'Georgia', serif",
-  fontSize: '1rem',
-  fontWeight: 700,
-  marginBottom: '0.75rem',
-};
-
-function SectionBlock({ title, children }) {
-  return (
-    <div
-      className="rounded-xl p-4 space-y-4"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
-    >
-      <h3 style={SECTION_HEADING}>{title}</h3>
-      {children}
-    </div>
-  );
-}
-
 function FieldLabel({ children }) {
   return (
-    <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(224,216,200,0.6)' }}>
+    <label className="ck-field-label">
       {children}
     </label>
   );
@@ -100,12 +81,6 @@ function StyledInput({ value, onChange, placeholder, type = 'text', ...props }) 
       onChange={onChange}
       placeholder={placeholder}
       className="w-full"
-      style={{
-        background: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(180,140,75,0.22)',
-        color: '#F5F1E7',
-        borderRadius: '0.5rem',
-      }}
       {...props}
     />
   );
@@ -119,12 +94,6 @@ function StyledTextarea({ value, onChange, placeholder, rows = 3 }) {
       placeholder={placeholder}
       rows={rows}
       className="w-full resize-none"
-      style={{
-        background: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(180,140,75,0.22)',
-        color: '#F5F1E7',
-        borderRadius: '0.5rem',
-      }}
     />
   );
 }
@@ -132,14 +101,7 @@ function StyledTextarea({ value, onChange, placeholder, rows = 3 }) {
 function StyledSelect({ value, onValueChange, placeholder, children }) {
   return (
     <Select value={value || undefined} onValueChange={onValueChange}>
-      <SelectTrigger
-        style={{
-          background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(180,140,75,0.22)',
-          color: value ? '#F5F1E7' : 'rgba(224,216,200,0.4)',
-          borderRadius: '0.5rem',
-        }}
-      >
+      <SelectTrigger>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent style={{ background: 'rgba(40,28,18,0.98)', border: '1px solid rgba(180,140,75,0.3)' }}>
@@ -364,10 +326,16 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
 
   const selectItemStyle = { color: '#F5F1E7', background: 'rgba(40,28,18,0.98)' };
 
+  // Build summary strings for collapsed sections
+  const identitySummary = [form.name, form.brand, form.vitola].filter(Boolean).join(' · ') || undefined;
+  const constructionSummary = [form.wrapper, form.country_of_origin].filter(Boolean).join(' · ') || undefined;
+  const profileSummary = [form.body, form.strength].filter(Boolean).map((v) => v.replace(/_/g, '-')).join(' · ') || undefined;
+  const inventorySummary = form.singles_equivalent ? `${form.singles_equivalent} sticks` : undefined;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Section 1: Identity */}
-      <SectionBlock title="Identity">
+    <form onSubmit={handleSubmit} className="space-y-3">
+      {/* Section 1: Identity — open by default */}
+      <FormSection title="Identity" summary={identitySummary} defaultOpen>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Name *">
             <StyledInput value={form.name} onChange={set('name')} placeholder="e.g. Serie V" />
@@ -382,10 +350,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             <StyledInput value={form.vitola} onChange={set('vitola')} placeholder="e.g. Robusto" />
           </FormField>
         </div>
-      </SectionBlock>
+      </FormSection>
 
       {/* Section 2: Construction */}
-      <SectionBlock title="Construction">
+      <FormSection title="Construction" summary={constructionSummary}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Wrapper">
             <StyledInput value={form.wrapper} onChange={set('wrapper')} placeholder="e.g. Maduro" />
@@ -411,10 +379,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             </FormField>
           </div>
         </div>
-      </SectionBlock>
+      </FormSection>
 
       {/* Section 3: Profile */}
-      <SectionBlock title="Profile">
+      <FormSection title="Profile" summary={profileSummary}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Body">
             <StyledSelect value={form.body} onValueChange={set('body')} placeholder="Select body">
@@ -459,10 +427,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           onChange={(val) => setForm((f) => ({ ...f, flavor_notes: val }))}
           placeholder="Add a note (press Enter)"
         />
-      </SectionBlock>
+      </FormSection>
 
       {/* Section 4: Acquisition */}
-      <SectionBlock title="Acquisition">
+      <FormSection title="Acquisition">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Purchase Source">
             <StyledInput value={form.purchase_source} onChange={set('purchase_source')} placeholder="e.g. Famous Smoke Shop" />
@@ -477,10 +445,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             <StyledInput type="number" value={form.estimated_value} onChange={set('estimated_value')} placeholder="0.00" />
           </FormField>
         </div>
-      </SectionBlock>
+      </FormSection>
 
       {/* Section 5: Inventory */}
-      <SectionBlock title="Inventory">
+      <FormSection title="Inventory" summary={inventorySummary}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Unit Type">
             <StyledSelect value={form.unit_type} onValueChange={handleUnitTypeChange} placeholder="Select unit">
@@ -530,10 +498,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
         <FormField label="Storage Notes">
           <StyledTextarea value={form.storage_notes} onChange={set('storage_notes')} placeholder="Storage conditions, shelf placement…" rows={2} />
         </FormField>
-      </SectionBlock>
+      </FormSection>
 
       {/* Section 6: Notes & Tags */}
-      <SectionBlock title="Notes & Tags">
+      <FormSection title="Notes & Tags">
         <FormField label="Personal Notes">
           <StyledTextarea value={form.personal_notes} onChange={set('personal_notes')} placeholder="Tasting impressions, context…" rows={4} />
         </FormField>
@@ -546,10 +514,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           <CheckToggle label="Wishlist" checked={form.wishlist} onChange={(v) => setForm((f) => ({ ...f, wishlist: v }))} />
           <CheckToggle label="Restock Flag" checked={form.restock_flag} onChange={(v) => setForm((f) => ({ ...f, restock_flag: v }))} />
         </div>
-      </SectionBlock>
+      </FormSection>
 
       {/* Section 7: Identifiers */}
-      <SectionBlock title="Identifiers">
+      <FormSection title="Identifiers">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <FormField label="Barcode">
             <StyledInput value={form.barcode} onChange={set('barcode')} placeholder="Barcode" />
@@ -569,10 +537,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             placeholder="Alternate names, SKUs…"
           />
         </FormField>
-      </SectionBlock>
+      </FormSection>
 
       {/* Section 8: Photos */}
-      <SectionBlock title="Photos">
+      <FormSection title="Photos">
         <PhotoUploader
           existingPhotos={form.photos}
           onPhotosSelected={handlePhotos}
@@ -580,10 +548,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           recordType="cigar"
           recordData={cigar}
         />
-      </SectionBlock>
+      </FormSection>
 
       {/* Actions */}
-      <div className="flex gap-3 justify-end pt-2">
+      <div className="ck-action-footer">
         {typeof onCancel === 'function' && (
           <Button type="button" variant="ghost" onClick={onCancel} style={{ color: 'rgba(224,216,200,0.7)' }}>
             Cancel

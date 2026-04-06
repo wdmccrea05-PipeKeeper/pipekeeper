@@ -19,6 +19,7 @@ import AvatarCropper from "@/components/pipes/AvatarCropper";
 import WhiskeyPreferencesSection from "@/components/profile/WhiskeyPreferencesSection";
 import CigarPreferencesSection from "@/components/profile/CigarPreferencesSection";
 import ModuleVisibilitySettings from "@/components/profile/ModuleVisibilitySettings";
+import FormSection from "@/components/forms/FormSection";
 
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -492,15 +493,15 @@ export default function ProfilePage() {
                     )}
 
                     {!shouldShowPurchaseUI() && (
-                       <div className="text-xs text-amber-800/80 text-right max-w-[260px]">
+                       <div className="text-xs text-right max-w-[260px]" style={{ color: 'rgba(224,216,200,0.5)' }}>
                          {getSubscriptionManagementMessage()}
                        </div>
                      )}
                   </>
                 ) : (
-                  <div className="text-sm text-amber-800/80 bg-amber-50 p-3 rounded-lg">
+                  <div className="text-sm p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.18)', color: 'rgba(224,216,200,0.7)' }}>
                     {t("profile.premiumSubscriptionWebOnly")}{" "}
-                    <a className="underline font-medium" href="https://pipekeeper.app/Subscription" target="_blank" rel="noreferrer">
+                    <a className="underline font-medium" style={{ color: 'rgba(212,165,116,0.9)' }} href="https://pipekeeper.app/Subscription" target="_blank" rel="noreferrer">
                       pipekeeper.app
                     </a>
                     .
@@ -541,13 +542,13 @@ export default function ProfilePage() {
                 {planLabel.toUpperCase()}
               </Badge>
               {provider === "stripe" && (
-                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.providerStripe")}</Badge>
+                <Badge variant="secondary" style={{ background: 'rgba(180,140,75,0.15)', color: 'rgba(212,165,116,0.9)', border: '1px solid rgba(180,140,75,0.25)' }}>{t("profileExtended.providerStripe")}</Badge>
               )}
               {provider === "apple" && (
-                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.providerApple")}</Badge>
+                <Badge variant="secondary" style={{ background: 'rgba(180,140,75,0.15)', color: 'rgba(212,165,116,0.9)', border: '1px solid rgba(180,140,75,0.25)' }}>{t("profileExtended.providerApple")}</Badge>
               )}
               {subscription?.status && typeof subscription.status === 'string' ? (
-                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">
+                <Badge variant="secondary" style={{ background: 'rgba(100,100,100,0.2)', color: 'rgba(224,216,200,0.7)', border: '1px solid rgba(120,120,120,0.3)' }}>
                   {statusLabels[subscription.status] || subscription.status}
                 </Badge>
               ) : null}
@@ -555,13 +556,13 @@ export default function ProfilePage() {
 
             {/* Avatar */}
             <div className="space-y-2">
-              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.profilePicture")}</Label>
+              <Label className="font-medium break-words" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.profilePicture")}</Label>
               <div className="flex items-center gap-4">
                 <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-amber-200 to-amber-300 overflow-hidden flex items-center justify-center group">
                   {formData.avatar_url ? (
                     <img src={formData.avatar_url} alt={t("profileExtended.avatarAlt")} className="w-full h-full object-cover" />
                   ) : (
-                    <User className="w-10 h-10 text-amber-700" />
+                    <User className="w-10 h-10" style={{ color: 'rgba(212,165,116,0.8)' }} />
                   )}
                   <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity rounded-full">
                     <input type="file" accept="image/*" onChange={handleAvatarFileSelected} className="hidden" disabled={uploadingAvatar} />
@@ -577,7 +578,7 @@ export default function ProfilePage() {
                       className="hidden"
                       disabled={uploadingAvatar}
                     />
-                    <Button type="button" variant="outline" disabled={uploadingAvatar} className="text-stone-700 hover:text-stone-900">
+                    <Button type="button" variant="outline" disabled={uploadingAvatar} style={{ color: 'rgba(224,216,200,0.8)' }}>
                       <Upload className="w-4 h-4 mr-2" />
                       {uploadingAvatar ? t("profileExtended.uploading") : t("common.upload")}
                     </Button>
@@ -620,19 +621,15 @@ export default function ProfilePage() {
             </div>
 
             {/* Location */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.location")}</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm" style={{ color: 'rgba(224,216,200,0.65)' }}>{t("profileExtended.showOnProfile")}</span>
-                  <Switch
-                    checked={formData.show_location}
-                    onCheckedChange={(v) => setFormData((p) => ({ ...p, show_location: !!v }))}
-                    className="data-[state=checked]:bg-[#A35C5C]"
-                  />
-                </div>
+            <FormSection title="Location">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm" style={{ color: 'rgba(224,216,200,0.65)' }}>{t("profileExtended.showOnProfile")}</span>
+                <Switch
+                  checked={formData.show_location}
+                  onCheckedChange={(v) => setFormData((p) => ({ ...p, show_location: !!v }))}
+                  className="data-[state=checked]:bg-[#A35C5C]"
+                />
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   placeholder={t("profileExtended.cityPlaceholder")}
@@ -655,13 +652,11 @@ export default function ProfilePage() {
                   onChange={(e) => setFormData((p) => ({ ...p, postal_code: e.target.value }))}
                 />
               </div>
-            </div>
+            </FormSection>
 
             {/* Privacy */}
-            <div className="space-y-3">
-             <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.privacy")}</Label>
-
-             <div className="flex items-center justify-between">
+            <FormSection title="Privacy & Visibility">
+              <div className="flex items-center justify-between">
                 <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideValues")}</span>
                 <Switch
                   checked={formData.privacy_hide_values}
@@ -690,8 +685,8 @@ export default function ProfilePage() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-medium text-stone-700">{t("profileExtended.hideHomeValues")}</span>
-                  <p className="text-xs text-stone-500 mt-0.5">{t("profileExtended.hideHomeValuesDesc")}</p>
+                  <span className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.hideHomeValues")}</span>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.hideHomeValuesDesc")}</p>
                 </div>
                 <Switch
                   checked={formData.home_hide_collection_values}
@@ -702,8 +697,8 @@ export default function ProfilePage() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-medium text-stone-700">{t("profile.enableMessaging")}</div>
-                  <div className="text-xs text-stone-600">{t("profile.enableMessagingDesc")}</div>
+                  <div className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profile.enableMessaging")}</div>
+                  <div className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profile.enableMessagingDesc")}</div>
                 </div>
                 <Switch
                   checked={formData.enable_messaging}
@@ -711,180 +706,169 @@ export default function ProfilePage() {
                   className="data-[state=checked]:bg-[#A35C5C]"
                 />
               </div>
-            </div>
+            </FormSection>
 
-            {/* Preferences */}
-             <div className="space-y-3">
-               <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.clenchingPreference")}</Label>
-               <div className="flex flex-wrap gap-2">
-                 {["Yes", "No", "Sometimes"].map((pref) => {
-                   const active = formData.clenching_preference === pref;
-                   return (
-                     <Button
-                       key={pref}
-                       onClick={() => setFormData((p) => ({ ...p, clenching_preference: pref }))}
-                       variant={active ? "default" : "outline"}
-                       size="sm"
-                       className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A]" : "text-stone-400 border-stone-600 hover:bg-stone-800"}
-                     >
-                       {pref}
-                     </Button>
-                   );
-                 })}
-               </div>
-             </div>
+            {/* Pipe / Tobacco Preferences */}
+            <FormSection title="Pipe & Tobacco Preferences">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="ck-field-label">{t("profileExtended.clenchingPreference")}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Yes", "No", "Sometimes"].map((pref) => {
+                      const active = formData.clenching_preference === pref;
+                      return (
+                        <Button
+                          key={pref}
+                          onClick={() => setFormData((p) => ({ ...p, clenching_preference: pref }))}
+                          variant={active ? "default" : "outline"}
+                          size="sm"
+                          className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
+                        >
+                          {pref}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-             <div className="space-y-3">
-               <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.smokeDurationPreference")}</Label>
-               <div className="flex flex-wrap gap-2">
-                 {["Short (15-30 min)", "Medium (30-60 min)", "Long (60+ min)", "No Preference"].map((pref) => {
-                   const active = formData.smoke_duration_preference === pref;
-                   return (
-                     <Button
-                       key={pref}
-                       onClick={() => setFormData((p) => ({ ...p, smoke_duration_preference: pref }))}
-                       variant={active ? "default" : "outline"}
-                       size="sm"
-                       className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A]" : "text-stone-400 border-stone-600 hover:bg-stone-800"}
-                     >
-                       {pref}
-                     </Button>
-                   );
-                 })}
-               </div>
-             </div>
+                <div className="space-y-2">
+                  <Label className="ck-field-label">{t("profileExtended.smokeDurationPreference")}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Short (15-30 min)", "Medium (30-60 min)", "Long (60+ min)", "No Preference"].map((pref) => {
+                      const active = formData.smoke_duration_preference === pref;
+                      return (
+                        <Button
+                          key={pref}
+                          onClick={() => setFormData((p) => ({ ...p, smoke_duration_preference: pref }))}
+                          variant={active ? "default" : "outline"}
+                          size="sm"
+                          className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
+                        >
+                          {pref}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-             <div className="space-y-3">
-               <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.pipeSizePreference")}</Label>
-               <div className="flex flex-wrap gap-2">
-                 {["Small", "Medium", "Large", "Extra Large", "No Preference"].map((pref) => {
-                   const active = formData.pipe_size_preference === pref;
-                   return (
-                     <Button
-                       key={pref}
-                       onClick={() => setFormData((p) => ({ ...p, pipe_size_preference: pref }))}
-                       variant={active ? "default" : "outline"}
-                       size="sm"
-                       className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A]" : "text-stone-400 border-stone-600 hover:bg-stone-800"}
-                     >
-                       {pref}
-                     </Button>
-                   );
-                 })}
-               </div>
-             </div>
+                <div className="space-y-2">
+                  <Label className="ck-field-label">{t("profileExtended.pipeSizePreference")}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Small", "Medium", "Large", "Extra Large", "No Preference"].map((pref) => {
+                      const active = formData.pipe_size_preference === pref;
+                      return (
+                        <Button
+                          key={pref}
+                          onClick={() => setFormData((p) => ({ ...p, pipe_size_preference: pref }))}
+                          variant={active ? "default" : "outline"}
+                          size="sm"
+                          className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
+                        >
+                          {pref}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-             <div className="space-y-3">
-               <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.strengthPreference")}</Label>
-               <div className="flex flex-wrap gap-2">
-                 {["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full", "No Preference"].map((pref) => {
-                   const active = formData.strength_preference === pref;
-                   return (
-                     <Button
-                       key={pref}
-                       onClick={() => setFormData((p) => ({ ...p, strength_preference: pref }))}
-                       variant={active ? "default" : "outline"}
-                       size="sm"
-                       className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A]" : "text-stone-400 border-stone-600 hover:bg-stone-800"}
-                     >
-                       {pref}
-                     </Button>
-                   );
-                 })}
-               </div>
-             </div>
+                <div className="space-y-2">
+                  <Label className="ck-field-label">{t("profileExtended.strengthPreference")}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full", "No Preference"].map((pref) => {
+                      const active = formData.strength_preference === pref;
+                      return (
+                        <Button
+                          key={pref}
+                          onClick={() => setFormData((p) => ({ ...p, strength_preference: pref }))}
+                          variant={active ? "default" : "outline"}
+                          size="sm"
+                          className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
+                        >
+                          {pref}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-            <div className="space-y-3">
-              <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.preferredBlendTypes")}</Label>
-              <div className="flex flex-wrap gap-2">
-                {BLEND_TYPES.map((bt) => {
-                  const active = formData.preferred_blend_types.includes(bt);
-                  return (
-                    <Badge
-                      key={bt}
-                      onClick={() => toggleBlendType(bt)}
-                      className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-stone-800 text-stone-100 border-stone-700"}`}
-                    >
-                      {bt}
-                    </Badge>
-                  );
-                })}
+                <div className="space-y-2">
+                  <Label className="ck-field-label">{t("profileExtended.preferredBlendTypes")}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {BLEND_TYPES.map((bt) => {
+                      const active = formData.preferred_blend_types.includes(bt);
+                      return (
+                        <Badge
+                          key={bt}
+                          onClick={() => toggleBlendType(bt)}
+                          className={`cursor-pointer border ${active ? "bg-[#A35C5C] text-[#F5F1E7] border-[#A35C5C]" : "border-[rgba(140,105,65,0.3)] text-[rgba(224,216,200,0.65)] hover:bg-[rgba(180,140,75,0.1)]"}`}
+                        >
+                          {bt}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="ck-field-label">{t("profileExtended.preferredPipeShapes")}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {PIPE_SHAPES.map((sh) => {
+                      const active = formData.preferred_shapes.includes(sh);
+                      return (
+                        <Badge
+                          key={sh}
+                          onClick={() => toggleShape(sh)}
+                          className={`cursor-pointer border ${active ? "bg-[#A35C5C] text-[#F5F1E7] border-[#A35C5C]" : "border-[rgba(140,105,65,0.3)] text-[rgba(224,216,200,0.65)] hover:bg-[rgba(180,140,75,0.1)]"}`}
+                        >
+                          {sh}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="ck-field-label">{t("common.notes")}</Label>
+                  <Textarea
+                    value={formData.notes}
+                    onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
+                    rows={3}
+                    placeholder="Any guidance for pipe and tobacco recommendations..."
+                  />
+                </div>
               </div>
-            </div>
-
-            <div className="space-y-3">
-              <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.preferredPipeShapes")}</Label>
-              <div className="flex flex-wrap gap-2">
-                {PIPE_SHAPES.map((sh) => {
-                  const active = formData.preferred_shapes.includes(sh);
-                  return (
-                    <Badge
-                      key={sh}
-                      onClick={() => toggleShape(sh)}
-                      className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-stone-800 text-stone-100 border-stone-700"}`}
-                    >
-                      {sh}
-                    </Badge>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("common.notes")}</Label>
-              <Textarea
-                value={formData.notes}
-                onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
-                rows={4}
-              />
-            </div>
+            </FormSection>
 
             {/* Whiskey Preferences */}
-            <div className="pt-2 space-y-3">
-              <div className="flex items-center gap-2">
-                <WhiskeyKeeperIcon size={16} color="rgb(217,119,6)" />
-                <Label className="font-semibold text-base" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profile.whiskeyPreferences", "Whiskey Preferences")}</Label>
-              </div>
-              <p className="text-xs text-stone-500">
+            <FormSection title="Whiskey Preferences">
+              <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.48)' }}>
                 Used by Curator to personalize pairing recommendations and cross-collection insights.
               </p>
               <WhiskeyPreferencesSection
                 preferences={formData.whiskey_preferences}
                 onChange={(updated) => setFormData((p) => ({ ...p, whiskey_preferences: updated }))}
               />
-            </div>
+            </FormSection>
 
             {/* Cigar Preferences */}
-            <div className="pt-2 space-y-3">
-              <div className="flex items-center gap-2">
-                <span style={{ fontSize: 16 }}>🚬</span>
-                <Label className="font-semibold text-base" style={{ color: 'rgba(224,216,200,0.85)' }}>Cigar Preferences</Label>
-              </div>
-              <p className="text-xs text-stone-500">
+            <FormSection title="Cigar Preferences">
+              <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.48)' }}>
                 Used by Curator to personalize cigar recommendations, humidor guidance, and cross-collection pairing suggestions.
               </p>
               <CigarPreferencesSection
                 preferences={formData.cigar_preferences}
                 onChange={(updated) => setFormData((p) => ({ ...p, cigar_preferences: updated }))}
               />
-            </div>
-
-            {/* Cigar Notes for AI */}
-            <div className="pt-2 space-y-2">
-              <div className="flex items-center gap-2">
-                <span style={{ fontSize: 16 }}>🚬</span>
-                <Label className="font-semibold text-base" style={{ color: 'rgba(224,216,200,0.85)' }}>Cigar Notes for Recommendations</Label>
+              <div className="mt-4">
+                <Label className="ck-field-label">Cigar Notes for Recommendations</Label>
+                <Textarea
+                  value={formData.cigar_notes}
+                  onChange={(e) => setFormData((p) => ({ ...p, cigar_notes: e.target.value }))}
+                  rows={3}
+                  placeholder="e.g. Love full-bodied Nicaraguans, prefer maduro wrappers, enjoy pairing with coffee or Bourbon..."
+                />
               </div>
-              <p className="text-xs text-stone-500">
-                Describe your cigar likes/dislikes, favorite wrappers or origins, strength preferences, pairings, or any guidance for Curator.
-              </p>
-              <Textarea
-                value={formData.cigar_notes}
-                onChange={(e) => setFormData((p) => ({ ...p, cigar_notes: e.target.value }))}
-                rows={4}
-                placeholder="e.g. Love full-bodied Nicaraguans, prefer maduro wrappers, enjoy pairing with coffee or Bourbon..."
-              />
-            </div>
+            </FormSection>
 
             {/* Public profile toggle */}
             <div className="flex items-center justify-between">
@@ -912,7 +896,7 @@ export default function ProfilePage() {
               <Button
                 variant="outline"
                 onClick={() => navigate(createPageUrl("CollectionInsightsShare"))}
-                className="text-stone-100 border-stone-500 hover:bg-stone-800 hover:text-stone-50"
+                style={{color: "rgba(224,216,200,0.8)", borderColor: "rgba(140,105,65,0.35)"}}
               >
                 <Share2 className="w-4 h-4 mr-2" />
                 {t("profile.shareCollectionInsights", "Share Collection Insights")}
@@ -927,7 +911,7 @@ export default function ProfilePage() {
                      navigate(createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}&preview=true`));
                    } catch {}
                  }}
-                 className="text-stone-100 border-stone-500 hover:bg-stone-800 hover:text-stone-50"
+                 style={{color: "rgba(224,216,200,0.8)", borderColor: "rgba(140,105,65,0.35)"}}
                 >
                   {t("profileExtended.previewPublicProfile")}
                 </Button>
