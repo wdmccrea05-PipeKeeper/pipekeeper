@@ -333,6 +333,11 @@ const esUI = {
     notes: "Notas",
     note: "Nota",
     loading: "Cargando…",
+    deleting: "Eliminando…",
+    saving: "Guardando…",
+    unratedTasting: "Cata sin calificar",
+    noNotes: "Sin notas",
+    noValue: "Sin valor",
     unknown: "Desconocido",
     unknownBlend: "Mezcla desconocida",
     tobacco: "Tabaco",
@@ -1112,6 +1117,17 @@ const esUI = {
     advancedValuation: "Seguimiento de valoración avanzado",
     prioritySupport: "Soporte prioritario",
     fullFeatureDescription: "Para una descripción completa de funciones visita",
+  },
+
+  hub: {
+    inCollection: "En la colección",
+    trackedBlends: "Mezclas rastreadas",
+    recentSessions: "Sesiones recientes",
+    sessionsThisWeek: "Sesiones en todos los módulos esta semana",
+    trackedTastings: "Cataciones rastreadas",
+    inHumidor: "En el humidor",
+    acrossActiveCollections: "En colecciones activas",
+    cigars: "Puros",
   },
 
 };

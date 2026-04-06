@@ -312,6 +312,11 @@ const ptBRUI = {
     notes: "Notas",
     note: "Nota",
     loading: "Carregando…",
+    deleting: "Excluindo…",
+    saving: "Salvando…",
+    unratedTasting: "Degustação sem avaliação",
+    noNotes: "Sem notas",
+    noValue: "Sem valor",
     unknown: "Desconhecido",
     unknownBlend: "Mistura desconhecida",
     tobacco: "Tabaco",
@@ -877,6 +882,17 @@ const ptBRUI = {
     advancedValuation: "Rastreamento de avaliação avançado",
     prioritySupport: "Suporte prioritário",
     fullFeatureDescription: "Para uma descrição completa dos recursos, visite",
+  },
+
+  hub: {
+    inCollection: "Na coleção",
+    trackedBlends: "Misturas rastreadas",
+    recentSessions: "Sessões recentes",
+    sessionsThisWeek: "Sessões em todos os módulos esta semana",
+    trackedTastings: "Degustações rastreadas",
+    inHumidor: "No humidor",
+    acrossActiveCollections: "Em coleções ativas",
+    cigars: "Charutos",
   },
 
 };

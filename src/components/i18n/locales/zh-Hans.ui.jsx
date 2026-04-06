@@ -312,6 +312,11 @@ const zhHansUI = {
     notes: "备注",
     note: "注意",
     loading: "加载中…",
+    deleting: "删除中…",
+    saving: "保存中…",
+    unratedTasting: "未评分的品鉴",
+    noNotes: "无备注",
+    noValue: "无值",
     unknown: "未知",
     unknownBlend: "未知混合料",
     tobacco: "烟草",
@@ -872,6 +877,17 @@ const zhHansUI = {
     advancedValuation: "高级估值追踪",
     prioritySupport: "优先支持",
     fullFeatureDescription: "有关完整功能描述，请访问",
+  },
+
+  hub: {
+    inCollection: "在收藏中",
+    trackedBlends: "已追踪的混合",
+    recentSessions: "最近的会话",
+    sessionsThisWeek: "本周所有模块的会话",
+    trackedTastings: "已追踪的品鉴",
+    inHumidor: "在保湿盒中",
+    acrossActiveCollections: "在活跃收藏中",
+    cigars: "雪茄",
   },
 
 };

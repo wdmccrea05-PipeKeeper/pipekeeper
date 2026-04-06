@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const ITEM_TYPE_MAP = {
   blend: "blend",
@@ -10,7 +11,7 @@ const ITEM_TYPE_MAP = {
   pipe: "pipe",
 };
 
-function buildAcquisitionItem(itemType, itemData, category, userEmail) {
+function buildAcquisitionItem(itemType, itemData, category, userEmail, labels = {}) {
   const normalizedType = ITEM_TYPE_MAP[itemType] || itemType;
 
   const base = {
@@ -25,7 +26,7 @@ function buildAcquisitionItem(itemType, itemData, category, userEmail) {
   if (itemType === "blend") {
     return {
       ...base,
-      name: itemData?.name || "Unknown Blend",
+      name: itemData?.name || labels.unknownBlend || "Unknown Blend",
       brand: itemData?.manufacturer || "",
       blend_name: itemData?.name || undefined,
       notes: [itemData?.blend_type, itemData?.notes].filter(Boolean).join(" · "),
@@ -35,7 +36,7 @@ function buildAcquisitionItem(itemType, itemData, category, userEmail) {
   if (itemType === "bottle") {
     return {
       ...base,
-      name: itemData?.name || "Unknown Bottle",
+      name: itemData?.name || labels.unknownBottle || "Unknown Bottle",
       brand: itemData?.distillery || "",
       notes: [itemData?.type, itemData?.notes].filter(Boolean).join(" · "),
     };
@@ -44,7 +45,7 @@ function buildAcquisitionItem(itemType, itemData, category, userEmail) {
   const pipeName =
     [itemData?.maker, itemData?.model].filter(Boolean).join(" ") ||
     itemData?.name ||
-    "Unknown Pipe";
+    labels.unknownPipe || "Unknown Pipe";
 
   return {
     ...base,
@@ -55,10 +56,9 @@ function buildAcquisitionItem(itemType, itemData, category, userEmail) {
   };
 }
 
-const CHOICES = [
+const CHOICES_STYLES = [
   {
     key: "wishlist",
-    label: "Add to Wish",
     style: {
       background: "linear-gradient(135deg,rgba(180,140,75,0.28),rgba(160,120,55,0.18))",
       border: "1px solid rgba(180,140,75,0.35)",
@@ -67,7 +67,6 @@ const CHOICES = [
   },
   {
     key: "shopping_list",
-    label: "Add to Shopping",
     style: {
       background: "linear-gradient(135deg,rgba(46,125,92,0.25),rgba(30,100,70,0.15))",
       border: "1px solid rgba(46,125,92,0.35)",
@@ -76,7 +75,6 @@ const CHOICES = [
   },
   {
     key: "do_not_buy_again",
-    label: "Not for Me",
     style: {
       background: "rgba(255,255,255,0.04)",
       border: "1px solid rgba(255,255,255,0.1)",
@@ -85,7 +83,6 @@ const CHOICES = [
   },
   {
     key: "ignore",
-    label: "Ignore",
     style: {
       background: "transparent",
       border: "1px solid rgba(255,255,255,0.08)",
@@ -95,8 +92,16 @@ const CHOICES = [
 ];
 
 export default function PostSessionPrompt({ externalItems = [], onDone }) {
+  const { t } = useTranslation();
   const { user } = useCurrentUser();
   const userEmail = user?.email || null;
+
+  const CHOICES = [
+    { ...CHOICES_STYLES[0], label: t('session.addToWish', 'Add to Wish') },
+    { ...CHOICES_STYLES[1], label: t('session.addToShopping', 'Add to Shopping') },
+    { ...CHOICES_STYLES[2], label: t('session.notForMe', 'Not for Me') },
+    { ...CHOICES_STYLES[3], label: t('session.ignore', 'Ignore') },
+  ];
 
   const [decisions, setDecisions] = useState({});
   const [saving, setSaving] = useState(false);
@@ -127,7 +132,11 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
         const choice = decisions[ei.label];
         if (!choice || choice === "ignore") continue;
 
-        const item = buildAcquisitionItem(ei.item_type, ei.itemData, choice, userEmail);
+        const item = buildAcquisitionItem(ei.item_type, ei.itemData, choice, userEmail, {
+            unknownBlend: t('common.unknownBlend', 'Unknown Blend'),
+            unknownBottle: t('session.unknownBottle', 'Unknown Bottle'),
+            unknownPipe: t('session.unknownPipe', 'Unknown Pipe'),
+          });
         await base44.entities.AcquisitionItem.create(item);
       }
 

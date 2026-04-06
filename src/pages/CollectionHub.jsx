@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useNavigate } from '@/components/utils/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import LogSessionSelector from '@/components/session/LogSessionSelector';
@@ -262,6 +263,7 @@ export default function CollectionHub() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
+  const { t } = useTranslation();
 
   const [showLogSelector, setShowLogSelector] = useState(false);
   const [showCombinedModal, setShowCombinedModal] = useState(false);
@@ -494,66 +496,66 @@ export default function CollectionHub() {
       </section>
 
       <section className="space-y-4">
-        <SectionTitle>Collection Overview</SectionTitle>
+        <SectionTitle>{t('hub.collectionSummary')}</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <StatCard
             icon={TrendingUp}
-            label="Total Value"
+            label={t('hub.totalValue')}
             value={isLoading ? '—' : currency(metrics.totalValue)}
-            sub="Across active collections"
+            sub={t('hub.acrossActiveCollections')}
             accent="#C89752"
           />
           {pipekeeperOpenable ? (
             <StatCard
               icon={PipeIcon}
-              label="Pipes"
+              label={t('hub.pipes')}
               value={isLoading ? '—' : pipes.length}
-              sub="In collection"
+              sub={t('hub.inCollection')}
               accent="#B48C4B"
             />
           ) : null}
           {pipekeeperOpenable ? (
             <StatCard
               icon={Leaf}
-              label="Blends"
+              label={t('hub.blends')}
               value={isLoading ? '—' : blends.length}
-              sub="Tracked blends"
+              sub={t('hub.trackedBlends')}
               accent="#6E8A57"
             />
           ) : null}
           {pipekeeperOpenable || whiskeyOpenable || cigarOpenable ? (
             <StatCard
               icon={Flame}
-              label="Recent Sessions"
+              label={t('hub.recentSessions')}
               value={isLoading ? '—' : metrics.recentSessionsCount}
-              sub="Sessions across all modules this week"
+              sub={t('hub.sessionsThisWeek')}
               accent="#B56A5F"
             />
           ) : null}
           {whiskeyOpenable ? (
             <StatCard
               icon={WhiskeyKeeperIcon}
-              label="Whiskey"
+              label={t('hub.whiskey')}
               value={isLoading ? '—' : bottles.length}
-              sub="In collection"
+              sub={t('hub.inCollection')}
               accent="#B66565"
             />
           ) : null}
           {whiskeyOpenable ? (
             <StatCard
               icon={Flame}
-              label="Tastings"
+              label={t('hub.tastings')}
               value={isLoading ? '—' : tastings.length}
-              sub="Tracked tastings"
+              sub={t('hub.trackedTastings')}
               accent="#A35050"
             />
           ) : null}
           {cigarOpenable ? (
             <StatCard
               icon={Flame}
-              label="Cigars"
+              label={t('hub.cigars')}
               value={isLoading ? '—' : cigars.length}
-              sub="In humidor"
+              sub={t('hub.inHumidor')}
               accent="#8C6B3F"
             />
           ) : null}
@@ -589,7 +591,7 @@ export default function CollectionHub() {
 
       {openableModuleKeys.length > 0 ? (
         <section className="space-y-4">
-          <SectionTitle>Your Collections</SectionTitle>
+          <SectionTitle>{t('hub.yourModules')}</SectionTitle>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {openableModuleKeys.map((moduleKey) => (
               <ModuleCard
