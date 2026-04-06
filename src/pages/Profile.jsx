@@ -47,6 +47,10 @@ const PIPE_SHAPES = [
   "Prince", "Rhodesian", "Zulu", "Calabash",
 ];
 
+// Note fields where the most-recently-updated record's exact value (including "")
+// must take precedence over the pick() fallback logic.
+const PROFILE_NOTE_FIELDS = ['notes', 'whiskey_notes', 'wine_notes', 'cigar_notes'];
+
 function consolidateProfiles(rows = []) {
   if (!Array.isArray(rows) || rows.length === 0) {
     return { masterId: null, merged: null };
@@ -90,6 +94,8 @@ function consolidateProfiles(rows = []) {
     preferred_shapes: pickArray(acc.preferred_shapes, row.preferred_shapes),
     strength_preference: pick(acc.strength_preference, row.strength_preference),
     notes: pick(acc.notes, row.notes),
+    // Note: whiskey_notes / wine_notes / cigar_notes are overridden below
+    // using master-record preference so intentional empty saves are preserved.
     whiskey_notes: pick(acc.whiskey_notes, row.whiskey_notes),
     wine_notes: pick(acc.wine_notes, row.wine_notes),
     cigar_notes: pick(acc.cigar_notes, row.cigar_notes),
@@ -101,6 +107,16 @@ function consolidateProfiles(rows = []) {
     cigarkeeper_enabled: pickBool(acc.cigarkeeper_enabled, row.cigarkeeper_enabled),
     module_preferences_set: pickBool(acc.module_preferences_set, row.module_preferences_set),
   }), {});
+
+  // For free-text note fields, prefer the master (most-recently-updated) record's
+  // exact value — including an empty string.  The `pick` helper above skips ""
+  // which means intentional clears would silently revert to an older record's text.
+  for (const field of PROFILE_NOTE_FIELDS) {
+    const masterVal = master?.[field];
+    if (masterVal !== undefined && masterVal !== null) {
+      merged[field] = masterVal;
+    }
+  }
 
   return { masterId: master?.id || null, merged };
 }
