@@ -1,12 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Cigarette, Plus, BarChart3, BookOpen, Grid3X3, AlertTriangle, TrendingDown, Clock, Flame, Droplets } from 'lucide-react';
-import CigarForm from '@/components/cigars/CigarForm';
+import { Cigarette, Plus, BarChart3, BookOpen, Grid3X3, AlertTriangle, TrendingDown, Clock, Droplets } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import CigarKeeperModuleNav from '@/components/modules/CigarKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
@@ -122,9 +120,7 @@ function CigarKeeperInner() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useCurrentUser();
-  const queryClient = useQueryClient();
   const [sessionModalOpen, setSessionModalOpen] = useState(false);
-  const [addCigarOpen, setAddCigarOpen] = useState(false);
 
   const { data: cigars = [] } = useQuery({
     queryKey: ['cigars-summary', user?.email],
@@ -206,7 +202,7 @@ function CigarKeeperInner() {
       key: 'addCigar',
       Icon: Plus,
       label: t('cigars.addCigar', 'Add Cigar'),
-      onClick: () => setAddCigarOpen(true),
+      onClick: () => navigate('/Cigars?action=add'),
     },
     {
       key: 'browseCollection',
@@ -273,7 +269,7 @@ function CigarKeeperInner() {
         </Button>
       </div>
 
-      <CigarKeeperModuleNav currentPageName={null} onAddCigar={() => setAddCigarOpen(true)} onLogSession={() => setSessionModalOpen(true)} />
+      <CigarKeeperModuleNav currentPageName={null} onLogSession={() => setSessionModalOpen(true)} />
 
       <CigarHighlightCard cigars={cigars} sessions={sessions} humidors={humidors} />
 
@@ -339,28 +335,7 @@ function CigarKeeperInner() {
         onSessionSaved={() => setSessionModalOpen(false)}
       />
 
-      <Dialog open={addCigarOpen} onOpenChange={setAddCigarOpen}>
-        <DialogContent
-          className="max-w-2xl max-h-[90vh] overflow-y-auto"
-          style={{
-            background: 'linear-gradient(145deg, rgba(40,28,18,0.98), rgba(27,19,13,0.99))',
-            border: '1px solid rgba(140,107,63,0.35)',
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-              Add Cigar
-            </DialogTitle>
-          </DialogHeader>
-          <CigarForm
-            onSubmit={() => {
-              setAddCigarOpen(false);
-              queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
-            }}
-            onCancel={() => setAddCigarOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 }

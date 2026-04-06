@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { TrendingUp, Plus, Cigarette, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AddCigarModal from '@/components/cigars/AddCigarModal';
 
-export default function CigarKeeperModuleNav({ currentPageName, onAddCigar, onLogSession }) {
+export default function CigarKeeperModuleNav({ currentPageName, onLogSession }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [addCigarOpen, setAddCigarOpen] = useState(false);
 
   const items = [
     { page: 'Cigars', label: t('cigars.cigars', 'Cigars'), Icon: Cigarette },
@@ -41,7 +43,7 @@ export default function CigarKeeperModuleNav({ currentPageName, onAddCigar, onLo
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         <Button
-          onClick={typeof onAddCigar === 'function' ? onAddCigar : () => navigate('/Cigars?action=add')}
+          onClick={() => setAddCigarOpen(true)}
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
@@ -63,6 +65,8 @@ export default function CigarKeeperModuleNav({ currentPageName, onAddCigar, onLo
           <span className="hidden sm:inline">{t('cigars.logSession', 'Log Session')}</span>
         </Button>
       </div>
+
+      <AddCigarModal open={addCigarOpen} onClose={() => setAddCigarOpen(false)} />
     </div>
   );
 }

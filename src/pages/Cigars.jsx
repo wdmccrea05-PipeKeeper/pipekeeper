@@ -212,7 +212,7 @@ function CigarsInner() {
 
   return (
     <div className="space-y-6 text-[#F5F1E7]">
-      <CigarKeeperModuleNav currentPageName="Cigars" />
+      <CigarKeeperModuleNav currentPageName="Cigars" onLogSession={undefined} />
 
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div>
