@@ -126,18 +126,9 @@ export default function Curator() {
     return resolveLaunchContext();
   });
 
-  const [isOptimizeMode, setIsOptimizeMode] = useState(() => {
-    // Detect optimize mode from location state or sessionStorage context
-    if (location?.state?.mode === "optimize") return true;
-    try {
-      const stored = sessionStorage.getItem("pk_curator_context");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return parsed?.mode === "optimize";
-      }
-    } catch {}
-    return false;
-  });
+  // Optimize panel is the primary results surface — always shown by default.
+  // Users can dismiss it to access the chat workspace below.
+  const [isOptimizeMode, setIsOptimizeMode] = useState(true);
 
   const [curatorScope, setCuratorScope] = useState(
     location?.state?.scope || "all"
@@ -284,6 +275,15 @@ export default function Curator() {
   };
 
   const handleExpertAction = useCallback((actionLaunchContext) => {
+    // Clicking "Optimize Collection" from the action bar should open the grouped
+    // recommendations panel, not pre-fill the chat with an AI query.
+    if (
+      actionLaunchContext?.actionType === 'optimize_collection' ||
+      actionLaunchContext?.sourceAction?.id === 'optimize_collection'
+    ) {
+      setIsOptimizeMode(true);
+      return;
+    }
     setLaunchContext(actionLaunchContext);
   }, []);
 
@@ -324,7 +324,7 @@ export default function Curator() {
 
   return (
     <div className="space-y-5">
-      {/* Optimize Panel — shown when user arrives via Optimize button */}
+      {/* Optimize Panel — primary grouped recommendations surface (default view) */}
       {isOptimizeMode && (
         <CuratorOptimizePanel
           pipes={scopedPipes}
@@ -340,7 +340,7 @@ export default function Curator() {
         />
       )}
 
-      {/* Hero Section */}
+      {/* Hero Section — shown collapsed when optimize panel is active */}
       <div
         className="rounded-2xl overflow-hidden"
         style={{
@@ -371,34 +371,53 @@ export default function Curator() {
             </div>
           </div>
 
-          {/* Scope selector chips — inline with header */}
-          {availableScopes.length > 1 && (
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {availableScopes.map((opt) => {
-                const selected = curatorScope === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => handleScopeChange(opt.value)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
-                    style={{
-                      background: selected ? "rgba(163,92,92,0.25)" : "rgba(255,255,255,0.05)",
-                      border: selected ? "1px solid rgba(163,92,92,0.55)" : "1px solid rgba(120,90,65,0.2)",
-                      color: selected ? "#F5F1E7" : "rgba(224,216,200,0.5)",
-                    }}
-                  >
-                    {opt.isPipeIcon ? (
-                      <PipeIcon className="w-3 h-3" color={selected ? "#F5F1E7" : "rgba(224,216,200,0.5)"} />
-                    ) : opt.icon ? (
-                      <opt.icon className="w-3 h-3" />
-                    ) : null}
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Back to Optimize button — only shown when optimize panel is closed */}
+            {!isOptimizeMode && (
+              <button
+                type="button"
+                onClick={() => setIsOptimizeMode(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                style={{
+                  background: "rgba(180,140,75,0.15)",
+                  border: "1px solid rgba(180,140,75,0.35)",
+                  color: "rgba(212,165,116,0.9)",
+                }}
+              >
+                <Sparkles className="w-3 h-3" />
+                View Recommendations
+              </button>
+            )}
+
+            {/* Scope selector chips — inline with header */}
+            {availableScopes.length > 1 && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {availableScopes.map((opt) => {
+                  const selected = curatorScope === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => handleScopeChange(opt.value)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                      style={{
+                        background: selected ? "rgba(163,92,92,0.25)" : "rgba(255,255,255,0.05)",
+                        border: selected ? "1px solid rgba(163,92,92,0.55)" : "1px solid rgba(120,90,65,0.2)",
+                        color: selected ? "#F5F1E7" : "rgba(224,216,200,0.5)",
+                      }}
+                    >
+                      {opt.isPipeIcon ? (
+                        <PipeIcon className="w-3 h-3" color={selected ? "#F5F1E7" : "rgba(224,216,200,0.5)"} />
+                      ) : opt.icon ? (
+                        <opt.icon className="w-3 h-3" />
+                      ) : null}
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Subtitle / prompt state */}
@@ -429,7 +448,7 @@ export default function Curator() {
         </div>
       </div>
 
-      {/* Main Workspace */}
+      {/* Main Workspace — chat interface */}
       <div ref={chatRef}>
       <Card>
         <CardContent className="p-0 sm:p-2">
