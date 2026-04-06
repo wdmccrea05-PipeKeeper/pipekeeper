@@ -3,22 +3,67 @@
 @tailwind utilities;
 
 :root {
+  /* ── Backgrounds ── */
   --ck-bg-0: #140f0c;
   --ck-bg-1: #1d1511;
   --ck-bg-2: #241913;
+
+  /* ── Surfaces ── */
   --ck-surface-1: rgba(42, 31, 24, 0.94);
   --ck-surface-2: rgba(255, 255, 255, 0.045);
   --ck-surface-3: rgba(255, 255, 255, 0.065);
+
+  /* ── Borders ── */
   --ck-border: rgba(180, 140, 75, 0.16);
   --ck-border-strong: rgba(180, 140, 75, 0.26);
+  --ck-border-subtle: rgba(180, 140, 75, 0.10);
+
+  /* ── Text ── */
   --ck-text: #f5f1e7;
   --ck-text-soft: rgba(224, 216, 200, 0.78);
-  --ck-text-muted: rgba(224, 216, 200, 0.58);
+  --ck-text-muted: rgba(224, 216, 200, 0.52);
+  --ck-text-faint: rgba(224, 216, 200, 0.35);
+
+  /* ── Accent colors ── */
   --ck-gold: #d4a574;
+  --ck-gold-muted: rgba(212, 165, 116, 0.7);
   --ck-rose: #a35c5c;
+  --ck-rose-hover: #8f4e4e;
   --ck-success: #2e7d5c;
   --ck-danger: #b35f5f;
+  --ck-info: rgba(100, 130, 180, 0.85);
+
+  /* ── Elevation shadows ── */
   --ck-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+  --ck-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.22);
+
+  /* ── Typography scale ── */
+  --ck-text-xs: 0.75rem;     /* 12px */
+  --ck-text-sm: 0.8125rem;   /* 13px */
+  --ck-text-base: 0.9375rem; /* 15px — slightly larger than default for readability */
+  --ck-text-md: 1.0625rem;   /* 17px */
+  --ck-text-lg: 1.1875rem;   /* 19px */
+  --ck-text-xl: 1.375rem;    /* 22px */
+  --ck-text-2xl: 1.625rem;   /* 26px */
+  --ck-text-3xl: 2rem;       /* 32px */
+  --ck-text-4xl: 2.5rem;     /* 40px */
+
+  /* ── Spacing scale ── */
+  --ck-space-1: 0.25rem;
+  --ck-space-2: 0.5rem;
+  --ck-space-3: 0.75rem;
+  --ck-space-4: 1rem;
+  --ck-space-5: 1.25rem;
+  --ck-space-6: 1.5rem;
+  --ck-space-8: 2rem;
+  --ck-space-10: 2.5rem;
+  --ck-space-12: 3rem;
+
+  /* ── Radius ── */
+  --ck-radius-sm: 0.5rem;
+  --ck-radius-md: 0.75rem;
+  --ck-radius-lg: 1rem;
+  --ck-radius-xl: 1.25rem;
 }
 
 /* ─── Scroll fix: single document scroll, no nested root trap ─── */
@@ -130,20 +175,32 @@ div {
     letter-spacing: -0.02em;
   }
 
+  h1 { font-size: var(--ck-text-3xl); font-weight: 700; }
+  h2 { font-size: var(--ck-text-2xl); font-weight: 600; }
+  h3 { font-size: var(--ck-text-xl);  font-weight: 600; }
+
   p {
     color: var(--ck-text-soft);
-    line-height: 1.5;
+    line-height: 1.6;
+    font-size: var(--ck-text-base);
+  }
+
+  label {
+    font-size: var(--ck-text-sm);
+    color: var(--ck-text-soft);
+    line-height: 1.4;
   }
 
   input,
   textarea,
   select {
     color: var(--ck-text);
+    font-size: var(--ck-text-base);
   }
 
   input::placeholder,
   textarea::placeholder {
-    color: rgba(224, 216, 200, 0.55);
+    color: rgba(224, 216, 200, 0.45);
   }
 }
 
@@ -200,6 +257,57 @@ div {
     border: 1px solid var(--ck-border);
   }
 
+  /* ── Form Primitives ── */
+  .ck-field-label {
+    display: block;
+    font-size: var(--ck-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ck-text-muted);
+    margin-bottom: 0.35rem;
+  }
+
+  .ck-field-label-md {
+    display: block;
+    font-size: var(--ck-text-sm);
+    font-weight: 500;
+    color: var(--ck-text-soft);
+    margin-bottom: 0.4rem;
+  }
+
+  .ck-helper-text {
+    font-size: var(--ck-text-xs);
+    color: var(--ck-text-faint);
+    margin-top: 0.3rem;
+    line-height: 1.45;
+  }
+
+  /* ── Section Titles ── */
+  .ck-page-title {
+    font-size: var(--ck-text-3xl);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--ck-text);
+    line-height: 1.1;
+  }
+
+  .ck-section-title {
+    font-size: var(--ck-text-xl);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--ck-text);
+    line-height: 1.2;
+  }
+
+  .ck-subsection-title {
+    font-size: var(--ck-text-md);
+    font-weight: 600;
+    color: var(--ck-text-soft);
+    line-height: 1.3;
+  }
+
+  /* ── Stat display ── */
   .ck-stat-card {
     @apply rounded-xl p-4;
     background: rgba(255, 255, 255, 0.045);
@@ -207,18 +315,36 @@ div {
   }
 
   .ck-stat-label {
-    @apply flex items-center gap-2 text-sm font-semibold;
+    font-size: var(--ck-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     color: var(--ck-gold);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .ck-stat-value {
-    @apply text-3xl font-bold mt-2;
+    font-size: var(--ck-text-3xl);
+    font-weight: 700;
+    margin-top: 0.5rem;
     color: var(--ck-text);
+    line-height: 1;
   }
 
   .ck-stat-note {
-    @apply text-xs mt-1;
+    font-size: var(--ck-text-xs);
+    margin-top: 0.3rem;
     color: var(--ck-text-muted);
+  }
+
+  /* ── Action bar ── */
+  .ck-action-footer {
+    @apply flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-end;
+    padding: var(--ck-space-4) 0;
+    border-top: 1px solid var(--ck-border-subtle);
+    margin-top: var(--ck-space-4);
   }
 
   .ck-badge {
