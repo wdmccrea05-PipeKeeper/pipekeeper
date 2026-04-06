@@ -130,7 +130,7 @@ export default function UserReport() {
   const sanityChecks  = report?.sanityChecks  || {};
 
   // Show the warnings panel when there are excluded-record counts.
-  // warnings contains: missingPrice, missingInterval, missingPlatform, duplicatesRemoved.
+  // warnings contains: missingPrice, missingInterval, missingPlatform, missingPlanKey, duplicatesRemoved.
   // Sanity check failures are internal-only and not surfaced here.
   const hasDataWarning =
     !!report &&
@@ -138,6 +138,7 @@ export default function UserReport() {
       (warnings.missingPrice    > 0) ||
       (warnings.missingInterval > 0) ||
       (warnings.missingPlatform > 0) ||
+      (warnings.missingPlanKey  > 0) ||
       (warnings.duplicatesRemoved > 0)
     );
 
@@ -272,6 +273,7 @@ export default function UserReport() {
       ['Missing Price',          warnings.missingPrice      ?? 0],
       ['Missing Billing Interval', warnings.missingInterval ?? 0],
       ['Missing Platform',       warnings.missingPlatform   ?? 0],
+      ['Missing Plan Key',       warnings.missingPlanKey    ?? 0],
       ['Duplicates Removed',     warnings.duplicatesRemoved ?? 0],
       // User detail
       ['', ''],
@@ -447,7 +449,7 @@ export default function UserReport() {
       <SectionCard title="Subscriptions" icon={Package} accentColor="#A78BFA">
         {/* Total counts + billing interval visual */}
         <div className="grid grid-cols-1 sm:grid-cols-1 gap-4 mb-4">
-          <MetricCard label="Total Active Paid Subscriptions" value={subscriptions.totalActivePaid ?? 0} sub="PipeKeeper only — all active paid records" />
+          <MetricCard label="Total Active Paid Subscriptions" value={subscriptions.totalActivePaid ?? 0} sub="All active paid records (deduped per account per module)" />
         </div>
         <div className="mb-4">
           <BillingIntervalBar monthly={subscriptions.monthly} annual={subscriptions.annual} />
@@ -455,7 +457,7 @@ export default function UserReport() {
 
         <SectionDivider label="By Product" />
         <p className="text-xs text-[#E0D8C8]/50 mb-3">
-          PipeKeeper is the only active paid module. All other products show 0.
+          Active paid subscriptions grouped by product. Single-module subs count toward their module; bundles are counted separately.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <MetricCard label="PipeKeeper"    value={subscriptions.byProduct?.pipekeeper    ?? 0} />
@@ -621,9 +623,10 @@ function WarningsPanel({ warnings }) {
 
   // Excluded-record counts — source-data quality issues after dedup.
   const dataQualityItems = [
-    warnings.missingPrice      > 0 && `${warnings.missingPrice} paid sub(s) missing price — excluded from revenue`,
-    warnings.missingInterval   > 0 && `${warnings.missingInterval} paid sub(s) missing billing interval — excluded from MRR/ARR`,
+    warnings.missingPrice      > 0 && `${warnings.missingPrice} paid sub(s) missing price — excluded from MRR/ARR and renewal revenue`,
+    warnings.missingInterval   > 0 && `${warnings.missingInterval} paid sub(s) missing billing interval — excluded from MRR/ARR and renewal revenue`,
     warnings.missingPlatform   > 0 && `${warnings.missingPlatform} paid sub(s) missing platform — excluded from platform breakdown`,
+    warnings.missingPlanKey    > 0 && `${warnings.missingPlanKey} paid sub(s) with unknown plan key — price resolved from stored amount only`,
     warnings.duplicatesRemoved > 0 && `${warnings.duplicatesRemoved} duplicate sub(s) removed (kept most recent per account per module)`,
   ].filter(Boolean);
 

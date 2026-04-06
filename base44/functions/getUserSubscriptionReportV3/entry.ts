@@ -11,26 +11,74 @@ type PlatformKind = 'ios' | 'web' | 'google';
 
 /**
  * Canonical subscription record.
- * Required fields: userId/userEmail, billingInterval, price, platform.
- * If any required field is null, the record is excluded from the relevant metric
- * and counted in the corresponding warning.
+ *
+ * Price resolution order:
+ *   1. raw.amount  (actual billed amount if present and > 0)
+ *   2. PLAN_CATALOG[planKey].price  (catalog fallback when amount is missing/zero)
+ *   3. null → excluded from revenue and renewal metrics; counted in warnings
+ *
+ * Billing interval resolution order:
+ *   1. raw.billing_interval / raw.billing_period (field-based)
+ *   2. PLAN_CATALOG[planKey].billingInterval (catalog fallback)
+ *   3. null → excluded from MRR/ARR and renewal metrics; counted in warnings
+ *
+ * Excluded subscriptions are NEVER removed from active paid subscription counts.
  */
 interface NormalizedSub {
   rawId: string;
   userId: string;
   userEmail: string;
   isPaid: boolean;
+  planKey: string | null;        // null = no known plan key
   billingInterval: IntervalKind | null; // null = missing / unknown
-  price: number | null;                 // null = missing / zero
+  price: number | null;                 // null = missing / zero with no catalog entry
   createdAt: Date | null;
   renewalAt: Date | null;
-  module: 'pipekeeper';
+  module: string;                // primary module for this subscription
+  modules: string[];             // all modules covered (multi-element for bundles)
   platform: PlatformKind | null;        // null = missing / unknown
 }
 
 interface CalendarRange {
   start: Date;
   end: Date;
+}
+
+// ─── Product catalog ──────────────────────────────────────────────────────────
+
+/**
+ * Explicit mapping of every known plan key to its canonical attributes.
+ *
+ * This is the authoritative source of truth for:
+ *   - which modules a plan covers
+ *   - the billing interval
+ *   - the known price
+ *
+ * Prices mirror src/components/subscription/stripeConfig.jsx.
+ * NOTE: This object is intentionally duplicated from src/lib/reportingV3Utils.js.
+ * Deno edge functions cannot import from the src/ tree. Keep them in sync.
+ */
+const PLAN_CATALOG: Record<string, { modules: string[]; billingInterval: IntervalKind; price: number }> = {
+  // Single-module plans
+  pipekeeper_pro_monthly:      { modules: ['pipekeeper'],                                                  billingInterval: 'monthly', price: 2.99  },
+  pipekeeper_pro_annual:       { modules: ['pipekeeper'],                                                  billingInterval: 'annual',  price: 29.99 },
+  whiskeykeeper_pro_monthly:   { modules: ['whiskeykeeper'],                                               billingInterval: 'monthly', price: 2.99  },
+  whiskeykeeper_pro_annual:    { modules: ['whiskeykeeper'],                                               billingInterval: 'annual',  price: 29.99 },
+  cigarkeeper_pro_monthly:     { modules: ['cigarkeeper'],                                                 billingInterval: 'monthly', price: 2.99  },
+  cigarkeeper_pro_annual:      { modules: ['cigarkeeper'],                                                 billingInterval: 'annual',  price: 29.99 },
+  winekeeper_pro_monthly:      { modules: ['winekeeper'],                                                  billingInterval: 'monthly', price: 2.99  },
+  winekeeper_pro_annual:       { modules: ['winekeeper'],                                                  billingInterval: 'annual',  price: 29.99 },
+  // Bundle plans
+  three_module_bundle_monthly: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],                  billingInterval: 'monthly', price: 7.99  },
+  three_module_bundle_annual:  { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],                  billingInterval: 'annual',  price: 79.99 },
+  four_module_bundle_monthly:  { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],    billingInterval: 'monthly', price: 8.99  },
+  four_module_bundle_annual:   { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],    billingInterval: 'annual',  price: 89.99 },
+  founders_bundle_annual:      { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],    billingInterval: 'annual',  price: 49.99 },
+};
+
+function lookupPlanCatalog(planKey: string | null) {
+  if (!planKey) return null;
+  return PLAN_CATALOG[planKey.trim().toLowerCase()] ?? null;
 }
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
@@ -185,32 +233,47 @@ function isActivePaid(raw: any): boolean {
 /**
  * Normalize ONE raw subscription record into the V3 canonical shape.
  *
- * Field mapping from the Subscription entity:
- *   user_id          → userId
- *   user_email       → userEmail
- *   is_paid          → derived via isActivePaid(raw)
- *   billing_interval / billing_period → billingInterval (monthly | annual | null)
- *   amount           → price (null when missing/zero)
- *   started_at || created_date || current_period_start → createdAt
- *   current_period_end → renewalAt
- *   provider / user.platform → platform ('ios' | 'web' | 'google' | null)
- *   module           → always 'pipekeeper' (only active paid module)
+ * Price resolution order:
+ *   1. raw.amount  (actual billed amount if present and > 0)
+ *   2. PLAN_CATALOG[planKey].price  (catalog fallback when amount is missing/zero)
+ *   3. null → excluded from revenue/renewal metrics; counted in warnings
+ *
+ * Billing interval resolution order:
+ *   1. raw.billing_interval / raw.billing_period
+ *   2. PLAN_CATALOG[planKey].billingInterval
+ *   3. null
  *
  * @param raw   Raw subscription record
  * @param user  Associated user record (optional, used for platform fallback)
  */
 function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
+  const planKey = (String(raw.planKey || raw.plan_key || '').trim().toLowerCase()) || null;
+  const catalog = lookupPlanCatalog(planKey);
+
+  // Price: actual billed amount first, then catalog price as fallback
   const rawPrice = Math.max(0, Number(raw.amount || 0));
+  const price: number | null = rawPrice > 0 ? rawPrice : (catalog?.price ?? null);
+
+  // Billing interval: field-based normalization first, then catalog fallback
+  const fieldInterval = normalizeInterval(raw);
+  const billingInterval: IntervalKind | null = fieldInterval ?? (catalog?.billingInterval ?? null);
+
+  // Module(s): use catalog when available, fall back to primary_module field
+  const modules: string[] = catalog?.modules ?? (norm(raw.primary_module || '') ? [norm(raw.primary_module)] : ['pipekeeper']);
+  const module = modules[0] ?? 'pipekeeper';
+
   return {
     rawId:           String(raw.id || raw.stripe_subscription_id || ''),
     userId:          String(raw.user_id || ''),
     userEmail:       norm(raw.user_email || ''),
     isPaid:          isActivePaid(raw),
-    billingInterval: normalizeInterval(raw),
-    price:           rawPrice > 0 ? rawPrice : null,
+    planKey,
+    billingInterval,
+    price,
     createdAt:       parseDate(raw.started_at || raw.created_date || raw.current_period_start),
     renewalAt:       parseDate(raw.current_period_end),
-    module:          'pipekeeper',
+    module,
+    modules,
     platform:        normalizePlatform(raw, user),
   };
 }
@@ -238,6 +301,11 @@ function mrrContribution(sub: NormalizedSub): number {
  *   subscriptions  = count of subscriptions with renewal_at in range
  *   revenue        = sum of actual billed prices for those subscriptions
  *
+ * Rule 6: only subscriptions with a valid renewal date AND a known price AND a known
+ * billing interval are counted. If any of those three fields is missing, the
+ * subscription cannot contribute revenue and therefore MUST NOT be counted as a
+ * renewing subscription. This guarantees that count and revenue always reconcile.
+ *
  * Uses ACTUAL billed price — NOT MRR/ARR.
  */
 function calcRenewalPeriod(
@@ -245,7 +313,11 @@ function calcRenewalPeriod(
   range: CalendarRange
 ): { customers: number; subscriptions: number; revenue: number } {
   const renewing = paidSubs.filter(
-    (s) => s.renewalAt !== null && inRange(s.renewalAt, range)
+    (s) =>
+      s.renewalAt !== null &&
+      inRange(s.renewalAt, range) &&
+      s.price !== null &&
+      s.billingInterval !== null
   );
   const customers = new Set(
     renewing.map((s) => s.userId || s.userEmail).filter(Boolean)
@@ -457,16 +529,35 @@ Deno.serve(async (req) => {
     let warningMissingPrice    = 0;
     let warningMissingInterval = 0;
     let warningMissingPlatform = 0;
+    let warningMissingPlanKey  = 0;
     for (const sub of paidSubs) {
       if (sub.price === null)           warningMissingPrice++;
       if (sub.billingInterval === null) warningMissingInterval++;
       if (sub.platform === null)        warningMissingPlatform++;
+      if (sub.planKey === null)         warningMissingPlanKey++;
     }
 
     // ── Subscription counts ───────────────────────────────────────────────────
     const totalActivePaid = paidSubs.length;
     const monthlyCount    = paidSubs.filter((s) => s.billingInterval === 'monthly').length;
     const annualCount     = paidSubs.filter((s) => s.billingInterval === 'annual').length;
+
+    // ── By-product breakdown ──────────────────────────────────────────────────
+    // Single-module subs count toward their module; multi-module subs count as bundles.
+    // pipekeeper + whiskeykeeper + cigarkeeper + winekeeper + bundles = totalActivePaid
+    const byProductCounts = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundles: 0 };
+    for (const sub of paidSubs) {
+      if (sub.modules.length > 1) {
+        byProductCounts.bundles++;
+      } else {
+        const m = sub.modules[0] ?? sub.module;
+        if (m === 'pipekeeper')    byProductCounts.pipekeeper++;
+        else if (m === 'whiskeykeeper') byProductCounts.whiskeykeeper++;
+        else if (m === 'cigarkeeper')   byProductCounts.cigarkeeper++;
+        else if (m === 'winekeeper')    byProductCounts.winekeeper++;
+        else                            byProductCounts.pipekeeper++; // unknown fallback
+      }
+    }
 
     // ── User-level paid / free classification ─────────────────────────────────
     // A user is paid if at least one active paid subscription belongs to them.
@@ -590,6 +681,7 @@ Deno.serve(async (req) => {
         missingPrice:      warningMissingPrice,
         missingInterval:   warningMissingInterval,
         missingPlatform:   warningMissingPlatform,
+        missingPlanKey:    warningMissingPlanKey,
         duplicatesRemoved: duplicatesRemoved,
       },
       accounts: {
@@ -604,13 +696,7 @@ Deno.serve(async (req) => {
         totalActivePaid,
         monthly: monthlyCount,
         annual:  annualCount,
-        byProduct: {
-          pipekeeper:    totalActivePaid,
-          whiskeykeeper: 0,
-          cigarkeeper:   0,
-          winekeeper:    0,
-          bundles:       0,
-        },
+        byProduct: byProductCounts,
       },
       runRate: { mrr, arr },
       renewalRevenue: {
@@ -632,7 +718,7 @@ Deno.serve(async (req) => {
         meta:         { generatedAt: new Date().toISOString(), reportVersion: REPORT_VERSION },
         sanityChecks: { passed: false, failures: ['Report generation failed — see server logs.'] },
         warnings:     {
-          missingPrice: 0, missingInterval: 0, missingPlatform: 0, duplicatesRemoved: 0,
+          missingPrice: 0, missingInterval: 0, missingPlatform: 0, missingPlanKey: 0, duplicatesRemoved: 0,
         },
         accounts:       {},
         subscriptions:  {},
