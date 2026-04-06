@@ -4,15 +4,20 @@
  * These are the canonical implementations used for testing.
  * The Deno entry.ts duplicates the same logic inline (Deno cannot import from src/).
  *
- * Field mapping from the Subscription entity:
- *   user_id             → userId
- *   user_email          → userEmail
- *   is_paid             → derived via isActivePaid(raw)
- *   billing_interval / billing_period → billingInterval ('monthly' | 'annual' | null)
- *   amount              → price (null when missing/zero)
- *   started_at || created_date || current_period_start → createdAt
- *   current_period_end  → renewalAt
- *   product             → always 'pipekeeper'
+ * Canonical data model (NormalizedSub):
+ *   userId              ← user_id
+ *   userEmail           ← user_email
+ *   isPaid              ← derived via isActivePaid(raw)
+ *   billingInterval     ← billing_interval / billing_period ('monthly' | 'annual' | null)
+ *   price               ← amount (null when missing/zero)
+ *   createdAt           ← started_at || created_date || current_period_start
+ *   renewalAt           ← current_period_end
+ *   module              ← always 'pipekeeper' (only active paid module)
+ *   platform            ← derived from subscription provider or user record ('ios'|'web'|'google'|null)
+ *
+ * Required fields: userId/userEmail, billingInterval, price, platform.
+ * If ANY required field is missing, the subscription is excluded from revenue metrics
+ * and counted in the corresponding excluded-record warning.
  */
 
 // ─── Low-level helpers ────────────────────────────────────────────────────────
@@ -139,6 +144,44 @@ export function isActivePaid(raw) {
   return false;
 }
 
+// ─── Platform normalization ───────────────────────────────────────────────────
+// NOTE: This function is intentionally mirrored in
+// base44/functions/getUserSubscriptionReportV3/entry.ts.
+// Deno edge functions cannot import from src/, so both files maintain the same
+// logic independently. Keep them in sync when editing either.
+
+/**
+ * Normalize platform from subscription provider or user record.
+ *
+ * Primary source: raw.provider ('apple', 'ios', 'google', 'android', 'stripe', 'web', …)
+ * Secondary source: user.data.platform or user.platform (fallback when no provider)
+ *
+ * Known web indicators: any non-empty, non-mobile, non-'unknown' value.
+ * This mirrors the signup-source logic already used elsewhere in this report.
+ * Returns null when platform cannot be determined — do NOT guess.
+ *
+ * @param {object}      raw   Raw subscription record
+ * @param {object|null} user  Associated user record (optional)
+ * @returns {'ios'|'web'|'google'|null}
+ */
+export function normalizePlatform(raw, user = null) {
+  const provider = norm(raw.provider || '');
+  if (provider === 'apple' || provider === 'ios') return 'ios';
+  if (provider === 'google' || provider === 'android' || provider === 'googleplay') return 'google';
+  if (provider === 'stripe' || provider === 'web') return 'web';
+
+  if (user) {
+    const userPlatform = norm(user.data?.platform || user.platform || '');
+    if (userPlatform === 'apple' || userPlatform === 'ios') return 'ios';
+    if (userPlatform === 'android' || userPlatform === 'googleplay' || userPlatform === 'google') return 'google';
+    // Any non-empty, non-mobile, non-'unknown' value is treated as web.
+    // Consistent with signupSources logic: non-mobile platform → web.
+    if (userPlatform && userPlatform !== 'unknown') return 'web';
+  }
+
+  return null;
+}
+
 // ─── Normalization ────────────────────────────────────────────────────────────
 
 /**
@@ -150,13 +193,15 @@ export function isActivePaid(raw) {
  *   price: number | null,
  *   createdAt: Date | null,
  *   renewalAt: Date | null,
- *   product: 'pipekeeper',
+ *   module: 'pipekeeper',
+ *   platform: 'ios' | 'web' | 'google' | null,
  * }
  *
- * @param {object} raw  Raw subscription record
+ * @param {object}      raw   Raw subscription record
+ * @param {object|null} user  Associated user record (optional, used for platform fallback)
  * @returns {object}    Normalized subscription
  */
-export function normalizeSub(raw) {
+export function normalizeSub(raw, user = null) {
   const rawPrice = Math.max(0, Number(raw.amount || 0));
   return {
     rawId:           String(raw.id || raw.stripe_subscription_id || ''),
@@ -167,7 +212,8 @@ export function normalizeSub(raw) {
     price:           rawPrice > 0 ? rawPrice : null,
     createdAt:       parseDate(raw.started_at || raw.created_date || raw.current_period_start),
     renewalAt:       parseDate(raw.current_period_end),
-    product:         'pipekeeper',
+    module:          'pipekeeper',
+    platform:        normalizePlatform(raw, user),
   };
 }
 

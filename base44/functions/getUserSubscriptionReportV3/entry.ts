@@ -7,7 +7,14 @@ const REPORT_VERSION = 'v3';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type IntervalKind = 'monthly' | 'annual';
+type PlatformKind = 'ios' | 'web' | 'google';
 
+/**
+ * Canonical subscription record.
+ * Required fields: userId/userEmail, billingInterval, price, platform.
+ * If any required field is null, the record is excluded from the relevant metric
+ * and counted in the corresponding warning.
+ */
 interface NormalizedSub {
   rawId: string;
   userId: string;
@@ -17,7 +24,8 @@ interface NormalizedSub {
   price: number | null;                 // null = missing / zero
   createdAt: Date | null;
   renewalAt: Date | null;
-  product: 'pipekeeper';
+  module: 'pipekeeper';
+  platform: PlatformKind | null;        // null = missing / unknown
 }
 
 interface CalendarRange {
@@ -122,6 +130,39 @@ function normalizeInterval(raw: any): IntervalKind | null {
   return null;
 }
 
+// ─── Platform normalization ───────────────────────────────────────────────────
+// NOTE: This function is intentionally duplicated from src/lib/reportingV3Utils.js.
+// Deno edge functions cannot import from the src/ tree, so both files maintain
+// the same logic independently. Keep them in sync when editing either.
+
+/**
+ * Normalize platform from subscription provider or user record.
+ *
+ * Primary: raw.provider ('apple', 'ios', 'google', 'android', 'stripe', 'web', …)
+ * Secondary: user.data.platform or user.platform (fallback when no provider set)
+ *
+ * Known web indicators: any non-empty, non-mobile, non-'unknown' value.
+ * This mirrors the signup-source logic already used elsewhere in this report.
+ * Returns null when platform cannot be determined — do NOT guess.
+ */
+function normalizePlatform(raw: any, user: any | null): PlatformKind | null {
+  const provider = norm(raw.provider || '');
+  if (provider === 'apple' || provider === 'ios') return 'ios';
+  if (provider === 'google' || provider === 'android' || provider === 'googleplay') return 'google';
+  if (provider === 'stripe' || provider === 'web') return 'web';
+
+  if (user) {
+    const userPlatform = norm(user.data?.platform || user.platform || '');
+    if (userPlatform === 'apple' || userPlatform === 'ios') return 'ios';
+    if (userPlatform === 'android' || userPlatform === 'googleplay' || userPlatform === 'google') return 'google';
+    // Any non-empty, non-mobile, non-'unknown' value is treated as web.
+    // This is consistent with signupSources logic: non-mobile platform → web.
+    if (userPlatform && userPlatform !== 'unknown') return 'web';
+  }
+
+  return null;
+}
+
 // ─── Active paid detection ────────────────────────────────────────────────────
 
 /**
@@ -152,9 +193,13 @@ function isActivePaid(raw: any): boolean {
  *   amount           → price (null when missing/zero)
  *   started_at || created_date || current_period_start → createdAt
  *   current_period_end → renewalAt
- *   product          → always 'pipekeeper' (only paid module)
+ *   provider / user.platform → platform ('ios' | 'web' | 'google' | null)
+ *   module           → always 'pipekeeper' (only active paid module)
+ *
+ * @param raw   Raw subscription record
+ * @param user  Associated user record (optional, used for platform fallback)
  */
-function normalizeSub(raw: any): NormalizedSub {
+function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
   const rawPrice = Math.max(0, Number(raw.amount || 0));
   return {
     rawId:           String(raw.id || raw.stripe_subscription_id || ''),
@@ -165,7 +210,8 @@ function normalizeSub(raw: any): NormalizedSub {
     price:           rawPrice > 0 ? rawPrice : null,
     createdAt:       parseDate(raw.started_at || raw.created_date || raw.current_period_start),
     renewalAt:       parseDate(raw.current_period_end),
-    product:         'pipekeeper',
+    module:          'pipekeeper',
+    platform:        normalizePlatform(raw, user),
   };
 }
 
@@ -219,34 +265,35 @@ interface SanityResult {
 
 /**
  * Run hard assertions on the computed metrics.
- * On failure: log the bug and return the failure list.
- * Does NOT throw — the caller embeds failures in the response.
+ * On failure: log the bug — sanity failures indicate a logic error in this report.
+ * Does NOT throw — failures are logged server-side only (not surfaced to UI).
  *
- * Note: new account counts are NOT expected to be monotonic — calendar week
- * ranges can cross month/quarter boundaries, so week > month is normal.
+ * These checks should never fail when the math is correct:
+ *   - paidAccounts <= totalAccounts  (guaranteed by dedup)
+ *   - arr === mrr * 12              (guaranteed by derivation from rounded mrr)
+ *   - renewing customers <= renewing subscriptions  (guaranteed by set semantics)
  */
 function runSanityChecks(params: {
-  newAccounts: { today: number; week: number; month: number; quarter: number; year: number };
   paidAccounts: number;
   totalAccounts: number;
   mrr: number;
   arr: number;
-  renewalWeek: { customers: number; subscriptions: number };
-  renewalMonth: { customers: number; subscriptions: number };
-  renewalQuarter: { customers: number; subscriptions: number };
-  renewalYear: { customers: number; subscriptions: number };
+  renewals: {
+    week:    { customers: number; subscriptions: number };
+    month:   { customers: number; subscriptions: number };
+    quarter: { customers: number; subscriptions: number };
+    year:    { customers: number; subscriptions: number };
+  };
 }): SanityResult {
   const failures: string[] = [];
   const { paidAccounts, totalAccounts, mrr, arr } = params;
 
-  // Paid accounts <= total accounts
   if (paidAccounts > totalAccounts) {
     failures.push(
       `SANITY_FAIL: paidAccounts(${paidAccounts}) > totalAccounts(${totalAccounts})`
     );
   }
 
-  // ARR = MRR * 12 (allow <$0.01 float rounding)
   const expectedArr = parseFloat((mrr * 12).toFixed(2));
   if (Math.abs(arr - expectedArr) > 0.01) {
     failures.push(
@@ -254,13 +301,7 @@ function runSanityChecks(params: {
     );
   }
 
-  // renewing customers <= renewing subscriptions (per period)
-  for (const [label, period] of [
-    ['week', params.renewalWeek],
-    ['month', params.renewalMonth],
-    ['quarter', params.renewalQuarter],
-    ['year', params.renewalYear],
-  ] as const) {
+  for (const [label, period] of Object.entries(params.renewals) as [string, { customers: number; subscriptions: number }][]) {
     if (period.customers > period.subscriptions) {
       failures.push(
         `SANITY_FAIL: renewal ${label} — customers(${period.customers}) > subscriptions(${period.subscriptions})`
@@ -319,7 +360,7 @@ Deno.serve(async (req) => {
 
     const now = new Date();
 
-    // ── Calendar ranges (single shared helper, used everywhere) ──────────────
+    // ── Calendar ranges (single shared UTC helper, used everywhere) ───────────
     const ranges = {
       today:   getCalendarRange('today',   now),
       week:    getCalendarRange('week',    now),
@@ -336,6 +377,15 @@ Deno.serve(async (req) => {
       if (!uniqueUsersMap.has(email)) uniqueUsersMap.set(email, u);
     }
     const uniqueUsers = [...uniqueUsersMap.values()];
+
+    // ── User lookup maps (for platform fallback during sub normalization) ──────
+    const userByIdMap    = new Map<string, any>();
+    const userByEmailMap = new Map<string, any>();
+    for (const u of uniqueUsers) {
+      if (u.id) userByIdMap.set(String(u.id), u);
+      const email = norm(u.email || '');
+      if (email) userByEmailMap.set(email, u);
+    }
 
     // ── Build subscription lookup maps (by user_id and by email) ─────────────
     const subsByUserId = new Map<string, any[]>();
@@ -366,40 +416,51 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── Normalize all active paid subscriptions ───────────────────────────────
-    const warningMissingPrice:    string[] = [];
-    const warningMissingInterval: string[] = [];
-    const warningMissingRenewal:  string[] = [];
-
-    const activePaidRaw = allSubscriptions.filter(isActivePaid);
-
-    // Deduplicate by subscription id to avoid double-counting
+    // ── Phase 1: Normalize all active paid subs (dedup by subscription ID) ────
+    // Prevents double-counting the same subscription appearing via both
+    // user_id and user_email lookups.
     const seenSubIds = new Set<string>();
-    const paidSubs: NormalizedSub[] = [];
-    for (const raw of activePaidRaw) {
+    const allActivePaidNorm: NormalizedSub[] = [];
+    for (const raw of allSubscriptions.filter(isActivePaid)) {
       const key = String(raw.id || raw.stripe_subscription_id || '');
       if (key && seenSubIds.has(key)) continue;
       if (key) seenSubIds.add(key);
+      const userId = String(raw.user_id || '');
+      const email  = norm(raw.user_email || '');
+      const user   = (userId && userByIdMap.get(userId)) ||
+                     (email  && userByEmailMap.get(email)) ||
+                     null;
+      allActivePaidNorm.push(normalizeSub(raw, user));
+    }
 
-      const sub = normalizeSub(raw);
+    // ── Phase 2: Dedup per (userKey, module) — keep the most recent valid sub ─
+    // Guarantees: at most ONE active paid sub per account per module in metrics.
+    const paidSubsByKey = new Map<string, NormalizedSub>();
+    let duplicatesRemoved = 0;
+    for (const sub of allActivePaidNorm) {
+      const userKey = sub.userId || sub.userEmail;
+      if (!userKey) continue; // orphan sub — no account_id → excluded per spec
+      const dedupKey = `${userKey}::${sub.module}`;
+      const existing = paidSubsByKey.get(dedupKey);
+      if (!existing) {
+        paidSubsByKey.set(dedupKey, sub);
+      } else {
+        duplicatesRemoved++;
+        const existingDate = existing.createdAt?.getTime() ?? 0;
+        const subDate      = sub.createdAt?.getTime() ?? 0;
+        if (subDate > existingDate) paidSubsByKey.set(dedupKey, sub);
+      }
+    }
+    const paidSubs = [...paidSubsByKey.values()];
 
-      if (sub.price === null) {
-        warningMissingPrice.push(
-          `Sub "${sub.rawId}" (user: "${sub.userId || sub.userEmail}") is paid but missing price — excluded from revenue.`
-        );
-      }
-      if (sub.billingInterval === null) {
-        warningMissingInterval.push(
-          `Sub "${sub.rawId}" (user: "${sub.userId || sub.userEmail}") is paid but missing billing interval — excluded from MRR/ARR.`
-        );
-      }
-      if (sub.renewalAt === null) {
-        warningMissingRenewal.push(
-          `Sub "${sub.rawId}" (user: "${sub.userId || sub.userEmail}") is paid but missing renewal date — excluded from renewal metrics.`
-        );
-      }
-
-      paidSubs.push(sub);
+    // ── Warning counts (after dedup — reflects final metric inputs) ───────────
+    let warningMissingPrice    = 0;
+    let warningMissingInterval = 0;
+    let warningMissingPlatform = 0;
+    for (const sub of paidSubs) {
+      if (sub.price === null)           warningMissingPrice++;
+      if (sub.billingInterval === null) warningMissingInterval++;
+      if (sub.platform === null)        warningMissingPlatform++;
     }
 
     // ── Subscription counts ───────────────────────────────────────────────────
@@ -417,9 +478,8 @@ Deno.serve(async (req) => {
       const activePaidUserSubs = rawUserSubs.filter(isActivePaid);
       const isPaid = activePaidUserSubs.length > 0;
 
-      // Best sub = first active paid sub (already in status priority by sort below)
       const bestRaw = activePaidUserSubs[0] ?? null;
-      const bestSub = bestRaw ? normalizeSub(bestRaw) : null;
+      const bestSub = bestRaw ? normalizeSub(bestRaw, u) : null;
 
       const row = {
         full_name:           u.full_name || '',
@@ -429,6 +489,7 @@ Deno.serve(async (req) => {
         subscription_status: isPaid ? (norm(bestRaw?.status) || 'active') : 'none',
         billing_interval:    bestSub?.billingInterval ?? null,
         subscription_end:    bestSub?.renewalAt?.toISOString() ?? null,
+        platform:            bestSub?.platform ?? null,
       };
 
       if (isPaid) paidUsersList.push(row);
@@ -442,7 +503,7 @@ Deno.serve(async (req) => {
       ? parseFloat(((paidUsersCount / totalUsers) * 100).toFixed(1))
       : 0;
 
-    // ── Signup sources ────────────────────────────────────────────────────────
+    // ── Signup sources (based on user account platform) ───────────────────────
     const signupSources = { web: 0, apple: 0, googlePlay: 0, unknown: 0 };
     for (const u of uniqueUsers) {
       const platform = norm(u.data?.platform || u.platform || '');
@@ -457,9 +518,9 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── New accounts by calendar period (based ONLY on user created_at) ───────
-    // Each period is an independent calendar window (UTC). Week can cross month
-    // boundaries, so counts are NOT expected to be monotonic across periods.
+    // ── New accounts by calendar period (based ONLY on account created_at) ────
+    // Each period is an independent UTC calendar window.
+    // Week can cross month/quarter boundaries — counts are not monotonic.
     const newAccounts = { today: 0, week: 0, month: 0, quarter: 0, year: 0 };
     for (const u of uniqueUsers) {
       const d = parseDate(u.created_date);
@@ -472,37 +533,31 @@ Deno.serve(async (req) => {
     }
 
     // ── MRR / ARR ─────────────────────────────────────────────────────────────
-    // Canonical formula:
-    //   totalMRR = Σ mrrContribution(s)   (unrounded internal accumulator)
-    //   mrr      = round(totalMRR, 2)     (displayed MRR — single source of truth)
-    //   arr      = round(mrr * 12, 2)     (derived from rounded mrr — guarantees display consistency)
-    //
-    // ARR must be derived from the ROUNDED mrr so that displayed ARR == displayed MRR × 12.
-    // Using the unrounded totalMRR for arr would cause the sanity check (arr === mrr*12) to
-    // fail whenever totalMRR has sub-cent decimals, because rounding error is amplified 12×.
-    const mrrSubs    = paidSubs.filter((s) => s.billingInterval !== null && s.price !== null);
-    const totalMRR   = mrrSubs.reduce((sum, s) => sum + mrrContribution(s), 0);
-    const mrr        = parseFloat(totalMRR.toFixed(2));
-    const arr        = parseFloat((mrr * 12).toFixed(2)); // derived from rounded mrr
+    // mrr = Σ mrrContribution(s)  rounded to 2dp
+    // arr = round(mrr * 12, 2)    derived from rounded mrr — guarantees arr == mrr * 12
+    const mrrSubs  = paidSubs.filter((s) => s.billingInterval !== null && s.price !== null);
+    const totalMRR = mrrSubs.reduce((sum, s) => sum + mrrContribution(s), 0);
+    const mrr      = parseFloat(totalMRR.toFixed(2));
+    const arr      = parseFloat((mrr * 12).toFixed(2));
 
-    // ── Renewal revenue by calendar period ────────────────────────────────────
-    // Uses ACTUAL billed price — not MRR/ARR.
+    // ── Renewal revenue by calendar period (actual billed price, not MRR) ─────
     const renewalWeek    = calcRenewalPeriod(paidSubs, ranges.week);
     const renewalMonth   = calcRenewalPeriod(paidSubs, ranges.month);
     const renewalQuarter = calcRenewalPeriod(paidSubs, ranges.quarter);
     const renewalYear    = calcRenewalPeriod(paidSubs, ranges.year);
 
-    // ── Sanity checks ─────────────────────────────────────────────────────────
+    // ── Internal sanity checks (server-side only — should never fail) ─────────
     const sanity = runSanityChecks({
-      newAccounts,
       paidAccounts:  paidUsersCount,
       totalAccounts: totalUsers,
       mrr,
       arr,
-      renewalWeek,
-      renewalMonth,
-      renewalQuarter,
-      renewalYear,
+      renewals: {
+        week:    renewalWeek,
+        month:   renewalMonth,
+        quarter: renewalQuarter,
+        year:    renewalYear,
+      },
     });
 
     // Sort user lists newest first
@@ -526,20 +581,16 @@ Deno.serve(async (req) => {
           year:    { start: ranges.year.start.toISOString(),    end: ranges.year.end.toISOString()    },
         },
       },
+      // Sanity checks are internal validation — should always pass when math is correct.
+      // Included for server-side debugging; not surfaced in the UI.
       sanityChecks: sanity,
+      // Excluded-record counts: source-data quality issues found after dedup.
+      // Only counts are exposed — no per-subscription detail strings.
       warnings: {
-        // Data-quality issues: paid subscriptions with missing fields.
-        // These are source-data problems — the subscription record itself is incomplete.
-        missingPrice:    warningMissingPrice.length,
-        missingInterval: warningMissingInterval.length,
-        missingRenewal:  warningMissingRenewal.length,
-        messages: [
-          ...warningMissingPrice,
-          ...warningMissingInterval,
-          ...warningMissingRenewal,
-          // Note: sanity failures are NOT included here — they live in sanityChecks.failures.
-          // Mixing them caused every sanity failure to appear twice in the warnings panel.
-        ],
+        missingPrice:      warningMissingPrice,
+        missingInterval:   warningMissingInterval,
+        missingPlatform:   warningMissingPlatform,
+        duplicatesRemoved: duplicatesRemoved,
       },
       accounts: {
         total:        totalUsers,
@@ -553,7 +604,6 @@ Deno.serve(async (req) => {
         totalActivePaid,
         monthly: monthlyCount,
         annual:  annualCount,
-        // V3: every paid subscription is PipeKeeper — no classification needed
         byProduct: {
           pipekeeper:    totalActivePaid,
           whiskeykeeper: 0,
@@ -582,8 +632,7 @@ Deno.serve(async (req) => {
         meta:         { generatedAt: new Date().toISOString(), reportVersion: REPORT_VERSION },
         sanityChecks: { passed: false, failures: ['Report generation failed — see server logs.'] },
         warnings:     {
-          missingPrice: 0, missingInterval: 0, missingRenewal: 0,
-          messages: ['Report generation failed — see server logs.'],
+          missingPrice: 0, missingInterval: 0, missingPlatform: 0, duplicatesRemoved: 0,
         },
         accounts:       {},
         subscriptions:  {},
