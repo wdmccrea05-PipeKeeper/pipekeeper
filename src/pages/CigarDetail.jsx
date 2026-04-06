@@ -457,6 +457,17 @@ function CigarDetailInner() {
     staleTime: 10000,
   });
 
+  const { data: allHumidors = [] } = useQuery({
+    queryKey: ['all-humidors', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      const result = await base44.entities.HumidorLocation.filter({ created_by: user.email }, 'name').catch(() => []);
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 60000,
+  });
+
   const valuation = useMemo(() => (cigar ? calculateCigarValue(cigar) : null), [cigar]);
 
   const displayValue = useMemo(() => {
@@ -787,7 +798,31 @@ function CigarDetailInner() {
               value={cigar.storage_notes}
               onSave={(v) => saveField('storage_notes', v)}
             />
-            <InfoRow label="Humidor" value={humidor?.name} />
+            <div className="flex gap-3 py-2 items-center" style={{ borderBottom: '1px solid rgba(140,107,63,0.1)' }}>
+              <span className="text-xs uppercase tracking-wider w-36 shrink-0" style={{ color: 'rgba(224,216,200,0.5)' }}>Humidor</span>
+              <select
+                value={cigar.humidor_id || ''}
+                onChange={async (e) => {
+                  const val = e.target.value || null;
+                  await base44.entities.Cigar.update(cigar.id, { humidor_id: val });
+                  queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
+                  queryClient.invalidateQueries({ queryKey: ['humidor-for-cigar', cigar?.humidor_id] });
+                  toast.success('Humidor updated');
+                }}
+                className="flex-1 rounded-lg px-2 py-1.5 text-sm"
+                style={{
+                  background: 'rgba(20,15,12,0.8)',
+                  border: '1px solid rgba(140,107,63,0.35)',
+                  color: '#F5F1E7',
+                  outline: 'none',
+                }}
+              >
+                <option value="">Unassigned</option>
+                {allHumidors.map(h => (
+                  <option key={h.id} value={h.id}>{h.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
         )}
 
