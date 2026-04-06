@@ -143,8 +143,149 @@ export function generateCollectionPairingSuggestions(activeModuleIds = []) {
 }
 
 /**
- * Get pairing recommendations for item
+ * Validate a requested pairing between two or more modules.
+ *
+ * Returns { valid: true } when all module pairs are compatible.
+ * Returns { valid: false, reason: string } if any pair is invalid.
+ *
+ * Use this before generating pairing recommendations to prevent
+ * nonsensical combinations (e.g. pipe + cigar, whiskey + wine).
+ *
+ * @param {string[]} moduleIds - modules the user wants to pair
+ * @returns {{ valid: boolean, reason?: string }}
  */
+export function validatePairingModules(moduleIds = []) {
+  if (!Array.isArray(moduleIds) || moduleIds.length < 2) {
+    return { valid: false, reason: 'At least two modules required for pairing.' };
+  }
+
+  for (let i = 0; i < moduleIds.length; i++) {
+    for (let j = i + 1; j < moduleIds.length; j++) {
+      const a = moduleIds[i];
+      const b = moduleIds[j];
+      if (isSimultaneouslyIncompatible(a, b)) {
+        return {
+          valid: false,
+          reason: `${a} and ${b} cannot be paired simultaneously — they are session alternatives, not complements.`,
+        };
+      }
+      const compatA = PAIRING_MATRIX[a]?.compatible || [];
+      if (!compatA.includes(b)) {
+        return {
+          valid: false,
+          reason: `${a} and ${b} have no defined pairing compatibility.`,
+        };
+      }
+    }
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Synchronous pairing recommendations using pre-fetched collection data.
+ *
+ * Unlike getPairingRecommendations this function does NOT make any API calls.
+ * It works entirely from the context already available in the Curator workspace,
+ * which prevents UI hangs and timeouts.
+ *
+ * Results are deterministic (sorted by rating desc, then name asc) and capped
+ * at `limit` items per compatible module to prevent oversized payloads.
+ *
+ * @param {{
+ *   pipes?: Array,
+ *   blends?: Array,
+ *   bottles?: Array,
+ *   cigars?: Array,
+ * }} collectionContext - pre-fetched collection data
+ * @param {string[]} activeModuleIds  - e.g. ['pipekeeper', 'whiskeykeeper']
+ * @param {number}   [limit=5]        - max items per pairing partner
+ * @returns {{
+ *   valid: boolean,
+ *   reason?: string,
+ *   pairings: Array<{
+ *     module: string,
+ *     moduleName: string,
+ *     items: Array<{ id: string, name: string, rating: number|null }>
+ *   }>
+ * }}
+ */
+export function getPairingRecommendationsFromContext(
+  collectionContext = {},
+  activeModuleIds = [],
+  limit = 5
+) {
+  const validation = validatePairingModules(activeModuleIds);
+  if (!validation.valid) {
+    return { valid: false, reason: validation.reason, pairings: [] };
+  }
+
+  const paths = getValidDirectPairingPaths(activeModuleIds);
+  if (paths.length === 0) {
+    return {
+      valid: false,
+      reason: 'No valid pairing paths found for the selected modules.',
+      pairings: [],
+    };
+  }
+
+  // Module → collection items (pre-fetched)
+  const moduleItems = {
+    pipekeeper:    (collectionContext.pipes   || []).filter(i => i.ai_excluded !== true),
+    tobacco:       (collectionContext.blends  || []).filter(i => i.ai_excluded !== true),
+    whiskeykeeper: (collectionContext.bottles || []).filter(i => i.ai_excluded !== true),
+    cigarkeeper:   (collectionContext.cigars  || []).filter(i => i.ai_excluded !== true),
+  };
+
+  const moduleNames = {
+    pipekeeper:    'PipeKeeper',
+    tobacco:       'Tobacco',
+    whiskeykeeper: 'WhiskeyKeeper',
+    cigarkeeper:   'CigarKeeper',
+  };
+
+  function topItems(items, n) {
+    return [...items]
+      .sort((a, b) => {
+        const ratingDiff = (b.rating || 0) - (a.rating || 0);
+        if (ratingDiff !== 0) return ratingDiff;
+        return (a.name || '').localeCompare(b.name || '');
+      })
+      .slice(0, n)
+      .map(i => ({ id: i.id, name: i.name, rating: i.rating || null }));
+  }
+
+  const seen = new Set();
+  const pairings = [];
+
+  for (const { a, b } of paths) {
+    const key = pairKey(a, b);
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const itemsA = moduleItems[a] || [];
+    const itemsB = moduleItems[b] || [];
+
+    if (itemsA.length > 0) {
+      pairings.push({
+        module: a,
+        moduleName: moduleNames[a] || a,
+        items: topItems(itemsA, limit),
+      });
+    }
+    if (itemsB.length > 0) {
+      pairings.push({
+        module: b,
+        moduleName: moduleNames[b] || b,
+        items: topItems(itemsB, limit),
+      });
+    }
+  }
+
+  return { valid: true, pairings };
+}
+
+/**
 export async function getPairingRecommendations(userEmail, itemId, moduleId, limit = 5) {
   try {
     const module = MODULE_REGISTRY[moduleId];

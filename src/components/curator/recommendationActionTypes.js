@@ -20,13 +20,22 @@ export const RECOMMENDATION_CLASS = {
    * Advisory insight — surfaces awareness without changing data directly.
    * Examples: rotation opportunity, underused items, balance awareness.
    * Buttons: Acknowledge | View Items | Ask Curator
+   * IMPORTANT: Apply Fix must NEVER appear on advisory cards.
    */
   ADVISORY: 'advisory',
+
+  /**
+   * Requires explicit user confirmation before proceeding.
+   * Examples: batch reclassification, data migration, merge operations.
+   * Buttons: Review Details | Approve Changes | Ask Curator
+   */
+  REVIEW_REQUIRED: 'review_required',
 
   /**
    * Multi-path decision that requires user judgment.
    * Examples: pipe specialization, nuanced reclassification, batch suggestions.
    * Buttons: Acknowledge | Ask for More Info | Treat Individually
+   * Optional: Apply All (only shown at high confidence)
    */
   MULTI_PATH: 'multi_path',
 };
@@ -35,27 +44,30 @@ export const RECOMMENDATION_CLASS = {
 
 export function getRecommendationClassLabel(cls) {
   switch (cls) {
-    case RECOMMENDATION_CLASS.AUTO_FIX:   return 'Auto Fix';
-    case RECOMMENDATION_CLASS.ADVISORY:   return 'Advisory';
-    case RECOMMENDATION_CLASS.MULTI_PATH: return 'Needs Your Input';
-    default:                              return '';
+    case RECOMMENDATION_CLASS.AUTO_FIX:        return 'Auto Fix';
+    case RECOMMENDATION_CLASS.ADVISORY:        return 'Advisory';
+    case RECOMMENDATION_CLASS.REVIEW_REQUIRED: return 'Review Required';
+    case RECOMMENDATION_CLASS.MULTI_PATH:      return 'Needs Your Input';
+    default:                                   return '';
   }
 }
 
 export function getRecommendationClassColor(cls) {
   switch (cls) {
-    case RECOMMENDATION_CLASS.AUTO_FIX:   return 'rgba(74,124,92,0.85)';
-    case RECOMMENDATION_CLASS.ADVISORY:   return 'rgba(74,124,156,0.85)';
-    case RECOMMENDATION_CLASS.MULTI_PATH: return 'rgba(139,94,58,0.85)';
-    default:                              return 'rgba(180,140,75,0.7)';
+    case RECOMMENDATION_CLASS.AUTO_FIX:        return 'rgba(74,124,92,0.85)';
+    case RECOMMENDATION_CLASS.ADVISORY:        return 'rgba(74,124,156,0.85)';
+    case RECOMMENDATION_CLASS.REVIEW_REQUIRED: return 'rgba(180,100,50,0.85)';
+    case RECOMMENDATION_CLASS.MULTI_PATH:      return 'rgba(139,94,58,0.85)';
+    default:                                   return 'rgba(180,140,75,0.7)';
   }
 }
 
 export function getRecommendationClassBg(cls) {
   switch (cls) {
-    case RECOMMENDATION_CLASS.AUTO_FIX:   return 'rgba(74,124,92,0.12)';
-    case RECOMMENDATION_CLASS.ADVISORY:   return 'rgba(74,124,156,0.12)';
-    case RECOMMENDATION_CLASS.MULTI_PATH: return 'rgba(139,94,58,0.12)';
-    default:                              return 'rgba(180,140,75,0.07)';
+    case RECOMMENDATION_CLASS.AUTO_FIX:        return 'rgba(74,124,92,0.12)';
+    case RECOMMENDATION_CLASS.ADVISORY:        return 'rgba(74,124,156,0.12)';
+    case RECOMMENDATION_CLASS.REVIEW_REQUIRED: return 'rgba(180,100,50,0.12)';
+    case RECOMMENDATION_CLASS.MULTI_PATH:      return 'rgba(139,94,58,0.12)';
+    default:                                   return 'rgba(180,140,75,0.07)';
   }
 }

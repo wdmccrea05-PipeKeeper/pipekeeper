@@ -3,12 +3,16 @@
  *
  * Single recommendation item with full workflow controls:
  * Accept, Dismiss, Exclude This Item, Show Why, Ask Curator to Clarify
+ *
+ * Button labels and behavior are driven by item.recommendationClass so that
+ * advisory items never show an "Apply Changes" button.
  */
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, HelpCircle, XCircle, Ban, ChevronDown, ArrowRight } from "lucide-react";
 import { recordRecommendationAction } from "./curatorRecommendationHistory";
+import { RECOMMENDATION_CLASS } from "./recommendationActionTypes";
 
 const CONFIDENCE_COLORS = {
   high: { bg: "rgba(46,125,92,0.15)", text: "rgba(80,180,130,1)", label: "High" },
@@ -76,6 +80,16 @@ export default function CuratorRecommendationRow({
   const confidenceStyle = CONFIDENCE_COLORS[item.confidence] || CONFIDENCE_COLORS.medium;
   const hasProposedChange =
     item.proposedChange?.payload && Object.keys(item.proposedChange.payload).length > 0;
+
+  // Derive accept button label from recommendation class
+  const recClass = item.recommendationClass || item.actionType || null;
+  function getAcceptLabel() {
+    if (recClass === RECOMMENDATION_CLASS.ADVISORY) return "Acknowledge";
+    if (recClass === RECOMMENDATION_CLASS.MULTI_PATH) return "Acknowledge";
+    if (recClass === RECOMMENDATION_CLASS.REVIEW_REQUIRED) return "Approve Changes";
+    if (hasProposedChange) return "Accept & Apply Changes";
+    return "Accept";
+  }
 
   const handleDismiss = () => {
     recordRecommendationAction(item.id, 'dismissed');
@@ -210,7 +224,7 @@ export default function CuratorRecommendationRow({
             }}
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            {hasProposedChange ? "Accept & Apply Changes" : "Accept"}
+            {getAcceptLabel()}
           </Button>
         )}
 
@@ -255,14 +269,29 @@ export default function CuratorRecommendationRow({
           </Button>
         </div>
 
-        {onAccept && hasProposedChange && (
+        {onAccept && (
           <p className="w-full text-xs mt-1" style={{ color: "rgba(224,216,200,0.38)" }}>
-            <span style={{ color: "rgba(74,200,130,0.7)", fontWeight: 600 }}>Accept &amp; Apply Changes</span> will immediately save the changes listed above to this record in your collection.
-          </p>
-        )}
-        {onAccept && !hasProposedChange && (
-          <p className="w-full text-xs mt-1" style={{ color: "rgba(224,216,200,0.38)" }}>
-            <span style={{ color: "rgba(212,165,116,0.7)", fontWeight: 600 }}>Accept</span> marks this recommendation as acknowledged — no data in your collection will be automatically changed.
+            {recClass === RECOMMENDATION_CLASS.ADVISORY ? (
+              <>
+                <span style={{ color: "rgba(212,165,116,0.7)", fontWeight: 600 }}>Acknowledge</span>
+                {" "}marks this insight as reviewed — no data in your collection will change automatically.
+              </>
+            ) : recClass === RECOMMENDATION_CLASS.MULTI_PATH ? (
+              <>
+                <span style={{ color: "rgba(212,165,116,0.7)", fontWeight: 600 }}>Acknowledge</span>
+                {" "}defers this recommendation without taking action.
+              </>
+            ) : hasProposedChange ? (
+              <>
+                <span style={{ color: "rgba(74,200,130,0.7)", fontWeight: 600 }}>Accept &amp; Apply Changes</span>
+                {" "}will immediately save the changes listed above to this record in your collection.
+              </>
+            ) : (
+              <>
+                <span style={{ color: "rgba(212,165,116,0.7)", fontWeight: 600 }}>Accept</span>
+                {" "}marks this recommendation as acknowledged — no data in your collection will be automatically changed.
+              </>
+            )}
           </p>
         )}
       </div>
