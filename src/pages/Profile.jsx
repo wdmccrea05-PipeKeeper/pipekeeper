@@ -17,6 +17,7 @@ import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, Layers } from 
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 import WhiskeyPreferencesSection from "@/components/profile/WhiskeyPreferencesSection";
+import CigarPreferencesSection from "@/components/profile/CigarPreferencesSection";
 import ModuleVisibilitySettings from "@/components/profile/ModuleVisibilitySettings";
 
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -92,6 +93,7 @@ function consolidateProfiles(rows = []) {
     wine_notes: pick(acc.wine_notes, row.wine_notes),
     cigar_notes: pick(acc.cigar_notes, row.cigar_notes),
     whiskey_preferences: acc.whiskey_preferences || row.whiskey_preferences || null,
+    cigar_preferences: acc.cigar_preferences || row.cigar_preferences || null,
     pipekeeper_enabled: pickBool(acc.pipekeeper_enabled, row.pipekeeper_enabled),
     whiskeykeeper_enabled: pickBool(acc.whiskeykeeper_enabled, row.whiskeykeeper_enabled),
     winekeeper_enabled: pickBool(acc.winekeeper_enabled, row.winekeeper_enabled),
@@ -225,6 +227,16 @@ export default function ProfilePage() {
       drinking_style: [],
       cocktails: [],
     },
+    cigar_preferences: {
+      strengths: [],
+      bodies: [],
+      wrappers: [],
+      origins: [],
+      vitolas: [],
+      flavors: [],
+      occasions: [],
+      pairings: [],
+    },
     // Module visibility: null = not yet set (system derives from release state)
     pipekeeper_enabled: null,
     whiskeykeeper_enabled: false,
@@ -281,6 +293,7 @@ export default function ProfilePage() {
       wine_notes: source.wine_notes || "",
       cigar_notes: source.cigar_notes || "",
       whiskey_preferences: source.whiskey_preferences || { types: [], flavors: [], drinking_style: [], cocktails: [] },
+      cigar_preferences: source.cigar_preferences || { strengths: [], bodies: [], wrappers: [], origins: [], vitolas: [], flavors: [], occasions: [], pairings: [] },
       // Use saved value exactly; null/undefined = not set (system will derive from release state)
       pipekeeper_enabled: source.pipekeeper_enabled,
       whiskeykeeper_enabled: source.whiskeykeeper_enabled === true,
@@ -841,20 +854,35 @@ export default function ProfilePage() {
               />
             </div>
 
-            {/* Whiskey Notes for AI */}
-            <div className="pt-2 space-y-2">
+            {/* Cigar Preferences */}
+            <div className="pt-2 space-y-3">
               <div className="flex items-center gap-2">
-                <WhiskeyKeeperIcon size={16} color="rgb(245,158,11)" />
-                <Label className="font-semibold text-base" style={{ color: 'rgba(224,216,200,0.85)' }}>Whiskey Notes for Recommendations</Label>
+                <span style={{ fontSize: 16 }}>🚬</span>
+                <Label className="font-semibold text-base" style={{ color: 'rgba(224,216,200,0.85)' }}>Cigar Preferences</Label>
               </div>
               <p className="text-xs text-stone-500">
-                Add any whiskey preferences, dislikes, pairing notes, collector priorities, or guidance for Curator. For example: "Prefer sweeter bourbons over peated scotch", "Saving rare bottles for special occasions", or "Prefer pairings with Virginia/Perique blends".
+                Used by Curator to personalize cigar recommendations, humidor guidance, and cross-collection pairing suggestions.
+              </p>
+              <CigarPreferencesSection
+                preferences={formData.cigar_preferences}
+                onChange={(updated) => setFormData((p) => ({ ...p, cigar_preferences: updated }))}
+              />
+            </div>
+
+            {/* Cigar Notes for AI */}
+            <div className="pt-2 space-y-2">
+              <div className="flex items-center gap-2">
+                <span style={{ fontSize: 16 }}>🚬</span>
+                <Label className="font-semibold text-base" style={{ color: 'rgba(224,216,200,0.85)' }}>Cigar Notes for Recommendations</Label>
+              </div>
+              <p className="text-xs text-stone-500">
+                Describe your cigar likes/dislikes, favorite wrappers or origins, strength preferences, pairings, or any guidance for Curator.
               </p>
               <Textarea
-                value={formData.whiskey_notes}
-                onChange={(e) => setFormData((p) => ({ ...p, whiskey_notes: e.target.value }))}
+                value={formData.cigar_notes}
+                onChange={(e) => setFormData((p) => ({ ...p, cigar_notes: e.target.value }))}
                 rows={4}
-                placeholder="e.g. Prefer sweeter bourbons, avoid heavily peated Scotch, saving Pappy for special occasions..."
+                placeholder="e.g. Love full-bodied Nicaraguans, prefer maduro wrappers, enjoy pairing with coffee or Bourbon..."
               />
             </div>
 

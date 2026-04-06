@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import PipeIcon from "@/components/icons/PipeIcon";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
+import { Flame } from "lucide-react";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
 
 function NavItem({ item, isActive }) {
@@ -76,6 +77,15 @@ export default function ModuleNav({ currentPageName, user }) {
         label: "WhiskeyKeeper",
         icon: WhiskeyKeeperIcon,
         path: "/WhiskeyKeeper",
+      });
+    }
+
+    if (activeModules.includes("cigarkeeper")) {
+      items.push({
+        page: "CigarKeeper",
+        label: "CigarKeeper",
+        icon: Flame,
+        path: "/CigarKeeper",
       });
     }
 

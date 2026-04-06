@@ -170,7 +170,7 @@
     },
     "whiskey_notes": {
       "type": "string",
-      "description": "Free-form WhiskeyKeeper notes for AI recommendations. E.g. preferred styles, dislikes, pairing priorities, collector goals."
+      "description": "Free-form WhiskeyKeeper notes for AI recommendations."
     },
     "wine_notes": {
       "type": "string",
@@ -187,7 +187,7 @@
         "imperial"
       ],
       "default": "metric",
-      "description": "User's preferred measurement system for displaying dimensions and weights"
+      "description": "User's preferred measurement system"
     },
     "whiskey_preferences": {
       "type": "object",
@@ -198,28 +198,90 @@
           "items": {
             "type": "string"
           },
-          "description": "Preferred whiskey types e.g. Scotch, Bourbon, Rye"
+          "description": "Preferred whiskey types"
         },
         "flavors": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "Preferred flavor profiles e.g. Peated, Smoky, Sherried"
+          "description": "Preferred flavor profiles"
         },
         "drinking_style": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "Preferred drinking styles e.g. Neat, On the rocks"
+          "description": "Preferred drinking styles"
         },
         "cocktails": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "Preferred cocktails e.g. Old Fashioned, Manhattan"
+          "description": "Preferred cocktails"
+        }
+      }
+    },
+    "cigar_preferences": {
+      "type": "object",
+      "description": "User's cigar preferences for personalized recommendations",
+      "properties": {
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Preferred strengths (Mild, Medium, Full, etc.)"
+        },
+        "bodies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Preferred body profiles"
+        },
+        "wrappers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Preferred wrapper types (Connecticut, Maduro, etc.)"
+        },
+        "origins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Preferred countries of origin"
+        },
+        "vitolas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Preferred vitola/format (Robusto, Toro, etc.)"
+        },
+        "flavors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Preferred flavor notes"
+        },
+        "occasions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Preferred smoking occasions/styles"
+        },
+        "pairings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Preferred pairings (Coffee, Whiskey, etc.)"
         }
       }
     },
@@ -246,7 +308,7 @@
     "module_preferences_set": {
       "type": "boolean",
       "default": false,
-      "description": "Whether user has explicitly set their module preferences (used to detect new vs existing users)"
+      "description": "Whether user has explicitly set their module preferences"
     },
     "wantlist_prompt_on_low_inventory": {
       "type": "boolean",
