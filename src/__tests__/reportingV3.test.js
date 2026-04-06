@@ -26,6 +26,8 @@ import {
   computeMRRARR,
   calcRenewalPeriod,
   runSanityChecks,
+  PLAN_CATALOG,
+  lookupPlanCatalog,
 } from '../lib/reportingV3Utils.js';
 
 // ─── Helpers used across tests ────────────────────────────────────────────────
@@ -173,8 +175,8 @@ describe('normalizeSub', () => {
     expect(sub.renewalAt).toBeNull();
   });
 
-  it('always sets module to pipekeeper', () => {
-    // Even if product_kind were set to something else, V3 ignores it
+  it('always sets module to pipekeeper when no planKey or primary_module', () => {
+    // product_kind is not a recognized field — module falls back to 'pipekeeper'
     const raw = makeSub({ product_kind: 'whiskeykeeper' });
     const sub = normalizeSub(raw);
     expect(sub.module).toBe('pipekeeper');
@@ -207,6 +209,132 @@ describe('normalizeSub', () => {
     const user = { platform: 'ios' };
     const sub = normalizeSub(makeSub({ provider: undefined }), user);
     expect(sub.platform).toBe('ios');
+  });
+});
+
+// ─── PLAN_CATALOG ─────────────────────────────────────────────────────────────
+
+describe('PLAN_CATALOG', () => {
+  it('contains all expected plan keys', () => {
+    const expectedKeys = [
+      'pipekeeper_pro_monthly', 'pipekeeper_pro_annual',
+      'whiskeykeeper_pro_monthly', 'whiskeykeeper_pro_annual',
+      'cigarkeeper_pro_monthly', 'cigarkeeper_pro_annual',
+      'winekeeper_pro_monthly', 'winekeeper_pro_annual',
+      'three_module_bundle_monthly', 'three_module_bundle_annual',
+      'four_module_bundle_monthly', 'four_module_bundle_annual',
+      'founders_bundle_annual',
+    ];
+    for (const key of expectedKeys) {
+      expect(PLAN_CATALOG).toHaveProperty(key);
+    }
+  });
+
+  it('every entry has modules, billingInterval, and price', () => {
+    for (const [key, entry] of Object.entries(PLAN_CATALOG)) {
+      expect(Array.isArray(entry.modules), `${key}: modules must be an array`).toBe(true);
+      expect(entry.modules.length, `${key}: modules must not be empty`).toBeGreaterThan(0);
+      expect(['monthly', 'annual'], `${key}: billingInterval must be monthly or annual`).toContain(entry.billingInterval);
+      expect(typeof entry.price, `${key}: price must be a number`).toBe('number');
+      expect(entry.price, `${key}: price must be > 0`).toBeGreaterThan(0);
+    }
+  });
+
+  it('single-module plans have exactly one module', () => {
+    const singles = ['pipekeeper_pro_monthly', 'whiskeykeeper_pro_annual', 'cigarkeeper_pro_monthly', 'winekeeper_pro_annual'];
+    for (const key of singles) {
+      expect(PLAN_CATALOG[key].modules).toHaveLength(1);
+    }
+  });
+
+  it('bundle plans have multiple modules', () => {
+    expect(PLAN_CATALOG.three_module_bundle_monthly.modules).toHaveLength(3);
+    expect(PLAN_CATALOG.four_module_bundle_annual.modules).toHaveLength(4);
+    expect(PLAN_CATALOG.founders_bundle_annual.modules).toHaveLength(4);
+  });
+});
+
+describe('lookupPlanCatalog', () => {
+  it('returns catalog entry for known plan key', () => {
+    const entry = lookupPlanCatalog('pipekeeper_pro_monthly');
+    expect(entry).not.toBeNull();
+    expect(entry.modules).toEqual(['pipekeeper']);
+    expect(entry.billingInterval).toBe('monthly');
+    expect(entry.price).toBe(2.99);
+  });
+
+  it('is case-insensitive', () => {
+    expect(lookupPlanCatalog('PIPEKEEPER_PRO_MONTHLY')).not.toBeNull();
+    expect(lookupPlanCatalog('Pipekeeper_Pro_Annual')).not.toBeNull();
+  });
+
+  it('returns null for unknown plan key', () => {
+    expect(lookupPlanCatalog('unknown_plan')).toBeNull();
+    expect(lookupPlanCatalog('')).toBeNull();
+    expect(lookupPlanCatalog(null)).toBeNull();
+  });
+});
+
+// ─── normalizeSub: planKey-based resolution ───────────────────────────────────
+
+describe('normalizeSub: planKey-based resolution', () => {
+  it('uses catalog price when amount is zero and planKey is known', () => {
+    const raw = makeSub({ planKey: 'pipekeeper_pro_monthly', amount: 0 });
+    const sub = normalizeSub(raw);
+    expect(sub.price).toBe(2.99);
+    expect(sub.planKey).toBe('pipekeeper_pro_monthly');
+  });
+
+  it('uses catalog price when amount is missing and planKey is known', () => {
+    const raw = makeSub({ planKey: 'pipekeeper_pro_annual', amount: undefined, billing_interval: undefined, billing_period: undefined });
+    const sub = normalizeSub(raw);
+    expect(sub.price).toBe(29.99);
+    expect(sub.billingInterval).toBe('annual');
+  });
+
+  it('prefers raw.amount over catalog price when amount is non-zero', () => {
+    const raw = makeSub({ planKey: 'pipekeeper_pro_monthly', amount: 1.99 });
+    const sub = normalizeSub(raw);
+    expect(sub.price).toBe(1.99); // actual billed amount, not catalog
+  });
+
+  it('derives module from planKey', () => {
+    const raw = makeSub({ planKey: 'whiskeykeeper_pro_monthly', amount: 2.99, billing_interval: 'monthly' });
+    const sub = normalizeSub(raw);
+    expect(sub.module).toBe('whiskeykeeper');
+    expect(sub.modules).toEqual(['whiskeykeeper']);
+  });
+
+  it('derives multiple modules from bundle planKey', () => {
+    const raw = makeSub({ planKey: 'three_module_bundle_monthly', amount: 7.99, billing_interval: 'monthly' });
+    const sub = normalizeSub(raw);
+    expect(sub.modules).toEqual(['pipekeeper', 'whiskeykeeper', 'cigarkeeper']);
+    expect(sub.module).toBe('pipekeeper');
+  });
+
+  it('four-module bundle covers all four modules', () => {
+    const raw = makeSub({ planKey: 'four_module_bundle_annual', amount: 89.99, billing_interval: 'annual' });
+    const sub = normalizeSub(raw);
+    expect(sub.modules).toEqual(['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper']);
+  });
+
+  it('uses catalog billingInterval when billing_interval field is missing', () => {
+    const raw = makeSub({ planKey: 'pipekeeper_pro_annual', amount: 0, billing_interval: undefined, billing_period: undefined });
+    const sub = normalizeSub(raw);
+    expect(sub.billingInterval).toBe('annual');
+  });
+
+  it('stores planKey as null when no plan key is present', () => {
+    const raw = makeSub({ amount: 9.99 });
+    const sub = normalizeSub(raw);
+    expect(sub.planKey).toBeNull();
+  });
+
+  it('always exposes modules as an array', () => {
+    const raw = makeSub({ amount: 9.99 });
+    const sub = normalizeSub(raw);
+    expect(Array.isArray(sub.modules)).toBe(true);
+    expect(sub.modules.length).toBeGreaterThan(0);
   });
 });
 
@@ -505,6 +633,50 @@ describe('calcRenewalPeriod', () => {
     expect(result.customers).toBe(0);
     expect(result.revenue).toBe(0);
   });
+
+  it('excludes subs with null price from renewal counts (rule 6)', () => {
+    // A sub with no amount and no planKey → price=null → must NOT count in renewals
+    const subs = [
+      normalizeSub(makeSub({ id: 'a', user_id: 'u1', amount: 0,  current_period_end: '2025-04-15T00:00:00Z' })),
+      normalizeSub(makeSub({ id: 'b', user_id: 'u2', amount: 10, current_period_end: '2025-04-15T00:00:00Z' })),
+    ];
+    // sub 'a' has price=null (amount=0, no planKey), sub 'b' has price=10
+    expect(subs[0].price).toBeNull();
+    expect(subs[1].price).toBe(10);
+
+    const result = calcRenewalPeriod(subs, range);
+    expect(result.subscriptions).toBe(1);   // only sub 'b'
+    expect(result.customers).toBe(1);
+    expect(result.revenue).toBe(10);
+  });
+
+  it('excludes subs with null billingInterval from renewal counts (rule 6)', () => {
+    const subs = [
+      normalizeSub(makeSub({ id: 'a', user_id: 'u1', amount: 10, billing_interval: undefined, billing_period: undefined, current_period_end: '2025-04-15T00:00:00Z' })),
+      normalizeSub(makeSub({ id: 'b', user_id: 'u2', amount: 10, billing_interval: 'monthly',  current_period_end: '2025-04-15T00:00:00Z' })),
+    ];
+    expect(subs[0].billingInterval).toBeNull();
+
+    const result = calcRenewalPeriod(subs, range);
+    expect(result.subscriptions).toBe(1);   // only sub 'b'
+    expect(result.customers).toBe(1);
+    expect(result.revenue).toBe(10);
+  });
+
+  it('renewal count and revenue always reconcile — no sub can increase count without contributing revenue', () => {
+    // Three subs: one valid, one no price, one no interval
+    const subs = [
+      normalizeSub(makeSub({ id: 'a', user_id: 'u1', amount: 9.99, billing_interval: 'monthly', current_period_end: '2025-04-15T00:00:00Z' })),
+      normalizeSub(makeSub({ id: 'b', user_id: 'u2', amount: 0,    billing_interval: 'monthly', current_period_end: '2025-04-15T00:00:00Z' })),
+      normalizeSub(makeSub({ id: 'c', user_id: 'u3', amount: 9.99, billing_interval: undefined, current_period_end: '2025-04-15T00:00:00Z' })),
+    ];
+    const result = calcRenewalPeriod(subs, range);
+    // Only sub 'a' qualifies
+    expect(result.subscriptions).toBe(1);
+    expect(result.revenue).toBeCloseTo(9.99, 2);
+    // The sum of per-sub revenue for qualifying subs == reported revenue
+    expect(result.revenue / result.subscriptions).toBeCloseTo(9.99, 2);
+  });
 });
 
 // ─── runSanityChecks ─────────────────────────────────────────────────────────
@@ -607,5 +779,21 @@ describe('missing field handling', () => {
     expect(sub.price).toBeNull();
     // mrrContribution is 0 but sub still exists
     expect(mrrContribution(sub)).toBe(0);
+  });
+
+  it('sub with missing price is excluded from renewal counts but not from subscription count', () => {
+    // The sub IS counted in paidSubs (subscription count) but NOT in calcRenewalPeriod
+    const range = {
+      start: new Date('2025-04-01T00:00:00Z'),
+      end:   new Date('2025-04-30T23:59:59.999Z'),
+    };
+    const pricelessSub = normalizeSub(makeSub({ id: 'a', amount: 0, billing_interval: 'monthly', current_period_end: '2025-04-15T00:00:00Z' }));
+
+    expect(pricelessSub.isPaid).toBe(true);   // counts as active paid
+    expect(pricelessSub.price).toBeNull();    // excluded from revenue
+
+    const result = calcRenewalPeriod([pricelessSub], range);
+    expect(result.subscriptions).toBe(0);    // excluded from renewals
+    expect(result.revenue).toBe(0);
   });
 });
