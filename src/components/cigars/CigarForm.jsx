@@ -245,6 +245,23 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
     Array.isArray(cigar?.aliases) ? cigar.aliases.join(', ') : ''
   );
 
+  // Re-sync form if the cigar prop loads asynchronously after mount
+  useEffect(() => {
+    if (!cigar) return;
+    const sanitized = Object.fromEntries(
+      Object.entries(cigar).map(([k, v]) => [k, v === null ? '' : v])
+    );
+    setForm({
+      ...DEFAULT_FORM,
+      ...sanitized,
+      flavor_notes: Array.isArray(cigar.flavor_notes) ? cigar.flavor_notes : [],
+      aliases: Array.isArray(cigar.aliases) ? cigar.aliases : [],
+      photos: Array.isArray(cigar.photos) ? cigar.photos : [],
+      rating: cigar.rating ?? 0,
+    });
+    setAliasInput(Array.isArray(cigar.aliases) ? cigar.aliases.join(', ') : '');
+  }, [cigar?.id]);
+
   // Smart defaults: set cigars_per_package when unit_type changes
   const PACKAGE_DEFAULTS = { single: 1, '5pack': 5, pack: 5, box: 20, bundle: 25, partial_box: 20 };
 
