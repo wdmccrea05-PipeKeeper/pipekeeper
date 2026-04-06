@@ -1,5 +1,23 @@
 import React from "react";
 
+const PAIRING_MODE_LABELS = {
+  direct_pairing: 'Direct Pairing',
+  collection_mix_match: 'Mix-and-Match Suggestion',
+};
+
+const PAIRING_MODE_STYLES = {
+  direct_pairing: {
+    background: 'rgba(46,125,92,0.15)',
+    color: 'rgba(80,180,130,1)',
+    border: '1px solid rgba(46,125,92,0.3)',
+  },
+  collection_mix_match: {
+    background: 'rgba(180,140,75,0.15)',
+    color: 'rgba(212,165,116,1)',
+    border: '1px solid rgba(180,140,75,0.3)',
+  },
+};
+
 function humanizeKey(key) {
   return String(key || "")
     .replace(/_/g, " ")
@@ -126,9 +144,24 @@ export default function CuratorActionResultCard({
 
   const { pipeName, blendName, bottleName } = buildSessionItemLines(item);
 
+  // Pairing mode — resolves from either camelCase or snake_case field
+  const pairingMode = item.pairingMode || item.pairing_mode || null;
+  const pairingModeLabel = pairingMode ? PAIRING_MODE_LABELS[pairingMode] : null;
+  const pairingModeStyle = pairingMode ? PAIRING_MODE_STYLES[pairingMode] : null;
+
   return (
     <div className="rounded-xl border border-amber-500/20 bg-black/20 p-4">
       <div className="min-w-0">
+        {pairingModeLabel && (
+          <div className="mb-2">
+            <span
+              className="inline-block text-xs font-semibold px-2 py-0.5 rounded-full"
+              style={pairingModeStyle}
+            >
+              {pairingModeLabel}
+            </span>
+          </div>
+        )}
         <div className="text-base font-medium text-amber-100">
           {displayTitle}
         </div>
