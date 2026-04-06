@@ -43,7 +43,7 @@ export default function FormSection({ title, summary, defaultOpen = false, child
       >
         <div className="flex-1 min-w-0 flex items-center gap-3">
           <span
-            className="text-xs font-bold uppercase tracking-widest"
+            className="text-xs font-bold uppercase tracking-wide"
             style={{ color: open ? 'rgba(212,165,116,0.95)' : 'rgba(212,165,116,0.65)' }}
           >
             {title}

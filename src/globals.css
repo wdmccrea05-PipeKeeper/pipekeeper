@@ -200,7 +200,7 @@ div {
 
   input::placeholder,
   textarea::placeholder {
-    color: rgba(224, 216, 200, 0.38);
+    color: rgba(224, 216, 200, 0.45);
   }
 }
 
