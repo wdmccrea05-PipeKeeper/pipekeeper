@@ -131,6 +131,9 @@ function normalizeInterval(raw: any): IntervalKind | null {
 }
 
 // ─── Platform normalization ───────────────────────────────────────────────────
+// NOTE: This function is intentionally duplicated from src/lib/reportingV3Utils.js.
+// Deno edge functions cannot import from the src/ tree, so both files maintain
+// the same logic independently. Keep them in sync when editing either.
 
 /**
  * Normalize platform from subscription provider or user record.
@@ -138,6 +141,8 @@ function normalizeInterval(raw: any): IntervalKind | null {
  * Primary: raw.provider ('apple', 'ios', 'google', 'android', 'stripe', 'web', …)
  * Secondary: user.data.platform or user.platform (fallback when no provider set)
  *
+ * Known web indicators: any non-empty, non-mobile, non-'unknown' value.
+ * This mirrors the signup-source logic already used elsewhere in this report.
  * Returns null when platform cannot be determined — do NOT guess.
  */
 function normalizePlatform(raw: any, user: any | null): PlatformKind | null {
@@ -150,6 +155,8 @@ function normalizePlatform(raw: any, user: any | null): PlatformKind | null {
     const userPlatform = norm(user.data?.platform || user.platform || '');
     if (userPlatform === 'apple' || userPlatform === 'ios') return 'ios';
     if (userPlatform === 'android' || userPlatform === 'googleplay' || userPlatform === 'google') return 'google';
+    // Any non-empty, non-mobile, non-'unknown' value is treated as web.
+    // This is consistent with signupSources logic: non-mobile platform → web.
     if (userPlatform && userPlatform !== 'unknown') return 'web';
   }
 

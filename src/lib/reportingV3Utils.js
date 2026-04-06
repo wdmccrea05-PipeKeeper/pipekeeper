@@ -145,6 +145,10 @@ export function isActivePaid(raw) {
 }
 
 // ─── Platform normalization ───────────────────────────────────────────────────
+// NOTE: This function is intentionally mirrored in
+// base44/functions/getUserSubscriptionReportV3/entry.ts.
+// Deno edge functions cannot import from src/, so both files maintain the same
+// logic independently. Keep them in sync when editing either.
 
 /**
  * Normalize platform from subscription provider or user record.
@@ -152,8 +156,9 @@ export function isActivePaid(raw) {
  * Primary source: raw.provider ('apple', 'ios', 'google', 'android', 'stripe', 'web', …)
  * Secondary source: user.data.platform or user.platform (fallback when no provider)
  *
- * Returns null when the platform cannot be determined — the caller must count
- * this under missingPlatform and NOT guess.
+ * Known web indicators: any non-empty, non-mobile, non-'unknown' value.
+ * This mirrors the signup-source logic already used elsewhere in this report.
+ * Returns null when platform cannot be determined — do NOT guess.
  *
  * @param {object}      raw   Raw subscription record
  * @param {object|null} user  Associated user record (optional)
@@ -169,6 +174,8 @@ export function normalizePlatform(raw, user = null) {
     const userPlatform = norm(user.data?.platform || user.platform || '');
     if (userPlatform === 'apple' || userPlatform === 'ios') return 'ios';
     if (userPlatform === 'android' || userPlatform === 'googleplay' || userPlatform === 'google') return 'google';
+    // Any non-empty, non-mobile, non-'unknown' value is treated as web.
+    // Consistent with signupSources logic: non-mobile platform → web.
     if (userPlatform && userPlatform !== 'unknown') return 'web';
   }
 
