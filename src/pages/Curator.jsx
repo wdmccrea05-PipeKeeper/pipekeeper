@@ -126,9 +126,9 @@ export default function Curator() {
     return resolveLaunchContext();
   });
 
-  // Optimize panel is the primary results surface — always shown by default.
-  // Users can dismiss it to access the chat workspace below.
-  const [isOptimizeMode, setIsOptimizeMode] = useState(true);
+  // Optimize panel is shown only when explicitly triggered (e.g. from Hub quick launch)
+  // or when user clicks "View Recommendations" button in the curator header.
+  const [isOptimizeMode, setIsOptimizeMode] = useState(false);
 
   const [curatorScope, setCuratorScope] = useState(
     location?.state?.scope || "all"
