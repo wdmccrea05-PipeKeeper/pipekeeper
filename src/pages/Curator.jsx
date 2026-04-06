@@ -1,10 +1,11 @@
-import React, { useMemo, useState, useCallback, useEffect } from "react";
+import React, { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import CuratorWorkspace from "@/components/curator/CuratorWorkspace";
 import CuratorActionBar from "@/components/curator/CuratorActionBar";
+import CuratorOptimizePanel from "@/components/curator/CuratorOptimizePanel";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useEnabledKeeperModules } from "@/components/hooks/useEnabledKeeperModules";
@@ -109,6 +110,8 @@ export default function Curator() {
   const { isModuleEnabled } = useEnabledKeeperModules();
   const { enabled } = useEnabledModules();
   const location = useLocation();
+  const chatRef = useRef(null);
+
   const [launchContext, setLaunchContext] = useState(() => {
     // Hydrate from React Router location.state.seedPrompt (e.g. from BottleDetail)
     const stateSeed = location?.state?.seedPrompt;
@@ -122,6 +125,20 @@ export default function Curator() {
     }
     return resolveLaunchContext();
   });
+
+  const [isOptimizeMode, setIsOptimizeMode] = useState(() => {
+    // Detect optimize mode from location state or sessionStorage context
+    if (location?.state?.mode === "optimize") return true;
+    try {
+      const stored = sessionStorage.getItem("pk_curator_context");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed?.mode === "optimize";
+      }
+    } catch {}
+    return false;
+  });
+
   const [curatorScope, setCuratorScope] = useState(
     location?.state?.scope || "all"
   );
@@ -257,6 +274,20 @@ export default function Curator() {
     setLaunchContext(actionLaunchContext);
   }, []);
 
+  // Called from CuratorOptimizePanel when user clicks "Ask Curator" or "Review Details"
+  // Pre-fills the chat prompt without auto-submitting — user must press send manually
+  const handleOptimizeAskCurator = useCallback((promptText) => {
+    setLaunchContext({
+      source: "optimize_panel",
+      initialPrompt: promptText,
+      recommendationContext: null,
+    });
+    // Scroll to the chat workspace area
+    if (chatRef.current) {
+      chatRef.current.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+    }
+  }, []);
+
   const subtitle = useMemo(() => {
     const ctx = launchContext?.recommendationContext;
 
@@ -280,6 +311,19 @@ export default function Curator() {
 
   return (
     <div className="space-y-5">
+      {/* Optimize Panel — shown when user arrives via Optimize button */}
+      {isOptimizeMode && (
+        <CuratorOptimizePanel
+          pipes={scopedPipes}
+          blends={scopedBlends}
+          cigars={scopedCigars}
+          bottles={scopedBottles}
+          smokeLogs={scopedSmokingLogs}
+          onClose={() => setIsOptimizeMode(false)}
+          onAskCurator={handleOptimizeAskCurator}
+        />
+      )}
+
       {/* Hero Section */}
       <div
         className="rounded-2xl overflow-hidden"
@@ -370,6 +414,7 @@ export default function Curator() {
       </div>
 
       {/* Main Workspace */}
+      <div ref={chatRef}>
       <Card>
         <CardContent className="p-0 sm:p-2">
           <div key={`curator-workspace-${curatorScope}`}>
@@ -391,6 +436,7 @@ export default function Curator() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
