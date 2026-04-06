@@ -133,7 +133,7 @@ export function generateCollectionPairingSuggestions(activeModuleIds = []) {
     'cigarkeeper|whiskeykeeper': 'Best cigar + whiskey pairings from your current inventory',
     'cigarkeeper|winekeeper': 'Best cigar + wine pairings from your current inventory',
     'pipekeeper|whiskeykeeper': 'Best pipe + whiskey pairings from your current inventory',
-    'tobacco|whiskeykeeper': 'Best pipe tobacco + whiskey pairings from your current inventory',
+    'pipekeeper|tobacco': 'Best pipe + tobacco pairings from your current inventory',
     'cigarkeeper|coffeekeeper': 'Best cigar + coffee pairings from your current inventory',
   };
 

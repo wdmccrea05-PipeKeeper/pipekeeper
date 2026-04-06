@@ -612,7 +612,7 @@ PAIRING RULES:
 - NEVER suggest smoking a pipe and a cigar at the same time
 - NEVER suggest drinking whiskey and wine simultaneously
 - NEVER combine all items into one simultaneous experience
-- Each recommendation must be exactly TWO things: one cigar + one drink
+- Each individual recommendation pairs exactly TWO things: one cigar + one drink (even within a mix-and-match set, each entry is a two-item pairing)
 
 CIGARS (${smokeable.length} available):
 ${smokeable.map(c =>
