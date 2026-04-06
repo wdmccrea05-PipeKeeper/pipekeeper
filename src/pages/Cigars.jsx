@@ -31,14 +31,6 @@ import CollectorGridView from '@/components/ui/CollectorGridView';
 
 const TABS = ['collection', 'humidors', 'wishlist', 'restock'];
 
-const SORT_VALUES = [
-  { value: 'name' },
-  { value: 'brand' },
-  { value: 'created_date' },
-  { value: 'estimated_value' },
-  { value: 'quantity' },
-];
-
 const BODY_OPTIONS = ['mild', 'mild_medium', 'medium', 'medium_full', 'full'];
 const STRENGTH_OPTIONS = ['mild', 'medium', 'full'];
 

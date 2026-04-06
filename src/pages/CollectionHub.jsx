@@ -211,7 +211,7 @@ function ModuleCard({ moduleKey, stats = [], onOpen }) {
           color: meta.accent,
         }}
       >
-        {t('common.open')} {t(meta.labelKey)}
+        {t('common.openModule', { module: t(meta.labelKey) })}
       </button>
     </div>
   );

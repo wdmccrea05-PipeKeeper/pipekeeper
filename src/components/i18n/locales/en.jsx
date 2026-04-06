@@ -43,6 +43,7 @@ export default {
     noValue: "No value",
     view: "View",
     filter: "Filter",
+    openModule: "Open {{module}}",
   },
   
   notifications: {
