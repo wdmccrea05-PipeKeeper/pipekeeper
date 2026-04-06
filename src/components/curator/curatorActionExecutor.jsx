@@ -660,6 +660,418 @@ async function handleGenericAction({ actionType, context, requestId }) {
   return enrichCanonicalResult(raw, context, fallbackType);
 }
 
+// ─── Optimize Collection — staged local + focused LLM ─────────────────────────
+
+const MAX_ITEMS_PER_OPTIMIZE_CATEGORY = 3;
+
+function buildLocalOptimizeItems(context) {
+  const pipes = context?.pipes || [];
+  const blends = context?.blends || [];
+  const bottles = context?.bottles || [];
+  const cigars = context?.cigars || [];
+  const smokingLogs = context?.smokingLogs || [];
+  const tastingLogs = context?.tastingLogs || [];
+  const items = [];
+
+  // --- Metadata gaps (pipes) ---
+  const pipesNoShape = pipes.filter((p) => !p.shape && !p.pipe_shape);
+  if (pipesNoShape.length > 0) {
+    items.push({
+      id: 'local_pipe_no_shape',
+      type: 'data_gap',
+      recommendationClass: 'auto_fix',
+      recordType: 'pipe',
+      category: 'data_metadata',
+      title: `${pipesNoShape.length} Pipe${pipesNoShape.length > 1 ? 's' : ''} Missing Shape Classification`,
+      issue: `${pipesNoShape.length} pipe${pipesNoShape.length > 1 ? 's' : ''} lack a shape classification.`,
+      recommendation: 'Open PipeKeeper and assign a shape to each affected pipe.',
+      explanation: 'Shape drives pairing recommendations and session planning.',
+      confidence: 'high',
+      ownershipStatus: 'owned',
+    });
+  }
+
+  // --- Metadata gaps (blends) ---
+  const blendsNoType = blends.filter((b) => !b.blend_type && !b.blend_family);
+  if (blendsNoType.length > 0) {
+    items.push({
+      id: 'local_blend_no_type',
+      type: 'data_gap',
+      recommendationClass: 'auto_fix',
+      recordType: 'blend',
+      category: 'data_metadata',
+      title: `${blendsNoType.length} Blend${blendsNoType.length > 1 ? 's' : ''} Without Family Classification`,
+      issue: `${blendsNoType.length} blend${blendsNoType.length > 1 ? 's' : ''} have no blend family.`,
+      recommendation: 'Assign a blend family (Virginia, English, Aromatic, Burley) to each blend.',
+      explanation: 'Blend family is required for diversity analysis and pairing suggestions.',
+      confidence: 'high',
+      ownershipStatus: 'owned',
+    });
+  }
+
+  // --- Metadata gaps (cigars) ---
+  const cigarsNoWrapper = cigars.filter((c) => !c.wrapper && !c.wrapper_country);
+  if (cigarsNoWrapper.length > 0) {
+    items.push({
+      id: 'local_cigar_no_wrapper',
+      type: 'data_gap',
+      recommendationClass: 'auto_fix',
+      recordType: 'cigar',
+      category: 'data_metadata',
+      title: `${cigarsNoWrapper.length} Cigar${cigarsNoWrapper.length > 1 ? 's' : ''} Missing Wrapper Details`,
+      issue: `${cigarsNoWrapper.length} cigar${cigarsNoWrapper.length > 1 ? 's' : ''} are missing wrapper information.`,
+      recommendation: 'Open CigarKeeper and add wrapper leaf or wrapper country for each cigar.',
+      explanation: 'Wrapper data drives flavor profile analysis and pairing suggestions.',
+      confidence: 'high',
+      ownershipStatus: 'owned',
+    });
+  }
+
+  // --- Restock: low blend stock ---
+  const lowBlends = blends.filter((b) => {
+    const oz =
+      Number(b.tin_total_quantity_oz || 0) +
+      Number(b.bulk_total_quantity_oz || 0) +
+      Number(b.pouch_total_quantity_oz || 0);
+    return oz > 0 && oz < 2;
+  });
+  if (lowBlends.length > 0) {
+    items.push({
+      id: 'local_low_blend_stock',
+      type: 'restock',
+      recommendationClass: 'advisory',
+      recordType: 'blend',
+      category: 'purchase_restock',
+      title: `${lowBlends.length} Blend${lowBlends.length > 1 ? 's' : ''} Running Low (Under 2oz)`,
+      issue: `${lowBlends.length} blend${lowBlends.length > 1 ? 's are' : ' is'} below 2oz: ${lowBlends.slice(0, 3).map((b) => b.name).join(', ')}${lowBlends.length > 3 ? ` and ${lowBlends.length - 3} more` : ''}.`,
+      recommendation: 'Restock these blends or move backups from the cellar to active rotation.',
+      explanation: 'Running out of preferred blends without a backup plan disrupts rotation.',
+      confidence: 'high',
+      ownershipStatus: 'owned',
+    });
+  }
+
+  // --- Restock: cigars running low ---
+  const lowCigars = cigars.filter((c) => {
+    const qty = Number(c.quantity || 0);
+    return qty > 0 && qty <= 3;
+  });
+  if (lowCigars.length > 0) {
+    items.push({
+      id: 'local_low_cigar_stock',
+      type: 'restock',
+      recommendationClass: 'advisory',
+      recordType: 'cigar',
+      category: 'purchase_restock',
+      title: `${lowCigars.length} Cigar${lowCigars.length > 1 ? 's' : ''} Running Low (3 or Fewer)`,
+      issue: `${lowCigars.length} cigar${lowCigars.length > 1 ? 's are' : ' is'} down to 3 or fewer: ${lowCigars.slice(0, 3).map((c) => c.name || c.brand || 'Unnamed').join(', ')}${lowCigars.length > 3 ? ` and ${lowCigars.length - 3} more` : ''}.`,
+      recommendation: 'Consider restocking these cigars if they are regulars in your rotation.',
+      explanation: 'Low-stock cigars are at risk of running out before reorder.',
+      confidence: 'high',
+      ownershipStatus: 'owned',
+    });
+  }
+
+  // --- Utilization: never-used pipes ---
+  const pipeUsage = {};
+  for (const log of smokingLogs) {
+    if (log.pipe_id) pipeUsage[log.pipe_id] = true;
+  }
+  const neverUsedPipes = pipes.filter((p) => !pipeUsage[p.id]);
+  if (neverUsedPipes.length > 0 && pipes.length >= 3) {
+    items.push({
+      id: 'local_never_used_pipes',
+      type: 'utilization',
+      recommendationClass: 'advisory',
+      recordType: 'pipe',
+      category: 'utilization',
+      title: `${neverUsedPipes.length} Pipe${neverUsedPipes.length > 1 ? 's' : ''} Never Smoked`,
+      issue: `${neverUsedPipes.length} pipe${neverUsedPipes.length > 1 ? 's have' : ' has'} no recorded smoking sessions.`,
+      recommendation: 'Schedule a session with one of these pipes to break it in or re-evaluate it.',
+      explanation: 'Unsmoked pipes represent uninitiated investments. Early use reveals their character.',
+      confidence: 'high',
+      ownershipStatus: 'owned',
+    });
+  }
+
+  // --- Utilization: never-smoked cigars ---
+  const cigarSessionIds = new Set(
+    (context?.cigarSessions || []).map((s) => s.cigar_id).filter(Boolean)
+  );
+  const neverSmokedCigars = cigars.filter((c) => c.id && !cigarSessionIds.has(c.id));
+  if (neverSmokedCigars.length > 0 && cigars.length >= 3) {
+    items.push({
+      id: 'local_never_smoked_cigars',
+      type: 'utilization',
+      recommendationClass: 'advisory',
+      recordType: 'cigar',
+      category: 'utilization',
+      title: `${neverSmokedCigars.length} Cigar${neverSmokedCigars.length > 1 ? 's' : ''} Never Smoked`,
+      issue: `${neverSmokedCigars.length} cigar${neverSmokedCigars.length > 1 ? 's have' : ' has'} no logged sessions.`,
+      recommendation: 'Start logging your cigar sessions so Curator can track what you have tried.',
+      explanation: 'Unlogged cigars cannot be factored into pairing, rotation, or buy-again suggestions.',
+      confidence: 'medium',
+      ownershipStatus: 'owned',
+    });
+  }
+
+  // --- Pipes without specialization ---
+  const pipesNoFocus = pipes.filter(
+    (p) => !p.focus || (Array.isArray(p.focus) && p.focus.length === 0)
+  );
+  if (pipesNoFocus.length > 0) {
+    items.push({
+      id: 'local_pipes_no_focus',
+      type: 'specialization',
+      recommendationClass: 'multi_path',
+      recordType: 'pipe',
+      category: 'specialization',
+      title: `${pipesNoFocus.length} Pipe${pipesNoFocus.length > 1 ? 's' : ''} Without Specialization`,
+      issue: `${pipesNoFocus.length} pipe${pipesNoFocus.length > 1 ? 's have' : ' has'} no tobacco focus assigned.`,
+      recommendation: 'Assign a specialization (Aromatic, English, Virginia, etc.) to each pipe based on how you use it.',
+      explanation: 'Pipe specialization dramatically improves pairing recommendations and session planning.',
+      confidence: 'high',
+      ownershipStatus: 'owned',
+    });
+  }
+
+  return items;
+}
+
+function buildOptimizeHealthPrompt(safeContext, contextBlock) {
+  return `You are PipeKeeper Curator analyzing collection health and utilization patterns.
+
+Return VALID JSON ONLY. No markdown. No backticks. No commentary.
+Maximum ${MAX_ITEMS_PER_OPTIMIZE_CATEGORY * 2} items total. Focus on health and utilization only.
+
+COLLECTION CONTEXT:
+${contextBlock}
+
+TASK: Identify the most important collection health and utilization issues.
+
+Focus on:
+1. Collection balance and diversity gaps (blend families, pipe shapes, whiskey types, cigar wrappers)
+2. Neglected or underused items that should be rotated back in
+3. Aging opportunities or rotation imbalances
+4. Cross-module synergy gaps (e.g. pipes with no matching blends)
+
+RULES:
+- Only reference items from the collection context
+- Each item must have a clear "what was found", "why it matters", "what should be done"
+- Prefer specific actionable findings over generic advice
+- For owned items: "ownershipStatus": "owned"
+- Limit to ${MAX_ITEMS_PER_OPTIMIZE_CATEGORY * 2} items across both groups
+
+Return JSON:
+{
+  "actionId": "optimize_health",
+  "summary": "Specific summary of health and utilization findings",
+  "groups": [
+    {
+      "groupKey": "collection_health",
+      "groupTitle": "Collection Health",
+      "description": "Balance, diversity, and composition findings",
+      "priority": "medium",
+      "items": []
+    },
+    {
+      "groupKey": "utilization",
+      "groupTitle": "Utilization & Rotation",
+      "description": "Underused items and rotation gaps",
+      "priority": "medium",
+      "items": []
+    }
+  ]
+}
+
+If no actionable items exist, return valid JSON with empty items arrays.`;
+}
+
+function buildOptimizePairingPrompt(safeContext, contextBlock) {
+  const hasCigars = (safeContext.cigarStats?.count || 0) > 0;
+  const hasBottles = (safeContext.bottleStats?.count || 0) > 0;
+
+  return `You are PipeKeeper Curator analyzing specialization and pairing opportunities.
+
+Return VALID JSON ONLY. No markdown. No backticks. No commentary.
+Maximum ${MAX_ITEMS_PER_OPTIMIZE_CATEGORY * 2} items total. Focus on specialization and pairing only.
+
+COLLECTION CONTEXT:
+${contextBlock}
+
+TASK: Identify specialization opportunities and pairing improvements.
+
+Focus on:
+1. Pipe specialization suggestions based on blend usage patterns
+2. Pairing coverage gaps (pipe+tobacco, ${hasCigars ? 'cigar+whiskey, ' : ''}cross-module pairings)
+3. Collection strategy — what to deepen vs diversify
+${hasCigars ? '4. Cigar rotation and pairing opportunities with available spirits' : ''}
+${hasBottles ? '4. Whiskey and tobacco pairing synergies' : ''}
+
+RULES:
+- Only reference items from the collection context
+- NEVER suggest pipe + cigar simultaneously in the same session
+- NEVER suggest all modules at once — pair exactly two things
+- For owned items: "ownershipStatus": "owned"
+- Limit to ${MAX_ITEMS_PER_OPTIMIZE_CATEGORY * 2} items across both groups
+
+Return JSON:
+{
+  "actionId": "optimize_pairing",
+  "summary": "Specific summary of specialization and pairing findings",
+  "groups": [
+    {
+      "groupKey": "specialization",
+      "groupTitle": "Specialization & Strategy",
+      "description": "Pipe focus and collection strategy recommendations",
+      "priority": "medium",
+      "items": []
+    },
+    {
+      "groupKey": "pairing",
+      "groupTitle": "Pairing & Experience",
+      "description": "Cross-module pairing opportunities",
+      "priority": "medium",
+      "items": []
+    }
+  ]
+}
+
+If no actionable items exist, return valid JSON with empty items arrays.`;
+}
+
+function deduplicateOptimizeItems(allItems) {
+  const seen = new Map();
+  for (const item of allItems) {
+    // Local-check items use stable prefixed IDs; LLM items are keyed by their
+    // primary label (recordName > itemName > title > id) to collapse overlapping
+    // recommendations that target the same collection record.
+    const key = (item.id || '').startsWith('local_')
+      ? item.id
+      : String(item.recordName || item.itemName || item.title || item.id || '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '_')
+          .trim();
+    if (!key) continue;
+    if (!seen.has(key)) {
+      seen.set(key, item);
+    } else {
+      // Prefer items with more detail
+      const existing = seen.get(key);
+      const inDetail = (item.explanation ? 1 : 0) + (item.recommendation ? 1 : 0) + (item.rationale ? 1 : 0);
+      const exDetail = (existing.explanation ? 1 : 0) + (existing.recommendation ? 1 : 0) + (existing.rationale ? 1 : 0);
+      if (inDetail > exDetail) seen.set(key, item);
+    }
+  }
+  return Array.from(seen.values());
+}
+
+function groupOptimizeItemsByCategory(items) {
+  const categoryMap = {
+    data_metadata: [],
+    collection_health: [],
+    utilization: [],
+    purchase_restock: [],
+    specialization: [],
+    pairing: [],
+  };
+
+  for (const item of items) {
+    const cat = item.category || item.groupKey || 'collection_health';
+    if (categoryMap[cat]) {
+      categoryMap[cat].push(item);
+    } else {
+      categoryMap.collection_health.push(item);
+    }
+  }
+
+  const groups = [];
+  const groupLabels = {
+    data_metadata: { title: 'Data & Metadata', description: 'Missing fields and classification gaps' },
+    collection_health: { title: 'Collection Health', description: 'Balance, diversity, and composition' },
+    utilization: { title: 'Utilization & Rotation', description: 'Underused items and rotation gaps' },
+    purchase_restock: { title: 'Purchase & Restock', description: 'Low stock and acquisition opportunities' },
+    specialization: { title: 'Specialization & Strategy', description: 'Focus areas and collection strategy' },
+    pairing: { title: 'Pairing & Experience', description: 'Cross-module pairing opportunities' },
+  };
+
+  for (const [key, catItems] of Object.entries(categoryMap)) {
+    if (catItems.length === 0) continue;
+    const capped = catItems.slice(0, MAX_ITEMS_PER_OPTIMIZE_CATEGORY);
+    groups.push({
+      groupKey: key,
+      groupTitle: groupLabels[key]?.title || key,
+      description: groupLabels[key]?.description || '',
+      priority: key === 'data_metadata' ? 'low' : 'medium',
+      items: capped,
+    });
+  }
+
+  return groups;
+}
+
+async function handleOptimizeCollection({ context, requestId }) {
+  const safeContext = buildSafeCollectionContext(context || {});
+  const contextBlock = buildPromptBlock(safeContext);
+
+  // Step 1: Local cheap checks (instant, no LLM)
+  const localItems = buildLocalOptimizeItems(context || {});
+
+  // Step 2: Focused LLM call 1 — collection health + utilization
+  let healthItems = [];
+  try {
+    const healthPrompt = buildOptimizeHealthPrompt(safeContext, contextBlock);
+    const healthRaw = await invokeCuratorModel({ prompt: healthPrompt, actionType: 'optimize_health', requestId: `${requestId}_health` });
+    const healthResult = enrichCanonicalResult(healthRaw, context || {}, null);
+    if (Array.isArray(healthResult?.groups)) {
+      for (const group of healthResult.groups) {
+        const cat = group.groupKey === 'collection_health' ? 'collection_health' : 'utilization';
+        for (const item of (group.items || []).slice(0, MAX_ITEMS_PER_OPTIMIZE_CATEGORY)) {
+          healthItems.push({ ...item, category: cat });
+        }
+      }
+    } else if (Array.isArray(healthResult?.items)) {
+      healthItems = healthResult.items.slice(0, MAX_ITEMS_PER_OPTIMIZE_CATEGORY * 2).map((i) => ({ ...i, category: i.category || 'collection_health' }));
+    }
+  } catch (err) {
+    console.warn('[CuratorExecutor] optimize health/utilization LLM call failed:', err?.message);
+  }
+
+  // Step 3: Focused LLM call 2 — specialization + pairing
+  let pairingItems = [];
+  try {
+    const pairingPrompt = buildOptimizePairingPrompt(safeContext, contextBlock);
+    const pairingRaw = await invokeCuratorModel({ prompt: pairingPrompt, actionType: 'optimize_pairing', requestId: `${requestId}_pairing` });
+    const pairingResult = enrichCanonicalResult(pairingRaw, context || {}, null);
+    if (Array.isArray(pairingResult?.groups)) {
+      for (const group of pairingResult.groups) {
+        const cat = group.groupKey === 'pairing' ? 'pairing' : 'specialization';
+        for (const item of (group.items || []).slice(0, MAX_ITEMS_PER_OPTIMIZE_CATEGORY)) {
+          pairingItems.push({ ...item, category: cat });
+        }
+      }
+    } else if (Array.isArray(pairingResult?.items)) {
+      pairingItems = pairingResult.items.slice(0, MAX_ITEMS_PER_OPTIMIZE_CATEGORY * 2).map((i) => ({ ...i, category: i.category || 'pairing' }));
+    }
+  } catch (err) {
+    console.warn('[CuratorExecutor] optimize specialization/pairing LLM call failed:', err?.message);
+  }
+
+  // Step 4: Merge, deduplicate, group by category
+  const allItems = deduplicateOptimizeItems([...localItems, ...healthItems, ...pairingItems]);
+  const groups = groupOptimizeItemsByCategory(allItems);
+  const totalItems = groups.reduce((sum, g) => sum + g.items.length, 0);
+
+  return {
+    actionId: 'optimize_collection',
+    title: 'Collection Optimization',
+    summary: totalItems > 0
+      ? `${totalItems} optimization recommendation${totalItems === 1 ? '' : 's'} across ${groups.length} ${groups.length === 1 ? 'category' : 'categories'}.`
+      : 'No immediate optimizations found for your current collection.',
+    groups,
+  };
+}
+
 export async function executeCuratorAction({
   actionType,
   context,
@@ -672,6 +1084,10 @@ export async function executeCuratorAction({
       context,
       anchorOverrides,
     });
+  }
+
+  if (actionType === 'optimize_collection') {
+    return await handleOptimizeCollection({ context, requestId });
   }
 
   return await handleGenericAction({

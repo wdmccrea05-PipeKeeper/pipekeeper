@@ -14,8 +14,8 @@ const THRESHOLDS = {
   large: 300,
 };
 
-export function selectContextMode(pipes = [], blends = [], bottles = [], logs = []) {
-  const totalItems = pipes.length + blends.length + bottles.length;
+export function selectContextMode(pipes = [], blends = [], bottles = [], logs = [], cigars = []) {
+  const totalItems = pipes.length + blends.length + bottles.length + cigars.length;
   const totalActivity = logs.length;
 
   if (totalItems <= THRESHOLDS.small && totalActivity <= 200) return 'small';
@@ -39,41 +39,49 @@ export function buildSafeCollectionContext(rawContext = {}) {
     bottles = [],
     smokingLogs = [],
     tastingLogs = [],
+    cigars = [],
+    cigarSessions = [],
     userProfile = null,
   } = rawContext;
 
   const eligiblePipes = filterAiEligibleItems(pipes);
   const eligibleBlends = filterAiEligibleItems(blends);
   const eligibleBottles = filterAiEligibleItems(bottles);
+  const eligibleCigars = filterAiEligibleItems(cigars);
 
   const mode = selectContextMode(
     eligiblePipes,
     eligibleBlends,
     eligibleBottles,
-    [...smokingLogs, ...tastingLogs]
+    [...smokingLogs, ...tastingLogs, ...cigarSessions],
+    eligibleCigars,
   );
 
   const pipeStats = computePipeStats(eligiblePipes, smokingLogs);
   const blendStats = computeBlendStats(eligibleBlends, smokingLogs);
   const bottleStats = computeBottleStats(eligibleBottles, tastingLogs);
-  const activitySummary = computeActivitySummary(smokingLogs, tastingLogs);
+  const cigarStats = computeCigarStats(eligibleCigars, cigarSessions);
+  const activitySummary = computeActivitySummary(smokingLogs, tastingLogs, cigarSessions);
 
   const candidateStats = {
-    totalRaw: pipes.length + blends.length + bottles.length,
-    totalEligible: eligiblePipes.length + eligibleBlends.length + eligibleBottles.length,
+    totalRaw: pipes.length + blends.length + bottles.length + cigars.length,
+    totalEligible: eligiblePipes.length + eligibleBlends.length + eligibleBottles.length + eligibleCigars.length,
     excluded:
       (pipes.length - eligiblePipes.length) +
       (blends.length - eligibleBlends.length) +
-      (bottles.length - eligibleBottles.length),
+      (bottles.length - eligibleBottles.length) +
+      (cigars.length - eligibleCigars.length),
     pipes: { raw: pipes.length, eligible: eligiblePipes.length },
     blends: { raw: blends.length, eligible: eligibleBlends.length },
     bottles: { raw: bottles.length, eligible: eligibleBottles.length },
-    logs: smokingLogs.length + tastingLogs.length,
+    cigars: { raw: cigars.length, eligible: eligibleCigars.length },
+    logs: smokingLogs.length + tastingLogs.length + cigarSessions.length,
   };
 
   const pipesSummary = buildItemSummary(eligiblePipes, mode, 'pipe');
   const blendsSummary = buildItemSummary(eligibleBlends, mode, 'blend');
   const bottlesSummary = buildItemSummary(eligibleBottles, mode, 'bottle');
+  const cigarsSummary = buildItemSummary(eligibleCigars, mode, 'cigar');
 
   return {
     mode,
@@ -81,14 +89,17 @@ export function buildSafeCollectionContext(rawContext = {}) {
     pipeStats,
     blendStats,
     bottleStats,
+    cigarStats,
     activitySummary,
     pipesSummary,
     blendsSummary,
     bottlesSummary,
+    cigarsSummary,
     userProfile,
     eligiblePipeIds: eligiblePipes.map((p) => p.id),
     eligibleBlendIds: eligibleBlends.map((b) => b.id),
     eligibleBottleIds: eligibleBottles.map((b) => b.id),
+    eligibleCigarIds: eligibleCigars.map((c) => c.id),
   };
 }
 
@@ -161,6 +172,22 @@ function formatItemFull(item, type) {
     };
   }
 
+  if (type === 'cigar') {
+    return {
+      id: item.id,
+      name: item.name,
+      brand: item.brand,
+      vitola: item.vitola,
+      wrapper: item.wrapper,
+      strength: item.strength || item.body,
+      origin: item.origin || item.country,
+      quantity: item.quantity,
+      rating: item.rating,
+      is_favorite: item.is_favorite,
+      purchase_date: item.purchase_date,
+    };
+  }
+
   return { id: item.id, name: item.name };
 }
 
@@ -196,6 +223,19 @@ function formatItemCompact(item, type) {
       type: item.type || item.whiskey_type || null,
       age: item.age || null,
       abv: item.abv || null,
+      rating: item.rating || null,
+    };
+  }
+
+  if (type === 'cigar') {
+    return {
+      id: item.id,
+      name: item.name,
+      brand: item.brand || null,
+      vitola: item.vitola || null,
+      wrapper: item.wrapper || null,
+      strength: item.strength || item.body || null,
+      quantity: item.quantity || null,
       rating: item.rating || null,
     };
   }
@@ -248,6 +288,10 @@ function selectNotableItems(items, type, limit) {
     if (type === 'pipe' && item.focus?.length > 0) {
       score += 2;
     }
+    if (type === 'cigar') {
+      if (item.quantity > 5) score += 2;
+      if (item.vitola) score += 1;
+    }
     return { item, score };
   });
 
@@ -270,6 +314,11 @@ function computeTypeDistribution(items, type) {
   } else if (type === 'bottle') {
     for (const item of items) {
       const key = item.type || item.whiskey_type || 'Unknown';
+      dist[key] = (dist[key] || 0) + 1;
+    }
+  } else if (type === 'cigar') {
+    for (const item of items) {
+      const key = item.wrapper || item.vitola || 'Unknown';
       dist[key] = (dist[key] || 0) + 1;
     }
   }
@@ -381,16 +430,57 @@ function computeBottleStats(bottles, tastingLogs = []) {
   };
 }
 
-function computeActivitySummary(smokingLogs = [], tastingLogs = []) {
+function computeCigarStats(cigars = [], cigarSessions = []) {
+  if (!cigars.length) return { count: 0 };
+
+  const sessionCigarIds = new Set(cigarSessions.map((s) => s.cigar_id).filter(Boolean));
+  let ratedCount = 0;
+  let ratingSum = 0;
+  let totalQuantity = 0;
+
+  for (const c of cigars) {
+    if (c.rating) {
+      ratedCount++;
+      ratingSum += c.rating;
+    }
+    totalQuantity += Number(c.quantity || 0);
+  }
+
+  const wrapperDist = {};
+  for (const c of cigars) {
+    const key = c.wrapper || 'Unknown';
+    wrapperDist[key] = (wrapperDist[key] || 0) + 1;
+  }
+
+  return {
+    count: cigars.length,
+    totalQuantity,
+    smoked: sessionCigarIds.size,
+    neverSmoked: cigars.filter((c) => !sessionCigarIds.has(c.id)).length,
+    totalSessions: cigarSessions.length,
+    ratedCount,
+    avgRating: ratedCount > 0 ? Math.round((ratingSum / ratedCount) * 10) / 10 : null,
+    favorites: cigars.filter((c) => c.is_favorite).length,
+    wrapperDistribution: wrapperDist,
+  };
+}
+
+function computeActivitySummary(smokingLogs = [], tastingLogs = [], cigarSessions = []) {
   const now = Date.now();
   const recent30 = smokingLogs.filter((l) => l.date && now - new Date(l.date).getTime() < 30 * 86400000).length;
   const recent30Tasting = tastingLogs.filter((l) => l.tasting_date && now - new Date(l.tasting_date).getTime() < 30 * 86400000).length;
+  const recent30Cigar = cigarSessions.filter((l) => {
+    const d = l.date || l.session_date || l.created_date;
+    return d && now - new Date(d).getTime() < 30 * 86400000;
+  }).length;
 
   return {
     totalSmokingLogs: smokingLogs.length,
     totalTastingLogs: tastingLogs.length,
+    totalCigarSessions: cigarSessions.length,
     smokingLast30Days: recent30,
     tastingLast30Days: recent30Tasting,
+    cigarSessionsLast30Days: recent30Cigar,
   };
 }
 
@@ -401,10 +491,12 @@ export function buildPromptBlock(safeContext) {
     pipeStats,
     blendStats,
     bottleStats,
+    cigarStats,
     activitySummary,
     pipesSummary,
     blendsSummary,
     bottlesSummary,
+    cigarsSummary,
   } = safeContext;
 
   const modeNote =
@@ -412,12 +504,20 @@ export function buildPromptBlock(safeContext) {
       ? `[Analysis Mode: ${mode.toUpperCase()} — ${candidateStats.totalEligible} eligible items from ${candidateStats.totalRaw} total${candidateStats.excluded > 0 ? `, ${candidateStats.excluded} AI-excluded` : ''}]\n`
       : '';
 
+  const cigarStatsLine = cigarStats && cigarStats.count > 0
+    ? `\nCigars: ${cigarStats.count} total | ${cigarStats.totalQuantity || 0} total qty | ${cigarStats.neverSmoked || 0} never smoked | ${cigarStats.totalSessions || 0} sessions logged`
+    : '';
+
+  const cigarActivityNote = activitySummary.totalCigarSessions > 0
+    ? ` | ${activitySummary.totalCigarSessions} cigar sessions`
+    : '';
+
   const statsBlock = `
 COLLECTION STATISTICS:
 Pipes: ${pipeStats.count} total | ${pipeStats.neverUsed || 0} never used | ${pipeStats.usedLast30 || 0} active last 30d | ${pipeStats.neglected || 0} neglected (60d+) | ${pipeStats.unfocused || 0} without specialization
 Blends: ${blendStats.count} total | ${blendStats.neverSmoked || 0} never smoked | ${blendStats.totalInventoryOz || 0}oz inventory | ${blendStats.discontinuedCount || 0} discontinued
-Bottles: ${bottleStats.count} total | ${bottleStats.untasted || 0} untasted | ${bottleStats.tasted || 0} tasted | ${bottleStats.totalTastings || 0} total tastings
-Activity: ${activitySummary.totalSmokingLogs} smoking sessions | ${activitySummary.smokingLast30Days} last 30 days | ${activitySummary.totalTastingLogs} tasting notes`;
+Bottles: ${bottleStats.count} total | ${bottleStats.untasted || 0} untasted | ${bottleStats.tasted || 0} tasted | ${bottleStats.totalTastings || 0} total tastings${cigarStatsLine}
+Activity: ${activitySummary.totalSmokingLogs} pipe sessions | ${activitySummary.smokingLast30Days} last 30 days | ${activitySummary.totalTastingLogs} tasting notes${cigarActivityNote}`;
 
   const formatSection = (label, summary, count) => {
     if (!count) return `\n${label}: None`;
@@ -440,7 +540,10 @@ Activity: ${activitySummary.totalSmokingLogs} smoking sessions | ${activitySumma
     statsBlock +
     formatSection('PIPES', pipesSummary, pipeStats.count) +
     formatSection('TOBACCO BLENDS', blendsSummary, blendStats.count) +
-    formatSection('WHISKEY BOTTLES', bottlesSummary, bottleStats.count)
+    formatSection('WHISKEY BOTTLES', bottlesSummary, bottleStats.count) +
+    (cigarStats && cigarStats.count > 0
+      ? formatSection('CIGARS', cigarsSummary, cigarStats.count)
+      : '')
   );
 }
 
@@ -450,6 +553,7 @@ export function validateCandidateIds(aiReturnedIds, safeContext) {
     ...safeContext.eligiblePipeIds,
     ...safeContext.eligibleBlendIds,
     ...safeContext.eligibleBottleIds,
+    ...(safeContext.eligibleCigarIds || []),
   ]);
   return aiReturnedIds.filter((id) => validIds.has(id));
 }
