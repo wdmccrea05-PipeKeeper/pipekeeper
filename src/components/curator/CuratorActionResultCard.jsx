@@ -97,6 +97,13 @@ function buildSessionItemLines(item) {
   return { pipeName, blendName, bottleName };
 }
 
+function getAcceptLabel({ isApplying, isNonMutating, hasProposedEntries }) {
+  if (isApplying) return "Applying...";
+  if (isNonMutating) return "Try This";
+  if (hasProposedEntries) return "Apply Changes";
+  return "Acknowledge";
+}
+
 export default function CuratorActionResultCard({
   item,
   state,
@@ -282,13 +289,7 @@ export default function CuratorActionResultCard({
             disabled={isApplying}
             className="whitespace-nowrap rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-black disabled:opacity-50"
           >
-            {isApplying
-              ? "Applying..."
-              : isNonMutating
-              ? "Try This"
-              : proposedEntries.length > 0
-              ? "Apply Changes"
-              : "Acknowledge"}
+            {getAcceptLabel({ isApplying, isNonMutating, hasProposedEntries: proposedEntries.length > 0 })}
           </button>
 
           <button
