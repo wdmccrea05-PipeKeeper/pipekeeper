@@ -29,6 +29,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { safeUpdate } from '@/components/utils/safeUpdate';
 import QuickActions from '@/components/home/QuickActions';
+import OptimizeModal from '@/components/home/OptimizeModal';
 
 const safe = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
 
@@ -264,6 +265,7 @@ export default function CollectionHub() {
 
   const [showLogSelector, setShowLogSelector] = useState(false);
   const [showCombinedModal, setShowCombinedModal] = useState(false);
+  const [showOptimizeModal, setShowOptimizeModal] = useState(false);
   const [editingSmokingLog, setEditingSmokingLog] = useState(null);
   const [confirmDeleteLog, setConfirmDeleteLog] = useState(null);
 
@@ -563,7 +565,7 @@ export default function CollectionHub() {
         <QuickActions
           onLogSession={() => setShowLogSelector(true)}
           onIdentify={() => navigate('/PipeKeeper?action=identify')}
-          onOptimize={() => navigate('/Insights')}
+          onOptimize={() => setShowOptimizeModal(true)}
           onAskCurator={() => navigate(createPageUrl('Curator'))}
           onWantList={() => navigate(createPageUrl('WantList'))}
         />
@@ -815,6 +817,16 @@ export default function CollectionHub() {
           </div>
         </section>
       ) : null}
+
+      <OptimizeModal
+        isOpen={showOptimizeModal}
+        onClose={() => setShowOptimizeModal(false)}
+        pipes={pipes}
+        blends={blends}
+        cigars={cigars}
+        bottles={bottles}
+        smokeLogs={smokeLogs}
+      />
 
       <CombinedSessionModal
         isOpen={showCombinedModal}
