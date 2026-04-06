@@ -943,6 +943,9 @@ If no actionable items exist, return valid JSON with empty items arrays.`;
 function deduplicateOptimizeItems(allItems) {
   const seen = new Map();
   for (const item of allItems) {
+    // Local-check items use stable prefixed IDs; LLM items are keyed by their
+    // primary label (recordName > itemName > title > id) to collapse overlapping
+    // recommendations that target the same collection record.
     const key = (item.id || '').startsWith('local_')
       ? item.id
       : String(item.recordName || item.itemName || item.title || item.id || '')

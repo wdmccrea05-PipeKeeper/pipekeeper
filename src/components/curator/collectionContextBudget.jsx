@@ -504,13 +504,20 @@ export function buildPromptBlock(safeContext) {
       ? `[Analysis Mode: ${mode.toUpperCase()} — ${candidateStats.totalEligible} eligible items from ${candidateStats.totalRaw} total${candidateStats.excluded > 0 ? `, ${candidateStats.excluded} AI-excluded` : ''}]\n`
       : '';
 
+  const cigarStatsLine = cigarStats && cigarStats.count > 0
+    ? `\nCigars: ${cigarStats.count} total | ${cigarStats.totalQuantity || 0} total qty | ${cigarStats.neverSmoked || 0} never smoked | ${cigarStats.totalSessions || 0} sessions logged`
+    : '';
+
+  const cigarActivityNote = activitySummary.totalCigarSessions > 0
+    ? ` | ${activitySummary.totalCigarSessions} cigar sessions`
+    : '';
+
   const statsBlock = `
 COLLECTION STATISTICS:
 Pipes: ${pipeStats.count} total | ${pipeStats.neverUsed || 0} never used | ${pipeStats.usedLast30 || 0} active last 30d | ${pipeStats.neglected || 0} neglected (60d+) | ${pipeStats.unfocused || 0} without specialization
 Blends: ${blendStats.count} total | ${blendStats.neverSmoked || 0} never smoked | ${blendStats.totalInventoryOz || 0}oz inventory | ${blendStats.discontinuedCount || 0} discontinued
-Bottles: ${bottleStats.count} total | ${bottleStats.untasted || 0} untasted | ${bottleStats.tasted || 0} tasted | ${bottleStats.totalTastings || 0} total tastings${cigarStats && cigarStats.count > 0 ? `
-Cigars: ${cigarStats.count} total | ${cigarStats.totalQuantity || 0} total qty | ${cigarStats.neverSmoked || 0} never smoked | ${cigarStats.totalSessions || 0} sessions logged` : ''}
-Activity: ${activitySummary.totalSmokingLogs} pipe sessions | ${activitySummary.smokingLast30Days} last 30 days | ${activitySummary.totalTastingLogs} tasting notes${activitySummary.totalCigarSessions > 0 ? ` | ${activitySummary.totalCigarSessions} cigar sessions` : ''}`;
+Bottles: ${bottleStats.count} total | ${bottleStats.untasted || 0} untasted | ${bottleStats.tasted || 0} tasted | ${bottleStats.totalTastings || 0} total tastings${cigarStatsLine}
+Activity: ${activitySummary.totalSmokingLogs} pipe sessions | ${activitySummary.smokingLast30Days} last 30 days | ${activitySummary.totalTastingLogs} tasting notes${cigarActivityNote}`;
 
   const formatSection = (label, summary, count) => {
     if (!count) return `\n${label}: None`;
