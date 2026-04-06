@@ -416,7 +416,8 @@ PAIRING RULES (MANDATORY):
 - NEVER suggest all modules at once
 - Direct pairing: one item from one module paired with one item from another compatible module
 - Collection mix & match: recommend the best items from each module independently
-- Valid pairings only: cigar+whiskey, cigar+wine, pipe+whiskey, pipe+tobacco`;
+- Valid pairings only: cigar+whiskey, cigar+wine, pipe+whiskey, pipe+tobacco
+- For pairing items, include "pairingMode": "direct_pairing" for a specific two-item match, or "pairingMode": "collection_mix_match" for a broader collection-wide suggestion`;
 
   return `You are PipeKeeper Curator. Your job is to provide specific, data-driven recommendations
 based solely on the user's actual collection data provided below.

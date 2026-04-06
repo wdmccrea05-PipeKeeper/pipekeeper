@@ -509,6 +509,58 @@ function RecommendationCard({
           </p>
         </>
       )}
+
+      {recClass === RECOMMENDATION_CLASS.REVIEW_REQUIRED && (
+        <>
+          <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+            <button
+              type="button"
+              onClick={onReviewDetails}
+              title="Ask Curator to explain what will change before you commit"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(74,124,156,0.3), rgba(74,124,156,0.15))',
+                border: '1px solid rgba(74,124,156,0.45)',
+                color: '#6aabc0',
+              }}
+            >
+              <Eye className="w-4 h-4" />
+              Review Details
+            </button>
+            <button
+              type="button"
+              onClick={onApplyFix}
+              title="Approve and apply the recommended changes"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(180,100,50,0.4), rgba(150,75,30,0.25))',
+                border: '1px solid rgba(180,100,50,0.55)',
+                color: '#e0a070',
+              }}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              Approve Changes
+            </button>
+            <button
+              type="button"
+              onClick={onAskCurator}
+              title="Discuss this recommendation with the Curator before deciding"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(139,94,58,0.3), rgba(100,65,40,0.18))',
+                border: '1px solid rgba(139,94,58,0.45)',
+                color: '#D4956A',
+              }}
+            >
+              <MessageCircle className="w-4 h-4" />
+              Ask Curator
+            </button>
+          </div>
+          <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
+            Review Details asks the Curator to explain exactly what will change before you commit. Approve Changes applies the listed changes to your collection.
+          </p>
+        </>
+      )}
     </div>
   );
 }
