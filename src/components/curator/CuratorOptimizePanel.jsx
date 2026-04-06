@@ -45,6 +45,18 @@ function plural(count, singular, pluralForm) {
   return count === 1 ? singular : (pluralForm || singular + 's');
 }
 
+function has(count) {
+  return count === 1 ? 'has' : 'have';
+}
+
+function is(count) {
+  return count === 1 ? 'is' : 'are';
+}
+
+function uses(count) {
+  return count === 1 ? 'uses' : 'use';
+}
+
 function insightToCard(insight) {
   return {
     id: insight.id,
@@ -364,6 +376,23 @@ export default function CuratorOptimizePanel({
   const navigate = useNavigate();
   const [activeModule, setActiveModule] = useState('all');
   const [confirmCard, setConfirmCard] = useState(null);
+  const triggerElementRef = React.useRef(null);
+
+  // Capture the element that had focus when the panel mounted so we can
+  // restore focus to it when the panel is dismissed.
+  React.useEffect(() => {
+    triggerElementRef.current = document.activeElement;
+  }, []);
+
+  function handleClose() {
+    if (onClose) {
+      onClose();
+      // Restore focus to the element that opened the panel
+      if (triggerElementRef.current && typeof triggerElementRef.current.focus === 'function') {
+        requestAnimationFrame(() => triggerElementRef.current.focus());
+      }
+    }
+  }
 
   // Build latest log map (same as OptimizeModal)
   const latestLogByPipe = useMemo(() => {
@@ -392,7 +421,7 @@ export default function CuratorOptimizePanel({
       cards.push({
         id: 'qw_pipes_no_photo',
         title: 'Pipes Missing Photos',
-        whatWeFound: `${pipesNoPhoto.length} ${plural(pipesNoPhoto.length, 'pipe')} in your collection ${pipesNoPhoto.length === 1 ? 'has' : 'have'} no photos.`,
+        whatWeFound: `${pipesNoPhoto.length} ${plural(pipesNoPhoto.length, 'pipe')} in your collection ${has(pipesNoPhoto.length)} no photos.`,
         whyItMatters: 'Photos improve collection presentation and help the AI identification feature work better.',
         recommendedAction: "Add photos to capture each pipe's visual details and condition.",
         severity: INSIGHT_SEVERITY.LOW,
@@ -405,7 +434,7 @@ export default function CuratorOptimizePanel({
       cards.push({
         id: 'qw_blends_no_type',
         title: 'Blends Without Family Classification',
-        whatWeFound: `${blendsNoType.length} ${plural(blendsNoType.length, 'blend')} ${blendsNoType.length === 1 ? 'has' : 'have'} no blend family assigned.`,
+        whatWeFound: `${blendsNoType.length} ${plural(blendsNoType.length, 'blend')} ${has(blendsNoType.length)} no blend family assigned.`,
         whyItMatters: 'Blend family is required for diversity analysis and pairing suggestions.',
         recommendedAction: 'Open each blend and set the blend family (Virginia, Burley, Latakia, etc.).',
         severity: INSIGHT_SEVERITY.MEDIUM,
@@ -418,7 +447,7 @@ export default function CuratorOptimizePanel({
       cards.push({
         id: 'qw_cigars_no_size',
         title: 'Cigars Missing Size Details',
-        whatWeFound: `${cigarsNoSize.length} ${plural(cigarsNoSize.length, 'cigar')} ${cigarsNoSize.length === 1 ? 'is' : 'are'} missing vitola or size information.`,
+        whatWeFound: `${cigarsNoSize.length} ${plural(cigarsNoSize.length, 'cigar')} ${is(cigarsNoSize.length)} missing vitola or size information.`,
         whyItMatters: 'Vitola and ring gauge data enable better categorization and balance analysis.',
         recommendedAction: 'Add vitola or size data to complete your cigar profiles.',
         severity: INSIGHT_SEVERITY.LOW,
@@ -431,7 +460,7 @@ export default function CuratorOptimizePanel({
       cards.push({
         id: 'qw_bottles_no_type',
         title: 'Bottles Without Spirit Type',
-        whatWeFound: `${bottlesNoType.length} ${plural(bottlesNoType.length, 'bottle')} ${bottlesNoType.length === 1 ? 'is' : 'are'} missing spirit type classification.`,
+        whatWeFound: `${bottlesNoType.length} ${plural(bottlesNoType.length, 'bottle')} ${is(bottlesNoType.length)} missing spirit type classification.`,
         whyItMatters: 'Spirit type is needed for whiskey collection diversity and flavor analysis.',
         recommendedAction: 'Classify each bottle with its spirit type (Scotch, Bourbon, Irish, etc.).',
         severity: INSIGHT_SEVERITY.LOW,
@@ -450,7 +479,7 @@ export default function CuratorOptimizePanel({
       cards.push({
         id: 'rc_pipe_shape',
         title: 'Pipe Shapes Not Specified',
-        whatWeFound: `${pipesNoShape.length} ${plural(pipesNoShape.length, 'pipe')} ${pipesNoShape.length === 1 ? 'is' : 'are'} missing a shape classification.`,
+        whatWeFound: `${pipesNoShape.length} ${plural(pipesNoShape.length, 'pipe')} ${is(pipesNoShape.length)} missing a shape classification.`,
         whyItMatters: 'Pipe shape affects pairing recommendations — certain shapes suit specific tobacco types.',
         recommendedAction: 'Review these pipes and assign their correct shape (billiard, bent, bulldog, etc.).',
         severity: INSIGHT_SEVERITY.LOW,
@@ -463,7 +492,7 @@ export default function CuratorOptimizePanel({
       cards.push({
         id: 'rc_pipe_generic',
         title: 'Pipes Using Generic "Other" Classification',
-        whatWeFound: `${pipesGeneric.length} ${plural(pipesGeneric.length, 'pipe')} ${pipesGeneric.length === 1 ? 'uses' : 'use'} a generic "Other" type or material.`,
+        whatWeFound: `${pipesGeneric.length} ${plural(pipesGeneric.length, 'pipe')} ${uses(pipesGeneric.length)} a generic "Other" type or material.`,
         whyItMatters: "Specific classifications improve the Curator's ability to make tailored recommendations.",
         recommendedAction: 'Update these pipes with more specific type or material values.',
         severity: INSIGHT_SEVERITY.LOW,
@@ -478,7 +507,7 @@ export default function CuratorOptimizePanel({
       cards.push({
         id: 'rc_blend_unknown',
         title: 'Blends Classified as Unknown',
-        whatWeFound: `${blendsUnknown.length} ${plural(blendsUnknown.length, 'blend')} ${blendsUnknown.length === 1 ? 'is' : 'are'} classified as "Unknown" type.`,
+        whatWeFound: `${blendsUnknown.length} ${plural(blendsUnknown.length, 'blend')} ${is(blendsUnknown.length)} classified as "Unknown" type.`,
         whyItMatters: 'Unknown classifications reduce the effectiveness of diversity and rotation analysis.',
         recommendedAction: 'Research and update the blend family for these blends.',
         severity: INSIGHT_SEVERITY.MEDIUM,
@@ -491,7 +520,7 @@ export default function CuratorOptimizePanel({
       cards.push({
         id: 'rc_cigar_wrapper',
         title: 'Cigars Missing Wrapper Details',
-        whatWeFound: `${cigarsNoWrapper.length} ${plural(cigarsNoWrapper.length, 'cigar')} ${cigarsNoWrapper.length === 1 ? 'is' : 'are'} missing wrapper leaf or country of origin.`,
+        whatWeFound: `${cigarsNoWrapper.length} ${plural(cigarsNoWrapper.length, 'cigar')} ${is(cigarsNoWrapper.length)} missing wrapper leaf or country of origin.`,
         whyItMatters: 'Wrapper information is key for flavor profile analysis and regional recommendations.',
         recommendedAction: 'Add wrapper details to enable complete flavor and region analysis.',
         severity: INSIGHT_SEVERITY.LOW,
@@ -504,7 +533,7 @@ export default function CuratorOptimizePanel({
       cards.push({
         id: 'rc_bottle_distillery',
         title: 'Bottles Missing Producer/Distillery',
-        whatWeFound: `${bottlesNoDistillery.length} ${plural(bottlesNoDistillery.length, 'bottle')} ${bottlesNoDistillery.length === 1 ? 'is' : 'are'} missing distillery or producer details.`,
+        whatWeFound: `${bottlesNoDistillery.length} ${plural(bottlesNoDistillery.length, 'bottle')} ${is(bottlesNoDistillery.length)} missing distillery or producer details.`,
         whyItMatters: 'Distillery data helps build a more accurate profile of your whiskey collection.',
         recommendedAction: 'Add the distillery or producer name for each bottle.',
         severity: INSIGHT_SEVERITY.LOW,
@@ -611,7 +640,7 @@ export default function CuratorOptimizePanel({
           {onClose && (
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="p-2 rounded-lg transition-all hover:opacity-80 flex-shrink-0"
               style={{
                 background: 'rgba(120,90,65,0.15)',

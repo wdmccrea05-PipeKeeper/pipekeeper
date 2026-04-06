@@ -284,7 +284,7 @@ export default function Curator() {
     });
     // Scroll to the chat workspace area
     if (chatRef.current) {
-      chatRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      chatRef.current.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
     }
   }, []);
 
