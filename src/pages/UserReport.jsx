@@ -18,13 +18,13 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 function MetricCard({ label, value, sub, uncertain = false }) {
   return (
-    <div className="p-3 rounded-lg border border-[#8b6239]/30 bg-[#2a1f18]/50 min-w-0">
-      <p className="text-xs text-[#E0D8C8]/70 font-medium break-words flex items-center gap-1">
+    <div className="ck-stat-card min-w-0">
+      <p className="ck-stat-label break-words flex items-center gap-1.5">
         {label}
         {uncertain && <AlertTriangle className="w-3 h-3 text-amber-400/70 shrink-0" />}
       </p>
-      <p className={`text-2xl font-bold ${uncertain ? 'text-[#F5F1E7]/70' : 'text-[#F5F1E7]'}`}>{value}</p>
-      {sub && <p className="text-xs text-[#E0D8C8]/50 mt-0.5 break-words">{sub}</p>}
+      <p className={`ck-stat-value ${uncertain ? 'opacity-70' : ''}`}>{value}</p>
+      {sub && <p className="ck-stat-note break-words">{sub}</p>}
     </div>
   );
 }
@@ -65,13 +65,19 @@ function BillingIntervalBar({ monthly, annual }) {
 
 function SectionCard({ title, icon: Icon, children, accentColor = '#8b6239', className = '' }) {
   return (
-    <div className={`mb-6 rounded-xl border border-[#8b6239]/25 bg-[#1a1208]/60 overflow-hidden ${className}`}
-         style={{ borderLeft: `3px solid ${accentColor}55` }}>
-      <div className="px-5 py-4 border-b border-[#8b6239]/20 flex items-center gap-2">
-        {Icon && <Icon className="w-4 h-4" style={{ color: accentColor }} />}
-        <h2 className="text-sm font-bold text-[#F5F1E7] uppercase tracking-wider">{title}</h2>
+    <div
+      className={`mb-8 rounded-2xl overflow-hidden ${className}`}
+      style={{
+        background: 'linear-gradient(180deg, rgba(28,20,15,0.96), rgba(20,15,10,0.98))',
+        border: '1px solid rgba(140,98,57,0.2)',
+        borderLeft: `3px solid ${accentColor}60`,
+      }}
+    >
+      <div className="px-6 py-4 border-b flex items-center gap-2.5" style={{ borderColor: 'rgba(140,98,57,0.15)' }}>
+        {Icon && <Icon className="w-4 h-4 shrink-0" style={{ color: accentColor }} />}
+        <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--ck-text)', letterSpacing: '0.08em' }}>{title}</h2>
       </div>
-      <div className="p-5">{children}</div>
+      <div className="p-6">{children}</div>
     </div>
   );
 }
@@ -322,7 +328,7 @@ export default function UserReport() {
       {/* ── Header ───────────────────────────────────────────────────────── */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#e8d5b7]">{t("userReport.title")}</h1>
+          <h1 className="ck-page-title">{t("userReport.title")}</h1>
           <p className="text-xs text-[#e8d5b7]/60 mt-1">
             {t("userReport.lastUpdated")}: {lastUpdated}
             {meta.reportVersion && (
