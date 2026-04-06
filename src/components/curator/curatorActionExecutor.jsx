@@ -262,27 +262,33 @@ function resolveTargetRecord(item, context = {}, fallbackType = null) {
   };
 }
 
+/** Maximum number of items returned across all groups to avoid oversized payloads. */
+const MAX_RESULT_ITEMS = 8;
+
 function enrichCanonicalResult(result, context = {}, fallbackType = null) {
   if (!result || typeof result !== "object") return result;
 
   if (Array.isArray(result.groups)) {
+    let totalItems = 0;
     return {
       ...result,
-      groups: result.groups.map((group) => ({
-        ...group,
-        items: (group.items || []).map((item) =>
-          resolveTargetRecord(item, context, fallbackType)
-        ),
-      })),
+      groups: result.groups.map((group) => {
+        const remaining = Math.max(0, MAX_RESULT_ITEMS - totalItems);
+        const items = (group.items || [])
+          .slice(0, remaining)
+          .map((item) => resolveTargetRecord(item, context, fallbackType));
+        totalItems += items.length;
+        return { ...group, items };
+      }),
     };
   }
 
   if (Array.isArray(result.items)) {
     return {
       ...result,
-      items: result.items.map((item) =>
-        resolveTargetRecord(item, context, fallbackType)
-      ),
+      items: result.items
+        .slice(0, MAX_RESULT_ITEMS)
+        .map((item) => resolveTargetRecord(item, context, fallbackType)),
     };
   }
 
@@ -401,9 +407,22 @@ IMPORTANT:
   - "recordName"
 - Use exact record ids from the provided collection context whenever the recommendation targets a specific collection item.`;
 
-  return `You are PipeKeeper Curator.
+  // Pairing rules — prevent the LLM from generating invalid pairing combinations
+  const pairingRules = `
+PAIRING RULES (MANDATORY):
+- NEVER suggest pipe + cigar simultaneously in the same session
+- NEVER suggest tobacco (pipe blend) + cigar simultaneously
+- NEVER suggest whiskey + wine simultaneously
+- NEVER suggest all modules at once
+- Direct pairing: one item from one module paired with one item from another compatible module
+- Collection mix & match: recommend the best items from each module independently
+- Valid pairings only: cigar+whiskey, cigar+wine, pipe+whiskey, pipe+tobacco`;
+
+  return `You are PipeKeeper Curator. Your job is to provide specific, data-driven recommendations
+based solely on the user's actual collection data provided below.
 
 Return VALID JSON ONLY. No markdown. No backticks. No commentary before or after.
+Maximum 8 items total across all groups. Be specific — reference real items from the collection by name.
 
 COLLECTION CONTEXT:
 ${contextBlock}
@@ -414,30 +433,44 @@ TASK:
 ${actionPrompt}
 
 ${extraMeasurementInstructions}
+${pairingRules}
+
+CRITICAL RULES FOR RECOMMENDATIONS:
+1. Be specific — reference actual item names from the collection context
+2. Never invent items not present in the collection
+3. Each recommendation must have a clear "what was found", "why it matters", and "what will happen"
+4. Assign the correct recommendationClass:
+   - "auto_fix" = safe structured data fix (e.g. missing field that can be filled)
+   - "advisory" = insight only, no data change (e.g. rotation opportunity, usage pattern)
+   - "review_required" = user must confirm before change is applied
+   - "multi_path" = requires user judgment between options (e.g. pipe specialization)
+5. Advisory items must NEVER include proposedChange.payload with actual field mutations
+6. Limit total items to 8 maximum
 
 Return JSON in this exact structure:
 {
   "actionId": "${action?.id || "curator_action"}",
   "title": "${action?.label || "Curator Results"}",
-  "summary": "Brief summary of findings",
+  "summary": "Specific summary referencing actual findings from the collection",
   "groups": [
     {
       "groupKey": "primary_recommendations",
       "groupTitle": "Primary Recommendations",
-      "description": "Short description",
+      "description": "Short description of what was found",
       "priority": "medium",
       "items": [
         {
           "id": "rec_1",
           "type": "measurement_update",
+          "recommendationClass": "auto_fix",
           "recordType": "pipe",
           "recordId": "exact-record-id",
           "recordName": "Exact record name",
           "itemName": "Optional display title",
-          "title": "Recommendation title",
-          "issue": "What you found",
-          "recommendation": "What the user should do",
-          "explanation": "Why this matters",
+          "title": "Specific recommendation title referencing the item",
+          "issue": "Exactly what was found about this specific item",
+          "recommendation": "Exactly what action the user should take",
+          "explanation": "Why this matters for this specific item",
           "confidence": "medium",
           "proposedChange": {
             "type": "field_update",
@@ -449,7 +482,7 @@ Return JSON in this exact structure:
   ]
 }
 
-If no actionable items exist, return valid JSON with a summary and groups: [].`;
+If no actionable items exist, return valid JSON with a specific summary explaining why and groups: [].`;
 }
 
 async function invokeCuratorModel({ prompt, actionType, requestId }) {
