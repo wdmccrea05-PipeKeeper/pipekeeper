@@ -20,11 +20,11 @@ import {
   Star,
   Cigarette,
   Package,
-  BookOpen,
   Flame,
   ShieldAlert,
   Thermometer,
   Clock3,
+  DollarSign,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -33,6 +33,7 @@ import CigarSessionModal from '@/components/cigars/CigarSessionModal';
 import { getCigarReadinessWithContext } from '@/platform/agingReadiness';
 import { getCigarInventoryMetrics } from '@/platform/cigarInventory';
 import EnrichButton from '@/components/shared/EnrichButton';
+import { calculateCigarValue } from '@/utils/cigarValuation';
 
 function safePrimitive(value, fallback = '—') {
   if (value === null || value === undefined || value === '') return fallback;
@@ -321,10 +322,12 @@ function CigarDetailInner() {
     staleTime: 10000,
   });
 
+  const valuation = useMemo(() => (cigar ? calculateCigarValue(cigar) : null), [cigar]);
+
   const displayValue = useMemo(() => {
-    const v = cigar?.estimated_value || cigar?.purchase_price;
-    return v ? formatCurrency(v) : '—';
-  }, [cigar]);
+    if (valuation?.totalValue) return formatCurrency(valuation.totalValue);
+    return '—';
+  }, [valuation]);
   const inventoryMetrics = useMemo(
     () => (cigar ? getCigarInventoryMetrics(cigar, sessions) : null),
     [cigar, sessions]
@@ -500,10 +503,37 @@ function CigarDetailInner() {
           value={cigar.singles_equivalent ?? cigar.quantity ?? '—'}
           icon={Package}
         />
-        <DetailStat label="Value" value={displayValue} icon={BookOpen} />
+        <div
+          className="rounded-2xl p-4"
+          style={{
+            background: 'rgba(255,255,255,0.035)',
+            border: '1px solid rgba(140,107,63,0.22)',
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(140,107,63,0.18)', border: '1px solid rgba(140,107,63,0.3)' }}
+            >
+              <DollarSign className="w-4 h-4" style={{ color: '#B48C4B' }} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-[0.14em]" style={{ color: 'rgba(224,216,200,0.6)' }}>Value</p>
+              <p className="text-lg font-semibold mt-1" style={{ color: '#F5F1E7' }}>{displayValue}</p>
+              {valuation?.perStickValue && valuation?.totalValue && valuation.perStickValue !== valuation.totalValue && (
+                <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
+                  {formatCurrency(valuation.perStickValue)}/stick
+                </p>
+              )}
+              {valuation?.confidenceScore === 'low' && displayValue !== '—' && (
+                <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.35)' }}>Est.</p>
+              )}
+            </div>
+          </div>
+        </div>
         <DetailStat
           label="Rating"
-          value={cigar.rating ? `${cigar.rating}/100` : '—'}
+          value={cigar.rating ? `${cigar.rating}/5` : '—'}
           icon={Star}
         />
         <DetailStat

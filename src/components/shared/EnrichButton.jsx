@@ -107,15 +107,10 @@ async function enrichCigar(record) {
   if (!record.filler) missingFields.push('filler');
   if (!record.strength) missingFields.push('strength');
   if (!record.body) missingFields.push('body');
+  const needsFlavorNotes = !Array.isArray(record.flavor_notes) || record.flavor_notes.length === 0;
+  if (needsFlavorNotes) missingFields.push('flavor_notes');
 
-  // Also compute production_status locally from quantity
-  const localUpdates = {};
-  if (!record.production_status) {
-    const quantity = record.singles_equivalent || record.quantity || 0;
-    if (quantity > 0) localUpdates.production_status = 'Active';
-  }
-
-  if (missingFields.length === 0) return localUpdates;
+  if (missingFields.length === 0) return {};
 
   const result = await base44.integrations.Core.InvokeLLM({
     prompt: `You are a cigar expert. Given this cigar record, fill in only the clearly identifiable missing fields.
@@ -130,8 +125,10 @@ Field guidelines:
 - wrapper: wrapper leaf origin/type (e.g. "Ecuador Connecticut", "Nicaraguan Habano", "Cameroon", "Maduro")
 - binder: binder leaf origin/type
 - filler: filler leaf blend description
-- strength: one of "mild", "medium", "full"
-- body: one of "mild", "mild_medium", "medium", "medium_full", "full"`,
+- strength: one of "mild", "mild_medium", "medium", "medium_full", "full"
+- body: one of "mild", "mild_medium", "medium", "medium_full", "full"
+- flavor_notes: array of 3-6 tasting note strings (e.g. ["cedar", "leather", "earth", "pepper"])`,
+    add_context_from_internet: true,
     response_json_schema: {
       type: 'object',
       properties: {
@@ -141,13 +138,20 @@ Field guidelines:
         filler: { type: ['string', 'null'] },
         strength: { type: ['string', 'null'] },
         body: { type: ['string', 'null'] },
+        flavor_notes: { type: ['array', 'null'], items: { type: 'string' } },
       },
     },
   });
 
-  const updates = { ...localUpdates };
+  const updates = {};
   for (const field of missingFields) {
-    if (result?.[field]) updates[field] = result[field];
+    if (field === 'flavor_notes') {
+      if (Array.isArray(result?.flavor_notes) && result.flavor_notes.length > 0) {
+        updates.flavor_notes = result.flavor_notes;
+      }
+    } else if (result?.[field]) {
+      updates[field] = result[field];
+    }
   }
   return updates;
 }
