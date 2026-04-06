@@ -237,9 +237,10 @@ function CheckToggle({ label, checked, onChange }) {
   );
 }
 
-export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSessionSaved }) {
+export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSessionSaved, editSession }) {
   const { user } = useCurrentUser();
   const queryClient = useQueryClient();
+  const isEditMode = !!editSession;
   const [cigarMode, setCigarMode] = useState('collection');
   const [selectedCigar, setSelectedCigar] = useState(defaultCigar || null);
   const [form, setForm] = useState({ ...DEFAULT_SESSION });
@@ -259,10 +260,35 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
       setSelectedCigar(defaultCigar || null);
       setShouldDecrement(true);
       setSaving(false);
+    } else if (isEditMode && editSession) {
+      // Populate form from existing session for editing
+      setForm({
+        date: editSession.date || DEFAULT_SESSION.date,
+        duration_minutes: editSession.duration_minutes != null ? String(editSession.duration_minutes) : '',
+        pairing: editSession.pairing || '',
+        construction_notes: editSession.construction_notes || '',
+        burn_notes: editSession.burn_notes || '',
+        draw_notes: editSession.draw_notes || '',
+        flavor_progression: editSession.flavor_progression || '',
+        strength_impression: editSession.strength_impression || '',
+        overall_enjoyment: editSession.overall_enjoyment || 0,
+        would_buy_again: editSession.would_buy_again || '',
+        occasion: editSession.occasion || '',
+        location: editSession.location || '',
+        notes: editSession.notes || '',
+        not_for_me: editSession.not_for_me || false,
+        wishlist_after: editSession.wishlist_after || false,
+        is_out_of_collection: editSession.is_out_of_collection || false,
+        external_cigar_brand: editSession.external_cigar_brand || '',
+        external_cigar_name: editSession.external_cigar_name || '',
+        external_cigar_vitola: editSession.external_cigar_vitola || '',
+      });
+      setCigarMode(editSession.is_out_of_collection ? 'external' : 'collection');
+      setShouldDecrement(false); // Never decrement when editing
     } else if (defaultCigar) {
       setSelectedCigar(defaultCigar);
     }
-  }, [isOpen, defaultCigar]);
+  }, [isOpen, defaultCigar, editSession, isEditMode]);
 
   const set = (field) => (e) =>
     setForm((f) => ({ ...f, [field]: e?.target ? e.target.value : e }));
@@ -281,30 +307,39 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
           : undefined,
         duration_minutes: form.duration_minutes !== '' ? Number(form.duration_minutes) : undefined,
         overall_enjoyment: form.overall_enjoyment || undefined,
-        created_by: user?.email,
       };
-      await base44.entities.CigarSession.create(payload);
 
-      // Optionally decrement inventory for collection cigars
-      if (!isExternal && selectedCigar && shouldDecrement) {
-        const decrementFields = computeSessionDecrement(selectedCigar);
-        if (decrementFields) {
-          try {
-            await base44.entities.Cigar.update(selectedCigar.id, decrementFields);
-            queryClient.invalidateQueries({ queryKey: ['cigars'] });
-            queryClient.invalidateQueries({ queryKey: ['cigars-summary'] });
-            queryClient.invalidateQueries({ queryKey: ['cigar-detail'] });
-          } catch {
-            // Non-fatal: session was saved; inventory update failed silently
+      if (isEditMode && editSession?.id) {
+        // Update existing session
+        await base44.entities.CigarSession.update(editSession.id, payload);
+        toast.success('Session updated!');
+      } else {
+        // Create new session
+        payload.created_by = user?.email;
+        await base44.entities.CigarSession.create(payload);
+
+        // Optionally decrement inventory for new collection cigar sessions
+        if (!isExternal && selectedCigar && shouldDecrement) {
+          const decrementFields = computeSessionDecrement(selectedCigar);
+          if (decrementFields) {
+            try {
+              await base44.entities.Cigar.update(selectedCigar.id, decrementFields);
+              queryClient.invalidateQueries({ queryKey: ['cigars'] });
+              queryClient.invalidateQueries({ queryKey: ['cigars-summary'] });
+              queryClient.invalidateQueries({ queryKey: ['cigar-detail'] });
+            } catch {
+              // Non-fatal: session was saved; inventory update failed silently
+            }
           }
         }
+
+        toast.success('Session logged!');
       }
 
-      toast.success('Session logged!');
       if (typeof onSessionSaved === 'function') onSessionSaved();
       onClose();
     } catch {
-      toast.error('Failed to save session');
+      toast.error(isEditMode ? 'Failed to update session' : 'Failed to save session');
     } finally {
       setSaving(false);
     }
@@ -324,7 +359,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
       >
         <DialogHeader>
           <DialogTitle style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            Log Cigar Session
+            {isEditMode ? 'Edit Cigar Session' : 'Log Cigar Session'}
           </DialogTitle>
         </DialogHeader>
 
@@ -507,7 +542,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
                 fontWeight: 600,
               }}
             >
-              {saving ? 'Saving…' : 'Log Session'}
+              {saving ? 'Saving…' : isEditMode ? 'Update Session' : 'Log Session'}
             </Button>
           </div>
         </form>

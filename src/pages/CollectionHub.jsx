@@ -31,6 +31,7 @@ import CollectionStoryCard from '@/components/hub/CollectionStoryCard';
 import CombinedSessionModal from '@/components/session/CombinedSessionModal';
 import SmokingLogEditor from '@/components/home/SmokingLogEditor';
 import LogTastingModal from '@/components/whiskey/LogTastingModal';
+import CigarSessionModal from '@/components/cigars/CigarSessionModal';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { safeUpdate } from '@/components/utils/safeUpdate';
@@ -274,6 +275,7 @@ export default function CollectionHub() {
   const [showCombinedModal, setShowCombinedModal] = useState(false);
   const [editingSmokingLog, setEditingSmokingLog] = useState(null);
   const [editingTastingLog, setEditingTastingLog] = useState(null);
+  const [editingCigarSession, setEditingCigarSession] = useState(null);
   const [confirmDeleteLog, setConfirmDeleteLog] = useState(null);
 
   const updateLogMutation = useMutation({
@@ -760,6 +762,9 @@ export default function CollectionHub() {
               const rawTastingLog = activity.type === 'tasting'
                 ? tastings.find(l => l.id === activity.id)
                 : null;
+              const rawCigarSession = activity.type === 'cigar_session'
+                ? cigarSessions.find(l => l.id === activity.id)
+                : null;
               const isCigar = activity.type === 'cigar_session';
               return (
               <div
@@ -829,6 +834,16 @@ export default function CollectionHub() {
                       onClick={() => setEditingTastingLog(rawTastingLog)}
                       className="text-sm px-3 py-1 rounded-lg"
                       style={{ background: 'rgba(182,101,101,0.15)', color: '#D47C7C', border: '1px solid rgba(182,101,101,0.25)' }}
+                    >
+                      Edit
+                    </button>
+                  )}
+                  {rawCigarSession && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingCigarSession(rawCigarSession)}
+                      className="text-sm px-3 py-1 rounded-lg"
+                      style={{ background: 'rgba(140,107,63,0.15)', color: '#C4956A', border: '1px solid rgba(140,107,63,0.25)' }}
                     >
                       Edit
                     </button>
@@ -912,6 +927,16 @@ export default function CollectionHub() {
           }}
         />
       )}
+
+      <CigarSessionModal
+        isOpen={!!editingCigarSession}
+        editSession={editingCigarSession}
+        onClose={() => setEditingCigarSession(null)}
+        onSessionSaved={() => {
+          setEditingCigarSession(null);
+          queryClient.invalidateQueries({ queryKey: ['collection-hub-dashboard'] });
+        }}
+      />
 
       <AlertDialog open={!!confirmDeleteLog} onOpenChange={(open) => !open && setConfirmDeleteLog(null)}>
         <AlertDialogContent>
