@@ -312,6 +312,11 @@ const plUI = {
     notes: "Notatki",
     note: "Notatka",
     loading: "Ładowanie…",
+    deleting: "Usuwanie…",
+    saving: "Zapisywanie…",
+    unratedTasting: "Nieoceniona degustacja",
+    noNotes: "Brak notatek",
+    noValue: "Brak wartości",
     unknown: "Nieznany",
     unknownBlend: "Nieznana mieszanka",
     tobacco: "Tytoń",
@@ -872,6 +877,17 @@ const plUI = {
     advancedValuation: "Zaawansowane śledzenie wyceny",
     prioritySupport: "Priorytetowe wsparcie",
     fullFeatureDescription: "Pełny opis funkcji znajdziesz na stronie",
+  },
+
+  hub: {
+    inCollection: "W kolekcji",
+    trackedBlends: "Śledzone mieszanki",
+    recentSessions: "Ostatnie sesje",
+    sessionsThisWeek: "Sesje we wszystkich modułach w tym tygodniu",
+    trackedTastings: "Śledzone degustacje",
+    inHumidor: "W humidorze",
+    acrossActiveCollections: "Przez aktywne kolekcje",
+    cigars: "Cygara",
   },
 
 };

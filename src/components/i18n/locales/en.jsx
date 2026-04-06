@@ -36,6 +36,11 @@ export default {
     error: "Error",
     none: "None",
     share: "Share",
+    deleting: "Deleting...",
+    saving: "Saving...",
+    unratedTasting: "Unrated tasting",
+    noNotes: "No notes",
+    noValue: "No value",
   },
   
   notifications: {
@@ -116,6 +121,14 @@ export default {
     justNow: "Just now",
     unknownDate: "Unknown",
     tastingLogged: "Tasting logged",
+    inCollection: "In collection",
+    trackedBlends: "Tracked blends",
+    recentSessions: "Recent Sessions",
+    sessionsThisWeek: "Sessions across all modules this week",
+    trackedTastings: "Tracked tastings",
+    inHumidor: "In humidor",
+    acrossActiveCollections: "Across active collections",
+    cigars: "Cigars",
   },
 
   nav: {

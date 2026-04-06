@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   PlusCircle,
@@ -52,6 +53,7 @@ function safeText(value, fallback = "—") {
 function BottleGridCard({ bottle, onOpen }) {
   const photo = getBottlePhoto(bottle);
   const unitValue = resolveBottleUnitValue(bottle);
+  const { t } = useTranslation();
 
   return (
     <button
@@ -78,7 +80,7 @@ function BottleGridCard({ bottle, onOpen }) {
 
       <div className="p-4 space-y-2">
         <h3 className="text-lg font-semibold text-[#F5F1E7] leading-tight break-words">
-          {safeText(bottle.name, "Untitled Bottle")}
+          {safeText(bottle.name, t('whiskey.untitledBottle'))}
         </h3>
 
         <p className="text-sm text-[#D8C7A6]/72 break-words">
@@ -89,7 +91,7 @@ function BottleGridCard({ bottle, onOpen }) {
 
         <div className="flex items-center justify-between gap-3">
           <div className="text-sm text-[#E0D8C8]">
-            {unitValue > 0 ? formatCurrency(unitValue) : "No value"}
+            {unitValue > 0 ? formatCurrency(unitValue) : t('common.noValue')}
           </div>
           {bottle.favorite ? (
             <Star className="w-4 h-4 text-[#D4A574]" fill="currentColor" />
@@ -103,6 +105,7 @@ function BottleGridCard({ bottle, onOpen }) {
 function BottleListRow({ bottle, onOpen }) {
   const photo = getBottlePhoto(bottle);
   const unitValue = resolveBottleUnitValue(bottle);
+  const { t } = useTranslation();
 
   return (
     <button
@@ -130,7 +133,7 @@ function BottleListRow({ bottle, onOpen }) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="text-lg font-semibold text-[#F5F1E7] break-words leading-tight">
-              {safeText(bottle.name, "Untitled Bottle")}
+              {safeText(bottle.name, t('whiskey.untitledBottle'))}
             </h3>
             <p className="text-sm text-[#D8C7A6]/72 mt-1 break-words">
               {[
@@ -145,7 +148,7 @@ function BottleListRow({ bottle, onOpen }) {
 
           <div className="text-right shrink-0">
             <div className="text-sm text-[#E0D8C8]">
-              {unitValue > 0 ? formatCurrency(unitValue) : "No value"}
+              {unitValue > 0 ? formatCurrency(unitValue) : t('common.noValue')}
             </div>
             {bottle.favorite ? (
               <Star
@@ -164,6 +167,7 @@ function WhiskeyInner() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isLoading: userLoading } = useCurrentUser();
+  const { t } = useTranslation();
 
   const [bottles, setBottles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -283,7 +287,7 @@ function WhiskeyInner() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search bottles"
+                placeholder={t('whiskey.searchPlaceholder')}
                 className="bg-transparent outline-none text-sm text-[#F5F1E7] placeholder:text-[#D8C7A6]/45 w-full"
               />
             </div>

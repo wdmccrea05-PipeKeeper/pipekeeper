@@ -333,6 +333,11 @@ const jaUI = {
     notes: "メモ",
     note: "注意",
     loading: "読み込み中…",
+    deleting: "削除中…",
+    saving: "保存中…",
+    unratedTasting: "未評価のテイスティング",
+    noNotes: "ノートなし",
+    noValue: "値なし",
     unknown: "不明",
     unknownBlend: "不明なブレンド",
     tobacco: "タバコ",
@@ -960,6 +965,17 @@ const jaUI = {
     advancedValuation: "高度な評価追跡",
     prioritySupport: "優先サポート",
     fullFeatureDescription: "完全な機能説明については、こちらをご覧ください",
+  },
+
+  hub: {
+    inCollection: "コレクションに",
+    trackedBlends: "追跡中のブレンド",
+    recentSessions: "最近のセッション",
+    sessionsThisWeek: "今週の全モジュールのセッション",
+    trackedTastings: "追跡中のテイスティング",
+    inHumidor: "ヒュミドールに",
+    acrossActiveCollections: "アクティブコレクション全体",
+    cigars: "葉巻",
   },
 
 };

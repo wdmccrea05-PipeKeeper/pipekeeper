@@ -312,6 +312,11 @@ const nlUI = {
     notes: "Notities",
     note: "Notitie",
     loading: "Laden…",
+    deleting: "Verwijderen…",
+    saving: "Opslaan…",
+    unratedTasting: "Niet beoordeelde proeverij",
+    noNotes: "Geen notities",
+    noValue: "Geen waarde",
     unknown: "Onbekend",
     unknownBlend: "Onbekend mengsel",
     tobacco: "Tabak",
@@ -877,6 +882,17 @@ const nlUI = {
     advancedValuation: "Geavanceerd waarderingsbeheer",
     prioritySupport: "Prioriteitsondersteuning",
     fullFeatureDescription: "Voor een volledige functiebeschrijving bezoek",
+  },
+
+  hub: {
+    inCollection: "In de collectie",
+    trackedBlends: "Gevolgde blends",
+    recentSessions: "Recente sessies",
+    sessionsThisWeek: "Sessies in alle modules deze week",
+    trackedTastings: "Gevolgde proeverijen",
+    inHumidor: "In de humidor",
+    acrossActiveCollections: "Over actieve collecties",
+    cigars: "Sigaren",
   },
 
 };

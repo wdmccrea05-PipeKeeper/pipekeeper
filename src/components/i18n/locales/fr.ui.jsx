@@ -300,6 +300,11 @@ const frUI = {
     notes: "Notes",
     note: "Note",
     loading: "Chargement…",
+    deleting: "Suppression…",
+    saving: "Enregistrement…",
+    unratedTasting: "Dégustation non notée",
+    noNotes: "Pas de notes",
+    noValue: "Pas de valeur",
     unknown: "Inconnu",
     unknownBlend: "Mélange inconnu",
     tobacco: "Tabac",
@@ -909,6 +914,17 @@ const frUI = {
     advancedValuation: "Suivi d'évaluation avancé",
     prioritySupport: "Support prioritaire",
     fullFeatureDescription: "Pour une description complète des fonctionnalités, visitez",
+  },
+
+  hub: {
+    inCollection: "Dans la collection",
+    trackedBlends: "Mélanges suivis",
+    recentSessions: "Sessions récentes",
+    sessionsThisWeek: "Sessions sur tous les modules cette semaine",
+    trackedTastings: "Dégustations suivies",
+    inHumidor: "Dans le humidor",
+    acrossActiveCollections: "Sur les collections actives",
+    cigars: "Cigares",
   },
 
 };
