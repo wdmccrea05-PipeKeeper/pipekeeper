@@ -14,14 +14,16 @@
  *   renewalAt           ← current_period_end
  *   planKey             ← raw.planKey / raw.plan_key (null when unknown)
  *   module              ← primary module derived from planKey → primary_module field → 'pipekeeper'
- *   modules             ← all modules for this subscription (e.g. ['pipekeeper','whiskeykeeper','cigarkeeper'] for a bundle)
+ *   modules             ← all modules for this subscription
  *   platform            ← derived from subscription provider or user record ('ios'|'web'|'google'|null)
  *
- * Required fields for revenue: billingInterval, price.
- * Required fields for renewal: billingInterval, price, renewalAt.
- * If price or billingInterval is missing, the subscription is excluded from revenue/renewal metrics
- * and counted in the corresponding excluded-record warning.
- * Excluded subscriptions are NEVER removed from active paid subscription counts.
+ * Valid paid subscription (for paid metrics):
+ *   isPaid === true AND price !== null AND billingInterval !== null
+ *
+ * Excluded subscription:
+ *   isPaid === true BUT price === null OR billingInterval === null
+ *   Excluded subs MUST NOT count toward paid metrics or renewal metrics.
+ *   They are counted separately in excludedSubscriptions.
  */
 
 // ─── Low-level helpers ────────────────────────────────────────────────────────
@@ -207,8 +209,6 @@ export function isActivePaid(raw) {
  * Primary source: raw.provider ('apple', 'ios', 'google', 'android', 'stripe', 'web', …)
  * Secondary source: user.data.platform or user.platform (fallback when no provider)
  *
- * Known web indicators: any non-empty, non-mobile, non-'unknown' value.
- * This mirrors the signup-source logic already used elsewhere in this report.
  * Returns null when platform cannot be determined — do NOT guess.
  *
  * @param {object}      raw   Raw subscription record
@@ -226,7 +226,6 @@ export function normalizePlatform(raw, user = null) {
     if (userPlatform === 'apple' || userPlatform === 'ios') return 'ios';
     if (userPlatform === 'android' || userPlatform === 'googleplay' || userPlatform === 'google') return 'google';
     // Any non-empty, non-mobile, non-'unknown' value is treated as web.
-    // Consistent with signupSources logic: non-mobile platform → web.
     if (userPlatform && userPlatform !== 'unknown') return 'web';
   }
 
@@ -236,32 +235,20 @@ export function normalizePlatform(raw, user = null) {
 // ─── Normalization ────────────────────────────────────────────────────────────
 
 /**
- * Normalize ONE raw subscription record into the V3 canonical shape:
- * {
- *   rawId, userId, userEmail,
- *   isPaid,
- *   planKey: string | null,
- *   billingInterval: 'monthly' | 'annual' | null,
- *   price: number | null,
- *   createdAt: Date | null,
- *   renewalAt: Date | null,
- *   module: string,
- *   modules: string[],
- *   platform: 'ios' | 'web' | 'google' | null,
- * }
+ * Normalize ONE raw subscription record into the V3 canonical shape.
  *
  * Price resolution order:
  *   1. raw.amount (actual billed amount if present and > 0)
  *   2. PLAN_CATALOG[planKey].price (known catalog price when amount is missing/zero)
- *   3. null (excluded from revenue and renewal metrics; counted in warnings)
+ *   3. null (excluded from revenue and renewal metrics)
  *
  * Billing interval resolution order:
- *   1. raw.billing_interval / raw.billing_period (field-based normalization)
- *   2. PLAN_CATALOG[planKey].billingInterval (catalog fallback)
+ *   1. raw.billing_interval / raw.billing_period
+ *   2. PLAN_CATALOG[planKey].billingInterval
  *   3. null
  *
  * @param {object}      raw   Raw subscription record
- * @param {object|null} user  Associated user record (optional, used for platform fallback)
+ * @param {object|null} user  Associated user record (optional)
  * @returns {object}    Normalized subscription
  */
 export function normalizeSub(raw, user = null) {
@@ -296,6 +283,44 @@ export function normalizeSub(raw, user = null) {
   };
 }
 
+/**
+ * Normalize an array of raw subscription records.
+ *
+ * @param {object[]} rawSubs        Raw subscription records
+ * @param {Map}      userByIdMap    Map of userId → user record
+ * @param {Map}      userByEmailMap Map of email → user record
+ * @returns {object[]} Normalized subscriptions
+ */
+export function normalizeSubscriptionRecords(rawSubs, userByIdMap = new Map(), userByEmailMap = new Map()) {
+  return rawSubs.map((raw) => {
+    const userId = String(raw.user_id || '');
+    const email  = norm(raw.user_email || '');
+    const user   = (userId && userByIdMap.get(userId)) ||
+                   (email  && userByEmailMap.get(email)) ||
+                   null;
+    return normalizeSub(raw, user);
+  });
+}
+
+// ─── Valid-paid check ─────────────────────────────────────────────────────────
+
+/**
+ * A normalized subscription is "valid for paid metrics" when:
+ *   - it is active paid (isPaid === true)
+ *   - it has a known price (price !== null)
+ *   - it has a known billing interval (billingInterval !== null)
+ *
+ * Subscriptions that fail this check are excluded from paid metrics (Active Paid
+ * Subscriptions, Paid Accounts, MRR, ARR) and from renewal metrics. They are
+ * counted separately in the Excluded Subscription Issues section.
+ *
+ * @param {object} sub  Normalized subscription
+ * @returns {boolean}
+ */
+export function isValidForPaidMetrics(sub) {
+  return sub.isPaid && sub.price !== null && sub.billingInterval !== null;
+}
+
 // ─── MRR math ─────────────────────────────────────────────────────────────────
 
 /**
@@ -320,11 +345,8 @@ export function mrrContribution(sub) {
  *
  * Canonical formula:
  *   totalMRR = Σ mrrContribution(s)   (unrounded internal accumulator)
- *   mrr      = round(totalMRR, 2)     (displayed MRR — single canonical source of truth)
- *   arr      = round(mrr * 12, 2)     (derived from rounded MRR — guarantees display consistency)
- *
- * ARR is always derived from the ROUNDED mrr so that displayed ARR == displayed MRR × 12
- * within normal currency rounding rules (±$0.01).
+ *   mrr      = round(totalMRR, 2)     (displayed MRR — single canonical source)
+ *   arr      = round(mrr * 12, 2)     (derived from rounded MRR — display consistent)
  *
  * @param {object[]} paidSubs  Normalized subscriptions
  * @returns {{ mrr: number, arr: number }}
@@ -345,10 +367,10 @@ export function computeMRRARR(paidSubs) {
  *   subscriptions = count of subs with renewal_at in range
  *   revenue       = sum of actual billed prices (not MRR-normalized)
  *
- * Rule 6: only subscriptions with a valid renewal date AND a known price AND a known
+ * Rule: only subscriptions with a valid renewal date AND a known price AND a known
  * billing interval are counted. If any of those three fields is missing, the
- * subscription cannot contribute revenue and therefore MUST NOT be counted as a
- * renewing subscription. This guarantees that count and revenue always reconcile.
+ * subscription cannot contribute revenue and MUST NOT be counted as a renewing
+ * subscription. This guarantees that count and revenue always reconcile.
  *
  * @param {object[]} paidSubs  Normalized subscriptions
  * @param {{ start: Date, end: Date }} range  Calendar range
@@ -376,9 +398,6 @@ export function calcRenewalPeriod(paidSubs, range) {
 /**
  * Run hard assertions on computed metrics.
  * Returns { passed, failures } — never throws.
- *
- * Note: new account counts are NOT expected to be monotonic — calendar week
- * ranges can cross month/quarter boundaries, so week > month is valid.
  *
  * Assertions:
  *   - paidAccounts <= totalAccounts
@@ -410,4 +429,350 @@ export function runSanityChecks(params) {
   }
 
   return { passed: failures.length === 0, failures };
+}
+
+// ─── High-level metric builders ───────────────────────────────────────────────
+
+/**
+ * Build account metrics from deduplicated account records.
+ *
+ * Account metrics are derived ONLY from account records:
+ *   - Total Accounts
+ *   - Paid Accounts (accounts with at least one valid paid subscription)
+ *   - Free Accounts (total - paid)
+ *   - Signup Sources (web / apple / googlePlay / unknown)
+ *   - New Accounts by calendar period (from account.created_at only)
+ *
+ * No account is excluded because subscription data is incomplete.
+ *
+ * @param {object[]} uniqueAccounts   Deduplicated account records
+ * @param {Set<string>} paidAccountKeys  Set of userId or email for valid-paid accounts
+ * @param {object} ranges             Calendar ranges from getCalendarRange
+ * @returns {object} Account metrics
+ */
+export function buildAccountMetrics(uniqueAccounts, paidAccountKeys, ranges) {
+  const total    = uniqueAccounts.length;
+  const paid     = paidAccountKeys.size;
+  const free     = total - paid;
+  const paidPct  = total > 0 ? parseFloat(((paid / total) * 100).toFixed(1)) : 0;
+
+  const signupSources = { web: 0, apple: 0, googlePlay: 0, unknown: 0 };
+  for (const u of uniqueAccounts) {
+    const platform = norm(u.data?.platform || u.platform || '');
+    if (platform === 'apple' || platform === 'ios') {
+      signupSources.apple++;
+    } else if (platform === 'android' || platform === 'googleplay' || platform === 'google') {
+      signupSources.googlePlay++;
+    } else if (!platform) {
+      signupSources.unknown++;
+    } else {
+      signupSources.web++;
+    }
+  }
+
+  // New accounts use account.created_at only — never subscription data
+  const newAccounts = { today: 0, week: 0, month: 0, quarter: 0, year: 0 };
+  for (const u of uniqueAccounts) {
+    const d = parseDate(u.created_date || u.created_at);
+    if (!d) continue;
+    if (inRange(d, ranges.today))   newAccounts.today++;
+    if (inRange(d, ranges.week))    newAccounts.week++;
+    if (inRange(d, ranges.month))   newAccounts.month++;
+    if (inRange(d, ranges.quarter)) newAccounts.quarter++;
+    if (inRange(d, ranges.year))    newAccounts.year++;
+  }
+
+  return { total, paid, free, paidPct, signupSources, newAccounts };
+}
+
+/**
+ * Build paid subscription metrics from valid paid subscriptions only.
+ *
+ * Only subscriptions that pass isValidForPaidMetrics are included.
+ * Excluded subscriptions (missing price or billing interval) are NOT counted here.
+ *
+ * @param {object[]} validPaidSubs  Normalized subs that pass isValidForPaidMetrics
+ * @returns {object} Paid subscription metrics
+ */
+export function buildPaidMetrics(validPaidSubs) {
+  const totalActivePaid = validPaidSubs.length;
+  const monthly = validPaidSubs.filter((s) => s.billingInterval === 'monthly').length;
+  const annual  = validPaidSubs.filter((s) => s.billingInterval === 'annual').length;
+
+  const byProduct = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundles: 0 };
+  for (const sub of validPaidSubs) {
+    if (sub.modules.length > 1) {
+      byProduct.bundles++;
+    } else {
+      const m = sub.modules[0] ?? sub.module;
+      if (m === 'pipekeeper')         byProduct.pipekeeper++;
+      else if (m === 'whiskeykeeper') byProduct.whiskeykeeper++;
+      else if (m === 'cigarkeeper')   byProduct.cigarkeeper++;
+      else if (m === 'winekeeper')    byProduct.winekeeper++;
+      else                            byProduct.pipekeeper++; // unknown fallback
+    }
+  }
+
+  const { mrr, arr } = computeMRRARR(validPaidSubs);
+
+  return { totalActivePaid, monthly, annual, byProduct, mrr, arr };
+}
+
+/**
+ * Build renewal metrics from valid paid subscriptions.
+ *
+ * @param {object[]} validPaidSubs  Normalized subs that pass isValidForPaidMetrics
+ * @param {object} ranges           Calendar ranges
+ * @returns {object} Renewal metrics by calendar period
+ */
+export function buildRenewalMetrics(validPaidSubs, ranges) {
+  return {
+    week:    calcRenewalPeriod(validPaidSubs, ranges.week),
+    month:   calcRenewalPeriod(validPaidSubs, ranges.month),
+    quarter: calcRenewalPeriod(validPaidSubs, ranges.quarter),
+    year:    calcRenewalPeriod(validPaidSubs, ranges.year),
+  };
+}
+
+/**
+ * Build excluded subscription issue counts.
+ *
+ * Excluded subscriptions are active-paid subscriptions that failed isValidForPaidMetrics.
+ * They are counted here by exclusion reason for diagnostic purposes.
+ *
+ * @param {object[]} excludedSubs      Active paid subs that failed isValidForPaidMetrics
+ * @param {number}   duplicatesRemoved Count of duplicate subs removed during dedup
+ * @returns {object} Excluded subscription counts by reason
+ */
+export function buildExcludedSubscriptionMetrics(excludedSubs, duplicatesRemoved = 0) {
+  let missingPrice          = 0;
+  let missingBillingInterval = 0;
+  let missingPlanKey        = 0;
+  let orphaned              = 0;
+
+  for (const sub of excludedSubs) {
+    if (sub.price === null)           missingPrice++;
+    if (sub.billingInterval === null) missingBillingInterval++;
+    if (sub.planKey === null)         missingPlanKey++;
+    if (!sub.userId && !sub.userEmail) orphaned++;
+  }
+
+  return {
+    total: excludedSubs.length + duplicatesRemoved,
+    byReason: {
+      missingPrice,
+      missingBillingInterval,
+      missingPlanKey,
+      orphaned,
+      duplicatesRemoved,
+    },
+  };
+}
+
+// ─── Full pipeline ────────────────────────────────────────────────────────────
+
+/**
+ * Build the complete V3 user subscription report from raw data.
+ *
+ * This function exists so the entire pipeline can be unit-tested without Deno.
+ * The Deno entry.ts duplicates the same logic inline.
+ *
+ * Pipeline:
+ *   1. Deduplicate accounts by email
+ *   2. Normalize all active paid subscriptions (dedup by subscription ID)
+ *   3. Dedup per (userKey, module) — keep most recent valid sub
+ *   4. Split into validPaidSubs and excludedSubs
+ *   5. Build account metrics (from accounts + valid paid keys)
+ *   6. Build paid metrics (from valid paid subs only)
+ *   7. Build renewal metrics (from valid paid subs only)
+ *   8. Build excluded subscription metrics
+ *   9. Build user detail lists
+ *  10. Run sanity checks
+ *
+ * @param {object[]} allAccounts      Raw account/user records
+ * @param {object[]} allSubscriptions Raw subscription records
+ * @param {Date}     now              Current time (for calendar ranges)
+ * @returns {object} Full report payload
+ */
+export function buildUserSubscriptionReport(allAccounts, allSubscriptions, now) {
+  const ranges = {
+    today:   getCalendarRange('today',   now),
+    week:    getCalendarRange('week',    now),
+    month:   getCalendarRange('month',   now),
+    quarter: getCalendarRange('quarter', now),
+    year:    getCalendarRange('year',    now),
+  };
+
+  // ── Deduplicate accounts by email (first occurrence wins) ──────────────────
+  const uniqueUsersMap = new Map();
+  for (const u of allAccounts) {
+    const email = norm(u.email || '');
+    if (!email) continue;
+    if (!uniqueUsersMap.has(email)) uniqueUsersMap.set(email, u);
+  }
+  const uniqueAccounts = [...uniqueUsersMap.values()];
+
+  // ── User lookup maps (for platform fallback during sub normalization) ───────
+  const userByIdMap    = new Map();
+  const userByEmailMap = new Map();
+  for (const u of uniqueAccounts) {
+    if (u.id) userByIdMap.set(String(u.id), u);
+    const email = norm(u.email || '');
+    if (email) userByEmailMap.set(email, u);
+  }
+
+  // ── Build subscription lookup maps (for user detail lists) ────────────────
+  const subsByUserId = new Map();
+  const subsByEmail  = new Map();
+  for (const raw of allSubscriptions) {
+    if (raw.user_id) {
+      if (!subsByUserId.has(raw.user_id)) subsByUserId.set(raw.user_id, []);
+      subsByUserId.get(raw.user_id).push(raw);
+    }
+    const e = norm(raw.user_email || '');
+    if (e) {
+      if (!subsByEmail.has(e)) subsByEmail.set(e, []);
+      subsByEmail.get(e).push(raw);
+    }
+  }
+
+  function getUserRawSubs(u) {
+    const email  = norm(u.email || '');
+    const byId   = subsByUserId.get(u.id) || [];
+    const byMail = subsByEmail.get(email) || [];
+    const seen   = new Set();
+    return [...byId, ...byMail].filter((s) => {
+      const key = s.id || s.stripe_subscription_id || '';
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  // ── Phase 1: Normalize all active paid subs (dedup by subscription ID) ─────
+  const seenSubIds       = new Set();
+  const allActivePaidNorm = [];
+  for (const raw of allSubscriptions.filter(isActivePaid)) {
+    const key = String(raw.id || raw.stripe_subscription_id || '');
+    if (key && seenSubIds.has(key)) continue;
+    if (key) seenSubIds.add(key);
+    const userId = String(raw.user_id || '');
+    const email  = norm(raw.user_email || '');
+    const user   = (userId && userByIdMap.get(userId)) ||
+                   (email  && userByEmailMap.get(email)) ||
+                   null;
+    allActivePaidNorm.push(normalizeSub(raw, user));
+  }
+
+  // ── Phase 2: Dedup per (userKey, module) — keep most recent valid sub ──────
+  const paidSubsByKey  = new Map();
+  let duplicatesRemoved = 0;
+  for (const sub of allActivePaidNorm) {
+    const userKey = sub.userId || sub.userEmail;
+    if (!userKey) continue; // orphan — no account link
+    const dedupKey = `${userKey}::${sub.module}`;
+    const existing = paidSubsByKey.get(dedupKey);
+    if (!existing) {
+      paidSubsByKey.set(dedupKey, sub);
+    } else {
+      duplicatesRemoved++;
+      const existingDate = existing.createdAt?.getTime() ?? 0;
+      const subDate      = sub.createdAt?.getTime() ?? 0;
+      if (subDate > existingDate) paidSubsByKey.set(dedupKey, sub);
+    }
+  }
+  const allDedupedSubs = [...paidSubsByKey.values()];
+
+  // ── Phase 3: Split into valid and excluded ─────────────────────────────────
+  const validPaidSubs = allDedupedSubs.filter(isValidForPaidMetrics);
+  const excludedSubs  = allDedupedSubs.filter((s) => !isValidForPaidMetrics(s));
+
+  // ── Build paid account key set (from valid paid subs only) ─────────────────
+  const paidAccountKeys = new Set();
+  for (const sub of validPaidSubs) {
+    const key = sub.userId || sub.userEmail;
+    if (key) paidAccountKeys.add(key);
+  }
+
+  // ── Compute metrics ────────────────────────────────────────────────────────
+  const accountMetrics  = buildAccountMetrics(uniqueAccounts, paidAccountKeys, ranges);
+  const paidMetrics     = buildPaidMetrics(validPaidSubs);
+  const renewalMetrics  = buildRenewalMetrics(validPaidSubs, ranges);
+  const excludedMetrics = buildExcludedSubscriptionMetrics(excludedSubs, duplicatesRemoved);
+
+  // ── Build user detail lists ────────────────────────────────────────────────
+  const paidUsersList = [];
+  const freeUsersList = [];
+
+  for (const u of uniqueAccounts) {
+    const isPaidUser =
+      (u.id    && paidAccountKeys.has(String(u.id)))   ||
+      (u.email && paidAccountKeys.has(norm(u.email)));
+
+    const rawUserSubs        = getUserRawSubs(u);
+    const activePaidUserSubs = rawUserSubs.filter(isActivePaid);
+    const bestRaw            = activePaidUserSubs[0] ?? null;
+    const bestSub            = bestRaw ? normalizeSub(bestRaw, u) : null;
+
+    const row = {
+      full_name:           u.full_name || '',
+      email:               norm(u.email || ''),
+      role:                u.role || 'user',
+      created_date:        u.created_date || u.created_at || '',
+      subscription_status: isPaidUser ? (norm(bestRaw?.status) || 'active') : 'none',
+      billing_interval:    bestSub?.billingInterval ?? null,
+      subscription_end:    bestSub?.renewalAt?.toISOString() ?? null,
+      platform:            bestSub?.platform ?? null,
+    };
+
+    if (isPaidUser) paidUsersList.push(row);
+    else            freeUsersList.push(row);
+  }
+
+  const sortByDate = (a, b) =>
+    new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime();
+  paidUsersList.sort(sortByDate);
+  freeUsersList.sort(sortByDate);
+
+  // ── Sanity checks ──────────────────────────────────────────────────────────
+  const sanity = runSanityChecks({
+    paidAccounts:  accountMetrics.paid,
+    totalAccounts: accountMetrics.total,
+    mrr:           paidMetrics.mrr,
+    arr:           paidMetrics.arr,
+    renewals:      renewalMetrics,
+  });
+
+  return {
+    meta: {
+      generatedAt:         now.toISOString(),
+      dateRangeDefinition: 'calendar',
+      timezoneNote:        'UTC',
+      reportVersion:       'v3',
+      calendarRanges: {
+        today:   { start: ranges.today.start.toISOString(),   end: ranges.today.end.toISOString()   },
+        week:    { start: ranges.week.start.toISOString(),    end: ranges.week.end.toISOString()    },
+        month:   { start: ranges.month.start.toISOString(),   end: ranges.month.end.toISOString()   },
+        quarter: { start: ranges.quarter.start.toISOString(), end: ranges.quarter.end.toISOString() },
+        year:    { start: ranges.year.start.toISOString(),    end: ranges.year.end.toISOString()    },
+      },
+    },
+    sanityChecks:          sanity,
+    accounts:              accountMetrics,
+    subscriptions: {
+      totalActivePaid: paidMetrics.totalActivePaid,
+      monthly:         paidMetrics.monthly,
+      annual:          paidMetrics.annual,
+      byProduct:       paidMetrics.byProduct,
+    },
+    runRate: {
+      mrr: paidMetrics.mrr,
+      arr: paidMetrics.arr,
+    },
+    renewalRevenue:        renewalMetrics,
+    excludedSubscriptions: excludedMetrics,
+    paid_users:            paidUsersList,
+    free_users:            freeUsersList,
+  };
 }
