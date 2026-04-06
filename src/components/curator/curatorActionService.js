@@ -1,5 +1,12 @@
 const BASE_ACTION_TIMEOUT_MS = 30000;
 const FIND_SIMILAR_TIMEOUT_MS = 15000;
+const PAIRING_TIMEOUT_MS = 45000;
+
+// Pairing actions are more complex (cross-module analysis) and need extra time
+const PAIRING_ACTION_TYPES = new Set([
+  'cigar_pairing_suggestions',
+  'session_builder',
+]);
 
 function withTimeout(promise, ms) {
   return new Promise((resolve, reject) => {
@@ -47,6 +54,8 @@ export async function runCuratorAction({
   const anchorList = getAnchorList(anchorOverrides);
   const timeoutMs = String(actionType || "").startsWith("find_similar")
     ? FIND_SIMILAR_TIMEOUT_MS
+    : PAIRING_ACTION_TYPES.has(actionType)
+    ? PAIRING_TIMEOUT_MS
     : BASE_ACTION_TIMEOUT_MS;
 
   try {

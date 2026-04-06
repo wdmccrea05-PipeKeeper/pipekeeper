@@ -15,6 +15,18 @@ import { base44 } from '@/api/base44Client';
 import { MODULE_REGISTRY } from './moduleRegistry';
 
 /**
+ * Pairing modes — used to classify the type of recommendation.
+ * direct_pairing: two items consumed together in one session (e.g. cigar + whiskey)
+ * collection_mix_match: multiple pairing options generated across the full collection
+ * incompatible_simultaneous: combinations that should NEVER be suggested together
+ */
+export const PAIRING_MODES = {
+  DIRECT: 'direct_pairing',
+  COLLECTION_MIX_MATCH: 'collection_mix_match',
+  INCOMPATIBLE: 'incompatible_simultaneous',
+};
+
+/**
  * Pairing compatibility matrix
  * Which modules can pair with which
  */
@@ -44,6 +56,91 @@ const PAIRING_MATRIX = {
     incompatible: [],
   },
 };
+
+/**
+ * Module pairs that must NEVER be recommended as a simultaneous live experience.
+ * These are alternatives in a session — not complements.
+ *
+ * Examples:
+ *  - You smoke a pipe OR a cigar (not both at once)
+ *  - You drink whiskey OR wine (not both at once)
+ */
+const SIMULTANEOUS_INCOMPATIBLE = new Set([
+  // Normalised as "module_a|module_b" (alphabetical order for lookup)
+  'cigarkeeper|pipekeeper',
+  'tobacco|cigarkeeper',   // tobacco is the pipe-tobacco module
+  'winekeeper|whiskeykeeper',
+]);
+
+/**
+ * Return a normalised key for a module pair (alphabetical, pipe-delimited).
+ */
+function pairKey(module1, module2) {
+  return [module1, module2].sort().join('|');
+}
+
+/**
+ * Check if two modules should NOT be presented as a simultaneous live experience.
+ * Use this to filter nonsensical combined recommendations before surfacing them.
+ *
+ * @param {string} module1
+ * @param {string} module2
+ * @returns {boolean} true if the pair is incompatible for simultaneous use
+ */
+export function isSimultaneouslyIncompatible(module1, module2) {
+  if (!module1 || !module2 || module1 === module2) return false;
+  return SIMULTANEOUS_INCOMPATIBLE.has(pairKey(module1, module2));
+}
+
+/**
+ * Given a list of active module IDs, return all valid two-way direct pairing paths.
+ * Filters out any pair that is incompatible for simultaneous use.
+ *
+ * @param {string[]} activeModuleIds - e.g. ['cigarkeeper', 'whiskeykeeper', 'pipekeeper']
+ * @returns {Array<{a: string, b: string}>} valid pairing paths
+ */
+export function getValidDirectPairingPaths(activeModuleIds = []) {
+  const paths = [];
+  const seen = new Set();
+
+  for (const modA of activeModuleIds) {
+    const compatible = PAIRING_MATRIX[modA]?.compatible || [];
+    for (const modB of compatible) {
+      if (!activeModuleIds.includes(modB)) continue;
+      if (isSimultaneouslyIncompatible(modA, modB)) continue;
+      const key = pairKey(modA, modB);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      paths.push({ a: modA, b: modB });
+    }
+  }
+
+  return paths;
+}
+
+/**
+ * Given a set of active module IDs, generate human-readable collection-wide
+ * mix-and-match pairing suggestion labels.  This is a local (no-LLM) helper
+ * that produces the scaffolding Curator can use to frame its recommendations.
+ *
+ * @param {string[]} activeModuleIds
+ * @returns {string[]} suggestion labels
+ */
+export function generateCollectionPairingSuggestions(activeModuleIds = []) {
+  const paths = getValidDirectPairingPaths(activeModuleIds);
+
+  const labels = {
+    'cigarkeeper|whiskeykeeper': 'Best cigar + whiskey pairings from your current inventory',
+    'cigarkeeper|winekeeper': 'Best cigar + wine pairings from your current inventory',
+    'pipekeeper|whiskeykeeper': 'Best pipe + whiskey pairings from your current inventory',
+    'tobacco|whiskeykeeper': 'Best pipe tobacco + whiskey pairings from your current inventory',
+    'cigarkeeper|coffeekeeper': 'Best cigar + coffee pairings from your current inventory',
+  };
+
+  return paths
+    .map(({ a, b }) => labels[pairKey(a, b)])
+    .filter(Boolean);
+}
 
 /**
  * Get pairing recommendations for item
