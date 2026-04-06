@@ -29,21 +29,21 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
   // If no modules specified, include all by default
   const hasWhiskey = enabledModules.length === 0 || enabledModules.includes('whiskeykeeper');
   const hasPipe = enabledModules.length === 0 || enabledModules.includes('pipekeeper');
-  const isCombined = hasWhiskey && hasPipe;
+  const hasCigar = enabledModules.length === 0 || enabledModules.includes('cigarkeeper');
+  const isCombined = (hasWhiskey ? 1 : 0) + (hasPipe ? 1 : 0) + (hasCigar ? 1 : 0) >= 2;
 
   const cards = [];
 
   // 1. Opening snapshot — module-aware
-  const openingLabel = isCombined
-    ? 'Collection Snapshot'
-    : hasPipe
-      ? 'Pipe & Tobacco Snapshot'
-      : 'Whiskey Snapshot';
+  const moduleNames = [hasPipe && 'pipes', hasWhiskey && 'whiskey', hasCigar && 'cigars'].filter(Boolean);
+  const openingLabel = isCombined ? 'Collection Snapshot' : hasPipe ? 'Pipe & Tobacco Snapshot' : hasCigar ? 'Cigar Snapshot' : 'Whiskey Snapshot';
   const openingSubtitle = isCombined
-    ? 'A curated collection across pipes, tobacco & whiskey.'
+    ? `A curated collection across ${moduleNames.join(', ')}.`
     : hasPipe
       ? 'A curated pipe and tobacco collection.'
-      : 'A curated whiskey collection.';
+      : hasCigar
+        ? 'A curated cigar collection.'
+        : 'A curated whiskey collection.';
 
   cards.push({
     title: openingLabel,
@@ -108,14 +108,48 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     });
   }
 
+  // 4b. Most smoked cigar
+  if (hasCigar && h.mostSmokedCigar) {
+    const record = h.mostSmokedCigar._record || null;
+    const photo = record?.photos?.[0] || record?.photo || null;
+    cards.push({
+      title: h.mostSmokedCigar.name,
+      value: h.mostSmokedCigar.name,
+      sub: `Most smoked cigar${h.mostSmokedCigar.sessions ? ` · ${h.mostSmokedCigar.sessions} sessions` : ''}`,
+      accent: '#C89752',
+      icon: Flame,
+      heroImage: photo,
+      bgImage: photo,
+      silhouetteType: 'pipe',
+      label: 'Most Smoked Cigar',
+    });
+  }
+
+  // 4c. Favorite cigar
+  if (hasCigar && h.favoriteCigar) {
+    const record = h.favoriteCigar._record || null;
+    const photo = record?.photos?.[0] || record?.photo || null;
+    cards.push({
+      title: h.favoriteCigar.name,
+      value: h.favoriteCigar.name,
+      sub: `Favourite cigar${h.favoriteCigar.rating ? ` · ${h.favoriteCigar.rating}★` : ''}`,
+      accent: '#A0784A',
+      icon: Star,
+      heroImage: photo,
+      bgImage: photo,
+      silhouetteType: 'pipe',
+      label: 'Favorite Cigar',
+    });
+  }
+
   // 5. Crown jewel (most valuable item)
   if (h.mostValuableItem) {
     const record = h.mostValuableItem._record || null;
     const rt = h.mostValuableItem.recordType || 'bottle';
-    // Filter out disabled module items
     const isWhiskeyItem = rt === 'bottle';
     const isPipeItem = rt === 'pipe' || rt === 'blend';
-    if ((isWhiskeyItem && !hasWhiskey) || (isPipeItem && !hasPipe)) {
+    const isCigarItem = rt === 'cigar';
+    if ((isWhiskeyItem && !hasWhiskey) || (isPipeItem && !hasPipe) || (isCigarItem && !hasCigar)) {
       // Skip this item if its module is disabled
     } else {
     const photo =
@@ -123,7 +157,9 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
         ? record?.photos?.[0] || record?.photo || null
         : rt === 'blend'
           ? record?.logo || record?.photo || null
-          : record?.photo || record?.image || null;
+          : rt === 'cigar'
+            ? record?.photos?.[0] || record?.photo || null
+            : record?.photo || record?.image || null;
     cards.push({
       title: h.mostValuableItem.name,
       value: h.mostValuableItem.name,
@@ -141,13 +177,22 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
   // 6. Collection by the numbers
   const pipeCount = hasPipe ? (m.pipes || 0) + (m.blends || 0) : 0;
   const bottleCount = hasWhiskey ? (m.totalBottles || 0) : 0;
-  const hasCounts = pipeCount + bottleCount > 0;
+  const cigarCount = hasCigar ? (m.cigarTypes || m.cigars || 0) : 0;
+  const hasCounts = pipeCount + bottleCount + cigarCount > 0;
   if (hasCounts) {
     const parts = [];
     if (hasPipe && m.pipes) parts.push(`${m.pipes} pipe${m.pipes !== 1 ? 's' : ''}`);
     if (hasPipe && m.blends) parts.push(`${m.blends} blend${m.blends !== 1 ? 's' : ''}`);
     if (hasWhiskey && m.totalBottles) parts.push(`${m.totalBottles} bottle${m.totalBottles !== 1 ? 's' : ''}`);
-    const countLabel = isCombined ? 'By the Numbers' : hasPipe ? 'Collection Count' : 'Bottle Count';
+    if (hasCigar && (m.cigarTypes || m.cigars)) {
+      const ct = m.cigarTypes || m.cigars;
+      parts.push(`${ct} cigar type${ct !== 1 ? 's' : ''}`);
+    }
+    if (hasCigar && (m.totalCigarSticks || m.cigarSticks)) {
+      const cs = m.totalCigarSticks || m.cigarSticks;
+      parts.push(`${cs} stick${cs !== 1 ? 's' : ''}`);
+    }
+    const countLabel = isCombined ? 'By the Numbers' : hasPipe ? 'Collection Count' : hasCigar ? 'Cigar Count' : 'Bottle Count';
     cards.push({
       title: countLabel,
       value: parts[0] || 'Your Collection',
@@ -173,15 +218,17 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     });
   }
 
-  // 8. Sessions / tastings
+  // 8. Sessions / tastings / cigar sessions
   const sessions = hasPipe ? Number(m.sessions || 0) : 0;
   const tastings = hasWhiskey ? Number(m.tastings || 0) : 0;
-  if (sessions + tastings > 0) {
+  const cigarSessions = hasCigar ? Number(m.cigarSessions || 0) : 0;
+  if (sessions + tastings + cigarSessions > 0) {
     const desc = [
-      sessions > 0 ? `${sessions} session${sessions !== 1 ? 's' : ''}` : null,
+      sessions > 0 ? `${sessions} smoke${sessions !== 1 ? 's' : ''}` : null,
       tastings > 0 ? `${tastings} tasting${tastings !== 1 ? 's' : ''}` : null,
+      cigarSessions > 0 ? `${cigarSessions} cigar session${cigarSessions !== 1 ? 's' : ''}` : null,
     ].filter(Boolean).join(' · ');
-    const expLabel = isCombined ? 'Experiences Logged' : hasPipe ? 'Smoking Sessions' : 'Tastings Logged';
+    const expLabel = isCombined ? 'Experiences Logged' : hasPipe ? 'Smoking Sessions' : hasCigar ? 'Cigar Sessions' : 'Tastings Logged';
     cards.push({
       title: expLabel,
       value: sessions + tastings,

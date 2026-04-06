@@ -28,6 +28,11 @@ function resolvePhoto(record, recordType) {
     return record.photo || record.image || record.image_url || null;
   }
 
+  if (recordType === 'cigar') {
+    const photos = Array.isArray(record.photos) ? record.photos : [];
+    return photos[0] || record.photo || record.image || null;
+  }
+
   return null;
 }
 
@@ -36,6 +41,7 @@ function getRoute(recordType, id) {
   if (recordType === 'pipe') return `/PipeDetail?id=${encodeURIComponent(id)}`;
   if (recordType === 'blend') return `/TobaccoDetail?id=${encodeURIComponent(id)}`;
   if (recordType === 'bottle') return `/BottleDetail?id=${encodeURIComponent(id)}`;
+  if (recordType === 'cigar') return `/CigarDetail?id=${encodeURIComponent(id)}`;
   return null;
 }
 
@@ -49,7 +55,9 @@ async function getEntityRecord(recordType, id) {
         ? base44.entities.TobaccoBlend
         : recordType === 'bottle'
           ? base44.entities.Bottle
-          : null;
+          : recordType === 'cigar'
+            ? base44.entities.Cigar
+            : null;
 
   if (!entity) return null;
 
@@ -75,6 +83,9 @@ async function enrichHighlights(story) {
     ['favoritePipe', 'pipe'],
     ['favoriteBlend', 'blend'],
     ['mostTastedBottle', 'bottle'],
+    ['mostSmokedCigar', 'cigar'],
+    ['favoriteCigar', 'cigar'],
+    ['mostValuedCigar', 'cigar'],
   ];
 
   await Promise.all(
@@ -179,6 +190,7 @@ export default function CollectionStoryCard() {
   const { isModuleEnabled, enabledModuleKeys } = useEnabledKeeperModules();
   const whiskeyVisible = !WHISKEYKEEPER_BLOCKED && isModuleEnabled('whiskeykeeper'); // gated
   const pipeVisible = isModuleEnabled('pipekeeper');
+  const cigarVisible = isModuleEnabled('cigarkeeper');
 
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -282,6 +294,18 @@ export default function CollectionStoryCard() {
             </div>
           </>
         )}
+        {cigarVisible && (
+          <div className="rounded-xl p-4 border border-[rgba(140,107,63,0.28)] bg-[rgba(140,107,63,0.10)]">
+            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">Cigar Types</p>
+            <p className="text-2xl font-bold mt-2 text-[#C89752]">{m.cigarTypes || m.cigars || 0}</p>
+          </div>
+        )}
+        {cigarVisible && (m.totalCigarSticks || m.cigarSticks) ? (
+          <div className="rounded-xl p-4 border border-[rgba(140,107,63,0.28)] bg-[rgba(140,107,63,0.10)]">
+            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">Sticks Owned</p>
+            <p className="text-2xl font-bold mt-2 text-[#C89752]">{m.totalCigarSticks || m.cigarSticks || 0}</p>
+          </div>
+        ) : null}
         <div className="rounded-xl p-4 border border-[rgba(16,185,129,0.22)] bg-[rgba(16,185,129,0.10)]">
           <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.totalValueShort', 'Value')}</p>
           <p className="text-2xl font-bold mt-2 text-[#10B981]">{valueDisplay}</p>
@@ -322,10 +346,31 @@ export default function CollectionStoryCard() {
           />
         ) : null}
 
+        {cigarVisible && h.mostSmokedCigar ? (
+          <StoryCard
+            label="Most Smoked Cigar"
+            title={h.mostSmokedCigar.name}
+            item={h.mostSmokedCigar}
+            navigate={navigate}
+          />
+        ) : null}
+
+        {cigarVisible && h.favoriteCigar ? (
+          <StoryCard
+            label="Favorite Cigar"
+            title={h.favoriteCigar.name}
+            item={h.favoriteCigar}
+            navigate={navigate}
+          />
+        ) : null}
+
         {(() => {
           if (!h.mostValuableItem) return null;
           const rt = h.mostValuableItem.recordType;
-          const crownVisible = rt === 'bottle' ? whiskeyVisible : pipeVisible;
+          const crownVisible =
+            rt === 'bottle' ? whiskeyVisible
+            : rt === 'cigar' ? cigarVisible
+            : pipeVisible;
           if (!crownVisible) return null;
           return (
             <StoryCard
