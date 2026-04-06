@@ -286,18 +286,33 @@ function deduplicateItems(items) {
   const seen = new Map();
   for (const item of items) {
     const nameKey = normalizeString(
-      item?.recordName || item?.itemName || item?.title || item?.id || ""
+      item?.recordName || item?.itemName || item?.title || ""
     );
     if (!nameKey) continue;
     if (!seen.has(nameKey)) {
       seen.set(nameKey, item);
     } else {
-      // Keep the one with higher priority: owned > not_owned, then prefer the one with more detail
+      // Prefer owned items over not_owned ones
       const existing = seen.get(nameKey);
       const incomingIsOwned = item?.ownershipStatus === "owned";
       const existingIsOwned = existing?.ownershipStatus === "owned";
       if (incomingIsOwned && !existingIsOwned) {
         seen.set(nameKey, item);
+      } else if (incomingIsOwned === existingIsOwned) {
+        // When ownership status is equal, prefer the item with more contextual detail
+        const incomingDetail =
+          (item?.explanation ? 1 : 0) +
+          (item?.recommendation ? 1 : 0) +
+          (item?.rationale ? 1 : 0) +
+          (item?.proposedChanges ? 1 : 0);
+        const existingDetail =
+          (existing?.explanation ? 1 : 0) +
+          (existing?.recommendation ? 1 : 0) +
+          (existing?.rationale ? 1 : 0) +
+          (existing?.proposedChanges ? 1 : 0);
+        if (incomingDetail > existingDetail) {
+          seen.set(nameKey, item);
+        }
       }
     }
   }
