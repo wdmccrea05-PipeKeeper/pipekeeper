@@ -679,7 +679,7 @@ function buildLocalOptimizeItems(context) {
     items.push({
       id: 'local_pipe_no_shape',
       type: 'data_gap',
-      recommendationClass: 'auto_fix',
+      recommendationClass: 'advisory',
       recordType: 'pipe',
       category: 'data_metadata',
       title: `${pipesNoShape.length} Pipe${pipesNoShape.length > 1 ? 's' : ''} Missing Shape Classification`,
@@ -697,7 +697,7 @@ function buildLocalOptimizeItems(context) {
     items.push({
       id: 'local_blend_no_type',
       type: 'data_gap',
-      recommendationClass: 'auto_fix',
+      recommendationClass: 'advisory',
       recordType: 'blend',
       category: 'data_metadata',
       title: `${blendsNoType.length} Blend${blendsNoType.length > 1 ? 's' : ''} Without Family Classification`,
@@ -715,7 +715,7 @@ function buildLocalOptimizeItems(context) {
     items.push({
       id: 'local_cigar_no_wrapper',
       type: 'data_gap',
-      recommendationClass: 'auto_fix',
+      recommendationClass: 'advisory',
       recordType: 'cigar',
       category: 'data_metadata',
       title: `${cigarsNoWrapper.length} Cigar${cigarsNoWrapper.length > 1 ? 's' : ''} Missing Wrapper Details`,
@@ -862,6 +862,13 @@ RULES:
 - For owned items: "ownershipStatus": "owned"
 - Limit to ${MAX_ITEMS_PER_OPTIMIZE_CATEGORY * 2} items across both groups
 
+CRITICAL GROUPING RULE:
+- Do NOT create one item per affected collection record
+- Instead, return ONE grouped item per optimization goal
+- Example: If 5 blends are underused, return ONE item with title "5 Underused Blends to Revisit", listing specific blend names in the recommendation field
+- Example: If 3 pipes have no logs, return ONE item "3 Pipes Never Smoked" not 3 separate items
+- Each item group should show the affected items in the "recommendation" field as a comma-separated list
+
 Return JSON:
 {
   "actionId": "optimize_health",
@@ -942,28 +949,62 @@ If no actionable items exist, return valid JSON with empty items arrays.`;
 
 function deduplicateOptimizeItems(allItems) {
   const seen = new Map();
+  // Goal key = category + recommendationClass + first-word-of-title (to detect same goal)
+  const goalGroups = new Map(); // goalKey -> item[]
+  const stableItems = []; // local_ prefixed items with stable IDs
+
   for (const item of allItems) {
-    // Local-check items use stable prefixed IDs; LLM items are keyed by their
-    // primary label (recordName > itemName > title > id) to collapse overlapping
-    // recommendations that target the same collection record.
-    const key = (item.id || '').startsWith('local_')
-      ? item.id
-      : String(item.recordName || item.itemName || item.title || item.id || '')
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '_')
-          .trim();
-    if (!key) continue;
-    if (!seen.has(key)) {
-      seen.set(key, item);
+    if ((item.id || '').startsWith('local_')) {
+      // Local items: deduplicate by id
+      if (!seen.has(item.id)) {
+        seen.set(item.id, item);
+        stableItems.push(item);
+      }
+      continue;
+    }
+
+    // LLM items: deduplicate by goal (category + recommendationClass + full title)
+    // Using the full normalized title avoids false merges between goals with similar prefixes
+    // (e.g., "5 Pipes Never Smoked" vs "5 Pipes Missing Photos" are different goals)
+    const cat = item.category || item.groupKey || 'collection_health';
+    const cls = item.recommendationClass || 'advisory';
+    const normalizedTitle = String(item.title || item.itemName || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').trim();
+    const goalKey = `${cat}__${cls}__${normalizedTitle}`;
+
+    if (!goalGroups.has(goalKey)) {
+      goalGroups.set(goalKey, []);
+    }
+    goalGroups.get(goalKey).push(item);
+  }
+
+  // Collapse same-goal groups: prefer the item with the most detail
+  const llmItems = [];
+  for (const [, group] of goalGroups) {
+    if (group.length === 1) {
+      llmItems.push(group[0]);
     } else {
-      // Prefer items with more detail
-      const existing = seen.get(key);
-      const inDetail = (item.explanation ? 1 : 0) + (item.recommendation ? 1 : 0) + (item.rationale ? 1 : 0);
-      const exDetail = (existing.explanation ? 1 : 0) + (existing.recommendation ? 1 : 0) + (existing.rationale ? 1 : 0);
-      if (inDetail > exDetail) seen.set(key, item);
+      // Pick the best item (most detail), but merge item names into the recommendation
+      const best = group.reduce((a, b) => {
+        const aDetail = (a.explanation ? 1 : 0) + (a.recommendation ? 1 : 0) + (a.rationale ? 1 : 0);
+        const bDetail = (b.explanation ? 1 : 0) + (b.recommendation ? 1 : 0) + (b.rationale ? 1 : 0);
+        return bDetail > aDetail ? b : a;
+      });
+      // Collect all item names for the merged representation
+      const allNames = [...new Set(group.map((i) => i.recordName || i.itemName || i.title).filter(Boolean))];
+      const mergedTitle = best.title || best.itemName || best.recordName || 'Recommendation';
+      llmItems.push({
+        ...best,
+        title: allNames.length > 1
+          ? `${allNames.length} Items — ${String(mergedTitle).replace(/^(\S+\s+\S+\s+\S+).*/, '$1')}`
+          : mergedTitle,
+        recommendation: allNames.length > 1
+          ? `${best.recommendation || ''} (Affects: ${allNames.slice(0, 4).join(', ')}${allNames.length > 4 ? ` and ${allNames.length - 4} more` : ''})`
+          : best.recommendation,
+      });
     }
   }
-  return Array.from(seen.values());
+
+  return [...stableItems, ...llmItems];
 }
 
 function groupOptimizeItemsByCategory(items) {

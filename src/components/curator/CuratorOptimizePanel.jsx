@@ -40,6 +40,7 @@ import {
   getRecommendationClassColor,
   getRecommendationClassBg,
 } from './recommendationActionTypes';
+import { base44 } from "@/api/base44Client";
 
 // ─── Section definitions ──────────────────────────────────────────────────────
 
@@ -217,14 +218,14 @@ function buildDataMetadataCards(pipes, blends, cigars, bottles) {
     cards.push({
       id: 'qw_pipes_no_photo',
       title: `${pipesNoPhoto.length} ${plural(pipesNoPhoto.length, 'Pipe')} Without Photos`,
-      whatWeFound: `${pipesNoPhoto.length} ${plural(pipesNoPhoto.length, 'pipe')} in your collection ${has(pipesNoPhoto.length)} no photos. Review & Apply Fix will open PipeKeeper so you can add them.`,
+      whatWeFound: `${pipesNoPhoto.length} ${plural(pipesNoPhoto.length, 'pipe')} in your collection ${has(pipesNoPhoto.length)} no photos. View Items opens PipeKeeper so you can add them.`,
       whyItMatters: 'Photos improve collection presentation, help the AI identification feature, and make records more useful when reviewing your collection.',
       recommendedAction: 'Open PipeKeeper and add at least one photo per affected pipe. Each pipe benefits from a photo of the bowl and one of the full pipe.',
       severity: INSIGHT_SEVERITY.LOW,
       module: 'pipe',
       section: 'data_metadata',
       suggestions: pipesNoPhoto.slice(0, 5).map((p) => p.name || 'Unnamed Pipe'),
-      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
     });
   }
 
@@ -235,12 +236,12 @@ function buildDataMetadataCards(pipes, blends, cigars, bottles) {
       title: `${pipesNoShape.length} ${plural(pipesNoShape.length, 'Pipe')} Missing Shape Classification`,
       whatWeFound: `${pipesNoShape.length} ${plural(pipesNoShape.length, 'pipe')} ${is(pipesNoShape.length)} missing a shape classification. Shape affects pairing recommendations and session planning.`,
       whyItMatters: 'Shape classification lets the Curator match pipes to appropriate tobacco types and session lengths. Billiards, bent pipes, and Canadians each have different characteristics.',
-      recommendedAction: 'Open PipeKeeper and assign the correct shape (billiard, bent, bulldog, Canadian, etc.) to each pipe. Review & Apply Fix navigates there.',
+      recommendedAction: 'Open PipeKeeper and assign the correct shape (billiard, bent, bulldog, Canadian, etc.) to each pipe. View Items opens PipeKeeper.',
       severity: INSIGHT_SEVERITY.LOW,
       module: 'pipe',
       section: 'data_metadata',
       suggestions: pipesNoShape.slice(0, 5).map((p) => p.name || 'Unnamed Pipe'),
-      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
     });
   }
 
@@ -251,12 +252,12 @@ function buildDataMetadataCards(pipes, blends, cigars, bottles) {
       title: `${pipesGeneric.length} ${plural(pipesGeneric.length, 'Pipe')} Using Generic "Other" Classification`,
       whatWeFound: `${pipesGeneric.length} ${plural(pipesGeneric.length, 'pipe')} ${uses(pipesGeneric.length)} a generic "Other" type or material. This reduces the Curator's ability to make specific recommendations.`,
       whyItMatters: 'Specific material values (briar, meerschaum, clay, morta) enable better pairing and aging advice. "Other" is a placeholder that should be updated.',
-      recommendedAction: 'Update these pipes with more specific type or material values. Review & Apply Fix opens PipeKeeper.',
+      recommendedAction: 'Update these pipes with more specific type or material values. View Items opens PipeKeeper.',
       severity: INSIGHT_SEVERITY.LOW,
       module: 'pipe',
       section: 'data_metadata',
       suggestions: pipesGeneric.slice(0, 5).map((p) => p.name || 'Unnamed Pipe'),
-      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
     });
   }
 
@@ -268,12 +269,12 @@ function buildDataMetadataCards(pipes, blends, cigars, bottles) {
       title: `${blendsNoType.length} ${plural(blendsNoType.length, 'Blend')} Without Family Classification`,
       whatWeFound: `${blendsNoType.length} ${plural(blendsNoType.length, 'blend')} ${has(blendsNoType.length)} no blend family assigned. Examples: ${blendsNoType.slice(0, 3).map((b) => b.name || 'Unnamed').join(', ')}${blendsNoType.length > 3 ? ` and ${blendsNoType.length - 3} more` : ''}.`,
       whyItMatters: 'Blend family (Virginia, Burley, English/Latakia, Aromatic, etc.) is required for diversity analysis, pipe pairing suggestions, and rotation planning.',
-      recommendedAction: 'Applying this opens PipeKeeper where you can assign blend families to the affected blends. Review Details asks the Curator to help classify them.',
+      recommendedAction: 'View Items opens PipeKeeper where you can assign blend families to the affected blends. Review Details asks the Curator to help classify them.',
       severity: INSIGHT_SEVERITY.MEDIUM,
       module: 'tobacco',
       section: 'data_metadata',
       suggestions: blendsNoType.slice(0, 5).map((b) => b.name || 'Unnamed Blend'),
-      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
     });
   }
 
@@ -289,7 +290,7 @@ function buildDataMetadataCards(pipes, blends, cigars, bottles) {
       module: 'tobacco',
       section: 'data_metadata',
       suggestions: blendsUnknown.slice(0, 5).map((b) => b.name || 'Unnamed Blend'),
-      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
     });
   }
 
@@ -300,12 +301,12 @@ function buildDataMetadataCards(pipes, blends, cigars, bottles) {
       title: `${blendsNoStrength.length} ${plural(blendsNoStrength.length, 'Blend')} Missing Strength Rating`,
       whatWeFound: `${blendsNoStrength.length} ${plural(blendsNoStrength.length, 'blend')} ${has(blendsNoStrength.length)} no strength rating. Adding strength data enables better session matching and Curator recommendations.`,
       whyItMatters: 'Strength data (mild, medium, full) lets the Curator suggest appropriate blends for different session types and helps build your preference profile.',
-      recommendedAction: 'Open PipeKeeper and add a strength rating to each affected blend. Review & Apply Fix navigates there.',
+      recommendedAction: 'Open PipeKeeper and add a strength rating to each affected blend. View Items opens PipeKeeper.',
       severity: INSIGHT_SEVERITY.LOW,
       module: 'tobacco',
       section: 'data_metadata',
       suggestions: blendsNoStrength.slice(0, 5).map((b) => b.name || 'Unnamed Blend'),
-      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
     });
   }
 
@@ -317,12 +318,12 @@ function buildDataMetadataCards(pipes, blends, cigars, bottles) {
       title: `${cigarsNoSize.length} ${plural(cigarsNoSize.length, 'Cigar')} Missing Size Details`,
       whatWeFound: `${cigarsNoSize.length} ${plural(cigarsNoSize.length, 'cigar')} ${is(cigarsNoSize.length)} missing vitola or size information. Vitola and ring gauge are required for proper categorization.`,
       whyItMatters: 'Size details enable better categorization and balance analysis. They also affect smoke time estimates and pairing suggestions for sessions.',
-      recommendedAction: 'Add vitola or size data to each affected cigar. Review & Apply Fix opens CigarKeeper.',
+      recommendedAction: 'Add vitola or size data to each affected cigar. View Items opens CigarKeeper.',
       severity: INSIGHT_SEVERITY.LOW,
       module: 'cigar',
       section: 'data_metadata',
       suggestions: cigarsNoSize.slice(0, 5).map((c) => c.name || 'Unnamed Cigar'),
-      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
     });
   }
 
@@ -333,12 +334,12 @@ function buildDataMetadataCards(pipes, blends, cigars, bottles) {
       title: `${cigarsNoWrapper.length} ${plural(cigarsNoWrapper.length, 'Cigar')} Missing Wrapper Details`,
       whatWeFound: `${cigarsNoWrapper.length} ${plural(cigarsNoWrapper.length, 'cigar')} ${is(cigarsNoWrapper.length)} missing wrapper leaf or country of origin — key fields for flavor profile analysis.`,
       whyItMatters: 'Wrapper information drives flavor profile analysis, regional pairing suggestions, and diversity scoring. Colorado Claro, Maduro, and Natural wrappers have very different profiles.',
-      recommendedAction: 'Add wrapper details to each affected cigar. Review & Apply Fix opens CigarKeeper.',
+      recommendedAction: 'Add wrapper details to each affected cigar. View Items opens CigarKeeper.',
       severity: INSIGHT_SEVERITY.LOW,
       module: 'cigar',
       section: 'data_metadata',
       suggestions: cigarsNoWrapper.slice(0, 5).map((c) => c.name || 'Unnamed Cigar'),
-      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
     });
   }
 
@@ -352,12 +353,12 @@ function buildDataMetadataCards(pipes, blends, cigars, bottles) {
       title: `${bottlesNoType.length} ${plural(bottlesNoType.length, 'Bottle')} Without Spirit Type`,
       whatWeFound: `${bottlesNoType.length} ${plural(bottlesNoType.length, 'bottle')} ${is(bottlesNoType.length)} missing spirit type. Examples: ${bottlesNoType.slice(0, 3).map((b) => b.name || 'Unnamed').join(', ')}${bottlesNoType.length > 3 ? ` and ${bottlesNoType.length - 3} more` : ''}.`,
       whyItMatters: 'Spirit type (Scotch, Bourbon, Irish, Japanese, etc.) is essential for collection diversity analysis, flavor profiling, and cross-module pairing with cigars or tobacco.',
-      recommendedAction: 'Classify each bottle with its spirit type. Review & Apply Fix opens WhiskeyKeeper.',
+      recommendedAction: 'Classify each bottle with its spirit type. View Items opens WhiskeyKeeper.',
       severity: INSIGHT_SEVERITY.LOW,
       module: 'whiskey',
       section: 'data_metadata',
       suggestions: bottlesNoType.slice(0, 5).map((b) => b.name || 'Unnamed Bottle'),
-      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
     });
   }
 
@@ -368,12 +369,12 @@ function buildDataMetadataCards(pipes, blends, cigars, bottles) {
       title: `${bottlesNoDistillery.length} ${plural(bottlesNoDistillery.length, 'Bottle')} Missing Producer/Distillery`,
       whatWeFound: `${bottlesNoDistillery.length} ${plural(bottlesNoDistillery.length, 'bottle')} ${is(bottlesNoDistillery.length)} missing distillery or producer details. This weakens your whiskey collection profile.`,
       whyItMatters: 'Distillery data enables regional analysis, helps build a producer-level view of your collection, and improves the accuracy of pairing and acquisition recommendations.',
-      recommendedAction: 'Add the distillery or producer name for each bottle. Review & Apply Fix opens WhiskeyKeeper.',
+      recommendedAction: 'Add the distillery or producer name for each bottle. View Items opens WhiskeyKeeper.',
       severity: INSIGHT_SEVERITY.LOW,
       module: 'whiskey',
       section: 'data_metadata',
       suggestions: bottlesNoDistillery.slice(0, 5).map((b) => b.name || 'Unnamed Bottle'),
-      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
     });
   }
 
@@ -386,12 +387,12 @@ function buildDataMetadataCards(pipes, blends, cigars, bottles) {
       title: `${bottlesNoValue.length} ${plural(bottlesNoValue.length, 'Bottle')} Missing Valuation Data`,
       whatWeFound: `${bottlesNoValue.length} ${plural(bottlesNoValue.length, 'bottle')} ${has(bottlesNoValue.length)} no price or value data (no purchase price, retail price, or collector value). Portfolio valuation reports are incomplete without this.`,
       whyItMatters: 'Valuation data enables portfolio analysis, insurance estimates, and identification of which bottles represent the highest value in your collection.',
-      recommendedAction: 'Open WhiskeyKeeper and add at least a purchase price for each affected bottle. Review & Apply Fix navigates there.',
+      recommendedAction: 'Open WhiskeyKeeper and add at least a purchase price for each affected bottle. View Items opens WhiskeyKeeper.',
       severity: INSIGHT_SEVERITY.LOW,
       module: 'whiskey',
       section: 'data_metadata',
       suggestions: bottlesNoValue.slice(0, 5).map((b) => b.name || 'Unnamed Bottle'),
-      recommendationClass: RECOMMENDATION_CLASS.AUTO_FIX,
+      recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
     });
   }
 
@@ -783,14 +784,23 @@ function truncatePill(text) {
  * are left as-is. Non-AUTO_FIX cards are always left as-is.
  */
 function collapseToGroupedCards(cards) {
-  const moduleGroups = new Map(); // moduleKey -> card[]
+  const moduleGroups = new Map(); // moduleKey -> card[] (AUTO_FIX)
+  const advisoryModuleGroups = new Map(); // moduleKey -> card[] (ADVISORY)
   const ungroupable = [];
 
   for (const card of cards) {
+    if (card.isGrouped) {
+      ungroupable.push(card);
+      continue;
+    }
     if (card.recommendationClass === RECOMMENDATION_CLASS.AUTO_FIX && card.module) {
       const mk = card.module;
       if (!moduleGroups.has(mk)) moduleGroups.set(mk, []);
       moduleGroups.get(mk).push(card);
+    } else if (card.recommendationClass === RECOMMENDATION_CLASS.ADVISORY && card.module) {
+      const mk = card.module;
+      if (!advisoryModuleGroups.has(mk)) advisoryModuleGroups.set(mk, []);
+      advisoryModuleGroups.get(mk).push(card);
     } else {
       ungroupable.push(card);
     }
@@ -798,6 +808,7 @@ function collapseToGroupedCards(cards) {
 
   const result = [];
 
+  // Group AUTO_FIX by module
   for (const [moduleKey, moduleCards] of moduleGroups) {
     if (moduleCards.length === 1) {
       result.push(moduleCards[0]);
@@ -827,6 +838,36 @@ function collapseToGroupedCards(cards) {
     }
   }
 
+  // Group ADVISORY by module
+  for (const [moduleKey, moduleCards] of advisoryModuleGroups) {
+    if (moduleCards.length === 1) {
+      result.push(moduleCards[0]);
+    } else {
+      const allSuggestions = [...new Set(moduleCards.flatMap((c) => c.suggestions || []))];
+      const highestSeverity = moduleCards.reduce((best, c) => {
+        const rank = SEVERITY_PRIORITY_MAP[c.severity] ?? 3;
+        const bestRank = SEVERITY_PRIORITY_MAP[best] ?? 3;
+        return rank < bestRank ? c.severity : best;
+      }, moduleCards[0].severity);
+      const moduleName = getModuleName(moduleKey);
+      result.push({
+        id: `grouped_advisory_${moduleKey}`,
+        isGrouped: true,
+        title: `${moduleName} — ${moduleCards.length} ${plural(moduleCards.length, 'Item')} to Review`,
+        whyItMatters: `${moduleCards.length} data items in your ${moduleName.toLowerCase()} need attention. Completing these fields improves Curator recommendation quality.`,
+        module: moduleKey,
+        section: moduleCards[0].section,
+        severity: highestSeverity,
+        recommendationClass: RECOMMENDATION_CLASS.ADVISORY,
+        suggestions: allSuggestions,
+        subCards: moduleCards,
+        subCardIds: moduleCards.map((c) => c.id),
+        subIssues: moduleCards.map((c) => ({ id: c.id, title: c.title })),
+        navigateTo: moduleCards.find((c) => c.navigateTo)?.navigateTo || null,
+      });
+    }
+  }
+
   for (const card of ungroupable) {
     result.push(card);
   }
@@ -844,8 +885,9 @@ function collapseToGroupedCards(cards) {
 
 // ─── GroupedRecommendationCard ────────────────────────────────────────────────
 
-function GroupedRecommendationCard({ card, onApplyFix, onReviewDetails, onAskCurator }) {
+function GroupedRecommendationCard({ card, onApplyFix, onReviewDetails, onAskCurator, onAcknowledge, onViewItems }) {
   const [localApplied, setLocalApplied] = useState(false);
+  const [localAcknowledged, setLocalAcknowledged] = useState(false);
 
   const color = severityColor(card.severity);
   const bg = severityBg(card.severity);
@@ -856,6 +898,28 @@ function GroupedRecommendationCard({ card, onApplyFix, onReviewDetails, onAskCur
 
   const previewItems = (card.suggestions || []).slice(0, PREVIEW_ITEM_MAX);
   const overflowCount = Math.max(0, (card.suggestions?.length || 0) - PREVIEW_ITEM_MAX);
+
+  if (localAcknowledged) {
+    return (
+      <div
+        className="rounded-xl px-4 py-2.5 flex items-center justify-between gap-3"
+        style={{ background: 'rgba(20,14,10,0.5)', border: '1px solid rgba(140,105,65,0.1)' }}
+      >
+        <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(224,216,200,0.45)' }}>
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(74,124,92,0.6)' }} />
+          <span>{card.title} — acknowledged</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setLocalAcknowledged(false)}
+          className="text-xs hover:opacity-80 underline shrink-0"
+          style={{ color: 'rgba(180,140,75,0.5)' }}
+        >
+          Undo
+        </button>
+      </div>
+    );
+  }
 
   if (localApplied) {
     return (
@@ -966,30 +1030,61 @@ function GroupedRecommendationCard({ card, onApplyFix, onReviewDetails, onAskCur
         className="px-4 py-2.5 flex items-center gap-2 flex-wrap"
         style={{ borderTop: '1px solid rgba(140,105,65,0.1)', background: 'rgba(0,0,0,0.14)' }}
       >
-        <button
-          type="button"
-          onClick={() => { setLocalApplied(true); onApplyFix(); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
-          style={{ background: 'rgba(74,124,92,0.28)', border: '1px solid rgba(74,124,92,0.5)', color: '#6aab80' }}
-        >
-          <CheckCircle2 className="w-3 h-3" /> Apply Fix
-        </button>
-        <button
-          type="button"
-          onClick={onReviewDetails}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
-          style={{ background: 'rgba(74,124,156,0.18)', border: '1px solid rgba(74,124,156,0.4)', color: '#6aabc0' }}
-        >
-          <Eye className="w-3 h-3" /> Review Details
-        </button>
-        <button
-          type="button"
-          onClick={onAskCurator}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
-          style={{ background: 'rgba(139,94,58,0.18)', border: '1px solid rgba(139,94,58,0.38)', color: '#D4956A' }}
-        >
-          <MessageCircle className="w-3 h-3" /> Ask Curator
-        </button>
+        {card.recommendationClass === RECOMMENDATION_CLASS.ADVISORY ? (
+          <>
+            <button
+              type="button"
+              onClick={() => { setLocalAcknowledged(true); if (onAcknowledge) onAcknowledge(); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(74,124,92,0.25)', border: '1px solid rgba(74,124,92,0.45)', color: '#6aab80' }}
+            >
+              <CheckCircle2 className="w-3 h-3" /> Acknowledge
+            </button>
+            <button
+              type="button"
+              onClick={onViewItems}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(74,124,156,0.18)', border: '1px solid rgba(74,124,156,0.4)', color: '#6aabc0' }}
+            >
+              <Eye className="w-3 h-3" /> View Items
+            </button>
+            <button
+              type="button"
+              onClick={onAskCurator}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(139,94,58,0.18)', border: '1px solid rgba(139,94,58,0.38)', color: '#D4956A' }}
+            >
+              <MessageCircle className="w-3 h-3" /> Ask Curator
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => { setLocalApplied(true); onApplyFix(); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(74,124,92,0.28)', border: '1px solid rgba(74,124,92,0.5)', color: '#6aab80' }}
+            >
+              <CheckCircle2 className="w-3 h-3" /> Apply Fix
+            </button>
+            <button
+              type="button"
+              onClick={onReviewDetails}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(74,124,156,0.18)', border: '1px solid rgba(74,124,156,0.4)', color: '#6aabc0' }}
+            >
+              <Eye className="w-3 h-3" /> Review Details
+            </button>
+            <button
+              type="button"
+              onClick={onAskCurator}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(139,94,58,0.18)', border: '1px solid rgba(139,94,58,0.38)', color: '#D4956A' }}
+            >
+              <MessageCircle className="w-3 h-3" /> Ask Curator
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -1302,6 +1397,8 @@ function RecommendationCard({
 function TreatIndividuallyModal({ card, onClose, onAskCurator, navigate }) {
   const items = card?.candidateItems || [];
   const [skipped, setSkipped] = useState({});
+  const [applied, setApplied] = useState({});
+  const [applying, setApplying] = useState({});
 
   if (!card) return null;
 
@@ -1364,7 +1461,35 @@ function TreatIndividuallyModal({ card, onClose, onAskCurator, navigate }) {
 
                   {!isSkipped && (
                     <div className="flex flex-wrap gap-2 mt-3">
-                      {item.detailUrl && (
+                      {item.suggestedSpecialization && !applied[item.id] && (
+                        <button type="button"
+                          disabled={!!applying[item.id]}
+                          onClick={async () => {
+                            setApplying((prev) => ({ ...prev, [item.id]: true }));
+                            try {
+                              await base44.entities.Pipe.update(item.id, {
+                                focus: [String(item.suggestedSpecialization)],
+                              });
+                              setApplied((prev) => ({ ...prev, [item.id]: true }));
+                            } catch (err) {
+                              console.error('Failed to apply specialization:', err);
+                            } finally {
+                              setApplying((prev) => ({ ...prev, [item.id]: false }));
+                            }
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+                          style={{ background: 'rgba(46,125,92,0.3)', border: '1px solid rgba(46,125,92,0.55)', color: '#6aab80' }}
+                        >
+                          <CheckCircle2 className="w-3 h-3" />
+                          {applying[item.id] ? 'Applying…' : `Accept → ${item.suggestedSpecialization}`}
+                        </button>
+                      )}
+                      {applied[item.id] && (
+                        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ color: '#6aab80' }}>
+                          <CheckCircle2 className="w-3 h-3" /> Applied ✓
+                        </span>
+                      )}
+                      {item.detailUrl && !applied[item.id] && (
                         <button type="button" onClick={() => { onClose(); navigate(item.detailUrl); }}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
                           style={{ background: 'rgba(74,124,92,0.25)', border: '1px solid rgba(74,124,92,0.45)', color: '#6aab80' }}
@@ -1465,6 +1590,8 @@ function SectionGroup({
               onApplyFix={() => onApplyFix(card)}
               onReviewDetails={() => onReviewDetails(card)}
               onAskCurator={() => onAskCurator(card)}
+              onAcknowledge={() => onAcknowledge && onAcknowledge(card)}
+              onViewItems={() => onViewItems && onViewItems(card)}
             />
           ) : (
             <RecommendationCard
@@ -1595,9 +1722,19 @@ export default function CuratorOptimizePanel({
     if (nextPurchaseCards.some((c) => c.id === 'np_blend_family_gaps')) {
       suppressedInsightIds.add('diversity_low_blend_variety');
     }
-    // util_underused_blends (tobacco) and rotation_underused_pipes (pipes) target
-    // different item types — they are complementary, not duplicates, so no
-    // suppression is needed between them.
+    // util_underused_blends covers ROTATION and USAGE_PATTERN insights for blends/tobacco.
+    // Suppress only tobacco-scoped insights to avoid hiding pipe or cigar utilization signals.
+    if (utilizationCards.some((c) => c.id === 'util_underused_blends')) {
+      for (const insight of allInsights) {
+        if (
+          (insight.category === INSIGHT_CATEGORIES.ROTATION ||
+            insight.category === INSIGHT_CATEGORIES.USAGE_PATTERN) &&
+          (insight.scope === INSIGHT_SCOPE.TOBACCO || insight.module === 'tobacco')
+        ) {
+          suppressedInsightIds.add(insight.id);
+        }
+      }
+    }
 
     // Priority order: data fixes first → specialization → restock/purchases → utilization → insights
     for (const card of dataMetadataCards) addCard({ ...card, section: card.section || 'data_metadata' });
@@ -1656,17 +1793,7 @@ export default function CuratorOptimizePanel({
 
   // Handlers
   function handleApplyFix(card) {
-    // AUTO_FIX: navigate immediately — no confirmation dialog
-    if (card.recommendationClass === RECOMMENDATION_CLASS.AUTO_FIX) {
-      if (card.navigateTo) {
-        navigate(card.navigateTo);
-      } else {
-        const route = getModuleRoute(getModuleKey(card));
-        if (route) navigate(route);
-      }
-      return;
-    }
-    // REVIEW_REQUIRED: keep the confirmation dialog
+    // Always use confirmation dialog — navigation-only "fixes" are now ADVISORY
     setConfirmCard(card);
   }
 
