@@ -1,106 +1,84 @@
 /**
  * CuratorWorkspace
  *
- * Main Curator layout container.
- * Manages view state (home ↔ results) and runs the recommendation engine.
+ * Three-surface operations workspace. No chat shell. No ForYou panel.
  *
- * Views:
- *   home    — CuratorQuickActions (6 action tiles)
- *   results — CuratorResultsBoard (grouped recommendations)
+ * Surfaces:
+ *   1. Optimize Board        — main landing, analysis auto-runs on mount
+ *   2. Specialization Review — per-pipe specialization workflow
+ *   3. Purchase & Restock    — actionable queue with batch shopping list actions
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { Loader2 } from 'lucide-react';
-import CuratorQuickActions from './CuratorQuickActions';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Loader2, LayoutDashboard, Award, ShoppingCart } from 'lucide-react';
 import CuratorResultsBoard from './CuratorResultsBoard';
+import CuratorSpecializationReview from './CuratorSpecializationReview';
+import CuratorPurchaseQueue from './CuratorPurchaseQueue';
 import { generateRecommendations } from '@/lib/curator/recommendationEngine.js';
 import { groupRecommendations } from '@/lib/curator/recommendationGrouping.js';
 import { executeRecommendationAction } from '@/lib/curator/recommendationActions.js';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useQueryClient } from '@tanstack/react-query';
+import { CATEGORY } from '@/lib/curator/recommendationSchema.js';
 
-const ACTION_LABELS = {
-  plan_session:    'Plan Session',
-  optimize:        'Optimize Collection',
-  what_to_smoke:   'What to Smoke Now',
-  pairing:         'Pairing Suggestions',
-  specialization:  'Recommend Specializations',
-  purchase:        'Purchase / Restock',
-};
+const SURFACES = [
+  { key: 'board',          label: 'Optimize Board',        icon: LayoutDashboard },
+  { key: 'specialization', label: 'Specialization Review', icon: Award },
+  { key: 'purchase',       label: 'Purchase & Restock',    icon: ShoppingCart },
+];
+
+const PURCHASE_CATEGORIES = [CATEGORY.PURCHASE, CATEGORY.CIGAR_DISCOVERY];
 
 /**
- * @param {object}   props
- * @param {object}   props.collectionContext   - { pipes, blends, bottles, cigars, smokingLogs, tastingLogs, cigarSessions, wantListItems, cigarModuleActive }
- * @param {boolean}  props.isLoading           - Whether data is still loading
- * @param {Function} props.onAskCurator        - (prompt) => void
+ * @param {object}  props
+ * @param {object}  props.collectionContext  - { pipes, blends, bottles, cigars, smokingLogs, tastingLogs, cigarSessions, wantListItems, cigarModuleActive }
+ * @param {boolean} props.isLoading         - Whether data is still loading
  */
-export default function CuratorWorkspace({ collectionContext = {}, isLoading = false, onAskCurator }) {
-  const { user } = useCurrentUser();
+export default function CuratorWorkspace({ collectionContext = {}, isLoading = false }) {
+  const { user }   = useCurrentUser();
   const queryClient = useQueryClient();
 
-  const [view, setView]                       = useState('home');       // 'home' | 'results'
-  const [runLabel, setRunLabel]               = useState('Results');
-  const [allSections, setAllSections]         = useState([]);
-  const [activeCategories, setActiveCategories] = useState([]);
-  const [isRunning, setIsRunning]             = useState(false);
+  const [surface, setSurface]           = useState('board');
+  const [allSections, setAllSections]   = useState([]);
+  const [purchaseSections, setPurchaseSections] = useState([]);
+  const [specRecs, setSpecRecs]         = useState([]);
+  const [analysisRun, setAnalysisRun]   = useState(false);
 
-  const handleQuickAction = useCallback((actionKey, categories) => {
-    setIsRunning(true);
-
-    // Small timeout so the UI can show the running state before blocking
-    setTimeout(() => {
-      try {
-        const recs = generateRecommendations(collectionContext);
-
-        // Filter to requested categories if specified
-        const filtered = categories
-          ? recs.filter((r) => categories.includes(r.category))
-          : recs;
-
-        const sections = groupRecommendations(filtered);
-        setAllSections(sections);
-        setActiveCategories([]);
-        setRunLabel(ACTION_LABELS[actionKey] || 'Results');
-        setView('results');
-      } finally {
-        setIsRunning(false);
-      }
-    }, 50);
+  const runAnalysis = useCallback(() => {
+    const recs = generateRecommendations(collectionContext);
+    setAllSections(groupRecommendations(recs));
+    setPurchaseSections(groupRecommendations(recs.filter((r) => PURCHASE_CATEGORIES.includes(r.category))));
+    setSpecRecs(recs.filter((r) => r.category === CATEGORY.SPECIALIZATION));
+    setAnalysisRun(true);
   }, [collectionContext]);
 
-  const handleCategoryToggle = useCallback((category) => {
-    setActiveCategories((prev) => {
-      if (prev.includes(category)) {
-        const next = prev.filter((c) => c !== category);
-        return next;
-      }
-      return [...prev, category];
-    });
-  }, []);
+  // Run analysis once data loads
+  useEffect(() => {
+    if (!isLoading && !analysisRun) runAnalysis();
+  }, [isLoading, analysisRun, runAnalysis]);
 
-  const handleReset = useCallback(() => {
-    setView('home');
-    setAllSections([]);
-    setActiveCategories([]);
-  }, []);
+  // Re-run when collection changes
+  useEffect(() => { setAnalysisRun(false); }, [collectionContext]);
 
   const handleAction = useCallback(async (actionKey, recommendation, opts = {}) => {
-    const result = await executeRecommendationAction(
-      recommendation,
-      actionKey,
-      { ...opts, userEmail: user?.email }
-    );
-
-    // Invalidate data queries after mutating actions so the parent can refetch
-    if (actionKey === 'apply_fix' || actionKey === 'approve_changes' || actionKey === 'apply_specialization') {
+    const result = await executeRecommendationAction(recommendation, actionKey, {
+      ...opts,
+      userEmail: user?.email,
+    });
+    if (['apply_fix', 'approve_changes', 'apply_specialization'].includes(actionKey)) {
       queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
     }
     if (actionKey === 'add_to_shopping_list') {
       queryClient.invalidateQueries({ queryKey: ['shoppingListItems'] });
     }
-
     return result;
   }, [user?.email, queryClient]);
+
+  // Badge counts
+  const specCandidateCount = specRecs
+    .flatMap((r) => r.items || [])
+    .filter((i) => i.hasLogData).length;
+  const purchaseCount = purchaseSections.reduce((s, g) => s + g.recommendations.length, 0);
 
   if (isLoading) {
     return (
@@ -112,30 +90,71 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
 
   return (
     <div className="space-y-5">
-      {view === 'home' && (
-        <CuratorQuickActions
-          onAction={handleQuickAction}
-          isRunning={isRunning}
-        />
-      )}
+      {/* Surface tabs */}
+      <div
+        className="flex gap-1 p-1 rounded-xl"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.15)' }}
+      >
+        {SURFACES.map(({ key, label, icon: Icon }) => {
+          const isActive = surface === key;
+          const badge =
+            key === 'specialization' && specCandidateCount > 0 ? specCandidateCount :
+            key === 'purchase'       && purchaseCount > 0       ? purchaseCount       : null;
 
-      {view === 'results' && (
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setSurface(key)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all"
+              style={
+                isActive
+                  ? { background: 'rgba(140,105,65,0.25)', color: '#F5F1E7', border: '1px solid rgba(140,105,65,0.4)' }
+                  : { background: 'transparent', color: 'rgba(224,216,200,0.5)', border: '1px solid transparent' }
+              }
+            >
+              <Icon className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden sm:inline">{label}</span>
+              {badge != null && (
+                <span
+                  className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                  style={{ background: 'rgba(139,58,58,0.3)', color: 'rgba(220,140,140,1)' }}
+                >
+                  {badge}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Surface content */}
+      {surface === 'board' && (
         <CuratorResultsBoard
           sections={allSections}
-          activeCategories={activeCategories}
-          onCategoryToggle={handleCategoryToggle}
-          onReset={handleReset}
           onAction={handleAction}
-          onAskCurator={onAskCurator}
-          runLabel={runLabel}
+          onOpenSpecialization={() => setSurface('specialization')}
+          onOpenPurchase={() => setSurface('purchase')}
+          onRefresh={runAnalysis}
         />
       )}
 
-      {isRunning && view === 'home' && (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-5 h-5 animate-spin mr-2" style={{ color: 'rgba(80,180,130,0.8)' }} />
-          <p className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>Running analysis…</p>
-        </div>
+      {surface === 'specialization' && (
+        <CuratorSpecializationReview
+          specRecs={specRecs}
+          onDone={() => {
+            queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
+            setSurface('board');
+          }}
+        />
+      )}
+
+      {surface === 'purchase' && (
+        <CuratorPurchaseQueue
+          sections={purchaseSections}
+          onAction={handleAction}
+          userEmail={user?.email}
+        />
       )}
     </div>
   );
