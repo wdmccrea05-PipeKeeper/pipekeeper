@@ -76,7 +76,7 @@ function buildWhyBullets(pipe) {
 
 // ─── Single pipe review panel ─────────────────────────────────────────────────
 
-function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejected }) {
+function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejected, onAskCurator }) {
   const [applying, setApplying]     = useState(false);
   const [status, setStatus]         = useState(null); // null | 'accepted' | 'rejected'
   const [customSpec, setCustomSpec] = useState('');
@@ -370,6 +370,17 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
           <HelpCircle className="w-3 h-3" />
           {expanded ? 'Hide detail' : 'View evidence'}
         </button>
+        {onAskCurator && (
+          <button
+            type="button"
+            onClick={() => onAskCurator(pipe)}
+            className="text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition-all"
+            style={{ background: 'rgba(74,124,156,0.1)', color: 'rgba(120,170,220,0.8)', border: '1px solid rgba(74,124,156,0.2)' }}
+          >
+            <HelpCircle className="w-3 h-3" />
+            Ask Curator
+          </button>
+        )}
       </div>
     </div>
   );
@@ -379,10 +390,11 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
 
 /**
  * @param {object}   props
- * @param {object[]} props.specRecs  - Specialization recommendation objects from the engine
- * @param {Function} props.onDone    - () => void — navigate back to board
+ * @param {object[]} props.specRecs      - Specialization recommendation objects from the engine
+ * @param {Function} props.onDone        - () => void — navigate back to board
+ * @param {Function} [props.onAskCurator] - (pipe) => void — switch to chat with specialization context
  */
-export default function CuratorSpecializationReview({ specRecs = [], onDone }) {
+export default function CuratorSpecializationReview({ specRecs = [], onDone, onAskCurator }) {
   // Extract pipe items with actual evidence
   const allPipeItems = useMemo(
     () => specRecs.flatMap((r) => r.items || []).filter((i) => i.hasLogData && i.suggestedSpec),
@@ -655,6 +667,7 @@ export default function CuratorSpecializationReview({ specRecs = [], onDone }) {
             onToggleSelect={toggleSelect}
             onAccepted={handleAccepted}
             onRejected={handleRejected}
+            onAskCurator={onAskCurator}
           />
         ))}
       </div>

@@ -116,14 +116,23 @@ function analyzeMetadata(context) {
       };
     });
     const inferredCount = items.filter((i) => i.proposedChange).length;
+
+    // Use AUTO_FIX when we have deterministic inferences — apply_fix skips items without proposals.
+    // Fall back to REVIEW_REQUIRED when nothing can be inferred (all blend types are unmapped).
+    const actionType = inferredCount > 0 ? ACTION_TYPE.AUTO_FIX : ACTION_TYPE.REVIEW_REQUIRED;
+
     recommendations.push(createRecommendation({
       category:           CATEGORY.METADATA,
       goal:               'blend_missing_strength',
-      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      actionType,
       title:              'Blends Missing Strength',
-      summary:            `${items.length} blend${items.length > 1 ? 's are' : ' is'} missing a strength rating${inferredCount > 0 ? ` — ${inferredCount} can be inferred from blend type` : ''}`,
+      summary:            inferredCount > 0
+        ? `${inferredCount} of ${items.length} blend${items.length > 1 ? 's' : ''} can have strength auto-filled from blend type`
+        : `${items.length} blend${items.length > 1 ? 's are' : ' is'} missing a strength rating`,
       whyItMatters:       'Strength data helps with session planning, rotation, and pairing suggestions',
-      recommendationText: 'Review and approve the inferred strength values, or add ratings manually',
+      recommendationText: inferredCount > 0
+        ? `Apply Fix to auto-fill ${inferredCount} inferred strength value${inferredCount > 1 ? 's' : ''}${items.length - inferredCount > 0 ? ` (${items.length - inferredCount} remain manual)` : ''}`
+        : 'Open each blend to add a strength rating manually',
       moduleKey:          MODULE_KEY.TOBACCO,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           PRIORITY.LOW,

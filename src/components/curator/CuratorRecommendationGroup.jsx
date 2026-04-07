@@ -340,6 +340,12 @@ export default function CuratorRecommendationGroup({
           <p className="text-sm font-bold leading-tight" style={{ color: '#F5F1E7' }}>
             {rec.title}
           </p>
+          {/* Summary line */}
+          {rec.summary && (
+            <p className="text-xs mt-0.5 leading-snug" style={{ color: 'rgba(224,216,200,0.55)' }}>
+              {rec.summary}
+            </p>
+          )}
         </div>
         {/* Item count */}
         {itemCount > 0 && (
@@ -354,7 +360,7 @@ export default function CuratorRecommendationGroup({
 
       {/* Why it matters — one line */}
       {rec.whyItMatters && (
-        <p className="text-xs leading-snug" style={{ color: 'rgba(224,216,200,0.6)' }}>
+        <p className="text-xs leading-snug" style={{ color: 'rgba(224,216,200,0.65)' }}>
           {rec.whyItMatters}
         </p>
       )}
