@@ -1,22 +1,27 @@
 /**
  * CuratorWorkspace
  *
- * Three-surface operations workspace. No chat shell. No ForYou panel.
+ * Five-surface operations workspace.
  *
  * Surfaces:
  *   1. Optimize Board        — main landing, analysis auto-runs on mount
  *   2. Specialization Review — per-pipe specialization workflow
  *   3. Purchase & Restock    — actionable queue with batch shopping list actions
+ *   4. Pairings              — structured pairing entries with follow-up actions
+ *   5. Chat                  — expert tobacconist chat (secondary, not the landing)
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Loader2, LayoutDashboard, Award, ShoppingCart } from 'lucide-react';
+import { Loader2, LayoutDashboard, Award, ShoppingCart, Sparkles, MessageCircle } from 'lucide-react';
 import CuratorResultsBoard from './CuratorResultsBoard';
 import CuratorSpecializationReview from './CuratorSpecializationReview';
 import CuratorPurchaseQueue from './CuratorPurchaseQueue';
+import CuratorPairingsTab from './CuratorPairingsTab';
+import ExpertTobacconistChat from '@/components/agent/ExpertTobacconistChat';
 import { generateRecommendations } from '@/lib/curator/recommendationEngine.js';
 import { groupRecommendations } from '@/lib/curator/recommendationGrouping.js';
 import { executeRecommendationAction } from '@/lib/curator/recommendationActions.js';
+import { generatePairingRecommendations } from '@/lib/curator/pairingEngine.js';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useQueryClient } from '@tanstack/react-query';
 import { CATEGORY } from '@/lib/curator/recommendationSchema.js';
@@ -25,6 +30,8 @@ const SURFACES = [
   { key: 'board',          label: 'Optimize Board',        icon: LayoutDashboard },
   { key: 'specialization', label: 'Specialization Review', icon: Award },
   { key: 'purchase',       label: 'Purchase & Restock',    icon: ShoppingCart },
+  { key: 'pairings',       label: 'Pairings',              icon: Sparkles },
+  { key: 'chat',           label: 'Chat',                  icon: MessageCircle },
 ];
 
 const PURCHASE_CATEGORIES = [CATEGORY.PURCHASE, CATEGORY.CIGAR_DISCOVERY];
@@ -42,13 +49,19 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
   const [allSections, setAllSections]   = useState([]);
   const [purchaseSections, setPurchaseSections] = useState([]);
   const [specRecs, setSpecRecs]         = useState([]);
+  const [pairingRecs, setPairingRecs]   = useState([]);
   const [analysisRun, setAnalysisRun]   = useState(false);
+
+  // Chat state
+  const [threadId, setThreadId]           = useState(null);
+  const [preFillMessage, setPreFillMessage] = useState('');
 
   const runAnalysis = useCallback(() => {
     const recs = generateRecommendations(collectionContext);
     setAllSections(groupRecommendations(recs));
     setPurchaseSections(groupRecommendations(recs.filter((r) => PURCHASE_CATEGORIES.includes(r.category))));
     setSpecRecs(recs.filter((r) => r.category === CATEGORY.SPECIALIZATION));
+    setPairingRecs(generatePairingRecommendations(collectionContext));
     setAnalysisRun(true);
   }, [collectionContext]);
 
@@ -74,11 +87,29 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
     return result;
   }, [user?.email, queryClient]);
 
+  // Pairings "Ask Curator" — switch to Chat tab with context pre-filled
+  const handlePairingAction = useCallback((actionKey, pairing) => {
+    if (actionKey === 'ask_curator') {
+      const left  = pairing.leftItem?.name  || pairing.leftItem?.type  || 'item';
+      const right = pairing.rightItem?.name || pairing.rightItem?.type || 'item';
+      const rationale = pairing.rationale ? ` — ${pairing.rationale}` : '';
+      setPreFillMessage(`Tell me more about pairing ${left} with ${right}${rationale}`);
+      setSurface('chat');
+    }
+    // build_session and save_pairing are handled by the main action handler
+  }, []);
+
+  // Clear pre-fill once chat has consumed it
+  const handlePreFillConsumed = useCallback(() => {
+    setPreFillMessage('');
+  }, []);
+
   // Badge counts
   const specCandidateCount = specRecs
     .flatMap((r) => r.items || [])
     .filter((i) => i.hasLogData).length;
   const purchaseCount = purchaseSections.reduce((s, g) => s + g.recommendations.length, 0);
+  const pairingCount  = pairingRecs.reduce((s, r) => s + (r.items?.length || 0), 0);
 
   if (isLoading) {
     return (
@@ -99,7 +130,8 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
           const isActive = surface === key;
           const badge =
             key === 'specialization' && specCandidateCount > 0 ? specCandidateCount :
-            key === 'purchase'       && purchaseCount > 0       ? purchaseCount       : null;
+            key === 'purchase'       && purchaseCount > 0       ? purchaseCount       :
+            key === 'pairings'       && pairingCount  > 0       ? pairingCount        : null;
 
           return (
             <button
@@ -155,6 +187,32 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
           onAction={handleAction}
           userEmail={user?.email}
         />
+      )}
+
+      {surface === 'pairings' && (
+        <CuratorPairingsTab
+          pairingRecs={pairingRecs}
+          onAction={handlePairingAction}
+        />
+      )}
+
+      {surface === 'chat' && (
+        <div className="space-y-3">
+          <div>
+            <h2 className="text-base font-bold" style={{ color: '#F5F1E7' }}>
+              Ask the Curator
+            </h2>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
+              Expert tobacconist chat — explore collection questions, pairing deep-dives, and more
+            </p>
+          </div>
+          <ExpertTobacconistChat
+            threadId={threadId}
+            setThreadId={setThreadId}
+            preFillMessage={preFillMessage}
+            onPreFillConsumed={handlePreFillConsumed}
+          />
+        </div>
       )}
     </div>
   );
