@@ -31,7 +31,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { CATEGORY } from '@/lib/curator/recommendationSchema.js';
 
 const SURFACES = [
-  { key: 'board',         label: 'Optimize Board',         icon: LayoutDashboard },
+  { key: 'board',         label: 'Record Optimization',    icon: LayoutDashboard },
   { key: 'collectionopt', label: 'Collection Optimization', icon: Layers },
   { key: 'purchase',      label: 'Purchase & Restock',      icon: ShoppingCart },
   { key: 'pairings',      label: 'Pairings',                icon: Sparkles },
@@ -144,7 +144,7 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
     const recs = generateRecommendations(collectionContext);
     setAllSections(groupRecommendations(recs));
     setPurchaseSections(groupRecommendations(recs.filter((r) => PURCHASE_CATEGORIES.includes(r.category))));
-    setSpecRecs(recs.filter((r) => r.category === CATEGORY.SPECIALIZATION));
+    setSpecRecs(recs.filter((r) => r.goal === 'specialization_candidates'));
     setPairingRecs(generatePairingRecommendations({ ...collectionContext, preferences }));
     setDismissedIds(new Set());
     setAnalysisRun(true);

@@ -27,6 +27,33 @@ import {
   PRIORITY,
 } from './recommendationSchema.js';
 
+// ─── Specific product catalog — maps progression targets to concrete products ──
+
+const BLEND_PROGRESSION_PRODUCTS = {
+  'Virginia':            'Samuel Gawith Golden Glow',
+  'Virginia/Perique':    'G.L. Pease Odyssey',
+  'Virginia/Burley':     'Lane Limited 1-Q',
+  'Virginia/Oriental':   'G.L. Pease Abingdon',
+  'English':             'Esoterica Dunbar',
+  'English/Balkan':      'Peterson Elizabethan Mixture',
+  'Balkan':              'Esoterica Stonehaven',
+  'Burley':              'Solani Aged Burley Flake',
+  'Aromatic':            'Lane Limited RLP-6',
+  'Oriental':            "Rattray's Marlin Flake",
+  'Dark Fired Kentucky': 'Cornell & Diehl Old Dark Fired',
+};
+
+const WHISKEY_PROGRESSION_PRODUCTS = {
+  'Bourbon':            'Eagle Rare 10 Year',
+  'Rye':                'Rittenhouse Rye 100',
+  'Single Malt Scotch': 'GlenDronach 12',
+  'Islay Single Malt':  'Laphroaig 10 Year',
+  'Irish Whiskey':      'Redbreast 12',
+  'Blended Scotch':     'Monkey Shoulder',
+  'Tennessee Whiskey':  'George Dickel No. 12',
+  'Japanese Whisky':    'Nikka From The Barrel',
+};
+
 // ─── Domain Knowledge — Natural Progressions ─────────────────────────────────
 
 // What blend types naturally follow or complement existing collection patterns
@@ -255,11 +282,13 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
     diversityContribution: 0.9, // always high — we're expanding the collection
   });
 
+  const specificProduct = BLEND_PROGRESSION_PRODUCTS[nextType] || `${nextType} Blend`;
+
   results.push(createRecommendation({
     category:           CATEGORY.GROW_EXPAND,
     goal:               'blend_family_expansion',
     actionType:         ACTION_TYPE.SHOPPING_LIST_ACTION,
-    title:              `Explore ${nextType}`,
+    title:              `Explore ${specificProduct}`,
     summary:            progression.recommendation,
     whyItMatters:       progression.rationale(blends.filter((b) => (b.blend_type || b.blend_family) === dominantType)),
     recommendationText: progression.action,
@@ -271,8 +300,8 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
       id:             `grow_blend_${nextType.replace(/[\s/]/g, '_').toLowerCase()}`,
       recordId:       null,
       recordType:     'blend_suggestion',
-      recordName:     nextType,
-      itemName:       `${nextType} Blend`,
+      recordName:     specificProduct,
+      itemName:       specificProduct,
       ownershipStatus: 'wishlist',
       shoppingType:   'buy_new_item',
       itemType:       'blend',
@@ -283,6 +312,7 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
       shoppingType:   'buy_new_item',
       itemType:       'blend',
       suggestedFamily: nextType,
+      specificProduct,
     },
   }));
 
@@ -342,11 +372,13 @@ function generateWhiskeyExpansion(bottles, blends, preferences = {}) {
     diversityContribution: 0.9,
   });
 
+  const specificProduct = WHISKEY_PROGRESSION_PRODUCTS[finalNextType] || finalNextType;
+
   results.push(createRecommendation({
     category:           CATEGORY.GROW_EXPAND,
     goal:               'whiskey_type_expansion',
     actionType:         ACTION_TYPE.SHOPPING_LIST_ACTION,
-    title:              `Explore ${finalNextType}`,
+    title:              `Explore ${specificProduct}`,
     summary:            progression.recommendation,
     whyItMatters:       progression.rationale(bottles),
     recommendationText: progression.action,
@@ -358,8 +390,8 @@ function generateWhiskeyExpansion(bottles, blends, preferences = {}) {
       id:             `grow_whiskey_${finalNextType.replace(/[\s/]/g, '_').toLowerCase()}`,
       recordId:       null,
       recordType:     'bottle_suggestion',
-      recordName:     finalNextType,
-      itemName:       `${finalNextType}`,
+      recordName:     specificProduct,
+      itemName:       specificProduct,
       ownershipStatus: 'wishlist',
       shoppingType:   'buy_new_item',
       itemType:       'bottle',
@@ -367,9 +399,10 @@ function generateWhiskeyExpansion(bottles, blends, preferences = {}) {
       rationale:       progression.rationale(bottles),
     }],
     actionPayload: {
-      shoppingType: 'buy_new_item',
-      itemType:     'bottle',
-      suggestedType: finalNextType,
+      shoppingType:   'buy_new_item',
+      itemType:       'bottle',
+      suggestedType:   finalNextType,
+      specificProduct,
     },
   }));
 

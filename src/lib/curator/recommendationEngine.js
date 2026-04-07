@@ -80,6 +80,7 @@ function analyzeMetadata(context) {
       itemName: b.name,
       manufacturer: b.manufacturer || null,
       ownershipStatus: 'owned',
+      missingFields: ['blend type'], // always missing since this item is in the blendsNoType list
       proposedChange: null,
     }));
     const summary = items.length === 1
@@ -207,14 +208,25 @@ function analyzeMetadata(context) {
     (b) => !b.retail_price && !b.aftermarket_price && !b.collector_value
   );
   if (bottlesMissingValue.length > 0) {
-    const items = bottlesMissingValue.slice(0, MAX_ITEMS_PER_REC).map((b) => ({
-      id: b.id,
-      recordId: b.id,
-      recordType: 'bottle',
-      recordName: b.name,
-      itemName: b.name,
-      ownershipStatus: 'owned',
-    }));
+    const items = bottlesMissingValue.slice(0, MAX_ITEMS_PER_REC).map((b) => {
+      const VALUATION_FIELDS = {
+        'retail price':      'retail_price',
+        'aftermarket price': 'aftermarket_price',
+        'collector value':   'collector_value',
+      };
+      const missingFields = Object.entries(VALUATION_FIELDS)
+        .filter(([, key]) => !b[key])
+        .map(([label]) => label);
+      return {
+        id: b.id,
+        recordId: b.id,
+        recordType: 'bottle',
+        recordName: b.name,
+        itemName: b.name,
+        ownershipStatus: 'owned',
+        missingFields,
+      };
+    });
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
       goal:               'bottle_missing_valuation',

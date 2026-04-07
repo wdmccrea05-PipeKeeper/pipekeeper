@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import { applyPipeSpecialization } from '@/lib/curator/recommendationActions.js';
 import CuratorRecommendationGroup from './CuratorRecommendationGroup';
-import { CATEGORY } from '@/lib/curator/recommendationSchema.js';
 
 // ─── Confidence styles ────────────────────────────────────────────────────────
 
@@ -380,17 +379,25 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
 
 // ─── Collection Optimization Sections ─────────────────────────────────────────
 // Renders BALANCE and UTILIZATION recommendations with collapsible section headers.
+// Uses goal-based filtering to avoid duplicate display (all coll-opt recs share the
+// same category value, so category-based filtering would show the same recs twice).
+
+const UTILIZATION_GOALS = new Set(['underused_blends', 'never_smoked_blends', 'underused_pipes']);
+const BALANCE_GOALS     = new Set(['tobacco_type_imbalance']);
+
+// Goals handled by PipeReviewPanel — exclude from CollectionOptSections to avoid duplication
+const SPECIALIZATION_GOALS = new Set(['specialization_candidates']);
 
 const COLL_OPT_SECTION_MAP = [
   {
     key:        'utilization',
     label:      'Utilization & Rotation',
-    categories: [CATEGORY.UTILIZATION],
+    goalFilter: (r) => UTILIZATION_GOALS.has(r.goal),
   },
   {
     key:        'balance',
-    label:      'Collection Balance',
-    categories: [CATEGORY.BALANCE],
+    label:      'Collection Balance & Gaps',
+    goalFilter: (r) => BALANCE_GOALS.has(r.goal),
   },
 ];
 
@@ -440,12 +447,16 @@ function CollOptSection({ label, recommendations, onAction }) {
 }
 
 function CollectionOptSections({ sections, onAction }) {
+  // Flatten all recommendations from all collection-opt sections
+  const allRecs = sections.flatMap((s) => s.recommendations || []);
+
   return (
     <div className="space-y-5">
-      {COLL_OPT_SECTION_MAP.map(({ key, label, categories }) => {
-        const recs = sections
-          .filter((s) => categories.includes(s.category))
-          .flatMap((s) => s.recommendations || []);
+      {COLL_OPT_SECTION_MAP.map(({ key, label, goalFilter }) => {
+        // Filter by goal to avoid duplicates and exclude specialization (shown in PipeReviewPanel)
+        const recs = allRecs.filter(
+          (r) => goalFilter(r) && !SPECIALIZATION_GOALS.has(r.goal)
+        );
         return (
           <CollOptSection
             key={key}
