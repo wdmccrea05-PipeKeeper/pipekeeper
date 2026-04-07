@@ -1,48 +1,75 @@
 /**
- * CuratorOptimizePanel
+ * CuratorOptimizePanel — NEW v2
  *
- * Renders the "Optimize Your Collection" view.
+ * Renders the "Optimize Your Collection" view using structured local analysis.
+ * NO LLM calls for recommendation generation.
  *
- * RENDERING PATH:
- *   1. Calls executeCuratorAction({ actionType: 'optimize_collection', context })
- *   2. Receives { groups } from the executor (already deduplicated + grouped)
- *   3. Renders each group via CuratorRecommendationGroup
+ * Sections (in order):
+ *   1. Data & Metadata
+ *   2. Collection Balance
+ *   3. Utilization & Rotation
+ *   4. Purchase & Restock
+ *   5. Specialization & Strategy
+ *   6. Pairing & Experience
  *
- * APPLY FIX:
- *   - Calls applyCuratorRecommendation(item) directly (no navigation)
- *   - Removes the applied item from local state immediately (refreshState)
- *
- * Old per-item card rendering path (SectionGroup / RecommendationCard) has been removed.
+ * Each section shows compact grouped recommendation cards.
+ * Actions mutate data directly — no navigation.
  */
 
-import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { CheckCircle2, MessageCircle, X, Loader2, AlertTriangle } from 'lucide-react';
-import { executeCuratorAction } from './curatorActionExecutor';
-import { applyCuratorRecommendation } from './curatorActionApply';
+import React, { useMemo, useState, useCallback } from 'react';
+import { CheckCircle2, MessageCircle, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { generateRecommendations } from '@/lib/curator/recommendationEngine.js';
+import { groupRecommendations, getGroupSummary } from '@/lib/curator/recommendationGrouping.js';
+import { executeRecommendationAction } from '@/lib/curator/recommendationActions.js';
+import { CATEGORY_LABELS } from '@/lib/curator/recommendationSchema.js';
 import CuratorRecommendationGroup from './CuratorRecommendationGroup';
+
+// ─── Section header ───────────────────────────────────────────────────────────
+
+function SectionHeader({ label, count, isExpanded, onToggle }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="w-full flex items-center justify-between px-1 py-2 group"
+    >
+      <div className="flex items-center gap-2">
+        <p
+          className="text-xs font-bold uppercase tracking-widest"
+          style={{ color: 'rgba(180,140,75,0.85)', letterSpacing: '0.1em' }}
+        >
+          {label}
+        </p>
+        <span
+          className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+          style={{ background: 'rgba(180,140,75,0.12)', color: 'rgba(180,140,75,0.7)' }}
+        >
+          {count}
+        </span>
+      </div>
+      {isExpanded
+        ? <ChevronUp className="w-3.5 h-3.5" style={{ color: 'rgba(180,140,75,0.5)' }} />
+        : <ChevronDown className="w-3.5 h-3.5" style={{ color: 'rgba(180,140,75,0.5)' }} />
+      }
+    </button>
+  );
+}
 
 // ─── Module filter pills ──────────────────────────────────────────────────────
 
 const MODULE_PILLS = [
-  { key: 'all', label: 'All' },
-  { key: 'pipe', label: 'Pipe' },
-  { key: 'tobacco', label: 'Tobacco' },
-  { key: 'cigar', label: 'Cigar' },
-  { key: 'whiskey', label: 'Whiskey' },
+  { key: 'all',    label: 'All' },
+  { key: 'pipe',   label: 'Pipe' },
+  { key: 'tobacco',label: 'Tobacco' },
+  { key: 'cigar',  label: 'Cigar' },
+  { key: 'whiskey',label: 'Whiskey' },
 ];
 
-// ─── Module key helper ────────────────────────────────────────────────────────
-
-function itemMatchesModule(item, moduleKey) {
+function recMatchesModule(rec, moduleKey) {
   if (moduleKey === 'all') return true;
-  const rt = (item.recordType || '').toLowerCase();
-  switch (moduleKey) {
-    case 'pipe':    return rt === 'pipe';
-    case 'tobacco': return rt === 'blend' || rt === 'tobacco';
-    case 'cigar':   return rt === 'cigar';
-    case 'whiskey': return rt === 'bottle' || rt === 'whiskey';
-    default:        return true;
-  }
+  const mk = (rec.moduleKey || '').toLowerCase();
+  if (mk === 'multi') return true;
+  return mk === moduleKey || mk.includes(moduleKey);
 }
 
 // ─── CuratorOptimizePanel ─────────────────────────────────────────────────────
@@ -59,14 +86,17 @@ export default function CuratorOptimizePanel({
   onClose,
   onAskCurator,
 }) {
-  const [rawGroups, setRawGroups] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [applyError, setApplyError] = useState(null);
-  const [activeModule, setActiveModule] = useState('all');
-  const triggerElementRef = useRef(null);
+  const [activeModule, setActiveModule]       = useState('all');
+  const [collapsedSections, setCollapsedSections] = useState(new Set());
+  const [dismissedIds, setDismissedIds]       = useState(new Set());
+  const [actionErrors, setActionErrors]       = useState({});
+  const triggerRef = React.useRef(null);
 
-  // Build the collection context that the executor needs
+  React.useEffect(() => {
+    triggerRef.current = document.activeElement;
+  }, []);
+
+  // Generate recommendations from local structured analysis (no LLM)
   const context = useMemo(() => ({
     pipes,
     blends,
@@ -76,117 +106,63 @@ export default function CuratorOptimizePanel({
     tastingLogs,
     cigarSessions,
     wantListItems,
-  }), [
-    pipes, blends, cigars, bottles,
-    smokeLogs, tastingLogs, cigarSessions, wantListItems,
-  ]);
+  }), [pipes, blends, cigars, bottles, smokeLogs, tastingLogs, cigarSessions, wantListItems]);
 
-  // Capture focus trigger on mount
-  useEffect(() => {
-    triggerElementRef.current = document.activeElement;
-  }, []);
+  const allRecommendations = useMemo(() => generateRecommendations(context), [context]);
 
-  // Run the executor once per mount. The optimize call is expensive (LLM) and is
-  // triggered by user intent (opening the panel), so a single run on mount is correct.
-  // Collection data is captured via the context ref at call time.
-  const contextRef = useRef(context);
-  contextRef.current = context;
+  // Filter by module and dismissed
+  const visibleRecommendations = useMemo(() => {
+    return allRecommendations.filter(
+      (rec) => !dismissedIds.has(rec.id) && recMatchesModule(rec, activeModule)
+    );
+  }, [allRecommendations, dismissedIds, activeModule]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setIsLoading(true);
-    setError(null);
+  const sections = useMemo(() => groupRecommendations(visibleRecommendations), [visibleRecommendations]);
+  const summary  = useMemo(() => getGroupSummary(sections), [sections]);
 
-    executeCuratorAction({ actionType: 'optimize_collection', context: contextRef.current, requestId: `opt_${Date.now()}` })
-      .then((result) => {
-        if (cancelled) return;
-        setRawGroups(
-          (result?.groups || []).map((g) => ({
-            ...g,
-            itemCount: g.items?.length ?? 0,
-          }))
-        );
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        console.error('[CuratorOptimizePanel] executor failed:', err);
-        setError(err?.message || 'Failed to load recommendations.');
-        setIsLoading(false);
-      });
-
-    return () => { cancelled = true; };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps — intentionally runs once per mount
-
-  // Filter groups by active module
-  const filteredGroups = useMemo(() => {
-    if (activeModule === 'all') return rawGroups;
-    return rawGroups
-      .map((g) => {
-        const items = (g.items || []).filter((item) => itemMatchesModule(item, activeModule));
-        return { ...g, items, itemCount: items.length };
-      })
-      .filter((g) => g.items.length > 0);
-  }, [rawGroups, activeModule]);
-
-  const totalItems = filteredGroups.reduce((sum, g) => sum + (g.items?.length ?? 0), 0);
-
-  // ── Handlers ────────────────────────────────────────────────────────────────
+  // ── Handlers ─────────────────────────────────────────────────────────────────
 
   function handleClose() {
     if (onClose) {
       onClose();
-      if (triggerElementRef.current?.focus) {
-        requestAnimationFrame(() => triggerElementRef.current.focus());
+      if (triggerRef.current?.focus) {
+        requestAnimationFrame(() => triggerRef.current.focus());
       }
     }
   }
 
-  /**
-   * executeFix: apply the recommendation directly via the apply handler.
-   * persist: applyCuratorRecommendation already persists to the DB.
-   * refreshState: remove the item from local groups so the UI updates instantly.
-   */
-  async function handleAcceptItem(item) {
-    setApplyError(null);
+  function handleToggleSection(cat) {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
+  }
+
+  const handleAction = useCallback(async (actionKey, recommendation, opts = {}) => {
+    setActionErrors((prev) => { const n = { ...prev }; delete n[recommendation.id]; return n; });
     try {
-      await applyCuratorRecommendation(item);
-      // refreshState — remove the applied item from all groups only after successful persist
-      setRawGroups((prev) =>
-        prev
-          .map((g) => ({
-            ...g,
-            items: (g.items || []).filter((i) => i.id !== item.id),
-            itemCount: Math.max(0, (g.itemCount ?? 0) - 1),
-          }))
-          .filter((g) => (g.items?.length ?? 0) > 0)
-      );
-    } catch (err) {
-      console.error('[CuratorOptimizePanel] apply failed:', err);
-      setApplyError(err?.message || 'Could not apply the fix. Please try again.');
-    }
-  }
-
-  function handleClarifyItem(item) {
-    if (!onAskCurator) return;
-    const prompt =
-      item._clarifyPrompt ||
-      `Tell me more about: "${item.title || item.itemName}". ${item.issue || ''} What should I prioritize?`;
-    onAskCurator(prompt);
-    if (onClose) onClose();
-  }
-
-  async function handleApplyAllInGroup(group, items) {
-    for (const item of items) {
-      try {
-        await handleAcceptItem(item);
-      } catch (err) {
-        console.error('[CuratorOptimizePanel] bulk apply failed for item:', item?.id, err);
+      const result = await executeRecommendationAction(recommendation, actionKey, opts);
+      if (result?.ok) {
+        // Remove the resolved recommendation from view
+        setDismissedIds((prev) => new Set([...prev, recommendation.id]));
       }
+      return result;
+    } catch (err) {
+      setActionErrors((prev) => ({ ...prev, [recommendation.id]: err?.message || 'Action failed.' }));
+      throw err;
     }
-  }
+  }, []);
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  const handleAskCurator = useCallback((promptText) => {
+    if (onAskCurator) {
+      onAskCurator(promptText);
+      if (onClose) onClose();
+    }
+  }, [onAskCurator, onClose]);
+
+  // ── Render ────────────────────────────────────────────────────────────────────
 
   return (
     <div
@@ -197,7 +173,7 @@ export default function CuratorOptimizePanel({
         boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
       }}
     >
-      {/* ── Sticky Header ─────────────────────────────────────────────── */}
+      {/* ── Sticky header ─────────────────────────────────────────────── */}
       <div
         className="sticky top-0 z-10 px-5 pt-5 pb-4"
         style={{
@@ -214,8 +190,8 @@ export default function CuratorOptimizePanel({
             >
               Optimize Your Collection
             </h1>
-            <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.6)' }}>
-              Structured improvement across data, health, rotation, acquisitions, and strategy
+            <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.5)' }}>
+              Structured improvements across data, balance, rotation, restocking, and strategy
             </p>
           </div>
           {onClose && (
@@ -260,84 +236,48 @@ export default function CuratorOptimizePanel({
         </div>
       </div>
 
-      {/* ── Summary Bar ───────────────────────────────────────────────── */}
-      {!isLoading && totalItems > 0 && (
+      {/* ── Summary bar ───────────────────────────────────────────────── */}
+      {summary.totalRecs > 0 && (
         <div
-          className="px-5 py-4 grid grid-cols-2 gap-3"
+          className="px-5 py-3 flex gap-4"
           style={{ borderBottom: '1px solid rgba(140,105,65,0.12)' }}
         >
-          {[
-            { label: 'Optimizations', value: totalItems, color: 'rgba(224,216,200,0.8)' },
-            { label: 'Categories', value: filteredGroups.length, color: 'rgba(180,140,75,0.85)' },
-          ].map(({ label, value, color }) => (
-            <div
-              key={label}
-              className="text-center py-3 rounded-xl"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.1)' }}
-            >
-              <div
-                className="text-2xl sm:text-3xl font-bold mb-1"
-                style={{ color, fontFamily: "'Georgia', serif" }}
-              >
-                {value}
+          <div className="text-center">
+            <p className="text-xl font-bold" style={{ color: 'rgba(224,216,200,0.8)', fontFamily: "'Georgia', serif" }}>
+              {summary.totalRecs}
+            </p>
+            <p className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(224,216,200,0.4)' }}>
+              Suggestions
+            </p>
+          </div>
+          <div className="w-px" style={{ background: 'rgba(140,105,65,0.15)' }} />
+          <div className="text-center">
+            <p className="text-xl font-bold" style={{ color: 'rgba(180,140,75,0.85)', fontFamily: "'Georgia', serif" }}>
+              {summary.sectionCount}
+            </p>
+            <p className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(224,216,200,0.4)' }}>
+              Categories
+            </p>
+          </div>
+          {summary.totalItems > 0 && (
+            <>
+              <div className="w-px" style={{ background: 'rgba(140,105,65,0.15)' }} />
+              <div className="text-center">
+                <p className="text-xl font-bold" style={{ color: 'rgba(224,216,200,0.6)', fontFamily: "'Georgia', serif" }}>
+                  {summary.totalItems}
+                </p>
+                <p className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(224,216,200,0.4)' }}>
+                  Items
+                </p>
               </div>
-              <div className="text-[10px] sm:text-xs font-medium" style={{ color: 'rgba(224,216,200,0.5)' }}>
-                {label}
-              </div>
-            </div>
-          ))}
+            </>
+          )}
         </div>
       )}
 
       {/* ── Content ───────────────────────────────────────────────────── */}
-      <div className="px-5 py-5 space-y-3">
-        {/* Apply-fix error banner */}
-        {applyError && (
-          <div
-            className="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
-            style={{ background: 'rgba(180,50,50,0.12)', border: '1px solid rgba(200,80,80,0.3)' }}
-          >
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 shrink-0" style={{ color: 'rgba(220,100,80,0.9)' }} />
-              <p className="text-xs" style={{ color: 'rgba(240,200,190,0.9)' }}>{applyError}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setApplyError(null)}
-              className="text-xs shrink-0 hover:opacity-80"
-              style={{ color: 'rgba(200,150,140,0.7)' }}
-            >
-              Dismiss
-            </button>
-          </div>
-        )}
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-4">
-            <Loader2
-              className="w-8 h-8 animate-spin"
-              style={{ color: 'rgba(180,140,75,0.7)' }}
-            />
-            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.5)' }}>
-              Analyzing your collection…
-            </p>
-          </div>
-        ) : error ? (
-          <div
-            className="rounded-2xl p-8 text-center"
-            style={{
-              background: 'rgba(180,50,50,0.06)',
-              border: '1px solid rgba(180,80,80,0.2)',
-            }}
-          >
-            <AlertTriangle className="w-8 h-8 mx-auto mb-3" style={{ color: 'rgba(200,100,80,0.8)' }} />
-            <p className="text-sm font-semibold mb-1" style={{ color: '#F5F1E7' }}>
-              Could not load recommendations
-            </p>
-            <p className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>
-              {error}
-            </p>
-          </div>
-        ) : totalItems === 0 ? (
+      <div className="px-5 py-4 space-y-5">
+        {sections.length === 0 ? (
           <div
             className="rounded-2xl p-8 text-center"
             style={{
@@ -357,16 +297,38 @@ export default function CuratorOptimizePanel({
             </p>
           </div>
         ) : (
-          filteredGroups.map((group) => (
-            <CuratorRecommendationGroup
-              key={group.groupKey}
-              group={group}
-              workflowId="optimize_collection"
-              onAcceptItem={handleAcceptItem}
-              onClarifyItem={handleClarifyItem}
-              onApplyAllInGroup={handleApplyAllInGroup}
-            />
-          ))
+          sections.map((section) => {
+            const isCollapsed = collapsedSections.has(section.category);
+            return (
+              <div key={section.category}>
+                {/* Section divider */}
+                <div
+                  className="mb-2.5"
+                  style={{ borderBottom: '1px solid rgba(140,105,65,0.12)' }}
+                >
+                  <SectionHeader
+                    label={section.label}
+                    count={section.recommendations.length}
+                    isExpanded={!isCollapsed}
+                    onToggle={() => handleToggleSection(section.category)}
+                  />
+                </div>
+
+                {!isCollapsed && (
+                  <div className="space-y-2.5">
+                    {section.recommendations.map((rec) => (
+                      <CuratorRecommendationGroup
+                        key={rec.id}
+                        recommendation={rec}
+                        onAction={handleAction}
+                        onAskCurator={handleAskCurator}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
     </div>

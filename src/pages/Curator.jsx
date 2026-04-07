@@ -126,9 +126,13 @@ export default function Curator() {
     return resolveLaunchContext();
   });
 
-  // Optimize panel is shown only when explicitly triggered (e.g. from Hub quick launch)
-  // or when user clicks "View Recommendations" button in the curator header.
-  const [isOptimizeMode, setIsOptimizeMode] = useState(false);
+  // Optimize panel is the default view unless a chat prompt is pending (e.g. from a
+  // collection insight click or URL ?prompt= parameter). Showing it by default makes
+  // the Curator feel like a workflow engine, not an AI chat window.
+  const [isOptimizeMode, setIsOptimizeMode] = useState(() => {
+    const lc = resolveLaunchContext();
+    return !lc.initialPrompt; // default to optimize unless a prompt is waiting
+  });
 
   const [curatorScope, setCuratorScope] = useState(
     location?.state?.scope || "all"
@@ -288,13 +292,14 @@ export default function Curator() {
   }, []);
 
   // Called from CuratorOptimizePanel when user clicks "Ask Curator" or "Review Details"
-  // Pre-fills the chat prompt without auto-submitting — user must press send manually
+  // Switches to chat mode and pre-fills the prompt — user must press send manually
   const handleOptimizeAskCurator = useCallback((promptText) => {
     setLaunchContext({
       source: "optimize_panel",
       initialPrompt: promptText,
       recommendationContext: null,
     });
+    setIsOptimizeMode(false);
     // Scroll to the chat workspace area
     if (chatRef.current) {
       chatRef.current.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
