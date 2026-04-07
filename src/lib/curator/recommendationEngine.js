@@ -46,6 +46,21 @@ function nowMs() {
   return Date.now();
 }
 
+// ─── Strength inference by blend type ────────────────────────────────────────
+
+const BLEND_TYPE_STRENGTH_INFERENCE = {
+  'Aromatic':          'Mild',
+  'Virginia':          'Mild',
+  'Virginia/Perique':  'Medium',
+  'Virginia/Burley':   'Medium',
+  'Virginia/Oriental': 'Medium',
+  'Oriental':          'Medium',
+  'Burley':            'Medium-Full',
+  'English':           'Full',
+  'English/Balkan':    'Full',
+  'Balkan':            'Full',
+};
+
 // ─── Category 1: Data & Metadata ─────────────────────────────────────────────
 
 function analyzeMetadata(context) {
@@ -82,26 +97,33 @@ function analyzeMetadata(context) {
     }));
   }
 
-  // Blends missing strength
+  // Blends missing strength — infer from blend_type where possible
   const blendsNoStrength = blends.filter((b) => b.blend_type && (!b.strength || b.strength === ''));
   if (blendsNoStrength.length > 0) {
-    const items = blendsNoStrength.slice(0, MAX_ITEMS_PER_REC).map((b) => ({
-      id: b.id,
-      recordId: b.id,
-      recordType: 'blend',
-      recordName: b.name,
-      itemName: b.name,
-      manufacturer: b.manufacturer || null,
-      ownershipStatus: 'owned',
-    }));
+    const items = blendsNoStrength.slice(0, MAX_ITEMS_PER_REC).map((b) => {
+      const inferred = BLEND_TYPE_STRENGTH_INFERENCE[b.blend_type] || null;
+      return {
+        id: b.id,
+        recordId: b.id,
+        recordType: 'blend',
+        recordName: b.name,
+        itemName: b.name,
+        manufacturer: b.manufacturer || null,
+        ownershipStatus: 'owned',
+        proposedChange: inferred
+          ? { field: 'strength', displayValue: inferred, payload: { strength: inferred } }
+          : null,
+      };
+    });
+    const inferredCount = items.filter((i) => i.proposedChange).length;
     recommendations.push(createRecommendation({
       category:           CATEGORY.METADATA,
       goal:               'blend_missing_strength',
-      actionType:         ACTION_TYPE.ADVISORY,
+      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
       title:              'Blends Missing Strength',
-      summary:            `${items.length} blend${items.length > 1 ? 's are' : ' is'} missing a strength rating`,
+      summary:            `${items.length} blend${items.length > 1 ? 's are' : ' is'} missing a strength rating${inferredCount > 0 ? ` — ${inferredCount} can be inferred from blend type` : ''}`,
       whyItMatters:       'Strength data helps with session planning, rotation, and pairing suggestions',
-      recommendationText: 'Add a strength rating (Mild, Medium, Full) to these blends',
+      recommendationText: 'Review and approve the inferred strength values, or add ratings manually',
       moduleKey:          MODULE_KEY.TOBACCO,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           PRIORITY.LOW,
@@ -136,11 +158,11 @@ function analyzeMetadata(context) {
     recommendations.push(createRecommendation({
       category:           CATEGORY.METADATA,
       goal:               'bottle_missing_core_metadata',
-      actionType:         ACTION_TYPE.ADVISORY,
+      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
       title:              'Bottles Missing Core Metadata',
       summary:            `${items.length} bottle${items.length > 1 ? 's are' : ' is'} missing distillery, region, age, ABV, or spirit type`,
       whyItMatters:       'Core metadata enables accurate pairing recommendations and collection analytics',
-      recommendationText: 'Complete the metadata for these bottles',
+      recommendationText: 'Open each bottle in WhiskeyKeeper to complete the missing fields',
       moduleKey:          MODULE_KEY.WHISKEY,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           items.length >= 5 ? PRIORITY.MEDIUM : PRIORITY.LOW,
@@ -166,11 +188,11 @@ function analyzeMetadata(context) {
     recommendations.push(createRecommendation({
       category:           CATEGORY.METADATA,
       goal:               'bottle_missing_valuation',
-      actionType:         ACTION_TYPE.ADVISORY,
+      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
       title:              'Bottles Without Valuation Data',
       summary:            `${items.length} bottle${items.length > 1 ? 's have' : ' has'} no pricing or valuation data`,
       whyItMatters:       'Valuation data helps track collection worth and supports purchase decisions',
-      recommendationText: 'Add retail, aftermarket, or collector values to these bottles',
+      recommendationText: 'Open each bottle in WhiskeyKeeper to add retail, aftermarket, or collector values',
       moduleKey:          MODULE_KEY.WHISKEY,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           PRIORITY.LOW,
@@ -195,11 +217,11 @@ function analyzeMetadata(context) {
     recommendations.push(createRecommendation({
       category:           CATEGORY.METADATA,
       goal:               'pipe_missing_shape',
-      actionType:         ACTION_TYPE.ADVISORY,
+      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
       title:              'Pipes Missing Shape Classification',
       summary:            `${items.length} pipe${items.length > 1 ? 's are' : ' is'} missing shape or bowl style`,
       whyItMatters:       'Shape data helps identify pipe characteristics and supports collection diversity analysis',
-      recommendationText: 'Add shape and bowl style to these pipes',
+      recommendationText: 'Open each pipe to add shape and bowl style classification',
       moduleKey:          MODULE_KEY.PIPE,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           PRIORITY.LOW,
