@@ -4,12 +4,12 @@
  * Three-surface operations workspace. No chat shell. No ForYou panel.
  *
  * Surfaces:
- *   1. Optimize Board        — main landing, grouped operational recommendations
+ *   1. Optimize Board        — main landing, analysis auto-runs on mount
  *   2. Specialization Review — per-pipe specialization workflow
  *   3. Purchase & Restock    — actionable queue with batch shopping list actions
  */
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Loader2, LayoutDashboard, Award, ShoppingCart } from 'lucide-react';
 import CuratorResultsBoard from './CuratorResultsBoard';
 import CuratorSpecializationReview from './CuratorSpecializationReview';
@@ -22,69 +22,50 @@ import { useQueryClient } from '@tanstack/react-query';
 import { CATEGORY } from '@/lib/curator/recommendationSchema.js';
 
 const SURFACES = [
-  { key: 'board',          label: 'Optimize Board',      icon: LayoutDashboard },
+  { key: 'board',          label: 'Optimize Board',        icon: LayoutDashboard },
   { key: 'specialization', label: 'Specialization Review', icon: Award },
-  { key: 'purchase',       label: 'Purchase & Restock',  icon: ShoppingCart },
+  { key: 'purchase',       label: 'Purchase & Restock',    icon: ShoppingCart },
 ];
 
-const OPTIMIZE_CATEGORIES = [
-  CATEGORY.METADATA,
-  CATEGORY.BALANCE,
-  CATEGORY.UTILIZATION,
-  CATEGORY.SPECIALIZATION,
-];
-
-const PURCHASE_CATEGORIES = [
-  CATEGORY.PURCHASE,
-  CATEGORY.CIGAR_DISCOVERY,
-];
+const PURCHASE_CATEGORIES = [CATEGORY.PURCHASE, CATEGORY.CIGAR_DISCOVERY];
 
 /**
- * @param {object}   props
- * @param {object}   props.collectionContext   - { pipes, blends, bottles, cigars, smokingLogs, tastingLogs, cigarSessions, wantListItems, cigarModuleActive }
- * @param {boolean}  props.isLoading           - Whether data is still loading
+ * @param {object}  props
+ * @param {object}  props.collectionContext  - { pipes, blends, bottles, cigars, smokingLogs, tastingLogs, cigarSessions, wantListItems, cigarModuleActive }
+ * @param {boolean} props.isLoading         - Whether data is still loading
  */
 export default function CuratorWorkspace({ collectionContext = {}, isLoading = false }) {
-  const { user } = useCurrentUser();
+  const { user }   = useCurrentUser();
   const queryClient = useQueryClient();
 
   const [surface, setSurface]           = useState('board');
-  const [boardSections, setBoardSections] = useState([]);
+  const [allSections, setAllSections]   = useState([]);
   const [purchaseSections, setPurchaseSections] = useState([]);
-  const [specItems, setSpecItems]       = useState([]);
+  const [specRecs, setSpecRecs]         = useState([]);
   const [analysisRun, setAnalysisRun]   = useState(false);
 
-  // Run analysis once data is loaded
-  useEffect(() => {
-    if (isLoading || analysisRun) return;
+  const runAnalysis = useCallback(() => {
     const recs = generateRecommendations(collectionContext);
-
-    const boardRecs    = recs.filter((r) => OPTIMIZE_CATEGORIES.includes(r.category));
-    const purchaseRecs = recs.filter((r) => PURCHASE_CATEGORIES.includes(r.category));
-    const specRecs     = recs.filter((r) => r.category === CATEGORY.SPECIALIZATION);
-
-    setBoardSections(groupRecommendations(boardRecs));
-    setPurchaseSections(groupRecommendations(purchaseRecs));
-
-    // Flatten all specialization candidate items
-    const allSpecItems = specRecs.flatMap((r) => r.items || []).filter((i) => i.hasLogData);
-    setSpecItems(allSpecItems);
-
+    setAllSections(groupRecommendations(recs));
+    setPurchaseSections(groupRecommendations(recs.filter((r) => PURCHASE_CATEGORIES.includes(r.category))));
+    setSpecRecs(recs.filter((r) => r.category === CATEGORY.SPECIALIZATION));
     setAnalysisRun(true);
-  }, [isLoading, collectionContext, analysisRun]);
-
-  // Re-run when collection changes
-  useEffect(() => {
-    setAnalysisRun(false);
   }, [collectionContext]);
 
+  // Run analysis once data loads
+  useEffect(() => {
+    if (!isLoading && !analysisRun) runAnalysis();
+  }, [isLoading, analysisRun, runAnalysis]);
+
+  // Re-run when collection changes
+  useEffect(() => { setAnalysisRun(false); }, [collectionContext]);
+
   const handleAction = useCallback(async (actionKey, recommendation, opts = {}) => {
-    const result = await executeRecommendationAction(
-      recommendation,
-      actionKey,
-      { ...opts, userEmail: user?.email }
-    );
-    if (actionKey === 'apply_fix' || actionKey === 'approve_changes' || actionKey === 'apply_specialization') {
+    const result = await executeRecommendationAction(recommendation, actionKey, {
+      ...opts,
+      userEmail: user?.email,
+    });
+    if (['apply_fix', 'approve_changes', 'apply_specialization'].includes(actionKey)) {
       queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
     }
     if (actionKey === 'add_to_shopping_list') {
@@ -93,7 +74,10 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
     return result;
   }, [user?.email, queryClient]);
 
-  const specCandidateCount = specItems.length;
+  // Badge counts
+  const specCandidateCount = specRecs
+    .flatMap((r) => r.items || [])
+    .filter((i) => i.hasLogData).length;
   const purchaseCount = purchaseSections.reduce((s, g) => s + g.recommendations.length, 0);
 
   if (isLoading) {
@@ -147,16 +131,17 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
       {/* Surface content */}
       {surface === 'board' && (
         <CuratorResultsBoard
-          sections={boardSections}
+          sections={allSections}
           onAction={handleAction}
           onOpenSpecialization={() => setSurface('specialization')}
           onOpenPurchase={() => setSurface('purchase')}
+          onRefresh={runAnalysis}
         />
       )}
 
       {surface === 'specialization' && (
         <CuratorSpecializationReview
-          pipeItems={specItems}
+          specRecs={specRecs}
           onDone={() => {
             queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
             setSurface('board');

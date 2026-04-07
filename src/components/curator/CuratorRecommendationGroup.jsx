@@ -1,452 +1,335 @@
 /**
- * CuratorRecommendationGroup — NEW v2
+ * CuratorRecommendationGroup — compact operational card
  *
- * Renders a single structured recommendation as a compact grouped card.
- * One card = one goal/cohort, NOT one card per item.
+ * One card = one recommendation goal/cohort.
  *
  * Card structure:
- *   [ACTION_TYPE badge] [PRIORITY badge]
+ *   Header row: [type badge] [module label] [priority badge]  |  [item count]
  *   Title
- *   Why it matters line
- *   Item preview chips + "+N more"
- *   Action row (buttons depend on actionType)
+ *   Why-it-matters line (1 line max)
+ *   Item preview chips (top 3–5) + "+N more"
+ *   Action row: ONE primary button + secondary + optional tertiary
  *
- * Action types → button sets:
- *   auto_fix:             [Apply Fix] [Review Details] [Ask Curator]
- *   advisory:             [Acknowledge] [View Items] [Ask Curator]
- *   review_required:      [Review Details] [Approve Changes] [Ask Curator]
- *   multi_path:           [Acknowledge] [Ask for More Info] [Treat Individually]
- *   shopping_list_action: [Add to Shopping List] [Review Candidates] [Ask Curator]
+ * Action hierarchy (per spec):
+ *   primary   — filled
+ *   secondary — outline
+ *   tertiary  — ghost text
+ *
+ * Action type mapping:
+ *   auto_fix             → Apply Fix (primary)  | Review Details (secondary) | Ask Curator (tertiary)
+ *   advisory             → View Items (primary)  | Acknowledge (secondary)    | Ask Curator (tertiary)
+ *   review_required      → Review Details (secondary) | Approve Changes (primary)  | Ask Curator (tertiary)
+ *   multi_path           → Treat Individually (primary) | Ask for More Info (secondary) | Acknowledge (tertiary)
+ *   shopping_list_action → Add All to Shopping List (primary) | Review Items (secondary)
  */
 
-import React, { useState } from "react";
-import { Check, Eye, HelpCircle, SplitSquareVertical, ShoppingCart, Loader2, CheckCircle2 } from "lucide-react";
-import { ACTION_TYPE, ACTION_TYPE_LABELS, ACTION_TYPE_COLORS, PRIORITY_STYLES } from "@/lib/curator/recommendationSchema.js";
-import CuratorItemPreviewList from "./CuratorItemPreviewList";
-import CuratorPairingResults from "./CuratorPairingResults";
-import CuratorSpecializationReview from "./CuratorSpecializationReview";
+import React, { useState } from 'react';
+import {
+  Check, Eye, ShoppingCart, SplitSquareVertical,
+  HelpCircle, Loader2, CheckCircle2, ArrowRight,
+} from 'lucide-react';
+import { ACTION_TYPE, PRIORITY_STYLES, MODULE_KEY } from '@/lib/curator/recommendationSchema.js';
+import CuratorItemPreviewList from './CuratorItemPreviewList';
 
-// ─── Action button sets ───────────────────────────────────────────────────────
+// ─── Badge definitions ────────────────────────────────────────────────────────
 
-function ActionButtons({ rec, onAction, applying }) {
-  const at = rec.actionType;
+const ACTION_TYPE_BADGE = {
+  [ACTION_TYPE.AUTO_FIX]:             { bg: 'rgba(74,124,92,0.18)',  text: 'rgba(80,180,130,1)',   label: 'Auto Fix' },
+  [ACTION_TYPE.ADVISORY]:             { bg: 'rgba(74,124,156,0.18)', text: 'rgba(120,170,220,1)',  label: 'Advisory' },
+  [ACTION_TYPE.REVIEW_REQUIRED]:      { bg: 'rgba(180,100,50,0.18)', text: 'rgba(220,140,90,1)',   label: 'Review' },
+  [ACTION_TYPE.MULTI_PATH]:           { bg: 'rgba(139,94,58,0.18)',  text: 'rgba(200,155,100,1)',  label: 'Strategy' },
+  [ACTION_TYPE.SHOPPING_LIST_ACTION]: { bg: 'rgba(74,100,156,0.18)', text: 'rgba(160,200,240,1)',  label: 'Shopping' },
+};
 
-  const btnBase = {
-    className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50",
-  };
+const MODULE_LABEL = {
+  [MODULE_KEY.PIPE]:    { text: 'rgba(200,155,100,0.9)',  label: 'Pipe' },
+  [MODULE_KEY.TOBACCO]: { text: 'rgba(100,180,130,0.9)',  label: 'Tobacco' },
+  [MODULE_KEY.WHISKEY]: { text: 'rgba(160,200,240,0.9)',  label: 'Whiskey' },
+  [MODULE_KEY.CIGAR]:   { text: 'rgba(220,160,120,0.9)',  label: 'Cigar' },
+  [MODULE_KEY.MULTI]:   { text: 'rgba(180,180,180,0.55)', label: 'Multi' },
+};
 
-  if (at === ACTION_TYPE.AUTO_FIX) {
-    return (
-      <>
-        <button
-          type="button"
-          onClick={() => onAction('apply_fix', rec)}
-          disabled={applying}
-          {...btnBase}
-          style={{ background: 'rgba(74,124,92,0.25)', color: 'rgba(80,180,130,1)', border: '1px solid rgba(74,124,92,0.4)' }}
-        >
-          {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-          {applying ? 'Applying…' : 'Apply Fix'}
-        </button>
-        <button
-          type="button"
-          onClick={() => onAction('view_details', rec)}
-          {...btnBase}
-          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(224,216,200,0.6)', border: '1px solid rgba(140,105,65,0.2)' }}
-        >
-          <Eye className="w-3 h-3" />
-          Review Details
-        </button>
-        <button
-          type="button"
-          onClick={() => onAction('ask_curator', rec)}
-          {...btnBase}
-          style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(140,105,65,0.12)' }}
-        >
-          <HelpCircle className="w-3 h-3" />
-          Ask Curator
-        </button>
-      </>
-    );
-  }
+// ─── Reusable button primitives ───────────────────────────────────────────────
 
-  if (at === ACTION_TYPE.ADVISORY) {
-    return (
-      <>
-        <button
-          type="button"
-          onClick={() => onAction('acknowledge', rec)}
-          {...btnBase}
-          style={{ background: 'rgba(74,124,92,0.2)', color: 'rgba(100,180,130,0.9)', border: '1px solid rgba(74,124,92,0.35)' }}
-        >
-          <Check className="w-3 h-3" />
-          Acknowledge
-        </button>
-        <button
-          type="button"
-          onClick={() => onAction('view_items', rec)}
-          {...btnBase}
-          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(224,216,200,0.6)', border: '1px solid rgba(140,105,65,0.2)' }}
-        >
-          <Eye className="w-3 h-3" />
-          View Items
-        </button>
-        <button
-          type="button"
-          onClick={() => onAction('ask_curator', rec)}
-          {...btnBase}
-          style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(140,105,65,0.12)' }}
-        >
-          <HelpCircle className="w-3 h-3" />
-          Ask Curator
-        </button>
-      </>
-    );
-  }
-
-  if (at === ACTION_TYPE.REVIEW_REQUIRED) {
-    return (
-      <>
-        <button
-          type="button"
-          onClick={() => onAction('view_details', rec)}
-          {...btnBase}
-          style={{ background: 'rgba(180,100,50,0.2)', color: 'rgba(220,140,90,0.9)', border: '1px solid rgba(180,100,50,0.35)' }}
-        >
-          <Eye className="w-3 h-3" />
-          Review Details
-        </button>
-        <button
-          type="button"
-          onClick={() => onAction('approve_changes', rec)}
-          disabled={applying}
-          {...btnBase}
-          style={{ background: 'rgba(74,124,92,0.2)', color: 'rgba(100,180,130,0.9)', border: '1px solid rgba(74,124,92,0.35)' }}
-        >
-          {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-          {applying ? 'Applying…' : 'Approve Changes'}
-        </button>
-        <button
-          type="button"
-          onClick={() => onAction('ask_curator', rec)}
-          {...btnBase}
-          style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(140,105,65,0.12)' }}
-        >
-          <HelpCircle className="w-3 h-3" />
-          Ask Curator
-        </button>
-      </>
-    );
-  }
-
-  if (at === ACTION_TYPE.MULTI_PATH) {
-    return (
-      <>
-        <button
-          type="button"
-          onClick={() => onAction('acknowledge', rec)}
-          {...btnBase}
-          style={{ background: 'rgba(74,124,92,0.2)', color: 'rgba(100,180,130,0.9)', border: '1px solid rgba(74,124,92,0.35)' }}
-        >
-          <Check className="w-3 h-3" />
-          Acknowledge
-        </button>
-        <button
-          type="button"
-          onClick={() => onAction('treat_individually', rec)}
-          {...btnBase}
-          style={{ background: 'rgba(139,94,58,0.2)', color: 'rgba(200,155,100,0.9)', border: '1px solid rgba(139,94,58,0.35)' }}
-        >
-          <SplitSquareVertical className="w-3 h-3" />
-          Treat Individually
-        </button>
-        <button
-          type="button"
-          onClick={() => onAction('ask_curator', rec)}
-          {...btnBase}
-          style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(140,105,65,0.12)' }}
-        >
-          <HelpCircle className="w-3 h-3" />
-          Ask for More Info
-        </button>
-      </>
-    );
-  }
-
-  // Fallback
+function PrimaryBtn({ onClick, disabled, loading, icon: Icon, label }) {
   return (
     <button
       type="button"
-      onClick={() => onAction('acknowledge', rec)}
-      {...btnBase}
-      style={{ background: 'rgba(74,124,92,0.2)', color: 'rgba(100,180,130,0.9)', border: '1px solid rgba(74,124,92,0.35)' }}
+      onClick={onClick}
+      disabled={disabled || loading}
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
+      style={{ background: 'rgba(74,124,92,0.25)', color: 'rgba(80,180,130,1)', border: '1px solid rgba(74,124,92,0.4)' }}
     >
-      <Check className="w-3 h-3" />
-      Acknowledge
+      {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : Icon ? <Icon className="w-3 h-3" /> : null}
+      {loading ? 'Applying…' : label}
     </button>
   );
 }
 
-// ─── Shopping action button set ───────────────────────────────────────────────
+function SecondaryBtn({ onClick, disabled, icon: Icon, label, colorText }) {
+  const c = colorText || 'rgba(224,216,200,0.6)';
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
+      style={{ background: 'rgba(255,255,255,0.05)', color: c, border: '1px solid rgba(140,105,65,0.2)' }}
+    >
+      {Icon ? <Icon className="w-3 h-3" /> : null}
+      {label}
+    </button>
+  );
+}
 
-function ShoppingActionButtons({ rec, onAction, applying }) {
-  const btnBase = {
-    className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50",
+function TertiaryBtn({ onClick, icon: Icon, label }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg transition-all"
+      style={{ color: 'rgba(224,216,200,0.35)', background: 'transparent' }}
+    >
+      {Icon ? <Icon className="w-3 h-3" /> : null}
+      {label}
+    </button>
+  );
+}
+
+function DoneIndicator({ label }) {
+  return (
+    <span className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(80,180,130,0.9)' }}>
+      <CheckCircle2 className="w-3.5 h-3.5" />
+      {label}
+    </span>
+  );
+}
+
+// ─── Action rows by type ──────────────────────────────────────────────────────
+
+function AutoFixActions({ rec, onAction }) {
+  const [applying, setApplying] = useState(false);
+  const [done, setDone]         = useState(false);
+
+  if (done) return <DoneIndicator label="Fix Applied" />;
+
+  const handleApply = async () => {
+    setApplying(true);
+    try { await onAction('apply_fix', rec); setDone(true); }
+    finally { setApplying(false); }
   };
+
   return (
     <>
-      <button
-        type="button"
-        onClick={() => onAction('add_to_shopping_list', rec)}
-        disabled={applying}
-        {...btnBase}
-        style={{ background: 'rgba(74,124,156,0.25)', color: 'rgba(160,200,240,1)', border: '1px solid rgba(74,124,156,0.45)' }}
-      >
-        {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShoppingCart className="w-3 h-3" />}
-        {applying ? 'Adding…' : 'Add to Shopping List'}
-      </button>
-      <button
-        type="button"
-        onClick={() => onAction('view_items', rec)}
-        {...btnBase}
-        style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(224,216,200,0.6)', border: '1px solid rgba(140,105,65,0.2)' }}
-      >
-        <Eye className="w-3 h-3" />
-        Review Candidates
-      </button>
-      <button
-        type="button"
-        onClick={() => onAction('ask_curator', rec)}
-        {...btnBase}
-        style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(140,105,65,0.12)' }}
-      >
-        <HelpCircle className="w-3 h-3" />
-        Ask Curator
-      </button>
+      <PrimaryBtn onClick={handleApply} loading={applying} icon={Check} label="Apply Fix" />
+      <SecondaryBtn onClick={() => onAction('view_details', rec)} icon={Eye} label="Review Details" />
+      <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
     </>
   );
 }
 
-// ─── Success overlay ──────────────────────────────────────────────────────────
+function AdvisoryActions({ rec, onAction }) {
+  const [done, setDone] = useState(false);
 
-function SuccessOverlay({ message }) {
+  if (done) return <DoneIndicator label="Acknowledged" />;
+
   return (
-    <div className="flex items-center gap-2 py-2">
-      <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: '#4A7C59' }} />
-      <p className="text-sm" style={{ color: 'rgba(100,180,130,0.9)' }}>{message || 'Done.'}</p>
-    </div>
+    <>
+      <PrimaryBtn onClick={() => onAction('view_items', rec)} icon={Eye} label="View Items" />
+      <SecondaryBtn
+        onClick={() => { onAction('acknowledge', rec); setDone(true); }}
+        icon={Check}
+        label="Acknowledge"
+      />
+      <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
+    </>
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+function ReviewRequiredActions({ rec, onAction }) {
+  const [applying, setApplying] = useState(false);
+  const [done, setDone]         = useState(false);
+
+  if (done) return <DoneIndicator label="Changes Applied" />;
+
+  const handleApprove = async () => {
+    setApplying(true);
+    try { await onAction('approve_changes', rec); setDone(true); }
+    finally { setApplying(false); }
+  };
+
+  return (
+    <>
+      <SecondaryBtn
+        onClick={() => onAction('view_details', rec)}
+        icon={Eye}
+        label="Review Details"
+        colorText="rgba(220,140,90,0.9)"
+      />
+      <PrimaryBtn onClick={handleApprove} loading={applying} icon={Check} label="Approve Changes" />
+      <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
+    </>
+  );
+}
+
+function MultiPathActions({ rec, onAction, onOpenSpecialization }) {
+  const [done, setDone] = useState(false);
+
+  if (done) return <DoneIndicator label="Acknowledged" />;
+
+  const handleTreatIndividually = () => {
+    onAction('treat_individually', rec);
+    onOpenSpecialization?.();
+  };
+
+  return (
+    <>
+      <PrimaryBtn
+        onClick={handleTreatIndividually}
+        icon={SplitSquareVertical}
+        label="Treat Individually"
+      />
+      <SecondaryBtn
+        onClick={() => onAction('ask_curator', rec)}
+        icon={HelpCircle}
+        label="Ask for More Info"
+      />
+      <TertiaryBtn
+        onClick={() => { onAction('acknowledge', rec); setDone(true); }}
+        label="Acknowledge"
+      />
+    </>
+  );
+}
+
+function ShoppingActions({ rec, onAction, onOpenPurchase }) {
+  const [applying, setApplying] = useState(false);
+  const [done, setDone]         = useState(false);
+
+  if (done) return <DoneIndicator label="Added to Shopping List" />;
+
+  const handleAddAll = async () => {
+    setApplying(true);
+    try { await onAction('add_to_shopping_list', rec); setDone(true); }
+    finally { setApplying(false); }
+  };
+
+  return (
+    <>
+      <PrimaryBtn
+        onClick={handleAddAll}
+        loading={applying}
+        icon={ShoppingCart}
+        label="Add All to Shopping List"
+      />
+      <SecondaryBtn
+        onClick={() => onOpenPurchase?.()}
+        icon={ArrowRight}
+        label="Review Items"
+      />
+    </>
+  );
+}
+
+// ─── CuratorRecommendationGroup ───────────────────────────────────────────────
 
 /**
  * @param {object}   props
- * @param {object}   props.recommendation  - Structured recommendation object
- * @param {Function} props.onAction        - (actionKey, recommendation, opts?) => void
- * @param {Function} props.onAskCurator    - (promptText) => void
+ * @param {object}   props.recommendation       - Structured recommendation object
+ * @param {Function} props.onAction             - (actionKey, rec, opts) => Promise
+ * @param {Function} props.onOpenSpecialization - () => void  — navigate to Specialization Review
+ * @param {Function} props.onOpenPurchase       - () => void  — navigate to Purchase & Restock
  */
-export default function CuratorRecommendationGroup({ recommendation, onAction, onAskCurator }) {
-  const [applying, setApplying] = useState(false);
-  const [done, setDone] = useState(false);
-  const [doneMessage, setDoneMessage] = useState('');
-  const [showDetails, setShowDetails] = useState(false);
-  const [showSpecReview, setShowSpecReview] = useState(false);
-  const [actionError, setActionError] = useState(null);
-
-  const rec = recommendation;
+export default function CuratorRecommendationGroup({
+  recommendation: rec,
+  onAction,
+  onOpenSpecialization,
+  onOpenPurchase,
+}) {
   if (!rec) return null;
 
-  const atColors = ACTION_TYPE_COLORS[rec.actionType] || ACTION_TYPE_COLORS[ACTION_TYPE.ADVISORY];
-  const atLabel  = ACTION_TYPE_LABELS[rec.actionType] || rec.actionType;
-  const ps       = PRIORITY_STYLES[rec.priority] || PRIORITY_STYLES.medium;
-
-  const isPairing = rec.goal?.includes('pairing');
-  const isSpec    = rec.goal?.includes('specialization') && rec.actionType === ACTION_TYPE.MULTI_PATH;
-
-  function handleAction(actionKey, r, opts = {}) {
-    setActionError(null);
-
-    if (actionKey === 'ask_curator' || actionKey === 'ask_for_more_info') {
-      const prompt = `Tell me more about this recommendation: "${r.title}". ${r.whyItMatters || ''} What should I do?`;
-      if (onAskCurator) onAskCurator(prompt);
-      return;
-    }
-
-    if (actionKey === 'treat_individually') {
-      setShowSpecReview(true);
-      return;
-    }
-
-    if (actionKey === 'view_details') {
-      setShowDetails((v) => !v);
-      return;
-    }
-
-    if (actionKey === 'view_items') {
-      setShowDetails((v) => !v);
-      return;
-    }
-
-    if (actionKey === 'acknowledge') {
-      setDone(true);
-      setDoneMessage('Acknowledged — this recommendation has been noted.');
-      return;
-    }
-
-    // Delegate mutating actions to parent
-    if (onAction) {
-      setApplying(true);
-      Promise.resolve(onAction(actionKey, r, opts))
-        .then((result) => {
-          setDone(true);
-          setDoneMessage(result?.message || 'Fix applied successfully.');
-        })
-        .catch((err) => {
-          setActionError(err?.message || 'Action failed. Please try again.');
-        })
-        .finally(() => setApplying(false));
-    }
-  }
-
-  function handleSpecReviewDone(results) {
-    setShowSpecReview(false);
-    const accepted = Object.values(results || {}).filter((r) => r.status === 'accepted').length;
-    if (accepted > 0) {
-      setDone(true);
-      setDoneMessage(`${accepted} specialization${accepted > 1 ? 's' : ''} applied.`);
-    }
-  }
-
-  if (done) {
-    return (
-      <div
-        className="rounded-xl px-4 py-3"
-        style={{ background: 'rgba(74,124,92,0.08)', border: '1px solid rgba(74,124,92,0.25)' }}
-      >
-        <SuccessOverlay message={doneMessage} />
-      </div>
-    );
-  }
+  const at        = rec.actionType;
+  const typeBadge = ACTION_TYPE_BADGE[at];
+  const modInfo   = MODULE_LABEL[rec.moduleKey];
+  const priStyle  = PRIORITY_STYLES[rec.priority];
+  const itemCount = rec.items?.length || 0;
 
   return (
     <div
-      className="rounded-xl overflow-hidden"
-      style={{ border: `1px solid ${ps.border}`, background: 'rgba(255,255,255,0.025)' }}
+      className="rounded-xl p-4 space-y-3"
+      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.18)' }}
     >
-      {/* Card body */}
-      <div className="px-4 pt-3.5 pb-3 space-y-2.5">
-
-        {/* Badge row */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span
-            className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider"
-            style={{ background: atColors.bg, color: atColors.text, border: `1px solid ${atColors.border}` }}
-          >
-            {atLabel}
-          </span>
-          {rec.priority !== 'low' && (
-            <span
-              className="text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wider"
-              style={{ background: ps.bg, color: ps.text, border: `1px solid ${ps.border}` }}
-            >
-              {ps.label}
-            </span>
-          )}
-          {rec.moduleKey && rec.moduleKey !== 'multi' && (
-            <span
-              className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-              style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(140,105,65,0.15)' }}
-            >
-              {rec.moduleKey}
-            </span>
-          )}
-        </div>
-
-        {/* Title */}
-        <p className="text-sm font-bold leading-tight" style={{ color: '#F5F1E7' }}>
-          {rec.title}
-        </p>
-
-        {/* Why it matters */}
-        {rec.whyItMatters && (
-          <p className="text-xs leading-relaxed" style={{ color: 'rgba(224,216,200,0.55)' }}>
-            {rec.whyItMatters}
+      {/* Header: badges + title + item count */}
+      <div className="flex items-start gap-3">
+        <div className="flex-1 min-w-0">
+          {/* Badge row */}
+          <div className="flex items-center flex-wrap gap-1.5 mb-1.5">
+            {typeBadge && (
+              <span
+                className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                style={{ background: typeBadge.bg, color: typeBadge.text }}
+              >
+                {typeBadge.label}
+              </span>
+            )}
+            {modInfo && (
+              <span className="text-[10px] font-semibold" style={{ color: modInfo.text }}>
+                {modInfo.label}
+              </span>
+            )}
+            {priStyle && (
+              <span
+                className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                style={{ background: priStyle.bg, color: priStyle.text, border: `1px solid ${priStyle.border}` }}
+              >
+                {priStyle.label}
+              </span>
+            )}
+          </div>
+          {/* Title */}
+          <p className="text-sm font-bold leading-tight" style={{ color: '#F5F1E7' }}>
+            {rec.title}
           </p>
-        )}
-
-        {/* Item preview — for non-pairing recommendations */}
-        {!isPairing && rec.items?.length > 0 && (
-          <CuratorItemPreviewList items={rec.items} maxPreview={4} />
-        )}
-
-        {/* Pairing results */}
-        {isPairing && rec.items?.length > 0 && (
-          <>
-            <CuratorPairingResults pairings={rec.items.slice(0, 3)} />
-            {rec.items.length > 3 && (
-              <p className="text-xs" style={{ color: 'rgba(224,216,200,0.4)' }}>
-                +{rec.items.length - 3} more pairing suggestions
-              </p>
-            )}
-          </>
-        )}
-
-        {/* Inline specialization review */}
-        {showSpecReview && isSpec && (
-          <CuratorSpecializationReview
-            pipeItems={rec.items}
-            onDone={handleSpecReviewDone}
-            onAskCurator={onAskCurator}
-          />
-        )}
-
-        {/* Inline detail expansion */}
-        {showDetails && !showSpecReview && (
-          <div
-            className="rounded-lg p-3 space-y-1.5"
-            style={{ background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(140,105,65,0.12)' }}
+        </div>
+        {/* Item count */}
+        {itemCount > 0 && (
+          <span
+            className="shrink-0 text-[11px] px-2 py-0.5 rounded-full tabular-nums self-start mt-1"
+            style={{ background: 'rgba(80,80,80,0.1)', color: 'rgba(224,216,200,0.45)', border: '1px solid rgba(100,100,100,0.18)' }}
           >
-            {rec.summary && (
-              <p className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>{rec.summary}</p>
-            )}
-            {rec.recommendationText && (
-              <p className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>{rec.recommendationText}</p>
-            )}
-            {rec.items?.length > 4 && (
-              <div className="pt-1.5">
-                <p className="text-[10px] uppercase tracking-wider mb-1.5" style={{ color: 'rgba(224,216,200,0.35)' }}>
-                  All items ({rec.items.length})
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {rec.items.map((item, idx) => (
-                    <span
-                      key={item.id || idx}
-                      className="text-[11px] px-2 py-0.5 rounded"
-                      style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(224,216,200,0.6)', border: '1px solid rgba(140,105,65,0.15)' }}
-                    >
-                      {item.recordName || item.itemName || item.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+            {itemCount}
+          </span>
         )}
+      </div>
 
-        {/* Error */}
-        {actionError && (
-          <p className="text-xs" style={{ color: 'rgba(210,100,80,1)' }}>{actionError}</p>
+      {/* Why it matters — one line */}
+      {rec.whyItMatters && (
+        <p className="text-xs leading-snug" style={{ color: 'rgba(224,216,200,0.6)' }}>
+          {rec.whyItMatters}
+        </p>
+      )}
+
+      {/* Item preview chips */}
+      {itemCount > 0 && (
+        <CuratorItemPreviewList items={rec.items} previewCount={5} />
+      )}
+
+      {/* Action row */}
+      <div className="flex flex-wrap items-center gap-2 pt-0.5">
+        {at === ACTION_TYPE.AUTO_FIX && (
+          <AutoFixActions rec={rec} onAction={onAction} />
         )}
-
-        {/* Action row */}
-        {!showSpecReview && (
-          <div className="flex items-center gap-2 flex-wrap pt-0.5">
-            {rec.actionType === ACTION_TYPE.SHOPPING_LIST_ACTION
-              ? <ShoppingActionButtons rec={rec} onAction={handleAction} applying={applying} />
-              : <ActionButtons rec={rec} onAction={handleAction} applying={applying} />
-            }
-          </div>
+        {at === ACTION_TYPE.ADVISORY && (
+          <AdvisoryActions rec={rec} onAction={onAction} />
+        )}
+        {at === ACTION_TYPE.REVIEW_REQUIRED && (
+          <ReviewRequiredActions rec={rec} onAction={onAction} />
+        )}
+        {at === ACTION_TYPE.MULTI_PATH && (
+          <MultiPathActions rec={rec} onAction={onAction} onOpenSpecialization={onOpenSpecialization} />
+        )}
+        {at === ACTION_TYPE.SHOPPING_LIST_ACTION && (
+          <ShoppingActions rec={rec} onAction={onAction} onOpenPurchase={onOpenPurchase} />
         )}
       </div>
     </div>
