@@ -12,14 +12,15 @@
  *   Action row (buttons depend on actionType)
  *
  * Action types → button sets:
- *   auto_fix:        [Apply Fix] [Review Details] [Ask Curator]
- *   advisory:        [Acknowledge] [View Items] [Ask Curator]
- *   review_required: [Review Details] [Approve Changes] [Ask Curator]
- *   multi_path:      [Acknowledge] [Ask for More Info] [Treat Individually]
+ *   auto_fix:             [Apply Fix] [Review Details] [Ask Curator]
+ *   advisory:             [Acknowledge] [View Items] [Ask Curator]
+ *   review_required:      [Review Details] [Approve Changes] [Ask Curator]
+ *   multi_path:           [Acknowledge] [Ask for More Info] [Treat Individually]
+ *   shopping_list_action: [Add to Shopping List] [Review Candidates] [Ask Curator]
  */
 
 import React, { useState } from "react";
-import { Check, Eye, HelpCircle, SplitSquareVertical, ChevronDown, ChevronUp, Loader2, CheckCircle2 } from "lucide-react";
+import { Check, Eye, HelpCircle, SplitSquareVertical, ShoppingCart, Loader2, CheckCircle2 } from "lucide-react";
 import { ACTION_TYPE, ACTION_TYPE_LABELS, ACTION_TYPE_COLORS, PRIORITY_STYLES } from "@/lib/curator/recommendationSchema.js";
 import CuratorItemPreviewList from "./CuratorItemPreviewList";
 import CuratorPairingResults from "./CuratorPairingResults";
@@ -183,6 +184,46 @@ function ActionButtons({ rec, onAction, applying }) {
       <Check className="w-3 h-3" />
       Acknowledge
     </button>
+  );
+}
+
+// ─── Shopping action button set ───────────────────────────────────────────────
+
+function ShoppingActionButtons({ rec, onAction, applying }) {
+  const btnBase = {
+    className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50",
+  };
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => onAction('add_to_shopping_list', rec)}
+        disabled={applying}
+        {...btnBase}
+        style={{ background: 'rgba(74,124,156,0.25)', color: 'rgba(160,200,240,1)', border: '1px solid rgba(74,124,156,0.45)' }}
+      >
+        {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShoppingCart className="w-3 h-3" />}
+        {applying ? 'Adding…' : 'Add to Shopping List'}
+      </button>
+      <button
+        type="button"
+        onClick={() => onAction('view_items', rec)}
+        {...btnBase}
+        style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(224,216,200,0.6)', border: '1px solid rgba(140,105,65,0.2)' }}
+      >
+        <Eye className="w-3 h-3" />
+        Review Candidates
+      </button>
+      <button
+        type="button"
+        onClick={() => onAction('ask_curator', rec)}
+        {...btnBase}
+        style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(140,105,65,0.12)' }}
+      >
+        <HelpCircle className="w-3 h-3" />
+        Ask Curator
+      </button>
+    </>
   );
 }
 
@@ -401,7 +442,10 @@ export default function CuratorRecommendationGroup({ recommendation, onAction, o
         {/* Action row */}
         {!showSpecReview && (
           <div className="flex items-center gap-2 flex-wrap pt-0.5">
-            <ActionButtons rec={rec} onAction={handleAction} applying={applying} />
+            {rec.actionType === ACTION_TYPE.SHOPPING_LIST_ACTION
+              ? <ShoppingActionButtons rec={rec} onAction={handleAction} applying={applying} />
+              : <ActionButtons rec={rec} onAction={handleAction} applying={applying} />
+            }
           </div>
         )}
       </div>

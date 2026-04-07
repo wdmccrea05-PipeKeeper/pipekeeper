@@ -8,21 +8,23 @@
 // ─── Category Constants ───────────────────────────────────────────────────────
 
 export const CATEGORY = {
-  METADATA:       'metadata',
-  BALANCE:        'balance',
-  UTILIZATION:    'utilization',
-  PURCHASE:       'purchase',
-  SPECIALIZATION: 'specialization',
-  PAIRING:        'pairing',
+  METADATA:         'metadata',
+  BALANCE:          'balance',
+  UTILIZATION:      'utilization',
+  PURCHASE:         'purchase',
+  SPECIALIZATION:   'specialization',
+  PAIRING:          'pairing',
+  CIGAR_DISCOVERY:  'cigar_discovery',
 };
 
 export const CATEGORY_LABELS = {
-  [CATEGORY.METADATA]:       'Data & Metadata',
-  [CATEGORY.BALANCE]:        'Collection Balance',
-  [CATEGORY.UTILIZATION]:    'Utilization & Rotation',
-  [CATEGORY.PURCHASE]:       'Purchase & Restock',
-  [CATEGORY.SPECIALIZATION]: 'Specialization & Strategy',
-  [CATEGORY.PAIRING]:        'Pairing & Experience',
+  [CATEGORY.METADATA]:         'Data & Metadata',
+  [CATEGORY.BALANCE]:          'Collection Balance',
+  [CATEGORY.UTILIZATION]:      'Utilization & Rotation',
+  [CATEGORY.PURCHASE]:         'Purchase & Restock',
+  [CATEGORY.SPECIALIZATION]:   'Specialization & Strategy',
+  [CATEGORY.PAIRING]:          'Pairing & Experience',
+  [CATEGORY.CIGAR_DISCOVERY]:  'Cigar Discovery',
 };
 
 export const CATEGORY_ORDER = [
@@ -32,29 +34,33 @@ export const CATEGORY_ORDER = [
   CATEGORY.PURCHASE,
   CATEGORY.SPECIALIZATION,
   CATEGORY.PAIRING,
+  CATEGORY.CIGAR_DISCOVERY,
 ];
 
 // ─── Action Type Constants ────────────────────────────────────────────────────
 
 export const ACTION_TYPE = {
-  AUTO_FIX:        'auto_fix',
-  ADVISORY:        'advisory',
-  REVIEW_REQUIRED: 'review_required',
-  MULTI_PATH:      'multi_path',
+  AUTO_FIX:             'auto_fix',
+  ADVISORY:             'advisory',
+  REVIEW_REQUIRED:      'review_required',
+  MULTI_PATH:           'multi_path',
+  SHOPPING_LIST_ACTION: 'shopping_list_action',
 };
 
 export const ACTION_TYPE_LABELS = {
-  [ACTION_TYPE.AUTO_FIX]:        'Auto Fix',
-  [ACTION_TYPE.ADVISORY]:        'Advisory',
-  [ACTION_TYPE.REVIEW_REQUIRED]: 'Review Required',
-  [ACTION_TYPE.MULTI_PATH]:      'Needs Your Input',
+  [ACTION_TYPE.AUTO_FIX]:             'Auto Fix',
+  [ACTION_TYPE.ADVISORY]:             'Advisory',
+  [ACTION_TYPE.REVIEW_REQUIRED]:      'Review Required',
+  [ACTION_TYPE.MULTI_PATH]:           'Needs Your Input',
+  [ACTION_TYPE.SHOPPING_LIST_ACTION]: 'Shopping Action',
 };
 
 export const ACTION_TYPE_COLORS = {
-  [ACTION_TYPE.AUTO_FIX]:        { bg: 'rgba(74,124,92,0.18)',  text: 'rgba(80,180,130,1)',   border: 'rgba(74,124,92,0.4)' },
-  [ACTION_TYPE.ADVISORY]:        { bg: 'rgba(74,124,156,0.18)', text: 'rgba(120,170,220,1)',  border: 'rgba(74,124,156,0.4)' },
-  [ACTION_TYPE.REVIEW_REQUIRED]: { bg: 'rgba(180,100,50,0.18)', text: 'rgba(220,140,90,1)',   border: 'rgba(180,100,50,0.4)' },
-  [ACTION_TYPE.MULTI_PATH]:      { bg: 'rgba(139,94,58,0.18)',  text: 'rgba(200,155,100,1)',  border: 'rgba(139,94,58,0.4)' },
+  [ACTION_TYPE.AUTO_FIX]:             { bg: 'rgba(74,124,92,0.18)',  text: 'rgba(80,180,130,1)',   border: 'rgba(74,124,92,0.4)' },
+  [ACTION_TYPE.ADVISORY]:             { bg: 'rgba(74,124,156,0.18)', text: 'rgba(120,170,220,1)',  border: 'rgba(74,124,156,0.4)' },
+  [ACTION_TYPE.REVIEW_REQUIRED]:      { bg: 'rgba(180,100,50,0.18)', text: 'rgba(220,140,90,1)',   border: 'rgba(180,100,50,0.4)' },
+  [ACTION_TYPE.MULTI_PATH]:           { bg: 'rgba(139,94,58,0.18)',  text: 'rgba(200,155,100,1)',  border: 'rgba(139,94,58,0.4)' },
+  [ACTION_TYPE.SHOPPING_LIST_ACTION]: { bg: 'rgba(74,124,156,0.18)', text: 'rgba(160,200,240,1)',  border: 'rgba(74,124,156,0.4)' },
 };
 
 // ─── Priority Constants ───────────────────────────────────────────────────────
