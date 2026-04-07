@@ -21,10 +21,11 @@ import { CATEGORY, ACTION_TYPE, MODULE_KEY } from '@/lib/curator/recommendationS
 // ─── Board section groups ─────────────────────────────────────────────────────
 
 const BOARD_SECTION_GROUPS = [
-  { id: 'metadata',       label: 'Data & Metadata',           categories: [CATEGORY.METADATA] },
-  { id: 'utilization',    label: 'Utilization & Rotation',    categories: [CATEGORY.UTILIZATION, CATEGORY.BALANCE] },
+  { id: 'metadata',       label: 'Record Optimization',       categories: [CATEGORY.METADATA, CATEGORY.RECORD_OPTIMIZATION] },
+  { id: 'utilization',    label: 'Collection Optimization',   categories: [CATEGORY.UTILIZATION, CATEGORY.BALANCE, CATEGORY.COLLECTION_OPTIMIZATION] },
   { id: 'purchase',       label: 'Purchase & Restock',        categories: [CATEGORY.PURCHASE, CATEGORY.CIGAR_DISCOVERY] },
   { id: 'specialization', label: 'Specialization & Strategy', categories: [CATEGORY.SPECIALIZATION, CATEGORY.PAIRING] },
+  { id: 'grow_expand',    label: 'Grow & Expand',             categories: [CATEGORY.GROW_EXPAND] },
 ];
 
 // ─── Module filter options ────────────────────────────────────────────────────

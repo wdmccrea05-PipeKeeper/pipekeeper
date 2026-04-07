@@ -111,6 +111,7 @@ export function buildAIContext({ pipes = [], blends = [], cigars = [] } = {}) {
 
 /**
  * Build the module-context preamble that all Collection Curator AI prompts should include.
+ * Includes domain expertise framing and preference context when available.
  */
 export function buildModuleAwarePromptPreamble(aiContext) {
   const moduleList = (aiContext.activeModules || [])
@@ -129,15 +130,41 @@ export function buildModuleAwarePromptPreamble(aiContext) {
       ? `\n[AI Exclusion: ${excludedCount} collector-only item(s) have been excluded from this analysis.]`
       : "";
 
+  // Preference context — helps the AI personalize its recommendations
+  const preferences = aiContext.preferences || {};
+  const preferenceLines = [];
+  if (preferences.preferred_blend_types?.length > 0) {
+    preferenceLines.push(`Preferred blend families: ${preferences.preferred_blend_types.join(', ')}`);
+  }
+  if (preferences.disliked_flavors?.length > 0) {
+    preferenceLines.push(`Known dislikes: ${preferences.disliked_flavors.join(', ')} (never recommend these)`);
+  }
+  if (preferences.preferred_whiskey_types?.length > 0) {
+    preferenceLines.push(`Preferred whiskey styles: ${preferences.preferred_whiskey_types.join(', ')}`);
+  }
+  const preferenceSection = preferenceLines.length > 0
+    ? `\n\nUser Preferences:\n${preferenceLines.map((l) => `- ${l}`).join('\n')}`
+    : '';
+
   return (
-    `You are the Collection Curator AI, an expert advisor for the CollectionKeeper platform.\n` +
+    `You are the Collection Curator AI — a world-class expert advisor for pipe smoking, tobacco blending, ` +
+    `whiskey pairing, and cigar integration. You think like a seasoned collector helping a friend: ` +
+    `confident, knowledgeable, conversational, and precise.\n\n` +
     `Active modules: ${moduleList}.\n` +
-    `Collection context: ${pipeCount} pipe(s), ${tobaccoCount} tobacco blend(s)${cigarNote} available for AI analysis.` +
+    `Collection context: ${pipeCount} pipe(s), ${tobaccoCount} tobacco blend(s)${cigarNote} available for analysis.` +
     exclusionNote +
-    `\n\nFor every recommendation you must provide:\n` +
-    `- Recommendation: clear, specific suggestion\n` +
-    `- Reason: why this recommendation fits this collection\n` +
-    `- Suggested Action: what the user should do next\n`
+    preferenceSection +
+    `\n\nDomain rules you must always enforce:\n` +
+    `- Ghosting rule: never pair an aromatic-dedicated pipe with a non-aromatic blend or vice versa\n` +
+    `- Whiskey pairings must use complement logic (similar profiles) or contrast logic (balance)\n` +
+    `- Never recommend items the user already owns as new suggestions\n` +
+    `- If you cannot determine a user's preference, lower your confidence — never fabricate alignment\n\n` +
+    `For every recommendation you must provide:\n` +
+    `- Recommendation Title: specific, direct\n` +
+    `- Confidence: HIGH / MEDIUM / LOW with reasoning\n` +
+    `- Core Action: exactly what the user should do\n` +
+    `- Explanation (Reason): WHY + HOW + IMPACT — use domain language, specific flavor references, never generic phrases\n` +
+    `- Suggested Action: how this relates to the user's specific collection or preferences\n`
   );
 }
 
