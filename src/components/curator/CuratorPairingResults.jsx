@@ -60,6 +60,11 @@ function ItemPill({ item }) {
   );
 }
 
+function truncateItemName(name, wordCount = 2) {
+  if (!name) return '—';
+  return name.split(' ').slice(0, wordCount).join(' ');
+}
+
 /**
  * @param {object}   props
  * @param {object[]} props.pairings  - Array of pairing result items
@@ -137,7 +142,7 @@ export default function CuratorPairingResults({ pairings = [], onAction }) {
                   style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.55)', border: '1px solid rgba(140,105,65,0.14)' }}
                 >
                   <ExternalLink className="w-2.5 h-2.5" />
-                  {pairing.leftItem?.name ? pairing.leftItem.name.split(' ').slice(0, 2).join(' ') : leftType}
+                  {truncateItemName(pairing.leftItem?.name) || leftType}
                 </a>
               )}
               {rightPage && rightPage !== leftPage && (
@@ -147,7 +152,7 @@ export default function CuratorPairingResults({ pairings = [], onAction }) {
                   style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.55)', border: '1px solid rgba(140,105,65,0.14)' }}
                 >
                   <ExternalLink className="w-2.5 h-2.5" />
-                  {pairing.rightItem?.name ? pairing.rightItem.name.split(' ').slice(0, 2).join(' ') : rightType}
+                  {truncateItemName(pairing.rightItem?.name) || rightType}
                 </a>
               )}
 

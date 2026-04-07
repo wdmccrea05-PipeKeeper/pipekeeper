@@ -122,6 +122,7 @@ function buildCigarBottleRationale(cigar, bottle) {
 
 const BOTTLE_REUSE_PENALTY = 3; // score penalty per additional use of the same bottle
 const MAX_BOTTLES_TO_SCORE  = 15; // widen search window for diversity
+const MIN_PAIRING_SCORE     = 1;  // minimum adjusted score to include a pairing
 
 // ─── Main Engine ──────────────────────────────────────────────────────────────
 
@@ -161,7 +162,7 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
       }
     }
 
-    if (!bestBottle || bestScore < 1) continue;
+    if (!bestBottle || bestScore < MIN_PAIRING_SCORE) continue;
 
     bottleUsageCount[bestBottle.id] = (bottleUsageCount[bestBottle.id] || 0) + 1;
 
@@ -220,7 +221,7 @@ function generateCigarWhiskeyPairings(cigars, bottles, bottleUsageCount) {
       }
     }
 
-    if (!bestBottle || bestScore < 1) continue;
+    if (!bestBottle || bestScore < MIN_PAIRING_SCORE) continue;
 
     bottleUsageCount[bestBottle.id] = (bottleUsageCount[bestBottle.id] || 0) + 1;
 

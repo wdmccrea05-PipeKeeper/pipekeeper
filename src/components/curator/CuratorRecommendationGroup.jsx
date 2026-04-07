@@ -208,11 +208,14 @@ function ReviewRequiredActions({ rec, onAction }) {
                 </p>
               )}
             </>
-          ) : (
-            <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.65)' }}>
-              {rec.items?.length || 0} item{(rec.items?.length || 0) !== 1 ? 's' : ''} need{(rec.items?.length || 0) === 1 ? 's' : ''} attention — click <strong>Open in Module</strong> to edit them directly.
-            </p>
-          )}
+          ) : (() => {
+            const itemCount = rec.items?.length || 0;
+            return (
+              <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.65)' }}>
+                {itemCount} item{itemCount !== 1 ? 's' : ''} need{itemCount === 1 ? 's' : ''} attention — click <strong>Open in Module</strong> to edit them directly.
+              </p>
+            );
+          })()}
         </div>
       )}
     </>
