@@ -618,6 +618,15 @@ export default {
     whiskeykeeper: "WhiskeyKeeper",
     cigarkeeper: "CigarKeeper",
     winekeeper: "WineKeeper",
+    notAvailable: "Not Available",
+    notAvailableInRelease: "{{moduleName}} is not available in this release.",
+    notYetAvailable: "{{moduleName}} is not yet available.",
+    notEntitled: "Subscription Required",
+    notEntitledDescription: "Subscribe to unlock {{moduleName}} and access your full collection.",
+    subscribeToUnlock: "Subscribe to Unlock",
+    isHidden: "{{moduleName}} is Hidden",
+    hiddenDescription: "This module is currently hidden in your preferences. Your data is safe and intact.",
+    manageModules: "Manage Modules in Profile",
   },
 
   cellarLog: {

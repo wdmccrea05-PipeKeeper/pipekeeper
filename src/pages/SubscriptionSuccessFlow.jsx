@@ -12,12 +12,17 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle2, AlertCircle, Loader } from 'lucide-react';
 import { buildAccessSummary } from '@/components/access/accessSummary';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { getModuleDisplayName } from '@/components/utils/moduleRegistry';
 
 const SYNC_TIMEOUT_MS = 20000;
 
 function toDisplayName(moduleKey) {
   if (!moduleKey) return 'Module';
-  return moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1).replace('keeper', ' Keeper');
+  try {
+    return getModuleDisplayName(moduleKey) || moduleKey;
+  } catch {
+    return moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1).replace('keeper', ' Keeper');
+  }
 }
 
 function withTimeout(promise, ms, message) {

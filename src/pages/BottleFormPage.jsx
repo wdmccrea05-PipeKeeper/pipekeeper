@@ -4,8 +4,10 @@ import { base44 } from '@/api/base44Client';
 import BottleForm from '@/components/whiskey/BottleForm';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function BottleFormPageInner() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useCurrentUser();
@@ -88,7 +90,7 @@ function BottleFormPageInner() {
             border: '1px solid rgba(180,140,75,0.22)',
           }}
         >
-          <p className="text-[#D8C7A6]">Loading…</p>
+          <p className="text-[#D8C7A6]">{t('common.loading', 'Loading...')}</p>
         </div>
       </div>
     );

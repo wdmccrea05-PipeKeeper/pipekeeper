@@ -64,14 +64,14 @@ export default function ModuleNav({ currentPageName, user }) {
   const moduleItems = useMemo(() => {
     const items = [];
 
-    if (activeModules.includes("pipekeeper")) {
-      items.push({
-        page: "PipeKeeper",
-        label: t("nav.pipekeeper", "PipeKeeper"),
-        icon: PipeIcon,
-        path: "/PipeKeeper",
-      });
-    }
+    // PipeKeeper is the base module — always shown for any logged-in user.
+    // It is 'launched' and free, so no entitlement check is needed here.
+    items.push({
+      page: "PipeKeeper",
+      label: t("nav.pipekeeper", "PipeKeeper"),
+      icon: PipeIcon,
+      path: "/PipeKeeper",
+    });
 
     if (activeModules.includes("whiskeykeeper")) {
       items.push({
