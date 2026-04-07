@@ -66,7 +66,7 @@ export default function LockedModuleGuard({ moduleKey, children }) {
           <p className="text-xs uppercase tracking-[0.12em] font-bold mb-1" style={{ color: '#B48C4B' }}>CollectionKeeper</p>
           <h2 className="text-lg font-bold mb-2" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{t('modules.notAvailable', 'Not Available')}</h2>
           <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.55)' }}>
-            {label} {t('modules.notAvailableInRelease', 'is not available in this release.')}
+            {t('modules.notAvailableInRelease', { defaultValue: '{{moduleName}} is not available in this release.', moduleName: label })}
           </p>
           <Button
             variant="ghost"
@@ -99,7 +99,7 @@ export default function LockedModuleGuard({ moduleKey, children }) {
           <p className="text-xs uppercase tracking-[0.12em] font-bold mb-1" style={{ color: '#B48C4B' }}>CollectionKeeper</p>
           <h2 className="text-lg font-bold mb-2" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{t('hub.comingSoonLabel', 'Coming Soon')}</h2>
           <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.55)' }}>
-            {label} {t('modules.notYetAvailable', 'is not yet available.')}
+            {t('modules.notYetAvailable', { defaultValue: '{{moduleName}} is not yet available.', moduleName: label })}
           </p>
           <Button
             variant="ghost"
@@ -135,7 +135,7 @@ export default function LockedModuleGuard({ moduleKey, children }) {
             className="text-xl font-bold mb-2"
             style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
           >
-            {label} {t('modules.isHidden', 'is Hidden')}
+            {t('modules.isHidden', '{{moduleName}} is Hidden', { moduleName: label })}
           </h2>
           <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.6)' }}>
             {t('modules.hiddenDescription', 'This module is currently hidden in your preferences. Your data is safe and intact.')}

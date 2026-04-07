@@ -168,6 +168,7 @@ export default {
     hub: "Hub",
     pipekeeper: "PipeKeeper",
     whiskeykeeper: "WhiskeyKeeper",
+    cigarkeeper: "CigarKeeper",
     curator: "Curator",
     community: "Community",
     profile: "Profile",

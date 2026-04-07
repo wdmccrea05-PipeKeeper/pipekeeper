@@ -39,7 +39,7 @@ import zhHansUI from './locales/zh-Hans.ui.jsx';
 const CRITICAL_FALLBACKS = {
   common: { back: 'Back', search: 'Search', share: 'Share', loading: 'Loading...', retry: 'Retry' },
   nav: {
-    hub: 'Hub', pipekeeper: 'PipeKeeper', whiskeykeeper: 'WhiskeyKeeper', curator: 'Curator',
+    hub: 'Hub', pipekeeper: 'PipeKeeper', whiskeykeeper: 'WhiskeyKeeper', cigarkeeper: 'CigarKeeper', curator: 'Curator',
     community: 'Community', profile: 'Profile', help: 'Help', faq: 'FAQ', support: 'Support', insights: 'Insights',
     wantList: 'Want List', quickAccess: 'Quick Access',
   },
@@ -73,9 +73,9 @@ const CRITICAL_FALLBACKS = {
   },
   modules: {
     notAvailable: 'Not Available',
-    notAvailableInRelease: 'is not available in this release.',
-    notYetAvailable: 'is not yet available.',
-    isHidden: 'is Hidden',
+    notAvailableInRelease: '{{moduleName}} is not available in this release.',
+    notYetAvailable: '{{moduleName}} is not yet available.',
+    isHidden: '{{moduleName}} is Hidden',
     hiddenDescription: 'This module is currently hidden in your preferences. Your data is safe and intact.',
     manageModules: 'Manage Modules in Profile',
   },

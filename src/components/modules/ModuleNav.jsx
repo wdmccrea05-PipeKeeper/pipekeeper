@@ -85,7 +85,7 @@ export default function ModuleNav({ currentPageName, user }) {
     if (activeModules.includes("cigarkeeper")) {
       items.push({
         page: "CigarKeeper",
-        label: t("hub.cigarkeeper", "CigarKeeper"),
+        label: t("nav.cigarkeeper", "CigarKeeper"),
         icon: Flame,
         path: "/CigarKeeper",
       });
