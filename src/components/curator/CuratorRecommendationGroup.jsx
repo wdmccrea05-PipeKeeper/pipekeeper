@@ -1,189 +1,410 @@
 /**
- * Curator Recommendation Group
+ * CuratorRecommendationGroup — NEW v2
  *
- * Collapsible group of recommendations.
- * Handles select all, item selection, and bulk operations.
+ * Renders a single structured recommendation as a compact grouped card.
+ * One card = one goal/cohort, NOT one card per item.
+ *
+ * Card structure:
+ *   [ACTION_TYPE badge] [PRIORITY badge]
+ *   Title
+ *   Why it matters line
+ *   Item preview chips + "+N more"
+ *   Action row (buttons depend on actionType)
+ *
+ * Action types → button sets:
+ *   auto_fix:        [Apply Fix] [Review Details] [Ask Curator]
+ *   advisory:        [Acknowledge] [View Items] [Ask Curator]
+ *   review_required: [Review Details] [Approve Changes] [Ask Curator]
+ *   multi_path:      [Acknowledge] [Ask for More Info] [Treat Individually]
  */
 
-import React, { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { ChevronDown, CheckSquare, Square } from "lucide-react";
-import CuratorRecommendationRow from "./CuratorRecommendationRow";
+import React, { useState } from "react";
+import { Check, Eye, HelpCircle, SplitSquareVertical, ChevronDown, ChevronUp, Loader2, CheckCircle2 } from "lucide-react";
+import { ACTION_TYPE, ACTION_TYPE_LABELS, ACTION_TYPE_COLORS, PRIORITY_STYLES } from "@/lib/curator/recommendationSchema.js";
+import CuratorItemPreviewList from "./CuratorItemPreviewList";
+import CuratorPairingResults from "./CuratorPairingResults";
+import CuratorSpecializationReview from "./CuratorSpecializationReview";
 
-const PRIORITY_STYLES = {
-  high: {
-    headerBg: "rgba(139,58,58,0.18)",
-    border: "rgba(139,58,58,0.28)",
-    badge: { bg: "rgba(163,92,92,0.25)", text: "rgba(220,140,140,1)" },
-    label: "High Priority",
-  },
-  medium: {
-    headerBg: "rgba(180,140,75,0.12)",
-    border: "rgba(180,140,75,0.22)",
-    badge: { bg: "rgba(180,140,75,0.18)", text: "rgba(212,165,116,1)" },
-    label: "Medium",
-  },
-  low: {
-    headerBg: "rgba(80,80,80,0.12)",
-    border: "rgba(100,100,100,0.2)",
-    badge: { bg: "rgba(100,100,100,0.15)", text: "rgba(180,180,180,0.85)" },
-    label: "Low",
-  },
-  info: {
-    headerBg: "rgba(80,110,150,0.12)",
-    border: "rgba(100,130,180,0.18)",
-    badge: { bg: "rgba(100,120,160,0.18)", text: "rgba(140,170,220,0.9)" },
-    label: "Info",
-  },
-};
+// ─── Action button sets ───────────────────────────────────────────────────────
 
-export default function CuratorRecommendationGroup({
-  group,
-  workflowId,
-  onAcceptItem,
-  onClarifyItem,
-  onApplyAllInGroup,
-  isLoading = false,
-}) {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [selectedItemIds, setSelectedItemIds] = useState(new Set());
+function ActionButtons({ rec, onAction, applying }) {
+  const at = rec.actionType;
 
-  const ps = PRIORITY_STYLES[group.priority] || PRIORITY_STYLES.medium;
+  const btnBase = {
+    className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50",
+  };
 
-  const allSelected = useMemo(
-    () => group.items?.length > 0 && selectedItemIds.size === group.items.length,
-    [group.items, selectedItemIds]
+  if (at === ACTION_TYPE.AUTO_FIX) {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => onAction('apply_fix', rec)}
+          disabled={applying}
+          {...btnBase}
+          style={{ background: 'rgba(74,124,92,0.25)', color: 'rgba(80,180,130,1)', border: '1px solid rgba(74,124,92,0.4)' }}
+        >
+          {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+          {applying ? 'Applying…' : 'Apply Fix'}
+        </button>
+        <button
+          type="button"
+          onClick={() => onAction('view_details', rec)}
+          {...btnBase}
+          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(224,216,200,0.6)', border: '1px solid rgba(140,105,65,0.2)' }}
+        >
+          <Eye className="w-3 h-3" />
+          Review Details
+        </button>
+        <button
+          type="button"
+          onClick={() => onAction('ask_curator', rec)}
+          {...btnBase}
+          style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(140,105,65,0.12)' }}
+        >
+          <HelpCircle className="w-3 h-3" />
+          Ask Curator
+        </button>
+      </>
+    );
+  }
+
+  if (at === ACTION_TYPE.ADVISORY) {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => onAction('acknowledge', rec)}
+          {...btnBase}
+          style={{ background: 'rgba(74,124,92,0.2)', color: 'rgba(100,180,130,0.9)', border: '1px solid rgba(74,124,92,0.35)' }}
+        >
+          <Check className="w-3 h-3" />
+          Acknowledge
+        </button>
+        <button
+          type="button"
+          onClick={() => onAction('view_items', rec)}
+          {...btnBase}
+          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(224,216,200,0.6)', border: '1px solid rgba(140,105,65,0.2)' }}
+        >
+          <Eye className="w-3 h-3" />
+          View Items
+        </button>
+        <button
+          type="button"
+          onClick={() => onAction('ask_curator', rec)}
+          {...btnBase}
+          style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(140,105,65,0.12)' }}
+        >
+          <HelpCircle className="w-3 h-3" />
+          Ask Curator
+        </button>
+      </>
+    );
+  }
+
+  if (at === ACTION_TYPE.REVIEW_REQUIRED) {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => onAction('view_details', rec)}
+          {...btnBase}
+          style={{ background: 'rgba(180,100,50,0.2)', color: 'rgba(220,140,90,0.9)', border: '1px solid rgba(180,100,50,0.35)' }}
+        >
+          <Eye className="w-3 h-3" />
+          Review Details
+        </button>
+        <button
+          type="button"
+          onClick={() => onAction('approve_changes', rec)}
+          disabled={applying}
+          {...btnBase}
+          style={{ background: 'rgba(74,124,92,0.2)', color: 'rgba(100,180,130,0.9)', border: '1px solid rgba(74,124,92,0.35)' }}
+        >
+          {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+          {applying ? 'Applying…' : 'Approve Changes'}
+        </button>
+        <button
+          type="button"
+          onClick={() => onAction('ask_curator', rec)}
+          {...btnBase}
+          style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(140,105,65,0.12)' }}
+        >
+          <HelpCircle className="w-3 h-3" />
+          Ask Curator
+        </button>
+      </>
+    );
+  }
+
+  if (at === ACTION_TYPE.MULTI_PATH) {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => onAction('acknowledge', rec)}
+          {...btnBase}
+          style={{ background: 'rgba(74,124,92,0.2)', color: 'rgba(100,180,130,0.9)', border: '1px solid rgba(74,124,92,0.35)' }}
+        >
+          <Check className="w-3 h-3" />
+          Acknowledge
+        </button>
+        <button
+          type="button"
+          onClick={() => onAction('treat_individually', rec)}
+          {...btnBase}
+          style={{ background: 'rgba(139,94,58,0.2)', color: 'rgba(200,155,100,0.9)', border: '1px solid rgba(139,94,58,0.35)' }}
+        >
+          <SplitSquareVertical className="w-3 h-3" />
+          Treat Individually
+        </button>
+        <button
+          type="button"
+          onClick={() => onAction('ask_curator', rec)}
+          {...btnBase}
+          style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(140,105,65,0.12)' }}
+        >
+          <HelpCircle className="w-3 h-3" />
+          Ask for More Info
+        </button>
+      </>
+    );
+  }
+
+  // Fallback
+  return (
+    <button
+      type="button"
+      onClick={() => onAction('acknowledge', rec)}
+      {...btnBase}
+      style={{ background: 'rgba(74,124,92,0.2)', color: 'rgba(100,180,130,0.9)', border: '1px solid rgba(74,124,92,0.35)' }}
+    >
+      <Check className="w-3 h-3" />
+      Acknowledge
+    </button>
   );
+}
 
-  const someSelected = useMemo(() => selectedItemIds.size > 0, [selectedItemIds]);
+// ─── Success overlay ──────────────────────────────────────────────────────────
 
-  const handleToggleAll = () => {
-    if (allSelected) {
-      setSelectedItemIds(new Set());
-    } else {
-      setSelectedItemIds(new Set((group.items || []).map((i) => i.id)));
+function SuccessOverlay({ message }) {
+  return (
+    <div className="flex items-center gap-2 py-2">
+      <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: '#4A7C59' }} />
+      <p className="text-sm" style={{ color: 'rgba(100,180,130,0.9)' }}>{message || 'Done.'}</p>
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+/**
+ * @param {object}   props
+ * @param {object}   props.recommendation  - Structured recommendation object
+ * @param {Function} props.onAction        - (actionKey, recommendation, opts?) => void
+ * @param {Function} props.onAskCurator    - (promptText) => void
+ */
+export default function CuratorRecommendationGroup({ recommendation, onAction, onAskCurator }) {
+  const [applying, setApplying] = useState(false);
+  const [done, setDone] = useState(false);
+  const [doneMessage, setDoneMessage] = useState('');
+  const [showDetails, setShowDetails] = useState(false);
+  const [showSpecReview, setShowSpecReview] = useState(false);
+  const [actionError, setActionError] = useState(null);
+
+  const rec = recommendation;
+  if (!rec) return null;
+
+  const atColors = ACTION_TYPE_COLORS[rec.actionType] || ACTION_TYPE_COLORS[ACTION_TYPE.ADVISORY];
+  const atLabel  = ACTION_TYPE_LABELS[rec.actionType] || rec.actionType;
+  const ps       = PRIORITY_STYLES[rec.priority] || PRIORITY_STYLES.medium;
+
+  const isPairing = rec.goal?.includes('pairing');
+  const isSpec    = rec.goal?.includes('specialization') && rec.actionType === ACTION_TYPE.MULTI_PATH;
+
+  function handleAction(actionKey, r, opts = {}) {
+    setActionError(null);
+
+    if (actionKey === 'ask_curator' || actionKey === 'ask_for_more_info') {
+      const prompt = `Tell me more about this recommendation: "${r.title}". ${r.whyItMatters || ''} What should I do?`;
+      if (onAskCurator) onAskCurator(prompt);
+      return;
     }
-  };
 
-  const handleToggleItem = (itemId) => {
-    const next = new Set(selectedItemIds);
-    if (next.has(itemId)) next.delete(itemId);
-    else next.add(itemId);
-    setSelectedItemIds(next);
-  };
-
-  const handleApplyAll = () => {
-    const itemsToApply = (group.items || []).filter((i) => selectedItemIds.has(i.id));
-    if (itemsToApply.length > 0 && onApplyAllInGroup) {
-      onApplyAllInGroup(group, itemsToApply);
+    if (actionKey === 'treat_individually') {
+      setShowSpecReview(true);
+      return;
     }
-  };
+
+    if (actionKey === 'view_details') {
+      setShowDetails((v) => !v);
+      return;
+    }
+
+    if (actionKey === 'view_items') {
+      setShowDetails((v) => !v);
+      return;
+    }
+
+    if (actionKey === 'acknowledge') {
+      setDone(true);
+      setDoneMessage('Acknowledged — this recommendation has been noted.');
+      return;
+    }
+
+    // Delegate mutating actions to parent
+    if (onAction) {
+      setApplying(true);
+      Promise.resolve(onAction(actionKey, r, opts))
+        .then((result) => {
+          setDone(true);
+          setDoneMessage(result?.message || 'Fix applied successfully.');
+        })
+        .catch((err) => {
+          setActionError(err?.message || 'Action failed. Please try again.');
+        })
+        .finally(() => setApplying(false));
+    }
+  }
+
+  function handleSpecReviewDone(results) {
+    setShowSpecReview(false);
+    const accepted = Object.values(results || {}).filter((r) => r.status === 'accepted').length;
+    if (accepted > 0) {
+      setDone(true);
+      setDoneMessage(`${accepted} specialization${accepted > 1 ? 's' : ''} applied.`);
+    }
+  }
+
+  if (done) {
+    return (
+      <div
+        className="rounded-xl px-4 py-3"
+        style={{ background: 'rgba(74,124,92,0.08)', border: '1px solid rgba(74,124,92,0.25)' }}
+      >
+        <SuccessOverlay message={doneMessage} />
+      </div>
+    );
+  }
 
   return (
     <div
-      className="rounded-xl mb-5 overflow-hidden"
-      style={{ border: `1px solid ${ps.border}` }}
+      className="rounded-xl overflow-hidden"
+      style={{ border: `1px solid ${ps.border}`, background: 'rgba(255,255,255,0.025)' }}
     >
-      {/* Group Header */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-5 py-3.5 flex items-center justify-between transition-colors"
-        style={{ background: ps.headerBg }}
-      >
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <ChevronDown
-            className="w-4 h-4 flex-shrink-0 transition-transform duration-200"
-            style={{
-              color: "rgba(212,165,116,0.8)",
-              transform: isExpanded ? "rotate(0deg)" : "rotate(-90deg)",
-            }}
-          />
-          <div className="text-left min-w-0">
-            <p className="font-semibold text-sm leading-tight" style={{ color: "#F5F1E7" }}>
-              {group.groupTitle}
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: "rgba(224,216,200,0.5)" }}>
-              {group.itemCount} {group.itemCount === 1 ? "item" : "items"}
-            </p>
-          </div>
-        </div>
+      {/* Card body */}
+      <div className="px-4 pt-3.5 pb-3 space-y-2.5">
 
-        <div className="flex items-center gap-2 shrink-0 ml-3">
-          {group.priority !== "info" && (
+        {/* Badge row */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider"
+            style={{ background: atColors.bg, color: atColors.text, border: `1px solid ${atColors.border}` }}
+          >
+            {atLabel}
+          </span>
+          {rec.priority !== 'low' && (
             <span
-              className="text-xs px-2.5 py-1 rounded-full font-medium"
-              style={{ background: ps.badge.bg, color: ps.badge.text }}
+              className="text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wider"
+              style={{ background: ps.bg, color: ps.text, border: `1px solid ${ps.border}` }}
             >
               {ps.label}
             </span>
           )}
-          {isExpanded && someSelected && (
+          {rec.moduleKey && rec.moduleKey !== 'multi' && (
             <span
-              className="text-xs px-2 py-0.5 rounded-full"
-              style={{ background: "rgba(46,125,92,0.25)", color: "rgba(80,180,130,1)" }}
+              className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+              style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(140,105,65,0.15)' }}
             >
-              {selectedItemIds.size} selected
+              {rec.moduleKey}
             </span>
           )}
         </div>
-      </button>
 
-      {/* Expanded Content */}
-      {isExpanded && (
-        <>
-          {/* Bulk select bar */}
+        {/* Title */}
+        <p className="text-sm font-bold leading-tight" style={{ color: '#F5F1E7' }}>
+          {rec.title}
+        </p>
+
+        {/* Why it matters */}
+        {rec.whyItMatters && (
+          <p className="text-xs leading-relaxed" style={{ color: 'rgba(224,216,200,0.55)' }}>
+            {rec.whyItMatters}
+          </p>
+        )}
+
+        {/* Item preview — for non-pairing recommendations */}
+        {!isPairing && rec.items?.length > 0 && (
+          <CuratorItemPreviewList items={rec.items} maxPreview={4} />
+        )}
+
+        {/* Pairing results */}
+        {isPairing && rec.items?.length > 0 && (
+          <>
+            <CuratorPairingResults pairings={rec.items.slice(0, 3)} />
+            {rec.items.length > 3 && (
+              <p className="text-xs" style={{ color: 'rgba(224,216,200,0.4)' }}>
+                +{rec.items.length - 3} more pairing suggestions
+              </p>
+            )}
+          </>
+        )}
+
+        {/* Inline specialization review */}
+        {showSpecReview && isSpec && (
+          <CuratorSpecializationReview
+            pipeItems={rec.items}
+            onDone={handleSpecReviewDone}
+            onAskCurator={onAskCurator}
+          />
+        )}
+
+        {/* Inline detail expansion */}
+        {showDetails && !showSpecReview && (
           <div
-            className="px-5 py-2.5 flex items-center gap-3"
-            style={{ borderBottom: "1px solid rgba(140,105,65,0.12)", background: "rgba(0,0,0,0.1)" }}
+            className="rounded-lg p-3 space-y-1.5"
+            style={{ background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(140,105,65,0.12)' }}
           >
-            <button
-              onClick={handleToggleAll}
-              className="flex items-center gap-2 text-xs font-medium transition-opacity hover:opacity-80"
-              style={{ color: "rgba(212,165,116,0.8)" }}
-              disabled={isLoading}
-            >
-              {allSelected ? (
-                <CheckSquare className="w-4 h-4" />
-              ) : (
-                <Square className="w-4 h-4" style={{ opacity: 0.6 }} />
-              )}
-              {allSelected ? "Deselect All" : "Select All"}
-            </button>
-
-            {someSelected && (
-              <Button
-                onClick={handleApplyAll}
-                size="sm"
-                disabled={isLoading || !someSelected}
-                className="ml-auto text-xs h-7 font-medium"
-                style={{
-                  background: "linear-gradient(135deg, rgba(46,125,92,0.9), rgba(38,100,73,1))",
-                  border: "1px solid rgba(46,125,92,0.3)",
-                  color: "#e8f5ee",
-                }}
-              >
-                Apply {selectedItemIds.size}
-              </Button>
+            {rec.summary && (
+              <p className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>{rec.summary}</p>
+            )}
+            {rec.recommendationText && (
+              <p className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>{rec.recommendationText}</p>
+            )}
+            {rec.items?.length > 4 && (
+              <div className="pt-1.5">
+                <p className="text-[10px] uppercase tracking-wider mb-1.5" style={{ color: 'rgba(224,216,200,0.35)' }}>
+                  All items ({rec.items.length})
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {rec.items.map((item, idx) => (
+                    <span
+                      key={item.id || idx}
+                      className="text-[11px] px-2 py-0.5 rounded"
+                      style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(224,216,200,0.6)', border: '1px solid rgba(140,105,65,0.15)' }}
+                    >
+                      {item.recordName || item.itemName || item.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
+        )}
 
-          {/* Items */}
-          <div className="px-4 pt-3 pb-2">
-            {(group.items || []).map((item) => (
-              <CuratorRecommendationRow
-                key={item.id}
-                item={item}
-                workflowId={workflowId}
-                onAccept={onAcceptItem}
-                onClarify={onClarifyItem}
-                isSelected={selectedItemIds.has(item.id)}
-                onToggleSelect={handleToggleItem}
-                isLoading={isLoading}
-              />
-            ))}
+        {/* Error */}
+        {actionError && (
+          <p className="text-xs" style={{ color: 'rgba(210,100,80,1)' }}>{actionError}</p>
+        )}
+
+        {/* Action row */}
+        {!showSpecReview && (
+          <div className="flex items-center gap-2 flex-wrap pt-0.5">
+            <ActionButtons rec={rec} onAction={handleAction} applying={applying} />
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }
