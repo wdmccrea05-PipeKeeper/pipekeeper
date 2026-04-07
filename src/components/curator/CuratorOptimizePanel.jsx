@@ -1467,7 +1467,9 @@ function TreatIndividuallyModal({ card, onClose, onAskCurator, navigate }) {
                           onClick={async () => {
                             setApplying((prev) => ({ ...prev, [item.id]: true }));
                             try {
-                              await base44.entities.Pipe.update(item.id, { focus: [item.suggestedSpecialization] });
+                              await base44.entities.Pipe.update(item.id, {
+                                focus: [String(item.suggestedSpecialization)],
+                              });
                               setApplied((prev) => ({ ...prev, [item.id]: true }));
                             } catch (err) {
                               console.error('Failed to apply specialization:', err);
@@ -1720,13 +1722,14 @@ export default function CuratorOptimizePanel({
     if (nextPurchaseCards.some((c) => c.id === 'np_blend_family_gaps')) {
       suppressedInsightIds.add('diversity_low_blend_variety');
     }
-    // util_underused_blends already covers all ROTATION and USAGE_PATTERN insights
-    // suppress proactive rotation/utilization per-blend insights to prevent per-item duplicates
+    // util_underused_blends covers ROTATION and USAGE_PATTERN insights for blends/tobacco.
+    // Suppress only tobacco-scoped insights to avoid hiding pipe or cigar utilization signals.
     if (utilizationCards.some((c) => c.id === 'util_underused_blends')) {
       for (const insight of allInsights) {
         if (
-          insight.category === INSIGHT_CATEGORIES.ROTATION ||
-          insight.category === INSIGHT_CATEGORIES.USAGE_PATTERN
+          (insight.category === INSIGHT_CATEGORIES.ROTATION ||
+            insight.category === INSIGHT_CATEGORIES.USAGE_PATTERN) &&
+          (insight.scope === INSIGHT_SCOPE.TOBACCO || insight.module === 'tobacco')
         ) {
           suppressedInsightIds.add(insight.id);
         }

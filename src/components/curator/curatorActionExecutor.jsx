@@ -963,12 +963,13 @@ function deduplicateOptimizeItems(allItems) {
       continue;
     }
 
-    // LLM items: deduplicate by goal (category + recommendationClass)
+    // LLM items: deduplicate by goal (category + recommendationClass + full title)
+    // Using the full normalized title avoids false merges between goals with similar prefixes
+    // (e.g., "5 Pipes Never Smoked" vs "5 Pipes Missing Photos" are different goals)
     const cat = item.category || item.groupKey || 'collection_health';
     const cls = item.recommendationClass || 'advisory';
-    // Use title prefix (first 3 words) to detect same-goal recommendations
-    const titleWords = String(item.title || item.itemName || '').toLowerCase().split(/\s+/).slice(0, 3).join('_');
-    const goalKey = `${cat}__${cls}__${titleWords}`;
+    const normalizedTitle = String(item.title || item.itemName || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').trim();
+    const goalKey = `${cat}__${cls}__${normalizedTitle}`;
 
     if (!goalGroups.has(goalKey)) {
       goalGroups.set(goalKey, []);

@@ -45,7 +45,7 @@ function computeLogDrivenSpecByPipe(smokingLogs, blends) {
     if (!log.pipe_id || !log.blend_id) continue;
     const blend = blendById[log.blend_id];
     if (!blend) continue;
-    const type = blend.blend_type || blend.blend_family;
+    const type = (blend.blend_type && blend.blend_type !== 'Unknown') ? blend.blend_type : blend.blend_family;
     if (!type || type === 'Unknown') continue;
     if (!typeCounts[log.pipe_id]) { typeCounts[log.pipe_id] = {}; blendNames[log.pipe_id] = {}; }
     typeCounts[log.pipe_id][type] = (typeCounts[log.pipe_id][type] || 0) + 1;
