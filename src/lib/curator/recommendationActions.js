@@ -2,11 +2,37 @@
  * Recommendation Actions
  *
  * Executes actions triggered from recommendation cards.
- * All mutations happen here — no navigation.
+ * Mutations and navigation both happen here.
  */
 
 import { base44 } from '@/api/base44Client';
-import { ACTION_TYPE } from './recommendationSchema.js';
+import { ACTION_TYPE, MODULE_KEY } from './recommendationSchema.js';
+
+// ─── Module → page mapping ────────────────────────────────────────────────────
+
+const MODULE_PAGE = {
+  [MODULE_KEY.PIPE]:    'Pipes',
+  [MODULE_KEY.TOBACCO]: 'Tobacco',
+  [MODULE_KEY.WHISKEY]: 'Whiskey',
+  [MODULE_KEY.CIGAR]:   'Cigars',
+};
+
+const RECORD_TYPE_PAGE = {
+  pipe:    'Pipes',
+  blend:   'Tobacco',
+  tobacco: 'Tobacco',
+  bottle:  'Whiskey',
+  whiskey: 'Whiskey',
+  cigar:   'Cigars',
+};
+
+function getNavigationPage(recommendation) {
+  const fromModule = MODULE_PAGE[recommendation?.moduleKey];
+  if (fromModule) return fromModule;
+  const firstItem = recommendation?.items?.[0];
+  if (firstItem) return RECORD_TYPE_PAGE[firstItem.recordType] || null;
+  return null;
+}
 
 // ─── Field allow-lists ────────────────────────────────────────────────────────
 
@@ -111,6 +137,16 @@ export async function executeRecommendationAction(recommendation, action, opts =
   if (!recommendation) throw new Error('recommendation is required.');
 
   switch (action) {
+    case 'view_items':
+    case 'view_details': {
+      // Navigate to the relevant module page
+      const page = getNavigationPage(recommendation);
+      if (page && typeof window !== 'undefined') {
+        window.location.href = `/${page}`;
+      }
+      return { ok: true, navigate: page ? { page } : null, message: page ? `Opening ${page}.` : 'No module page found.' };
+    }
+
     case 'apply_fix': {
       // For auto_fix recommendations — apply the proposed change to all items
       const items = recommendation.items || [];
@@ -196,18 +232,40 @@ export async function executeRecommendationAction(recommendation, action, opts =
     }
 
     case 'approve_changes': {
-      // For review_required — same as apply_fix but explicit user confirmation
+      // For review_required — apply proposed changes for items that have them.
+      // Items without proposedChange are skipped (user must edit manually in the module).
       const items = recommendation.items || [];
-      const toApply = opts.itemId
+      const toApply = (opts.itemId
         ? items.filter((i) => i.id === opts.itemId || i.recordId === opts.itemId)
-        : items;
+        : items
+      ).filter((i) => i.proposedChange?.payload && Object.keys(i.proposedChange.payload).length > 0);
+
+      if (!toApply.length) {
+        // No auto-applicable items — navigate to module so user can edit manually
+        const page = getNavigationPage(recommendation);
+        if (page && typeof window !== 'undefined') {
+          window.location.href = `/${page}`;
+        }
+        return { ok: true, navigate: page ? { page } : null, message: 'No proposed changes to apply. Opening module for manual edit.' };
+      }
 
       let applied = 0;
+      const errors = [];
+
       for (const item of toApply) {
-        await applySingleItemFix(item);
-        applied++;
+        try {
+          await applySingleItemFix(item);
+          applied++;
+        } catch (err) {
+          errors.push({ item: item.recordName, error: err.message });
+        }
       }
-      return { ok: true, applied, message: `Changes approved for ${applied} item${applied > 1 ? 's' : ''}.` };
+
+      if (applied === 0 && errors.length > 0) {
+        throw new Error(errors.map((e) => `${e.item}: ${e.error}`).join('; '));
+      }
+
+      return { ok: true, applied, errors, message: `Changes approved for ${applied} item${applied > 1 ? 's' : ''}.` };
     }
 
     default:

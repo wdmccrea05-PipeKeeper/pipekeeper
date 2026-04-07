@@ -149,25 +149,75 @@ function AdvisoryActions({ rec, onAction }) {
 function ReviewRequiredActions({ rec, onAction }) {
   const [applying, setApplying] = useState(false);
   const [done, setDone]         = useState(false);
+  const [showReview, setShowReview] = useState(false);
 
   if (done) return <DoneIndicator label="Changes Applied" />;
 
+  const itemsWithProposals = (rec.items || []).filter((i) => i.proposedChange?.payload);
+  const hasProposals = itemsWithProposals.length > 0;
+
   const handleApprove = async () => {
     setApplying(true);
-    try { await onAction('approve_changes', rec); setDone(true); }
+    try { await onAction('approve_changes', rec); if (hasProposals) setDone(true); }
     finally { setApplying(false); }
   };
 
   return (
     <>
       <SecondaryBtn
-        onClick={() => onAction('view_details', rec)}
+        onClick={() => setShowReview((s) => !s)}
         icon={Eye}
-        label="Review Details"
+        label={showReview ? 'Hide Details' : 'Review Details'}
         colorText="rgba(220,140,90,0.9)"
       />
-      <PrimaryBtn onClick={handleApprove} loading={applying} icon={Check} label="Approve Changes" />
+      <PrimaryBtn
+        onClick={handleApprove}
+        loading={applying}
+        icon={Check}
+        label={hasProposals ? 'Approve Changes' : 'Open in Module'}
+      />
       <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
+
+      {/* Inline review panel — breaks to full width inside flex-wrap parent */}
+      {showReview && (
+        <div
+          className="basis-full w-full mt-1 rounded-lg p-3 space-y-1.5"
+          style={{ background: 'rgba(180,100,50,0.07)', border: '1px solid rgba(180,100,50,0.2)' }}
+        >
+          {hasProposals ? (
+            <>
+              <p className="text-[11px] font-semibold mb-2" style={{ color: 'rgba(220,140,90,0.85)' }}>
+                Proposed changes — review before approving
+              </p>
+              {itemsWithProposals.slice(0, 10).map((item) => (
+                <div
+                  key={item.recordId || item.id}
+                  className="flex items-center justify-between gap-2 text-[11px]"
+                >
+                  <span className="truncate max-w-[60%]" style={{ color: 'rgba(224,216,200,0.8)' }}>
+                    {item.itemName || item.recordName}
+                  </span>
+                  <span className="shrink-0 font-medium" style={{ color: 'rgba(220,140,90,0.9)' }}>
+                    {item.proposedChange.field}: {item.proposedChange.displayValue}
+                  </span>
+                </div>
+              ))}
+              {itemsWithProposals.length > 10 && (
+                <p className="text-[10px]" style={{ color: 'rgba(224,216,200,0.4)' }}>
+                  +{itemsWithProposals.length - 10} more
+                </p>
+              )}
+            </>
+          ) : (() => {
+            const itemCount = rec.items?.length || 0;
+            return (
+              <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.65)' }}>
+                {itemCount} item{itemCount !== 1 ? 's' : ''} need{itemCount === 1 ? 's' : ''} attention — click <strong>Open in Module</strong> to edit them directly.
+              </p>
+            );
+          })()}
+        </div>
+      )}
     </>
   );
 }
