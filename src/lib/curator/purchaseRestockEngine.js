@@ -42,7 +42,7 @@ function totalOz(blend) {
 }
 
 function isFavorite(blend) {
-  return blend.is_favorite || blend.favorite || blend.rating >= 4;
+  return blend.is_favorite || blend.favorite || (blend.rating != null && blend.rating >= 4);
 }
 
 function isBottleLowStock(bottle) {
@@ -319,7 +319,7 @@ function analyzeCigarDiscovery(cigars = []) {
   // Cigars with aging potential (have a recommended aging date or are premium)
   const agingCandidates = cigars
     .filter((c) => {
-      const hasAging = c.recommended_age_years > 0 || c.aging_potential === 'high' || c.aging_potential === 'excellent';
+    const hasAging = (c.recommended_age_years != null && c.recommended_age_years > 0) || c.aging_potential === 'high' || c.aging_potential === 'excellent';
       const qty = Number(c.quantity ?? c.available_quantity ?? c.initial_quantity);
       return hasAging && qty <= 2;
     })
