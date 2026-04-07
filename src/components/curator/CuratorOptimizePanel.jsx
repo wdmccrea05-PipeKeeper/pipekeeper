@@ -62,6 +62,7 @@ export default function CuratorOptimizePanel({
   const [rawGroups, setRawGroups] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [applyError, setApplyError] = useState(null);
   const [activeModule, setActiveModule] = useState('all');
   const triggerElementRef = useRef(null);
 
@@ -85,13 +86,18 @@ export default function CuratorOptimizePanel({
     triggerElementRef.current = document.activeElement;
   }, []);
 
-  // Run the executor and populate groups
+  // Run the executor once per mount. The optimize call is expensive (LLM) and is
+  // triggered by user intent (opening the panel), so a single run on mount is correct.
+  // Collection data is captured via the context ref at call time.
+  const contextRef = useRef(context);
+  contextRef.current = context;
+
   useEffect(() => {
     let cancelled = false;
     setIsLoading(true);
     setError(null);
 
-    executeCuratorAction({ actionType: 'optimize_collection', context, requestId: `opt_${Date.now()}` })
+    executeCuratorAction({ actionType: 'optimize_collection', context: contextRef.current, requestId: `opt_${Date.now()}` })
       .then((result) => {
         if (cancelled) return;
         setRawGroups(
@@ -110,10 +116,7 @@ export default function CuratorOptimizePanel({
       });
 
     return () => { cancelled = true; };
-  // Intentionally run once per mount; context object reference will change only
-  // when collection data genuinely changes.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps — intentionally runs once per mount
 
   // Filter groups by active module
   const filteredGroups = useMemo(() => {
@@ -145,21 +148,23 @@ export default function CuratorOptimizePanel({
    * refreshState: remove the item from local groups so the UI updates instantly.
    */
   async function handleAcceptItem(item) {
+    setApplyError(null);
     try {
       await applyCuratorRecommendation(item);
+      // refreshState — remove the applied item from all groups only after successful persist
+      setRawGroups((prev) =>
+        prev
+          .map((g) => ({
+            ...g,
+            items: (g.items || []).filter((i) => i.id !== item.id),
+            itemCount: Math.max(0, (g.itemCount ?? 0) - 1),
+          }))
+          .filter((g) => (g.items?.length ?? 0) > 0)
+      );
     } catch (err) {
       console.error('[CuratorOptimizePanel] apply failed:', err);
+      setApplyError(err?.message || 'Could not apply the fix. Please try again.');
     }
-    // refreshState — remove the applied item from all groups
-    setRawGroups((prev) =>
-      prev
-        .map((g) => ({
-          ...g,
-          items: (g.items || []).filter((i) => i.id !== item.id),
-          itemCount: Math.max(0, (g.itemCount ?? 0) - 1),
-        }))
-        .filter((g) => (g.items?.length ?? 0) > 0)
-    );
   }
 
   function handleClarifyItem(item) {
@@ -286,6 +291,26 @@ export default function CuratorOptimizePanel({
 
       {/* ── Content ───────────────────────────────────────────────────── */}
       <div className="px-5 py-5 space-y-3">
+        {/* Apply-fix error banner */}
+        {applyError && (
+          <div
+            className="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
+            style={{ background: 'rgba(180,50,50,0.12)', border: '1px solid rgba(200,80,80,0.3)' }}
+          >
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0" style={{ color: 'rgba(220,100,80,0.9)' }} />
+              <p className="text-xs" style={{ color: 'rgba(240,200,190,0.9)' }}>{applyError}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setApplyError(null)}
+              className="text-xs shrink-0 hover:opacity-80"
+              style={{ color: 'rgba(200,150,140,0.7)' }}
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <Loader2
