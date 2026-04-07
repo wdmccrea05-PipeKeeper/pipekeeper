@@ -206,6 +206,7 @@ export default function ProfilePage() {
     }
   }, [profile, provider]);
 
+  const initializedRef = React.useRef(false);
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [cropperImage, setCropperImage] = useState(null);
@@ -264,7 +265,10 @@ export default function ProfilePage() {
 
 
   useEffect(() => {
+    // Only hydrate once when profile data first arrives; don't reset on user re-renders
     if (!profile && !user) return;
+    if (initializedRef.current) return;
+    initializedRef.current = true;
     const source = profile || {};
 
     if (import.meta.env.DEV) {
@@ -311,7 +315,6 @@ export default function ProfilePage() {
       cigar_notes: source.cigar_notes || "",
       whiskey_preferences: source.whiskey_preferences || { types: [], flavors: [], drinking_style: [], cocktails: [] },
       cigar_preferences: source.cigar_preferences || { strengths: [], bodies: [], wrappers: [], origins: [], vitolas: [], flavors: [], occasions: [], pairings: [] },
-      // Use saved value exactly; null/undefined = not set (system will derive from release state)
       pipekeeper_enabled: source.pipekeeper_enabled,
       whiskeykeeper_enabled: source.whiskeykeeper_enabled === true,
       winekeeper_enabled: source.winekeeper_enabled === true,
