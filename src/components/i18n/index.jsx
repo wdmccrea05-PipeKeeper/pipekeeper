@@ -37,10 +37,11 @@ import jaUI from './locales/ja.ui.jsx';
 import zhHansUI from './locales/zh-Hans.ui.jsx';
 
 const CRITICAL_FALLBACKS = {
-  common: { back: 'Back', search: 'Search', share: 'Share', loading: 'Loading...' },
+  common: { back: 'Back', search: 'Search', share: 'Share', loading: 'Loading...', retry: 'Retry' },
   nav: {
-    hub: 'Hub', pipekeeper: 'PipeKeeper', whiskeykeeper: 'WhiskeyKeeper', curator: 'Curator',
+    hub: 'Hub', pipekeeper: 'PipeKeeper', whiskeykeeper: 'WhiskeyKeeper', cigarkeeper: 'CigarKeeper', curator: 'Curator',
     community: 'Community', profile: 'Profile', help: 'Help', faq: 'FAQ', support: 'Support', insights: 'Insights',
+    wantList: 'Want List', quickAccess: 'Quick Access',
   },
   footer: { copyright: '© 2026 CollectionKeeper. All rights reserved.' },
   search: {
@@ -55,7 +56,7 @@ const CRITICAL_FALLBACKS = {
     collectionSummary: 'Collection Overview', totalValue: 'Total Value', pipes: 'Pipes', blends: 'Blends',
     bottleTypes: 'Bottle Types', totalBottles: 'Total Bottles', activeModules: 'Active Modules', yourModules: 'Your Collections',
     pipekeeper: 'PipeKeeper', whiskeykeeper: 'WhiskeyKeeper', cigarkeeper: 'CigarKeeper', winekeeper: 'WineKeeper',
-    openModule: 'Open Module', quickLaunch: 'Quick Launch', comingSoon: 'Expanding Soon',
+    openModule: 'Open Module', quickLaunch: 'Quick Launch', comingSoon: 'Expanding Soon', comingSoonLabel: 'Coming Soon',
     expandingEcosystem: 'Expanding your CollectionKeeper ecosystem soon.', recentActivity: 'Recent Activity',
     noRecentActivity: 'No recent activity yet. Start by adding to your collections!', loading: 'Loading ecosystem data...',
     curatorTitle: 'Collection Curator', curatorDescription: 'Get AI-powered insights, recommendations, and guidance across your entire collection.',
@@ -67,7 +68,26 @@ const CRITICAL_FALLBACKS = {
   },
   quickActions: {
     addPipe: 'Add Pipe', addBlend: 'Add Blend', logSession: 'Log Session', addBottle: 'Add Bottle',
-    quickSearchBottle: 'Quick Search Bottle', logTasting: 'Log Tasting',
+    quickSearchBottle: 'Quick Search Bottle', logTasting: 'Log Tasting', identifyPipe: 'Identify Pipe',
+    collectionCurator: 'Collection Curator', insights: 'Insights', wantList: 'Want List',
+  },
+  modules: {
+    notAvailable: 'Not Available',
+    notAvailableInRelease: '{{moduleName}} is not available in this release.',
+    notYetAvailable: '{{moduleName}} is not yet available.',
+    isHidden: '{{moduleName}} is Hidden',
+    hiddenDescription: 'This module is currently hidden in your preferences. Your data is safe and intact.',
+    manageModules: 'Manage Modules in Profile',
+  },
+  subscription: {
+    activating: 'Activating your subscription...',
+    activationDelayedTitle: 'Activation Taking Longer',
+    activationDelayedBody: 'Please try again or contact support if the issue persists.',
+    continueAnyway: 'Continue Anyway',
+    welcome: 'Welcome!',
+    nowActive: 'Your subscription is now active. Your modules are ready to use.',
+    activeAccess: 'Active Access',
+    exploreCollections: 'Explore Collections',
   },
 };
 
