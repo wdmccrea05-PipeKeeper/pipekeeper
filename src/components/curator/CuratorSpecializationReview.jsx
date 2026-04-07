@@ -12,7 +12,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import {
   Search, X, Check, CheckCircle2, HelpCircle,
-  Loader2, ChevronDown, ChevronUp, TrendingUp,
+  Loader2, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { applyPipeSpecialization } from '@/lib/curator/recommendationActions.js';
 import CuratorRecommendationGroup from './CuratorRecommendationGroup';

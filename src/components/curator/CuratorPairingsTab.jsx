@@ -41,7 +41,7 @@ const PAIRING_TABS = [
     key:    'new',
     label:  'Something New',
     goals:  ['something_new_pairing'],
-    hint:   'Expand your palate — blends you haven\'t explored yet',
+    hint:   "Expand your palate — blends you haven't explored yet",
   },
 ];
 

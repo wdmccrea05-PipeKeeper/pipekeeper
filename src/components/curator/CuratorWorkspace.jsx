@@ -40,7 +40,7 @@ const SURFACES = [
 ];
 
 const PURCHASE_CATEGORIES = [CATEGORY.PURCHASE, CATEGORY.CIGAR_DISCOVERY];
-const COLLECTION_OPT_CATEGORIES = [CATEGORY.BALANCE, CATEGORY.UTILIZATION];
+const COLLECTION_OPTIMIZATION_CATEGORIES = [CATEGORY.BALANCE, CATEGORY.UTILIZATION];
 
 // ─── Preference builder from collection data ──────────────────────────────────
 
@@ -177,7 +177,7 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
 
   // Collection Optimization: balance + utilization (spec handled separately)
   const collectionOptSections = useMemo(
-    () => visibleSections.filter((s) => COLLECTION_OPT_CATEGORIES.includes(s.category)),
+    () => visibleSections.filter((s) => COLLECTION_OPTIMIZATION_CATEGORIES.includes(s.category)),
     [visibleSections]
   );
 
