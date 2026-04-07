@@ -989,7 +989,7 @@ function deduplicateOptimizeItems(allItems) {
         return bDetail > aDetail ? b : a;
       });
       // Collect all item names for the merged representation
-      const allNames = [...new Set(group.map((i) => i.recordName || i.itemName || i.title || '').filter(Boolean))];
+      const allNames = [...new Set(group.map((i) => i.recordName || i.itemName || i.title).filter(Boolean))];
       const mergedTitle = best.title || best.itemName || best.recordName || 'Recommendation';
       llmItems.push({
         ...best,

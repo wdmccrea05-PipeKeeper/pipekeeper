@@ -136,7 +136,7 @@ export const CURATOR_ACTIONS = [
 
       const candidateLines = pipesWithoutSpec.slice(0, 12).map((p) => {
         const sug = logSuggestions[p.id];
-        const currentFocus = Array.isArray(p.focus) ? p.focus.join('/') : (p.focus || 'None');
+        const currentFocus = Array.isArray(p.focus) && p.focus.length > 0 ? p.focus.join('/') : 'None';
         if (sug) {
           return `- Pipe: "${p.name}" (id: ${p.id}) | current: ${currentFocus} | suggested: ${sug.suggestedType} | evidence: ${sug.sessionCount} sessions with ${sug.topBlends.join(', ')}`;
         }
