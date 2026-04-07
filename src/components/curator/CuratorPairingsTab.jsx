@@ -19,7 +19,7 @@
  */
 
 import React from 'react';
-import { Sparkles, ArrowLeftRight } from 'lucide-react';
+import { Sparkles, ArrowLeftRight, RefreshCw, HelpCircle } from 'lucide-react';
 import CuratorPairingResults from './CuratorPairingResults';
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
@@ -79,21 +79,47 @@ function PairingGroup({ rec, onAction }) {
  * @param {object}   props
  * @param {object[]} props.pairingRecs  - Array of pairing recommendation objects from pairingEngine
  * @param {Function} props.onAction     - (actionKey, pairing) => void — handled by workspace
+ * @param {Function} [props.onRefresh]  - () => void — rerun pairing analysis
+ * @param {Function} [props.onAskCurator] - () => void — switch to chat
  */
-export default function CuratorPairingsTab({ pairingRecs = [], onAction }) {
+export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefresh, onAskCurator }) {
   const hasAny = pairingRecs.some((r) => (r.items?.length || 0) > 0);
 
   return (
-    <div className="space-y-5">
-      {/* Title */}
+    <div className="space-y-4">
+      {/* Title + actions */}
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-base font-bold" style={{ color: '#F5F1E7' }}>
             Pairings
           </h2>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-            Structured pairing suggestions from your collection — pipe &amp; whiskey, cigar &amp; whiskey
+            Pipe &amp; whiskey, cigar &amp; whiskey — based on your collection
           </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {onAskCurator && (
+            <button
+              type="button"
+              onClick={onAskCurator}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg"
+              style={{ background: 'rgba(74,124,156,0.12)', color: 'rgba(120,170,220,0.9)', border: '1px solid rgba(74,124,156,0.25)' }}
+            >
+              <HelpCircle className="w-3 h-3" />
+              Ask Curator
+            </button>
+          )}
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg"
+              style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(140,105,65,0.14)' }}
+              title="Refresh pairings"
+            >
+              <RefreshCw className="w-3 h-3" />
+            </button>
+          )}
         </div>
       </div>
 

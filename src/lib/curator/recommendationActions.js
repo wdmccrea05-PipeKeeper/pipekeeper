@@ -34,6 +34,31 @@ function getNavigationPage(recommendation) {
   return null;
 }
 
+/**
+ * Build a navigation descriptor for view_items / view_details.
+ * Callers (React components) should perform the actual navigation.
+ *
+ * @returns {{ ok: boolean, navigate: { page: string, path: string, itemIds: string[] } | null, message: string }}
+ */
+export function buildViewItemsNavigation(recommendation) {
+  const page = getNavigationPage(recommendation);
+  if (!page) return { ok: false, navigate: null, message: 'No module page found for this recommendation.' };
+
+  const itemIds = (recommendation.items || [])
+    .map((i) => i.recordId || i.id)
+    .filter(Boolean);
+
+  // Build a path with curator context query params for the module page
+  const params = new URLSearchParams();
+  if (itemIds.length > 0 && itemIds.length <= 30) {
+    params.set('curator_ids', itemIds.join(','));
+  }
+  if (recommendation.goal) params.set('curator_hint', recommendation.goal);
+
+  const path = `/${page}${params.toString() ? `?${params.toString()}` : ''}`;
+  return { ok: true, navigate: { page, path, itemIds }, message: `Opening ${page}.` };
+}
+
 // ─── Field allow-lists ────────────────────────────────────────────────────────
 
 const SAFE_BLEND_FIELDS = new Set([
@@ -139,23 +164,27 @@ export async function executeRecommendationAction(recommendation, action, opts =
   switch (action) {
     case 'view_items':
     case 'view_details': {
-      // Navigate to the relevant module page
-      const page = getNavigationPage(recommendation);
-      if (page && typeof window !== 'undefined') {
-        window.location.href = `/${page}`;
-      }
-      return { ok: true, navigate: page ? { page } : null, message: page ? `Opening ${page}.` : 'No module page found.' };
+      // Navigation is performed by the calling React component via React Router.
+      // Return navigation info; do NOT use window.location.href here.
+      return buildViewItemsNavigation(recommendation);
     }
 
     case 'apply_fix': {
-      // For auto_fix recommendations — apply the proposed change to all items
+      // For auto_fix recommendations — apply the proposed change to items that have proposals.
+      // Items without a proposedChange payload are intentionally skipped (not all can be auto-fixed).
       const items = recommendation.items || [];
-      const toApply = opts.itemId
+      const candidates = opts.itemId
         ? items.filter((i) => i.id === opts.itemId || i.recordId === opts.itemId)
         : items;
 
+      // Only apply items that have a concrete proposed payload
+      const toApply = candidates.filter(
+        (i) => i.proposedChange?.payload && Object.keys(i.proposedChange.payload).length > 0
+      );
+
       if (!toApply.length) {
-        throw new Error('No items found to apply fix to.');
+        // Fall back: navigate to the module page so the user can edit manually
+        return buildViewItemsNavigation(recommendation);
       }
 
       let applied = 0;
@@ -242,11 +271,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
 
       if (!toApply.length) {
         // No auto-applicable items — navigate to module so user can edit manually
-        const page = getNavigationPage(recommendation);
-        if (page && typeof window !== 'undefined') {
-          window.location.href = `/${page}`;
-        }
-        return { ok: true, navigate: page ? { page } : null, message: 'No proposed changes to apply. Opening module for manual edit.' };
+        return buildViewItemsNavigation(recommendation);
       }
 
       let applied = 0;

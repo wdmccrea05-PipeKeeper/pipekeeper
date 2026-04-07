@@ -120,9 +120,11 @@ function buildCigarBottleRationale(cigar, bottle) {
 
 // ─── Pairing diversity ────────────────────────────────────────────────────────
 
-const BOTTLE_REUSE_PENALTY = 3; // score penalty per additional use of the same bottle
-const MAX_BOTTLES_TO_SCORE  = 15; // widen search window for diversity
-const MIN_PAIRING_SCORE     = 1;  // minimum adjusted score to include a pairing
+const MS_PER_DAY            = 86_400_000; // milliseconds in one day
+const BOTTLE_REUSE_PENALTY  = 3;          // score penalty per additional use of the same bottle
+const BOTTLE_REUSE_HARD_CAP = 2;          // a single bottle can appear in at most this many pairings
+const MAX_BOTTLES_TO_SCORE  = 20;         // widen search window for diversity
+const MIN_PAIRING_SCORE     = 1;          // minimum adjusted score to include a pairing
 
 // ─── Main Engine ──────────────────────────────────────────────────────────────
 
@@ -143,16 +145,23 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
   const blendById = Object.fromEntries(blends.map((b) => [b.id, b]));
   const pairingItems = [];
 
-  for (const pipe of pipes.slice(0, 6)) {
+  for (let pipeIdx = 0; pipeIdx < Math.min(pipes.length, 6); pipeIdx++) {
+    const pipe = pipes[pipeIdx];
     const blendCounts = pipeBlendCounts[pipe.id] || {};
     const topBlendId = Object.entries(blendCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
-    const blend = topBlendId ? blendById[topBlendId] : blends[0];
+
+    // Fallback blend: cycle through the blend list based on pipe index to avoid always using blends[0]
+    const fallbackBlend = blendById[topBlendId] || blends[pipeIdx % blends.length];
+    const blend = fallbackBlend;
     if (!blend) continue;
 
     let bestBottle = null;
     let bestScore = -1;
 
     for (const bottle of bottles.slice(0, MAX_BOTTLES_TO_SCORE)) {
+      // Skip bottles that have hit the hard cap
+      if ((bottleUsageCount[bottle.id] || 0) >= BOTTLE_REUSE_HARD_CAP) continue;
+
       const baseScore = scoreBlendBottlePairing(blend, bottle);
       const penalty   = (bottleUsageCount[bottle.id] || 0) * BOTTLE_REUSE_PENALTY;
       const score     = baseScore - penalty;
@@ -170,8 +179,8 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
       id:            `pair_pw_${pipe.id}_${bestBottle.id}`,
       pairingMode:   PAIRING_MODE.DIRECT_PAIRING,
       leftItem:      { type: 'pipe', id: pipe.id, name: pipe.name, recordType: 'pipe' },
+      blendBridge:   { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' },
       rightItem:     { type: 'bottle', id: bestBottle.id, name: bestBottle.name, recordType: 'bottle' },
-      blendBridge:   blend ? { type: 'blend', id: blend.id, name: blend.name } : null,
       score:         bestScore,
       rationale:     buildPipeBlendBottleRationale(pipe, blend, bestBottle),
       ownershipStatus: 'owned',
@@ -200,6 +209,146 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
 }
 
 /**
+ * Generate thematic "Old Favorites" and "Rediscover" pairing recommendations.
+ * These use different selection logic to give different suggestions than the primary pairing.
+ */
+function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsageCount) {
+  if (!pipes.length || !bottles.length || !blends.length) return [];
+
+  // Build blend usage counts across all logs
+  const blendUsageCount = {};
+  const blendLastUsed   = {};
+  const now = Date.now();
+  for (const log of smokingLogs) {
+    if (!log.blend_id) continue;
+    blendUsageCount[log.blend_id] = (blendUsageCount[log.blend_id] || 0) + 1;
+    const ts = log.date ? new Date(log.date).getTime() : 0;
+    if (!blendLastUsed[log.blend_id] || ts > blendLastUsed[log.blend_id]) {
+      blendLastUsed[log.blend_id] = ts;
+    }
+  }
+
+  const results = [];
+
+  // ── Old Favorites: most-smoked blends with a great bottle match ─────────────
+  const topBlends = blends
+    .filter((b) => (blendUsageCount[b.id] || 0) > 0)
+    .sort((a, b) => (blendUsageCount[b.id] || 0) - (blendUsageCount[a.id] || 0))
+    .slice(0, 4);
+
+  const favItems = [];
+  for (const blend of topBlends) {
+    let best = null;
+    let bestScore = -1;
+    for (const bottle of bottles.slice(0, MAX_BOTTLES_TO_SCORE)) {
+      if ((bottleUsageCount[bottle.id] || 0) >= BOTTLE_REUSE_HARD_CAP) continue;
+      const score = scoreBlendBottlePairing(blend, bottle) - (bottleUsageCount[bottle.id] || 0) * BOTTLE_REUSE_PENALTY;
+      if (score > bestScore) { bestScore = score; best = bottle; }
+    }
+    if (!best || bestScore < MIN_PAIRING_SCORE) continue;
+
+    // Find best pipe for this blend from logs
+    const pipeBlendCounts = {};
+    for (const log of smokingLogs) {
+      if (log.blend_id !== blend.id || !log.pipe_id) continue;
+      pipeBlendCounts[log.pipe_id] = (pipeBlendCounts[log.pipe_id] || 0) + 1;
+    }
+    const topPipeId = Object.entries(pipeBlendCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const pipe = pipes.find((p) => p.id === topPipeId) || pipes[0];
+
+    bottleUsageCount[best.id] = (bottleUsageCount[best.id] || 0) + 1;
+    favItems.push({
+      id:          `pair_fav_${blend.id}_${best.id}`,
+      pairingMode: PAIRING_MODE.COLLECTION_MIX_MATCH,
+      leftItem:    pipe ? { type: 'pipe', id: pipe.id, name: pipe.name, recordType: 'pipe' } : { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' },
+      blendBridge: pipe ? { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' } : null,
+      rightItem:   { type: 'bottle', id: best.id, name: best.name, recordType: 'bottle' },
+      score:       bestScore,
+      rationale:   buildPipeBlendBottleRationale(pipe, blend, best),
+      ownershipStatus: 'owned',
+    });
+  }
+
+  if (favItems.length > 0) {
+    results.push(createRecommendation({
+      category:           CATEGORY.PAIRING,
+      goal:               'old_favorites_pairing',
+      actionType:         ACTION_TYPE.ADVISORY,
+      title:              'Old Favorites',
+      summary:            `Your most-smoked blends paired with the best whiskey match`,
+      whyItMatters:       'Revisit the blends you know and love with a complementary dram',
+      recommendationText: 'A trusted pairing based on your session history',
+      moduleKey:          MODULE_KEY.MULTI,
+      ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+      priority:           PRIORITY.LOW,
+      confidence:         'high',
+      items:              favItems,
+      actionPayload:      { type: 'pairing_suggestions', mode: 'old_favorites' },
+    }));
+  }
+
+  // ── Rediscover: blends with stock but not smoked in 60+ days ────────────────
+  const rediscoverBlends = blends
+    .filter((b) => {
+      if ((b.tin_total_quantity_oz || 0) <= 0) return false;
+      const lastUsed = blendLastUsed[b.id];
+      if (!lastUsed) return smokingLogs.length > 0; // never used when logs exist
+      return (now - lastUsed) / MS_PER_DAY > 60;
+    })
+    .sort((a, b) => (blendLastUsed[a.id] || 0) - (blendLastUsed[b.id] || 0)) // oldest first
+    .slice(0, 3);
+
+  const rediscoverItems = [];
+  for (const blend of rediscoverBlends) {
+    let best = null;
+    let bestScore = -1;
+    for (const bottle of bottles.slice(0, MAX_BOTTLES_TO_SCORE)) {
+      if ((bottleUsageCount[bottle.id] || 0) >= BOTTLE_REUSE_HARD_CAP) continue;
+      const score = scoreBlendBottlePairing(blend, bottle) - (bottleUsageCount[bottle.id] || 0) * BOTTLE_REUSE_PENALTY;
+      if (score > bestScore) { bestScore = score; best = bottle; }
+    }
+    if (!best || bestScore < MIN_PAIRING_SCORE) continue;
+
+    const pipe = pipes[rediscoverItems.length % pipes.length];
+    bottleUsageCount[best.id] = (bottleUsageCount[best.id] || 0) + 1;
+
+    const daysAgo = blendLastUsed[blend.id] ? Math.floor((now - blendLastUsed[blend.id]) / MS_PER_DAY) : null;
+    rediscoverItems.push({
+      id:          `pair_rediscover_${blend.id}_${best.id}`,
+      pairingMode: PAIRING_MODE.COLLECTION_MIX_MATCH,
+      leftItem:    pipe ? { type: 'pipe', id: pipe.id, name: pipe.name, recordType: 'pipe' } : { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' },
+      blendBridge: pipe ? { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' } : null,
+      rightItem:   { type: 'bottle', id: best.id, name: best.name, recordType: 'bottle' },
+      score:       bestScore,
+      rationale:   daysAgo
+        ? `${blend.name} hasn't been smoked in ${daysAgo} days — a great occasion to revisit it alongside ${best.name}`
+        : `${blend.name} is waiting in your cellar — ${best.name} would pair well`,
+      ownershipStatus: 'owned',
+    });
+  }
+
+  if (rediscoverItems.length > 0) {
+    results.push(createRecommendation({
+      category:           CATEGORY.PAIRING,
+      goal:               'rediscover_pairing',
+      actionType:         ACTION_TYPE.ADVISORY,
+      title:              'Rediscover',
+      summary:            `${rediscoverItems.length} cellar blend${rediscoverItems.length > 1 ? 's' : ''} waiting to be revisited`,
+      whyItMatters:       'Rotating through overlooked blends keeps your cellar active and your palate fresh',
+      recommendationText: 'Give one of these a session tonight',
+      moduleKey:          MODULE_KEY.MULTI,
+      ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+      priority:           PRIORITY.LOW,
+      confidence:         'medium',
+      items:              rediscoverItems,
+      actionPayload:      { type: 'pairing_suggestions', mode: 'rediscover' },
+    }));
+  }
+
+  return results;
+}
+
+/**
  * Generate cigar + whiskey pairing recommendations.
  */
 function generateCigarWhiskeyPairings(cigars, bottles, bottleUsageCount) {
@@ -212,6 +361,7 @@ function generateCigarWhiskeyPairings(cigars, bottles, bottleUsageCount) {
     let bestScore = -1;
 
     for (const bottle of bottles.slice(0, MAX_BOTTLES_TO_SCORE)) {
+      if ((bottleUsageCount[bottle.id] || 0) >= BOTTLE_REUSE_HARD_CAP) continue;
       const baseScore = scoreCigarBottlePairing(cigar, bottle);
       const penalty   = (bottleUsageCount[bottle.id] || 0) * BOTTLE_REUSE_PENALTY;
       const score     = baseScore - penalty;
@@ -274,7 +424,7 @@ export function generatePairingRecommendations(context = {}) {
   } = context;
 
   const results = [];
-  // Shared bottle usage count — ensures diversity across both pairing types
+  // Shared bottle usage count — ensures diversity across all pairing types
   const bottleUsageCount = {};
 
   if (pipes.length > 0 && blends.length > 0 && bottles.length > 0) {
@@ -283,6 +433,11 @@ export function generatePairingRecommendations(context = {}) {
 
   if (cigars.length > 0 && bottles.length > 0) {
     results.push(...generateCigarWhiskeyPairings(cigars, bottles, bottleUsageCount));
+  }
+
+  // Thematic pairings — Old Favorites and Rediscover use different selection logic
+  if (pipes.length > 0 && blends.length > 0 && bottles.length > 0 && smokingLogs.length > 0) {
+    results.push(...generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsageCount));
   }
 
   return results;
