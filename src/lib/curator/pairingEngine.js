@@ -408,10 +408,111 @@ function generateCigarWhiskeyPairings(cigars, bottles, bottleUsageCount) {
   ];
 }
 
+// ─── Preference filtering helpers ─────────────────────────────────────────────
+
+/**
+ * Build a set of disliked blend types and whiskey types from user preferences.
+ * Preference input is derived from the tasteProfile (preferred types = liked; inverse inference).
+ */
+function buildPreferenceContext(preferences = null) {
+  if (!preferences) return { dislikedBlendTypes: new Set(), dislikedWhiskeyTypes: new Set() };
+
+  // Treat very low-rated blend/whiskey types as disliked (avg rating < 2.5)
+  const dislikedBlendTypes  = new Set(preferences.disliked_blend_types  || []);
+  const dislikedWhiskeyTypes = new Set(preferences.disliked_whiskey_types || []);
+
+  return { dislikedBlendTypes, dislikedWhiskeyTypes };
+}
+
+function isBlendAcceptable(blend, dislikedBlendTypes) {
+  if (!dislikedBlendTypes.size) return true;
+  const type = getBlendType(blend);
+  return !type || !dislikedBlendTypes.has(type);
+}
+
+function isBottleAcceptable(bottle, dislikedWhiskeyTypes) {
+  if (!dislikedWhiskeyTypes.size) return true;
+  const type = getWhiskeyType(bottle);
+  return !type || !dislikedWhiskeyTypes.has(type);
+}
+
+// ─── Something New pairings ───────────────────────────────────────────────────
+
+/**
+ * Generate "Something New" pairing suggestions — blends or pipes the user hasn't tried
+ * much, paired with a well-matched bottle.
+ */
+function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottleUsageCount, prefCtx) {
+  if (!pipes.length || !bottles.length || !blends.length) return [];
+
+  const blendUsageCount = {};
+  for (const log of smokingLogs) {
+    if (log.blend_id) blendUsageCount[log.blend_id] = (blendUsageCount[log.blend_id] || 0) + 1;
+  }
+
+  // Blends with little or no usage — "try these"
+  const novelBlends = blends
+    .filter((b) => {
+      if (!isBlendAcceptable(b, prefCtx.dislikedBlendTypes)) return false;
+      const usage = blendUsageCount[b.id] || 0;
+      return usage <= 1; // never or rarely smoked
+    })
+    .sort((a, b) => (blendUsageCount[a.id] || 0) - (blendUsageCount[b.id] || 0))
+    .slice(0, 4);
+
+  if (!novelBlends.length) return [];
+
+  const newItems = [];
+  for (const blend of novelBlends) {
+    let best = null;
+    let bestScore = -1;
+
+    for (const bottle of bottles.slice(0, MAX_BOTTLES_TO_SCORE)) {
+      if (!isBottleAcceptable(bottle, prefCtx.dislikedWhiskeyTypes)) continue;
+      if ((bottleUsageCount[bottle.id] || 0) >= BOTTLE_REUSE_HARD_CAP) continue;
+      const score = scoreBlendBottlePairing(blend, bottle) - (bottleUsageCount[bottle.id] || 0) * BOTTLE_REUSE_PENALTY;
+      if (score > bestScore) { bestScore = score; best = bottle; }
+    }
+    if (!best || bestScore < MIN_PAIRING_SCORE) continue;
+
+    const pipe = pipes[newItems.length % pipes.length];
+    bottleUsageCount[best.id] = (bottleUsageCount[best.id] || 0) + 1;
+
+    newItems.push({
+      id:          `pair_new_${blend.id}_${best.id}`,
+      pairingMode: PAIRING_MODE.COLLECTION_MIX_MATCH,
+      leftItem:    pipe ? { type: 'pipe', id: pipe.id, name: pipe.name, recordType: 'pipe' } : { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' },
+      blendBridge: pipe ? { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' } : null,
+      rightItem:   { type: 'bottle', id: best.id, name: best.name, recordType: 'bottle' },
+      score:       bestScore,
+      rationale:   `Expand your palate — ${blend.name} is a ${getBlendType(blend) || 'blend'} you haven't explored much yet`,
+      ownershipStatus: 'owned',
+    });
+  }
+
+  if (!newItems.length) return [];
+
+  return [createRecommendation({
+    category:           CATEGORY.PAIRING,
+    goal:               'something_new_pairing',
+    actionType:         ACTION_TYPE.ADVISORY,
+    title:              'Something New',
+    summary:            `${newItems.length} pairing${newItems.length > 1 ? 's' : ''} using blends you haven't explored yet`,
+    whyItMatters:       'Expanding into less-used blends broadens your palate and makes full use of your collection',
+    recommendationText: 'Try something outside your usual rotation',
+    moduleKey:          MODULE_KEY.MULTI,
+    ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+    priority:           PRIORITY.LOW,
+    confidence:         'medium',
+    items:              newItems,
+    actionPayload:      { type: 'pairing_suggestions', mode: 'something_new' },
+  })];
+}
+
 /**
  * Main pairing engine entry point.
  *
- * @param {object} context - { pipes, blends, bottles, cigars, smokingLogs, tastingLogs }
+ * @param {object} context - { pipes, blends, bottles, cigars, smokingLogs, tastingLogs, preferences }
  * @returns {import('./recommendationSchema.js').Recommendation[]}
  */
 export function generatePairingRecommendations(context = {}) {
@@ -421,23 +522,35 @@ export function generatePairingRecommendations(context = {}) {
     bottles = [],
     cigars = [],
     smokingLogs = [],
+    preferences = null,
   } = context;
+
+  const prefCtx = buildPreferenceContext(preferences);
+
+  // Apply preference filtering to source data
+  const acceptableBlends  = blends.filter((b)  => isBlendAcceptable(b,  prefCtx.dislikedBlendTypes));
+  const acceptableBottles = bottles.filter((b) => isBottleAcceptable(b, prefCtx.dislikedWhiskeyTypes));
 
   const results = [];
   // Shared bottle usage count — ensures diversity across all pairing types
   const bottleUsageCount = {};
 
-  if (pipes.length > 0 && blends.length > 0 && bottles.length > 0) {
-    results.push(...generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottleUsageCount));
+  if (pipes.length > 0 && acceptableBlends.length > 0 && acceptableBottles.length > 0) {
+    results.push(...generatePipeWhiskeyPairings(pipes, acceptableBlends, acceptableBottles, smokingLogs, bottleUsageCount));
   }
 
-  if (cigars.length > 0 && bottles.length > 0) {
-    results.push(...generateCigarWhiskeyPairings(cigars, bottles, bottleUsageCount));
+  if (cigars.length > 0 && acceptableBottles.length > 0) {
+    results.push(...generateCigarWhiskeyPairings(cigars, acceptableBottles, bottleUsageCount));
   }
 
   // Thematic pairings — Old Favorites and Rediscover use different selection logic
-  if (pipes.length > 0 && blends.length > 0 && bottles.length > 0 && smokingLogs.length > 0) {
-    results.push(...generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsageCount));
+  if (pipes.length > 0 && acceptableBlends.length > 0 && acceptableBottles.length > 0 && smokingLogs.length > 0) {
+    results.push(...generateThematicPairings(pipes, acceptableBlends, acceptableBottles, smokingLogs, bottleUsageCount));
+  }
+
+  // Something New — unexplored blends paired with suitable bottles
+  if (pipes.length > 0 && blends.length > 0 && acceptableBottles.length > 0) {
+    results.push(...generateSomethingNewPairings(pipes, blends, acceptableBottles, smokingLogs, bottleUsageCount, prefCtx));
   }
 
   return results;

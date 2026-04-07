@@ -1,74 +1,65 @@
 /**
  * CuratorPairingsTab — Surface 4
  *
- * Pairings workspace for the Collection Curator.
+ * Pairings workspace with result sub-tabs.
  *
- * Layout:
- *   Title + subtitle
- *   Grouped pairing sections (one per recommendation / pairing goal)
- *     Header: goal label + pairing count
- *     Why it matters
- *     CuratorPairingResults with all entries + per-entry actions
- *   Empty state when no pairings found
+ * Sub-tabs:
+ *   1. Expert Pairing   — primary pipe/cigar + whiskey pairings
+ *   2. Old Favorites    — most-smoked blends with best bottle match
+ *   3. Rediscover       — cellar blends waiting to be revisited
+ *   4. Something New    — unexplored blends, expand your palate
  *
- * Actions surfaced per pairing entry:
- *   Open Items   — links to the item's collection page
- *   Ask Curator  — switches to Chat tab with pre-filled context
- *   Build Session — (pipe pairings) opens session flow
- *   Save Pairing  — saves the pairing
+ * Pairing cards show Pipe / Blend / Pour with equal prominence.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Sparkles, ArrowLeftRight, RefreshCw, HelpCircle } from 'lucide-react';
 import CuratorPairingResults from './CuratorPairingResults';
 
+// ─── Sub-tab definitions ──────────────────────────────────────────────────────
+
+const PAIRING_TABS = [
+  {
+    key:    'expert',
+    label:  'Expert Pairing',
+    goals:  ['pipe_whiskey_pairing', 'cigar_whiskey_pairing'],
+    hint:   'Primary pairings based on your collection',
+  },
+  {
+    key:    'favorites',
+    label:  'Old Favorites',
+    goals:  ['old_favorites_pairing'],
+    hint:   'Your most-smoked blends with the best whiskey match',
+  },
+  {
+    key:    'rediscover',
+    label:  'Rediscover',
+    goals:  ['rediscover_pairing'],
+    hint:   'Cellar blends waiting to be revisited',
+  },
+  {
+    key:    'new',
+    label:  'Something New',
+    goals:  ['something_new_pairing'],
+    hint:   'Expand your palate — blends you haven\'t explored yet',
+  },
+];
+
 // ─── Empty state ──────────────────────────────────────────────────────────────
 
-function EmptyState() {
+function EmptyState({ tab }) {
+  const messages = {
+    expert:    'No expert pairings yet. Pairings require pipes with sessions and whiskey bottles.',
+    favorites: 'Log sessions to build your favorites — your most-smoked blends will appear here.',
+    rediscover:'No blends waiting to be rediscovered. Keep smoking and logging sessions.',
+    new:       'No new blend discoveries available. Add more blends to your collection.',
+  };
   return (
-    <div className="py-16 text-center space-y-3">
-      <ArrowLeftRight className="w-10 h-10 mx-auto" style={{ color: 'rgba(180,140,75,0.3)' }} />
-      <p className="text-sm font-semibold" style={{ color: 'rgba(224,216,200,0.6)' }}>
-        No pairings found yet
+    <div className="py-12 text-center space-y-3">
+      <ArrowLeftRight className="w-8 h-8 mx-auto" style={{ color: 'rgba(180,140,75,0.3)' }} />
+      <p className="text-xs max-w-xs mx-auto" style={{ color: 'rgba(224,216,200,0.4)' }}>
+        {messages[tab] || 'No pairings found for this category.'}
       </p>
-      <p className="text-xs max-w-xs mx-auto" style={{ color: 'rgba(224,216,200,0.35)' }}>
-        Pairings require pipes with logged sessions and whiskey bottles, or cigars with whiskey bottles.
-        Add and log sessions to generate pairing suggestions.
-      </p>
-    </div>
-  );
-}
-
-// ─── Single pairing group ─────────────────────────────────────────────────────
-
-function PairingGroup({ rec, onAction }) {
-  const pairingItems = rec.items || [];
-
-  return (
-    <div className="space-y-3">
-      {/* Group header */}
-      <div className="space-y-0.5">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-3.5 h-3.5 shrink-0" style={{ color: 'rgba(180,140,75,0.7)' }} />
-          <h3 className="text-sm font-bold" style={{ color: '#F5F1E7' }}>
-            {rec.title}
-          </h3>
-          <span
-            className="text-[10px] px-2 py-0.5 rounded-full tabular-nums"
-            style={{ background: 'rgba(80,80,80,0.1)', color: 'rgba(224,216,200,0.45)', border: '1px solid rgba(100,100,100,0.18)' }}
-          >
-            {pairingItems.length} pairing{pairingItems.length !== 1 ? 's' : ''}
-          </span>
-        </div>
-        {rec.whyItMatters && (
-          <p className="text-xs pl-5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-            {rec.whyItMatters}
-          </p>
-        )}
-      </div>
-
-      {/* Pairing entries */}
-      <CuratorPairingResults pairings={pairingItems} onAction={onAction} />
     </div>
   );
 }
@@ -83,7 +74,21 @@ function PairingGroup({ rec, onAction }) {
  * @param {Function} [props.onAskCurator] - () => void — switch to chat
  */
 export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefresh, onAskCurator }) {
-  const hasAny = pairingRecs.some((r) => (r.items?.length || 0) > 0);
+  const [activeTab, setActiveTab] = useState('expert');
+
+  // Build a map: goal → pairingItems
+  const goalItemsMap = {};
+  for (const rec of pairingRecs) {
+    if (!goalItemsMap[rec.goal]) goalItemsMap[rec.goal] = [];
+    goalItemsMap[rec.goal].push(...(rec.items || []));
+  }
+
+  // Get items for active tab
+  const activeDef    = PAIRING_TABS.find((t) => t.key === activeTab) || PAIRING_TABS[0];
+  const activeItems  = activeDef.goals.flatMap((g) => goalItemsMap[g] || []);
+
+  // Badge count per tab (number of pairings)
+  const getTabCount = (tabDef) => tabDef.goals.reduce((s, g) => s + (goalItemsMap[g]?.length || 0), 0);
 
   return (
     <div className="space-y-4">
@@ -123,16 +128,50 @@ export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefre
         </div>
       </div>
 
-      {!hasAny ? (
-        <EmptyState />
+      {/* Result sub-tabs */}
+      <div
+        className="flex gap-1 p-1 rounded-xl"
+        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(140,105,65,0.12)' }}
+      >
+        {PAIRING_TABS.map((tab) => {
+          const isActive = activeTab === tab.key;
+          const count    = getTabCount(tab);
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-all"
+              style={
+                isActive
+                  ? { background: 'rgba(140,105,65,0.22)', color: '#F5F1E7', border: '1px solid rgba(140,105,65,0.35)' }
+                  : { background: 'transparent', color: 'rgba(224,216,200,0.45)', border: '1px solid transparent' }
+              }
+            >
+              <span className="truncate">{tab.label}</span>
+              {count > 0 && (
+                <span
+                  className="text-[9px] px-1.5 py-0.5 rounded-full tabular-nums shrink-0"
+                  style={{ background: 'rgba(80,80,80,0.15)', color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(100,100,100,0.18)' }}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Tab hint */}
+      <p className="text-xs" style={{ color: 'rgba(224,216,200,0.4)' }}>
+        {activeDef.hint}
+      </p>
+
+      {/* Tab content */}
+      {activeItems.length === 0 ? (
+        <EmptyState tab={activeTab} />
       ) : (
-        <div className="space-y-6">
-          {pairingRecs
-            .filter((r) => (r.items?.length || 0) > 0)
-            .map((rec) => (
-              <PairingGroup key={rec.id || rec.goal} rec={rec} onAction={onAction} />
-            ))}
-        </div>
+        <CuratorPairingResults pairings={activeItems} onAction={onAction} />
       )}
     </div>
   );

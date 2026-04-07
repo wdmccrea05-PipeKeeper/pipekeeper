@@ -1,41 +1,83 @@
 /**
  * CuratorWorkspace
  *
- * Five-surface operations workspace.
+ * Six-surface operations workspace.
  *
  * Surfaces:
- *   1. Optimize Board        — main landing, analysis auto-runs on mount
- *   2. Specialization Review — per-pipe specialization workflow
- *   3. Purchase & Restock    — actionable queue with batch shopping list actions
- *   4. Pairings              — structured pairing entries with follow-up actions
- *   5. Chat                  — expert tobacconist chat (secondary, not the landing)
+ *   1. Optimize Board          — record quality / metadata landing
+ *   2. Collection Optimization — rotation, balance, pipe specialization
+ *   3. Purchase & Restock      — actionable queue with batch shopping list actions
+ *   4. Pairings                — structured pairing entries with result sub-tabs
+ *   5. Grow & Expand           — outside-collection exploration / Add to Want List
+ *   6. Chat                    — expert tobacconist chat (free-form questions)
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, LayoutDashboard, Award, ShoppingCart, Sparkles, MessageCircle } from 'lucide-react';
+import { Loader2, LayoutDashboard, Layers, ShoppingCart, Sparkles, TrendingUp, MessageCircle } from 'lucide-react';
 import CuratorResultsBoard from './CuratorResultsBoard';
 import CuratorSpecializationReview from './CuratorSpecializationReview';
 import CuratorPurchaseQueue from './CuratorPurchaseQueue';
 import CuratorPairingsTab from './CuratorPairingsTab';
+import CuratorGrowAndExpand from './CuratorGrowAndExpand';
 import ExpertTobacconistChat from '@/components/agent/ExpertTobacconistChat';
 import { generateRecommendations } from '@/lib/curator/recommendationEngine.js';
 import { groupRecommendations } from '@/lib/curator/recommendationGrouping.js';
 import { executeRecommendationAction, buildViewItemsNavigation } from '@/lib/curator/recommendationActions.js';
 import { generatePairingRecommendations } from '@/lib/curator/pairingEngine.js';
+import { useTasteProfile } from '@/components/curator/useTasteProfile.jsx';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useQueryClient } from '@tanstack/react-query';
 import { CATEGORY } from '@/lib/curator/recommendationSchema.js';
 
 const SURFACES = [
-  { key: 'board',          label: 'Optimize Board',        icon: LayoutDashboard },
-  { key: 'specialization', label: 'Specialization Review', icon: Award },
-  { key: 'purchase',       label: 'Purchase & Restock',    icon: ShoppingCart },
-  { key: 'pairings',       label: 'Pairings',              icon: Sparkles },
-  { key: 'chat',           label: 'Chat',                  icon: MessageCircle },
+  { key: 'board',         label: 'Optimize Board',         icon: LayoutDashboard },
+  { key: 'collectionopt', label: 'Collection Optimization', icon: Layers },
+  { key: 'purchase',      label: 'Purchase & Restock',      icon: ShoppingCart },
+  { key: 'pairings',      label: 'Pairings',                icon: Sparkles },
+  { key: 'grow',          label: 'Grow & Expand',           icon: TrendingUp },
+  { key: 'chat',          label: 'Chat',                    icon: MessageCircle },
 ];
 
 const PURCHASE_CATEGORIES = [CATEGORY.PURCHASE, CATEGORY.CIGAR_DISCOVERY];
+const COLLECTION_OPT_CATEGORIES = [CATEGORY.BALANCE, CATEGORY.UTILIZATION];
+
+// ─── Preference builder from collection data ──────────────────────────────────
+
+function buildPreferences(collectionContext, tasteProfile) {
+  const { blends = [], bottles = [] } = collectionContext;
+
+  // Compute per-type average ratings to find disliked types (avg < 2.5 with ≥2 samples)
+  const blendTypeRatings = {};
+  const blendTypeCounts  = {};
+  for (const b of blends) {
+    if (!b.rating || !b.blend_type) continue;
+    blendTypeRatings[b.blend_type] = (blendTypeRatings[b.blend_type] || 0) + Number(b.rating);
+    blendTypeCounts[b.blend_type]  = (blendTypeCounts[b.blend_type]  || 0) + 1;
+  }
+  const disliked_blend_types = Object.entries(blendTypeRatings)
+    .filter(([type, total]) => blendTypeCounts[type] >= 2 && total / blendTypeCounts[type] < 2.5)
+    .map(([type]) => type);
+
+  const whiskeyTypeRatings = {};
+  const whiskeyTypeCounts  = {};
+  for (const b of bottles) {
+    const type = b.type || b.whiskey_type;
+    if (!b.rating || !type) continue;
+    whiskeyTypeRatings[type] = (whiskeyTypeRatings[type] || 0) + Number(b.rating);
+    whiskeyTypeCounts[type]  = (whiskeyTypeCounts[type]  || 0) + 1;
+  }
+  const disliked_whiskey_types = Object.entries(whiskeyTypeRatings)
+    .filter(([type, total]) => whiskeyTypeCounts[type] >= 2 && total / whiskeyTypeCounts[type] < 2.5)
+    .map(([type]) => type);
+
+  return {
+    preferred_blend_types:  tasteProfile?.preferred_blend_types  || [],
+    preferred_whiskey_types: tasteProfile?.preferred_whiskey_types || [],
+    disliked_blend_types,
+    disliked_whiskey_types,
+  };
+}
 
 // ─── Ask Curator context builders ─────────────────────────────────────────────
 
@@ -77,6 +119,20 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
   const [pairingRecs, setPairingRecs]   = useState([]);
   const [analysisRun, setAnalysisRun]   = useState(false);
 
+  // Taste profile — derived from collection data, used for preference-aware filtering
+  const tasteProfile = useTasteProfile({
+    pipes:       collectionContext.pipes       || [],
+    blends:      collectionContext.blends      || [],
+    bottles:     collectionContext.bottles     || [],
+    smokingLogs: collectionContext.smokingLogs || [],
+    tastingLogs: collectionContext.tastingLogs || [],
+  });
+
+  const preferences = useMemo(
+    () => buildPreferences(collectionContext, tasteProfile),
+    [collectionContext, tasteProfile]
+  );
+
   // Track dismissed/applied recommendation IDs for this session
   const [dismissedIds, setDismissedIds] = useState(new Set());
 
@@ -89,10 +145,10 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
     setAllSections(groupRecommendations(recs));
     setPurchaseSections(groupRecommendations(recs.filter((r) => PURCHASE_CATEGORIES.includes(r.category))));
     setSpecRecs(recs.filter((r) => r.category === CATEGORY.SPECIALIZATION));
-    setPairingRecs(generatePairingRecommendations(collectionContext));
+    setPairingRecs(generatePairingRecommendations({ ...collectionContext, preferences }));
     setDismissedIds(new Set());
     setAnalysisRun(true);
-  }, [collectionContext]);
+  }, [collectionContext, preferences]);
 
   // Run analysis once data loads
   useEffect(() => {
@@ -112,6 +168,18 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
       }))
       .filter((section) => section.recommendations.length > 0);
   }, [allSections, dismissedIds]);
+
+  // Board: only record-quality / metadata sections
+  const boardSections = useMemo(
+    () => visibleSections.filter((s) => s.category === CATEGORY.METADATA),
+    [visibleSections]
+  );
+
+  // Collection Optimization: balance + utilization (spec handled separately)
+  const collectionOptSections = useMemo(
+    () => visibleSections.filter((s) => COLLECTION_OPT_CATEGORIES.includes(s.category)),
+    [visibleSections]
+  );
 
   const visiblePurchaseSections = useMemo(() => {
     if (dismissedIds.size === 0) return purchaseSections;
@@ -210,11 +278,13 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
   }, []);
 
   // Badge counts
-  const specCandidateCount = specRecs
+  const specCandidateCount    = specRecs
     .flatMap((r) => r.items || [])
     .filter((i) => i.hasLogData).length;
-  const purchaseCount = visiblePurchaseSections.reduce((s, g) => s + g.recommendations.length, 0);
-  const pairingCount  = visiblePairingRecs.reduce((s, r) => s + (r.items?.length || 0), 0);
+  const collectionOptCount    = collectionOptSections.reduce((s, g) => s + g.recommendations.length, 0)
+    + specCandidateCount;
+  const purchaseCount         = visiblePurchaseSections.reduce((s, g) => s + g.recommendations.length, 0);
+  const pairingCount          = visiblePairingRecs.reduce((s, r) => s + (r.items?.length || 0), 0);
 
   if (isLoading) {
     return (
@@ -234,9 +304,9 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
         {SURFACES.map(({ key, label, icon: Icon }) => {
           const isActive = surface === key;
           const badge =
-            key === 'specialization' && specCandidateCount > 0 ? specCandidateCount :
-            key === 'purchase'       && purchaseCount > 0       ? purchaseCount       :
-            key === 'pairings'       && pairingCount  > 0       ? pairingCount        : null;
+            key === 'collectionopt' && collectionOptCount > 0 ? collectionOptCount :
+            key === 'purchase'      && purchaseCount > 0      ? purchaseCount       :
+            key === 'pairings'      && pairingCount  > 0      ? pairingCount        : null;
 
           return (
             <button
@@ -268,17 +338,19 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
       {/* Surface content */}
       {surface === 'board' && (
         <CuratorResultsBoard
-          sections={visibleSections}
+          sections={boardSections}
           onAction={handleAction}
-          onOpenSpecialization={() => setSurface('specialization')}
+          onOpenSpecialization={() => setSurface('collectionopt')}
           onOpenPurchase={() => setSurface('purchase')}
           onRefresh={runAnalysis}
         />
       )}
 
-      {surface === 'specialization' && (
+      {surface === 'collectionopt' && (
         <CuratorSpecializationReview
           specRecs={specRecs}
+          collectionSections={collectionOptSections}
+          onAction={handleAction}
           onDone={() => {
             queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
             setSurface('board');
@@ -304,6 +376,14 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
         />
       )}
 
+      {surface === 'grow' && (
+        <CuratorGrowAndExpand
+          collectionContext={collectionContext}
+          preferences={preferences}
+          userEmail={user?.email}
+        />
+      )}
+
       {surface === 'chat' && (
         <div className="space-y-3">
           <div>
@@ -311,7 +391,7 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
               Ask the Curator
             </h2>
             <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-              Expert tobacconist chat — explore collection questions, pairing deep-dives, and more
+              Expert tobacconist chat — collection questions, pairing deep-dives, and more
             </p>
           </div>
           <ExpertTobacconistChat
