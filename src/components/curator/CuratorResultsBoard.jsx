@@ -6,11 +6,12 @@
  * Layout:
  *   Row 1: module filter chips  +  refresh button
  *   Row 2: 4 summary cards (Open Fixes, Review Needed, Shopping Candidates, Specialization)
- *   Rows 3+: 4 collapsible grouped sections
- *     — Data & Metadata
- *     — Utilization & Rotation
+ *   Rows 3+: 5 collapsible grouped sections
+ *     — Record Optimization
+ *     — Collection Optimization
  *     — Purchase & Restock
  *     — Specialization & Strategy
+ *     — Grow & Expand
  */
 
 import React, { useState, useMemo, useCallback } from 'react';

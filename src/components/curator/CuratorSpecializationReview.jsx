@@ -1,22 +1,12 @@
 /**
- * CuratorSpecializationReview — Surface 2
+ * CuratorSpecializationReview — Collection Optimization
  *
- * Standalone specialization workflow, not a card.
+ * Surface 2: Broader collection optimization.
  *
- * Layout:
- *   Title + subtitle
- *   Summary strip: total candidates, high confidence, medium confidence
- *   Toolbar: search | confidence filter | blend family filter | bulk actions
- *   Vertical list of pipe review panels
- *
- * Each pipe panel:
- *   Header: pipe name + current→suggested spec + confidence badge
- *   Expandable 2-col detail:
- *     Left:  Issue statement | Suggested spec | Evidence bullets
- *     Right: Top blend family bars | Related blends preview
- *   Footer actions: Accept | Reject | Custom Spec | Ask Curator
- *
- * Bulk actions appear when items are selected.
+ * Sections:
+ *   1. Utilization & Rotation — underused blends, pipes
+ *   2. Collection Balance     — blend type distribution, gaps
+ *   3. Pipe Specialization    — per-pipe specialization workflow
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -25,6 +15,8 @@ import {
   Loader2, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { applyPipeSpecialization } from '@/lib/curator/recommendationActions.js';
+import CuratorRecommendationGroup from './CuratorRecommendationGroup';
+import { CATEGORY } from '@/lib/curator/recommendationSchema.js';
 
 // ─── Confidence styles ────────────────────────────────────────────────────────
 
@@ -386,15 +378,106 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
   );
 }
 
-// ─── CuratorSpecializationReview ──────────────────────────────────────────────
+// ─── Collection Optimization Sections ─────────────────────────────────────────
+// Renders BALANCE and UTILIZATION recommendations with collapsible section headers.
+
+const COLL_OPT_SECTION_MAP = [
+  {
+    key:        'utilization',
+    label:      'Utilization & Rotation',
+    categories: [CATEGORY.UTILIZATION],
+  },
+  {
+    key:        'balance',
+    label:      'Collection Balance',
+    categories: [CATEGORY.BALANCE],
+  },
+];
+
+function CollOptSection({ label, recommendations, onAction }) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  if (!recommendations.length) return null;
+
+  return (
+    <div className="space-y-2">
+      <button
+        type="button"
+        onClick={() => setCollapsed((v) => !v)}
+        className="w-full flex items-center gap-2 py-1 group"
+        aria-expanded={!collapsed}
+      >
+        <span
+          className="text-[11px] font-bold uppercase tracking-widest shrink-0"
+          style={{ color: 'rgba(224,216,200,0.45)' }}
+        >
+          {label}
+        </span>
+        <div className="flex-1 h-px" style={{ background: 'rgba(140,105,65,0.15)' }} />
+        <span
+          className="text-[11px] px-2 py-0.5 rounded-full tabular-nums shrink-0"
+          style={{ background: 'rgba(80,80,80,0.1)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(100,100,100,0.18)' }}
+        >
+          {recommendations.length}
+        </span>
+        {collapsed
+          ? <ChevronDown className="w-3 h-3 shrink-0" style={{ color: 'rgba(224,216,200,0.3)' }} />
+          : <ChevronUp   className="w-3 h-3 shrink-0" style={{ color: 'rgba(224,216,200,0.3)' }} />}
+      </button>
+      {!collapsed && (
+        <div className="space-y-2.5">
+          {recommendations.map((rec) => (
+            <CuratorRecommendationGroup
+              key={rec.id}
+              recommendation={rec}
+              onAction={onAction}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CollectionOptSections({ sections, onAction }) {
+  return (
+    <div className="space-y-5">
+      {COLL_OPT_SECTION_MAP.map(({ key, label, categories }) => {
+        const recs = sections
+          .filter((s) => categories.includes(s.category))
+          .flatMap((s) => s.recommendations || []);
+        return (
+          <CollOptSection
+            key={key}
+            label={label}
+            recommendations={recs}
+            onAction={onAction}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── CuratorSpecializationReview (Collection Optimization) ────────────────────
 
 /**
  * @param {object}   props
- * @param {object[]} props.specRecs      - Specialization recommendation objects from the engine
- * @param {Function} props.onDone        - () => void — navigate back to board
- * @param {Function} [props.onAskCurator] - (pipe) => void — switch to chat with specialization context
+ * @param {object[]} props.specRecs          - Specialization recommendation objects from the engine
+ * @param {object[]} props.collectionSections - Broader collection optimization sections (balance + utilization)
+ * @param {Function} props.onAction          - (actionKey, rec, opts) => Promise — for collection sections
+ * @param {Function} props.onDone            - () => void — navigate back to board
+ * @param {Function} [props.onAskCurator]    - (pipe) => void — switch to chat with specialization context
  */
-export default function CuratorSpecializationReview({ specRecs = [], onDone, onAskCurator }) {
+export default function CuratorSpecializationReview({
+  specRecs = [],
+  collectionSections = [],
+  onAction,
+  onDone,
+  onAskCurator,
+}) {
+  // ─── Collection optimization sections (BALANCE + UTILIZATION) ────────────────
+  const hasCollectionSections = collectionSections.some((s) => s.recommendations?.length > 0);
   // Extract pipe items with actual evidence
   const allPipeItems = useMemo(
     () => specRecs.flatMap((r) => r.items || []).filter((i) => i.hasLogData && i.suggestedSpec),
@@ -474,12 +557,18 @@ export default function CuratorSpecializationReview({ specRecs = [], onDone, onA
     return (
       <div className="space-y-4">
         <div>
-          <h2 className="text-base font-bold" style={{ color: '#F5F1E7' }}>Specialization Review</h2>
+          <h2 className="text-base font-bold" style={{ color: '#F5F1E7' }}>Collection Optimization</h2>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-            Pipe-by-pipe suggestions based on actual session history
+            Rotation, balance, and pipe specialization suggestions
           </p>
         </div>
-        <div className="py-12 text-center space-y-3">
+
+        {/* Collection sections even if no spec candidates */}
+        {hasCollectionSections && (
+          <CollectionOptSections sections={collectionSections} onAction={onAction} />
+        )}
+
+        <div className="py-8 text-center space-y-3">
           <CheckCircle2 className="w-10 h-10 mx-auto" style={{ color: 'rgba(74,124,92,0.35)' }} />
           <p className="text-sm font-semibold" style={{ color: 'rgba(224,216,200,0.6)' }}>
             No specialization candidates with session evidence
@@ -532,11 +621,33 @@ export default function CuratorSpecializationReview({ specRecs = [], onDone, onA
       {/* Title */}
       <div>
         <h2 className="text-base font-bold" style={{ color: '#F5F1E7' }}>
-          Specialization Review
+          Collection Optimization
         </h2>
         <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-          Pipe-by-pipe suggestions based on actual session history
+          Rotation, balance, and pipe specialization — all in one place
         </p>
+      </div>
+
+      {/* Collection optimization sections — utilization & balance */}
+      {hasCollectionSections && (
+        <CollectionOptSections sections={collectionSections} onAction={onAction} />
+      )}
+
+      {/* Pipe Specialization section header */}
+      <div className="flex items-center gap-2 pt-1">
+        <span
+          className="text-[11px] font-bold uppercase tracking-widest shrink-0"
+          style={{ color: 'rgba(224,216,200,0.45)' }}
+        >
+          Pipe Specialization
+        </span>
+        <div className="flex-1 h-px" style={{ background: 'rgba(140,105,65,0.15)' }} />
+        <span
+          className="text-[11px] px-2 py-0.5 rounded-full tabular-nums shrink-0"
+          style={{ background: 'rgba(80,80,80,0.1)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(100,100,100,0.18)' }}
+        >
+          {allPipeItems.length}
+        </span>
       </div>
 
       {/* Summary strip */}
@@ -704,7 +815,7 @@ export default function CuratorSpecializationReview({ specRecs = [], onDone, onA
             className="text-xs px-4 py-2 rounded-lg"
             style={{ background: 'rgba(140,105,65,0.12)', color: 'rgba(224,216,200,0.65)', border: '1px solid rgba(140,105,65,0.22)' }}
           >
-            Done — Back to Board
+            Done
           </button>
         </div>
       )}
