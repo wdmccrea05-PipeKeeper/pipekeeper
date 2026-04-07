@@ -20,7 +20,10 @@ function toDisplayName(moduleKey) {
   if (!moduleKey) return 'Module';
   try {
     return getModuleDisplayName(moduleKey) || moduleKey;
-  } catch {
+  } catch (err) {
+    if (import.meta?.env?.DEV) {
+      console.warn('[SubscriptionSuccessFlow] getModuleDisplayName failed for key:', moduleKey, err);
+    }
     return moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1).replace('keeper', ' Keeper');
   }
 }

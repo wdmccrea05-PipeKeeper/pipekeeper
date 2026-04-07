@@ -116,7 +116,7 @@ export default function LockedModuleGuard({ moduleKey, children }) {
     );
   }
 
-  // 3. Launched module — PipeKeeper and WhiskeyKeeper are always accessible (Free + Pro tiers).
+  // 3. Launched module — all launched modules are always accessible (Free + Pro tiers).
   // Only block if the user has explicitly hidden this module in their preferences.
   if (!isModuleBlocked(key) && !isModuleInternal(key)) {
     if (!isModuleEnabled(key)) {

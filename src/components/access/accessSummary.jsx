@@ -195,11 +195,13 @@ export function buildAccessSummary(user, subscription) {
   // to any logged-in user. Subscriptions unlock Pro features within each module
   // independently. Ensure both are always present in activeModules.
   const FREE_BASE_MODULES = ['pipekeeper', 'whiskeykeeper'];
+  const activeSet = new Set(activeModules);
   for (const m of FREE_BASE_MODULES) {
-    if (getEffectiveModuleReleaseState(m, user) === 'launched' && !activeModules.includes(m)) {
-      activeModules = [...activeModules, m];
+    if (!activeSet.has(m) && getEffectiveModuleReleaseState(m, user) === 'launched') {
+      activeSet.add(m);
     }
   }
+  activeModules = Array.from(activeSet);
 
   // Safety: ensure activeModules is always an array
   if (!activeModules || activeModules.length === 0) {
