@@ -16,7 +16,7 @@ import React, { useState } from 'react';
 import { Sparkles, ArrowLeftRight, RefreshCw, HelpCircle } from 'lucide-react';
 import CuratorPairingResults from './CuratorPairingResults';
 
-// Maximum pairings shown per sub-tab
+// Safety net — actual cap is enforced by the pairing engine (MAX_ITEMS_PER_SUBTAB = 3)
 const MAX_PAIRINGS_PER_TAB = 3;
 
 const PAIRING_TABS = [

@@ -243,11 +243,12 @@ function buildCigarBottleRationale(cigar, bottle) {
 
 // ─── Pairing diversity ────────────────────────────────────────────────────────
 
-const MS_PER_DAY            = 86_400_000; // milliseconds in one day
-const BOTTLE_REUSE_PENALTY  = 3;          // score penalty per additional use of the same bottle
-const BOTTLE_REUSE_HARD_CAP = 2;          // a single bottle can appear in at most this many pairings
-const MAX_BOTTLES_TO_SCORE  = 20;         // widen search window for diversity
-const MIN_PAIRING_SCORE     = 1;          // minimum adjusted score to include a pairing
+const MS_PER_DAY             = 86_400_000; // milliseconds in one day
+const BOTTLE_REUSE_PENALTY   = 3;          // score penalty per additional use of the same bottle
+const BOTTLE_REUSE_HARD_CAP  = 2;          // a single bottle can appear in at most this many pairings
+const MAX_BOTTLES_TO_SCORE   = 20;         // widen search window for diversity
+const MIN_PAIRING_SCORE      = 1;          // minimum adjusted score to include a pairing
+const MAX_ITEMS_PER_SUBTAB   = 3;          // hard cap on items per pairing sub-tab — enforced in engine
 
 // ─── Main Engine ──────────────────────────────────────────────────────────────
 
@@ -269,7 +270,7 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
   const blendById = Object.fromEntries(blends.map((b) => [b.id, b]));
   const pairingItems = [];
 
-  for (let pipeIdx = 0; pipeIdx < Math.min(pipes.length, 6); pipeIdx++) {
+  for (let pipeIdx = 0; pipeIdx < Math.min(pipes.length, MAX_ITEMS_PER_SUBTAB); pipeIdx++) {
     const pipe = pipes[pipeIdx];
     const blendCounts = pipeBlendCounts[pipe.id] || {};
 
@@ -399,7 +400,7 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
   const topBlends = blends
     .filter((b) => (blendUsageCount[b.id] || 0) > 0)
     .sort((a, b) => (blendUsageCount[b.id] || 0) - (blendUsageCount[a.id] || 0))
-    .slice(0, 4);
+    .slice(0, MAX_ITEMS_PER_SUBTAB);
 
   const favItems = [];
   for (const blend of topBlends) {
@@ -552,7 +553,7 @@ function generateCigarWhiskeyPairings(cigars, bottles, bottleUsageCount) {
 
   const pairingItems = [];
 
-  for (const cigar of cigars.slice(0, 6)) {
+  for (const cigar of cigars.slice(0, MAX_ITEMS_PER_SUBTAB)) {
     let bestBottle = null;
     let bestScore = -1;
 
@@ -659,7 +660,7 @@ function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottl
       return usage <= 1; // never or rarely smoked
     })
     .sort((a, b) => (blendUsageCount[a.id] || 0) - (blendUsageCount[b.id] || 0))
-    .slice(0, 4);
+    .slice(0, MAX_ITEMS_PER_SUBTAB);
 
   if (!novelBlends.length) return [];
 

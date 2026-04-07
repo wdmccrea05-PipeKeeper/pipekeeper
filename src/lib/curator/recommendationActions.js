@@ -183,8 +183,12 @@ export async function executeRecommendationAction(recommendation, action, opts =
       );
 
       if (!toApply.length) {
-        // Fall back: navigate to the module page so the user can edit manually
-        return buildViewItemsNavigation(recommendation);
+        // No auto-applicable proposals — return informational result without navigating away
+        return {
+          ok: true,
+          applied: 0,
+          message: 'No auto-fix proposals available for these items. Use Review Details to inspect and edit each record.',
+        };
       }
 
       let applied = 0;
@@ -262,7 +266,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
 
     case 'approve_changes': {
       // For review_required — apply proposed changes for items that have them.
-      // Items without proposedChange are skipped (user must edit manually in the module).
+      // Items without proposedChange are skipped (user must edit manually via Review Details).
       const items = recommendation.items || [];
       const toApply = (opts.itemId
         ? items.filter((i) => i.id === opts.itemId || i.recordId === opts.itemId)
@@ -270,8 +274,12 @@ export async function executeRecommendationAction(recommendation, action, opts =
       ).filter((i) => i.proposedChange?.payload && Object.keys(i.proposedChange.payload).length > 0);
 
       if (!toApply.length) {
-        // No auto-applicable items — navigate to module so user can edit manually
-        return buildViewItemsNavigation(recommendation);
+        // No auto-applicable proposals — return informational result without navigating away
+        return {
+          ok: true,
+          applied: 0,
+          message: 'No auto-applicable changes found. Use Review Details to inspect and manually update each record.',
+        };
       }
 
       let applied = 0;

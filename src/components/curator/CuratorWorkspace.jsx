@@ -236,13 +236,10 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
       dismissRec(recommendation?.id);
     }
 
-    // ── Handle navigation results from engine (e.g. apply_fix fallback) ───────
-    if (result?.navigate?.path) {
-      navigate(result.navigate.path);
-    }
-
-    if (['apply_fix', 'approve_changes', 'apply_specialization'].includes(actionKey)) {
+    if (['apply_fix', 'approve_changes', 'apply_specialization'].includes(actionKey) && result?.applied > 0) {
       queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
+      // Re-run the recommendation engine immediately so completed items are removed
+      runAnalysis();
     }
     if (actionKey === 'add_to_shopping_list') {
       queryClient.invalidateQueries({ queryKey: ['shoppingListItems'] });

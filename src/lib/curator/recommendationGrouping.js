@@ -2,6 +2,19 @@
  * Recommendation Grouping
  *
  * Groups a flat list of recommendations into ordered category sections.
+ *
+ * Routing responsibilities (enforced by the engines):
+ *
+ *   RECORD_OPTIMIZATION:
+ *     — Data quality issues only: missing metadata, non-canonical values, valuation gaps.
+ *     — Examples: blend_missing_type, bottle_missing_valuation, pipe_missing_shape.
+ *
+ *   COLLECTION_OPTIMIZATION:
+ *     — Collection-level concerns only: rotation, balance, specialization, gap analysis.
+ *     — Examples: tobacco_type_imbalance, underused_blends, specialization_candidates.
+ *
+ * These two categories must NOT overlap. Record issues → RECORD_OPTIMIZATION.
+ * Collection strategy → COLLECTION_OPTIMIZATION.
  */
 
 import { CATEGORY, CATEGORY_LABELS, CATEGORY_ORDER } from './recommendationSchema.js';
