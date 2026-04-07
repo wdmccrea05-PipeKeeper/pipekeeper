@@ -30,7 +30,7 @@ const BLEND_TYPE_PRODUCTS = {
   'Balkan':              ['Esoterica Stonehaven', 'G.L. Pease Cairo', 'Balkan Sobranie Original'],
   'Burley':              ['Solani Aged Burley Flake', 'C&D Billy Budd', 'Mac Baren Burley London Blend'],
   'Aromatic':            ['Lane Limited RLP-6', 'Captain Black White', 'Mac Baren Plumcake'],
-  'Oriental':            ["Rattray's Marlin Flake", 'G.L. Pease Abingdon', 'Sutliff Vanilla Custard'],
+  'Oriental':            ["Rattray's Marlin Flake", 'G.L. Pease Abingdon', 'Cornell & Diehl Pasha'],
   'Cavendish':           ['Mac Baren HH Burley Flake', 'Samuel Gawith Black Cherry Flake'],
   'Dark Fired Kentucky': ['Cornell & Diehl Old Dark Fired', 'C&D Haunted Bookshop', 'Gawith Hoggarth Dark Flake'],
 };
