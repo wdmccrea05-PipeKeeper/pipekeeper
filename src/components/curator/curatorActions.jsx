@@ -32,6 +32,41 @@ import {
   createActionExecutionContext,
 } from './actionExecutionHelpers';
 
+/**
+ * Compute log-driven specialization suggestions per pipe.
+ * Returns a map of pipe_id → { suggestedType, sessionCount, topBlends }
+ */
+function computeLogDrivenSpecByPipe(smokingLogs, blends) {
+  if (!smokingLogs?.length || !blends?.length) return {};
+  const blendById = Object.fromEntries(blends.map((b) => [b.id, b]));
+  const typeCounts = {};
+  const blendNames = {};
+  for (const log of smokingLogs) {
+    if (!log.pipe_id || !log.blend_id) continue;
+    const blend = blendById[log.blend_id];
+    if (!blend) continue;
+    const type = blend.blend_type || blend.blend_family;
+    if (!type || type === 'Unknown') continue;
+    if (!typeCounts[log.pipe_id]) { typeCounts[log.pipe_id] = {}; blendNames[log.pipe_id] = {}; }
+    typeCounts[log.pipe_id][type] = (typeCounts[log.pipe_id][type] || 0) + 1;
+    if (!blendNames[log.pipe_id][type]) blendNames[log.pipe_id][type] = new Set();
+    blendNames[log.pipe_id][type].add(blend.name);
+  }
+  const result = {};
+  for (const [pipeId, counts] of Object.entries(typeCounts)) {
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    if (sorted.length > 0) {
+      const [topType, topCount] = sorted[0];
+      result[pipeId] = {
+        suggestedType: topType,
+        sessionCount: topCount,
+        topBlends: [...(blendNames[pipeId][topType] || [])].slice(0, 3),
+      };
+    }
+  }
+  return result;
+}
+
 export const CURATOR_ACTIONS = [
   {
     id: 'optimize_collection',
@@ -88,26 +123,43 @@ export const CURATOR_ACTIONS = [
     visibility: (ctx) => true, // Always visible
     buildPrompt: (ctx) => {
       const { pipes = [], blends = [], smokingLogs = [] } = ctx;
-      const specContext = buildSpecializationContext(blends, smokingLogs);
-      const expertContext = buildExpertTobacconistContext(blends, smokingLogs);
 
-      return `You are analyzing this collector's specialization patterns and opportunities.
+      const pipesWithoutSpec = pipes.filter(
+        (p) => !p.focus || (Array.isArray(p.focus) && p.focus.length === 0)
+      );
 
-  ${expertContext}
+      if (pipesWithoutSpec.length === 0) {
+        return `All pipes have specializations assigned. Review whether they match actual usage patterns based on smoking logs.`;
+      }
 
-  ${specContext}
+      const logSuggestions = computeLogDrivenSpecByPipe(smokingLogs, blends);
 
-  Provide detailed specialization recommendations:
+      const candidateLines = pipesWithoutSpec.slice(0, 12).map((p) => {
+        const sug = logSuggestions[p.id];
+        const currentFocus = Array.isArray(p.focus) ? p.focus.join('/') : (p.focus || 'None');
+        if (sug) {
+          return `- Pipe: "${p.name}" (id: ${p.id}) | current: ${currentFocus} | suggested: ${sug.suggestedType} | evidence: ${sug.sessionCount} sessions with ${sug.topBlends.join(', ')}`;
+        }
+        return `- Pipe: "${p.name}" (id: ${p.id}) | current: ${currentFocus} | no log data`;
+      }).join('\n');
 
-  1. **Current Specialization Pattern** — Specialist, focused, balanced, or generalist?
-  2. **Strongest Focus Areas** — Which current specializations are working well and why?
-  3. **Underexplored Opportunities** — Which families/styles would create natural next specializations?
-  4. **Deepening vs. Diversifying** — Should they deepen existing strengths or diversify?
-  5. **Specific Recommendations** — Name 2-3 specific specializations with concrete next acquisitions
-  6. **Why It Matters** — How specialization improves both collection coherence and smoking enjoyment
-  7. **Implementation Priority** — Which to pursue first and why?
+      return `Return one structured item per candidate pipe below. Each item must:
+- Have type: "specialization"
+- Have recommendationClass: "multi_path"
+- Have recordType: "pipe"
+- Have recordId set to the exact pipe ID from the list
+- Have recordName set to the exact pipe name
+- Have title formatted as: "[PipeName] → [SuggestedType]" (or "[PipeName] — No Log Data" if no suggestion)
+- Have issue: brief description of why no specialization is set
+- Have recommendation: the specific suggested specialization type with evidence from logs
+- Have explanation: concrete rationale based on actual session counts and blend types
+- Have confidence: "high" if 5+ sessions, "medium" if 2-4 sessions, "low" if no log data
+- For pipes WITH log data: include proposedChange: { type: "field_update", payload: { specialization: "[SuggestedType]" } }
 
-  Ground recommendations in actual collection data and usage patterns, not generic preferences.`;
+Pipe candidates (from smoking log analysis):
+${candidateLines}
+
+Return these as items in the JSON response. Do not return prose. Do not return generic advice. Reference actual session counts and blend names in your explanations.`;
     },
     buildContext: (ctx) => ({
       type: 'recommend_specializations',
@@ -598,41 +650,48 @@ Be specific. Name actual brands and lines where you can infer them.`;
       return cigars.length > 0;
     },
     buildPrompt: (ctx) => {
-      const { cigars = [], bottles = [] } = ctx;
-      // Cap items to keep prompt fast and deterministic
-      const smokeable = cigars.filter(c => (c.quantity ?? 0) > 0 || c.unit_type).slice(0, 5);
-      const bottleList = bottles.slice(0, 5);
-      const hasBottles = bottleList.length > 0;
+      const { pipes = [], blends = [], cigars = [], bottles = [] } = ctx;
 
-      return `You are a pairing expert for premium cigars. Generate focused pairing recommendations.
+      const hasCigars = cigars.length > 0;
+      const hasBottles = bottles.length > 0;
+      const hasPipes = pipes.length > 0;
+      const hasBlends = blends.length > 0;
 
-PAIRING RULES:
-- "direct_pairing": one cigar paired with one specific drink for tonight
-- "collection_mix_match": a set of cigar+drink options from the full collection
-- NEVER suggest smoking a pipe and a cigar at the same time
-- NEVER suggest drinking whiskey and wine simultaneously
-- NEVER combine all items into one simultaneous experience
-- Each individual recommendation pairs exactly TWO things: one cigar + one drink (even within a mix-and-match set, each entry is a two-item pairing)
+      if (!hasCigars && !hasBottles) {
+        return `No cigars or whiskey bottles in collection. Cannot generate pairings.`;
+      }
 
-CIGARS (${smokeable.length} available):
-${smokeable.map(c =>
-  `- ${c.brand || ''} ${c.name || ''} | Body: ${c.body || '?'} | Wrapper: ${c.wrapper || '?'}`
-).join('\n')}
+      // Build concise collection summary for concrete pairings
+      const cigarList = cigars.slice(0, 8).map((c) => `"${c.name || c.brand}"${c.wrapper ? ` (${c.wrapper} wrapper)` : ''}${c.body ? `, ${c.body} body` : ''}`).join('\n- ');
+      const bottleList = bottles.slice(0, 8).map((b) => `"${b.name}"${b.distillery ? ` (${b.distillery})` : ''}${b.type ? `, ${b.type}` : ''}`).join('\n- ');
+      const blendList = blends.slice(0, 6).map((b) => `"${b.name}"${b.blend_type ? `, ${b.blend_type}` : ''}`).join('\n- ');
+      const pipeList = pipes.slice(0, 6).map((p) => `"${p.name}"${p.shape ? `, ${p.shape}` : ''}`).join('\n- ');
 
-${hasBottles ? `WHISKEY COLLECTION (${bottleList.length} bottles):
-${bottleList.map(b => `- ${b.distillery || b.brand || ''} ${b.name || ''} ${b.whiskey_type || ''}`).join('\n')}
+      return `Return concrete pairing entries — one item per pairing. Do NOT write prose summaries or headers.
 
-` : ''}Generate exactly these recommendations:
-1. Best direct pairing for tonight (one cigar + one spirit)
-${hasBottles ? '2. Best cigar + specific whiskey match from owned bottles (direct_pairing)' : '2. Best cigar + non-alcoholic pairing (direct_pairing)'}
-3. Top 2-3 mix-and-match options across the collection (collection_mix_match)
-4. Any cigars currently lacking strong pairing options
+Each item in the JSON output must be:
+- type: "pairing_recommendation"
+- pairingMode: "direct_pairing" for a specific two-item match, or "collection_mix_match" for a broader suggestion
+- title: EXACT format "[Item A] + [Item B]" using actual item names from the collection
+- recordName: the primary item name (cigar or pipe name)
+- bottleName: the whiskey/drink name (for cigar+whiskey pairings)
+- blendName: the blend name (for pipe+tobacco pairings only)
+- explanation: 1-2 sentences on why this specific pairing works (flavor notes, complement/contrast)
+- confidence: "high", "medium", or "low"
 
-For each recommendation set:
-- pairingMode: "direct_pairing" or "collection_mix_match"
-- what is being paired (specific items from the collection above)
-- why they go together (1 sentence)
-- what inventory was considered`;
+MANDATORY PAIRING RULES:
+- NEVER pair pipe + cigar in the same session
+- NEVER pair whiskey + wine simultaneously  
+- NEVER suggest all modules together
+- Only valid combos: cigar+whiskey, pipe+tobacco (pipe+blend)
+- Do not output pairings for items not listed below
+
+COLLECTION:
+${hasCigars ? `CIGARS:\n- ${cigarList}` : ''}
+${hasBottles ? `WHISKEY:\n- ${bottleList}` : ''}
+${hasPipes && hasBlends ? `PIPES:\n- ${pipeList}\nBLENDS:\n- ${blendList}` : ''}
+
+Return ${Math.min(6, (hasCigars && hasBottles ? cigars.length : 0) + (hasPipes && hasBlends ? pipes.length : 0))} pairing items covering the best matches. No placeholder text. No prose-only output.`;
     },
     buildContext: (ctx) => ({
       type: 'cigar_pairing_suggestions',

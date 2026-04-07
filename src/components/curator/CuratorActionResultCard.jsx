@@ -99,7 +99,13 @@ function buildSessionItemLines(item) {
     recordNameAsBottle ||
     null;
 
-  return { pipeName, blendName, bottleName };
+  const cigarName =
+    item.cigarName ||
+    item.cigar?.name ||
+    (item.recordType === 'cigar' ? item.recordName : null) ||
+    null;
+
+  return { pipeName, blendName, bottleName, cigarName };
 }
 
 /**
@@ -201,6 +207,7 @@ function ActionButtons({
   onAccept,
   onReject,
   onAskCurator,
+  onTreatIndividually,
 }) {
   if (isNonMutating) {
     return (
@@ -274,6 +281,11 @@ function ActionButtons({
           <SecondaryBtn onClick={onReject} disabled={isApplying}>
             Ask for More Info
           </SecondaryBtn>
+          {onTreatIndividually && (
+            <SecondaryBtn onClick={onTreatIndividually} disabled={isApplying}>
+              Treat Individually
+            </SecondaryBtn>
+          )}
           <GhostBtn onClick={onAskCurator} disabled={isApplying}>
             Ask Curator
           </GhostBtn>
@@ -430,7 +442,7 @@ export default function CuratorActionResultCard({
     ? item.characteristics.filter(Boolean)
     : [];
 
-  const { pipeName, blendName, bottleName } = buildSessionItemLines(item);
+  const { pipeName, blendName, bottleName, cigarName } = buildSessionItemLines(item);
 
   // Pairing mode badge
   const pairingMode = item.pairingMode || item.pairing_mode || null;
@@ -509,9 +521,10 @@ export default function CuratorActionResultCard({
 
         {isSession || isPairing ? (
           <div className="mt-2 space-y-1">
-            <SessionLine label="Pipe" value={pipeName} />
-            <SessionLine label="Blend" value={blendName} />
-            <SessionLine label="Pour" value={bottleName} />
+            {pipeName && <SessionLine label="Pipe" value={pipeName} />}
+            {blendName && <SessionLine label="Blend" value={blendName} />}
+            {cigarName && <SessionLine label="Cigar" value={cigarName} />}
+            {bottleName && <SessionLine label="Pour" value={bottleName} />}
           </div>
         ) : (
           (item.recordName || item.recordType || item.category || item.anchorName) && (
@@ -609,6 +622,7 @@ export default function CuratorActionResultCard({
             onAccept={onAccept}
             onReject={onReject}
             onAskCurator={onAskCurator}
+            onTreatIndividually={item.candidateItems?.length > 0 ? () => onAskCurator && onAskCurator() : undefined}
           />
           <ActionExplainer
             recClass={recClass}
