@@ -16,7 +16,8 @@ import React, { useState } from 'react';
 import { Sparkles, ArrowLeftRight, RefreshCw, HelpCircle } from 'lucide-react';
 import CuratorPairingResults from './CuratorPairingResults';
 
-// ─── Sub-tab definitions ──────────────────────────────────────────────────────
+// Maximum pairings shown per sub-tab
+const MAX_PAIRINGS_PER_TAB = 3;
 
 const PAIRING_TABS = [
   {
@@ -83,12 +84,15 @@ export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefre
     goalItemsMap[rec.goal].push(...(rec.items || []));
   }
 
-  // Get items for active tab
+  // Get items for active tab — capped at MAX_PAIRINGS_PER_TAB (best 3 after engine scoring)
   const activeDef    = PAIRING_TABS.find((t) => t.key === activeTab) || PAIRING_TABS[0];
-  const activeItems  = activeDef.goals.flatMap((g) => goalItemsMap[g] || []);
+  const activeItems  = activeDef.goals.flatMap((g) => goalItemsMap[g] || []).slice(0, MAX_PAIRINGS_PER_TAB);
 
-  // Badge count per tab (number of pairings)
-  const getTabCount = (tabDef) => tabDef.goals.reduce((s, g) => s + (goalItemsMap[g]?.length || 0), 0);
+  // Badge count per tab (show actual cap)
+  const getTabCount = (tabDef) => Math.min(
+    tabDef.goals.reduce((s, g) => s + (goalItemsMap[g]?.length || 0), 0),
+    MAX_PAIRINGS_PER_TAB
+  );
 
   return (
     <div className="space-y-4">

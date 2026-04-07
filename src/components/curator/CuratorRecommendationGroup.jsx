@@ -146,6 +146,14 @@ function AdvisoryActions({ rec, onAction }) {
   );
 }
 
+const MODULE_DISPLAY_NAME = {
+  pipe:    'PipeKeeper',
+  tobacco: 'Tobacco',
+  whiskey: 'WhiskeyKeeper',
+  cigar:   'CigarKeeper',
+  multi:   'records',
+};
+
 function ReviewRequiredActions({ rec, onAction }) {
   const [applying, setApplying] = useState(false);
   const [done, setDone]         = useState(false);
@@ -155,6 +163,11 @@ function ReviewRequiredActions({ rec, onAction }) {
 
   const itemsWithProposals = (rec.items || []).filter((i) => i.proposedChange?.payload);
   const hasProposals = itemsWithProposals.length > 0;
+
+  // Items without proposals — show field-level details where available
+  const itemsNeedingEdit = (rec.items || []).filter((i) => !i.proposedChange?.payload);
+  const moduleName = MODULE_DISPLAY_NAME[rec.moduleKey] || 'module';
+  const openLabel  = `Open in ${moduleName}`;
 
   const handleApprove = async () => {
     setApplying(true);
@@ -170,15 +183,24 @@ function ReviewRequiredActions({ rec, onAction }) {
         label={showReview ? 'Hide Details' : 'Review Details'}
         colorText="rgba(220,140,90,0.9)"
       />
-      <PrimaryBtn
-        onClick={handleApprove}
-        loading={applying}
-        icon={Check}
-        label={hasProposals ? 'Approve Changes' : 'Open in Module'}
-      />
+      {hasProposals ? (
+        <PrimaryBtn
+          onClick={handleApprove}
+          loading={applying}
+          icon={Check}
+          label="Approve Changes"
+        />
+      ) : (
+        <SecondaryBtn
+          onClick={() => onAction('view_items', rec)}
+          icon={Eye}
+          label={openLabel}
+          colorText="rgba(160,200,240,0.85)"
+        />
+      )}
       <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
 
-      {/* Inline review panel — breaks to full width inside flex-wrap parent */}
+      {/* Inline review panel */}
       {showReview && (
         <div
           className="basis-full w-full mt-1 rounded-lg p-3 space-y-1.5"
@@ -208,14 +230,37 @@ function ReviewRequiredActions({ rec, onAction }) {
                 </p>
               )}
             </>
-          ) : (() => {
-            const itemCount = rec.items?.length || 0;
-            return (
-              <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.65)' }}>
-                {itemCount} item{itemCount !== 1 ? 's' : ''} need{itemCount === 1 ? 's' : ''} attention — click <strong>Open in Module</strong> to edit them directly.
+          ) : (
+            <>
+              <p className="text-[11px] font-semibold mb-2" style={{ color: 'rgba(220,140,90,0.85)' }}>
+                Records needing manual attention
               </p>
-            );
-          })()}
+              {itemsNeedingEdit.slice(0, 10).map((item) => {
+                const fields = item.missingFields?.join(', ') || rec.actionPayload?.field || 'see record';
+                return (
+                  <div
+                    key={item.recordId || item.id}
+                    className="flex items-center justify-between gap-2 text-[11px]"
+                  >
+                    <span className="truncate max-w-[60%]" style={{ color: 'rgba(224,216,200,0.8)' }}>
+                      {item.itemName || item.recordName}
+                    </span>
+                    <span className="shrink-0" style={{ color: 'rgba(220,140,90,0.7)' }}>
+                      {fields}
+                    </span>
+                  </div>
+                );
+              })}
+              {itemsNeedingEdit.length > 10 && (
+                <p className="text-[10px]" style={{ color: 'rgba(224,216,200,0.4)' }}>
+                  +{itemsNeedingEdit.length - 10} more
+                </p>
+              )}
+              <p className="text-[10px] mt-1.5 pt-1.5" style={{ color: 'rgba(224,216,200,0.4)', borderTop: '1px solid rgba(140,105,65,0.1)' }}>
+                Click <strong style={{ color: 'rgba(160,200,240,0.7)' }}>{openLabel}</strong> to edit these records directly.
+              </p>
+            </>
+          )}
         </div>
       )}
     </>

@@ -15,6 +15,46 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { TrendingUp, Plus, CheckCircle2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
+// ─── Specific product catalogs for concrete suggestions ──────────────────────
+
+const BLEND_TYPE_PRODUCTS = {
+  'Virginia':            ['Samuel Gawith Golden Glow', 'Mac Baren Virginia No. 1', 'Peter Stokkebye Luxury Bullseye Flake'],
+  'Virginia/Perique':    ['G.L. Pease Odyssey', 'Esoterica Penzance', 'Samuel Gawith Full Virginia Flake'],
+  'Virginia/Burley':     ['Lane Limited 1-Q', 'C&D Old Joe Krantz', 'Mac Baren Classic Burley Blend'],
+  'Virginia/Oriental':   ['G.L. Pease Abingdon', 'Peterson University Flake', 'Germain Flake Mixture'],
+  'English':             ['Esoterica Dunbar', 'G.L. Pease Union Square', 'Samuel Gawith Squadron Leader'],
+  'English/Balkan':      ['Peterson Elizabethan Mixture', 'Dunhill London Mixture', "Rattray's Old Gowrie"],
+  'Balkan':              ['Esoterica Stonehaven', 'G.L. Pease Cairo', 'Balkan Sobranie Original'],
+  'Burley':              ['Solani Aged Burley Flake', 'C&D Billy Budd', 'Mac Baren Burley London Blend'],
+  'Aromatic':            ['Lane Limited RLP-6', 'Captain Black White', 'Mac Baren Plumcake'],
+  'Oriental':            ["Rattray's Marlin Flake", 'G.L. Pease Abingdon', 'Sutliff Vanilla Custard'],
+  'Cavendish':           ['Mac Baren HH Burley Flake', 'Samuel Gawith Black Cherry Flake'],
+  'Dark Fired Kentucky': ['Cornell & Diehl Old Dark Fired', 'C&D Haunted Bookshop', 'Gawith Hoggarth Dark Flake'],
+};
+
+const WHISKEY_TYPE_PRODUCTS = {
+  'Bourbon':            ['Buffalo Trace', 'Eagle Rare 10 Year', 'Wild Turkey 101', 'Four Roses Small Batch'],
+  'Rye':                ['Rittenhouse Rye 100', 'WhistlePig 10 Year', 'Sazerac 6 Year Rye'],
+  'Single Malt Scotch': ['GlenDronach 12', 'Balvenie DoubleWood 12', 'Glenfarclas 15'],
+  'Blended Scotch':     ['Famous Grouse', 'Monkey Shoulder', 'Johnnie Walker Black'],
+  'Islay Single Malt':  ['Laphroaig 10 Year', 'Ardbeg 10 Year', 'Bowmore 12 Year'],
+  'Irish Whiskey':      ['Redbreast 12', 'Jameson Black Barrel', 'Green Spot'],
+  'Japanese Whisky':    ['Nikka From The Barrel', 'Suntory Toki', 'Hakushu 12 Year'],
+  'Tennessee Whiskey':  ['George Dickel No. 12', "Jack Daniel's Single Barrel"],
+};
+
+/** Pick a deterministic specific product for a given type string.
+ *  Uses a prime-multiplier string hash (31 is the standard Java/JS choice)
+ *  to select consistently without randomness. */
+function pickProduct(catalog, typeKey, fallback) {
+  const products = catalog[typeKey];
+  if (!products || products.length === 0) return fallback;
+  // Use a stable hash of the type string to pick consistently
+  let hash = 0;
+  for (let i = 0; i < typeKey.length; i++) hash = (hash * 31 + typeKey.charCodeAt(i)) & 0xffff;
+  return products[hash % products.length];
+}
+
 // ─── Blend types in the ecosystem ────────────────────────────────────────────
 
 const ALL_BLEND_TYPES = [
@@ -56,17 +96,19 @@ function analyzeGaps(collectionContext, preferences) {
     if (dislikedTypes.has(type)) continue;
 
     const isPreferred = preferredTypes.has(type);
+    const specificProduct = pickProduct(BLEND_TYPE_PRODUCTS, type, `${type} Blend`);
     suggestions.push({
       id:         `gap_blend_${type.replace(/[\s/]/g, '_')}`,
       type:       'blend_type_gap',
       moduleKey:  'tobacco',
-      title:      `Explore ${type} Blends`,
+      title:      `Explore ${specificProduct}`,
       summary:    isPreferred
-        ? `${type} matches your taste profile but isn't in your collection yet`
-        : `${type} is a blend family not represented in your cellar`,
+        ? `A ${type} blend — fits your taste profile but isn't in your collection yet`
+        : `${specificProduct} is a ${type} blend not represented in your cellar`,
       reason:     isPreferred ? 'preference_match' : 'collection_gap',
       priority:   isPreferred ? 'high' : 'medium',
-      searchHint: type,
+      searchHint: specificProduct,
+      blendFamily: type,
       itemType:   'blend',
     });
   }
@@ -83,17 +125,19 @@ function analyzeGaps(collectionContext, preferences) {
     if (dislikedWhiskeyTypes.has(type)) continue;
 
     const isPreferred = preferredWhiskeyTypes.has(type);
+    const specificProduct = pickProduct(WHISKEY_TYPE_PRODUCTS, type, type);
     suggestions.push({
       id:         `gap_whiskey_${type.replace(/[\s/]/g, '_')}`,
       type:       'whiskey_type_gap',
       moduleKey:  'whiskey',
-      title:      `Try ${type}`,
+      title:      `Explore ${specificProduct}`,
       summary:    isPreferred
-        ? `${type} fits your whiskey profile but you don't have any yet`
-        : `${type} would add whiskey diversity to your collection`,
+        ? `A ${type} — fits your whiskey profile but you don't have any yet`
+        : `${specificProduct} (${type}) would add whiskey diversity to your collection`,
       reason:     isPreferred ? 'preference_match' : 'collection_gap',
       priority:   isPreferred ? 'high' : 'low',
-      searchHint: type,
+      searchHint: specificProduct,
+      whiskeyStyle: type,
       itemType:   'bottle',
     });
   }
@@ -102,17 +146,26 @@ function analyzeGaps(collectionContext, preferences) {
   if (cigarModuleActive && cigars.length > 0) {
     const ownedStrengths = new Set(cigars.map((c) => c.strength || c.body).filter(Boolean));
 
+    const CIGAR_STRENGTH_DESCRIPTIONS = {
+      'Mild':         'a mild Connecticut cigar for a lighter session',
+      'Mild-Medium':  'a mild-to-medium Honduran or Dominican for approachable complexity',
+      'Medium':       'a medium-bodied Nicaraguan for balanced depth',
+      'Medium-Full':  'a medium-full Nicaraguan or Peruvian for greater intensity',
+      'Full':         'a full-bodied Ligero blend for a robust session',
+    };
+
     for (const strength of ALL_CIGAR_STRENGTHS) {
       if (ownedStrengths.has(strength)) continue;
+      const productDesc = CIGAR_STRENGTH_DESCRIPTIONS[strength] || `${strength} strength cigar`;
       suggestions.push({
         id:         `gap_cigar_${strength.replace(/[\s-]/g, '_')}`,
         type:       'cigar_strength_gap',
         moduleKey:  'cigar',
-        title:      `Explore ${strength} Cigars`,
+        title:      `Explore ${productDesc}`,
         summary:    `${strength} strength cigars aren't represented in your humidor`,
         reason:     'collection_gap',
         priority:   'low',
-        searchHint: strength,
+        searchHint: `${strength} cigar`,
         itemType:   'cigar',
       });
     }
@@ -144,13 +197,16 @@ function GrowCard({ suggestion, userEmail }) {
 
   const mc = MODULE_COLORS[suggestion.moduleKey] || MODULE_COLORS.tobacco;
 
+  // Use the specific product name (searchHint) for the Want List item; fall back to title
+  const wantListName = suggestion.searchHint || suggestion.title;
+
   const handleAdd = useCallback(async () => {
     if (!userEmail || adding || added) return;
     setAdding(true);
     setError(null);
     try {
       await base44.entities.AcquisitionItem.create({
-        name:       suggestion.title,
+        name:       wantListName,
         item_type:  suggestion.itemType || 'blend',
         notes:      suggestion.summary || '',
         priority:   suggestion.priority || 'medium',
@@ -165,7 +221,10 @@ function GrowCard({ suggestion, userEmail }) {
     } finally {
       setAdding(false);
     }
-  }, [suggestion, userEmail, adding, added]);
+  }, [suggestion, wantListName, userEmail, adding, added]);
+
+  // Sub-label: blend family or whiskey style
+  const subLabel = suggestion.blendFamily || suggestion.whiskeyStyle || null;
 
   return (
     <div
@@ -182,6 +241,14 @@ function GrowCard({ suggestion, userEmail }) {
             >
               {mc.label}
             </span>
+            {subLabel && (
+              <span
+                className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                style={{ background: 'rgba(80,80,80,0.1)', color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(100,100,100,0.15)' }}
+              >
+                {subLabel}
+              </span>
+            )}
             {suggestion.reason === 'preference_match' && (
               <span
                 className="text-[10px] px-2 py-0.5 rounded-full font-semibold"

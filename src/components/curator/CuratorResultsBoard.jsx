@@ -1,17 +1,12 @@
 /**
- * CuratorResultsBoard — Optimize Board
+ * CuratorResultsBoard — Record Optimization
  *
- * Surface 1: Main operations dashboard.
+ * Surface 1: Record quality / metadata operations.
  *
  * Layout:
  *   Row 1: module filter chips  +  refresh button
- *   Row 2: 4 summary cards (Open Fixes, Review Needed, Shopping Candidates, Specialization)
- *   Rows 3+: 5 collapsible grouped sections
- *     — Record Optimization
- *     — Collection Optimization
- *     — Purchase & Restock
- *     — Specialization & Strategy
- *     — Grow & Expand
+ *   Row 2: 3 summary cards (Auto-Fixable, Review Needed, Total Records)
+ *   Rows 3+: record optimization recommendation cards
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -19,14 +14,10 @@ import { RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import CuratorRecommendationGroup from './CuratorRecommendationGroup';
 import { CATEGORY, ACTION_TYPE, MODULE_KEY } from '@/lib/curator/recommendationSchema.js';
 
-// ─── Board section groups ─────────────────────────────────────────────────────
+// ─── Board section group (record optimization only) ───────────────────────────
 
 const BOARD_SECTION_GROUPS = [
-  { id: 'metadata',       label: 'Record Optimization',       categories: [CATEGORY.METADATA, CATEGORY.RECORD_OPTIMIZATION] },
-  { id: 'utilization',    label: 'Collection Optimization',   categories: [CATEGORY.UTILIZATION, CATEGORY.BALANCE, CATEGORY.COLLECTION_OPTIMIZATION] },
-  { id: 'purchase',       label: 'Purchase & Restock',        categories: [CATEGORY.PURCHASE, CATEGORY.CIGAR_DISCOVERY] },
-  { id: 'specialization', label: 'Specialization & Strategy', categories: [CATEGORY.SPECIALIZATION, CATEGORY.PAIRING] },
-  { id: 'grow_expand',    label: 'Grow & Expand',             categories: [CATEGORY.GROW_EXPAND] },
+  { id: 'record_opt', label: 'Record Optimization', categories: [CATEGORY.METADATA, CATEGORY.RECORD_OPTIMIZATION] },
 ];
 
 // ─── Module filter options ────────────────────────────────────────────────────
@@ -55,14 +46,9 @@ function buildBoardSections(sections, moduleFilter) {
 function computeSummary(sections) {
   const allRecs = sections.flatMap((s) => s.recommendations || []);
   return {
-    openFixes:      allRecs.filter((r) => r.actionType === ACTION_TYPE.AUTO_FIX).length,
-    reviewNeeded:   allRecs.filter((r) => r.actionType === ACTION_TYPE.REVIEW_REQUIRED).length,
-    shoppingItems:  allRecs
-      .filter((r) => r.actionType === ACTION_TYPE.SHOPPING_LIST_ACTION)
-      .reduce((sum, r) => sum + (r.items?.length || 0), 0),
-    specCandidates: allRecs
-      .filter((r) => r.category === CATEGORY.SPECIALIZATION)
-      .reduce((sum, r) => sum + (r.items?.filter((i) => i.hasLogData)?.length || 0), 0),
+    openFixes:    allRecs.filter((r) => r.actionType === ACTION_TYPE.AUTO_FIX).length,
+    reviewNeeded: allRecs.filter((r) => r.actionType === ACTION_TYPE.REVIEW_REQUIRED).length,
+    totalRecords: allRecs.reduce((sum, r) => sum + (r.items?.length || 0), 0),
   };
 }
 
@@ -235,13 +221,13 @@ export default function CuratorResultsBoard({
         </button>
       </div>
 
-      {/* Row 2: 4 summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {/* Row 2: 3 summary cards */}
+      <div className="grid grid-cols-3 gap-3">
         <SummaryCard
           value={summary.openFixes}
-          label="Open Fixes"
+          label="Auto-Fixable"
           color="rgba(80,180,130,0.9)"
-          subtext="auto-fixable"
+          subtext="apply in one click"
         />
         <SummaryCard
           value={summary.reviewNeeded}
@@ -250,16 +236,10 @@ export default function CuratorResultsBoard({
           subtext="require your input"
         />
         <SummaryCard
-          value={summary.shoppingItems}
-          label="Shopping Candidates"
+          value={summary.totalRecords}
+          label="Records Flagged"
           color="rgba(160,200,240,0.9)"
-          subtext="ready to queue"
-        />
-        <SummaryCard
-          value={summary.specCandidates}
-          label="Specialization"
-          color="rgba(200,155,100,0.9)"
-          subtext="evidence-backed"
+          subtext="across all issues"
         />
       </div>
 
