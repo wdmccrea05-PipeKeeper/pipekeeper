@@ -204,7 +204,7 @@ function PurchaseGroupCard({ rec, userEmail }) {
       </div>
 
       {/* Compact preview (collapsed) */}
-      {!expanded && <CuratorItemPreviewList items={items} previewCount={4} />}
+      {!expanded && <CuratorItemPreviewList items={items} maxPreview={4} />}
 
       {/* Expanded item list with checkboxes */}
       {expanded && (
@@ -388,7 +388,7 @@ export default function CuratorPurchaseQueue({ sections = [], onAction, userEmai
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-base font-bold" style={{ color: '#F5F1E7' }}>
-            Purchase &amp; Restock
+            Purchase & Restock
           </h2>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
             Actionable queue — add candidates directly to your shopping list

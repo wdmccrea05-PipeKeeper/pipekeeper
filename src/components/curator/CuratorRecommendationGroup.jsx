@@ -311,7 +311,7 @@ export default function CuratorRecommendationGroup({
 
       {/* Item preview chips */}
       {itemCount > 0 && (
-        <CuratorItemPreviewList items={rec.items} previewCount={5} />
+        <CuratorItemPreviewList items={rec.items} maxPreview={5} />
       )}
 
       {/* Action row */}
