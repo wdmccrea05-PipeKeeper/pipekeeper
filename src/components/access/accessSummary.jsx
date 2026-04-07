@@ -171,9 +171,9 @@ export function buildAccessSummary(user, subscription) {
     activeModules = parseModulesCsv(user?.paid_modules_csv);
   }
 
-  // If tier is pro but modules are still unresolved, preserve empty state honestly.
-  // The UI should show a syncing / restore-needed message instead of fabricating access.
-  // Do NOT default to pipekeeper — that masks entitlement sync failures.
+  // If tier is pro but subscription-specific modules are still unresolved, the
+  // free-base-modules block below will still ensure pipekeeper + whiskeykeeper
+  // are present. Do not fabricate paid-only modules (cigarkeeper, winekeeper) here.
 
   const isFoundingMember = user?.isFoundingMember === true;
   if (isFoundingMember && tier === 'pro') {
@@ -187,9 +187,19 @@ export function buildAccessSummary(user, subscription) {
   // ─── RELEASE-STATE GATE ───────────────────────────────────────────────────
   // Filter activeModules to only those whose effective release state is 'launched'.
   // Admin/internal testers bypass this filter — all their entitled modules pass through.
-  // This is the single enforcement point that prevents WhiskeyKeeper (state: 'internal')
-  // from appearing in normal users' activeModules before it officially launches.
+  // PipeKeeper and WhiskeyKeeper are both 'launched' so they always survive this filter.
   activeModules = filterModulesByReleaseState(activeModules, user);
+
+  // ─── FREE-TIER BASE MODULES ──────────────────────────────────────────────────
+  // PipeKeeper and WhiskeyKeeper both have Free tiers that are always accessible
+  // to any logged-in user. Subscriptions unlock Pro features within each module
+  // independently. Ensure both are always present in activeModules.
+  const FREE_BASE_MODULES = ['pipekeeper', 'whiskeykeeper'];
+  for (const m of FREE_BASE_MODULES) {
+    if (getEffectiveModuleReleaseState(m, user) === 'launched' && !activeModules.includes(m)) {
+      activeModules = [...activeModules, m];
+    }
+  }
 
   // Safety: ensure activeModules is always an array
   if (!activeModules || activeModules.length === 0) {

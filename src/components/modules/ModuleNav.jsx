@@ -64,8 +64,8 @@ export default function ModuleNav({ currentPageName, user }) {
   const moduleItems = useMemo(() => {
     const items = [];
 
-    // PipeKeeper is the base module — always shown for any logged-in user.
-    // It is 'launched' and free, so no entitlement check is needed here.
+    // PipeKeeper and WhiskeyKeeper both have Free tiers — always shown for any
+    // logged-in user. Subscriptions unlock Pro features within each module independently.
     items.push({
       page: "PipeKeeper",
       label: t("nav.pipekeeper", "PipeKeeper"),
@@ -73,15 +73,14 @@ export default function ModuleNav({ currentPageName, user }) {
       path: "/PipeKeeper",
     });
 
-    if (activeModules.includes("whiskeykeeper")) {
-      items.push({
-        page: "WhiskeyKeeper",
-        label: t("nav.whiskeykeeper", "WhiskeyKeeper"),
-        icon: WhiskeyKeeperIcon,
-        path: "/WhiskeyKeeper",
-      });
-    }
+    items.push({
+      page: "WhiskeyKeeper",
+      label: t("nav.whiskeykeeper", "WhiskeyKeeper"),
+      icon: WhiskeyKeeperIcon,
+      path: "/WhiskeyKeeper",
+    });
 
+    // CigarKeeper is internal — only shown for internal testers (activeModules-gated).
     if (activeModules.includes("cigarkeeper")) {
       items.push({
         page: "CigarKeeper",

@@ -2,15 +2,15 @@
  * LockedModuleGuard — enforces module release state at the route level.
  *
  * Checks the canonical MODULE_RELEASE_STATES table. Blocked modules
- * show a clean "not available" message. Internal modules redirect
- * non-internal users. Launched modules without entitlement show a
- * subscribe CTA. User-hidden modules offer a settings link.
+ * show a clean "not available" message. Internal modules are only
+ * accessible to internal testers. Launched modules (PipeKeeper,
+ * WhiskeyKeeper) are always accessible — Free and Pro tiers are
+ * both available; subscriptions unlock Pro features within each module.
+ * User-hidden modules offer a settings link to re-enable.
  */
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
-import { useAccessSummary } from '@/components/hooks/useAccessSummary';
-import { hasModuleAccess } from '@/components/access/accessSelectors';
 import {
   isModuleBlocked,
   isModuleInternal,
@@ -18,7 +18,7 @@ import {
   canUserAccessModule,
 } from '@/components/utils/moduleReleaseState';
 import { createPageUrl } from '@/components/utils/createPageUrl';
-import { EyeOff, Settings, Lock, Star } from 'lucide-react';
+import { EyeOff, Settings, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import BrandLogo from '@/components/branding/BrandLogo';
@@ -34,7 +34,6 @@ const MODULE_LABELS = {
 export default function LockedModuleGuard({ moduleKey, children }) {
   const { isModuleEnabled, isLoading: visibilityLoading } = useModuleVisibility();
   const { user, isLoading: userLoading } = useCurrentUser();
-  const access = useAccessSummary();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -117,58 +116,9 @@ export default function LockedModuleGuard({ moduleKey, children }) {
     );
   }
 
-  // 3. Launched module — check entitlement before checking user preference
+  // 3. Launched module — PipeKeeper and WhiskeyKeeper are always accessible (Free + Pro tiers).
+  // Only block if the user has explicitly hidden this module in their preferences.
   if (!isModuleBlocked(key) && !isModuleInternal(key)) {
-    const hasEntitlement = hasModuleAccess(access, key);
-
-    if (!hasEntitlement) {
-      // User does not own this module — show subscribe/upgrade CTA.
-      return (
-        <div className="min-h-[60vh] flex items-center justify-center p-6">
-          <div
-            className="max-w-sm w-full rounded-2xl p-8 text-center"
-            style={{
-              background: 'linear-gradient(145deg, rgba(42,30,20,0.96), rgba(28,18,12,0.98))',
-              border: '1px solid rgba(120,90,65,0.35)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-            }}
-          >
-            <BrandLogo compact showWordmark={false} imageClassName="w-10 h-10 mx-auto mb-4 opacity-80" />
-            <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.2)' }}>
-              <Star className="w-5 h-5" style={{ color: 'rgba(180,140,75,0.6)' }} />
-            </div>
-            <p className="text-xs uppercase tracking-[0.12em] font-bold mb-1" style={{ color: '#B48C4B' }}>{t('hub.title', 'CollectionKeeper')}</p>
-            <h2 className="text-lg font-bold mb-2" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-              {t('modules.notEntitled', 'Subscription Required')}
-            </h2>
-            <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.55)' }}>
-              {t('modules.notEntitledDescription', { defaultValue: 'Subscribe to unlock {{moduleName}} and access your full collection.', moduleName: label })}
-            </p>
-            <div className="flex flex-col gap-2">
-              <Button
-                onClick={() => navigate(createPageUrl('Subscription'))}
-                style={{
-                  background: 'linear-gradient(135deg, rgba(163,92,92,0.9), rgba(140,70,70,0.95))',
-                  border: '1px solid rgba(163,92,92,0.4)',
-                  color: '#F5F1E7',
-                }}
-              >
-                {t('modules.subscribeToUnlock', 'Subscribe to Unlock')}
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => navigate(createPageUrl('CollectionHub'))}
-                className="text-[#E0D8C8]/60 hover:text-[#E0D8C8]"
-              >
-                {t('common.backToHub', 'Back to Hub')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // User has entitlement but has hidden this module in their preferences.
     if (!isModuleEnabled(key)) {
       return (
         <div className="min-h-screen flex items-center justify-center p-6">
