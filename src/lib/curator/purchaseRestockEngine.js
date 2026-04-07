@@ -359,6 +359,52 @@ function analyzeCigarDiscovery(cigars = []) {
   return results;
 }
 
+// ─── Tobacco: Discontinued Low Stock ─────────────────────────────────────────
+
+function analyzeDiscontinuedBlends(blends) {
+  const discontinued = blends.filter((b) => {
+    const status = (b.production_status || '').toLowerCase();
+    if (!status.includes('discontinu')) return false;
+    const oz = totalOz(b);
+    // Include if low stock (known) or if stock is untracked — for discontinued items,
+    // untracked quantities are also worth surfacing since you can never reorder once gone.
+    return oz === null || oz < LOW_STOCK_OZ;
+  }).slice(0, MAX_ITEMS_PER_REC);
+
+  if (!discontinued.length) return [];
+
+  return [createRecommendation({
+    category:         CATEGORY.PURCHASE,
+    goal:             'discontinued_low_stock',
+    actionType:       ACTION_TYPE.SHOPPING_LIST_ACTION,
+    title:            'Discontinued Blends Running Low',
+    summary:          `${discontinued.length} discontinued blend${discontinued.length > 1 ? 's are' : ' is'} low — these cannot be restocked once gone`,
+    whyItMatters:     'Once a discontinued blend runs out, it cannot be purchased again. Add to your shopping list to source remaining stock.',
+    moduleKey:        MODULE_KEY.TOBACCO,
+    ownershipContext: OWNERSHIP_CONTEXT.IN_COLLECTION,
+    priority:         PRIORITY.HIGH,
+    confidence:       'high',
+    items: discontinued.map((b) => ({
+      id:             b.id,
+      recordId:       b.id,
+      recordType:     'blend',
+      recordName:     b.name,
+      itemName:       b.name,
+      name:           b.name,
+      brand:          b.manufacturer || b.brand || '',
+      manufacturer:   b.manufacturer || '',
+      quantityOz:     totalOz(b),
+      ownershipStatus:'in_collection',
+      shoppingType:   'restock',
+      itemType:       'blend',
+    })),
+    actionPayload: {
+      shoppingType: 'restock',
+      itemType:     'blend',
+    },
+  })];
+}
+
 // ─── Main Engine Entry Point ──────────────────────────────────────────────────
 
 /**
@@ -379,6 +425,7 @@ export function generatePurchaseRestockRecommendations(context = {}) {
   const recommendations = [
     ...analyzeLowStockBlends(blends),
     ...analyzeDepletedBlends(blends),
+    ...analyzeDiscontinuedBlends(blends),
     ...analyzeBottleRestock(bottles),
     ...analyzeWishlistCandidates(wantListItems),
     ...(cigarModuleActive ? analyzeCigarDiscovery(cigars) : []),

@@ -29,8 +29,6 @@ import { generatePurchaseRestockRecommendations } from './purchaseRestockEngine.
 
 const UNDERUSED_BLEND_DAYS    = 60;   // blend not used in 60+ days
 const UNDERUSED_PIPE_DAYS     = 45;   // pipe not used in 45+ days
-const LOW_STOCK_OZ            = 2;    // below 2 oz = low stock
-const CRITICAL_STOCK_OZ       = 0.5; // below 0.5 oz = critical
 const IMBALANCE_THRESHOLD     = 0.70; // 70%+ of one type = imbalance
 
 const MAX_ITEMS_PER_REC = 30;        // hard cap on items per recommendation
@@ -415,88 +413,6 @@ function analyzeUtilization(context) {
         actionPayload: { type: 'view_pipes', filter: 'underused' },
       }));
     }
-  }
-
-  return recommendations;
-}
-
-// ─── Category 4: Purchase & Restock ──────────────────────────────────────────
-
-function analyzePurchase(context) {
-  const { blends = [] } = context;
-  const recommendations = [];
-
-  // Low stock blends
-  const lowStockBlends = blends.filter(
-    (b) => typeof b.tin_total_quantity_oz === 'number'
-      && b.tin_total_quantity_oz > 0
-      && b.tin_total_quantity_oz < LOW_STOCK_OZ
-  );
-
-  if (lowStockBlends.length > 0) {
-    const criticalItems = lowStockBlends.filter((b) => b.tin_total_quantity_oz < CRITICAL_STOCK_OZ);
-    const items = lowStockBlends.slice(0, MAX_ITEMS_PER_REC).map((b) => ({
-      id: b.id,
-      recordId: b.id,
-      recordType: 'blend',
-      recordName: b.name,
-      itemName: b.name,
-      manufacturer: b.manufacturer || null,
-      qty: b.tin_total_quantity_oz,
-      isCritical: b.tin_total_quantity_oz < CRITICAL_STOCK_OZ,
-      productionStatus: b.production_status || null,
-      ownershipStatus: 'owned',
-    }));
-
-    recommendations.push(createRecommendation({
-      category:           CATEGORY.PURCHASE,
-      goal:               'low_stock_blends',
-      actionType:         ACTION_TYPE.ADVISORY,
-      title:              'Blends Running Low',
-      summary:            `${items.length} blend${items.length > 1 ? 's are' : ' is'} below ${LOW_STOCK_OZ}oz${criticalItems.length > 0 ? ` (${criticalItems.length} critical)` : ''}`,
-      whyItMatters:       'Running out of a favorite blend breaks your rotation and may mean missing a production run',
-      recommendationText: 'Restock these blends before they run out — prioritize discontinued ones first',
-      moduleKey:          MODULE_KEY.TOBACCO,
-      ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
-      priority:           criticalItems.length > 0 ? PRIORITY.HIGH : PRIORITY.MEDIUM,
-      confidence:         'high',
-      items,
-      actionPayload: { type: 'view_blends', filter: 'low_stock' },
-    }));
-  }
-
-  // Discontinued blends (any qty)
-  const discontinuedBlends = blends.filter(
-    (b) => b.production_status && b.production_status.toLowerCase().includes('discontinu')
-      && (b.tin_total_quantity_oz || 0) < LOW_STOCK_OZ
-  );
-  if (discontinuedBlends.length > 0) {
-    const items = discontinuedBlends.slice(0, MAX_ITEMS_PER_REC).map((b) => ({
-      id: b.id,
-      recordId: b.id,
-      recordType: 'blend',
-      recordName: b.name,
-      itemName: b.name,
-      manufacturer: b.manufacturer || null,
-      qty: b.tin_total_quantity_oz || 0,
-      productionStatus: b.production_status,
-      ownershipStatus: 'owned',
-    }));
-    recommendations.push(createRecommendation({
-      category:           CATEGORY.PURCHASE,
-      goal:               'discontinued_low_stock',
-      actionType:         ACTION_TYPE.ADVISORY,
-      title:              'Discontinued Blends Running Low',
-      summary:            `${items.length} discontinued blend${items.length > 1 ? 's are' : ' is'} getting low — these cannot be restocked once gone`,
-      whyItMatters:       'Once a discontinued blend is gone, it cannot be purchased again — stock up while available on secondary market',
-      recommendationText: 'Check secondary market sources (Smokingpipes, Famous Smoke, etc.) for remaining stock',
-      moduleKey:          MODULE_KEY.TOBACCO,
-      ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
-      priority:           PRIORITY.HIGH,
-      confidence:         'high',
-      items,
-      actionPayload: { type: 'view_blends', filter: 'discontinued' },
-    }));
   }
 
   return recommendations;
