@@ -23,6 +23,7 @@ import {
 } from './recommendationSchema.js';
 import { generateSpecializationRecommendations } from './specializationEngine.js';
 import { generatePairingRecommendations } from './pairingEngine.js';
+import { generatePurchaseRestockRecommendations } from './purchaseRestockEngine.js';
 
 // ─── Thresholds ───────────────────────────────────────────────────────────────
 
@@ -506,7 +507,7 @@ function analyzePurchase(context) {
 /**
  * Generate all structured recommendations for a collection.
  *
- * @param {object} context - { pipes, blends, bottles, cigars, smokingLogs, tastingLogs, cigarSessions, wantListItems }
+ * @param {object} context - { pipes, blends, bottles, cigars, smokingLogs, tastingLogs, cigarSessions, wantListItems, cigarModuleActive }
  * @returns {import('./recommendationSchema.js').Recommendation[]}
  */
 export function generateRecommendations(context = {}) {
@@ -514,7 +515,13 @@ export function generateRecommendations(context = {}) {
     ...analyzeMetadata(context),
     ...analyzeBalance(context),
     ...analyzeUtilization(context),
-    ...analyzePurchase(context),
+    ...generatePurchaseRestockRecommendations({
+      blends:             context.blends || [],
+      bottles:            context.bottles || [],
+      cigars:             context.cigars || [],
+      wantListItems:      context.wantListItems || [],
+      cigarModuleActive:  context.cigarModuleActive || false,
+    }),
     ...generateSpecializationRecommendations(
       context.pipes || [],
       context.blends || [],

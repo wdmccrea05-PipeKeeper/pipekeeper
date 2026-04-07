@@ -152,6 +152,49 @@ export async function executeRecommendationAction(recommendation, action, opts =
       // Advisory acknowledgements are UI-only — no DB write needed
       return { ok: true, message: 'Acknowledged.' };
 
+    case 'add_to_shopping_list': {
+      const items = recommendation.items || [];
+      const toAdd = opts.itemId
+        ? items.filter((i) => i.id === opts.itemId || i.recordId === opts.itemId)
+        : items;
+
+      if (!toAdd.length) throw new Error('No items to add to shopping list.');
+      if (!opts.userEmail) throw new Error('User email is required to add to shopping list.');
+
+      let added = 0;
+      const errors = [];
+
+      for (const item of toAdd) {
+        try {
+          await base44.entities.ShoppingListItem.create({
+            name:          item.recordName || item.itemName || item.name || '—',
+            brand:         item.brand || item.manufacturer || '',
+            item_type:     item.itemType || item.recordType || 'blend',
+            shopping_type: item.shoppingType || recommendation.actionPayload?.shoppingType || 'restock',
+            status:        'active',
+            priority:      'medium',
+            is_manual:     false,
+            notes:         '',
+            created_by:    opts.userEmail,
+          });
+          added++;
+        } catch (err) {
+          errors.push({ item: item.recordName, error: err.message });
+        }
+      }
+
+      if (added === 0 && errors.length > 0) {
+        throw new Error(errors.map((e) => `${e.item}: ${e.error}`).join('; '));
+      }
+
+      return {
+        ok:      true,
+        added,
+        errors,
+        message: `${added} item${added > 1 ? 's' : ''} added to Shopping List.`,
+      };
+    }
+
     case 'approve_changes': {
       // For review_required — same as apply_fix but explicit user confirmation
       const items = recommendation.items || [];
