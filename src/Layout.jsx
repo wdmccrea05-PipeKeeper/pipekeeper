@@ -7,10 +7,12 @@ import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 import { Button } from "@/components/ui/button";
 import { Zap } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function Layout({ children, currentPageName }) {
   const [quickAccessOpen, setQuickAccessOpen] = useState(false);
   const { user } = useCurrentUser();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#140f0c' }}>
@@ -32,10 +34,10 @@ export default function Layout({ children, currentPageName }) {
                   size="sm"
                   onClick={() => setQuickAccessOpen(true)}
                   className="text-[#E0D8C8] hover:bg-white/10"
-                  title="Quick Access"
+                  title={t('nav.quickAccess', 'Quick Access')}
                 >
                   <Zap className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">Quick Access</span>
+                  <span className="hidden sm:inline">{t('nav.quickAccess', 'Quick Access')}</span>
                 </Button>
               </div>
             </div>

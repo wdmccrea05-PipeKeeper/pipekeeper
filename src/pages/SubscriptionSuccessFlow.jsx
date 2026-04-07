@@ -11,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, AlertCircle, Loader } from 'lucide-react';
 import { buildAccessSummary } from '@/components/access/accessSummary';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const SYNC_TIMEOUT_MS = 20000;
 
@@ -39,6 +40,7 @@ export default function SubscriptionSuccessFlow() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const [phase, setPhase] = useState('loading');
   const [error, setError] = useState(null);
@@ -100,9 +102,12 @@ export default function SubscriptionSuccessFlow() {
 
             const rebuiltAccess = buildAccessSummary(me, pseudoSubscription);
             const unlockedModules = rebuiltAccess?.activeModules || [];
-            const hasAccess = rebuiltAccess?.tier === 'pro' && unlockedModules.length > 0;
+            // Consider it a success if tier is 'pro' — payment was confirmed.
+            // Some modules may be release-gated (internal/blocked) so activeModules
+            // could be empty even with a valid subscription; don't error in that case.
+            const hasPaidTier = rebuiltAccess?.tier === 'pro';
 
-            if (!hasAccess) {
+            if (!hasPaidTier) {
               throw new Error(
                 'Your payment was received, but access is still updating. Please retry once or reopen the app in a moment.'
               );
@@ -147,7 +152,7 @@ export default function SubscriptionSuccessFlow() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
         <div className="text-center">
           <Loader className="w-12 h-12 animate-spin mx-auto mb-4" style={{ color: '#D4A574' }} />
-          <p style={{ color: '#E0D8C8' }}>Activating your subscription...</p>
+          <p style={{ color: '#E0D8C8' }}>{t('subscription.activating', 'Activating your subscription...')}</p>
         </div>
       </div>
     );
@@ -165,10 +170,10 @@ export default function SubscriptionSuccessFlow() {
         >
           <AlertCircle className="w-16 h-16 mx-auto mb-4" style={{ color: '#D45C5C' }} />
           <h2 style={{ color: '#F5F1E7' }} className="text-2xl font-bold mb-2">
-            Activation Taking Longer
+            {t('subscription.activationDelayedTitle', 'Activation Taking Longer')}
           </h2>
           <p style={{ color: '#E0D8C8', marginBottom: '24px' }} className="text-sm mb-6">
-            {error || 'Please try again or contact support if the issue persists.'}
+            {error || t('subscription.activationDelayedBody', 'Please try again or contact support if the issue persists.')}
           </p>
           <div className="flex gap-3">
             <Button
@@ -176,10 +181,10 @@ export default function SubscriptionSuccessFlow() {
               onClick={() => setAttempt((prev) => prev + 1)}
               className="flex-1"
             >
-              Retry
+              {t('common.retry', 'Retry')}
             </Button>
             <Button onClick={() => navigate(targetUrl)} className="flex-1">
-              Continue Anyway
+              {t('subscription.continueAnyway', 'Continue Anyway')}
             </Button>
           </div>
         </div>
@@ -201,11 +206,11 @@ export default function SubscriptionSuccessFlow() {
         <CheckCircle2 className="w-16 h-16 mx-auto mb-4" style={{ color: '#2e7d5c' }} />
 
         <h1 style={{ color: '#F5F1E7' }} className="text-3xl font-bold mb-2">
-          Welcome!
+          {t('subscription.welcome', 'Welcome!')}
         </h1>
 
         <p style={{ color: '#E0D8C8' }} className="text-sm mb-6">
-          Your subscription is now active. Your modules are ready to use.
+          {t('subscription.nowActive', 'Your subscription is now active. Your modules are ready to use.')}
         </p>
 
         {modules.length > 0 && (
@@ -214,7 +219,7 @@ export default function SubscriptionSuccessFlow() {
               style={{ color: '#8b6239' }}
               className="text-xs font-semibold uppercase tracking-wider mb-3"
             >
-              Active Access
+              {t('subscription.activeAccess', 'Active Access')}
             </p>
             <div className="space-y-2">
               {modules.map((m) => (
@@ -241,7 +246,7 @@ export default function SubscriptionSuccessFlow() {
             color: '#F5F1E7',
           }}
         >
-          Explore Collections
+          {t('subscription.exploreCollections', 'Explore Collections')}
         </Button>
       </div>
     </div>

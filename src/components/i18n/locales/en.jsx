@@ -175,6 +175,7 @@ export default {
     faq: "FAQ",
     support: "Support",
     quickAccess: "Quick Access",
+    wantList: "Want List",
     syncing: "Syncing...",
     subscriptionSupport: "Subscription Support",
     userReport: "User Report",

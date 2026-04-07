@@ -20,6 +20,7 @@ import PipeIcon from "@/components/icons/PipeIcon";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 import { Flame } from "lucide-react";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 function NavItem({ item, isActive }) {
   return (
@@ -51,6 +52,7 @@ export default function ModuleNav({ currentPageName, user }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const access = useAccessSummary();
+  const { t } = useTranslation();
 
   const isAdmin =
     user?.role === "admin" ||
@@ -65,7 +67,7 @@ export default function ModuleNav({ currentPageName, user }) {
     if (activeModules.includes("pipekeeper")) {
       items.push({
         page: "PipeKeeper",
-        label: "PipeKeeper",
+        label: t("nav.pipekeeper", "PipeKeeper"),
         icon: PipeIcon,
         path: "/PipeKeeper",
       });
@@ -74,7 +76,7 @@ export default function ModuleNav({ currentPageName, user }) {
     if (activeModules.includes("whiskeykeeper")) {
       items.push({
         page: "WhiskeyKeeper",
-        label: "WhiskeyKeeper",
+        label: t("nav.whiskeykeeper", "WhiskeyKeeper"),
         icon: WhiskeyKeeperIcon,
         path: "/WhiskeyKeeper",
       });
@@ -83,23 +85,23 @@ export default function ModuleNav({ currentPageName, user }) {
     if (activeModules.includes("cigarkeeper")) {
       items.push({
         page: "CigarKeeper",
-        label: "CigarKeeper",
+        label: t("hub.cigarkeeper", "CigarKeeper"),
         icon: Flame,
         path: "/CigarKeeper",
       });
     }
 
     return items;
-  }, [activeModules]);
+  }, [activeModules, t]);
 
   const baseItems = [
-    { page: "CollectionHub", label: "Hub", icon: Home, path: "/" },
+    { page: "CollectionHub", label: t("nav.hub", "Hub"), icon: Home, path: "/" },
     ...moduleItems,
-    { page: "WantList", label: "Want List", icon: List, path: "/WantList" },
-    { page: "Curator", label: "Curator", icon: Target, path: "/Curator" },
-    { page: "Community", label: "Community", icon: Users, path: "/Community" },
-    { page: "Profile", label: "Profile", icon: User, path: "/Profile" },
-    { page: "HelpCenter", label: "Help", icon: HelpCircle, path: "/HelpCenter" },
+    { page: "WantList", label: t("nav.wantList", "Want List"), icon: List, path: "/WantList" },
+    { page: "Curator", label: t("nav.curator", "Curator"), icon: Target, path: "/Curator" },
+    { page: "Community", label: t("nav.community", "Community"), icon: Users, path: "/Community" },
+    { page: "Profile", label: t("nav.profile", "Profile"), icon: User, path: "/Profile" },
+    { page: "HelpCenter", label: t("nav.help", "Help"), icon: HelpCircle, path: "/HelpCenter" },
   ];
 
   const adminItems = isAdmin

@@ -138,7 +138,7 @@ export default function PipeKeeperModule() {
     {
       key: 'identifyPipe',
       Icon: Sparkles,
-      label: 'Identify Pipe',
+      label: t('quickActions.identifyPipe', 'Identify Pipe'),
       onClick: () => setShowIdentifier(true)
     },
     {
@@ -156,7 +156,7 @@ export default function PipeKeeperModule() {
     {
       key: 'wantList',
       Icon: List,
-      label: 'Want List',
+      label: t('nav.wantList', 'Want List'),
       onClick: () => navigate(createPageUrl('WantList'))
     }
   ];
