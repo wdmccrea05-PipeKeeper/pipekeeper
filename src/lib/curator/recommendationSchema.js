@@ -1,40 +1,49 @@
 /**
  * Curator Recommendation Schema
  *
- * Canonical schema definitions for the new Curator recommendation model.
+ * Canonical schema definitions for the Curator recommendation model.
  * Every recommendation is a structured object — no freeform prose blobs.
+ *
+ * Five canonical categories (per Curator specification):
+ *   A. Record Optimization   — metadata enrichment, valuation, reclassification
+ *   B. Collection Optimization — pipe specialization, reassignment, gap identification
+ *   C. Purchase & Restock    — replenish items, convert wishlist to action
+ *   D. Pairings              — session-ready combinations
+ *   E. Grow & Expand         — curated outside-of-collection suggestions
  */
 
 // ─── Category Constants ───────────────────────────────────────────────────────
 
 export const CATEGORY = {
-  METADATA:         'metadata',
-  BALANCE:          'balance',
-  UTILIZATION:      'utilization',
-  PURCHASE:         'purchase',
-  SPECIALIZATION:   'specialization',
-  PAIRING:          'pairing',
-  CIGAR_DISCOVERY:  'cigar_discovery',
+  // ── Five canonical Curator categories ────────────────────────────────────
+  RECORD_OPTIMIZATION:      'record_optimization',    // A: metadata, valuation, reclassification
+  COLLECTION_OPTIMIZATION:  'collection_optimization', // B: specialization, rotation, gap
+  PURCHASE:                 'purchase',               // C: restock, wishlist conversion
+  PAIRING:                  'pairing',                // D: session-ready combinations
+  GROW_EXPAND:              'grow_expand',            // E: outside-of-collection suggestions
+
+  // ── Legacy aliases (backward compat with UI surfaces that key on these) ──
+  METADATA:         'record_optimization',   // → Record Optimization
+  BALANCE:          'collection_optimization', // → Collection Optimization
+  UTILIZATION:      'collection_optimization', // → Collection Optimization
+  SPECIALIZATION:   'collection_optimization', // → Collection Optimization
+  CIGAR_DISCOVERY:  'purchase',              // → Purchase & Restock
 };
 
 export const CATEGORY_LABELS = {
-  [CATEGORY.METADATA]:         'Data & Metadata',
-  [CATEGORY.BALANCE]:          'Collection Balance',
-  [CATEGORY.UTILIZATION]:      'Utilization & Rotation',
-  [CATEGORY.PURCHASE]:         'Purchase & Restock',
-  [CATEGORY.SPECIALIZATION]:   'Specialization & Strategy',
-  [CATEGORY.PAIRING]:          'Pairing & Experience',
-  [CATEGORY.CIGAR_DISCOVERY]:  'Cigar Discovery',
+  [CATEGORY.RECORD_OPTIMIZATION]:     'Record Optimization',
+  [CATEGORY.COLLECTION_OPTIMIZATION]: 'Collection Optimization',
+  [CATEGORY.PURCHASE]:                'Purchase & Restock',
+  [CATEGORY.PAIRING]:                 'Pairings',
+  [CATEGORY.GROW_EXPAND]:             'Grow & Expand',
 };
 
 export const CATEGORY_ORDER = [
-  CATEGORY.METADATA,
-  CATEGORY.BALANCE,
-  CATEGORY.UTILIZATION,
+  CATEGORY.RECORD_OPTIMIZATION,
+  CATEGORY.COLLECTION_OPTIMIZATION,
   CATEGORY.PURCHASE,
-  CATEGORY.SPECIALIZATION,
   CATEGORY.PAIRING,
-  CATEGORY.CIGAR_DISCOVERY,
+  CATEGORY.GROW_EXPAND,
 ];
 
 // ─── Action Type Constants ────────────────────────────────────────────────────
@@ -95,6 +104,44 @@ export const OWNERSHIP_CONTEXT = {
   MIXED:         'mixed',
 };
 
+// ─── Scoring Engine ───────────────────────────────────────────────────────────
+
+/**
+ * Compute a multi-factor confidence string for a recommendation.
+ *
+ * Factors (each 0–1):
+ *   preferenceAlignment    — how well the recommendation matches known preferences
+ *   usageHistoryRelevance  — how much session log data supports this
+ *   dataCompleteness       — how complete the relevant records are
+ *   diversityContribution  — how much this adds variety vs. repeating the same advice
+ *
+ * Returns 'high' | 'medium' | 'low'.
+ * If any factor is explicitly 0, the result is capped at 'medium'.
+ * If insufficient data exists (all factors null/undefined), returns 'low'.
+ */
+export function computeConfidence({
+  preferenceAlignment   = null,
+  usageHistoryRelevance = null,
+  dataCompleteness      = null,
+  diversityContribution = null,
+} = {}) {
+  const factors = [
+    preferenceAlignment,
+    usageHistoryRelevance,
+    dataCompleteness,
+    diversityContribution,
+  ].filter((f) => f !== null && f !== undefined);
+
+  if (factors.length === 0) return 'low';
+
+  const mean = factors.reduce((s, f) => s + f, 0) / factors.length;
+  const hasZero = factors.some((f) => f === 0);
+
+  if (mean >= 0.75 && !hasZero) return 'high';
+  if (mean >= 0.4)               return 'medium';
+  return 'low';
+}
+
 // ─── Factory Function ─────────────────────────────────────────────────────────
 
 let _idCounter = 0;
@@ -114,7 +161,7 @@ export function createRecommendation(overrides = {}) {
 
   return {
     id:                 `rec_${_idCounter}_${overrides.goal || 'unknown'}`,
-    category:           CATEGORY.METADATA,
+    category:           CATEGORY.RECORD_OPTIMIZATION,
     goal:               '',
     actionType:         ACTION_TYPE.ADVISORY,
     title:              '',

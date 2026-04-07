@@ -1,0 +1,501 @@
+/**
+ * Grow & Expand Engine
+ *
+ * Generates outside-of-collection suggestions based on the user's existing
+ * taste profile and collection gaps. Uses domain knowledge and preference
+ * inference — no LLM calls.
+ *
+ * Recommendation logic:
+ *   1. Infer what the user likes from blend types, usage history, and preferences
+ *   2. Identify natural next steps (adjacent families, complementary styles)
+ *   3. Suggest specific blend families or bottle types — not generic categories
+ *   4. Score by preference alignment + diversity contribution
+ *
+ * Hard rules:
+ *   - Never suggest something the user already owns
+ *   - No redundant suggestions (one per logical expansion vector)
+ *   - Low confidence if collection is too small to infer from
+ */
+
+import {
+  createRecommendation,
+  computeConfidence,
+  CATEGORY,
+  ACTION_TYPE,
+  MODULE_KEY,
+  OWNERSHIP_CONTEXT,
+  PRIORITY,
+} from './recommendationSchema.js';
+
+// ─── Domain Knowledge — Natural Progressions ─────────────────────────────────
+
+// What blend types naturally follow or complement existing collection patterns
+const BLEND_PROGRESSION_MAP = {
+  'Aromatic': {
+    next: ['Virginia', 'Virginia/Burley'],
+    rationale: (existing) =>
+      `Your aromatic collection is solid, but a mild ${existing.length > 3 ? 'unflavored ' : ''}Virginia blend would give you a clean reference point — ` +
+      `the natural sweetness of Virginia leaf does the work without added toppings, ` +
+      `and it opens up a whole category of pairings your current pipes can't touch.`,
+    recommendation: 'Explore a Virginia — the gateway out of aromatics that doesn\'t feel like a jump',
+    action: 'Add a mild Virginia to your Want List as a gateway blend',
+  },
+  'Virginia': {
+    next: ['Virginia/Perique', 'English'],
+    rationale: (existing) =>
+      `A Virginia collection this size is ready to move up. Virginia/Perique adds Perique's ` +
+      `peppery complexity to the base you already know — same foundation, more dimension. ` +
+      `The transition is intuitive because the Virginia character you're used to stays dominant.`,
+    recommendation: 'A Virginia/Perique would expand your palette without leaving familiar territory',
+    action: 'Add Virginia/Perique to your Want List to explore Perique\'s pepper and plum notes',
+  },
+  'Virginia/Perique': {
+    next: ['English', 'Balkan'],
+    rationale: () =>
+      `Virginia/Perique smokers often find English blends a natural next step — the Latakia smoke ` +
+      `adds a dimension that Perique's pepper already hinted at. Start with a mild-to-medium English ` +
+      `to keep it approachable, not a full Latakia bomb.`,
+    recommendation: 'A mild English blend is the logical next horizon for your palate',
+    action: 'Add a mild-to-medium English to your Want List',
+  },
+  'English': {
+    next: ['English/Balkan', 'Oriental'],
+    rationale: () =>
+      `Your English collection suggests you're comfortable with Latakia. Balkan blends dial ` +
+      `back the Latakia and bring in more Oriental leaf — the incense-like spice opens up ` +
+      `complexity that full English blends sometimes cover. It's the more nuanced side of the same family.`,
+    recommendation: 'Add a Balkan-style blend to explore the Oriental dimension of your English collection',
+    action: 'Add an English/Balkan to your Want List to experience the Oriental-forward profile',
+  },
+  'English/Balkan': {
+    next: ['Oriental', 'Virginia/Oriental'],
+    rationale: () =>
+      `A pure Oriental/Turkish blend is the natural culmination of Balkan exploration. ` +
+      `The Latakia is stripped away and what remains is the raw floral, spicy, almost ` +
+      `wine-like character of Oriental leaf. It's an acquired taste that rewards the patient smoker.`,
+    recommendation: 'Explore a pure Oriental blend — the refined endpoint of the Balkan direction',
+    action: 'Add a pure Oriental to your Want List',
+  },
+  'Burley': {
+    next: ['Virginia/Burley', 'English'],
+    rationale: () =>
+      `Heavy burley smokers often discover that adding a Virginia base transforms the ` +
+      `experience. Virginia/Burley keeps the familiar nutty-earth character while introducing ` +
+      `the sweetness and complexity that pure burley blends hold back.`,
+    recommendation: 'Virginia/Burley is the natural complement to your burley-heavy collection',
+    action: 'Add a Virginia/Burley to your Want List',
+  },
+};
+
+// What whiskey types naturally extend a collection based on existing bottles
+const WHISKEY_PROGRESSION_MAP = {
+  'Bourbon': {
+    next: ['Rye', 'Tennessee Whiskey'],
+    rationale: (owned) =>
+      `Your bourbon collection is a strong foundation. Rye is the most logical step — ` +
+      `same American whiskey tradition, but the rye grain shifts the sweetness toward ` +
+      `dry spice and pepper. It pairs differently with tobacco blends and creates contrast ` +
+      `where bourbon creates complement.`,
+    recommendation: 'Rye whiskey is bourbon\'s counterpart — same tradition, opposite flavor direction',
+    action: 'Add a rye whiskey to your Want List',
+  },
+  'Rye': {
+    next: ['Bourbon', 'Single Malt Scotch'],
+    rationale: () =>
+      `Rye and Single Malt Scotch sit at opposite ends of the whiskey spectrum. ` +
+      `A Speyside or Highland single malt introduces sherry, dried fruit, and malt complexity ` +
+      `that creates pairings rye simply can't — particularly with Virginia and English blends.`,
+    recommendation: 'A Speyside or Highland single malt opens pairing vectors your ryes can\'t reach',
+    action: 'Add a Speyside or Highland single malt to your Want List',
+  },
+  'Single Malt Scotch': {
+    next: ['Islay Single Malt', 'Irish Whiskey'],
+    rationale: (owned) => {
+      const hasIslay = (owned || []).some((b) => {
+        const t = (b.type || b.whiskey_type || '').toLowerCase();
+        return t.includes('islay');
+      });
+      return hasIslay
+        ? `Your Scotch collection is strong. An Irish Whiskey would add a completely ` +
+          `different character — lighter, unpeated, and versatile. It creates pairings ` +
+          `with aromatics and mild Virginias that none of your current bottles can match.`
+        : `An Islay single malt is the next frontier for your Scotch collection. ` +
+          `Heavy peat and brine create pairing possibilities with English blends ` +
+          `that no other whiskey type can replicate.`;
+    },
+    recommendation: 'Expand your Scotch range — an Islay or Irish Whiskey opens distinct pairing territory',
+    action: 'Add an Islay single malt or Irish whiskey to your Want List',
+  },
+  'Irish Whiskey': {
+    next: ['Bourbon', 'Blended Scotch'],
+    rationale: () =>
+      `Irish Whiskey's light, approachable profile is excellent for aromatics, but a bourbon ` +
+      `would give you access to the corn-sweet, vanilla-oak pairing that Virginias and Burleys need. ` +
+      `It's the single most useful addition to a collection anchored in Irish.`,
+    recommendation: 'A good bourbon would be the workhorse pairing partner your Irish Whiskey can\'t cover',
+    action: 'Add an entry-level or mid-range bourbon to your Want List',
+  },
+};
+
+// Pipe shape suggestions based on collection composition
+const PIPE_SHAPE_SUGGESTIONS = {
+  billiard: {
+    suggests: 'Dublin',
+    rationale: 'A Dublin\'s tapered bowl concentrates flavor in a way the billiard\'s straight walls don\'t. It\'s the most natural shape addition after a billiard.',
+  },
+  bent: {
+    suggests: 'Straight (Billiard or Canadian)',
+    rationale: 'A straight pipe smokes differently — cooler, with better moisture drainage. Useful for longer sessions where the bent\'s gravity helps but so does a straight\'s efficiency.',
+  },
+  dublin: {
+    suggests: 'Pot or Apple',
+    rationale: 'The Pot\'s compact, wide bowl offers a short, dense smoke that contrasts with the Dublin\'s taper. It\'s the logical variety addition.',
+  },
+};
+
+// ─── Preference Inferencer ────────────────────────────────────────────────────
+
+/**
+ * Infer user's dominant taste profile from collection and usage.
+ */
+function inferTasteProfile(blends, bottles, smokingLogs, preferences = {}) {
+  const typeCounts = {};
+  const whiskeyTypeCounts = {};
+
+  // Count blend types in collection
+  for (const blend of blends) {
+    const t = blend.blend_type || blend.blend_family;
+    if (t && t !== 'Unknown') typeCounts[t] = (typeCounts[t] || 0) + 1;
+  }
+
+  // Weight by usage in logs
+  for (const log of smokingLogs) {
+    const blend = blends.find((b) => b.id === log.blend_id);
+    if (!blend) continue;
+    const t = blend.blend_type || blend.blend_family;
+    if (t && t !== 'Unknown') typeCounts[t] = (typeCounts[t] || 0) + 0.5; // usage adds half weight
+  }
+
+  // Count whiskey types in collection
+  for (const bottle of bottles) {
+    const t = bottle.type || bottle.whiskey_type || bottle.spirit_type;
+    if (t) whiskeyTypeCounts[t] = (whiskeyTypeCounts[t] || 0) + 1;
+  }
+
+  const sortedBlendTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+  const sortedWhiskeyTypes = Object.entries(whiskeyTypeCounts).sort((a, b) => b[1] - a[1]);
+
+  // Explicit preferences override inference
+  const explicitPrefs = preferences.preferred_blend_types || preferences.preferredBlendTypes || [];
+  const dislikes = preferences.disliked_flavors || preferences.dislikes || [];
+
+  return {
+    dominantBlendType:   sortedBlendTypes[0]?.[0] || null,
+    blendTypeRanking:    sortedBlendTypes.map(([t]) => t),
+    dominantWhiskeyType: sortedWhiskeyTypes[0]?.[0] || null,
+    whiskeyTypeRanking:  sortedWhiskeyTypes.map(([t]) => t),
+    explicitPreferences: explicitPrefs,
+    dislikes,
+    totalBlends:         blends.length,
+    totalBottles:        bottles.length,
+    totalPipes:          0, // set by caller
+    hasUsageHistory:     smokingLogs.length > 0,
+  };
+}
+
+// ─── Deduplication helpers ────────────────────────────────────────────────────
+
+/**
+ * Check if an item name or type is already in the collection.
+ */
+function isAlreadyOwned(targetType, blends, bottles) {
+  const normalizedTarget = targetType.toLowerCase();
+  for (const blend of blends) {
+    const t = (blend.blend_type || blend.blend_family || '').toLowerCase();
+    if (t.includes(normalizedTarget) || normalizedTarget.includes(t)) return true;
+  }
+  for (const bottle of bottles) {
+    const t = (bottle.type || bottle.whiskey_type || '').toLowerCase();
+    if (t.includes(normalizedTarget) || normalizedTarget.includes(t)) return true;
+  }
+  return false;
+}
+
+// ─── Suggestion Generators ───────────────────────────────────────────────────
+
+function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
+  const results = [];
+  if (blends.length < 2) return results; // too few to infer from
+
+  const typeCounts = {};
+  for (const blend of blends) {
+    const t = blend.blend_type || blend.blend_family;
+    if (t && t !== 'Unknown') typeCounts[t] = (typeCounts[t] || 0) + 1;
+  }
+  const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+  const dominantType = sortedTypes[0]?.[0];
+  if (!dominantType) return results;
+
+  const progression = BLEND_PROGRESSION_MAP[dominantType];
+  if (!progression) return results;
+
+  // Find the first suggested type that's not already in the collection
+  const nextType = progression.next.find((t) => !isAlreadyOwned(t, blends, []));
+  if (!nextType) return results;
+
+  // Don't suggest if the user has explicitly said they dislike this direction
+  const dislikes = preferences.disliked_flavors || preferences.dislikes || [];
+  if (dislikes.some((d) => nextType.toLowerCase().includes(d.toLowerCase()))) return results;
+
+  const isWellEstablished = sortedTypes[0][1] >= 3;
+  const confidence = computeConfidence({
+    preferenceAlignment:   isWellEstablished ? 0.8 : 0.5,
+    usageHistoryRelevance: smokingLogs.length > 5 ? 0.8 : 0.4,
+    dataCompleteness:      sortedTypes.length >= 2 ? 0.8 : 0.5,
+    diversityContribution: 0.9, // always high — we're expanding the collection
+  });
+
+  results.push(createRecommendation({
+    category:           CATEGORY.GROW_EXPAND,
+    goal:               'blend_family_expansion',
+    actionType:         ACTION_TYPE.SHOPPING_LIST_ACTION,
+    title:              `Explore ${nextType}`,
+    summary:            progression.recommendation,
+    whyItMatters:       progression.rationale(blends.filter((b) => (b.blend_type || b.blend_family) === dominantType)),
+    recommendationText: progression.action,
+    moduleKey:          MODULE_KEY.TOBACCO,
+    ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
+    priority:           isWellEstablished ? PRIORITY.MEDIUM : PRIORITY.LOW,
+    confidence,
+    items: [{
+      id:             `grow_blend_${nextType.replace(/[\s/]/g, '_').toLowerCase()}`,
+      recordId:       null,
+      recordType:     'blend_suggestion',
+      recordName:     nextType,
+      itemName:       `${nextType} Blend`,
+      ownershipStatus: 'wishlist',
+      shoppingType:   'buy_new_item',
+      itemType:       'blend',
+      suggestedFamily: nextType,
+      rationale:       progression.rationale(blends.filter((b) => (b.blend_type || b.blend_family) === dominantType)),
+    }],
+    actionPayload: {
+      shoppingType:   'buy_new_item',
+      itemType:       'blend',
+      suggestedFamily: nextType,
+    },
+  }));
+
+  return results;
+}
+
+function generateWhiskeyExpansion(bottles, blends, preferences = {}) {
+  const results = [];
+  if (bottles.length === 0) return results;
+
+  const whiskeyTypeCounts = {};
+  for (const bottle of bottles) {
+    const t = bottle.type || bottle.whiskey_type || bottle.spirit_type;
+    if (t) whiskeyTypeCounts[t] = (whiskeyTypeCounts[t] || 0) + 1;
+  }
+  const sortedTypes = Object.entries(whiskeyTypeCounts).sort((a, b) => b[1] - a[1]);
+
+  // Find the dominant whiskey type and its progression
+  let progression = null;
+  let dominantType = null;
+  for (const [type] of sortedTypes) {
+    const matchKey = Object.keys(WHISKEY_PROGRESSION_MAP).find((k) =>
+      type.toLowerCase().includes(k.toLowerCase())
+    );
+    if (matchKey) {
+      progression = WHISKEY_PROGRESSION_MAP[matchKey];
+      dominantType = type;
+      break;
+    }
+  }
+
+  if (!progression || !dominantType) return results;
+
+  // Find a next type not already owned
+  const nextType = progression.next.find((t) => !isAlreadyOwned(t, [], bottles));
+  if (!nextType) return results;
+
+  // Respect dislikes (e.g., user hates peat → skip Islay)
+  const dislikes = preferences.disliked_flavors || preferences.dislikes || [];
+  const peatedTypes = ['Islay', 'Peated'];
+  let finalNextType = nextType;
+  if (peatedTypes.some((p) => nextType.includes(p)) &&
+      dislikes.some((d) => d.toLowerCase().includes('peat') || d.toLowerCase().includes('smoke'))) {
+    // Try the alternative next type
+    const altNextType = progression.next.find((t) =>
+      !isAlreadyOwned(t, [], bottles) &&
+      !peatedTypes.some((p) => t.includes(p))
+    );
+    if (!altNextType) return results;
+    finalNextType = altNextType;
+  }
+
+  const confidence = computeConfidence({
+    preferenceAlignment:   0.75,
+    usageHistoryRelevance: blends.length > 0 ? 0.7 : 0.4,
+    dataCompleteness:      sortedTypes.length >= 1 ? 0.8 : 0.5,
+    diversityContribution: 0.9,
+  });
+
+  results.push(createRecommendation({
+    category:           CATEGORY.GROW_EXPAND,
+    goal:               'whiskey_type_expansion',
+    actionType:         ACTION_TYPE.SHOPPING_LIST_ACTION,
+    title:              `Explore ${finalNextType}`,
+    summary:            progression.recommendation,
+    whyItMatters:       progression.rationale(bottles),
+    recommendationText: progression.action,
+    moduleKey:          MODULE_KEY.WHISKEY,
+    ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
+    priority:           PRIORITY.LOW,
+    confidence,
+    items: [{
+      id:             `grow_whiskey_${finalNextType.replace(/[\s/]/g, '_').toLowerCase()}`,
+      recordId:       null,
+      recordType:     'bottle_suggestion',
+      recordName:     finalNextType,
+      itemName:       `${finalNextType}`,
+      ownershipStatus: 'wishlist',
+      shoppingType:   'buy_new_item',
+      itemType:       'bottle',
+      suggestedType:   finalNextType,
+      rationale:       progression.rationale(bottles),
+    }],
+    actionPayload: {
+      shoppingType: 'buy_new_item',
+      itemType:     'bottle',
+      suggestedType: finalNextType,
+    },
+  }));
+
+  return results;
+}
+
+/**
+ * Suggest a pipe shape gap based on existing collection shapes.
+ */
+function generatePipeShapeExpansion(pipes, blends) {
+  if (pipes.length < 2 || blends.length === 0) return [];
+
+  const ownedShapes = new Set(pipes.map((p) => (p.shape || '').toLowerCase()).filter(Boolean));
+  if (ownedShapes.size === 0) return [];
+
+  // Find the most common shape and suggest its complement
+  const shapeCounts = {};
+  for (const pipe of pipes) {
+    const s = (pipe.shape || '').toLowerCase();
+    if (s) shapeCounts[s] = (shapeCounts[s] || 0) + 1;
+  }
+  const dominantShape = Object.entries(shapeCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+  if (!dominantShape) return [];
+
+  const suggestion = PIPE_SHAPE_SUGGESTIONS[dominantShape];
+  if (!suggestion) return [];
+
+  const suggestedShape = suggestion.suggests.toLowerCase();
+  if (ownedShapes.has(suggestedShape)) return [];
+
+  const confidence = computeConfidence({
+    preferenceAlignment:   0.6,
+    usageHistoryRelevance: 0.5,
+    dataCompleteness:      0.7,
+    diversityContribution: 0.85,
+  });
+
+  return [createRecommendation({
+    category:           CATEGORY.GROW_EXPAND,
+    goal:               'pipe_shape_expansion',
+    actionType:         ACTION_TYPE.ADVISORY,
+    title:              `Add a ${suggestion.suggests} to Your Rotation`,
+    summary:            `Your collection is ${dominantShape}-heavy. A ${suggestion.suggests} would introduce a different smoking experience.`,
+    whyItMatters:       suggestion.rationale,
+    recommendationText: `Look for a quality ${suggestion.suggests} from a trusted maker as your next pipe acquisition.`,
+    moduleKey:          MODULE_KEY.PIPE,
+    ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
+    priority:           PRIORITY.LOW,
+    confidence,
+    items: [{
+      id:             `grow_pipe_${suggestedShape}`,
+      recordId:       null,
+      recordType:     'pipe_suggestion',
+      recordName:     suggestion.suggests,
+      itemName:       `${suggestion.suggests} Pipe`,
+      ownershipStatus: 'wishlist',
+      shoppingType:   'buy_new_item',
+      itemType:       'pipe',
+      suggestedShape:  suggestion.suggests,
+      rationale:       suggestion.rationale,
+    }],
+    actionPayload: {
+      shoppingType:   'buy_new_item',
+      itemType:       'pipe',
+      suggestedShape:  suggestion.suggests,
+    },
+  })];
+}
+
+// ─── Main Engine Entry Point ─────────────────────────────────────────────────
+
+/**
+ * Generate Grow & Expand recommendations.
+ *
+ * These are outside-of-collection suggestions grounded in the user's
+ * existing taste profile. Never redundant with owned items.
+ *
+ * @param {object} context - { pipes, blends, bottles, smokingLogs, preferences }
+ * @returns {import('./recommendationSchema.js').Recommendation[]}
+ */
+export function generateGrowExpandRecommendations(context = {}) {
+  const {
+    pipes       = [],
+    blends      = [],
+    bottles     = [],
+    smokingLogs = [],
+    preferences = {},
+  } = context;
+
+  // Edge case: insufficient data to make meaningful suggestions
+  const totalItems = pipes.length + blends.length + bottles.length;
+  if (totalItems < 3) return [];
+
+  const results = [];
+  const seen = new Set();
+
+  // Blend family expansion — suggest new blend types based on dominant profile
+  const blendExpansion = generateBlendExpansion(blends, smokingLogs, preferences);
+  for (const rec of blendExpansion) {
+    if (!seen.has(rec.goal)) {
+      results.push(rec);
+      seen.add(rec.goal);
+    }
+  }
+
+  // Whiskey type expansion — suggest new whiskey styles based on existing bottles
+  if (bottles.length > 0) {
+    const whiskeyExpansion = generateWhiskeyExpansion(bottles, blends, preferences);
+    for (const rec of whiskeyExpansion) {
+      if (!seen.has(rec.goal)) {
+        results.push(rec);
+        seen.add(rec.goal);
+      }
+    }
+  }
+
+  // Pipe shape expansion — suggest complementary shapes
+  if (pipes.length >= 2) {
+    const pipeExpansion = generatePipeShapeExpansion(pipes, blends);
+    for (const rec of pipeExpansion) {
+      if (!seen.has(rec.goal)) {
+        results.push(rec);
+        seen.add(rec.goal);
+      }
+    }
+  }
+
+  return results;
+}

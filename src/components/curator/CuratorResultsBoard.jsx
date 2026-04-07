@@ -1,15 +1,17 @@
 /**
  * CuratorResultsBoard — Optimize Board
  *
- * Surface 1: Record-quality dashboard.
- *
- * Scope: metadata enrichment, reclassification, valuation, record completion.
- * Does NOT include utilization, purchase, specialization, or pairing suggestions.
+ * Surface 1: Main operations dashboard.
  *
  * Layout:
  *   Row 1: module filter chips  +  refresh button
- *   Row 2: 3 summary cards (Open Fixes, Review Needed, Total Issues)
- *   Rows 3+: collapsible section — Data & Metadata
+ *   Row 2: 4 summary cards (Open Fixes, Review Needed, Shopping Candidates, Specialization)
+ *   Rows 3+: 5 collapsible grouped sections
+ *     — Record Optimization
+ *     — Collection Optimization
+ *     — Purchase & Restock
+ *     — Specialization & Strategy
+ *     — Grow & Expand
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -17,10 +19,14 @@ import { RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import CuratorRecommendationGroup from './CuratorRecommendationGroup';
 import { CATEGORY, ACTION_TYPE, MODULE_KEY } from '@/lib/curator/recommendationSchema.js';
 
-// ─── Board section groups — record quality only ───────────────────────────────
+// ─── Board section groups ─────────────────────────────────────────────────────
 
 const BOARD_SECTION_GROUPS = [
-  { id: 'metadata', label: 'Data & Record Quality', categories: [CATEGORY.METADATA] },
+  { id: 'metadata',       label: 'Record Optimization',       categories: [CATEGORY.METADATA, CATEGORY.RECORD_OPTIMIZATION] },
+  { id: 'utilization',    label: 'Collection Optimization',   categories: [CATEGORY.UTILIZATION, CATEGORY.BALANCE, CATEGORY.COLLECTION_OPTIMIZATION] },
+  { id: 'purchase',       label: 'Purchase & Restock',        categories: [CATEGORY.PURCHASE, CATEGORY.CIGAR_DISCOVERY] },
+  { id: 'specialization', label: 'Specialization & Strategy', categories: [CATEGORY.SPECIALIZATION, CATEGORY.PAIRING] },
+  { id: 'grow_expand',    label: 'Grow & Expand',             categories: [CATEGORY.GROW_EXPAND] },
 ];
 
 // ─── Module filter options ────────────────────────────────────────────────────
@@ -49,9 +55,14 @@ function buildBoardSections(sections, moduleFilter) {
 function computeSummary(sections) {
   const allRecs = sections.flatMap((s) => s.recommendations || []);
   return {
-    openFixes:    allRecs.filter((r) => r.actionType === ACTION_TYPE.AUTO_FIX).length,
-    reviewNeeded: allRecs.filter((r) => r.actionType === ACTION_TYPE.REVIEW_REQUIRED).length,
-    totalIssues:  allRecs.length,
+    openFixes:      allRecs.filter((r) => r.actionType === ACTION_TYPE.AUTO_FIX).length,
+    reviewNeeded:   allRecs.filter((r) => r.actionType === ACTION_TYPE.REVIEW_REQUIRED).length,
+    shoppingItems:  allRecs
+      .filter((r) => r.actionType === ACTION_TYPE.SHOPPING_LIST_ACTION)
+      .reduce((sum, r) => sum + (r.items?.length || 0), 0),
+    specCandidates: allRecs
+      .filter((r) => r.category === CATEGORY.SPECIALIZATION)
+      .reduce((sum, r) => sum + (r.items?.filter((i) => i.hasLogData)?.length || 0), 0),
   };
 }
 
@@ -148,7 +159,7 @@ function EmptyState({ moduleFilter, onRefresh }) {
       <p className="text-xs max-w-xs mx-auto" style={{ color: 'rgba(224,216,200,0.4)' }}>
         {moduleFilter !== 'all'
           ? 'Try a different module filter or select All.'
-          : 'All record metadata looks complete. Add more collection data for deeper analysis.'}
+          : 'Nothing to flag right now. Add more collection data for deeper analysis.'}
       </p>
       <button
         type="button"
@@ -224,13 +235,13 @@ export default function CuratorResultsBoard({
         </button>
       </div>
 
-      {/* Row 2: 3 summary cards */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Row 2: 4 summary cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <SummaryCard
           value={summary.openFixes}
-          label="Auto-Fix Ready"
+          label="Open Fixes"
           color="rgba(80,180,130,0.9)"
-          subtext="can be applied now"
+          subtext="auto-fixable"
         />
         <SummaryCard
           value={summary.reviewNeeded}
@@ -239,10 +250,16 @@ export default function CuratorResultsBoard({
           subtext="require your input"
         />
         <SummaryCard
-          value={summary.totalIssues}
-          label="Record Issues"
+          value={summary.shoppingItems}
+          label="Shopping Candidates"
           color="rgba(160,200,240,0.9)"
-          subtext="total to resolve"
+          subtext="ready to queue"
+        />
+        <SummaryCard
+          value={summary.specCandidates}
+          label="Specialization"
+          color="rgba(200,155,100,0.9)"
+          subtext="evidence-backed"
         />
       </div>
 

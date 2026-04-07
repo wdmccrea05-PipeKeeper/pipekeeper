@@ -72,16 +72,30 @@ function analyzeLowStockBlends(blends) {
   }).slice(0, MAX_ITEMS_PER_REC);
 
   if (lowStock.length > 0) {
+    const singleBlend = lowStock.length === 1 ? lowStock[0] : null;
+    const criticalCount = lowStock.filter((b) => (totalOz(b) || 0) <= CRITICAL_STOCK_OZ).length;
+
+    const summary = singleBlend
+      ? `${singleBlend.name} is down to ${totalOz(singleBlend)?.toFixed(1)} oz${criticalCount > 0 ? ' — critical' : ' — running low'}.`
+      : `${lowStock.length} of your favorite blends are running low${criticalCount > 0 ? `, ${criticalCount} critically so` : ''}.`;
+
+    const whyItMatters = criticalCount > 0
+      ? `${criticalCount > 1 ? `${criticalCount} of these blends are` : 'One of these blends is'} below ${CRITICAL_STOCK_OZ} oz — ` +
+        `that's one or two sessions at most. Running out of a well-rated blend mid-rotation forces a substitution ` +
+        `that breaks the session rhythm. Restock before it becomes a gap.`
+      : `These are blends you rate highly enough to call favorites. Running them down to zero means ` +
+        `a gap in your rotation while you wait for reorder delivery. A few ounces of lead time prevents that.`;
+
     results.push(createRecommendation({
       category:         CATEGORY.PURCHASE,
       goal:             'low_stock_favorites',
       actionType:       ACTION_TYPE.SHOPPING_LIST_ACTION,
       title:            'Low Stock Favorites',
-      summary:          `${lowStock.length} favorite blend${lowStock.length > 1 ? 's are' : ' is'} running low`,
-      whyItMatters:     'These are blends you rate highly. Restocking before they run out prevents a gap in your rotation.',
+      summary,
+      whyItMatters,
       moduleKey:        MODULE_KEY.TOBACCO,
       ownershipContext: OWNERSHIP_CONTEXT.IN_COLLECTION,
-      priority:         PRIORITY.HIGH,
+      priority:         criticalCount > 0 ? PRIORITY.HIGH : PRIORITY.HIGH,
       confidence:       'high',
       items: lowStock.map((b) => ({
         id:             b.id,
@@ -118,13 +132,24 @@ function analyzeDepletedBlends(blends) {
 
   if (!depleted.length) return [];
 
+  const singleBlend = depleted.length === 1 ? depleted[0] : null;
+  const summary = singleBlend
+    ? `${singleBlend.name} is fully depleted — it's one of your favorites and the stock is gone.`
+    : `${depleted.length} of your top-rated blends are fully depleted. Until restocked, they're holes in your rotation.`;
+
+  const whyItMatters = depleted.length === 1
+    ? `You've rated ${singleBlend.name} highly enough that running out matters. ` +
+      `Add it to your shopping list and order before the gap creates a substitution habit.`
+    : `These blends scored well enough to qualify as favorites. Running them to zero and leaving them there ` +
+      `is a collection gap, not a preference. Add to your shopping list to close it.`;
+
   return [createRecommendation({
     category:         CATEGORY.PURCHASE,
     goal:             'depleted_favorites',
     actionType:       ACTION_TYPE.SHOPPING_LIST_ACTION,
     title:            'Depleted Favorites',
-    summary:          `${depleted.length} favorite blend${depleted.length > 1 ? 's' : ''} fully depleted`,
-    whyItMatters:     'Your top-rated blends are out of stock. Add them to your shopping list to restock.',
+    summary,
+    whyItMatters,
     moduleKey:        MODULE_KEY.TOBACCO,
     ownershipContext: OWNERSHIP_CONTEXT.IN_COLLECTION,
     priority:         PRIORITY.HIGH,
@@ -157,13 +182,19 @@ function analyzeBottleRestock(bottles) {
 
   const lowStock = bottles.filter(isBottleLowStock).slice(0, MAX_ITEMS_PER_REC);
   if (lowStock.length > 0) {
+    const singleBottle = lowStock.length === 1 ? lowStock[0] : null;
+    const summary = singleBottle
+      ? `${singleBottle.name} is nearly empty — a few pours left at most.`
+      : `${lowStock.length} bottle${lowStock.length > 1 ? 's are' : ' is'} down to the last few pours.`;
+
     results.push(createRecommendation({
       category:         CATEGORY.PURCHASE,
       goal:             'low_stock_bottles',
       actionType:       ACTION_TYPE.SHOPPING_LIST_ACTION,
       title:            'Whiskey Running Low',
-      summary:          `${lowStock.length} bottle${lowStock.length > 1 ? 's are' : ' is'} nearly empty`,
-      whyItMatters:     'These bottles have limited pours remaining. Add them to your shopping list if you want to restock.',
+      summary,
+      whyItMatters:     'Running a bottle dry without a replacement ready means a pairing gap. ' +
+                        'If any of these are bottles you rely on for tobacco pairings, the timing matters more than it might seem.',
       moduleKey:        MODULE_KEY.WHISKEY,
       ownershipContext: OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:         PRIORITY.MEDIUM,
@@ -189,13 +220,19 @@ function analyzeBottleRestock(bottles) {
 
   const depleted = bottles.filter(isBottleDepleted).slice(0, MAX_ITEMS_PER_REC);
   if (depleted.length > 0) {
+    const singleBottle = depleted.length === 1 ? depleted[0] : null;
+    const summary = singleBottle
+      ? `${singleBottle.name} is empty. If you want it back in your pairing rotation, it needs to be replaced.`
+      : `${depleted.length} bottle${depleted.length > 1 ? 's are' : ' is'} fully depleted.`;
+
     results.push(createRecommendation({
       category:         CATEGORY.PURCHASE,
       goal:             'depleted_bottles',
       actionType:       ACTION_TYPE.SHOPPING_LIST_ACTION,
       title:            'Depleted Bottles',
-      summary:          `${depleted.length} bottle${depleted.length > 1 ? 's' : ''} fully depleted`,
-      whyItMatters:     'These bottles are empty. Add them to your shopping list to restock your favorites.',
+      summary,
+      whyItMatters:     'Empty bottles drop out of all pairing recommendations — the Curator can\'t use them until restocked. ' +
+                        'Add them to your shopping list so they stay visible as purchase targets.',
       moduleKey:        MODULE_KEY.WHISKEY,
       ownershipContext: OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:         PRIORITY.MEDIUM,
@@ -232,13 +269,19 @@ function analyzeWishlistCandidates(wantListItems = []) {
 
   if (!wishlist.length) return [];
 
+  const singleItem = wishlist.length === 1 ? wishlist[0] : null;
+  const summary = singleItem
+    ? `${singleItem.name || singleItem.blend_name || singleItem.pipe_model || 'An item'} has been on your Want List — move it to your shopping list when you\'re ready to act.`
+    : `${wishlist.length} items are on your Want List. If any are ready to purchase, moving them to the shopping list makes them easier to track.`;
+
   return [createRecommendation({
     category:         CATEGORY.PURCHASE,
     goal:             'wishlist_ready',
     actionType:       ACTION_TYPE.SHOPPING_LIST_ACTION,
-    title:            'Wishlist Ready for Shopping',
-    summary:          `${wishlist.length} wishlist item${wishlist.length > 1 ? 's' : ''} ready to move to shopping list`,
-    whyItMatters:     'These items are on your wish list. Move them to your shopping list when you\'re ready to buy.',
+    title:            'Want List Ready for Shopping',
+    summary,
+    whyItMatters:     'Want List items represent expressed interest that hasn\'t converted to action. ' +
+                      'Moving them to the shopping list keeps them visible and commits you to the next step.',
     moduleKey:        MODULE_KEY.MULTI,
     ownershipContext: OWNERSHIP_CONTEXT.EXTERNAL,
     priority:         PRIORITY.LOW,
@@ -373,13 +416,19 @@ function analyzeDiscontinuedBlends(blends) {
 
   if (!discontinued.length) return [];
 
+  const singleBlend = discontinued.length === 1 ? discontinued[0] : null;
+  const summary = singleBlend
+    ? `${singleBlend.name} is discontinued and running low — once it's gone, that's it.`
+    : `${discontinued.length} discontinued blend${discontinued.length > 1 ? 's are' : ' is'} running low. These can't be restocked once gone.`;
+
   return [createRecommendation({
     category:         CATEGORY.PURCHASE,
     goal:             'discontinued_low_stock',
     actionType:       ACTION_TYPE.SHOPPING_LIST_ACTION,
     title:            'Discontinued Blends Running Low',
-    summary:          `${discontinued.length} discontinued blend${discontinued.length > 1 ? 's are' : ' is'} low — these cannot be restocked once gone`,
-    whyItMatters:     'Once a discontinued blend runs out, it cannot be purchased again. Add to your shopping list to source remaining stock.',
+    summary,
+    whyItMatters:     'Discontinued blends are a one-way door. When a tin runs out, you\'re done — the manufacturer has stopped production. ' +
+                      'If any of these blends are meaningful to your rotation, source remaining stock now while independent retailers may still carry it.',
     moduleKey:        MODULE_KEY.TOBACCO,
     ownershipContext: OWNERSHIP_CONTEXT.IN_COLLECTION,
     priority:         PRIORITY.HIGH,
