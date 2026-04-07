@@ -31,7 +31,7 @@ const SPEC_SECTIONS = [
   {
     id:      'restock',
     label:   'Restock Now',
-    goals:   ['low_stock_blends', 'depleted_favorites', 'low_stock_bottles', 'depleted_bottles'],
+    goals:   ['low_stock_favorites', 'low_stock_blends', 'depleted_favorites', 'discontinued_low_stock', 'low_stock_bottles', 'depleted_bottles'],
     reason:  'Low stock, depleted, or running out',
   },
   {
