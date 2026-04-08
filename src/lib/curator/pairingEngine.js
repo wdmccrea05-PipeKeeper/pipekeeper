@@ -273,9 +273,27 @@ function buildCigarBottleRationale(cigar, bottle) {
     `${cigar.name}'s ${strength.toLowerCase()} body pairs with ${bottle.name}'s ${whiskeyChar || whiskeyType || 'character'}.`;
 }
 
-// ─── Pairing diversity ────────────────────────────────────────────────────────
+/**
+ * Return 'complement' | 'contrast' | null for a blend/bottle pairing.
+ * Used to add the pairingType structured field to pairing items.
+ */
+function getPairingType(blend, bottle) {
+  const blendType = getBlendType(blend);
+  const logic = BLEND_WHISKEY_PAIRING_LOGIC[blendType];
+  return logic ? logic.logic : null;
+}
 
-const MS_PER_DAY             = 86_400_000; // milliseconds in one day
+/**
+ * Return 'complement' | 'contrast' for a cigar/bottle pairing.
+ */
+function getCigarPairingType(cigar) {
+  const strength = getCigarStrength(cigar);
+  // Mild-medium and medium-full are complement; medium body creates contrast
+  const contrastStrengths = new Set(['Medium']);
+  return contrastStrengths.has(strength) ? 'contrast' : 'complement';
+}
+
+
 const BOTTLE_REUSE_PENALTY   = 3;          // score penalty per additional use of the same bottle
 const BOTTLE_REUSE_HARD_CAP  = 2;          // a single bottle can appear in at most this many pairings
 const MAX_BOTTLES_TO_SCORE   = 20;         // widen search window for diversity
@@ -362,6 +380,7 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
     pairingItems.push({
       id:            `pair_pw_${pipe.id}_${bestBottle.id}`,
       pairingMode:   PAIRING_MODE.DIRECT_PAIRING,
+      pairingType:   getPairingType(blend, bestBottle),
       leftItem:      { type: 'pipe', id: pipe.id, name: pipe.name, recordType: 'pipe' },
       blendBridge:   { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' },
       rightItem:     { type: 'bottle', id: bestBottle.id, name: bestBottle.name, recordType: 'bottle' },
@@ -458,6 +477,7 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
     favItems.push({
       id:          `pair_fav_${blend.id}_${best.id}`,
       pairingMode: PAIRING_MODE.COLLECTION_MIX_MATCH,
+      pairingType: getPairingType(blend, best),
       leftItem:    pipe ? { type: 'pipe', id: pipe.id, name: pipe.name, recordType: 'pipe' } : { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' },
       blendBridge: pipe ? { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' } : null,
       rightItem:   { type: 'bottle', id: best.id, name: best.name, recordType: 'bottle' },
@@ -542,6 +562,7 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
     rediscoverItems.push({
       id:          `pair_rediscover_${blend.id}_${best.id}`,
       pairingMode: PAIRING_MODE.COLLECTION_MIX_MATCH,
+      pairingType: getPairingType(blend, best),
       leftItem:    pipe ? { type: 'pipe', id: pipe.id, name: pipe.name, recordType: 'pipe' } : { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' },
       blendBridge: pipe ? { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' } : null,
       rightItem:   { type: 'bottle', id: best.id, name: best.name, recordType: 'bottle' },
@@ -607,6 +628,7 @@ function generateCigarWhiskeyPairings(cigars, bottles, bottleUsageCount) {
     pairingItems.push({
       id:            `pair_cw_${cigar.id}_${bestBottle.id}`,
       pairingMode:   PAIRING_MODE.DIRECT_PAIRING,
+      pairingType:   getCigarPairingType(cigar),
       leftItem:      { type: 'cigar', id: cigar.id, name: cigar.name, recordType: 'cigar' },
       rightItem:     { type: 'bottle', id: bestBottle.id, name: bestBottle.name, recordType: 'bottle' },
       blendBridge:   null,
@@ -712,14 +734,23 @@ function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottl
     const pipe = pipes[newItems.length % pipes.length];
     bottleUsageCount[best.id] = (bottleUsageCount[best.id] || 0) + 1;
 
+    const blendType = getBlendType(blend);
+    const whiskeyChar = getWhiskeyCharacter(best);
+    const pairingLogic = BLEND_WHISKEY_PAIRING_LOGIC[blendType];
+    const logicLabel = pairingLogic ? (pairingLogic.logic === 'complement' ? 'Complement pairing' : 'Contrast pairing') : null;
+    const novelRationale = logicLabel
+      ? `${blend.name} hasn't seen much use yet. ${logicLabel}: ${pairingLogic.note}. ${best.name}'s ${whiskeyChar} sets the right backdrop for a first serious session.`
+      : `${blend.name} is a ${blendType || 'blend'} waiting for its moment. ${best.name}'s ${whiskeyChar} makes it a worthwhile first session — give it the attention it hasn't had yet.`;
+
     newItems.push({
       id:          `pair_new_${blend.id}_${best.id}`,
       pairingMode: PAIRING_MODE.COLLECTION_MIX_MATCH,
+      pairingType: getPairingType(blend, best),
       leftItem:    pipe ? { type: 'pipe', id: pipe.id, name: pipe.name, recordType: 'pipe' } : { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' },
       blendBridge: pipe ? { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' } : null,
       rightItem:   { type: 'bottle', id: best.id, name: best.name, recordType: 'bottle' },
       score:       bestScore,
-      rationale:   `Expand your palate — ${blend.name} is a ${getBlendType(blend) || 'blend'} you haven't explored much yet`,
+      rationale:   novelRationale,
       ownershipStatus: 'owned',
     });
   }

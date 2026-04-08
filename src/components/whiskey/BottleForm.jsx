@@ -590,10 +590,11 @@ export default function BottleForm({
                     </SelectTrigger>
                     <SelectContent>
                     <SelectItem value="_auto">Auto-Compute</SelectItem>
+                    <SelectItem value="very_easy">Very Easy to Replace</SelectItem>
                     <SelectItem value="easy">Easy to Replace</SelectItem>
-                    <SelectItem value="moderate">Moderately Available</SelectItem>
+                    <SelectItem value="moderate">Moderately Difficult</SelectItem>
                     <SelectItem value="hard">Hard to Replace</SelectItem>
-                    <SelectItem value="very_hard">Very Hard to Replace</SelectItem>
+                    <SelectItem value="very_hard">Very Hard / Rare</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

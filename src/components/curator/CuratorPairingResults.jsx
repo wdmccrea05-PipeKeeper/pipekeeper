@@ -12,21 +12,7 @@
 
 import React from 'react';
 import { HelpCircle, BookOpen, Star, ExternalLink } from 'lucide-react';
-import { PAIRING_MODE, PAIRING_MODE_LABELS } from '@/lib/curator/pairingEngine.js';
 import { createPageUrl } from '@/components/utils/createPageUrl';
-
-const PAIRING_MODE_STYLES = {
-  [PAIRING_MODE.DIRECT_PAIRING]: {
-    bg:     'rgba(46,125,92,0.15)',
-    color:  'rgba(80,180,130,1)',
-    border: '1px solid rgba(46,125,92,0.3)',
-  },
-  [PAIRING_MODE.COLLECTION_MIX_MATCH]: {
-    bg:     'rgba(180,140,75,0.15)',
-    color:  'rgba(212,165,116,1)',
-    border: '1px solid rgba(180,140,75,0.3)',
-  },
-};
 
 const TYPE_COLORS = {
   pipe:    'rgba(200,155,100,0.95)',
@@ -66,7 +52,7 @@ function TrioItem({ item, slotLabel }) {
 
   return (
     <div
-      className="flex-1 min-w-0 rounded-lg px-2.5 py-2 text-center space-y-0.5"
+      className="flex-1 min-w-0 rounded-lg px-3 py-2.5 text-center space-y-1"
       style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,105,65,0.15)' }}
     >
       <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: 'rgba(224,216,200,0.38)' }}>
@@ -120,46 +106,49 @@ export default function CuratorPairingResults({ pairings = [], onAction }) {
   if (!pairings.length) return null;
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-3">
       {pairings.map((pairing, idx) => {
-        const modeStyle   = PAIRING_MODE_STYLES[pairing.pairingMode] || PAIRING_MODE_STYLES[PAIRING_MODE.DIRECT_PAIRING];
-        const modeLabel   = PAIRING_MODE_LABELS[pairing.pairingMode] || pairing.pairingMode;
         const isPipe      = pairing.leftItem?.type === 'pipe' || pairing.leftItem?.recordType === 'pipe';
         const hasTrio     = isPipe && pairing.blendBridge;
+
+        // Prefer structured pairingType field; fall back to extracting from rationale text
+        const pairingType = pairing.pairingType || null;
+        const typeStyle = pairingType === 'complement'
+          ? { bg: 'rgba(46,125,92,0.15)', color: 'rgba(80,180,130,1)', border: '1px solid rgba(46,125,92,0.3)', label: 'Complement' }
+          : pairingType === 'contrast'
+            ? { bg: 'rgba(74,124,156,0.15)', color: 'rgba(120,170,220,1)', border: '1px solid rgba(74,124,156,0.3)', label: 'Contrast' }
+            : null;
 
         return (
           <div
             key={pairing.id || idx}
-            className="rounded-xl p-3"
+            className="rounded-xl p-4"
             style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(140,105,65,0.14)',
+              background: 'rgba(255,255,255,0.035)',
+              border: '1px solid rgba(140,105,65,0.16)',
             }}
           >
-            {/* Mode badge + score */}
-            <div className="flex items-center justify-between mb-2">
-              <span
-                className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wider"
-                style={{ ...modeStyle }}
-              >
-                {modeLabel}
-              </span>
-              {pairing.score != null && (
-                <span className="text-[9px]" style={{ color: 'rgba(224,216,200,0.25)' }}>
-                  {pairing.score}/10
+            {/* Header: complement/contrast badge */}
+            {typeStyle && (
+              <div className="mb-3">
+                <span
+                  className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider"
+                  style={{ background: typeStyle.bg, color: typeStyle.color, border: typeStyle.border }}
+                >
+                  {typeStyle.label} Pairing
                 </span>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Trio layout for pipe pairings — Pipe / Blend / Pour equally prominent */}
             {hasTrio ? (
-              <div className="flex items-stretch gap-1.5 mb-2">
+              <div className="flex items-stretch gap-2 mb-3">
                 <TrioItem item={pairing.leftItem}  slotLabel="Pipe" />
                 <TrioItem item={pairing.blendBridge} slotLabel="Blend" />
                 <TrioItem item={pairing.rightItem} slotLabel="Pour" />
               </div>
             ) : (
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-3">
                 <DuoItem item={pairing.leftItem} />
                 <span className="text-[10px] shrink-0" style={{ color: 'rgba(180,140,75,0.45)' }} aria-hidden="true">✕</span>
                 <DuoItem item={pairing.rightItem} />
@@ -168,7 +157,7 @@ export default function CuratorPairingResults({ pairings = [], onAction }) {
 
             {/* Rationale */}
             {pairing.rationale && (
-              <p className="text-xs leading-snug mb-2.5" style={{ color: 'rgba(224,216,200,0.55)' }}>
+              <p className="text-sm leading-relaxed mb-3" style={{ color: 'rgba(224,216,200,0.72)' }}>
                 {pairing.rationale}
               </p>
             )}
