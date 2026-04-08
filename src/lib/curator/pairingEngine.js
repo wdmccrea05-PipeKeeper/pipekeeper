@@ -551,7 +551,7 @@ function buildSummaryOpening(blend, bottle, blendType, blendFlavor, variantIdx) 
  * Return a short, inline pipe clause suitable for embedding in a sentence.
  * e.g. "while Boswell Jumbo's broader chamber lets the blend stay open"
  */
-function getPipeNarrativeClause(pipe, blend) {
+function getPipeNarrativeClause(pipe) {
   if (!pipe) return '';
   const shape     = (pipe.shape || pipe.bowl_style || '').toLowerCase();
   const sizeClass = (pipe.sizeClass || '').toLowerCase();
@@ -613,7 +613,7 @@ function buildNarrativeExplanation(pipe, blend, bottle, variantIdx = 0) {
   const bottleName   = bottle?.name || 'This pour';
   const abvNote      = abv > 0 ? ` at ${abv}%` : '';
   const isComplement = pairingLogic?.logic === 'complement';
-  const pipeClause   = pipe ? getPipeNarrativeClause(pipe, blend) : '';
+  const pipeClause   = pipe ? getPipeNarrativeClause(pipe) : '';
 
   let narrative;
 
