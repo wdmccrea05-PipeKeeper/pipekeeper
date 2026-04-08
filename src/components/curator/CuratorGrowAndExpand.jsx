@@ -66,40 +66,47 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
 
   return (
     <div
-      className="rounded-xl p-3.5 space-y-2.5"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.16)' }}
+      style={{
+        background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+        borderRadius: '18px',
+        padding: '24px',
+      }}
     >
       {/* Header */}
       <div className="flex items-start gap-2.5">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
             <span
-              className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-              style={{ background: mc.bg, color: mc.text, border: `1px solid ${mc.border}` }}
+              style={{ background: mc.bg, color: mc.text, border: `1px solid ${mc.border}`, fontSize: '13px', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}
             >
               {mc.label}
             </span>
             {subLabel && (
               <span
-                className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                style={{ background: 'rgba(80,80,80,0.1)', color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(100,100,100,0.15)' }}
+                style={{ background: 'rgba(255,255,255,0.06)', color: '#A1A1AA', fontSize: '13px', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}
               >
                 {subLabel}
               </span>
             )}
             {suggestion.reason === 'preference_match' && (
               <span
-                className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                style={{ background: 'rgba(140,105,65,0.15)', color: 'rgba(212,165,116,0.9)', border: '1px solid rgba(140,105,65,0.3)' }}
+                style={{ background: 'rgba(198,161,91,0.15)', color: '#C6A15B', border: '1px solid rgba(198,161,91,0.3)', fontSize: '13px', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}
               >
                 Matches your profile
               </span>
             )}
           </div>
-          <p className="text-sm font-bold leading-tight" style={{ color: '#F5F1E7' }}>
+          <p style={{ color: '#F5F5F7', fontSize: '18px', fontWeight: 600, lineHeight: 1.3, margin: 0 }}>
             {suggestion.title}
           </p>
-          <p className="text-xs mt-0.5 leading-snug" style={{ color: 'rgba(224,216,200,0.55)' }}>
+          {suggestion.gap && (
+            <p style={{ color: '#F5F5F7', fontSize: '16px', lineHeight: 1.6, marginTop: '8px' }}>
+              You are missing {suggestion.gap}.
+            </p>
+          )}
+          <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: suggestion.gap ? '4px' : '8px' }}>
             {suggestion.summary}
           </p>
         </div>
@@ -118,8 +125,8 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
       {/* Actions */}
       <div className="flex items-center gap-2 flex-wrap">
         {added ? (
-          <span className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(80,180,130,0.9)' }}>
-            <CheckCircle2 className="w-3.5 h-3.5" />
+          <span className="inline-flex items-center gap-2" style={{ color: '#22C55E', fontSize: '16px', fontWeight: 600 }}>
+            <CheckCircle2 className="w-5 h-5" />
             Added to Want List
           </span>
         ) : (
@@ -127,10 +134,10 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
             type="button"
             onClick={handleAdd}
             disabled={adding || !userEmail}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold transition-all disabled:opacity-50"
-            style={{ background: 'rgba(140,105,65,0.2)', color: 'rgba(212,165,116,1)', border: '1px solid rgba(140,105,65,0.35)' }}
+            className="inline-flex items-center gap-2 font-semibold transition-all disabled:opacity-50"
+            style={{ background: '#C6A15B', color: '#0B0B0C', height: '40px', padding: '0 16px', borderRadius: '12px', fontSize: '14px', border: 'none' }}
           >
-            {adding ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+            {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             {adding ? 'Adding…' : 'Add to Want List'}
           </button>
         )}
@@ -138,10 +145,10 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
           <button
             type="button"
             onClick={() => onAskCurator(suggestion)}
-            className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition-all"
-            style={{ background: 'rgba(74,124,156,0.1)', color: 'rgba(120,170,220,0.8)', border: '1px solid rgba(74,124,156,0.2)' }}
+            className="inline-flex items-center gap-2 transition-all"
+            style={{ color: '#A1A1AA', background: 'transparent', border: 'none', fontSize: '14px', height: '40px', padding: '0 8px' }}
           >
-            <HelpCircle className="w-3 h-3" />
+            <HelpCircle className="w-4 h-4" />
             Ask Curator
           </button>
         )}
@@ -172,8 +179,8 @@ function GrowSection({ label, suggestions, userEmail, onAskCurator }) {
         aria-expanded={!collapsed}
       >
         <span
-          className="text-[11px] font-bold uppercase tracking-widest shrink-0"
-          style={{ color: 'rgba(224,216,200,0.45)' }}
+          style={{ color: '#71717A', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}
+          className="shrink-0"
         >
           {label}
         </span>
@@ -236,29 +243,19 @@ export default function CuratorGrowAndExpand({ collectionContext = {}, preferenc
     <div className="space-y-5">
       {/* Title */}
       <div>
-        <h2 className="text-base font-bold" style={{ color: '#F5F1E7' }}>
+        <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, letterSpacing: '-0.3px', margin: 0 }}>
           Grow &amp; Expand
         </h2>
-        <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-          Discover what's missing — explore new categories outside your current collection
+        <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>
+          Discover what&apos;s missing — explore new categories outside your current collection
         </p>
       </div>
 
       {/* Distinction note */}
       <div
-        className="rounded-xl p-3 text-xs"
-        style={{ background: 'rgba(140,105,65,0.07)', border: '1px solid rgba(140,105,65,0.18)' }}
+        style={{ background: 'rgba(198,161,91,0.08)', border: '1px solid rgba(198,161,91,0.2)', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', color: '#A1A1AA' }}
       >
-        <span className="font-semibold" style={{ color: 'rgba(212,165,116,0.85)' }}>
-          Add to Want List
-        </span>
-        <span style={{ color: 'rgba(224,216,200,0.5)' }}>
-          {' '}— track items to explore. Items already owned or tracked are in{' '}
-        </span>
-        <span className="font-semibold" style={{ color: 'rgba(160,200,240,0.85)' }}>
-          Purchase &amp; Restock
-        </span>
-        <span style={{ color: 'rgba(224,216,200,0.5)' }}>.</span>
+        Items added here go to your <span style={{ color: '#C6A15B', fontWeight: 600 }}>Want List</span>. Items already owned or tracked are in <span style={{ color: '#C6A15B', fontWeight: 600 }}>Purchase &amp; Restock</span>.
       </div>
 
       {!hasAny ? (

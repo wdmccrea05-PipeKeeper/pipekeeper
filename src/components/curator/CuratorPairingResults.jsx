@@ -196,6 +196,16 @@ export default function CuratorPairingResults({ pairings = [], onAction }) {
                     </p>
                   </div>
                 )}
+                {pairing.pipeInfluence && (
+                  <div className="flex items-start gap-3">
+                    <span style={{ color: '#C6A15B', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', minWidth: '72px', paddingTop: '2px', flexShrink: 0 }}>
+                      PIPE:
+                    </span>
+                    <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, margin: 0 }}>
+                      {pairing.pipeInfluence}
+                    </p>
+                  </div>
+                )}
                 {pairing.outcome && (
                   <div className="flex items-start gap-3">
                     <span style={{ color: '#C6A15B', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', minWidth: '72px', paddingTop: '2px', flexShrink: 0 }}>
