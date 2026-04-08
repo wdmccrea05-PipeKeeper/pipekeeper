@@ -57,24 +57,26 @@ function computeSummary(sections) {
 function SummaryCard({ value, label, color, subtext }) {
   return (
     <div
-      className="rounded-2xl p-5 flex flex-col gap-1.5 min-w-0"
+      className="flex flex-col gap-2 min-w-0"
       style={{
-        background: 'rgba(255,255,255,0.035)',
-        border: `1px solid ${color}20`,
-        boxShadow: '0 4px 16px rgba(0,0,0,0.14)',
+        background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+        borderRadius: '18px',
+        padding: '24px',
       }}
     >
       <span
-        className="text-3xl font-bold tabular-nums leading-none"
-        style={{ color }}
+        className="tabular-nums leading-none"
+        style={{ color, fontSize: '32px', fontWeight: 700 }}
       >
         {value}
       </span>
-      <span className="text-sm font-semibold leading-tight" style={{ color: 'rgba(224,216,200,0.8)' }}>
+      <span style={{ color: '#F5F5F7', fontSize: '16px', fontWeight: 600 }}>
         {label}
       </span>
       {subtext && (
-        <span className="text-xs leading-tight" style={{ color: 'rgba(224,216,200,0.4)' }}>
+        <span style={{ color: '#71717A', fontSize: '13px' }}>
           {subtext}
         </span>
       )}
@@ -202,12 +204,15 @@ export default function CuratorResultsBoard({
               key={key}
               type="button"
               onClick={() => setModuleFilter(key)}
-              className="text-xs px-3 py-1.5 rounded-lg font-medium transition-all"
-              style={
-                moduleFilter === key
-                  ? { background: 'rgba(140,105,65,0.25)', color: '#F5F1E7', border: '1px solid rgba(140,105,65,0.4)' }
-                  : { background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(140,105,65,0.12)' }
-              }
+              className="font-semibold transition-all"
+              style={{
+                fontSize: '13px',
+                padding: '6px 14px',
+                borderRadius: '999px',
+                ...(moduleFilter === key
+                  ? { background: '#C6A15B', color: '#0B0B0C', border: 'none' }
+                  : { background: 'transparent', color: '#A1A1AA', border: '1px solid rgba(255,255,255,0.1)' })
+              }}
             >
               {label}
             </button>
@@ -216,11 +221,11 @@ export default function CuratorResultsBoard({
         <button
           type="button"
           onClick={handleRefresh}
-          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all"
-          style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.45)', border: '1px solid rgba(140,105,65,0.12)' }}
+          className="inline-flex items-center gap-2 font-semibold transition-all"
+          style={{ background: 'transparent', color: '#A1A1AA', border: '1px solid rgba(255,255,255,0.1)', fontSize: '13px', padding: '6px 14px', borderRadius: '12px' }}
           title="Refresh analysis"
         >
-          <RefreshCw className="w-3 h-3" />
+          <RefreshCw className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Refresh</span>
         </button>
       </div>
@@ -251,7 +256,7 @@ export default function CuratorResultsBoard({
       {boardGroups.length === 0 ? (
         <EmptyState moduleFilter={moduleFilter} onRefresh={handleRefresh} />
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-8">
           {boardGroups.map((group) => (
             <BoardSection
               key={group.id}

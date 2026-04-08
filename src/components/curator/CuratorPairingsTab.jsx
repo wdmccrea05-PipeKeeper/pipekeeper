@@ -99,10 +99,10 @@ export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefre
       {/* Title + actions */}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-base font-bold" style={{ color: '#F5F1E7' }}>
+          <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, letterSpacing: '-0.3px', margin: 0 }}>
             Pairings
           </h2>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
+          <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>
             Pipe &amp; whiskey, cigar &amp; whiskey — based on your collection
           </p>
         </div>
@@ -111,10 +111,10 @@ export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefre
             <button
               type="button"
               onClick={onAskCurator}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg"
-              style={{ background: 'rgba(74,124,156,0.12)', color: 'rgba(120,170,220,0.9)', border: '1px solid rgba(74,124,156,0.25)' }}
+              className="inline-flex items-center gap-2 font-semibold transition-all"
+              style={{ background: 'transparent', color: '#F5F5F7', border: '1px solid rgba(255,255,255,0.1)', fontSize: '13px', padding: '6px 14px', borderRadius: '12px' }}
             >
-              <HelpCircle className="w-3 h-3" />
+              <HelpCircle className="w-3.5 h-3.5" />
               Ask Curator
             </button>
           )}
@@ -122,11 +122,11 @@ export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefre
             <button
               type="button"
               onClick={onRefresh}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg"
-              style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(140,105,65,0.14)' }}
+              className="inline-flex items-center gap-2 transition-all"
+              style={{ background: 'transparent', color: '#A1A1AA', border: '1px solid rgba(255,255,255,0.1)', fontSize: '13px', padding: '6px 14px', borderRadius: '12px' }}
               title="Refresh pairings"
             >
-              <RefreshCw className="w-3 h-3" />
+              <RefreshCw className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
@@ -134,8 +134,8 @@ export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefre
 
       {/* Result sub-tabs */}
       <div
-        className="flex gap-1 p-1 rounded-xl"
-        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(140,105,65,0.12)' }}
+        className="flex gap-2 overflow-x-auto"
+        style={{ padding: '4px 0' }}
       >
         {PAIRING_TABS.map((tab) => {
           const isActive = activeTab === tab.key;
@@ -145,18 +145,28 @@ export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefre
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-all"
-              style={
-                isActive
-                  ? { background: 'rgba(140,105,65,0.22)', color: '#F5F1E7', border: '1px solid rgba(140,105,65,0.35)' }
-                  : { background: 'transparent', color: 'rgba(224,216,200,0.45)', border: '1px solid transparent' }
-              }
+              className="inline-flex items-center gap-2 font-semibold transition-all whitespace-nowrap shrink-0"
+              style={{
+                fontSize: '13px',
+                padding: '6px 16px',
+                borderRadius: '999px',
+                height: '36px',
+                ...(isActive
+                  ? { background: '#C6A15B', color: '#0B0B0C', border: 'none' }
+                  : { background: 'transparent', color: '#A1A1AA', border: '1px solid rgba(255,255,255,0.1)' })
+              }}
             >
-              <span className="truncate">{tab.label}</span>
+              <span>{tab.label}</span>
               {count > 0 && (
                 <span
-                  className="text-[9px] px-1.5 py-0.5 rounded-full tabular-nums shrink-0"
-                  style={{ background: 'rgba(80,80,80,0.15)', color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(100,100,100,0.18)' }}
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    background: isActive ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.08)',
+                    color: isActive ? '#0B0B0C' : '#A1A1AA',
+                    padding: '1px 7px',
+                    borderRadius: '999px',
+                  }}
                 >
                   {count}
                 </span>
@@ -167,7 +177,7 @@ export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefre
       </div>
 
       {/* Tab hint */}
-      <p className="text-xs" style={{ color: 'rgba(224,216,200,0.4)' }}>
+      <p style={{ color: '#71717A', fontSize: '13px', lineHeight: 1.6 }}>
         {activeDef.hint}
       </p>
 

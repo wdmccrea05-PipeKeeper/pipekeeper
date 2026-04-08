@@ -46,30 +46,22 @@ const TRIO_LABELS = {
 function TrioItem({ item, slotLabel }) {
   const type   = item?.type || item?.recordType || 'default';
   const name   = item?.name || '—';
-  const color  = TYPE_COLORS[type] || 'rgba(224,216,200,0.7)';
-  const page   = TYPE_PAGE[type];
+  const color  = TYPE_COLORS[type] || '#F5F5F7';
   const label  = slotLabel || TRIO_LABELS[type] || type;
 
   return (
     <div
-      className="flex-1 min-w-0 rounded-lg px-3 py-2.5 text-center space-y-1"
-      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,105,65,0.15)' }}
+      className="flex-1 min-w-0 text-center"
+      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px 12px' }}
     >
-      <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: 'rgba(224,216,200,0.38)' }}>
+      <p style={{ color: '#71717A', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
         {label}
       </p>
-      <p className="text-xs font-bold truncate leading-snug" style={{ color }} title={name}>
+      <p style={{ color, fontSize: '15px', fontWeight: 700, lineHeight: 1.3 }} title={name}>
         {name}
       </p>
-      {page && (
-        <a
-          href={createPageUrl(page)}
-          className="inline-flex items-center gap-0.5 text-[9px]"
-          style={{ color: 'rgba(224,216,200,0.3)' }}
-        >
-          <ExternalLink className="w-2 h-2" />
-          open
-        </a>
+      {item?.status && (
+        <p style={{ color: '#71717A', fontSize: '13px', marginTop: '4px' }}>{item.status}</p>
       )}
     </div>
   );
@@ -122,25 +114,36 @@ export default function CuratorPairingResults({ pairings = [], onAction }) {
         return (
           <div
             key={pairing.id || idx}
-            className="rounded-xl p-4"
             style={{
-              background: 'rgba(255,255,255,0.035)',
-              border: '1px solid rgba(140,105,65,0.16)',
+              background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+              borderRadius: '18px',
+              padding: '24px',
             }}
           >
-            {/* Header: complement/contrast badge + confidence */}
-            <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
-              {typeStyle && (
+            {/* Header: confidence tag (top-left) + pairing type */}
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              {pairing.confidenceLabel && (
                 <span
-                  className="text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider"
-                  style={{ background: typeStyle.bg, color: typeStyle.color, border: typeStyle.border }}
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    padding: '3px 12px',
+                    borderRadius: '999px',
+                    background: pairing.confidenceLabel?.toLowerCase().includes('high') ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)',
+                    color: pairing.confidenceLabel?.toLowerCase().includes('high') ? '#22C55E' : '#F59E0B',
+                    border: pairing.confidenceLabel?.toLowerCase().includes('high') ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(245,158,11,0.3)',
+                  }}
                 >
-                  {typeStyle.label} Pairing
+                  {pairing.confidenceLabel?.toLowerCase().includes('high') ? 'High Confidence' : 'Experimental'}
                 </span>
               )}
-              {pairing.confidenceLabel && (
-                <span className="text-[10px] font-medium" style={{ color: 'rgba(180,140,75,0.65)' }}>
-                  {pairing.confidenceLabel} confidence
+              {typeStyle && (
+                <span
+                  style={{ background: typeStyle.bg, color: typeStyle.color, border: typeStyle.border, fontSize: '13px', fontWeight: 600, padding: '3px 12px', borderRadius: '999px' }}
+                >
+                  {typeStyle.label} Pairing
                 </span>
               )}
             </div>
@@ -162,43 +165,43 @@ export default function CuratorPairingResults({ pairings = [], onAction }) {
 
             {/* Main expert rationale */}
             {pairing.rationale && (
-              <p className="text-sm leading-relaxed mb-3" style={{ color: 'rgba(224,216,200,0.82)' }}>
+              <p style={{ color: '#F5F5F7', fontSize: '16px', lineHeight: 1.6, marginBottom: '16px' }}>
                 {pairing.rationale}
               </p>
             )}
 
-            {/* Secondary explanation fields */}
+            {/* Structured FLAVOR / STRUCTURE / SESSION rows */}
             {(pairing.flavorInteraction || pairing.structuralCompatibility || pairing.outcome) && (
               <div
-                className="space-y-2 mb-3 pt-2.5"
-                style={{ borderTop: '1px solid rgba(140,105,65,0.12)' }}
+                className="space-y-3"
+                style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px', marginBottom: '16px' }}
               >
                 {pairing.flavorInteraction && (
-                  <div className="flex items-start gap-2">
-                    <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5 shrink-0 w-14" style={{ color: 'rgba(212,165,116,0.55)' }}>
-                      Flavor
+                  <div className="flex items-start gap-3">
+                    <span style={{ color: '#C6A15B', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', minWidth: '72px', paddingTop: '2px', flexShrink: 0 }}>
+                      FLAVOR:
                     </span>
-                    <p className="text-xs leading-snug" style={{ color: 'rgba(224,216,200,0.58)' }}>
+                    <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, margin: 0 }}>
                       {pairing.flavorInteraction}
                     </p>
                   </div>
                 )}
                 {pairing.structuralCompatibility && (
-                  <div className="flex items-start gap-2">
-                    <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5 shrink-0 w-14" style={{ color: 'rgba(212,165,116,0.55)' }}>
-                      Structure
+                  <div className="flex items-start gap-3">
+                    <span style={{ color: '#C6A15B', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', minWidth: '72px', paddingTop: '2px', flexShrink: 0 }}>
+                      STRUCTURE:
                     </span>
-                    <p className="text-xs leading-snug" style={{ color: 'rgba(224,216,200,0.58)' }}>
+                    <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, margin: 0 }}>
                       {pairing.structuralCompatibility}
                     </p>
                   </div>
                 )}
                 {pairing.outcome && (
-                  <div className="flex items-start gap-2">
-                    <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5 shrink-0 w-14" style={{ color: 'rgba(212,165,116,0.55)' }}>
-                      Session
+                  <div className="flex items-start gap-3">
+                    <span style={{ color: '#C6A15B', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', minWidth: '72px', paddingTop: '2px', flexShrink: 0 }}>
+                      SESSION:
                     </span>
-                    <p className="text-xs leading-snug" style={{ color: 'rgba(224,216,200,0.58)' }}>
+                    <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, margin: 0 }}>
                       {pairing.outcome}
                     </p>
                   </div>
@@ -208,17 +211,17 @@ export default function CuratorPairingResults({ pairings = [], onAction }) {
 
             {/* Action row */}
             <div
-              className="flex flex-wrap items-center gap-2 pt-2"
-              style={{ borderTop: '1px solid rgba(140,105,65,0.1)' }}
+              className="flex flex-wrap items-center gap-3"
+              style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px' }}
             >
               {onAction && isPipe && (
                 <button
                   type="button"
                   onClick={() => onAction('build_session', pairing)}
-                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold"
-                  style={{ background: 'rgba(74,124,92,0.18)', color: 'rgba(80,180,130,0.95)', border: '1px solid rgba(74,124,92,0.32)' }}
+                  className="inline-flex items-center gap-2 font-semibold transition-all"
+                  style={{ background: '#C6A15B', color: '#0B0B0C', height: '40px', padding: '0 16px', borderRadius: '12px', fontSize: '14px', border: 'none' }}
                 >
-                  <BookOpen className="w-3 h-3" />
+                  <BookOpen className="w-4 h-4" />
                   Build Session
                 </button>
               )}
@@ -227,10 +230,10 @@ export default function CuratorPairingResults({ pairings = [], onAction }) {
                 <button
                   type="button"
                   onClick={() => onAction('save_pairing', pairing)}
-                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold"
-                  style={{ background: 'rgba(180,140,75,0.1)', color: 'rgba(212,165,116,0.9)', border: '1px solid rgba(180,140,75,0.22)' }}
+                  className="inline-flex items-center gap-2 font-semibold transition-all"
+                  style={{ background: 'transparent', color: '#F5F5F7', height: '40px', padding: '0 16px', borderRadius: '12px', fontSize: '14px', border: '1px solid rgba(255,255,255,0.1)' }}
                 >
-                  <Star className="w-3 h-3" />
+                  <Star className="w-4 h-4" />
                   Save Pairing
                 </button>
               )}
@@ -239,10 +242,10 @@ export default function CuratorPairingResults({ pairings = [], onAction }) {
                 <button
                   type="button"
                   onClick={() => onAction('ask_curator', pairing)}
-                  className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg"
-                  style={{ color: 'rgba(120,170,220,0.7)', background: 'transparent', border: 'none' }}
+                  className="inline-flex items-center gap-2 transition-all"
+                  style={{ color: '#A1A1AA', background: 'transparent', border: 'none', fontSize: '14px', height: '40px', padding: '0 8px' }}
                 >
-                  <HelpCircle className="w-3 h-3" />
+                  <HelpCircle className="w-4 h-4" />
                   Ask Curator
                 </button>
               )}

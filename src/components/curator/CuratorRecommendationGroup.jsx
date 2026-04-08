@@ -58,26 +58,41 @@ function PrimaryBtn({ onClick, disabled, loading, icon: Icon, label }) {
       type="button"
       onClick={onClick}
       disabled={disabled || loading}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
-      style={{ background: 'rgba(74,124,92,0.25)', color: 'rgba(80,180,130,1)', border: '1px solid rgba(74,124,92,0.4)' }}
+      className="inline-flex items-center gap-2 font-semibold transition-all disabled:opacity-50"
+      style={{
+        background: '#C6A15B',
+        color: '#0B0B0C',
+        height: '40px',
+        padding: '0 16px',
+        borderRadius: '12px',
+        fontSize: '14px',
+        border: 'none',
+      }}
     >
-      {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : Icon ? <Icon className="w-3 h-3" /> : null}
+      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : Icon ? <Icon className="w-4 h-4" /> : null}
       {loading ? 'Applying…' : label}
     </button>
   );
 }
 
-function SecondaryBtn({ onClick, disabled, icon: Icon, label, colorText }) {
-  const c = colorText || 'rgba(224,216,200,0.6)';
+function SecondaryBtn({ onClick, disabled, icon: Icon, label }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
-      style={{ background: 'rgba(255,255,255,0.05)', color: c, border: '1px solid rgba(140,105,65,0.2)' }}
+      className="inline-flex items-center gap-2 font-semibold transition-all disabled:opacity-50"
+      style={{
+        background: 'transparent',
+        color: '#F5F5F7',
+        height: '40px',
+        padding: '0 16px',
+        borderRadius: '12px',
+        fontSize: '14px',
+        border: '1px solid rgba(255,255,255,0.1)',
+      }}
     >
-      {Icon ? <Icon className="w-3 h-3" /> : null}
+      {Icon ? <Icon className="w-4 h-4" /> : null}
       {label}
     </button>
   );
@@ -88,10 +103,17 @@ function TertiaryBtn({ onClick, icon: Icon, label }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg transition-all"
-      style={{ color: 'rgba(224,216,200,0.35)', background: 'transparent' }}
+      className="inline-flex items-center gap-1.5 transition-all"
+      style={{
+        color: '#A1A1AA',
+        background: 'transparent',
+        border: 'none',
+        fontSize: '14px',
+        padding: '0 8px',
+        height: '40px',
+      }}
     >
-      {Icon ? <Icon className="w-3 h-3" /> : null}
+      {Icon ? <Icon className="w-4 h-4" /> : null}
       {label}
     </button>
   );
@@ -456,47 +478,48 @@ export default function CuratorRecommendationGroup({
 
   return (
     <div
-      className="rounded-2xl p-5 space-y-3.5"
+      className="space-y-4"
       style={{
-        background: 'rgba(255,255,255,0.035)',
-        border: '1px solid rgba(140,105,65,0.2)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
+        background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+        borderRadius: '18px',
+        padding: '24px',
       }}
     >
       {/* Header: badges + title + item count */}
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           {/* Badge row */}
-          <div className="flex items-center flex-wrap gap-1.5 mb-2">
+          <div className="flex items-center flex-wrap gap-2 mb-3">
             {typeBadge && (
               <span
-                className="text-[10px] px-2.5 py-0.5 rounded-full font-semibold"
-                style={{ background: typeBadge.bg, color: typeBadge.text }}
+                className="font-semibold"
+                style={{ background: typeBadge.bg, color: typeBadge.text, fontSize: '13px', padding: '2px 10px', borderRadius: '999px' }}
               >
                 {typeBadge.label}
               </span>
             )}
             {modInfo && (
-              <span className="text-[10px] font-semibold" style={{ color: modInfo.text }}>
+              <span style={{ color: modInfo.text, fontSize: '13px', fontWeight: 600 }}>
                 {modInfo.label}
               </span>
             )}
             {priStyle && (
               <span
-                className="text-[10px] px-2.5 py-0.5 rounded-full font-semibold"
-                style={{ background: priStyle.bg, color: priStyle.text, border: `1px solid ${priStyle.border}` }}
+                style={{ background: priStyle.bg, color: priStyle.text, border: `1px solid ${priStyle.border}`, fontSize: '13px', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}
               >
                 {priStyle.label}
               </span>
             )}
           </div>
           {/* Title */}
-          <p className="text-[1.0625rem] font-bold leading-snug" style={{ color: '#F5F1E7' }}>
+          <p style={{ color: '#F5F5F7', fontSize: '18px', fontWeight: 600, lineHeight: 1.3, margin: 0 }}>
             {rec.title}
           </p>
           {/* Summary line */}
           {rec.summary && (
-            <p className="text-sm mt-1 leading-snug" style={{ color: 'rgba(224,216,200,0.6)' }}>
+            <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '8px' }}>
               {rec.summary}
             </p>
           )}
@@ -514,7 +537,7 @@ export default function CuratorRecommendationGroup({
 
       {/* Why it matters */}
       {rec.whyItMatters && (
-        <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.7)' }}>
+        <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6 }}>
           {rec.whyItMatters}
         </p>
       )}
@@ -526,8 +549,8 @@ export default function CuratorRecommendationGroup({
 
       {/* Action row */}
       <div
-        className="flex flex-wrap items-center gap-2 pt-1"
-        style={{ borderTop: '1px solid rgba(140,105,65,0.1)' }}
+        className="flex flex-wrap items-center gap-3"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px', marginTop: '8px' }}
       >
         {at === ACTION_TYPE.AUTO_FIX && (
           <AutoFixActions rec={rec} onAction={onAction} />
