@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { base44 } from '@/api/base44Client';
+
 import CuratorResultsBoard from '@/components/curator/CuratorResultsBoard';
 import CuratorPairingsTab from '@/components/curator/CuratorPairingsTab';
 import CuratorPurchaseQueue from '@/components/curator/CuratorPurchaseQueue';
@@ -18,7 +20,34 @@ export default function CuratorWorkspace({
   const [pairings, setPairings] = useState([]);
   const [threadId, setThreadId] = useState(null);
 
-  // 🔥 LOAD ALL DATA
+  // 🔥 FULL DATA LOADER (FIXED — NO EMPTY STATE)
+  const buildContext = async () => {
+    try {
+      const [pipes, blends, bottles, logs] = await Promise.all([
+        base44.entities.Pipe.list(),
+        base44.entities.TobaccoBlend.list(),
+        base44.entities.Bottle.list(),
+        base44.entities.SmokingLog?.list?.() || [],
+      ]);
+
+      return {
+        pipes: pipes || [],
+        blends: blends || [],
+        bottles: bottles || [],
+        smokingLogs: logs || [],
+      };
+    } catch (err) {
+      console.error('Failed to load curator data', err);
+      return {
+        pipes: [],
+        blends: [],
+        bottles: [],
+        smokingLogs: [],
+      };
+    }
+  };
+
+  // 🔥 LOAD EVERYTHING
   const loadData = useCallback(async () => {
     setLoading(true);
 
@@ -52,9 +81,9 @@ export default function CuratorWorkspace({
     loadData();
   }, [loadData]);
 
-  // 🔥 SIMPLE ACTION HANDLER (no stale state bugs)
+  // 🔥 ACTION HANDLER — FORCE REFRESH (no stale state)
   const handleAction = async () => {
-    await loadData(); // always refresh after action
+    await loadData();
   };
 
   if (loading) {
@@ -65,7 +94,7 @@ export default function CuratorWorkspace({
     );
   }
 
-  // 🔥 SURFACE SWITCH (ONLY ONE NAV EXISTS NOW)
+  // 🔥 SINGLE SURFACE RENDER (NO DUPLICATE NAV)
   switch (activeSurface) {
     case 'record_optimization':
     case 'collection_optimization':
@@ -124,14 +153,4 @@ function countItems(sections, title) {
     .filter((s) => s.title === title)
     .flatMap((s) => s.recommendations || [])
     .reduce((sum, r) => sum + (r.items?.length || 0), 0);
-}
-
-async function buildContext() {
-  // 🔥 Replace with your actual data loader
-  return {
-    pipes: [],
-    blends: [],
-    bottles: [],
-    smokingLogs: [],
-  };
 }
