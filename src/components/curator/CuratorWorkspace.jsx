@@ -101,8 +101,10 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
   const [pairingRecs, setPairingRecs]     = useState([]);
   const [analysisRun, setAnalysisRun]     = useState(false);
 
-  // resolvedRecIds — immediately removes resolved recs without waiting for re-analysis
+  // resolvedRecIds — removes entire recommendation cards immediately
   const [resolvedRecIds, setResolvedRecIds] = useState(new Set());
+  // resolvedItemIds — tracks individual record IDs that were fixed; used to filter items within cards
+  const [resolvedItemIds, setResolvedItemIds] = useState(new Set());
 
   const tasteProfile = useTasteProfile({
     pipes:       collectionContext.pipes       || [],
@@ -127,6 +129,7 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
     setSpecRecs(recs.filter((r) => r.goal === 'specialization_candidates'));
     setPairingRecs(generatePairingRecommendations({ ...collectionContext, preferences }));
     setResolvedRecIds(new Set());
+    setResolvedItemIds(new Set());
     setAnalysisRun(true);
   }, [collectionContext, preferences]);
 
@@ -136,16 +139,26 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
 
   useEffect(() => { setAnalysisRun(false); }, [collectionContext]);
 
-  // Helper: filter resolved recs out of any section list
+  // Helper: filter resolved recs out of any section list, also filtering item-level resolved records
   const filterResolved = useCallback((sections) => {
-    if (resolvedRecIds.size === 0) return sections;
+    if (resolvedRecIds.size === 0 && resolvedItemIds.size === 0) return sections;
     return sections
       .map((section) => ({
         ...section,
-        recommendations: section.recommendations.filter((r) => !resolvedRecIds.has(r.id)),
+        recommendations: section.recommendations
+          .filter((r) => !resolvedRecIds.has(r.id))
+          .map((r) => {
+            if (resolvedItemIds.size === 0 || !(r.items?.length > 0)) return r;
+            const filteredItems = r.items.filter(
+              (item) => !resolvedItemIds.has(item.recordId || item.id)
+            );
+            // _hadItems marks recs whose items were all filtered out so we can hide them
+            return { ...r, items: filteredItems, _hadItems: true };
+          })
+          .filter((r) => !r._hadItems || (r.items || []).length > 0),
       }))
       .filter((section) => section.recommendations.length > 0);
-  }, [resolvedRecIds]);
+  }, [resolvedRecIds, resolvedItemIds]);
 
   const visibleSections = useMemo(() => filterResolved(allSections), [allSections, filterResolved]);
 
@@ -191,10 +204,23 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
       userEmail: user?.email,
     });
 
-    // Immediately remove resolved rec from display
+    // Item-level optimistic resolution: remove fixed records from their cards immediately.
+    // If all items in a card are resolved, filterResolved will collapse the card automatically.
+    if (result?.ok && ['apply_fix', 'approve_changes'].includes(actionKey)) {
+      const ids = result.resolvedIds || result.resolvedRecordIds || [];
+      if (ids.length > 0) {
+        setResolvedItemIds((prev) => {
+          const next = new Set(prev);
+          ids.forEach((id) => next.add(id));
+          return next;
+        });
+      }
+    }
+
+    // Whole-card removal for dismiss-type actions (non-item-level)
     if (result?.ok && (
       result?.dismissed ||
-      ['apply_fix', 'approve_changes', 'apply_specialization', 'acknowledge', 'add_to_shopping_list',
+      ['apply_specialization', 'acknowledge', 'add_to_shopping_list',
        'add_to_rotation', 'mark_for_session', 'add_to_want_list'].includes(actionKey)
     )) {
       if (recommendation?.id) {
@@ -202,11 +228,10 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
       }
     }
 
-    // Wait for DB writes to settle before re-running analysis so fresh data is reflected
-    const DB_SETTLE_DELAY_MS = 800;
-    if (['apply_fix', 'approve_changes', 'apply_specialization'].includes(actionKey) && result?.applied > 0) {
+    // Invalidate collection queries so fresh data arrives and triggers a clean re-analysis.
+    // Do NOT force runAnalysis here — the collectionContext change effect handles re-run with fresh data.
+    if (['apply_fix', 'approve_changes', 'apply_specialization'].includes(actionKey) && result?.appliedCount > 0) {
       queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
-      setTimeout(() => runAnalysis(), DB_SETTLE_DELAY_MS);
     }
     if (actionKey === 'add_to_shopping_list') {
       queryClient.invalidateQueries({ queryKey: ['shoppingListItems'] });
@@ -215,7 +240,7 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
       queryClient.invalidateQueries({ queryKey: ['curatorCollection', 'wantList'] });
     }
     return result;
-  }, [user?.email, queryClient, navigate, openChat, runAnalysis]);
+  }, [user?.email, queryClient, navigate, openChat]);
 
   const handlePairingAction = useCallback((actionKey, pairing) => {
     if (actionKey === 'ask_curator') {

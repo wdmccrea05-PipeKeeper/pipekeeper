@@ -134,23 +134,16 @@ export default function CuratorPairingResults({ items = [], onAction }) {
               padding: '24px',
             }}
           >
-            {/* Header row: confidence + pairing type badge | score */}
-            <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-              <div className="flex items-center gap-2 flex-wrap">
-                {pairing.confidenceLabel && (
-                  <span style={{ ...confStyle, fontSize: '13px', fontWeight: 600, padding: '3px 12px', borderRadius: '999px' }}>
-                    {confStyle.label}
-                  </span>
-                )}
-                {ptStyle && (
-                  <span style={{ background: ptStyle.bg, color: ptStyle.color, border: ptStyle.border, fontSize: '13px', fontWeight: 600, padding: '3px 12px', borderRadius: '999px' }}>
-                    {ptStyle.label}
-                  </span>
-                )}
-              </div>
-              {pairing.score != null && (
-                <span style={{ color: '#C6A15B', fontSize: '13px', fontWeight: 700 }}>
-                  {Math.round(pairing.score * 100)}%
+            {/* Header row: confidence + pairing type badge */}
+            <div className="flex items-center gap-2 flex-wrap mb-4">
+              {pairing.confidenceLabel && (
+                <span style={{ ...confStyle, fontSize: '13px', fontWeight: 600, padding: '3px 12px', borderRadius: '999px' }}>
+                  {confStyle.label}
+                </span>
+              )}
+              {ptStyle && (
+                <span style={{ background: ptStyle.bg, color: ptStyle.color, border: ptStyle.border, fontSize: '13px', fontWeight: 600, padding: '3px 12px', borderRadius: '999px' }}>
+                  {ptStyle.label}
                 </span>
               )}
             </div>

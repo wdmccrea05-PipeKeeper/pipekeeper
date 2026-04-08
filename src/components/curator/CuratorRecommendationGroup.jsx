@@ -155,7 +155,6 @@ function InlineReviewPanel({ rec, onApply, onCancel }) {
 
 function RecordOptimizationActions({ rec, onAction }) {
   const [applying, setApplying] = useState(false);
-  const [done, setDone] = useState(false);
   const [showReview, setShowReview] = useState(false);
 
   const allItems = rec.items || [];
@@ -163,17 +162,14 @@ function RecordOptimizationActions({ rec, onAction }) {
   const hasPayloads = itemsWithPayloads.length > 0;
   const showAutoFix = rec.actionType === ACTION_TYPE.AUTO_FIX || hasPayloads;
 
-  if (done) return <DoneIndicator label="Changes Applied" />;
-
   const handleApplyFix = async () => {
     setApplying(true);
-    try { await onAction('apply_fix', rec); setDone(true); }
+    try { await onAction('apply_fix', rec); }
     finally { setApplying(false); }
   };
 
   const handleApprove = async () => {
     await onAction('approve_changes', rec);
-    setDone(true);
     setShowReview(false);
   };
 
@@ -236,23 +232,19 @@ function CollectionOptActions({ rec, onAction, onOpenGrowExpand }) {
 
 function AutoFixActions({ rec, onAction }) {
   const [applying, setApplying] = useState(false);
-  const [done, setDone] = useState(false);
   const [showReview, setShowReview] = useState(false);
 
   const allItems = rec.items || [];
   const hasPayloads = allItems.some((i) => i.proposedChange?.payload);
 
-  if (done) return <DoneIndicator label="Fix Applied" />;
-
   const handleApplyFix = async () => {
     setApplying(true);
-    try { await onAction('apply_fix', rec); setDone(true); }
+    try { await onAction('apply_fix', rec); }
     finally { setApplying(false); }
   };
 
   const handleApprove = async () => {
     await onAction('approve_changes', rec);
-    setDone(true);
     setShowReview(false);
   };
 
@@ -276,18 +268,15 @@ function AutoFixActions({ rec, onAction }) {
 
 function ReviewRequiredActions({ rec, onAction }) {
   const [applying, setApplying] = useState(false);
-  const [done, setDone] = useState(false);
   const [showReview, setShowReview] = useState(false);
 
   const allItems = rec.items || [];
   const itemsWithPayloads = allItems.filter((i) => i.proposedChange?.payload);
   const hasPayloads = itemsWithPayloads.length > 0;
 
-  if (done) return <DoneIndicator label="Changes Applied" />;
-
   const handleApprove = async () => {
     setApplying(true);
-    try { await onAction('approve_changes', rec); setDone(true); setShowReview(false); }
+    try { await onAction('approve_changes', rec); setShowReview(false); }
     finally { setApplying(false); }
   };
 

@@ -215,13 +215,15 @@ export async function executeRecommendationAction(recommendation, action, opts =
       }
 
       return {
-        ok:           true,
+        ok:              true,
         applied,
-        appliedCount: applied,
+        appliedCount:    applied,
         resolvedIds,
+        resolvedRecordIds: resolvedIds,
         failedIds,
         errors,
-        message:      `Applied to ${applied} item${applied > 1 ? 's' : ''}.`,
+        recommendationType: recommendation.actionType || null,
+        message:         `Applied to ${applied} item${applied > 1 ? 's' : ''}.`,
       };
     }
 
@@ -327,13 +329,15 @@ export async function executeRecommendationAction(recommendation, action, opts =
       }
 
       return {
-        ok:           true,
+        ok:              true,
         applied,
-        appliedCount: applied,
+        appliedCount:    applied,
         resolvedIds,
+        resolvedRecordIds: resolvedIds,
         failedIds,
         errors,
-        message:      `Changes approved for ${applied} item${applied > 1 ? 's' : ''}.`,
+        recommendationType: recommendation.actionType || null,
+        message:         `Changes approved for ${applied} item${applied > 1 ? 's' : ''}.`,
       };
     }
 

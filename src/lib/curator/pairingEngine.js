@@ -272,8 +272,13 @@ function getPipeCharacterNote(pipe, blend) {
  *   3. Pour logic    — sweetness / spice / proof / finish / smoke / oak / texture
  *   4. Interaction   — complement or contrast, how flavors work together
  *   5. Session feel  — what the combined experience is like
+ *
+ * @param {object} pipe
+ * @param {object} blend
+ * @param {object} bottle
+ * @param {number} [variantIdx=0]  — deterministic variant selector for opening sentences
  */
-function buildPipeBlendBottleRationale(pipe, blend, bottle) {
+function buildPipeBlendBottleRationale(pipe, blend, bottle, variantIdx = 0) {
   const blendType    = getBlendType(blend);
   const whiskeyType  = getWhiskeyType(bottle);
   const pairingLogic = BLEND_WHISKEY_PAIRING_LOGIC[blendType];
@@ -293,8 +298,8 @@ function buildPipeBlendBottleRationale(pipe, blend, bottle) {
       : 'Expect a dynamic session where each sip resets the palate and each draw reclaims the room.';
 
     const parts = [];
-    // Blend logic
-    parts.push(`${blendName}'s ${blendType} character brings ${getBlendFlavorNote(blendType)} to the bowl.`);
+    // Blend logic — varied opening
+    parts.push(buildSummaryOpening(blend, bottle, blendType, getBlendFlavorNote(blendType), variantIdx));
     // Pour logic
     parts.push(`${bottleName} delivers ${whiskeyChar}.`);
     // Interaction logic
@@ -307,16 +312,17 @@ function buildPipeBlendBottleRationale(pipe, blend, bottle) {
     return parts.join(' ');
   }
 
-  // Fallback: still be specific when we have data
+  // Fallback: still be specific when we have type data
   if (blendType && whiskeyType) {
     const parts = [
-      `${blendName}'s ${blendType} profile — ${getBlendFlavorNote(blendType)} — finds a workable partner in ${bottleName}'s ${whiskeyChar}.`,
+      `${blendName} is a ${blendType} blend — ${getBlendFlavorNote(blendType)}. ${bottleName} brings ${whiskeyChar}.`,
     ];
     if (pipeShort) parts.push(pipeShort + '.');
     return parts.join(' ');
   }
 
-  return `${blendName} + ${bottleName}${pipe ? ` in ${pipe.name}` : ''} — compatible flavor profiles matched from your collection.`;
+  // Minimal fallback — never use generic labels
+  return `${blendName} + ${bottleName}${pipe ? ` in ${pipe.name}` : ''} — the blend and the pour are matched by type logic from your collection.`;
 }
 
 /**
@@ -478,10 +484,72 @@ function getCigarPairingType(cigar) {
   return contrastStrengths.has(strength) ? 'contrast' : 'complement';
 }
 
+// ─── Explanation helpers ──────────────────────────────────────────────────────
+
+/**
+ * Deterministic variant index from two entity identifiers.
+ * Keeps explanations stable (same pair → same template variant) without randomness.
+ */
+function pairingVariantIndex(a, b, n = 4) {
+  const str = (a || '') + '|' + (b || '');
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0xFFFFFFFF;
+  return Math.abs(h) % n;
+}
+
+/**
+ * Build the FLAVOR explanation line — must reference actual interaction, never generic labels.
+ * No banned phrases: "compatible flavor profiles", "pairs nicely", "works well", "good match".
+ */
+function buildExplanationFlavor(blend, bottle) {
+  const blendType   = getBlendType(blend);
+  const whiskeyType = getWhiskeyType(bottle);
+  const logic       = blendType ? BLEND_WHISKEY_PAIRING_LOGIC[blendType] : null;
+  const blendFlavor = getBlendFlavorNote(blendType);
+  const whiskeyChar = getWhiskeyCharacter(bottle);
+
+  if (logic) {
+    const direction = logic.logic === 'complement' ? 'Complementary' : 'Contrast';
+    return `${direction}: ${blendFlavor} — ${logic.note.charAt(0).toUpperCase() + logic.note.slice(1)}`;
+  }
+
+  if (blendType && whiskeyType) {
+    return `${blendFlavor} meets ${whiskeyChar} — these two profiles interact by type logic without either erasing the other`;
+  }
+
+  if (blendType) {
+    return `${blendFlavor} — the blend's character drives the flavor dimension of this session`;
+  }
+
+  if (whiskeyChar) {
+    return `${whiskeyChar} — the pour anchors the session while the blend adds texture and smoke`;
+  }
+
+  return `Flavor matched from your collection by blend-type and whiskey-style affinity`;
+}
+
+/**
+ * Build the SUMMARY opening sentence with variation so repeated blend types
+ * don't all start with the identical sentence structure.
+ * Uses a deterministic 4-variant rotation keyed by blend+bottle IDs.
+ */
+function buildSummaryOpening(blend, bottle, blendType, blendFlavor, variantIdx) {
+  const blendName  = blend?.name  || 'This blend';
+  const bottleName = bottle?.name || 'This pour';
+  const openings = [
+    () => `${blendName}'s ${blendType || 'character'} brings ${blendFlavor} to the bowl.`,
+    () => `The bowl is loaded with ${blendName} — ${blendFlavor}.`,
+    () => `${blendType ? `${blendType} defines this draw` : 'This session starts'}: ${blendName} delivers ${blendFlavor}.`,
+    () => `${blendName} opens with ${blendFlavor} — ${bottleName} answers it.`,
+  ];
+  return openings[variantIdx % openings.length]();
+}
+
 
 const MS_PER_DAY             = 86_400_000; // milliseconds in one day
 const BOTTLE_REUSE_PENALTY   = 3;          // score penalty per additional use of the same bottle
 const BOTTLE_REUSE_HARD_CAP  = 2;          // a single bottle can appear in at most this many pairings
+const BLEND_REUSE_HARD_CAP   = 2;          // a single blend can appear in at most this many cross-tab pairings
 const MAX_BOTTLES_TO_SCORE   = 20;         // widen search window for diversity
 const MIN_PAIRING_SCORE      = 1;          // minimum adjusted score to include a pairing
 const MAX_ITEMS_PER_SUBTAB   = 3;          // hard cap on items per pairing sub-tab — enforced in engine
@@ -491,8 +559,9 @@ const MAX_ITEMS_PER_SUBTAB   = 3;          // hard cap on items per pairing sub-
 /**
  * Generate pipe + whiskey pairing recommendations.
  * Enforces ghosting rule: skips pipe/blend combinations where specialization conflicts.
+ * Enforces blend reuse cap across tabs via shared blendUsageCount.
  */
-function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottleUsageCount) {
+function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottleUsageCount, blendUsageCount) {
   if (!pipes.length || !bottles.length || !blends.length) return [];
 
   // Find most-used blends per pipe
@@ -510,7 +579,7 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
     const pipe = pipes[pipeIdx];
     const blendCounts = pipeBlendCounts[pipe.id] || {};
 
-    // Try each candidate blend in usage order, enforce ghosting rule
+    // Try each candidate blend in usage order, enforce ghosting rule + cross-tab reuse cap
     const sortedBlendIds = Object.entries(blendCounts)
       .sort((a, b) => b[1] - a[1])
       .map(([id]) => id);
@@ -523,17 +592,27 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
     for (const blendId of candidateBlendIds) {
       const candidate = blendById[blendId];
       if (!candidate) continue;
-      // Enforce ghosting rule — skip forbidden pipe/blend combinations
       if (violatesGhostingRule(pipe, candidate)) continue;
+      if ((blendUsageCount[blendId] || 0) >= BLEND_REUSE_HARD_CAP) continue;
       blend = candidate;
       break;
     }
 
-    // If no blend found from logs, try the cycling fallback (with ghosting check)
+    // If no blend found from logs, try the cycling fallback (with ghosting + reuse checks)
     if (!blend) {
       for (let offset = 0; offset < blends.length; offset++) {
         const candidate = blends[(pipeIdx + offset) % blends.length];
-        if (!violatesGhostingRule(pipe, candidate)) { blend = candidate; break; }
+        if (violatesGhostingRule(pipe, candidate)) continue;
+        if ((blendUsageCount[candidate.id] || 0) >= BLEND_REUSE_HARD_CAP) continue;
+        blend = candidate;
+        break;
+      }
+      // Last resort: ignore reuse cap if no alternatives remain
+      if (!blend) {
+        for (let offset = 0; offset < blends.length; offset++) {
+          const candidate = blends[(pipeIdx + offset) % blends.length];
+          if (!violatesGhostingRule(pipe, candidate)) { blend = candidate; break; }
+        }
       }
     }
 
@@ -558,24 +637,28 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
     if (!bestBottle || bestScore < MIN_PAIRING_SCORE) continue;
 
     bottleUsageCount[bestBottle.id] = (bottleUsageCount[bestBottle.id] || 0) + 1;
+    blendUsageCount[blend.id] = (blendUsageCount[blend.id] || 0) + 1;
 
-    const hasBlendType = !!getBlendType(blend);
+    const hasBlendType   = !!getBlendType(blend);
     const hasWhiskeyType = !!getWhiskeyType(bestBottle);
-    const hasLogData = sortedBlendIds.length > 0;
+    const hasLogData     = sortedBlendIds.length > 0;
+    const variantIdx     = pairingVariantIndex(blend.id || blend.name, bestBottle.id || bestBottle.name);
+    const pairingType    = getPairingType(blend, bestBottle);
+    const rationale      = buildPipeBlendBottleRationale(pipe, blend, bestBottle, variantIdx);
 
     pairingItems.push({
       id:            `pair_pw_${pipe.id}_${bestBottle.id}`,
       pairingMode:   PAIRING_MODE.DIRECT_PAIRING,
-      pairingType:   getPairingType(blend, bestBottle),
+      pairingType,
       leftItem:      { type: 'pipe', id: pipe.id, name: pipe.name, recordType: 'pipe' },
       blendBridge:   { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' },
       rightItem:     { type: 'bottle', id: bestBottle.id, name: bestBottle.name, recordType: 'bottle' },
       score:         bestScore,
-      rationale:     buildPipeBlendBottleRationale(pipe, blend, bestBottle),
+      rationale,
       flavorInteraction:       buildFlavorInteraction(blend, bestBottle),
       structuralCompatibility: buildStructuralCompatibility(blend, bestBottle),
       pipeInfluence:           getPipeCharacterNote(pipe, blend).whyNote,
-      outcome:                 buildPairingOutcome(getPairingType(blend, bestBottle), blend, bestBottle),
+      outcome:                 buildPairingOutcome(pairingType, blend, bestBottle),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       confidence:    computeConfidence({
         preferenceAlignment:   hasBlendType && hasWhiskeyType ? (bestScore >= 7 ? 0.9 : 0.6) : 0.4,
@@ -584,11 +667,11 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
         diversityContribution: 0.7,
       }),
       explanation: {
-        flavor:    `${getBlendFlavorNote(getBlendType(blend))} — ${BLEND_WHISKEY_PAIRING_LOGIC[getBlendType(blend)]?.note || 'Compatible flavor profiles matched from your collection'}`,
+        flavor:    buildExplanationFlavor(blend, bestBottle),
         structure: buildStructuralCompatibility(blend, bestBottle),
         pipe:      getPipeCharacterNote(pipe, blend).whyNote,
-        session:   buildPairingOutcome(getPairingType(blend, bestBottle), blend, bestBottle),
-        summary:   buildPipeBlendBottleRationale(pipe, blend, bestBottle).split('. ')[0] + '.',
+        session:   buildPairingOutcome(pairingType, blend, bestBottle),
+        summary:   rationale.split('. ')[0] + '.',
       },
       ownershipStatus: 'owned',
     });
@@ -626,17 +709,18 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
 /**
  * Generate thematic "Old Favorites" and "Rediscover" pairing recommendations.
  * These use different selection logic to give different suggestions than the primary pairing.
+ * Enforces blend reuse cap across tabs via shared blendUsageCount.
  */
-function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsageCount) {
+function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsageCount, blendUsageCount) {
   if (!pipes.length || !bottles.length || !blends.length) return [];
 
-  // Build blend usage counts across all logs
-  const blendUsageCount = {};
-  const blendLastUsed   = {};
+  // Build log-based blend usage counts and last-used timestamps (local to this function)
+  const blendLogCount = {};
+  const blendLastUsed = {};
   const now = Date.now();
   for (const log of smokingLogs) {
     if (!log.blend_id) continue;
-    blendUsageCount[log.blend_id] = (blendUsageCount[log.blend_id] || 0) + 1;
+    blendLogCount[log.blend_id] = (blendLogCount[log.blend_id] || 0) + 1;
     const ts = log.date ? new Date(log.date).getTime() : 0;
     if (!blendLastUsed[log.blend_id] || ts > blendLastUsed[log.blend_id]) {
       blendLastUsed[log.blend_id] = ts;
@@ -647,12 +731,15 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
 
   // ── Old Favorites: most-smoked blends with a great bottle match ─────────────
   const topBlends = blends
-    .filter((b) => (blendUsageCount[b.id] || 0) > 0)
-    .sort((a, b) => (blendUsageCount[b.id] || 0) - (blendUsageCount[a.id] || 0))
+    .filter((b) => (blendLogCount[b.id] || 0) > 0)
+    .sort((a, b) => (blendLogCount[b.id] || 0) - (blendLogCount[a.id] || 0))
     .slice(0, MAX_ITEMS_PER_SUBTAB);
 
   const favItems = [];
   for (const blend of topBlends) {
+    // Respect cross-tab blend reuse cap
+    if ((blendUsageCount[blend.id] || 0) >= BLEND_REUSE_HARD_CAP) continue;
+
     let best = null;
     let bestScore = -1;
     for (const bottle of bottles.slice(0, MAX_BOTTLES_TO_SCORE)) {
@@ -672,26 +759,32 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
     const pipe = pipes.find((p) => p.id === topPipeId) || pipes[0];
 
     bottleUsageCount[best.id] = (bottleUsageCount[best.id] || 0) + 1;
+    blendUsageCount[blend.id] = (blendUsageCount[blend.id] || 0) + 1;
+
+    const variantIdx  = pairingVariantIndex(blend.id || blend.name, best.id || best.name);
+    const pairingType = getPairingType(blend, best);
+    const rationale   = buildPipeBlendBottleRationale(pipe, blend, best, variantIdx);
+
     favItems.push({
       id:          `pair_fav_${blend.id}_${best.id}`,
       pairingMode: PAIRING_MODE.COLLECTION_MIX_MATCH,
-      pairingType: getPairingType(blend, best),
+      pairingType,
       leftItem:    pipe ? { type: 'pipe', id: pipe.id, name: pipe.name, recordType: 'pipe' } : { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' },
       blendBridge: pipe ? { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' } : null,
       rightItem:   { type: 'bottle', id: best.id, name: best.name, recordType: 'bottle' },
       score:       bestScore,
-      rationale:   buildPipeBlendBottleRationale(pipe, blend, best),
+      rationale,
       flavorInteraction:       buildFlavorInteraction(blend, best),
       structuralCompatibility: buildStructuralCompatibility(blend, best),
       pipeInfluence:           pipe ? getPipeCharacterNote(pipe, blend).whyNote : null,
-      outcome:                 buildPairingOutcome(getPairingType(blend, best), blend, best),
+      outcome:                 buildPairingOutcome(pairingType, blend, best),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       explanation: {
-        flavor:    `${getBlendFlavorNote(getBlendType(blend))} — ${BLEND_WHISKEY_PAIRING_LOGIC[getBlendType(blend)]?.note || 'Compatible flavor profiles matched from your collection'}`,
+        flavor:    buildExplanationFlavor(blend, best),
         structure: buildStructuralCompatibility(blend, best),
         pipe:      pipe ? getPipeCharacterNote(pipe, blend).whyNote : 'No pipe specified for this pairing',
-        session:   buildPairingOutcome(getPairingType(blend, best), blend, best),
-        summary:   buildPipeBlendBottleRationale(pipe, blend, best).split('. ')[0] + '.',
+        session:   buildPairingOutcome(pairingType, blend, best),
+        summary:   rationale.split('. ')[0] + '.',
       },
       ownershipStatus: 'owned',
     });
@@ -733,6 +826,9 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
 
   const rediscoverItems = [];
   for (const blend of rediscoverBlends) {
+    // Respect cross-tab blend reuse cap
+    if ((blendUsageCount[blend.id] || 0) >= BLEND_REUSE_HARD_CAP) continue;
+
     let best = null;
     let bestScore = -1;
     for (const bottle of bottles.slice(0, MAX_BOTTLES_TO_SCORE)) {
@@ -757,10 +853,12 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
     }
 
     bottleUsageCount[best.id] = (bottleUsageCount[best.id] || 0) + 1;
+    blendUsageCount[blend.id] = (blendUsageCount[blend.id] || 0) + 1;
 
-    const daysAgo = blendLastUsed[blend.id] ? Math.floor((now - blendLastUsed[blend.id]) / MS_PER_DAY) : null;
-    const blendType = getBlendType(blend);
+    const daysAgo     = blendLastUsed[blend.id] ? Math.floor((now - blendLastUsed[blend.id]) / MS_PER_DAY) : null;
+    const blendType   = getBlendType(blend);
     const whiskeyChar = getWhiskeyCharacter(best);
+    const pairingType = getPairingType(blend, best);
 
     const rediscoverRationale = daysAgo
       ? `${blend.name} has been sitting in your cellar for ${daysAgo} days. ` +
@@ -772,7 +870,7 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
     rediscoverItems.push({
       id:          `pair_rediscover_${blend.id}_${best.id}`,
       pairingMode: PAIRING_MODE.COLLECTION_MIX_MATCH,
-      pairingType: getPairingType(blend, best),
+      pairingType,
       leftItem:    pipe ? { type: 'pipe', id: pipe.id, name: pipe.name, recordType: 'pipe' } : { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' },
       blendBridge: pipe ? { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' } : null,
       rightItem:   { type: 'bottle', id: best.id, name: best.name, recordType: 'bottle' },
@@ -781,13 +879,13 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
       flavorInteraction:       buildFlavorInteraction(blend, best),
       structuralCompatibility: buildStructuralCompatibility(blend, best),
       pipeInfluence:           pipe ? getPipeCharacterNote(pipe, blend).whyNote : null,
-      outcome:                 buildPairingOutcome(getPairingType(blend, best), blend, best),
+      outcome:                 buildPairingOutcome(pairingType, blend, best),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       explanation: {
-        flavor:    `${getBlendFlavorNote(getBlendType(blend))} — ${BLEND_WHISKEY_PAIRING_LOGIC[getBlendType(blend)]?.note || 'Compatible flavor profiles matched from your collection'}`,
+        flavor:    buildExplanationFlavor(blend, best),
         structure: buildStructuralCompatibility(blend, best),
         pipe:      pipe ? getPipeCharacterNote(pipe, blend).whyNote : 'No pipe specified for this pairing',
-        session:   buildPairingOutcome(getPairingType(blend, best), blend, best),
+        session:   buildPairingOutcome(pairingType, blend, best),
         summary:   rediscoverRationale.split('. ')[0] + '.',
       },
       ownershipStatus: 'owned',
@@ -930,23 +1028,25 @@ function isBottleAcceptable(bottle, dislikedWhiskeyTypes) {
 /**
  * Generate "Something New" pairing suggestions — blends or pipes the user hasn't tried
  * much, paired with a well-matched bottle.
+ * Enforces blend reuse cap across tabs via shared blendUsageCount.
  */
-function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottleUsageCount, prefCtx) {
+function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottleUsageCount, prefCtx, blendUsageCount) {
   if (!pipes.length || !bottles.length || !blends.length) return [];
 
-  const blendUsageCount = {};
+  const blendLogCount = {};
   for (const log of smokingLogs) {
-    if (log.blend_id) blendUsageCount[log.blend_id] = (blendUsageCount[log.blend_id] || 0) + 1;
+    if (log.blend_id) blendLogCount[log.blend_id] = (blendLogCount[log.blend_id] || 0) + 1;
   }
 
-  // Blends with little or no usage — "try these"
+  // Blends with little or no usage — "try these"; skip those already over the cross-tab cap
   const novelBlends = blends
     .filter((b) => {
       if (!isBlendAcceptable(b, prefCtx.dislikedBlendTypes)) return false;
-      const usage = blendUsageCount[b.id] || 0;
+      if ((blendUsageCount[b.id] || 0) >= BLEND_REUSE_HARD_CAP) return false;
+      const usage = blendLogCount[b.id] || 0;
       return usage <= 1; // never or rarely smoked
     })
-    .sort((a, b) => (blendUsageCount[a.id] || 0) - (blendUsageCount[b.id] || 0))
+    .sort((a, b) => (blendLogCount[a.id] || 0) - (blendLogCount[b.id] || 0))
     .slice(0, MAX_ITEMS_PER_SUBTAB);
 
   if (!novelBlends.length) return [];
@@ -966,11 +1066,13 @@ function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottl
 
     const pipe = pipes[newItems.length % pipes.length];
     bottleUsageCount[best.id] = (bottleUsageCount[best.id] || 0) + 1;
+    blendUsageCount[blend.id] = (blendUsageCount[blend.id] || 0) + 1;
 
-    const blendType = getBlendType(blend);
-    const whiskeyChar = getWhiskeyCharacter(best);
+    const blendType    = getBlendType(blend);
+    const whiskeyChar  = getWhiskeyCharacter(best);
     const pairingLogic = BLEND_WHISKEY_PAIRING_LOGIC[blendType];
-    const logicLabel = pairingLogic ? (pairingLogic.logic === 'complement' ? 'Complement pairing' : 'Contrast pairing') : null;
+    const pairingType  = getPairingType(blend, best);
+    const logicLabel   = pairingLogic ? (pairingLogic.logic === 'complement' ? 'Complement pairing' : 'Contrast pairing') : null;
     const novelRationale = logicLabel
       ? `${blend.name} hasn't seen much use yet. ${logicLabel}: ${pairingLogic.note}. ${best.name}'s ${whiskeyChar} sets the right backdrop for a first serious session.`
       : `${blend.name} is a ${blendType || 'blend'} waiting for its moment. ${best.name}'s ${whiskeyChar} makes it a worthwhile first session — give it the attention it hasn't had yet.`;
@@ -978,7 +1080,7 @@ function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottl
     newItems.push({
       id:          `pair_new_${blend.id}_${best.id}`,
       pairingMode: PAIRING_MODE.COLLECTION_MIX_MATCH,
-      pairingType: getPairingType(blend, best),
+      pairingType,
       leftItem:    pipe ? { type: 'pipe', id: pipe.id, name: pipe.name, recordType: 'pipe' } : { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' },
       blendBridge: pipe ? { type: 'blend', id: blend.id, name: blend.name, recordType: 'blend' } : null,
       rightItem:   { type: 'bottle', id: best.id, name: best.name, recordType: 'bottle' },
@@ -987,13 +1089,13 @@ function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottl
       flavorInteraction:       buildFlavorInteraction(blend, best),
       structuralCompatibility: buildStructuralCompatibility(blend, best),
       pipeInfluence:           pipe ? getPipeCharacterNote(pipe, blend).whyNote : null,
-      outcome:                 buildPairingOutcome(getPairingType(blend, best), blend, best),
+      outcome:                 buildPairingOutcome(pairingType, blend, best),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       explanation: {
-        flavor:    `${getBlendFlavorNote(blendType)} — ${pairingLogic?.note || 'Compatible flavor profiles matched from your collection'}`,
+        flavor:    buildExplanationFlavor(blend, best),
         structure: buildStructuralCompatibility(blend, best),
         pipe:      pipe ? getPipeCharacterNote(pipe, blend).whyNote : 'No pipe specified for this pairing',
-        session:   buildPairingOutcome(getPairingType(blend, best), blend, best),
+        session:   buildPairingOutcome(pairingType, blend, best),
         summary:   novelRationale.split('. ')[0] + '.',
       },
       ownershipStatus: 'owned',
@@ -1044,11 +1146,13 @@ export function generatePairingRecommendations(context = {}) {
   const acceptableBottles = bottles.filter((b) => isBottleAcceptable(b, prefCtx.dislikedWhiskeyTypes));
 
   const results = [];
-  // Shared bottle usage count — ensures diversity across all pairing types
+  // Shared bottle usage count — ensures bottle diversity across all pairing types
   const bottleUsageCount = {};
+  // Shared blend usage count — limits a single blend to BLEND_REUSE_HARD_CAP appearances across tabs
+  const blendUsageCount = {};
 
   if (pipes.length > 0 && acceptableBlends.length > 0 && acceptableBottles.length > 0) {
-    results.push(...generatePipeWhiskeyPairings(pipes, acceptableBlends, acceptableBottles, smokingLogs, bottleUsageCount));
+    results.push(...generatePipeWhiskeyPairings(pipes, acceptableBlends, acceptableBottles, smokingLogs, bottleUsageCount, blendUsageCount));
   }
 
   if (cigars.length > 0 && acceptableBottles.length > 0) {
@@ -1057,12 +1161,12 @@ export function generatePairingRecommendations(context = {}) {
 
   // Thematic pairings — Old Favorites and Rediscover use different selection logic
   if (pipes.length > 0 && acceptableBlends.length > 0 && acceptableBottles.length > 0 && smokingLogs.length > 0) {
-    results.push(...generateThematicPairings(pipes, acceptableBlends, acceptableBottles, smokingLogs, bottleUsageCount));
+    results.push(...generateThematicPairings(pipes, acceptableBlends, acceptableBottles, smokingLogs, bottleUsageCount, blendUsageCount));
   }
 
   // Something New — unexplored blends paired with suitable bottles
   if (pipes.length > 0 && blends.length > 0 && acceptableBottles.length > 0) {
-    results.push(...generateSomethingNewPairings(pipes, blends, acceptableBottles, smokingLogs, bottleUsageCount, prefCtx));
+    results.push(...generateSomethingNewPairings(pipes, blends, acceptableBottles, smokingLogs, bottleUsageCount, prefCtx, blendUsageCount));
   }
 
   return results;
