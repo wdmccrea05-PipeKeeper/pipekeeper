@@ -1,12 +1,5 @@
 /**
- * CuratorResultsBoard — Record Optimization
- *
- * Surface 1: Record quality / metadata operations.
- *
- * Layout:
- *   Row 1: module filter chips  +  refresh button
- *   Row 2: 3 summary cards (Auto-Fixable, Review Needed, Total Records)
- *   Rows 3+: record optimization recommendation cards
+ * CuratorResultsBoard — Record Optimization surface
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -14,13 +7,9 @@ import { RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import CuratorRecommendationGroup from './CuratorRecommendationGroup';
 import { CATEGORY, ACTION_TYPE, MODULE_KEY } from '@/lib/curator/recommendationSchema.js';
 
-// ─── Board section group (record optimization only) ───────────────────────────
-
 const BOARD_SECTION_GROUPS = [
-  { id: 'record_opt', label: 'Collection Health', categories: [CATEGORY.METADATA, CATEGORY.RECORD_OPTIMIZATION] },
+  { id: 'record_opt', label: 'Collection Health', categories: [CATEGORY.RECORD_OPTIMIZATION, CATEGORY.METADATA] },
 ];
-
-// ─── Module filter options ────────────────────────────────────────────────────
 
 const MODULE_FILTERS = [
   { key: 'all',              label: 'All' },
@@ -29,8 +18,6 @@ const MODULE_FILTERS = [
   { key: MODULE_KEY.WHISKEY, label: 'Whiskey' },
   { key: MODULE_KEY.CIGAR,   label: 'Cigar' },
 ];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function buildBoardSections(sections, moduleFilter) {
   return BOARD_SECTION_GROUPS.map((group) => {
@@ -52,8 +39,6 @@ function computeSummary(sections) {
   };
 }
 
-// ─── Summary card ─────────────────────────────────────────────────────────────
-
 function SummaryCard({ value, label, color, subtext }) {
   return (
     <div
@@ -61,30 +46,18 @@ function SummaryCard({ value, label, color, subtext }) {
       style={{
         background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)',
         border: '1px solid rgba(255,255,255,0.06)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
         borderRadius: '18px',
         padding: '24px',
       }}
     >
-      <span
-        className="tabular-nums leading-none"
-        style={{ color, fontSize: '32px', fontWeight: 700 }}
-      >
+      <span className="tabular-nums leading-none" style={{ color, fontSize: '32px', fontWeight: 700 }}>
         {value}
       </span>
-      <span style={{ color: '#F5F5F7', fontSize: '16px', fontWeight: 600 }}>
-        {label}
-      </span>
-      {subtext && (
-        <span style={{ color: '#71717A', fontSize: '13px' }}>
-          {subtext}
-        </span>
-      )}
+      <span style={{ color: '#F5F5F7', fontSize: '16px', fontWeight: 600 }}>{label}</span>
+      {subtext && <span style={{ color: '#71717A', fontSize: '13px' }}>{subtext}</span>}
     </div>
   );
 }
-
-// ─── Collapsible board section ────────────────────────────────────────────────
 
 function BoardSection({ group, onAction, onOpenSpecialization, onOpenPurchase }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -94,13 +67,10 @@ function BoardSection({ group, onAction, onOpenSpecialization, onOpenPurchase })
       <button
         type="button"
         onClick={() => setCollapsed((v) => !v)}
-        className="w-full flex items-center gap-2 py-1 group"
+        className="w-full flex items-center gap-2 py-1"
         aria-expanded={!collapsed}
       >
-        <span
-          className="text-[11px] font-bold uppercase tracking-widest shrink-0"
-          style={{ color: 'rgba(224,216,200,0.45)' }}
-        >
+        <span className="text-[11px] font-bold uppercase tracking-widest shrink-0" style={{ color: 'rgba(224,216,200,0.45)' }}>
           {group.label}
         </span>
         <div className="flex-1 h-px" style={{ background: 'rgba(140,105,65,0.15)' }} />
@@ -120,10 +90,9 @@ function BoardSection({ group, onAction, onOpenSpecialization, onOpenPurchase })
           {group.recommendations.map((rec) => (
             <CuratorRecommendationGroup
               key={rec.id}
-              recommendation={rec}
+              rec={rec}
               onAction={onAction}
-              onOpenSpecialization={onOpenSpecialization}
-              onOpenPurchase={onOpenPurchase}
+              onOpenGrowExpand={onOpenSpecialization}
             />
           ))}
         </div>
@@ -131,8 +100,6 @@ function BoardSection({ group, onAction, onOpenSpecialization, onOpenPurchase })
     </div>
   );
 }
-
-// ─── Empty state ──────────────────────────────────────────────────────────────
 
 function EmptyState({ moduleFilter, onRefresh }) {
   return (
@@ -166,16 +133,6 @@ function EmptyState({ moduleFilter, onRefresh }) {
   );
 }
 
-// ─── CuratorResultsBoard ─────────────────────────────────────────────────────
-
-/**
- * @param {object}   props
- * @param {object[]} props.sections             - Grouped sections from recommendationGrouping
- * @param {Function} props.onAction             - (actionKey, rec, opts) => Promise
- * @param {Function} props.onOpenSpecialization - () => void
- * @param {Function} props.onOpenPurchase       - () => void
- * @param {Function} props.onRefresh            - () => void
- */
 export default function CuratorResultsBoard({
   sections = [],
   onAction,
@@ -196,7 +153,7 @@ export default function CuratorResultsBoard({
 
   return (
     <div className="space-y-5">
-      {/* Row 1: module filter chips + refresh */}
+      {/* Module filter chips + refresh */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex flex-wrap gap-1.5">
           {MODULE_FILTERS.map(({ key, label }) => (
@@ -223,36 +180,19 @@ export default function CuratorResultsBoard({
           onClick={handleRefresh}
           className="inline-flex items-center gap-2 font-semibold transition-all"
           style={{ background: 'transparent', color: '#A1A1AA', border: '1px solid rgba(255,255,255,0.1)', fontSize: '13px', padding: '6px 14px', borderRadius: '12px' }}
-          title="Refresh analysis"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Refresh</span>
         </button>
       </div>
 
-      {/* Row 2: 3 summary cards */}
+      {/* 3 summary tiles — derived from sections prop */}
       <div className="grid grid-cols-3 gap-3">
-        <SummaryCard
-          value={summary.openFixes}
-          label="Auto-Fixable"
-          color="rgba(80,180,130,0.9)"
-          subtext="apply in one click"
-        />
-        <SummaryCard
-          value={summary.reviewNeeded}
-          label="Review Needed"
-          color="rgba(212,165,116,0.9)"
-          subtext="require your input"
-        />
-        <SummaryCard
-          value={summary.totalRecords}
-          label="Records Flagged"
-          color="rgba(160,200,240,0.9)"
-          subtext="across all issues"
-        />
+        <SummaryCard value={summary.openFixes}    label="Auto-Fixable"   color="rgba(80,180,130,0.9)"  subtext="apply in one click" />
+        <SummaryCard value={summary.reviewNeeded} label="Review Needed"  color="rgba(212,165,116,0.9)" subtext="require your input" />
+        <SummaryCard value={summary.totalRecords} label="Total Records"  color="rgba(160,200,240,0.9)" subtext="across all issues" />
       </div>
 
-      {/* Rows 3+: grouped collapsible sections */}
       {boardGroups.length === 0 ? (
         <EmptyState moduleFilter={moduleFilter} onRefresh={handleRefresh} />
       ) : (

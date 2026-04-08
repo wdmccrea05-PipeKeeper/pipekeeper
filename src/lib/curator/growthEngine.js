@@ -288,6 +288,10 @@ export function generateGrowthSuggestions(collectionContext = {}, preferences = 
       priority:    isPreferred ? 'high' : 'medium',
       blendFamily: type,
       itemType:    'blend',
+      tags:              [type, 'Tobacco Blend', isPreferred ? 'Preferred Type' : 'Collection Gap'],
+      gapFilled:         `Missing ${type} Blend`,
+      whyFit:            BLEND_CHARACTER_NOTES[type] || buildBlendGapSummary(type, isPreferred, ownedBlendTypes, ownedWhiskeyTypes),
+      recommendedAction: 'Add to Want List',
     });
   }
 
@@ -322,6 +326,10 @@ export function generateGrowthSuggestions(collectionContext = {}, preferences = 
       priority:     isPreferred ? 'high' : 'low',
       whiskeyStyle: type,
       itemType:     'bottle',
+      tags:              [type, 'Whiskey', isPreferred ? 'Preferred Type' : 'Pairing Gap'],
+      gapFilled:         `No ${type} for pairing`,
+      whyFit:            buildWhiskeyGapSummary(type, isPreferred, ownedBlendTypes),
+      recommendedAction: 'Add to Want List',
     });
   }
 
@@ -362,6 +370,11 @@ export function generateGrowthSuggestions(collectionContext = {}, preferences = 
         confidence,
         priority:  'low',
         itemType:  'cigar',
+        tags:              [strength, 'Cigar', 'Collection Gap'],
+        gapFilled:         `Missing ${strength} Strength Cigar`,
+        whyFit:            CIGAR_STRENGTH_NOTES[strength] ||
+          `${specificName} (${strength} strength) isn't represented in your humidor — adding it broadens your pairing range.`,
+        recommendedAction: 'Add to Want List',
       });
     }
   }

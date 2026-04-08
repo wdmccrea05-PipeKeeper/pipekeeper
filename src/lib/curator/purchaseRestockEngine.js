@@ -472,13 +472,22 @@ export function generatePurchaseRestockRecommendations(context = {}) {
   } = context;
 
   const recommendations = [
-    ...analyzeLowStockBlends(blends),
-    ...analyzeDepletedBlends(blends),
-    ...analyzeDiscontinuedBlends(blends),
-    ...analyzeBottleRestock(bottles),
-    ...analyzeWishlistCandidates(wantListItems),
-    ...(cigarModuleActive ? analyzeCigarDiscovery(cigars) : []),
+    ...analyzeLowStockBlends(blends).map((r)   => ({ ...r, queueType: 'restock_now' })),
+    ...analyzeDepletedBlends(blends).map((r)    => ({ ...r, queueType: 'restock_now' })),
+    ...analyzeDiscontinuedBlends(blends).map((r) => ({ ...r, queueType: 'gap_fill' })),
+    ...analyzeBottleRestock(bottles).map((r)    => ({ ...r, queueType: 'restock_now' })),
+    ...analyzeWishlistCandidates(wantListItems).map((r) => ({ ...r, queueType: 'wishlist_ready' })),
+    ...(cigarModuleActive ? analyzeCigarDiscovery(cigars).map((r) => ({ ...r, queueType: 'restock_now' })) : []),
   ];
+
+  // Build explicit queue groups for consumers that want structured access
+  const queueGroups = { restockNow: [], wishlistReady: [], gapFillBuys: [] };
+  for (const r of recommendations) {
+    if (r.queueType === 'restock_now')    queueGroups.restockNow.push(r);
+    else if (r.queueType === 'wishlist_ready') queueGroups.wishlistReady.push(r);
+    else if (r.queueType === 'gap_fill')  queueGroups.gapFillBuys.push(r);
+  }
+  recommendations._queueGroups = queueGroups;
 
   return recommendations;
 }
