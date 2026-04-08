@@ -8,11 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Flame, Glasses, BarChart3 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency } from '@/components/utils/localeFormatters';
-import {
-  buildInventoryCountByBottleId,
-  getBottleTotalValue,
-  getEffectiveBottleCount,
-} from '@/components/utils/whiskeyValueHelpers';
+import { selectWhiskeyMetrics } from '@/lib/collection/whiskeySelectors';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
@@ -37,54 +33,22 @@ function WhiskeyKeeperInner() {
     staleTime: 10000,
   });
 
-  const bottleIds = useMemo(
-    () => new Set((bottles || []).map((b) => b.id).filter(Boolean)),
-    [bottles]
-  );
-
   const { data: inventoryUnits = [] } = useQuery({
-    queryKey: ['inventory-units-summary', user?.email, bottles.length],
+    queryKey: ['whiskey-inventory-summary', user?.email],
     queryFn: async () => {
-      if (!user?.email) return [];
-
-      let result = [];
-
-      try {
-        result = await base44.entities.BottleInventoryUnit?.filter?.({ created_by: user.email }, '-created_date');
-      } catch {
-        result = await base44.entities.BottleInventoryUnit?.list?.('-created_date').catch(() => []);
-      }
-
-      const rows = Array.isArray(result) ? result : [];
-
-      return rows.filter((unit) => {
-        if (unit?.created_by && unit.created_by === user.email) return true;
-        if (unit?.bottle_id && bottleIds.has(unit.bottle_id)) return true;
-        return false;
-      });
+      const result = await base44.entities.WhiskeyInventoryUnit
+        .filter({ created_by: user.email }, '-created_date')
+        .catch(() => []);
+      return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
     staleTime: 10000,
   });
 
-  const inventoryCountByBottleId = useMemo(
-    () => buildInventoryCountByBottleId(inventoryUnits),
-    [inventoryUnits]
+  const whiskeyMetrics = useMemo(
+    () => selectWhiskeyMetrics(bottles, inventoryUnits, []),
+    [bottles, inventoryUnits]
   );
-
-  const hasInventoryUnits = inventoryUnits.length > 0;
-
-  const totalBottles = useMemo(() => {
-    return bottles.reduce((sum, bottle) => {
-      return sum + getEffectiveBottleCount(bottle, inventoryCountByBottleId, hasInventoryUnits);
-    }, 0);
-  }, [bottles, inventoryCountByBottleId, hasInventoryUnits]);
-
-  const totalBottleValue = useMemo(() => {
-    return bottles.reduce((sum, bottle) => {
-      return sum + getBottleTotalValue(bottle, inventoryCountByBottleId, hasInventoryUnits);
-    }, 0);
-  }, [bottles, inventoryCountByBottleId, hasInventoryUnits]);
 
   const highlights = useMemo(() => {
     return getWhiskeyHighlights(bottles, inventoryUnits);
@@ -153,7 +117,7 @@ function WhiskeyKeeperInner() {
               {t('whiskey.collectionValue', 'Total Value')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
-              {formatCurrency(Math.round(totalBottleValue))}
+              {formatCurrency(Math.round(whiskeyMetrics.collection_value))}
             </p>
           </div>
           <div className="space-y-2">
@@ -161,7 +125,7 @@ function WhiskeyKeeperInner() {
               {t('whiskey.bottleTypes', 'Bottle Types')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#B48C4B' }}>
-              {bottles.length}
+              {whiskeyMetrics.bottle_types}
             </p>
           </div>
           <div className="space-y-2">
@@ -169,7 +133,7 @@ function WhiskeyKeeperInner() {
               {t('whiskey.inventory', 'Inventory')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#B4824B' }}>
-              {totalBottles}
+              {whiskeyMetrics.total_bottles}
             </p>
           </div>
         </div>

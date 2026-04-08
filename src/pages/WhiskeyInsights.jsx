@@ -14,12 +14,13 @@ import { formatCurrency } from '@/components/utils/localeFormatters';
 import { toast } from 'sonner';
 import { differenceInCalendarDays, parseISO, subDays, isWithinInterval } from 'date-fns';
 import { StatusCard, CATEGORY_COLORS } from '@/components/ui/HeroCard';
-import { computeCurrentValue, DIFFICULTY_LABELS } from '@/components/valuation/valueEngine';
-
-function sumBottleCollectionValue(bottles) {
-  if (!Array.isArray(bottles)) return 0;
-  return bottles.reduce((sum, b) => sum + computeCurrentValue(b, 'whiskeykeeper'), 0);
-}
+import { DIFFICULTY_LABELS } from '@/components/valuation/valueEngine';
+import {
+  selectWhiskeyMetrics,
+  getBottleUnitValue,
+  selectOpenBottleValue,
+  selectSealedBottleValue,
+} from '@/lib/collection/whiskeySelectors';
 
 export default function WhiskeyInsightsPage() {
   const { t } = useTranslation();
@@ -54,15 +55,17 @@ export default function WhiskeyInsightsPage() {
     enabled: !!user?.email,
   });
 
-  // Canonical dual bottle metrics
-  const bottleTypes = useMemo(() => bottles.length, [bottles]); // distinct labels
-  const totalBottles = useMemo(() => {
-    if (inventoryUnits.length > 0) return inventoryUnits.length;
-    return bottles.reduce((sum, b) => sum + (Number(b.bottle_count) || 1), 0);
-  }, [bottles, inventoryUnits]);
-  const openBottles = useMemo(() => inventoryUnits.filter(u => u.status === 'open').length, [inventoryUnits]);
-  const sealedBottles = useMemo(() => inventoryUnits.filter(u => u.status === 'reserve' || u.status === 'drinking').length, [inventoryUnits]);
-  const totalTastings = useMemo(() => tastingLogs.length, [tastingLogs]);
+  // Canonical whiskey metrics via shared selector layer — single source of truth
+  const whiskeyMetrics = useMemo(
+    () => selectWhiskeyMetrics(bottles, inventoryUnits, tastingLogs),
+    [bottles, inventoryUnits, tastingLogs]
+  );
+  const bottleTypes = whiskeyMetrics.bottle_types;
+  const totalBottles = whiskeyMetrics.total_bottles;
+  const openBottles = whiskeyMetrics.open_bottles;
+  const sealedBottles = whiskeyMetrics.sealed_bottles;
+  const totalTastings = whiskeyMetrics.total_tastings;
+  const totalValue = whiskeyMetrics.collection_value;
 
   const now = new Date();
   const oneWeekAgo = subDays(now, 7);
@@ -81,7 +84,7 @@ export default function WhiskeyInsightsPage() {
   );
 
   // FIXED: sum per-bottle canonical values using canonical priority
-  const totalValue = useMemo(() => sumBottleCollectionValue(bottles), [bottles]);
+  // totalValue is now derived from whiskeyMetrics above (unit_value × unit_count per bottle)
 
   const averageRating = useMemo(() => {
     const rated = bottles.filter(b => b.rating != null && b.rating !== '' && Number(b.rating) > 0);
@@ -90,8 +93,8 @@ export default function WhiskeyInsightsPage() {
       : 0;
   }, [bottles]);
 
-  // Canonical single-bottle value via shared engine
-  const getBottleValue = (b) => computeCurrentValue(b, 'whiskeykeeper');
+  // Canonical single-bottle value via shared selector
+  const getBottleValue = (b) => getBottleUnitValue(b);
 
   const mostValuedBottle = useMemo(() => {
     if (!bottles.length) return null;
@@ -152,20 +155,15 @@ export default function WhiskeyInsightsPage() {
   const replacementRiskBottles = useMemo(() => getReplacementRiskBottles(bottles, 5), [bottles]);
   const valueConcentration = useMemo(() => getValueConcentration(bottles), [bottles]);
 
-  const sealedValue = useMemo(() => {
-    if (inventoryUnits.length === 0) return 0;
-    const sealedBottleIds = new Set(inventoryUnits.filter(u => u.status === 'reserve' || u.status === 'drinking').map(u => u.bottle_id));
-    return bottles
-      .filter(b => sealedBottleIds.has(b.id))
-      .reduce((sum, b) => sum + computeCurrentValue(b, 'whiskeykeeper'), 0);
-  }, [bottles, inventoryUnits]);
+  const sealedValue = useMemo(
+    () => selectSealedBottleValue(bottles, inventoryUnits),
+    [bottles, inventoryUnits]
+  );
 
-  const openValue = useMemo(() => {
-    const openBottleIds = new Set(inventoryUnits.filter(u => u.status === 'open').map(u => u.bottle_id));
-    return bottles
-      .filter(b => openBottleIds.has(b.id))
-      .reduce((sum, b) => sum + computeCurrentValue(b, 'whiskeykeeper'), 0);
-  }, [bottles, inventoryUnits]);
+  const openValue = useMemo(
+    () => selectOpenBottleValue(bottles, inventoryUnits),
+    [bottles, inventoryUnits]
+  );
 
   const hasData = bottles.length > 0 || tastingLogs.length > 0;
 
@@ -485,7 +483,7 @@ export default function WhiskeyInsightsPage() {
                           <p className="text-xs text-[#D8C7A6]/60">{b.distillery || b.type || '—'}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(computeCurrentValue(b, 'whiskeykeeper'))}</p>
+                          <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(getBottleValue(b))}</p>
                           <p className="text-xs text-[#D8C7A6]/60">Rarity {b._rarityScore}/100</p>
                         </div>
                       </div>
@@ -508,7 +506,7 @@ export default function WhiskeyInsightsPage() {
                           <p className="text-sm font-medium text-[#F5F1E7]">{b.name || '—'}</p>
                           <p className="text-xs text-[#D8C7A6]/60">{b.type || '—'} · {b.country || '—'}</p>
                         </div>
-                        <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(computeCurrentValue(b, 'whiskeykeeper'))}</p>
+                        <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(getBottleValue(b))}</p>
                       </div>
                     ))}
                   </div>
@@ -530,7 +528,7 @@ export default function WhiskeyInsightsPage() {
                           <p className="text-sm font-medium text-[#F5F1E7]">{b.name || '—'}</p>
                           <p className="text-xs text-[#D8C7A6]/60">{b._difficulty ? DIFFICULTY_LABELS[b._difficulty] : '—'}</p>
                         </div>
-                        <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(computeCurrentValue(b, 'whiskeykeeper'))}</p>
+                        <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(getBottleValue(b))}</p>
                       </div>
                     ))}
                   </div>
@@ -702,11 +700,11 @@ export default function WhiskeyInsightsPage() {
                           doc.text(`Generated: ${new Date().toLocaleDateString()}`, pw / 2, 28, { align: 'center' });
                           doc.text(`Owner: ${user?.full_name || user?.email || ''}`, pw / 2, 34, { align: 'center' });
 
-                          const totalVal = bottles.reduce((sum, b) => sum + getBottleValue(b), 0);
+                          const totalVal = totalValue; // canonical value from shared selectors
                           doc.setFontSize(11);
                           doc.setTextColor(60, 40, 20);
                           doc.text(`Total Collection Value: ${fmtMoney(totalVal)}`, 20, 44);
-                          doc.text(`Total Bottle Types: ${bottles.length}`, 20, 51);
+                          doc.text(`Total Bottle Types: ${bottleTypes}`, 20, 51);
 
                           const loadImg = (url) => new Promise((resolve) => {
                             const img = new Image();

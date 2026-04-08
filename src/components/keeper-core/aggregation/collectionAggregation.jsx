@@ -11,32 +11,20 @@
 
 import { base44 } from '@/api/base44Client';
 import { shouldFetchModuleData } from '@/components/utils/moduleReleaseState';
-import { getBottleValue, getPipeValue } from '@/components/keeper-core/value/valueAggregation';
+import { getPipeValue } from '@/components/keeper-core/value/valueAggregation';
+import {
+  selectWhiskeyMetrics,
+  getBottleUnitValue,
+} from '@/lib/collection/whiskeySelectors';
+import { getBlendValue } from '@/lib/collection/tobaccoSelectors';
 
 
 
 /**
- * Get total tobacco value: value per oz × total oz across all container types.
- * Falls back to manual/ai flat value if quantity data is missing.
+ * Get total tobacco value using the canonical getBlendValue selector.
  */
 function getTobaccoValue(blend) {
-  const perOz =
-    Number(blend.manual_market_value) ||
-    Number(blend.ai_estimated_value) ||
-    0;
-
-  if (perOz > 0) {
-    const totalOz =
-      Number(blend.tin_total_quantity_oz) ||
-      Number(blend.bulk_total_quantity_oz) ||
-      Number(blend.pouch_total_quantity_oz) ||
-      0;
-    // If we have quantity data, return per-oz * total-oz; otherwise return flat value
-    if (totalOz > 0) return perOz * totalOz;
-    return perOz; // flat value fallback
-  }
-
-  return 0;
+  return getBlendValue(blend);
 }
 
 /**
@@ -103,56 +91,26 @@ export async function aggregateCollection(userEmail) {
     };
 
     // === WHISKEY MODULE ===
-     //
-     // TWO DISTINCT METRICS — must never be conflated:
-     //
-     //  bottleTypes  = number of distinct Bottle records (unique labels / products)
-     //  totalBottles = actual physical bottle inventory count
-     //
-     // If inventory units exist, totalBottles = sum of all WhiskeyInventoryUnit records for this user.
-     // If no inventory units exist (legacy / simple users), fall back to sum of bottle_count fields on Bottle records.
-     // bottleTypes always = bottlesList.length regardless of inventory depth.
-
-     const bottleTypes = bottlesList.length; // Distinct bottle records / unique labels
-
-     // Total physical bottles: prefer WhiskeyInventoryUnit records (accurate per-unit tracking)
-     // Fall back to legacy bottle_count field on Bottle records for users who haven't migrated
-     let totalBottles;
-     if (inventoryUnitsList.length > 0) {
-       totalBottles = inventoryUnitsList.length;
-     } else {
-       // Legacy fallback: sum bottle_count fields (default 1 per record)
-       totalBottles = bottlesList.reduce((sum, b) => sum + (Number(b.bottle_count) || 1), 0);
-     }
-
-     const bottlesValue = bottlesList.reduce((sum, b) => sum + getBottleValue(b), 0);
-
-     // Open/unopened counts based on actual inventory units (not record count)
-     // If no inventory units, treat each bottle record as 1 unopened unit (conservative default)
-     const openBottles = inventoryUnitsList.length > 0
-       ? inventoryUnitsList.filter(u => u.status === 'open').length
-       : 0;
-     const unopenedBottles = inventoryUnitsList.length > 0
-       ? inventoryUnitsList.filter(u => u.status === 'reserve' || u.status === 'drinking').length
-       : totalBottles; // All bottles are "unopened" if no unit tracking
+     // All metrics derived from canonical selectors — no ad-hoc calculations here.
+     const canonicalWhiskey = selectWhiskeyMetrics(bottlesList, inventoryUnitsList, tastingLogsList);
 
      const whiskeyStats = {
        // Canonical dual metrics — use these everywhere, never use just "count" for whiskey
-       bottleTypes,    // Distinct bottle records / unique labels
-       totalBottles,   // Actual physical bottle inventory count
+       bottleTypes: canonicalWhiskey.bottle_types,
+       totalBottles: canonicalWhiskey.total_bottles,
        // Legacy alias — kept for backward compatibility but refers to bottleTypes
-       count: bottleTypes,
-       value: bottlesValue,
-       open: openBottles,
-       unopened: unopenedBottles,
+       count: canonicalWhiskey.bottle_types,
+       value: canonicalWhiskey.collection_value,
+       open: canonicalWhiskey.open_bottles,
+       unopened: canonicalWhiskey.sealed_bottles,
        // Legacy alias
-       sealed: unopenedBottles,
+       sealed: canonicalWhiskey.sealed_bottles,
        favorite: bottlesList.filter(b => b.favorite).length,
        rated: bottlesList.filter(b => b.rating).length,
        avgRating: bottlesList.filter(b => b.rating).length > 0
          ? (bottlesList.reduce((sum, b) => sum + (b.rating || 0), 0) / bottlesList.filter(b => b.rating).length).toFixed(2)
          : 0,
-       tastings: tastingLogsList.length,
+       tastings: canonicalWhiskey.total_tastings,
      };
 
     // === USAGE PATTERNS ===
@@ -195,8 +153,8 @@ export async function aggregateCollection(userEmail) {
 
     const mostValuedBottle = bottlesList.length > 0
       ? bottlesList.reduce((max, b) => {
-          const bVal = getBottleValue(b);
-          const maxVal = getBottleValue(max);
+          const bVal = getBottleUnitValue(b);
+          const maxVal = getBottleUnitValue(max);
           return bVal > maxVal ? b : max;
         })
       : null;
@@ -227,7 +185,7 @@ export async function aggregateCollection(userEmail) {
 
     // === TOTALS ===
     const totalItems = pipesCount + tobaccosCount + bottlesList.length;
-    const totalValue = pipesValue + tobaccosValue + bottlesValue;
+    const totalValue = pipesValue + tobaccosValue + whiskeyStats.value;
 
     return {
       // Per-module statistics
@@ -259,7 +217,7 @@ export async function aggregateCollection(userEmail) {
         mostValuedBottle: mostValuedBottle ? {
           id: mostValuedBottle.id,
           name: mostValuedBottle.name,
-          value: getBottleValue(mostValuedBottle),
+          value: getBottleUnitValue(mostValuedBottle),
           category: mostValuedBottle.type?.toLowerCase().includes('wine') ? 'wine' : 'whiskey',
         } : null,
         oldestBottle,
