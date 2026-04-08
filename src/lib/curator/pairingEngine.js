@@ -300,15 +300,24 @@ function getPairingType(blend, bottle) {
 
 /**
  * Build a short flavorInteraction string.
+ * Handles both tobacco blends and cigars as the first argument.
  * Returns null if insufficient data.
  */
-function buildFlavorInteraction(blend, bottle) {
-  const blendType   = blend?.blend_type || blend?.blend_family || blend?.type || '';
+function buildFlavorInteraction(blendOrCigar, bottle) {
   const whiskeyChar = bottle?.whiskey_type || bottle?.spirit_type || '';
+  // Try tobacco blend fields first
+  const blendType = blendOrCigar?.blend_type || blendOrCigar?.blend_family || blendOrCigar?.type || '';
   if (blendType && whiskeyChar) {
     return `${blendType} character meets ${whiskeyChar} — shared sweetness and body`;
   }
   if (blendType) return `${blendType} character drives the pairing`;
+  // Fall back to cigar fields
+  const cigarWrapper = blendOrCigar?.wrapper || '';
+  const cigarStrength = blendOrCigar?.strength || blendOrCigar?.body || '';
+  if (cigarStrength && whiskeyChar) {
+    return `${cigarStrength} body meets ${whiskeyChar} — matched intensity`;
+  }
+  if (cigarWrapper) return `${cigarWrapper} wrapper complexity drives the pairing`;
   return null;
 }
 

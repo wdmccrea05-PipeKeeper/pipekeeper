@@ -26,7 +26,7 @@ export function computeBottleStats(bottles = [], inventoryUnits = []) {
     let open = 0;
     let sealed = 0;
     for (const b of (bottles || [])) {
-      const qty = Math.max(1, Number(b?.bottle_count) || Number(b?.quantity) || 0);
+      const qty = Math.max(0, Number(b?.bottle_count) || Number(b?.quantity) || 0);
       total += qty;
       const fill = Number(b?.current_fill ?? 100);
       if (fill < 100) open += qty;
@@ -40,7 +40,7 @@ export function computeBottleStats(bottles = [], inventoryUnits = []) {
   let sealed = 0;
 
   for (const unit of inventoryUnits) {
-    const qty = Math.max(1, Number(unit?.quantity) || 1);
+    const qty = Number(unit?.quantity) || 1;
     total += qty;
     const status = String(unit?.status || '').toLowerCase();
     if (status === 'open' || status === 'drinking') {

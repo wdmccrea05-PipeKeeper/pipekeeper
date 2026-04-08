@@ -94,11 +94,9 @@ export function getRarityLevel(bottle) {
     return { level: 2, label: 'Available', dots: '●●○○○', explanation: 'No bottle data provided' };
   }
 
-  const n = (v) => { const x = Number(v); return Number.isFinite(x) ? x : 0; };
-
-  const retailPrice    = n(bottle.retail_price);
-  const aftermarket    = n(bottle.aftermarket_price);
-  const collectorValue = n(bottle.collector_value);
+  const retailPrice    = toNumber(bottle.retail_price);
+  const aftermarket    = toNumber(bottle.aftermarket_price);
+  const collectorValue = toNumber(bottle.collector_value);
   const status         = String(bottle.production_status || '').toLowerCase();
 
   const isDiscontinued = DISCONTINUED_STATUSES.has(status);
