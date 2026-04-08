@@ -545,6 +545,244 @@ function buildSummaryOpening(blend, bottle, blendType, blendFlavor, variantIdx) 
   return openings[variantIdx % openings.length]();
 }
 
+// ─── Narrative explanation builders ──────────────────────────────────────────
+
+/**
+ * Return a short, inline pipe clause suitable for embedding in a sentence.
+ * e.g. "while Boswell Jumbo's broader chamber lets the blend stay open"
+ */
+function getPipeNarrativeClause(pipe, blend) {
+  if (!pipe) return '';
+  const shape     = (pipe.shape || pipe.bowl_style || '').toLowerCase();
+  const sizeClass = (pipe.sizeClass || '').toLowerCase();
+  const spec      = (pipe.specialization || '').toLowerCase();
+  const name      = pipe.name || 'the pipe';
+
+  if (sizeClass === 'large' || shape.includes('pot') || shape.includes('poker') || shape.includes('churchwarden')) {
+    return `${name}'s broader chamber keeps the bowl open and even instead of tightening up`;
+  }
+  if (sizeClass === 'small' || shape.includes('brandy') || shape.includes('prince') || shape.includes('apple')) {
+    return `${name}'s compact bowl brings the character forward quickly`;
+  }
+  if (shape.includes('billiard') || shape.includes('canadian')) {
+    return `${name}'s straight billiard chamber delivers even smoke from light to finish`;
+  }
+  if (shape.includes('bent') || shape.includes('calabash')) {
+    return `${name}'s longer airpath keeps the smoke cool and the flavor clear throughout`;
+  }
+  if (spec && spec !== 'unspecialized' && spec !== 'general') {
+    const specLabel = spec.charAt(0).toUpperCase() + spec.slice(1);
+    return `${name}'s ${specLabel.toLowerCase()}-seasoned walls reinforce rather than compete with this blend`;
+  }
+  return `${name}'s seasoned chamber provides a clean backdrop that lets the blend speak`;
+}
+
+/**
+ * Return the best-moment recommendation for a blend type.
+ */
+function getBlendBestMoment(blendType) {
+  const moments = {
+    'Virginia':          'A slow afternoon when you want natural sweetness without anything demanding.',
+    'Virginia/Perique':  'An evening sit when you want complexity without heaviness — the pepper needs time to develop.',
+    'Virginia/Burley':   'A relaxed evening session when you want earthy grounding with a sweeter edge.',
+    'Virginia/Oriental': 'An unhurried afternoon when floral complexity on the draw is the point.',
+    'English':           'An evening smoke when you want smoke-forward depth and a pour that can hold its own against it.',
+    'English/Balkan':    'A focused evening when you want layered complexity in both the bowl and the glass.',
+    'Balkan':            'A contemplative session — incense and dried fruit reward slow, careful smoking.',
+    'Aromatic':          'An easy evening when you want something approachable and slightly sweet.',
+    'Burley':            'A relaxed evening when you want something comforting and grounding without being heavy.',
+    'Oriental':          'An unhurried afternoon when delicate floral and spice character deserve the attention.',
+  };
+  return moments[blendType] || 'A deliberate session when both the tobacco and the pour deserve your full attention.';
+}
+
+/**
+ * Build a flowing narrative explanation for a pipe + blend + bottle pairing.
+ * Returns { narrative, whyItWorks, whatToExpect, bestMoment }.
+ *
+ * Uses 4-variant rotation keyed by variantIdx to avoid repeated sentence structures
+ * across cards in the same sub-tab.
+ */
+function buildNarrativeExplanation(pipe, blend, bottle, variantIdx = 0) {
+  const blendType    = getBlendType(blend);
+  const pairingLogic = BLEND_WHISKEY_PAIRING_LOGIC[blendType];
+  const blendFlavor  = getBlendFlavorNote(blendType);
+  const whiskeyChar  = getWhiskeyCharacter(bottle);
+  const abv          = Number(bottle?.abv) || 0;
+  const blendName    = blend?.name  || 'This blend';
+  const bottleName   = bottle?.name || 'This pour';
+  const abvNote      = abv > 0 ? ` at ${abv}%` : '';
+  const isComplement = pairingLogic?.logic === 'complement';
+  const pipeClause   = pipe ? getPipeNarrativeClause(pipe, blend) : '';
+
+  let narrative;
+
+  if (pairingLogic) {
+    const logicNote = pairingLogic.note.charAt(0).toLowerCase() + pairingLogic.note.slice(1);
+
+    // 4 structurally distinct variants — same information, different sentence order/connectors
+    const variants = [
+      () => {
+        // Blend opens → whiskey bridges with logic + pipe inline → result closes
+        const blendOpen = `${blendName}'s ${blendFlavor} defines the draw.`;
+        const bridge = isComplement
+          ? `${bottleName}${abvNote} reinforces that with ${whiskeyChar}${pipeClause ? `, and ${pipeClause}` : ''} — ${logicNote}.`
+          : `${bottleName}${abvNote} provides the contrast: ${whiskeyChar}${pipeClause ? `, while ${pipeClause}` : ''} — ${logicNote}.`;
+        const result = isComplement
+          ? 'The session holds together throughout — neither the tobacco nor the pour pulling ahead.'
+          : 'The result is a dynamic session where each sip resets the palate and each draw reclaims the character.';
+        return `${blendOpen} ${bridge} ${result}`;
+      },
+      () => {
+        // Bowl-loaded opening → whiskey with pipe → logic close
+        const blendOpen = `The bowl is loaded with ${blendName} — ${blendFlavor}.`;
+        const whiskeyLine = `${bottleName}${abvNote} brings ${whiskeyChar}${pipeClause ? `, while ${pipeClause}` : ''}.`;
+        const logicClose = isComplement
+          ? `That's a complement: ${logicNote}, which keeps both in frame.`
+          : `The contrast is intentional: ${logicNote}, sharpening rather than muddying.`;
+        return `${blendOpen} ${whiskeyLine} ${logicClose}`;
+      },
+      () => {
+        // Blend type defines → whiskey works well because → pipe closes
+        const typeLabel = blendType || 'This blend';
+        const blendOpen = `${typeLabel} defines this draw — ${blendName} brings ${blendFlavor.split(',')[0]}.`;
+        const whiskeyLine = isComplement
+          ? `${bottleName}${abvNote} works well here because ${logicNote}, and ${whiskeyChar} provides the textural frame.`
+          : `${bottleName}${abvNote} works as contrast: ${logicNote}, with ${whiskeyChar} giving the palate somewhere to land.`;
+        const pipeClose = pipeClause ? ` ${pipeClause.charAt(0).toUpperCase() + pipeClause.slice(1)}.` : '';
+        return `${blendOpen} ${whiskeyLine}${pipeClose}`;
+      },
+      () => {
+        // Blend calls → bottle answers → logic sentence
+        const blendOpen = `${blendName} opens with ${blendFlavor}`;
+        const answer = isComplement
+          ? ` — ${bottleName}${abvNote} echoes that with ${whiskeyChar}${pipeClause ? `, while ${pipeClause}` : ''}.`
+          : ` — ${bottleName}${abvNote} offers contrast with ${whiskeyChar}${pipeClause ? `, while ${pipeClause}` : ''}.`;
+        const logicClose = ` ${pairingLogic.note.charAt(0).toUpperCase() + pairingLogic.note.slice(1)}.`;
+        return `${blendOpen}${answer}${logicClose}`;
+      },
+    ];
+    narrative = variants[variantIdx % variants.length]();
+
+  } else if (blendType && getWhiskeyType(bottle)) {
+    const s1 = `${blendName} brings ${blendFlavor} to the bowl.`;
+    const s2 = `${bottleName}${abvNote} offers ${whiskeyChar}${pipeClause ? `, while ${pipeClause}` : ''}.`;
+    narrative = `${s1} ${s2} The two profiles align by type affinity — neither erases the other.`;
+
+  } else {
+    const pipeNote = pipe ? ` in ${pipe.name}` : '';
+    narrative = `${blendName} and ${bottleName}${abvNote}${pipeNote} — matched by flavor logic from your collection.`;
+  }
+
+  // whyItWorks: the specific mechanism in one tight sentence
+  let whyItWorks;
+  if (pairingLogic) {
+    const core    = pairingLogic.note.split(' — ')[0] || pairingLogic.note;
+    const capCore = core.charAt(0).toUpperCase() + core.slice(1);
+    whyItWorks = isComplement
+      ? `${capCore}, reinforcing each other without either taking over.`
+      : `${capCore}, sharpening both sides of the pairing rather than flattening either.`;
+  } else {
+    const bt = blendType || 'Blend';
+    const wt = getWhiskeyType(bottle) || 'whiskey';
+    whyItWorks = `${bt} and ${wt} profiles are type-aligned — both contribute without collision.`;
+  }
+
+  // whatToExpect: the sensory session experience
+  const firstFlavor = (blendFlavor || '').split(',')[0].trim();
+  let whatToExpect;
+  if (isComplement) {
+    whatToExpect = `A steady, ${firstFlavor}-forward session where the pour adds texture without displacing the tobacco.`;
+  } else if (pairingLogic) {
+    const whiskeyLead = (whiskeyChar || '').split(' ').slice(0, 3).join(' ');
+    whatToExpect = `A dynamic session — the whiskey's ${whiskeyLead} resets the palate between draws, making each one feel more defined.`;
+  } else {
+    whatToExpect = `A measured session where both the tobacco and the pour hold their own character.`;
+  }
+
+  const bestMoment = getBlendBestMoment(blendType);
+
+  return { narrative, whyItWorks, whatToExpect, bestMoment };
+}
+
+/**
+ * Build a flowing narrative explanation for a cigar + bottle pairing.
+ * Returns { narrative, whyItWorks, whatToExpect, bestMoment }.
+ */
+function buildCigarNarrativeExplanation(cigar, bottle, variantIdx = 0) {
+  const strength     = getCigarStrength(cigar);
+  const whiskeyType  = getWhiskeyType(bottle);
+  const whiskeyChar  = getWhiskeyCharacter(bottle);
+  const wrapper      = cigar.wrapper ? ` ${cigar.wrapper}-wrapped` : '';
+  const cigarName    = cigar.name  || 'This cigar';
+  const bottleName   = bottle.name || 'This pour';
+  const abv          = Number(bottle?.abv) || 0;
+  const abvNote      = abv > 0 ? ` at ${abv}%` : '';
+  const isComplement = getCigarPairingType(cigar) === 'complement';
+
+  const strengthChar = {
+    'Mild':        'a delicate, creamy draw with light cedar and restrained sweetness',
+    'Mild-Medium': 'an accessible body with enough character to stay interesting without weight',
+    'Medium':      'earthy, woody body with building spice — present without being aggressive',
+    'Medium-Full': 'pepper, leather, and woody depth that needs a pour with genuine structure',
+    'Full':        'a bold, full-bodied draw that buries lighter pours — needs weight on the other side',
+  }[strength] || `${strength.toLowerCase()} body character`;
+
+  const variants = [
+    () => {
+      const s1 = `${cigarName}${wrapper} delivers ${strengthChar}.`;
+      const s2 = isComplement
+        ? `${bottleName}${abvNote} matches that with ${whiskeyChar} — intensity-aligned, neither element getting lost.`
+        : `${bottleName}${abvNote}'s ${whiskeyChar} provides deliberate contrast, the sweetness resetting the palate slightly between draws.`;
+      const s3 = isComplement
+        ? 'Both elements stay in frame throughout, the session holding its shape from start to finish.'
+        : 'The contrast keeps the session engaging — each sip reframes the draw that follows.';
+      return `${s1} ${s2} ${s3}`;
+    },
+    () => {
+      const s1 = `The ${strength.toLowerCase()} body of ${cigarName}${wrapper} — ${strengthChar} — sets the session's intensity.`;
+      const s2 = isComplement
+        ? `${bottleName}${abvNote} holds that frame with ${whiskeyChar}, a complement that keeps both in balance.`
+        : `${bottleName}${abvNote}'s ${whiskeyChar} works as contrast here, giving the palate a different register to rest on between draws.`;
+      return `${s1} ${s2}`;
+    },
+    () => {
+      const s1 = `${cigarName}${wrapper} is a ${strength.toLowerCase()}-body cigar — ${strengthChar}.`;
+      const s2 = isComplement
+        ? `${bottleName}${abvNote} arrives with ${whiskeyChar} and stays intensity-matched, so no element overwhelms the other.`
+        : `${bottleName}${abvNote} brings ${whiskeyChar}, and the contrast is the point — each makes the other more distinct.`;
+      return `${s1} ${s2}`;
+    },
+    () => {
+      const s1 = `With ${strengthChar}, ${cigarName}${wrapper} defines the session's weight from the start.`;
+      const s2 = isComplement
+        ? `${bottleName}${abvNote}'s ${whiskeyChar} stays aligned — both deliver without either flattening the other.`
+        : `${bottleName}${abvNote}'s ${whiskeyChar} steps in as contrast, creating space between draws.`;
+      return `${s1} ${s2}`;
+    },
+  ];
+
+  const narrative = variants[variantIdx % variants.length]();
+
+  const whyItWorks = isComplement
+    ? `${strength} body and ${whiskeyType || 'whiskey'} are intensity-matched — neither gets buried.`
+    : `The whiskey's sweetness provides palate relief from the cigar's weight, making each draw feel more distinct.`;
+
+  const whatToExpect = isComplement
+    ? `A cohesive session — both the cigar's body and the pour's character stay in balance across the full smoke.`
+    : `A session where the contrast keeps you engaged — each sip resets the palate and each draw feels fresh.`;
+
+  const bestMoment = {
+    'Mild':        'A relaxed afternoon when you want something approachable without weight.',
+    'Mild-Medium': 'An easy evening when you want character without commitment.',
+    'Medium':      'A deliberate post-dinner session when you want both elements to contribute equally.',
+    'Medium-Full': 'An evening when you want a substantial smoke alongside a pour that can hold its own.',
+    'Full':        'A long evening when you want both at full expression — not a casual smoke.',
+  }[strength] || 'A considered session when both the cigar and the pour deserve your full attention.';
+
+  return { narrative, whyItWorks, whatToExpect, bestMoment };
+}
+
 
 const MS_PER_DAY             = 86_400_000; // milliseconds in one day
 const BOTTLE_REUSE_PENALTY   = 3;          // score penalty per additional use of the same bottle
@@ -666,13 +904,7 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
         dataCompleteness:      hasBlendType && hasWhiskeyType ? 0.9 : 0.5,
         diversityContribution: 0.7,
       }),
-      explanation: {
-        flavor:    buildExplanationFlavor(blend, bestBottle),
-        structure: buildStructuralCompatibility(blend, bestBottle),
-        pipe:      getPipeCharacterNote(pipe, blend).whyNote,
-        session:   buildPairingOutcome(pairingType, blend, bestBottle),
-        summary:   rationale.split('. ')[0] + '.',
-      },
+      explanation: buildNarrativeExplanation(pipe, blend, bestBottle, variantIdx),
       ownershipStatus: 'owned',
     });
   }
@@ -779,13 +1011,7 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
       pipeInfluence:           pipe ? getPipeCharacterNote(pipe, blend).whyNote : null,
       outcome:                 buildPairingOutcome(pairingType, blend, best),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
-      explanation: {
-        flavor:    buildExplanationFlavor(blend, best),
-        structure: buildStructuralCompatibility(blend, best),
-        pipe:      pipe ? getPipeCharacterNote(pipe, blend).whyNote : 'No pipe specified for this pairing',
-        session:   buildPairingOutcome(pairingType, blend, best),
-        summary:   rationale.split('. ')[0] + '.',
-      },
+      explanation: buildNarrativeExplanation(pipe, blend, best, variantIdx),
       ownershipStatus: 'owned',
     });
   }
@@ -859,6 +1085,7 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
     const blendType   = getBlendType(blend);
     const whiskeyChar = getWhiskeyCharacter(best);
     const pairingType = getPairingType(blend, best);
+    const variantIdx  = pairingVariantIndex(blend.id || blend.name, best.id || best.name);
 
     const rediscoverRationale = daysAgo
       ? `${blend.name} has been sitting in your cellar for ${daysAgo} days. ` +
@@ -881,13 +1108,7 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
       pipeInfluence:           pipe ? getPipeCharacterNote(pipe, blend).whyNote : null,
       outcome:                 buildPairingOutcome(pairingType, blend, best),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
-      explanation: {
-        flavor:    buildExplanationFlavor(blend, best),
-        structure: buildStructuralCompatibility(blend, best),
-        pipe:      pipe ? getPipeCharacterNote(pipe, blend).whyNote : 'No pipe specified for this pairing',
-        session:   buildPairingOutcome(pairingType, blend, best),
-        summary:   rediscoverRationale.split('. ')[0] + '.',
-      },
+      explanation: buildNarrativeExplanation(pipe, blend, best, variantIdx),
       ownershipStatus: 'owned',
     });
   }
@@ -945,6 +1166,8 @@ function generateCigarWhiskeyPairings(cigars, bottles, bottleUsageCount) {
 
     bottleUsageCount[bestBottle.id] = (bottleUsageCount[bestBottle.id] || 0) + 1;
 
+    const variantIdx = pairingVariantIndex(cigar.id || cigar.name, bestBottle.id || bestBottle.name);
+
     pairingItems.push({
       id:            `pair_cw_${cigar.id}_${bestBottle.id}`,
       pairingMode:   PAIRING_MODE.DIRECT_PAIRING,
@@ -958,13 +1181,7 @@ function generateCigarWhiskeyPairings(cigars, bottles, bottleUsageCount) {
       structuralCompatibility: buildStructuralCompatibility(cigar, bestBottle),
       outcome:                 buildPairingOutcome(getCigarPairingType(cigar), cigar, bestBottle),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
-      explanation: {
-        flavor:    `${getCigarStrength(cigar)} body cigar${cigar.wrapper ? ` with ${cigar.wrapper} wrapper` : ''} — intensity-matched to ${getWhiskeyType(bestBottle) || 'the whiskey'}`,
-        structure: buildStructuralCompatibility(cigar, bestBottle),
-        pipe:      'N/A — cigar pairing',
-        session:   buildPairingOutcome(getCigarPairingType(cigar), cigar, bestBottle),
-        summary:   buildCigarBottleRationale(cigar, bestBottle).split('. ')[0] + '.',
-      },
+      explanation: buildCigarNarrativeExplanation(cigar, bestBottle, variantIdx),
       ownershipStatus: 'owned',
     });
   }
@@ -1072,6 +1289,7 @@ function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottl
     const whiskeyChar  = getWhiskeyCharacter(best);
     const pairingLogic = BLEND_WHISKEY_PAIRING_LOGIC[blendType];
     const pairingType  = getPairingType(blend, best);
+    const variantIdx   = pairingVariantIndex(blend.id || blend.name, best.id || best.name);
     const logicLabel   = pairingLogic ? (pairingLogic.logic === 'complement' ? 'Complement pairing' : 'Contrast pairing') : null;
     const novelRationale = logicLabel
       ? `${blend.name} hasn't seen much use yet. ${logicLabel}: ${pairingLogic.note}. ${best.name}'s ${whiskeyChar} sets the right backdrop for a first serious session.`
@@ -1091,13 +1309,7 @@ function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottl
       pipeInfluence:           pipe ? getPipeCharacterNote(pipe, blend).whyNote : null,
       outcome:                 buildPairingOutcome(pairingType, blend, best),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
-      explanation: {
-        flavor:    buildExplanationFlavor(blend, best),
-        structure: buildStructuralCompatibility(blend, best),
-        pipe:      pipe ? getPipeCharacterNote(pipe, blend).whyNote : 'No pipe specified for this pairing',
-        session:   buildPairingOutcome(pairingType, blend, best),
-        summary:   novelRationale.split('. ')[0] + '.',
-      },
+      explanation: buildNarrativeExplanation(pipe, blend, best, variantIdx),
       ownershipStatus: 'owned',
     });
   }

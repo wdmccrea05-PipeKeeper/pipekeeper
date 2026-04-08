@@ -84,14 +84,14 @@ function getConfidenceStyle(confidenceLabel) {
   return CONFIDENCE_STYLES.experimental;
 }
 
-function SectionRow({ label, value }) {
-  if (!value || value === 'N/A — cigar pairing' || value === 'N/A') return null;
+function SupportLine({ label, value }) {
+  if (!value) return null;
   return (
-    <div className="flex items-start gap-3">
-      <span style={{ color: '#C6A15B', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', minWidth: '76px', paddingTop: '3px', flexShrink: 0 }}>
-        {label}
+    <div className="flex items-start gap-2">
+      <span style={{ color: '#C6A15B', fontSize: '14px', fontWeight: 600, flexShrink: 0, lineHeight: 1.5 }}>
+        {label}:
       </span>
-      <p style={{ color: '#A1A1AA', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>{value}</p>
+      <p style={{ color: '#A1A1AA', fontSize: '14px', lineHeight: 1.5, margin: 0 }}>{value}</p>
     </div>
   );
 }
@@ -118,11 +118,10 @@ export default function CuratorPairingResults({ items = [], onAction }) {
         const ptStyle = PAIRING_TYPE_STYLES[ptKey] || null;
 
         // Content fields
-        const summary   = pairing.explanation?.summary || pairing.rationale;
-        const flavor    = pairing.explanation?.flavor || pairing.flavorInteraction;
-        const structure = pairing.explanation?.structure || pairing.structuralCompatibility;
-        const pipeVal   = pairing.explanation?.pipe || pairing.pipeInfluence;
-        const session   = pairing.explanation?.session || pairing.outcome;
+        const narrative    = pairing.explanation?.narrative || pairing.rationale || pairing.explanation?.summary;
+        const whyItWorks   = pairing.explanation?.whyItWorks;
+        const whatToExpect = pairing.explanation?.whatToExpect;
+        const bestMoment   = pairing.explanation?.bestMoment;
 
         return (
           <div
@@ -163,23 +162,22 @@ export default function CuratorPairingResults({ items = [], onAction }) {
               </div>
             )}
 
-            {/* Summary paragraph */}
-            {summary && (
+            {/* Narrative paragraph */}
+            {narrative && (
               <p style={{ color: '#F5F5F7', fontSize: '16px', lineHeight: 1.6, marginBottom: '16px' }}>
-                {summary}
+                {narrative}
               </p>
             )}
 
-            {/* Labeled sections */}
-            {(flavor || structure || pipeVal || session) && (
+            {/* Support lines */}
+            {(whyItWorks || whatToExpect || bestMoment) && (
               <div
-                className="space-y-3"
+                className="space-y-2"
                 style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px', marginBottom: '16px' }}
               >
-                <SectionRow label="FLAVOR"    value={flavor} />
-                <SectionRow label="STRUCTURE" value={structure} />
-                <SectionRow label="PIPE"      value={pipeVal} />
-                <SectionRow label="SESSION"   value={session} />
+                <SupportLine label="Why it works"      value={whyItWorks} />
+                <SupportLine label="What to expect"    value={whatToExpect} />
+                <SupportLine label="Best moment for it" value={bestMoment} />
               </div>
             )}
 
