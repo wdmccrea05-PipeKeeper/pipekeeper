@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import CuratorWorkspace from '@/components/curator/CuratorWorkspace';
 
 const SURFACES = [
@@ -18,7 +18,7 @@ function SurfaceTab({ active, label, badge, onClick }) {
       className="h-[58px] px-7 rounded-[18px] inline-flex items-center gap-3 text-[16px] font-medium transition"
       style={{
         background: active ? 'rgba(198,161,91,0.18)' : 'transparent',
-        color: active ? '#F5F5F7' : '#B7AA95',
+        color: active ? '#F5F5F7' : '#C8B898',
         border: active ? '1px solid rgba(198,161,91,0.35)' : '1px solid transparent',
       }}
     >
@@ -41,7 +41,7 @@ function SurfaceTab({ active, label, badge, onClick }) {
 
 export default function CuratorPage() {
   const [surface, setSurface] = useState('record_optimization');
-  const [surfaceBadges, setSurfaceBadges] = useState({
+  const [counts, setCounts] = useState({
     record_optimization: 0,
     collection_optimization: 0,
     purchase_restock: 0,
@@ -50,17 +50,14 @@ export default function CuratorPage() {
     chat: 0,
   });
 
-  const handleCountsChange = useCallback((counts) => {
-    setSurfaceBadges((prev) => ({
-      ...prev,
-      ...counts,
-    }));
+  const handleCountsChange = useCallback((nextCounts) => {
+    setCounts((prev) => ({ ...prev, ...nextCounts }));
   }, []);
 
-  const pageKey = useMemo(
-    () => `${surface}:${Object.values(surfaceBadges).join('-')}`,
-    [surface, surfaceBadges]
-  );
+  const progressWidth = useMemo(() => {
+    const index = SURFACES.findIndex((s) => s.key === surface);
+    return `${((index + 1) / SURFACES.length) * 100}%`;
+  }, [surface]);
 
   return (
     <div className="min-h-screen" style={{ background: '#0B0B0C' }}>
@@ -72,10 +69,7 @@ export default function CuratorPage() {
           >
             Collection Curator
           </h1>
-          <p
-            className="text-[18px] leading-8"
-            style={{ color: '#9C968C' }}
-          >
+          <p className="text-[18px] leading-8" style={{ color: '#9C968C' }}>
             Operational intelligence across your collection — fix, optimize, pair, and grow.
           </p>
         </header>
@@ -93,7 +87,7 @@ export default function CuratorPage() {
               <SurfaceTab
                 key={tab.key}
                 label={tab.label}
-                badge={surfaceBadges[tab.key]}
+                badge={counts[tab.key]}
                 active={surface === tab.key}
                 onClick={() => setSurface(tab.key)}
               />
@@ -107,7 +101,7 @@ export default function CuratorPage() {
             <div
               className="h-full rounded-full transition-all duration-300"
               style={{
-                width: `${((SURFACES.findIndex((s) => s.key === surface) + 1) / SURFACES.length) * 100}%`,
+                width: progressWidth,
                 background: 'linear-gradient(90deg, rgba(198,161,91,0.65) 0%, rgba(198,161,91,0.35) 100%)',
               }}
             />
@@ -115,7 +109,6 @@ export default function CuratorPage() {
         </div>
 
         <CuratorWorkspace
-          key={pageKey}
           activeSurface={surface}
           onSurfaceChange={setSurface}
           onCountsChange={handleCountsChange}
