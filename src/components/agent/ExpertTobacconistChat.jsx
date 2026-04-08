@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { SendHorizontal } from 'lucide-react';
 
 const STARTER_PROMPTS = [
@@ -10,17 +9,39 @@ const STARTER_PROMPTS = [
   'What gap matters most in my collection?',
 ];
 
+function buildLocalReply(message) {
+  const text = String(message || '').toLowerCase();
+
+  if (text.includes('clean') && text.includes('meerschaum')) {
+    return `For a meerschaum, keep it gentle. Let the pipe cool completely, empty the bowl, wipe the chamber lightly with a dry folded pipe cleaner or soft paper, and run regular then bristle cleaners through the airway without forcing them. Avoid alcohol on the exterior and avoid aggressive reaming—meerschaum rewards patience more than scrubbing.`;
+  }
+
+  if (text.includes('what should i smoke tonight')) {
+    return `Tonight, lean toward something dependable rather than experimental. Pick a pipe that has been smoking well lately, match it with a blend that fits that pipe’s specialization, and choose a pour that supports the tobacco instead of dominating it. If you want, use the Pairings tab first, then come back here and I’ll help you narrow the best option.`;
+  }
+
+  if (text.includes('what should i open next')) {
+    return `Open something that is replaceable and aligned with your current preferences rather than the rarest bottle on the shelf. In practical terms, that usually means moderate rarity, easy replacement, and a flavor profile you already tend to rate well.`;
+  }
+
+  if (text.includes('gap') && text.includes('collection')) {
+    return `The most important gap is usually not “more of everything,” but a missing usable lane: a blend family, pipe specialization, or whiskey style that would materially improve session planning and pairings. The Grow & Expand tab is the right place to spot that, then use this chat to sanity-check what matters most for your habits.`;
+  }
+
+  if (text.includes('pairing')) {
+    return `A good pairing should answer three questions clearly: why this tobacco, why this pour, and why this pipe. If any one of those feels random, the pairing is weak. Use the Pipe, Blend, and Pour together as one session system, not as separate objects that happen to be nearby.`;
+  }
+
+  return `I can help with collection questions, pairing logic, rotation, opening strategy, and growth gaps. Ask me about a specific pipe, blend, bottle, or a session goal and I’ll give you a practical recommendation.`;
+}
+
 export default function ExpertTobacconistChat({
-  threadId,
-  setThreadId,
   preFillMessage,
   onPreFillConsumed,
-  onAnsweredBy,
 }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [error, setError] = useState('');
 
   const canSend = useMemo(() => !!input.trim() && !isSending, [input, isSending]);
 
@@ -31,36 +52,14 @@ export default function ExpertTobacconistChat({
     }
   }, [preFillMessage, onPreFillConsumed]);
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function ensureThread() {
-      if (threadId) return;
-      try {
-        const created = await base44.ai.createThread({ agent: 'expert_tobacconist' });
-        if (mounted && created?.id) {
-          setThreadId?.(created.id);
-        }
-      } catch (err) {
-        if (mounted) setError('Could not initialize Curator chat.');
-      }
-    }
-
-    ensureThread();
-    return () => { mounted = false; };
-  }, [threadId, setThreadId]);
-
-  const appendStarterPrompt = (text) => setInput(text);
-
   const sendMessage = async () => {
     const text = input.trim();
-    if (!text || !threadId || isSending) return;
+    if (!text || isSending) return;
 
     setIsSending(true);
-    setError('');
 
     const userMessage = {
-      id: `local-user-${Date.now()}`,
+      id: `user-${Date.now()}`,
       role: 'user',
       content: text,
     };
@@ -69,36 +68,13 @@ export default function ExpertTobacconistChat({
     setInput('');
 
     try {
-      const response = await base44.ai.sendMessage({
-        thread_id: threadId,
-        agent: 'expert_tobacconist',
-        message: text,
-      });
+      const assistantMessage = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: buildLocalReply(text),
+      };
 
-      const returned = Array.isArray(response?.messages) ? response.messages : [];
-      const assistant = returned.find((m) => m.role === 'assistant');
-
-      if (!assistant?.content) {
-        throw new Error('No assistant response returned.');
-      }
-
-      setMessages((prev) => [
-        ...prev.filter((m) => m.id !== userMessage.id),
-        userMessage,
-        {
-          id: assistant.id || `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: assistant.content,
-          meta: assistant.meta || {},
-        },
-      ]);
-
-      const answeredBy = assistant?.meta?.answered_by || assistant?.meta?.agent;
-      if (answeredBy) onAnsweredBy?.(answeredBy);
-    } catch (err) {
-      setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
-      setInput(text);
-      setError('Curator could not answer that just now. Try again.');
+      setMessages((prev) => [...prev, assistantMessage]);
     } finally {
       setIsSending(false);
     }
@@ -107,7 +83,10 @@ export default function ExpertTobacconistChat({
   return (
     <div
       className="rounded-[18px] p-8"
-      style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)' }}
+      style={{
+        background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)',
+        border: '1px solid rgba(140,105,65,0.16)',
+      }}
     >
       <h3 className="text-[20px] font-semibold mb-2" style={{ color: '#F5F5F7' }}>
         Curator Console
@@ -136,7 +115,7 @@ export default function ExpertTobacconistChat({
                 <button
                   key={prompt}
                   type="button"
-                  onClick={() => appendStarterPrompt(prompt)}
+                  onClick={() => setInput(prompt)}
                   className="px-4 h-10 rounded-full text-sm"
                   style={{ border: '1px solid rgba(255,255,255,0.10)', color: '#F5F5F7' }}
                 >
@@ -181,12 +160,6 @@ export default function ExpertTobacconistChat({
           Send
         </button>
       </div>
-
-      {error ? (
-        <div className="mt-4 text-sm" style={{ color: '#EF4444' }}>
-          {error}
-        </div>
-      ) : null}
     </div>
   );
 }
