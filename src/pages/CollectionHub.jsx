@@ -36,6 +36,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { safeUpdate } from '@/components/utils/safeUpdate';
 import QuickActions from '@/components/home/QuickActions';
+import OnboardingRouter from '@/components/onboarding/OnboardingRouter';
 
 
 const safe = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);

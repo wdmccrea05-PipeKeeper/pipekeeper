@@ -12,6 +12,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import ModuleSelectionStep from './ModuleSelectionStep';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
+import { markPipeOnboardingComplete } from './onboardingState';
 
 import { usePaywall } from '@/components/subscription/usePaywall';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
@@ -413,6 +414,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
     }
 
     if (currentStep === steps.length - 1) {
+      markPipeOnboardingComplete();
       onComplete();
     } else {
       setCurrentStep(currentStep + 1);
@@ -421,6 +423,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
 
   const handleNext = async () => {
     if (currentStep === steps.length - 1) {
+      markPipeOnboardingComplete();
       onComplete();
     } else {
       setCurrentStep(currentStep + 1);
