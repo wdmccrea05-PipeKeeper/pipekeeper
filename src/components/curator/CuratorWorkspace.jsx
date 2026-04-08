@@ -11,14 +11,17 @@ import { generateRecommendations } from '@/lib/curator/recommendationEngine';
 import { generatePairingRecommendations } from '@/lib/curator/pairingEngine';
 import { executeRecommendationAction, buildViewItemsNavigation } from '@/lib/curator/recommendationActions';
 
-const LOAD_TIMEOUT_MS = 12000;
+const LOAD_TIMEOUT_MS = 10000;
 
 function withTimeout(promise, label, ms = LOAD_TIMEOUT_MS) {
   return Promise.race([
     promise,
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
-    ),
+    new Promise((_, reject) => {
+      const id = setTimeout(() => {
+        clearTimeout(id);
+        reject(new Error(`${label} timed out after ${ms}ms`));
+      }, ms);
+    }),
   ]);
 }
 
@@ -29,7 +32,6 @@ async function safeList(entityName, label) {
       console.warn(`[Curator] Missing entity or list(): ${entityName}`);
       return [];
     }
-
     const result = await withTimeout(entity.list(), label);
     return Array.isArray(result) ? result : [];
   } catch (err) {
@@ -75,7 +77,7 @@ function reconcileSections(prevSections, resolvedIds = [], resolvedRecommendatio
 }
 
 async function buildContext() {
-  const [pipes, blends, bottles, logs] = await Promise.all([
+  const [pipes, blends, bottles, smokingLogs] = await Promise.all([
     safeList('Pipe', 'pipes'),
     safeList('TobaccoBlend', 'tobacco blends'),
     safeList('Bottle', 'bottles'),
@@ -83,10 +85,10 @@ async function buildContext() {
   ]);
 
   return {
-    pipes,
-    blends,
-    bottles,
-    smokingLogs: logs,
+    pipes: pipes || [],
+    blends: blends || [],
+    bottles: bottles || [],
+    smokingLogs: smokingLogs || [],
   };
 }
 
@@ -95,15 +97,17 @@ export default function CuratorWorkspace({
   onSurfaceChange,
   onCountsChange,
 }) {
+  const mountedRef = useRef(true);
+  const contextRef = useRef(null);
+
   const [loading, setLoading] = useState(true);
+  const [pairingsLoading, setPairingsLoading] = useState(false);
   const [error, setError] = useState('');
   const [sections, setSections] = useState([]);
   const [pairings, setPairings] = useState([]);
   const [threadId, setThreadId] = useState(null);
   const [preFillMessage, setPreFillMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const mountedRef = useRef(true);
 
   const publishCounts = useCallback(
     (recs, pairingRecs) => {
@@ -119,7 +123,7 @@ export default function CuratorWorkspace({
     [onCountsChange]
   );
 
-  const loadData = useCallback(
+  const loadPrimaryData = useCallback(
     async ({ silent = false } = {}) => {
       if (!silent) {
         setLoading(true);
@@ -130,17 +134,25 @@ export default function CuratorWorkspace({
 
       try {
         const context = await buildContext();
+        contextRef.current = context;
 
-        const recs = generateRecommendations(context) || [];
-        const pairingRecs = generatePairingRecommendations(context) || [];
+        let recs = [];
+        try {
+          recs = generateRecommendations(context) || [];
+        } catch (engineErr) {
+          console.error('[Curator] recommendation engine failed:', engineErr);
+          recs = [];
+        }
 
         if (!mountedRef.current) return;
 
         setSections(recs);
-        setPairings(pairingRecs);
-        publishCounts(recs, pairingRecs);
+
+        // IMPORTANT: do not generate pairings here
+        publishCounts(recs, pairings);
       } catch (err) {
-        console.error('[Curator] loadData failed:', err);
+        console.error('[Curator] primary load failed:', err);
+
         if (!mountedRef.current) return;
 
         setSections([]);
@@ -153,17 +165,51 @@ export default function CuratorWorkspace({
         setIsRefreshing(false);
       }
     },
-    [publishCounts]
+    [publishCounts, pairings]
   );
+
+  const loadPairings = useCallback(async () => {
+    if (pairingsLoading) return;
+    if (pairings.length > 0) return;
+
+    setPairingsLoading(true);
+    try {
+      const context = contextRef.current || (await buildContext());
+      contextRef.current = context;
+
+      let nextPairings = [];
+      try {
+        nextPairings = generatePairingRecommendations(context) || [];
+      } catch (pairErr) {
+        console.error('[Curator] pairing engine failed:', pairErr);
+        nextPairings = [];
+      }
+
+      if (!mountedRef.current) return;
+
+      setPairings(nextPairings);
+      publishCounts(sections, nextPairings);
+    } finally {
+      if (mountedRef.current) {
+        setPairingsLoading(false);
+      }
+    }
+  }, [pairingsLoading, pairings.length, publishCounts, sections]);
 
   useEffect(() => {
     mountedRef.current = true;
-    loadData();
+    loadPrimaryData();
 
     return () => {
       mountedRef.current = false;
     };
-  }, [loadData]);
+  }, [loadPrimaryData]);
+
+  useEffect(() => {
+    if (activeSurface === 'pairings') {
+      loadPairings();
+    }
+  }, [activeSurface, loadPairings]);
 
   const handleAction = useCallback(
     async (actionKey, payload, opts = {}) => {
@@ -199,22 +245,41 @@ export default function CuratorWorkspace({
       });
 
       if (actionKey === 'save_pairing') {
-        setPairings((prev) => prev.filter((p) => p.id !== payload?.id));
+        setPairings((prev) => {
+          const next = prev.filter((p) => p.id !== payload?.id);
+          publishCounts(sections, next);
+          return next;
+        });
       }
 
+      // Hard reload the lightweight data only after mutations that change records
       if (
         actionKey === 'apply_fix' ||
         actionKey === 'approve_changes' ||
         actionKey === 'move_to_shopping_list' ||
         actionKey === 'add_to_want_list'
       ) {
-        await loadData({ silent: true });
+        await loadPrimaryData({ silent: true });
+
+        // only refresh pairings if currently on pairings tab
+        if (activeSurface === 'pairings') {
+          setPairings([]);
+          await loadPairings();
+        }
       }
 
       return result;
     },
-    [loadData, onSurfaceChange, pairings, publishCounts]
+    [activeSurface, loadPairings, loadPrimaryData, onSurfaceChange, pairings, publishCounts, sections]
   );
+
+  const handleRefresh = useCallback(async () => {
+    setPairings([]);
+    await loadPrimaryData({ silent: true });
+    if (activeSurface === 'pairings') {
+      await loadPairings();
+    }
+  }, [activeSurface, loadPairings, loadPrimaryData]);
 
   const renderSurface = () => {
     switch (activeSurface) {
@@ -223,7 +288,7 @@ export default function CuratorWorkspace({
           <CuratorResultsBoard
             sections={sections.filter((s) => s?.title === 'Record Optimization')}
             onAction={handleAction}
-            onRefresh={() => loadData({ silent: true })}
+            onRefresh={handleRefresh}
             isRefreshing={isRefreshing}
           />
         );
@@ -233,7 +298,7 @@ export default function CuratorWorkspace({
           <CuratorResultsBoard
             sections={sections.filter((s) => s?.title === 'Collection Optimization')}
             onAction={handleAction}
-            onRefresh={() => loadData({ silent: true })}
+            onRefresh={handleRefresh}
             isRefreshing={isRefreshing}
           />
         );
@@ -243,17 +308,27 @@ export default function CuratorWorkspace({
           <CuratorPurchaseQueue
             sections={sections}
             onAction={handleAction}
-            onRefresh={() => loadData({ silent: true })}
+            onRefresh={handleRefresh}
             isRefreshing={isRefreshing}
           />
         );
 
       case 'pairings':
+        if (pairingsLoading) {
+          return (
+            <div className="py-20 text-center">
+              <div className="text-[20px]" style={{ color: '#A1A1AA' }}>
+                Loading pairings…
+              </div>
+            </div>
+          );
+        }
+
         return (
           <CuratorPairingsTab
             pairings={pairings}
             onAction={handleAction}
-            onRefresh={() => loadData({ silent: true })}
+            onRefresh={handleRefresh}
             isRefreshing={isRefreshing}
           />
         );
@@ -263,7 +338,7 @@ export default function CuratorWorkspace({
           <CuratorGrowAndExpand
             sections={sections}
             onAction={handleAction}
-            onRefresh={() => loadData({ silent: true })}
+            onRefresh={handleRefresh}
             isRefreshing={isRefreshing}
           />
         );
@@ -310,7 +385,7 @@ export default function CuratorWorkspace({
         </div>
         <button
           type="button"
-          onClick={() => loadData()}
+          onClick={() => loadPrimaryData()}
           className="h-12 px-6 rounded-[14px] font-medium"
           style={{ background: '#C6A15B', color: '#0B0B0C' }}
         >
