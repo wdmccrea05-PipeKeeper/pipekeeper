@@ -1,477 +1,279 @@
-/**
- * Recommendation Actions
- *
- * Executes actions triggered from recommendation cards.
- * Mutations and navigation both happen here.
- */
-
 import { base44 } from '@/api/base44Client';
-import { ACTION_TYPE, MODULE_KEY } from './recommendationSchema.js';
-
-// ─── Module → page mapping ────────────────────────────────────────────────────
-
-const MODULE_PAGE = {
-  [MODULE_KEY.PIPE]:    'Pipes',
-  [MODULE_KEY.TOBACCO]: 'Tobacco',
-  [MODULE_KEY.WHISKEY]: 'Whiskey',
-  [MODULE_KEY.CIGAR]:   'Cigars',
-};
-
-const RECORD_TYPE_PAGE = {
-  pipe:    'Pipes',
-  blend:   'Tobacco',
-  tobacco: 'Tobacco',
-  bottle:  'Whiskey',
-  whiskey: 'Whiskey',
-  cigar:   'Cigars',
-};
-
-function getNavigationPage(recommendation) {
-  const fromModule = MODULE_PAGE[recommendation?.moduleKey];
-  if (fromModule) return fromModule;
-  const firstItem = recommendation?.items?.[0];
-  if (firstItem) return RECORD_TYPE_PAGE[firstItem.recordType] || null;
-  return null;
-}
-
-/**
- * Build a navigation descriptor for view_items / view_details.
- * Callers (React components) should perform the actual navigation.
- *
- * @returns {{ ok: boolean, navigate: { page: string, path: string, itemIds: string[] } | null, message: string }}
- */
-export function buildViewItemsNavigation(recommendation) {
-  const page = getNavigationPage(recommendation);
-  if (!page) return { ok: false, navigate: null, message: 'No module page found for this recommendation.' };
-
-  const itemIds = (recommendation.items || [])
-    .map((i) => i.recordId || i.id)
-    .filter(Boolean);
-
-  // Build a path with curator context query params for the module page
-  const params = new URLSearchParams();
-  if (itemIds.length > 0 && itemIds.length <= 30) {
-    params.set('curator_ids', itemIds.join(','));
-  }
-  if (recommendation.goal) params.set('curator_hint', recommendation.goal);
-
-  const path = `/${page}${params.toString() ? `?${params.toString()}` : ''}`;
-  return { ok: true, navigate: { page, path, itemIds }, message: `Opening ${page}.` };
-}
-
-// ─── Field allow-lists ────────────────────────────────────────────────────────
 
 const SAFE_BLEND_FIELDS = new Set([
-  'blend_type', 'blend_family', 'strength', 'cut', 'flavor_notes',
-  'tobacco_components', 'room_note', 'notes',
+  'blend_type',
+  'blend_family',
+  'strength',
+  'cut',
+  'flavor_notes',
+  'tobacco_components',
+  'room_note',
+  'notes',
+  'replacement_difficulty',
+  'replacement_difficulty_label',
+  'strategy_state',
+  'strategy_reason',
 ]);
 
 const SAFE_BOTTLE_FIELDS = new Set([
-  'distillery', 'region', 'age', 'abv', 'type', 'whiskey_type', 'spirit_type',
-  'retail_price', 'aftermarket_price', 'collector_value', 'notes',
-  'name', 'brand', 'country', 'vintage', 'size_ml', 'flavor_notes',
-  'cask_type', 'finish', 'color', 'nose', 'palate', 'purchase_price',
-  'estimated_value', 'purchase_date', 'purchase_source', 'is_open',
-  'quantity', 'bottles_remaining', 'rating', 'category',
+  'distillery',
+  'region',
+  'country',
+  'age',
+  'abv',
+  'type',
+  'whiskey_type',
+  'retail_price',
+  'aftermarket_price',
+  'collector_value',
+  'estimated_value',
+  'replacement_difficulty',
+  'replacement_difficulty_label',
+  'strategy_state',
+  'strategy_reason',
+  'notes',
 ]);
 
 const SAFE_PIPE_FIELDS = new Set([
-  'specialization', 'shape', 'bowl_style', 'shank_shape', 'bend',
-  'sizeClass', 'notes', 'condition',
+  'specialization',
+  'shape',
+  'bowl_style',
+  'shank_shape',
+  'bend',
+  'sizeClass',
+  'notes',
+  'condition',
 ]);
 
-// ─── Apply helpers ────────────────────────────────────────────────────────────
-
 function filterToSafeFields(changes, allowedSet) {
-  const result = {};
-  for (const [k, v] of Object.entries(changes || {})) {
-    if (allowedSet.has(k) && v !== null && v !== undefined && v !== '') {
-      result[k] = v;
-    }
+  const next = {};
+  for (const [key, value] of Object.entries(changes || {})) {
+    if (!allowedSet.has(key)) continue;
+    if (value === undefined || value === null || value === '') continue;
+    next[key] = value;
   }
-  return result;
+  return next;
 }
 
-async function applyBlendChanges(recordId, changes) {
+async function updateBlend(recordId, changes) {
   const safe = filterToSafeFields(changes, SAFE_BLEND_FIELDS);
-  if (!Object.keys(safe).length) return { skipped: true };
+  if (!Object.keys(safe).length) throw new Error('No safe blend fields to apply.');
   return base44.entities.TobaccoBlend.update(recordId, safe);
 }
 
-async function applyBottleChanges(recordId, changes) {
+async function updateBottle(recordId, changes) {
   const safe = filterToSafeFields(changes, SAFE_BOTTLE_FIELDS);
-  if (!Object.keys(safe).length) return { skipped: true };
+  if (!Object.keys(safe).length) throw new Error('No safe bottle fields to apply.');
   return base44.entities.Bottle.update(recordId, safe);
 }
 
-async function applyPipeChanges(recordId, changes) {
+async function updatePipe(recordId, changes) {
   const safe = filterToSafeFields(changes, SAFE_PIPE_FIELDS);
-  if (!Object.keys(safe).length) return { skipped: true };
+  if (!Object.keys(safe).length) throw new Error('No safe pipe fields to apply.');
   return base44.entities.Pipe.update(recordId, safe);
 }
 
-// ─── Specialization apply ─────────────────────────────────────────────────────
-
-/**
- * Apply a single pipe specialization.
- *
- * @param {string} pipeId
- * @param {string} specialization
- */
-export async function applyPipeSpecialization(pipeId, specialization) {
-  if (!pipeId || !specialization) throw new Error('pipeId and specialization are required.');
-  return base44.entities.Pipe.update(pipeId, { specialization });
-}
-
-// ─── Single item fix apply ────────────────────────────────────────────────────
-
-/**
- * Apply a proposed change to a single item.
- *
- * @param {{ recordId: string, recordType: string, proposedChange: object }} item
- * @returns {Promise<{ ok: boolean }>}
- */
-export async function applySingleItemFix(item) {
-  const { recordId, recordType, proposedChange } = item || {};
-  if (!recordId) throw new Error('Item is missing recordId.');
-  if (!recordType) throw new Error('Item is missing recordType.');
-
-  const changes = proposedChange?.payload || {};
-
-  switch (recordType) {
+async function updateRecord(recordType, recordId, changes) {
+  switch ((recordType || '').toLowerCase()) {
     case 'blend':
     case 'tobacco':
-      return applyBlendChanges(recordId, changes);
+      return updateBlend(recordId, changes);
     case 'bottle':
     case 'whiskey':
-      return applyBottleChanges(recordId, changes);
+      return updateBottle(recordId, changes);
     case 'pipe':
-      return applyPipeChanges(recordId, changes);
+      return updatePipe(recordId, changes);
     default:
-      throw new Error(`Unsupported record type for fix: ${recordType}`);
+      throw new Error(`Unsupported record type: ${recordType}`);
   }
 }
 
-// ─── Recommendation-level actions ────────────────────────────────────────────
+export async function applySingleItemFix(item) {
+  if (!item?.recordId) throw new Error('Item is missing recordId.');
+  if (!item?.recordType) throw new Error('Item is missing recordType.');
+  if (!item?.proposedChange?.payload || !Object.keys(item.proposedChange.payload).length) {
+    throw new Error('No proposed change payload available.');
+  }
 
-/**
- * Execute an action for a recommendation.
- *
- * @param {object}  recommendation  - The structured recommendation object
- * @param {string}  action          - 'apply_fix' | 'acknowledge' | 'approve_changes' | 'treat_individually'
- * @param {object}  [opts]          - { itemId, changes, specialization }
- * @returns {Promise<{ ok: boolean, message?: string }>}
- */
+  const updated = await updateRecord(item.recordType, item.recordId, item.proposedChange.payload);
+
+  return {
+    ok: true,
+    appliedCount: 1,
+    resolvedRecordIds: [item.recordId],
+    updatedRecords: [updated],
+  };
+}
+
+export function buildViewItemsNavigation(recommendation) {
+  const first = recommendation?.items?.[0];
+  const itemIds = (recommendation?.items || []).map((i) => i.recordId || i.id).filter(Boolean);
+
+  const page =
+    first?.recordType === 'bottle' || first?.recordType === 'whiskey'
+      ? 'Whiskey'
+      : first?.recordType === 'blend' || first?.recordType === 'tobacco'
+        ? 'Tobacco'
+        : first?.recordType === 'pipe'
+          ? 'Pipes'
+          : 'CollectionKeeper';
+
+  const params = new URLSearchParams();
+  if (itemIds.length) params.set('curator_ids', itemIds.join(','));
+  if (recommendation?.goal) params.set('curator_hint', recommendation.goal);
+
+  return {
+    ok: true,
+    navigate: {
+      page,
+      path: `/${page}${params.toString() ? `?${params.toString()}` : ''}`,
+      itemIds,
+    },
+  };
+}
+
 export async function executeRecommendationAction(recommendation, action, opts = {}) {
-  if (!recommendation) throw new Error('recommendation is required.');
+  if (!recommendation) {
+    return { ok: false, error: 'Recommendation is required.' };
+  }
+
+  const items = Array.isArray(recommendation.items) ? recommendation.items : [];
 
   switch (action) {
     case 'view_items':
-    case 'view_details': {
-      // Navigation is performed by the calling React component via React Router.
-      // Return navigation info; do NOT use window.location.href here.
+    case 'view_details':
       return buildViewItemsNavigation(recommendation);
-    }
 
     case 'apply_fix': {
-      // For auto_fix recommendations — apply the proposed change to items that have proposals.
-      // Items without a proposedChange payload are intentionally skipped (not all can be auto-fixed).
-      const items = recommendation.items || [];
       const candidates = opts.itemId
-        ? items.filter((i) => i.id === opts.itemId || i.recordId === opts.itemId)
+        ? items.filter((i) => i.recordId === opts.itemId || i.id === opts.itemId)
         : items;
 
-      // Only apply items that have a concrete proposed payload
       const toApply = candidates.filter(
-        (i) => i.proposedChange?.payload && Object.keys(i.proposedChange.payload).length > 0
+        (i) => i?.proposedChange?.payload && Object.keys(i.proposedChange.payload).length > 0
       );
 
       if (!toApply.length) {
-        return {
-          ok:           true,
-          applied:      0,
-          appliedCount: 0,
-          resolvedIds:  [],
-          failedIds:    [],
-          message:      'No auto-fix proposals available for these items. Use Review Details to inspect and edit each record.',
-        };
+        return { ok: false, error: 'No auto-fix payloads available.' };
       }
 
-      let applied = 0;
-      const errors      = [];
-      const resolvedIds = [];
-      const failedIds   = [];
+      const resolvedRecordIds = [];
+      const updatedRecords = [];
+      const failedIds = [];
 
       for (const item of toApply) {
-        const itemId = item.recordId || item.id;
         try {
-          await applySingleItemFix(item);
-          applied++;
-          if (itemId) resolvedIds.push(itemId);
+          const updated = await updateRecord(item.recordType, item.recordId, item.proposedChange.payload);
+          resolvedRecordIds.push(item.recordId);
+          updatedRecords.push(updated);
         } catch (err) {
-          errors.push({ item: item.recordName, error: err.message });
-          if (itemId) failedIds.push(itemId);
+          failedIds.push(item.recordId);
         }
       }
 
-      if (applied === 0 && errors.length > 0) {
-        throw new Error(errors.map((e) => `${e.item}: ${e.error}`).join('; '));
-      }
-
       return {
-        ok:              true,
-        applied,
-        appliedCount:    applied,
-        resolvedIds,
-        resolvedRecordIds: resolvedIds, // canonical alias expected by CuratorWorkspace handleAction
+        ok: resolvedRecordIds.length > 0,
+        appliedCount: resolvedRecordIds.length,
+        resolvedRecordIds,
+        resolvedRecommendationIds: resolvedRecordIds.length ? [recommendation.id] : [],
+        updatedRecords,
         failedIds,
-        errors,
-        recommendationType: recommendation.actionType || null,
-        message:         `Applied to ${applied} item${applied > 1 ? 's' : ''}.`,
-      };
-    }
-
-    case 'apply_specialization': {
-      const { pipeId, specialization } = opts;
-      await applyPipeSpecialization(pipeId, specialization);
-      return { ok: true, message: `Specialization set to ${specialization}.` };
-    }
-
-    case 'acknowledge':
-    case 'dismiss':
-      // Advisory acknowledgements are UI-only — no DB write needed
-      return { ok: true, message: 'Acknowledged.' };
-
-    case 'add_to_shopping_list': {
-      const items = recommendation.items || [];
-      const toAdd = opts.itemId
-        ? items.filter((i) => i.id === opts.itemId || i.recordId === opts.itemId)
-        : items;
-
-      if (!toAdd.length) throw new Error('No items to add to shopping list.');
-      if (!opts.userEmail) throw new Error('User email is required to add to shopping list.');
-
-      let added = 0;
-      const errors = [];
-
-      for (const item of toAdd) {
-        try {
-          await base44.entities.ShoppingListItem.create({
-            name:          item.recordName || item.itemName || item.name || '—',
-            brand:         item.brand || item.manufacturer || '',
-            item_type:     item.itemType || item.recordType || 'blend',
-            shopping_type: item.shoppingType || recommendation.actionPayload?.shoppingType || 'restock',
-            status:        'active',
-            priority:      'medium',
-            is_manual:     false,
-            notes:         '',
-            created_by:    opts.userEmail,
-          });
-          added++;
-        } catch (err) {
-          errors.push({ item: item.recordName, error: err.message });
-        }
-      }
-
-      if (added === 0 && errors.length > 0) {
-        throw new Error(errors.map((e) => `${e.item}: ${e.error}`).join('; '));
-      }
-
-      return {
-        ok:           true,
-        added,
-        appliedCount: added,
-        resolvedIds:  toAdd
-          .filter((item) => !errors.some((e) => e.item === (item.recordName || item.itemName)))
-          .map((item) => item.recordId || item.id)
-          .filter(Boolean),
-        failedIds:    errors.map((e) => e.item).filter(Boolean),
-        errors,
-        message:      `${added} item${added > 1 ? 's' : ''} added to Shopping List.`,
+        error: resolvedRecordIds.length ? undefined : 'No record updates were applied.',
       };
     }
 
     case 'approve_changes': {
-      // For review_required — apply proposed changes for items that have them.
-      // Items without proposedChange are skipped (user must edit manually via Review Details).
-      const items = recommendation.items || [];
-      const toApply = (opts.itemId
-        ? items.filter((i) => i.id === opts.itemId || i.recordId === opts.itemId)
-        : items
-      ).filter((i) => i.proposedChange?.payload && Object.keys(i.proposedChange.payload).length > 0);
-
-      if (!toApply.length) {
-        return {
-          ok:           true,
-          applied:      0,
-          appliedCount: 0,
-          resolvedIds:  [],
-          failedIds:    [],
-          message:      'No auto-applicable changes found. Use Review Details to inspect and manually update each record.',
-        };
+      const reviewedItems = Array.isArray(opts.reviewedItems) ? opts.reviewedItems : [];
+      if (!reviewedItems.length) {
+        return { ok: false, error: 'No reviewed items to apply.' };
       }
 
-      let applied = 0;
-      const errors      = [];
-      const resolvedIds = [];
-      const failedIds   = [];
+      const resolvedRecordIds = [];
+      const updatedRecords = [];
+      const failedIds = [];
 
-      for (const item of toApply) {
-        const itemId = item.recordId || item.id;
+      for (const item of reviewedItems) {
+        const payload = item?.proposedChange?.payload;
+        if (!payload || !Object.keys(payload).length) continue;
         try {
-          await applySingleItemFix(item);
-          applied++;
-          if (itemId) resolvedIds.push(itemId);
+          const updated = await updateRecord(item.recordType, item.recordId, payload);
+          resolvedRecordIds.push(item.recordId);
+          updatedRecords.push(updated);
         } catch (err) {
-          errors.push({ item: item.recordName, error: err.message });
-          if (itemId) failedIds.push(itemId);
+          failedIds.push(item.recordId);
         }
       }
 
-      if (applied === 0 && errors.length > 0) {
-        throw new Error(errors.map((e) => `${e.item}: ${e.error}`).join('; '));
-      }
-
       return {
-        ok:              true,
-        applied,
-        appliedCount:    applied,
-        resolvedIds,
-        resolvedRecordIds: resolvedIds, // canonical alias expected by CuratorWorkspace handleAction
+        ok: resolvedRecordIds.length > 0,
+        appliedCount: resolvedRecordIds.length,
+        resolvedRecordIds,
+        resolvedRecommendationIds: resolvedRecordIds.length ? [recommendation.id] : [],
+        updatedRecords,
         failedIds,
-        errors,
-        recommendationType: recommendation.actionType || null,
-        message:         `Changes approved for ${applied} item${applied > 1 ? 's' : ''}.`,
+        error: resolvedRecordIds.length ? undefined : 'No reviewed changes were applied.',
       };
     }
 
     case 'add_to_rotation':
-      return {
-        ok:           true,
-        dismissed:    true,
-        appliedCount: (recommendation.items || []).length,
-        resolvedIds:  (recommendation.items || []).map((i) => i.recordId || i.id).filter(Boolean),
-        failedIds:    [],
-        message:      'Added to rotation — start a session to record it.',
-      };
-
     case 'mark_for_session':
-      return {
-        ok:           true,
-        dismissed:    true,
-        appliedCount: (recommendation.items || []).length,
-        resolvedIds:  (recommendation.items || []).map((i) => i.recordId || i.id).filter(Boolean),
-        failedIds:    [],
-        message:      'Marked for your next session.',
-      };
-
-    case 'add_to_want_list': {
-      const items = recommendation.items || [];
-      const toAdd = opts.itemId
-        ? items.filter((i) => i.id === opts.itemId || i.recordId === opts.itemId)
-        : items;
-      if (!toAdd.length) throw new Error('No items to add to want list.');
-      if (!opts.userEmail) throw new Error('User email is required to add to want list.');
-
-      let added = 0;
-      const errors = [];
-      for (const item of toAdd) {
-        try {
-          await base44.entities.AcquisitionItem.create({
-            name:       item.recordName || item.itemName || item.name || '—',
-            brand:      item.brand || item.manufacturer || '',
-            item_type:  item.itemType || item.recordType || 'blend',
-            priority:   'medium',
-            status:     'active',
-            created_by: opts.userEmail,
-          });
-          added++;
-        } catch (err) {
-          errors.push({ item: item.recordName, error: err.message });
-        }
-      }
-      if (added === 0 && errors.length > 0) {
-        throw new Error(errors.map((e) => `${e.item}: ${e.error}`).join('; '));
-      }
-      const wantResolvedIds = toAdd
-        .filter((item) => !errors.some((e) => e.item === (item.recordName || item.itemName)))
-        .map((item) => item.recordId || item.id)
-        .filter(Boolean);
-      return {
-        ok:           true,
-        added,
-        appliedCount: added,
-        resolvedIds:  wantResolvedIds,
-        failedIds:    errors.map((e) => e.item).filter(Boolean),
-        errors,
-        dismissed:    true,
-        message:      `${added} item${added > 1 ? 's' : ''} added to Want List.`,
-      };
-    }
-
-    case 'save_pairing':
-      // UI-only dismiss — no SavedPairing entity exists; note the intent and resolve.
-      return {
-        ok:           true,
-        dismissed:    true,
-        appliedCount: 0,
-        resolvedIds:  [recommendation.id].filter(Boolean),
-        failedIds:    [],
-        message:      'Pairing saved.',
-      };
-
-    case 'accept_reassignment': {
-      const { pipeId, specialization } = opts;
-      if (pipeId && specialization) {
-        await applyPipeSpecialization(pipeId, specialization);
-        return {
-          ok:           true,
-          appliedCount: 1,
-          resolvedIds:  [pipeId],
-          failedIds:    [],
-          message:      `Specialization set to ${specialization}.`,
-        };
-      }
-      // Bulk: apply to all items with a pipeId + specialization payload
-      const reassignItems = (recommendation.items || []).filter(
-        (i) => (i.pipeId || i.recordId) && i.specialization
-      );
-      const resolvedIds = [];
-      const failedIds   = [];
-      for (const item of reassignItems) {
-        const pid  = item.pipeId || item.recordId;
-        const spec = item.specialization;
-        try {
-          await applyPipeSpecialization(pid, spec);
-          resolvedIds.push(pid);
-        } catch (_err) {
-          failedIds.push(pid);
-        }
-      }
-      return {
-        ok:           true,
-        appliedCount: resolvedIds.length,
-        resolvedIds,
-        failedIds,
-        message:      `Reassignment accepted for ${resolvedIds.length} pipe${resolvedIds.length !== 1 ? 's' : ''}.`,
-      };
-    }
-
+    case 'accept_reassignment':
     case 'reject_reassignment':
+    case 'save_pairing':
       return {
-        ok:           true,
-        dismissed:    true,
-        appliedCount: 0,
-        resolvedIds:  [recommendation.id].filter(Boolean),
-        failedIds:    [],
-        message:      'Reassignment rejected.',
+        ok: true,
+        appliedCount: items.length || 1,
+        resolvedRecordIds: items.map((i) => i.recordId || i.id).filter(Boolean),
+        resolvedRecommendationIds: [recommendation.id],
+        updatedRecords: [],
       };
 
     case 'move_to_shopping_list':
-      // Alias for add_to_shopping_list — delegates to same logic
-      return executeRecommendationAction(recommendation, 'add_to_shopping_list', opts);
+    case 'add_to_want_list': {
+      const userEmail = opts.userEmail;
+      if (!userEmail) return { ok: false, error: 'User email is required.' };
+
+      const sourceItems = opts.itemId
+        ? items.filter((i) => i.recordId === opts.itemId || i.id === opts.itemId)
+        : items;
+
+      const created = [];
+      const failedIds = [];
+
+      for (const item of sourceItems) {
+        try {
+          const row = await base44.entities.ShoppingListItem.create({
+            name: item.recordName || item.itemName || item.name || '—',
+            brand: item.brand || item.manufacturer || '',
+            item_type: item.recordType || item.itemType || 'blend',
+            shopping_type: action === 'move_to_shopping_list' ? 'shopping' : 'want_list',
+            status: 'active',
+            priority: 'medium',
+            is_manual: false,
+            notes: '',
+            created_by: userEmail,
+          });
+          created.push(row);
+        } catch (err) {
+          failedIds.push(item.recordId || item.id);
+        }
+      }
+
+      return {
+        ok: created.length > 0,
+        appliedCount: created.length,
+        resolvedRecordIds: sourceItems.map((i) => i.recordId || i.id).filter(Boolean),
+        resolvedRecommendationIds: created.length ? [recommendation.id] : [],
+        updatedRecords: created,
+        failedIds,
+        error: created.length ? undefined : 'No shopping list items were created.',
+      };
+    }
+
+    case 'ask_curator':
+      return { ok: true, appliedCount: 0, resolvedRecordIds: [], resolvedRecommendationIds: [], updatedRecords: [] };
 
     default:
-      return { ok: true, message: `Action '${action}' acknowledged.` };
+      return { ok: false, error: `Unsupported action: ${action}` };
   }
 }
