@@ -14,7 +14,7 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { TrendingUp, Plus, CheckCircle2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { TrendingUp, Plus, CheckCircle2, Loader2, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { generateGrowthSuggestions } from '@/lib/curator/growthEngine.js';
 
@@ -28,7 +28,7 @@ const MODULE_COLORS = {
 
 // ─── Single grow suggestion card ──────────────────────────────────────────────
 
-function GrowCard({ suggestion, userEmail }) {
+function GrowCard({ suggestion, userEmail, onAskCurator }) {
   const [adding, setAdding]   = useState(false);
   const [added, setAdded]     = useState(false);
   const [error, setError]     = useState(null);
@@ -115,8 +115,8 @@ function GrowCard({ suggestion, userEmail }) {
         </p>
       )}
 
-      {/* Action */}
-      <div className="flex items-center gap-2">
+      {/* Actions */}
+      <div className="flex items-center gap-2 flex-wrap">
         {added ? (
           <span className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(80,180,130,0.9)' }}>
             <CheckCircle2 className="w-3.5 h-3.5" />
@@ -134,6 +134,17 @@ function GrowCard({ suggestion, userEmail }) {
             {adding ? 'Adding…' : 'Add to Want List'}
           </button>
         )}
+        {onAskCurator && (
+          <button
+            type="button"
+            onClick={() => onAskCurator(suggestion)}
+            className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition-all"
+            style={{ background: 'rgba(74,124,156,0.1)', color: 'rgba(120,170,220,0.8)', border: '1px solid rgba(74,124,156,0.2)' }}
+          >
+            <HelpCircle className="w-3 h-3" />
+            Ask Curator
+          </button>
+        )}
       </div>
     </div>
   );
@@ -147,7 +158,7 @@ const GROW_SECTIONS = [
   { key: 'cigar',   label: 'Cigar Discoveries',   moduleKey: 'cigar'   },
 ];
 
-function GrowSection({ label, suggestions, userEmail }) {
+function GrowSection({ label, suggestions, userEmail, onAskCurator }) {
   const [collapsed, setCollapsed] = useState(false);
 
   if (!suggestions.length) return null;
@@ -180,7 +191,7 @@ function GrowSection({ label, suggestions, userEmail }) {
       {!collapsed && (
         <div className="space-y-2">
           {suggestions.map((s) => (
-            <GrowCard key={s.id} suggestion={s} userEmail={userEmail} />
+            <GrowCard key={s.id} suggestion={s} userEmail={userEmail} onAskCurator={onAskCurator} />
           ))}
         </div>
       )}
@@ -211,8 +222,9 @@ function EmptyState() {
  * @param {object}   props.collectionContext  - Full collection context
  * @param {object}   [props.preferences]     - Taste profile / preferences (from useTasteProfile)
  * @param {string}   [props.userEmail]       - Current user email (for Want List creates)
+ * @param {Function} [props.onAskCurator]    - () => void — switch to chat tab
  */
-export default function CuratorGrowAndExpand({ collectionContext = {}, preferences = null, userEmail }) {
+export default function CuratorGrowAndExpand({ collectionContext = {}, preferences = null, userEmail, onAskCurator }) {
   const suggestions = useMemo(
     () => generateGrowthSuggestions(collectionContext, preferences),
     [collectionContext, preferences]
@@ -259,6 +271,7 @@ export default function CuratorGrowAndExpand({ collectionContext = {}, preferenc
               label={label}
               suggestions={suggestions.filter((s) => s.moduleKey === moduleKey)}
               userEmail={userEmail}
+              onAskCurator={onAskCurator}
             />
           ))}
         </div>

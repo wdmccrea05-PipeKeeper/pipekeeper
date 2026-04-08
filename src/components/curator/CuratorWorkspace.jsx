@@ -353,6 +353,7 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
             setSurface('board');
           }}
           onAskCurator={handleSpecAskCurator}
+          onOpenGrowExpand={() => setSurface('grow')}
         />
       )}
 
@@ -378,6 +379,7 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
           collectionContext={collectionContext}
           preferences={preferences}
           userEmail={user?.email}
+          onAskCurator={() => setSurface('chat')}
         />
       )}
 

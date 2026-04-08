@@ -190,32 +190,64 @@ function getWhiskeyCharacter(bottle) {
   return bottle.flavor_notes || type || 'its characteristic profile';
 }
 
+// ─── Pipe character descriptors ───────────────────────────────────────────────
+
+/**
+ * Return a description of why the pipe is suitable for this pairing.
+ * References bowl size, specialization, and shape when available.
+ */
+function getPipeCharacterNote(pipe, blend) {
+  if (!pipe) return null;
+
+  const shape     = (pipe.shape || pipe.bowl_style || '').toLowerCase();
+  const sizeClass = (pipe.sizeClass || '').toLowerCase();
+  const spec      = (pipe.specialization || '').toLowerCase();
+
+  // Shape/size-based notes
+  if (sizeClass === 'large' || shape.includes('pot') || shape.includes('poker') || shape.includes('churchwarden')) {
+    return `${pipe.name}'s larger bowl sustains a longer, slower burn — letting ${blend.name}'s character develop fully through the smoke`;
+  }
+  if (sizeClass === 'small' || shape.includes('brandy') || shape.includes('prince') || shape.includes('apple')) {
+    return `${pipe.name}'s compact bowl concentrates ${blend.name}'s flavors for a shorter, more focused session`;
+  }
+  if (shape.includes('billiard') || shape.includes('canadian')) {
+    return `${pipe.name}'s straight, even-burning chamber gives ${blend.name} a consistent platform throughout the bowl`;
+  }
+
+  // Specialization-based notes
+  if (spec && spec !== 'unspecialized' && spec !== 'general') {
+    const specLabel = spec.charAt(0).toUpperCase() + spec.slice(1);
+    return `${pipe.name}'s ${specLabel}-seasoned cake provides a complementary base that supports rather than competes with ${blend.name}`;
+  }
+
+  return `${pipe.name} is the right choice for this session`;
+}
+
 /**
  * Build an expert-quality rationale for a pipe + blend + bottle pairing.
  * Always references specific flavors. Labels logic as complement or contrast.
+ * Includes a pipe-specific note about why the pipe suits this combination.
  */
 function buildPipeBlendBottleRationale(pipe, blend, bottle) {
-  const blendType = getBlendType(blend);
-  const whiskeyType = getWhiskeyType(bottle);
+  const blendType    = getBlendType(blend);
+  const whiskeyType  = getWhiskeyType(bottle);
   const pairingLogic = BLEND_WHISKEY_PAIRING_LOGIC[blendType];
-  const whiskeyChar = getWhiskeyCharacter(bottle);
+  const whiskeyChar  = getWhiskeyCharacter(bottle);
+  const pipeNote     = getPipeCharacterNote(pipe, blend);
 
   if (pairingLogic) {
-    const logicLabel = pairingLogic.logic === 'complement' ? 'Complement pairing' : 'Contrast pairing';
-    return (
-      `${logicLabel}. ${pairingLogic.note}. ` +
-      `${blend.name}'s ${blendType} character and ${bottle.name}'s ${whiskeyChar} ` +
-      `${pairingLogic.logic === 'complement' ? 'reinforce each other' : 'create a balanced tension'} ` +
-      `${pipe ? `— served in ${pipe.name}` : ''}.`
-    ).trim();
+    const logicLabel    = pairingLogic.logic === 'complement' ? 'Complement' : 'Contrast';
+    const tensionLabel  = pairingLogic.logic === 'complement'
+      ? 'each reinforcing the other without competing'
+      : 'the tension between them creating a balanced experience';
+    const base = `${logicLabel} pairing: ${pairingLogic.note}. ${blend.name}'s ${blendType} character meets ${bottle.name}'s ${whiskeyChar} — ${tensionLabel}.`;
+    return pipeNote ? `${base} ${pipeNote}.` : base;
   }
 
   // Fallback: still be specific
   if (blendType && whiskeyType) {
-    return (
-      `${blend.name}'s ${blendType} profile finds a workable partner in ${bottle.name}'s ${whiskeyChar}. ` +
-      `${pipe ? `Use ${pipe.name} for this session.` : ''}`
-    ).trim();
+    const base = `${blend.name}'s ${blendType} profile finds a workable partner in ${bottle.name}'s ${whiskeyChar}.`;
+    return pipeNote ? `${base} ${pipeNote}.` : base;
   }
 
   return `${blend.name} + ${bottle.name}${pipe ? ` in ${pipe.name}` : ''} — compatible flavor profiles.`;

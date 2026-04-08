@@ -83,6 +83,147 @@ function pickProduct(catalog, typeKey, fallback) {
   return products[hash % products.length];
 }
 
+// ─── Pairing compatibility maps (for gap explanations) ───────────────────────
+
+const BLEND_WHISKEY_COMPAT = {
+  'Virginia':            ['Bourbon', 'Irish Whiskey'],
+  'Virginia/Perique':    ['Bourbon', 'Rye'],
+  'Virginia/Burley':     ['Bourbon', 'Rye'],
+  'Virginia/Oriental':   ['Single Malt Scotch', 'Bourbon'],
+  'English':             ['Islay Single Malt', 'Single Malt Scotch'],
+  'English/Balkan':      ['Islay Single Malt', 'Single Malt Scotch'],
+  'Aromatic':            ['Irish Whiskey', 'Blended Scotch', 'Bourbon'],
+  'Burley':              ['Bourbon', 'Tennessee Whiskey'],
+  'Oriental':            ['Single Malt Scotch'],
+  'Balkan':              ['Single Malt Scotch'],
+  'Cavendish':           ['Bourbon', 'Irish Whiskey'],
+  'Dark Fired Kentucky': ['Bourbon', 'Rye'],
+};
+
+const WHISKEY_BLEND_COMPAT = {
+  'Bourbon':            ['Virginia', 'Virginia/Burley', 'Virginia/Perique', 'Burley'],
+  'Rye':                ['Virginia/Perique', 'Virginia/Burley', 'Dark Fired Kentucky'],
+  'Single Malt Scotch': ['Virginia/Oriental', 'Oriental', 'Balkan', 'English'],
+  'Islay Single Malt':  ['English', 'English/Balkan'],
+  'Irish Whiskey':      ['Aromatic', 'Virginia', 'Cavendish'],
+  'Blended Scotch':     ['Aromatic', 'Cavendish', 'Virginia'],
+  'Japanese Whisky':    ['Virginia', 'Virginia/Oriental', 'Oriental'],
+  'Tennessee Whiskey':  ['Burley', 'Dark Fired Kentucky'],
+};
+
+// ─── Context-aware summary builders ──────────────────────────────────────────
+
+const BLEND_CHARACTER_NOTES = {
+  'Virginia':            'Virginia\'s natural hay sweetness and clean burn provide the foundational profile most other blend families build on',
+  'Virginia/Perique':    'Virginia/Perique adds Perique\'s peppery complexity to a Virginia base — more dimension than straight Virginia, without leaving familiar territory',
+  'Virginia/Burley':     'Virginia/Burley bridges Virginia sweetness and Burley earthiness — the most versatile crossover family, suitable for most pipe specializations',
+  'Virginia/Oriental':   'Virginia/Oriental combines Virginia sweetness with Oriental\'s floral spice — lighter than full English blends but significantly more complex than plain Virginia',
+  'English':             'English blends are built around Latakia\'s campfire smoke and leather depth — nothing else in the pipe tradition covers this character',
+  'English/Balkan':      'English/Balkan blends layer Latakia, Oriental, and Virginia into one of the most complex profiles in the tradition',
+  'Aromatic':            'Aromatics produce an entirely different kind of session and require a dedicated pipe — adding one reshapes how you plan your rotation',
+  'Burley':              'Burley\'s dry, nutty earth contributes a distinct base that no other blend family replicates — and pairs directly with bourbon',
+  'Oriental':            'Pure Oriental blends carry a floral, incense-like quality that nothing else in a cellar reproduces',
+  'Balkan':              'Balkan blends layer Oriental, Virginia, and Latakia into a deeply complex profile — your cellar has no representative of this family',
+  'Cavendish':           'Cavendish adds a smooth, processed sweetness suited for shorter, lighter sessions — distinct in character from unflavored blends',
+  'Dark Fired Kentucky': 'Dark Fired Kentucky brings intense, assertive smokiness and bold depth — the most distinctive blend family not yet in your cellar',
+};
+
+const BLEND_PAIRING_NOTES = {
+  'Virginia':            (w) => `Virginia\'s hay sweetness pairs as a complement to ${w}\'s warm, sweet character — each reinforces the other without competing`,
+  'Virginia/Perique':    (w) => `Perique\'s peppery bite contrasts ${w}\'s spice in a way that lets Virginia\'s sweetness come through clean`,
+  'Virginia/Burley':     (w) => `Burley\'s nutty earth amplifies the caramel and vanilla in ${w} without overriding the Virginia base`,
+  'English':             (w) => `Latakia\'s campfire smoke and leather find their natural match in ${w}\'s smoke and peat — one reinforces the other`,
+  'English/Balkan':      (w) => `The layered spice of Balkan-style blends tracks the complex, smoky character of ${w} note for note`,
+  'Aromatic':            (w) => `${w}\'s light grain sweetness softens the aromatic\'s topping without masking it — a contrast pairing that works because neither is too assertive`,
+  'Burley':              (w) => `Burley\'s dry, nutty character was built for ${w} — the sweetness rounds out the dryness without overwhelming it`,
+  'Oriental':            (w) => `Oriental\'s floral, spiced notes contrast ${w}\'s malt complexity in a way that opens both up`,
+  'Balkan':              (w) => `Balkan\'s incense-like Oriental leaf finds a natural companion in ${w}\'s fruit and malt`,
+  'Virginia/Oriental':   (w) => `Oriental\'s floral spice and Virginia\'s sweetness both open up alongside ${w}\'s fruity complexity`,
+};
+
+const WHISKEY_CHARACTER_NOTES = {
+  'Bourbon':            'corn-forward sweetness and vanilla oak',
+  'Rye':                'dry spice and peppery finish',
+  'Single Malt Scotch': 'malt complexity and regional character',
+  'Islay Single Malt':  'heavy peat, brine, and smoke',
+  'Irish Whiskey':      'light body and clean grain sweetness',
+  'Blended Scotch':     'approachable malt and grain balance',
+  'Japanese Whisky':    'delicate fruit and restrained grain complexity',
+  'Tennessee Whiskey':  'charcoal-filtered smoothness and caramel',
+};
+
+const WHISKEY_PAIRING_NOTES = {
+  'Bourbon':            (b) => `Your ${b} blends pair naturally with bourbon\'s vanilla and caramel notes — add this and the Curator can build those pairings immediately`,
+  'Rye':                (b) => `Rye\'s dry spice contrasts ${b}\'s pepper in a way bourbon doesn\'t — it\'s the complement pairing that opens up the peppery side of your tobacco shelf`,
+  'Single Malt Scotch': (b) => `${b} blends are built for single malt — the malt complexity creates the backdrop that lets ${b}\'s character fully express`,
+  'Islay Single Malt':  (b) => `Your ${b} blends are waiting for an Islay — that peat-and-Latakia combination is one of the most classic pairings in the tradition`,
+  'Irish Whiskey':      (b) => `${b} blends pair as a contrast with Irish whiskey\'s light body — the softness of the pour prevents the blend\'s topping from overwhelming`,
+  'Blended Scotch':     (b) => `A blended Scotch provides an approachable pairing backdrop for your ${b} blends without demanding a specific tobacco profile`,
+  'Japanese Whisky':    (b) => `Japanese whisky\'s delicate balance of fruit and grain opens a lighter, more precise pairing axis for your ${b} blends`,
+  'Tennessee Whiskey':  (b) => `The Lincoln County Process\'s charcoal-filtered smoothness pairs gently with ${b}\'s bold depth — a mellow complement to an assertive blend`,
+};
+
+/**
+ * Build a context-aware summary for a blend gap suggestion.
+ */
+function buildBlendGapSummary(type, isPreferred, ownedBlendTypes, ownedWhiskeyTypes) {
+  const compatWhiskeys = BLEND_WHISKEY_COMPAT[type] || [];
+  const matchingWhiskey = compatWhiskeys.find((wt) =>
+    [...ownedWhiskeyTypes].some((ot) => ot.toLowerCase().includes(wt.toLowerCase()) || wt.toLowerCase().includes(ot.toLowerCase()))
+  );
+
+  if (isPreferred && matchingWhiskey) {
+    const pairingNote = BLEND_PAIRING_NOTES[type]?.(matchingWhiskey) ||
+      `pairs directly with your ${matchingWhiskey}`;
+    return `${type} is in your preferred types and your shelf already has ${matchingWhiskey}. ${pairingNote}. Adding this blend activates that pairing immediately.`;
+  }
+
+  if (isPreferred) {
+    const charNote = BLEND_CHARACTER_NOTES[type] || `${type} blends are not yet in your cellar`;
+    return `${type} matches your taste profile but isn't in your cellar yet. ${charNote} — your rotation is missing this entire flavor axis.`;
+  }
+
+  if (matchingWhiskey) {
+    const pairingNote = BLEND_PAIRING_NOTES[type]?.(matchingWhiskey) ||
+      `creates a compatible pairing with your ${matchingWhiskey}`;
+    return `Your ${matchingWhiskey} has no matching tobacco blend. ${pairingNote}. This fills the tobacco side of that pairing.`;
+  }
+
+  const charNote = BLEND_CHARACTER_NOTES[type];
+  return charNote
+    ? `${charNote}. Your cellar currently has no representative of this family.`
+    : `${type} blends are absent from your cellar — adding one would fill this gap in your collection's blend diversity.`;
+}
+
+/**
+ * Build a context-aware summary for a whiskey gap suggestion.
+ */
+function buildWhiskeyGapSummary(type, isPreferred, ownedBlendTypes) {
+  const compatBlends = WHISKEY_BLEND_COMPAT[type] || [];
+  const matchingBlend = compatBlends.find((bt) => ownedBlendTypes.has(bt));
+  const charNote = WHISKEY_CHARACTER_NOTES[type] || '';
+
+  if (isPreferred && matchingBlend) {
+    const pairingNote = WHISKEY_PAIRING_NOTES[type]?.(matchingBlend) ||
+      `pairs directly with your ${matchingBlend} blends`;
+    return `${type} is in your preferred whiskey types. ${pairingNote}. Adding this unlocks those pairings without requiring anything else.`;
+  }
+
+  if (isPreferred) {
+    return `${type} is in your preferred types but absent from your shelf. Without it, this pairing category is entirely unavailable to the Curator's recommendation engine.`;
+  }
+
+  if (matchingBlend) {
+    const pairingNote = WHISKEY_PAIRING_NOTES[type]?.(matchingBlend) ||
+      `your ${matchingBlend} blends have a natural pairing in ${type}`;
+    return `Your ${matchingBlend} blends have no natural pairing whiskey on your shelf. ${pairingNote}. This is the missing half of a pairing your tobacco collection already supports.`;
+  }
+
+  return charNote
+    ? `${type} brings ${charNote} — a distinct pairing axis your current shelf doesn't cover.`
+    : `${type} would add whiskey diversity and expand your pairing options beyond what's currently on your shelf.`;
+}
+
 // ─── Gap analysis ─────────────────────────────────────────────────────────────
 
 /**
@@ -108,6 +249,9 @@ export function generateGrowthSuggestions(collectionContext = {}, preferences = 
   const ownedBlendTypes  = new Set(blends.map((b) => b.blend_type || b.blend_family).filter(Boolean));
   const preferredTypes   = new Set(preferences?.preferred_blend_types  || []);
   const dislikedTypes    = new Set(preferences?.disliked_blend_types   || []);
+  const ownedWhiskeyTypes = new Set(
+    bottles.map((b) => b.type || b.whiskey_type || b.spirit_type).filter(Boolean)
+  );
 
   // Weight blend types by usage history for better preference inference
   const blendTypeUsageCounts = {};
@@ -137,10 +281,8 @@ export function generateGrowthSuggestions(collectionContext = {}, preferences = 
       category:    'tobacco',
       type:        'blend_type_gap',
       moduleKey:   'tobacco',
-      title:       `Explore ${specificName}`,
-      summary:     isPreferred
-        ? `${specificName} is a ${type} blend that fits your taste profile but isn't in your collection yet`
-        : `${specificName} (${type}) isn't represented in your cellar`,
+      title:       specificName,
+      summary:     buildBlendGapSummary(type, isPreferred, ownedBlendTypes, ownedWhiskeyTypes),
       reason:      isPreferred ? 'preference_match' : 'collection_gap',
       confidence,
       priority:    isPreferred ? 'high' : 'medium',
@@ -151,9 +293,6 @@ export function generateGrowthSuggestions(collectionContext = {}, preferences = 
 
   // ── Whiskey gap analysis ────────────────────────────────────────────────────
 
-  const ownedWhiskeyTypes    = new Set(
-    bottles.map((b) => b.type || b.whiskey_type || b.spirit_type).filter(Boolean)
-  );
   const preferredWhiskeyTypes = new Set(preferences?.preferred_whiskey_types || []);
   const dislikedWhiskeyTypes  = new Set(preferences?.disliked_whiskey_types  || []);
 
@@ -176,10 +315,8 @@ export function generateGrowthSuggestions(collectionContext = {}, preferences = 
       category:     'whiskey',
       type:         'whiskey_type_gap',
       moduleKey:    'whiskey',
-      title:        `Explore ${specificName}`,
-      summary:      isPreferred
-        ? `${specificName} (${type}) fits your whiskey profile but you don't have any yet`
-        : `${specificName} (${type}) would add whiskey diversity to your collection`,
+      title:        specificName,
+      summary:      buildWhiskeyGapSummary(type, isPreferred, ownedBlendTypes),
       reason:       isPreferred ? 'preference_match' : 'collection_gap',
       confidence,
       priority:     isPreferred ? 'high' : 'low',
@@ -192,6 +329,14 @@ export function generateGrowthSuggestions(collectionContext = {}, preferences = 
 
   if (cigarModuleActive && cigars.length > 0) {
     const ownedStrengths = new Set(cigars.map((c) => c.strength || c.body).filter(Boolean));
+
+    const CIGAR_STRENGTH_NOTES = {
+      'Mild':         'A mild cigar broadens your lighter pairing options — pairs cleanly with Irish whiskey and blended Scotch for accessible, lower-commitment sessions.',
+      'Mild-Medium':  'Mild-medium cigars add a versatile middle range — strong enough to be interesting, light enough to pair with a wide range of whiskeys without one dominating.',
+      'Medium':       'A medium-bodied cigar is the backbone of most pairings — pairs as complement or contrast depending on the whiskey, and suits a wide range of occasions.',
+      'Medium-Full':  'Medium-full cigars pair well with bourbon\'s body and single malt\'s complexity. Your humidor lacks this range — it would expand pairing options significantly.',
+      'Full':         'Full-bodied cigars need a pour with presence. This fills the bold end of your humidor\'s range and pairs with high-proof bourbons or rye — currently unpairable.',
+    };
 
     for (const strength of ALL_CIGAR_STRENGTHS) {
       if (ownedStrengths.has(strength)) continue;
@@ -210,8 +355,9 @@ export function generateGrowthSuggestions(collectionContext = {}, preferences = 
         category:  'cigar',
         type:      'cigar_strength_gap',
         moduleKey: 'cigar',
-        title:     `Explore ${specificName}`,
-        summary:   `${specificName} (${strength} strength) isn't represented in your humidor`,
+        title:     specificName,
+        summary:   CIGAR_STRENGTH_NOTES[strength] ||
+          `${specificName} (${strength} strength) isn't represented in your humidor — adding it broadens your pairing range.`,
         reason:    'collection_gap',
         confidence,
         priority:  'low',

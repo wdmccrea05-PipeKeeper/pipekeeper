@@ -401,7 +401,7 @@ const COLL_OPT_SECTION_MAP = [
   },
 ];
 
-function CollOptSection({ label, recommendations, onAction }) {
+function CollOptSection({ label, recommendations, onAction, onOpenGrowExpand }) {
   const [collapsed, setCollapsed] = useState(false);
 
   if (!recommendations.length) return null;
@@ -438,6 +438,7 @@ function CollOptSection({ label, recommendations, onAction }) {
               key={rec.id}
               recommendation={rec}
               onAction={onAction}
+              onOpenGrowExpand={onOpenGrowExpand}
             />
           ))}
         </div>
@@ -446,7 +447,7 @@ function CollOptSection({ label, recommendations, onAction }) {
   );
 }
 
-function CollectionOptSections({ sections, onAction }) {
+function CollectionOptSections({ sections, onAction, onOpenGrowExpand }) {
   // Flatten all recommendations from all collection-opt sections
   const allRecs = sections.flatMap((s) => s.recommendations || []);
 
@@ -463,6 +464,7 @@ function CollectionOptSections({ sections, onAction }) {
             label={label}
             recommendations={recs}
             onAction={onAction}
+            onOpenGrowExpand={onOpenGrowExpand}
           />
         );
       })}
@@ -479,6 +481,7 @@ function CollectionOptSections({ sections, onAction }) {
  * @param {Function} props.onAction          - (actionKey, rec, opts) => Promise — for collection sections
  * @param {Function} props.onDone            - () => void — navigate back to board
  * @param {Function} [props.onAskCurator]    - (pipe) => void — switch to chat with specialization context
+ * @param {Function} [props.onOpenGrowExpand] - () => void — navigate to Grow & Expand tab
  */
 export default function CuratorSpecializationReview({
   specRecs = [],
@@ -486,6 +489,7 @@ export default function CuratorSpecializationReview({
   onAction,
   onDone,
   onAskCurator,
+  onOpenGrowExpand,
 }) {
   // ─── Collection optimization sections (BALANCE + UTILIZATION) ────────────────
   const hasCollectionSections = collectionSections.some((s) => s.recommendations?.length > 0);
@@ -576,7 +580,7 @@ export default function CuratorSpecializationReview({
 
         {/* Collection sections even if no spec candidates */}
         {hasCollectionSections && (
-          <CollectionOptSections sections={collectionSections} onAction={onAction} />
+          <CollectionOptSections sections={collectionSections} onAction={onAction} onOpenGrowExpand={onOpenGrowExpand} />
         )}
 
         <div className="py-8 text-center space-y-3">
@@ -641,7 +645,7 @@ export default function CuratorSpecializationReview({
 
       {/* Collection optimization sections — utilization & balance */}
       {hasCollectionSections && (
-        <CollectionOptSections sections={collectionSections} onAction={onAction} />
+        <CollectionOptSections sections={collectionSections} onAction={onAction} onOpenGrowExpand={onOpenGrowExpand} />
       )}
 
       {/* Pipe Specialization section header */}
