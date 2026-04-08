@@ -127,8 +127,8 @@ function AutoFixActions({ rec, onAction }) {
 
   return (
     <>
-      <PrimaryBtn onClick={handleApply} loading={applying} icon={Check} label="Apply Fix" />
-      <SecondaryBtn onClick={() => onAction('view_details', rec)} icon={Eye} label="Review Details" />
+      <PrimaryBtn onClick={handleApply} loading={applying} icon={Check} label="Fix Now" />
+      <SecondaryBtn onClick={() => { onAction('mark_reviewed', rec); }} icon={Check} label="Mark Reviewed" />
       <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
     </>
   );
@@ -195,11 +195,11 @@ function CollectionOptActions({ rec, onAction, onOpenGrowExpand }) {
   // Generic fallback advisory
   return (
     <>
-      <PrimaryBtn onClick={() => onAction('view_items', rec)} icon={Eye} label="View Items" />
+      <PrimaryBtn onClick={() => onAction('apply_suggestion', rec)} icon={Check} label="Apply Suggestion" />
       <SecondaryBtn
         onClick={() => { onAction('acknowledge', rec); setDone(true); }}
         icon={Check}
-        label="Acknowledge"
+        label="Mark Reviewed"
       />
       <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
     </>
@@ -220,11 +220,11 @@ function AdvisoryActions({ rec, onAction, onOpenGrowExpand }) {
 
   return (
     <>
-      <PrimaryBtn onClick={() => onAction('view_items', rec)} icon={Eye} label="View Items" />
+      <PrimaryBtn onClick={() => onAction('apply_suggestion', rec)} icon={Check} label="Apply Suggestion" />
       <SecondaryBtn
         onClick={() => { onAction('acknowledge', rec); setDone(true); }}
         icon={Check}
-        label="Acknowledge"
+        label="Mark Reviewed"
       />
       <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
     </>
@@ -386,7 +386,7 @@ function MultiPathActions({ rec, onAction, onOpenSpecialization }) {
       />
       <TertiaryBtn
         onClick={() => { onAction('acknowledge', rec); setDone(true); }}
-        label="Acknowledge"
+        label="Mark Reviewed"
       />
     </>
   );
@@ -448,7 +448,7 @@ export default function CuratorRecommendationGroup({
 
   return (
     <div
-      className="rounded-xl p-4 space-y-3"
+      className="rounded-2xl p-4 space-y-3"
       style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.18)' }}
     >
       {/* Header: badges + title + item count */}
@@ -479,7 +479,7 @@ export default function CuratorRecommendationGroup({
             )}
           </div>
           {/* Title */}
-          <p className="text-sm font-bold leading-tight" style={{ color: '#F5F1E7' }}>
+          <p className="text-base font-bold leading-tight" style={{ color: '#F5F1E7' }}>
             {rec.title}
           </p>
           {/* Summary line */}
@@ -502,7 +502,7 @@ export default function CuratorRecommendationGroup({
 
       {/* Why it matters — one line */}
       {rec.whyItMatters && (
-        <p className="text-xs leading-snug" style={{ color: 'rgba(224,216,200,0.65)' }}>
+        <p className="text-sm leading-snug" style={{ color: 'rgba(224,216,200,0.65)' }}>
           {rec.whyItMatters}
         </p>
       )}

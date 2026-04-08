@@ -35,6 +35,21 @@ export const PAIRING_MODE_LABELS = {
   [PAIRING_MODE.COLLECTION_MIX_MATCH]: 'Mix & Match',
 };
 
+// ─── Pairing type labels ─────────────────────────────────────────────────────
+export const PAIRING_TYPE = {
+  COMPLEMENTARY: 'complementary',
+  CONTRAST:      'contrast',
+  AMPLIFICATION: 'amplification',
+  EXPERIMENTAL:  'experimental',
+};
+
+export const PAIRING_TYPE_LABELS = {
+  complementary: 'Complementary',
+  contrast:      'Contrast',
+  amplification: 'Amplification',
+  experimental:  'Experimental',
+};
+
 // ─── Ghosting rule constants ──────────────────────────────────────────────────
 
 // Blend types that leave aromatic flavor oils — must stay in dedicated aromatic pipes
@@ -284,6 +299,53 @@ function getPairingType(blend, bottle) {
 }
 
 /**
+ * Build a short flavorInteraction string.
+ * Handles both tobacco blends and cigars as the first argument.
+ * Returns null if insufficient data.
+ */
+function buildFlavorInteraction(blendOrCigar, bottle) {
+  const whiskeyChar = bottle?.whiskey_type || bottle?.spirit_type || '';
+  // Try tobacco blend fields first
+  const blendType = blendOrCigar?.blend_type || blendOrCigar?.blend_family || blendOrCigar?.type || '';
+  if (blendType && whiskeyChar) {
+    return `${blendType} character meets ${whiskeyChar} — shared sweetness and body`;
+  }
+  if (blendType) return `${blendType} character drives the pairing`;
+  // Fall back to cigar fields
+  const cigarWrapper = blendOrCigar?.wrapper || '';
+  const cigarStrength = blendOrCigar?.strength || blendOrCigar?.body || '';
+  if (cigarStrength && whiskeyChar) {
+    return `${cigarStrength} body meets ${whiskeyChar} — matched intensity`;
+  }
+  if (cigarWrapper) return `${cigarWrapper} wrapper complexity drives the pairing`;
+  return null;
+}
+
+/**
+ * Build a short structuralCompatibility string.
+ */
+function buildStructuralCompatibility(blend, bottle) {
+  const abv = Number(bottle?.abv) || 0;
+  if (abv > 50) return 'High-proof spirit matches full-bodied smoke — structure holds';
+  if (abv > 40) return 'Mid-strength spirit balances the blend — clean burn delivery';
+  return 'Spirit weight and smoke density are complementary';
+}
+
+/**
+ * Build a short outcome string based on pairing type.
+ */
+function buildPairingOutcome(pairingType) {
+  switch (pairingType) {
+    case 'complementary': return 'Consistent, cohesive experience throughout the session';
+    case 'contrast':      return 'Dynamic contrast — each element sharpens the other';
+    case 'amplification': return 'Dominant notes amplified — bold, full delivery';
+    case 'experimental':  return 'Unexpected combination — results vary by palate';
+    case 'complement':    return 'Balanced complementary session — cohesive experience';
+    default:              return 'Balanced session pairing';
+  }
+}
+
+/**
  * Return 'complement' | 'contrast' for a cigar/bottle pairing.
  */
 function getCigarPairingType(cigar) {
@@ -387,6 +449,10 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
       rightItem:     { type: 'bottle', id: bestBottle.id, name: bestBottle.name, recordType: 'bottle' },
       score:         bestScore,
       rationale:     buildPipeBlendBottleRationale(pipe, blend, bestBottle),
+      flavorInteraction:       buildFlavorInteraction(blend, bestBottle),
+      structuralCompatibility: buildStructuralCompatibility(blend, bestBottle),
+      outcome:                 buildPairingOutcome(getPairingType(blend, bestBottle)),
+      confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       confidence:    computeConfidence({
         preferenceAlignment:   hasBlendType && hasWhiskeyType ? (bestScore >= 7 ? 0.9 : 0.6) : 0.4,
         usageHistoryRelevance: hasLogData ? 0.8 : 0.4,
@@ -484,6 +550,10 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
       rightItem:   { type: 'bottle', id: best.id, name: best.name, recordType: 'bottle' },
       score:       bestScore,
       rationale:   buildPipeBlendBottleRationale(pipe, blend, best),
+      flavorInteraction:       buildFlavorInteraction(blend, best),
+      structuralCompatibility: buildStructuralCompatibility(blend, best),
+      outcome:                 buildPairingOutcome(getPairingType(blend, best)),
+      confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       ownershipStatus: 'owned',
     });
   }
@@ -569,6 +639,10 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
       rightItem:   { type: 'bottle', id: best.id, name: best.name, recordType: 'bottle' },
       score:       bestScore,
       rationale:   rediscoverRationale,
+      flavorInteraction:       buildFlavorInteraction(blend, best),
+      structuralCompatibility: buildStructuralCompatibility(blend, best),
+      outcome:                 buildPairingOutcome(getPairingType(blend, best)),
+      confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       ownershipStatus: 'owned',
     });
   }
@@ -635,6 +709,10 @@ function generateCigarWhiskeyPairings(cigars, bottles, bottleUsageCount) {
       blendBridge:   null,
       score:         bestScore,
       rationale:     buildCigarBottleRationale(cigar, bestBottle),
+      flavorInteraction:       buildFlavorInteraction(cigar, bestBottle),
+      structuralCompatibility: buildStructuralCompatibility(cigar, bestBottle),
+      outcome:                 buildPairingOutcome(getCigarPairingType(cigar)),
+      confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       ownershipStatus: 'owned',
     });
   }
@@ -752,6 +830,10 @@ function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottl
       rightItem:   { type: 'bottle', id: best.id, name: best.name, recordType: 'bottle' },
       score:       bestScore,
       rationale:   novelRationale,
+      flavorInteraction:       buildFlavorInteraction(blend, best),
+      structuralCompatibility: buildStructuralCompatibility(blend, best),
+      outcome:                 buildPairingOutcome(getPairingType(blend, best)),
+      confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       ownershipStatus: 'owned',
     });
   }

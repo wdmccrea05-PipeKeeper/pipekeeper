@@ -31,7 +31,7 @@ export const CATEGORY = {
 };
 
 export const CATEGORY_LABELS = {
-  [CATEGORY.RECORD_OPTIMIZATION]:     'Record Optimization',
+  [CATEGORY.RECORD_OPTIMIZATION]:     'Collection Health',
   [CATEGORY.COLLECTION_OPTIMIZATION]: 'Collection Optimization',
   [CATEGORY.PURCHASE]:                'Purchase & Restock',
   [CATEGORY.PAIRING]:                 'Pairings',
