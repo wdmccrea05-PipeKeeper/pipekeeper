@@ -93,6 +93,15 @@
     @apply text-foreground;
     overflow-wrap: break-word;
     word-break: break-word;
+    font-size: 16px;
+  }
+
+  /* Taller, easier-to-read inputs globally */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    min-height: 2.65rem;
+    font-size: 1rem;
   }
 
   label {

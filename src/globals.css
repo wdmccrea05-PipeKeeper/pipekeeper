@@ -9,24 +9,24 @@
   --ck-bg-2: #241913;
 
   /* ── Surfaces ── */
-  --ck-surface-1: rgba(42, 31, 24, 0.94);
-  --ck-surface-2: rgba(255, 255, 255, 0.045);
-  --ck-surface-3: rgba(255, 255, 255, 0.065);
+  --ck-surface-1: rgba(42, 31, 24, 0.96);
+  --ck-surface-2: rgba(255, 255, 255, 0.05);
+  --ck-surface-3: rgba(255, 255, 255, 0.075);
 
   /* ── Borders ── */
-  --ck-border: rgba(180, 140, 75, 0.16);
-  --ck-border-strong: rgba(180, 140, 75, 0.26);
+  --ck-border: rgba(180, 140, 75, 0.18);
+  --ck-border-strong: rgba(180, 140, 75, 0.30);
   --ck-border-subtle: rgba(180, 140, 75, 0.10);
 
   /* ── Text ── */
   --ck-text: #f5f1e7;
-  --ck-text-soft: rgba(224, 216, 200, 0.78);
-  --ck-text-muted: rgba(224, 216, 200, 0.52);
-  --ck-text-faint: rgba(224, 216, 200, 0.35);
+  --ck-text-soft: rgba(224, 216, 200, 0.85);
+  --ck-text-muted: rgba(224, 216, 200, 0.60);
+  --ck-text-faint: rgba(224, 216, 200, 0.42);
 
   /* ── Accent colors ── */
   --ck-gold: #d4a574;
-  --ck-gold-muted: rgba(212, 165, 116, 0.7);
+  --ck-gold-muted: rgba(212, 165, 116, 0.75);
   --ck-rose: #a35c5c;
   --ck-rose-hover: #8f4e4e;
   --ck-success: #2e7d5c;
@@ -34,39 +34,41 @@
   --ck-info: rgba(100, 130, 180, 0.85);
 
   /* ── Elevation shadows ── */
-  --ck-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
-  --ck-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.22);
+  --ck-shadow: 0 16px 48px rgba(0, 0, 0, 0.32);
+  --ck-shadow-sm: 0 6px 20px rgba(0, 0, 0, 0.26);
+  --ck-shadow-card: 0 8px 32px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
-  /* ── Typography scale ── */
-  --ck-text-xs: 0.75rem;     /* 12px */
-  --ck-text-sm: 0.8125rem;   /* 13px */
-  --ck-text-base: 0.9375rem; /* 15px — slightly larger than default for readability */
-  --ck-text-md: 1.0625rem;   /* 17px */
-  --ck-text-lg: 1.1875rem;   /* 19px */
-  --ck-text-xl: 1.375rem;    /* 22px */
-  --ck-text-2xl: 1.625rem;   /* 26px */
-  --ck-text-3xl: 2rem;       /* 32px */
-  --ck-text-4xl: 2.5rem;     /* 40px */
+  /* ── Typography scale — increased for readability ── */
+  --ck-text-xs: 0.8125rem;    /* 13px  ↑ was 12px */
+  --ck-text-sm: 0.875rem;     /* 14px  ↑ was 13px */
+  --ck-text-base: 1rem;       /* 16px  ↑ was 15px */
+  --ck-text-md: 1.125rem;     /* 18px  ↑ was 17px */
+  --ck-text-lg: 1.25rem;      /* 20px  ↑ was 19px */
+  --ck-text-xl: 1.5rem;       /* 24px  ↑ was 22px */
+  --ck-text-2xl: 1.75rem;     /* 28px  ↑ was 26px */
+  --ck-text-3xl: 2.125rem;    /* 34px  ↑ was 32px */
+  --ck-text-4xl: 2.75rem;     /* 44px  ↑ was 40px */
 
   /* ── Spacing scale ── */
   --ck-space-1: 0.25rem;
   --ck-space-2: 0.5rem;
   --ck-space-3: 0.75rem;
   --ck-space-4: 1rem;
-  --ck-space-5: 1.25rem;
-  --ck-space-6: 1.5rem;
-  --ck-space-8: 2rem;
-  --ck-space-10: 2.5rem;
-  --ck-space-12: 3rem;
+  --ck-space-5: 1.375rem;
+  --ck-space-6: 1.75rem;
+  --ck-space-8: 2.25rem;
+  --ck-space-10: 2.75rem;
+  --ck-space-12: 3.5rem;
 
-  /* ── Radius ── */
-  --ck-radius-sm: 0.5rem;
-  --ck-radius-md: 0.75rem;
-  --ck-radius-lg: 1rem;
-  --ck-radius-xl: 1.25rem;
+  /* ── Radius — softer/more rounded ── */
+  --ck-radius-sm: 0.625rem;
+  --ck-radius-md: 0.875rem;
+  --ck-radius-lg: 1.125rem;
+  --ck-radius-xl: 1.5rem;
+  --ck-radius-2xl: 1.875rem;
 }
 
-/* ─── Scroll fix: single document scroll, no nested root trap ─── */
+/* ─── Scroll fix ─── */
 html {
   height: 100%;
 }
@@ -74,14 +76,11 @@ html {
 body {
   min-height: 100%;
   background-color: #140f0c;
-  /* Do NOT set overflow-x:hidden on body — breaks vertical scroll on iOS Safari */
-  /* Do NOT set overflow-y here — let the document scroll naturally */
 }
 
-/* #root must NOT set height:100% or overflow:auto — that creates a nested scroll trap on iPad */
 #root {
   min-height: 100vh;
-  overflow-x: hidden; /* Safe here — doesn't break iOS vertical scroll */
+  overflow-x: hidden;
 }
 
 body {
@@ -94,6 +93,8 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+  /* ↑ Slightly larger base font for global readability */
+  font-size: 16px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
@@ -160,7 +161,7 @@ div {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(180, 140, 75, 0.34);
+  background: rgba(180, 140, 75, 0.36);
 }
 
 @layer base {
@@ -181,14 +182,14 @@ div {
 
   p {
     color: var(--ck-text-soft);
-    line-height: 1.6;
+    line-height: 1.65;
     font-size: var(--ck-text-base);
   }
 
   label {
     font-size: var(--ck-text-sm);
     color: var(--ck-text-soft);
-    line-height: 1.4;
+    line-height: 1.45;
   }
 
   input,
@@ -196,11 +197,13 @@ div {
   select {
     color: var(--ck-text);
     font-size: var(--ck-text-base);
+    /* Taller inputs for better tap targets */
+    min-height: 2.75rem;
   }
 
   input::placeholder,
   textarea::placeholder {
-    color: rgba(224, 216, 200, 0.45);
+    color: rgba(224, 216, 200, 0.4);
   }
 }
 
@@ -209,34 +212,38 @@ div {
     @apply w-full max-w-[1600px] mx-auto px-4 md:px-6 xl:px-8;
   }
 
+  /* ── Primary card — soft, layered, premium ── */
   .ck-section-card {
-    background: linear-gradient(180deg, rgba(44, 30, 22, 0.96), rgba(29, 22, 17, 0.98));
+    background: linear-gradient(180deg, rgba(46, 32, 22, 0.97), rgba(30, 22, 17, 0.99));
     border: 1px solid var(--ck-border);
-    box-shadow: var(--ck-shadow);
-    @apply rounded-2xl;
+    box-shadow: var(--ck-shadow-card);
+    border-radius: var(--ck-radius-2xl);
   }
 
   .ck-soft-card {
     background: var(--ck-surface-1);
     border: 1px solid var(--ck-border);
-    @apply rounded-2xl;
+    box-shadow: var(--ck-shadow-sm);
+    border-radius: var(--ck-radius-xl);
   }
 
   .ck-glass-card {
     background: var(--ck-surface-2);
     border: 1px solid rgba(224, 216, 200, 0.08);
-    backdrop-filter: blur(10px);
-    @apply rounded-2xl;
+    backdrop-filter: blur(12px);
+    border-radius: var(--ck-radius-xl);
   }
 
+  /* ── Typography utilities ── */
   .ck-title {
-    @apply text-2xl md:text-3xl font-bold tracking-tight;
+    @apply text-3xl md:text-4xl font-bold tracking-tight;
     color: var(--ck-text);
   }
 
   .ck-subtitle {
-    @apply text-sm md:text-base;
+    @apply text-base md:text-lg;
     color: var(--ck-text-soft);
+    line-height: 1.6;
   }
 
   .ck-muted {
@@ -251,9 +258,12 @@ div {
     border-color: var(--ck-border-strong);
   }
 
+  /* ── Toolbar ── */
   .ck-toolbar {
-    @apply flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between rounded-2xl p-4;
-    background: linear-gradient(135deg, rgba(44, 30, 22, 0.92), rgba(26, 19, 15, 0.96));
+    @apply flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between;
+    padding: var(--ck-space-5) var(--ck-space-6);
+    border-radius: var(--ck-radius-xl);
+    background: linear-gradient(135deg, rgba(44, 30, 22, 0.94), rgba(26, 19, 15, 0.97));
     border: 1px solid var(--ck-border);
   }
 
@@ -262,10 +272,10 @@ div {
     display: block;
     font-size: var(--ck-text-xs);
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
-    color: var(--ck-text-muted);
-    margin-bottom: 0.35rem;
+    color: var(--ck-gold-muted);
+    margin-bottom: 0.45rem;
   }
 
   .ck-field-label-md {
@@ -273,21 +283,21 @@ div {
     font-size: var(--ck-text-sm);
     font-weight: 500;
     color: var(--ck-text-soft);
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
   }
 
   .ck-helper-text {
     font-size: var(--ck-text-xs);
     color: var(--ck-text-faint);
-    margin-top: 0.3rem;
-    line-height: 1.45;
+    margin-top: 0.35rem;
+    line-height: 1.5;
   }
 
   /* ── Section Titles ── */
   .ck-page-title {
     font-size: var(--ck-text-3xl);
     font-weight: 700;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.028em;
     color: var(--ck-text);
     line-height: 1.1;
   }
@@ -295,7 +305,7 @@ div {
   .ck-section-title {
     font-size: var(--ck-text-xl);
     font-weight: 600;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.018em;
     color: var(--ck-text);
     line-height: 1.2;
   }
@@ -304,20 +314,22 @@ div {
     font-size: var(--ck-text-md);
     font-weight: 600;
     color: var(--ck-text-soft);
-    line-height: 1.3;
+    line-height: 1.35;
   }
 
   /* ── Stat display ── */
   .ck-stat-card {
-    @apply rounded-xl p-4;
-    background: rgba(255, 255, 255, 0.045);
-    border: 1px solid rgba(180, 140, 75, 0.10);
+    border-radius: var(--ck-radius-lg);
+    padding: var(--ck-space-5);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(180, 140, 75, 0.13);
+    box-shadow: var(--ck-shadow-sm);
   }
 
   .ck-stat-label {
     font-size: var(--ck-text-xs);
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--ck-gold);
     display: flex;
@@ -328,58 +340,80 @@ div {
   .ck-stat-value {
     font-size: var(--ck-text-3xl);
     font-weight: 700;
-    margin-top: 0.5rem;
+    margin-top: 0.6rem;
     color: var(--ck-text);
     line-height: 1;
   }
 
   .ck-stat-note {
     font-size: var(--ck-text-xs);
-    margin-top: 0.3rem;
+    margin-top: 0.4rem;
     color: var(--ck-text-muted);
   }
 
   /* ── Action bar ── */
   .ck-action-footer {
     @apply flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-end;
-    padding: var(--ck-space-4) 0;
+    padding: var(--ck-space-5) 0;
     border-top: 1px solid var(--ck-border-subtle);
-    margin-top: var(--ck-space-4);
+    margin-top: var(--ck-space-5);
   }
 
+  /* ── Badge ── */
   .ck-badge {
-    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold;
     background: rgba(180, 140, 75, 0.18);
     border: 1px solid rgba(180, 140, 75, 0.28);
-    color: rgba(245, 241, 231, 0.88);
+    color: rgba(245, 241, 231, 0.9);
+    letter-spacing: 0.02em;
   }
 
+  /* ── Buttons ── */
   .ck-button-primary {
     background: linear-gradient(135deg, #a35c5c, #8f4e4e);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--ck-radius-md);
+    padding: 0.6rem 1.25rem;
+    font-size: var(--ck-text-sm);
+    font-weight: 600;
     @apply shadow-sm;
+    transition: filter 0.15s;
   }
 
   .ck-button-primary:hover {
-    filter: brightness(1.05);
+    filter: brightness(1.08);
   }
 
+  /* ── Inputs ── */
   .ck-input,
   .ck-select,
   .ck-textarea {
-    background: rgba(20, 15, 12, 0.6);
+    background: rgba(20, 15, 12, 0.65);
     border: 1px solid rgba(180, 140, 75, 0.28);
     color: var(--ck-text);
-    @apply rounded-xl;
+    border-radius: var(--ck-radius-md);
+    padding: 0.65rem 0.9rem;
+    font-size: var(--ck-text-base);
+    transition: border-color 0.15s;
   }
 
+  .ck-input:focus,
+  .ck-select:focus,
+  .ck-textarea:focus {
+    border-color: rgba(180, 140, 75, 0.52);
+    outline: none;
+  }
+
+  /* ── Panel image ── */
   .ck-panel-image {
-    @apply w-full rounded-2xl overflow-hidden;
+    @apply w-full overflow-hidden;
+    border-radius: var(--ck-radius-xl);
     background: rgba(0, 0, 0, 0.18);
     border: 1px solid rgba(180, 140, 75, 0.12);
   }
 
+  /* ── Text clamping ── */
   .ck-line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -392,6 +426,44 @@ div {
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  /* ── List rows — more breathing room ── */
+  .ck-list-row {
+    padding: var(--ck-space-4) var(--ck-space-5);
+    border-bottom: 1px solid var(--ck-border-subtle);
+    display: flex;
+    align-items: center;
+    gap: var(--ck-space-4);
+    min-height: 4rem;
+  }
+
+  .ck-list-row:last-child {
+    border-bottom: none;
+  }
+
+  /* ── Form section grouping ── */
+  .ck-form-section {
+    border-radius: var(--ck-radius-xl);
+    padding: var(--ck-space-6);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--ck-border-subtle);
+    margin-bottom: var(--ck-space-5);
+  }
+
+  .ck-form-section-title {
+    font-size: var(--ck-text-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ck-gold-muted);
+    margin-bottom: var(--ck-space-5);
+    padding-bottom: var(--ck-space-3);
+    border-bottom: 1px solid var(--ck-border-subtle);
+  }
+
+  .ck-form-field {
+    margin-bottom: var(--ck-space-5);
   }
 }
 
