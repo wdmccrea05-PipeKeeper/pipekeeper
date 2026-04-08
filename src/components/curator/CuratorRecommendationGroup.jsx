@@ -27,6 +27,7 @@ import React, { useState } from 'react';
 import {
   Check, Eye, ShoppingCart, SplitSquareVertical,
   HelpCircle, Loader2, CheckCircle2, ArrowRight,
+  RotateCcw, CalendarClock, TrendingUp,
 } from 'lucide-react';
 import { ACTION_TYPE, PRIORITY_STYLES, MODULE_KEY } from '@/lib/curator/recommendationSchema.js';
 import CuratorItemPreviewList from './CuratorItemPreviewList';
@@ -107,6 +108,11 @@ function DoneIndicator({ label }) {
 
 // ─── Action rows by type ──────────────────────────────────────────────────────
 
+// Goals that belong to Collection Optimization and need specific operational actions
+const COLLECTION_OPT_ROTATION_GOALS = new Set([
+  'underused_blends', 'never_smoked_blends', 'underused_pipes',
+]);
+
 function AutoFixActions({ rec, onAction }) {
   const [applying, setApplying] = useState(false);
   const [done, setDone]         = useState(false);
@@ -128,8 +134,87 @@ function AutoFixActions({ rec, onAction }) {
   );
 }
 
-function AdvisoryActions({ rec, onAction }) {
+// Collection Optimization: goal-specific operational actions
+function CollectionOptActions({ rec, onAction, onOpenGrowExpand }) {
   const [done, setDone] = useState(false);
+
+  if (done) return <DoneIndicator label="Added to Rotation" />;
+
+  // Gap identification → send to Grow & Expand
+  if (rec.goal === 'tobacco_type_imbalance') {
+    return (
+      <>
+        <PrimaryBtn
+          onClick={() => onOpenGrowExpand?.()}
+          icon={TrendingUp}
+          label="Explore Gaps"
+        />
+        <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
+      </>
+    );
+  }
+
+  // Cellar blends / never-smoked blends
+  if (rec.goal === 'underused_blends' || rec.goal === 'never_smoked_blends') {
+    return (
+      <>
+        <PrimaryBtn
+          onClick={() => { onAction('add_to_rotation', rec); setDone(true); }}
+          icon={RotateCcw}
+          label="Add to Rotation"
+        />
+        <SecondaryBtn
+          onClick={() => { onAction('mark_for_session', rec); setDone(true); }}
+          icon={CalendarClock}
+          label="Mark for Session"
+        />
+        <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
+      </>
+    );
+  }
+
+  // Underused pipes
+  if (rec.goal === 'underused_pipes') {
+    return (
+      <>
+        <PrimaryBtn
+          onClick={() => { onAction('add_to_rotation', rec); setDone(true); }}
+          icon={RotateCcw}
+          label="Add to Rotation"
+        />
+        <SecondaryBtn
+          onClick={() => { onAction('mark_for_session', rec); setDone(true); }}
+          icon={CalendarClock}
+          label="Mark as Next Session"
+        />
+        <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
+      </>
+    );
+  }
+
+  // Generic fallback advisory
+  return (
+    <>
+      <PrimaryBtn onClick={() => onAction('view_items', rec)} icon={Eye} label="View Items" />
+      <SecondaryBtn
+        onClick={() => { onAction('acknowledge', rec); setDone(true); }}
+        icon={Check}
+        label="Acknowledge"
+      />
+      <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
+    </>
+  );
+}
+
+function AdvisoryActions({ rec, onAction, onOpenGrowExpand }) {
+  const [done, setDone] = useState(false);
+
+  // Route collection optimization goals to specific operational actions
+  if (COLLECTION_OPT_ROTATION_GOALS.has(rec.goal) || rec.goal === 'tobacco_type_imbalance') {
+    return (
+      <CollectionOptActions rec={rec} onAction={onAction} onOpenGrowExpand={onOpenGrowExpand} />
+    );
+  }
 
   if (done) return <DoneIndicator label="Acknowledged" />;
 
@@ -177,27 +262,25 @@ function ReviewRequiredActions({ rec, onAction }) {
 
   return (
     <>
-      <SecondaryBtn
-        onClick={() => setShowReview((s) => !s)}
-        icon={Eye}
-        label={showReview ? 'Hide Details' : 'Review Details'}
-        colorText="rgba(220,140,90,0.9)"
-      />
-      {hasProposals ? (
+      {/* Primary: Approve Changes (when proposals exist) */}
+      {hasProposals && (
         <PrimaryBtn
           onClick={handleApprove}
           loading={applying}
           icon={Check}
           label="Approve Changes"
         />
-      ) : (
-        <SecondaryBtn
-          onClick={() => onAction('view_items', rec)}
-          icon={Eye}
-          label={openLabel}
-          colorText="rgba(160,200,240,0.85)"
-        />
       )}
+
+      {/* Review Details always available */}
+      <SecondaryBtn
+        onClick={() => setShowReview((s) => !s)}
+        icon={Eye}
+        label={showReview ? 'Hide Details' : 'Review Details'}
+        colorText="rgba(220,140,90,0.9)"
+      />
+
+      {/* Ask Curator as tertiary */}
       <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
 
       {/* Inline review panel */}
@@ -256,8 +339,20 @@ function ReviewRequiredActions({ rec, onAction }) {
                   +{itemsNeedingEdit.length - 10} more
                 </p>
               )}
-              <p className="text-[10px] mt-1.5 pt-1.5" style={{ color: 'rgba(224,216,200,0.4)', borderTop: '1px solid rgba(140,105,65,0.1)' }}>
-                Click <strong style={{ color: 'rgba(160,200,240,0.7)' }}>{openLabel}</strong> to edit these records directly.
+              <p
+                className="text-[10px] mt-1.5 pt-1.5"
+                style={{ color: 'rgba(224,216,200,0.4)', borderTop: '1px solid rgba(140,105,65,0.1)' }}
+              >
+                Use{' '}
+                <button
+                  type="button"
+                  onClick={() => onAction('view_items', rec)}
+                  className="underline"
+                  style={{ color: 'rgba(160,200,240,0.6)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                >
+                  {openLabel}
+                </button>
+                {' '}to edit these records directly, or Ask Curator for guidance on the right values.
               </p>
             </>
           )}
@@ -334,12 +429,14 @@ function ShoppingActions({ rec, onAction, onOpenPurchase }) {
  * @param {Function} props.onAction             - (actionKey, rec, opts) => Promise
  * @param {Function} props.onOpenSpecialization - () => void  — navigate to Specialization Review
  * @param {Function} props.onOpenPurchase       - () => void  — navigate to Purchase & Restock
+ * @param {Function} [props.onOpenGrowExpand]   - () => void  — navigate to Grow & Expand
  */
 export default function CuratorRecommendationGroup({
   recommendation: rec,
   onAction,
   onOpenSpecialization,
   onOpenPurchase,
+  onOpenGrowExpand,
 }) {
   if (!rec) return null;
 
@@ -421,7 +518,7 @@ export default function CuratorRecommendationGroup({
           <AutoFixActions rec={rec} onAction={onAction} />
         )}
         {at === ACTION_TYPE.ADVISORY && (
-          <AdvisoryActions rec={rec} onAction={onAction} />
+          <AdvisoryActions rec={rec} onAction={onAction} onOpenGrowExpand={onOpenGrowExpand} />
         )}
         {at === ACTION_TYPE.REVIEW_REQUIRED && (
           <ReviewRequiredActions rec={rec} onAction={onAction} />
