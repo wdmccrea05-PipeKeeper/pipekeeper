@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 
 import CuratorResultsBoard from '@/components/curator/CuratorResultsBoard';
 import CuratorPairingsTab from '@/components/curator/CuratorPairingsTab';
@@ -22,28 +23,15 @@ function withTimeout(promise, label, ms = LOAD_TIMEOUT_MS) {
   ]);
 }
 
-async function tryEntityList(entityName, label) {
+async function safeFilter(entityHandle, filter, sort, limit, label) {
   try {
-    const entity = base44?.entities?.[entityName];
-    if (!entity || typeof entity.list !== 'function') return [];
-    const result = await withTimeout(entity.list(), label);
-    return Array.isArray(result) ? result : [];
+    if (!entityHandle || typeof entityHandle.filter !== 'function') return [];
+    const rows = await withTimeout(entityHandle.filter(filter, sort, limit), label);
+    return Array.isArray(rows) ? rows : [];
   } catch (err) {
-    console.error(`[Curator] Failed loading ${label}:`, err);
+    console.error(`[Curator] ${label} failed`, err);
     return [];
   }
-}
-
-async function loadEntityWithFallbacks(candidates, label) {
-  for (const name of candidates) {
-    const rows = await tryEntityList(name, `${label}:${name}`);
-    if (rows.length) {
-      console.info(`[Curator] Loaded ${rows.length} ${label} from ${name}`);
-      return rows;
-    }
-  }
-  console.warn(`[Curator] No rows returned for ${label} from any candidate entity`);
-  return [];
 }
 
 function normalizeText(value) {
@@ -128,7 +116,6 @@ function bucketSections(rawSections = []) {
       continue;
     }
 
-    // safe fallback: anything unclassified goes into collection optimization
     buckets.collection_optimization.push(section);
   }
 
@@ -170,27 +157,13 @@ function reconcileSections(prevSections, resolvedIds = [], resolvedRecommendatio
     .filter((section) => (section?.recommendations || []).length > 0);
 }
 
-async function buildContext() {
-  const [pipes, blends, bottles, smokingLogs] = await Promise.all([
-    loadEntityWithFallbacks(['Pipe', 'Pipes'], 'pipes'),
-    loadEntityWithFallbacks(['TobaccoBlend', 'Blend', 'Tobacco'], 'blends'),
-    loadEntityWithFallbacks(['Bottle', 'WhiskeyBottle', 'Whiskey'], 'bottles'),
-    loadEntityWithFallbacks(['SmokingLog', 'SmokeLog', 'SessionLog'], 'smokingLogs'),
-  ]);
-
-  return {
-    pipes,
-    blends,
-    bottles,
-    smokingLogs,
-  };
-}
-
 export default function CuratorWorkspace({
   activeSurface,
   onSurfaceChange,
   onCountsChange,
 }) {
+  const { user } = useCurrentUser();
+
   const mountedRef = useRef(true);
   const contextRef = useRef(null);
 
@@ -220,8 +193,47 @@ export default function CuratorWorkspace({
     [onCountsChange]
   );
 
+  const buildContext = useCallback(async () => {
+    if (!user?.email) {
+      return {
+        pipes: [],
+        blends: [],
+        bottles: [],
+        smokingLogs: [],
+        tastingLogs: [],
+        inventoryUnits: [],
+      };
+    }
+
+    const [pipes, blends, bottles, smokingLogs, tastingLogs, inventoryUnits] = await Promise.all([
+      safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 500, 'pipes'),
+      safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 500, 'blends'),
+      safeFilter(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 500, 'bottles'),
+      safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 1000, 'smokingLogs'),
+      safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 500, 'tastingLogs'),
+      safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null, 2000, 'inventoryUnits'),
+    ]);
+
+    return {
+      pipes,
+      blends,
+      bottles,
+      smokingLogs,
+      tastingLogs,
+      inventoryUnits,
+    };
+  }, [user?.email]);
+
   const loadPrimaryData = useCallback(
     async ({ silent = false } = {}) => {
+      if (!user?.email) {
+        setLoading(false);
+        setRawSections([]);
+        setPairings([]);
+        publishCounts([], []);
+        return;
+      }
+
       if (!silent) {
         setLoading(true);
         setError('');
@@ -233,17 +245,10 @@ export default function CuratorWorkspace({
         const context = await buildContext();
         contextRef.current = context;
 
-        let recs = [];
-        try {
-          recs = generateRecommendations(context) || [];
-        } catch (engineErr) {
-          console.error('[Curator] recommendation engine failed:', engineErr);
-          recs = [];
-        }
+        const recs = generateRecommendations(context) || [];
 
         if (!mountedRef.current) return;
 
-        console.info('[Curator] recommendations generated:', recs);
         setRawSections(recs);
         publishCounts(recs, pairings);
       } catch (err) {
@@ -261,39 +266,39 @@ export default function CuratorWorkspace({
         setIsRefreshing(false);
       }
     },
-    [pairings, publishCounts]
+    [buildContext, pairings, publishCounts, user?.email]
   );
 
   const loadPairings = useCallback(async () => {
-    if (pairingsLoading) return;
+    if (!user?.email) {
+      setPairings([]);
+      return;
+    }
 
     setPairingsLoading(true);
     try {
       const context = contextRef.current || (await buildContext());
       contextRef.current = context;
 
-      let nextPairings = [];
-      try {
-        nextPairings = generatePairingRecommendations(context) || [];
-      } catch (err) {
-        console.error('[Curator] pairing engine failed:', err);
-        nextPairings = [];
-      }
+      const nextPairings = generatePairingRecommendations(context) || [];
 
       if (!mountedRef.current) return;
 
-      console.info('[Curator] pairings generated:', nextPairings);
       setPairings(nextPairings);
       publishCounts(rawSections, nextPairings);
+    } catch (err) {
+      console.error('[Curator] pairing load failed:', err);
+      if (!mountedRef.current) return;
+      setPairings([]);
+      publishCounts(rawSections, []);
     } finally {
       if (mountedRef.current) setPairingsLoading(false);
     }
-  }, [pairingsLoading, publishCounts, rawSections]);
+  }, [buildContext, publishCounts, rawSections, user?.email]);
 
   useEffect(() => {
     mountedRef.current = true;
     loadPrimaryData();
-
     return () => {
       mountedRef.current = false;
     };
@@ -322,7 +327,10 @@ export default function CuratorWorkspace({
         return;
       }
 
-      const result = await executeRecommendationAction(payload, actionKey, opts);
+      const result = await executeRecommendationAction(payload, actionKey, {
+        ...opts,
+        userEmail: user?.email,
+      });
 
       if (!result?.ok) {
         console.error('[Curator] action failed:', result?.error || 'unknown error');
@@ -353,7 +361,6 @@ export default function CuratorWorkspace({
         actionKey === 'add_to_want_list'
       ) {
         await loadPrimaryData({ silent: true });
-
         if (activeSurface === 'pairings') {
           await loadPairings();
         }
@@ -361,7 +368,7 @@ export default function CuratorWorkspace({
 
       return result;
     },
-    [activeSurface, loadPairings, loadPrimaryData, onSurfaceChange, pairings, publishCounts, rawSections]
+    [activeSurface, loadPairings, loadPrimaryData, onSurfaceChange, pairings, publishCounts, rawSections, user?.email]
   );
 
   const handleRefresh = useCallback(async () => {
