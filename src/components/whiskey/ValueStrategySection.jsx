@@ -213,18 +213,45 @@ function RecommendationBlock({ holdRecommendation, rationale, moduleKey, itemTyp
   );
 }
 
-function RarityBar({ score }) {
-  const pct = Math.min(100, Math.max(0, score));
-  const color = pct >= 70 ? '#f87171' : pct >= 40 ? '#fbbf24' : '#4ade80';
+function ReplacementDifficultyDots({ level }) {
+  const LEVELS = ['very_easy', 'easy', 'moderate', 'hard', 'very_hard'];
+  const LEVEL_LABELS = {
+    very_easy: 'Very Easy to Replace',
+    easy:      'Easy to Replace',
+    moderate:  'Moderately Difficult',
+    hard:      'Hard to Replace',
+    very_hard: 'Very Hard / Rare',
+  };
+  const LEVEL_COLORS = {
+    very_easy: '#4ade80',
+    easy:      '#86efac',
+    moderate:  '#fbbf24',
+    hard:      '#fb923c',
+    very_hard: '#f87171',
+  };
+
+  const activeIdx  = LEVELS.indexOf(level);
+  const filledCount = activeIdx === -1 ? 1 : activeIdx + 1;
+  const activeColor = LEVEL_COLORS[level] || LEVEL_COLORS.easy;
+  const label       = LEVEL_LABELS[level] || '—';
+
   return (
-    <div className="mt-1.5 space-y-1">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-bold text-[#F5F1E7]">{pct}/100</span>
-        <span className="text-xs text-[#D8C7A6]/60">{pct >= 70 ? 'Rare' : pct >= 40 ? 'Moderate' : 'Common'}</span>
+    <div className="mt-1.5 space-y-2">
+      <div className="flex items-center gap-1.5">
+        {LEVELS.map((_, i) => (
+          <div
+            key={i}
+            className="flex-1 h-2 rounded-full transition-all"
+            style={{
+              background: i < filledCount ? activeColor : 'rgba(255,255,255,0.06)',
+              boxShadow: i < filledCount ? `0 0 6px ${activeColor}55` : 'none',
+            }}
+          />
+        ))}
       </div>
-      <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
-      </div>
+      <p className="text-sm font-semibold" style={{ color: activeColor }}>
+        {label}
+      </p>
     </div>
   );
 }
@@ -518,20 +545,10 @@ export default function ValueStrategySection({
           {/* C — Strategy */}
           <RecommendationBlock holdRecommendation={holdRecommendation} rationale={rationale} moduleKey={moduleKey} itemType={itemType} />
 
-          {/* D — Risk & Rarity grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
-           <div className={`rounded-xl p-3 min-w-0 transition-all ${rarityScore >= 70 ? 'ring-1' : ''}`} 
-             style={{
-               background: rarityScore >= 70 ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.03)',
-               border: rarityScore >= 70 ? '1px solid rgba(248,113,113,0.25)' : '1px solid rgba(180,140,75,0.14)',
-             }}>
-             <p className={`text-xs uppercase tracking-[0.12em] ${rarityScore >= 70 ? 'text-[#f87171]' : 'text-[#D8C7A6]/60'} mb-1 font-semibold`}>Rarity Score {rarityScore >= 70 ? '🔥' : ''}</p>
-             <RarityBar score={rarityScore} />
-           </div>
-           <div className="rounded-xl p-3 min-w-0" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
-             <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2 font-semibold">Replacement</p>
-             <p className="text-sm font-semibold text-[#F5F1E7] break-words">{DIFFICULTY_LABELS[replacementDifficulty] || '—'}</p>
-           </div>
+          {/* D — Replacement Difficulty */}
+          <div className="rounded-xl p-4 min-w-0" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
+            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2 font-semibold">Replacement Difficulty</p>
+            <ReplacementDifficultyDots level={replacementDifficulty} />
           </div>
 
           {/* E — Value History */}

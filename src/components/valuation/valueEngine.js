@@ -722,10 +722,11 @@ export function computeRarityScore(item, moduleKey) {
 // ---------------------------------------------------------------------------
 
 const DIFFICULTY_LEVELS = {
-  VERY_HARD: 'very_hard',
-  HARD: 'hard',
-  MODERATE: 'moderate',
+  VERY_EASY: 'very_easy',
   EASY: 'easy',
+  MODERATE: 'moderate',
+  HARD: 'hard',
+  VERY_HARD: 'very_hard',
 };
 
 /**
@@ -759,6 +760,8 @@ export function computeReplacementDifficulty(item, moduleKey) {
     if (inputs.isExportOnly || inputs.isExclusive) return DIFFICULTY_LEVELS.HARD;
     if (inputs.age >= 12 || rarity >= 50) return DIFFICULTY_LEVELS.MODERATE;
     if (inputs.isAllocated) return DIFFICULTY_LEVELS.MODERATE;
+    // No age statement + wide distribution = very easy to replace
+    if (!inputs.age || inputs.age < 5) return DIFFICULTY_LEVELS.VERY_EASY;
     return DIFFICULTY_LEVELS.EASY;
   }
 
@@ -778,7 +781,8 @@ export function computeReplacementDifficulty(item, moduleKey) {
       // Seasonal, limited, regional, or inactive maker still in business
       if (isLimited || inputs.isRegionalExclusive || inputs.isSeasonal) return DIFFICULTY_LEVELS.MODERATE;
       if (inputs.isMakerInactive) return DIFFICULTY_LEVELS.MODERATE;
-      return DIFFICULTY_LEVELS.EASY;
+      // Common, actively produced, widely available blend
+      return DIFFICULTY_LEVELS.VERY_EASY;
     }
 
     // ── PIPE replacement difficulty ───────────────────────────────────────────
@@ -833,14 +837,16 @@ export function computeReplacementDifficulty(item, moduleKey) {
     // Special materials: inherently limited supply
     if (inputs.bowlMaterial === 'Meerschaum' || inputs.bowlMaterial === 'Morta') return DIFFICULTY_LEVELS.MODERATE;
 
-    return DIFFICULTY_LEVELS.EASY;
+    // Standard factory pipe from an active manufacturer — widely available
+    return DIFFICULTY_LEVELS.VERY_EASY;
   }
 
   // Generic: rarity-based (adjusted for modules that may have a rarity floor)
   if (rarity >= 80) return DIFFICULTY_LEVELS.VERY_HARD;
   if (rarity >= 60) return DIFFICULTY_LEVELS.HARD;
   if (rarity >= 35) return DIFFICULTY_LEVELS.MODERATE;
-  return DIFFICULTY_LEVELS.EASY;
+  if (rarity >= 15) return DIFFICULTY_LEVELS.EASY;
+  return DIFFICULTY_LEVELS.VERY_EASY;
 }
 
 // ---------------------------------------------------------------------------
@@ -1126,10 +1132,11 @@ export function resolveValueTrend(history) {
 // ---------------------------------------------------------------------------
 
 export const DIFFICULTY_LABELS = {
+  very_easy: 'Very Easy to Replace',
   easy: 'Easy to Replace',
-  moderate: 'Moderately Available',
+  moderate: 'Moderately Difficult',
   hard: 'Hard to Replace',
-  very_hard: 'Very Hard to Replace',
+  very_hard: 'Very Hard / Rare',
 };
 
 export const TREND_LABELS = {
@@ -1355,6 +1362,6 @@ export function mapReplacementDifficultyLabel(difficulty) {
  * @returns {number} 0 = easy, 1 = moderate, 2 = hard, 3 = very_hard
  */
 export function computeReplacementDifficultyScore(difficulty) {
-  const map = { easy: 0, moderate: 1, hard: 2, very_hard: 3 };
-  return map[difficulty] ?? 0;
+  const map = { very_easy: 0, easy: 1, moderate: 2, hard: 3, very_hard: 4 };
+  return map[difficulty] ?? 1;
 }
