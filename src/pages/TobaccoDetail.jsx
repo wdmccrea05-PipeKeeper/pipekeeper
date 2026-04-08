@@ -840,7 +840,7 @@ export default function TobaccoDetail() {
                   <div
                     key={n}
                     className="h-2 flex-1 rounded-full"
-                    style={{ background: n < replacementDifficulty.level ? '#22C55E' : 'rgba(255,255,255,0.10)' }}
+                    style={{ background: n <= replacementDifficulty.level ? '#22C55E' : 'rgba(255,255,255,0.10)' }}
                   />
                 ))}
               </div>
