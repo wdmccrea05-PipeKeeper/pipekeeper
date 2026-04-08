@@ -26,6 +26,7 @@ import { generateSpecializationRecommendations } from './specializationEngine.js
 import { generatePairingRecommendations } from './pairingEngine.js';
 import { generatePurchaseRestockRecommendations } from './purchaseRestockEngine.js';
 import { generateGrowExpandRecommendations } from './growExpandEngine.js';
+import { filterAiEligibleItems } from '../../platform/aiEligibility.js';
 
 // ─── Thresholds ───────────────────────────────────────────────────────────────
 
@@ -282,7 +283,9 @@ function analyzeMetadata(context) {
 // ─── Category B: Collection Optimization — Balance ────────────────────────────
 
 function analyzeBalance(context) {
-  const { blends = [], pipes = [] } = context;
+  // Exclude ai_excluded items: collectible-only / hold pieces must not influence rotation balance
+  const blends = filterAiEligibleItems(context.blends || []);
+  const pipes  = filterAiEligibleItems(context.pipes  || []);
   const recommendations = [];
 
   // Tobacco type distribution
@@ -356,7 +359,10 @@ function analyzeBalance(context) {
 // ─── Category B: Collection Optimization — Utilization & Rotation ─────────────
 
 function analyzeUtilization(context) {
-  const { blends = [], pipes = [], smokingLogs = [] } = context;
+  // Exclude ai_excluded items: collectible-only / hold-only pieces must not appear in rotation recommendations
+  const blends     = filterAiEligibleItems(context.blends || []);
+  const pipes      = filterAiEligibleItems(context.pipes  || []);
+  const { smokingLogs = [] } = context;
   const recommendations = [];
   const now = nowMs();
 

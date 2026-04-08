@@ -301,6 +301,46 @@ export async function executeRecommendationAction(recommendation, action, opts =
       return { ok: true, applied, errors, message: `Changes approved for ${applied} item${applied > 1 ? 's' : ''}.` };
     }
 
+    case 'add_to_rotation':
+      // Soft action — marks blends/pipes as re-introduced to rotation.
+      // No DB field to write to; the recommendation dismisses and the next analysis run will
+      // reflect updated usage if the user actually starts a session.
+      return { ok: true, dismissed: true, message: 'Added to rotation — start a session to record it.' };
+
+    case 'mark_for_session':
+      return { ok: true, dismissed: true, message: 'Marked for your next session.' };
+
+    case 'add_to_want_list': {
+      const items = recommendation.items || [];
+      const toAdd = opts.itemId
+        ? items.filter((i) => i.id === opts.itemId || i.recordId === opts.itemId)
+        : items;
+      if (!toAdd.length) throw new Error('No items to add to want list.');
+      if (!opts.userEmail) throw new Error('User email is required to add to want list.');
+
+      let added = 0;
+      const errors = [];
+      for (const item of toAdd) {
+        try {
+          await base44.entities.AcquisitionItem.create({
+            name:       item.recordName || item.itemName || item.name || '—',
+            brand:      item.brand || item.manufacturer || '',
+            item_type:  item.itemType || item.recordType || 'blend',
+            priority:   'medium',
+            status:     'active',
+            created_by: opts.userEmail,
+          });
+          added++;
+        } catch (err) {
+          errors.push({ item: item.recordName, error: err.message });
+        }
+      }
+      if (added === 0 && errors.length > 0) {
+        throw new Error(errors.map((e) => `${e.item}: ${e.error}`).join('; '));
+      }
+      return { ok: true, added, errors, dismissed: true, message: `${added} item${added > 1 ? 's' : ''} added to Want List.` };
+    }
+
     default:
       return { ok: true, message: `Action '${action}' acknowledged.` };
   }

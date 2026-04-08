@@ -231,13 +231,6 @@ function AdvisoryActions({ rec, onAction, onOpenGrowExpand }) {
   );
 }
 
-const MODULE_DISPLAY_NAME = {
-  pipe:    'PipeKeeper',
-  tobacco: 'Tobacco',
-  whiskey: 'WhiskeyKeeper',
-  cigar:   'CigarKeeper',
-  multi:   'records',
-};
 
 function ReviewRequiredActions({ rec, onAction }) {
   const [applying, setApplying] = useState(false);
@@ -246,13 +239,11 @@ function ReviewRequiredActions({ rec, onAction }) {
 
   if (done) return <DoneIndicator label="Changes Applied" />;
 
-  const itemsWithProposals = (rec.items || []).filter((i) => i.proposedChange?.payload);
-  const hasProposals = itemsWithProposals.length > 0;
-
-  // Items without proposals — show field-level details where available
-  const itemsNeedingEdit = (rec.items || []).filter((i) => !i.proposedChange?.payload);
-  const moduleName = MODULE_DISPLAY_NAME[rec.moduleKey] || 'module';
-  const openLabel  = `Open in ${moduleName}`;
+  const allItems           = rec.items || [];
+  const itemsWithProposals = allItems.filter((i) => i.proposedChange?.payload);
+  const itemsNeedingEdit   = allItems.filter((i) => !i.proposedChange?.payload);
+  const hasProposals       = itemsWithProposals.length > 0;
+  const hasManualItems     = itemsNeedingEdit.length > 0;
 
   const handleApprove = async () => {
     setApplying(true);
@@ -268,7 +259,7 @@ function ReviewRequiredActions({ rec, onAction }) {
           onClick={handleApprove}
           loading={applying}
           icon={Check}
-          label="Approve Changes"
+          label={`Approve ${itemsWithProposals.length > 1 ? `${itemsWithProposals.length} Changes` : 'Change'}`}
         />
       )}
 
@@ -286,74 +277,91 @@ function ReviewRequiredActions({ rec, onAction }) {
       {/* Inline review panel */}
       {showReview && (
         <div
-          className="basis-full w-full mt-1 rounded-lg p-3 space-y-1.5"
-          style={{ background: 'rgba(180,100,50,0.07)', border: '1px solid rgba(180,100,50,0.2)' }}
+          className="basis-full w-full mt-2 rounded-xl p-4 space-y-2"
+          style={{ background: 'rgba(180,100,50,0.07)', border: '1px solid rgba(180,100,50,0.22)' }}
         >
-          {hasProposals ? (
+          {/* Auto-approvable items */}
+          {hasProposals && (
             <>
-              <p className="text-[11px] font-semibold mb-2" style={{ color: 'rgba(220,140,90,0.85)' }}>
-                Proposed changes — review before approving
+              <p className="text-xs font-semibold mb-2" style={{ color: 'rgba(220,140,90,0.9)' }}>
+                Curator-proposed changes — review and approve below
               </p>
-              {itemsWithProposals.slice(0, 10).map((item) => (
+              {itemsWithProposals.slice(0, 12).map((item) => (
                 <div
                   key={item.recordId || item.id}
-                  className="flex items-center justify-between gap-2 text-[11px]"
+                  className="grid gap-1 pb-1.5"
+                  style={{ gridTemplateColumns: '1fr auto', borderBottom: '1px solid rgba(140,105,65,0.08)' }}
                 >
-                  <span className="truncate max-w-[60%]" style={{ color: 'rgba(224,216,200,0.8)' }}>
+                  <span className="text-xs font-medium truncate" style={{ color: 'rgba(224,216,200,0.88)' }}>
                     {item.itemName || item.recordName}
                   </span>
-                  <span className="shrink-0 font-medium" style={{ color: 'rgba(220,140,90,0.9)' }}>
-                    {item.proposedChange.field}: {item.proposedChange.displayValue}
+                  <span className="text-xs font-semibold whitespace-nowrap" style={{ color: 'rgba(220,140,90,0.95)' }}>
+                    {item.proposedChange.field}: <span style={{ color: 'rgba(80,180,130,0.95)' }}>{item.proposedChange.displayValue}</span>
                   </span>
+                  {item.proposedChange?.reasoning && (
+                    <span className="text-[10px] col-span-2" style={{ color: 'rgba(224,216,200,0.42)' }}>
+                      {item.proposedChange.reasoning}
+                    </span>
+                  )}
                 </div>
               ))}
-              {itemsWithProposals.length > 10 && (
-                <p className="text-[10px]" style={{ color: 'rgba(224,216,200,0.4)' }}>
-                  +{itemsWithProposals.length - 10} more
+              {itemsWithProposals.length > 12 && (
+                <p className="text-[10px]" style={{ color: 'rgba(224,216,200,0.38)' }}>
+                  +{itemsWithProposals.length - 12} more — all will be approved together
                 </p>
               )}
             </>
-          ) : (
+          )}
+
+          {/* Items needing manual input */}
+          {hasManualItems && (
             <>
-              <p className="text-[11px] font-semibold mb-2" style={{ color: 'rgba(220,140,90,0.85)' }}>
-                Records needing manual attention
-              </p>
-              {itemsNeedingEdit.slice(0, 10).map((item) => {
-                const fields = item.missingFields?.join(', ') || rec.actionPayload?.field || 'see record';
+              {hasProposals && (
+                <p className="text-xs font-semibold pt-2 mt-2" style={{ color: 'rgba(160,200,240,0.8)', borderTop: '1px solid rgba(140,105,65,0.12)' }}>
+                  Also needs manual input ({itemsNeedingEdit.length})
+                </p>
+              )}
+              {!hasProposals && (
+                <p className="text-xs font-semibold mb-2" style={{ color: 'rgba(220,140,90,0.9)' }}>
+                  These records need values the Curator can't infer automatically
+                </p>
+              )}
+              {itemsNeedingEdit.slice(0, 12).map((item) => {
+                const fields = item.missingFields?.join(', ') || rec.actionPayload?.field || 'missing fields';
                 return (
                   <div
                     key={item.recordId || item.id}
-                    className="flex items-center justify-between gap-2 text-[11px]"
+                    className="flex items-center justify-between gap-2 pb-1"
+                    style={{ borderBottom: '1px solid rgba(140,105,65,0.08)' }}
                   >
-                    <span className="truncate max-w-[60%]" style={{ color: 'rgba(224,216,200,0.8)' }}>
+                    <span className="text-xs font-medium truncate" style={{ color: 'rgba(224,216,200,0.88)' }}>
                       {item.itemName || item.recordName}
                     </span>
-                    <span className="shrink-0" style={{ color: 'rgba(220,140,90,0.7)' }}>
+                    <span className="text-xs shrink-0" style={{ color: 'rgba(220,140,90,0.7)' }}>
                       {fields}
                     </span>
                   </div>
                 );
               })}
-              {itemsNeedingEdit.length > 10 && (
-                <p className="text-[10px]" style={{ color: 'rgba(224,216,200,0.4)' }}>
-                  +{itemsNeedingEdit.length - 10} more
+              {itemsNeedingEdit.length > 12 && (
+                <p className="text-[10px]" style={{ color: 'rgba(224,216,200,0.38)' }}>
+                  +{itemsNeedingEdit.length - 12} more records need attention
                 </p>
               )}
-              <p
-                className="text-[10px] mt-1.5 pt-1.5"
-                style={{ color: 'rgba(224,216,200,0.4)', borderTop: '1px solid rgba(140,105,65,0.1)' }}
+              <div
+                className="flex items-center gap-2 pt-2 mt-1"
+                style={{ borderTop: '1px solid rgba(140,105,65,0.1)' }}
               >
-                Use{' '}
                 <button
                   type="button"
-                  onClick={() => onAction('view_items', rec)}
-                  className="underline"
-                  style={{ color: 'rgba(160,200,240,0.6)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                  onClick={() => onAction('ask_curator', rec)}
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium"
+                  style={{ background: 'rgba(74,124,156,0.15)', color: 'rgba(120,170,220,0.9)', border: '1px solid rgba(74,124,156,0.28)' }}
                 >
-                  {openLabel}
+                  <HelpCircle className="w-3 h-3" />
+                  Ask Curator for guidance
                 </button>
-                {' '}to edit these records directly, or Ask Curator for guidance on the right values.
-              </p>
+              </div>
             </>
           )}
         </div>
@@ -448,17 +456,21 @@ export default function CuratorRecommendationGroup({
 
   return (
     <div
-      className="rounded-2xl p-4 space-y-3"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.18)' }}
+      className="rounded-2xl p-5 space-y-3.5"
+      style={{
+        background: 'rgba(255,255,255,0.035)',
+        border: '1px solid rgba(140,105,65,0.2)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
+      }}
     >
       {/* Header: badges + title + item count */}
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           {/* Badge row */}
-          <div className="flex items-center flex-wrap gap-1.5 mb-1.5">
+          <div className="flex items-center flex-wrap gap-1.5 mb-2">
             {typeBadge && (
               <span
-                className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                className="text-[10px] px-2.5 py-0.5 rounded-full font-semibold"
                 style={{ background: typeBadge.bg, color: typeBadge.text }}
               >
                 {typeBadge.label}
@@ -471,7 +483,7 @@ export default function CuratorRecommendationGroup({
             )}
             {priStyle && (
               <span
-                className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                className="text-[10px] px-2.5 py-0.5 rounded-full font-semibold"
                 style={{ background: priStyle.bg, color: priStyle.text, border: `1px solid ${priStyle.border}` }}
               >
                 {priStyle.label}
@@ -479,12 +491,12 @@ export default function CuratorRecommendationGroup({
             )}
           </div>
           {/* Title */}
-          <p className="text-base font-bold leading-tight" style={{ color: '#F5F1E7' }}>
+          <p className="text-[1.0625rem] font-bold leading-snug" style={{ color: '#F5F1E7' }}>
             {rec.title}
           </p>
           {/* Summary line */}
           {rec.summary && (
-            <p className="text-xs mt-0.5 leading-snug" style={{ color: 'rgba(224,216,200,0.55)' }}>
+            <p className="text-sm mt-1 leading-snug" style={{ color: 'rgba(224,216,200,0.6)' }}>
               {rec.summary}
             </p>
           )}
@@ -492,17 +504,17 @@ export default function CuratorRecommendationGroup({
         {/* Item count */}
         {itemCount > 0 && (
           <span
-            className="shrink-0 text-[11px] px-2 py-0.5 rounded-full tabular-nums self-start mt-1"
-            style={{ background: 'rgba(80,80,80,0.1)', color: 'rgba(224,216,200,0.45)', border: '1px solid rgba(100,100,100,0.18)' }}
+            className="shrink-0 text-xs px-2.5 py-1 rounded-full tabular-nums self-start font-semibold"
+            style={{ background: 'rgba(80,80,80,0.12)', color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(100,100,100,0.2)' }}
           >
             {itemCount}
           </span>
         )}
       </div>
 
-      {/* Why it matters — one line */}
+      {/* Why it matters */}
       {rec.whyItMatters && (
-        <p className="text-sm leading-snug" style={{ color: 'rgba(224,216,200,0.65)' }}>
+        <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.7)' }}>
           {rec.whyItMatters}
         </p>
       )}
@@ -513,7 +525,10 @@ export default function CuratorRecommendationGroup({
       )}
 
       {/* Action row */}
-      <div className="flex flex-wrap items-center gap-2 pt-0.5">
+      <div
+        className="flex flex-wrap items-center gap-2 pt-1"
+        style={{ borderTop: '1px solid rgba(140,105,65,0.1)' }}
+      >
         {at === ACTION_TYPE.AUTO_FIX && (
           <AutoFixActions rec={rec} onAction={onAction} />
         )}
