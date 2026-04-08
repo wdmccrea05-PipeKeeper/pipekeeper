@@ -88,6 +88,12 @@ async function updateRecord(recordType, recordId, changes) {
   }
 }
 
+export async function applyPipeSpecialization(recordId, spec) {
+  if (!recordId) throw new Error('Pipe recordId is required.');
+  if (!spec) throw new Error('Specialization spec is required.');
+  return base44.entities.Pipe.update(recordId, { focus: [spec] });
+}
+
 export async function applySingleItemFix(item) {
   if (!item?.recordId) throw new Error('Item is missing recordId.');
   if (!item?.recordType) throw new Error('Item is missing recordType.');
