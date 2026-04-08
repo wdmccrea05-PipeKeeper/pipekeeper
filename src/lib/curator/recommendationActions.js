@@ -67,8 +67,12 @@ const SAFE_BLEND_FIELDS = new Set([
 ]);
 
 const SAFE_BOTTLE_FIELDS = new Set([
-  'distillery', 'region', 'age', 'abv', 'type', 'whiskey_type',
+  'distillery', 'region', 'age', 'abv', 'type', 'whiskey_type', 'spirit_type',
   'retail_price', 'aftermarket_price', 'collector_value', 'notes',
+  'name', 'brand', 'country', 'vintage', 'size_ml', 'flavor_notes',
+  'cask_type', 'finish', 'color', 'nose', 'palate', 'purchase_price',
+  'estimated_value', 'purchase_date', 'purchase_source', 'is_open',
+  'quantity', 'bottles_remaining', 'rating', 'category',
 ]);
 
 const SAFE_PIPE_FIELDS = new Set([
@@ -90,19 +94,19 @@ function filterToSafeFields(changes, allowedSet) {
 
 async function applyBlendChanges(recordId, changes) {
   const safe = filterToSafeFields(changes, SAFE_BLEND_FIELDS);
-  if (!Object.keys(safe).length) throw new Error('No safe blend fields to apply.');
+  if (!Object.keys(safe).length) return { skipped: true };
   return base44.entities.TobaccoBlend.update(recordId, safe);
 }
 
 async function applyBottleChanges(recordId, changes) {
   const safe = filterToSafeFields(changes, SAFE_BOTTLE_FIELDS);
-  if (!Object.keys(safe).length) throw new Error('No safe bottle fields to apply.');
+  if (!Object.keys(safe).length) return { skipped: true };
   return base44.entities.Bottle.update(recordId, safe);
 }
 
 async function applyPipeChanges(recordId, changes) {
   const safe = filterToSafeFields(changes, SAFE_PIPE_FIELDS);
-  if (!Object.keys(safe).length) throw new Error('No safe pipe fields to apply.');
+  if (!Object.keys(safe).length) return { skipped: true };
   return base44.entities.Pipe.update(recordId, safe);
 }
 
