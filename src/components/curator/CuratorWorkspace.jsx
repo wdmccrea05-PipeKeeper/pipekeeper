@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 
 import CuratorResultsBoard from '@/components/curator/CuratorResultsBoard';
@@ -16,22 +16,16 @@ const LOAD_TIMEOUT_MS = 10000;
 function withTimeout(promise, label, ms = LOAD_TIMEOUT_MS) {
   return Promise.race([
     promise,
-    new Promise((_, reject) => {
-      const id = setTimeout(() => {
-        clearTimeout(id);
-        reject(new Error(`${label} timed out after ${ms}ms`));
-      }, ms);
-    }),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+    ),
   ]);
 }
 
-async function safeList(entityName, label) {
+async function tryEntityList(entityName, label) {
   try {
     const entity = base44?.entities?.[entityName];
-    if (!entity || typeof entity.list !== 'function') {
-      console.warn(`[Curator] Missing entity or list(): ${entityName}`);
-      return [];
-    }
+    if (!entity || typeof entity.list !== 'function') return [];
     const result = await withTimeout(entity.list(), label);
     return Array.isArray(result) ? result : [];
   } catch (err) {
@@ -40,9 +34,109 @@ async function safeList(entityName, label) {
   }
 }
 
-function countItemsByTitle(sections, title) {
-  return (sections || [])
-    .filter((s) => s?.title === title)
+async function loadEntityWithFallbacks(candidates, label) {
+  for (const name of candidates) {
+    const rows = await tryEntityList(name, `${label}:${name}`);
+    if (rows.length) {
+      console.info(`[Curator] Loaded ${rows.length} ${label} from ${name}`);
+      return rows;
+    }
+  }
+  console.warn(`[Curator] No rows returned for ${label} from any candidate entity`);
+  return [];
+}
+
+function normalizeText(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function isRecordOptimizationSection(section) {
+  const title = normalizeText(section?.title);
+  const category = normalizeText(section?.category);
+  return (
+    title.includes('record optimization') ||
+    title.includes('collection health') ||
+    title.includes('metadata') ||
+    title.includes('valuation') ||
+    category.includes('record')
+  );
+}
+
+function isCollectionOptimizationSection(section) {
+  const title = normalizeText(section?.title);
+  const category = normalizeText(section?.category);
+  return (
+    title.includes('collection optimization') ||
+    title.includes('utilization') ||
+    title.includes('rotation') ||
+    title.includes('specialization') ||
+    title.includes('collection balance') ||
+    category.includes('collection')
+  );
+}
+
+function isPurchaseRestockSection(section) {
+  const title = normalizeText(section?.title);
+  const category = normalizeText(section?.category);
+  return (
+    title.includes('purchase') ||
+    title.includes('restock') ||
+    title.includes('shopping') ||
+    title.includes('wishlist') ||
+    category.includes('purchase')
+  );
+}
+
+function isGrowExpandSection(section) {
+  const title = normalizeText(section?.title);
+  const category = normalizeText(section?.category);
+  return (
+    title.includes('grow') ||
+    title.includes('expand') ||
+    title.includes('discovery') ||
+    title.includes('discoveries') ||
+    title.includes('outside') ||
+    category.includes('grow')
+  );
+}
+
+function bucketSections(rawSections = []) {
+  const buckets = {
+    record_optimization: [],
+    collection_optimization: [],
+    purchase_restock: [],
+    grow_expand: [],
+  };
+
+  for (const section of rawSections) {
+    if (!section || !Array.isArray(section.recommendations) || section.recommendations.length === 0) continue;
+
+    if (isRecordOptimizationSection(section)) {
+      buckets.record_optimization.push(section);
+      continue;
+    }
+    if (isCollectionOptimizationSection(section)) {
+      buckets.collection_optimization.push(section);
+      continue;
+    }
+    if (isPurchaseRestockSection(section)) {
+      buckets.purchase_restock.push(section);
+      continue;
+    }
+    if (isGrowExpandSection(section)) {
+      buckets.grow_expand.push(section);
+      continue;
+    }
+
+    // safe fallback: anything unclassified goes into collection optimization
+    buckets.collection_optimization.push(section);
+  }
+
+  return buckets;
+}
+
+function countRecommendationItems(sections = []) {
+  return sections
     .flatMap((s) => s?.recommendations || [])
     .reduce((sum, rec) => sum + ((rec?.items || []).length || 0), 0);
 }
@@ -78,17 +172,17 @@ function reconcileSections(prevSections, resolvedIds = [], resolvedRecommendatio
 
 async function buildContext() {
   const [pipes, blends, bottles, smokingLogs] = await Promise.all([
-    safeList('Pipe', 'pipes'),
-    safeList('TobaccoBlend', 'tobacco blends'),
-    safeList('Bottle', 'bottles'),
-    safeList('SmokingLog', 'smoking logs'),
+    loadEntityWithFallbacks(['Pipe', 'Pipes'], 'pipes'),
+    loadEntityWithFallbacks(['TobaccoBlend', 'Blend', 'Tobacco'], 'blends'),
+    loadEntityWithFallbacks(['Bottle', 'WhiskeyBottle', 'Whiskey'], 'bottles'),
+    loadEntityWithFallbacks(['SmokingLog', 'SmokeLog', 'SessionLog'], 'smokingLogs'),
   ]);
 
   return {
-    pipes: pipes || [],
-    blends: blends || [],
-    bottles: bottles || [],
-    smokingLogs: smokingLogs || [],
+    pipes,
+    blends,
+    bottles,
+    smokingLogs,
   };
 }
 
@@ -103,20 +197,23 @@ export default function CuratorWorkspace({
   const [loading, setLoading] = useState(true);
   const [pairingsLoading, setPairingsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [sections, setSections] = useState([]);
+  const [rawSections, setRawSections] = useState([]);
   const [pairings, setPairings] = useState([]);
   const [threadId, setThreadId] = useState(null);
   const [preFillMessage, setPreFillMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const buckets = useMemo(() => bucketSections(rawSections), [rawSections]);
+
   const publishCounts = useCallback(
-    (recs, pairingRecs) => {
+    (nextSections, nextPairings) => {
+      const nextBuckets = bucketSections(nextSections);
       onCountsChange?.({
-        record_optimization: countItemsByTitle(recs, 'Record Optimization'),
-        collection_optimization: countItemsByTitle(recs, 'Collection Optimization'),
-        purchase_restock: countItemsByTitle(recs, 'Purchase & Restock'),
-        pairings: Array.isArray(pairingRecs) ? pairingRecs.length : 0,
-        grow_expand: countItemsByTitle(recs, 'Grow & Expand'),
+        record_optimization: countRecommendationItems(nextBuckets.record_optimization),
+        collection_optimization: countRecommendationItems(nextBuckets.collection_optimization),
+        purchase_restock: countRecommendationItems(nextBuckets.purchase_restock),
+        pairings: Array.isArray(nextPairings) ? nextPairings.length : 0,
+        grow_expand: countRecommendationItems(nextBuckets.grow_expand),
         chat: 0,
       });
     },
@@ -146,16 +243,15 @@ export default function CuratorWorkspace({
 
         if (!mountedRef.current) return;
 
-        setSections(recs);
-
-        // IMPORTANT: do not generate pairings here
+        console.info('[Curator] recommendations generated:', recs);
+        setRawSections(recs);
         publishCounts(recs, pairings);
       } catch (err) {
         console.error('[Curator] primary load failed:', err);
 
         if (!mountedRef.current) return;
 
-        setSections([]);
+        setRawSections([]);
         setPairings([]);
         setError(err?.message || 'Curator could not load.');
         publishCounts([], []);
@@ -165,12 +261,11 @@ export default function CuratorWorkspace({
         setIsRefreshing(false);
       }
     },
-    [publishCounts, pairings]
+    [pairings, publishCounts]
   );
 
   const loadPairings = useCallback(async () => {
     if (pairingsLoading) return;
-    if (pairings.length > 0) return;
 
     setPairingsLoading(true);
     try {
@@ -180,21 +275,20 @@ export default function CuratorWorkspace({
       let nextPairings = [];
       try {
         nextPairings = generatePairingRecommendations(context) || [];
-      } catch (pairErr) {
-        console.error('[Curator] pairing engine failed:', pairErr);
+      } catch (err) {
+        console.error('[Curator] pairing engine failed:', err);
         nextPairings = [];
       }
 
       if (!mountedRef.current) return;
 
+      console.info('[Curator] pairings generated:', nextPairings);
       setPairings(nextPairings);
-      publishCounts(sections, nextPairings);
+      publishCounts(rawSections, nextPairings);
     } finally {
-      if (mountedRef.current) {
-        setPairingsLoading(false);
-      }
+      if (mountedRef.current) setPairingsLoading(false);
     }
-  }, [pairingsLoading, pairings.length, publishCounts, sections]);
+  }, [pairingsLoading, publishCounts, rawSections]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -220,7 +314,7 @@ export default function CuratorWorkspace({
         return;
       }
 
-      if (actionKey === 'view_items' || actionKey === 'view_details') {
+      if (actionKey === 'view_items' || actionKey === 'view_details' || actionKey === 'open_records') {
         const nav = buildViewItemsNavigation(payload);
         if (nav?.navigate?.path) {
           window.location.href = nav.navigate.path;
@@ -238,7 +332,7 @@ export default function CuratorWorkspace({
       const resolvedIds = result.resolvedRecordIds || [];
       const resolvedRecommendationIds = result.resolvedRecommendationIds || [];
 
-      setSections((prev) => {
+      setRawSections((prev) => {
         const next = reconcileSections(prev, resolvedIds, resolvedRecommendationIds);
         publishCounts(next, pairings);
         return next;
@@ -247,12 +341,11 @@ export default function CuratorWorkspace({
       if (actionKey === 'save_pairing') {
         setPairings((prev) => {
           const next = prev.filter((p) => p.id !== payload?.id);
-          publishCounts(sections, next);
+          publishCounts(rawSections, next);
           return next;
         });
       }
 
-      // Hard reload the lightweight data only after mutations that change records
       if (
         actionKey === 'apply_fix' ||
         actionKey === 'approve_changes' ||
@@ -261,102 +354,23 @@ export default function CuratorWorkspace({
       ) {
         await loadPrimaryData({ silent: true });
 
-        // only refresh pairings if currently on pairings tab
         if (activeSurface === 'pairings') {
-          setPairings([]);
           await loadPairings();
         }
       }
 
       return result;
     },
-    [activeSurface, loadPairings, loadPrimaryData, onSurfaceChange, pairings, publishCounts, sections]
+    [activeSurface, loadPairings, loadPrimaryData, onSurfaceChange, pairings, publishCounts, rawSections]
   );
 
   const handleRefresh = useCallback(async () => {
-    setPairings([]);
-    await loadPrimaryData({ silent: true });
     if (activeSurface === 'pairings') {
       await loadPairings();
+      return;
     }
+    await loadPrimaryData({ silent: true });
   }, [activeSurface, loadPairings, loadPrimaryData]);
-
-  const renderSurface = () => {
-    switch (activeSurface) {
-      case 'record_optimization':
-        return (
-          <CuratorResultsBoard
-            sections={sections.filter((s) => s?.title === 'Record Optimization')}
-            onAction={handleAction}
-            onRefresh={handleRefresh}
-            isRefreshing={isRefreshing}
-          />
-        );
-
-      case 'collection_optimization':
-        return (
-          <CuratorResultsBoard
-            sections={sections.filter((s) => s?.title === 'Collection Optimization')}
-            onAction={handleAction}
-            onRefresh={handleRefresh}
-            isRefreshing={isRefreshing}
-          />
-        );
-
-      case 'purchase_restock':
-        return (
-          <CuratorPurchaseQueue
-            sections={sections}
-            onAction={handleAction}
-            onRefresh={handleRefresh}
-            isRefreshing={isRefreshing}
-          />
-        );
-
-      case 'pairings':
-        if (pairingsLoading) {
-          return (
-            <div className="py-20 text-center">
-              <div className="text-[20px]" style={{ color: '#A1A1AA' }}>
-                Loading pairings…
-              </div>
-            </div>
-          );
-        }
-
-        return (
-          <CuratorPairingsTab
-            pairings={pairings}
-            onAction={handleAction}
-            onRefresh={handleRefresh}
-            isRefreshing={isRefreshing}
-          />
-        );
-
-      case 'grow_expand':
-        return (
-          <CuratorGrowAndExpand
-            sections={sections}
-            onAction={handleAction}
-            onRefresh={handleRefresh}
-            isRefreshing={isRefreshing}
-          />
-        );
-
-      case 'chat':
-        return (
-          <ExpertTobacconistChat
-            threadId={threadId}
-            setThreadId={setThreadId}
-            preFillMessage={preFillMessage}
-            onPreFillConsumed={() => setPreFillMessage('')}
-          />
-        );
-
-      default:
-        return null;
-    }
-  };
 
   if (loading) {
     return (
@@ -395,5 +409,68 @@ export default function CuratorWorkspace({
     );
   }
 
-  return <div className="space-y-8">{renderSurface()}</div>;
+  switch (activeSurface) {
+    case 'record_optimization':
+      return (
+        <CuratorResultsBoard
+          sections={buckets.record_optimization}
+          onAction={handleAction}
+          onRefresh={handleRefresh}
+          isRefreshing={isRefreshing}
+        />
+      );
+
+    case 'collection_optimization':
+      return (
+        <CuratorResultsBoard
+          sections={buckets.collection_optimization}
+          onAction={handleAction}
+          onRefresh={handleRefresh}
+          isRefreshing={isRefreshing}
+        />
+      );
+
+    case 'purchase_restock':
+      return (
+        <CuratorPurchaseQueue
+          sections={buckets.purchase_restock}
+          onAction={handleAction}
+          onRefresh={handleRefresh}
+          isRefreshing={isRefreshing}
+        />
+      );
+
+    case 'pairings':
+      return (
+        <CuratorPairingsTab
+          pairings={pairings}
+          onAction={handleAction}
+          onRefresh={handleRefresh}
+          isRefreshing={pairingsLoading || isRefreshing}
+        />
+      );
+
+    case 'grow_expand':
+      return (
+        <CuratorGrowAndExpand
+          sections={buckets.grow_expand}
+          onAction={handleAction}
+          onRefresh={handleRefresh}
+          isRefreshing={isRefreshing}
+        />
+      );
+
+    case 'chat':
+      return (
+        <ExpertTobacconistChat
+          threadId={threadId}
+          setThreadId={setThreadId}
+          preFillMessage={preFillMessage}
+          onPreFillConsumed={() => setPreFillMessage('')}
+        />
+      );
+
+    default:
+      return null;
+  }
 }
