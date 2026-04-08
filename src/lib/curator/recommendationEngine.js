@@ -725,15 +725,51 @@ function analyzeMetadata(context) {
     (b) => !b.distillery || !b.region || !b.age || !b.abv || !(b.type || b.whiskey_type)
   );
   if (bottlesMissingMeta.length > 0) {
+    const inferBottleMetaPayload = (bottle) => {
+      const payload = {};
+      const name = (bottle.name || '').toLowerCase();
+
+      if (!(bottle.type || bottle.whiskey_type)) {
+        if (name.includes('bourbon')) payload.type = 'Bourbon';
+        else if (name.includes('rye')) payload.type = 'Rye';
+        else if (name.includes('irish')) payload.type = 'Irish Whiskey';
+        else if (name.includes('scotch')) payload.type = 'Scotch';
+        else if (name.includes('single malt')) payload.type = 'Single Malt Scotch';
+        else if (name.includes('flavored') || name.includes('honey') || name.includes('peanut butter')) payload.type = 'Flavored Whiskey';
+      }
+
+      if (!bottle.country) {
+        if (name.includes('irish') || name.includes('bushmills')) payload.country = 'Ireland';
+        else if (name.includes('scotch') || name.includes('islay') || name.includes('speyside')) payload.country = 'Scotland';
+        else if (payload.type === 'Bourbon' || payload.type === 'Rye') payload.country = 'United States';
+      }
+
+      if (!bottle.region) {
+        if (name.includes('islay')) payload.region = 'Islay';
+        else if (name.includes('speyside')) payload.region = 'Speyside';
+        else if (payload.type === 'Bourbon') payload.region = 'Kentucky';
+      }
+
+      if (!bottle.abv) {
+        if (name.includes('bottled-in-bond')) payload.abv = 50;
+        else if (name.includes('irish honey')) payload.abv = 35;
+        else if (name.includes('small batch')) payload.abv = 45;
+      }
+
+      return payload;
+    };
+
     const items = bottlesMissingMeta.slice(0, MAX_ITEMS_PER_REC).map((b) => {
       const missing = [];
       if (!b.distillery) missing.push('distillery');
       if (!b.region) missing.push('region');
+      if (!b.country) missing.push('country');
       if (!b.age) missing.push('age');
       if (!b.abv) missing.push('ABV');
       if (!(b.type || b.whiskey_type)) missing.push('spirit type');
 
-      const inference = inferBottleMetadata(b);
+      const payload = inferBottleMetaPayload(b);
+
       return {
         id: b.id,
         recordId: b.id,
@@ -742,38 +778,33 @@ function analyzeMetadata(context) {
         itemName: b.name,
         missingFields: missing,
         ownershipStatus: 'owned',
-        proposedChange: inference.payload
-          ? { confidence: inference.confidence, payload: inference.payload, rationale: 'Matched from distillery catalog' }
+        proposedChange: Object.keys(payload).length
+          ? {
+              confidence: 0.78,
+              payload,
+              rationale: 'Values inferred from bottle name patterns and existing whiskey conventions.',
+            }
           : null,
       };
     });
 
-    const highConfItems = items.filter((i) => i.proposedChange && i.proposedChange.confidence >= 0.70);
-    const actionType = highConfItems.length >= items.length / 2
-      ? ACTION_TYPE.AUTO_FIX
-      : ACTION_TYPE.REVIEW_REQUIRED;
-
-    const criticalField = items.some((i) => i.missingFields.includes('spirit type'));
-    const summary = items.length === 1
-      ? `${items[0].itemName} is missing ${items[0].missingFields.join(', ')} — the pairing engine cannot use it without this data.`
-      : `${items.length} bottles have incomplete records. ${criticalField ? 'Spirit type is missing on some — without it, no pairing logic applies.' : 'Missing fields reduce pairing accuracy.'}`;
+    const actionableCount = items.filter((i) => i.proposedChange?.payload).length;
 
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
       goal:               'bottle_missing_core_metadata',
-      actionType,
+      actionType:         actionableCount > 0 ? ACTION_TYPE.AUTO_FIX : ACTION_TYPE.REVIEW_REQUIRED,
       title:              'Bottles Missing Core Metadata',
-      summary,
+      summary:            `${items.length} bottles have incomplete records. Missing fields reduce pairing accuracy.`,
       whyItMatters:       'Spirit type, region, and ABV are not just descriptive — they determine which blends and cigars this bottle can be paired with.',
-      recommendationText: highConfItems.length > 0
-        ? `Apply Fix to auto-fill ${highConfItems.length} value${highConfItems.length > 1 ? 's' : ''} matched from the distillery catalog.`
-        : 'Open each bottle and complete the missing fields.',
+      recommendationText: actionableCount > 0
+        ? `${actionableCount} bottles have auto-fixable metadata.`
+        : 'These bottles need review.',
       moduleKey:          MODULE_KEY.WHISKEY,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           items.length >= 5 ? PRIORITY.MEDIUM : PRIORITY.LOW,
       confidence:         'high',
       items,
-      actionPayload: { type: 'open_bottle_edit' },
     }));
   }
 
@@ -782,33 +813,59 @@ function analyzeMetadata(context) {
     (b) => !b.retail_price && !b.aftermarket_price && !b.collector_value
   );
   if (bottlesMissingValue.length > 0) {
-    const items = bottlesMissingValue.slice(0, MAX_ITEMS_PER_REC).map((b) => ({
-      id: b.id,
-      recordId: b.id,
-      recordType: 'bottle',
-      recordName: b.name,
-      itemName: b.name,
-      ownershipStatus: 'owned',
-      missingFields: [
-        ['retail price',      'retail_price'],
-        ['aftermarket price', 'aftermarket_price'],
-        ['collector value',   'collector_value'],
-      ].filter(([, key]) => !b[key]).map(([label]) => label),
-    }));
+    const deriveBottleValuePayload = (bottle) => {
+      const retail = Number(bottle.retail_price || 0);
+      const market = Number(bottle.aftermarket_price || 0);
+      const collector = Number(bottle.collector_value || 0);
+      if (retail || market || collector) return null;
+
+      const purchase = Number(bottle.purchase_price || 0);
+      const fallback = purchase > 0 ? purchase : 0;
+      if (!fallback) return null;
+
+      return {
+        retail_price: fallback,
+        estimated_value: fallback,
+      };
+    };
+
+    const items = bottlesMissingValue.slice(0, MAX_ITEMS_PER_REC).map((b) => {
+      const payload = deriveBottleValuePayload(b);
+      return {
+        id: b.id,
+        recordId: b.id,
+        recordType: 'bottle',
+        recordName: b.name,
+        itemName: b.name,
+        ownershipStatus: 'owned',
+        missingFields: ['valuation'],
+        proposedChange: payload
+          ? {
+              confidence: 0.82,
+              payload,
+              rationale: 'Value derived from existing purchase price fallback.',
+            }
+          : null,
+      };
+    });
+
+    const actionableCount = items.filter((i) => i.proposedChange?.payload).length;
+
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
       goal:               'bottle_missing_valuation',
-      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      actionType:         actionableCount > 0 ? ACTION_TYPE.AUTO_FIX : ACTION_TYPE.REVIEW_REQUIRED,
       title:              'Bottles Without Valuation Data',
-      summary:            `${items.length} bottle${items.length > 1 ? 's have' : ' has'} no pricing data — your collection\'s total value is understated.`,
+      summary:            `${items.length} bottles have no pricing data — your collection's total value is understated.`,
       whyItMatters:       'Valuation data shows what the collection is actually worth and informs purchase priority.',
-      recommendationText: 'Open each bottle to add retail, aftermarket, or collector values.',
+      recommendationText: actionableCount > 0
+        ? `${actionableCount} bottles can be valued automatically using the existing valuation fallback chain.`
+        : 'These bottles need manual review.',
       moduleKey:          MODULE_KEY.WHISKEY,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           PRIORITY.LOW,
-      confidence:         'high',
+      confidence:         'medium',
       items,
-      actionPayload: { type: 'open_bottle_edit', fields: ['retail_price', 'aftermarket_price', 'collector_value'] },
     }));
   }
 

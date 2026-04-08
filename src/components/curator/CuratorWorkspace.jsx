@@ -75,6 +75,28 @@ function buildRecAskCuratorContext(recommendation) {
   return parts.join('. ');
 }
 
+function removeResolvedItemsFromRecommendation(rec, resolvedIds = []) {
+  const remainingItems = (rec.items || []).filter((item) => !resolvedIds.includes(item.recordId || item.id));
+  return {
+    ...rec,
+    items: remainingItems,
+    previewItems: remainingItems.slice(0, 5),
+    remainingCount: Math.max(0, remainingItems.length - 5),
+  };
+}
+
+function reconcileRecommendationLists(sections, resolvedIds = [], resolvedRecommendationIds = []) {
+  return sections
+    .map((section) => ({
+      ...section,
+      recommendations: (section.recommendations || [])
+        .filter((rec) => !resolvedRecommendationIds.includes(rec.id))
+        .map((rec) => removeResolvedItemsFromRecommendation(rec, resolvedIds))
+        .filter((rec) => (rec.items || []).length > 0),
+    }))
+    .filter((section) => (section.recommendations || []).length > 0);
+}
+
 function buildSpecAskCuratorContext(pipe) {
   const pct = pipe.dominanceRatio != null ? `${Math.round(pipe.dominanceRatio * 100)}%` : null;
   return [
@@ -190,14 +212,15 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
 
   const handleAction = useCallback(async (actionKey, recommendation, opts = {}) => {
     if (actionKey === 'ask_curator') {
-      openChat(buildRecAskCuratorContext(recommendation));
-      return { ok: true };
+      setPreFillMessage(recommendation?.title ? `Help me with this: ${recommendation.title}` : 'Help me understand this recommendation.');
+      setSurface('chat');
+      return;
     }
 
     if (actionKey === 'view_items' || actionKey === 'view_details') {
       const navResult = buildViewItemsNavigation(recommendation);
-      if (navResult.navigate?.path) navigate(navResult.navigate.path);
-      return navResult;
+      if (navResult?.navigate?.path) navigate(navResult.navigate.path);
+      return;
     }
 
     const result = await executeRecommendationAction(recommendation, actionKey, {
@@ -205,43 +228,26 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
       userEmail: user?.email,
     });
 
-    // Item-level optimistic resolution: remove fixed records from their cards immediately.
-    // If all items in a card are resolved, filterResolved will collapse the card automatically.
-    if (result?.ok && ['apply_fix', 'approve_changes'].includes(actionKey)) {
-      const ids = result.resolvedIds || result.resolvedRecordIds || [];
-      if (ids.length > 0) {
-        setResolvedItemIds((prev) => {
-          const next = new Set(prev);
-          ids.forEach((id) => next.add(id));
-          return next;
-        });
-      }
-    }
+    if (!result?.ok) return result;
 
-    // Whole-card removal for dismiss-type actions (non-item-level)
-    if (result?.ok && (
-      result?.dismissed ||
-      ['apply_specialization', 'acknowledge', 'add_to_shopping_list',
-       'add_to_rotation', 'mark_for_session', 'add_to_want_list'].includes(actionKey)
-    )) {
-      if (recommendation?.id) {
-        setResolvedRecIds((prev) => new Set([...prev, recommendation.id]));
-      }
-    }
+    const resolvedIds = result.resolvedRecordIds || [];
+    const resolvedRecommendationIds = result.resolvedRecommendationIds || [];
 
-    // Invalidate collection queries so fresh data arrives and triggers a clean re-analysis.
-    // Do NOT force runAnalysis here — the collectionContext change effect handles re-run with fresh data.
-    if (['apply_fix', 'approve_changes', 'apply_specialization'].includes(actionKey) && result?.appliedCount > 0) {
-      queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
-    }
-    if (actionKey === 'add_to_shopping_list') {
-      queryClient.invalidateQueries({ queryKey: ['shoppingListItems'] });
-    }
-    if (actionKey === 'add_to_want_list') {
-      queryClient.invalidateQueries({ queryKey: ['curatorCollection', 'wantList'] });
-    }
+    setAllSections((prev) => reconcileRecommendationLists(prev, resolvedIds, resolvedRecommendationIds));
+    setPurchaseSections((prev) => reconcileRecommendationLists(prev, resolvedIds, resolvedRecommendationIds));
+
+    setPairingRecs((prev) =>
+      prev.filter((pairing) => !resolvedRecommendationIds.includes(pairing.id))
+    );
+
+    setSpecRecs((prev) =>
+      prev
+        .map((rec) => removeResolvedItemsFromRecommendation(rec, resolvedIds))
+        .filter((rec) => (rec.items || []).length > 0)
+    );
+
     return result;
-  }, [user?.email, queryClient, navigate, openChat]);
+  }, [navigate, user?.email]);
 
   const handlePairingAction = useCallback((actionKey, pairing) => {
     if (actionKey === 'ask_curator') {

@@ -162,11 +162,15 @@ function InlineReviewPanel({ rec, onApply, onCancel }) {
 
 function RecordOptimizationActions({ rec, onAction }) {
   const [applying, setApplying] = useState(false);
-  const [showReview, setShowReview] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
-  const allItems = rec.items || [];
-  const hasPayloads = allItems.some(hasNonEmptyPayload);
-  const isAutoFix = rec.actionType === ACTION_TYPE.AUTO_FIX;
+  const actionableItems = (rec.items || []).filter(
+    (item) => item?.proposedChange?.payload && Object.keys(item.proposedChange.payload).length > 0
+  );
+
+  const hasAutoFix = rec.actionType === ACTION_TYPE.AUTO_FIX && actionableItems.length > 0;
+  const hasReviewableDiffs = rec.actionType === ACTION_TYPE.REVIEW_REQUIRED && actionableItems.length > 0;
+  const hasNoDiffs = actionableItems.length === 0;
 
   const handleApplyFix = async () => {
     setApplying(true);
@@ -174,14 +178,7 @@ function RecordOptimizationActions({ rec, onAction }) {
     finally { setApplying(false); }
   };
 
-  const handleApprove = async () => {
-    await onAction('approve_changes', rec);
-    setShowReview(false);
-  };
-
-  // No payloads and not an auto-fix: nothing to auto-apply or review inline.
-  // Show only "Ask Curator" so the user has guidance without a broken empty panel.
-  if (!hasPayloads && !isAutoFix) {
+  if (hasNoDiffs) {
     return (
       <div className="flex flex-wrap items-center gap-2">
         <TertiaryBtn onClick={() => onAction('view_details', rec)} icon={Eye} label="Open Records" />
@@ -193,20 +190,51 @@ function RecordOptimizationActions({ rec, onAction }) {
   return (
     <>
       <div className="flex flex-wrap items-center gap-2">
-        {(isAutoFix || hasPayloads) && (
+        {hasAutoFix && (
           <PrimaryBtn onClick={handleApplyFix} loading={applying} icon={Check} label="Fix All Automatically" />
         )}
-        {hasPayloads && (
-          <SecondaryBtn onClick={() => setShowReview((v) => !v)} icon={Eye} label="Review & Apply" />
+        {hasReviewableDiffs && (
+          <PrimaryBtn onClick={() => setExpanded((v) => !v)} icon={Eye} label="Review & Apply" />
         )}
         <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
       </div>
-      {showReview && (
-        <InlineReviewPanel
-          rec={rec}
-          onApply={handleApprove}
-          onCancel={() => setShowReview(false)}
-        />
+      {expanded && hasReviewableDiffs && (
+        <div className="mt-5 rounded-[16px] p-5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.16)' }}>
+          <div className="space-y-4">
+            {actionableItems.map((item) => (
+              <div key={item.recordId} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-start">
+                <div className="text-sm font-medium" style={{ color: '#F5F5F7' }}>{item.recordName}</div>
+                {Object.entries(item.proposedChange.payload).map(([field, value]) => (
+                  <React.Fragment key={`${item.recordId}-${field}`}>
+                    <div className="text-sm" style={{ color: '#A1A1AA' }}>{field}</div>
+                    <div className="text-sm" style={{ color: '#F5F5F7' }}>
+                      {String(value)}
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-3 mt-5">
+            <button
+              type="button"
+              onClick={() => onAction?.('approve_changes', rec, { reviewedItems: actionableItems })}
+              className="inline-flex items-center gap-2 px-5 h-12 rounded-xl font-medium"
+              style={{ background: '#C6A15B', color: '#0B0B0C' }}
+            >
+              Apply Changes
+            </button>
+            <button
+              type="button"
+              onClick={() => setExpanded(false)}
+              className="inline-flex items-center gap-2 px-5 h-12 rounded-xl font-medium"
+              style={{ border: '1px solid rgba(255,255,255,0.12)', color: '#F5F5F7' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       )}
     </>
   );
