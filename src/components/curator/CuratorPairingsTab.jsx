@@ -1,52 +1,39 @@
 /**
  * CuratorPairingsTab — Surface 4
- *
- * Pairings workspace with result sub-tabs.
- *
- * Sub-tabs:
- *   1. Expert Pairing   — primary pipe/cigar + whiskey pairings
- *   2. Old Favorites    — most-smoked blends with best bottle match
- *   3. Rediscover       — cellar blends waiting to be revisited
- *   4. Something New    — unexplored blends, expand your palate
- *
- * Pairing cards show Pipe / Blend / Pour with equal prominence.
  */
 
 import React, { useState } from 'react';
-import { Sparkles, ArrowLeftRight, RefreshCw, HelpCircle } from 'lucide-react';
+import { ArrowLeftRight, RefreshCw, HelpCircle } from 'lucide-react';
 import CuratorPairingResults from './CuratorPairingResults';
 
-// Safety net — actual cap is enforced by the pairing engine (MAX_ITEMS_PER_SUBTAB = 3)
 const MAX_PAIRINGS_PER_TAB = 3;
 
 const PAIRING_TABS = [
   {
-    key:    'expert',
-    label:  'Expert Pairing',
-    goals:  ['pipe_whiskey_pairing', 'cigar_whiskey_pairing'],
-    hint:   'Primary pairings based on your collection',
+    key:   'expert',
+    label: 'Expert Pairing',
+    goals: ['pipe_whiskey_pairing', 'cigar_whiskey_pairing'],
+    hint:  'Primary pairings based on your collection',
   },
   {
-    key:    'favorites',
-    label:  'Old Favorites',
-    goals:  ['old_favorites_pairing'],
-    hint:   'Your most-smoked blends with the best whiskey match',
+    key:   'favorites',
+    label: 'Old Favorites',
+    goals: ['old_favorites_pairing'],
+    hint:  'Your most-smoked blends with the best whiskey match',
   },
   {
-    key:    'rediscover',
-    label:  'Rediscover',
-    goals:  ['rediscover_pairing'],
-    hint:   'Cellar blends waiting to be revisited',
+    key:   'rediscover',
+    label: 'Rediscover',
+    goals: ['rediscover_pairing'],
+    hint:  'Cellar blends waiting to be revisited',
   },
   {
-    key:    'new',
-    label:  'Something New',
-    goals:  ['something_new_pairing'],
-    hint:   "Expand your palate — blends you haven't explored yet",
+    key:   'new',
+    label: 'Something New',
+    goals: ['something_new_pairing'],
+    hint:  "Expand your palate — blends you haven't explored yet",
   },
 ];
-
-// ─── Empty state ──────────────────────────────────────────────────────────────
 
 function EmptyState({ tab }) {
   const messages = {
@@ -65,30 +52,25 @@ function EmptyState({ tab }) {
   );
 }
 
-// ─── CuratorPairingsTab ───────────────────────────────────────────────────────
-
 /**
  * @param {object}   props
- * @param {object[]} props.pairingRecs  - Array of pairing recommendation objects from pairingEngine
- * @param {Function} props.onAction     - (actionKey, pairing) => void — handled by workspace
- * @param {Function} [props.onRefresh]  - () => void — rerun pairing analysis
- * @param {Function} [props.onAskCurator] - () => void — switch to chat
+ * @param {object[]} props.pairingRecs    - Array of pairing recommendation objects
+ * @param {Function} props.onAction       - (actionKey, pairing) => void
+ * @param {Function} [props.onRefresh]    - () => void
+ * @param {Function} [props.onAskCurator] - () => void
  */
 export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefresh, onAskCurator }) {
   const [activeTab, setActiveTab] = useState('expert');
 
-  // Build a map: goal → pairingItems
   const goalItemsMap = {};
   for (const rec of pairingRecs) {
     if (!goalItemsMap[rec.goal]) goalItemsMap[rec.goal] = [];
     goalItemsMap[rec.goal].push(...(rec.items || []));
   }
 
-  // Get items for active tab — capped at MAX_PAIRINGS_PER_TAB (best 3 after engine scoring)
-  const activeDef    = PAIRING_TABS.find((t) => t.key === activeTab) || PAIRING_TABS[0];
-  const activeItems  = activeDef.goals.flatMap((g) => goalItemsMap[g] || []).slice(0, MAX_PAIRINGS_PER_TAB);
+  const activeDef   = PAIRING_TABS.find((t) => t.key === activeTab) || PAIRING_TABS[0];
+  const activeItems = activeDef.goals.flatMap((g) => goalItemsMap[g] || []).slice(0, MAX_PAIRINGS_PER_TAB);
 
-  // Badge count per tab (show actual cap)
   const getTabCount = (tabDef) => Math.min(
     tabDef.goals.reduce((s, g) => s + (goalItemsMap[g]?.length || 0), 0),
     MAX_PAIRINGS_PER_TAB
@@ -99,7 +81,7 @@ export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefre
       {/* Title + actions */}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, letterSpacing: '-0.3px', margin: 0 }}>
+          <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, margin: 0 }}>
             Pairings
           </h2>
           <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>
@@ -124,7 +106,6 @@ export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefre
               onClick={onRefresh}
               className="inline-flex items-center gap-2 transition-all"
               style={{ background: 'transparent', color: '#A1A1AA', border: '1px solid rgba(255,255,255,0.1)', fontSize: '13px', padding: '6px 14px', borderRadius: '12px' }}
-              title="Refresh pairings"
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
@@ -132,11 +113,8 @@ export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefre
         </div>
       </div>
 
-      {/* Result sub-tabs */}
-      <div
-        className="flex gap-2 overflow-x-auto"
-        style={{ padding: '4px 0' }}
-      >
+      {/* Sub-tabs */}
+      <div className="flex gap-2 overflow-x-auto" style={{ padding: '4px 0' }}>
         {PAIRING_TABS.map((tab) => {
           const isActive = activeTab === tab.key;
           const count    = getTabCount(tab);
@@ -185,7 +163,7 @@ export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefre
       {activeItems.length === 0 ? (
         <EmptyState tab={activeTab} />
       ) : (
-        <CuratorPairingResults pairings={activeItems} onAction={onAction} />
+        <CuratorPairingResults items={activeItems} onAction={onAction} />
       )}
     </div>
   );

@@ -1,24 +1,11 @@
 /**
- * CuratorGrowAndExpand — Surface 5
- *
- * Outside-of-collection exploration tab.
- * Surfaces ideas the user doesn't already own, based on:
- *   - collection gaps (missing blend types, whiskey styles)
- *   - preference alignment (preferred types not fully explored)
- *   - extension of highly-rated items
- *
- * Primary action: Add to Want List
- * Distinct from Purchase & Restock (which is for already-owned/tracked items).
- *
- * All suggestion logic lives in growthEngine.js — this component only renders.
+ * CuratorGrowAndExpand — Surface 5: outside-of-collection exploration
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { TrendingUp, Plus, CheckCircle2, Loader2, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import { TrendingUp, Plus, CheckCircle2, Loader2, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { generateGrowthSuggestions } from '@/lib/curator/growthEngine.js';
-
-// ─── Module colors ─────────────────────────────────────────────────────────────
 
 const MODULE_COLORS = {
   tobacco: { bg: 'rgba(74,124,92,0.12)',  text: 'rgba(100,180,130,0.9)',  border: 'rgba(74,124,92,0.25)',  label: 'Tobacco' },
@@ -26,17 +13,27 @@ const MODULE_COLORS = {
   cigar:   { bg: 'rgba(180,100,50,0.12)', text: 'rgba(220,140,90,0.9)',  border: 'rgba(180,100,50,0.25)', label: 'Cigar'   },
 };
 
-// ─── Single grow suggestion card ──────────────────────────────────────────────
-
 function GrowCard({ suggestion, userEmail, onAskCurator }) {
-  const [adding, setAdding]   = useState(false);
-  const [added, setAdded]     = useState(false);
-  const [error, setError]     = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded]   = useState(false);
+  const [error, setError]   = useState(null);
 
   const mc = MODULE_COLORS[suggestion.moduleKey] || MODULE_COLORS.tobacco;
 
-  // Use the specific product name for the Want List item
-  const wantListName = suggestion.name || suggestion.title;
+  // Tags from suggestion.tags or fallback to blendFamily/whiskeyStyle
+  const tags = suggestion.tags?.length
+    ? suggestion.tags
+    : [suggestion.blendFamily || suggestion.whiskeyStyle].filter(Boolean);
+
+  // Gap filled chip
+  const gapFilled = suggestion.gapFilled || suggestion.reason;
+
+  // Why it fits — max 3 sentences
+  const whyFit = (() => {
+    const raw = suggestion.whyFit || suggestion.summary || '';
+    const sentences = raw.match(/[^.!?]+[.!?]+/g) || [raw];
+    return sentences.slice(0, 3).join(' ').trim();
+  })();
 
   const handleAdd = useCallback(async () => {
     if (!userEmail || adding || added) return;
@@ -44,7 +41,7 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
     setError(null);
     try {
       await base44.entities.AcquisitionItem.create({
-        name:       wantListName,
+        name:       suggestion.name || suggestion.title,
         item_type:  suggestion.itemType || 'blend',
         notes:      suggestion.summary || '',
         priority:   suggestion.priority || 'medium',
@@ -59,70 +56,55 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
     } finally {
       setAdding(false);
     }
-  }, [suggestion, wantListName, userEmail, adding, added]);
-
-  // Sub-label: blend family or whiskey style
-  const subLabel = suggestion.blendFamily || suggestion.whiskeyStyle || null;
+  }, [suggestion, userEmail, adding, added]);
 
   return (
     <div
       style={{
         background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)',
         border: '1px solid rgba(255,255,255,0.06)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
         borderRadius: '18px',
         padding: '24px',
       }}
     >
-      {/* Header */}
-      <div className="flex items-start gap-2.5">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <span
-              style={{ background: mc.bg, color: mc.text, border: `1px solid ${mc.border}`, fontSize: '13px', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}
-            >
-              {mc.label}
-            </span>
-            {subLabel && (
-              <span
-                style={{ background: 'rgba(255,255,255,0.06)', color: '#A1A1AA', fontSize: '13px', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}
-              >
-                {subLabel}
-              </span>
-            )}
-            {suggestion.reason === 'preference_match' && (
-              <span
-                style={{ background: 'rgba(198,161,91,0.15)', color: '#C6A15B', border: '1px solid rgba(198,161,91,0.3)', fontSize: '13px', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}
-              >
-                Matches your profile
-              </span>
-            )}
-          </div>
-          <p style={{ color: '#F5F5F7', fontSize: '18px', fontWeight: 600, lineHeight: 1.3, margin: 0 }}>
-            {suggestion.title}
-          </p>
-          {suggestion.gap && (
-            <p style={{ color: '#F5F5F7', fontSize: '16px', lineHeight: 1.6, marginTop: '8px' }}>
-              You are missing {suggestion.gap}.
-            </p>
-          )}
-          <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: suggestion.gap ? '4px' : '8px' }}>
-            {suggestion.summary}
-          </p>
-        </div>
+      {/* 1. Module badge */}
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <span style={{ background: mc.bg, color: mc.text, border: `1px solid ${mc.border}`, fontSize: '13px', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}>
+          {mc.label}
+        </span>
+        {/* 3. Tags row */}
+        {tags.map((tag, i) => (
+          <span key={i} style={{ background: 'rgba(255,255,255,0.06)', color: '#A1A1AA', fontSize: '13px', fontWeight: 500, padding: '2px 10px', borderRadius: '999px' }}>
+            {tag}
+          </span>
+        ))}
+        {/* 4. Gap filled chip */}
+        {gapFilled && (
+          <span style={{ background: 'rgba(198,161,91,0.15)', color: '#C6A15B', border: '1px solid rgba(198,161,91,0.3)', fontSize: '13px', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}>
+            {gapFilled}
+          </span>
+        )}
       </div>
 
-      {/* Error */}
+      {/* 2. Product name */}
+      <p style={{ color: '#F5F5F7', fontSize: '18px', fontWeight: 600, lineHeight: 1.3, margin: '0 0 10px 0' }}>
+        {suggestion.title}
+      </p>
+
+      {/* 5. Why it fits */}
+      {whyFit && (
+        <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, margin: '0 0 16px 0' }}>
+          {whyFit}
+        </p>
+      )}
+
       {error && (
-        <p
-          className="text-xs rounded px-2 py-1"
-          style={{ background: 'rgba(139,58,58,0.15)', color: 'rgba(220,140,140,1)' }}
-        >
+        <p className="text-xs rounded px-2 py-1 mb-3" style={{ background: 'rgba(139,58,58,0.15)', color: 'rgba(220,140,140,1)' }}>
           {error}
         </p>
       )}
 
-      {/* Actions */}
+      {/* 6. Actions */}
       <div className="flex items-center gap-2 flex-wrap">
         {added ? (
           <span className="inline-flex items-center gap-2" style={{ color: '#22C55E', fontSize: '16px', fontWeight: 600 }}>
@@ -145,7 +127,7 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
           <button
             type="button"
             onClick={() => onAskCurator(suggestion)}
-            className="inline-flex items-center gap-2 transition-all"
+            className="inline-flex items-center gap-1.5 transition-all"
             style={{ color: '#A1A1AA', background: 'transparent', border: 'none', fontSize: '14px', height: '40px', padding: '0 8px' }}
           >
             <HelpCircle className="w-4 h-4" />
@@ -156,8 +138,6 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
     </div>
   );
 }
-
-// ─── Section with collapsible ─────────────────────────────────────────────────
 
 const GROW_SECTIONS = [
   { key: 'tobacco', label: 'Tobacco Discoveries', moduleKey: 'tobacco' },
@@ -178,17 +158,11 @@ function GrowSection({ label, suggestions, userEmail, onAskCurator }) {
         className="w-full flex items-center gap-2 py-1"
         aria-expanded={!collapsed}
       >
-        <span
-          style={{ color: '#71717A', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}
-          className="shrink-0"
-        >
+        <span style={{ color: '#71717A', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }} className="shrink-0">
           {label}
         </span>
         <div className="flex-1 h-px" style={{ background: 'rgba(140,105,65,0.15)' }} />
-        <span
-          className="text-[11px] px-2 py-0.5 rounded-full tabular-nums shrink-0"
-          style={{ background: 'rgba(80,80,80,0.1)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(100,100,100,0.18)' }}
-        >
+        <span className="text-[11px] px-2 py-0.5 rounded-full tabular-nums shrink-0" style={{ background: 'rgba(80,80,80,0.1)', color: 'rgba(224,216,200,0.4)', border: '1px solid rgba(100,100,100,0.18)' }}>
           {suggestions.length}
         </span>
         {collapsed
@@ -206,8 +180,6 @@ function GrowSection({ label, suggestions, userEmail, onAskCurator }) {
   );
 }
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
-
 function EmptyState() {
   return (
     <div className="py-16 text-center space-y-3">
@@ -222,14 +194,12 @@ function EmptyState() {
   );
 }
 
-// ─── CuratorGrowAndExpand ─────────────────────────────────────────────────────
-
 /**
  * @param {object}   props
- * @param {object}   props.collectionContext  - Full collection context
- * @param {object}   [props.preferences]     - Taste profile / preferences (from useTasteProfile)
- * @param {string}   [props.userEmail]       - Current user email (for Want List creates)
- * @param {Function} [props.onAskCurator]    - () => void — switch to chat tab
+ * @param {object}   props.collectionContext
+ * @param {object}   [props.preferences]
+ * @param {string}   [props.userEmail]
+ * @param {Function} [props.onAskCurator]
  */
 export default function CuratorGrowAndExpand({ collectionContext = {}, preferences = null, userEmail, onAskCurator }) {
   const suggestions = useMemo(
@@ -237,13 +207,10 @@ export default function CuratorGrowAndExpand({ collectionContext = {}, preferenc
     [collectionContext, preferences]
   );
 
-  const hasAny = suggestions.length > 0;
-
   return (
     <div className="space-y-5">
-      {/* Title */}
       <div>
-        <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, letterSpacing: '-0.3px', margin: 0 }}>
+        <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, margin: 0 }}>
           Grow &amp; Expand
         </h2>
         <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>
@@ -251,14 +218,11 @@ export default function CuratorGrowAndExpand({ collectionContext = {}, preferenc
         </p>
       </div>
 
-      {/* Distinction note */}
-      <div
-        style={{ background: 'rgba(198,161,91,0.08)', border: '1px solid rgba(198,161,91,0.2)', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', color: '#A1A1AA' }}
-      >
+      <div style={{ background: 'rgba(198,161,91,0.08)', border: '1px solid rgba(198,161,91,0.2)', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', color: '#A1A1AA' }}>
         Items added here go to your <span style={{ color: '#C6A15B', fontWeight: 600 }}>Want List</span>. Items already owned or tracked are in <span style={{ color: '#C6A15B', fontWeight: 600 }}>Purchase &amp; Restock</span>.
       </div>
 
-      {!hasAny ? (
+      {suggestions.length === 0 ? (
         <EmptyState />
       ) : (
         <div className="space-y-6">

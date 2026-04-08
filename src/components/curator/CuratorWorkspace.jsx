@@ -1,15 +1,5 @@
 /**
- * CuratorWorkspace
- *
- * Six-surface operations workspace.
- *
- * Surfaces:
- *   1. Optimize Board          — record quality / metadata landing
- *   2. Collection Optimization — rotation, balance, pipe specialization
- *   3. Purchase & Restock      — actionable queue with batch shopping list actions
- *   4. Pairings                — structured pairing entries with result sub-tabs
- *   5. Grow & Expand           — outside-collection exploration / Add to Want List
- *   6. Chat                    — expert tobacconist chat (free-form questions)
+ * CuratorWorkspace — Six-surface operations workspace
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
@@ -42,12 +32,9 @@ const SURFACES = [
 const PURCHASE_CATEGORIES = [CATEGORY.PURCHASE, CATEGORY.CIGAR_DISCOVERY];
 const COLLECTION_OPTIMIZATION_CATEGORIES = [CATEGORY.BALANCE, CATEGORY.UTILIZATION];
 
-// ─── Preference builder from collection data ──────────────────────────────────
-
 function buildPreferences(collectionContext, tasteProfile) {
   const { blends = [], bottles = [] } = collectionContext;
 
-  // Compute per-type average ratings to find disliked types (avg < 2.5 with ≥2 samples)
   const blendTypeRatings = {};
   const blendTypeCounts  = {};
   for (const b of blends) {
@@ -72,23 +59,18 @@ function buildPreferences(collectionContext, tasteProfile) {
     .map(([type]) => type);
 
   return {
-    preferred_blend_types:  tasteProfile?.preferred_blend_types  || [],
+    preferred_blend_types:   tasteProfile?.preferred_blend_types   || [],
     preferred_whiskey_types: tasteProfile?.preferred_whiskey_types || [],
     disliked_blend_types,
     disliked_whiskey_types,
   };
 }
 
-// ─── Ask Curator context builders ─────────────────────────────────────────────
-
 function buildRecAskCuratorContext(recommendation) {
   const parts = [recommendation.title];
   if (recommendation.summary) parts.push(recommendation.summary);
   if (recommendation.whyItMatters) parts.push(`Why it matters: ${recommendation.whyItMatters}`);
-  const names = (recommendation.items || [])
-    .slice(0, 5)
-    .map((i) => i.itemName || i.recordName)
-    .filter(Boolean);
+  const names = (recommendation.items || []).slice(0, 5).map((i) => i.itemName || i.recordName).filter(Boolean);
   if (names.length > 0) parts.push(`Affected items: ${names.join(', ')}`);
   return parts.join('. ');
 }
@@ -104,22 +86,24 @@ function buildSpecAskCuratorContext(pipe) {
 
 /**
  * @param {object}  props
- * @param {object}  props.collectionContext  - { pipes, blends, bottles, cigars, smokingLogs, tastingLogs, cigarSessions, wantListItems, cigarModuleActive }
- * @param {boolean} props.isLoading         - Whether data is still loading
+ * @param {object}  props.collectionContext
+ * @param {boolean} props.isLoading
  */
 export default function CuratorWorkspace({ collectionContext = {}, isLoading = false }) {
   const { user }    = useCurrentUser();
   const queryClient = useQueryClient();
   const navigate    = useNavigate();
 
-  const [surface, setSurface]           = useState('board');
-  const [allSections, setAllSections]   = useState([]);
+  const [surface, setSurface]             = useState('board');
+  const [allSections, setAllSections]     = useState([]);
   const [purchaseSections, setPurchaseSections] = useState([]);
-  const [specRecs, setSpecRecs]         = useState([]);
-  const [pairingRecs, setPairingRecs]   = useState([]);
-  const [analysisRun, setAnalysisRun]   = useState(false);
+  const [specRecs, setSpecRecs]           = useState([]);
+  const [pairingRecs, setPairingRecs]     = useState([]);
+  const [analysisRun, setAnalysisRun]     = useState(false);
 
-  // Taste profile — derived from collection data, used for preference-aware filtering
+  // resolvedRecIds — immediately removes resolved recs without waiting for re-analysis
+  const [resolvedRecIds, setResolvedRecIds] = useState(new Set());
+
   const tasteProfile = useTasteProfile({
     pipes:       collectionContext.pipes       || [],
     blends:      collectionContext.blends      || [],
@@ -133,11 +117,7 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
     [collectionContext, tasteProfile]
   );
 
-  // Track dismissed/applied recommendation IDs for this session
-  const [dismissedIds, setDismissedIds] = useState(new Set());
-
-  // Chat state
-  const [threadId, setThreadId]           = useState(null);
+  const [threadId, setThreadId]             = useState(null);
   const [preFillMessage, setPreFillMessage] = useState('');
 
   const runAnalysis = useCallback(() => {
@@ -146,80 +126,63 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
     setPurchaseSections(groupRecommendations(recs.filter((r) => PURCHASE_CATEGORIES.includes(r.category))));
     setSpecRecs(recs.filter((r) => r.goal === 'specialization_candidates'));
     setPairingRecs(generatePairingRecommendations({ ...collectionContext, preferences }));
-    setDismissedIds(new Set());
+    setResolvedRecIds(new Set());
     setAnalysisRun(true);
   }, [collectionContext, preferences]);
 
-  // Run analysis once data loads
   useEffect(() => {
     if (!isLoading && !analysisRun) runAnalysis();
   }, [isLoading, analysisRun, runAnalysis]);
 
-  // Re-run when collection changes
   useEffect(() => { setAnalysisRun(false); }, [collectionContext]);
 
-  // Filter out dismissed recommendations from sections
-  const visibleSections = useMemo(() => {
-    if (dismissedIds.size === 0) return allSections;
-    return allSections
+  // Helper: filter resolved recs out of any section list
+  const filterResolved = useCallback((sections) => {
+    if (resolvedRecIds.size === 0) return sections;
+    return sections
       .map((section) => ({
         ...section,
-        recommendations: section.recommendations.filter((r) => !dismissedIds.has(r.id)),
+        recommendations: section.recommendations.filter((r) => !resolvedRecIds.has(r.id)),
       }))
       .filter((section) => section.recommendations.length > 0);
-  }, [allSections, dismissedIds]);
+  }, [resolvedRecIds]);
 
-  // Board: only record-quality / metadata sections
+  const visibleSections = useMemo(() => filterResolved(allSections), [allSections, filterResolved]);
+
+  // Board: record optimization + metadata (legacy alias)
   const boardSections = useMemo(
-    () => visibleSections.filter((s) => s.category === CATEGORY.METADATA),
+    () => visibleSections.filter(
+      (s) => s.category === CATEGORY.RECORD_OPTIMIZATION || s.category === CATEGORY.METADATA
+    ),
     [visibleSections]
   );
 
-  // Collection Optimization: balance + utilization (spec handled separately)
   const collectionOptSections = useMemo(
     () => visibleSections.filter((s) => COLLECTION_OPTIMIZATION_CATEGORIES.includes(s.category)),
     [visibleSections]
   );
 
-  const visiblePurchaseSections = useMemo(() => {
-    if (dismissedIds.size === 0) return purchaseSections;
-    return purchaseSections
-      .map((section) => ({
-        ...section,
-        recommendations: section.recommendations.filter((r) => !dismissedIds.has(r.id)),
-      }))
-      .filter((section) => section.recommendations.length > 0);
-  }, [purchaseSections, dismissedIds]);
+  const visiblePurchaseSections = useMemo(() => filterResolved(purchaseSections), [purchaseSections, filterResolved]);
 
   const visiblePairingRecs = useMemo(() => {
-    if (dismissedIds.size === 0) return pairingRecs;
-    return pairingRecs.filter((r) => !dismissedIds.has(r.id));
-  }, [pairingRecs, dismissedIds]);
+    if (resolvedRecIds.size === 0) return pairingRecs;
+    return pairingRecs.filter((r) => !resolvedRecIds.has(r.id));
+  }, [pairingRecs, resolvedRecIds]);
 
-  // Dismiss a recommendation by ID
-  const dismissRec = useCallback((recId) => {
-    if (recId) setDismissedIds((prev) => new Set([...prev, recId]));
-  }, []);
-
-  // Switch to chat with pre-filled context
   const openChat = useCallback((contextMessage) => {
     setPreFillMessage(contextMessage || '');
     setSurface('chat');
   }, []);
 
   const handleAction = useCallback(async (actionKey, recommendation, opts = {}) => {
-    // ── Intercept: Ask Curator ─────────────────────────────────────────────────
     if (actionKey === 'ask_curator') {
       openChat(buildRecAskCuratorContext(recommendation));
       return { ok: true };
     }
 
-    // ── Intercept: View Items / View Details ───────────────────────────────────
     if (actionKey === 'view_items' || actionKey === 'view_details') {
       const navResult = buildViewItemsNavigation(recommendation);
-      if (navResult.navigate?.path) {
-        navigate(navResult.navigate.path);
-      }
+      if (navResult.navigate?.path) navigate(navResult.navigate.path);
       return navResult;
     }
 
@@ -228,19 +191,21 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
       userEmail: user?.email,
     });
 
-    // ── Dismiss on completion ──────────────────────────────────────────────────
+    // Immediately remove resolved rec from display
     if (result?.ok && (
       result?.dismissed ||
       ['apply_fix', 'approve_changes', 'apply_specialization', 'acknowledge', 'add_to_shopping_list',
        'add_to_rotation', 'mark_for_session', 'add_to_want_list'].includes(actionKey)
     )) {
-      dismissRec(recommendation?.id);
+      if (recommendation?.id) {
+        setResolvedRecIds((prev) => new Set([...prev, recommendation.id]));
+      }
     }
 
     if (['apply_fix', 'approve_changes', 'apply_specialization'].includes(actionKey) && result?.applied > 0) {
       queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
-      // Re-run the recommendation engine immediately so completed items are removed
-      runAnalysis();
+      // Schedule re-analysis after DB writes settle
+      setTimeout(() => runAnalysis(), 800);
     }
     if (actionKey === 'add_to_shopping_list') {
       queryClient.invalidateQueries({ queryKey: ['shoppingListItems'] });
@@ -249,43 +214,35 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
       queryClient.invalidateQueries({ queryKey: ['curatorCollection', 'wantList'] });
     }
     return result;
-  }, [user?.email, queryClient, navigate, dismissRec, openChat]);
+  }, [user?.email, queryClient, navigate, openChat, runAnalysis]);
 
-  // Pairings "Ask Curator" — switch to Chat tab with context pre-filled
   const handlePairingAction = useCallback((actionKey, pairing) => {
     if (actionKey === 'ask_curator') {
-      const left     = pairing.leftItem?.name  || pairing.leftItem?.type  || 'item';
-      const blend    = pairing.blendBridge?.name;
-      const right    = pairing.rightItem?.name || pairing.rightItem?.type || 'item';
-      const trio     = blend ? `${left} / ${blend} / ${right}` : `${left} and ${right}`;
+      const left    = pairing.leftItem?.name  || pairing.leftItem?.type  || 'item';
+      const blend   = pairing.blendBridge?.name;
+      const right   = pairing.rightItem?.name || pairing.rightItem?.type || 'item';
+      const trio    = blend ? `${left} / ${blend} / ${right}` : `${left} and ${right}`;
       const rationale = pairing.rationale ? ` — ${pairing.rationale}` : '';
       openChat(`Tell me more about this pairing: ${trio}${rationale}`);
     }
   }, [openChat]);
 
-  // Specialization "Ask Curator"
   const handleSpecAskCurator = useCallback((pipe) => {
     openChat(buildSpecAskCuratorContext(pipe));
   }, [openChat]);
 
-  // Pairings-tab Ask Curator (no specific pairing selected)
   const handlePairingsTabAskCurator = useCallback(() => {
     openChat('I have questions about my pairing suggestions and how to make the most of them.');
   }, [openChat]);
 
-  // Clear pre-fill once chat has consumed it
   const handlePreFillConsumed = useCallback(() => {
     setPreFillMessage('');
   }, []);
 
-  // Badge counts
-  const specCandidateCount    = specRecs
-    .flatMap((r) => r.items || [])
-    .filter((i) => i.hasLogData).length;
-  const collectionOptCount    = collectionOptSections.reduce((s, g) => s + g.recommendations.length, 0)
-    + specCandidateCount;
-  const purchaseCount         = visiblePurchaseSections.reduce((s, g) => s + g.recommendations.length, 0);
-  const pairingCount          = visiblePairingRecs.reduce((s, r) => s + (r.items?.length || 0), 0);
+  const specCandidateCount = specRecs.flatMap((r) => r.items || []).filter((i) => i.hasLogData).length;
+  const collectionOptCount = collectionOptSections.reduce((s, g) => s + g.recommendations.length, 0) + specCandidateCount;
+  const purchaseCount      = visiblePurchaseSections.reduce((s, g) => s + g.recommendations.length, 0);
+  const pairingCount       = visiblePairingRecs.reduce((s, r) => s + (r.items?.length || 0), 0);
 
   if (isLoading) {
     return (
@@ -336,7 +293,6 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
         })}
       </div>
 
-      {/* Surface content */}
       {surface === 'board' && (
         <CuratorResultsBoard
           sections={boardSections}
@@ -388,15 +344,14 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
       )}
 
       {surface === 'chat' && (
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-lg font-bold" style={{ color: '#F5F1E7' }}>
-              Ask the Curator
-            </h2>
-            <p className="text-sm mt-0.5" style={{ color: 'rgba(224,216,200,0.52)' }}>
-              Expert tobacconist chat — collection questions, pairing deep-dives, and more
-            </p>
-          </div>
+        <div
+          style={{
+            background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: '18px',
+            padding: '24px',
+          }}
+        >
           <ExpertTobacconistChat
             threadId={threadId}
             setThreadId={setThreadId}
