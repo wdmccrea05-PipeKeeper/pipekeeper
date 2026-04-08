@@ -1,320 +1,192 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { translateToEnglish, translateFromEnglish, getCurrentLocale } from "@/components/utils/aiTranslation";
-import { toast } from "sonner";
-import { base44 } from "@/api/base44Client";
-import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { Send } from "lucide-react";
+import React, { useEffect, useMemo, useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { SendHorizontal } from 'lucide-react';
 
 const STARTER_PROMPTS = [
-  "Why this pairing?",
-  "Give me an alternative",
-  "What should I smoke tonight?",
-  "What should I open next?",
-  "What gap matters most in my collection?",
+  'Why this pairing?',
+  'Give me an alternative',
+  'What should I smoke tonight?',
+  'What should I open next?',
+  'What gap matters most in my collection?',
 ];
-
-const CONTEXT_CHIPS = ["Your Collection", "Pairings", "Session Planning"];
 
 export default function ExpertTobacconistChat({
   threadId,
   setThreadId,
-  onAnsweredBy,
   preFillMessage,
   onPreFillConsumed,
+  onAnsweredBy,
 }) {
-  const { user } = useCurrentUser();
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState('');
 
-  const [messages, setMessages]       = useState([]);
-  const [input, setInput]             = useState("");
-  const [sending, setSending]         = useState(false);
-  const [initializing, setInitializing] = useState(false);
-
-  const listRef = useRef(null);
-  const inputRef = useRef(null);
-
-  const onPreFillConsumedRef = useRef(onPreFillConsumed);
-  useEffect(() => {
-    onPreFillConsumedRef.current = onPreFillConsumed;
-  }, [onPreFillConsumed]);
+  const canSend = useMemo(() => !!input.trim() && !isSending, [input, isSending]);
 
   useEffect(() => {
     if (preFillMessage) {
       setInput(preFillMessage);
-      onPreFillConsumedRef.current?.();
-      setTimeout(() => inputRef.current?.focus(), 100);
+      onPreFillConsumed?.();
     }
-  }, [preFillMessage]);
-
-  const canSend = useMemo(() => !!input.trim() && !sending && !initializing, [input, sending, initializing]);
+  }, [preFillMessage, onPreFillConsumed]);
 
   useEffect(() => {
-    try {
-      if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
-    } catch {}
-  }, [messages]);
+    let mounted = true;
 
-  const initializeChat = async () => {
-    try {
-      setInitializing(true);
-      if (!threadId) {
-        const created = await base44.ai.createThread({ agent: "expert_tobacconist" });
-        if (!created?.id) {
-          toast.error("Failed to initialize Curator chat.");
-          return;
+    async function ensureThread() {
+      if (threadId) return;
+      try {
+        const created = await base44.ai.createThread({ agent: 'expert_tobacconist' });
+        if (mounted && created?.id) {
+          setThreadId?.(created.id);
         }
-        setThreadId(created.id);
+      } catch (err) {
+        if (mounted) setError('Could not initialize Curator chat.');
       }
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to initialize Curator chat.");
-    } finally {
-      setInitializing(false);
     }
-  };
 
-  // Initialize chat thread when user becomes available.
-  // Using user?.id as dependency ensures we retry if user loaded asynchronously after mount.
-  useEffect(() => {
-    if (user?.id) initializeChat();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+    ensureThread();
+    return () => { mounted = false; };
+  }, [threadId, setThreadId]);
 
-  const loadThread = async () => {
-    if (!threadId) return;
-    try {
-      const history = await base44.ai.getThreadMessages({ thread_id: threadId });
-      const mapped = (history?.messages || []).map((m) => ({
-        id: m.id || `${m.role}-${Math.random()}`,
-        role: m.role,
-        content: m.content || "",
-        meta: m.meta || {},
-      }));
-      setMessages(mapped);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  useEffect(() => {
-    loadThread();
-  }, [threadId]);
+  const appendStarterPrompt = (text) => setInput(text);
 
   const sendMessage = async () => {
     const text = input.trim();
-    if (!text || !threadId || sending) return;
+    if (!text || !threadId || isSending) return;
 
-    setSending(true);
-    const locale = getCurrentLocale();
+    setIsSending(true);
+    setError('');
 
-    const optimistic = { id: `local-${Date.now()}`, role: "user", content: text, meta: {} };
-    setMessages((prev) => [...prev, optimistic]);
-    setInput("");
+    const userMessage = {
+      id: `local-user-${Date.now()}`,
+      role: 'user',
+      content: text,
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
 
     try {
-      const englishText = await translateToEnglish(text, locale);
-      const res = await base44.ai.sendMessage({
+      const response = await base44.ai.sendMessage({
         thread_id: threadId,
-        agent: "expert_tobacconist",
-        message: englishText,
+        agent: 'expert_tobacconist',
+        message: text,
       });
 
-      const newMsgs = await Promise.all(
-        (res?.messages || []).map(async (m) => {
-          const translatedContent =
-            m.role === "assistant"
-              ? await translateFromEnglish(m.content || "", locale)
-              : m.content || "";
-          return {
-            id: m.id || `${m.role}-${Math.random()}`,
-            role: m.role,
-            content: translatedContent,
-            meta: m.meta || {},
-          };
-        })
-      );
+      const returned = Array.isArray(response?.messages) ? response.messages : [];
+      const assistant = returned.find((m) => m.role === 'assistant');
 
-      setMessages((prev) => {
-        const withoutLocal = prev.filter((m) => !String(m.id).startsWith("local-"));
-        return [...withoutLocal, ...newMsgs];
-      });
+      if (!assistant?.content) {
+        throw new Error('No assistant response returned.');
+      }
 
-      const assistant = newMsgs.find((m) => m.role === "assistant");
-      const answeredBy = assistant?.meta?.answered_by || assistant?.meta?.agent || "";
-      if (answeredBy && onAnsweredBy) onAnsweredBy(answeredBy);
-    } catch (e) {
-      console.error(e);
-      toast.error("Couldn't load a response — please try again.");
+      setMessages((prev) => [
+        ...prev.filter((m) => m.id !== userMessage.id),
+        userMessage,
+        {
+          id: assistant.id || `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: assistant.content,
+          meta: assistant.meta || {},
+        },
+      ]);
+
+      const answeredBy = assistant?.meta?.answered_by || assistant?.meta?.agent;
+      if (answeredBy) onAnsweredBy?.(answeredBy);
+    } catch (err) {
+      setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
+      setInput(text);
+      setError('Curator could not answer that just now. Try again.');
     } finally {
-      setSending(false);
-    }
-  };
-
-  const onKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (canSend) sendMessage();
-    }
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-      e.preventDefault();
-      if (canSend) sendMessage();
+      setIsSending(false);
     }
   };
 
   return (
-    <div className="space-y-4">
-      {/* Title + description */}
-      <div>
-        <h2 style={{ color: '#C6A15B', fontSize: '20px', fontWeight: 600, margin: 0 }}>
-          Curator Console
-        </h2>
-        <p style={{ color: '#A1A1AA', fontSize: '14px', marginTop: '4px' }}>
-          Ask anything about your collection, pairings, or what to smoke tonight.
-        </p>
+    <div
+      className="rounded-[18px] p-8"
+      style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)' }}
+    >
+      <h3 className="text-[20px] font-semibold mb-2" style={{ color: '#F5F5F7' }}>
+        Curator Console
+      </h3>
+      <p className="text-[16px] mb-6" style={{ color: '#A1A1AA' }}>
+        Ask about your collection, pairings, or what to smoke tonight.
+      </p>
+
+      <div className="flex flex-wrap gap-3 mb-6">
+        <span className="px-4 py-2 rounded-full text-sm" style={{ border: '1px solid rgba(198,161,91,0.25)', color: '#C6A15B' }}>Your Collection</span>
+        <span className="px-4 py-2 rounded-full text-sm" style={{ border: '1px solid rgba(198,161,91,0.25)', color: '#C6A15B' }}>Pairings</span>
+        <span className="px-4 py-2 rounded-full text-sm" style={{ border: '1px solid rgba(198,161,91,0.25)', color: '#C6A15B' }}>Session Planning</span>
       </div>
 
-      {/* Context chips */}
-      <div className="flex gap-2 flex-wrap">
-        {CONTEXT_CHIPS.map((chip) => (
-          <span
-            key={chip}
-            style={{ background: 'rgba(198,161,91,0.08)', color: '#C6A15B', border: '1px solid rgba(198,161,91,0.2)', fontSize: '13px', fontWeight: 500, padding: '4px 12px', borderRadius: '999px' }}
-          >
-            {chip}
-          </span>
-        ))}
-      </div>
-
-      {/* Message history */}
       <div
-        ref={listRef}
-        style={{
-          background: '#0B0B0C',
-          border: '1px solid rgba(255,255,255,0.06)',
-          borderRadius: '14px',
-          padding: '16px',
-          minHeight: '300px',
-          maxHeight: '480px',
-          overflowY: 'auto',
-        }}
+        className="rounded-[18px] p-5 mb-5"
+        style={{ background: '#09090B', border: '1px solid rgba(255,255,255,0.06)', minHeight: 220 }}
       >
         {messages.length === 0 ? (
-          <div className="space-y-4">
-            <p style={{ color: '#A1A1AA', fontSize: '14px' }}>
-              {initializing ? 'Initializing…' : 'Start a conversation or pick a prompt below.'}
-            </p>
-            {/* Starter prompt chips */}
-            {!initializing && (
-              <div className="flex flex-wrap gap-2">
-                {STARTER_PROMPTS.map((prompt) => (
-                  <button
-                    key={prompt}
-                    type="button"
-                    onClick={() => setInput(prompt)}
-                    style={{
-                      background: 'rgba(255,255,255,0.04)',
-                      color: '#F5F5F7',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      fontSize: '13px',
-                      padding: '6px 14px',
-                      borderRadius: '999px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {prompt}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {messages.map((m) => (
-              <div
-                key={m.id}
-                className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  style={{
-                    maxWidth: '85%',
-                    padding: '10px 14px',
-                    borderRadius: '14px',
-                    ...(m.role === 'user'
-                      ? { background: '#C6A15B', color: '#0B0B0C' }
-                      : {
-                          background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)',
-                          border: '1px solid rgba(255,255,255,0.06)',
-                          color: '#F5F5F7',
-                        })
-                  }}
+          <>
+            <div className="text-[16px] mb-5" style={{ color: '#A1A1AA' }}>
+              Start a conversation or pick a prompt below.
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {STARTER_PROMPTS.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => appendStarterPrompt(prompt)}
+                  className="px-4 h-10 rounded-full text-sm"
+                  style={{ border: '1px solid rgba(255,255,255,0.10)', color: '#F5F5F7' }}
                 >
-                  <p style={{ fontSize: '14px', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
-                    {m.content}
-                  </p>
-                  {m.role !== 'user' && m?.meta?.answered_by && (
-                    <p style={{ color: 'rgba(161,161,170,0.6)', fontSize: '12px', marginTop: '6px' }}>
-                      via {String(m.meta.answered_by)}
-                    </p>
-                  )}
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="space-y-4">
+            {messages.map((m) => (
+              <div key={m.id} className="space-y-1">
+                <div className="text-[12px] uppercase tracking-[0.12em]" style={{ color: '#71717A' }}>
+                  {m.role === 'user' ? 'You' : 'Curator'}
+                </div>
+                <div className="text-[16px] leading-7" style={{ color: '#F5F5F7' }}>
+                  {m.content}
                 </div>
               </div>
             ))}
-            {sending && (
-              <div className="flex justify-start">
-                <div style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '10px 14px' }}>
-                  <span style={{ color: '#A1A1AA', fontSize: '14px' }}>…</span>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
 
-      {/* Input area */}
-      <div className="flex gap-2">
+      <div className="flex gap-3 items-center">
         <input
-          ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={onKeyDown}
-          placeholder="Ask the Curator…"
-          disabled={sending || initializing}
-          style={{
-            flex: 1,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '12px',
-            padding: '10px 14px',
-            color: '#F5F5F7',
-            fontSize: '14px',
-            outline: 'none',
-          }}
+          onKeyDown={(e) => { if (e.key === 'Enter' && canSend) sendMessage(); }}
+          placeholder="Ask about pipes, blends, pairings, aging, value, redundancy..."
+          className="flex-1 h-14 px-5 rounded-[14px] outline-none bg-transparent"
+          style={{ border: '1px solid rgba(255,255,255,0.10)', color: '#F5F5F7' }}
         />
         <button
           type="button"
-          onClick={sendMessage}
           disabled={!canSend}
-          style={{
-            background: canSend ? '#C6A15B' : 'rgba(198,161,91,0.3)',
-            color: '#0B0B0C',
-            height: '40px',
-            padding: '0 16px',
-            borderRadius: '12px',
-            fontSize: '14px',
-            border: 'none',
-            cursor: canSend ? 'pointer' : 'not-allowed',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontWeight: 600,
-          }}
+          onClick={sendMessage}
+          className="h-14 px-6 rounded-[14px] inline-flex items-center gap-2 font-medium"
+          style={{ background: '#C6A15B', color: '#0B0B0C', opacity: canSend ? 1 : 0.6 }}
         >
-          <Send className="w-4 h-4" />
-          {sending ? 'Sending…' : 'Send'}
+          <SendHorizontal className="w-4 h-4" />
+          Send
         </button>
       </div>
-      <p style={{ color: 'rgba(161,161,170,0.5)', fontSize: '12px' }}>
-        Press Enter to send · Cmd+Enter also works
-      </p>
+
+      {error ? (
+        <div className="mt-4 text-sm" style={{ color: '#EF4444' }}>
+          {error}
+        </div>
+      ) : null}
     </div>
   );
 }
