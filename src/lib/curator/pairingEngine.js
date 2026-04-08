@@ -294,6 +294,7 @@ function getCigarPairingType(cigar) {
 }
 
 
+const MS_PER_DAY             = 86_400_000; // milliseconds in one day
 const BOTTLE_REUSE_PENALTY   = 3;          // score penalty per additional use of the same bottle
 const BOTTLE_REUSE_HARD_CAP  = 2;          // a single bottle can appear in at most this many pairings
 const MAX_BOTTLES_TO_SCORE   = 20;         // widen search window for diversity
