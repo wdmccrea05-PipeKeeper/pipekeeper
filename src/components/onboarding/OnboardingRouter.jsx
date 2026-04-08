@@ -148,7 +148,7 @@ export default function OnboardingRouter() {
       setActiveFlow('pipe');
     }
     // Both complete → nothing to show
-  }, [userLoading, modulesLoading, user, hasPipe, hasWhiskey]);
+  }, [userLoading, modulesLoading, user, hasPipe, hasWhiskey, activeFlow]);
 
   // ── Dismiss helpers ─────────────────────────────────────────────────────────
 

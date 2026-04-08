@@ -323,8 +323,6 @@ function StepCuratorIntro() {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-const TOTAL_STEPS = 5; // 0-indexed steps displayed (step 1 / collection add is handled inline)
-
 export default function WhiskeyKeeperOnboarding({ onComplete, onSkip }) {
   const [step, setStep] = useState(0);
   const [prefs, setPrefs] = useState({
@@ -335,7 +333,6 @@ export default function WhiskeyKeeperOnboarding({ onComplete, onSkip }) {
   const [saving, setSaving] = useState(false);
   const { user } = useCurrentUser();
 
-  // Steps: 0=welcome, 1=collection, 2=prefs, 3=value preview, 4=curator intro
   const STEPS = [
     { key: 'welcome',     label: 'Welcome',     skipLabel: null },
     { key: 'collection',  label: 'Collection',  skipLabel: 'Skip' },
@@ -349,7 +346,10 @@ export default function WhiskeyKeeperOnboarding({ onComplete, onSkip }) {
 
   async function savePrefsToProfile() {
     if (!user?.email) return;
-    if (!prefs.preferred_whiskey_types.length && !prefs.flavor_preferences.length && !prefs.experience_level) return;
+    if (!prefs.preferred_whiskey_types.length && !prefs.flavor_preferences.length && !prefs.experience_level) {
+      // Nothing to save — user skipped all preference fields
+      return;
+    }
 
     try {
       setSaving(true);
