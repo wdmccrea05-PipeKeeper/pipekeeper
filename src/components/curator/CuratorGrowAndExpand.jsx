@@ -31,6 +31,7 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
   // Why it fits — max 3 sentences
   const whyFit = (() => {
     const raw = suggestion.whyFit || suggestion.summary || '';
+    if (!raw) return '';
     const sentences = raw.match(/[^.!?]+[.!?]+/g) || [raw];
     return sentences.slice(0, 3).join(' ').trim();
   })();

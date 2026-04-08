@@ -76,6 +76,14 @@ function DuoItem({ item }) {
   );
 }
 
+function getConfidenceStyle(confidenceLabel) {
+  const key = (confidenceLabel || '').toLowerCase();
+  if (key in CONFIDENCE_STYLES) return CONFIDENCE_STYLES[key];
+  if (key.includes('high'))   return CONFIDENCE_STYLES.high;
+  if (key.includes('med'))    return CONFIDENCE_STYLES.medium;
+  return CONFIDENCE_STYLES.experimental;
+}
+
 function SectionRow({ label, value }) {
   if (!value || value === 'N/A — cigar pairing' || value === 'N/A') return null;
   return (
@@ -103,8 +111,7 @@ export default function CuratorPairingResults({ items = [], onAction }) {
         const hasTrio = isPipe && pairing.blendBridge;
 
         // Confidence badge
-        const confKey  = pairing.confidenceLabel?.toLowerCase() || '';
-        const confStyle = CONFIDENCE_STYLES[confKey] || (confKey.includes('high') ? CONFIDENCE_STYLES.high : confKey.includes('med') ? CONFIDENCE_STYLES.medium : CONFIDENCE_STYLES.experimental);
+        const confStyle = getConfidenceStyle(pairing.confidenceLabel);
 
         // Pairing type badge
         const ptKey   = (pairing.pairingType || '').toLowerCase();

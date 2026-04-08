@@ -262,10 +262,11 @@ function EmptyState() {
 export default function CuratorPurchaseQueue({ sections = [], onAction, userEmail }) {
   const queueGroups = useMemo(() => buildQueueGroups(sections), [sections]);
 
-  // Stats from rendered grouped arrays
-  const restockItems  = useMemo(() => (queueGroups.find((g) => g.id === 'restock')?.recommendations  || []).flatMap((r) => r.items || []), [queueGroups]);
-  const wishlistItems = useMemo(() => (queueGroups.find((g) => g.id === 'wishlist')?.recommendations || []).flatMap((r) => r.items || []), [queueGroups]);
-  const gapFillItems  = useMemo(() => (queueGroups.find((g) => g.id === 'gap_fill')?.recommendations || []).flatMap((r) => r.items || []), [queueGroups]);
+  // Stats from rendered grouped arrays — computed in a single pass
+  const { restockItems, wishlistItems, gapFillItems } = useMemo(() => {
+    const find = (id) => (queueGroups.find((g) => g.id === id)?.recommendations || []).flatMap((r) => r.items || []);
+    return { restockItems: find('restock'), wishlistItems: find('wishlist'), gapFillItems: find('gap_fill') };
+  }, [queueGroups]);
 
   return (
     <div className="space-y-5">

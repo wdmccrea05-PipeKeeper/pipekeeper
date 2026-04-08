@@ -202,10 +202,11 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
       }
     }
 
+    // Wait for DB writes to settle before re-running analysis so fresh data is reflected
+    const DB_SETTLE_DELAY_MS = 800;
     if (['apply_fix', 'approve_changes', 'apply_specialization'].includes(actionKey) && result?.applied > 0) {
       queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
-      // Schedule re-analysis after DB writes settle
-      setTimeout(() => runAnalysis(), 800);
+      setTimeout(() => runAnalysis(), DB_SETTLE_DELAY_MS);
     }
     if (actionKey === 'add_to_shopping_list') {
       queryClient.invalidateQueries({ queryKey: ['shoppingListItems'] });
