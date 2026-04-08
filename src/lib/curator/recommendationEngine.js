@@ -237,6 +237,8 @@ function analyzeMetadata(context) {
     const nameStr       = (bottle.name        || '').toLowerCase();
     const searchStr     = distilleryStr || nameStr;
 
+    if (!searchStr) return { payload: null, confidence: 0 };
+
     for (const [key, data] of Object.entries(KNOWN_DISTILLERIES)) {
       const keyLower = key.toLowerCase();
       if (searchStr.includes(keyLower) || keyLower.includes(searchStr.replace(/\s+\d+.*$/, ''))) {

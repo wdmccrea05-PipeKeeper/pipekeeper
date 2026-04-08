@@ -481,11 +481,13 @@ export function generatePurchaseRestockRecommendations(context = {}) {
   ];
 
   // Build explicit queue groups for consumers that want structured access
-  recommendations._queueGroups = {
-    restockNow:    recommendations.filter((r) => r.queueType === 'restock_now'),
-    wishlistReady: recommendations.filter((r) => r.queueType === 'wishlist_ready'),
-    gapFillBuys:   recommendations.filter((r) => r.queueType === 'gap_fill'),
-  };
+  const queueGroups = { restockNow: [], wishlistReady: [], gapFillBuys: [] };
+  for (const r of recommendations) {
+    if (r.queueType === 'restock_now')    queueGroups.restockNow.push(r);
+    else if (r.queueType === 'wishlist_ready') queueGroups.wishlistReady.push(r);
+    else if (r.queueType === 'gap_fill')  queueGroups.gapFillBuys.push(r);
+  }
+  recommendations._queueGroups = queueGroups;
 
   return recommendations;
 }
