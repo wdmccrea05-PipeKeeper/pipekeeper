@@ -23,9 +23,7 @@ import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import BrandLogo from '@/components/branding/BrandLogo';
 import CatalogPlate from '@/components/home/CatalogPlate';
-import { getPipeValue, getBottleValue } from '@/components/keeper-core/value/valueAggregation';
-import { calculateTobaccoCollectionValue, calculateTotalOzFromBlend } from '@/components/utils/tobaccoQuantityHelpers';
-import { getAvailableQuantity } from '@/platform/cigarInventory';
+import { getPipeValue } from '@/components/keeper-core/value/valueAggregation';
 import { buildUnifiedActivityFeed } from '@/components/utils/activityNormalizer';
 import CollectionStoryCard from '@/components/hub/CollectionStoryCard';
 import CombinedSessionModal from '@/components/session/CombinedSessionModal';
@@ -37,6 +35,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { safeUpdate } from '@/components/utils/safeUpdate';
 import QuickActions from '@/components/home/QuickActions';
 import OnboardingRouter from '@/components/onboarding/OnboardingRouter';
+import {
+  selectWhiskeyMetrics,
+  getBottleUnitValue as getBottleValue,
+} from '@/lib/collection/whiskeySelectors';
+import { selectTotalSticks } from '@/lib/collection/cigarSelectors';
+import { selectCellarValue as calculateTobaccoCollectionValue } from '@/lib/collection/tobaccoSelectors';
+import { selectPipeCollectionValue } from '@/lib/collection/pipeSelectors';
 
 
 const safe = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
@@ -308,7 +313,7 @@ export default function CollectionHub() {
     enabled: !!user?.email,
     staleTime: 2 * 60 * 1000,
     queryFn: async () => {
-      const [pipes, blends, smokeLogs, bottles, tastings, cigars, cigarSessions] = await Promise.all([
+      const [pipes, blends, smokeLogs, bottles, tastings, cigars, cigarSessions, whiskeyInventory] = await Promise.all([
         pipekeeperOpenable
           ? base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
           : Promise.resolve([]),
@@ -330,9 +335,12 @@ export default function CollectionHub() {
         cigarOpenable
           ? base44.entities.CigarSession.filter({ created_by: user.email }, '-date', 250).catch(() => [])
           : Promise.resolve([]),
+        whiskeyOpenable
+          ? base44.entities.WhiskeyInventoryUnit.filter({ created_by: user.email }).catch(() => [])
+          : Promise.resolve([]),
       ]);
 
-      return { pipes, blends, smokeLogs, bottles, tastings, cigars, cigarSessions };
+      return { pipes, blends, smokeLogs, bottles, tastings, cigars, cigarSessions, whiskeyInventory };
     },
   });
 
@@ -343,16 +351,23 @@ export default function CollectionHub() {
   const tastings = whiskeyOpenable ? data?.tastings || [] : [];
   const cigars = cigarOpenable ? data?.cigars || [] : [];
   const cigarSessions = cigarOpenable ? data?.cigarSessions || [] : [];
+  const whiskeyInventory = whiskeyOpenable ? data?.whiskeyInventory || [] : [];
+
+  // Canonical whiskey metrics via shared selector layer
+  const whiskeyMetrics = useMemo(
+    () => selectWhiskeyMetrics(bottles, whiskeyInventory, tastings),
+    [bottles, whiskeyInventory, tastings]
+  );
 
   const metrics = useMemo(() => {
     const pipeValue = pipekeeperOpenable
-      ? pipes.reduce((sum, p) => sum + safe(getPipeValue(p)), 0)
+      ? selectPipeCollectionValue(pipes)
       : 0;
     const tobaccoValue = pipekeeperOpenable
       ? calculateTobaccoCollectionValue(blends)
       : 0;
     const whiskeyValue = whiskeyOpenable
-      ? bottles.reduce((sum, b) => sum + safe(getBottleValue(b)), 0)
+      ? whiskeyMetrics.collection_value
       : 0;
 
     const totalValue = pipeValue + tobaccoValue + whiskeyValue;
@@ -422,14 +437,17 @@ export default function CollectionHub() {
 
     const recentActivity = buildUnifiedActivityFeed(smokeLogs, tastings, cigarSessions, { limit: 5 });
 
-    // Cigar sticks: sum singles_equivalent ?? quantity per record (canonical inventory math)
-    const totalCigarSticks = cigars.reduce((sum, c) => sum + getAvailableQuantity(c), 0);
+    // Cigar sticks: canonical selector (single-stick equivalents)
+    const totalCigarSticks = selectTotalSticks(cigars);
 
-    // Blend quantity: sum tin + bulk + pouch oz per blend record
-    const totalBlendOz = blends.reduce((sum, b) => sum + calculateTotalOzFromBlend(b), 0);
+    // Blend quantity: canonical selector (sum all container types)
+    const totalBlendOz = blends.reduce((sum, b) => {
+      const n = (v) => { const x = Number(v); return Number.isFinite(x) ? x : 0; };
+      return sum + n(b.tin_total_quantity_oz) + n(b.bulk_total_quantity_oz) + n(b.pouch_total_quantity_oz);
+    }, 0);
 
-    // Bottle count: bottle_count field (defaults to 1 per record)
-    const totalBottleCount = bottles.reduce((sum, b) => sum + (Number(b.bottle_count) || 1), 0);
+    // Bottle count: via canonical whiskey selector (uses inventory units when available)
+    const totalBottleCount = whiskeyMetrics.total_bottles;
 
     return {
       totalValue,
@@ -447,7 +465,7 @@ export default function CollectionHub() {
       totalBlendOz,
       totalBottleCount,
     };
-  }, [pipes, blends, bottles, smokeLogs, tastings, cigars, cigarSessions, pipekeeperOpenable, whiskeyOpenable, cigarOpenable]);
+  }, [pipes, blends, bottles, whiskeyInventory, smokeLogs, tastings, cigars, cigarSessions, pipekeeperOpenable, whiskeyOpenable, cigarOpenable, whiskeyMetrics]);
 
   const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route && k !== 'winekeeper');
   const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route && k !== 'winekeeper');
@@ -461,9 +479,9 @@ export default function CollectionHub() {
   ];
 
   const whiskeyStats = [
-    { label: t('hub.bottleTypes'), value: isLoading ? '—' : bottles.length },
-    { label: t('hub.totalBottles'), value: isLoading ? '—' : metrics.totalBottleCount },
-    { label: t('whiskey.collectionValue', 'Est. value'), value: currency(bottles.reduce((s, b) => s + safe(getBottleValue(b)), 0)) },
+    { label: t('hub.bottleTypes'), value: isLoading ? '—' : whiskeyMetrics.bottle_types },
+    { label: t('hub.totalBottles'), value: isLoading ? '—' : whiskeyMetrics.total_bottles },
+    { label: t('whiskey.collectionValue', 'Est. value'), value: isLoading ? '—' : currency(whiskeyMetrics.collection_value) },
   ];
 
   const cigarStats = [
@@ -558,8 +576,8 @@ export default function CollectionHub() {
             <StatCard
               icon={WhiskeyKeeperIcon}
               label={t('hub.whiskey')}
-              value={isLoading ? '—' : bottles.length}
-              sub={isLoading ? '' : `${metrics.totalBottleCount} ${t('hub.bottlesOwnedLabel')}`}
+              value={isLoading ? '—' : whiskeyMetrics.bottle_types}
+              sub={isLoading ? '' : `${whiskeyMetrics.total_bottles} ${t('hub.bottlesOwnedLabel')}`}
               accent="#B66565"
             />
           ) : null}

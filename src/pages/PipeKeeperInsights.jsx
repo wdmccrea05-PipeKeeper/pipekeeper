@@ -11,6 +11,8 @@ import {
   TOBACCO_RECOMMENDATION_LABELS,
 } from '@/components/valuation/valueEngine';
 import { formatCurrency } from '@/components/utils/localeFormatters';
+import { selectPipeCollectionValue, selectTotalQuantityOz as _selectTobaccoOz } from '@/lib/collection';
+import { selectCellarValue } from '@/lib/collection/tobaccoSelectors';
 import {
   TrendingUp,
   Award,
@@ -189,18 +191,18 @@ export default function PipeKeeperInsights() {
     enabled: !!user?.email,
   });
 
-  // Pipe analytics
+  // Pipe analytics — value via canonical selector
   const totalPipeValue = useMemo(
-    () => pipes.reduce((sum, p) => sum + computeCurrentValue(p, 'pipekeeper'), 0),
+    () => selectPipeCollectionValue(pipes),
     [pipes]
   );
   const mostValuablePipes = useMemo(() => getMostValuablePipes(pipes, 5), [pipes]);
   const rarestPipes = useMemo(() => getRarestPipes(pipes, 5), [pipes]);
   const underutilizedPipes = useMemo(() => getUnderutilizedHighValuePipes(pipes, 5), [pipes]);
 
-  // Tobacco analytics
+  // Tobacco analytics — value and oz via canonical selectors
   const totalCellarValue = useMemo(
-    () => blends.reduce((sum, b) => sum + computeCurrentValue(b, 'pipekeeper'), 0),
+    () => selectCellarValue(blends),
     [blends]
   );
   const mostValuableTobaccos = useMemo(() => getMostValuableTobaccos(blends, 5), [blends]);
@@ -209,15 +211,7 @@ export default function PipeKeeperInsights() {
   const cellarCandidates = useMemo(() => getCellarCandidates(blends, 5), [blends]);
   const smokeNowCandidates = useMemo(() => getSmokeNowCandidates(blends, 5), [blends]);
 
-  const totalOz = useMemo(() =>
-    blends.reduce((sum, b) =>
-      sum +
-      (Number(b.tin_total_quantity_oz) || 0) +
-      (Number(b.bulk_total_quantity_oz) || 0) +
-      (Number(b.pouch_total_quantity_oz) || 0),
-    0),
-    [blends]
-  );
+  const totalOz = useMemo(() => _selectTobaccoOz(blends), [blends]);
 
   const TABS = [
     { key: 'pipes', label: 'Pipes' },
