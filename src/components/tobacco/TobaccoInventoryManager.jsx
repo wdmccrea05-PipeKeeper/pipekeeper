@@ -212,7 +212,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
       <div className="flex items-end gap-3 p-3 rounded-xl" style={{ background: "rgba(180,140,75,0.07)", border: "1px solid rgba(180,140,75,0.18)" }}>
         <div className="flex-1 space-y-1">
           <Label className="text-xs text-[#D4A574] font-semibold uppercase tracking-wide">
-            {t("inventory.sharedCellaredDate") || "Shared Cellared Date"}
+            Shared Cellared Date
           </Label>
           <Input
             type="date"
@@ -222,7 +222,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
           />
         </div>
         <p className="text-xs text-[#E0D8C8]/50 pb-1 max-w-[140px]">
-          {t("inventory.sharedDateHint") || "Sets date for all tabs"}
+          Sets date for all tabs
         </p>
       </div>
 
