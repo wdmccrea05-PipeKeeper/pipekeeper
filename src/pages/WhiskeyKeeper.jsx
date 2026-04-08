@@ -88,7 +88,7 @@ function WhiskeyKeeperInner() {
   ];
 
   return (
-    <div className="space-y-8 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+    <div className="space-y-8">
       <AddFlowModal
         open={showAddModal}
         onClose={() => setShowAddModal(false)}
