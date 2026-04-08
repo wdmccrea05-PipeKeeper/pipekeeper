@@ -1,169 +1,136 @@
-/**
- * CuratorPairingsTab — Surface 4
- */
+import React, { useMemo, useState, useEffect } from 'react';
+import CuratorPairingResults from '@/components/curator/CuratorPairingResults';
 
-import React, { useState } from 'react';
-import { ArrowLeftRight, RefreshCw, HelpCircle } from 'lucide-react';
-import CuratorPairingResults from './CuratorPairingResults';
-
-const MAX_PAIRINGS_PER_TAB = 3;
-
-const PAIRING_TABS = [
-  {
-    key:   'expert',
-    label: 'Expert Pairing',
-    goals: ['pipe_whiskey_pairing', 'cigar_whiskey_pairing'],
-    hint:  'Primary pairings based on your collection',
-  },
-  {
-    key:   'favorites',
-    label: 'Old Favorites',
-    goals: ['old_favorites_pairing'],
-    hint:  'Your most-smoked blends with the best whiskey match',
-  },
-  {
-    key:   'rediscover',
-    label: 'Rediscover',
-    goals: ['rediscover_pairing'],
-    hint:  'Cellar blends waiting to be revisited',
-  },
-  {
-    key:   'new',
-    label: 'Something New',
-    goals: ['something_new_pairing'],
-    hint:  "Expand your palate — blends you haven't explored yet",
-  },
+const SUB_TABS = [
+  { key: 'expert', label: 'Expert Pairing', empty: 'No expert pairings yet.' },
+  { key: 'old_favorites', label: 'Old Favorites', empty: 'No old favorites pairings yet.' },
+  { key: 'rediscover', label: 'Rediscover', empty: 'No rediscover pairings yet.' },
+  { key: 'something_new', label: 'Something New', empty: 'No something new pairings yet.' },
 ];
 
-function EmptyState({ tab }) {
-  const messages = {
-    expert:    'No expert pairings yet. Pairings require pipes with sessions and whiskey bottles.',
-    favorites: 'Log sessions to build your favorites — your most-smoked blends will appear here.',
-    rediscover:'No blends waiting to be rediscovered. Keep smoking and logging sessions.',
-    new:       'No new blend discoveries available. Add more blends to your collection.',
+function normalizeKey(value) {
+  return String(value || '').trim().toLowerCase().replace(/\s+/g, '_');
+}
+
+function groupPairings(pairings = []) {
+  const grouped = {
+    expert: [],
+    old_favorites: [],
+    rediscover: [],
+    something_new: [],
   };
+
+  for (const pairing of pairings) {
+    const key = normalizeKey(pairing?.subTab || pairing?.tab || pairing?.group);
+    if (grouped[key]) {
+      grouped[key].push(pairing);
+    }
+  }
+
+  return grouped;
+}
+
+function SubTab({ active, label, onClick }) {
   return (
-    <div className="py-12 text-center space-y-3">
-      <ArrowLeftRight className="w-8 h-8 mx-auto" style={{ color: 'rgba(180,140,75,0.3)' }} />
-      <p className="text-xs max-w-xs mx-auto" style={{ color: 'rgba(224,216,200,0.4)' }}>
-        {messages[tab] || 'No pairings found for this category.'}
-      </p>
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className="h-12 px-5 rounded-full text-[16px] font-medium"
+      style={{
+        background: active ? '#C6A15B' : 'transparent',
+        color: active ? '#0B0B0C' : '#D8D0C2',
+        border: active ? '1px solid #C6A15B' : '1px solid rgba(255,255,255,0.10)',
+      }}
+    >
+      {label}
+    </button>
   );
 }
 
-/**
- * @param {object}   props
- * @param {object[]} props.pairingRecs    - Array of pairing recommendation objects
- * @param {Function} props.onAction       - (actionKey, pairing) => void
- * @param {Function} [props.onRefresh]    - () => void
- * @param {Function} [props.onAskCurator] - () => void
- */
-export default function CuratorPairingsTab({ pairingRecs = [], onAction, onRefresh, onAskCurator }) {
+export default function CuratorPairingsTab({
+  pairings = [],
+  onAction,
+  onRefresh,
+  isRefreshing = false,
+}) {
+  const grouped = useMemo(() => groupPairings(pairings), [pairings]);
   const [activeTab, setActiveTab] = useState('expert');
 
-  const goalItemsMap = {};
-  for (const rec of pairingRecs) {
-    if (!goalItemsMap[rec.goal]) goalItemsMap[rec.goal] = [];
-    goalItemsMap[rec.goal].push(...(rec.items || []));
-  }
+  useEffect(() => {
+    const hasActiveData = grouped[activeTab]?.length > 0;
+    if (hasActiveData) return;
 
-  const activeDef   = PAIRING_TABS.find((t) => t.key === activeTab) || PAIRING_TABS[0];
-  const activeItems = activeDef.goals.flatMap((g) => goalItemsMap[g] || []).slice(0, MAX_PAIRINGS_PER_TAB);
+    const firstNonEmpty = SUB_TABS.find((tab) => (grouped[tab.key] || []).length > 0);
+    if (firstNonEmpty) {
+      setActiveTab(firstNonEmpty.key);
+    }
+  }, [activeTab, grouped]);
 
-  const getTabCount = (tabDef) => Math.min(
-    tabDef.goals.reduce((s, g) => s + (goalItemsMap[g]?.length || 0), 0),
-    MAX_PAIRINGS_PER_TAB
-  );
+  const activePairings = grouped[activeTab] || [];
+  const activeTabMeta = SUB_TABS.find((tab) => tab.key === activeTab) || SUB_TABS[0];
 
   return (
-    <div className="space-y-4">
-      {/* Title + actions */}
-      <div className="flex items-start justify-between gap-3">
+    <div className="space-y-8">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, margin: 0 }}>
+          <h2 className="text-[20px] font-semibold mb-2" style={{ color: '#F5F5F7' }}>
             Pairings
           </h2>
-          <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>
-            Pipe &amp; whiskey, cigar &amp; whiskey — based on your collection
+          <p className="text-[16px]" style={{ color: '#A1A1AA' }}>
+            Pipe & whiskey, cigar & whiskey — based on your collection
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {onAskCurator && (
-            <button
-              type="button"
-              onClick={onAskCurator}
-              className="inline-flex items-center gap-2 font-semibold transition-all"
-              style={{ background: 'transparent', color: '#F5F5F7', border: '1px solid rgba(255,255,255,0.1)', fontSize: '13px', padding: '6px 14px', borderRadius: '12px' }}
-            >
-              <HelpCircle className="w-3.5 h-3.5" />
-              Ask Curator
-            </button>
-          )}
-          {onRefresh && (
-            <button
-              type="button"
-              onClick={onRefresh}
-              className="inline-flex items-center gap-2 transition-all"
-              style={{ background: 'transparent', color: '#A1A1AA', border: '1px solid rgba(255,255,255,0.1)', fontSize: '13px', padding: '6px 14px', borderRadius: '12px' }}
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
-          )}
+
+        <button
+          type="button"
+          onClick={() => onRefresh?.()}
+          disabled={isRefreshing}
+          className="h-12 w-12 rounded-[14px] inline-flex items-center justify-center"
+          style={{
+            border: '1px solid rgba(255,255,255,0.10)',
+            color: '#D8D0C2',
+            opacity: isRefreshing ? 0.6 : 1,
+          }}
+        >
+          ⟳
+        </button>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        {SUB_TABS.map((tab) => (
+          <SubTab
+            key={tab.key}
+            label={tab.label}
+            active={activeTab === tab.key}
+            onClick={() => setActiveTab(tab.key)}
+          />
+        ))}
+      </div>
+
+      <div className="text-[15px]" style={{ color: '#7F7F8A' }}>
+        Primary pairings based on your collection
+      </div>
+
+      {isRefreshing ? (
+        <div className="py-16 text-center">
+          <div className="text-[18px]" style={{ color: '#A1A1AA' }}>
+            Loading pairings…
+          </div>
         </div>
-      </div>
-
-      {/* Sub-tabs */}
-      <div className="flex gap-2 overflow-x-auto" style={{ padding: '4px 0' }}>
-        {PAIRING_TABS.map((tab) => {
-          const isActive = activeTab === tab.key;
-          const count    = getTabCount(tab);
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setActiveTab(tab.key)}
-              className="inline-flex items-center gap-2 font-semibold transition-all whitespace-nowrap shrink-0"
-              style={{
-                fontSize: '13px',
-                padding: '6px 16px',
-                borderRadius: '999px',
-                height: '36px',
-                ...(isActive
-                  ? { background: '#C6A15B', color: '#0B0B0C', border: 'none' }
-                  : { background: 'transparent', color: '#A1A1AA', border: '1px solid rgba(255,255,255,0.1)' })
-              }}
-            >
-              <span>{tab.label}</span>
-              {count > 0 && (
-                <span
-                  style={{
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    background: isActive ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.08)',
-                    color: isActive ? '#0B0B0C' : '#A1A1AA',
-                    padding: '1px 7px',
-                    borderRadius: '999px',
-                  }}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Tab hint */}
-      <p style={{ color: '#71717A', fontSize: '13px', lineHeight: 1.6 }}>
-        {activeDef.hint}
-      </p>
-
-      {/* Tab content */}
-      {activeItems.length === 0 ? (
-        <EmptyState tab={activeTab} />
+      ) : activePairings.length > 0 ? (
+        <CuratorPairingResults pairings={activePairings} onAction={onAction} />
       ) : (
-        <CuratorPairingResults items={activeItems} onAction={onAction} />
+        <div className="py-20 text-center">
+          <div className="text-[42px] mb-4" style={{ color: 'rgba(198,161,91,0.45)' }}>
+            ⇄
+          </div>
+          <div className="text-[18px] mb-2" style={{ color: '#A1A1AA' }}>
+            {activeTabMeta.empty}
+          </div>
+          <div className="text-[15px]" style={{ color: '#6F6F78' }}>
+            Pairings require owned pipes, tobacco, and whiskey data.
+          </div>
+        </div>
       )}
     </div>
   );
