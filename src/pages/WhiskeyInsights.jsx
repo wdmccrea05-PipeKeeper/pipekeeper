@@ -265,6 +265,29 @@ export default function WhiskeyInsightsPage() {
 
 
 
+  if (!user?.email) {
+    return null;
+  }
+
+  if (bottles.length === 0 && tastingLogs.length === 0 && inventoryUnits.length === 0) {
+    return (
+      <div
+        className="rounded-[24px] p-12 text-center"
+        style={{
+          background: 'linear-gradient(145deg, rgba(38,22,12,0.65) 0%, rgba(25,15,10,0.9) 100%)',
+          border: '1px solid rgba(140,105,65,0.18)',
+        }}
+      >
+        <div className="text-[20px] font-semibold mb-3" style={{ color: '#F5F5F7' }}>
+          No insights yet
+        </div>
+        <div className="text-[16px]" style={{ color: '#A1A1AA' }}>
+          Add bottles or tastings to your collection to see insights.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <LockedModuleGuard moduleKey="whiskeykeeper">
     <div className="space-y-6">
@@ -290,7 +313,6 @@ export default function WhiskeyInsightsPage() {
         </p>
       </div>
 
-      {bottles.length > 0 ? (
         <div className="space-y-8">
           {/* Tab Navigation */}
           <div className="flex gap-2 flex-wrap" style={{ borderBottom: '1px solid rgba(180,140,75,0.2)' }}>
@@ -809,23 +831,6 @@ export default function WhiskeyInsightsPage() {
             </div>
           )}
         </div>
-      ) : (
-        <div
-          className="rounded-2xl p-12 text-center"
-          style={{
-            background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.3), rgba(31, 21, 16, 0.3))',
-            border: '1px solid rgba(180, 140, 75, 0.15)',
-          }}
-        >
-          <TrendingUp className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(180,140,75,0.5)' }} />
-          <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">
-            {t('whiskeykeeper.noInsights', 'No insights yet')}
-          </h2>
-          <p style={{ color: 'rgba(224,216,200,0.6)' }}>
-            {t('whiskeykeeper.addBottlesForInsights', 'Add bottles to your collection to see insights')}
-          </p>
-        </div>
-      )}
     </div>
     </LockedModuleGuard>
   );
