@@ -1,136 +1,126 @@
-/**
- * Curator Page
- *
- * New Curator — collection intelligence workflow.
- *
- * Loads all collection data, then renders CuratorWorkspace which
- * drives quick actions → structured grouped recommendations.
- */
-
-import React, { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { useCurrentUser } from '@/components/hooks/useCurrentUser';
-import { useEnabledModules } from '@/components/hooks/useEnabledModules';
+import React, { useCallback, useMemo, useState } from 'react';
 import CuratorWorkspace from '@/components/curator/CuratorWorkspace';
 
-export default function Curator() {
-  const { user } = useCurrentUser();
-  const { enabledModuleKeys = [] } = useEnabledModules() || {};
-  const email = user?.email || null;
+const SURFACES = [
+  { key: 'record_optimization', label: 'Record Optimization' },
+  { key: 'collection_optimization', label: 'Collection Optimization' },
+  { key: 'purchase_restock', label: 'Purchase & Restock' },
+  { key: 'pairings', label: 'Pairings' },
+  { key: 'grow_expand', label: 'Grow & Expand' },
+  { key: 'chat', label: 'Chat' },
+];
 
-  const cigarModuleActive = enabledModuleKeys.includes('cigarkeeper');
+function SurfaceTab({ active, label, badge, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="h-[58px] px-7 rounded-[18px] inline-flex items-center gap-3 text-[16px] font-medium transition"
+      style={{
+        background: active ? 'rgba(198,161,91,0.18)' : 'transparent',
+        color: active ? '#F5F5F7' : '#B7AA95',
+        border: active ? '1px solid rgba(198,161,91,0.35)' : '1px solid transparent',
+      }}
+    >
+      <span>{label}</span>
+      {typeof badge === 'number' && badge > 0 ? (
+        <span
+          className="min-w-[24px] h-[24px] px-2 rounded-full text-[12px] inline-flex items-center justify-center"
+          style={{
+            background: 'rgba(154,67,67,0.45)',
+            color: '#F3C7C7',
+            border: '1px solid rgba(154,67,67,0.28)',
+          }}
+        >
+          {badge}
+        </span>
+      ) : null}
+    </button>
+  );
+}
 
-  // ─── Fetch all collection data ──────────────────────────────────────────────
-
-  const { data: pipes = [],        isLoading: loadingPipes }    = useQuery({
-    queryKey: ['curatorCollection', 'pipes', email],
-    enabled:  !!email,
-    staleTime: 60_000,
-    queryFn:  async () =>
-      base44.entities.Pipe.filter({ created_by: email }, '-updated_date', 500).catch(() => []),
+export default function CuratorPage() {
+  const [surface, setSurface] = useState('record_optimization');
+  const [surfaceBadges, setSurfaceBadges] = useState({
+    record_optimization: 0,
+    collection_optimization: 0,
+    purchase_restock: 0,
+    pairings: 0,
+    grow_expand: 0,
+    chat: 0,
   });
 
-  const { data: blends = [],       isLoading: loadingBlends }   = useQuery({
-    queryKey: ['curatorCollection', 'blends', email],
-    enabled:  !!email,
-    staleTime: 60_000,
-    queryFn:  async () =>
-      base44.entities.TobaccoBlend.filter({ created_by: email }, '-updated_date', 500).catch(() => []),
-  });
+  const handleCountsChange = useCallback((counts) => {
+    setSurfaceBadges((prev) => ({
+      ...prev,
+      ...counts,
+    }));
+  }, []);
 
-  const { data: bottles = [],      isLoading: loadingBottles }  = useQuery({
-    queryKey: ['curatorCollection', 'bottles', email],
-    enabled:  !!email && enabledModuleKeys.includes('whiskeykeeper'),
-    staleTime: 60_000,
-    queryFn:  async () =>
-      base44.entities.Bottle.filter({ created_by: email }, '-updated_date', 500).catch(() => []),
-  });
-
-  const { data: cigars = [],       isLoading: loadingCigars }   = useQuery({
-    queryKey: ['curatorCollection', 'cigars', email],
-    enabled:  !!email && cigarModuleActive,
-    staleTime: 60_000,
-    queryFn:  async () =>
-      base44.entities.Cigar.filter({ created_by: email }, '-updated_date', 500).catch(() => []),
-  });
-
-  const { data: smokingLogs = [],  isLoading: loadingLogs }     = useQuery({
-    queryKey: ['curatorCollection', 'smokingLogs', email],
-    enabled:  !!email,
-    staleTime: 60_000,
-    queryFn:  async () =>
-      base44.entities.SmokingLog.filter({ created_by: email }, '-date', 1000).catch(() => []),
-  });
-
-  const { data: tastingLogs = [],  isLoading: loadingTastings } = useQuery({
-    queryKey: ['curatorCollection', 'tastingLogs', email],
-    enabled:  !!email && enabledModuleKeys.includes('whiskeykeeper'),
-    staleTime: 60_000,
-    queryFn:  async () =>
-      base44.entities.TastingLog.filter({ created_by: email }, '-tasting_date', 250).catch(() => []),
-  });
-
-  const { data: cigarSessions = [], isLoading: loadingCigarSessions } = useQuery({
-    queryKey: ['curatorCollection', 'cigarSessions', email],
-    enabled:  !!email && cigarModuleActive,
-    staleTime: 60_000,
-    queryFn:  async () =>
-      base44.entities.CigarSession.filter({ created_by: email }, '-date', 250).catch(() => []),
-  });
-
-  const { data: wantListItems = [], isLoading: loadingWantList } = useQuery({
-    queryKey: ['curatorCollection', 'wantList', email],
-    enabled:  !!email,
-    staleTime: 60_000,
-    queryFn:  async () =>
-      base44.entities.AcquisitionItem.filter({ created_by: email }, '-created_date', 500).catch(() => []),
-  });
-
-  // ─── Loading state ───────────────────────────────────────────────────────────
-
-  const isLoading =
-    loadingPipes || loadingBlends || loadingBottles || loadingCigars ||
-    loadingLogs || loadingTastings || loadingCigarSessions || loadingWantList;
-
-  // ─── Collection context for engine ──────────────────────────────────────────
-
-  const collectionContext = useMemo(() => ({
-    pipes,
-    blends,
-    bottles,
-    cigars,
-    smokingLogs,
-    tastingLogs,
-    cigarSessions,
-    wantListItems,
-    cigarModuleActive,
-  }), [pipes, blends, bottles, cigars, smokingLogs, tastingLogs, cigarSessions, wantListItems, cigarModuleActive]);
-
-  // ─── Render ──────────────────────────────────────────────────────────────────
+  const pageKey = useMemo(
+    () => `${surface}:${Object.values(surfaceBadges).join('-')}`,
+    [surface, surfaceBadges]
+  );
 
   return (
-    <div className="px-4 py-8 max-w-4xl mx-auto space-y-6">
-      {/* Page header */}
-      <div className="space-y-1">
-        <h1
-          className="font-bold tracking-tight"
-          style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", fontSize: 'var(--ck-text-2xl)' }}
-        >
-          Collection Curator
-        </h1>
-        <p
-          className="text-sm"
-          style={{ color: 'rgba(224,216,200,0.55)' }}
-        >
-          Operational intelligence across your collection — fix, optimize, pair, and grow.
-        </p>
-      </div>
+    <div className="min-h-screen" style={{ background: '#0B0B0C' }}>
+      <div className="max-w-[1440px] mx-auto px-10 py-10">
+        <header className="mb-8">
+          <h1
+            className="text-[32px] leading-none font-semibold mb-3"
+            style={{ color: '#F5F5F7', letterSpacing: '-0.5px' }}
+          >
+            Collection Curator
+          </h1>
+          <p
+            className="text-[18px] leading-8"
+            style={{ color: '#9C968C' }}
+          >
+            Operational intelligence across your collection — fix, optimize, pair, and grow.
+          </p>
+        </header>
 
-      <CuratorWorkspace
-        collectionContext={collectionContext}
-        isLoading={isLoading}
-      />
+        <div
+          className="rounded-[22px] p-3 mb-9"
+          style={{
+            background: 'linear-gradient(145deg, rgba(23,23,26,0.92) 0%, rgba(17,17,19,0.92) 100%)',
+            border: '1px solid rgba(140,105,65,0.16)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+          }}
+        >
+          <div className="flex flex-wrap gap-3">
+            {SURFACES.map((tab) => (
+              <SurfaceTab
+                key={tab.key}
+                label={tab.label}
+                badge={surfaceBadges[tab.key]}
+                active={surface === tab.key}
+                onClick={() => setSurface(tab.key)}
+              />
+            ))}
+          </div>
+
+          <div
+            className="h-[10px] rounded-full mt-3 overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.04)' }}
+          >
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{
+                width: `${((SURFACES.findIndex((s) => s.key === surface) + 1) / SURFACES.length) * 100}%`,
+                background: 'linear-gradient(90deg, rgba(198,161,91,0.65) 0%, rgba(198,161,91,0.35) 100%)',
+              }}
+            />
+          </div>
+        </div>
+
+        <CuratorWorkspace
+          key={pageKey}
+          activeSurface={surface}
+          onSurfaceChange={setSurface}
+          onCountsChange={handleCountsChange}
+        />
+      </div>
     </div>
   );
 }
