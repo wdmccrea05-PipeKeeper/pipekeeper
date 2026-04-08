@@ -56,10 +56,6 @@ export default function ExpertTobacconistChat({
   const initializeChat = async () => {
     try {
       setInitializing(true);
-      if (!user?.id) {
-        toast.error("Still loading your collection — please try again in a moment.");
-        return;
-      }
       if (!threadId) {
         const created = await base44.ai.createThread({ agent: "expert_tobacconist" });
         if (!created?.id) {
@@ -76,9 +72,12 @@ export default function ExpertTobacconistChat({
     }
   };
 
+  // Initialize chat thread when user becomes available.
+  // Using user?.id as dependency ensures we retry if user loaded asynchronously after mount.
   useEffect(() => {
-    initializeChat();
-  }, []);
+    if (user?.id) initializeChat();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const loadThread = async () => {
     if (!threadId) return;

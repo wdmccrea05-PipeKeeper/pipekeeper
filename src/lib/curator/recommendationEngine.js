@@ -64,41 +64,395 @@ const BLEND_TYPE_STRENGTH_INFERENCE = {
   'Balkan':            'Full',
 };
 
+// ─── Known tobacco blends catalog ────────────────────────────────────────────
+// Source: manufacturer data, tobaccoreviews.com, tobacco listings.
+// blend_type and strength derived from documented product specifications.
+
+const KNOWN_BLENDS = {
+  // Cornell & Diehl
+  'Autumn Evening':            { blend_type: 'Virginia/Perique', strength: 'Medium' },
+  'Billy Budd':                { blend_type: 'Virginia',          strength: 'Mild' },
+  'Blue Ridge':                { blend_type: 'Virginia',          strength: 'Mild' },
+  'Burley Flake #3':           { blend_type: 'Burley',            strength: 'Medium' },
+  'Crooner':                   { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Dark Star':                 { blend_type: 'Virginia/Perique',  strength: 'Medium-Full' },
+  'Jack Knife Plug':           { blend_type: 'Virginia',          strength: 'Medium' },
+  'Pegasus':                   { blend_type: 'Virginia/Perique',  strength: 'Medium' },
+  'Red Rapparee':              { blend_type: 'Burley',            strength: 'Medium-Full' },
+  'Renegade':                  { blend_type: 'Burley',            strength: 'Medium' },
+  'Star of the East':          { blend_type: 'Oriental',          strength: 'Medium' },
+  'Stoved Virginia Flake':     { blend_type: 'Virginia',          strength: 'Mild' },
+  'Tilted Tulip':              { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Warped Harvest':            { blend_type: 'Virginia/Burley',   strength: 'Medium' },
+  'Haunted Bookshop':          { blend_type: 'Virginia',          strength: 'Mild' },
+  'Bright Leaf Kentucky':      { blend_type: 'Virginia/Burley',   strength: 'Medium' },
+  'Pirate Kake':               { blend_type: 'Virginia',          strength: 'Mild' },
+  'Anniversary Kake':          { blend_type: 'Virginia/Perique',  strength: 'Medium' },
+
+  // G.L. Pease
+  'Abingdon':                  { blend_type: 'Virginia/Perique',  strength: 'Medium' },
+  'Cairo':                     { blend_type: 'English',           strength: 'Full' },
+  'Charing Cross':             { blend_type: 'English',           strength: 'Full' },
+  'Chelsea Morning':           { blend_type: 'Virginia',          strength: 'Mild' },
+  'Caravan':                   { blend_type: 'English',           strength: 'Medium-Full' },
+  'Fillmore':                  { blend_type: 'Virginia/Perique',  strength: 'Medium' },
+  'Gaslight':                  { blend_type: 'English',           strength: 'Medium' },
+  "Haddo's Delight":           { blend_type: 'Virginia/Perique',  strength: 'Medium' },
+  'Hammerhead':                { blend_type: 'Virginia/Burley',   strength: 'Medium-Full' },
+  'Hyde Park':                 { blend_type: 'Virginia',          strength: 'Mild' },
+  'Kensington':                { blend_type: 'English',           strength: 'Medium' },
+  'Lagonda':                   { blend_type: 'Virginia/Perique',  strength: 'Medium' },
+  'Meridian':                  { blend_type: 'Virginia',          strength: 'Medium' },
+  'Old London Street':         { blend_type: 'English',           strength: 'Full' },
+  'Samarra':                   { blend_type: 'English',           strength: 'Full' },
+  'Sixpence':                  { blend_type: 'Virginia',          strength: 'Mild' },
+  'Spotlight':                 { blend_type: 'Virginia',          strength: 'Mild' },
+  'Stonehenge Flake':          { blend_type: 'Virginia',          strength: 'Medium' },
+  'Symmetric':                 { blend_type: 'Virginia',          strength: 'Mild' },
+  'Telegraph Hill':            { blend_type: 'Virginia/Burley',   strength: 'Medium' },
+  'Triple Play':               { blend_type: 'Virginia',          strength: 'Medium' },
+  'Union Square':              { blend_type: 'Virginia',          strength: 'Mild' },
+  'Velvet Hammer':             { blend_type: 'Virginia/Perique',  strength: 'Medium-Full' },
+  'Westminster':               { blend_type: 'English/Balkan',    strength: 'Full' },
+  'Windjammer':                { blend_type: 'Virginia',          strength: 'Mild' },
+
+  // Samuel Gawith
+  'Best Brown Flake':          { blend_type: 'Virginia',          strength: 'Medium' },
+  'Black XX Flake':            { blend_type: 'Virginia',          strength: 'Medium-Full' },
+  "Bobby's Best Blend":        { blend_type: 'Virginia',          strength: 'Mild' },
+  'Ennerdale Flake':           { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Full Virginia Flake':       { blend_type: 'Virginia',          strength: 'Medium' },
+  'Grousemoor':                { blend_type: 'English',           strength: 'Medium-Full' },
+  'Kendal Cream Flake':        { blend_type: 'Virginia',          strength: 'Mild' },
+  'Kendal Dark Flake':         { blend_type: 'Virginia',          strength: 'Medium' },
+  'Kendal Flake':              { blend_type: 'Virginia',          strength: 'Medium' },
+  'Skiff Mixture':             { blend_type: 'English',           strength: 'Medium-Full' },
+  'Squadron Leader':           { blend_type: 'English',           strength: 'Medium-Full' },
+  'St. James Flake':           { blend_type: 'Virginia',          strength: 'Medium' },
+  'Super Saver':               { blend_type: 'Virginia',          strength: 'Medium' },
+  'Tom Buck':                  { blend_type: 'Virginia/Perique',  strength: 'Medium' },
+  'Bracken Flake':             { blend_type: 'Virginia',          strength: 'Medium' },
+  'Perfection':                { blend_type: 'Virginia',          strength: 'Medium' },
+
+  // Gawith Hoggarth
+  "Dark Bird's Eye":           { blend_type: 'Virginia',          strength: 'Medium-Full' },
+  "Light Bird's Eye":          { blend_type: 'Virginia',          strength: 'Medium' },
+  'Brown Twist':               { blend_type: 'Virginia',          strength: 'Medium-Full' },
+  'Curly Block':               { blend_type: 'Virginia',          strength: 'Medium-Full' },
+  'Dark Flake Unscented':      { blend_type: 'Virginia',          strength: 'Medium-Full' },
+  'Empire Mixture':            { blend_type: 'English',           strength: 'Full' },
+  'Golden Glow':               { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Kendal Cream':              { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Brown No. 4':               { blend_type: 'Virginia',          strength: 'Medium' },
+
+  // Dunhill (archived; data from documented manufacturer specs)
+  'Early Morning Pipe':        { blend_type: 'Virginia',          strength: 'Mild' },
+  'My Mixture 965':            { blend_type: 'English',           strength: 'Full' },
+  'Royal Yacht':               { blend_type: 'Virginia/Perique',  strength: 'Medium-Full' },
+  'Elizabethan Mixture':       { blend_type: 'English',           strength: 'Medium' },
+  'Aperitif':                  { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Nightcap':                  { blend_type: 'English',           strength: 'Full' },
+  'Standard Mixture':          { blend_type: 'English',           strength: 'Medium' },
+  'Three Year Matured Virginia': { blend_type: 'Virginia',        strength: 'Medium' },
+
+  // Esoterica (St. Bruno / Ashton Heritage)
+  'And So To Bed':             { blend_type: 'Virginia',          strength: 'Mild' },
+  'Dunbar':                    { blend_type: 'Virginia',          strength: 'Mild' },
+  'Margate':                   { blend_type: 'Virginia/Perique',  strength: 'Medium' },
+  'Penzance':                  { blend_type: 'English',           strength: 'Full' },
+  'Stonehaven':                { blend_type: 'English',           strength: 'Medium' },
+  'Tobago':                    { blend_type: 'Virginia',          strength: 'Mild' },
+
+  // Mac Baren
+  '7 Seas Aromatic':           { blend_type: 'Aromatic',          strength: 'Mild' },
+  '7 Seas Black':              { blend_type: 'Aromatic',          strength: 'Mild' },
+  '7 Seas Royal':              { blend_type: 'Aromatic',          strength: 'Medium' },
+  'Burley London Blend':       { blend_type: 'Virginia/Burley',   strength: 'Medium' },
+  'Cube Cut':                  { blend_type: 'Virginia',          strength: 'Medium' },
+  'Golden Extra':              { blend_type: 'Virginia',          strength: 'Mild' },
+  'HH Acadian Perique':        { blend_type: 'Virginia/Perique',  strength: 'Medium' },
+  'HH Bold Kentucky':          { blend_type: 'Burley',            strength: 'Medium-Full' },
+  'HH Burley':                 { blend_type: 'Burley',            strength: 'Medium' },
+  'HH English Blend':          { blend_type: 'English',           strength: 'Medium-Full' },
+  'HH Mature Virginia':        { blend_type: 'Virginia',          strength: 'Medium' },
+  'HH Old Dark Fired':         { blend_type: 'Burley',            strength: 'Full' },
+  'HH Pure Virginia':          { blend_type: 'Virginia',          strength: 'Medium' },
+  'Navy Flake':                { blend_type: 'Virginia/Perique',  strength: 'Medium-Full' },
+  'Roll Cake':                 { blend_type: 'Virginia',          strength: 'Medium' },
+  'Virginia No. 1':            { blend_type: 'Virginia',          strength: 'Medium' },
+  'Solent Mixture':            { blend_type: 'Virginia',          strength: 'Mild' },
+  'Plum Cake':                 { blend_type: 'Aromatic',          strength: 'Mild' },
+
+  // Orlik
+  'Dark Strong Kentucky':      { blend_type: 'Burley',            strength: 'Full' },
+  'Erinmore Flake':            { blend_type: 'Virginia',          strength: 'Medium' },
+  'Erinmore Mixture':          { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Finest Hour':               { blend_type: 'English',           strength: 'Medium' },
+  'Golden Sliced':             { blend_type: 'Virginia',          strength: 'Mild' },
+  'Medium Aromatic':           { blend_type: 'Aromatic',          strength: 'Mild' },
+
+  // Robert McConnell
+  'Award Flake':               { blend_type: 'Virginia',          strength: 'Medium' },
+  'Baker Street':              { blend_type: 'English',           strength: 'Medium-Full' },
+  'Black Cherry Blend':        { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Embarcadero':               { blend_type: 'English',           strength: 'Medium-Full' },
+  'Matured Virginia':          { blend_type: 'Virginia',          strength: 'Medium' },
+  'Rustica':                   { blend_type: 'Virginia',          strength: 'Medium-Full' },
+  'Scottish Mixture':          { blend_type: 'English',           strength: 'Medium-Full' },
+
+  // Peter Stokkebye
+  'Amsterdam Shag':            { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Burgundy Cavendish':        { blend_type: 'Aromatic',          strength: 'Mild' },
+  'English Blend No. 10':      { blend_type: 'English',           strength: 'Medium' },
+  'English Oriental Supreme':  { blend_type: 'English',           strength: 'Medium-Full' },
+  'Luxury Bullseye Flake':     { blend_type: 'Virginia',          strength: 'Medium' },
+  'Luxury Twist Flake':        { blend_type: 'Virginia',          strength: 'Medium' },
+  'Norwegian Sailors':         { blend_type: 'English',           strength: 'Medium-Full' },
+
+  // Lane Limited
+  '1Q':                        { blend_type: 'Aromatic',          strength: 'Mild' },
+  'BCA':                       { blend_type: 'Aromatic',          strength: 'Mild' },
+  'HGL':                       { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Ready Rubbed':              { blend_type: 'Aromatic',          strength: 'Mild' },
+  'LL-7':                      { blend_type: 'Aromatic',          strength: 'Mild' },
+
+  // Sutliff
+  'Bohemian Scandal':          { blend_type: 'English',           strength: 'Medium-Full' },
+  'Cringle Flake':             { blend_type: 'Virginia',          strength: 'Medium' },
+  'Maple Street':              { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Molto Dolce':               { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Paladin Black Cherry':      { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Trophy Room':               { blend_type: 'English',           strength: 'Medium' },
+  'Virginia Flake':            { blend_type: 'Virginia',          strength: 'Medium' },
+  'Vintage Cube Cut Virginia': { blend_type: 'Virginia',          strength: 'Medium' },
+  'Match 965':                 { blend_type: 'English',           strength: 'Full' },
+
+  // W.O. Larsen
+  'Old Fashioned':             { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Private Blend No. 1':       { blend_type: 'English',           strength: 'Medium' },
+  'Honey Dew':                 { blend_type: 'Aromatic',          strength: 'Mild' },
+
+  // Dan Tobacco
+  "Devil's Holiday":           { blend_type: 'English',           strength: 'Full' },
+  'Fathom':                    { blend_type: 'English',           strength: 'Medium-Full' },
+  'My Mixture 773':            { blend_type: 'Virginia',          strength: 'Medium' },
+  'Sjoeman':                   { blend_type: 'English',           strength: 'Medium' },
+
+  // Balkan Sobranie (documented historical specs)
+  'Balkan Sobranie Original':  { blend_type: 'English/Balkan',    strength: 'Full' },
+  'Balkan Sobranie No. 759':   { blend_type: 'English/Balkan',    strength: 'Full' },
+  'White Ribbon':              { blend_type: 'English/Balkan',    strength: 'Medium-Full' },
+  'Sobranie Mixture No. 10':   { blend_type: 'English/Balkan',    strength: 'Full' },
+
+  // Captain Black
+  'Captain Black Gold':        { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Captain Black Light':       { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Captain Black Original':    { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Captain Black White':       { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Captain Black Royal':       { blend_type: 'Aromatic',          strength: 'Mild' },
+
+  // Borkum Riff
+  'Borkum Riff Bourbon Whiskey': { blend_type: 'Aromatic',        strength: 'Mild' },
+  'Borkum Riff Cherry Cavendish': { blend_type: 'Aromatic',       strength: 'Mild' },
+  'Borkum Riff Original':      { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Borkum Riff Honey & Vanilla': { blend_type: 'Aromatic',        strength: 'Mild' },
+
+  // Amphora
+  'Amphora Brown Blend':       { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Amphora Full Aroma':        { blend_type: 'Aromatic',          strength: 'Medium' },
+  'Amphora Original':          { blend_type: 'Aromatic',          strength: 'Mild' },
+
+  // Solani
+  'Aged Burley Flake':         { blend_type: 'Burley',            strength: 'Medium' },
+  'Silver Flake':              { blend_type: 'Virginia',          strength: 'Medium' },
+  'Mountain Herbs':            { blend_type: 'Aromatic',          strength: 'Medium' },
+
+  // Rattray's
+  "Accountant's Mixture":      { blend_type: 'English',           strength: 'Medium' },
+  'Black Mallory':             { blend_type: 'English',           strength: 'Full' },
+  'Brown Clunee':              { blend_type: 'English',           strength: 'Medium-Full' },
+  "Hal o' the Wynd":           { blend_type: 'Virginia',          strength: 'Mild' },
+  'Marlin Flake':              { blend_type: 'Virginia',          strength: 'Medium' },
+  'Old Gowrie':                { blend_type: 'Virginia',          strength: 'Medium' },
+  "Rattray's Red Rapparee":    { blend_type: 'Burley',            strength: 'Medium-Full' },
+
+  // Davidoff
+  'Danish Mixture':            { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Davidoff English Mixture':  { blend_type: 'English',           strength: 'Medium' },
+  'Fleur de Lis':              { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Royalty':                   { blend_type: 'Virginia',          strength: 'Medium' },
+
+  // Vauen / Stanwell house blends
+  'De Luxe':                   { blend_type: 'Aromatic',          strength: 'Mild' },
+  'Top Cavendish':             { blend_type: 'Aromatic',          strength: 'Mild' },
+};
+
+/**
+ * Infer blend_type and strength for a single TobaccoBlend record.
+ * 1. Exact blend name match in catalog → confidence 0.90
+ * 2. Partial blend name match (blend name contained in catalog key) → confidence 0.80
+ * 3. No match → { payload: null, confidence: 0 }
+ */
+/** Build a proposedChange payload for a blend from a catalog match, including only missing fields. */
+function buildBlendPayload(blend, data) {
+  const payload = {};
+  if (!blend.blend_type || blend.blend_type === '' || blend.blend_type === 'Unknown') payload.blend_type = data.blend_type;
+  if (!blend.strength   || blend.strength   === '') payload.strength   = data.strength;
+  return Object.keys(payload).length ? payload : null;
+}
+
+function inferBlendMetadata(blend) {
+  const nameLower = (blend.name || '').toLowerCase().trim();
+  if (!nameLower) return { payload: null, confidence: 0 };
+
+  // 1. Exact match
+  for (const [key, data] of Object.entries(KNOWN_BLENDS)) {
+    if (nameLower === key.toLowerCase()) {
+      const payload = buildBlendPayload(blend, data);
+      return payload ? { payload, confidence: 0.90 } : { payload: null, confidence: 0 };
+    }
+  }
+
+  // 2. Partial match — catalog key is contained in the blend name or vice versa
+  for (const [key, data] of Object.entries(KNOWN_BLENDS)) {
+    const keyLower = key.toLowerCase();
+    if (nameLower.includes(keyLower) || keyLower.includes(nameLower)) {
+      const payload = buildBlendPayload(blend, data);
+      return payload ? { payload, confidence: 0.80 } : { payload: null, confidence: 0 };
+    }
+  }
+
+  return { payload: null, confidence: 0 };
+}
+
+// ─── Known production pipe shapes ────────────────────────────────────────────
+// Source: manufacturer catalogues, pipedia.org shape charts.
+
+const KNOWN_PIPE_SHAPES = {
+  // Peterson standard shapes (shape number in name)
+  'system standard':      'Bent Billiard',
+  'system spigot':        'Bent Billiard',
+  'system deluxe':        'Bent Billiard',
+  'sherlock holmes':      'Calabash',
+  'aran':                 'Bent',
+  'x105':                 'Bent Billiard',
+  'x220':                 'Prince',
+  'x245':                 'Billiard',
+  'x999':                 'Bent',
+  'kildare':              'Bent Billiard',
+  'donegal rocky':        'Billiard',
+  'emerald':              'Billiard',
+  'whiskey barrel':       'Barrel',
+  'tankard':              'Tankard',
+  // Savinelli common series
+  'autograph':            'Billiard',
+  'alor':                 'Bent',
+  'oscar':                'Billiard',
+  'point':                'Billiard',
+  'oom paul':             'Oom Paul',
+  'half bent':            'Half-Bent',
+  'prince':               'Prince',
+  'rhodesian':            'Rhodesian',
+  'cherrywood':           'Cherrywood',
+  'cavalier':             'Cavalier',
+  'volcano':              'Volcano',
+  'canadian':             'Canadian',
+  'lumberman':            'Lumberman',
+  'poker':                'Poker',
+  // Stanwell
+  'regal':                'Billiard',
+  'de luxe':              'Billiard',
+  'featherweight':        'Billiard',
+  'pot':                  'Pot',
+  'dublin':               'Dublin',
+  'apple':                'Apple',
+  // Chacom
+  'atlas':                'Billiard',
+  'morvan':               'Bent',
+  'pirate':               'Billiard',
+  // Common shape keywords (catch-all pattern matching)
+  'billiard':             'Billiard',
+  'bent billiard':        'Bent Billiard',
+  'bent':                 'Bent',
+  'apple billiard':       'Apple',
+  'dublin bent':          'Dublin Bent',
+  'churchwarden':         'Churchwarden',
+  'freehand':             'Freehand',
+  'calabash':             'Calabash',
+  'bamboo':               'Bamboo',
+  'horn':                 'Horn',
+  'acorn':                'Acorn',
+  'brandy':               'Brandy',
+  'egg':                  'Egg',
+  'bulldog':              'Bulldog',
+  'bullmoose':            'Bull Moose',
+  'zulu':                 'Zulu',
+  'cutty':                'Cutty',
+};
+
+/**
+ * Infer shape for a production pipe from its name or model.
+ * Returns { shape, confidence } or { shape: null, confidence: 0 }.
+ */
+function inferPipeShape(pipe) {
+  const searchStr = `${pipe.name || ''} ${pipe.maker || ''} ${pipe.model || ''}`.toLowerCase();
+  if (!searchStr.trim()) return { shape: null, confidence: 0 };
+
+  for (const [key, shape] of Object.entries(KNOWN_PIPE_SHAPES)) {
+    if (searchStr.includes(key)) {
+      // Longer keys are more specific model names → higher confidence; short keys are generic shape words.
+      const confidence = key.length > 6 ? 0.82 : 0.72;
+      return { shape, confidence };
+    }
+  }
+  return { shape: null, confidence: 0 };
+}
+
 // ─── Category A: Record Optimization ─────────────────────────────────────────
 
 function analyzeMetadata(context) {
   const { blends = [], pipes = [], bottles = [] } = context;
   const recommendations = [];
 
-  // Blends missing blend_type
+  // ── Blends missing blend_type ──────────────────────────────────────────────
   const blendsNoType = blends.filter((b) => !b.blend_type || b.blend_type === '' || b.blend_type === 'Unknown');
   if (blendsNoType.length > 0) {
-    const items = blendsNoType.slice(0, MAX_ITEMS_PER_REC).map((b) => ({
-      id: b.id,
-      recordId: b.id,
-      recordType: 'blend',
-      recordName: b.name,
-      itemName: b.name,
-      manufacturer: b.manufacturer || null,
-      ownershipStatus: 'owned',
-      missingFields: ['blend type'], // always missing since this item is in the blendsNoType list
-      proposedChange: null,
-    }));
-    const summary = items.length === 1
-      ? `${items[0].itemName} has no blend type set — without it, this blend can't contribute to balance calculations or pairing logic.`
-      : `${items.length} blends are unclassified. The Curator's rotation and pairing engines are blind to any blend without a type.`;
+    const items = blendsNoType.slice(0, MAX_ITEMS_PER_REC).map((b) => {
+      const lookup = inferBlendMetadata(b);
+      return {
+        id: b.id,
+        recordId: b.id,
+        recordType: 'blend',
+        recordName: b.name,
+        itemName: b.name,
+        manufacturer: b.manufacturer || null,
+        ownershipStatus: 'owned',
+        missingFields: ['blend type'],
+        proposedChange: lookup.payload
+          ? { confidence: lookup.confidence, payload: lookup.payload, rationale: 'Matched from product catalog' }
+          : null,
+      };
+    });
+
+    const withPayloads   = items.filter((i) => i.proposedChange);
+    const highConf       = withPayloads.filter((i) => i.proposedChange.confidence >= 0.70);
+    const actionType     = highConf.length > 0 ? ACTION_TYPE.AUTO_FIX : ACTION_TYPE.REVIEW_REQUIRED;
+
+    const summary = withPayloads.length > 0
+      ? `${withPayloads.length} of ${items.length} unclassified blend${items.length > 1 ? 's' : ''} matched in the product catalog and ${withPayloads.length > 1 ? 'are' : 'is'} ready to apply.`
+      : `${items.length} blend${items.length > 1 ? 's are' : ' is'} unclassified — blend type not found in catalog.`;
 
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
       goal:               'blend_missing_type',
-      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      actionType,
       title:              'Blends Missing Classification',
       summary,
       whyItMatters:       'Blend type is the foundation of every recommendation this system makes. ' +
-                          'Without it, a blend can\'t be matched to a pipe, placed in a pairing, or factored into collection balance. ' +
-                          'These blends are invisible to the intelligence layer.',
-      recommendationText: 'Open each blend and assign Virginia, English, Aromatic, Burley, or whichever family applies. ' +
-                          'If you\'re unsure, the Curator\'s chat can help identify it from the blend\'s components.',
+                          'Without it, a blend cannot be matched to a pipe, placed in a pairing, or factored into collection balance.',
+      recommendationText: withPayloads.length > 0
+        ? `${withPayloads.length} blend${withPayloads.length > 1 ? 's' : ''} matched from the product catalog. Apply Fix to auto-fill or Review to confirm.`
+        : 'Open each blend and assign the blend family — Virginia, English, Aromatic, Burley, or whichever applies.',
       moduleKey:          MODULE_KEY.TOBACCO,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           items.length >= 5 ? PRIORITY.HIGH : PRIORITY.MEDIUM,
@@ -108,11 +462,17 @@ function analyzeMetadata(context) {
     }));
   }
 
-  // Blends missing strength — infer from blend_type where possible
-  const blendsNoStrength = blends.filter((b) => b.blend_type && (!b.strength || b.strength === ''));
+  // ── Blends missing strength ────────────────────────────────────────────────
+  const blendsNoStrength = blends.filter((b) => (!b.strength || b.strength === ''));
   if (blendsNoStrength.length > 0) {
     const items = blendsNoStrength.slice(0, MAX_ITEMS_PER_REC).map((b) => {
-      const inferred = BLEND_TYPE_STRENGTH_INFERENCE[b.blend_type] || null;
+      // Try catalog lookup first, then fall back to blend_type inference
+      const catalogLookup = inferBlendMetadata(b);
+      const catalogStrength = catalogLookup.payload?.strength || null;
+      const typeInferred    = b.blend_type ? (BLEND_TYPE_STRENGTH_INFERENCE[b.blend_type] || null) : null;
+      const inferred        = catalogStrength || typeInferred;
+      const confidence      = catalogStrength ? catalogLookup.confidence : (typeInferred ? 0.80 : 0);
+
       return {
         id: b.id,
         recordId: b.id,
@@ -122,20 +482,16 @@ function analyzeMetadata(context) {
         manufacturer: b.manufacturer || null,
         ownershipStatus: 'owned',
         proposedChange: inferred
-          ? { field: 'strength', displayValue: inferred, payload: { strength: inferred } }
+          ? { confidence, payload: { strength: inferred }, rationale: catalogStrength ? 'Matched from product catalog' : 'Inferred from blend type' }
           : null,
       };
     });
     const inferredCount = items.filter((i) => i.proposedChange).length;
-
-    // Use AUTO_FIX when we have deterministic inferences — apply_fix skips items without proposals.
-    // Fall back to REVIEW_REQUIRED when nothing can be inferred (all blend types are unmapped).
     const actionType = inferredCount > 0 ? ACTION_TYPE.AUTO_FIX : ACTION_TYPE.REVIEW_REQUIRED;
 
     const summary = inferredCount > 0
-      ? `${inferredCount} of ${items.length} blend${items.length > 1 ? 's' : ''} can have strength auto-filled from their blend type — ` +
-        `the Curator has inferred the values and is ready to apply them.`
-      : `${items.length} blend${items.length > 1 ? 's are' : ' is'} missing a strength rating that can\'t be inferred automatically.`;
+      ? `${inferredCount} of ${items.length} blend${items.length > 1 ? 's' : ''} matched in the catalog — strength values ready to apply.`
+      : `${items.length} blend${items.length > 1 ? 's are' : ' is'} missing a strength rating.`;
 
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
@@ -144,11 +500,10 @@ function analyzeMetadata(context) {
       title:              'Blends Missing Strength',
       summary,
       whyItMatters:       'Strength rating determines how blends are sequenced in a session, which pipes suit them, ' +
-                          'and which whiskeys create a balanced pairing. Missing strength data produces generic advice — not expert advice.',
+                          'and which whiskeys create a balanced pairing.',
       recommendationText: inferredCount > 0
-        ? `Apply Fix to auto-fill ${inferredCount} inferred value${inferredCount > 1 ? 's' : ''}. ` +
-          `${items.length - inferredCount > 0 ? `The remaining ${items.length - inferredCount} need manual entry.` : ''}`
-        : 'Open each blend and set the strength manually — check the manufacturer\'s tasting notes or the Curator\'s chat for guidance.',
+        ? `Apply Fix to auto-fill ${inferredCount} value${inferredCount > 1 ? 's' : ''} from the product catalog.`
+        : 'Open each blend and set the strength from the tin or manufacturer page.',
       moduleKey:          MODULE_KEY.TOBACCO,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           PRIORITY.LOW,
@@ -159,69 +514,165 @@ function analyzeMetadata(context) {
   }
 
   // ─── Whiskey inference data ─────────────────────────────────────────────────
+  // Source: distillery websites, whiskybase.com, master of malt listings.
 
   const KNOWN_DISTILLERIES = {
-    'Buffalo Trace':    { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
-    'Wild Turkey':      { type: 'Bourbon',            region: 'Kentucky',     country: 'USA' },
-    'Four Roses':       { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 40 },
-    "Maker's Mark":     { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
-    'Woodford Reserve': { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45.2 },
-    'Knob Creek':       { type: 'Bourbon',            region: 'Kentucky',     country: 'USA' },
-    'Jim Beam':         { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 40 },
-    'Evan Williams':    { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 43 },
-    'Eagle Rare':       { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
-    'Bulleit':          { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
-    'Heaven Hill':      { type: 'Bourbon',            region: 'Kentucky',     country: 'USA' },
-    'Old Forester':     { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 43 },
-    'Laphroaig':        { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 40 },
-    'Ardbeg':           { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 46 },
-    'Bowmore':          { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 40 },
-    'Lagavulin':        { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 43 },
-    'Caol Ila':         { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 43 },
-    'Bunnahabhain':     { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 46.3 },
-    'Balvenie':         { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
-    'Glenfiddich':      { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
-    'Glenlivet':        { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
-    'Macallan':         { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland' },
-    'GlenDronach':      { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 43 },
-    'Glenfarclas':      { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
-    'Oban':             { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 43 },
-    'Highland Park':    { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 40 },
-    'Glenmorangie':     { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 43 },
-    'Talisker':         { type: 'Single Malt Scotch', region: 'Island',       country: 'Scotland', abv: 45.8 },
-    'Springbank':       { type: 'Single Malt Scotch', region: 'Campbeltown',  country: 'Scotland', abv: 46 },
-    'Jameson':          { type: 'Irish Whiskey',      region: 'Cork',         country: 'Ireland',  abv: 40 },
-    'Redbreast':        { type: 'Irish Whiskey',      region: 'Dublin',       country: 'Ireland',  abv: 40 },
-    'Bushmills':        { type: 'Irish Whiskey',      region: 'Antrim',       country: 'Ireland',  abv: 40 },
-    'Teeling':          { type: 'Irish Whiskey',      region: 'Dublin',       country: 'Ireland',  abv: 46 },
-    'Green Spot':       { type: 'Irish Whiskey',      region: 'Cork',         country: 'Ireland',  abv: 40 },
-    'Nikka':            { type: 'Japanese Whisky',    region: 'Japan',        country: 'Japan' },
-    'Suntory':          { type: 'Japanese Whisky',    region: 'Japan',        country: 'Japan' },
-    'Hakushu':          { type: 'Japanese Whisky',    region: 'Yamanashi',    country: 'Japan',    abv: 43 },
-    'Hibiki':           { type: 'Japanese Whisky',    region: 'Japan',        country: 'Japan',    abv: 43 },
-    'Jack Daniel':      { type: 'Tennessee Whiskey',  region: 'Tennessee',    country: 'USA',      abv: 40 },
-    'George Dickel':    { type: 'Tennessee Whiskey',  region: 'Tennessee',    country: 'USA',      abv: 45 },
-    'Rittenhouse':      { type: 'Rye',                region: 'Pennsylvania', country: 'USA',      abv: 50 },
-    'WhistlePig':       { type: 'Rye',                region: 'Vermont',      country: 'USA',      abv: 50 },
-    'Sazerac':          { type: 'Rye',                region: 'Louisiana',    country: 'USA',      abv: 45 },
-    'High West':        { type: 'Rye',                region: 'Utah',         country: 'USA' },
-    'Templeton':        { type: 'Rye',                region: 'Iowa',         country: 'USA',      abv: 40 },
-    'Famous Grouse':    { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
-    'Monkey Shoulder':  { type: 'Blended Scotch',     region: 'Speyside',     country: 'Scotland', abv: 40 },
-    'Johnnie Walker':   { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
-    "Dewar's":          { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
-    'Chivas':           { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    // Kentucky Bourbon
+    'Buffalo Trace':       { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
+    'Wild Turkey':         { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 40 },
+    'Four Roses':          { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 40 },
+    "Maker's Mark":        { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
+    'Woodford Reserve':    { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45.2 },
+    'Knob Creek':          { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 50 },
+    'Jim Beam':            { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 40 },
+    'Evan Williams':       { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 43 },
+    'Eagle Rare':          { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
+    'Bulleit':             { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
+    'Heaven Hill':         { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 40 },
+    'Old Forester':        { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 43 },
+    'Elijah Craig':        { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 47 },
+    'Angel\'s Envy':       { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 43.3 },
+    'Bakers':              { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 53.5 },
+    'Basil Hayden':        { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 40 },
+    'Blanton\'s':          { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 46.5 },
+    'Booker\'s':           { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 62 },
+    'George T. Stagg':     { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 67 },
+    'Noah\'s Mill':        { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 57.15 },
+    'Old Charter':         { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 40 },
+    'Old Grand Dad':       { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 40 },
+    'Pappy Van Winkle':    { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45.2 },
+    'W.L. Weller':         { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
+    'Weller':              { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
+    'Jefferson\'s':        { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 41.15 },
+    'Town Branch':         { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 40 },
+    'Kentucky Owl':        { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 48.2 },
+    'Russell\'s Reserve':  { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
+    // Tennessee
+    'Jack Daniel':         { type: 'Tennessee Whiskey',  region: 'Tennessee',    country: 'USA',      abv: 40 },
+    'George Dickel':       { type: 'Tennessee Whiskey',  region: 'Tennessee',    country: 'USA',      abv: 45 },
+    'Uncle Nearest':       { type: 'Tennessee Whiskey',  region: 'Tennessee',    country: 'USA',      abv: 46.5 },
+    // American Rye
+    'Rittenhouse':         { type: 'Rye',                region: 'Pennsylvania', country: 'USA',      abv: 50 },
+    'WhistlePig':          { type: 'Rye',                region: 'Vermont',      country: 'USA',      abv: 50 },
+    'Sazerac':             { type: 'Rye',                region: 'Louisiana',    country: 'USA',      abv: 45 },
+    'High West':           { type: 'Rye',                region: 'Utah',         country: 'USA',      abv: 46 },
+    'Templeton':           { type: 'Rye',                region: 'Iowa',         country: 'USA',      abv: 40 },
+    'Michter\'s':          { type: 'Rye',                region: 'Kentucky',     country: 'USA',      abv: 42.4 },
+    'Old Overholt':        { type: 'Rye',                region: 'Kentucky',     country: 'USA',      abv: 40 },
+    'Pikesville':          { type: 'Rye',                region: 'Maryland',     country: 'USA',      abv: 55 },
+    'Redemption':          { type: 'Rye',                region: 'Indiana',      country: 'USA',      abv: 46 },
+    'FEW':                 { type: 'Rye',                region: 'Illinois',     country: 'USA',      abv: 46.5 },
+    // Islay Scotch
+    'Laphroaig':           { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 40 },
+    'Ardbeg':              { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 46 },
+    'Bowmore':             { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 40 },
+    'Lagavulin':           { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 43 },
+    'Caol Ila':            { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 43 },
+    'Bunnahabhain':        { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 46.3 },
+    'Kilchoman':           { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 46 },
+    'Bruichladdich':       { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 50 },
+    'Port Charlotte':      { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 50 },
+    'Octomore':            { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 59.3 },
+    // Speyside Scotch
+    'Balvenie':            { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Glenfiddich':         { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Glenlivet':           { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Macallan':            { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Glenfarclas':         { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Aberlour':            { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Cragganmore':         { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Dalwhinnie':          { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 43 },
+    'Benromach':           { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 43 },
+    'Cardhu':              { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Craigellachie':       { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 46 },
+    'Knockando':           { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 43 },
+    'Linkwood':            { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 43 },
+    'Longmorn':            { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 46 },
+    'Mortlach':            { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 43.4 },
+    'Strathisla':          { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 43 },
+    // Highland Scotch
+    'GlenDronach':         { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 43 },
+    'Oban':                { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 43 },
+    'Highland Park':       { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 40 },
+    'Glenmorangie':        { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 43 },
+    'Edradour':            { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 40 },
+    'Glengoyne':           { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 43 },
+    'Tomatin':             { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 40 },
+    'Dalmore':             { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 40 },
+    'Balblair':            { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 46 },
+    'Ben Nevis':           { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 46 },
+    'Clynelish':           { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 46 },
+    'Old Pulteney':        { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 40 },
+    'Royal Lochnagar':     { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 40 },
+    // Island Scotch
+    'Talisker':            { type: 'Single Malt Scotch', region: 'Island',       country: 'Scotland', abv: 45.8 },
+    'Jura':                { type: 'Single Malt Scotch', region: 'Island',       country: 'Scotland', abv: 40 },
+    'Ledaig':              { type: 'Single Malt Scotch', region: 'Island',       country: 'Scotland', abv: 46.3 },
+    'Tobermory':           { type: 'Single Malt Scotch', region: 'Island',       country: 'Scotland', abv: 46.3 },
+    'Arran':               { type: 'Single Malt Scotch', region: 'Island',       country: 'Scotland', abv: 46 },
+    // Campbeltown
+    'Springbank':          { type: 'Single Malt Scotch', region: 'Campbeltown',  country: 'Scotland', abv: 46 },
+    'Glengyle':            { type: 'Single Malt Scotch', region: 'Campbeltown',  country: 'Scotland', abv: 46 },
+    'Glen Scotia':         { type: 'Single Malt Scotch', region: 'Campbeltown',  country: 'Scotland', abv: 46 },
+    // Blended Scotch
+    'Famous Grouse':       { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    'Monkey Shoulder':     { type: 'Blended Scotch',     region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Johnnie Walker':      { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    "Dewar's":             { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    'Chivas':              { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    "Teacher's":           { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    'Cutty Sark':          { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    'Ballantine\'s':       { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    'Bell\'s':             { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    'Grant\'s':            { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    "Robbie Dhu":          { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    // Irish
+    'Jameson':             { type: 'Irish Whiskey',      region: 'Cork',         country: 'Ireland',  abv: 40 },
+    'Redbreast':           { type: 'Irish Whiskey',      region: 'Dublin',       country: 'Ireland',  abv: 40 },
+    'Bushmills':           { type: 'Irish Whiskey',      region: 'Antrim',       country: 'Ireland',  abv: 40 },
+    'Teeling':             { type: 'Irish Whiskey',      region: 'Dublin',       country: 'Ireland',  abv: 46 },
+    'Green Spot':          { type: 'Irish Whiskey',      region: 'Cork',         country: 'Ireland',  abv: 40 },
+    'Yellow Spot':         { type: 'Irish Whiskey',      region: 'Cork',         country: 'Ireland',  abv: 46 },
+    'Red Spot':            { type: 'Irish Whiskey',      region: 'Cork',         country: 'Ireland',  abv: 46 },
+    'Tullamore':           { type: 'Irish Whiskey',      region: 'Offaly',       country: 'Ireland',  abv: 40 },
+    'Slane':               { type: 'Irish Whiskey',      region: 'Meath',        country: 'Ireland',  abv: 40 },
+    'Powers':              { type: 'Irish Whiskey',      region: 'Dublin',       country: 'Ireland',  abv: 40 },
+    'Kilbeggan':           { type: 'Irish Whiskey',      region: 'Westmeath',    country: 'Ireland',  abv: 40 },
+    'Connemara':           { type: 'Irish Whiskey',      region: 'Galway',       country: 'Ireland',  abv: 40 },
+    'Midleton':            { type: 'Irish Whiskey',      region: 'Cork',         country: 'Ireland',  abv: 40 },
+    "Writer's Tears":      { type: 'Irish Whiskey',      region: 'Dublin',       country: 'Ireland',  abv: 40 },
+    'Waterford':           { type: 'Irish Whiskey',      region: 'Waterford',    country: 'Ireland',  abv: 50 },
+    // Japanese
+    'Nikka':               { type: 'Japanese Whisky',    region: 'Japan',        country: 'Japan',    abv: 43 },
+    'Suntory':             { type: 'Japanese Whisky',    region: 'Japan',        country: 'Japan',    abv: 43 },
+    'Hakushu':             { type: 'Japanese Whisky',    region: 'Yamanashi',    country: 'Japan',    abv: 43 },
+    'Hibiki':              { type: 'Japanese Whisky',    region: 'Japan',        country: 'Japan',    abv: 43 },
+    'Yoichi':              { type: 'Japanese Whisky',    region: 'Hokkaido',     country: 'Japan',    abv: 45 },
+    'Miyagikyo':           { type: 'Japanese Whisky',    region: 'Miyagi',       country: 'Japan',    abv: 45 },
+    'Yamazaki':            { type: 'Japanese Whisky',    region: 'Osaka',        country: 'Japan',    abv: 43 },
+    'Toki':                { type: 'Japanese Whisky',    region: 'Japan',        country: 'Japan',    abv: 43 },
+    'Chichibu':            { type: 'Japanese Whisky',    region: 'Saitama',      country: 'Japan',    abv: 46 },
+    'Akkeshi':             { type: 'Japanese Whisky',    region: 'Hokkaido',     country: 'Japan',    abv: 55 },
+    // Canadian
+    'Crown Royal':         { type: 'Canadian Whisky',    region: 'Manitoba',     country: 'Canada',   abv: 40 },
+    "Canadian Club":       { type: 'Canadian Whisky',    region: 'Ontario',      country: 'Canada',   abv: 40 },
+    'Forty Creek':         { type: 'Canadian Whisky',    region: 'Ontario',      country: 'Canada',   abv: 40 },
+    'Pendleton':           { type: 'Canadian Whisky',    region: 'British Columbia', country: 'Canada', abv: 40 },
+    'Seagram\'s':          { type: 'Canadian Whisky',    region: 'Ontario',      country: 'Canada',   abv: 40 },
   };
 
   const WHISKEY_NAME_PATTERNS = [
-    { pattern: /\bbourbon\b/i,     type: 'Bourbon',            confidence: 0.88 },
-    { pattern: /\brye\b/i,         type: 'Rye',                confidence: 0.85 },
-    { pattern: /\bislay\b/i,       type: 'Islay Single Malt',  confidence: 0.92 },
-    { pattern: /\bsingle malt\b/i, type: 'Single Malt Scotch', confidence: 0.90 },
-    { pattern: /\bscotch\b/i,      type: 'Blended Scotch',     confidence: 0.75 },
-    { pattern: /\birish\b/i,       type: 'Irish Whiskey',      confidence: 0.88 },
-    { pattern: /\bjapanese\b/i,    type: 'Japanese Whisky',    confidence: 0.88 },
-    { pattern: /\btennessee\b/i,   type: 'Tennessee Whiskey',  confidence: 0.88 },
+    { pattern: /\bbourbon\b/i,        type: 'Bourbon',            confidence: 0.88 },
+    { pattern: /\brye\b/i,            type: 'Rye',                confidence: 0.85 },
+    { pattern: /\bislay\b/i,          type: 'Islay Single Malt',  confidence: 0.92 },
+    { pattern: /\bsingle malt\b/i,    type: 'Single Malt Scotch', confidence: 0.90 },
+    { pattern: /\bscotch\b/i,         type: 'Blended Scotch',     confidence: 0.75 },
+    { pattern: /\birish\b/i,          type: 'Irish Whiskey',      confidence: 0.88 },
+    { pattern: /\bjapanese\b/i,       type: 'Japanese Whisky',    confidence: 0.88 },
+    { pattern: /\btennessee\b/i,      type: 'Tennessee Whiskey',  confidence: 0.88 },
+    { pattern: /\bcanadian\b/i,       type: 'Canadian Whisky',    confidence: 0.85 },
+    { pattern: /\bspeyside\b/i,       type: 'Single Malt Scotch', confidence: 0.85 },
+    { pattern: /\bhighland\b/i,       type: 'Single Malt Scotch', confidence: 0.80 },
   ];
 
   /**
@@ -232,7 +683,6 @@ function analyzeMetadata(context) {
     let distilleryData = null;
     let inferConfidence = 0;
 
-    // 1. Try exact or partial match against known distilleries
     const distilleryStr = (bottle.distillery || '').toLowerCase();
     const nameStr       = (bottle.name        || '').toLowerCase();
     const searchStr     = distilleryStr || nameStr;
@@ -242,17 +692,16 @@ function analyzeMetadata(context) {
     for (const [key, data] of Object.entries(KNOWN_DISTILLERIES)) {
       const keyLower = key.toLowerCase();
       if (searchStr.includes(keyLower) || keyLower.includes(searchStr.replace(/\s+\d+.*$/, ''))) {
-        distilleryData = data;
+        distilleryData  = data;
         inferConfidence = 0.85;
         break;
       }
     }
 
-    // 2. Fallback: name pattern matching for spirit type
     if (!distilleryData) {
       for (const { pattern, type, confidence } of WHISKEY_NAME_PATTERNS) {
         if (pattern.test(nameStr) || pattern.test(distilleryStr)) {
-          distilleryData = { type };
+          distilleryData  = { type };
           inferConfidence = confidence;
           break;
         }
@@ -261,18 +710,17 @@ function analyzeMetadata(context) {
 
     if (!distilleryData) return { payload: null, confidence: 0 };
 
-    // Build payload with only fields that are actually missing
     const payload = {};
-    if (!bottle.type && !bottle.whiskey_type && distilleryData.type)    payload.type    = distilleryData.type;
+    if (!bottle.type && !bottle.whiskey_type && distilleryData.type)   payload.type   = distilleryData.type;
     if (!bottle.region  && distilleryData.region)  payload.region  = distilleryData.region;
+    if (!bottle.country && distilleryData.country) payload.country = distilleryData.country;
     if (!bottle.abv     && distilleryData.abv)     payload.abv     = distilleryData.abv;
 
     if (!Object.keys(payload).length) return { payload: null, confidence: 0 };
-
     return { payload, confidence: inferConfidence };
   }
 
-  // Bottles missing core metadata
+  // ── Bottles missing core metadata ─────────────────────────────────────────
   const bottlesMissingMeta = bottles.filter(
     (b) => !b.distillery || !b.region || !b.age || !b.abv || !(b.type || b.whiskey_type)
   );
@@ -295,11 +743,7 @@ function analyzeMetadata(context) {
         missingFields: missing,
         ownershipStatus: 'owned',
         proposedChange: inference.payload
-          ? {
-              confidence: inference.confidence,
-              payload:    inference.payload,
-              rationale:  'Inferred from known distillery/product patterns',
-            }
+          ? { confidence: inference.confidence, payload: inference.payload, rationale: 'Matched from distillery catalog' }
           : null,
       };
     });
@@ -311,7 +755,7 @@ function analyzeMetadata(context) {
 
     const criticalField = items.some((i) => i.missingFields.includes('spirit type'));
     const summary = items.length === 1
-      ? `${items[0].itemName} is missing ${items[0].missingFields.join(', ')} — the pairing engine can't use it without this data.`
+      ? `${items[0].itemName} is missing ${items[0].missingFields.join(', ')} — the pairing engine cannot use it without this data.`
       : `${items.length} bottles have incomplete records. ${criticalField ? 'Spirit type is missing on some — without it, no pairing logic applies.' : 'Missing fields reduce pairing accuracy.'}`;
 
     recommendations.push(createRecommendation({
@@ -320,12 +764,10 @@ function analyzeMetadata(context) {
       actionType,
       title:              'Bottles Missing Core Metadata',
       summary,
-      whyItMatters:       'Spirit type, region, and ABV aren\'t just descriptive — they determine which blends and cigars this bottle can be paired with. ' +
-                          'An unclassified bottle is pairing-dead to the Curator.',
+      whyItMatters:       'Spirit type, region, and ABV are not just descriptive — they determine which blends and cigars this bottle can be paired with.',
       recommendationText: highConfItems.length > 0
-        ? `Apply Fix to auto-fill ${highConfItems.length} inferred value${highConfItems.length > 1 ? 's' : ''} from known distillery data. ` +
-          `${items.length - highConfItems.length > 0 ? `The remaining ${items.length - highConfItems.length} need manual entry.` : ''}`
-        : 'Open each bottle in WhiskeyKeeper and complete the missing fields. Spirit type is the priority — it unlocks all pairing logic.',
+        ? `Apply Fix to auto-fill ${highConfItems.length} value${highConfItems.length > 1 ? 's' : ''} matched from the distillery catalog.`
+        : 'Open each bottle and complete the missing fields.',
       moduleKey:          MODULE_KEY.WHISKEY,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           items.length >= 5 ? PRIORITY.MEDIUM : PRIORITY.LOW,
@@ -335,40 +777,32 @@ function analyzeMetadata(context) {
     }));
   }
 
-  // Bottles missing valuation
+  // ── Bottles missing valuation ─────────────────────────────────────────────
   const bottlesMissingValue = bottles.filter(
     (b) => !b.retail_price && !b.aftermarket_price && !b.collector_value
   );
   if (bottlesMissingValue.length > 0) {
-    const items = bottlesMissingValue.slice(0, MAX_ITEMS_PER_REC).map((b) => {
-      const VALUATION_FIELDS = {
-        'retail price':      'retail_price',
-        'aftermarket price': 'aftermarket_price',
-        'collector value':   'collector_value',
-      };
-      const missingFields = Object.entries(VALUATION_FIELDS)
-        .filter(([, key]) => !b[key])
-        .map(([label]) => label);
-      return {
-        id: b.id,
-        recordId: b.id,
-        recordType: 'bottle',
-        recordName: b.name,
-        itemName: b.name,
-        ownershipStatus: 'owned',
-        missingFields,
-      };
-    });
+    const items = bottlesMissingValue.slice(0, MAX_ITEMS_PER_REC).map((b) => ({
+      id: b.id,
+      recordId: b.id,
+      recordType: 'bottle',
+      recordName: b.name,
+      itemName: b.name,
+      ownershipStatus: 'owned',
+      missingFields: [
+        ['retail price',      'retail_price'],
+        ['aftermarket price', 'aftermarket_price'],
+        ['collector value',   'collector_value'],
+      ].filter(([, key]) => !b[key]).map(([label]) => label),
+    }));
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
       goal:               'bottle_missing_valuation',
       actionType:         ACTION_TYPE.REVIEW_REQUIRED,
       title:              'Bottles Without Valuation Data',
-      summary:            `${items.length} bottle${items.length > 1 ? 's have' : ' has'} no pricing or valuation data — your collection\'s total value is understated.`,
-      whyItMatters:       'Valuation data shows you what the collection is actually worth and informs purchase priority. ' +
-                          'For collector-grade bottles, aftermarket values can change significantly over time.',
-      recommendationText: 'Open each bottle in WhiskeyKeeper to add retail, aftermarket, or collector values. ' +
-                          'Even a rough retail estimate is more useful than nothing.',
+      summary:            `${items.length} bottle${items.length > 1 ? 's have' : ' has'} no pricing data — your collection\'s total value is understated.`,
+      whyItMatters:       'Valuation data shows what the collection is actually worth and informs purchase priority.',
+      recommendationText: 'Open each bottle to add retail, aftermarket, or collector values.',
       moduleKey:          MODULE_KEY.WHISKEY,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           PRIORITY.LOW,
@@ -378,27 +812,40 @@ function analyzeMetadata(context) {
     }));
   }
 
-  // Pipes missing basic classification (no shape or bowl_style)
+  // ── Pipes missing shape classification ───────────────────────────────────
   const pipesMissingClass = pipes.filter((p) => !p.shape && !p.bowl_style);
   if (pipesMissingClass.length >= 3) {
-    const items = pipesMissingClass.slice(0, MAX_ITEMS_PER_REC).map((p) => ({
-      id: p.id,
-      recordId: p.id,
-      recordType: 'pipe',
-      recordName: p.name,
-      itemName: p.name,
-      maker: p.maker || null,
-      ownershipStatus: 'owned',
-    }));
+    const items = pipesMissingClass.slice(0, MAX_ITEMS_PER_REC).map((p) => {
+      const lookup = inferPipeShape(p);
+      return {
+        id: p.id,
+        recordId: p.id,
+        recordType: 'pipe',
+        recordName: p.name,
+        itemName: p.name,
+        maker: p.maker || null,
+        ownershipStatus: 'owned',
+        proposedChange: lookup.shape
+          ? { confidence: lookup.confidence, payload: { shape: lookup.shape }, rationale: 'Matched from production pipe catalog' }
+          : null,
+      };
+    });
+
+    const withPayloads = items.filter((i) => i.proposedChange);
+    const actionType   = withPayloads.length > 0 ? ACTION_TYPE.AUTO_FIX : ACTION_TYPE.REVIEW_REQUIRED;
+
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
       goal:               'pipe_missing_shape',
-      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      actionType,
       title:              'Pipes Missing Shape Classification',
-      summary:            `${items.length} pipe${items.length > 1 ? 's are' : ' is'} missing shape or bowl style — collection diversity analysis is incomplete.`,
-      whyItMatters:       'Shape drives bowl volume and smoking characteristics. ' +
-                          'Without it, the Curator can\'t assess whether your collection has the right shape diversity for your blend rotation.',
-      recommendationText: 'Open each pipe and add the shape. Billiard, Dublin, Bent, Pot — even a rough classification helps.',
+      summary: withPayloads.length > 0
+        ? `${withPayloads.length} of ${items.length} pipe${items.length > 1 ? 's' : ''} matched in the production catalog — shape ready to apply.`
+        : `${items.length} pipe${items.length > 1 ? 's are' : ' is'} missing shape or bowl style.`,
+      whyItMatters:       'Shape drives bowl volume and smoking characteristics. Without it, collection diversity analysis is incomplete.',
+      recommendationText: withPayloads.length > 0
+        ? `Apply Fix to auto-fill ${withPayloads.length} shape${withPayloads.length > 1 ? 's' : ''} from the pipe catalog.`
+        : 'Open each pipe and add the shape — Billiard, Dublin, Bent, Pot, or whichever applies.',
       moduleKey:          MODULE_KEY.PIPE,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           PRIORITY.LOW,

@@ -793,6 +793,36 @@ const MAX_BOTTLES_TO_SCORE   = 20;         // widen search window for diversity
 const MIN_PAIRING_SCORE      = 1;          // minimum adjusted score to include a pairing
 const MAX_ITEMS_PER_SUBTAB   = 3;          // hard cap on items per pairing sub-tab — enforced in engine
 
+// ─── Shared helpers ───────────────────────────────────────────────────────────
+
+/**
+ * Select the best available pipe for a blend, respecting the cross-tab pipe reuse cap
+ * and the ghosting rule. Falls back through three tiers:
+ *   1. Preferred pipe (by ID) that isn't capped and doesn't violate ghosting
+ *   2. Any pipe in the set that isn't capped and doesn't violate ghosting
+ *   3. Any pipe that doesn't violate ghosting (ignores cap as last resort)
+ *
+ * @param {object[]} pipes
+ * @param {object}   blend
+ * @param {string|null} preferredPipeId   - ID of first-choice pipe (from logs or caller)
+ * @param {number}   fallbackIndex        - index used for cycling when no preferred pipe
+ * @param {object}   pipeUsageCount       - shared cross-tab usage tracker
+ * @returns {object|null}
+ */
+function selectPipeForBlend(pipes, blend, preferredPipeId, fallbackIndex, pipeUsageCount) {
+  const underCap = (p) => (pipeUsageCount[p.id] || 0) < PIPE_REUSE_HARD_CAP;
+  const safe     = (p) => !violatesGhostingRule(p, blend);
+
+  if (preferredPipeId) {
+    const pref = pipes.find((p) => p.id === preferredPipeId && safe(p) && underCap(p));
+    if (pref) return pref;
+  }
+  const any = pipes.find((p) => safe(p) && underCap(p));
+  if (any) return any;
+  // Last resort: ignore cap but still respect ghosting rule
+  return pipes.find((p) => safe(p)) || null;
+}
+
 // ─── Main Engine ──────────────────────────────────────────────────────────────
 
 /**
@@ -994,10 +1024,7 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
       pipeBlendCounts[log.pipe_id] = (pipeBlendCounts[log.pipe_id] || 0) + 1;
     }
     const topPipeId = Object.entries(pipeBlendCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
-    // Prefer top pipe from logs; fall back to first non-capped pipe; then any pipe as last resort
-    let pipe = pipes.find((p) => p.id === topPipeId && (pipeUsageCount[p.id] || 0) < PIPE_REUSE_HARD_CAP);
-    if (!pipe) pipe = pipes.find((p) => (pipeUsageCount[p.id] || 0) < PIPE_REUSE_HARD_CAP);
-    if (!pipe) pipe = pipes[0]; // last resort: ignore cap
+    const pipe = selectPipeForBlend(pipes, blend, topPipeId, favItems.length, pipeUsageCount);
 
     bottleUsageCount[best.id] = (bottleUsageCount[best.id] || 0) + 1;
     blendUsageCount[blend.id] = (blendUsageCount[blend.id] || 0) + 1;
@@ -1080,15 +1107,8 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
       if (log.blend_id !== blend.id || !log.pipe_id) continue;
       pipeBlendLogCounts[log.pipe_id] = (pipeBlendLogCounts[log.pipe_id] || 0) + 1;
     }
-    const sortedPipeIds = Object.entries(pipeBlendLogCounts).sort((a, b) => b[1] - a[1]).map(([id]) => id);
-    let pipe = sortedPipeIds.length > 0
-      ? pipes.find((p) => p.id === sortedPipeIds[0] && !violatesGhostingRule(p, blend) && (pipeUsageCount[p.id] || 0) < PIPE_REUSE_HARD_CAP)
-      : null;
-    if (!pipe) {
-      pipe = pipes.find((p) => !violatesGhostingRule(p, blend) && (pipeUsageCount[p.id] || 0) < PIPE_REUSE_HARD_CAP)
-          || pipes.find((p) => !violatesGhostingRule(p, blend))
-          || pipes[rediscoverItems.length % pipes.length];
-    }
+    const topRediscoverPipeId = Object.entries(pipeBlendLogCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const pipe = selectPipeForBlend(pipes, blend, topRediscoverPipeId, rediscoverItems.length, pipeUsageCount);
 
     bottleUsageCount[best.id] = (bottleUsageCount[best.id] || 0) + 1;
     blendUsageCount[blend.id] = (blendUsageCount[blend.id] || 0) + 1;
@@ -1294,23 +1314,9 @@ function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottl
     }
     if (!best || bestScore < MIN_PAIRING_SCORE) continue;
 
-    // Pick a pipe respecting the cross-tab reuse cap; cycle through pipes for diversity
-    let pipe = null;
-    for (let offset = 0; offset < pipes.length; offset++) {
-      const candidate = pipes[(newItems.length + offset) % pipes.length];
-      if (!violatesGhostingRule(candidate, blend) && (pipeUsageCount[candidate.id] || 0) < PIPE_REUSE_HARD_CAP) {
-        pipe = candidate;
-        break;
-      }
-    }
-    // Last resort: ignore cap but still respect ghosting rule
-    if (!pipe) {
-      for (let offset = 0; offset < pipes.length; offset++) {
-        const candidate = pipes[(newItems.length + offset) % pipes.length];
-        if (!violatesGhostingRule(candidate, blend)) { pipe = candidate; break; }
-      }
-    }
-    if (!pipe) pipe = pipes[newItems.length % pipes.length];
+    // Pick a pipe respecting the cross-tab reuse cap; prefer cycling for variety.
+    // selectPipeForBlend handles ghosting rule + cap + last-resort fallback.
+    const pipe = selectPipeForBlend(pipes, blend, null, newItems.length, pipeUsageCount);
 
     bottleUsageCount[best.id] = (bottleUsageCount[best.id] || 0) + 1;
     blendUsageCount[blend.id] = (blendUsageCount[blend.id] || 0) + 1;
@@ -1389,13 +1395,13 @@ export function generatePairingRecommendations(context = {}) {
   const acceptableBottles = bottles.filter((b) => isBottleAcceptable(b, prefCtx.dislikedWhiskeyTypes));
 
   const results = [];
-  // Shared bottle usage count — ensures bottle diversity across all pairing types
+  // Shared usage counts — enforce diversity across all pairing sub-tabs
   const bottleUsageCount = {};
-  // Shared blend usage count — limits a single blend to BLEND_REUSE_HARD_CAP appearances across tabs
-  const blendUsageCount = {};
+  const blendUsageCount  = {};
+  const pipeUsageCount   = {};
 
   if (pipes.length > 0 && acceptableBlends.length > 0 && acceptableBottles.length > 0) {
-    results.push(...generatePipeWhiskeyPairings(pipes, acceptableBlends, acceptableBottles, smokingLogs, bottleUsageCount, blendUsageCount));
+    results.push(...generatePipeWhiskeyPairings(pipes, acceptableBlends, acceptableBottles, smokingLogs, bottleUsageCount, blendUsageCount, pipeUsageCount));
   }
 
   if (cigars.length > 0 && acceptableBottles.length > 0) {
@@ -1404,12 +1410,12 @@ export function generatePairingRecommendations(context = {}) {
 
   // Thematic pairings — Old Favorites and Rediscover use different selection logic
   if (pipes.length > 0 && acceptableBlends.length > 0 && acceptableBottles.length > 0 && smokingLogs.length > 0) {
-    results.push(...generateThematicPairings(pipes, acceptableBlends, acceptableBottles, smokingLogs, bottleUsageCount, blendUsageCount));
+    results.push(...generateThematicPairings(pipes, acceptableBlends, acceptableBottles, smokingLogs, bottleUsageCount, blendUsageCount, pipeUsageCount));
   }
 
   // Something New — unexplored blends paired with suitable bottles
   if (pipes.length > 0 && blends.length > 0 && acceptableBottles.length > 0) {
-    results.push(...generateSomethingNewPairings(pipes, blends, acceptableBottles, smokingLogs, bottleUsageCount, prefCtx, blendUsageCount));
+    results.push(...generateSomethingNewPairings(pipes, blends, acceptableBottles, smokingLogs, bottleUsageCount, prefCtx, blendUsageCount, pipeUsageCount));
   }
 
   return results;

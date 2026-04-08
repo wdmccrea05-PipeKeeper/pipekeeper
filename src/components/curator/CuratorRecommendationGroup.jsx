@@ -84,12 +84,19 @@ function DoneIndicator({ label }) {
   );
 }
 
+// ─── Shared payload helpers ───────────────────────────────────────────────────
+
+/** True when an item carries a non-empty proposedChange payload. */
+function hasNonEmptyPayload(item) {
+  return !!(item.proposedChange?.payload && Object.keys(item.proposedChange.payload).length > 0);
+}
+
 // ─── Inline Review Panel ──────────────────────────────────────────────────────
 
 function InlineReviewPanel({ rec, onApply, onCancel }) {
   const [applying, setApplying] = useState(false);
   const allItems = rec.items || [];
-  const itemsWithPayloads = allItems.filter((i) => i.proposedChange?.payload);
+  const itemsWithPayloads = allItems.filter(hasNonEmptyPayload);
 
   const handleApply = async () => {
     setApplying(true);
@@ -158,8 +165,7 @@ function RecordOptimizationActions({ rec, onAction }) {
   const [showReview, setShowReview] = useState(false);
 
   const allItems = rec.items || [];
-  const itemsWithPayloads = allItems.filter((i) => i.proposedChange?.payload && Object.keys(i.proposedChange.payload).length > 0);
-  const hasPayloads = itemsWithPayloads.length > 0;
+  const hasPayloads = allItems.some(hasNonEmptyPayload);
   const isAutoFix = rec.actionType === ACTION_TYPE.AUTO_FIX;
 
   const handleApplyFix = async () => {
@@ -248,7 +254,7 @@ function AutoFixActions({ rec, onAction }) {
   const [showReview, setShowReview] = useState(false);
 
   const allItems = rec.items || [];
-  const hasPayloads = allItems.some((i) => i.proposedChange?.payload);
+  const hasPayloads = allItems.some(hasNonEmptyPayload);
 
   const handleApplyFix = async () => {
     setApplying(true);
@@ -284,8 +290,7 @@ function ReviewRequiredActions({ rec, onAction }) {
   const [showReview, setShowReview] = useState(false);
 
   const allItems = rec.items || [];
-  const itemsWithPayloads = allItems.filter((i) => i.proposedChange?.payload && Object.keys(i.proposedChange.payload).length > 0);
-  const hasPayloads = itemsWithPayloads.length > 0;
+  const hasPayloads = allItems.some(hasNonEmptyPayload);
 
   const handleApprove = async () => {
     setApplying(true);
