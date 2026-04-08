@@ -295,7 +295,7 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
     <div className="space-y-5">
       {/* Surface tabs */}
       <div
-        className="flex gap-1 p-1 rounded-xl"
+        className="flex gap-1 p-1 rounded-xl overflow-x-auto"
         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.15)' }}
       >
         {SURFACES.map(({ key, label, icon: Icon }) => {
@@ -310,7 +310,7 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
               key={key}
               type="button"
               onClick={() => setSurface(key)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all"
+              className="flex-shrink-0 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
               style={
                 isActive
                   ? { background: 'rgba(140,105,65,0.25)', color: '#F5F1E7', border: '1px solid rgba(140,105,65,0.4)' }
@@ -318,7 +318,7 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
               }
             >
               <Icon className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden sm:inline">{label}</span>
+              <span>{label}</span>
               {badge != null && (
                 <span
                   className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full font-bold"
