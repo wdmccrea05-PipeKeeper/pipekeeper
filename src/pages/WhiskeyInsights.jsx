@@ -31,28 +31,40 @@ export default function WhiskeyInsightsPage() {
   const { data: bottles = [] } = useQuery({
     queryKey: ['bottles', user?.email],
     queryFn: async () => {
-      const result = await base44.entities.Bottle.filter({ created_by: user?.email });
+      if (!user?.email) return [];
+      const result = await base44.entities.Bottle
+        .filter({ created_by: user.email }, '-updated_date', 1000)
+        .catch(() => []);
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
+    staleTime: 30_000,
   });
 
   const { data: tastingLogs = [] } = useQuery({
     queryKey: ['tasting-logs', user?.email],
     queryFn: async () => {
-      const result = await base44.entities.TastingLog.filter({ created_by: user?.email }, '-tasting_date', 100);
+      if (!user?.email) return [];
+      const result = await base44.entities.TastingLog
+        .filter({ created_by: user.email }, '-tasting_date', 1000)
+        .catch(() => []);
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
+    staleTime: 30_000,
   });
 
   const { data: inventoryUnits = [] } = useQuery({
     queryKey: ['whiskey-inventory', user?.email],
     queryFn: async () => {
-      const result = await base44.entities.WhiskeyInventoryUnit.filter({ created_by: user?.email });
+      if (!user?.email) return [];
+      const result = await base44.entities.WhiskeyInventoryUnit
+        .filter({ created_by: user.email })
+        .catch(() => []);
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
+    staleTime: 30_000,
   });
 
   // Canonical whiskey metrics via shared selector layer — single source of truth
