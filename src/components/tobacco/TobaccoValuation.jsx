@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Lock, TrendingUp, DollarSign, Info, Sparkles, Loader2 } from "lucide-react";
+import { Lock, TrendingUp, DollarSign, Info, Sparkles, Loader2, ShieldCheck } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { isLegacyPremium } from "@/components/utils/premiumAccess";
 import ProUpgradeModal from "@/components/subscription/ProUpgradeModal";
@@ -12,6 +12,11 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
+import {
+  computeBlendReplacementDifficulty,
+  computeBlendStrategy,
+  BLEND_DIFFICULTY_LABELS,
+} from "@/lib/collection/tobaccoSelectors";
 
 const INTERNAL_SOURCE_RE = /^turn\d+(search|fetch|open|view|click)\d+$/i;
 const URL_RE = /(https?:\/\/[^\s)]+)/i;
@@ -65,6 +70,71 @@ function normalizeEvidenceSources(rawSources) {
 
   return normalized.slice(0, 6);
 }
+
+const DIFFICULTY_COLORS = {
+  very_easy: '#4ade80',
+  easy:      '#86efac',
+  moderate:  '#fbbf24',
+  hard:      '#fb923c',
+  very_hard: '#f87171',
+};
+
+const DIFFICULTY_LEVELS_ORDER = ['very_easy', 'easy', 'moderate', 'hard', 'very_hard'];
+
+function ReplacementDifficultyPanel({ blend }) {
+  const difficulty = computeBlendReplacementDifficulty(blend);
+  const strategy   = computeBlendStrategy(blend);
+  const label      = BLEND_DIFFICULTY_LABELS[difficulty] || difficulty;
+  const color      = DIFFICULTY_COLORS[difficulty] || DIFFICULTY_COLORS.easy;
+  const activeIdx  = DIFFICULTY_LEVELS_ORDER.indexOf(difficulty);
+  const filledCount = activeIdx === -1 ? 1 : activeIdx + 1;
+
+  return (
+    <Card style={{
+      background: 'linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))',
+      border: '1px solid rgba(140,105,65,0.35)',
+      boxShadow: '0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)',
+    }}>
+      <CardHeader>
+        <CardTitle className="text-[#e8d5b7] flex items-center gap-2">
+          <ShieldCheck className="w-5 h-5 text-amber-400" />
+          Replacement Difficulty
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* 5-segment bar */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            {DIFFICULTY_LEVELS_ORDER.map((_, i) => (
+              <div
+                key={i}
+                className="flex-1 h-2 rounded-full transition-all"
+                style={{
+                  background: i < filledCount ? color : 'rgba(255,255,255,0.08)',
+                  boxShadow: i < filledCount ? `0 0 6px ${color}55` : 'none',
+                }}
+              />
+            ))}
+          </div>
+          <p className="text-sm font-semibold" style={{ color }}>{label}</p>
+        </div>
+
+        {/* Strategy block */}
+        <div
+          className="rounded-xl p-4 space-y-2"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.18)' }}
+        >
+          <p className="text-xs uppercase tracking-widest text-[#e8d5b7]/50 font-semibold">Strategy</p>
+          <p className="text-base font-bold" style={{ color: '#e8d5b7' }}>{strategy.label}</p>
+          <p className="text-xs text-[#e8d5b7]/60">{strategy.reason}</p>
+          <p className="text-sm text-[#e8d5b7]/80">{strategy.guidance}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export { ReplacementDifficultyPanel };
 
 export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
   const { t } = useTranslation();

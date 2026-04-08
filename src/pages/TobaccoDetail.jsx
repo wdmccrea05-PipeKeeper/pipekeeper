@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Leaf, Pencil, Share2, Search, Trash2 } from 'lucide-react';
 import EnrichButton from '@/components/shared/EnrichButton';
 import {
@@ -39,6 +40,7 @@ import {
   seedInitialSnapshotIfMissing,
   refreshItemValue,
 } from '@/components/valuation/valueRefreshService';
+import { ReplacementDifficultyPanel } from '@/components/tobacco/TobaccoValuation';
 
 // ── Valuation modals ──────────────────────────────────────────────────────────
 
@@ -365,6 +367,7 @@ export default function TobaccoDetail() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { user } = useCurrentUser();
+  const queryClient = useQueryClient();
 
   const blendId = params.get('id') || params.get('blendId');
   const userEmail = user?.email || null;
@@ -523,6 +526,8 @@ export default function TobaccoDetail() {
       await scopedEntities.TobaccoBlend.update(blend.id, updates);
       setBlend((prev) => ({ ...prev, ...updates }));
       toast.success(t('inventory.saved') || 'Inventory updated');
+      // Invalidate curator collection so the Curator page reflects the update immediately
+      queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
     } catch (e) {
       console.error('[TobaccoDetail] update failed', e);
       toast.error(t('errors.updateFailed') || 'Failed to update inventory');
@@ -794,7 +799,7 @@ export default function TobaccoDetail() {
       <CellarLog blend={blend} />
 
       {/* Value & Strategy Section — full feature parity with BottleDetail */}
-      {tobaccoStrategy && (
+      {tobaccoStrategy ? (
         <ValueStrategySection
           valuationSnapshot={tobaccoStrategy}
           valueTrend={valueTrend}
@@ -809,6 +814,9 @@ export default function TobaccoDetail() {
           onRefreshNow={handleRefreshValueNow}
           isRefreshing={isRefreshingValue}
         />
+      ) : (
+        /* Fallback: standalone replacement difficulty + strategy when full valuation is unavailable */
+        <ReplacementDifficultyPanel blend={blend} />
       )}
 
       <ShareRecordModal
@@ -893,6 +901,7 @@ export default function TobaccoDetail() {
             toast.success('Valuation inputs updated');
             // Reload snapshots so Value History reflects the new inputs
             reloadSnapshots();
+            queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
           }}
         />
       )}

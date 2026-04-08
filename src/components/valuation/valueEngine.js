@@ -148,8 +148,19 @@ export function normalizeValuationInputs(item, moduleKey) {
   }
 
   if (moduleKey === 'pipekeeper') {
-    // Detect tobacco blend by presence of blend_type or manufacturer without maker
-    const isTobacco = !!(item.blend_type || (item.manufacturer && !item.maker));
+    // Detect tobacco blend by any tobacco-specific field present on the record.
+    // Covers blends that may not have blend_type set but have inventory or other tobacco fields.
+    const isTobacco = !!(
+      item.blend_type ||
+      item.blend_family ||
+      item.tobacco_components ||
+      item.aging_potential ||
+      item.tin_total_tins !== undefined ||
+      item.tin_total_quantity_oz !== undefined ||
+      item.bulk_open !== undefined ||
+      item.pouch_total_pouches !== undefined ||
+      (item.manufacturer && !item.maker)
+    );
 
     if (isTobacco) {
       const totalOz =
