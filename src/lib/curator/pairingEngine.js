@@ -376,7 +376,7 @@ function buildCigarBottleRationale(cigar, bottle) {
   };
 
   return logicMap[strength] ||
-    `${cigarName}'s ${strength.toLowerCase()} body is matched to ${bottleName}'s ${whiskeyChar || whiskeyChar || 'character'} for a session where both elements contribute equally.`;
+    `${cigarName}'s ${strength.toLowerCase()} body is matched to ${bottleName}'s ${whiskeyChar || 'character'} for a session where both elements contribute equally.`;
 }
 
 /**
