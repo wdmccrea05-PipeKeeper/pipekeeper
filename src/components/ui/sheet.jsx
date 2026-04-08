@@ -70,7 +70,7 @@ const SheetContent = React.forwardRef(({ side = "right", className, children, ..
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 
 const SheetHeader = ({ className, ...props }) => (
-  <div className={cn("flex flex-col space-y-2 text-center sm:text-left border-b border-[rgba(140,105,65,0.18)] p-6", className)} {...props} />
+  <div className={cn("flex flex-col gap-2 border-b border-[rgba(180,140,75,0.15)] px-7 py-6", className)} {...props} />
 );
 SheetHeader.displayName = "SheetHeader";
 
@@ -86,12 +86,12 @@ const SheetFooter = ({ className, ...props }) => (
 SheetFooter.displayName = "SheetFooter";
 
 const SheetTitle = React.forwardRef(({ className, ...props }, ref) => (
-  <SheetPrimitive.Title ref={ref} className={cn("text-lg font-semibold text-[#F5F1E7]", className)} {...props} />
+  <SheetPrimitive.Title ref={ref} className={cn("text-xl font-semibold leading-snug text-[#F5F1E7]", className)} {...props} />
 ));
 SheetTitle.displayName = SheetPrimitive.Title.displayName;
 
 const SheetDescription = React.forwardRef(({ className, ...props }, ref) => (
-  <SheetPrimitive.Description ref={ref} className={cn("text-sm text-[#D7C9B2]/78", className)} {...props} />
+  <SheetPrimitive.Description ref={ref} className={cn("text-sm leading-relaxed text-[rgba(224,216,200,0.70)]", className)} {...props} />
 ));
 SheetDescription.displayName = SheetPrimitive.Description.displayName;
 

@@ -5,6 +5,8 @@ module.exports = {
   theme: {
   	extend: {
   		borderRadius: {
+  			'2xl': '1.5rem',
+  			xl: '1.125rem',
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'

@@ -1,24 +1,37 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-export default function Input(props) {
-  const { children, className = "", disabled, ...rest } = props;
-
+/**
+ * Input — premium, larger, readable.
+ * Taller tap target, warm palette, gold focus ring.
+ */
+function Input({ className = "", disabled, type, ...props }) {
   return (
     <input
+      type={type}
+      disabled={disabled}
       className={cn(
-        "flex h-10 w-full rounded-xl border border-[rgba(140,105,65,0.28)] bg-[rgba(28,21,16,0.72)] px-3 py-2 text-[16px] sm:text-sm text-[#F5F1E7] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
-        "placeholder:text-[#D8C7A6]/55",
-        "focus:outline-none focus:ring-2 focus:ring-[#A35C5C] focus:border-[rgba(163,92,92,0.55)]",
-        disabled && "cursor-not-allowed bg-[rgba(0,0,0,0.3)] text-[rgba(224,216,200,0.4)]",
+        // Layout & size
+        "flex h-11 w-full rounded-xl px-4 py-2.5",
+        // Typography
+        "text-base text-[#F5F1E7]",
+        // Surface
+        "bg-[rgba(20,14,10,0.70)] border border-[rgba(180,140,75,0.25)]",
+        "shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
+        // Placeholder
+        "placeholder:text-[rgba(224,216,200,0.38)]",
+        // Focus
+        "focus:outline-none focus:ring-2 focus:ring-[rgba(180,140,75,0.40)] focus:border-[rgba(180,140,75,0.52)]",
+        // Transition
+        "transition-colors duration-150",
+        // Disabled
+        disabled && "cursor-not-allowed opacity-50",
         className
       )}
-      disabled={disabled}
-      {...rest}
-    >
-      {children}
-    </input>
+      {...props}
+    />
   );
 }
 
 export { Input };
+export default Input;

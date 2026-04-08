@@ -27,20 +27,17 @@ function NavItem({ item, isActive }) {
     <Link
       to={createPageUrl(item.page)}
       className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-        isActive ? "bg-[#6b4a2d]/55" : "hover:bg-white/5"
+        "flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+        isActive
+          ? "bg-[rgba(100,66,34,0.55)] border border-[rgba(180,140,75,0.38)]"
+          : "border border-transparent hover:bg-white/6 hover:border-[rgba(180,140,75,0.15)]"
       )}
-      style={{
-        color: isActive ? "#F5F1E7" : "rgba(224,216,200,0.78)",
-        border: isActive
-          ? "1px solid rgba(180,140,75,0.35)"
-          : "1px solid transparent",
-      }}
+      style={{ color: isActive ? "#F5F1E7" : "rgba(224,216,200,0.76)" }}
     >
       {item.icon ? (
         <item.icon
           className="w-4 h-4 flex-shrink-0"
-          style={{ color: isActive ? "#D4A574" : "rgba(180,140,75,0.78)" }}
+          style={{ color: isActive ? "#D4A574" : "rgba(180,140,75,0.72)" }}
         />
       ) : null}
       <span className="line-clamp-1">{item.label}</span>
@@ -162,14 +159,14 @@ export default function ModuleNav({ currentPageName, user }) {
       <div className="md:hidden relative">
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:bg-white/5"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all hover:bg-white/6 border border-transparent hover:border-[rgba(180,140,75,0.18)]"
           style={{ color: "rgba(224,216,200,0.78)" }}
         >
           {mobileOpen ? "✕" : "☰"}
         </button>
 
         {mobileOpen && (
-          <div className="absolute top-10 left-0 bg-[#1d1511] border border-[rgba(180,140,75,0.35)] rounded-lg shadow-lg z-50 min-w-[200px] max-w-[calc(100vw-2rem)] max-h-[80vh] overflow-y-auto">
+          <div className="absolute top-12 left-0 bg-[rgba(22,16,12,0.98)] border border-[rgba(180,140,75,0.28)] rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.65)] z-50 min-w-[220px] max-w-[calc(100vw-2rem)] max-h-[80vh] overflow-y-auto py-2">
             {items.map((item) => {
               const isActive = location.pathname.startsWith(item.path);
 

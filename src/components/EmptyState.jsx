@@ -2,74 +2,80 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 
-export default function EmptyState({ 
-  icon: Icon, 
-  title, 
-  description, 
-  actionLabel, 
+/**
+ * EmptyState — premium, breathing, warm-palette empty screen.
+ */
+export default function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  actionLabel,
   onAction,
   secondaryActionLabel,
-  onSecondaryAction 
+  onSecondaryAction,
 }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="text-center py-16 px-4"
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="flex flex-col items-center text-center py-20 px-6"
     >
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-        className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-[#7D90A5]/20 to-[#A35C5C]/20 flex items-center justify-center"
-      >
-        {Icon && <Icon className="w-12 h-12 text-[#7D90A5]" strokeWidth={1.5} />}
-      </motion.div>
-      
+      {Icon && (
+        <motion.div
+          initial={{ scale: 0.82, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.08, type: "spring", stiffness: 220, damping: 22 }}
+          className="w-24 h-24 mb-7 rounded-full flex items-center justify-center"
+          style={{
+            background: "linear-gradient(135deg, rgba(180,140,75,0.12), rgba(163,92,92,0.12))",
+            border: "1px solid rgba(180,140,75,0.20)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.30)",
+          }}
+        >
+          <Icon className="w-11 h-11" style={{ color: "rgba(212,165,116,0.80)" }} strokeWidth={1.4} />
+        </motion.div>
+      )}
+
       <motion.h3
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="text-2xl font-semibold text-[#E0D8C8] mb-3"
+        transition={{ delay: 0.18 }}
+        className="text-2xl font-bold mb-3 tracking-tight"
+        style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}
       >
         {title}
       </motion.h3>
-      
+
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="text-[#E0D8C8]/70 mb-8 max-w-md mx-auto"
+        transition={{ delay: 0.26 }}
+        className="text-base leading-relaxed mb-9 max-w-sm"
+        style={{ color: "rgba(224,216,200,0.68)" }}
       >
         {description}
       </motion.p>
-      
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="flex flex-col sm:flex-row gap-3 justify-center"
-      >
-        {actionLabel && onAction && (
-          <Button 
-            onClick={onAction}
-            className="bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] hover:from-[#8B4A4A] hover:to-[#A35C5C] shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
-            size="lg"
-          >
-            {actionLabel}
-          </Button>
-        )}
-        {secondaryActionLabel && onSecondaryAction && (
-          <Button 
-            onClick={onSecondaryAction}
-            variant="outline"
-            className="border-[#E0D8C8]/30 text-[#E0D8C8] hover:bg-[#E0D8C8]/10"
-            size="lg"
-          >
-            {secondaryActionLabel}
-          </Button>
-        )}
-      </motion.div>
+
+      {(actionLabel || secondaryActionLabel) && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.34 }}
+          className="flex flex-col sm:flex-row gap-3 justify-center"
+        >
+          {actionLabel && onAction && (
+            <Button onClick={onAction} size="lg">
+              {actionLabel}
+            </Button>
+          )}
+          {secondaryActionLabel && onSecondaryAction && (
+            <Button onClick={onSecondaryAction} variant="outline" size="lg">
+              {secondaryActionLabel}
+            </Button>
+          )}
+        </motion.div>
+      )}
     </motion.div>
   );
 }

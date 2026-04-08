@@ -2,23 +2,28 @@ import * as React from "react";
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+/**
+ * Badge — softer, more readable, consistent palette.
+ */
 const badgeVariants = cva(
-  "inline-flex items-center rounded-lg border px-2.5 py-0.5 text-xs font-semibold transition-colors",
+  "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-wide transition-colors",
   {
     variants: {
       variant: {
         default:
-          "bg-[#A35C5C]/20 text-[#E0D8C8] border border-[#A35C5C]/40",
+          "bg-[rgba(163,92,92,0.20)] text-[#F0D8C8] border-[rgba(163,92,92,0.35)]",
         secondary:
-          "bg-[#2a2a2a] text-[#E0D8C8] border border-[rgba(255,255,255,0.15)]",
+          "bg-[rgba(255,255,255,0.06)] text-[#E0D8C8] border-[rgba(255,255,255,0.12)]",
         outline:
-          "border border-[rgba(180,140,75,0.35)] text-[#E0D8C8] bg-transparent",
+          "bg-transparent text-[#E0D8C8] border-[rgba(180,140,75,0.38)]",
+        gold:
+          "bg-[rgba(180,140,75,0.18)] text-[#D4A574] border-[rgba(180,140,75,0.35)]",
         success:
-          "border-[#4a9a70] bg-[rgba(46,175,111,0.2)] text-[#7dd8a8]",
+          "bg-[rgba(46,125,92,0.20)] text-[#7dd8a8] border-[rgba(74,154,112,0.38)]",
         warning:
-          "border-[#d99b3b] bg-[rgba(199,122,43,0.2)] text-[#f0b657]",
+          "bg-[rgba(199,122,43,0.18)] text-[#f0b657] border-[rgba(217,155,59,0.35)]",
         destructive:
-          "border-[#d97070] bg-[rgba(224,93,93,0.2)] text-[#f08888]",
+          "bg-[rgba(179,95,95,0.18)] text-[#f08888] border-[rgba(217,112,112,0.35)]",
       },
     },
     defaultVariants: {
