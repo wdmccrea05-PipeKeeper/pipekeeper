@@ -185,7 +185,7 @@ function CollectionOptActions({ rec, onAction, onOpenGrowExpand }) {
         <SecondaryBtn
           onClick={() => { onAction('mark_for_session', rec); setDone(true); }}
           icon={CalendarClock}
-          label="Mark as Next Session"
+          label="Mark for Session"
         />
         <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
       </>
