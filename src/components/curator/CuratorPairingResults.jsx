@@ -128,82 +128,98 @@ export default function CuratorPairingResults({ pairings = [], onAction }) {
               border: '1px solid rgba(140,105,65,0.16)',
             }}
           >
-            {/* Header: complement/contrast badge */}
-            {typeStyle && (
-              <div className="mb-3">
+            {/* Header: complement/contrast badge + confidence */}
+            <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+              {typeStyle && (
                 <span
-                  className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider"
+                  className="text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider"
                   style={{ background: typeStyle.bg, color: typeStyle.color, border: typeStyle.border }}
                 >
                   {typeStyle.label} Pairing
                 </span>
-              </div>
-            )}
+              )}
+              {pairing.confidenceLabel && (
+                <span className="text-[10px] font-medium" style={{ color: 'rgba(180,140,75,0.65)' }}>
+                  {pairing.confidenceLabel} confidence
+                </span>
+              )}
+            </div>
 
             {/* Trio layout for pipe pairings — Pipe / Blend / Pour equally prominent */}
             {hasTrio ? (
-              <div className="flex items-stretch gap-2 mb-3">
-                <TrioItem item={pairing.leftItem}  slotLabel="Pipe" />
+              <div className="flex items-stretch gap-2 mb-4">
+                <TrioItem item={pairing.leftItem}    slotLabel="Pipe" />
                 <TrioItem item={pairing.blendBridge} slotLabel="Blend" />
-                <TrioItem item={pairing.rightItem} slotLabel="Pour" />
+                <TrioItem item={pairing.rightItem}   slotLabel="Pour" />
               </div>
             ) : (
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-4">
                 <DuoItem item={pairing.leftItem} />
                 <span className="text-[10px] shrink-0" style={{ color: 'rgba(180,140,75,0.45)' }} aria-hidden="true">✕</span>
                 <DuoItem item={pairing.rightItem} />
               </div>
             )}
 
-            {/* Rationale */}
+            {/* Main expert rationale */}
             {pairing.rationale && (
-              <p className="text-sm leading-relaxed mb-3" style={{ color: 'rgba(224,216,200,0.72)' }}>
+              <p className="text-sm leading-relaxed mb-3" style={{ color: 'rgba(224,216,200,0.82)' }}>
                 {pairing.rationale}
               </p>
             )}
 
-            {/* Flavor explanation fields */}
-            {(pairing.flavorInteraction || pairing.confidenceLabel) && (
-              <div className="space-y-1 mb-3">
+            {/* Secondary explanation fields */}
+            {(pairing.flavorInteraction || pairing.structuralCompatibility || pairing.outcome) && (
+              <div
+                className="space-y-2 mb-3 pt-2.5"
+                style={{ borderTop: '1px solid rgba(140,105,65,0.12)' }}
+              >
                 {pairing.flavorInteraction && (
-                  <p className="text-xs leading-snug" style={{ color: 'rgba(224,216,200,0.5)' }}>
-                    {pairing.flavorInteraction}
-                  </p>
+                  <div className="flex items-start gap-2">
+                    <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5 shrink-0 w-14" style={{ color: 'rgba(212,165,116,0.55)' }}>
+                      Flavor
+                    </span>
+                    <p className="text-xs leading-snug" style={{ color: 'rgba(224,216,200,0.58)' }}>
+                      {pairing.flavorInteraction}
+                    </p>
+                  </div>
                 )}
-                {pairing.confidenceLabel && (
-                  <p className="text-[10px]" style={{ color: 'rgba(180,140,75,0.6)' }}>
-                    Confidence: {pairing.confidenceLabel}
-                  </p>
+                {pairing.structuralCompatibility && (
+                  <div className="flex items-start gap-2">
+                    <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5 shrink-0 w-14" style={{ color: 'rgba(212,165,116,0.55)' }}>
+                      Structure
+                    </span>
+                    <p className="text-xs leading-snug" style={{ color: 'rgba(224,216,200,0.58)' }}>
+                      {pairing.structuralCompatibility}
+                    </p>
+                  </div>
+                )}
+                {pairing.outcome && (
+                  <div className="flex items-start gap-2">
+                    <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5 shrink-0 w-14" style={{ color: 'rgba(212,165,116,0.55)' }}>
+                      Session
+                    </span>
+                    <p className="text-xs leading-snug" style={{ color: 'rgba(224,216,200,0.58)' }}>
+                      {pairing.outcome}
+                    </p>
+                  </div>
                 )}
               </div>
             )}
 
             {/* Action row */}
             <div
-              className="flex flex-wrap items-center gap-1.5 pt-1.5"
+              className="flex flex-wrap items-center gap-2 pt-2"
               style={{ borderTop: '1px solid rgba(140,105,65,0.1)' }}
             >
-              {onAction && (
-                <button
-                  type="button"
-                  onClick={() => onAction('ask_curator', pairing)}
-                  className="flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-md font-medium"
-                  style={{ background: 'rgba(74,124,156,0.12)', color: 'rgba(120,170,220,0.9)', border: '1px solid rgba(74,124,156,0.25)' }}
-                >
-                  <HelpCircle className="w-2.5 h-2.5" />
-                  Ask Curator
-                </button>
-              )}
-
               {onAction && isPipe && (
                 <button
                   type="button"
                   onClick={() => onAction('build_session', pairing)}
-                  className="flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-md font-medium"
-                  style={{ background: 'rgba(74,124,92,0.1)', color: 'rgba(80,180,130,0.85)', border: '1px solid rgba(74,124,92,0.22)' }}
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold"
+                  style={{ background: 'rgba(74,124,92,0.18)', color: 'rgba(80,180,130,0.95)', border: '1px solid rgba(74,124,92,0.32)' }}
                 >
-                  <BookOpen className="w-2.5 h-2.5" />
-                  Session
+                  <BookOpen className="w-3 h-3" />
+                  Build Session
                 </button>
               )}
 
@@ -211,11 +227,23 @@ export default function CuratorPairingResults({ pairings = [], onAction }) {
                 <button
                   type="button"
                   onClick={() => onAction('save_pairing', pairing)}
-                  className="flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-md font-medium"
-                  style={{ background: 'rgba(180,140,75,0.08)', color: 'rgba(212,165,116,0.75)', border: '1px solid rgba(180,140,75,0.2)' }}
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold"
+                  style={{ background: 'rgba(180,140,75,0.1)', color: 'rgba(212,165,116,0.9)', border: '1px solid rgba(180,140,75,0.22)' }}
                 >
-                  <Star className="w-2.5 h-2.5" />
-                  Save
+                  <Star className="w-3 h-3" />
+                  Save Pairing
+                </button>
+              )}
+
+              {onAction && (
+                <button
+                  type="button"
+                  onClick={() => onAction('ask_curator', pairing)}
+                  className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg"
+                  style={{ color: 'rgba(120,170,220,0.7)', background: 'transparent', border: 'none' }}
+                >
+                  <HelpCircle className="w-3 h-3" />
+                  Ask Curator
                 </button>
               )}
             </div>

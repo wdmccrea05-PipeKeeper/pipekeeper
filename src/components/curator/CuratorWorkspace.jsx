@@ -229,10 +229,11 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
     });
 
     // ── Dismiss on completion ──────────────────────────────────────────────────
-    if (
-      result?.ok &&
-      ['apply_fix', 'approve_changes', 'apply_specialization', 'acknowledge', 'add_to_shopping_list'].includes(actionKey)
-    ) {
+    if (result?.ok && (
+      result?.dismissed ||
+      ['apply_fix', 'approve_changes', 'apply_specialization', 'acknowledge', 'add_to_shopping_list',
+       'add_to_rotation', 'mark_for_session', 'add_to_want_list'].includes(actionKey)
+    )) {
       dismissRec(recommendation?.id);
     }
 
@@ -243,6 +244,9 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
     }
     if (actionKey === 'add_to_shopping_list') {
       queryClient.invalidateQueries({ queryKey: ['shoppingListItems'] });
+    }
+    if (actionKey === 'add_to_want_list') {
+      queryClient.invalidateQueries({ queryKey: ['curatorCollection', 'wantList'] });
     }
     return result;
   }, [user?.email, queryClient, navigate, dismissRec, openChat]);
@@ -292,10 +296,10 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Surface tabs */}
       <div
-        className="flex gap-1 p-1 rounded-xl overflow-x-auto"
+        className="flex gap-1 p-1 rounded-2xl overflow-x-auto"
         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.15)' }}
       >
         {SURFACES.map(({ key, label, icon: Icon }) => {
@@ -310,11 +314,11 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
               key={key}
               type="button"
               onClick={() => setSurface(key)}
-              className="flex-shrink-0 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
+              className="flex-shrink-0 flex items-center justify-center gap-1.5 py-2.5 px-3.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap"
               style={
                 isActive
-                  ? { background: 'rgba(140,105,65,0.25)', color: '#F5F1E7', border: '1px solid rgba(140,105,65,0.4)' }
-                  : { background: 'transparent', color: 'rgba(224,216,200,0.5)', border: '1px solid transparent' }
+                  ? { background: 'rgba(140,105,65,0.28)', color: '#F5F1E7', border: '1px solid rgba(140,105,65,0.45)' }
+                  : { background: 'transparent', color: 'rgba(224,216,200,0.48)', border: '1px solid transparent' }
               }
             >
               <Icon className="w-3.5 h-3.5 shrink-0" />
@@ -384,12 +388,12 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
       )}
 
       {surface === 'chat' && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div>
-            <h2 className="text-base font-bold" style={{ color: '#F5F1E7' }}>
+            <h2 className="text-lg font-bold" style={{ color: '#F5F1E7' }}>
               Ask the Curator
             </h2>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
+            <p className="text-sm mt-0.5" style={{ color: 'rgba(224,216,200,0.52)' }}>
               Expert tobacconist chat — collection questions, pairing deep-dives, and more
             </p>
           </div>

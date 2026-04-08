@@ -22,6 +22,7 @@
  */
 
 import { createRecommendation, computeConfidence, CATEGORY, ACTION_TYPE, MODULE_KEY, OWNERSHIP_CONTEXT, PRIORITY } from './recommendationSchema.js';
+import { filterAiEligibleItems } from '../../platform/aiEligibility.js';
 
 // ─── Pairing mode constants ───────────────────────────────────────────────────
 
@@ -208,84 +209,174 @@ function getWhiskeyCharacter(bottle) {
 // ─── Pipe character descriptors ───────────────────────────────────────────────
 
 /**
- * Return a description of why the pipe is suitable for this pairing.
- * References bowl size, specialization, and shape when available.
+ * Return a structured pipe description covering chamber, shape, and smoking behavior.
+ * Returns { shortNote, whyNote } — both strings, never null.
  */
 function getPipeCharacterNote(pipe, blend) {
-  if (!pipe) return null;
+  if (!pipe) return { shortNote: null, whyNote: null };
 
   const shape     = (pipe.shape || pipe.bowl_style || '').toLowerCase();
   const sizeClass = (pipe.sizeClass || '').toLowerCase();
   const spec      = (pipe.specialization || '').toLowerCase();
+  const name      = pipe.name || 'This pipe';
 
-  // Shape/size-based notes
+  // Large / slow-burning shapes
   if (sizeClass === 'large' || shape.includes('pot') || shape.includes('poker') || shape.includes('churchwarden')) {
-    return `${pipe.name}'s larger bowl sustains a longer, slower burn — letting ${blend.name}'s character develop fully through the smoke`;
+    return {
+      shortNote: `${name}'s generous bowl sustains a slow, even burn`,
+      whyNote:   `${name}'s larger chamber gives ${blend?.name || 'this blend'} room to open up gradually, preventing the rapid heat spikes that compress flavor in smaller bowls — ideal for a contemplative session.`,
+    };
   }
+  // Small / focused shapes
   if (sizeClass === 'small' || shape.includes('brandy') || shape.includes('prince') || shape.includes('apple')) {
-    return `${pipe.name}'s compact bowl concentrates ${blend.name}'s flavors for a shorter, more focused session`;
+    return {
+      shortNote: `${name}'s compact bowl concentrates ${blend?.name || 'the blend'} into a shorter, more intense smoke`,
+      whyNote:   `The tighter chamber of ${name} brings flavors forward quickly, making it suited for shorter sittings where you want immediate character rather than a long development arc.`,
+    };
   }
+  // Billiard / Canadian — the workhorse shape
   if (shape.includes('billiard') || shape.includes('canadian')) {
-    return `${pipe.name}'s straight, even-burning chamber gives ${blend.name} a consistent platform throughout the bowl`;
+    return {
+      shortNote: `${name}'s straight, even-burning billiard chamber delivers consistent smoke throughout`,
+      whyNote:   `A billiard's straight draft means even airflow from top to bottom — ${blend?.name || 'this blend'} will smoke at the same character from light to dottle, making this shape the reliable benchmark.`,
+    };
   }
-
-  // Specialization-based notes
+  // Bent shapes
+  if (shape.includes('bent') || shape.includes('calabash')) {
+    return {
+      shortNote: `${name}'s bent design keeps smoke cool over a longer session`,
+      whyNote:   `The longer airpath of ${name} drops smoke temperature before it reaches the palate, softening any harshness and letting delicate flavor notes in ${blend?.name || 'this blend'} stay clear.`,
+    };
+  }
+  // Specialization-based
   if (spec && spec !== 'unspecialized' && spec !== 'general') {
     const specLabel = spec.charAt(0).toUpperCase() + spec.slice(1);
-    return `${pipe.name}'s ${specLabel}-seasoned cake provides a complementary base that supports rather than competes with ${blend.name}`;
+    return {
+      shortNote: `${name}'s ${specLabel}-seasoned cake reinforces rather than competes with this blend`,
+      whyNote:   `${name} has been dedicated to ${specLabel} blends — the residual cake character in its walls is conditioned to support exactly this flavor profile, not undercut it.`,
+    };
   }
 
-  return `${pipe.name} is the right choice for this session`;
+  return {
+    shortNote: `${name} is well-suited to this blend`,
+    whyNote:   `${name}'s seasoned chamber provides a neutral backdrop, letting ${blend?.name || 'the blend'}'s own character drive the session.`,
+  };
 }
 
 /**
- * Build an expert-quality rationale for a pipe + blend + bottle pairing.
- * Always references specific flavors. Labels logic as complement or contrast.
- * Includes a pipe-specific note about why the pipe suits this combination.
+ * Build an expert-quality, multi-dimensional rationale for a pipe + blend + bottle pairing.
+ *
+ * Covers all 5 required dimensions:
+ *   1. Pipe logic    — chamber / shape / smoking behavior
+ *   2. Blend logic   — flavor profile, body, role in the pairing
+ *   3. Pour logic    — sweetness / spice / proof / finish / smoke / oak / texture
+ *   4. Interaction   — complement or contrast, how flavors work together
+ *   5. Session feel  — what the combined experience is like
  */
 function buildPipeBlendBottleRationale(pipe, blend, bottle) {
   const blendType    = getBlendType(blend);
   const whiskeyType  = getWhiskeyType(bottle);
   const pairingLogic = BLEND_WHISKEY_PAIRING_LOGIC[blendType];
   const whiskeyChar  = getWhiskeyCharacter(bottle);
-  const pipeNote     = getPipeCharacterNote(pipe, blend);
+  const { shortNote: pipeShort, whyNote: pipeWhy } = getPipeCharacterNote(pipe, blend);
+
+  const blendName   = blend?.name   || 'This blend';
+  const bottleName  = bottle?.name  || 'This pour';
 
   if (pairingLogic) {
-    const logicLabel    = pairingLogic.logic === 'complement' ? 'Complement' : 'Contrast';
-    const tensionLabel  = pairingLogic.logic === 'complement'
-      ? 'each reinforcing the other without competing'
-      : 'the tension between them creating a balanced experience';
-    const base = `${logicLabel} pairing: ${pairingLogic.note}. ${blend.name}'s ${blendType} character meets ${bottle.name}'s ${whiskeyChar} — ${tensionLabel}.`;
-    return pipeNote ? `${base} ${pipeNote}.` : base;
+    const isComplement = pairingLogic.logic === 'complement';
+    const interactionLabel = isComplement
+      ? 'each reinforcing the other without either dominating'
+      : 'the contrast sharpening both rather than softening either';
+    const sessionFeel = isComplement
+      ? 'The session stays cohesive from light to finish — neither the tobacco nor the pour pulls ahead.'
+      : 'Expect a dynamic session where each sip resets the palate and each draw reclaims the room.';
+
+    const parts = [];
+    // Blend logic
+    parts.push(`${blendName}'s ${blendType} character brings ${getBlendFlavorNote(blendType)} to the bowl.`);
+    // Pour logic
+    parts.push(`${bottleName} delivers ${whiskeyChar}.`);
+    // Interaction logic
+    parts.push(`${pairingLogic.note} — ${interactionLabel}.`);
+    // Pipe logic
+    if (pipeShort) parts.push(pipeShort + '.');
+    // Session feel
+    parts.push(sessionFeel);
+
+    return parts.join(' ');
   }
 
-  // Fallback: still be specific
+  // Fallback: still be specific when we have data
   if (blendType && whiskeyType) {
-    const base = `${blend.name}'s ${blendType} profile finds a workable partner in ${bottle.name}'s ${whiskeyChar}.`;
-    return pipeNote ? `${base} ${pipeNote}.` : base;
+    const parts = [
+      `${blendName}'s ${blendType} profile — ${getBlendFlavorNote(blendType)} — finds a workable partner in ${bottleName}'s ${whiskeyChar}.`,
+    ];
+    if (pipeShort) parts.push(pipeShort + '.');
+    return parts.join(' ');
   }
 
-  return `${blend.name} + ${bottle.name}${pipe ? ` in ${pipe.name}` : ''} — compatible flavor profiles.`;
+  return `${blendName} + ${bottleName}${pipe ? ` in ${pipe.name}` : ''} — compatible flavor profiles matched from your collection.`;
+}
+
+/**
+ * Return a short, specific flavor descriptor for a blend type.
+ */
+function getBlendFlavorNote(blendType) {
+  const notes = {
+    'Virginia':          'natural sweetness, hay, and sometimes citrus or stone-fruit notes',
+    'Virginia/Perique':  'Virginia sweetness cut by Perique\'s plum, fig, and black pepper complexity',
+    'Virginia/Burley':   'a dry, nutty backbone balancing Virginia\'s natural sweetness',
+    'Virginia/Oriental': 'floral spice and fruity complexity layered over Virginia\'s base',
+    'English':           'Latakia smoke, leather, and earthy depth',
+    'English/Balkan':    'layered Oriental spice, Latakia smoke, and complex incense character',
+    'Balkan':            'incense-like Oriental leaf, toasted bread, and dried fruit',
+    'Aromatic':          'cased sweetness, room note, and smooth accessibility',
+    'Burley':            'dry nuttiness, cocoa bitterness, and earthy body',
+    'Oriental':          'floral, slightly spicy, and exotic dried-leaf complexity',
+  };
+  return notes[blendType] || `${blendType} character`;
 }
 
 /**
  * Build an expert-quality rationale for a cigar + bottle pairing.
+ * Covers blend strength, whiskey character, interaction logic, and session feel.
  */
 function buildCigarBottleRationale(cigar, bottle) {
-  const strength = getCigarStrength(cigar);
-  const whiskeyType = getWhiskeyType(bottle);
+  const strength    = getCigarStrength(cigar);
   const whiskeyChar = getWhiskeyCharacter(bottle);
+  const wrapper     = cigar.wrapper ? ` ${cigar.wrapper}-wrapped` : '';
+  const cigarName   = cigar.name   || 'This cigar';
+  const bottleName  = bottle.name  || 'This pour';
 
   const logicMap = {
-    'Mild':        `${bottle.name}'s ${whiskeyChar} won't compete with a mild cigar — the lightness of both keeps the session approachable without either overpowering.`,
-    'Mild-Medium': `${cigar.name}'s restrained body pairs as a complement to ${bottle.name}'s ${whiskeyChar}, letting both evolve without dominating.`,
-    'Medium':      `${cigar.name}'s medium body creates a contrast pairing with ${bottle.name}'s ${whiskeyChar} — the whiskey's character becomes the backdrop that lets the cigar's complexity emerge.`,
-    'Medium-Full': `${bottle.name}'s ${whiskeyChar} holds up to ${cigar.name}'s fuller body. This is a complement pairing where neither backs down.`,
-    'Full':        `A full-bodied cigar needs a pour with presence. ${bottle.name}'s ${whiskeyChar} has enough structure to stand alongside ${cigar.name} without disappearing.`,
+    'Mild': (
+      `${cigarName}'s${wrapper} mild body — delicate, often creamy with light cedar notes — finds an ideal companion in ${bottleName}'s ${whiskeyChar}. ` +
+      `Neither overpowers the other; the pour's lighter frame lets the cigar's subtleties come forward. ` +
+      `This is a complement pairing: approachable, cohesive, and well-suited to a relaxed session.`
+    ),
+    'Mild-Medium': (
+      `${cigarName} sits in the mild-to-medium range — enough character to be interesting without the weight to demand a bold pour. ` +
+      `${bottleName}'s ${whiskeyChar} meets it as a complement: similar in intensity, letting both develop across the smoke without either flattening out.`
+    ),
+    'Medium': (
+      `${cigarName}'s medium body — likely earthy, woody, and with some spice in the transition — creates a contrast pairing with ${bottleName}'s ${whiskeyChar}. ` +
+      `The whiskey's sweetness becomes the backdrop that lets the cigar's complexity come through in relief. ` +
+      `Each sip resets the palate slightly, making the draw that follows feel more defined.`
+    ),
+    'Medium-Full': (
+      `${cigarName} has enough presence — pepper, leather, and woody depth — to need a pour that won't disappear behind it. ` +
+      `${bottleName}'s ${whiskeyChar} holds up without competing, making this a complement pairing where both deliver at full expression.`
+    ),
+    'Full': (
+      `A full-bodied cigar like ${cigarName}${wrapper} needs a pour with genuine structure — anything lighter gets buried. ` +
+      `${bottleName}'s ${whiskeyChar} has enough weight and finish length to stand alongside it. ` +
+      `This isn't a subtle session — both elements are bold, and the pairing rewards that.`
+    ),
   };
 
   return logicMap[strength] ||
-    `${cigar.name}'s ${strength.toLowerCase()} body pairs with ${bottle.name}'s ${whiskeyChar || whiskeyType || 'character'}.`;
+    `${cigarName}'s ${strength.toLowerCase()} body is matched to ${bottleName}'s ${whiskeyChar || 'character'} for a session where both elements contribute equally.`;
 }
 
 /**
@@ -299,50 +390,82 @@ function getPairingType(blend, bottle) {
 }
 
 /**
- * Build a short flavorInteraction string.
- * Handles both tobacco blends and cigars as the first argument.
- * Returns null if insufficient data.
+ * Build a flavor interaction summary line (shown below the main rationale).
+ * More specific than before — references actual blend and whiskey notes.
  */
 function buildFlavorInteraction(blendOrCigar, bottle) {
-  const whiskeyChar = bottle?.whiskey_type || bottle?.spirit_type || '';
-  // Try tobacco blend fields first
-  const blendType = blendOrCigar?.blend_type || blendOrCigar?.blend_family || blendOrCigar?.type || '';
-  if (blendType && whiskeyChar) {
-    return `${blendType} character meets ${whiskeyChar} — shared sweetness and body`;
+  const blendType     = blendOrCigar?.blend_type || blendOrCigar?.blend_family || blendOrCigar?.type || '';
+  const whiskeyType   = getWhiskeyType(bottle);
+  const pairingLogic  = blendType ? BLEND_WHISKEY_PAIRING_LOGIC[blendType] : null;
+
+  if (blendType && pairingLogic) {
+    const logicWord = pairingLogic.logic === 'complement' ? 'Complementary' : 'Contrast';
+    return `${logicWord}: ${blendType} × ${whiskeyType || 'whiskey'} — ${pairingLogic.note.split('.')[0].toLowerCase()}`;
   }
-  if (blendType) return `${blendType} character drives the pairing`;
-  // Fall back to cigar fields
-  const cigarWrapper = blendOrCigar?.wrapper || '';
-  const cigarStrength = blendOrCigar?.strength || blendOrCigar?.body || '';
-  if (cigarStrength && whiskeyChar) {
-    return `${cigarStrength} body meets ${whiskeyChar} — matched intensity`;
+  if (blendType && whiskeyType) {
+    return `${blendType} character meets ${whiskeyType} — flavor alignment by type logic`;
   }
-  if (cigarWrapper) return `${cigarWrapper} wrapper complexity drives the pairing`;
+  if (blendType) return `${blendType} profile drives the pairing`;
+
+  // Cigar fallback
+  const strength = blendOrCigar?.strength || blendOrCigar?.body || '';
+  if (strength && whiskeyType) {
+    const cigarPairingType = getCigarPairingType(blendOrCigar);
+    const logicWord = cigarPairingType === 'complement' ? 'Complementary' : 'Contrast';
+    return `${logicWord}: ${strength} body × ${whiskeyType} — intensity matched for balance`;
+  }
   return null;
 }
 
 /**
- * Build a short structuralCompatibility string.
+ * Build a structural compatibility note.
+ * References ABV and blend strength for a concrete structural read.
  */
 function buildStructuralCompatibility(blend, bottle) {
-  const abv = Number(bottle?.abv) || 0;
-  if (abv > 50) return 'High-proof spirit matches full-bodied smoke — structure holds';
-  if (abv > 40) return 'Mid-strength spirit balances the blend — clean burn delivery';
-  return 'Spirit weight and smoke density are complementary';
+  const abv       = Number(bottle?.abv) || 0;
+  const strength  = blend?.strength || blend?.body || '';
+  const blendType = getBlendType(blend);
+
+  if (abv > 55 && (strength === 'Full' || blendType === 'English' || blendType === 'English/Balkan')) {
+    return `Cask-strength proof (${abv}% ABV) pairs well with full-bodied smoke — both can sustain the intensity`;
+  }
+  if (abv > 50) {
+    return `High-proof spirit (${abv}% ABV) stands up to the blend's weight without getting lost`;
+  }
+  if (abv > 43) {
+    return `Standard cask proof (${abv}% ABV) — neither the smoke nor the pour overwhelms the other`;
+  }
+  if (abv > 0) {
+    return `Approachable proof (${abv}% ABV) matches a gentler smoke profile — clean and balanced`;
+  }
+  return 'Spirit weight and smoke density are structurally compatible';
 }
 
 /**
- * Build a short outcome string based on pairing type.
+ * Build a session outcome string based on pairing type and blend data.
  */
-function buildPairingOutcome(pairingType) {
-  switch (pairingType) {
-    case 'complementary': return 'Consistent, cohesive experience throughout the session';
-    case 'contrast':      return 'Dynamic contrast — each element sharpens the other';
-    case 'amplification': return 'Dominant notes amplified — bold, full delivery';
-    case 'experimental':  return 'Unexpected combination — results vary by palate';
-    case 'complement':    return 'Balanced complementary session — cohesive experience';
-    default:              return 'Balanced session pairing';
+function buildPairingOutcome(pairingType, blend, bottle) {
+  const blendType   = blend ? getBlendType(blend) : null;
+  const whiskeyType = bottle ? getWhiskeyType(bottle) : null;
+
+  if (pairingType === 'complement' || pairingType === 'complementary') {
+    if (blendType === 'English' || blendType === 'English/Balkan') {
+      return 'Smoke-forward, smoky-smooth session — Latakia and peat amplify each other through the finish';
+    }
+    if (blendType === 'Virginia') {
+      return 'Sweet, warm session — Virginia brightness and bourbon sweetness stay cohesive from light to close';
+    }
+    return 'Cohesive session — similar profiles reinforce each other without competition';
   }
+  if (pairingType === 'contrast') {
+    if (blendType === 'Virginia/Perique') {
+      return 'Balanced contrast — Perique\'s pepper note and the whiskey\'s spice create a clean, defined experience';
+    }
+    return 'Dynamic contrast — each element sharpens the other; the session stays interesting throughout';
+  }
+  if (pairingType === 'amplification') return 'Dominant notes amplified — bold, full delivery from first light to finish';
+  if (pairingType === 'experimental')  return 'Unconventional pairing — results depend on palate; worth a deliberate session to evaluate';
+  return 'Balanced, deliberate session pairing from your collection';
 }
 
 /**
@@ -451,7 +574,7 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
       rationale:     buildPipeBlendBottleRationale(pipe, blend, bestBottle),
       flavorInteraction:       buildFlavorInteraction(blend, bestBottle),
       structuralCompatibility: buildStructuralCompatibility(blend, bestBottle),
-      outcome:                 buildPairingOutcome(getPairingType(blend, bestBottle)),
+      outcome:                 buildPairingOutcome(getPairingType(blend, bestBottle), blend, bestBottle),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       confidence:    computeConfidence({
         preferenceAlignment:   hasBlendType && hasWhiskeyType ? (bestScore >= 7 ? 0.9 : 0.6) : 0.4,
@@ -552,7 +675,7 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
       rationale:   buildPipeBlendBottleRationale(pipe, blend, best),
       flavorInteraction:       buildFlavorInteraction(blend, best),
       structuralCompatibility: buildStructuralCompatibility(blend, best),
-      outcome:                 buildPairingOutcome(getPairingType(blend, best)),
+      outcome:                 buildPairingOutcome(getPairingType(blend, best), blend, best),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       ownershipStatus: 'owned',
     });
@@ -641,7 +764,7 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
       rationale:   rediscoverRationale,
       flavorInteraction:       buildFlavorInteraction(blend, best),
       structuralCompatibility: buildStructuralCompatibility(blend, best),
-      outcome:                 buildPairingOutcome(getPairingType(blend, best)),
+      outcome:                 buildPairingOutcome(getPairingType(blend, best), blend, best),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       ownershipStatus: 'owned',
     });
@@ -711,7 +834,7 @@ function generateCigarWhiskeyPairings(cigars, bottles, bottleUsageCount) {
       rationale:     buildCigarBottleRationale(cigar, bestBottle),
       flavorInteraction:       buildFlavorInteraction(cigar, bestBottle),
       structuralCompatibility: buildStructuralCompatibility(cigar, bestBottle),
-      outcome:                 buildPairingOutcome(getCigarPairingType(cigar)),
+      outcome:                 buildPairingOutcome(getCigarPairingType(cigar), cigar, bestBottle),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       ownershipStatus: 'owned',
     });
@@ -832,7 +955,7 @@ function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottl
       rationale:   novelRationale,
       flavorInteraction:       buildFlavorInteraction(blend, best),
       structuralCompatibility: buildStructuralCompatibility(blend, best),
-      outcome:                 buildPairingOutcome(getPairingType(blend, best)),
+      outcome:                 buildPairingOutcome(getPairingType(blend, best), blend, best),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
       ownershipStatus: 'owned',
     });
@@ -865,13 +988,15 @@ function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottl
  */
 export function generatePairingRecommendations(context = {}) {
   const {
-    pipes = [],
-    blends = [],
-    bottles = [],
-    cigars = [],
     smokingLogs = [],
     preferences = null,
   } = context;
+
+  // Exclude ai_excluded (collectible-only / hold-only) items from all pairing logic
+  const pipes   = filterAiEligibleItems(context.pipes   || []);
+  const blends  = filterAiEligibleItems(context.blends  || []);
+  const bottles = filterAiEligibleItems(context.bottles || []);
+  const cigars  = filterAiEligibleItems(context.cigars  || []);
 
   const prefCtx = buildPreferenceContext(preferences);
 

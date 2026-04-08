@@ -57,20 +57,24 @@ function computeSummary(sections) {
 function SummaryCard({ value, label, color, subtext }) {
   return (
     <div
-      className="rounded-xl p-4 flex flex-col gap-1 min-w-0"
-      style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${color}25` }}
+      className="rounded-2xl p-5 flex flex-col gap-1.5 min-w-0"
+      style={{
+        background: 'rgba(255,255,255,0.035)',
+        border: `1px solid ${color}20`,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.14)',
+      }}
     >
       <span
-        className="text-2xl font-bold tabular-nums leading-none"
+        className="text-3xl font-bold tabular-nums leading-none"
         style={{ color }}
       >
         {value}
       </span>
-      <span className="text-sm font-semibold leading-tight" style={{ color: 'rgba(224,216,200,0.75)' }}>
+      <span className="text-sm font-semibold leading-tight" style={{ color: 'rgba(224,216,200,0.8)' }}>
         {label}
       </span>
       {subtext && (
-        <span className="text-[10px] leading-tight" style={{ color: 'rgba(224,216,200,0.35)' }}>
+        <span className="text-xs leading-tight" style={{ color: 'rgba(224,216,200,0.4)' }}>
           {subtext}
         </span>
       )}

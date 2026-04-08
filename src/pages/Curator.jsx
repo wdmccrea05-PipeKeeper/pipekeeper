@@ -110,20 +110,20 @@ export default function Curator() {
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="px-4 py-6 max-w-4xl mx-auto space-y-5">
+    <div className="px-4 py-8 max-w-4xl mx-auto space-y-6">
       {/* Page header */}
-      <div className="space-y-0.5">
+      <div className="space-y-1">
         <h1
-          className="text-xl font-bold tracking-tight"
-          style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+          className="font-bold tracking-tight"
+          style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", fontSize: 'var(--ck-text-2xl)' }}
         >
           Collection Curator
         </h1>
         <p
           className="text-sm"
-          style={{ color: 'rgba(224,216,200,0.5)' }}
+          style={{ color: 'rgba(224,216,200,0.55)' }}
         >
-          Operational recommendations across your collection
+          Operational intelligence across your collection — fix, optimize, pair, and grow.
         </p>
       </div>
 
