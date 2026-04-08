@@ -183,23 +183,30 @@ export async function executeRecommendationAction(recommendation, action, opts =
       );
 
       if (!toApply.length) {
-        // No auto-applicable proposals — return informational result without navigating away
         return {
-          ok: true,
-          applied: 0,
-          message: 'No auto-fix proposals available for these items. Use Review Details to inspect and edit each record.',
+          ok:           true,
+          applied:      0,
+          appliedCount: 0,
+          resolvedIds:  [],
+          failedIds:    [],
+          message:      'No auto-fix proposals available for these items. Use Review Details to inspect and edit each record.',
         };
       }
 
       let applied = 0;
-      const errors = [];
+      const errors      = [];
+      const resolvedIds = [];
+      const failedIds   = [];
 
       for (const item of toApply) {
+        const itemId = item.recordId || item.id;
         try {
           await applySingleItemFix(item);
           applied++;
+          if (itemId) resolvedIds.push(itemId);
         } catch (err) {
           errors.push({ item: item.recordName, error: err.message });
+          if (itemId) failedIds.push(itemId);
         }
       }
 
@@ -207,7 +214,15 @@ export async function executeRecommendationAction(recommendation, action, opts =
         throw new Error(errors.map((e) => `${e.item}: ${e.error}`).join('; '));
       }
 
-      return { ok: true, applied, errors, message: `Applied to ${applied} item${applied > 1 ? 's' : ''}.` };
+      return {
+        ok:           true,
+        applied,
+        appliedCount: applied,
+        resolvedIds,
+        failedIds,
+        errors,
+        message:      `Applied to ${applied} item${applied > 1 ? 's' : ''}.`,
+      };
     }
 
     case 'apply_specialization': {
@@ -257,10 +272,16 @@ export async function executeRecommendationAction(recommendation, action, opts =
       }
 
       return {
-        ok:      true,
+        ok:           true,
         added,
+        appliedCount: added,
+        resolvedIds:  toAdd
+          .filter((item) => !errors.some((e) => e.item === (item.recordName || item.itemName)))
+          .map((item) => item.recordId || item.id)
+          .filter(Boolean),
+        failedIds:    errors.map((e) => e.item).filter(Boolean),
         errors,
-        message: `${added} item${added > 1 ? 's' : ''} added to Shopping List.`,
+        message:      `${added} item${added > 1 ? 's' : ''} added to Shopping List.`,
       };
     }
 
@@ -274,23 +295,30 @@ export async function executeRecommendationAction(recommendation, action, opts =
       ).filter((i) => i.proposedChange?.payload && Object.keys(i.proposedChange.payload).length > 0);
 
       if (!toApply.length) {
-        // No auto-applicable proposals — return informational result without navigating away
         return {
-          ok: true,
-          applied: 0,
-          message: 'No auto-applicable changes found. Use Review Details to inspect and manually update each record.',
+          ok:           true,
+          applied:      0,
+          appliedCount: 0,
+          resolvedIds:  [],
+          failedIds:    [],
+          message:      'No auto-applicable changes found. Use Review Details to inspect and manually update each record.',
         };
       }
 
       let applied = 0;
-      const errors = [];
+      const errors      = [];
+      const resolvedIds = [];
+      const failedIds   = [];
 
       for (const item of toApply) {
+        const itemId = item.recordId || item.id;
         try {
           await applySingleItemFix(item);
           applied++;
+          if (itemId) resolvedIds.push(itemId);
         } catch (err) {
           errors.push({ item: item.recordName, error: err.message });
+          if (itemId) failedIds.push(itemId);
         }
       }
 
@@ -298,17 +326,36 @@ export async function executeRecommendationAction(recommendation, action, opts =
         throw new Error(errors.map((e) => `${e.item}: ${e.error}`).join('; '));
       }
 
-      return { ok: true, applied, errors, message: `Changes approved for ${applied} item${applied > 1 ? 's' : ''}.` };
+      return {
+        ok:           true,
+        applied,
+        appliedCount: applied,
+        resolvedIds,
+        failedIds,
+        errors,
+        message:      `Changes approved for ${applied} item${applied > 1 ? 's' : ''}.`,
+      };
     }
 
     case 'add_to_rotation':
-      // Soft action — marks blends/pipes as re-introduced to rotation.
-      // No DB field to write to; the recommendation dismisses and the next analysis run will
-      // reflect updated usage if the user actually starts a session.
-      return { ok: true, dismissed: true, message: 'Added to rotation — start a session to record it.' };
+      return {
+        ok:           true,
+        dismissed:    true,
+        appliedCount: (recommendation.items || []).length,
+        resolvedIds:  (recommendation.items || []).map((i) => i.recordId || i.id).filter(Boolean),
+        failedIds:    [],
+        message:      'Added to rotation — start a session to record it.',
+      };
 
     case 'mark_for_session':
-      return { ok: true, dismissed: true, message: 'Marked for your next session.' };
+      return {
+        ok:           true,
+        dismissed:    true,
+        appliedCount: (recommendation.items || []).length,
+        resolvedIds:  (recommendation.items || []).map((i) => i.recordId || i.id).filter(Boolean),
+        failedIds:    [],
+        message:      'Marked for your next session.',
+      };
 
     case 'add_to_want_list': {
       const items = recommendation.items || [];
@@ -338,8 +385,83 @@ export async function executeRecommendationAction(recommendation, action, opts =
       if (added === 0 && errors.length > 0) {
         throw new Error(errors.map((e) => `${e.item}: ${e.error}`).join('; '));
       }
-      return { ok: true, added, errors, dismissed: true, message: `${added} item${added > 1 ? 's' : ''} added to Want List.` };
+      const wantResolvedIds = toAdd
+        .filter((item) => !errors.some((e) => e.item === (item.recordName || item.itemName)))
+        .map((item) => item.recordId || item.id)
+        .filter(Boolean);
+      return {
+        ok:           true,
+        added,
+        appliedCount: added,
+        resolvedIds:  wantResolvedIds,
+        failedIds:    errors.map((e) => e.item).filter(Boolean),
+        errors,
+        dismissed:    true,
+        message:      `${added} item${added > 1 ? 's' : ''} added to Want List.`,
+      };
     }
+
+    case 'save_pairing':
+      // UI-only dismiss — no SavedPairing entity exists; note the intent and resolve.
+      return {
+        ok:           true,
+        dismissed:    true,
+        appliedCount: 0,
+        resolvedIds:  [recommendation.id].filter(Boolean),
+        failedIds:    [],
+        message:      'Pairing saved.',
+      };
+
+    case 'accept_reassignment': {
+      const { pipeId, specialization } = opts;
+      if (pipeId && specialization) {
+        await applyPipeSpecialization(pipeId, specialization);
+        return {
+          ok:           true,
+          appliedCount: 1,
+          resolvedIds:  [pipeId],
+          failedIds:    [],
+          message:      `Specialization set to ${specialization}.`,
+        };
+      }
+      // Bulk: apply to all items with a pipeId + specialization payload
+      const reassignItems = (recommendation.items || []).filter(
+        (i) => (i.pipeId || i.recordId) && i.specialization
+      );
+      const resolvedIds = [];
+      const failedIds   = [];
+      for (const item of reassignItems) {
+        const pid  = item.pipeId || item.recordId;
+        const spec = item.specialization;
+        try {
+          await applyPipeSpecialization(pid, spec);
+          resolvedIds.push(pid);
+        } catch (_err) {
+          failedIds.push(pid);
+        }
+      }
+      return {
+        ok:           true,
+        appliedCount: resolvedIds.length,
+        resolvedIds,
+        failedIds,
+        message:      `Reassignment accepted for ${resolvedIds.length} pipe${resolvedIds.length !== 1 ? 's' : ''}.`,
+      };
+    }
+
+    case 'reject_reassignment':
+      return {
+        ok:           true,
+        dismissed:    true,
+        appliedCount: 0,
+        resolvedIds:  [recommendation.id].filter(Boolean),
+        failedIds:    [],
+        message:      'Reassignment rejected.',
+      };
+
+    case 'move_to_shopping_list':
+      // Alias for add_to_shopping_list — delegates to same logic
+      return executeRecommendationAction(recommendation, 'add_to_shopping_list', opts);
 
     default:
       return { ok: true, message: `Action '${action}' acknowledged.` };

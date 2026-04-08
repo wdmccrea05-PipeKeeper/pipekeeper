@@ -472,13 +472,20 @@ export function generatePurchaseRestockRecommendations(context = {}) {
   } = context;
 
   const recommendations = [
-    ...analyzeLowStockBlends(blends),
-    ...analyzeDepletedBlends(blends),
-    ...analyzeDiscontinuedBlends(blends),
-    ...analyzeBottleRestock(bottles),
-    ...analyzeWishlistCandidates(wantListItems),
-    ...(cigarModuleActive ? analyzeCigarDiscovery(cigars) : []),
+    ...analyzeLowStockBlends(blends).map((r)   => ({ ...r, queueType: 'restock_now' })),
+    ...analyzeDepletedBlends(blends).map((r)    => ({ ...r, queueType: 'restock_now' })),
+    ...analyzeDiscontinuedBlends(blends).map((r) => ({ ...r, queueType: 'gap_fill' })),
+    ...analyzeBottleRestock(bottles).map((r)    => ({ ...r, queueType: 'restock_now' })),
+    ...analyzeWishlistCandidates(wantListItems).map((r) => ({ ...r, queueType: 'wishlist_ready' })),
+    ...(cigarModuleActive ? analyzeCigarDiscovery(cigars).map((r) => ({ ...r, queueType: 'restock_now' })) : []),
   ];
+
+  // Build explicit queue groups for consumers that want structured access
+  recommendations._queueGroups = {
+    restockNow:    recommendations.filter((r) => r.queueType === 'restock_now'),
+    wishlistReady: recommendations.filter((r) => r.queueType === 'wishlist_ready'),
+    gapFillBuys:   recommendations.filter((r) => r.queueType === 'gap_fill'),
+  };
 
   return recommendations;
 }

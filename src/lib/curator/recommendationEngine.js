@@ -158,6 +158,118 @@ function analyzeMetadata(context) {
     }));
   }
 
+  // ─── Whiskey inference data ─────────────────────────────────────────────────
+
+  const KNOWN_DISTILLERIES = {
+    'Buffalo Trace':    { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
+    'Wild Turkey':      { type: 'Bourbon',            region: 'Kentucky',     country: 'USA' },
+    'Four Roses':       { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 40 },
+    "Maker's Mark":     { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
+    'Woodford Reserve': { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45.2 },
+    'Knob Creek':       { type: 'Bourbon',            region: 'Kentucky',     country: 'USA' },
+    'Jim Beam':         { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 40 },
+    'Evan Williams':    { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 43 },
+    'Eagle Rare':       { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
+    'Bulleit':          { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 45 },
+    'Heaven Hill':      { type: 'Bourbon',            region: 'Kentucky',     country: 'USA' },
+    'Old Forester':     { type: 'Bourbon',            region: 'Kentucky',     country: 'USA',      abv: 43 },
+    'Laphroaig':        { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 40 },
+    'Ardbeg':           { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 46 },
+    'Bowmore':          { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 40 },
+    'Lagavulin':        { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 43 },
+    'Caol Ila':         { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 43 },
+    'Bunnahabhain':     { type: 'Islay Single Malt',  region: 'Islay',        country: 'Scotland', abv: 46.3 },
+    'Balvenie':         { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Glenfiddich':      { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Glenlivet':        { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Macallan':         { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland' },
+    'GlenDronach':      { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 43 },
+    'Glenfarclas':      { type: 'Single Malt Scotch', region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Oban':             { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 43 },
+    'Highland Park':    { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 40 },
+    'Glenmorangie':     { type: 'Single Malt Scotch', region: 'Highland',     country: 'Scotland', abv: 43 },
+    'Talisker':         { type: 'Single Malt Scotch', region: 'Island',       country: 'Scotland', abv: 45.8 },
+    'Springbank':       { type: 'Single Malt Scotch', region: 'Campbeltown',  country: 'Scotland', abv: 46 },
+    'Jameson':          { type: 'Irish Whiskey',      region: 'Cork',         country: 'Ireland',  abv: 40 },
+    'Redbreast':        { type: 'Irish Whiskey',      region: 'Dublin',       country: 'Ireland',  abv: 40 },
+    'Bushmills':        { type: 'Irish Whiskey',      region: 'Antrim',       country: 'Ireland',  abv: 40 },
+    'Teeling':          { type: 'Irish Whiskey',      region: 'Dublin',       country: 'Ireland',  abv: 46 },
+    'Green Spot':       { type: 'Irish Whiskey',      region: 'Cork',         country: 'Ireland',  abv: 40 },
+    'Nikka':            { type: 'Japanese Whisky',    region: 'Japan',        country: 'Japan' },
+    'Suntory':          { type: 'Japanese Whisky',    region: 'Japan',        country: 'Japan' },
+    'Hakushu':          { type: 'Japanese Whisky',    region: 'Yamanashi',    country: 'Japan',    abv: 43 },
+    'Hibiki':           { type: 'Japanese Whisky',    region: 'Japan',        country: 'Japan',    abv: 43 },
+    'Jack Daniel':      { type: 'Tennessee Whiskey',  region: 'Tennessee',    country: 'USA',      abv: 40 },
+    'George Dickel':    { type: 'Tennessee Whiskey',  region: 'Tennessee',    country: 'USA',      abv: 45 },
+    'Rittenhouse':      { type: 'Rye',                region: 'Pennsylvania', country: 'USA',      abv: 50 },
+    'WhistlePig':       { type: 'Rye',                region: 'Vermont',      country: 'USA',      abv: 50 },
+    'Sazerac':          { type: 'Rye',                region: 'Louisiana',    country: 'USA',      abv: 45 },
+    'High West':        { type: 'Rye',                region: 'Utah',         country: 'USA' },
+    'Templeton':        { type: 'Rye',                region: 'Iowa',         country: 'USA',      abv: 40 },
+    'Famous Grouse':    { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    'Monkey Shoulder':  { type: 'Blended Scotch',     region: 'Speyside',     country: 'Scotland', abv: 40 },
+    'Johnnie Walker':   { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    "Dewar's":          { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+    'Chivas':           { type: 'Blended Scotch',     region: 'Scotland',     country: 'Scotland', abv: 40 },
+  };
+
+  const WHISKEY_NAME_PATTERNS = [
+    { pattern: /\bbourbon\b/i,     type: 'Bourbon',            confidence: 0.88 },
+    { pattern: /\brye\b/i,         type: 'Rye',                confidence: 0.85 },
+    { pattern: /\bislay\b/i,       type: 'Islay Single Malt',  confidence: 0.92 },
+    { pattern: /\bsingle malt\b/i, type: 'Single Malt Scotch', confidence: 0.90 },
+    { pattern: /\bscotch\b/i,      type: 'Blended Scotch',     confidence: 0.75 },
+    { pattern: /\birish\b/i,       type: 'Irish Whiskey',      confidence: 0.88 },
+    { pattern: /\bjapanese\b/i,    type: 'Japanese Whisky',    confidence: 0.88 },
+    { pattern: /\btennessee\b/i,   type: 'Tennessee Whiskey',  confidence: 0.88 },
+  ];
+
+  /**
+   * Infer metadata for a bottle from known distilleries or name patterns.
+   * Returns only fields that are actually missing from the bottle.
+   */
+  function inferBottleMetadata(bottle) {
+    let distilleryData = null;
+    let inferConfidence = 0;
+
+    // 1. Try exact or partial match against known distilleries
+    const distilleryStr = (bottle.distillery || '').toLowerCase();
+    const nameStr       = (bottle.name        || '').toLowerCase();
+    const searchStr     = distilleryStr || nameStr;
+
+    for (const [key, data] of Object.entries(KNOWN_DISTILLERIES)) {
+      const keyLower = key.toLowerCase();
+      if (searchStr.includes(keyLower) || keyLower.includes(searchStr.replace(/\s+\d+.*$/, ''))) {
+        distilleryData = data;
+        inferConfidence = 0.85;
+        break;
+      }
+    }
+
+    // 2. Fallback: name pattern matching for spirit type
+    if (!distilleryData) {
+      for (const { pattern, type, confidence } of WHISKEY_NAME_PATTERNS) {
+        if (pattern.test(nameStr) || pattern.test(distilleryStr)) {
+          distilleryData = { type };
+          inferConfidence = confidence;
+          break;
+        }
+      }
+    }
+
+    if (!distilleryData) return { payload: null, confidence: 0 };
+
+    // Build payload with only fields that are actually missing
+    const payload = {};
+    if (!bottle.type && !bottle.whiskey_type && distilleryData.type)    payload.type    = distilleryData.type;
+    if (!bottle.region  && distilleryData.region)  payload.region  = distilleryData.region;
+    if (!bottle.abv     && distilleryData.abv)     payload.abv     = distilleryData.abv;
+
+    if (!Object.keys(payload).length) return { payload: null, confidence: 0 };
+
+    return { payload, confidence: inferConfidence };
+  }
+
   // Bottles missing core metadata
   const bottlesMissingMeta = bottles.filter(
     (b) => !b.distillery || !b.region || !b.age || !b.abv || !(b.type || b.whiskey_type)
@@ -170,6 +282,8 @@ function analyzeMetadata(context) {
       if (!b.age) missing.push('age');
       if (!b.abv) missing.push('ABV');
       if (!(b.type || b.whiskey_type)) missing.push('spirit type');
+
+      const inference = inferBottleMetadata(b);
       return {
         id: b.id,
         recordId: b.id,
@@ -178,8 +292,20 @@ function analyzeMetadata(context) {
         itemName: b.name,
         missingFields: missing,
         ownershipStatus: 'owned',
+        proposedChange: inference.payload
+          ? {
+              confidence: inference.confidence,
+              payload:    inference.payload,
+              rationale:  'Inferred from known distillery/product patterns',
+            }
+          : null,
       };
     });
+
+    const highConfItems = items.filter((i) => i.proposedChange && i.proposedChange.confidence >= 0.70);
+    const actionType = highConfItems.length >= items.length / 2
+      ? ACTION_TYPE.AUTO_FIX
+      : ACTION_TYPE.REVIEW_REQUIRED;
 
     const criticalField = items.some((i) => i.missingFields.includes('spirit type'));
     const summary = items.length === 1
@@ -189,12 +315,15 @@ function analyzeMetadata(context) {
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
       goal:               'bottle_missing_core_metadata',
-      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      actionType,
       title:              'Bottles Missing Core Metadata',
       summary,
       whyItMatters:       'Spirit type, region, and ABV aren\'t just descriptive — they determine which blends and cigars this bottle can be paired with. ' +
                           'An unclassified bottle is pairing-dead to the Curator.',
-      recommendationText: 'Open each bottle in WhiskeyKeeper and complete the missing fields. Spirit type is the priority — it unlocks all pairing logic.',
+      recommendationText: highConfItems.length > 0
+        ? `Apply Fix to auto-fill ${highConfItems.length} inferred value${highConfItems.length > 1 ? 's' : ''} from known distillery data. ` +
+          `${items.length - highConfItems.length > 0 ? `The remaining ${items.length - highConfItems.length} need manual entry.` : ''}`
+        : 'Open each bottle in WhiskeyKeeper and complete the missing fields. Spirit type is the priority — it unlocks all pairing logic.',
       moduleKey:          MODULE_KEY.WHISKEY,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           items.length >= 5 ? PRIORITY.MEDIUM : PRIORITY.LOW,

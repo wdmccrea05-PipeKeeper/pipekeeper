@@ -583,6 +583,13 @@ function generatePipeWhiskeyPairings(pipes, blends, bottles, smokingLogs, bottle
         dataCompleteness:      hasBlendType && hasWhiskeyType ? 0.9 : 0.5,
         diversityContribution: 0.7,
       }),
+      explanation: {
+        flavor:    `${getBlendFlavorNote(getBlendType(blend))} — ${BLEND_WHISKEY_PAIRING_LOGIC[getBlendType(blend)]?.note || 'Compatible flavor profiles matched from your collection'}`,
+        structure: buildStructuralCompatibility(blend, bestBottle),
+        pipe:      getPipeCharacterNote(pipe, blend).whyNote,
+        session:   buildPairingOutcome(getPairingType(blend, bestBottle), blend, bestBottle),
+        summary:   buildPipeBlendBottleRationale(pipe, blend, bestBottle).split('. ')[0] + '.',
+      },
       ownershipStatus: 'owned',
     });
   }
@@ -679,6 +686,13 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
       pipeInfluence:           pipe ? getPipeCharacterNote(pipe, blend).whyNote : null,
       outcome:                 buildPairingOutcome(getPairingType(blend, best), blend, best),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
+      explanation: {
+        flavor:    `${getBlendFlavorNote(getBlendType(blend))} — ${BLEND_WHISKEY_PAIRING_LOGIC[getBlendType(blend)]?.note || 'Compatible flavor profiles matched from your collection'}`,
+        structure: buildStructuralCompatibility(blend, best),
+        pipe:      pipe ? getPipeCharacterNote(pipe, blend).whyNote : 'No pipe specified for this pairing',
+        session:   buildPairingOutcome(getPairingType(blend, best), blend, best),
+        summary:   buildPipeBlendBottleRationale(pipe, blend, best).split('. ')[0] + '.',
+      },
       ownershipStatus: 'owned',
     });
   }
@@ -769,6 +783,13 @@ function generateThematicPairings(pipes, blends, bottles, smokingLogs, bottleUsa
       pipeInfluence:           pipe ? getPipeCharacterNote(pipe, blend).whyNote : null,
       outcome:                 buildPairingOutcome(getPairingType(blend, best), blend, best),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
+      explanation: {
+        flavor:    `${getBlendFlavorNote(getBlendType(blend))} — ${BLEND_WHISKEY_PAIRING_LOGIC[getBlendType(blend)]?.note || 'Compatible flavor profiles matched from your collection'}`,
+        structure: buildStructuralCompatibility(blend, best),
+        pipe:      pipe ? getPipeCharacterNote(pipe, blend).whyNote : 'No pipe specified for this pairing',
+        session:   buildPairingOutcome(getPairingType(blend, best), blend, best),
+        summary:   rediscoverRationale.split('. ')[0] + '.',
+      },
       ownershipStatus: 'owned',
     });
   }
@@ -839,6 +860,13 @@ function generateCigarWhiskeyPairings(cigars, bottles, bottleUsageCount) {
       structuralCompatibility: buildStructuralCompatibility(cigar, bestBottle),
       outcome:                 buildPairingOutcome(getCigarPairingType(cigar), cigar, bestBottle),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
+      explanation: {
+        flavor:    `${getCigarStrength(cigar)} body cigar${cigar.wrapper ? ` with ${cigar.wrapper} wrapper` : ''} — intensity-matched to ${getWhiskeyType(bestBottle) || 'the whiskey'}`,
+        structure: buildStructuralCompatibility(cigar, bestBottle),
+        pipe:      'N/A — cigar pairing',
+        session:   buildPairingOutcome(getCigarPairingType(cigar), cigar, bestBottle),
+        summary:   buildCigarBottleRationale(cigar, bestBottle).split('. ')[0] + '.',
+      },
       ownershipStatus: 'owned',
     });
   }
@@ -961,6 +989,13 @@ function generateSomethingNewPairings(pipes, blends, bottles, smokingLogs, bottl
       pipeInfluence:           pipe ? getPipeCharacterNote(pipe, blend).whyNote : null,
       outcome:                 buildPairingOutcome(getPairingType(blend, best), blend, best),
       confidenceLabel:         bestScore >= 7 ? 'High' : bestScore >= 4 ? 'Medium' : 'Experimental',
+      explanation: {
+        flavor:    `${getBlendFlavorNote(blendType)} — ${pairingLogic?.note || 'Compatible flavor profiles matched from your collection'}`,
+        structure: buildStructuralCompatibility(blend, best),
+        pipe:      pipe ? getPipeCharacterNote(pipe, blend).whyNote : 'No pipe specified for this pairing',
+        session:   buildPairingOutcome(getPairingType(blend, best), blend, best),
+        summary:   novelRationale.split('. ')[0] + '.',
+      },
       ownershipStatus: 'owned',
     });
   }
