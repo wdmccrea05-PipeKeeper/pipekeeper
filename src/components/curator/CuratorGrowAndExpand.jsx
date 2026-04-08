@@ -9,176 +9,14 @@
  *
  * Primary action: Add to Want List
  * Distinct from Purchase & Restock (which is for already-owned/tracked items).
+ *
+ * All suggestion logic lives in growthEngine.js — this component only renders.
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { TrendingUp, Plus, CheckCircle2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-
-// ─── Specific product catalogs for concrete suggestions ──────────────────────
-
-const BLEND_TYPE_PRODUCTS = {
-  'Virginia':            ['Samuel Gawith Golden Glow', 'Mac Baren Virginia No. 1', 'Peter Stokkebye Luxury Bullseye Flake'],
-  'Virginia/Perique':    ['G.L. Pease Odyssey', 'Esoterica Penzance', 'Samuel Gawith Full Virginia Flake'],
-  'Virginia/Burley':     ['Lane Limited 1-Q', 'C&D Old Joe Krantz', 'Mac Baren Classic Burley Blend'],
-  'Virginia/Oriental':   ['G.L. Pease Abingdon', 'Peterson University Flake', 'Germain Flake Mixture'],
-  'English':             ['Esoterica Dunbar', 'G.L. Pease Union Square', 'Samuel Gawith Squadron Leader'],
-  'English/Balkan':      ['Peterson Elizabethan Mixture', 'Dunhill London Mixture', "Rattray's Old Gowrie"],
-  'Balkan':              ['Esoterica Stonehaven', 'G.L. Pease Cairo', 'Balkan Sobranie Original'],
-  'Burley':              ['Solani Aged Burley Flake', 'C&D Billy Budd', 'Mac Baren Burley London Blend'],
-  'Aromatic':            ['Lane Limited RLP-6', 'Captain Black White', 'Mac Baren Plumcake'],
-  'Oriental':            ["Rattray's Marlin Flake", 'G.L. Pease Abingdon', 'Sutliff Vanilla Custard'],
-  'Cavendish':           ['Mac Baren HH Burley Flake', 'Samuel Gawith Black Cherry Flake'],
-  'Dark Fired Kentucky': ['Cornell & Diehl Old Dark Fired', 'C&D Haunted Bookshop', 'Gawith Hoggarth Dark Flake'],
-};
-
-const WHISKEY_TYPE_PRODUCTS = {
-  'Bourbon':            ['Buffalo Trace', 'Eagle Rare 10 Year', 'Wild Turkey 101', 'Four Roses Small Batch'],
-  'Rye':                ['Rittenhouse Rye 100', 'WhistlePig 10 Year', 'Sazerac 6 Year Rye'],
-  'Single Malt Scotch': ['GlenDronach 12', 'Balvenie DoubleWood 12', 'Glenfarclas 15'],
-  'Blended Scotch':     ['Famous Grouse', 'Monkey Shoulder', 'Johnnie Walker Black'],
-  'Islay Single Malt':  ['Laphroaig 10 Year', 'Ardbeg 10 Year', 'Bowmore 12 Year'],
-  'Irish Whiskey':      ['Redbreast 12', 'Jameson Black Barrel', 'Green Spot'],
-  'Japanese Whisky':    ['Nikka From The Barrel', 'Suntory Toki', 'Hakushu 12 Year'],
-  'Tennessee Whiskey':  ['George Dickel No. 12', "Jack Daniel's Single Barrel"],
-};
-
-/** Pick a deterministic specific product for a given type string.
- *  Uses a prime-multiplier string hash (31 is the standard Java/JS choice)
- *  to select consistently without randomness. */
-function pickProduct(catalog, typeKey, fallback) {
-  const products = catalog[typeKey];
-  if (!products || products.length === 0) return fallback;
-  // Use a stable hash of the type string to pick consistently
-  let hash = 0;
-  for (let i = 0; i < typeKey.length; i++) hash = (hash * 31 + typeKey.charCodeAt(i)) & 0xffff;
-  return products[hash % products.length];
-}
-
-// ─── Blend types in the ecosystem ────────────────────────────────────────────
-
-const ALL_BLEND_TYPES = [
-  'Virginia', 'Virginia/Perique', 'Virginia/Burley', 'Virginia/Oriental',
-  'English', 'English/Balkan', 'Balkan', 'Burley', 'Aromatic', 'Oriental',
-  'Cavendish', 'Dark Fired Kentucky',
-];
-
-const ALL_WHISKEY_TYPES = [
-  'Bourbon', 'Rye', 'Single Malt Scotch', 'Blended Scotch', 'Islay Single Malt',
-  'Irish Whiskey', 'Japanese Whisky', 'Tennessee Whiskey',
-];
-
-const ALL_CIGAR_STRENGTHS = ['Mild', 'Mild-Medium', 'Medium', 'Medium-Full', 'Full'];
-
-// ─── Gap analysis ─────────────────────────────────────────────────────────────
-
-function analyzeGaps(collectionContext, preferences) {
-  const {
-    blends = [],
-    bottles = [],
-    cigars = [],
-    smokingLogs = [],
-    tastingLogs = [],
-    cigarModuleActive = false,
-  } = collectionContext;
-
-  const suggestions = [];
-
-  // ── Tobacco gap analysis ────────────────────────────────────────────────────
-  const ownedBlendTypes = new Set(blends.map((b) => b.blend_type || b.blend_family).filter(Boolean));
-
-  // Preferred blend types from preferences (computed from rated blends)
-  const preferredTypes = new Set(preferences?.preferred_blend_types || []);
-  const dislikedTypes  = new Set(preferences?.disliked_blend_types  || []);
-
-  for (const type of ALL_BLEND_TYPES) {
-    if (ownedBlendTypes.has(type)) continue;
-    if (dislikedTypes.has(type)) continue;
-
-    const isPreferred = preferredTypes.has(type);
-    const specificProduct = pickProduct(BLEND_TYPE_PRODUCTS, type, `${type} Blend`);
-    suggestions.push({
-      id:         `gap_blend_${type.replace(/[\s/]/g, '_')}`,
-      type:       'blend_type_gap',
-      moduleKey:  'tobacco',
-      title:      `Explore ${specificProduct}`,
-      summary:    isPreferred
-        ? `A ${type} blend — fits your taste profile but isn't in your collection yet`
-        : `${specificProduct} is a ${type} blend not represented in your cellar`,
-      reason:     isPreferred ? 'preference_match' : 'collection_gap',
-      priority:   isPreferred ? 'high' : 'medium',
-      searchHint: specificProduct,
-      blendFamily: type,
-      itemType:   'blend',
-    });
-  }
-
-  // ── Whiskey gap analysis ────────────────────────────────────────────────────
-  const ownedWhiskeyTypes = new Set(
-    bottles.map((b) => b.type || b.whiskey_type || b.spirit_type).filter(Boolean)
-  );
-  const preferredWhiskeyTypes = new Set(preferences?.preferred_whiskey_types || []);
-  const dislikedWhiskeyTypes  = new Set(preferences?.disliked_whiskey_types  || []);
-
-  for (const type of ALL_WHISKEY_TYPES) {
-    if (ownedWhiskeyTypes.has(type)) continue;
-    if (dislikedWhiskeyTypes.has(type)) continue;
-
-    const isPreferred = preferredWhiskeyTypes.has(type);
-    const specificProduct = pickProduct(WHISKEY_TYPE_PRODUCTS, type, type);
-    suggestions.push({
-      id:         `gap_whiskey_${type.replace(/[\s/]/g, '_')}`,
-      type:       'whiskey_type_gap',
-      moduleKey:  'whiskey',
-      title:      `Explore ${specificProduct}`,
-      summary:    isPreferred
-        ? `A ${type} — fits your whiskey profile but you don't have any yet`
-        : `${specificProduct} (${type}) would add whiskey diversity to your collection`,
-      reason:     isPreferred ? 'preference_match' : 'collection_gap',
-      priority:   isPreferred ? 'high' : 'low',
-      searchHint: specificProduct,
-      whiskeyStyle: type,
-      itemType:   'bottle',
-    });
-  }
-
-  // ── Cigar gap analysis (if active) ─────────────────────────────────────────
-  if (cigarModuleActive && cigars.length > 0) {
-    const ownedStrengths = new Set(cigars.map((c) => c.strength || c.body).filter(Boolean));
-
-    const CIGAR_STRENGTH_DESCRIPTIONS = {
-      'Mild':         'a mild Connecticut cigar for a lighter session',
-      'Mild-Medium':  'a mild-to-medium Honduran or Dominican for approachable complexity',
-      'Medium':       'a medium-bodied Nicaraguan for balanced depth',
-      'Medium-Full':  'a medium-full Nicaraguan or Peruvian for greater intensity',
-      'Full':         'a full-bodied Ligero blend for a robust session',
-    };
-
-    for (const strength of ALL_CIGAR_STRENGTHS) {
-      if (ownedStrengths.has(strength)) continue;
-      const productDesc = CIGAR_STRENGTH_DESCRIPTIONS[strength] || `${strength} strength cigar`;
-      suggestions.push({
-        id:         `gap_cigar_${strength.replace(/[\s-]/g, '_')}`,
-        type:       'cigar_strength_gap',
-        moduleKey:  'cigar',
-        title:      `Explore ${productDesc}`,
-        summary:    `${strength} strength cigars aren't represented in your humidor`,
-        reason:     'collection_gap',
-        priority:   'low',
-        searchHint: `${strength} cigar`,
-        itemType:   'cigar',
-      });
-    }
-  }
-
-  // Sort: preference matches first, then high priority
-  return suggestions.sort((a, b) => {
-    const order = { preference_match: 0, collection_gap: 1 };
-    const priorityOrder = { high: 0, medium: 1, low: 2 };
-    if (order[a.reason] !== order[b.reason]) return order[a.reason] - order[b.reason];
-    return priorityOrder[a.priority] - priorityOrder[b.priority];
-  });
-}
+import { generateGrowthSuggestions } from '@/lib/curator/growthEngine.js';
 
 // ─── Module colors ─────────────────────────────────────────────────────────────
 
@@ -197,8 +35,8 @@ function GrowCard({ suggestion, userEmail }) {
 
   const mc = MODULE_COLORS[suggestion.moduleKey] || MODULE_COLORS.tobacco;
 
-  // Use the specific product name (searchHint) for the Want List item; fall back to title
-  const wantListName = suggestion.searchHint || suggestion.title;
+  // Use the specific product name for the Want List item
+  const wantListName = suggestion.name || suggestion.title;
 
   const handleAdd = useCallback(async () => {
     if (!userEmail || adding || added) return;
@@ -376,7 +214,7 @@ function EmptyState() {
  */
 export default function CuratorGrowAndExpand({ collectionContext = {}, preferences = null, userEmail }) {
   const suggestions = useMemo(
-    () => analyzeGaps(collectionContext, preferences),
+    () => generateGrowthSuggestions(collectionContext, preferences),
     [collectionContext, preferences]
   );
 
