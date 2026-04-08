@@ -219,7 +219,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
         applied,
         appliedCount:    applied,
         resolvedIds,
-        resolvedRecordIds: resolvedIds,
+        resolvedRecordIds: resolvedIds, // canonical alias expected by CuratorWorkspace handleAction
         failedIds,
         errors,
         recommendationType: recommendation.actionType || null,
@@ -333,7 +333,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
         applied,
         appliedCount:    applied,
         resolvedIds,
-        resolvedRecordIds: resolvedIds,
+        resolvedRecordIds: resolvedIds, // canonical alias expected by CuratorWorkspace handleAction
         failedIds,
         errors,
         recommendationType: recommendation.actionType || null,

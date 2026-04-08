@@ -150,12 +150,13 @@ export default function CuratorWorkspace({ collectionContext = {}, isLoading = f
           .map((r) => {
             if (resolvedItemIds.size === 0 || !(r.items?.length > 0)) return r;
             const filteredItems = r.items.filter(
+              // items use either recordId (recommendation item) or id (generic entity)
               (item) => !resolvedItemIds.has(item.recordId || item.id)
             );
-            // _hadItems marks recs whose items were all filtered out so we can hide them
-            return { ...r, items: filteredItems, _hadItems: true };
+            // _itemsFiltered marks recs whose items were all resolved so we can hide them
+            return { ...r, items: filteredItems, _itemsFiltered: true };
           })
-          .filter((r) => !r._hadItems || (r.items || []).length > 0),
+          .filter((r) => !r._itemsFiltered || (r.items || []).length > 0),
       }))
       .filter((section) => section.recommendations.length > 0);
   }, [resolvedRecIds, resolvedItemIds]);
