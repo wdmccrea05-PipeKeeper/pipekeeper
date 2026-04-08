@@ -1,3 +1,4 @@
+// build: 2026-04-08
 import "@/components/i18n";
 import React from "react";
 import ReactDOM from "react-dom/client";
