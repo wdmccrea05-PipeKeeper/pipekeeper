@@ -162,6 +162,22 @@ export default function CuratorPairingResults({ pairings = [], onAction }) {
               </p>
             )}
 
+            {/* Flavor explanation fields */}
+            {(pairing.flavorInteraction || pairing.confidenceLabel) && (
+              <div className="space-y-1 mb-3">
+                {pairing.flavorInteraction && (
+                  <p className="text-xs leading-snug" style={{ color: 'rgba(224,216,200,0.5)' }}>
+                    {pairing.flavorInteraction}
+                  </p>
+                )}
+                {pairing.confidenceLabel && (
+                  <p className="text-[10px]" style={{ color: 'rgba(180,140,75,0.6)' }}>
+                    Confidence: {pairing.confidenceLabel}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Action row */}
             <div
               className="flex flex-wrap items-center gap-1.5 pt-1.5"

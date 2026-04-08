@@ -17,7 +17,7 @@ import { CATEGORY, ACTION_TYPE, MODULE_KEY } from '@/lib/curator/recommendationS
 // ─── Board section group (record optimization only) ───────────────────────────
 
 const BOARD_SECTION_GROUPS = [
-  { id: 'record_opt', label: 'Record Optimization', categories: [CATEGORY.METADATA, CATEGORY.RECORD_OPTIMIZATION] },
+  { id: 'record_opt', label: 'Collection Health', categories: [CATEGORY.METADATA, CATEGORY.RECORD_OPTIMIZATION] },
 ];
 
 // ─── Module filter options ────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ function SummaryCard({ value, label, color, subtext }) {
       >
         {value}
       </span>
-      <span className="text-xs font-semibold leading-tight" style={{ color: 'rgba(224,216,200,0.75)' }}>
+      <span className="text-sm font-semibold leading-tight" style={{ color: 'rgba(224,216,200,0.75)' }}>
         {label}
       </span>
       {subtext && (
