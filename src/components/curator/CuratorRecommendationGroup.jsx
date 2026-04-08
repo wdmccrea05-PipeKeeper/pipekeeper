@@ -84,12 +84,19 @@ function DoneIndicator({ label }) {
   );
 }
 
+// ─── Shared payload helpers ───────────────────────────────────────────────────
+
+/** True when an item carries a non-empty proposedChange payload. */
+function hasNonEmptyPayload(item) {
+  return !!(item.proposedChange?.payload && Object.keys(item.proposedChange.payload).length > 0);
+}
+
 // ─── Inline Review Panel ──────────────────────────────────────────────────────
 
 function InlineReviewPanel({ rec, onApply, onCancel }) {
   const [applying, setApplying] = useState(false);
   const allItems = rec.items || [];
-  const itemsWithPayloads = allItems.filter((i) => i.proposedChange?.payload);
+  const itemsWithPayloads = allItems.filter(hasNonEmptyPayload);
 
   const handleApply = async () => {
     setApplying(true);
@@ -158,9 +165,8 @@ function RecordOptimizationActions({ rec, onAction }) {
   const [showReview, setShowReview] = useState(false);
 
   const allItems = rec.items || [];
-  const itemsWithPayloads = allItems.filter((i) => i.proposedChange?.payload);
-  const hasPayloads = itemsWithPayloads.length > 0;
-  const showAutoFix = rec.actionType === ACTION_TYPE.AUTO_FIX || hasPayloads;
+  const hasPayloads = allItems.some(hasNonEmptyPayload);
+  const isAutoFix = rec.actionType === ACTION_TYPE.AUTO_FIX;
 
   const handleApplyFix = async () => {
     setApplying(true);
@@ -173,13 +179,26 @@ function RecordOptimizationActions({ rec, onAction }) {
     setShowReview(false);
   };
 
+  // No payloads and not an auto-fix: nothing to auto-apply or review inline.
+  // Show only "Ask Curator" so the user has guidance without a broken empty panel.
+  if (!hasPayloads && !isAutoFix) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        <TertiaryBtn onClick={() => onAction('view_details', rec)} icon={Eye} label="Open Records" />
+        <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex flex-wrap items-center gap-2">
-        {showAutoFix && (
+        {(isAutoFix || hasPayloads) && (
           <PrimaryBtn onClick={handleApplyFix} loading={applying} icon={Check} label="Fix All Automatically" />
         )}
-        <SecondaryBtn onClick={() => setShowReview((v) => !v)} icon={Eye} label="Review & Apply" />
+        {hasPayloads && (
+          <SecondaryBtn onClick={() => setShowReview((v) => !v)} icon={Eye} label="Review & Apply" />
+        )}
         <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
       </div>
       {showReview && (
@@ -235,7 +254,7 @@ function AutoFixActions({ rec, onAction }) {
   const [showReview, setShowReview] = useState(false);
 
   const allItems = rec.items || [];
-  const hasPayloads = allItems.some((i) => i.proposedChange?.payload);
+  const hasPayloads = allItems.some(hasNonEmptyPayload);
 
   const handleApplyFix = async () => {
     setApplying(true);
@@ -271,8 +290,7 @@ function ReviewRequiredActions({ rec, onAction }) {
   const [showReview, setShowReview] = useState(false);
 
   const allItems = rec.items || [];
-  const itemsWithPayloads = allItems.filter((i) => i.proposedChange?.payload);
-  const hasPayloads = itemsWithPayloads.length > 0;
+  const hasPayloads = allItems.some(hasNonEmptyPayload);
 
   const handleApprove = async () => {
     setApplying(true);
@@ -280,13 +298,21 @@ function ReviewRequiredActions({ rec, onAction }) {
     finally { setApplying(false); }
   };
 
+  // No payloads — nothing to review inline; direct user to open records instead.
+  if (!hasPayloads) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        <TertiaryBtn onClick={() => onAction('view_details', rec)} icon={Eye} label="Open Records" />
+        <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex flex-wrap items-center gap-2">
         <PrimaryBtn onClick={() => setShowReview((v) => !v)} icon={Eye} label="Review & Apply" />
-        {hasPayloads && (
-          <SecondaryBtn onClick={handleApprove} disabled={applying} icon={Check} label="Approve Changes" />
-        )}
+        <SecondaryBtn onClick={handleApprove} disabled={applying} icon={Check} label="Approve Changes" />
         <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
       </div>
       {showReview && (
