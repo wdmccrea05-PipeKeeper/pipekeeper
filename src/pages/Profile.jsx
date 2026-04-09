@@ -132,52 +132,36 @@ export default function ProfilePage() {
   const userId = user?.id || null;
 
   const { data: profileBundle, isLoading: profileLoading } = useQuery({
-    queryKey: ["user-profile", userId, email],
+    queryKey: ["user-profile", email],
     queryFn: async () => {
-      if (!userId && !email) return { masterId: null, merged: null };
+      if (!email) return { masterId: null, merged: null };
 
       let records = [];
-
-      if (userId) {
-        try {
-          const byUserId = await base44.entities.UserProfile.filter({ user_id: userId });
-          records = [...records, ...byUserId];
-        } catch (e) {
-          console.warn("[Profile] Could not load UserProfile by user_id:", e);
-        }
+      try {
+        const byEmail = await base44.entities.UserProfile.filter({ user_email: email });
+        records = [...records, ...(byEmail || [])];
+      } catch (e) {
+        console.warn("[Profile] Could not load UserProfile by user_email:", e);
       }
 
-      if (email) {
-        try {
-          const byEmail = await base44.entities.UserProfile.filter({ user_email: email });
-          records = [...records, ...byEmail];
-        } catch (e) {
-          console.warn("[Profile] Could not load UserProfile by email:", e);
-        }
-
-        try {
-          const byCreated = await base44.entities.UserProfile.filter({ created_by: email });
-          records = [...records, ...byCreated];
-        } catch (e) {
-          console.warn("[Profile] Could not load UserProfile by created_by:", e);
-        }
+      try {
+        const byCreated = await base44.entities.UserProfile.filter({ created_by: email });
+        records = [...records, ...(byCreated || [])];
+      } catch (e) {
+        console.warn("[Profile] Could not load UserProfile by created_by:", e);
       }
 
       const seen = new Set();
-      const uniqueRecords = records.filter((r) => {
-        const key = r?.id || `${r?.user_id || ""}|${r?.user_email || ""}|${r?.created_by || ""}`;
+      const unique = records.filter((r) => {
+        const key = r?.id || `${r?.user_email || ""}|${r?.created_by || ""}`;
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
       });
 
-      if (import.meta.env.DEV) {
-        console.log("[Profile] Found profile rows:", uniqueRecords.map((r) => r?.id || r));
-      }
-
-      return consolidateProfiles(uniqueRecords);
+      return consolidateProfiles(unique);
     },
-    enabled: !!(userId || email),
+    enabled: !!email,
     staleTime: 30_000,
     gcTime: 60_000,
   });
@@ -352,8 +336,8 @@ export default function ProfilePage() {
     onSuccess: async (savedData) => {
       console.log("[Profile] Save successful, returned data:", savedData);
       toast.success(t("notifications.saved"));
-      await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
-      await queryClient.refetchQueries({ queryKey: ["user-profile", userId, email] });
+      await queryClient.invalidateQueries({ queryKey: ["user-profile", email] });
+      await queryClient.refetchQueries({ queryKey: ["user-profile", email] });
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
       await queryClient.invalidateQueries({ queryKey: ["public-profile", email] });
     },
@@ -387,8 +371,8 @@ export default function ProfilePage() {
           avatar_url: file_url,
         });
       }
-      await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
-      await queryClient.refetchQueries({ queryKey: ["user-profile", userId, email] });
+      await queryClient.invalidateQueries({ queryKey: ["user-profile", email] });
+      await queryClient.refetchQueries({ queryKey: ["user-profile", email] });
       await queryClient.invalidateQueries({ queryKey: ["public-profile", email] });
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
       toast.success(t("profile.avatarUploadedSuccessfully"));
