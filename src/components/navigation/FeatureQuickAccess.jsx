@@ -15,53 +15,53 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
   const features = [
     {
       icon: Package,
-      label: t("nav.pipes"),
-      description: t("quickAccess.catalogPipes"),
+      label: t("nav.pipes", "Pipes"),
+      description: t("quickAccess.catalogPipes", "Catalog and manage your pipes"),
       page: "Pipes",
     },
     {
       icon: Leaf,
-      label: t("nav.tobacco"),
-      description: t("quickAccess.manageBlendsAndCellar"),
+      label: t("nav.tobacco", "Tobacco"),
+      description: t("quickAccess.manageBlendsAndCellar", "Manage blends and cellar"),
       page: "Tobacco",
     },
     {
       icon: BarChart3,
-      label: t("quickAccess.collectionInsights"),
-      description: t("quickAccess.viewPairingsUsageTrends"),
+      label: t("quickAccess.collectionInsights", "Collection Insights"),
+      description: t("quickAccess.viewPairingsUsageTrends", "View pairings, usage & trends"),
       page: "Home",
       hash: "#insights",
     },
     {
       icon: FileText,
-      label: t("quickAccess.reportsExports"),
-      description: t("quickAccess.generatePDFCSV"),
+      label: t("quickAccess.reportsExports", "Reports & Exports"),
+      description: t("quickAccess.generatePDFCSV", "Generate PDF & CSV reports"),
       page: "Home",
       hash: "#insights",
     },
     {
       icon: Sparkles,
-      label: t("quickAccess.aiTools"),
-      description: t("quickAccess.photoIdentificationOptimization"),
+      label: t("quickAccess.aiTools", "AI Tools"),
+      description: t("quickAccess.photoIdentificationOptimization", "Photo identification & optimization"),
       page: "Home",
       hash: "#ai-tools",
     },
     {
       icon: CreditCard,
-      label: t("subscription.title"),
-      description: t("quickAccess.manageSubscription"),
+      label: t("subscription.title", "Subscriptions"),
+      description: t("quickAccess.manageSubscription", "Manage your subscription"),
       page: "Subscription",
     },
     {
       icon: User,
-      label: t("nav.profile"),
-      description: t("quickAccess.accountSettings"),
+      label: t("nav.profile", "Profile"),
+      description: t("quickAccess.accountSettings", "Account settings & preferences"),
       page: "Profile",
     },
     {
       icon: HelpCircle,
-      label: t("nav.help"),
-      description: t("nav.faq"),
+      label: t("nav.help", "Help"),
+      description: t("nav.faq", "FAQ & support resources"),
       page: "HelpCenter",
     },
   ];
@@ -76,8 +76,8 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">{t("quickAccess.quickAccess")}</DialogTitle>
-          <p className="text-sm text-[#E0D8C8]/70">{t("quickAccess.jumpToFeatures")}</p>
+          <DialogTitle className="text-xl">{t("quickAccess.quickAccess", "Quick Access")}</DialogTitle>
+          <p className="text-sm text-[#E0D8C8]/70">{t("quickAccess.jumpToFeatures", "Jump to any feature quickly")}</p>
         </DialogHeader>
         
         <div className="grid gap-3 mt-4">
