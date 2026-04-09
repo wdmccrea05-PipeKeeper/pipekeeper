@@ -1,3 +1,17 @@
+/**
+ * Pairing Engine
+ *
+ * Generates pipe-tobacco-whiskey pairings from your collection context.
+ * Outputs 4 distinct tabs:
+ *   - expert: highest-rated, most-used elements from your collection
+ *   - old_favorites: proven rotation anchors with fresh partners
+ *   - rediscover: underused pipes and blends brought back into play
+ *   - something_new: one fresh candidate per category, still within your taste profile
+ *
+ * The engine does NOT generate cross-module recommendations (pipe-only, whiskey-only).
+ * Pairings are context-aware, confidence-weighted, and human-curated for natural language.
+ */
+
 function getBlendType(blend) {
   return blend?.blend_type || blend?.blend_family || '';
 }
@@ -51,27 +65,89 @@ function pairingType(blend, bottle) {
 function buildNarrative(pipe, blend, bottle) {
   const bt = getBlendType(blend);
   const wt = getWhiskeyType(bottle);
-  const spec = pipe?.specialization ? `${pipe.specialization} pipe` : 'pipe';
-  return `${blend.name} and ${bottle.name} make sense together because ${blend.name} brings ${bt || 'its own'} character while ${bottle.name} adds ${wt || 'a complementary whiskey frame'}. ${pipe.name} matters because it is an established ${spec} in your collection and helps keep the session coherent.`;
+  const pipeDesc = pipe?.specialization ? `${pipe.specialization}-focused` : 'versatile';
+  const blendChar = bt || 'complex';
+  
+  // Reinforcing pairing (smoke + peated, burley + bourbon, etc.)
+  if ((bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') && (wt.toLowerCase().includes('islay') || wt.toLowerCase().includes('peated'))) {
+    return `This session stacks complementary smoke — the tobacco's dark layers and the whisky's phenolic character push in the same direction. ${pipe.name} as your ${pipeDesc} vessel keeps both intensities clear throughout.`;
+  }
+  
+  // Aromatic + Irish (contrast)
+  if (bt === 'Aromatic' && wt.toLowerCase().includes('irish')) {
+    return `A lighter counterpoint: the topping's sweetness meets Irish whiskey's cleaner grain character. ${pipe.name} frames this without overwhelming it — a session that finds its balance through subtraction, not addition.`;
+  }
+  
+  // Burley/Virginia-Burley + Bourbon (comfort pairing)
+  if ((bt === 'Burley' || bt === 'Virginia/Burley') && wt.toLowerCase().includes('bourbon')) {
+    return `Sweet tobacco earth and bourbon's caramel depth are old friends. They don't compete — they settle into each other. ${pipe.name} becomes the thinking pipe here, letting both elements breathe.`;
+  }
+  
+  // Virginia/Perique + Rye
+  if (bt === 'Virginia/Perique' && wt.toLowerCase().includes('rye')) {
+    return `The peppery snap of Perique finds its match in rye spice. ${pipe.name} carries this interplay without dulling it — a session with real conversation between the bowl and the glass.`;
+  }
+  
+  // Default: thoughtful complement
+  return `${blend.name} and ${bottle.name} speak the same language: the tobacco's ${blendChar} structure holds its own against the whisky's finish. ${pipe.name}, proven in your hands, becomes the anchor that lets you taste both clearly.`;
 }
 
 function buildWhyItWorks(blend, bottle) {
   const bt = getBlendType(blend);
   const wt = getWhiskeyType(bottle).toLowerCase();
-  if ((bt === 'Burley' || bt === 'Virginia/Burley') && wt.includes('bourbon')) return 'Burley earth and bourbon sweetness support each other without flattening the bowl.';
-  if ((bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') && (wt.includes('peated') || wt.includes('islay') || wt.includes('scotch'))) return 'Smoke and malt depth move in the same direction, so the pairing feels intentional rather than forced.';
-  if (bt === 'Aromatic' && wt.includes('irish')) return 'Irish whiskey keeps the topping lively without letting the session turn syrupy.';
-  if (bt === 'Virginia/Perique' && wt.includes('rye')) return 'Rye spice trims the sweetness and gives the peppery side of the bowl more structure.';
-  return 'Neither side strips the other of texture, so the bowl and pour stay identifiable through the session.';
+  
+  if ((bt === 'Burley' || bt === 'Virginia/Burley') && wt.includes('bourbon')) {
+    return 'The tobacco\'s earthy backbone lets bourbon\'s vanilla sweetness land without drowning the bowl. Both finish warm without competing for attention.';
+  }
+  
+  if ((bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') && (wt.includes('peated') || wt.includes('islay') || wt.includes('scotch'))) {
+    return 'Smoke recognizes smoke. The malt depth in a peated dram amplifies rather than masks the tobacco\'s complexity — each sip and pull reinforce the same sensory direction.';
+  }
+  
+  if (bt === 'Aromatic' && wt.includes('irish')) {
+    return 'Irish whiskey\'s grain-forward clean cut slices through topping sweetness just before it becomes cloying. The pairing resets itself with every pour.';
+  }
+  
+  if (bt === 'Virginia/Perique' && wt.includes('rye')) {
+    return 'Perique\'s pepper finds a partner in rye spice, and together they open new texture in each other. Neither one flattens — instead they sharpen.';
+  }
+  
+  if (bt === 'Virginia' || bt === 'Virginia/Oriental') {
+    return 'The bright fruit notes of Virginia leaf meet the whisky\'s middle palate without either fading. A session built on balance rather than boldness.';
+  }
+  
+  if (bt === 'Aromatic') {
+    return 'The topping\'s character has room to unfold without the whisky\'s tannins or finish overpowering it. This is a pairing for the nuanced sip, not the heavy pour.';
+  }
+  
+  return 'Both tobacco and spirit maintain their identity throughout — neither dominates, neither retreats. This is the architecture of a considered pairing.';
 }
 
 function buildWhatToExpect(blend, bottle) {
   const bt = getBlendType(blend);
   const wt = getWhiskeyType(bottle).toLowerCase();
-  if (bt === 'Aromatic') return 'Expect an easier, sweeter session where the sip resets the palate instead of crowding it.';
-  if (bt === 'Burley' || bt === 'Virginia/Burley') return 'Expect a steady, warm session with cocoa, nut, and caramel holding together nicely.';
-  if (bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan' || wt.includes('peated')) return 'Expect a darker, slower session where smoke and oak stay present from start to finish.';
-  return 'Expect a balanced session where both the tobacco and the pour remain recognizable.';
+  
+  if ((bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') && (wt.includes('peated') || wt.includes('islay'))) {
+    return 'Prepare for a deep, meditative session. The smoke will linger across both the bowl and the dram — don\'t rush. This is the kind of pairing that opens up over an hour.';
+  }
+  
+  if (bt === 'Aromatic') {
+    return 'A gentler session. The sweetness invites you to slow down and notice subtlety rather than power. The whisky becomes a palate bridge, not a statement.';
+  }
+  
+  if ((bt === 'Burley' || bt === 'Virginia/Burley') && wt.includes('bourbon')) {
+    return 'Expect comfort. Warm, earthy, slightly sweet — the kind of session where both the tobacco and the pour settle into their best selves without requiring your full concentration.';
+  }
+  
+  if (bt === 'Virginia' || bt === 'Virginia/Oriental') {
+    return 'A brighter session. The leaf\'s natural sweetness and fruit character stay front-and-center, with the whisky providing subtle texture rather than dominance.';
+  }
+  
+  if (bt === 'Virginia/Perique' && wt.includes('rye')) {
+    return 'A session with edges. There\'s real interplay here — the tobacco\'s spice and the whisky\'s bite keep each other sharp. Not soft, but rewarding.';
+  }
+  
+  return 'A balanced session where both elements maintain their voice. Neither overwhelms; together they\'re stronger than either alone.';
 }
 
 function buildBestMomentForIt(tab) {
