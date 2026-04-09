@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 
-import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, Layers } from "lucide-react";
+import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, Layers, Trash2, AlertTriangle } from "lucide-react";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 import WhiskeyPreferencesSection from "@/components/profile/WhiskeyPreferencesSection";
@@ -208,6 +208,8 @@ export default function ProfilePage() {
 
   const initializedRef = React.useRef(false);
   const [showBackupModal, setShowBackupModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingProfile, setDeletingProfile] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [cropperImage, setCropperImage] = useState(null);
 
@@ -263,6 +265,15 @@ export default function ProfilePage() {
   });
 
 
+
+  // Reset init ref when real profile data arrives so form re-hydrates with saved values
+  const prevProfileIdRef = React.useRef(null);
+  useEffect(() => {
+    if (profileId && profileId !== prevProfileIdRef.current) {
+      prevProfileIdRef.current = profileId;
+      initializedRef.current = false;
+    }
+  }, [profileId]);
 
   useEffect(() => {
     // Only hydrate once when profile data first arrives; don't reset on user re-renders
@@ -421,6 +432,23 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleDeleteProfile() {
+    setDeletingProfile(true);
+    try {
+      if (profileId) {
+        await base44.entities.UserProfile.delete(profileId);
+      }
+      await base44.auth.logout();
+      navigate(createPageUrl("Home"), { replace: true });
+    } catch (err) {
+      console.error("[Profile] delete failed:", err);
+      toast.error("Could not delete profile. Please try again.");
+    } finally {
+      setDeletingProfile(false);
+      setShowDeleteConfirm(false);
+    }
+  }
+
   if (userLoading || profileLoading) {
     return (
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center`}>
@@ -545,10 +573,18 @@ export default function ProfilePage() {
                 </CardDescription>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
                 <Button variant="outline" onClick={handleLogout}>
                   <LogOut className="w-4 h-4 mr-2" />
                   {t("profile.logout")}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="border-red-800/40 text-red-400 hover:bg-red-900/20 hover:border-red-700"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Profile
                 </Button>
               </div>
             </div>
@@ -997,6 +1033,43 @@ export default function ProfilePage() {
           isOpen={showBackupModal}
           onClose={() => setShowBackupModal(false)}
         />
+
+        {/* Delete Profile Confirmation Dialog */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
+            <div className="rounded-2xl p-8 max-w-md w-full space-y-5" style={{ background: 'linear-gradient(145deg, #1d1511, #140f0c)', border: '1px solid rgba(180,60,60,0.35)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(180,60,60,0.15)', border: '1px solid rgba(180,60,60,0.35)' }}>
+                  <AlertTriangle className="w-6 h-6 text-red-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold" style={{ color: '#F5F1E7' }}>Delete Profile</h2>
+                  <p className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>This action cannot be undone</p>
+                </div>
+              </div>
+              <p style={{ color: 'rgba(224,216,200,0.8)' }}>
+                Are you sure you want to permanently delete your profile? Your preferences and settings will be removed. Your collection data (pipes, tobacco, whiskey, cigars) will remain in the system but will no longer be linked to a profile.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deletingProfile}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDeleteProfile}
+                  disabled={deletingProfile}
+                  className="bg-red-700 hover:bg-red-800 text-white border-0"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {deletingProfile ? 'Deleting...' : 'Yes, Delete Profile'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
