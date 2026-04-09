@@ -18,6 +18,7 @@ import { groupRecommendations } from '@/lib/curator/recommendationGrouping';
 import { CATEGORY } from '@/lib/curator/recommendationSchema';
 
 const LOAD_TIMEOUT_MS = 10000;
+const CONTEXT_CACHE_MS = 60_000; // reuse fetched context within the same session
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function withTimeout(promise, label, ms = LOAD_TIMEOUT_MS) {
@@ -27,17 +28,6 @@ function withTimeout(promise, label, ms = LOAD_TIMEOUT_MS) {
       setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
     ),
   ]);
-}
-
-async function safeFilter(entityHandle, filter, sort, limit, label) {
-  try {
-    if (!entityHandle || typeof entityHandle.filter !== 'function') return [];
-    const rows = await withTimeout(entityHandle.filter(filter, sort, limit), label);
-    return Array.isArray(rows) ? rows : [];
-  } catch (err) {
-    console.error(`[Curator] ${label} failed`, err);
-    return [];
-  }
 }
 
 function bucketSections(groupedSections = []) {
@@ -112,15 +102,23 @@ export default function CuratorWorkspace({
   // Single-module mode: exactly 1 module enabled → no pairings, show Plan Session only
   const isSingleModuleMode = enabledModuleKeys.length <= 1;
 
-  const mountedRef = useRef(true);
-  const contextRef = useRef(null);
-  const pairingsRef = useRef([]);
+  // Stable primitive flags — prevents buildContext from re-creating whenever the moduleEnabled
+  // object reference changes (e.g. on profile query re-render).
+  const pipeActive    = moduleEnabled.pipekeeper    !== false;
+  const whiskeyActive = moduleEnabled.whiskeykeeper !== false;
+
+  const mountedRef          = useRef(true);
+  const contextRef          = useRef(null);
+  const pairingsRef         = useRef([]);
+  const rawSectionsRef      = useRef([]);   // mirrors rawSections state — used in callbacks to
+  const contextFetchTimeRef = useRef(0);    //   avoid rawSections in dep arrays
 
   const [loading, setLoading] = useState(true);
   const [pairingsLoading, setPairingsLoading] = useState(false);
   const [error, setError] = useState('');
   const [rawSections, setRawSections] = useState([]);
   const [pairings, setPairings] = useState([]);
+  const [failedEntities, setFailedEntities] = useState([]);
   const [threadId, setThreadId] = useState(null);
   const [preFillMessage, setPreFillMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -143,55 +141,81 @@ export default function CuratorWorkspace({
     [onCountsChange]
   );
 
-  const buildContext = useCallback(async () => {
+  const buildContext = useCallback(async ({ force = false } = {}) => {
     if (!user?.email) {
       return {
-        pipes: [], blends: [], bottles: [], smokingLogs: [], tastingLogs: [],
-        inventoryUnits: [], acquisitionItems: [], wantListItems: [],
-        preferences: {}, activeModules: moduleEnabled,
+        ctx: {
+          pipes: [], blends: [], bottles: [], smokingLogs: [], tastingLogs: [],
+          inventoryUnits: [], acquisitionItems: [], wantListItems: [],
+          preferences: {}, activeModules: moduleEnabled,
+        },
+        failures: [],
       };
     }
 
-    const pipeActive    = moduleEnabled.pipekeeper    !== false;
-    const whiskeyActive = moduleEnabled.whiskeykeeper !== false;
+    // Return cached context if it is still fresh — avoids re-fetching on every re-render
+    // or profile-query invalidation within the same session.
+    if (!force && contextRef.current && Date.now() - contextFetchTimeRef.current < CONTEXT_CACHE_MS) {
+      return { ctx: contextRef.current, failures: [] };
+    }
 
-    // Batch 1: core collection data
+    const failures = [];
+
+    // Local helper: fetch one entity collection, recording any failure in `failures`.
+    async function load(entityHandle, filter, sort, limit, label) {
+      try {
+        if (!entityHandle || typeof entityHandle.filter !== 'function') return [];
+        const rows = await withTimeout(entityHandle.filter(filter, sort, limit), label);
+        return Array.isArray(rows) ? rows : [];
+      } catch (err) {
+        console.error(`[Curator] ${label} failed`, err);
+        failures.push(label);
+        return [];
+      }
+    }
+
+    // Batch 1: core collection data (limits reduced to avoid rate-limiting)
     const [pipes, blends, bottles] = await Promise.all([
-      pipeActive    ? safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 500, 'pipes')          : Promise.resolve([]),
-      pipeActive    ? safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 500, 'blends') : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 500, 'bottles')      : Promise.resolve([]),
+      pipeActive    ? load(base44.entities.Pipe,          { created_by: user.email }, '-updated_date', 200, 'pipes')   : Promise.resolve([]),
+      pipeActive    ? load(base44.entities.TobaccoBlend,  { created_by: user.email }, '-updated_date', 200, 'blends')  : Promise.resolve([]),
+      whiskeyActive ? load(base44.entities.Bottle,        { created_by: user.email }, '-updated_date', 200, 'bottles') : Promise.resolve([]),
     ]);
 
     await sleep(250);
 
     // Batch 2: logs
     const [smokingLogs, tastingLogs] = await Promise.all([
-      pipeActive    ? safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 1000, 'smokingLogs')            : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 500, 'tastingLogs')     : Promise.resolve([]),
+      pipeActive    ? load(base44.entities.SmokingLog,  { created_by: user.email }, '-date',         200, 'smokingLogs')  : Promise.resolve([]),
+      whiskeyActive ? load(base44.entities.TastingLog,  { created_by: user.email }, '-tasting_date', 200, 'tastingLogs') : Promise.resolve([]),
     ]);
 
     await sleep(250);
 
     // Batch 3: inventory & acquisition
     const [inventoryUnits, acquisitionItems] = await Promise.all([
-      whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null, 2000, 'inventoryUnits') : Promise.resolve([]),
-      safeFilter(base44.entities.AcquisitionItem, { created_by: user.email }, '-created_date', 1000, 'acquisitionItems'),
+      whiskeyActive ? load(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null,            200, 'inventoryUnits')    : Promise.resolve([]),
+      load(base44.entities.AcquisitionItem,                      { created_by: user.email }, '-created_date', 200, 'acquisitionItems'),
     ]);
 
-    return {
+    const ctx = {
       pipes, blends, bottles, smokingLogs, tastingLogs,
       inventoryUnits, acquisitionItems,
       wantListItems: acquisitionItems,
       preferences: {},
       activeModules: moduleEnabled,
     };
-  }, [user?.email, moduleEnabled]);
+
+    contextRef.current          = ctx;
+    contextFetchTimeRef.current = Date.now();
+    return { ctx, failures };
+  }, [user?.email, pipeActive, whiskeyActive, moduleEnabled]);
 
   const loadPrimaryData = useCallback(
-    async ({ silent = false } = {}) => {
+    async ({ silent = false, force = false } = {}) => {
       if (!user?.email) {
         setLoading(false);
         setRawSections([]);
+        rawSectionsRef.current = [];
         setPairings([]);
         publishCounts([], []);
         return;
@@ -205,8 +229,7 @@ export default function CuratorWorkspace({
       }
 
       try {
-        const context = await buildContext();
-        contextRef.current = context;
+        const { ctx: context, failures } = await buildContext({ force });
 
         const flatRecommendations = generateRecommendations(context) || [];
         const groupedSections = groupRecommendations(
@@ -215,12 +238,15 @@ export default function CuratorWorkspace({
 
         if (!mountedRef.current) return;
 
+        rawSectionsRef.current = groupedSections;
         setRawSections(groupedSections);
+        setFailedEntities(failures || []);
         publishCounts(groupedSections, pairingsRef.current);
       } catch (err) {
         console.error('[Curator] primary load failed:', err);
         if (!mountedRef.current) return;
         setRawSections([]);
+        rawSectionsRef.current = [];
         setPairings([]);
         setError(err?.message || 'Curator could not load.');
         publishCounts([], []);
@@ -233,7 +259,7 @@ export default function CuratorWorkspace({
     [buildContext, publishCounts, user?.email]
   );
 
-  const loadPairings = useCallback(async () => {
+  const loadPairings = useCallback(async ({ force = false } = {}) => {
     // Pairings require multi-module context — skip entirely in single-module mode
     if (isSingleModuleMode || !user?.email) {
       setPairings([]);
@@ -242,8 +268,7 @@ export default function CuratorWorkspace({
 
     setPairingsLoading(true);
     try {
-      const context = contextRef.current || (await buildContext());
-      contextRef.current = context;
+      const { ctx: context } = await buildContext({ force });
 
       const nextPairings = generatePairingRecommendations(context) || [];
 
@@ -251,16 +276,19 @@ export default function CuratorWorkspace({
 
       pairingsRef.current = nextPairings;
       setPairings(nextPairings);
-      publishCounts(rawSections, nextPairings);
+      // Use the ref — NOT rawSections state — to avoid this callback re-creating
+      // whenever rawSections changes and triggering a fetch loop.
+      publishCounts(rawSectionsRef.current, nextPairings);
     } catch (err) {
       console.error('[Curator] pairing load failed:', err);
       if (!mountedRef.current) return;
       setPairings([]);
-      publishCounts(rawSections, []);
+      publishCounts(rawSectionsRef.current, []);
     } finally {
       if (mountedRef.current) setPairingsLoading(false);
     }
-  }, [buildContext, isSingleModuleMode, publishCounts, rawSections, user?.email]);
+  }, [buildContext, isSingleModuleMode, publishCounts, user?.email]);
+  // Note: rawSections intentionally excluded — use rawSectionsRef to prevent fetch loops.
 
   useEffect(() => {
     mountedRef.current = true;
@@ -272,7 +300,7 @@ export default function CuratorWorkspace({
 
   useEffect(() => {
     if (activeSurface === 'pairings') {
-      loadPairings();
+      loadPairings({});
     }
   }, [activeSurface, loadPairings]);
 
@@ -318,6 +346,7 @@ export default function CuratorWorkspace({
 
       setRawSections((prev) => {
         const next = reconcileSections(prev, resolvedIds, resolvedRecommendationIds);
+        rawSectionsRef.current = next;
         publishCounts(next, pairingsRef.current);
         return next;
       });
@@ -326,7 +355,8 @@ export default function CuratorWorkspace({
         setPairings((prev) => {
           const next = prev.filter((p) => p.id !== payload?.id);
           pairingsRef.current = next;
-          publishCounts(rawSections, next);
+          // Use ref — not rawSections state — to avoid stale closure issues
+          publishCounts(rawSectionsRef.current, next);
           return next;
         });
       }
@@ -337,23 +367,25 @@ export default function CuratorWorkspace({
         actionKey === 'move_to_shopping_list' ||
         actionKey === 'add_to_want_list'
       ) {
-        await loadPrimaryData({ silent: true });
+        // force: true bypasses cache so the reload reflects the mutation
+        await loadPrimaryData({ silent: true, force: true });
         if (activeSurface === 'pairings') {
-          await loadPairings();
+          await loadPairings({ force: true });
         }
       }
 
       return result;
     },
-    [activeSurface, loadPairings, loadPrimaryData, onSurfaceChange, publishCounts, rawSections, user?.email]
+    [activeSurface, loadPairings, loadPrimaryData, onSurfaceChange, publishCounts, user?.email]
+    // rawSections intentionally excluded — use rawSectionsRef to avoid re-creating on every render
   );
 
   const handleRefresh = useCallback(async () => {
     if (activeSurface === 'pairings') {
-      await loadPairings();
+      await loadPairings({ force: true });
       return;
     }
-    await loadPrimaryData({ silent: true });
+    await loadPrimaryData({ silent: true, force: true });
   }, [activeSurface, loadPairings, loadPrimaryData]);
 
   if (loading) {
@@ -383,7 +415,7 @@ export default function CuratorWorkspace({
         </div>
         <button
           type="button"
-          onClick={() => loadPrimaryData()}
+          onClick={() => loadPrimaryData({ force: true })}
           className="h-12 px-6 rounded-[14px] font-medium"
           style={{ background: '#C6A15B', color: '#0B0B0C' }}
         >
@@ -393,9 +425,11 @@ export default function CuratorWorkspace({
     );
   }
 
+  // Compute surface content first so we can wrap it with the partial-data banner.
+  let surfaceContent;
   switch (activeSurface) {
     case 'record_optimization':
-      return (
+      surfaceContent = (
         <CuratorResultsBoard
           sections={buckets.record_optimization}
           onAction={handleAction}
@@ -403,6 +437,7 @@ export default function CuratorWorkspace({
           isRefreshing={isRefreshing}
         />
       );
+      break;
 
     case 'collection_optimization': {
       const specRecs = extractSpecializationRecommendations(buckets.collection_optimization);
@@ -413,7 +448,7 @@ export default function CuratorWorkspace({
         }))
         .filter((section) => (section.recommendations || []).length > 0);
 
-      return showSpecializationReview || specRecs.length > 0 ? (
+      surfaceContent = showSpecializationReview || specRecs.length > 0 ? (
         <CuratorSpecializationReview
           specRecs={specRecs}
           collectionSections={nonSpecSections}
@@ -430,10 +465,11 @@ export default function CuratorWorkspace({
           isRefreshing={isRefreshing}
         />
       );
+      break;
     }
 
     case 'purchase_restock':
-      return (
+      surfaceContent = (
         <CuratorPurchaseQueue
           sections={buckets.purchase_restock}
           onAction={handleAction}
@@ -441,9 +477,10 @@ export default function CuratorWorkspace({
           isRefreshing={isRefreshing}
         />
       );
+      break;
 
     case 'pairings':
-      return (
+      surfaceContent = (
         <CuratorPairingsTab
           pairings={pairings}
           onAction={handleAction}
@@ -451,9 +488,10 @@ export default function CuratorWorkspace({
           isRefreshing={pairingsLoading || isRefreshing}
         />
       );
+      break;
 
     case 'plan_session':
-      return (
+      surfaceContent = (
         <CuratorPlanSession
           collectionContext={contextRef.current || {}}
           activeModules={moduleEnabled}
@@ -462,9 +500,10 @@ export default function CuratorWorkspace({
           isRefreshing={isRefreshing}
         />
       );
+      break;
 
     case 'grow_expand':
-      return (
+      surfaceContent = (
         <CuratorGrowAndExpand
           sections={buckets.grow_expand}
           collectionContext={contextRef.current || {}}
@@ -472,9 +511,10 @@ export default function CuratorWorkspace({
           onAskCurator={(item) => handleAction('ask_curator', item)}
         />
       );
+      break;
 
     case 'chat':
-      return (
+      surfaceContent = (
         <ExpertTobacconistChat
           threadId={threadId}
           setThreadId={setThreadId}
@@ -485,8 +525,36 @@ export default function CuratorWorkspace({
           activeModules={moduleEnabled}
         />
       );
+      break;
 
     default:
-      return null;
+      surfaceContent = null;
   }
+
+  return (
+    <div className="space-y-4">
+      {failedEntities.length > 0 && (
+        <div
+          className="rounded-[14px] px-5 py-3 flex flex-wrap items-center justify-between gap-3"
+          style={{
+            background: 'rgba(139,58,58,0.12)',
+            border: '1px solid rgba(139,58,58,0.28)',
+          }}
+        >
+          <p className="text-sm" style={{ color: 'rgba(220,140,140,0.9)' }}>
+            Some data could not be loaded ({failedEntities.join(', ')}). Recommendations may be incomplete.
+          </p>
+          <button
+            type="button"
+            onClick={() => loadPrimaryData({ force: true })}
+            className="shrink-0 text-xs px-3 h-8 rounded-lg font-medium"
+            style={{ background: 'rgba(139,58,58,0.25)', color: 'rgba(220,140,140,1)', border: '1px solid rgba(139,58,58,0.35)' }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+      {surfaceContent}
+    </div>
+  );
 }

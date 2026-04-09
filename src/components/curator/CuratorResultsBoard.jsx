@@ -227,17 +227,17 @@ export default function CuratorResultsBoard(props) {
       </div>
 
       <div className="space-y-8">
-        {filteredSections.map((section) => {
+        {filteredSections.map((section, idx) => {
           const recs = section?.recommendations || [];
           const sectionCount = recs.reduce((sum, rec) => sum + ((rec.items || []).length || 0), 0);
 
           return (
-            <section key={section.id || section.title}>
-              <SectionHeader title={section.title || 'Recommendations'} count={sectionCount} />
+            <section key={section.category || section.id || section.label || idx}>
+              <SectionHeader title={section.label || section.title || 'Recommendations'} count={sectionCount} />
               <div className="space-y-4">
-                {recs.map((recommendation) => (
+                {recs.map((recommendation, recIdx) => (
                   <CuratorRecommendationGroup
-                    key={`${recommendation.id}:${(recommendation.items || []).length}`}
+                    key={recommendation.id || recIdx}
                     recommendation={recommendation}
                     onAction={onAction}
                   />
