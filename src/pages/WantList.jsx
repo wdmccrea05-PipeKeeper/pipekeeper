@@ -416,11 +416,21 @@ function AddItemFlow({ onDone, onBack }) {
   return null;
 }
 
+// Maps item_type → moduleKey
+const ITEM_TYPE_MODULE = {
+  blend: "pipekeeper",
+  pipe: "pipekeeper",
+  bottle: "whiskeykeeper",
+  cigar: "cigarkeeper",
+};
+
 // ─── View Current List ───────────────────────────────────────────────────────
 function ViewList({ onBack }) {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
   const userEmail = user?.email || null;
+  const access = useAccessSummary();
+  const activeModules = useMemo(() => access?.activeModules || [], [access]);
 
   const [activeTab, setActiveTab] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
@@ -439,7 +449,10 @@ function ViewList({ onBack }) {
   });
 
   const filteredItems = useMemo(() => {
-    let result = [...items];
+    let result = items.filter((i) => {
+      const mod = ITEM_TYPE_MODULE[i.item_type];
+      return !mod || activeModules.includes(mod);
+    });
 
     if (activeTab === "wishlist") result = result.filter((i) => i.category === "wishlist");
     else if (activeTab === "shopping") result = result.filter((i) => i.category === "shopping_list" || i.category === "restock");
@@ -468,7 +481,7 @@ function ViewList({ onBack }) {
     });
 
     return result;
-  }, [items, activeTab, searchText, sortBy]);
+  }, [items, activeTab, searchText, sortBy, activeModules]);
 
   const handleStatusChange = () =>
     queryClient.invalidateQueries({ queryKey: ["acquisitionItems", userEmail] });
