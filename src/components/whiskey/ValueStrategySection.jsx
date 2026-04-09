@@ -13,21 +13,21 @@ import {
 } from '@/components/valuation/valueEngine';
 import { formatCurrency } from '@/components/whiskey/utils/bottleValue';
 
-// ── tiny helpers ──────────────────────────────────────────────────────────────
+// -- tiny helpers ---------------------------------------------------------------
 
 function formatDate(v) {
-  if (!v) return '—';
+  if (!v) return '--';
   const d = new Date(v);
-  if (isNaN(d.getTime())) return '—';
+  if (isNaN(d.getTime())) return '--';
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function CapitalizeFirst(str) {
-  if (!str) return '—';
+  if (!str) return '--';
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// ── sub-components ────────────────────────────────────────────────────────────
+// -- sub-components -------------------------------------------------------------
 
 function MiniCard({ label, children }) {
   return (
@@ -58,7 +58,7 @@ function TrendChip({ trend }) {
     down: { icon: TrendingDown, color: '#f87171', label: 'Trending Down' },
     flat: { icon: Minus, color: '#fbbf24', label: 'Stable' },
     unknown: { icon: HelpCircle, color: '#9ca3af', label: 'Unknown' },
-  }[trend] || { icon: HelpCircle, color: '#9ca3af', label: '—' };
+  }[trend] || { icon: HelpCircle, color: '#9ca3af', label: '--' };
   const Icon = cfg.icon;
   return (
     <span className="inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: cfg.color }}>
@@ -77,7 +77,7 @@ const RECOMMENDATION_CONFIG = {
     iconColor: '#fca5a5',
     textColor: '#fca5a5',
     label: 'Hold',
-    sublabel: 'Strategic value — preserve this item',
+    sublabel: 'Strategic value -- preserve this item',
   },
   open: {
     icon: Unlock,
@@ -86,7 +86,7 @@ const RECOMMENDATION_CONFIG = {
     iconColor: '#6ee7b7',
     textColor: '#6ee7b7',
     label: 'Safe to Open',
-    sublabel: 'Low replacement risk — enjoy freely',
+    sublabel: 'Low replacement risk -- enjoy freely',
   },
   open_if_duplicate: {
     icon: Zap,
@@ -95,7 +95,7 @@ const RECOMMENDATION_CONFIG = {
     iconColor: '#fbbf24',
     textColor: '#fbbf24',
     label: 'Open if Duplicate',
-    sublabel: 'You have a backup — opening is low risk',
+    sublabel: 'You have a backup -- opening is low risk',
   },
   either: {
     icon: HelpCircle,
@@ -104,7 +104,7 @@ const RECOMMENDATION_CONFIG = {
     iconColor: '#D4A574',
     textColor: '#D4A574',
     label: 'Your Call',
-    sublabel: 'Mixed signals — personal preference applies',
+    sublabel: 'Mixed signals -- personal preference applies',
   },
   // Pipes
   use: {
@@ -114,7 +114,7 @@ const RECOMMENDATION_CONFIG = {
     iconColor: '#6ee7b7',
     textColor: '#6ee7b7',
     label: 'Use Freely',
-    sublabel: 'Available and replaceable — enjoy your pipe',
+    sublabel: 'Available and replaceable -- enjoy your pipe',
   },
   rotate: {
     icon: HelpCircle,
@@ -123,7 +123,7 @@ const RECOMMENDATION_CONFIG = {
     iconColor: '#D4A574',
     textColor: '#D4A574',
     label: 'Include in Rotation',
-    sublabel: 'Moderately rare — smoke thoughtfully and maintain well',
+    sublabel: 'Moderately rare -- smoke thoughtfully and maintain well',
   },
   preserve: {
     icon: ShieldCheck,
@@ -131,8 +131,8 @@ const RECOMMENDATION_CONFIG = {
     border: 'rgba(239,68,68,0.28)',
     iconColor: '#fca5a5',
     textColor: '#fca5a5',
-    label: 'Preserve — Limit Use',
-    sublabel: 'Rare or vintage pipe — minimize use to protect collector value',
+    label: 'Preserve -- Limit Use',
+    sublabel: 'Rare or vintage pipe -- minimize use to protect collector value',
   },
   insure: {
     icon: ShieldCheck,
@@ -141,7 +141,7 @@ const RECOMMENDATION_CONFIG = {
     iconColor: '#c4b5fd',
     textColor: '#c4b5fd',
     label: 'Preserve & Insure',
-    sublabel: 'Extremely rare and irreplaceable — formal coverage recommended',
+    sublabel: 'Extremely rare and irreplaceable -- formal coverage recommended',
   },
   // Tobacco
   smoke_now: {
@@ -151,7 +151,7 @@ const RECOMMENDATION_CONFIG = {
     iconColor: '#6ee7b7',
     textColor: '#6ee7b7',
     label: 'Smoke Now',
-    sublabel: 'Widely available — enjoy at your own pace',
+    sublabel: 'Widely available -- enjoy at your own pace',
   },
   smoke_later: {
     icon: HelpCircle,
@@ -160,7 +160,7 @@ const RECOMMENDATION_CONFIG = {
     iconColor: '#D4A574',
     textColor: '#D4A574',
     label: 'Save for Later',
-    sublabel: 'Limited availability — save for special occasions',
+    sublabel: 'Limited availability -- save for special occasions',
   },
   cellar: {
     icon: ShieldCheck,
@@ -178,7 +178,7 @@ const RECOMMENDATION_CONFIG = {
     iconColor: '#fca5a5',
     textColor: '#fca5a5',
     label: 'Hold for Trade',
-    sublabel: 'Scarce blend — secondary value may appreciate',
+    sublabel: 'Scarce blend -- secondary value may appreciate',
   },
 };
 
@@ -233,7 +233,7 @@ function ReplacementDifficultyDots({ level }) {
   const activeIdx  = LEVELS.indexOf(level);
   const filledCount = activeIdx === -1 ? 1 : activeIdx + 1;
   const activeColor = LEVEL_COLORS[level] || LEVEL_COLORS.easy;
-  const label       = LEVEL_LABELS[level] || '—';
+  const label       = LEVEL_LABELS[level] || '--';
 
   return (
     <div className="mt-1.5 space-y-2">
@@ -272,8 +272,8 @@ function SnapshotHistoryList({ snapshots }) {
       {displayed.map((snap, i) => (
         <div key={snap.id || i} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-xs min-w-0" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.1)' }}>
           <span className="text-[#D8C7A6]/65 shrink-0">{formatDate(snap.snapshot_date)}</span>
-          <span className="font-semibold text-[#F5F1E7] tabular-nums">{snap.computed_current_value > 0 ? formatCurrency(snap.computed_current_value) : '—'}</span>
-          <span className="text-[#D8C7A6]/45 truncate min-w-0">{snap.source || snap.price_type || '—'}</span>
+          <span className="font-semibold text-[#F5F1E7] tabular-nums">{snap.computed_current_value > 0 ? formatCurrency(snap.computed_current_value) : '--'}</span>
+          <span className="text-[#D8C7A6]/45 truncate min-w-0">{snap.source || snap.price_type || '--'}</span>
           {snap.value_confidence && <ConfidenceBadge level={snap.value_confidence} />}
         </div>
       ))}
@@ -307,9 +307,9 @@ function ObservationList({ observations }) {
       {displayed.map((obs, i) => (
         <div key={obs.id || i} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-xs min-w-0" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(59,130,246,0.12)' }}>
           <span className="text-[#D8C7A6]/65 shrink-0">{formatDate(obs.observed_date)}</span>
-          <span className="font-semibold text-[#F5F1E7] tabular-nums">{obs.observed_price > 0 ? formatCurrency(obs.observed_price) : '—'}</span>
-          <span className="text-[#93C5FD]/70 truncate min-w-0">{obs.source_name || '—'}</span>
-          <span className="text-[#D8C7A6]/45 shrink-0 uppercase tracking-wide">{obs.price_type || '—'}</span>
+          <span className="font-semibold text-[#F5F1E7] tabular-nums">{obs.observed_price > 0 ? formatCurrency(obs.observed_price) : '--'}</span>
+          <span className="text-[#93C5FD]/70 truncate min-w-0">{obs.source_name || '--'}</span>
+          <span className="text-[#D8C7A6]/45 shrink-0 uppercase tracking-wide">{obs.price_type || '--'}</span>
         </div>
       ))}
       {observations.length > 3 && (
@@ -326,26 +326,26 @@ function ObservationList({ observations }) {
   );
 }
 
-// ── Main exported component ───────────────────────────────────────────────────
+// -- Main exported component ----------------------------------------------------
 
 /**
- * ValueStrategySection — universal "Value & Strategy" block.
+ * ValueStrategySection -- universal "Value & Strategy" block.
  * Works for bottles (whiskeykeeper), pipes, and tobacco blends (pipekeeper).
  *
  * Props:
- *  valuationSnapshot  — output of buildValuationSnapshot()
- *  valueTrend         — 'up' | 'down' | 'flat' | 'unknown'
- *  valueSnapshots     — array of ItemValueSnapshot records for this item
- *  priceObservations  — array of PriceObservation records for this item
- *  item               — the raw item record (replaces old `bottle` prop)
- *  bottle             — alias for item; kept for backward compatibility
- *  moduleKey          — 'pipekeeper' | 'whiskeykeeper' | ...
- *  itemType           — 'pipe' | 'tobacco' | 'bottle' | ...
- *  onAddSnapshot      — callback to open save-checkpoint modal
- *  onAddObservation   — callback to open add-observation modal
- *  onEditValuation    — callback to open edit-valuation-inputs modal (optional)
- *  onRefreshNow       — callback to recompute and save a new snapshot immediately (optional)
- *  isRefreshing       — true while a refresh is in progress (shows spinner)
+ *  valuationSnapshot  -- output of buildValuationSnapshot()
+ *  valueTrend         -- 'up' | 'down' | 'flat' | 'unknown'
+ *  valueSnapshots     -- array of ItemValueSnapshot records for this item
+ *  priceObservations  -- array of PriceObservation records for this item
+ *  item               -- the raw item record (replaces old `bottle` prop)
+ *  bottle             -- alias for item; kept for backward compatibility
+ *  moduleKey          -- 'pipekeeper' | 'whiskeykeeper' | ...
+ *  itemType           -- 'pipe' | 'tobacco' | 'bottle' | ...
+ *  onAddSnapshot      -- callback to open save-checkpoint modal
+ *  onAddObservation   -- callback to open add-observation modal
+ *  onEditValuation    -- callback to open edit-valuation-inputs modal (optional)
+ *  onRefreshNow       -- callback to recompute and save a new snapshot immediately (optional)
+ *  isRefreshing       -- true while a refresh is in progress (shows spinner)
  */
 export default function ValueStrategySection({
   valuationSnapshot,
@@ -368,7 +368,19 @@ export default function ValueStrategySection({
 
   const resolvedItem = item || bottle;
 
-  const { currentValue, source, confidence, rarityScore, replacementDifficulty, holdRecommendation, rationale } = valuationSnapshot;
+  const { rarityScore, replacementDifficulty, holdRecommendation, rationale } = valuationSnapshot;
+
+  // Resolve displayed value: fall back to latest saved snapshot when direct fields are empty
+  const latestSavedSnap = valueSnapshots[0];
+  const currentValue = valuationSnapshot.currentValue > 0
+    ? valuationSnapshot.currentValue
+    : (latestSavedSnap && latestSavedSnap.computed_current_value > 0 ? latestSavedSnap.computed_current_value : 0);
+  const source = valuationSnapshot.currentValue > 0
+    ? valuationSnapshot.source
+    : (latestSavedSnap && latestSavedSnap.computed_current_value > 0 ? (latestSavedSnap.source || 'Snapshot') : valuationSnapshot.source);
+  const confidence = valuationSnapshot.currentValue > 0
+    ? valuationSnapshot.confidence
+    : (latestSavedSnap && latestSavedSnap.value_confidence ? latestSavedSnap.value_confidence : valuationSnapshot.confidence);
 
   // Determine status badges to show based on item type and data
   const isAllocated = !!(resolvedItem?.production_status === 'Allocated' || resolvedItem?.allocated);
@@ -462,7 +474,7 @@ export default function ValueStrategySection({
                 title="Recompute and save a new value snapshot now"
               >
                 <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${isRefreshing ? 'animate-spin' : ''}`} />
-                <span className="hidden xs:inline">{isRefreshing ? 'Refresh…' : 'Refresh'}</span>
+                <span className="hidden xs:inline">{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
               </button>
             )}
             <button
@@ -478,12 +490,12 @@ export default function ValueStrategySection({
         </div>
 
         <div className="px-5 py-5 space-y-5">
-          {/* A — Current Value + Badges */}
+          {/* A -- Current Value + Badges */}
           <div className="flex flex-wrap items-start gap-4 min-w-0">
             <div className="min-w-0 flex-1">
               <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-1">Current Value</p>
               <p className="text-3xl font-bold text-[#F5F1E7] break-words tabular-nums">
-                {currentValue > 0 ? formatCurrency(currentValue) : '—'}
+                {currentValue > 0 ? formatCurrency(currentValue) : '--'}
               </p>
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 <span className="text-xs text-[#D8C7A6]/65">{source}</span>
@@ -494,7 +506,7 @@ export default function ValueStrategySection({
               )}
             </div>
 
-            {/* B — Trend */}
+            {/* B -- Trend */}
             <div className="shrink-0 rounded-xl px-4 py-3 text-center min-w-[110px]" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
               <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2">Trend</p>
               <TrendChip trend={valueTrend || valuationSnapshot.trend} />
@@ -542,22 +554,22 @@ export default function ValueStrategySection({
             </div>
           )}
 
-          {/* C — Strategy */}
+          {/* C -- Strategy */}
           <RecommendationBlock holdRecommendation={holdRecommendation} rationale={rationale} moduleKey={moduleKey} itemType={itemType} />
 
-          {/* D — Replacement Difficulty */}
+          {/* D -- Replacement Difficulty */}
           <div className="rounded-xl p-4 min-w-0" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
             <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2 font-semibold">Replacement Difficulty</p>
             <ReplacementDifficultyDots level={replacementDifficulty} />
           </div>
 
-          {/* E — Value History */}
+          {/* E -- Value History */}
           <div>
             <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2.5">Value History</p>
             <SnapshotHistoryList snapshots={valueSnapshots} />
           </div>
 
-          {/* F — Market Observations */}
+          {/* F -- Market Observations */}
           <div>
             <p className="text-xs uppercase tracking-[0.12em] text-[#93C5FD]/60 mb-2.5">Market Observations</p>
             <ObservationList observations={priceObservations} />
