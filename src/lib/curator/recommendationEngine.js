@@ -434,9 +434,13 @@ function analyzeMetadata(context) {
       };
     });
 
+    // §4.1: ≥0.85 → AUTO_FIX, 0.60–0.84 → REVIEW_REQUIRED, <0.60 → no actionable fix
     const withPayloads   = items.filter((i) => i.proposedChange);
-    const highConf       = withPayloads.filter((i) => i.proposedChange.confidence >= 0.70);
-    const actionType     = highConf.length > 0 ? ACTION_TYPE.AUTO_FIX : ACTION_TYPE.REVIEW_REQUIRED;
+    const autoFixable    = withPayloads.filter((i) => i.proposedChange.confidence >= 0.85);
+    const reviewable     = withPayloads.filter((i) => i.proposedChange.confidence >= 0.60 && i.proposedChange.confidence < 0.85);
+    const actionType     = autoFixable.length > 0 ? ACTION_TYPE.AUTO_FIX
+                         : reviewable.length  > 0 ? ACTION_TYPE.REVIEW_REQUIRED
+                         : ACTION_TYPE.REVIEW_REQUIRED;
 
     const summary = withPayloads.length > 0
       ? `${withPayloads.length} of ${items.length} unclassified blend${items.length > 1 ? 's' : ''} matched in the product catalog and ${withPayloads.length > 1 ? 'are' : 'is'} ready to apply.`
@@ -486,8 +490,11 @@ function analyzeMetadata(context) {
           : null,
       };
     });
-    const inferredCount = items.filter((i) => i.proposedChange).length;
-    const actionType = inferredCount > 0 ? ACTION_TYPE.AUTO_FIX : ACTION_TYPE.REVIEW_REQUIRED;
+    // §4.1 threshold: ≥0.85 → AUTO_FIX, 0.60–0.84 → REVIEW_REQUIRED
+    const inferredItems = items.filter((i) => i.proposedChange);
+    const inferredAutoFix = inferredItems.filter((i) => i.proposedChange.confidence >= 0.85);
+    const inferredCount = inferredItems.length;
+    const actionType = inferredAutoFix.length > 0 ? ACTION_TYPE.AUTO_FIX : inferredCount > 0 ? ACTION_TYPE.REVIEW_REQUIRED : ACTION_TYPE.REVIEW_REQUIRED;
 
     const summary = inferredCount > 0
       ? `${inferredCount} of ${items.length} blend${items.length > 1 ? 's' : ''} matched in the catalog — strength values ready to apply.`
@@ -756,12 +763,15 @@ function analyzeMetadata(context) {
       };
     });
 
+    // §4.1 threshold: ≥0.85 → AUTO_FIX, 0.60–0.84 → REVIEW_REQUIRED
     const actionableCount = items.filter((i) => i.proposedChange?.payload).length;
+    const bottleAutoFix   = items.filter((i) => i.proposedChange?.confidence >= 0.85).length;
+    const bottleReview    = items.filter((i) => i.proposedChange?.confidence >= 0.60 && (i.proposedChange?.confidence || 0) < 0.85).length;
 
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
       goal:               'bottle_missing_core_metadata',
-      actionType:         actionableCount > 0 ? ACTION_TYPE.AUTO_FIX : ACTION_TYPE.REVIEW_REQUIRED,
+      actionType:         bottleAutoFix > 0 ? ACTION_TYPE.AUTO_FIX : bottleReview > 0 ? ACTION_TYPE.REVIEW_REQUIRED : ACTION_TYPE.REVIEW_REQUIRED,
       title:              'Bottles Missing Core Metadata',
       summary:            `${items.length} bottle${items.length > 1 ? 's have' : ' has'} incomplete records.${actionableCount > 0 ? ` ${actionableCount} can be auto-filled from the distillery catalog.` : ''}`,
       whyItMatters:       'Spirit type, region, and ABV are not just descriptive — they determine which blends and cigars this bottle can be paired with.',
@@ -856,8 +866,10 @@ function analyzeMetadata(context) {
       };
     });
 
+    // §4.1 threshold: ≥0.85 → AUTO_FIX, 0.60–0.84 → REVIEW_REQUIRED
     const withPayloads = items.filter((i) => i.proposedChange);
-    const actionType   = withPayloads.length > 0 ? ACTION_TYPE.AUTO_FIX : ACTION_TYPE.REVIEW_REQUIRED;
+    const pipeAutoFix  = withPayloads.filter((i) => i.proposedChange.confidence >= 0.85);
+    const actionType   = pipeAutoFix.length > 0 ? ACTION_TYPE.AUTO_FIX : withPayloads.length > 0 ? ACTION_TYPE.REVIEW_REQUIRED : ACTION_TYPE.REVIEW_REQUIRED;
 
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,

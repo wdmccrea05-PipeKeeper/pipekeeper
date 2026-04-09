@@ -304,6 +304,73 @@ export async function executeRecommendationAction(recommendation, action, opts =
       };
     }
 
+    // §2.3 OPEN_RECORD — navigation only, no DB mutation
+    case 'open_record': {
+      const first = items[0];
+      if (!first) return { ok: false, error: 'No record to open.' };
+      const path = singleRecordPath(first);
+      if (path) window.location.href = path;
+      return { ok: !!path, navigate: { path }, resolvedRecordIds: [], resolvedRecommendationIds: [] };
+    }
+
+    // §2.3 TRACK_FOR_RESTOCK — set AcquisitionItem status to 'restock'
+    case 'track_for_restock': {
+      const userEmail = opts.userEmail;
+      if (!userEmail) return { ok: false, error: 'User email is required.' };
+      const sourceItems = opts.itemId
+        ? items.filter((i) => i.recordId === opts.itemId || i.id === opts.itemId)
+        : items;
+      const resolved = [];
+      for (const item of sourceItems) {
+        const recordId = item.recordId || item.id;
+        if (item.acquisitionId) {
+          await base44.entities.AcquisitionItem.update(item.acquisitionId, { status: 'restock' });
+          resolved.push(item.acquisitionId);
+        } else {
+          const rows = await base44.entities.AcquisitionItem.filter({ created_by: userEmail }).catch(() => []);
+          const existing = recordId ? rows.find((r) => r.record_id === recordId) : null;
+          if (existing) {
+            if (existing.status !== 'restock') await base44.entities.AcquisitionItem.update(existing.id, { status: 'restock' });
+            resolved.push(existing.id);
+          } else {
+            const row = await base44.entities.AcquisitionItem.create({
+              name: item.recordName || item.name || '—', item_type: item.recordType || 'blend',
+              status: 'restock', priority: 'high', notes: '', record_id: recordId || undefined,
+            });
+            resolved.push(row.id);
+          }
+        }
+      }
+      return { ok: resolved.length > 0, appliedCount: resolved.length, resolvedRecordIds: sourceItems.map((i) => i.recordId || i.id).filter(Boolean), resolvedRecommendationIds: resolved.length ? [recommendation.id] : [], updatedRecords: [] };
+    }
+
+    // §2.3 ARCHIVE_ITEM — mark AcquisitionItem as archived (idempotent)
+    case 'archive_item': {
+      const userEmail = opts.userEmail;
+      if (!userEmail) return { ok: false, error: 'User email is required.' };
+      const sourceItems = opts.itemId
+        ? items.filter((i) => i.recordId === opts.itemId || i.id === opts.itemId)
+        : items;
+      const resolved = [];
+      for (const item of sourceItems) {
+        if (item.acquisitionId) {
+          await base44.entities.AcquisitionItem.update(item.acquisitionId, { status: 'archived' });
+          resolved.push(item.acquisitionId);
+        }
+      }
+      return { ok: resolved.length > 0, appliedCount: resolved.length, resolvedRecordIds: sourceItems.map((i) => i.recordId || i.id).filter(Boolean), resolvedRecommendationIds: resolved.length ? [recommendation.id] : [], updatedRecords: [] };
+    }
+
+    // §2.3 MARK_REVIEWED — remove from Curator view (idempotent, optimistic)
+    case 'mark_reviewed':
+      return {
+        ok: true,
+        appliedCount: items.length || 1,
+        resolvedRecordIds: items.map((i) => i.recordId || i.id).filter(Boolean),
+        resolvedRecommendationIds: [recommendation.id],
+        updatedRecords: [],
+      };
+
     case 'ask_curator':
       return { ok: true, appliedCount: 0, resolvedRecordIds: [], resolvedRecommendationIds: [], updatedRecords: [] };
 
