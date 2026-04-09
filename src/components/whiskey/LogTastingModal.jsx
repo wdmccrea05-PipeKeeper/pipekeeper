@@ -162,9 +162,13 @@ export default function LogTastingModal({ bottle, bottles = [], editLog = null, 
       )}
 
       {!postPromptItems && (
-        <div className="fixed inset-0 z-[1200] bg-black/70 flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 z-[1200] bg-black/70 flex items-center justify-center p-4"
+          onClick={onClose}
+        >
           <div
             className="w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
             style={{
               background: 'linear-gradient(145deg, rgba(38,26,18,0.98), rgba(24,16,12,1))',
               border: '1px solid rgba(180,140,75,0.24)',
