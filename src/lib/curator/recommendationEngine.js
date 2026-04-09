@@ -1268,9 +1268,11 @@ function analyzeWhiskeyCollection(context) {
   const UNDERUSED_BOTTLE_DAYS = 90;
   const bottleLastTasted = {};
   for (const log of tastingLogs) {
-    const bid = log.bottle_id || log.bottleId;
-    const ts  = new Date(log.tasting_date || log.date || log.created_date).getTime();
-    if (bid && !isNaN(ts)) {
+    const bid      = log.bottle_id || log.bottleId;
+    const rawDate  = log.tasting_date || log.date || log.created_date;
+    if (!bid || !rawDate) continue;
+    const ts = new Date(rawDate).getTime();
+    if (!isNaN(ts) && ts > 0) {
       if (!bottleLastTasted[bid] || ts > bottleLastTasted[bid]) bottleLastTasted[bid] = ts;
     }
   }

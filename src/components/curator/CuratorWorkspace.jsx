@@ -300,7 +300,9 @@ export default function CuratorWorkspace({
       if (actionKey === 'build_session') {
         // Determine which modal to open based on session candidate type and active modules
         const candidate = payload?._sessionCandidate;
-        const isWhiskey = candidate?.moduleKey === 'whiskey' || candidate?.itemType === 'bottle' || payload?.leftItem?.type || payload?.leftItem?.whiskey_type;
+        // Use explicit module/item-type signals only — avoid inferring from type field values
+        // which may be pipe/blend types rather than whiskey types.
+        const isWhiskey = candidate?.moduleKey === 'whiskey' || candidate?.itemType === 'bottle' || !!payload?.leftItem?.whiskey_type;
         const isPipe    = candidate?.moduleKey === 'pipe' || candidate?.itemType === 'pipe' || candidate?.itemType === 'blend';
 
         if (isWhiskey) {
