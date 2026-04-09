@@ -1,33 +1,60 @@
-/**
- * CuratorGrowAndExpand — works from either prebuilt curator sections or direct collection context.
- */
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { TrendingUp, Plus, CheckCircle2, Loader2, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { generateGrowthSuggestions } from '@/lib/curator/growthEngine.js';
 
 const MODULE_COLORS = {
-  tobacco: { bg: 'rgba(74,124,92,0.12)',  text: 'rgba(100,180,130,0.9)',  border: 'rgba(74,124,92,0.25)',  label: 'Tobacco' },
+  tobacco: { bg: 'rgba(74,124,92,0.12)', text: 'rgba(100,180,130,0.9)', border: 'rgba(74,124,92,0.25)', label: 'Tobacco' },
   whiskey: { bg: 'rgba(74,124,156,0.12)', text: 'rgba(120,170,220,0.9)', border: 'rgba(74,124,156,0.25)', label: 'Whiskey' },
-  cigar:   { bg: 'rgba(180,100,50,0.12)', text: 'rgba(220,140,90,0.9)',  border: 'rgba(180,100,50,0.25)', label: 'Cigar'   },
+  cigar: { bg: 'rgba(180,100,50,0.12)', text: 'rgba(220,140,90,0.9)', border: 'rgba(180,100,50,0.25)', label: 'Cigar' },
+  pipe: { bg: 'rgba(180,140,75,0.12)', text: 'rgba(212,165,116,1)', border: 'rgba(180,140,75,0.26)', label: 'Pipe' },
 };
 
+function normalizeModuleKey(value) {
+  const raw = String(value || '').toLowerCase();
+  if (raw.includes('whiskey') || raw.includes('bottle')) return 'whiskey';
+  if (raw.includes('cigar')) return 'cigar';
+  if (raw.includes('pipe')) return 'pipe';
+  return 'tobacco';
+}
+
+function buildCollectionReason(rec, item) {
+  return item?.rationale || rec?.whyItMatters || rec?.recommendationText || rec?.summary || '';
+}
+
 function normalizeSectionSuggestions(sections = []) {
-  return (sections || []).flatMap((section) =>
-    (section?.recommendations || []).map((rec) => ({
-      id: rec.id,
-      title: rec.title || rec.summary || 'Curator suggestion',
-      summary: rec.summary || rec.recommendationText || '',
-      whyFit: rec.whyItMatters || rec.recommendationText || '',
-      moduleKey: rec.moduleKey === 'whiskey' ? 'whiskey' : rec.moduleKey === 'cigar' ? 'cigar' : 'tobacco',
-      itemType: rec.moduleKey === 'whiskey' ? 'bottle' : rec.moduleKey === 'cigar' ? 'cigar' : 'blend',
-      name: rec.title || rec.summary || 'Curator suggestion',
-      reason: rec.goal || 'growth',
-      tags: [rec.confidence, rec.priority].filter(Boolean),
-      sourceRecommendation: rec,
-    }))
-  );
+  const rows = [];
+
+  for (const section of sections || []) {
+    for (const rec of section?.recommendations || []) {
+      const recItems = Array.isArray(rec?.items) && rec.items.length ? rec.items : [null];
+      for (const item of recItems) {
+        const moduleKey = normalizeModuleKey(item?.itemType || item?.recordType || rec?.moduleKey);
+        const itemType = item?.itemType || item?.recordType || (moduleKey === 'whiskey' ? 'bottle' : moduleKey === 'pipe' ? 'pipe' : 'blend');
+        const title = item?.recordName || item?.itemName || rec?.title || rec?.summary || 'Curator suggestion';
+        rows.push({
+          id: `${rec.id}_${item?.id || item?.recordName || title}`,
+          title,
+          summary: rec?.summary || '',
+          whyFit: buildCollectionReason(rec, item),
+          moduleKey,
+          itemType,
+          name: title,
+          reason: rec?.goal || 'growth',
+          tags: [rec?.confidence, rec?.priority].filter(Boolean),
+          sourceRecommendation: rec,
+        });
+      }
+    }
+  }
+
+  const dedupe = new Set();
+  return rows.filter((row) => {
+    const key = `${row.moduleKey}:${row.name}`.toLowerCase();
+    if (dedupe.has(key)) return false;
+    dedupe.add(key);
+    return true;
+  });
 }
 
 function fallbackSuggestions(context = {}) {
@@ -37,7 +64,7 @@ function fallbackSuggestions(context = {}) {
     title: s.title || s.name || 'Curator suggestion',
     summary: s.summary || '',
     whyFit: s.whyFit || s.summary || '',
-    moduleKey: s.moduleKey || 'tobacco',
+    moduleKey: normalizeModuleKey(s.moduleKey || s.itemType),
     itemType: s.itemType || 'blend',
     name: s.name || s.title || 'Curator suggestion',
     reason: s.gapFilled || s.reason || 'growth',
@@ -60,10 +87,10 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
       await base44.entities.AcquisitionItem.create({
         name: suggestion.name || suggestion.title,
         item_type: suggestion.itemType || 'blend',
-        notes: suggestion.summary || suggestion.whyFit || '',
+        notes: suggestion.whyFit || suggestion.summary || '',
         priority: 'medium',
-        category: 'wishlist',
         status: 'wishlist',
+        category: 'wishlist',
         is_manual: false,
         created_by: userEmail,
       });
@@ -82,7 +109,8 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
         {tags.map((tag, i) => <span key={i} style={{ background: 'rgba(255,255,255,0.06)', color: '#A1A1AA', fontSize: '13px', fontWeight: 500, padding: '2px 10px', borderRadius: '999px' }}>{tag}</span>)}
       </div>
       <p style={{ color: '#F5F5F7', fontSize: '18px', fontWeight: 600, lineHeight: 1.3, margin: '0 0 10px 0' }}>{suggestion.title}</p>
-      {(suggestion.whyFit || suggestion.summary) && <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, margin: '0 0 16px 0' }}>{suggestion.whyFit || suggestion.summary}</p>}
+      {suggestion.summary ? <p style={{ color: '#D8D0C2', fontSize: '15px', lineHeight: 1.6, margin: '0 0 8px 0' }}>{suggestion.summary}</p> : null}
+      {suggestion.whyFit ? <p style={{ color: '#A1A1AA', fontSize: '15px', lineHeight: 1.6, margin: '0 0 16px 0' }}>{suggestion.whyFit}</p> : null}
       {error && <p className="text-xs rounded px-2 py-1 mb-3" style={{ background: 'rgba(139,58,58,0.15)', color: 'rgba(220,140,140,1)' }}>{error}</p>}
       <div className="flex items-center gap-2 flex-wrap">
         {added ? <span className="inline-flex items-center gap-2" style={{ color: '#22C55E', fontSize: '16px', fontWeight: 600 }}><CheckCircle2 className="w-5 h-5" />Added to Want List</span> : <button type="button" onClick={handleAdd} disabled={adding || !userEmail} className="inline-flex items-center gap-2 font-semibold transition-all disabled:opacity-50" style={{ background: '#C6A15B', color: '#0B0B0C', height: '40px', padding: '0 16px', borderRadius: '12px', fontSize: '14px', border: 'none' }}>{adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}{adding ? 'Adding…' : 'Add to Want List'}</button>}
@@ -118,6 +146,7 @@ export default function CuratorGrowAndExpand({ sections = [], collectionContext 
     tobacco: suggestions.filter((s) => s.moduleKey === 'tobacco'),
     whiskey: suggestions.filter((s) => s.moduleKey === 'whiskey'),
     cigar: suggestions.filter((s) => s.moduleKey === 'cigar'),
+    pipe: suggestions.filter((s) => s.moduleKey === 'pipe'),
   }), [suggestions]);
 
   if (!suggestions.length) {
@@ -132,6 +161,7 @@ export default function CuratorGrowAndExpand({ sections = [], collectionContext 
       </div>
       <GrowSection label="Tobacco Discoveries" suggestions={groups.tobacco} userEmail={userEmail} onAskCurator={onAskCurator} />
       <GrowSection label="Whiskey Discoveries" suggestions={groups.whiskey} userEmail={userEmail} onAskCurator={onAskCurator} />
+      <GrowSection label="Pipe Discoveries" suggestions={groups.pipe} userEmail={userEmail} onAskCurator={onAskCurator} />
       <GrowSection label="Cigar Discoveries" suggestions={groups.cigar} userEmail={userEmail} onAskCurator={onAskCurator} />
     </div>
   );
