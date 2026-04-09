@@ -15,11 +15,11 @@ import {
   BarChart3,
   TestTube2,
   List,
+  Flame,
 } from "lucide-react";
 import PipeIcon from "@/components/icons/PipeIcon";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
-import { Flame } from "lucide-react";
-import { useAccessSummary } from "@/components/hooks/useAccessSummary";
+import { useEnabledModules } from "@/components/hooks/useEnabledKeeperModules";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 function NavItem({ item, isActive }) {
@@ -48,20 +48,18 @@ function NavItem({ item, isActive }) {
 export default function ModuleNav({ currentPageName, user }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const access = useAccessSummary();
   const { t } = useTranslation();
+  const { enabled } = useEnabledModules();
 
   const isAdmin =
     user?.role === "admin" ||
     user?.is_admin === true ||
     user?.isAdmin === true;
 
-  const activeModules = access?.activeModules || [];
-
   const moduleItems = useMemo(() => {
     const items = [];
 
-    if (activeModules.includes("pipekeeper")) {
+    if (enabled.pipekeeper) {
       items.push({
         page: "PipeKeeper",
         label: t("nav.pipekeeper", "PipeKeeper"),
@@ -70,7 +68,7 @@ export default function ModuleNav({ currentPageName, user }) {
       });
     }
 
-    if (activeModules.includes("whiskeykeeper")) {
+    if (enabled.whiskeykeeper) {
       items.push({
         page: "WhiskeyKeeper",
         label: t("nav.whiskeykeeper", "WhiskeyKeeper"),
@@ -79,7 +77,7 @@ export default function ModuleNav({ currentPageName, user }) {
       });
     }
 
-    if (activeModules.includes("cigarkeeper")) {
+    if (enabled.cigarkeeper) {
       items.push({
         page: "CigarKeeper",
         label: t("nav.cigarkeeper", "CigarKeeper"),
@@ -89,7 +87,7 @@ export default function ModuleNav({ currentPageName, user }) {
     }
 
     return items;
-  }, [activeModules, t]);
+  }, [enabled, t]);
 
   const baseItems = [
     { page: "CollectionHub", label: t("nav.hub", "Hub"), icon: Home, path: "/" },

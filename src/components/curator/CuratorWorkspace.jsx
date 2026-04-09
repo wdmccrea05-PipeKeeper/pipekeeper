@@ -10,6 +10,7 @@ import CuratorSpecializationReview from '@/components/curator/CuratorSpecializat
 import ExpertTobacconistChat from '@/components/agent/ExpertTobacconistChat';
 
 import { generateRecommendations } from '@/lib/curator/recommendationEngine';
+import { useEnabledModules } from '@/components/hooks/useEnabledKeeperModules';
 import { generatePairingRecommendations } from '@/lib/curator/pairingEngine';
 import { executeRecommendationAction, buildViewItemsNavigation } from '@/lib/curator/recommendationActions';
 
@@ -171,6 +172,7 @@ export default function CuratorWorkspace({
   onCountsChange,
 }) {
   const { user } = useCurrentUser();
+  const { enabled: enabledModules } = useEnabledModules();
 
   const mountedRef = useRef(true);
   const contextRef = useRef(null);
@@ -217,12 +219,24 @@ export default function CuratorWorkspace({
     }
 
     const [pipes, blends, bottles, smokingLogs, tastingLogs, inventoryUnits, acquisitionItems] = await Promise.all([
-      safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 500, 'pipes'),
-      safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 500, 'blends'),
-      safeFilter(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 500, 'bottles'),
-      safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 1000, 'smokingLogs'),
-      safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 500, 'tastingLogs'),
-      safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null, 2000, 'inventoryUnits'),
+      enabledModules.pipekeeper
+        ? safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 500, 'pipes')
+        : Promise.resolve([]),
+      enabledModules.pipekeeper
+        ? safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 500, 'blends')
+        : Promise.resolve([]),
+      enabledModules.whiskeykeeper
+        ? safeFilter(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 500, 'bottles')
+        : Promise.resolve([]),
+      enabledModules.pipekeeper
+        ? safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 1000, 'smokingLogs')
+        : Promise.resolve([]),
+      enabledModules.whiskeykeeper
+        ? safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 500, 'tastingLogs')
+        : Promise.resolve([]),
+      enabledModules.whiskeykeeper
+        ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null, 2000, 'inventoryUnits')
+        : Promise.resolve([]),
       safeFilter(base44.entities.AcquisitionItem, { created_by: user.email }, '-created_date', 1000, 'acquisitionItems'),
     ]);
 
@@ -234,8 +248,9 @@ export default function CuratorWorkspace({
       tastingLogs,
       inventoryUnits,
       acquisitionItems,
+      cigarModuleActive: false,
     };
-  }, [user?.email]);
+  }, [user?.email, enabledModules.pipekeeper, enabledModules.whiskeykeeper, enabledModules.cigarkeeper]);
 
   const loadPrimaryData = useCallback(
     async ({ silent = false } = {}) => {
@@ -258,7 +273,21 @@ export default function CuratorWorkspace({
         const context = await buildContext();
         contextRef.current = context;
 
-        const recs = generateRecommendations(context) || [];
+        const allRecs = generateRecommendations(context) || [];
+
+        // Filter out recommendations for disabled modules
+        function isModuleKeyEnabled(moduleKey) {
+          if (moduleKey === 'pipe' || moduleKey === 'tobacco') return !!enabledModules.pipekeeper;
+          if (moduleKey === 'whiskey') return !!enabledModules.whiskeykeeper;
+          if (moduleKey === 'cigar') return !!enabledModules.cigarkeeper;
+          return true;
+        }
+        const recs = allRecs
+          .map((section) => ({
+            ...section,
+            recommendations: (section.recommendations || []).filter((rec) => isModuleKeyEnabled(rec?.moduleKey)),
+          }))
+          .filter((section) => (section.recommendations || []).length > 0);
 
         if (!mountedRef.current) return;
 

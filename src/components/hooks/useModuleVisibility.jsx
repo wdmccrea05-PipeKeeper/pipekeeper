@@ -195,11 +195,6 @@ export function useModuleVisibility(passedProfile = null, passedUser = null) {
         [moduleId]: !!enabled,
       };
 
-      const selectedCount = Object.values(nextState).filter(Boolean).length;
-      if (selectedCount === 0) {
-        throw new Error("At least one module must remain enabled.");
-      }
-
       await persistPreferences(nextState);
     },
     [persistPreferences, visibility]
@@ -225,11 +220,6 @@ export function useModuleVisibility(passedProfile = null, passedUser = null) {
             ? moduleSelections.cigarkeeper
             : visibility.cigarkeeper,
       };
-
-      const selectedCount = Object.values(normalized).filter(Boolean).length;
-      if (selectedCount === 0) {
-        throw new Error("At least one module must be selected.");
-      }
 
       await persistPreferences(normalized);
     },
