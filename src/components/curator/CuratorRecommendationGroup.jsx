@@ -273,14 +273,24 @@ function RecordOptimizationActions({ rec, onAction }) {
                     </a>
                   )}
                 </div>
-                {Object.entries(item.proposedChange.payload).map(([field, value]) => (
-                  <div key={`${item.recordId}-${field}`} className="flex items-center gap-3 text-sm" style={{ color: '#A1A1AA' }}>
-                    <span className="w-28 shrink-0">{field}</span>
-                    <span className="flex-1 truncate" style={{ color: '#71717A' }}>{String(item[field] ?? 'Not set')}</span>
-                    <span>→</span>
-                    <span className="flex-1 truncate" style={{ color: '#F5F5F7' }}>{String(value)}</span>
-                  </div>
-                ))}
+                {Object.entries(item.proposedChange.payload).map(([field, proposedValue]) => {
+                  // Resolve the current value from the item record.
+                  // The item carries the raw entity fields using the same snake_case keys
+                  // that appear in the proposedChange payload, so direct lookup is correct.
+                  const currentValue = Object.prototype.hasOwnProperty.call(item, field)
+                    ? item[field]
+                    : item.proposedChange?.currentValues?.[field];
+                  return (
+                    <div key={`${item.recordId}-${field}`} className="flex items-center gap-3 text-sm" style={{ color: '#A1A1AA' }}>
+                      <span className="w-28 shrink-0">{field}</span>
+                      <span className="flex-1 truncate" style={{ color: '#71717A' }}>
+                        {currentValue != null && currentValue !== '' ? String(currentValue) : 'Not set'}
+                      </span>
+                      <span>→</span>
+                      <span className="flex-1 truncate" style={{ color: '#F5F5F7' }}>{String(proposedValue)}</span>
+                    </div>
+                  );
+                })}
               </div>
             ))}
           </div>

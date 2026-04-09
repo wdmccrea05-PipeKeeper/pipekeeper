@@ -1,13 +1,24 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import CuratorWorkspace from '@/components/curator/CuratorWorkspace';
+import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 
-const SURFACES = [
-  { key: 'record_optimization', label: 'Record Optimization' },
+// ─── Static surfaces (always present) ────────────────────────────────────────
+
+const SURFACES_BASE = [
+  { key: 'record_optimization',  label: 'Record Optimization' },
   { key: 'collection_optimization', label: 'Collection Optimization' },
-  { key: 'purchase_restock', label: 'Purchase & Restock' },
+  { key: 'purchase_restock',     label: 'Purchase & Restock' },
+  { key: 'plan_session',         label: 'Plan Session' },
+];
+
+// These appear only when 2+ modules are active
+const MULTI_MODULE_SURFACES = [
   { key: 'pairings', label: 'Pairings' },
+];
+
+const SURFACES_TAIL = [
   { key: 'grow_expand', label: 'Grow & Expand' },
-  { key: 'chat', label: 'Chat' },
+  { key: 'chat',        label: 'Chat' },
 ];
 
 function SurfaceTab({ active, label, badge, onClick }) {
@@ -40,11 +51,32 @@ function SurfaceTab({ active, label, badge, onClick }) {
 }
 
 export default function CuratorPage() {
+  const { enabledModuleKeys } = useEnabledModules();
+
+  // Multi-module mode when 2+ modules are enabled
+  const isMultiModuleMode = enabledModuleKeys.length >= 2;
+
+  // Build the active surfaces list depending on module mode
+  const SURFACES = useMemo(() => [
+    ...SURFACES_BASE,
+    ...(isMultiModuleMode ? MULTI_MODULE_SURFACES : []),
+    ...SURFACES_TAIL,
+  ], [isMultiModuleMode]);
+
   const [surface, setSurface] = useState('record_optimization');
+
+  // If pairings is active but we switched to single-module mode, redirect to plan_session
+  useEffect(() => {
+    if (!isMultiModuleMode && surface === 'pairings') {
+      setSurface('plan_session');
+    }
+  }, [isMultiModuleMode, surface]);
+
   const [counts, setCounts] = useState({
     record_optimization: 0,
     collection_optimization: 0,
     purchase_restock: 0,
+    plan_session: 0,
     pairings: 0,
     grow_expand: 0,
     chat: 0,
@@ -57,7 +89,7 @@ export default function CuratorPage() {
   const progressWidth = useMemo(() => {
     const index = SURFACES.findIndex((s) => s.key === surface);
     return `${((index + 1) / SURFACES.length) * 100}%`;
-  }, [surface]);
+  }, [surface, SURFACES]);
 
   return (
     <div className="min-h-screen" style={{ background: '#0B0B0C' }}>

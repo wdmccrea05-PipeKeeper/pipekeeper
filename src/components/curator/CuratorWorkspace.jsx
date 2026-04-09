@@ -5,6 +5,7 @@ import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 
 import CuratorResultsBoard from '@/components/curator/CuratorResultsBoard';
 import CuratorPairingsTab from '@/components/curator/CuratorPairingsTab';
+import CuratorPlanSession from '@/components/curator/CuratorPlanSession';
 import CuratorPurchaseQueue from '@/components/curator/CuratorPurchaseQueue';
 import CuratorGrowAndExpand from '@/components/curator/CuratorGrowAndExpand';
 import CuratorSpecializationReview from '@/components/curator/CuratorSpecializationReview';
@@ -111,7 +112,10 @@ export default function CuratorWorkspace({
   onCountsChange,
 }) {
   const { user } = useCurrentUser();
-  const { enabled: moduleEnabled } = useEnabledModules();
+  const { enabled: moduleEnabled, enabledModuleKeys } = useEnabledModules();
+
+  // Single-module mode: exactly 1 module enabled → no pairings, show Plan Session only
+  const isSingleModuleMode = enabledModuleKeys.length <= 1;
 
   const mountedRef = useRef(true);
   const contextRef = useRef(null);
@@ -237,7 +241,8 @@ export default function CuratorWorkspace({
   );
 
   const loadPairings = useCallback(async () => {
-    if (!user?.email) {
+    // Pairings require multi-module context — skip entirely in single-module mode
+    if (isSingleModuleMode || !user?.email) {
       setPairings([]);
       return;
     }
@@ -262,7 +267,7 @@ export default function CuratorWorkspace({
     } finally {
       if (mountedRef.current) setPairingsLoading(false);
     }
-  }, [buildContext, publishCounts, rawSections, user?.email]);
+  }, [buildContext, isSingleModuleMode, publishCounts, rawSections, user?.email]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -454,6 +459,17 @@ export default function CuratorWorkspace({
         />
       );
 
+    case 'plan_session':
+      return (
+        <CuratorPlanSession
+          collectionContext={contextRef.current || {}}
+          activeModules={moduleEnabled}
+          onAction={handleAction}
+          onRefresh={handleRefresh}
+          isRefreshing={isRefreshing}
+        />
+      );
+
     case 'grow_expand':
       return (
         <CuratorGrowAndExpand
@@ -472,6 +488,8 @@ export default function CuratorWorkspace({
           preFillMessage={preFillMessage}
           onPreFillConsumed={() => setPreFillMessage('')}
           collectionContext={contextRef.current || {}}
+          isSingleModuleMode={isSingleModuleMode}
+          activeModules={moduleEnabled}
         />
       );
 

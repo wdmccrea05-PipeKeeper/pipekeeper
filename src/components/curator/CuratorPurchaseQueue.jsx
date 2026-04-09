@@ -105,7 +105,7 @@ function PurchaseRecommendationCard({ recommendation, onAction, groupId }) {
                 className="px-3 h-9 rounded-lg text-xs font-semibold"
                 style={{ background: '#C6A15B', color: '#0B0B0C' }}
               >
-                Add
+                {itemActionLabel}
               </button>
             </div>
           ))}
@@ -122,7 +122,7 @@ function PurchaseRecommendationCard({ recommendation, onAction, groupId }) {
           style={{ background: '#C6A15B', color: '#0B0B0C' }}
         >
           <ShoppingCart className="w-4 h-4" />
-          Add All to Shopping List
+          {bulkActionLabel}
         </button>
 
         <button
@@ -159,7 +159,7 @@ function QueueSection({ group, onAction }) {
       {!collapsed ? (
         <div className="space-y-3">
           {group.recommendations.map((rec) => (
-            <PurchaseRecommendationCard key={rec.id} recommendation={rec} onAction={onAction} />
+            <PurchaseRecommendationCard key={rec.id} recommendation={rec} onAction={onAction} groupId={group.key} />
           ))}
         </div>
       ) : null}

@@ -1,7 +1,18 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { SendHorizontal } from 'lucide-react';
+import { buildSessionPlan } from '@/lib/curator/sessionPlanner.js';
 
-const STARTER_PROMPTS = [
+// ─── Starter prompts vary by mode ─────────────────────────────────────────────
+
+const STARTER_PROMPTS_SINGLE = [
+  'What should I enjoy tonight?',
+  'What haven\'t I used recently?',
+  'What should I buy or restock next?',
+  'What is the biggest gap in my collection?',
+  'Which bottle should I open next?',
+];
+
+const STARTER_PROMPTS_MULTI = [
   'What is my most redundant pipe?',
   'Which pipe should I reassign?',
   'What should I smoke tonight?',
@@ -80,6 +91,23 @@ function emptyEntityContext() {
 function updateEntityContext(currentContext, entityType, entityRecord) {
   if (!entityType || !entityRecord) return currentContext;
   return { ...currentContext, [entityType]: entityRecord };
+}
+
+// ─── Intent detection ─────────────────────────────────────────────────────────
+
+/**
+ * Returns true when the message is explicitly asking for a PAIRING (cross-module).
+ * Returns false for single-module session questions.
+ */
+function isPairingIntent(text) {
+  return /\bpairing|pair with|pair together|combine|combination\b/i.test(text);
+}
+
+/**
+ * Returns true when the message is a session planning question (what to enjoy/use).
+ */
+function isSessionIntent(text) {
+  return /\b(tonight|enjoy|smoke|drink|use|open|revisit|rediscover|haven.?t used|haven.?t had)\b/i.test(text);
 }
 
 // ─── Collection analysis helpers ─────────────────────────────────────────────
@@ -217,12 +245,14 @@ function pairingExplanation(context = {}) {
  * Generate a reply to the user's message, grounded in the collection context
  * and the current session entity context (for follow-up resolution).
  *
- * @param {string} message         - The user's current message
- * @param {object} context         - Collection data: pipes, blends, bottles, logs, etc.
- * @param {object} entityContext   - Session entity tracking: { pipe, blend, bottle, acquisition }
+ * @param {string} message            - The user's current message
+ * @param {object} context            - Collection data: pipes, blends, bottles, logs, etc.
+ * @param {object} entityContext      - Session entity tracking: { pipe, blend, bottle, acquisition }
+ * @param {boolean} isSingleModuleMode - When true, prioritize session planning over pairings
+ * @param {object} activeModules      - Enabled module map
  * @returns {{ reply: string, updatedEntityContext: object }}
  */
-function answerQuestion(message, context = {}, entityContext = emptyEntityContext()) {
+function answerQuestion(message, context = {}, entityContext = emptyEntityContext(), isSingleModuleMode = false, activeModules = {}) {
   const text = norm(message);
   const pipes = context?.pipes || [];
   const blends = context?.blends || [];
@@ -230,6 +260,47 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
   const smokingLogs = context?.smokingLogs || [];
   const tastingLogs = context?.tastingLogs || [];
   const acquisitionItems = context?.acquisitionItems || context?.wantListItems || [];
+
+  // ── Detect intent first — pairing vs session ──────────────────────────────
+  // In single-module mode, pairing questions are redirected to session planning.
+  // In multi-module mode, explicit pairing intent uses pairing logic.
+  if (isPairingIntent(text)) {
+    if (isSingleModuleMode) {
+      return {
+        reply: 'Pairings require multiple active modules. Right now Curator is running in single-module mode. To plan tonight\'s session instead, ask me what to enjoy tonight or what hasn\'t been used recently.',
+        updatedEntityContext: entityContext,
+      };
+    }
+    // Multi-module pairing → fall through to pairing handler below
+  }
+
+  // ── Session planning: "enjoy tonight", "haven't used", "revisit", etc. ───
+  if (isSessionIntent(text) && !isPairingIntent(text)) {
+    // Determine target module from message
+    const whiskeyFocused = /\b(whiskey|bourbon|scotch|rye|irish|bottle|pour|dram)\b/i.test(text);
+    const pipeFocused    = /\b(pipe|smoke|tobacco|blend)\b/i.test(text);
+    const targetModule   = whiskeyFocused ? 'whiskey' : pipeFocused ? 'pipe' : 'any';
+
+    const candidates = buildSessionPlan(context, activeModules, targetModule);
+    if (!candidates.length) {
+      return {
+        reply: 'I do not have enough collection data yet to make a confident session suggestion. Log some sessions or add records to help Curator learn your rotation.',
+        updatedEntityContext: entityContext,
+      };
+    }
+
+    const top = candidates[0];
+    const others = candidates.slice(1, 3).map((c) => c.title).filter(Boolean);
+    const othersText = others.length ? ` Other strong options tonight: ${others.join(', ')}.` : '';
+
+    const entityKey = { bottle: 'bottle', pipe: 'pipe', blend: 'blend' }[top.itemType];
+    const updatedCtx = entityKey ? { ...entityContext, [entityKey]: top.item } : entityContext;
+
+    return {
+      reply: `${top.reason}${othersText}`,
+      updatedEntityContext: updatedCtx,
+    };
+  }
 
   // ── Resolve referenced entity from prior context if this is a follow-up ───
   const followUp = isFollowUpReference(text);
@@ -392,13 +463,14 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
   };
 }
 
-export default function ExpertTobacconistChat({ preFillMessage, onPreFillConsumed, collectionContext }) {
+export default function ExpertTobacconistChat({ preFillMessage, onPreFillConsumed, collectionContext, isSingleModuleMode = false, activeModules = {} }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   // Session-scoped entity context for follow-up resolution
   const [entityContext, setEntityContext] = useState(emptyEntityContext);
 
+  const starterPrompts = isSingleModuleMode ? STARTER_PROMPTS_SINGLE : STARTER_PROMPTS_MULTI;
   const canSend = useMemo(() => !!input.trim() && !isSending, [input, isSending]);
 
   useEffect(() => {
@@ -415,13 +487,13 @@ export default function ExpertTobacconistChat({ preFillMessage, onPreFillConsume
     setMessages((prev) => [...prev, { id: `user-${Date.now()}`, role: 'user', content: text }]);
     setInput('');
     try {
-      const { reply, updatedEntityContext } = answerQuestion(text, collectionContext, entityContext);
+      const { reply, updatedEntityContext } = answerQuestion(text, collectionContext, entityContext, isSingleModuleMode, activeModules);
       setEntityContext(updatedEntityContext);
       setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: reply }]);
     } finally {
       setIsSending(false);
     }
-  }, [input, isSending, collectionContext, entityContext]);
+  }, [input, isSending, collectionContext, entityContext, isSingleModuleMode, activeModules]);
 
   return (
     <div className="rounded-[18px] p-8" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)' }}>
@@ -437,7 +509,7 @@ export default function ExpertTobacconistChat({ preFillMessage, onPreFillConsume
           <>
             <div className="text-[16px] mb-5" style={{ color: '#A1A1AA' }}>Start a conversation or pick a prompt below.</div>
             <div className="flex flex-wrap gap-3">
-              {STARTER_PROMPTS.map((prompt) => (
+              {starterPrompts.map((prompt) => (
                 <button key={prompt} type="button" onClick={() => setInput(prompt)} className="px-4 h-10 rounded-full text-sm" style={{ border: '1px solid rgba(255,255,255,0.10)', color: '#F5F5F7' }}>{prompt}</button>
               ))}
             </div>
