@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import CuratorWorkspace from '@/components/curator/CuratorWorkspace';
-import CuratorIcon from '@/components/icons/CuratorIcon';
+
+const CURATOR_ICON = 'https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png';
 
 const SURFACES = [
   { key: 'record_optimization', label: 'Record Optimization' },
@@ -65,7 +66,7 @@ export default function CuratorPage() {
       <div className="max-w-[1440px] mx-auto px-10 py-10">
         <header className="mb-8">
           <div className="flex items-center gap-3 mb-3">
-            <CuratorIcon className="w-8 h-8" style={{ color: '#C6A15B' }} />
+            <img src={CURATOR_ICON} alt="" className="w-9 h-9 object-cover rounded" style={{ filter: 'hue-rotate(35deg) saturate(0.8) brightness(1.1)' }} aria-hidden="true" />
             <h1
               className="text-[32px] leading-none font-semibold"
               style={{ color: '#F5F5F7', letterSpacing: '-0.5px' }}
