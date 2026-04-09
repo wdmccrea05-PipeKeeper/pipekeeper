@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 
 import CuratorResultsBoard from '@/components/curator/CuratorResultsBoard';
 import CuratorPairingsTab from '@/components/curator/CuratorPairingsTab';
+import CuratorPlanSession from '@/components/curator/CuratorPlanSession';
 import CuratorPurchaseQueue from '@/components/curator/CuratorPurchaseQueue';
 import CuratorGrowAndExpand from '@/components/curator/CuratorGrowAndExpand';
 import CuratorSpecializationReview from '@/components/curator/CuratorSpecializationReview';
@@ -110,6 +112,10 @@ export default function CuratorWorkspace({
   onCountsChange,
 }) {
   const { user } = useCurrentUser();
+  const { enabled: moduleEnabled, enabledModuleKeys } = useEnabledModules();
+
+  // Single-module mode: exactly 1 module enabled → no pairings, show Plan Session only
+  const isSingleModuleMode = enabledModuleKeys.length <= 1;
 
   const mountedRef = useRef(true);
   const contextRef = useRef(null);
@@ -154,16 +160,21 @@ export default function CuratorWorkspace({
         acquisitionItems: [],
         wantListItems: [],
         preferences: {},
+        activeModules: moduleEnabled,
       };
     }
 
+    // Only fetch data for enabled modules to avoid polluting cross-module logic.
+    const pipeActive    = moduleEnabled.pipekeeper    !== false;
+    const whiskeyActive = moduleEnabled.whiskeykeeper !== false;
+
     const [pipes, blends, bottles, smokingLogs, tastingLogs, inventoryUnits, acquisitionItems] = await Promise.all([
-      safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 500, 'pipes'),
-      safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 500, 'blends'),
-      safeFilter(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 500, 'bottles'),
-      safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 1000, 'smokingLogs'),
-      safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 500, 'tastingLogs'),
-      safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null, 2000, 'inventoryUnits'),
+      pipeActive    ? safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 500, 'pipes')                           : Promise.resolve([]),
+      pipeActive    ? safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 500, 'blends')                  : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 500, 'bottles')                       : Promise.resolve([]),
+      pipeActive    ? safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 1000, 'smokingLogs')                      : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 500, 'tastingLogs')               : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null, 2000, 'inventoryUnits')             : Promise.resolve([]),
       safeFilter(base44.entities.AcquisitionItem, { created_by: user.email }, '-created_date', 1000, 'acquisitionItems'),
     ]);
 
@@ -177,8 +188,9 @@ export default function CuratorWorkspace({
       acquisitionItems,
       wantListItems: acquisitionItems,
       preferences: {},
+      activeModules: moduleEnabled,
     };
-  }, [user?.email]);
+  }, [user?.email, moduleEnabled]);
 
   const loadPrimaryData = useCallback(
     async ({ silent = false } = {}) => {
@@ -229,7 +241,8 @@ export default function CuratorWorkspace({
   );
 
   const loadPairings = useCallback(async () => {
-    if (!user?.email) {
+    // Pairings require multi-module context — skip entirely in single-module mode
+    if (isSingleModuleMode || !user?.email) {
       setPairings([]);
       return;
     }
@@ -254,7 +267,7 @@ export default function CuratorWorkspace({
     } finally {
       if (mountedRef.current) setPairingsLoading(false);
     }
-  }, [buildContext, publishCounts, rawSections, user?.email]);
+  }, [buildContext, isSingleModuleMode, publishCounts, rawSections, user?.email]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -446,6 +459,17 @@ export default function CuratorWorkspace({
         />
       );
 
+    case 'plan_session':
+      return (
+        <CuratorPlanSession
+          collectionContext={contextRef.current || {}}
+          activeModules={moduleEnabled}
+          onAction={handleAction}
+          onRefresh={handleRefresh}
+          isRefreshing={isRefreshing}
+        />
+      );
+
     case 'grow_expand':
       return (
         <CuratorGrowAndExpand
@@ -464,6 +488,8 @@ export default function CuratorWorkspace({
           preFillMessage={preFillMessage}
           onPreFillConsumed={() => setPreFillMessage('')}
           collectionContext={contextRef.current || {}}
+          isSingleModuleMode={isSingleModuleMode}
+          activeModules={moduleEnabled}
         />
       );
 

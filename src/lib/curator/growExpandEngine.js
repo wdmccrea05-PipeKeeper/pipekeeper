@@ -502,7 +502,11 @@ export function generateGrowExpandRecommendations(context = {}) {
     bottles     = [],
     smokingLogs = [],
     preferences = {},
+    activeModules = {},
   } = context;
+
+  const pipeActive    = activeModules.pipekeeper    !== false;
+  const whiskeyActive = activeModules.whiskeykeeper !== false;
 
   // Edge case: insufficient data to make meaningful suggestions
   const totalItems = pipes.length + blends.length + bottles.length;
@@ -511,17 +515,19 @@ export function generateGrowExpandRecommendations(context = {}) {
   const results = [];
   const seen = new Set();
 
-  // Blend family expansion — suggest new blend types based on dominant profile
-  const blendExpansion = generateBlendExpansion(blends, smokingLogs, preferences);
-  for (const rec of blendExpansion) {
-    if (!seen.has(rec.goal)) {
-      results.push(rec);
-      seen.add(rec.goal);
+  // Blend family expansion — only when PipeKeeper is active
+  if (pipeActive) {
+    const blendExpansion = generateBlendExpansion(blends, smokingLogs, preferences);
+    for (const rec of blendExpansion) {
+      if (!seen.has(rec.goal)) {
+        results.push(rec);
+        seen.add(rec.goal);
+      }
     }
   }
 
-  // Whiskey type expansion — suggest new whiskey styles based on existing bottles
-  if (bottles.length > 0) {
+  // Whiskey type expansion — only when WhiskeyKeeper is active
+  if (whiskeyActive && bottles.length > 0) {
     const whiskeyExpansion = generateWhiskeyExpansion(bottles, blends, preferences);
     for (const rec of whiskeyExpansion) {
       if (!seen.has(rec.goal)) {
@@ -531,8 +537,8 @@ export function generateGrowExpandRecommendations(context = {}) {
     }
   }
 
-  // Pipe shape expansion — suggest complementary shapes
-  if (pipes.length >= 2) {
+  // Pipe shape expansion — only when PipeKeeper is active
+  if (pipeActive && pipes.length >= 2) {
     const pipeExpansion = generatePipeShapeExpansion(pipes, blends);
     for (const rec of pipeExpansion) {
       if (!seen.has(rec.goal)) {
@@ -546,48 +552,50 @@ export function generateGrowExpandRecommendations(context = {}) {
   //     but nothing was surfaced by the normal generators ──────────────────────
 
   if (results.length === 0 && totalItems >= 3) {
-    // Fallback tobacco family — suggest exploring a first blend family
-    const ownedTypes = new Set(blends.map((b) => b.blend_type || b.blend_family).filter(Boolean));
-    const fallbackBlendType = ['Virginia', 'English', 'Virginia/Perique', 'Aromatic', 'Burley'].find(
-      (t) => !ownedTypes.has(t)
-    );
-    if (fallbackBlendType) {
-      const specificProduct = BLEND_PROGRESSION_PRODUCTS[fallbackBlendType] || `${fallbackBlendType} Blend`;
-      results.push(createRecommendation({
-        category:           CATEGORY.GROW_EXPAND,
-        goal:               'blend_family_expansion',
-        actionType:         ACTION_TYPE.SHOPPING_LIST_ACTION,
-        title:              `Explore ${specificProduct}`,
-        summary:            `Add a ${fallbackBlendType} blend to your collection to expand your palette.`,
-        whyItMatters:       `${fallbackBlendType} blends offer a distinct character your current collection doesn't cover. ` +
-                            `It's a natural next step for any pipe smoker looking to explore new territory.`,
-        moduleKey:          MODULE_KEY.TOBACCO,
-        ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
-        priority:           PRIORITY.LOW,
-        confidence:         'medium',
-        items: [{
-          id:              `grow_blend_fallback_${fallbackBlendType.replace(/[\s/]/g, '_').toLowerCase()}`,
-          recordId:        null,
-          recordType:      'blend_suggestion',
-          recordName:      specificProduct,
-          itemName:        specificProduct,
-          ownershipStatus: 'wishlist',
-          shoppingType:    'buy_new_item',
-          itemType:        'blend',
-          suggestedFamily: fallbackBlendType,
-          rationale:       `Diversify your blend collection with a ${fallbackBlendType} offering.`,
-        }],
-        actionPayload: {
-          shoppingType:    'buy_new_item',
-          itemType:        'blend',
-          suggestedFamily: fallbackBlendType,
-          specificProduct,
-        },
-      }));
+    // Fallback tobacco family — suggest exploring a first blend family (pipekeeper only)
+    if (pipeActive) {
+      const ownedTypes = new Set(blends.map((b) => b.blend_type || b.blend_family).filter(Boolean));
+      const fallbackBlendType = ['Virginia', 'English', 'Virginia/Perique', 'Aromatic', 'Burley'].find(
+        (t) => !ownedTypes.has(t)
+      );
+      if (fallbackBlendType) {
+        const specificProduct = BLEND_PROGRESSION_PRODUCTS[fallbackBlendType] || `${fallbackBlendType} Blend`;
+        results.push(createRecommendation({
+          category:           CATEGORY.GROW_EXPAND,
+          goal:               'blend_family_expansion',
+          actionType:         ACTION_TYPE.SHOPPING_LIST_ACTION,
+          title:              `Explore ${specificProduct}`,
+          summary:            `Add a ${fallbackBlendType} blend to your collection to expand your palette.`,
+          whyItMatters:       `${fallbackBlendType} blends offer a distinct character your current collection doesn't cover. ` +
+                              `It's a natural next step for any pipe smoker looking to explore new territory.`,
+          moduleKey:          MODULE_KEY.TOBACCO,
+          ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
+          priority:           PRIORITY.LOW,
+          confidence:         'medium',
+          items: [{
+            id:              `grow_blend_fallback_${fallbackBlendType.replace(/[\s/]/g, '_').toLowerCase()}`,
+            recordId:        null,
+            recordType:      'blend_suggestion',
+            recordName:      specificProduct,
+            itemName:        specificProduct,
+            ownershipStatus: 'wishlist',
+            shoppingType:    'buy_new_item',
+            itemType:        'blend',
+            suggestedFamily: fallbackBlendType,
+            rationale:       `Diversify your blend collection with a ${fallbackBlendType} offering.`,
+          }],
+          actionPayload: {
+            shoppingType:    'buy_new_item',
+            itemType:        'blend',
+            suggestedFamily: fallbackBlendType,
+            specificProduct,
+          },
+        }));
+      }
     }
 
-    // Fallback whiskey gap — suggest a starter bottle when none owned
-    if (bottles.length === 0 && blends.length > 0) {
+    // Fallback whiskey gap — suggest a starter bottle when none owned (whiskeykeeper only)
+    if (whiskeyActive && bottles.length === 0 && blends.length > 0) {
       const starterType = 'Bourbon';
       const specificProduct = WHISKEY_PROGRESSION_PRODUCTS[starterType];
       results.push(createRecommendation({
@@ -624,8 +632,8 @@ export function generateGrowExpandRecommendations(context = {}) {
       }));
     }
 
-    // Fallback pipe shape — suggest a billiard when collection lacks one
-    if (pipes.length >= 1) {
+    // Fallback pipe shape — suggest a billiard when collection lacks one (pipekeeper only)
+    if (pipeActive && pipes.length >= 1) {
       const ownedShapes = new Set(pipes.map((p) => (p.shape || '').toLowerCase()).filter(Boolean));
       if (!ownedShapes.has('billiard')) {
         const suggestedShape = 'Billiard';

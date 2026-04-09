@@ -1188,7 +1188,9 @@ export function generateRecommendations(context = {}) {
       bottles:            context.bottles || [],
       cigars:             context.cigars || [],
       wantListItems:      context.wantListItems || [],
+      acquisitionItems:   context.acquisitionItems || [],
       cigarModuleActive:  context.cigarModuleActive || false,
+      activeModules:      context.activeModules || {},
     }),
     ...generateSpecializationRecommendations(
       context.pipes || [],
@@ -1198,11 +1200,12 @@ export function generateRecommendations(context = {}) {
     ),
     ...generatePairingRecommendations(context),
     ...generateGrowExpandRecommendations({
-      pipes:       context.pipes || [],
-      blends:      context.blends || [],
-      bottles:     context.bottles || [],
-      smokingLogs: context.smokingLogs || [],
-      preferences: context.preferences || {},
+      pipes:         context.pipes || [],
+      blends:        context.blends || [],
+      bottles:       context.bottles || [],
+      smokingLogs:   context.smokingLogs || [],
+      preferences:   context.preferences || {},
+      activeModules: context.activeModules || {},
     }),
   ];
 

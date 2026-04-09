@@ -246,14 +246,18 @@ export function generatePurchaseRestockRecommendations(context = {}) {
     smokingLogs = [],
     wantListItems = [],
     acquisitionItems = [],
+    activeModules = {},
   } = context;
+
+  const pipeActive    = activeModules.pipekeeper    !== false;
+  const whiskeyActive = activeModules.whiskeykeeper !== false;
 
   const trackedItems = acquisitionItems.length ? acquisitionItems : wantListItems;
 
   return [
-    ...analyzeLowStockBlends(blends, smokingLogs),
-    ...analyzeDepletedBlends(blends, smokingLogs),
-    ...analyzeBottleRestock(bottles),
+    ...(pipeActive    ? analyzeLowStockBlends(blends, smokingLogs) : []),
+    ...(pipeActive    ? analyzeDepletedBlends(blends, smokingLogs) : []),
+    ...(whiskeyActive ? analyzeBottleRestock(bottles)              : []),
     ...analyzeTrackedItems(trackedItems),
   ];
 }

@@ -1,16 +1,34 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import CuratorWorkspace from '@/components/curator/CuratorWorkspace';
+import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 
 const CURATOR_ICON = 'https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png';
 
-const SURFACES = [
-  { key: 'record_optimization', label: 'Record Optimization' },
+// ─── Static surfaces (always present) ────────────────────────────────────────
+
+const SURFACES_BASE = [
+  { key: 'record_optimization',  label: 'Record Optimization' },
   { key: 'collection_optimization', label: 'Collection Optimization' },
-  { key: 'purchase_restock', label: 'Purchase & Restock' },
-  { key: 'pairings', label: 'Pairings' },
-  { key: 'grow_expand', label: 'Grow & Expand' },
-  { key: 'chat', label: 'Chat' },
+  { key: 'purchase_restock',     label: 'Purchase & Restock' },
+  { key: 'plan_session',         label: 'Plan Session' },
 ];
+
+// These appear only when 2+ modules are active
+const MULTI_MODULE_SURFACES = [
+  { key: 'pairings', label: 'Pairings' },
+];
+
+const SURFACES_TAIL = [
+  { key: 'grow_expand', label: 'Grow & Expand' },
+  { key: 'chat',        label: 'Chat' },
+];
+
+// All valid surface keys (used for URL deep-link validation before SURFACES is computed)
+const ALL_VALID_KEYS = new Set([
+  ...SURFACES_BASE,
+  ...MULTI_MODULE_SURFACES,
+  ...SURFACES_TAIL,
+].map((s) => s.key));
 
 function SurfaceTab({ active, label, badge, onClick }) {
   return (
@@ -42,16 +60,39 @@ function SurfaceTab({ active, label, badge, onClick }) {
 }
 
 export default function CuratorPage() {
+  const { enabledModuleKeys } = useEnabledModules();
+
+  // Multi-module mode when 2+ modules are enabled
+  const isMultiModuleMode = enabledModuleKeys.length >= 2;
+
+  // Build the active surfaces list depending on module mode
+  const SURFACES = useMemo(() => [
+    ...SURFACES_BASE,
+    ...(isMultiModuleMode ? MULTI_MODULE_SURFACES : []),
+    ...SURFACES_TAIL,
+  ], [isMultiModuleMode]);
+
+  // Support URL deep-links like ?surface=pairings — validate against all known keys
   const initialSurface = (() => {
     const params = new URLSearchParams(window.location.search);
     const s = params.get('surface');
-    return SURFACES.find((t) => t.key === s) ? s : 'record_optimization';
+    return s && ALL_VALID_KEYS.has(s) ? s : 'record_optimization';
   })();
+
   const [surface, setSurface] = useState(initialSurface);
+
+  // If pairings is active but we switched to single-module mode, redirect to plan_session
+  useEffect(() => {
+    if (!isMultiModuleMode && surface === 'pairings') {
+      setSurface('plan_session');
+    }
+  }, [isMultiModuleMode, surface]);
+
   const [counts, setCounts] = useState({
     record_optimization: 0,
     collection_optimization: 0,
     purchase_restock: 0,
+    plan_session: 0,
     pairings: 0,
     grow_expand: 0,
     chat: 0,
@@ -64,7 +105,7 @@ export default function CuratorPage() {
   const progressWidth = useMemo(() => {
     const index = SURFACES.findIndex((s) => s.key === surface);
     return `${((index + 1) / SURFACES.length) * 100}%`;
-  }, [surface]);
+  }, [surface, SURFACES]);
 
   return (
     <div className="min-h-screen" style={{ background: '#0B0B0C' }}>
