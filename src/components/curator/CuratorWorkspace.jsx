@@ -11,6 +11,7 @@ import ExpertTobacconistChat from '@/components/agent/ExpertTobacconistChat';
 
 import { generateRecommendations } from '@/lib/curator/recommendationEngine';
 import { generatePairingRecommendations } from '@/lib/curator/pairingEngine';
+import { seedInitialSnapshotIfMissing } from '@/components/valuation/valueRefreshService';
 import { executeRecommendationAction, buildViewItemsNavigation } from '@/lib/curator/recommendationActions';
 import { CATEGORY, MODULE_KEY } from '@/lib/curator/recommendationSchema';
 
@@ -223,6 +224,57 @@ export default function CuratorWorkspace({ activeSurface, onSurfaceChange, onCou
     };
   }, [user?.email]);
 
+  const loadPrimaryDataRef = useRef(null);
+
+  // Auto-enrich: silently fill missing metadata + seed valuations
+  const autoEnrichRecords = useCallback(async (context, userEmail) => {
+    if (!userEmail || !context) return;
+
+    const sessionKey = `pk_curator_autoenrich_${userEmail}`;
+    const lastRun = sessionStorage.getItem(sessionKey);
+    const INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
+    if (lastRun && Date.now() - Number(lastRun) < INTERVAL_MS) return;
+    sessionStorage.setItem(sessionKey, String(Date.now()));
+
+    // 1. Metadata enrichment for bottles missing core fields
+    const bottlesMissingMeta = (context.bottles || []).filter(
+      (b) => !b.distillery || !b.region || !b.country || !b.abv || !(b.type || b.whiskey_type)
+    );
+    if (bottlesMissingMeta.length > 0) {
+      try {
+        await base44.functions.invoke('autoEnrichBottleMetadata', {
+          bottles: bottlesMissingMeta.map((b) => ({
+            id: b.id, name: b.name, distillery: b.distillery, type: b.type,
+            whiskey_type: b.whiskey_type, region: b.region, country: b.country, abv: b.abv,
+          })),
+        });
+        // Trigger a silent refresh so updated metadata is reflected
+        if (mountedRef.current && loadPrimaryDataRef.current) {
+          await loadPrimaryDataRef.current({ silent: true });
+        }
+      } catch (err) {
+        console.warn('[Curator] autoEnrichBottleMetadata failed (non-fatal):', err?.message);
+      }
+    }
+
+    // 2. Auto-seed valuations for bottles missing pricing data but with a purchase price
+    const bottlesMissingValuation = (context.bottles || []).filter(
+      (b) => !b.retail_price && !b.aftermarket_price && !b.collector_value && b.purchase_price
+    );
+    for (const bottle of bottlesMissingValuation.slice(0, 20)) {
+      try {
+        await seedInitialSnapshotIfMissing(
+          bottle, 'whiskeykeeper', 'bottle', userEmail, base44, [], { bottles: context.bottles }
+        );
+        if (!bottle.retail_price) {
+          await base44.entities.Bottle.update(bottle.id, { retail_price: bottle.purchase_price });
+        }
+      } catch (err) {
+        console.warn('[Curator] valuation seed failed for bottle', bottle.id, '(non-fatal):', err?.message);
+      }
+    }
+  }, []);
+
   const loadPrimaryData = useCallback(
     async ({ silent = false } = {}) => {
       if (!user?.email) {
@@ -251,6 +303,12 @@ export default function CuratorWorkspace({ activeSurface, onSurfaceChange, onCou
 
         setRecommendations(nextRecommendations);
         publishCounts(nextRecommendations, pairingsRef.current);
+
+        // Auto-enrich records silently after a short delay (don't block render)
+        setTimeout(() => {
+          if (!mountedRef.current) return;
+          autoEnrichRecords(context, user?.email);
+        }, 1500);
       } catch (err) {
         console.error('[Curator] primary load failed:', err);
         if (!mountedRef.current) return;
@@ -292,6 +350,11 @@ export default function CuratorWorkspace({ activeSurface, onSurfaceChange, onCou
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buildContext, publishCounts, user?.email]);
+
+  // Keep a stable ref to loadPrimaryData so autoEnrichRecords can call it without circular deps
+  useEffect(() => {
+    loadPrimaryDataRef.current = loadPrimaryData;
+  }, [loadPrimaryData]);
 
   useEffect(() => {
     mountedRef.current = true;
