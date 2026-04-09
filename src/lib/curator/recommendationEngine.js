@@ -725,40 +725,6 @@ function analyzeMetadata(context) {
     (b) => !b.distillery || !b.region || !b.age || !b.abv || !(b.type || b.whiskey_type)
   );
   if (bottlesMissingMeta.length > 0) {
-    const inferBottleMetaPayload = (bottle) => {
-      const payload = {};
-      const name = (bottle.name || '').toLowerCase();
-
-      if (!(bottle.type || bottle.whiskey_type)) {
-        if (name.includes('bourbon')) payload.type = 'Bourbon';
-        else if (name.includes('rye')) payload.type = 'Rye';
-        else if (name.includes('irish')) payload.type = 'Irish Whiskey';
-        else if (name.includes('scotch')) payload.type = 'Scotch';
-        else if (name.includes('single malt')) payload.type = 'Single Malt Scotch';
-        else if (name.includes('flavored') || name.includes('honey') || name.includes('peanut butter')) payload.type = 'Flavored Whiskey';
-      }
-
-      if (!bottle.country) {
-        if (name.includes('irish') || name.includes('bushmills')) payload.country = 'Ireland';
-        else if (name.includes('scotch') || name.includes('islay') || name.includes('speyside')) payload.country = 'Scotland';
-        else if (payload.type === 'Bourbon' || payload.type === 'Rye') payload.country = 'United States';
-      }
-
-      if (!bottle.region) {
-        if (name.includes('islay')) payload.region = 'Islay';
-        else if (name.includes('speyside')) payload.region = 'Speyside';
-        else if (payload.type === 'Bourbon') payload.region = 'Kentucky';
-      }
-
-      if (!bottle.abv) {
-        if (name.includes('bottled-in-bond')) payload.abv = 50;
-        else if (name.includes('irish honey')) payload.abv = 35;
-        else if (name.includes('small batch')) payload.abv = 45;
-      }
-
-      return payload;
-    };
-
     const items = bottlesMissingMeta.slice(0, MAX_ITEMS_PER_REC).map((b) => {
       const missing = [];
       if (!b.distillery) missing.push('distillery');
@@ -768,7 +734,9 @@ function analyzeMetadata(context) {
       if (!b.abv) missing.push('ABV');
       if (!(b.type || b.whiskey_type)) missing.push('spirit type');
 
-      const payload = inferBottleMetaPayload(b);
+      // Use the comprehensive KNOWN_DISTILLERIES catalog lookup first,
+      // which yields higher-confidence inferences than name-pattern guessing.
+      const { payload: catalogPayload, confidence: catalogConfidence } = inferBottleMetadata(b);
 
       return {
         id: b.id,
@@ -778,11 +746,11 @@ function analyzeMetadata(context) {
         itemName: b.name,
         missingFields: missing,
         ownershipStatus: 'owned',
-        proposedChange: Object.keys(payload).length
+        proposedChange: catalogPayload
           ? {
-              confidence: 0.78,
-              payload,
-              rationale: 'Values inferred from bottle name patterns and existing whiskey conventions.',
+              confidence: catalogConfidence,
+              payload: catalogPayload,
+              rationale: 'Values inferred from the known distillery catalog.',
             }
           : null,
       };
@@ -795,11 +763,11 @@ function analyzeMetadata(context) {
       goal:               'bottle_missing_core_metadata',
       actionType:         actionableCount > 0 ? ACTION_TYPE.AUTO_FIX : ACTION_TYPE.REVIEW_REQUIRED,
       title:              'Bottles Missing Core Metadata',
-      summary:            `${items.length} bottles have incomplete records. Missing fields reduce pairing accuracy.`,
+      summary:            `${items.length} bottle${items.length > 1 ? 's have' : ' has'} incomplete records.${actionableCount > 0 ? ` ${actionableCount} can be auto-filled from the distillery catalog.` : ''}`,
       whyItMatters:       'Spirit type, region, and ABV are not just descriptive — they determine which blends and cigars this bottle can be paired with.',
       recommendationText: actionableCount > 0
-        ? `${actionableCount} bottles have auto-fixable metadata.`
-        : 'These bottles need review.',
+        ? `Apply Fix to auto-fill ${actionableCount} bottle${actionableCount > 1 ? 's' : ''} from the distillery catalog. Review each result before committing if needed.`
+        : 'Open each bottle and fill in the missing fields — distillery, region, spirit type, and ABV.',
       moduleKey:          MODULE_KEY.WHISKEY,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           items.length >= 5 ? PRIORITY.MEDIUM : PRIORITY.LOW,
@@ -1169,6 +1137,199 @@ function analyzeUtilization(context) {
   return recommendations;
 }
 
+// ─── Category B: Collection Optimization — Whiskey-native ────────────────────
+
+/**
+ * Whiskey-specific collection optimization analysis.
+ * Active when WhiskeyKeeper is the primary or only module.
+ */
+function analyzeWhiskeyCollection(context) {
+  const { bottles = [], tastingLogs = [], inventoryUnits = [], acquisitionItems = [] } = context;
+  const recommendations = [];
+  const now = nowMs();
+
+  if (!bottles.length) return recommendations;
+
+  // ── Bottles never tasted ────────────────────────────────────────────────────
+  const tastedIds = new Set(
+    tastingLogs.map((l) => l.bottle_id || l.bottleId).filter(Boolean)
+  );
+  const neverTasted = bottles.filter((b) => !tastedIds.has(b.id));
+  if (neverTasted.length >= 2) {
+    const items = neverTasted.slice(0, MAX_ITEMS_PER_REC).map((b) => ({
+      id: b.id,
+      recordId: b.id,
+      recordType: 'bottle',
+      recordName: b.name,
+      itemName: b.name,
+      ownershipStatus: 'owned',
+    }));
+
+    recommendations.push(createRecommendation({
+      category:           CATEGORY.COLLECTION_OPTIMIZATION,
+      goal:               'whiskey_bottles_never_tasted',
+      actionType:         ACTION_TYPE.ADVISORY,
+      title:              'Bottles With No Tasting History',
+      summary:            `${neverTasted.length} bottle${neverTasted.length > 1 ? 's have' : ' has'} never been logged. These are invisible to Curator's session and pairing logic.`,
+      whyItMatters:       'Tasting notes, even brief ones, let Curator recommend these bottles for sessions and pairings. Without at least one log entry, a bottle is dead weight in the rotation.',
+      recommendationText: 'Pick the one you are most curious about and log even a short tasting. One entry is enough to bring it into the rotation.',
+      moduleKey:          MODULE_KEY.WHISKEY,
+      ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+      priority:           neverTasted.length >= 5 ? PRIORITY.MEDIUM : PRIORITY.LOW,
+      confidence:         'high',
+      items,
+      actionPayload:      { type: 'view_bottles', filter: 'never_tasted' },
+    }));
+  }
+
+  // ── Style/region overconcentration ──────────────────────────────────────────
+  const typeCounts = {};
+  const regionCounts = {};
+  for (const b of bottles) {
+    const type = b.type || b.whiskey_type || null;
+    if (type) typeCounts[type] = (typeCounts[type] || 0) + 1;
+    const region = b.region || null;
+    if (region) regionCounts[region] = (regionCounts[region] || 0) + 1;
+  }
+  const classifiedByType = Object.values(typeCounts).reduce((s, n) => s + n, 0);
+  if (classifiedByType >= 4) {
+    const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+    const [topType, topCount] = sortedTypes[0];
+    const ratio = topCount / classifiedByType;
+    if (ratio >= IMBALANCE_THRESHOLD) {
+      const pct = Math.round(ratio * 100);
+      recommendations.push(createRecommendation({
+        category:           CATEGORY.COLLECTION_OPTIMIZATION,
+        goal:               'whiskey_style_overconcentration',
+        actionType:         ACTION_TYPE.ADVISORY,
+        title:              'Collection Skewed Toward One Spirit Style',
+        summary:            `${pct}% of your classified bottles are ${topType}. That leaves large blind spots in tasting range and pairing options.`,
+        whyItMatters:       `A whiskey collection heavily weighted toward ${topType} loses the contrast and range that makes each bottle distinct. Different styles offer different flavor profiles, pairings, and moods.`,
+        recommendationText: `Your Grow & Expand recommendations include specific suggestions for which style to explore next based on your current ${topType}-heavy collection.`,
+        moduleKey:          MODULE_KEY.WHISKEY,
+        ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+        priority:           PRIORITY.LOW,
+        confidence:         computeConfidence({
+          preferenceAlignment:   0.5,
+          usageHistoryRelevance: 0.5,
+          dataCompleteness:      classifiedByType >= 6 ? 0.9 : 0.6,
+          diversityContribution: 0.8,
+        }),
+        items:              bottles.filter((b) => (b.type || b.whiskey_type) === topType).slice(0, MAX_ITEMS_PER_REC).map((b) => ({
+          id: b.id, recordId: b.id, recordType: 'bottle', recordName: b.name, itemName: b.name, ownershipStatus: 'owned',
+        })),
+        actionPayload:      { type: 'balance_insight', topType, ratio: pct, totalTyped: classifiedByType },
+      }));
+    }
+  }
+
+  // ── Depleted bottles still in collection ────────────────────────────────────
+  const depleted = bottles.filter((b) => {
+    const remaining = Number(b.remaining_pours ?? b.current_pours ?? b.pours_remaining);
+    if (!Number.isNaN(remaining)) return remaining === 0;
+    const percent = Number(b.fill_level_percent ?? b.fill_percent ?? b.fill_level);
+    if (!Number.isNaN(percent)) return percent === 0;
+    return false;
+  });
+  // Only flag depleted bottles that are not already in the purchase queue
+  const trackedRestockIds = new Set(
+    acquisitionItems
+      .filter((i) => ['restock', 'shopping_list'].includes(String(i.status || '').toLowerCase()))
+      .map((i) => i.id)
+  );
+  const depletedUntracked = depleted.filter((b) => !trackedRestockIds.has(b.id));
+  if (depletedUntracked.length >= 1) {
+    const items = depletedUntracked.slice(0, MAX_ITEMS_PER_REC).map((b) => ({
+      id: b.id,
+      recordId: b.id,
+      recordType: 'bottle',
+      recordName: b.name,
+      itemName: b.name,
+      ownershipStatus: 'depleted',
+    }));
+    recommendations.push(createRecommendation({
+      category:           CATEGORY.COLLECTION_OPTIMIZATION,
+      goal:               'whiskey_depleted_bottles',
+      actionType:         ACTION_TYPE.ADVISORY,
+      title:              'Depleted Bottles Still in Collection',
+      summary:            `${depletedUntracked.length} empty bottle${depletedUntracked.length > 1 ? 's are' : ' is'} still tracked as active inventory. These take up rotation space and may affect collection value estimates.`,
+      whyItMatters:       'Depleted bottles that are not being restocked should be archived or marked for restock so the collection picture is accurate.',
+      recommendationText: 'Archive bottles you are not planning to replace, or add them to your restock list if you intend to get another.',
+      moduleKey:          MODULE_KEY.WHISKEY,
+      ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+      priority:           PRIORITY.LOW,
+      confidence:         'high',
+      items,
+      actionPayload:      { type: 'view_bottles', filter: 'depleted' },
+    }));
+  }
+
+  // ── Underused bottles (last tasting > 90 days, not depleted) ───────────────
+  const UNDERUSED_BOTTLE_DAYS = 90;
+  const bottleLastTasted = {};
+  for (const log of tastingLogs) {
+    const bid      = log.bottle_id || log.bottleId;
+    const rawDate  = log.tasting_date || log.date || log.created_date;
+    if (!bid || !rawDate) continue;
+    const ts = new Date(rawDate).getTime();
+    if (!isNaN(ts) && ts > 0) {
+      if (!bottleLastTasted[bid] || ts > bottleLastTasted[bid]) bottleLastTasted[bid] = ts;
+    }
+  }
+  if (tastingLogs.length > 0) {
+    const underused = bottles
+      .filter((b) => {
+        const remaining = Number(b.remaining_pours ?? b.current_pours ?? b.pours_remaining);
+        const percent   = Number(b.fill_level_percent ?? b.fill_percent ?? b.fill_level);
+        const isEmpty   = (!isNaN(remaining) && remaining === 0) || (!isNaN(percent) && percent === 0);
+        if (isEmpty) return false;
+        const last = bottleLastTasted[b.id];
+        if (!last) return false; // never tasted is handled separately
+        return (now - last) / 86_400_000 > UNDERUSED_BOTTLE_DAYS;
+      })
+      .sort((a, b) => (bottleLastTasted[a.id] || 0) - (bottleLastTasted[b.id] || 0));
+
+    if (underused.length >= 2) {
+      const items = underused.slice(0, MAX_ITEMS_PER_REC).map((b) => {
+        const daysAgo = bottleLastTasted[b.id]
+          ? Math.floor((now - bottleLastTasted[b.id]) / 86_400_000)
+          : null;
+        return {
+          id: b.id,
+          recordId: b.id,
+          recordType: 'bottle',
+          recordName: b.name,
+          itemName: b.name,
+          lastUsedDaysAgo: daysAgo,
+          ownershipStatus: 'owned',
+        };
+      });
+      const longestGap  = items[0]?.lastUsedDaysAgo;
+      const longestName = items[0]?.itemName;
+
+      recommendations.push(createRecommendation({
+        category:           CATEGORY.COLLECTION_OPTIMIZATION,
+        goal:               'whiskey_underused_bottles',
+        actionType:         ACTION_TYPE.ADVISORY,
+        title:              'Bottles Overdue for a Pour',
+        summary:            longestGap
+          ? `${longestName} hasn't been tasted in ${longestGap} days.${items.length > 1 ? ` ${items.length - 1} other bottle${items.length > 2 ? 's are' : ' is'} also sitting idle.` : ''}`
+          : `${items.length} bottles haven't been tasted in ${UNDERUSED_BOTTLE_DAYS}+ days.`,
+        whyItMatters:       'Whiskey continues to evolve once opened. A bottle untouched for months may be at a different peak than when you last poured it — for better or worse.',
+        recommendationText: 'Pour the oldest-sitting bottle first. Even a brief tasting note refreshes Curator\'s data and keeps the rotation honest.',
+        moduleKey:          MODULE_KEY.WHISKEY,
+        ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+        priority:           PRIORITY.MEDIUM,
+        confidence:         'high',
+        items,
+        actionPayload:      { type: 'view_bottles', filter: 'underused' },
+      }));
+    }
+  }
+
+  return recommendations;
+}
+
 // ─── Main Engine Entry Point ──────────────────────────────────────────────────
 
 /**
@@ -1179,10 +1340,13 @@ function analyzeUtilization(context) {
  * @returns {import('./recommendationSchema.js').Recommendation[]}
  */
 export function generateRecommendations(context = {}) {
+  const whiskeyActive = context.activeModules?.whiskeykeeper !== false;
+
   const allRecommendations = [
     ...analyzeMetadata(context),
     ...analyzeBalance(context),
     ...analyzeUtilization(context),
+    ...(whiskeyActive ? analyzeWhiskeyCollection(context) : []),
     ...generatePurchaseRestockRecommendations({
       blends:             context.blends || [],
       bottles:            context.bottles || [],

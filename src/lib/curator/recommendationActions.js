@@ -248,18 +248,27 @@ export async function executeRecommendationAction(recommendation, action, opts =
 
       for (const item of sourceItems) {
         try {
-          const row = await base44.entities.ShoppingListItem.create({
-            name: item.recordName || item.itemName || item.name || '—',
-            brand: item.brand || item.manufacturer || '',
-            item_type: item.recordType || item.itemType || 'blend',
-            shopping_type: action === 'move_to_shopping_list' ? 'shopping' : 'want_list',
-            status: 'active',
-            priority: 'medium',
-            is_manual: false,
-            notes: '',
-            created_by: userEmail,
-          });
-          created.push(row);
+          // When the item originates from an AcquisitionItem record (has acquisitionId),
+          // update that record's status directly instead of creating a duplicate entry.
+          if (action === 'move_to_shopping_list' && item.acquisitionId) {
+            await base44.entities.AcquisitionItem.update(item.acquisitionId, {
+              status: 'shopping_list',
+            });
+            created.push({ id: item.acquisitionId, updated: true });
+          } else {
+            const row = await base44.entities.ShoppingListItem.create({
+              name: item.recordName || item.itemName || item.name || '—',
+              brand: item.brand || item.manufacturer || '',
+              item_type: item.recordType || item.itemType || 'blend',
+              shopping_type: action === 'move_to_shopping_list' ? 'shopping' : 'want_list',
+              status: 'active',
+              priority: 'medium',
+              is_manual: false,
+              notes: '',
+              created_by: userEmail,
+            });
+            created.push(row);
+          }
         } catch (err) {
           failedIds.push(item.recordId || item.id);
         }

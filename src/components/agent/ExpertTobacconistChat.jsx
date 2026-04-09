@@ -206,10 +206,33 @@ function bestOpenBottle(bottles = [], tastingLogs = []) {
   return candidates[0] || bottles[0] || null;
 }
 
-function biggestGap(blends = [], bottles = []) {
+function biggestGap(blends = [], bottles = [], activeModules = {}) {
+  const whiskeyOnly = activeModules.whiskeykeeper !== false && activeModules.pipekeeper === false;
   const blendFamilies = new Set(blends.map((b) => getBlendType(b)).filter(Boolean));
   const bottleTypes = new Set(bottles.map((b) => getBottleType(b)).filter(Boolean));
 
+  // Whiskey-only mode: gap analysis is bottle/style-centric
+  if (whiskeyOnly) {
+    const types = [...bottleTypes].map((t) => t.toLowerCase());
+    if (!types.some((t) => t.includes('rye'))) {
+      return 'A rye lane looks absent from your collection. Rye whiskey adds pepper, grip, and spice that bourbon and Scotch handle differently — it is one of the most practical gaps to close.';
+    }
+    if (!types.some((t) => t.includes('scotch') || t.includes('single malt') || t.includes('islay') || t.includes('speyside') || t.includes('highland'))) {
+      return 'Your collection looks light on Scotch. Scotch brings smoke, fruit, and complexity that no American whiskey replicates — adding even one Speyside or Islay expression opens entirely different territory.';
+    }
+    if (!types.some((t) => t.includes('irish'))) {
+      return 'Irish whiskey is a gap worth noting. It is the most approachable style for guests and provides a light, clean pour that stands apart from bourbon, rye, and Scotch in a session context.';
+    }
+    if (!types.some((t) => t.includes('bourbon'))) {
+      return 'A bourbon is missing from the collection. Bourbon is the reference point that most other American whiskey styles are compared against — it anchors the tasting range.';
+    }
+    if (bottles.length < 3) {
+      return 'Your collection is still small enough that the most valuable gap to close is simply volume: three to five bottles across at least two different styles gives Curator enough to work with for session planning.';
+    }
+    return 'Your next gap is probably not style but depth: getting tasting notes on every bottle and pricing data on at least your highest-value pours. That turns a collection into an actual reference.';
+  }
+
+  // Multi-module mode: tobacco-aware gap analysis
   if (!blendFamilies.has('Virginia/Burley')) {
     return 'A practical Virginia/Burley lane looks thin or absent. That matters because it gives you a dependable middle ground between brighter Virginia sweetness and drier Burley structure.';
   }
@@ -372,7 +395,21 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
   }
 
   // ── Tonight recommendation ────────────────────────────────────────────────
-  if (text.includes('smoke tonight')) {
+  if (text.includes('smoke tonight') || text.includes('drink tonight')) {
+    const whiskeyFocusedTonight = text.includes('drink tonight') || (activeModules.whiskeykeeper !== false && activeModules.pipekeeper === false);
+    if (whiskeyFocusedTonight) {
+      const bottle = bestOpenBottle(bottles, tastingLogs);
+      if (!bottle) {
+        return {
+          reply: 'I do not have enough bottle data to make a confident pour recommendation tonight. Add a few bottles and log at least one tasting to give Curator something to work with.',
+          updatedEntityContext: entityContext,
+        };
+      }
+      return {
+        reply: `Tonight I would open ${bottle.name}. It is the strongest opening candidate from a collection-management standpoint — either it has not been tasted yet or it has been sitting long enough to be worth revisiting.`,
+        updatedEntityContext: { ...entityContext, bottle },
+      };
+    }
     const pipe  = bestTonightPipe(pipes, smokingLogs, blends);
     const blend = bestTonightBlend(blends, smokingLogs);
     if (!pipe || !blend) {
@@ -427,7 +464,7 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
   // ── Gap analysis ──────────────────────────────────────────────────────────
   if (text.includes('gap')) {
     return {
-      reply: biggestGap(blends, bottles),
+      reply: biggestGap(blends, bottles, activeModules),
       updatedEntityContext: entityContext,
     };
   }
@@ -457,8 +494,12 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
     };
   }
 
+  const whiskeyOnlyMode = activeModules.whiskeykeeper !== false && activeModules.pipekeeper === false;
+
   return {
-    reply: 'Ask me which pipe is most redundant, which one should be reassigned, what to smoke tonight, what to buy or restock next, or what the biggest gap is. I will answer from the current collection rather than generic hobby advice.',
+    reply: whiskeyOnlyMode
+      ? 'Ask me which bottle to open next, what to buy or restock, what the biggest gap in your collection is, or what to drink tonight. I will answer from your actual collection rather than generic advice.'
+      : 'Ask me which pipe is most redundant, which one should be reassigned, what to smoke tonight, what to buy or restock next, or what the biggest gap is. I will answer from the current collection rather than generic hobby advice.',
     updatedEntityContext: entityContext,
   };
 }

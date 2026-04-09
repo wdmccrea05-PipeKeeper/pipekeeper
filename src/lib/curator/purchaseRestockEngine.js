@@ -45,11 +45,19 @@ function isBottleDepleted(bottle) {
 }
 
 function normalizeAcquisitionCategory(item = {}) {
-  return String(item.status || item.category || item.list_type || '').trim().toLowerCase();
+  const raw = String(item.status || item.category || item.list_type || '').trim().toLowerCase();
+  // Normalize legacy "want_list" alias → "wishlist" (canonical schema value)
+  if (raw === 'want_list') return 'wishlist';
+  // Items with no status/category/list_type default to "wishlist" — matches the AcquisitionItem
+  // schema default value. An explicitly empty string is treated the same as absent.
+  if (!raw) return 'wishlist';
+  return raw;
 }
 
 function isActiveAcquisitionItem(item = {}) {
-  return normalizeAcquisitionCategory(item) && normalizeAcquisitionCategory(item) !== 'archived';
+  // An item is active unless it has been explicitly archived.
+  // Items with no status at all are treated as active (default = wishlist).
+  return normalizeAcquisitionCategory(item) !== 'archived';
 }
 
 function buildItem(source = {}, overrides = {}) {
@@ -197,7 +205,7 @@ function analyzeTrackedItems(acquisitionItems = []) {
       ownershipContext: OWNERSHIP_CONTEXT.EXTERNAL,
       priority: PRIORITY.MEDIUM,
       confidence: 'high',
-      items: grouped.wishlist.map((i) => buildItem(i, { ownershipStatus: 'wishlist', shoppingType: 'buy_new_item' })),
+      items: grouped.wishlist.map((i) => buildItem(i, { ownershipStatus: 'wishlist', shoppingType: 'buy_new_item', acquisitionId: i.id })),
       actionPayload: { shoppingType: 'buy_new_item' },
     }));
   }
