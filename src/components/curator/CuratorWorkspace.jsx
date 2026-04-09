@@ -115,6 +115,7 @@ export default function CuratorWorkspace({
   const mountedRef = useRef(true);
   const contextRef = useRef(null);
   const pairingsRef = useRef([]);
+  const rawSectionsRef = useRef([]);
 
   const [loading, setLoading] = useState(true);
   const [pairingsLoading, setPairingsLoading] = useState(false);
@@ -125,6 +126,11 @@ export default function CuratorWorkspace({
   const [preFillMessage, setPreFillMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showSpecializationReview, setShowSpecializationReview] = useState(false);
+
+  // Stabilize moduleEnabled so object-identity changes don't trigger effect loops
+  const moduleEnabledStr = JSON.stringify(moduleEnabled);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const stableModuleEnabled = useMemo(() => moduleEnabled, [moduleEnabledStr]);
 
   const buckets = useMemo(() => bucketSections(rawSections), [rawSections]);
 
@@ -148,34 +154,34 @@ export default function CuratorWorkspace({
       return {
         pipes: [], blends: [], bottles: [], smokingLogs: [], tastingLogs: [],
         inventoryUnits: [], acquisitionItems: [], wantListItems: [],
-        preferences: {}, activeModules: moduleEnabled,
+        preferences: {}, activeModules: stableModuleEnabled,
       };
     }
 
-    const pipeActive    = moduleEnabled.pipekeeper    !== false;
-    const whiskeyActive = moduleEnabled.whiskeykeeper !== false;
+    const pipeActive    = stableModuleEnabled.pipekeeper    !== false;
+    const whiskeyActive = stableModuleEnabled.whiskeykeeper !== false;
 
-    // Batch 1: core collection data
+    // Batch 1: core collection data (reduced limits to stay within rate limits)
     const [pipes, blends, bottles] = await Promise.all([
-      pipeActive    ? safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 500, 'pipes')          : Promise.resolve([]),
-      pipeActive    ? safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 500, 'blends') : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 500, 'bottles')      : Promise.resolve([]),
+      pipeActive    ? safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 200, 'pipes')          : Promise.resolve([]),
+      pipeActive    ? safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 200, 'blends') : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 200, 'bottles')      : Promise.resolve([]),
     ]);
 
     await sleep(250);
 
     // Batch 2: logs
     const [smokingLogs, tastingLogs] = await Promise.all([
-      pipeActive    ? safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 1000, 'smokingLogs')            : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 500, 'tastingLogs')     : Promise.resolve([]),
+      pipeActive    ? safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 300, 'smokingLogs')            : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 200, 'tastingLogs')     : Promise.resolve([]),
     ]);
 
     await sleep(250);
 
     // Batch 3: inventory & acquisition
     const [inventoryUnits, acquisitionItems] = await Promise.all([
-      whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null, 2000, 'inventoryUnits') : Promise.resolve([]),
-      safeFilter(base44.entities.AcquisitionItem, { created_by: user.email }, '-created_date', 1000, 'acquisitionItems'),
+      whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null, 500, 'inventoryUnits') : Promise.resolve([]),
+      safeFilter(base44.entities.AcquisitionItem, { created_by: user.email }, '-created_date', 300, 'acquisitionItems'),
     ]);
 
     return {
@@ -183,9 +189,9 @@ export default function CuratorWorkspace({
       inventoryUnits, acquisitionItems,
       wantListItems: acquisitionItems,
       preferences: {},
-      activeModules: moduleEnabled,
+      activeModules: stableModuleEnabled,
     };
-  }, [user?.email, moduleEnabled]);
+  }, [user?.email, stableModuleEnabled]);
 
   const loadPrimaryData = useCallback(
     async ({ silent = false } = {}) => {
@@ -215,6 +221,7 @@ export default function CuratorWorkspace({
 
         if (!mountedRef.current) return;
 
+        rawSectionsRef.current = groupedSections;
         setRawSections(groupedSections);
         publishCounts(groupedSections, pairingsRef.current);
       } catch (err) {
@@ -251,16 +258,17 @@ export default function CuratorWorkspace({
 
       pairingsRef.current = nextPairings;
       setPairings(nextPairings);
-      publishCounts(rawSections, nextPairings);
+      // Use rawSectionsRef to avoid stale closure & dependency loop
+      publishCounts(rawSectionsRef.current, nextPairings);
     } catch (err) {
       console.error('[Curator] pairing load failed:', err);
       if (!mountedRef.current) return;
       setPairings([]);
-      publishCounts(rawSections, []);
+      publishCounts(rawSectionsRef.current, []);
     } finally {
       if (mountedRef.current) setPairingsLoading(false);
     }
-  }, [buildContext, isSingleModuleMode, publishCounts, rawSections, user?.email]);
+  }, [buildContext, isSingleModuleMode, publishCounts, user?.email]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -326,7 +334,7 @@ export default function CuratorWorkspace({
         setPairings((prev) => {
           const next = prev.filter((p) => p.id !== payload?.id);
           pairingsRef.current = next;
-          publishCounts(rawSections, next);
+          publishCounts(rawSectionsRef.current, next);
           return next;
         });
       }
@@ -345,7 +353,7 @@ export default function CuratorWorkspace({
 
       return result;
     },
-    [activeSurface, loadPairings, loadPrimaryData, onSurfaceChange, publishCounts, rawSections, user?.email]
+    [activeSurface, loadPairings, loadPrimaryData, onSurfaceChange, publishCounts, user?.email]
   );
 
   const handleRefresh = useCallback(async () => {
