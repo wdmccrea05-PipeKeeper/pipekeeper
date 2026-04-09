@@ -489,55 +489,13 @@ export default function ProfilePage() {
               </div>
 
               <div className="w-full md:w-auto flex flex-col gap-2">
-                {!isIOSCompanion() ? (
-                  <>
-                    {subscription?.status === "active" || subscription?.status === "trialing" ? (
-                        <Button
-                          className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-                          onClick={async () => {
-                            try {
-                              const result = await handleManageSubscription(user, subscription, navigate, createPageUrl);
-                              if (!result?.ok) {
-                                toast.error(t("profile.manageSubError"));
-                                navigate(createPageUrl("Subscription"));
-                              }
-                            } catch (e) {
-                              console.error("[Profile] manage subscription error:", e);
-                              toast.error(t("profile.manageSubError"));
-                              navigate(createPageUrl("Subscription"));
-                            }
-                          }}
-                        >
-                          {t("profile.manageSubscription")}
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      ) : null}
-
-                    {shouldShowPurchaseUI() && !hasPaid && (
-                      <Button
-                        onClick={() => navigate(createPageUrl("Subscription"))}
-                        className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-                      >
-                        {t("profile.upgrade")}
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    )}
-
-                    {!shouldShowPurchaseUI() && (
-                       <div className="text-xs text-right max-w-[260px]" style={{ color: 'rgba(224,216,200,0.5)' }}>
-                         {getSubscriptionManagementMessage()}
-                       </div>
-                     )}
-                  </>
-                ) : (
-                  <div className="text-sm p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.18)', color: 'rgba(224,216,200,0.7)' }}>
-                    {t("profile.premiumSubscriptionWebOnly")}{" "}
-                    <a className="underline font-medium" style={{ color: 'rgba(212,165,116,0.9)' }} href="https://pipekeeper.app/Subscription" target="_blank" rel="noreferrer">
-                      pipekeeper.app
-                    </a>
-                    .
-                  </div>
-                )}
+                <Button
+                  className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
+                  onClick={() => navigate(createPageUrl("Subscription"))}
+                >
+                  {t("profile.manageSubscription")}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </div>
             </div>
           </CardContent>
