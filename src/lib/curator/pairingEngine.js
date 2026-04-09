@@ -214,7 +214,7 @@ function makePair(tab, pipe, blend, bottle, confidenceLabel = 'Medium Confidence
 
 function pushUnique(rows, next, seen) {
   if (!next) return;
-  const key = `${next.leftItem.id}:${next.blendBridge.id}:${next.rightItem.id}`;
+  const key = `${next.pipe.id}:${next.blend.id}:${next.bottle.id}`;
   if (seen.has(key)) return;
   seen.add(key);
   rows.push(next);
