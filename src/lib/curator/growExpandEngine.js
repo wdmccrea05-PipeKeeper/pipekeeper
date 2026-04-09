@@ -542,5 +542,126 @@ export function generateGrowExpandRecommendations(context = {}) {
     }
   }
 
+  // ─── Fallbacks: produce at least one suggestion when the collection has items
+  //     but nothing was surfaced by the normal generators ──────────────────────
+
+  if (results.length === 0 && totalItems >= 3) {
+    // Fallback tobacco family — suggest exploring a first blend family
+    const ownedTypes = new Set(blends.map((b) => b.blend_type || b.blend_family).filter(Boolean));
+    const fallbackBlendType = ['Virginia', 'English', 'Virginia/Perique', 'Aromatic', 'Burley'].find(
+      (t) => !ownedTypes.has(t)
+    );
+    if (fallbackBlendType) {
+      const specificProduct = BLEND_PROGRESSION_PRODUCTS[fallbackBlendType] || `${fallbackBlendType} Blend`;
+      results.push(createRecommendation({
+        category:           CATEGORY.GROW_EXPAND,
+        goal:               'blend_family_expansion',
+        actionType:         ACTION_TYPE.SHOPPING_LIST_ACTION,
+        title:              `Explore ${specificProduct}`,
+        summary:            `Add a ${fallbackBlendType} blend to your collection to expand your palette.`,
+        whyItMatters:       `${fallbackBlendType} blends offer a distinct character your current collection doesn't cover. ` +
+                            `It's a natural next step for any pipe smoker looking to explore new territory.`,
+        moduleKey:          MODULE_KEY.TOBACCO,
+        ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
+        priority:           PRIORITY.LOW,
+        confidence:         'medium',
+        items: [{
+          id:              `grow_blend_fallback_${fallbackBlendType.replace(/[\s/]/g, '_').toLowerCase()}`,
+          recordId:        null,
+          recordType:      'blend_suggestion',
+          recordName:      specificProduct,
+          itemName:        specificProduct,
+          ownershipStatus: 'wishlist',
+          shoppingType:    'buy_new_item',
+          itemType:        'blend',
+          suggestedFamily: fallbackBlendType,
+          rationale:       `Diversify your blend collection with a ${fallbackBlendType} offering.`,
+        }],
+        actionPayload: {
+          shoppingType:    'buy_new_item',
+          itemType:        'blend',
+          suggestedFamily: fallbackBlendType,
+          specificProduct,
+        },
+      }));
+    }
+
+    // Fallback whiskey gap — suggest a starter bottle when none owned
+    if (bottles.length === 0 && blends.length > 0) {
+      const starterType = 'Bourbon';
+      const specificProduct = WHISKEY_PROGRESSION_PRODUCTS[starterType];
+      results.push(createRecommendation({
+        category:           CATEGORY.GROW_EXPAND,
+        goal:               'whiskey_type_expansion',
+        actionType:         ACTION_TYPE.SHOPPING_LIST_ACTION,
+        title:              `Explore ${specificProduct}`,
+        summary:            'Add a bourbon to your collection to unlock tobacco pairings.',
+        whyItMatters:       'Bourbon is the most versatile pairing partner for pipe tobacco — its corn sweetness and vanilla-oak ' +
+                            'notes complement Burley and Virginia blends in a way that makes a session feel complete. ' +
+                            'A single well-chosen bottle opens a whole dimension of pairings.',
+        moduleKey:          MODULE_KEY.WHISKEY,
+        ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
+        priority:           PRIORITY.LOW,
+        confidence:         'medium',
+        items: [{
+          id:              'grow_whiskey_fallback_bourbon',
+          recordId:        null,
+          recordType:      'bottle_suggestion',
+          recordName:      specificProduct,
+          itemName:        specificProduct,
+          ownershipStatus: 'wishlist',
+          shoppingType:    'buy_new_item',
+          itemType:        'bottle',
+          suggestedType:   starterType,
+          rationale:       'Bourbon is the most approachable and versatile pairing partner for pipe tobacco.',
+        }],
+        actionPayload: {
+          shoppingType:    'buy_new_item',
+          itemType:        'bottle',
+          suggestedType:   starterType,
+          specificProduct,
+        },
+      }));
+    }
+
+    // Fallback pipe shape — suggest a billiard when collection lacks one
+    if (pipes.length >= 1) {
+      const ownedShapes = new Set(pipes.map((p) => (p.shape || '').toLowerCase()).filter(Boolean));
+      if (!ownedShapes.has('billiard')) {
+        const suggestedShape = 'Billiard';
+        results.push(createRecommendation({
+          category:           CATEGORY.GROW_EXPAND,
+          goal:               'pipe_shape_expansion',
+          actionType:         ACTION_TYPE.ADVISORY,
+          title:              `Add a ${suggestedShape} to Your Rotation`,
+          summary:            `A classic ${suggestedShape} is the most versatile pipe shape — a reliable addition to any collection.`,
+          whyItMatters:       'The Billiard\'s straight chamber keeps smoke even and focused, making it ideal for a wide range of blend types. ' +
+                              'It\'s the most widely available shape and the single most versatile addition you can make.',
+          moduleKey:          MODULE_KEY.PIPE,
+          ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
+          priority:           PRIORITY.LOW,
+          confidence:         'medium',
+          items: [{
+            id:              'grow_pipe_fallback_billiard',
+            recordId:        null,
+            recordType:      'pipe_suggestion',
+            recordName:      suggestedShape,
+            itemName:        `${suggestedShape} Pipe`,
+            ownershipStatus: 'wishlist',
+            shoppingType:    'buy_new_item',
+            itemType:        'pipe',
+            suggestedShape,
+            rationale:       'A Billiard is the most versatile and widely available pipe shape.',
+          }],
+          actionPayload: {
+            shoppingType:    'buy_new_item',
+            itemType:        'pipe',
+            suggestedShape,
+          },
+        }));
+      }
+    }
+  }
+
   return results;
 }

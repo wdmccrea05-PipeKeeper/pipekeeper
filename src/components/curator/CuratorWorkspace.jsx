@@ -6,6 +6,7 @@ import CuratorResultsBoard from '@/components/curator/CuratorResultsBoard';
 import CuratorPairingsTab from '@/components/curator/CuratorPairingsTab';
 import CuratorPurchaseQueue from '@/components/curator/CuratorPurchaseQueue';
 import CuratorGrowAndExpand from '@/components/curator/CuratorGrowAndExpand';
+import CuratorSpecializationReview from '@/components/curator/CuratorSpecializationReview';
 import ExpertTobacconistChat from '@/components/agent/ExpertTobacconistChat';
 
 import { generateRecommendations } from '@/lib/curator/recommendationEngine';
@@ -122,6 +123,8 @@ export default function CuratorWorkspace({ activeSurface, onSurfaceChange, onCou
   const [threadId, setThreadId] = useState(null);
   const [preFillMessage, setPreFillMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showSpecReview, setShowSpecReview] = useState(false);
+  const [specItems, setSpecItems] = useState([]);
 
   const recordSections = useMemo(
     () => sectionizeRecommendations(recommendations, CATEGORY.RECORD_OPTIMIZATION),
@@ -297,6 +300,12 @@ export default function CuratorWorkspace({ activeSurface, onSurfaceChange, onCou
 
   const handleAction = useCallback(
     async (actionKey, payload, opts = {}) => {
+      if (actionKey === 'review_specializations') {
+        setSpecItems(Array.isArray(payload) ? payload : payload?.items || [payload]);
+        setShowSpecReview(true);
+        return { ok: true };
+      }
+
       if (actionKey === 'ask_curator') {
         const title = payload?.title || payload?.recordName || payload?.name || 'this';
         setPreFillMessage(`Help me with ${title}.`);
@@ -410,21 +419,61 @@ export default function CuratorWorkspace({ activeSurface, onSurfaceChange, onCou
   switch (activeSurface) {
     case 'record_optimization':
       return (
-        <CuratorResultsBoard
-          sections={recordSections}
-          onAction={handleAction}
-          onRefresh={handleRefresh}
-          isRefreshing={isRefreshing}
-        />
+        <>
+          {showSpecReview ? (
+            <CuratorSpecializationReview
+              specRecs={specItems}
+              collectionSections={collectionSections}
+              onAction={handleAction}
+              onDone={() => setShowSpecReview(false)}
+              onAskCurator={(pipe) => {
+                setPreFillMessage(`Tell me about specializing my ${pipe?.recordName || 'pipe'}.`);
+                setShowSpecReview(false);
+                onSurfaceChange?.('chat');
+              }}
+              onOpenGrowExpand={() => {
+                setShowSpecReview(false);
+                onSurfaceChange?.('grow_expand');
+              }}
+            />
+          ) : (
+            <CuratorResultsBoard
+              sections={recordSections}
+              onAction={handleAction}
+              onRefresh={handleRefresh}
+              isRefreshing={isRefreshing}
+            />
+          )}
+        </>
       );
     case 'collection_optimization':
       return (
-        <CuratorResultsBoard
-          sections={collectionSections}
-          onAction={handleAction}
-          onRefresh={handleRefresh}
-          isRefreshing={isRefreshing}
-        />
+        <>
+          {showSpecReview ? (
+            <CuratorSpecializationReview
+              specRecs={specItems}
+              collectionSections={collectionSections}
+              onAction={handleAction}
+              onDone={() => setShowSpecReview(false)}
+              onAskCurator={(pipe) => {
+                setPreFillMessage(`Tell me about specializing my ${pipe?.recordName || 'pipe'}.`);
+                setShowSpecReview(false);
+                onSurfaceChange?.('chat');
+              }}
+              onOpenGrowExpand={() => {
+                setShowSpecReview(false);
+                onSurfaceChange?.('grow_expand');
+              }}
+            />
+          ) : (
+            <CuratorResultsBoard
+              sections={collectionSections}
+              onAction={handleAction}
+              onRefresh={handleRefresh}
+              isRefreshing={isRefreshing}
+            />
+          )}
+        </>
       );
     case 'purchase_restock':
       return (
