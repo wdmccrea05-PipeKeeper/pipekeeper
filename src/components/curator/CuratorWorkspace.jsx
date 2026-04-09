@@ -493,7 +493,7 @@ export default function CuratorWorkspace({
 
     case 'pairings':
       return (
-        <>{modals}<CuratorPairingsTab pairings={pairings} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={pairingsLoading || isRefreshing} /></>
+        <>{modals}<CuratorPairingsTab pairings={pairings} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={isRefreshing} /></>
       );
 
     case 'plan_session':
