@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import CuratorWorkspace from '@/components/curator/CuratorWorkspace';
+import CuratorIcon from '@/components/icons/CuratorIcon';
 
 const SURFACES = [
   { key: 'record_optimization', label: 'Record Optimization' },
@@ -63,12 +64,15 @@ export default function CuratorPage() {
     <div className="min-h-screen" style={{ background: '#0B0B0C' }}>
       <div className="max-w-[1440px] mx-auto px-10 py-10">
         <header className="mb-8">
-          <h1
-            className="text-[32px] leading-none font-semibold mb-3"
-            style={{ color: '#F5F5F7', letterSpacing: '-0.5px' }}
-          >
-            Collection Curator
-          </h1>
+          <div className="flex items-center gap-3 mb-3">
+            <CuratorIcon className="w-8 h-8" style={{ color: '#C6A15B' }} />
+            <h1
+              className="text-[32px] leading-none font-semibold"
+              style={{ color: '#F5F5F7', letterSpacing: '-0.5px' }}
+            >
+              Collection Curator
+            </h1>
+          </div>
           <p className="text-[18px] leading-8" style={{ color: '#9C968C' }}>
             Operational intelligence across your collection — fix, optimize, pair, and grow.
           </p>
