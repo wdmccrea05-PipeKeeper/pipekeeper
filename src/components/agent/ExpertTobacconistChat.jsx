@@ -541,20 +541,9 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
     };
   }
 
-  if (bottles.length > 0) {
-    const bottle = bestOpenBottle(bottles, tastingLogs);
-    if (bottle) {
-      return {
-        reply: `Based on your collection, ${bottle.name} is the strongest candidate for your next session. Ask me specifically about any bottle, your biggest gap, what to restock, or how to build a session.`,
-        updatedEntityContext: { ...entityContext, bottle },
-      };
-    }
-  }
-
+  // Fallback: respond to unmatched queries with clarification request
   return {
-    reply: whiskeyOnly
-      ? 'Ask me which bottle to open next, what to buy or restock, what the biggest gap in your collection is, or what to drink tonight. I will answer from your actual collection.'
-      : 'Ask me which pipe is most redundant, which one should be reassigned, what to smoke tonight, what to buy or restock next, or what the biggest gap is. I will answer from the current collection.',
+    reply: 'I did not quite understand the question. Could you ask me more specifically about:\n• **Your collection**: Which pipe is redundant? What should I reassign?\n• **Pairings**: Why do these work together? Explain a pairing.\n• **Sessions**: What should I smoke/drink tonight? What to buy or restock?\n• **Gaps**: What is the biggest gap in my collection?\n\nOr name a specific item and I can tell you more about it.',
     updatedEntityContext: entityContext,
   };
 }

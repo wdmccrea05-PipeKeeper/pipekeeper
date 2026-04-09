@@ -556,8 +556,9 @@ export function generateGrowExpandRecommendations(context = {}) {
   //     but nothing was surfaced by the normal generators ──────────────────────
 
   if (results.length === 0 && totalItems >= 3) {
-    // Fallback tobacco family — suggest exploring a first blend family (pipekeeper only)
-    if (pipeActive) {
+    // Fallback tobacco family — suggest exploring a first blend family (tobacco or pipekeeper active)
+    const tobaccoActive = activeModules.tobacco !== false; // standalone tobacco fallback
+    if (pipeActive || tobaccoActive) {
       const ownedTypes = new Set(blends.map((b) => b.blend_type || b.blend_family).filter(Boolean));
       const fallbackBlendType = ['Virginia', 'English', 'Virginia/Perique', 'Aromatic', 'Burley'].find(
         (t) => !ownedTypes.has(t)
