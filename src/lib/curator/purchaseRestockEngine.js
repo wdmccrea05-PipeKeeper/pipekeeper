@@ -45,11 +45,16 @@ function isBottleDepleted(bottle) {
 }
 
 function normalizeAcquisitionCategory(item = {}) {
-  return String(item.status || item.category || item.list_type || '').trim().toLowerCase();
+  const raw = String(item.status || item.category || item.list_type || '').trim().toLowerCase();
+  // Normalize legacy "want_list" alias → "wishlist" (canonical schema value)
+  if (raw === 'want_list') return 'wishlist';
+  // Items with no status field default to "wishlist" (matches schema default)
+  if (!raw) return 'wishlist';
+  return raw;
 }
 
 function isActiveAcquisitionItem(item = {}) {
-  return normalizeAcquisitionCategory(item) && normalizeAcquisitionCategory(item) !== 'archived';
+  return normalizeAcquisitionCategory(item) !== 'archived';
 }
 
 function buildItem(source = {}, overrides = {}) {
@@ -197,7 +202,7 @@ function analyzeTrackedItems(acquisitionItems = []) {
       ownershipContext: OWNERSHIP_CONTEXT.EXTERNAL,
       priority: PRIORITY.MEDIUM,
       confidence: 'high',
-      items: grouped.wishlist.map((i) => buildItem(i, { ownershipStatus: 'wishlist', shoppingType: 'buy_new_item' })),
+      items: grouped.wishlist.map((i) => buildItem(i, { ownershipStatus: 'wishlist', shoppingType: 'buy_new_item', acquisitionId: i.id })),
       actionPayload: { shoppingType: 'buy_new_item' },
     }));
   }

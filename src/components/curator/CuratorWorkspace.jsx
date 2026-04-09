@@ -10,6 +10,9 @@ import CuratorPurchaseQueue from '@/components/curator/CuratorPurchaseQueue';
 import CuratorGrowAndExpand from '@/components/curator/CuratorGrowAndExpand';
 import CuratorSpecializationReview from '@/components/curator/CuratorSpecializationReview';
 import ExpertTobacconistChat from '@/components/agent/ExpertTobacconistChat';
+import LogTastingModal from '@/components/whiskey/LogTastingModal';
+import LogSessionModal from '@/components/home/LogSessionModal';
+import CombinedSessionModal from '@/components/session/CombinedSessionModal';
 
 import { generateRecommendations } from '@/lib/curator/recommendationEngine';
 import { generatePairingRecommendations } from '@/lib/curator/pairingEngine';
@@ -126,6 +129,8 @@ export default function CuratorWorkspace({
   const [preFillMessage, setPreFillMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showSpecializationReview, setShowSpecializationReview] = useState(false);
+  const [buildSessionOpen, setBuildSessionOpen] = useState(false);
+  const [buildSessionTarget, setBuildSessionTarget] = useState(null);
 
   // Stabilize moduleEnabled so object-identity changes don't trigger effect loops
   const moduleEnabledStr = JSON.stringify(moduleEnabled);
@@ -293,8 +298,22 @@ export default function CuratorWorkspace({
       }
 
       if (actionKey === 'build_session') {
-        setPreFillMessage(buildSessionPrompt(payload));
-        onSurfaceChange?.('chat');
+        // Determine which modal to open based on session candidate type and active modules
+        const candidate = payload?._sessionCandidate;
+        const isWhiskey = candidate?.moduleKey === 'whiskey' || candidate?.itemType === 'bottle' || payload?.leftItem?.type || payload?.leftItem?.whiskey_type;
+        const isPipe    = candidate?.moduleKey === 'pipe' || candidate?.itemType === 'pipe' || candidate?.itemType === 'blend';
+
+        if (isWhiskey) {
+          // Open LogTastingModal pre-filled with the selected bottle
+          setBuildSessionTarget({ type: 'whiskey', bottle: payload?.leftItem || candidate?.item || null });
+        } else if (isPipe) {
+          // Open LogSessionModal pre-filled with selected pipe/blend
+          setBuildSessionTarget({ type: 'pipe', pipeId: payload?.leftItem?.id || '', blendId: payload?.blendBridge?.id || candidate?.item?.id || '' });
+        } else {
+          // Multi-module or unknown: open CombinedSessionModal
+          setBuildSessionTarget({ type: 'combined', bottle: payload?.leftItem || null, blend: payload?.blendBridge || null });
+        }
+        setBuildSessionOpen(true);
         return;
       }
 
@@ -401,15 +420,55 @@ export default function CuratorWorkspace({
     );
   }
 
+  const ctx = contextRef.current || {};
+
+  const sessionModals = buildSessionOpen && buildSessionTarget ? (
+    <>
+      {buildSessionTarget.type === 'whiskey' && (
+        <LogTastingModal
+          isOpen
+          bottle={buildSessionTarget.bottle || undefined}
+          bottles={ctx.bottles || []}
+          onClose={() => { setBuildSessionOpen(false); setBuildSessionTarget(null); }}
+          onSaved={() => { setBuildSessionOpen(false); setBuildSessionTarget(null); }}
+        />
+      )}
+      {buildSessionTarget.type === 'pipe' && (
+        <LogSessionModal
+          isOpen
+          pipes={ctx.pipes || []}
+          blends={ctx.blends || []}
+          initialPipeId={buildSessionTarget.pipeId || ''}
+          initialBlendId={buildSessionTarget.blendId || ''}
+          onClose={() => { setBuildSessionOpen(false); setBuildSessionTarget(null); }}
+        />
+      )}
+      {buildSessionTarget.type === 'combined' && (
+        <CombinedSessionModal
+          isOpen
+          pipes={ctx.pipes || []}
+          blends={ctx.blends || []}
+          bottles={ctx.bottles || []}
+          initialSelection={buildSessionTarget.bottle || buildSessionTarget.blend || null}
+          onClose={() => { setBuildSessionOpen(false); setBuildSessionTarget(null); }}
+          onSaved={() => { setBuildSessionOpen(false); setBuildSessionTarget(null); }}
+        />
+      )}
+    </>
+  ) : null;
+
   switch (activeSurface) {
     case 'record_optimization':
       return (
-        <CuratorResultsBoard
-          sections={buckets.record_optimization}
-          onAction={handleAction}
-          onRefresh={handleRefresh}
-          isRefreshing={isRefreshing}
-        />
+        <>
+          <CuratorResultsBoard
+            sections={buckets.record_optimization}
+            onAction={handleAction}
+            onRefresh={handleRefresh}
+            isRefreshing={isRefreshing}
+          />
+          {sessionModals}
+        </>
       );
 
     case 'collection_optimization': {
@@ -421,7 +480,7 @@ export default function CuratorWorkspace({
         }))
         .filter((section) => (section.recommendations || []).length > 0);
 
-      return showSpecializationReview || specRecs.length > 0 ? (
+      const inner = showSpecializationReview || specRecs.length > 0 ? (
         <CuratorSpecializationReview
           specRecs={specRecs}
           collectionSections={nonSpecSections}
@@ -438,63 +497,79 @@ export default function CuratorWorkspace({
           isRefreshing={isRefreshing}
         />
       );
+      return <>{inner}{sessionModals}</>;
     }
 
     case 'purchase_restock':
       return (
-        <CuratorPurchaseQueue
-          sections={buckets.purchase_restock}
-          onAction={handleAction}
-          onRefresh={handleRefresh}
-          isRefreshing={isRefreshing}
-        />
+        <>
+          <CuratorPurchaseQueue
+            sections={buckets.purchase_restock}
+            onAction={handleAction}
+            onRefresh={handleRefresh}
+            isRefreshing={isRefreshing}
+          />
+          {sessionModals}
+        </>
       );
 
     case 'pairings':
       return (
-        <CuratorPairingsTab
-          pairings={pairings}
-          onAction={handleAction}
-          onRefresh={handleRefresh}
-          isRefreshing={pairingsLoading || isRefreshing}
-        />
+        <>
+          <CuratorPairingsTab
+            pairings={pairings}
+            onAction={handleAction}
+            onRefresh={handleRefresh}
+            isRefreshing={pairingsLoading || isRefreshing}
+          />
+          {sessionModals}
+        </>
       );
 
     case 'plan_session':
       return (
-        <CuratorPlanSession
-          collectionContext={contextRef.current || {}}
-          activeModules={moduleEnabled}
-          onAction={handleAction}
-          onRefresh={handleRefresh}
-          isRefreshing={isRefreshing}
-        />
+        <>
+          <CuratorPlanSession
+            collectionContext={contextRef.current || {}}
+            activeModules={moduleEnabled}
+            onAction={handleAction}
+            onRefresh={handleRefresh}
+            isRefreshing={isRefreshing}
+          />
+          {sessionModals}
+        </>
       );
 
     case 'grow_expand':
       return (
-        <CuratorGrowAndExpand
-          sections={buckets.grow_expand}
-          collectionContext={contextRef.current || {}}
-          userEmail={user?.email}
-          onAskCurator={(item) => handleAction('ask_curator', item)}
-        />
+        <>
+          <CuratorGrowAndExpand
+            sections={buckets.grow_expand}
+            collectionContext={contextRef.current || {}}
+            userEmail={user?.email}
+            onAskCurator={(item) => handleAction('ask_curator', item)}
+          />
+          {sessionModals}
+        </>
       );
 
     case 'chat':
       return (
-        <ExpertTobacconistChat
-          threadId={threadId}
-          setThreadId={setThreadId}
-          preFillMessage={preFillMessage}
-          onPreFillConsumed={() => setPreFillMessage('')}
-          collectionContext={contextRef.current || {}}
-          isSingleModuleMode={isSingleModuleMode}
-          activeModules={moduleEnabled}
-        />
+        <>
+          <ExpertTobacconistChat
+            threadId={threadId}
+            setThreadId={setThreadId}
+            preFillMessage={preFillMessage}
+            onPreFillConsumed={() => setPreFillMessage('')}
+            collectionContext={contextRef.current || {}}
+            isSingleModuleMode={isSingleModuleMode}
+            activeModules={moduleEnabled}
+          />
+          {sessionModals}
+        </>
       );
 
     default:
-      return null;
+      return sessionModals || null;
   }
 }
