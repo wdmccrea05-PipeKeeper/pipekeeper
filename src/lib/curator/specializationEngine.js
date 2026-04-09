@@ -215,13 +215,12 @@ export function generateSpecializationRecommendations(pipes = [], blends = [], s
 
   const specCandidates = computePipeSpecializationCandidates(smokingLogs, blends);
 
-  // Pipes that have no specialization set
-  const pipesWithoutSpec = pipes.filter(
-    (p) => !p.specialization || (Array.isArray(p.specialization) && p.specialization.length === 0)
-      || p.specialization === '' || p.specialization === null
-  );
-
-  if (!pipesWithoutSpec.length) return [];
+  // Pipes that have no specialization set (check both canonical 'focus' and legacy 'specialization')
+  const pipesWithoutSpec = pipes.filter((p) => {
+    const hasFocus = Array.isArray(p.focus) && p.focus.length > 0 && p.focus[0];
+    const hasSpecialization = p.specialization && (Array.isArray(p.specialization) ? p.specialization.length > 0 : true) && p.specialization !== '';
+    return !hasFocus && !hasSpecialization;
+  });
 
   // Build candidate items for the recommendation
   const candidateItems = pipesWithoutSpec.slice(0, 20).map((pipe) => {
@@ -243,9 +242,8 @@ export function generateSpecializationRecommendations(pipes = [], blends = [], s
       recordName:           pipe.name,
       itemName:             pipe.name,
       maker:                pipe.maker || null,
-      currentSpec:          pipe.specialization || null,
+      currentSpec:          (Array.isArray(pipe.focus) && pipe.focus[0]) || pipe.specialization || null,
       suggestedSpec:        hasLogData ? logData.suggestedSpec : null,
-      sessionCount:         logData?.sessionCount ?? 0,
       totalSessions:        logData?.totalSessions ?? 0,
       dominanceRatio:       logData?.dominanceRatio ?? 0,
       topBlends:            logData?.topBlends ?? [],
@@ -319,4 +317,3 @@ export function generateSpecializationRecommendations(pipes = [], blends = [], s
 
   return recommendations;
 }
-
