@@ -899,10 +899,7 @@ function CigarDetailInner() {
   );
 }
 
+// LockedModuleGuard is already applied by App.jsx's CigarReleaseRoute wrapper
 export default function CigarDetail() {
-  return (
-    <LockedModuleGuard moduleKey="cigarkeeper">
-      <CigarDetailInner />
-    </LockedModuleGuard>
-  );
+  return <CigarDetailInner />;
 }
