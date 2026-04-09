@@ -10,9 +10,10 @@ import CuratorSpecializationReview from '@/components/curator/CuratorSpecializat
 import ExpertTobacconistChat from '@/components/agent/ExpertTobacconistChat';
 
 import { generateRecommendations } from '@/lib/curator/recommendationEngine';
-import { useEnabledModules } from '@/components/hooks/useEnabledKeeperModules';
 import { generatePairingRecommendations } from '@/lib/curator/pairingEngine';
 import { executeRecommendationAction, buildViewItemsNavigation } from '@/lib/curator/recommendationActions';
+import { groupRecommendations } from '@/lib/curator/recommendationGrouping';
+import { CATEGORY } from '@/lib/curator/recommendationSchema';
 
 const LOAD_TIMEOUT_MS = 10000;
 
@@ -36,105 +37,25 @@ async function safeFilter(entityHandle, filter, sort, limit, label) {
   }
 }
 
-function normalizeText(value) {
-  return String(value || '').trim().toLowerCase();
-}
-
-function isRecordOptimizationSection(section) {
-  const title = normalizeText(section?.title);
-  const category = normalizeText(section?.category);
-  return (
-    title.includes('record optimization') ||
-    title.includes('collection health') ||
-    title.includes('metadata') ||
-    title.includes('valuation') ||
-    category.includes('record')
-  );
-}
-
-function isCollectionOptimizationSection(section) {
-  const title = normalizeText(section?.title);
-  const category = normalizeText(section?.category);
-  return (
-    title.includes('collection optimization') ||
-    title.includes('utilization') ||
-    title.includes('rotation') ||
-    title.includes('specialization') ||
-    title.includes('collection balance') ||
-    category.includes('collection')
-  );
-}
-
-function isPurchaseRestockSection(section) {
-  const title = normalizeText(section?.title);
-  const category = normalizeText(section?.category);
-  return (
-    title.includes('purchase') ||
-    title.includes('restock') ||
-    title.includes('shopping') ||
-    title.includes('wishlist') ||
-    category.includes('purchase')
-  );
-}
-
-function isGrowExpandSection(section) {
-  const title = normalizeText(section?.title);
-  const category = normalizeText(section?.category);
-  return (
-    title.includes('grow') ||
-    title.includes('expand') ||
-    title.includes('discovery') ||
-    title.includes('discoveries') ||
-    title.includes('outside') ||
-    category.includes('grow')
-  );
-}
-
-function bucketSections(rawSections = []) {
-  const buckets = {
-    record_optimization: [],
-    collection_optimization: [],
-    purchase_restock: [],
-    grow_expand: [],
+function bucketSections(groupedSections = []) {
+  return {
+    record_optimization: groupedSections.filter((s) => s?.category === CATEGORY.RECORD_OPTIMIZATION),
+    collection_optimization: groupedSections.filter((s) => s?.category === CATEGORY.COLLECTION_OPTIMIZATION),
+    purchase_restock: groupedSections.filter((s) => s?.category === CATEGORY.PURCHASE),
+    grow_expand: groupedSections.filter((s) => s?.category === CATEGORY.GROW_EXPAND),
   };
-
-  for (const section of rawSections) {
-    if (!section || !Array.isArray(section.recommendations) || section.recommendations.length === 0) continue;
-
-    if (isRecordOptimizationSection(section)) {
-      buckets.record_optimization.push(section);
-      continue;
-    }
-    if (isCollectionOptimizationSection(section)) {
-      buckets.collection_optimization.push(section);
-      continue;
-    }
-    if (isPurchaseRestockSection(section)) {
-      buckets.purchase_restock.push(section);
-      continue;
-    }
-    if (isGrowExpandSection(section)) {
-      buckets.grow_expand.push(section);
-      continue;
-    }
-
-    buckets.collection_optimization.push(section);
-  }
-
-  return buckets;
 }
 
+function countRecommendationItems(sections = []) {
+  return (sections || [])
+    .flatMap((section) => section?.recommendations || [])
+    .reduce((sum, rec) => sum + ((rec?.items || []).length || 0), 0);
+}
 
 function extractSpecializationRecommendations(sections = []) {
   return (sections || [])
     .flatMap((section) => section?.recommendations || [])
     .filter((rec) => String(rec?.goal || '').toLowerCase().includes('special'));
-}
-
-function countRecommendationItems(sections = []) {
-  return sections
-    .flatMap((s) => s?.recommendations || [])
-    .reduce((sum, rec) => sum + ((rec?.items || []).length || 0), 0);
 }
 
 function removeResolvedFromRecommendation(rec, resolvedIds = []) {
@@ -166,23 +87,39 @@ function reconcileSections(prevSections, resolvedIds = [], resolvedRecommendatio
     .filter((section) => (section?.recommendations || []).length > 0);
 }
 
+function buildAskCuratorPrompt(payload = {}) {
+  if (payload?.pairingType && payload?.leftItem && payload?.blendBridge && payload?.rightItem) {
+    return `Explain why ${payload.leftItem.name}, ${payload.blendBridge.name}, and ${payload.rightItem.name} work together in my collection.`;
+  }
+
+  const title = payload?.title || payload?.recordName || payload?.itemName || payload?.name || 'this recommendation';
+  const why = payload?.whyItMatters || payload?.narrative || payload?.summary || payload?.reason || '';
+  return `Help me evaluate ${title}.${why ? ` ${why}` : ''}`;
+}
+
+function buildSessionPrompt(pairing = {}) {
+  if (pairing?.leftItem && pairing?.blendBridge && pairing?.rightItem) {
+    return `Build a session plan around ${pairing.leftItem.name}, ${pairing.blendBridge.name}, and ${pairing.rightItem.name}. Include why this session fits my collection.`;
+  }
+  return 'Build me a session from my current collection.';
+}
+
 export default function CuratorWorkspace({
   activeSurface,
   onSurfaceChange,
   onCountsChange,
 }) {
   const { user } = useCurrentUser();
-  const { enabled: enabledModules } = useEnabledModules();
 
   const mountedRef = useRef(true);
   const contextRef = useRef(null);
+  const pairingsRef = useRef([]);
 
   const [loading, setLoading] = useState(true);
   const [pairingsLoading, setPairingsLoading] = useState(false);
   const [error, setError] = useState('');
   const [rawSections, setRawSections] = useState([]);
   const [pairings, setPairings] = useState([]);
-  const pairingsRef = useRef([]);
   const [threadId, setThreadId] = useState(null);
   const [preFillMessage, setPreFillMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -191,7 +128,7 @@ export default function CuratorWorkspace({
   const buckets = useMemo(() => bucketSections(rawSections), [rawSections]);
 
   const publishCounts = useCallback(
-    (nextSections, nextPairings) => {
+    (nextSections = [], nextPairings = []) => {
       const nextBuckets = bucketSections(nextSections);
       onCountsChange?.({
         record_optimization: countRecommendationItems(nextBuckets.record_optimization),
@@ -215,28 +152,18 @@ export default function CuratorWorkspace({
         tastingLogs: [],
         inventoryUnits: [],
         acquisitionItems: [],
+        wantListItems: [],
+        preferences: {},
       };
     }
 
     const [pipes, blends, bottles, smokingLogs, tastingLogs, inventoryUnits, acquisitionItems] = await Promise.all([
-      enabledModules.pipekeeper
-        ? safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 500, 'pipes')
-        : Promise.resolve([]),
-      enabledModules.pipekeeper
-        ? safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 500, 'blends')
-        : Promise.resolve([]),
-      enabledModules.whiskeykeeper
-        ? safeFilter(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 500, 'bottles')
-        : Promise.resolve([]),
-      enabledModules.pipekeeper
-        ? safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 1000, 'smokingLogs')
-        : Promise.resolve([]),
-      enabledModules.whiskeykeeper
-        ? safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 500, 'tastingLogs')
-        : Promise.resolve([]),
-      enabledModules.whiskeykeeper
-        ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null, 2000, 'inventoryUnits')
-        : Promise.resolve([]),
+      safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 500, 'pipes'),
+      safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 500, 'blends'),
+      safeFilter(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 500, 'bottles'),
+      safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 1000, 'smokingLogs'),
+      safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 500, 'tastingLogs'),
+      safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null, 2000, 'inventoryUnits'),
       safeFilter(base44.entities.AcquisitionItem, { created_by: user.email }, '-created_date', 1000, 'acquisitionItems'),
     ]);
 
@@ -248,9 +175,10 @@ export default function CuratorWorkspace({
       tastingLogs,
       inventoryUnits,
       acquisitionItems,
-      cigarModuleActive: false,
+      wantListItems: acquisitionItems,
+      preferences: {},
     };
-  }, [user?.email, enabledModules.pipekeeper, enabledModules.whiskeykeeper, enabledModules.cigarkeeper]);
+  }, [user?.email]);
 
   const loadPrimaryData = useCallback(
     async ({ silent = false } = {}) => {
@@ -273,26 +201,15 @@ export default function CuratorWorkspace({
         const context = await buildContext();
         contextRef.current = context;
 
-        const allRecs = generateRecommendations(context) || [];
-
-        // Filter out recommendations for disabled modules
-        function isModuleKeyEnabled(moduleKey) {
-          if (moduleKey === 'pipe' || moduleKey === 'tobacco') return !!enabledModules.pipekeeper;
-          if (moduleKey === 'whiskey') return !!enabledModules.whiskeykeeper;
-          if (moduleKey === 'cigar') return !!enabledModules.cigarkeeper;
-          return true;
-        }
-        const recs = allRecs
-          .map((section) => ({
-            ...section,
-            recommendations: (section.recommendations || []).filter((rec) => isModuleKeyEnabled(rec?.moduleKey)),
-          }))
-          .filter((section) => (section.recommendations || []).length > 0);
+        const flatRecommendations = generateRecommendations(context) || [];
+        const groupedSections = groupRecommendations(
+          flatRecommendations.filter((rec) => rec?.category !== CATEGORY.PAIRING)
+        );
 
         if (!mountedRef.current) return;
 
-        setRawSections(recs);
-        publishCounts(recs, pairingsRef.current);
+        setRawSections(groupedSections);
+        publishCounts(groupedSections, pairingsRef.current);
       } catch (err) {
         console.error('[Curator] primary load failed:', err);
 
@@ -356,9 +273,13 @@ export default function CuratorWorkspace({
   const handleAction = useCallback(
     async (actionKey, payload, opts = {}) => {
       if (actionKey === 'ask_curator') {
-        const title = payload?.title || payload?.recordName || payload?.name || 'this recommendation';
-        const reason = payload?.whyItMatters || payload?.narrative || payload?.summary || '';
-        setPreFillMessage(`Help me evaluate ${title}.${reason ? ` ${reason}` : ''}`);
+        setPreFillMessage(buildAskCuratorPrompt(payload));
+        onSurfaceChange?.('chat');
+        return;
+      }
+
+      if (actionKey === 'build_session') {
+        setPreFillMessage(buildSessionPrompt(payload));
         onSurfaceChange?.('chat');
         return;
       }
@@ -391,13 +312,14 @@ export default function CuratorWorkspace({
 
       setRawSections((prev) => {
         const next = reconcileSections(prev, resolvedIds, resolvedRecommendationIds);
-        publishCounts(next, pairings);
+        publishCounts(next, pairingsRef.current);
         return next;
       });
 
       if (actionKey === 'save_pairing') {
         setPairings((prev) => {
           const next = prev.filter((p) => p.id !== payload?.id);
+          pairingsRef.current = next;
           publishCounts(rawSections, next);
           return next;
         });
@@ -417,7 +339,7 @@ export default function CuratorWorkspace({
 
       return result;
     },
-    [activeSurface, loadPairings, loadPrimaryData, onSurfaceChange, pairings, publishCounts, rawSections, user?.email]
+    [activeSurface, loadPairings, loadPrimaryData, onSurfaceChange, publishCounts, rawSections, user?.email]
   );
 
   const handleRefresh = useCallback(async () => {
@@ -478,10 +400,12 @@ export default function CuratorWorkspace({
 
     case 'collection_optimization': {
       const specRecs = extractSpecializationRecommendations(buckets.collection_optimization);
-      const nonSpecSections = buckets.collection_optimization.map((section) => ({
-        ...section,
-        recommendations: (section.recommendations || []).filter((rec) => !String(rec?.goal || '').toLowerCase().includes('special')),
-      })).filter((section) => (section.recommendations || []).length > 0);
+      const nonSpecSections = buckets.collection_optimization
+        .map((section) => ({
+          ...section,
+          recommendations: (section.recommendations || []).filter((rec) => !String(rec?.goal || '').toLowerCase().includes('special')),
+        }))
+        .filter((section) => (section.recommendations || []).length > 0);
 
       return showSpecializationReview || specRecs.length > 0 ? (
         <CuratorSpecializationReview
