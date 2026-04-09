@@ -290,7 +290,7 @@ function buildPairsForTab(tabKey, context, usageCounters) {
         if (scanned > MAX_CANDIDATES_PER_TAB) break;
 
         const score = scorePair(pipe, blend, bottle, usageCounters, tabKey);
-        if (score < 5.5) continue;
+        if (score < 6.5) continue;
 
         scored.push({ pipe, blend, bottle, score });
       }
@@ -343,77 +343,35 @@ function buildPairsForTab(tabKey, context, usageCounters) {
   return chosen;
 }
 
+function buildFallbackPairings(context = {}) {
+  const pipes = sortPipes(context.pipes || []);
+  const blends = sortBlends(context.blends || [], context.smokingLogs || []);
+  const bottles = sortBottles(context.bottles || []);
+  if (!pipes.length || !blends.length || !bottles.length) return [];
+  const pipe = pipes[0];
+  const blend = blends[0];
+  const bottle = bottles[0];
+  return [{
+    id: `fallback_${pipe.id}_${blend.id}_${bottle.id}`,
+    subTab: 'expert',
+    confidenceLabel: 'Experimental',
+    pairingType: pairingType(blend, bottle),
+    leftItem: wrapPipe(pipe),
+    blendBridge: wrapBlend(blend),
+    rightItem: wrapBottle(bottle),
+    narrative: buildNarrative(pipe, blend, bottle),
+    whyItWorks: buildWhyItWorks(blend, bottle),
+    whatToExpect: buildWhatToExpect(blend, bottle),
+    bestMomentForIt: buildBestMomentForIt(blend, bottle),
+  }];
+}
+
 export function generatePairingRecommendations(context = {}) {
   const usageCounters = { pipe: {}, blend: {}, bottle: {} };
-
   const all = [];
   for (const tab of SUB_TABS) {
     const rows = buildPairsForTab(tab, context, usageCounters);
     all.push(...rows);
   }
-
-  if (all.length === 0) {
-    const fallback = buildFallbackPairings(context);
-    all.push(...fallback);
-  }
-
-  return all;
-}
-
-function buildFallbackPairings(context = {}) {
-  const pipes = sortPipes(context.pipes || []);
-  const blends = sortBlends(context.blends || [], context.smokingLogs || []);
-  const bottles = sortBottles(context.bottles || []);
-
-  if (!pipes.length || !blends.length || !bottles.length) return [];
-
-  const results = [];
-
-  // Fallback 1: top blend (most sessions/favorite) × most used pipe × first available bottle
-  const topBlend = blends[0];
-  const topPipe = pipes[0];
-  const topBottle = bottles[0];
-
-  if (topBlend && topPipe && topBottle && !aromaticConflict(topPipe, topBlend)) {
-    results.push({
-      id: `fallback_top_${topPipe.id}_${topBlend.id}_${topBottle.id}`,
-      subTab: 'expert',
-      confidenceLabel: 'Experimental',
-      pairingType: pairingType(topBlend, topBottle),
-      leftItem: wrapPipe(topPipe),
-      blendBridge: wrapBlend(topBlend),
-      rightItem: wrapBottle(topBottle),
-      narrative: buildNarrative(topPipe, topBlend, topBottle),
-      whyItWorks: buildWhyItWorks(topBlend, topBottle),
-      whatToExpect: buildWhatToExpect(topBlend, topBottle),
-      bestMomentForIt: buildBestMomentForIt(topBlend, topBottle),
-    });
-  }
-
-  // Fallback 2: favorite blend × alternate pipe × alternate bottle (if available and no conflict)
-  const favBlend = blends.find((b) => b.favorite) || (blends.length > 1 ? blends[1] : null);
-  const altBottle = bottles.find((b) => b.id !== topBottle?.id) || topBottle;
-  const altPipe = pipes.find((p) => p.id !== topPipe?.id) || topPipe;
-
-  if (
-    favBlend && altPipe && altBottle &&
-    favBlend.id !== topBlend?.id &&
-    !aromaticConflict(altPipe, favBlend)
-  ) {
-    results.push({
-      id: `fallback_fav_${altPipe.id}_${favBlend.id}_${altBottle.id}`,
-      subTab: 'old_favorites',
-      confidenceLabel: 'Experimental',
-      pairingType: pairingType(favBlend, altBottle),
-      leftItem: wrapPipe(altPipe),
-      blendBridge: wrapBlend(favBlend),
-      rightItem: wrapBottle(altBottle),
-      narrative: buildNarrative(altPipe, favBlend, altBottle),
-      whyItWorks: buildWhyItWorks(favBlend, altBottle),
-      whatToExpect: buildWhatToExpect(favBlend, altBottle),
-      bestMomentForIt: buildBestMomentForIt(favBlend, altBottle),
-    });
-  }
-
-  return results;
+  return all.length ? all : buildFallbackPairings(context);
 }
