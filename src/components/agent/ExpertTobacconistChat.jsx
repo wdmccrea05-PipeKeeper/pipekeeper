@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { SendHorizontal } from 'lucide-react';
 import { buildSessionPlan } from '@/lib/curator/sessionPlanner.js';
 
-// ─── Starter prompts vary by mode ─────────────────────────────────────────────
+// --- Starter prompts vary by mode
 
 const STARTER_PROMPTS_SINGLE = [
   'What should I enjoy tonight?',
@@ -40,12 +40,8 @@ function daysSince(dateValue) {
   return Math.floor((Date.now() - ts) / 86400000);
 }
 
-// ─── Entity resolution helpers ────────────────────────────────────────────────
+// --- Entity resolution helpers
 
-/**
- * Extract the entity type referenced in the user's message.
- * Returns null if no clear entity type is mentioned.
- */
 function detectEntityType(text) {
   if (text.includes('pipe') || text.includes('briar') || text.includes('corn cob') || text.includes('meerschaum')) return 'pipe';
   if (text.includes('blend') || text.includes('tobacco') || text.includes('mixture')) return 'blend';
@@ -54,20 +50,11 @@ function detectEntityType(text) {
   return null;
 }
 
-/**
- * Returns true when the message is a follow-up referencing a prior entity
- * (uses pronouns like "it", "that", "this", "the one", etc.) without naming a
- * new entity.
- */
 function isFollowUpReference(text) {
   const pronouns = /\b(it|that|this one|this pipe|that pipe|this blend|that blend|this bottle|that bottle|the one|the pipe|the blend|the bottle|how do i|how should i|what should i do with)\b/i;
   return pronouns.test(text);
 }
 
-/**
- * Extract a named entity from the message against a list of known records.
- * Returns the first record whose name appears (case-insensitive) in the message.
- */
 function extractNamedEntity(text, records = []) {
   const lower = norm(text);
   for (const r of records) {
@@ -77,40 +64,52 @@ function extractNamedEntity(text, records = []) {
   return null;
 }
 
-/**
- * Build a fresh empty entity context for a new conversation session.
- */
 function emptyEntityContext() {
   return { pipe: null, blend: null, bottle: null, acquisition: null };
 }
 
-/**
- * Update the entity tracking context after a message is processed.
- * Looks at which entity was discussed in the assistant's reply and returns updated context.
- */
 function updateEntityContext(currentContext, entityType, entityRecord) {
   if (!entityType || !entityRecord) return currentContext;
   return { ...currentContext, [entityType]: entityRecord };
 }
 
-// ─── Intent detection ─────────────────────────────────────────────────────────
+// --- INTENT CLASSIFICATION (MANDATORY)
 
-/**
- * Returns true when the message is explicitly asking for a PAIRING (cross-module).
- * Returns false for single-module session questions.
- */
-function isPairingIntent(text) {
-  return /\bpairing|pair with|pair together|combine|combination\b/i.test(text);
+function classifyIntent(message) {
+  const text = norm(message);
+
+  // PAIRING_EXPLANATION: "why do these work", "explain why", "how do they work"
+  if (/\b(why|explain why|why do|how do they|what makes|what's the connection)\b/i.test(text) &&
+      (/\b(pair|pairing|work|together|combination)\b/i.test(text) ||
+       /\b(pipe|blend|bottle|whiskey|tobacco)\b/i.test(text))) {
+    return 'PAIRING_EXPLANATION';
+  }
+
+  // SESSION_RECOMMENDATION: "what should I", "build me", "tonight", "smoke", "drink"
+  if (/\b(what should i|build me|tonight|enjoy|smoke|drink|open)\b/i.test(text)) {
+    return 'SESSION_RECOMMENDATION';
+  }
+
+  // COLLECTION_ANALYSIS: "redundant", "overlap", "most", "crowded"
+  if (/\b(redundant|overlap|most|crowded|duplicate)\b/i.test(text)) {
+    return 'COLLECTION_ANALYSIS';
+  }
+
+  // RESTOCK_ADVICE: "buy", "restock", "purchase", "gap"
+  if (/\b(buy|restock|purchase|next|gap)\b/i.test(text)) {
+    return 'RESTOCK_ADVICE';
+  }
+
+  // FOLLOW_UP: pronoun references without action
+  if (/\b(it|that|this|the one)\b/i.test(text) &&
+      !/\b(why|explain|redundant|buy|restock|tonight|smoke|drink)\b/i.test(text)) {
+    return 'FOLLOW_UP';
+  }
+
+  return 'UNKNOWN';
 }
 
-/**
- * Returns true when the message is a session planning question (what to enjoy/use).
- */
-function isSessionIntent(text) {
-  return /\b(tonight|enjoy|smoke|drink|use|open|revisit|rediscover|haven.?t used|haven.?t had)\b/i.test(text);
-}
-
-// ─── Collection analysis helpers ─────────────────────────────────────────────
+// --- Collection analysis helpers
 
 function buildPipeUsage(pipes = [], smokingLogs = [], blends = []) {
   return pipes.map((pipe) => {
@@ -211,7 +210,6 @@ function biggestGap(blends = [], bottles = [], activeModules = {}) {
   const blendFamilies = new Set(blends.map((b) => getBlendType(b)).filter(Boolean));
   const bottleTypes = new Set(bottles.map((b) => getBottleType(b)).filter(Boolean));
 
-  // Whiskey-only mode: gap analysis is bottle/style-centric
   if (whiskeyOnly) {
     const types = [...bottleTypes].map((t) => t.toLowerCase());
     if (!types.some((t) => t.includes('rye'))) {
@@ -232,7 +230,6 @@ function biggestGap(blends = [], bottles = [], activeModules = {}) {
     return 'Your next gap is probably not style but depth: getting tasting notes on every bottle and pricing data on at least your highest-value pours. That turns a collection into an actual reference.';
   }
 
-  // Multi-module mode: tobacco-aware gap analysis
   if (!blendFamilies.has('Virginia/Burley')) {
     return 'A practical Virginia/Burley lane looks thin or absent. That matters because it gives you a dependable middle ground between brighter Virginia sweetness and drier Burley structure.';
   }
@@ -245,40 +242,73 @@ function biggestGap(blends = [], bottles = [], activeModules = {}) {
   return 'Your next important gap is probably not quantity but specialization: getting each pipe and each blend family into a cleaner lane so the collection becomes easier to use, not just larger.';
 }
 
-function pairingExplanation(context = {}) {
+// --- PAIRING EXPLANATION ENGINE (CRITICAL FIX)
+
+function pairingExplanationEngine(message, context = {}, entityContext = {}) {
   const pipes = context?.pipes || [];
   const blends = context?.blends || [];
   const bottles = context?.bottles || [];
-  const smokingLogs = context?.smokingLogs || [];
 
-  const pipe = bestTonightPipe(pipes, smokingLogs, blends);
-  const blend = bestTonightBlend(blends, smokingLogs);
-  const bottle = bestOpenBottle(bottles, context?.tastingLogs || []);
+  // Extract named items from message
+  let pipe = extractNamedEntity(norm(message), pipes) || entityContext.pipe;
+  let blend = extractNamedEntity(norm(message), blends) || entityContext.blend;
+  let bottle = extractNamedEntity(norm(message), bottles) || entityContext.bottle;
 
+  // If not named, use best candidates
   if (!pipe || !blend || !bottle) {
-    return 'A pairing explanation works best when I can point to one specific pipe, one specific blend, and one specific pour. Right now I do not have enough reliable candidates across all three.';
+    pipe = pipe || bestTonightPipe(pipes, context?.smokingLogs || [], blends);
+    blend = blend || bestTonightBlend(blends, context?.smokingLogs || []);
+    bottle = bottle || bestOpenBottle(bottles, context?.tastingLogs || []);
   }
 
-  return `${pipe.name}, ${blend.name}, and ${bottle.name} make sense together because ${blend.name} brings ${getBlendType(blend)} character while ${bottle.name} contributes ${getBottleType(bottle)} structure. ${pipe.name} matters because the pipe itself controls whether that bowl stays focused or gets muddy.`;
+  if (!pipe || !blend || !bottle) {
+    return {
+      reply: 'A pairing explanation works best when I can point to one specific pipe, one specific blend, and one specific pour. Either name the three items you want me to explain, or log more collection data so I can suggest a strong pairing.',
+      updatedEntityContext: entityContext,
+    };
+  }
+
+  const blendType = getBlendType(blend);
+  const bottleType = getBottleType(bottle);
+
+  // Build structured explanation based on actual interaction
+  let whyItWorks = '';
+  let whatToExpect = '';
+
+  if ((blendType.includes('English') || blendType.includes('Balkan')) && bottleType.toLowerCase().includes('peated')) {
+    whyItWorks = `Smoke doubles down on smoke. ${blendType} tobacco's dark layers meet ${bottleType}'s phenolic depth -- they reinforce each other rather than compete.`;
+    whatToExpect = 'A deep, meditative session. The smoke will linger across both bowl and dram. Do not rush this one.';
+  } else if (blendType.includes('Aromatic') && bottleType.toLowerCase().includes('irish')) {
+    whyItWorks = `${bottleType}'s clean grain cuts through ${blendType} topping sweetness right before it becomes cloying. Each pour resets the palate.`;
+    whatToExpect = 'A lighter session. The whiskey becomes a palate bridge, not a statement. This is about subtlety.';
+  } else if ((blendType.includes('Burley') || blendType.includes('Virginia/Burley')) && bottleType.toLowerCase().includes('bourbon')) {
+    whyItWorks = `${blendType} earth and ${bottleType} caramel settle into each other without competition. Both finish warm without fighting for attention.`;
+    whatToExpect = 'Comfort. The kind of session where both settle into their best selves without requiring your full concentration.';
+  } else if (blendType.includes('Virginia/Perique') && bottleType.toLowerCase().includes('rye')) {
+    whyItWorks = "Perique's peppery snap finds its match in rye's bite. Together they open new texture in each other -- neither one flattens.";
+    whatToExpect = 'A session with real edges. The tobacco and whiskey keep each other sharp. Not soft, but rewarding.';
+  } else if ((blendType.includes('Virginia') || blendType.includes('Virginia/Oriental')) && (bottleType.toLowerCase().includes('highland') || bottleType.toLowerCase().includes('speyside'))) {
+    whyItWorks = `${blendType} bright fruit meets ${bottleType}'s middle palate without either fading. Balance rather than boldness.`;
+    whatToExpect = 'A brighter session. Natural leaf sweetness stays front-and-center, with the whiskey providing subtle texture.';
+  } else {
+    whyItWorks = `${blendType} and ${bottleType} maintain their identity together. Neither dominates, neither retreats.`;
+    whatToExpect = 'A balanced session where both elements keep their voice.';
+  }
+
+  const reply = `**${pipe.name}, ${blend.name}, and ${bottle.name}**\n\nWhy it works:\n${whyItWorks}\n\n${pipe.name} matters because the chamber geometry and heat control determine whether the bowl stays focused or gets muddy. A well-rested pipe in this context lets both the tobacco character and whiskey finish stay clear.\n\nWhat to expect:\n${whatToExpect}\n\nWhen to use it:\nThis pairing rewards sitting down with time. Both tobacco and spirit give back attention in proportion to the attention you give them.`;
+
+  return {
+    reply,
+    updatedEntityContext: { ...entityContext, pipe, blend, bottle },
+  };
 }
 
-// ─── Answer generation ────────────────────────────────────────────────────────
+// --- Answer generation
 
-/**
- * Generate a reply to the user's message, grounded in the collection context
- * and the current session entity context (for follow-up resolution).
- *
- * @param {string} message            - The user's current message
- * @param {object} context            - Collection data: pipes, blends, bottles, logs, etc.
- * @param {object} entityContext      - Session entity tracking: { pipe, blend, bottle, acquisition }
- * @param {boolean} isSingleModuleMode - When true, prioritize session planning over pairings
- * @param {object} activeModules      - Enabled module map
- * @returns {{ reply: string, updatedEntityContext: object }}
- */
 function answerQuestion(message, context = {}, entityContext = emptyEntityContext(), isSingleModuleMode = false, activeModules = {}) {
   const text = norm(message);
+  const intent = classifyIntent(message);
 
-  // §7.2 Rule A — MODULE GATE: never reference disabled-module data
   const pipeActive    = activeModules.pipekeeper    === true;
   const whiskeyActive = activeModules.whiskeykeeper === true;
   const whiskeyOnly   = whiskeyActive && !pipeActive;
@@ -290,9 +320,17 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
   const tastingLogs = whiskeyActive ? (context?.tastingLogs  || []) : [];
   const acquisitionItems = context?.acquisitionItems || context?.wantListItems || [];
 
-  // ── Detect intent first — pairing vs session ──────────────────────────────
-  // In single-module mode, pairing questions are redirected to session planning.
-  // In multi-module mode, explicit pairing intent uses pairing logic.
+  // CRITICAL: Enforce intent matching
+  if (intent === 'PAIRING_EXPLANATION') {
+    if (isSingleModuleMode) {
+      return {
+        reply: 'Pairings require both PipeKeeper and WhiskeyKeeper. Right now Curator is running in single-module mode. To plan tonight\'s session instead, ask me what to enjoy tonight.',
+        updatedEntityContext: entityContext,
+      };
+    }
+    return pairingExplanationEngine(message, context, entityContext);
+  }
+
   if (isPairingIntent(text)) {
     if (isSingleModuleMode) {
       return {
@@ -300,12 +338,10 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
         updatedEntityContext: entityContext,
       };
     }
-    // Multi-module pairing → fall through to pairing handler below
+    return pairingExplanationEngine(message, context, entityContext);
   }
 
-  // ── Session planning: "enjoy tonight", "haven't used", "revisit", etc. ───
   if (isSessionIntent(text) && !isPairingIntent(text)) {
-    // Determine target module from message
     const whiskeyFocused = /\b(whiskey|bourbon|scotch|rye|irish|bottle|pour|dram)\b/i.test(text);
     const pipeFocused    = /\b(pipe|smoke|tobacco|blend)\b/i.test(text);
     const targetModule   = whiskeyFocused ? 'whiskey' : pipeFocused ? 'pipe' : 'any';
@@ -331,18 +367,12 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
     };
   }
 
-  // ── Resolve referenced entity from prior context if this is a follow-up ───
   const followUp = isFollowUpReference(text);
-  const explicitEntityType = detectEntityType(text);
-
-  // When the message refers to a previously discussed entity ("it", "that pipe", etc.)
-  // and doesn't name a new one, resolve to the last known entity of that type.
   let resolvedPipe    = entityContext.pipe;
   let resolvedBlend   = entityContext.blend;
   let resolvedBottle  = entityContext.bottle;
 
   if (!followUp) {
-    // Fresh question: try to identify a named entity in the message
     const namedPipe   = extractNamedEntity(text, pipes);
     const namedBlend  = extractNamedEntity(text, blends);
     const namedBottle = extractNamedEntity(text, bottles);
@@ -351,9 +381,7 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
     if (namedBottle) resolvedBottle = namedBottle;
   }
 
-  // ── Handle reassignment / specialization (pipe-focused) ──────────────────
   if (text.includes('reassign') || text.includes('specializ')) {
-    // If follow-up referencing a recently discussed pipe, answer about that pipe
     if (followUp && resolvedPipe) {
       const usage = buildPipeUsage([resolvedPipe], smokingLogs, blends);
       const pipe = usage[0];
@@ -366,7 +394,7 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
       const dominantFamily = pipe.dominantFamily || 'an undetermined family';
       const confidence = pipe.sessionCount ? Math.round((pipe.dominantCount / pipe.sessionCount) * 100) : 0;
       return {
-        reply: `${pipe.name} shows the strongest lean toward ${dominantFamily} — about ${confidence}% of its sessions point that direction. Reassigning it as a ${dominantFamily} specialist would put that pattern to work intentionally rather than letting it happen by accident.`,
+        reply: `${pipe.name} shows the strongest lean toward ${dominantFamily} — about ${confidence}% of its sessions point that direction. Reassigning it as a ${dominantFamily} specialist would put that pattern to work intentionally.`,
         updatedEntityContext: { ...entityContext, pipe: resolvedPipe },
       };
     }
@@ -374,19 +402,17 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
     const candidate = bestReassignment(pipes, smokingLogs, blends);
     if (!candidate) {
       return {
-        reply: 'I do not yet have enough reliable session evidence to recommend a confident reassignment. For a real reassignment, I want to see repeated usage pointing toward one dominant family instead of just one or two scattered sessions.',
+        reply: 'I do not yet have enough reliable session evidence to recommend a confident reassignment. For a real reassignment, I want to see repeated usage pointing toward one dominant family.',
         updatedEntityContext: entityContext,
       };
     }
     return {
-      reply: `${candidate.name} is the strongest reassignment candidate right now. Its logged usage leans most heavily toward ${candidate.dominantFamily}, with about ${candidate.confidence}% of its sessions pointing that way. That suggests it would serve the collection better as a ${candidate.dominantFamily} specialist than as ${candidate.currentSpec || 'an unassigned pipe'}.`,
+      reply: `${candidate.name} is the strongest reassignment candidate right now. Its logged usage leans most heavily toward ${candidate.dominantFamily}, with about ${candidate.confidence}% of its sessions pointing that way.`,
       updatedEntityContext: { ...entityContext, pipe: candidate },
     };
   }
 
-  // ── Handle redundancy question (pipe-focused) ─────────────────────────────
   if (text.includes('redundant')) {
-    // §7.2 Whiskey-only: answer with bottle type distribution, not pipe analysis
     if (whiskeyOnly) {
       const typeCounts = {};
       for (const b of bottles) {
@@ -396,14 +422,14 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
       const sorted = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
       if (!sorted.length || bottles.length < 2) {
         return {
-          reply: 'You need at least 2 bottles with spirit type filled in to analyze whiskey type redundancy. Open each bottle and confirm the spirit type field.',
+          reply: 'You need at least 2 bottles with spirit type filled in to analyze whiskey type redundancy.',
           updatedEntityContext: entityContext,
         };
       }
       const [topType, topCount] = sorted[0];
       const pct = Math.round((topCount / bottles.length) * 100);
       return {
-        reply: `${topType} is your most concentrated style — ${topCount} of your ${bottles.length} bottles (${pct}%) fall in that lane. That is the most redundant category in your current whiskey collection. Adding a style outside that lane would give you more contrast for session planning.`,
+        reply: `${topType} is your most concentrated style — ${topCount} of your ${bottles.length} bottles (${pct}%) fall in that lane. Adding a style outside that lane would give you more contrast.`,
         updatedEntityContext: entityContext,
       };
     }
@@ -416,24 +442,23 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
     }
     const shape = candidate.shape || 'that shape lane';
     return {
-      reply: `${candidate.name} is the strongest redundancy candidate right now. It sits in an already crowded ${shape} lane and has only ${candidate.sessionCount || 0} logged sessions${candidate.lastSmokedDays ? `, with about ${candidate.lastSmokedDays} days since it was last used` : ''}. That does not mean sell it, but it is the pipe I would scrutinize first for reassignment or reduced priority in the rotation.`,
+      reply: `${candidate.name} is the strongest redundancy candidate right now. It sits in an already crowded ${shape} lane with only ${candidate.sessionCount || 0} logged sessions. It is the pipe I would scrutinize first for reassignment.`,
       updatedEntityContext: { ...entityContext, pipe: candidate },
     };
   }
 
-  // ── Tonight recommendation ────────────────────────────────────────────────
   if (text.includes('smoke tonight') || text.includes('drink tonight')) {
     const whiskeyFocusedTonight = text.includes('drink tonight') || (activeModules.whiskeykeeper !== false && activeModules.pipekeeper === false);
     if (whiskeyFocusedTonight) {
       const bottle = bestOpenBottle(bottles, tastingLogs);
       if (!bottle) {
         return {
-          reply: 'I do not have enough bottle data to make a confident pour recommendation tonight. Add a few bottles and log at least one tasting to give Curator something to work with.',
+          reply: 'I do not have enough bottle data to make a confident pour recommendation tonight. Add a few bottles and log at least one tasting.',
           updatedEntityContext: entityContext,
         };
       }
       return {
-        reply: `Tonight I would open ${bottle.name}. It is the strongest opening candidate from a collection-management standpoint — either it has not been tasted yet or it has been sitting long enough to be worth revisiting.`,
+        reply: `Tonight I would open ${bottle.name}. It is the strongest opening candidate — either it has not been tasted yet or it has been sitting long enough to be worth revisiting.`,
         updatedEntityContext: { ...entityContext, bottle },
       };
     }
@@ -441,17 +466,16 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
     const blend = bestTonightBlend(blends, smokingLogs);
     if (!pipe || !blend) {
       return {
-        reply: 'I do not have enough usable session history yet to make a meaningful tonight recommendation. The fastest way to improve this is to log a few sessions with your active pipes and cellar blends.',
+        reply: 'I do not have enough usable session history yet to make a meaningful tonight recommendation. Log a few sessions to help.',
         updatedEntityContext: entityContext,
       };
     }
     return {
-      reply: `Tonight I would start with ${pipe.name} and ${blend.name}. ${pipe.name} looks underused enough to deserve attention, and ${blend.name} appears due for a revisit without being a reckless choice.`,
+      reply: `Tonight I would start with ${pipe.name} and ${blend.name}. ${pipe.name} looks underused enough to deserve attention, and ${blend.name} appears due for a revisit.`,
       updatedEntityContext: { ...entityContext, pipe, blend },
     };
   }
 
-  // ── Open next bottle ──────────────────────────────────────────────────────
   if (text.includes('open next')) {
     const bottle = bestOpenBottle(bottles, tastingLogs);
     if (!bottle) {
@@ -466,9 +490,7 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
     };
   }
 
-  // ── Purchase / restock ────────────────────────────────────────────────────
   if ((text.includes('buy') || text.includes('restock')) && (text.includes('next') || text.includes('should'))) {
-    // Resolve semantic status from live data (status:'active' + category:'wishlist' pattern)
     const resolveItemCategory = (i) => {
       const s = norm(i.status || '');
       const c = norm(i.category || i.list_type || '');
@@ -480,24 +502,23 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
     const tracked = acquisitionItems.find((i) => ['restock', 'shopping_list', 'wishlist'].includes(resolveItemCategory(i)));
     if (tracked) {
       return {
-        reply: `${tracked.name} is already explicitly tracked in your purchase workflow, so I would start there. Curator should honor items you have already marked for shopping or restock before inventing a new target.`,
+        reply: `${tracked.name} is already explicitly tracked in your purchase workflow, so I would start there.`,
         updatedEntityContext: { ...entityContext, acquisition: tracked },
       };
     }
     const lowBlend = blends.find((b) => Number(b.quantity_oz || b.total_oz || 0) <= 1);
     if (lowBlend) {
       return {
-        reply: `${lowBlend.name} is the clearest next purchase candidate because stock looks thin and it already matters inside your rotation.`,
+        reply: `${lowBlend.name} is the clearest next purchase candidate because stock looks thin and it already matters in your rotation.`,
         updatedEntityContext: { ...entityContext, blend: lowBlend },
       };
     }
     return {
-      reply: 'The best next purchase is the item that closes the largest active gap or restores a proven favorite. Right now I need either low-stock data or tracked want-list data to rank that confidently.',
+      reply: 'The best next purchase is the item that closes the largest active gap or restores a proven favorite. I need either low-stock data or tracked want-list data to rank that confidently.',
       updatedEntityContext: entityContext,
     };
   }
 
-  // ── Gap analysis ──────────────────────────────────────────────────────────
   if (text.includes('gap')) {
     return {
       reply: biggestGap(blends, bottles, activeModules),
@@ -505,15 +526,6 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
     };
   }
 
-  // ── Pairing explanation ───────────────────────────────────────────────────
-  if (text.includes('pairing')) {
-    return {
-      reply: pairingExplanation(context),
-      updatedEntityContext: entityContext,
-    };
-  }
-
-  // ── Follow-up about a known entity without a specific action ─────────────
   if (followUp) {
     const subject = resolvedPipe || resolvedBlend || resolvedBottle;
     if (!subject) {
@@ -522,7 +534,6 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
         updatedEntityContext: entityContext,
       };
     }
-    // Generic follow-up about the last discussed entity
     const subjectType = resolvedPipe === subject ? 'pipe' : resolvedBlend === subject ? 'blend' : 'bottle';
     return {
       reply: `If you are asking about ${subject.name}: it is currently tracked in your ${subjectType} collection. What specifically would you like to know — redundancy, reassignment, tonight's use, or something else?`,
@@ -530,12 +541,11 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
     };
   }
 
-  // §7.2 Rule B — NO GENERIC FALLBACK when data exists: produce actionable response from bottles
   if (bottles.length > 0) {
     const bottle = bestOpenBottle(bottles, tastingLogs);
     if (bottle) {
       return {
-        reply: `Based on your collection, ${bottle.name} is the strongest candidate for your next session — it hasn't been tasted recently or at all. Ask me specifically about any bottle, your biggest gap, what to restock, or how to build a session.`,
+        reply: `Based on your collection, ${bottle.name} is the strongest candidate for your next session. Ask me specifically about any bottle, your biggest gap, what to restock, or how to build a session.`,
         updatedEntityContext: { ...entityContext, bottle },
       };
     }
@@ -543,17 +553,24 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
 
   return {
     reply: whiskeyOnly
-      ? 'Ask me which bottle to open next, what to buy or restock, what the biggest gap in your collection is, or what to drink tonight. I will answer from your actual collection rather than generic advice.'
-      : 'Ask me which pipe is most redundant, which one should be reassigned, what to smoke tonight, what to buy or restock next, or what the biggest gap is. I will answer from the current collection rather than generic hobby advice.',
+      ? 'Ask me which bottle to open next, what to buy or restock, what the biggest gap in your collection is, or what to drink tonight. I will answer from your actual collection.'
+      : 'Ask me which pipe is most redundant, which one should be reassigned, what to smoke tonight, what to buy or restock next, or what the biggest gap is. I will answer from the current collection.',
     updatedEntityContext: entityContext,
   };
+}
+
+function isPairingIntent(text) {
+  return /\bpairing|pair with|pair together|combine|combination\b/i.test(text);
+}
+
+function isSessionIntent(text) {
+  return /\b(tonight|enjoy|smoke|drink|use|open|revisit|rediscover|haven.?t used|haven.?t had)\b/i.test(text);
 }
 
 export default function ExpertTobacconistChat({ preFillMessage, onPreFillConsumed, collectionContext, isSingleModuleMode = false, activeModules = {} }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
-  // Session-scoped entity context for follow-up resolution
   const [entityContext, setEntityContext] = useState(emptyEntityContext);
 
   const starterPrompts = isSingleModuleMode ? STARTER_PROMPTS_SINGLE : STARTER_PROMPTS_MULTI;
