@@ -434,7 +434,7 @@ export default function CuratorWorkspace({
           bottle={tastingModal.bottle}
           bottles={ctx.bottles || []}
           onClose={() => setTastingModal(null)}
-          onSaved={() => setTastingModal(null)}
+          onSaved={() => { setTastingModal(null); loadPrimaryData({ silent: true }); }}
         />
       )}
       {sessionModal && (

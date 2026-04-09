@@ -386,6 +386,27 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
 
   // ── Handle redundancy question (pipe-focused) ─────────────────────────────
   if (text.includes('redundant')) {
+    // §7.2 Whiskey-only: answer with bottle type distribution, not pipe analysis
+    if (whiskeyOnly) {
+      const typeCounts = {};
+      for (const b of bottles) {
+        const t = (b.type || b.whiskey_type || '').trim();
+        if (t) typeCounts[t] = (typeCounts[t] || 0) + 1;
+      }
+      const sorted = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+      if (!sorted.length || bottles.length < 2) {
+        return {
+          reply: 'You need at least 2 bottles with spirit type filled in to analyze whiskey type redundancy. Open each bottle and confirm the spirit type field.',
+          updatedEntityContext: entityContext,
+        };
+      }
+      const [topType, topCount] = sorted[0];
+      const pct = Math.round((topCount / bottles.length) * 100);
+      return {
+        reply: `${topType} is your most concentrated style — ${topCount} of your ${bottles.length} bottles (${pct}%) fall in that lane. That is the most redundant category in your current whiskey collection. Adding a style outside that lane would give you more contrast for session planning.`,
+        updatedEntityContext: entityContext,
+      };
+    }
     const candidate = mostRedundantPipe(pipes, smokingLogs, blends);
     if (!candidate) {
       return {

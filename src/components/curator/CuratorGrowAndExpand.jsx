@@ -84,16 +84,24 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
     setAdding(true);
     setError(null);
     try {
-      await base44.entities.AcquisitionItem.create({
-        name: suggestion.name || suggestion.title,
-        item_type: suggestion.itemType || 'blend',
-        notes: suggestion.whyFit || suggestion.summary || '',
-        priority: 'medium',
-        status: 'wishlist',
-        category: 'wishlist',
-        is_manual: false,
-        created_by: userEmail,
-      });
+      // §16 IDEMPOTENT: check for existing AcquisitionItem with same name before creating
+      const itemName = suggestion.name || suggestion.title;
+      const existing = await base44.entities.AcquisitionItem.filter({ created_by: userEmail }).catch(() => []);
+      const alreadyExists = existing.some(
+        (r) => r.name && r.name.toLowerCase() === (itemName || '').toLowerCase() && r.status !== 'archived'
+      );
+      if (!alreadyExists) {
+        await base44.entities.AcquisitionItem.create({
+          name: itemName,
+          item_type: suggestion.itemType || 'blend',
+          notes: suggestion.whyFit || suggestion.summary || '',
+          priority: 'medium',
+          status: 'wishlist',
+          category: 'wishlist',
+          is_manual: false,
+          created_by: userEmail,
+        });
+      }
       setAdded(true);
     } catch (err) {
       setError(err?.message || 'Failed to add to Want List');

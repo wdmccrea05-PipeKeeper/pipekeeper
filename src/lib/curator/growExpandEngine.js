@@ -508,9 +508,13 @@ export function generateGrowExpandRecommendations(context = {}) {
   const pipeActive    = activeModules.pipekeeper    !== false;
   const whiskeyActive = activeModules.whiskeykeeper !== false;
 
-  // Edge case: insufficient data to make meaningful suggestions
+  // §15 MODULE-AWARE minimum threshold:
+  // In whiskey-only mode totalItems = bottles only; require just 1 bottle.
+  // In multi-module mode require 3 items across the collection.
   const totalItems = pipes.length + blends.length + bottles.length;
-  if (totalItems < 3) return [];
+  const whiskeyOnlyMode = whiskeyActive && !pipeActive;
+  const minItems = whiskeyOnlyMode ? 1 : 3;
+  if (totalItems < minItems) return [];
 
   const results = [];
   const seen = new Set();
