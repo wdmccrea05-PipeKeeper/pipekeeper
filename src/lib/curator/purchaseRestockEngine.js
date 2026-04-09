@@ -259,89 +259,12 @@ function analyzeBottleRestock(bottles) {
   return results;
 }
 
-// ─── Status-Based Restock ────────────────────────────────────────────────────
-
-function analyzeStatusBasedRestock(blends, bottles) {
-  const results = [];
-
-  const restockBlends = blends.filter((b) => {
-    const s = (b.status || '').toLowerCase();
-    return s === 'restock' || s === 'needs_restock';
-  }).slice(0, MAX_ITEMS_PER_REC);
-
-  if (restockBlends.length > 0) {
-    results.push(createRecommendation({
-      category:         CATEGORY.PURCHASE,
-      goal:             'status_restock_blends',
-      actionType:       ACTION_TYPE.SHOPPING_LIST_ACTION,
-      title:            'Blends Marked for Restock',
-      summary:          `${restockBlends.length} blend${restockBlends.length > 1 ? 's are' : ' is'} flagged for restocking.`,
-      whyItMatters:     'These blends have been explicitly marked for restock. Add them to your shopping list to take action.',
-      moduleKey:        MODULE_KEY.TOBACCO,
-      ownershipContext: OWNERSHIP_CONTEXT.IN_COLLECTION,
-      priority:         PRIORITY.HIGH,
-      confidence:       'high',
-      items: restockBlends.map((b) => ({
-        id:             b.id,
-        recordId:       b.id,
-        recordType:     'blend',
-        recordName:     b.name,
-        itemName:       b.name,
-        name:           b.name,
-        brand:          b.manufacturer || b.brand || '',
-        manufacturer:   b.manufacturer || '',
-        ownershipStatus:'in_collection',
-        shoppingType:   'restock',
-        itemType:       'blend',
-      })),
-      actionPayload: { shoppingType: 'restock', itemType: 'blend' },
-    }));
-  }
-
-  const restockBottles = bottles.filter((b) => {
-    const s = (b.status || '').toLowerCase();
-    return s === 'restock' || s === 'needs_restock';
-  }).slice(0, MAX_ITEMS_PER_REC);
-
-  if (restockBottles.length > 0) {
-    results.push(createRecommendation({
-      category:         CATEGORY.PURCHASE,
-      goal:             'status_restock_bottles',
-      actionType:       ACTION_TYPE.SHOPPING_LIST_ACTION,
-      title:            'Bottles Marked for Restock',
-      summary:          `${restockBottles.length} bottle${restockBottles.length > 1 ? 's are' : ' is'} flagged for restocking.`,
-      whyItMatters:     'These bottles have been explicitly marked for restock. Add them to your shopping list.',
-      moduleKey:        MODULE_KEY.WHISKEY,
-      ownershipContext: OWNERSHIP_CONTEXT.IN_COLLECTION,
-      priority:         PRIORITY.MEDIUM,
-      confidence:       'high',
-      items: restockBottles.map((b) => ({
-        id:             b.id,
-        recordId:       b.id,
-        recordType:     'bottle',
-        recordName:     b.name,
-        itemName:       b.name,
-        name:           b.name,
-        brand:          b.distillery || b.brand || '',
-        ownershipStatus:'in_collection',
-        shoppingType:   'restock',
-        itemType:       'bottle',
-      })),
-      actionPayload: { shoppingType: 'restock', itemType: 'bottle' },
-    }));
-  }
-
-  return results;
-}
-
 // ─── Wishlist Candidates ───────────────────────────────────────────────────────
 
 function analyzeWishlistCandidates(wantListItems = []) {
   // Items on wish list (not yet on shopping list) that could move to shopping
   const wishlist = wantListItems.filter((item) =>
-    item.category === 'wishlist' ||
-    item.list_type === 'wishlist' ||
-    item.status === 'wishlist'
+    item.category === 'wishlist' || item.list_type === 'wishlist'
   ).slice(0, MAX_ITEMS_PER_REC);
 
   if (!wishlist.length) return [];
@@ -549,11 +472,10 @@ export function generatePurchaseRestockRecommendations(context = {}) {
   } = context;
 
   const recommendations = [
-    ...analyzeLowStockBlends(blends).map((r)      => ({ ...r, queueType: 'restock_now' })),
-    ...analyzeDepletedBlends(blends).map((r)      => ({ ...r, queueType: 'restock_now' })),
-    ...analyzeDiscontinuedBlends(blends).map((r)  => ({ ...r, queueType: 'gap_fill' })),
-    ...analyzeStatusBasedRestock(blends, bottles).map((r) => ({ ...r, queueType: 'restock_now' })),
-    ...analyzeBottleRestock(bottles).map((r)      => ({ ...r, queueType: 'restock_now' })),
+    ...analyzeLowStockBlends(blends).map((r)   => ({ ...r, queueType: 'restock_now' })),
+    ...analyzeDepletedBlends(blends).map((r)    => ({ ...r, queueType: 'restock_now' })),
+    ...analyzeDiscontinuedBlends(blends).map((r) => ({ ...r, queueType: 'gap_fill' })),
+    ...analyzeBottleRestock(bottles).map((r)    => ({ ...r, queueType: 'restock_now' })),
     ...analyzeWishlistCandidates(wantListItems).map((r) => ({ ...r, queueType: 'wishlist_ready' })),
     ...(cigarModuleActive ? analyzeCigarDiscovery(cigars).map((r) => ({ ...r, queueType: 'restock_now' })) : []),
   ];
