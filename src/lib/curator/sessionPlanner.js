@@ -251,13 +251,16 @@ function planWhiskeySession(context = {}) {
 
 function planPipeSession(context = {}) {
   const { pipes = [], blends = [], smokingLogs = [] } = context;
-  if (!pipes.length || !blends.length) return [];
 
-  // Score pipes
-  const scoredPipes = pipes
-    .map((pipe) => ({ pipe, scoreData: scorePipe(pipe, smokingLogs) }))
-    .filter(({ scoreData }) => scoreData.total > 0)
-    .sort((a, b) => b.scoreData.total - a.scoreData.total);
+  const results = [];
+
+  // Score pipes (if available)
+  const scoredPipes = pipes.length
+    ? pipes
+        .map((pipe) => ({ pipe, scoreData: scorePipe(pipe, smokingLogs) }))
+        .filter(({ scoreData }) => scoreData.total > 0)
+        .sort((a, b) => b.scoreData.total - a.scoreData.total)
+    : [];
 
   // Score blends (skip those with no stock)
   const scoredBlends = blends
@@ -267,8 +270,6 @@ function planPipeSession(context = {}) {
     })
     .filter(({ scoreData }) => !scoreData.noStock && scoreData.total > 0)
     .sort((a, b) => b.scoreData.total - a.scoreData.total);
-
-  const results = [];
 
   // Top pipes
   for (const { pipe, scoreData } of scoredPipes.slice(0, 3)) {
