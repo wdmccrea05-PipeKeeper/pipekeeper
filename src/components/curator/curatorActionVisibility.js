@@ -1,17 +1,16 @@
 import { getItemModule } from "@/components/utils/moduleContentVisibility";
 
-function matchesPipekeeperAction(action) {
-  const text = [
-    action?.id,
-    action?.key,
-    action?.title,
-    action?.label,
-    action?.description,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+function descText(action) {
+  return typeof action?.description === 'string' ? action.description : '';
+}
 
+function hasPipeModule(modules) {
+  return modules.some((m) => m === 'pipe' || m === 'tobacco');
+}
+
+function matchesPipekeeperAction(action) {
+  const text = [action?.id, action?.key, action?.title, action?.label, descText(action)]
+    .filter(Boolean).join(" ").toLowerCase();
   return (
     text.includes("pipe") ||
     text.includes("blend") ||
@@ -23,17 +22,8 @@ function matchesPipekeeperAction(action) {
 }
 
 function matchesWhiskeyAction(action) {
-  const text = [
-    action?.id,
-    action?.key,
-    action?.title,
-    action?.label,
-    action?.description,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
+  const text = [action?.id, action?.key, action?.title, action?.label, descText(action)]
+    .filter(Boolean).join(" ").toLowerCase();
   return (
     text.includes("whiskey") ||
     text.includes("bottle") ||
@@ -45,18 +35,8 @@ function matchesWhiskeyAction(action) {
 function matchesCigarAction(action) {
   const modules = Array.isArray(action?.modules) ? action.modules : [];
   if (modules.includes("cigar")) return true;
-
-  const text = [
-    action?.id,
-    action?.key,
-    action?.title,
-    action?.label,
-    action?.description,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
+  const text = [action?.id, action?.key, action?.title, action?.label, descText(action)]
+    .filter(Boolean).join(" ").toLowerCase();
   return (
     text.includes("cigar") ||
     text.includes("humidor") ||
@@ -65,6 +45,17 @@ function matchesCigarAction(action) {
 }
 
 export function getCuratorActionModule(action) {
+  // If the action declares an explicit modules array, use it first
+  if (Array.isArray(action?.modules) && action.modules.length > 0) {
+    const hasPipe = hasPipeModule(action.modules);
+    const hasWhiskey = action.modules.includes('whiskey');
+    const hasCigar = action.modules.includes('cigar');
+    if (hasPipe && hasWhiskey) return null; // multi-module: always show
+    if (hasWhiskey) return 'whiskeykeeper';
+    if (hasPipe) return 'pipekeeper';
+    if (hasCigar) return 'cigarkeeper';
+  }
+
   const inferred = getItemModule(action);
   if (inferred) return inferred;
 
@@ -76,6 +67,14 @@ export function getCuratorActionModule(action) {
 }
 
 export function shouldShowCuratorAction(action, enabledModules) {
+  // Multi-module actions (both pipe and whiskey) show if either relevant module is enabled
+  if (Array.isArray(action?.modules) && action.modules.length > 0) {
+    const hasPipe = hasPipeModule(action.modules);
+    const hasWhiskey = action.modules.includes('whiskey');
+    if (hasPipe && hasWhiskey) {
+      return !!(enabledModules?.pipekeeper || enabledModules?.whiskeykeeper);
+    }
+  }
   const moduleKey = getCuratorActionModule(action);
   if (!moduleKey) return true;
   return !!enabledModules?.[moduleKey];
