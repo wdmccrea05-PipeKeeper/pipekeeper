@@ -5,6 +5,7 @@ import { ChevronDown, Wrench, BookOpen, Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { base44 } from "@/api/base44Client";
 
 export default function FAQFull() {
   const { t } = useTranslation();
@@ -306,7 +307,7 @@ export default function FAQFull() {
           const handleStartTutorial = async () => {
             try {
               // Get current user to clear skip flag
-              const user = await (await import("@/api/base44Client")).base44.auth.me();
+              const user = await base44.auth.me();
               if (user?.email) {
                 localStorage.removeItem(`pk_quickstart_skipped_${user.email}`);
                 localStorage.removeItem(`pk_quickstart_completed_${user.email}`);

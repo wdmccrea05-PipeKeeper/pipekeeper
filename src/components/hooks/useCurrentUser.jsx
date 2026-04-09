@@ -6,6 +6,7 @@ import {
   getPlanLabel,
   isFoundingMember
 } from "@/components/utils/premiumAccess";
+import { subscriptionGrantsPaidAccess } from "@/components/utils/gracePeriod";
 import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 import { useEffect } from "react";
 import { useQuery as useQueryRQ, useQueryClient } from "@tanstack/react-query";
@@ -132,7 +133,6 @@ export function useCurrentUser() {
         if (!subs || subs.length === 0) return null;
 
         // Filter to subscriptions that grant paid access (including grace period)
-        const { subscriptionGrantsPaidAccess } = await import("@/components/utils/gracePeriod");
         const valid = subs.filter((s) => subscriptionGrantsPaidAccess(s));
 
         if (valid.length === 0) {

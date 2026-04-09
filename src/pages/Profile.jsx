@@ -14,7 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 
 import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, Layers, Trash2, AlertTriangle } from "lucide-react";
-import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 import WhiskeyPreferencesSection from "@/components/profile/WhiskeyPreferencesSection";
 import CigarPreferencesSection from "@/components/profile/CigarPreferencesSection";
@@ -24,8 +23,6 @@ import FormSection from "@/components/forms/FormSection";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
-import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion } from "@/components/utils/companion";
-import { handleManageSubscription } from "@/components/utils/manageSubscription";
 
 import { PK_THEME } from "@/components/utils/pkTheme";
 

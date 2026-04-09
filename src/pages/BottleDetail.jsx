@@ -654,7 +654,7 @@ function BottleDetailInner() {
     return () => {
       mounted = false;
     };
-  }, [bottleId, userEmail, userLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [bottleId, userEmail, userLoading]);  
 
   const photo = useMemo(() => getBottlePhoto(bottle), [bottle]);
   const displayName = useMemo(

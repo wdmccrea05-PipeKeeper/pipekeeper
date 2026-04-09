@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -14,7 +14,6 @@ import {
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import WhiskeyKeeperModuleNav from "@/components/modules/WhiskeyKeeperModuleNav";
-import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { formatCurrency, resolveBottleUnitValue } from "@/components/whiskey/utils/bottleValue";
 import {

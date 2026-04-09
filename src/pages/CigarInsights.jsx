@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { base44 } from '@/api/base44Client';
-import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import CigarKeeperModuleNav from '@/components/modules/CigarKeeperModuleNav';
 import CigarInsights from '@/components/cigars/CigarInsights';
 

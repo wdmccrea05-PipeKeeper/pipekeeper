@@ -17,7 +17,6 @@ import PipeCard from "@/components/pipes/PipeCard";
 import PipeListItem from "@/components/pipes/PipeListItem";
 import PipeForm from "@/components/pipes/PipeForm";
 import PipeExporter from "@/components/export/PipeExporter";
-import CollectorDisplayCard from "@/components/ui/CollectorDisplayCard";
 import CollectorGridView from "@/components/ui/CollectorGridView";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { Badge } from "@/components/ui/badge";

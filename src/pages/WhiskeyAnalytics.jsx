@@ -4,7 +4,6 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
-import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import { getBottleUnitValue } from '@/components/utils/whiskeyValueHelpers';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import { BarChart3 } from 'lucide-react';

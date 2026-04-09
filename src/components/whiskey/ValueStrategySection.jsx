@@ -8,9 +8,8 @@ import {
   TrendingUp, TrendingDown, Minus, ShieldCheck, Unlock, HelpCircle,
   PlusCircle, Eye, ChevronDown, ChevronUp, Lock, Zap, AlertTriangle, RefreshCw, Settings,
 } from 'lucide-react';
-import {
-  DIFFICULTY_LABELS,
-} from '@/components/valuation/valueEngine';
+
+
 import { formatCurrency } from '@/components/whiskey/utils/bottleValue';
 
 // ── tiny helpers ──────────────────────────────────────────────────────────────

@@ -8,7 +8,6 @@ import { Cigarette, Plus, BarChart3, BookOpen, Grid3X3, AlertTriangle, TrendingD
 import { base44 } from '@/api/base44Client';
 import CigarKeeperModuleNav from '@/components/modules/CigarKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
-import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import CigarHighlightCard from '@/components/cigars/CigarHighlightCard';
 import CigarSessionModal from '@/components/cigars/CigarSessionModal';
 import { getCollectionInsights } from '@/platform/cigarInsights';
