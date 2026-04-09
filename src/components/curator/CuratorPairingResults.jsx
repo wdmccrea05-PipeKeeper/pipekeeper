@@ -93,6 +93,6 @@ export default function CuratorPairingResults({ pairings = [], onAction, moduleF
           )}
         </div>
       ))}
-      </div>
-      );
-      }
+    </div>
+  );
+}
