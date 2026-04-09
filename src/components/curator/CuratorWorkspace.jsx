@@ -180,6 +180,7 @@ export default function CuratorWorkspace({
   const [error, setError] = useState('');
   const [rawSections, setRawSections] = useState([]);
   const [pairings, setPairings] = useState([]);
+  const pairingsRef = useRef([]);
   const [threadId, setThreadId] = useState(null);
   const [preFillMessage, setPreFillMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -262,7 +263,7 @@ export default function CuratorWorkspace({
         if (!mountedRef.current) return;
 
         setRawSections(recs);
-        publishCounts(recs, pairings);
+        publishCounts(recs, pairingsRef.current);
       } catch (err) {
         console.error('[Curator] primary load failed:', err);
 
@@ -278,7 +279,7 @@ export default function CuratorWorkspace({
         setIsRefreshing(false);
       }
     },
-    [buildContext, pairings, publishCounts, user?.email]
+    [buildContext, publishCounts, user?.email]
   );
 
   const loadPairings = useCallback(async () => {
@@ -296,6 +297,7 @@ export default function CuratorWorkspace({
 
       if (!mountedRef.current) return;
 
+      pairingsRef.current = nextPairings;
       setPairings(nextPairings);
       publishCounts(rawSections, nextPairings);
     } catch (err) {
