@@ -519,9 +519,10 @@ export default function CombinedSessionModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[1400] bg-black/75 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[1400] bg-black/75 flex items-center justify-center p-4" onClick={() => { if (!saving) onClose?.(); }}>
       <div
         className="w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
         style={{
           background:
             "linear-gradient(145deg,rgba(38,26,18,0.98),rgba(24,16,12,1))",

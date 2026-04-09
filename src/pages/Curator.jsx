@@ -2,6 +2,8 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import CuratorWorkspace from '@/components/curator/CuratorWorkspace';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 
+const CURATOR_ICON = 'https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png';
+
 // ─── Static surfaces (always present) ────────────────────────────────────────
 
 const SURFACES_BASE = [
@@ -20,6 +22,13 @@ const SURFACES_TAIL = [
   { key: 'grow_expand', label: 'Grow & Expand' },
   { key: 'chat',        label: 'Chat' },
 ];
+
+// All valid surface keys (used for URL deep-link validation before SURFACES is computed)
+const ALL_VALID_KEYS = new Set([
+  ...SURFACES_BASE,
+  ...MULTI_MODULE_SURFACES,
+  ...SURFACES_TAIL,
+].map((s) => s.key));
 
 function SurfaceTab({ active, label, badge, onClick }) {
   return (
@@ -63,7 +72,14 @@ export default function CuratorPage() {
     ...SURFACES_TAIL,
   ], [isMultiModuleMode]);
 
-  const [surface, setSurface] = useState('record_optimization');
+  // Support URL deep-links like ?surface=pairings — validate against all known keys
+  const initialSurface = (() => {
+    const params = new URLSearchParams(window.location.search);
+    const s = params.get('surface');
+    return s && ALL_VALID_KEYS.has(s) ? s : 'record_optimization';
+  })();
+
+  const [surface, setSurface] = useState(initialSurface);
 
   // If pairings is active but we switched to single-module mode, redirect to plan_session
   useEffect(() => {
@@ -95,12 +111,15 @@ export default function CuratorPage() {
     <div className="min-h-screen" style={{ background: '#0B0B0C' }}>
       <div className="max-w-[1440px] mx-auto px-10 py-10">
         <header className="mb-8">
-          <h1
-            className="text-[32px] leading-none font-semibold mb-3"
-            style={{ color: '#F5F5F7', letterSpacing: '-0.5px' }}
-          >
-            Collection Curator
-          </h1>
+          <div className="flex items-center gap-3 mb-3">
+            <img src={CURATOR_ICON} alt="" className="w-9 h-9 object-cover rounded" style={{ filter: 'hue-rotate(35deg) saturate(0.8) brightness(1.1)' }} aria-hidden="true" />
+            <h1
+              className="text-[32px] leading-none font-semibold"
+              style={{ color: '#F5F5F7', letterSpacing: '-0.5px' }}
+            >
+              Collection Curator
+            </h1>
+          </div>
           <p className="text-[18px] leading-8" style={{ color: '#9C968C' }}>
             Operational intelligence across your collection — fix, optimize, pair, and grow.
           </p>

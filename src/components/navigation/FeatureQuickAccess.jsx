@@ -5,66 +5,80 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useNavigate } from 'react-router-dom';
-import { Package, Leaf, BarChart3, FileText, Sparkles, User, HelpCircle, CreditCard } from 'lucide-react';
+import { Package, Leaf, BarChart3, FileText, Sparkles, User, HelpCircle, CreditCard, GlassWater, Cigarette } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 
 export default function FeatureQuickAccess({ isOpen, onClose }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { isModuleEnabled } = useModuleVisibility();
   
   const features = [
-    {
+    isModuleEnabled('pipekeeper') && {
       icon: Package,
-      label: t("nav.pipes"),
-      description: t("quickAccess.catalogPipes"),
+      label: t("nav.pipes", "Pipes"),
+      description: t("quickAccess.catalogPipes", "Catalog and manage your pipes"),
       page: "Pipes",
     },
-    {
+    isModuleEnabled('pipekeeper') && {
       icon: Leaf,
-      label: t("nav.tobacco"),
-      description: t("quickAccess.manageBlendsAndCellar"),
+      label: t("nav.tobacco", "Tobacco"),
+      description: t("quickAccess.manageBlendsAndCellar", "Manage blends and cellar"),
       page: "Tobacco",
+    },
+    isModuleEnabled('whiskeykeeper') && {
+      icon: GlassWater,
+      label: t("nav.whiskey", "Whiskey"),
+      description: t("quickAccess.manageWhiskey", "Manage your whiskey collection"),
+      page: "Whiskey",
+    },
+    isModuleEnabled('cigarkeeper') && {
+      icon: Cigarette,
+      label: t("nav.cigars", "Cigars"),
+      description: t("quickAccess.manageCigars", "Manage your cigar collection"),
+      page: "Cigars",
     },
     {
       icon: BarChart3,
-      label: t("quickAccess.collectionInsights"),
-      description: t("quickAccess.viewPairingsUsageTrends"),
+      label: t("quickAccess.collectionInsights", "Collection Insights"),
+      description: t("quickAccess.viewPairingsUsageTrends", "View pairings, usage & trends"),
       page: "Home",
       hash: "#insights",
     },
     {
       icon: FileText,
-      label: t("quickAccess.reportsExports"),
-      description: t("quickAccess.generatePDFCSV"),
+      label: t("quickAccess.reportsExports", "Reports & Exports"),
+      description: t("quickAccess.generatePDFCSV", "Generate PDF & CSV reports"),
       page: "Home",
       hash: "#insights",
     },
     {
       icon: Sparkles,
-      label: t("quickAccess.aiTools"),
-      description: t("quickAccess.photoIdentificationOptimization"),
+      label: t("quickAccess.aiTools", "AI Tools"),
+      description: t("quickAccess.photoIdentificationOptimization", "Photo identification & optimization"),
       page: "Home",
       hash: "#ai-tools",
     },
     {
       icon: CreditCard,
-      label: t("subscription.title"),
-      description: t("quickAccess.manageSubscription"),
+      label: t("subscription.title", "Subscriptions"),
+      description: t("quickAccess.manageSubscription", "Manage your subscription"),
       page: "Subscription",
     },
     {
       icon: User,
-      label: t("nav.profile"),
-      description: t("quickAccess.accountSettings"),
+      label: t("nav.profile", "Profile"),
+      description: t("quickAccess.accountSettings", "Account settings & preferences"),
       page: "Profile",
     },
     {
       icon: HelpCircle,
-      label: t("nav.help"),
-      description: t("nav.faq"),
+      label: t("nav.help", "Help"),
+      description: t("nav.faq", "FAQ & support resources"),
       page: "HelpCenter",
     },
-  ];
+  ].filter(Boolean);
   
   const handleFeatureClick = (feature) => {
     const url = createPageUrl(feature.page);
@@ -76,8 +90,8 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">{t("quickAccess.quickAccess")}</DialogTitle>
-          <p className="text-sm text-[#E0D8C8]/70">{t("quickAccess.jumpToFeatures")}</p>
+          <DialogTitle className="text-xl">{t("quickAccess.quickAccess", "Quick Access")}</DialogTitle>
+          <p className="text-sm text-[#E0D8C8]/70">{t("quickAccess.jumpToFeatures", "Jump to any feature quickly")}</p>
         </DialogHeader>
         
         <div className="grid gap-3 mt-4">
