@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { TrendingUp, Plus, CheckCircle2, Loader2, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { TrendingUp, Plus, CheckCircle2, Loader2, HelpCircle, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { generateGrowExpandRecommendations } from '@/lib/curator/growExpandEngine.js';
 
@@ -146,7 +146,7 @@ function GrowSection({ label, suggestions, userEmail, onAskCurator }) {
   );
 }
 
-export default function CuratorGrowAndExpand({ sections = [], collectionContext = {}, userEmail, onAskCurator }) {
+export default function CuratorGrowAndExpand({ sections = [], collectionContext = {}, userEmail, onAskCurator, onRefresh, isRefreshing = false }) {
   const suggestions = useMemo(() => {
     const fromSections = normalizeSectionSuggestions(sections);
     return fromSections.length ? fromSections : fallbackSuggestions(collectionContext);
@@ -165,9 +165,22 @@ export default function CuratorGrowAndExpand({ sections = [], collectionContext 
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, margin: 0 }}>Grow &amp; Expand</h2>
-        <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>Discover what's missing and move strong candidates directly onto your Want List.</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, margin: 0 }}>Grow &amp; Expand</h2>
+          <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>Discover what's missing and move strong candidates directly onto your Want List.</p>
+        </div>
+        {onRefresh && (
+          <button
+            type="button"
+            onClick={() => onRefresh?.()}
+            disabled={isRefreshing}
+            className="inline-flex items-center gap-2 px-4 h-10 rounded-xl font-medium shrink-0"
+            style={{ border: '1px solid rgba(255,255,255,0.10)', color: '#D8D0C2', opacity: isRefreshing ? 0.6 : 1 }}
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </button>
+        )}
       </div>
       <GrowSection label="Tobacco Discoveries" suggestions={groups.tobacco} userEmail={userEmail} onAskCurator={onAskCurator} />
       <GrowSection label="Whiskey Discoveries" suggestions={groups.whiskey} userEmail={userEmail} onAskCurator={onAskCurator} />

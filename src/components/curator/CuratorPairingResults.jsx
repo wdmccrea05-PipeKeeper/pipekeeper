@@ -59,30 +59,37 @@ function Badge({ text, tone = 'neutral' }) {
   );
 }
 
-export default function CuratorPairingResults({ pairings = [], onAction, onRefresh }) {
-  if (!pairings.length) return null;
+export default function CuratorPairingResults({ pairings = [], onAction, moduleFilter = 'all' }) {
+  const filtered = pairings.filter((p) => {
+    if (moduleFilter === 'all') return true;
+    if (moduleFilter === 'pipe') return p.pipe || p.leftItem;
+    if (moduleFilter === 'tobacco') return p.blend || p.blendBridge;
+    if (moduleFilter === 'whiskey') return p.bottle || p.rightItem;
+    return true;
+  });
+
+  if (!filtered.length) return null;
 
   return (
     <div className="space-y-3">
-      {pairings.map((pairing) => (
+      {filtered.map((pairing) => (
         <div key={pairing.id} className="rounded-xl p-4" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(255,255,255,0.06)' }}>
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <div className="space-y-1">
-              <p className="text-sm font-semibold" style={{ color: '#F5F5F7' }}>{pairing.title}</p>
-              {pairing.category && <Badge text={pairing.category} tone={pairing.categoryTone} />}
+              <p className="text-sm font-semibold" style={{ color: '#F5F5F7' }}>{pairing.narrative || pairing.title}</p>
+              {pairing.confidenceLabel && <Badge text={pairing.confidenceLabel} tone={pairing.pairingType === 'Reinforcing' ? 'success' : 'neutral'} />}
             </div>
-            {pairing.expertise && <Badge text={pairing.expertise} tone="gold" />}
           </div>
           <div className="flex gap-2 mb-3 flex-wrap">
-            <TrioItem item={pairing.pipe} label="Pipe" />
-            <TrioItem item={pairing.blend} label="Tobacco" />
-            <TrioItem item={pairing.bottle} label="Whiskey" />
+            <TrioItem item={pairing.pipe || pairing.leftItem} label="Pipe" />
+            <TrioItem item={pairing.blend || pairing.blendBridge} label="Tobacco" />
+            <TrioItem item={pairing.bottle || pairing.rightItem} label="Whiskey" />
           </div>
-          {pairing.whyItWorks && (
-            <p className="text-sm mb-3" style={{ color: '#D8D0C2' }}>{pairing.whyItWorks}</p>
+          {(pairing.whyItWorks || pairing.whatToExpect) && (
+            <p className="text-sm mb-3" style={{ color: '#D8D0C2' }}>{pairing.whyItWorks || pairing.whatToExpect}</p>
           )}
-          {pairing.whenToUse && (
-            <p className="text-xs mb-3" style={{ color: '#A1A1AA' }}><strong>When:</strong> {pairing.whenToUse}</p>
+          {pairing.bestMomentForIt && (
+            <p className="text-xs mb-3" style={{ color: '#A1A1AA' }}><strong>When:</strong> {pairing.bestMomentForIt}</p>
           )}
         </div>
       ))}

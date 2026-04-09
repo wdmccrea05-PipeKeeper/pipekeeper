@@ -9,6 +9,13 @@ const SUB_TABS = [
   { key: 'something_new', label: 'Something New', empty: 'No something new pairings yet.' },
 ];
 
+const MODULE_FILTERS = [
+  { key: 'all', label: 'All' },
+  { key: 'pipe', label: 'Pipe' },
+  { key: 'tobacco', label: 'Tobacco' },
+  { key: 'whiskey', label: 'Whiskey' },
+];
+
 function normalizeKey(value) {
   return String(value || '').trim().toLowerCase().replace(/\s+/g, '_');
 }
@@ -53,9 +60,11 @@ export default function CuratorPairingsTab({
   onAction,
   onRefresh,
   isRefreshing = false,
+  activeModules = {},
 }) {
   const grouped = useMemo(() => groupPairings(pairings), [pairings]);
   const [activeTab, setActiveTab] = useState('expert');
+  const [moduleFilter, setModuleFilter] = useState('all');
 
   useEffect(() => {
     const hasActiveData = grouped[activeTab]?.length > 0;
@@ -98,15 +107,36 @@ export default function CuratorPairingsTab({
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        {SUB_TABS.map((tab) => (
-          <SubTab
-            key={tab.key}
-            label={tab.label}
-            active={activeTab === tab.key}
-            onClick={() => setActiveTab(tab.key)}
-          />
-        ))}
+      <div className="flex flex-col gap-4">
+        {(activeModules.pipekeeper && activeModules.whiskeykeeper) && (
+          <div className="flex flex-wrap gap-2">
+            {MODULE_FILTERS.map((filter) => (
+              <button
+                key={filter.key}
+                type="button"
+                onClick={() => setModuleFilter(filter.key)}
+                className="h-10 px-4 rounded-full text-sm font-medium"
+                style={{
+                  background: moduleFilter === filter.key ? '#C6A15B' : 'transparent',
+                  color: moduleFilter === filter.key ? '#0B0B0C' : '#D8D0C2',
+                  border: moduleFilter === filter.key ? '1px solid #C6A15B' : '1px solid rgba(255,255,255,0.10)',
+                }}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="flex flex-wrap gap-3">
+          {SUB_TABS.map((tab) => (
+            <SubTab
+              key={tab.key}
+              label={tab.label}
+              active={activeTab === tab.key}
+              onClick={() => setActiveTab(tab.key)}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="text-[15px]" style={{ color: '#7F7F8A' }}>
@@ -120,7 +150,7 @@ export default function CuratorPairingsTab({
           </div>
         </div>
       ) : activePairings.length > 0 ? (
-        <CuratorPairingResults pairings={activePairings} onAction={onAction} />
+        <CuratorPairingResults pairings={activePairings} onAction={onAction} moduleFilter={moduleFilter} />
       ) : (
         <div className="py-20 text-center">
           <div className="text-[42px] mb-4" style={{ color: 'rgba(198,161,91,0.45)' }}>
