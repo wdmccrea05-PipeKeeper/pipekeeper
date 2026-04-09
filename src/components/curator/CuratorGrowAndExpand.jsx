@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { TrendingUp, Plus, CheckCircle2, Loader2, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { generateGrowthSuggestions } from '@/lib/curator/growthEngine.js';
+import { generateGrowExpandRecommendations } from '@/lib/curator/growExpandEngine.js';
 
 const MODULE_COLORS = {
   tobacco: { bg: 'rgba(74,124,92,0.12)', text: 'rgba(100,180,130,0.9)', border: 'rgba(74,124,92,0.25)', label: 'Tobacco' },
@@ -41,7 +41,8 @@ function normalizeSectionSuggestions(sections = []) {
           itemType,
           name: title,
           reason: rec?.goal || 'growth',
-          tags: [rec?.confidence, rec?.priority].filter(Boolean),
+          fitBadge: rec?.fitBadge || 'Medium Fit',
+          priorityBadge: rec?.priorityBadge || 'Medium Priority',
           sourceRecommendation: rec,
         });
       }
@@ -58,7 +59,7 @@ function normalizeSectionSuggestions(sections = []) {
 }
 
 function fallbackSuggestions(context = {}) {
-  const generated = generateGrowthSuggestions(context, null) || [];
+  const generated = generateGrowExpandRecommendations(context) || [];
   return generated.map((s, idx) => ({
     id: s.id || `generated_${idx}`,
     title: s.title || s.name || 'Curator suggestion',
@@ -68,7 +69,9 @@ function fallbackSuggestions(context = {}) {
     itemType: s.itemType || 'blend',
     name: s.name || s.title || 'Curator suggestion',
     reason: s.gapFilled || s.reason || 'growth',
-    tags: s.tags || [],
+    fitBadge: s.fitBadge || 'Medium Fit',
+    priorityBadge: s.priorityBadge || 'Medium Priority',
+    sourceRecommendation: s,
   }));
 }
 
@@ -77,14 +80,12 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
   const [added, setAdded] = useState(false);
   const [error, setError] = useState(null);
   const mc = MODULE_COLORS[suggestion.moduleKey] || MODULE_COLORS.tobacco;
-  const tags = suggestion.tags?.length ? suggestion.tags : [suggestion.reason].filter(Boolean);
 
   const handleAdd = useCallback(async () => {
     if (!userEmail || adding || added) return;
     setAdding(true);
     setError(null);
     try {
-      // §16 IDEMPOTENT: check for existing AcquisitionItem with same name before creating
       const itemName = suggestion.name || suggestion.title;
       const existing = await base44.entities.AcquisitionItem.filter({ created_by: userEmail }).catch(() => []);
       const alreadyExists = existing.some(
@@ -114,7 +115,8 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
     <div style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '24px' }}>
       <div className="flex items-center gap-2 mb-3 flex-wrap">
         <span style={{ background: mc.bg, color: mc.text, border: `1px solid ${mc.border}`, fontSize: '13px', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}>{mc.label}</span>
-        {tags.map((tag, i) => <span key={i} style={{ background: 'rgba(255,255,255,0.06)', color: '#A1A1AA', fontSize: '13px', fontWeight: 500, padding: '2px 10px', borderRadius: '999px' }}>{tag}</span>)}
+        <span style={{ background: 'rgba(100,150,100,0.15)', color: 'rgba(150,220,150,0.85)', fontSize: '13px', fontWeight: 500, padding: '2px 10px', borderRadius: '999px', border: '1px solid rgba(100,150,100,0.25)' }}>{suggestion.fitBadge}</span>
+        <span style={{ background: 'rgba(180,150,100,0.15)', color: 'rgba(220,180,120,0.85)', fontSize: '13px', fontWeight: 500, padding: '2px 10px', borderRadius: '999px', border: '1px solid rgba(180,150,100,0.25)' }}>{suggestion.priorityBadge}</span>
       </div>
       <p style={{ color: '#F5F5F7', fontSize: '18px', fontWeight: 600, lineHeight: 1.3, margin: '0 0 10px 0' }}>{suggestion.title}</p>
       {suggestion.summary ? <p style={{ color: '#D8D0C2', fontSize: '15px', lineHeight: 1.6, margin: '0 0 8px 0' }}>{suggestion.summary}</p> : null}
@@ -165,7 +167,7 @@ export default function CuratorGrowAndExpand({ sections = [], collectionContext 
     <div className="space-y-5">
       <div>
         <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, margin: 0 }}>Grow &amp; Expand</h2>
-        <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>Discover what&apos;s missing and move strong candidates directly onto your Want List.</p>
+        <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>Discover what's missing and move strong candidates directly onto your Want List.</p>
       </div>
       <GrowSection label="Tobacco Discoveries" suggestions={groups.tobacco} userEmail={userEmail} onAskCurator={onAskCurator} />
       <GrowSection label="Whiskey Discoveries" suggestions={groups.whiskey} userEmail={userEmail} onAskCurator={onAskCurator} />
