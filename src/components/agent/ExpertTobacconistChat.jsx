@@ -608,7 +608,7 @@ function handleGapIntent(pipes, blends, bottles, whiskeyOnlyMode, entityContext,
 function handleSessionIntent(bottles, blends, tastingLogs, whiskeyOnlyMode, entityContext) {
   if (bottles.length === 0 && !whiskeyOnlyMode) {
     return {
-      reply: 'You don't have any bottles in your collection yet. Start by adding whiskey, and I can recommend pairings with your pipes and tobacco.',
+      reply: "You don't have any bottles in your collection yet. Start by adding whiskey, and I can recommend pairings with your pipes and tobacco.",
       updatedEntityContext: entityContext,
     };
   }
