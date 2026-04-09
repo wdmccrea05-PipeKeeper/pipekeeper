@@ -26,11 +26,11 @@ function buildItemPath(item) {
   const rt = String(item?.recordType || '').toLowerCase();
   const id  = item?.recordId || item?.id;
   if (!id) return null;
-  const page =
-    rt === 'bottle' || rt === 'whiskey' ? 'Whiskey' :
-    rt === 'blend'  || rt === 'tobacco' ? 'Tobacco' :
-    rt === 'pipe'                        ? 'Pipes'   : null;
-  return page ? `/${page}?curator_ids=${id}` : null;
+  // Always navigate to exact record detail page — never module list/collection page
+  if (rt === 'bottle' || rt === 'whiskey') return `/BottleDetail?id=${encodeURIComponent(id)}`;
+  if (rt === 'blend'  || rt === 'tobacco') return `/TobaccoDetail?id=${encodeURIComponent(id)}`;
+  if (rt === 'pipe')                       return `/PipeDetail?id=${encodeURIComponent(id)}`;
+  return null;
 }
 
 /**

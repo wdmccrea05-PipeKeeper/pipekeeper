@@ -468,7 +468,16 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
 
   // ── Purchase / restock ────────────────────────────────────────────────────
   if ((text.includes('buy') || text.includes('restock')) && (text.includes('next') || text.includes('should'))) {
-    const tracked = acquisitionItems.find((i) => ['restock', 'shopping_list', 'wishlist'].includes(norm(i.status || i.category || i.list_type)));
+    // Resolve semantic status from live data (status:'active' + category:'wishlist' pattern)
+    const resolveItemCategory = (i) => {
+      const s = norm(i.status || '');
+      const c = norm(i.category || i.list_type || '');
+      if (s === 'archived') return 'archived';
+      if (s === 'active') return c === 'want_list' ? 'wishlist' : (c || 'wishlist');
+      if (s === 'want_list') return 'wishlist';
+      return s || (c === 'want_list' ? 'wishlist' : c) || 'wishlist';
+    };
+    const tracked = acquisitionItems.find((i) => ['restock', 'shopping_list', 'wishlist'].includes(resolveItemCategory(i)));
     if (tracked) {
       return {
         reply: `${tracked.name} is already explicitly tracked in your purchase workflow, so I would start there. Curator should honor items you have already marked for shopping or restock before inventing a new target.`,

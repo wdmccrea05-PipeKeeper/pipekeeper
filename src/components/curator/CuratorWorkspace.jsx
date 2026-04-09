@@ -184,11 +184,24 @@ export default function CuratorWorkspace({
       safeFilter(base44.entities.AcquisitionItem, { created_by: user.email }, '-created_date', 300, 'acquisitionItems'),
     ]);
 
-    // §5.1 Normalize AcquisitionItem status: null or "want_list" → "wishlist"
-    const normalizedAcquisitions = acquisitionItems.map((item) => ({
-      ...item,
-      status: item.status === 'want_list' || item.status == null ? 'wishlist' : item.status,
-    }));
+    // §5.1 Normalize AcquisitionItem status: live records use status:'active' + category:'wishlist'
+    // Map to canonical status values the engines expect.
+    const normalizedAcquisitions = acquisitionItems.map((item) => {
+      const rawStatus   = String(item.status   || '').trim().toLowerCase();
+      const rawCategory = String(item.category || item.list_type || '').trim().toLowerCase();
+      let canonicalStatus;
+      if (rawStatus === 'archived') {
+        canonicalStatus = 'archived';
+      } else if (rawStatus === 'active') {
+        // Legacy schema: semantic meaning in category
+        canonicalStatus = rawCategory === 'want_list' ? 'wishlist' : (rawCategory || 'wishlist');
+      } else if (rawStatus === 'want_list') {
+        canonicalStatus = 'wishlist';
+      } else {
+        canonicalStatus = rawStatus || (rawCategory === 'want_list' ? 'wishlist' : rawCategory) || 'wishlist';
+      }
+      return { ...item, status: canonicalStatus };
+    });
 
     return {
       // §1.2 enforce zero-arrays for disabled modules

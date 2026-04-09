@@ -91,16 +91,15 @@ function hasNonEmptyPayload(item) {
   return !!(item.proposedChange?.payload && Object.keys(item.proposedChange.payload).length > 0);
 }
 
-/** Build the navigation path for a single item record. */
+/** Build the navigation path for a single item record — always to detail page, never module list. */
 function singleItemPath(item) {
   const rt = String(item?.recordType || '').toLowerCase();
   const id  = item?.recordId || item?.id;
-  const page =
-    rt === 'bottle' || rt === 'whiskey' ? 'Whiskey' :
-    rt === 'blend'  || rt === 'tobacco' ? 'Tobacco' :
-    rt === 'pipe'                        ? 'Pipes'   : null;
-  if (!page) return null;
-  return `/${page}${id ? `?curator_ids=${id}` : ''}`;
+  if (!id) return null;
+  if (rt === 'bottle' || rt === 'whiskey') return `/BottleDetail?id=${encodeURIComponent(id)}`;
+  if (rt === 'blend'  || rt === 'tobacco') return `/TobaccoDetail?id=${encodeURIComponent(id)}`;
+  if (rt === 'pipe')                       return `/PipeDetail?id=${encodeURIComponent(id)}`;
+  return null;
 }
 
 // ─── Inline Review Panel ──────────────────────────────────────────────────────
@@ -190,9 +189,23 @@ function RecordOptimizationActions({ rec, onAction }) {
     finally { setApplying(false); }
   };
 
-  // Per-item row: name + "Open" link for navigating directly to that record
-  const ItemOpenRow = ({ item }) => {
+  // Per-item row: name + action based on confidence (Apply Fix / Review Fix / Open Record)
+  const ItemRow = ({ item }) => {
+    const [applying, setApplying] = useState(false);
+    const [done, setDone] = useState(false);
+    const confidence = item?.proposedChange?.confidence || 0;
+    const hasPayload = hasNonEmptyPayload(item);
     const path = singleItemPath(item);
+    const proposedSummary = hasPayload
+      ? Object.entries(item.proposedChange.payload).map(([k, v]) => `${k}: ${String(v)}`).join(' · ')
+      : null;
+
+    const handleApplyItem = async () => {
+      setApplying(true);
+      try { await onAction('apply_fix', rec, { itemId: item.recordId || item.id }); setDone(true); }
+      finally { setApplying(false); }
+    };
+
     return (
       <div className="flex items-center justify-between gap-3 rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
         <div className="min-w-0 flex-1">
@@ -200,20 +213,46 @@ function RecordOptimizationActions({ rec, onAction }) {
             {item.itemName || item.recordName || '—'}
           </div>
           {item.missingFields?.length > 0 && (
-            <div className="text-xs" style={{ color: '#71717A' }}>
-              Missing: {item.missingFields.join(', ')}
-            </div>
+            <div className="text-xs" style={{ color: '#71717A' }}>Missing: {item.missingFields.join(', ')}</div>
+          )}
+          {proposedSummary && !done && (
+            <div className="text-xs mt-0.5" style={{ color: '#C6A15B' }}>→ {proposedSummary}</div>
           )}
         </div>
-        {path && (
-          <a
-            href={path}
-            className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center"
-            style={{ border: '1px solid rgba(255,255,255,0.12)', color: '#F5F5F7', textDecoration: 'none' }}
-          >
-            Open
-          </a>
-        )}
+        <div className="shrink-0 flex items-center gap-1.5">
+          {done ? (
+            <DoneIndicator label="Fixed" />
+          ) : hasPayload && confidence >= 0.85 ? (
+            <button
+              type="button"
+              onClick={handleApplyItem}
+              disabled={applying}
+              className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-50"
+              style={{ background: '#4a7c5c', color: '#e0f5ea', border: 'none' }}
+            >
+              {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+              {applying ? 'Fixing…' : 'Apply Fix'}
+            </button>
+          ) : hasPayload && confidence >= 0.60 ? (
+            <button
+              type="button"
+              onClick={() => onAction('approve_changes', rec, { reviewedItems: [item] })}
+              className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center gap-1"
+              style={{ background: 'rgba(180,100,50,0.2)', color: 'rgba(220,140,90,1)', border: '1px solid rgba(180,100,50,0.35)' }}
+            >
+              <Eye className="w-3 h-3" />
+              Review Fix
+            </button>
+          ) : path ? (
+            <a
+              href={path}
+              className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center"
+              style={{ border: '1px solid rgba(255,255,255,0.12)', color: '#F5F5F7', textDecoration: 'none' }}
+            >
+              Open Record
+            </a>
+          ) : null}
+        </div>
       </div>
     );
   };
@@ -228,7 +267,7 @@ function RecordOptimizationActions({ rec, onAction }) {
             style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
           >
             {items.slice(0, 8).map((item) => (
-              <ItemOpenRow key={item.recordId || item.id} item={item} />
+              <ItemRow key={item.recordId || item.id} item={item} />
             ))}
             {items.length > 8 && (
               <div className="text-xs px-3 py-1" style={{ color: '#71717A' }}>
