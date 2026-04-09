@@ -159,7 +159,7 @@ function QueueSection({ group, onAction }) {
       {!collapsed ? (
         <div className="space-y-3">
           {group.recommendations.map((rec) => (
-            <PurchaseRecommendationCard key={rec.id} recommendation={rec} onAction={onAction} groupId={group.key} />
+            <PurchaseRecommendationCard key={rec.id} recommendation={rec} onAction={onAction} groupId={group.id} />
           ))}
         </div>
       ) : null}

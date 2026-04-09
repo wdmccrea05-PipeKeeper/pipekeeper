@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { RefreshCw } from 'lucide-react';
 import CuratorPairingResults from '@/components/curator/CuratorPairingResults';
 
 const SUB_TABS = [
@@ -85,14 +86,15 @@ export default function CuratorPairingsTab({
           type="button"
           onClick={() => onRefresh?.()}
           disabled={isRefreshing}
-          className="h-12 w-12 rounded-[14px] inline-flex items-center justify-center"
+          className="inline-flex items-center gap-2 px-4 h-10 rounded-xl font-medium"
           style={{
             border: '1px solid rgba(255,255,255,0.10)',
             color: '#D8D0C2',
             opacity: isRefreshing ? 0.6 : 1,
           }}
         >
-          ⟳
+          <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          New Pairings
         </button>
       </div>
 

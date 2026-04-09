@@ -121,7 +121,14 @@ function scoreBlend(blend, smokingLogs = []) {
     .reverse()[0];
 
   const daysSinceLast = daysSince(lastDate);
-  const oz = Number(blend.quantity_oz || blend.total_oz || 0);
+  const oz = Number(
+    blend.quantity_oz ||
+    blend.total_oz ||
+    blend.tin_total_quantity_oz ||
+    blend.bulk_total_quantity_oz ||
+    blend.pouch_total_quantity_oz ||
+    0
+  );
   const rating = Number(blend.rating || 0);
 
   // Recency: not smoked recently = higher priority (max 50 pts)
@@ -129,9 +136,12 @@ function scoreBlend(blend, smokingLogs = []) {
     ? 45
     : Math.min(50, daysSinceLast * 0.7);
 
-  // Stock: must have stock to smoke. Return a zero-total score instead of null
-  // so the return type is always consistent; the caller filters by noStock.
-  if (oz !== null && oz <= 0) {
+  // Stock: only flag noStock when quantity is explicitly recorded as zero.
+  // Blends without any inventory fields are allowed through (treat as available).
+  const hasExplicitZeroStock = oz === 0 &&
+    (blend.quantity_oz !== undefined || blend.total_oz !== undefined ||
+     blend.tin_total_quantity_oz !== undefined || blend.bulk_total_quantity_oz !== undefined);
+  if (hasExplicitZeroStock) {
     return { total: 0, sessionCount: logs.length, lastSmokedDays: daysSinceLast, oz, rating, noStock: true };
   }
 

@@ -207,6 +207,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
     case 'mark_for_session':
     case 'accept_reassignment':
     case 'reject_reassignment':
+    case 'acknowledge':
     case 'save_pairing':
       return {
         ok: true,
@@ -362,7 +363,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
     }
 
     // §2.3 MARK_REVIEWED — remove from Curator view (idempotent, optimistic)
-    case 'mark_reviewed':
+
       return {
         ok: true,
         appliedCount: items.length || 1,

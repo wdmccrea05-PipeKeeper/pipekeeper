@@ -378,6 +378,7 @@ export default function CuratorWorkspace({
 
       if (
         actionKey === 'apply_fix' ||
+        actionKey === 'apply_suggestion' ||
         actionKey === 'approve_changes' ||
         actionKey === 'move_to_shopping_list' ||
         actionKey === 'add_to_want_list'
