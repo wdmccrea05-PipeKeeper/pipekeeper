@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import { getVisibleActions, buildActionLaunchContext } from './curatorActions';
-import { filterCuratorActions } from './curatorActionVisibility';
+import { filterCuratorActions } from './curatorActionVisibility.js';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { logCuratorEvent } from '@/components/utils/curatorEventLogger';
