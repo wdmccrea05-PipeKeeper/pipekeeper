@@ -61,7 +61,12 @@ export default function ModuleNav({ currentPageName, user }) {
   const moduleItems = useMemo(() => {
     const items = [];
 
-    if (activeModules.includes("pipekeeper")) {
+    // pipekeeper_enabled defaults to true (null/undefined = shown), only hide if explicitly false
+    const pipekeeperVisible = user?.pipekeeper_enabled !== false;
+    const whiskeyVisible = user?.whiskeykeeper_enabled !== false;
+    const cigarVisible = user?.cigarkeeper_enabled !== false;
+
+    if (activeModules.includes("pipekeeper") && pipekeeperVisible) {
       items.push({
         page: "PipeKeeper",
         label: t("nav.pipekeeper", "PipeKeeper"),
@@ -70,7 +75,7 @@ export default function ModuleNav({ currentPageName, user }) {
       });
     }
 
-    if (activeModules.includes("whiskeykeeper")) {
+    if (activeModules.includes("whiskeykeeper") && whiskeyVisible) {
       items.push({
         page: "WhiskeyKeeper",
         label: t("nav.whiskeykeeper", "WhiskeyKeeper"),
@@ -79,7 +84,7 @@ export default function ModuleNav({ currentPageName, user }) {
       });
     }
 
-    if (activeModules.includes("cigarkeeper")) {
+    if (activeModules.includes("cigarkeeper") && cigarVisible) {
       items.push({
         page: "CigarKeeper",
         label: t("nav.cigarkeeper", "CigarKeeper"),
@@ -89,7 +94,7 @@ export default function ModuleNav({ currentPageName, user }) {
     }
 
     return items;
-  }, [activeModules, t]);
+  }, [activeModules, user?.pipekeeper_enabled, user?.whiskeykeeper_enabled, user?.cigarkeeper_enabled, t]);
 
   const baseItems = [
     { page: "CollectionHub", label: t("nav.hub", "Hub"), icon: Home, path: "/" },
