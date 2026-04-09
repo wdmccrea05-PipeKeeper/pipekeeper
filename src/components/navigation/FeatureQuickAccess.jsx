@@ -5,25 +5,39 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useNavigate } from 'react-router-dom';
-import { Package, Leaf, BarChart3, FileText, Sparkles, User, HelpCircle, CreditCard } from 'lucide-react';
+import { Package, Leaf, BarChart3, FileText, Sparkles, User, HelpCircle, CreditCard, GlassWater, Cigarette } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 
 export default function FeatureQuickAccess({ isOpen, onClose }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { isModuleEnabled } = useModuleVisibility();
   
   const features = [
-    {
+    isModuleEnabled('pipekeeper') && {
       icon: Package,
       label: t("nav.pipes", "Pipes"),
       description: t("quickAccess.catalogPipes", "Catalog and manage your pipes"),
       page: "Pipes",
     },
-    {
+    isModuleEnabled('pipekeeper') && {
       icon: Leaf,
       label: t("nav.tobacco", "Tobacco"),
       description: t("quickAccess.manageBlendsAndCellar", "Manage blends and cellar"),
       page: "Tobacco",
+    },
+    isModuleEnabled('whiskeykeeper') && {
+      icon: GlassWater,
+      label: t("nav.whiskey", "Whiskey"),
+      description: t("quickAccess.manageWhiskey", "Manage your whiskey collection"),
+      page: "Whiskey",
+    },
+    isModuleEnabled('cigarkeeper') && {
+      icon: Cigarette,
+      label: t("nav.cigars", "Cigars"),
+      description: t("quickAccess.manageCigars", "Manage your cigar collection"),
+      page: "Cigars",
     },
     {
       icon: BarChart3,
@@ -64,7 +78,7 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
       description: t("nav.faq", "FAQ & support resources"),
       page: "HelpCenter",
     },
-  ];
+  ].filter(Boolean);
   
   const handleFeatureClick = (feature) => {
     const url = createPageUrl(feature.page);
