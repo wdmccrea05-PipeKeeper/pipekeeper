@@ -47,9 +47,13 @@ function PriorityBadge({ priority }) {
   );
 }
 
-function PurchaseRecommendationCard({ recommendation, onAction }) {
+function PurchaseRecommendationCard({ recommendation, onAction, groupId }) {
   const [expanded, setExpanded] = useState(false);
   const items = recommendation?.items || [];
+
+  const isWishlist = groupId === 'wishlist';
+  const itemActionLabel = isWishlist ? 'Move to List' : 'Add';
+  const bulkActionLabel = isWishlist ? 'Move All to Shopping List' : 'Add All to Shopping List';
 
   return (
     <div className="rounded-xl p-4 space-y-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.18)' }}>

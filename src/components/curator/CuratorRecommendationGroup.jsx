@@ -91,6 +91,18 @@ function hasNonEmptyPayload(item) {
   return !!(item.proposedChange?.payload && Object.keys(item.proposedChange.payload).length > 0);
 }
 
+/** Build the navigation path for a single item record. */
+function singleItemPath(item) {
+  const rt = String(item?.recordType || '').toLowerCase();
+  const id  = item?.recordId || item?.id;
+  const page =
+    rt === 'bottle' || rt === 'whiskey' ? 'Whiskey' :
+    rt === 'blend'  || rt === 'tobacco' ? 'Tobacco' :
+    rt === 'pipe'                        ? 'Pipes'   : null;
+  if (!page) return null;
+  return `/${page}${id ? `?curator_ids=${id}` : ''}`;
+}
+
 // ─── Inline Review Panel ──────────────────────────────────────────────────────
 
 function InlineReviewPanel({ rec, onApply, onCancel }) {
@@ -178,11 +190,57 @@ function RecordOptimizationActions({ rec, onAction }) {
     finally { setApplying(false); }
   };
 
-  if (hasNoDiffs) {
+  // Per-item row: name + "Open" link for navigating directly to that record
+  const ItemOpenRow = ({ item }) => {
+    const path = singleItemPath(item);
     return (
-      <div className="flex flex-wrap items-center gap-2">
-        <TertiaryBtn onClick={() => onAction('view_details', rec)} icon={Eye} label="Open Records" />
-        <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
+      <div className="flex items-center justify-between gap-3 rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-medium truncate" style={{ color: '#F5F5F7' }}>
+            {item.itemName || item.recordName || '—'}
+          </div>
+          {item.missingFields?.length > 0 && (
+            <div className="text-xs" style={{ color: '#71717A' }}>
+              Missing: {item.missingFields.join(', ')}
+            </div>
+          )}
+        </div>
+        {path && (
+          <a
+            href={path}
+            className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center"
+            style={{ border: '1px solid rgba(255,255,255,0.12)', color: '#F5F5F7', textDecoration: 'none' }}
+          >
+            Open
+          </a>
+        )}
+      </div>
+    );
+  };
+
+  if (hasNoDiffs) {
+    const items = rec.items || [];
+    return (
+      <div className="space-y-3">
+        {items.length > 0 && (
+          <div
+            className="rounded-xl p-3 space-y-1"
+            style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+          >
+            {items.slice(0, 8).map((item) => (
+              <ItemOpenRow key={item.recordId || item.id} item={item} />
+            ))}
+            {items.length > 8 && (
+              <div className="text-xs px-3 py-1" style={{ color: '#71717A' }}>
+                +{items.length - 8} more
+              </div>
+            )}
+          </div>
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <TertiaryBtn onClick={() => onAction('view_details', rec)} icon={Eye} label="Open All Records" />
+          <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
+        </div>
       </div>
     );
   }
@@ -202,15 +260,26 @@ function RecordOptimizationActions({ rec, onAction }) {
         <div className="mt-5 rounded-[16px] p-5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.16)' }}>
           <div className="space-y-4">
             {actionableItems.map((item) => (
-              <div key={item.recordId} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-start">
-                <div className="text-sm font-medium" style={{ color: '#F5F5F7' }}>{item.recordName}</div>
+              <div key={item.recordId} className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <div className="text-sm font-medium" style={{ color: '#F5F5F7' }}>{item.recordName}</div>
+                  {singleItemPath(item) && (
+                    <a
+                      href={singleItemPath(item)}
+                      className="px-3 h-7 rounded-lg text-xs font-semibold inline-flex items-center"
+                      style={{ border: '1px solid rgba(255,255,255,0.12)', color: '#A1A1AA', textDecoration: 'none' }}
+                    >
+                      Open
+                    </a>
+                  )}
+                </div>
                 {Object.entries(item.proposedChange.payload).map(([field, value]) => (
-                  <React.Fragment key={`${item.recordId}-${field}`}>
-                    <div className="text-sm" style={{ color: '#A1A1AA' }}>{field}</div>
-                    <div className="text-sm" style={{ color: '#F5F5F7' }}>
-                      {String(value)}
-                    </div>
-                  </React.Fragment>
+                  <div key={`${item.recordId}-${field}`} className="flex items-center gap-3 text-sm" style={{ color: '#A1A1AA' }}>
+                    <span className="w-28 shrink-0">{field}</span>
+                    <span className="flex-1 truncate" style={{ color: '#71717A' }}>{String(item[field] ?? 'Not set')}</span>
+                    <span>→</span>
+                    <span className="flex-1 truncate" style={{ color: '#F5F5F7' }}>{String(value)}</span>
+                  </div>
                 ))}
               </div>
             ))}

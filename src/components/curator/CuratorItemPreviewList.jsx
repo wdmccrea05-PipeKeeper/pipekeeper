@@ -3,6 +3,7 @@
  *
  * Compact inline list of items for recommendation cards.
  * Shows up to `previewCount` items as chips, then "+N more".
+ * Chips with a known record type are clickable/navigable.
  */
 
 import React from 'react';
@@ -19,6 +20,17 @@ const TYPE_COLORS = {
 
 function getTypeColors(recordType) {
   return TYPE_COLORS[recordType] || TYPE_COLORS.default;
+}
+
+function buildItemPath(item) {
+  const rt = String(item?.recordType || '').toLowerCase();
+  const id  = item?.recordId || item?.id;
+  if (!id) return null;
+  const page =
+    rt === 'bottle' || rt === 'whiskey' ? 'Whiskey' :
+    rt === 'blend'  || rt === 'tobacco' ? 'Tobacco' :
+    rt === 'pipe'                        ? 'Pipes'   : null;
+  return page ? `/${page}?curator_ids=${id}` : null;
 }
 
 /**
@@ -39,16 +51,31 @@ export default function CuratorItemPreviewList({ items = [], maxPreview = 4, cla
         const name = item.recordName || item.itemName || item.name || 'Item';
         const type = item.recordType || item.type || 'default';
         const colors = getTypeColors(type);
+        const path = buildItemPath(item);
+        const chipStyle = {
+          background: colors.bg,
+          color:      colors.text,
+          border:     `1px solid ${colors.border}`,
+        };
+        if (path) {
+          return (
+            <a
+              key={item.id || item.recordId || idx}
+              href={path}
+              className="px-2 py-0.5 rounded text-[11px] font-medium leading-tight max-w-[140px] truncate"
+              title={name}
+              style={{ ...chipStyle, textDecoration: 'none', cursor: 'pointer' }}
+            >
+              {name}
+            </a>
+          );
+        }
         return (
           <span
             key={item.id || item.recordId || idx}
             className="px-2 py-0.5 rounded text-[11px] font-medium leading-tight max-w-[140px] truncate"
             title={name}
-            style={{
-              background: colors.bg,
-              color:      colors.text,
-              border:     `1px solid ${colors.border}`,
-            }}
+            style={chipStyle}
           >
             {name}
           </span>
