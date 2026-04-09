@@ -1409,9 +1409,24 @@ export function generateRecommendations(context = {}) {
 
   // Deduplicate by goal (keep first occurrence per goal)
   const seen = new Set();
-  return allRecommendations.filter((rec) => {
+  const deduplicated = allRecommendations.filter((rec) => {
     if (seen.has(rec.goal)) return false;
     seen.add(rec.goal);
     return true;
   });
+
+  // RULE 9: Log engine completion
+  console.log('CURATOR_RECOMMENDATIONS_GENERATED', {
+    total: deduplicated.length,
+    byCategory: {
+      record_optimization: deduplicated.filter((r) => r.category === 'record_optimization').length,
+      collection_optimization: deduplicated.filter((r) => r.category === 'collection_optimization').length,
+      purchase: deduplicated.filter((r) => r.category === 'purchase').length,
+      pairing: deduplicated.filter((r) => r.category === 'pairing').length,
+      grow_expand: deduplicated.filter((r) => r.category === 'grow_expand').length,
+    },
+    modules: context.activeModules,
+  });
+
+  return deduplicated;
 }
