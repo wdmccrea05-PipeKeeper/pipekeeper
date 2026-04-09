@@ -168,152 +168,30 @@ export default function CuratorWorkspace({
     const pipeActive    = moduleEnabled.pipekeeper    !== false;
     const whiskeyActive = moduleEnabled.whiskeykeeper !== false;
 
-    const [pipes, blends, bottles, smokingLogs, tastingLogs, inventoryUnits, acquisitionItems] = await Promise.all([
-      pipeActive    ? safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 500, 'pipes')                           : Promise.resolve([]),
-      pipeActive    ? safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 500, 'blends')                  : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 500, 'bottles')                       : Promise.resolve([]),
-      pipeActive    ? safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 1000, 'smokingLogs')                      : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 500, 'tastingLogs')               : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null, 2000, 'inventoryUnits')             : Promise.resolve([]),
-      safeFilter(base44.entities.AcquisitionItem, { created_by: user.email }, '-created_date', 1000, 'acquisitionItems'),
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    // Batch 1: core collection data
+    const [pipes, blends, bottles] = await Promise.all([
+      pipeActive    ? safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 500, 'pipes')       : Promise.resolve([]),
+      pipeActive    ? safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 500, 'blends') : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 500, 'bottles')  : Promise.resolve([]),
     ]);
 
-    return {
-      pipes,
-      blends,
-      bottles,
-      smokingLogs,
-      tastingLogs,
-      inventoryUnits,
-      acquisitionItems,
-      wantListItems: acquisitionItems,
-      preferences: {},
-      activeModules: moduleEnabled,
-    };
-  }, [user?.email, moduleEnabled]);
+    await sleep(250);
 
-  const loadPrimaryData = useCallback(
-    async ({ silent = false } = {}) => {
-      if (!user?.email) {
-        setLoading(false);
-        setRawSections([]);
-        setPairings([]);
-        publishCounts([], []);
-        return;
-      }
+    // Batch 2: logs
+    const [smokingLogs, tastingLogs] = await Promise.all([
+      pipeActive    ? safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 1000, 'smokingLogs')           : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 500, 'tastingLogs')    : Promise.resolve([]),
+    ]);
 
-      if (!silent) {
-        setLoading(true);
-        setError('');
-      } else {
-        setIsRefreshing(true);
-      }
+    await sleep(250);
 
-      try {
-        const context = await buildContext();
-        contextRef.current = context;
-
-        const flatRecommendations = generateRecommendations(context) || [];
-        const groupedSections = groupRecommendations(
-          flatRecommendations.filter((rec) => rec?.category !== CATEGORY.PAIRING)
-        );
-
-        if (!mountedRef.current) return;
-
-        setRawSections(groupedSections);
-        publishCounts(groupedSections, pairingsRef.current);
-      } catch (err) {
-        console.error('[Curator] primary load failed:', err);
-
-        if (!mountedRef.current) return;
-
-        setRawSections([]);
-        setPairings([]);
-        setError(err?.message || 'Curator could not load.');
-        publishCounts([], []);
-      } finally {
-        if (!mountedRef.current) return;
-        setLoading(false);
-        setIsRefreshing(false);
-      }
-    },
-    [buildContext, publishCounts, user?.email]
-  );
-
-  const loadPairings = useCallback(async () => {
-    // Pairings require multi-module context — skip entirely in single-module mode
-    if (isSingleModuleMode || !user?.email) {
-      setPairings([]);
-      return;
-    }
-
-    setPairingsLoading(true);
-    try {
-      const context = contextRef.current || (await buildContext());
-      contextRef.current = context;
-
-      const nextPairings = generatePairingRecommendations(context) || [];
-
-      if (!mountedRef.current) return;
-
-      pairingsRef.current = nextPairings;
-      setPairings(nextPairings);
-      publishCounts(rawSections, nextPairings);
-    } catch (err) {
-      console.error('[Curator] pairing load failed:', err);
-      if (!mountedRef.current) return;
-      setPairings([]);
-      publishCounts(rawSections, []);
-    } finally {
-      if (mountedRef.current) setPairingsLoading(false);
-    }
-  }, [buildContext, isSingleModuleMode, publishCounts, rawSections, user?.email]);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    loadPrimaryData();
-    return () => {
-      mountedRef.current = false;
-    };
-  }, [loadPrimaryData]);
-
-  useEffect(() => {
-    if (activeSurface === 'pairings') {
-      loadPairings();
-    }
-  }, [activeSurface, loadPairings]);
-
-  const handleAction = useCallback(
-    async (actionKey, payload, opts = {}) => {
-      if (actionKey === 'ask_curator') {
-        setPreFillMessage(buildAskCuratorPrompt(payload));
-        onSurfaceChange?.('chat');
-        return;
-      }
-
-      if (actionKey === 'build_session') {
-        setPreFillMessage(buildSessionPrompt(payload));
-        onSurfaceChange?.('chat');
-        return;
-      }
-
-      if (actionKey === 'review_specializations') {
-        setShowSpecializationReview(true);
-        return;
-      }
-
-      if (actionKey === 'view_items' || actionKey === 'view_details' || actionKey === 'open_records') {
-        const nav = buildViewItemsNavigation(payload);
-        if (nav?.navigate?.path) {
-          window.location.href = nav.navigate.path;
-        }
-        return;
-      }
-
-      const result = await executeRecommendationAction(payload, actionKey, {
-        ...opts,
-        userEmail: user?.email,
-      });
+    // Batch 3: inventory & acquisition
+    const [inventoryUnits, acquisitionItems] = await Promise.all([
+      whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null, 2000, 'inventoryUnits') : Promise.resolve([]),
+      safeFilter(base44.entities.AcquisitionItem, { created_by: user.email }, '-created_date', 1000, 'acquisitionItems'),
+    ]);
 
       if (!result?.ok) {
         console.error('[Curator] action failed:', result?.error || 'unknown error');
