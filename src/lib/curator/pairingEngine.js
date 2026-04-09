@@ -1,26 +1,3 @@
-const SUB_TABS = ['expert', 'old_favorites', 'rediscover', 'something_new'];
-
-// HARD CAPS to prevent UI lock-ups
-const MAX_PIPES = 12;
-const MAX_BLENDS = 18;
-const MAX_BOTTLES = 18;
-const MAX_CANDIDATES_PER_TAB = 180;
-const MAX_RESULTS_PER_TAB = 3;
-
-const AROMATIC_TYPES = new Set(['Aromatic', 'Danish']);
-const NON_AROMATIC_TYPES = new Set([
-  'Virginia',
-  'Virginia/Perique',
-  'Virginia/Burley',
-  'Virginia/Oriental',
-  'English',
-  'English/Balkan',
-  'Balkan',
-  'Burley',
-  'Oriental',
-  'Oriental/Turkish',
-]);
-
 function getBlendType(blend) {
   return blend?.blend_type || blend?.blend_family || '';
 }
@@ -29,332 +6,91 @@ function getWhiskeyType(bottle) {
   return bottle?.type || bottle?.whiskey_type || bottle?.spirit_type || '';
 }
 
-function getPipeSpec(pipe) {
-  return (pipe?.specialization || '').toLowerCase().trim();
+function daysSince(dateValue) {
+  if (!dateValue) return null;
+  const ts = new Date(dateValue).getTime();
+  if (!ts) return null;
+  return Math.floor((Date.now() - ts) / 86400000);
 }
 
-function isAromaticBlend(blend) {
-  return AROMATIC_TYPES.has(getBlendType(blend));
-}
-
-function isNonAromaticBlend(blend) {
-  return NON_AROMATIC_TYPES.has(getBlendType(blend));
-}
-
-function aromaticConflict(pipe, blend) {
-  const spec = getPipeSpec(pipe);
-  if (!spec) return false;
-
-  const aromaticPipe = spec.includes('aromatic');
-  const nonAromaticPipe =
-    spec.includes('english') ||
-    spec.includes('virginia') ||
-    spec.includes('burley') ||
-    spec.includes('oriental') ||
-    spec.includes('balkan') ||
-    spec.includes('non-aromatic');
-
-  if (aromaticPipe && isNonAromaticBlend(blend)) return true;
-  if (nonAromaticPipe && isAromaticBlend(blend)) return true;
-  return false;
-}
-
-function normalizeBlend(blend, smokingLogs = []) {
-  const logs = smokingLogs.filter((l) => l.blend_id === blend.id || l.blendId === blend.id);
-  const last = logs
-    .map((l) => new Date(l.date || l.created_date || 0).getTime())
-    .filter(Boolean)
-    .sort((a, b) => b - a)[0];
-
-  const session_count = logs.length;
-  const last_smoked_days = last ? Math.floor((Date.now() - last) / 86400000) : Infinity;
-
-  return {
-    ...blend,
-    session_count,
-    last_smoked_days,
-    favorite: !!blend.favorite || session_count >= 3 || Number(blend.rating || 0) >= 4,
-  };
-}
-
-function sortPipes(pipes = []) {
+function sortPipes(pipes = [], smokingLogs = []) {
   return [...pipes]
-    .filter(Boolean)
-    .sort((a, b) => {
-      const aScore = Number(a.session_count || 0);
-      const bScore = Number(b.session_count || 0);
-      return bScore - aScore;
+    .map((pipe) => {
+      const logs = smokingLogs.filter((l) => l?.pipe_id === pipe.id || l?.pipeId === pipe.id);
+      const last = logs.map((l) => l?.date || l?.created_date).filter(Boolean).sort().reverse()[0];
+      return { ...pipe, sessionCount: logs.length, lastUsedDays: daysSince(last) };
     })
-    .slice(0, MAX_PIPES);
+    .sort((a, b) => (b.sessionCount - a.sessionCount) || ((b.lastUsedDays || 0) - (a.lastUsedDays || 0)));
 }
 
 function sortBlends(blends = [], smokingLogs = []) {
-  return blends
-    .map((b) => normalizeBlend(b, smokingLogs))
-    .sort((a, b) => {
-      const aFav = a.favorite ? 1 : 0;
-      const bFav = b.favorite ? 1 : 0;
-      if (bFav !== aFav) return bFav - aFav;
-
-      const aCount = Number(a.session_count || 0);
-      const bCount = Number(b.session_count || 0);
-      return bCount - aCount;
+  return [...blends]
+    .map((blend) => {
+      const logs = smokingLogs.filter((l) => l?.blend_id === blend.id || l?.blendId === blend.id);
+      const last = logs.map((l) => l?.date || l?.created_date).filter(Boolean).sort().reverse()[0];
+      return { ...blend, sessionCount: logs.length, lastUsedDays: daysSince(last), ratingValue: Number(blend.rating || 0) };
     })
-    .slice(0, MAX_BLENDS);
+    .sort((a, b) => ((b.ratingValue + b.sessionCount) - (a.ratingValue + a.sessionCount)) || ((b.lastUsedDays || 0) - (a.lastUsedDays || 0)));
 }
 
-function sortBottles(bottles = []) {
+function sortBottles(bottles = [], tastingLogs = []) {
+  const tastedIds = new Set(tastingLogs.map((l) => l?.bottle_id || l?.bottleId).filter(Boolean));
   return [...bottles]
-    .filter(Boolean)
-    .sort((a, b) => {
-      const aVal = Number(a.estimated_value || a.retail_price || a.purchase_price || 0);
-      const bVal = Number(b.estimated_value || b.retail_price || b.purchase_price || 0);
-      return bVal - aVal;
-    })
-    .slice(0, MAX_BOTTLES);
-}
-
-function whiskeyProfile(bottle) {
-  const t = getWhiskeyType(bottle).toLowerCase();
-  if (t.includes('bourbon')) return 'corn sweetness, vanilla oak, and rounded warmth';
-  if (t.includes('rye')) return 'pepper, dry spice, and a firmer finish';
-  if (t.includes('irish')) return 'lighter grain sweetness and an easy, clean frame';
-  if (t.includes('peated') || t.includes('islay')) return 'smoke, earth, and darker, more forceful structure';
-  if (t.includes('scotch')) return 'malt depth, oak, and layered regional character';
-  if (t.includes('flavored')) return 'sweetened flavoring that can support or smother the tobacco depending on the bowl';
-  return 'oak, sweetness, and overall weight';
-}
-
-function blendProfile(blend) {
-  const t = getBlendType(blend);
-  switch (t) {
-    case 'Aromatic': return 'cased sweetness, room note, and a softer, fragrant delivery';
-    case 'Burley': return 'dry cocoa bitterness, nuttiness, and an earthy core';
-    case 'Virginia': return 'natural sweetness, hay, and a brighter top end';
-    case 'Virginia/Perique': return 'sweet grass, darker fruit, and a peppery edge';
-    case 'Virginia/Burley': return 'natural sweetness over a dry, nutty burley base';
-    case 'Virginia/Oriental': return 'sweetness, floral spice, and a fragrant middle';
-    case 'English': return 'smoke, leather, and a darker incense-like frame';
-    case 'English/Balkan': return 'latakia smoke layered with oriental spice and depth';
-    case 'Balkan': return 'oriental spice, incense, and darker smoky depth';
-    case 'Oriental': return 'dry floral spice and a fragrant savory edge';
-    default: return `${t || 'tobacco'} character`;
-  }
-}
-
-function chamberNote(pipe) {
-  const shape = (pipe?.shape || pipe?.bowl_style || '').toLowerCase();
-  const size = (pipe?.sizeClass || '').toLowerCase();
-
-  if (shape.includes('billiard')) return 'its straight billiard chamber keeps the smoke even and focused from first light to finish';
-  if (shape.includes('pot')) return 'its broader pot chamber opens the blend up earlier and keeps the flavors wide';
-  if (shape.includes('stack')) return 'its taller stack bowl keeps the smoke disciplined and lengthens the blend’s vertical development';
-  if (size === 'large') return 'its larger bowl gives the blend room to settle and unfold gradually';
-  if (size === 'small') return 'its smaller chamber keeps the session concentrated and tidy';
-  return 'its chamber keeps the smoke steady and controlled through the bowl';
+    .map((bottle) => ({ ...bottle, tasted: tastedIds.has(bottle.id), valueScore: Number(bottle.estimated_value || bottle.retail_price || bottle.purchase_price || 0) }))
+    .sort((a, b) => (Number(a.tasted) - Number(b.tasted)) || (a.valueScore - b.valueScore));
 }
 
 function pairingType(blend, bottle) {
   const bt = getBlendType(blend);
   const wt = getWhiskeyType(bottle).toLowerCase();
-
+  if ((bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') && (wt.includes('islay') || wt.includes('peated'))) return 'Reinforcing';
   if (bt === 'Aromatic' && wt.includes('irish')) return 'Contrast';
-  if ((bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') && (wt.includes('peated') || wt.includes('islay'))) return 'Complement';
-  if ((bt === 'Burley' || bt === 'Virginia/Burley') && wt.includes('bourbon')) return 'Complement';
-  if (bt === 'Virginia/Perique' && wt.includes('rye')) return 'Contrast';
   return 'Complement';
 }
 
-function confidenceLabel(score) {
-  if (score >= 8.5) return 'High Confidence';
-  if (score >= 7) return 'Medium Confidence';
-  return 'Experimental';
-}
-
-function scorePair(pipe, blend, bottle, usageCounters, tabKey) {
-  if (aromaticConflict(pipe, blend)) return -999;
-
-  const pipePenalty = (usageCounters.pipe[pipe.id] || 0) * 1.6;
-  const blendPenalty = (usageCounters.blend[blend.id] || 0) * 1.8;
-  const bottlePenalty = (usageCounters.bottle[bottle.id] || 0) * 1.5;
-
-  let score = 6.0;
-
-  const bt = getBlendType(blend);
-  const wt = getWhiskeyType(bottle).toLowerCase();
-  const spec = getPipeSpec(pipe);
-
-  if ((bt === 'Burley' || bt === 'Virginia/Burley') && wt.includes('bourbon')) score += 2.0;
-  if ((bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') && (wt.includes('peated') || wt.includes('islay') || wt.includes('scotch'))) score += 2.2;
-  if (bt === 'Aromatic' && wt.includes('irish')) score += 1.8;
-  if (bt === 'Virginia/Perique' && wt.includes('rye')) score += 1.6;
-  if (bt === 'Virginia' && wt.includes('bourbon')) score += 1.1;
-  if (wt.includes('flavored') && bt !== 'Aromatic') score -= 0.9;
-
-  if (spec && spec.includes('burley') && bt.includes('Burley')) score += 1.0;
-  if (spec && spec.includes('aromatic') && bt === 'Aromatic') score += 1.0;
-  if (spec && spec.includes('english') && (bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan')) score += 1.0;
-  if (spec && spec.includes('virginia') && bt.includes('Virginia')) score += 0.8;
-
-  if (tabKey === 'rediscover' && blend.last_smoked_days >= 45) score += 0.8;
-  if (tabKey === 'something_new' && blend.session_count === 0) score += 1.0;
-  if (tabKey === 'old_favorites' && blend.favorite) score += 1.2;
-
-  score -= pipePenalty + blendPenalty + bottlePenalty;
-  return score;
-}
-
 function buildNarrative(pipe, blend, bottle) {
-  const b = blendProfile(blend);
-  const w = whiskeyProfile(bottle);
-  const c = chamberNote(pipe);
-  const mode = pairingType(blend, bottle).toLowerCase();
-
-  if (mode === 'contrast') {
-    return `${blend.name} brings ${b}, while ${bottle.name} adds ${w}. This is a contrast pairing, so the pour reshapes the bowl rather than echoing it directly, and ${c}.`;
-  }
-
-  return `${blend.name} offers ${b}, and ${bottle.name} contributes ${w}. This is a complement pairing, so the shared notes stay in step instead of competing, and ${c}.`;
+  const bt = getBlendType(blend);
+  const wt = getWhiskeyType(bottle);
+  const spec = pipe?.specialization ? `${pipe.specialization} pipe` : 'pipe';
+  return `${blend.name} and ${bottle.name} make sense together because ${blend.name} brings ${bt || 'its own'} character while ${bottle.name} adds ${wt || 'a complementary whiskey frame'}. ${pipe.name} matters because it is an established ${spec} in your collection and helps keep the session coherent.`;
 }
 
 function buildWhyItWorks(blend, bottle) {
   const bt = getBlendType(blend);
   const wt = getWhiskeyType(bottle).toLowerCase();
-
-  if ((bt === 'Burley' || bt === 'Virginia/Burley') && wt.includes('bourbon')) {
-    return 'The whiskey’s vanilla-and-caramel sweetness rounds the burley’s bitterness without flattening the bowl.';
-  }
-  if ((bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') && (wt.includes('peated') || wt.includes('islay'))) {
-    return 'Smoke and spice reinforce each other, so neither the pipe nor the pour feels out of place.';
-  }
-  if (bt === 'Aromatic' && wt.includes('irish')) {
-    return 'The lighter whiskey frame keeps the topping present without letting sweetness turn syrupy.';
-  }
-  if (bt === 'Virginia/Perique' && wt.includes('rye')) {
-    return 'Rye spice trims the blend’s sweetness and gives the peppery side of the bowl more shape.';
-  }
-  return 'The bowl and pour stay balanced because neither one strips the other of texture or identity.';
+  if ((bt === 'Burley' || bt === 'Virginia/Burley') && wt.includes('bourbon')) return 'Burley earth and bourbon sweetness support each other without flattening the bowl.';
+  if ((bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') && (wt.includes('peated') || wt.includes('islay') || wt.includes('scotch'))) return 'Smoke and malt depth move in the same direction, so the pairing feels intentional rather than forced.';
+  if (bt === 'Aromatic' && wt.includes('irish')) return 'Irish whiskey keeps the topping lively without letting the session turn syrupy.';
+  if (bt === 'Virginia/Perique' && wt.includes('rye')) return 'Rye spice trims the sweetness and gives the peppery side of the bowl more structure.';
+  return 'Neither side strips the other of texture, so the bowl and pour stay identifiable through the session.';
 }
 
 function buildWhatToExpect(blend, bottle) {
   const bt = getBlendType(blend);
   const wt = getWhiskeyType(bottle).toLowerCase();
-
-  if (bt === 'Aromatic') return 'Expect a smoother, sweeter session where the sip resets the palate instead of overpowering it.';
-  if (bt === 'Burley' || bt === 'Virginia/Burley') return 'Expect a steady cocoa-and-nut-driven bowl with warmth building gradually through the sip.';
-  if (bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') return 'Expect a darker, more contemplative session with smoke and spice staying present all the way through.';
-  if (wt.includes('rye')) return 'Expect a firmer finish and a more structured rhythm between draw and sip.';
-  return 'Expect a balanced session where both the tobacco and the pour remain identifiable throughout.';
+  if (bt === 'Aromatic') return 'Expect an easier, sweeter session where the sip resets the palate instead of crowding it.';
+  if (bt === 'Burley' || bt === 'Virginia/Burley') return 'Expect a steady, warm session with cocoa, nut, and caramel holding together nicely.';
+  if (bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan' || wt.includes('peated')) return 'Expect a darker, slower session where smoke and oak stay present from start to finish.';
+  return 'Expect a balanced session where both the tobacco and the pour remain recognizable.';
 }
 
-function buildBestMomentForIt(blend, bottle) {
-  const bt = getBlendType(blend);
-  const wt = getWhiskeyType(bottle).toLowerCase();
-
-  if ((bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') && (wt.includes('peated') || wt.includes('islay'))) {
-    return 'Best for a slower evening when you want smoke, depth, and a more serious session.';
-  }
-  if (bt === 'Aromatic' && wt.includes('irish')) {
-    return 'Best for an easy evening or first pour when you want sweetness without heaviness.';
-  }
-  if (bt === 'Burley' || bt === 'Virginia/Burley') {
-    return 'Best for a relaxed late-afternoon or evening session when you want comfort and structure.';
-  }
-  return 'Best when you want a deliberate session that still feels easy to settle into.';
+function buildBestMomentForIt(tab) {
+  if (tab === 'rediscover') return 'Best when you want to bring an underused part of the collection back into the rotation.';
+  if (tab === 'old_favorites') return 'Best when you want a dependable session built from proven favorites.';
+  if (tab === 'something_new') return 'Best when you want something slightly different without leaving the guardrails of your collection.';
+  return 'Best when you want a deliberate pairing that still feels safe enough to trust.';
 }
 
-function wrapPipe(pipe) {
-  return { id: pipe.id, type: 'pipe', recordType: 'pipe', name: pipe.name };
-}
-function wrapBlend(blend) {
-  return { id: blend.id, type: 'blend', recordType: 'blend', name: blend.name };
-}
-function wrapBottle(bottle) {
-  return { id: bottle.id, type: 'bottle', recordType: 'bottle', name: bottle.name };
-}
+function wrapPipe(pipe) { return { id: pipe.id, type: 'pipe', recordType: 'pipe', name: pipe.name }; }
+function wrapBlend(blend) { return { id: blend.id, type: 'blend', recordType: 'blend', name: blend.name }; }
+function wrapBottle(bottle) { return { id: bottle.id, type: 'bottle', recordType: 'bottle', name: bottle.name }; }
 
-function buildPairsForTab(tabKey, context, usageCounters) {
-  const pipes = sortPipes(context.pipes || []);
-  const blends = sortBlends(context.blends || [], context.smokingLogs || []);
-  const bottles = sortBottles(context.bottles || []);
-
-  const scored = [];
-  let scanned = 0;
-
-  for (const pipe of pipes) {
-    for (const blend of blends) {
-      if (aromaticConflict(pipe, blend)) continue;
-
-      for (const bottle of bottles) {
-        scanned += 1;
-        if (scanned > MAX_CANDIDATES_PER_TAB) break;
-
-        const score = scorePair(pipe, blend, bottle, usageCounters, tabKey);
-        if (score < 6.5) continue;
-
-        scored.push({ pipe, blend, bottle, score });
-      }
-
-      if (scanned > MAX_CANDIDATES_PER_TAB) break;
-    }
-
-    if (scanned > MAX_CANDIDATES_PER_TAB) break;
-  }
-
-  scored.sort((a, b) => b.score - a.score);
-
-  const chosen = [];
-  const localUsage = {
-    pipe: { ...usageCounters.pipe },
-    blend: { ...usageCounters.blend },
-    bottle: { ...usageCounters.bottle },
-  };
-
-  for (const row of scored) {
-    if ((localUsage.pipe[row.pipe.id] || 0) >= 2) continue;
-    if ((localUsage.blend[row.blend.id] || 0) >= 2) continue;
-    if ((localUsage.bottle[row.bottle.id] || 0) >= 2) continue;
-
-    chosen.push({
-      id: `${tabKey}_${row.pipe.id}_${row.blend.id}_${row.bottle.id}`,
-      subTab: tabKey,
-      confidenceLabel: confidenceLabel(row.score),
-      pairingType: pairingType(row.blend, row.bottle),
-      leftItem: wrapPipe(row.pipe),
-      blendBridge: wrapBlend(row.blend),
-      rightItem: wrapBottle(row.bottle),
-      narrative: buildNarrative(row.pipe, row.blend, row.bottle),
-      whyItWorks: buildWhyItWorks(row.blend, row.bottle),
-      whatToExpect: buildWhatToExpect(row.blend, row.bottle),
-      bestMomentForIt: buildBestMomentForIt(row.blend, row.bottle),
-    });
-
-    localUsage.pipe[row.pipe.id] = (localUsage.pipe[row.pipe.id] || 0) + 1;
-    localUsage.blend[row.blend.id] = (localUsage.blend[row.blend.id] || 0) + 1;
-    localUsage.bottle[row.bottle.id] = (localUsage.bottle[row.bottle.id] || 0) + 1;
-
-    if (chosen.length === MAX_RESULTS_PER_TAB) break;
-  }
-
-  usageCounters.pipe = localUsage.pipe;
-  usageCounters.blend = localUsage.blend;
-  usageCounters.bottle = localUsage.bottle;
-
-  return chosen;
-}
-
-function buildFallbackPairings(context = {}) {
-  const pipes = sortPipes(context.pipes || []);
-  const blends = sortBlends(context.blends || [], context.smokingLogs || []);
-  const bottles = sortBottles(context.bottles || []);
-  if (!pipes.length || !blends.length || !bottles.length) return [];
-  const pipe = pipes[0];
-  const blend = blends[0];
-  const bottle = bottles[0];
-  return [{
-    id: `fallback_${pipe.id}_${blend.id}_${bottle.id}`,
-    subTab: 'expert',
-    confidenceLabel: 'Experimental',
+function makePair(tab, pipe, blend, bottle, confidenceLabel = 'Medium Confidence') {
+  if (!pipe || !blend || !bottle) return null;
+  return {
+    id: `${tab}_${pipe.id}_${blend.id}_${bottle.id}`,
+    subTab: tab,
+    confidenceLabel,
     pairingType: pairingType(blend, bottle),
     leftItem: wrapPipe(pipe),
     blendBridge: wrapBlend(blend),
@@ -362,16 +98,66 @@ function buildFallbackPairings(context = {}) {
     narrative: buildNarrative(pipe, blend, bottle),
     whyItWorks: buildWhyItWorks(blend, bottle),
     whatToExpect: buildWhatToExpect(blend, bottle),
-    bestMomentForIt: buildBestMomentForIt(blend, bottle),
-  }];
+    bestMomentForIt: buildBestMomentForIt(tab),
+  };
+}
+
+function pushUnique(rows, next, seen) {
+  if (!next) return;
+  const key = `${next.leftItem.id}:${next.blendBridge.id}:${next.rightItem.id}`;
+  if (seen.has(key)) return;
+  seen.add(key);
+  rows.push(next);
+}
+
+function firstUnused(list, usedIds = new Set()) {
+  return list.find((item) => !usedIds.has(item?.id)) || list[0] || null;
 }
 
 export function generatePairingRecommendations(context = {}) {
-  const usageCounters = { pipe: {}, blend: {}, bottle: {} };
-  const all = [];
-  for (const tab of SUB_TABS) {
-    const rows = buildPairsForTab(tab, context, usageCounters);
-    all.push(...rows);
+  const smokingLogs = context.smokingLogs || [];
+  const tastingLogs = context.tastingLogs || [];
+  const pipes = sortPipes(context.pipes || [], smokingLogs);
+  const blends = sortBlends(context.blends || [], smokingLogs);
+  const bottles = sortBottles(context.bottles || [], tastingLogs);
+
+  if (!pipes.length || !blends.length || !bottles.length) return [];
+
+  const underusedPipes = [...pipes].sort((a, b) => (b.lastUsedDays || 0) - (a.lastUsedDays || 0));
+  const underusedBlends = [...blends].sort((a, b) => (b.lastUsedDays || 0) - (a.lastUsedDays || 0));
+
+  const rows = [];
+  const seenTriplets = new Set();
+  const usedPipeIds = new Set();
+  const usedBlendIds = new Set();
+  const usedBottleIds = new Set();
+
+  const expertPipe = firstUnused(pipes, usedPipeIds);
+  const expertBlend = firstUnused(blends, usedBlendIds);
+  const expertBottle = firstUnused(bottles, usedBottleIds);
+  pushUnique(rows, makePair('expert', expertPipe, expertBlend, expertBottle, 'High Confidence'), seenTriplets);
+  usedPipeIds.add(expertPipe?.id); usedBlendIds.add(expertBlend?.id); usedBottleIds.add(expertBottle?.id);
+
+  const favoritesPipe = pipes[0] || expertPipe;
+  const favoritesBlend = firstUnused(blends, usedBlendIds);
+  const favoritesBottle = firstUnused(bottles, usedBottleIds);
+  pushUnique(rows, makePair('old_favorites', favoritesPipe, favoritesBlend, favoritesBottle, 'High Confidence'), seenTriplets);
+  usedBlendIds.add(favoritesBlend?.id); usedBottleIds.add(favoritesBottle?.id);
+
+  const rediscoverPipe = firstUnused(underusedPipes, usedPipeIds);
+  const rediscoverBlend = firstUnused(underusedBlends, usedBlendIds);
+  const rediscoverBottle = bottles[0] || firstUnused(bottles, usedBottleIds);
+  pushUnique(rows, makePair('rediscover', rediscoverPipe, rediscoverBlend, rediscoverBottle, 'Medium Confidence'), seenTriplets);
+  usedPipeIds.add(rediscoverPipe?.id); usedBlendIds.add(rediscoverBlend?.id);
+
+  const newPipe = firstUnused(pipes, usedPipeIds);
+  const newBlend = firstUnused(blends, usedBlendIds);
+  const newBottle = firstUnused(bottles, usedBottleIds);
+  pushUnique(rows, makePair('something_new', newPipe, newBlend, newBottle, 'Experimental'), seenTriplets);
+
+  if (!rows.length) {
+    pushUnique(rows, makePair('expert', pipes[0], blends[0], bottles[0], 'Medium Confidence'), seenTriplets);
   }
-  return all.length ? all : buildFallbackPairings(context);
+
+  return rows;
 }
