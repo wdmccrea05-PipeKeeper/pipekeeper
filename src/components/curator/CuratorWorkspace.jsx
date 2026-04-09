@@ -164,36 +164,42 @@ export default function CuratorWorkspace({
       };
     }
 
-    const pipeActive    = stableModuleEnabled.pipekeeper    !== false;
-    const whiskeyActive = stableModuleEnabled.whiskeykeeper !== false;
+    // §1.2 MODULE GATE: determine which modules are active BEFORE any fetch
+    const pipeActive    = stableModuleEnabled.pipekeeper    === true;
+    const whiskeyActive = stableModuleEnabled.whiskeykeeper === true;
 
-    // Batch 1: core collection data
-    const [pipes, blends, bottles] = await Promise.all([
-      pipeActive    ? safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 200, 'pipes')          : Promise.resolve([]),
-      pipeActive    ? safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 200, 'blends') : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 200, 'bottles')      : Promise.resolve([]),
-    ]);
-
-    await sleep(250);
-
-    // Batch 2: logs
-    const [smokingLogs, tastingLogs] = await Promise.all([
-      pipeActive    ? safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 300, 'smokingLogs')           : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 200, 'tastingLogs')    : Promise.resolve([]),
-    ]);
-
-    await sleep(250);
-
-    // Batch 3: inventory & acquisition
-    const [inventoryUnits, acquisitionItems] = await Promise.all([
-      whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null, 500, 'inventoryUnits') : Promise.resolve([]),
+    // Batch all fetches in parallel — §9.1 single Promise.all per load
+    const [
+      pipes, blends, bottles,
+      smokingLogs, tastingLogs,
+      inventoryUnits, acquisitionItems,
+    ] = await Promise.all([
+      // §1.2: if module disabled, return empty array — NO data leakage
+      pipeActive    ? safeFilter(base44.entities.Pipe,           { created_by: user.email }, '-updated_date',  200, 'pipes')          : Promise.resolve([]),
+      pipeActive    ? safeFilter(base44.entities.TobaccoBlend,   { created_by: user.email }, '-updated_date',  200, 'blends')         : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.Bottle,         { created_by: user.email }, '-updated_date',  200, 'bottles')        : Promise.resolve([]),
+      pipeActive    ? safeFilter(base44.entities.SmokingLog,     { created_by: user.email }, '-date',           300, 'smokingLogs')    : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.TastingLog,     { created_by: user.email }, '-tasting_date',   200, 'tastingLogs')   : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null,        500, 'inventoryUnits') : Promise.resolve([]),
       safeFilter(base44.entities.AcquisitionItem, { created_by: user.email }, '-created_date', 300, 'acquisitionItems'),
     ]);
 
+    // §5.1 Normalize AcquisitionItem status: null or "want_list" → "wishlist"
+    const normalizedAcquisitions = acquisitionItems.map((item) => ({
+      ...item,
+      status: item.status === 'want_list' || item.status == null ? 'wishlist' : item.status,
+    }));
+
     return {
-      pipes, blends, bottles, smokingLogs, tastingLogs,
-      inventoryUnits, acquisitionItems,
-      wantListItems: acquisitionItems,
+      // §1.2 enforce zero-arrays for disabled modules
+      pipes:          pipeActive    ? pipes    : [],
+      blends:         pipeActive    ? blends   : [],
+      bottles:        whiskeyActive ? bottles  : [],
+      smokingLogs:    pipeActive    ? smokingLogs  : [],
+      tastingLogs:    whiskeyActive ? tastingLogs  : [],
+      inventoryUnits: whiskeyActive ? inventoryUnits : [],
+      acquisitionItems: normalizedAcquisitions,
+      wantListItems:    normalizedAcquisitions,
       preferences: {},
       activeModules: stableModuleEnabled,
     };
@@ -247,6 +253,7 @@ export default function CuratorWorkspace({
   );
 
   const loadPairings = useCallback(async () => {
+    // §9.2 + pairings rule: skip entirely in single-module mode
     if (isSingleModuleMode || !user?.email) {
       setPairings([]);
       return;
@@ -254,8 +261,9 @@ export default function CuratorWorkspace({
 
     setPairingsLoading(true);
     try {
+      // §9.3 Always reuse cached context — never rebuild on tab switch
       const context = contextRef.current || (await buildContext());
-      contextRef.current = context;
+      if (!contextRef.current) contextRef.current = context;
 
       const nextPairings = generatePairingRecommendations(context) || [];
 

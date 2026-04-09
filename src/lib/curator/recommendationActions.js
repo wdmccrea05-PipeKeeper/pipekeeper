@@ -1,48 +1,21 @@
 import { base44 } from '@/api/base44Client';
 
 const SAFE_BLEND_FIELDS = new Set([
-  'blend_type',
-  'blend_family',
-  'strength',
-  'cut',
-  'flavor_notes',
-  'tobacco_components',
-  'room_note',
-  'notes',
-  'replacement_difficulty',
-  'replacement_difficulty_label',
-  'strategy_state',
-  'strategy_reason',
+  'blend_type', 'blend_family', 'strength', 'cut', 'flavor_notes',
+  'tobacco_components', 'room_note', 'notes',
+  'replacement_difficulty', 'replacement_difficulty_label',
+  'strategy_state', 'strategy_reason',
 ]);
 
 const SAFE_BOTTLE_FIELDS = new Set([
-  'distillery',
-  'region',
-  'country',
-  'age',
-  'abv',
-  'type',
-  'whiskey_type',
-  'retail_price',
-  'aftermarket_price',
-  'collector_value',
-  'estimated_value',
-  'replacement_difficulty',
-  'replacement_difficulty_label',
-  'strategy_state',
-  'strategy_reason',
-  'notes',
+  'distillery', 'region', 'country', 'age', 'abv', 'type', 'whiskey_type',
+  'retail_price', 'aftermarket_price', 'collector_value', 'estimated_value',
+  'replacement_difficulty', 'replacement_difficulty_label',
+  'strategy_state', 'strategy_reason', 'notes',
 ]);
 
 const SAFE_PIPE_FIELDS = new Set([
-  'specialization',
-  'shape',
-  'bowl_style',
-  'shank_shape',
-  'bend',
-  'sizeClass',
-  'notes',
-  'condition',
+  'specialization', 'shape', 'bowl_style', 'shank_shape', 'bend', 'sizeClass', 'notes', 'condition',
 ]);
 
 function filterToSafeFields(changes, allowedSet) {
@@ -100,29 +73,43 @@ export async function applySingleItemFix(item) {
   if (!item?.proposedChange?.payload || !Object.keys(item.proposedChange.payload).length) {
     throw new Error('No proposed change payload available.');
   }
-
   const updated = await updateRecord(item.recordType, item.recordId, item.proposedChange.payload);
+  return { ok: true, appliedCount: 1, resolvedRecordIds: [item.recordId], updatedRecords: [updated] };
+}
 
-  return {
-    ok: true,
-    appliedCount: 1,
-    resolvedRecordIds: [item.recordId],
-    updatedRecords: [updated],
-  };
+/**
+ * §3 RECORD NAVIGATION — always route to detail pages, never to module list pages.
+ * Single item → detail page.  Multi-item → list page with filter.
+ */
+function singleRecordPath(item) {
+  const rt = String(item?.recordType || '').toLowerCase();
+  const id = item?.recordId || item?.id;
+  if (!id) return null;
+  if (rt === 'bottle' || rt === 'whiskey') return `/BottleDetail?id=${encodeURIComponent(id)}`;
+  if (rt === 'blend'  || rt === 'tobacco') return `/TobaccoDetail?id=${encodeURIComponent(id)}`;
+  if (rt === 'pipe')                       return `/PipeDetail?id=${encodeURIComponent(id)}`;
+  return null;
 }
 
 export function buildViewItemsNavigation(recommendation) {
-  const first = recommendation?.items?.[0];
-  const itemIds = (recommendation?.items || []).map((i) => i.recordId || i.id).filter(Boolean);
+  const items = recommendation?.items || [];
+  const first = items[0];
 
-  const page =
-    first?.recordType === 'bottle' || first?.recordType === 'whiskey'
-      ? 'Whiskey'
-      : first?.recordType === 'blend' || first?.recordType === 'tobacco'
-        ? 'Tobacco'
-        : first?.recordType === 'pipe'
-          ? 'Pipes'
-          : 'CollectionKeeper';
+  // Single item → go directly to detail page
+  if (items.length === 1 && first) {
+    const path = singleRecordPath(first);
+    if (path) {
+      return { ok: true, navigate: { path, itemIds: [first.recordId || first.id].filter(Boolean) } };
+    }
+  }
+
+  // Multi-item → module list page with curator_ids filter
+  const itemIds = items.map((i) => i.recordId || i.id).filter(Boolean);
+  const rt = String(first?.recordType || '').toLowerCase();
+  const listPage =
+    rt === 'bottle' || rt === 'whiskey' ? 'Whiskey' :
+    rt === 'blend'  || rt === 'tobacco' ? 'Tobacco' :
+    rt === 'pipe'                        ? 'Pipes'   : 'CollectionHub';
 
   const params = new URLSearchParams();
   if (itemIds.length) params.set('curator_ids', itemIds.join(','));
@@ -131,8 +118,7 @@ export function buildViewItemsNavigation(recommendation) {
   return {
     ok: true,
     navigate: {
-      page,
-      path: `/${page}${params.toString() ? `?${params.toString()}` : ''}`,
+      path: `/${listPage}${params.toString() ? `?${params.toString()}` : ''}`,
       itemIds,
     },
   };
@@ -159,9 +145,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
         (i) => i?.proposedChange?.payload && Object.keys(i.proposedChange.payload).length > 0
       );
 
-      if (!toApply.length) {
-        return { ok: false, error: 'No auto-fix payloads available.' };
-      }
+      if (!toApply.length) return { ok: false, error: 'No auto-fix payloads available.' };
 
       const resolvedRecordIds = [];
       const updatedRecords = [];
@@ -172,7 +156,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
           const updated = await updateRecord(item.recordType, item.recordId, item.proposedChange.payload);
           resolvedRecordIds.push(item.recordId);
           updatedRecords.push(updated);
-        } catch (err) {
+        } catch {
           failedIds.push(item.recordId);
         }
       }
@@ -190,9 +174,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
 
     case 'approve_changes': {
       const reviewedItems = Array.isArray(opts.reviewedItems) ? opts.reviewedItems : [];
-      if (!reviewedItems.length) {
-        return { ok: false, error: 'No reviewed items to apply.' };
-      }
+      if (!reviewedItems.length) return { ok: false, error: 'No reviewed items to apply.' };
 
       const resolvedRecordIds = [];
       const updatedRecords = [];
@@ -205,7 +187,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
           const updated = await updateRecord(item.recordType, item.recordId, payload);
           resolvedRecordIds.push(item.recordId);
           updatedRecords.push(updated);
-        } catch (err) {
+        } catch {
           failedIds.push(item.recordId);
         }
       }
@@ -247,30 +229,67 @@ export async function executeRecommendationAction(recommendation, action, opts =
       const failedIds = [];
 
       for (const item of sourceItems) {
+        const recordId = item.recordId || item.id;
         try {
-          // When the item originates from an AcquisitionItem record (has acquisitionId),
-          // update that record's status directly instead of creating a duplicate entry.
           if (action === 'move_to_shopping_list' && item.acquisitionId) {
-            await base44.entities.AcquisitionItem.update(item.acquisitionId, {
-              status: 'shopping_list',
-            });
+            // §2.2 IDEMPOTENT: update existing AcquisitionItem in-place — no duplicate
+            await base44.entities.AcquisitionItem.update(item.acquisitionId, { status: 'shopping_list' });
             created.push({ id: item.acquisitionId, updated: true });
+
+          } else if (action === 'add_to_want_list') {
+            // §2.2 IDEMPOTENT: check for existing AcquisitionItem before creating
+            let existing = null;
+            if (item.acquisitionId) {
+              // Already tracked — just ensure status is wishlist
+              await base44.entities.AcquisitionItem.update(item.acquisitionId, { status: 'wishlist' });
+              existing = { id: item.acquisitionId, updated: true };
+            } else if (recordId) {
+              // Look for an existing row with matching source record
+              const rows = await base44.entities.AcquisitionItem.filter({ created_by: userEmail }).catch(() => []);
+              existing = rows.find((r) => r.record_id === recordId || r.source_record_id === recordId) || null;
+            }
+
+            if (existing) {
+              created.push(existing);
+            } else {
+              // §5.3 Create new AcquisitionItem with status 'wishlist' (NOT ShoppingListItem)
+              const row = await base44.entities.AcquisitionItem.create({
+                name:      item.recordName || item.itemName || item.name || '—',
+                item_type: item.recordType || item.itemType || 'blend',
+                status:    'wishlist',
+                priority:  'medium',
+                notes:     '',
+                record_id: recordId || undefined,
+              });
+              created.push(row);
+            }
+
           } else {
-            const row = await base44.entities.ShoppingListItem.create({
-              name: item.recordName || item.itemName || item.name || '—',
-              brand: item.brand || item.manufacturer || '',
-              item_type: item.recordType || item.itemType || 'blend',
-              shopping_type: action === 'move_to_shopping_list' ? 'shopping' : 'want_list',
-              status: 'active',
-              priority: 'medium',
-              is_manual: false,
-              notes: '',
-              created_by: userEmail,
-            });
-            created.push(row);
+            // move_to_shopping_list without acquisitionId → create AcquisitionItem in shopping_list state
+            const rows = await base44.entities.AcquisitionItem.filter({ created_by: userEmail }).catch(() => []);
+            const existing = recordId
+              ? rows.find((r) => r.record_id === recordId || r.source_record_id === recordId)
+              : null;
+
+            if (existing) {
+              if (existing.status !== 'shopping_list') {
+                await base44.entities.AcquisitionItem.update(existing.id, { status: 'shopping_list' });
+              }
+              created.push(existing);
+            } else {
+              const row = await base44.entities.AcquisitionItem.create({
+                name:      item.recordName || item.itemName || item.name || '—',
+                item_type: item.recordType || item.itemType || 'blend',
+                status:    'shopping_list',
+                priority:  'medium',
+                notes:     '',
+                record_id: recordId || undefined,
+              });
+              created.push(row);
+            }
           }
-        } catch (err) {
-          failedIds.push(item.recordId || item.id);
+        } catch {
+          failedIds.push(recordId);
         }
       }
 
@@ -281,7 +300,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
         resolvedRecommendationIds: created.length ? [recommendation.id] : [],
         updatedRecords: created,
         failedIds,
-        error: created.length ? undefined : 'No shopping list items were created.',
+        error: created.length ? undefined : 'No acquisition items were created or updated.',
       };
     }
 
