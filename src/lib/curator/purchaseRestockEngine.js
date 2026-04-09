@@ -98,10 +98,8 @@ function buildItem(source = {}, overrides = {}) {
 function analyzeLowStockBlends(blends = [], smokingLogs = []) {
   const lowStock = blends.filter((b) => {
     const oz = totalOz(b);
-    return oz !== null && oz > 0 && oz <= LOW_STOCK_OZ && isFavorite(b, smokingLogs);
+    return oz !== null && oz > 0 && oz <= LOW_STOCK_OZ;
   }).slice(0, MAX_ITEMS_PER_REC);
-
-  if (!lowStock.length) return [];
 
   const criticalCount = lowStock.filter((b) => (totalOz(b) || 0) <= CRITICAL_STOCK_OZ).length;
   const summary = lowStock.length === 1
