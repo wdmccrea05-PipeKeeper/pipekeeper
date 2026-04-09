@@ -495,6 +495,10 @@ function generatePipeShapeExpansion(pipes, blends) {
  * @param {object} context - { pipes, blends, bottles, smokingLogs, preferences }
  * @returns {import('./recommendationSchema.js').Recommendation[]}
  */
+/**
+ * RULE 5: GROW & EXPAND MUST INCLUDE ALL ACTIVE MODULES
+ * RULE 9: Debug logging per generator
+ */
 export function generateGrowExpandRecommendations(context = {}) {
   const {
     pipes       = [],
@@ -506,50 +510,67 @@ export function generateGrowExpandRecommendations(context = {}) {
   } = context;
 
   const pipeActive    = activeModules.pipekeeper    !== false;
+  const tobaccoActive = activeModules.tobacco       !== false;
   const whiskeyActive = activeModules.whiskeykeeper !== false;
 
-  // §15 MODULE-AWARE minimum threshold:
-  // In whiskey-only mode totalItems = bottles only; require just 1 bottle.
-  // In multi-module mode require 3 items across the collection.
-  const totalItems = pipes.length + blends.length + bottles.length;
-  const whiskeyOnlyMode = whiskeyActive && !pipeActive;
+  // RULE 3: Module gating enforced globally once
+  const gatedPipes = pipeActive ? pipes : [];
+  const gatedBlends = tobaccoActive ? blends : [];
+  const gatedBottles = whiskeyActive ? bottles : [];
+
+  const totalItems = gatedPipes.length + gatedBlends.length + gatedBottles.length;
+  const whiskeyOnlyMode = whiskeyActive && !pipeActive && !tobaccoActive;
   const minItems = whiskeyOnlyMode ? 1 : 3;
-  if (totalItems < minItems) return [];
+  if (totalItems < minItems) {
+    console.error('ENGINE_FAILURE', {
+      engine: 'growExpandEngine',
+      reason: 'insufficient_data',
+      dataCounts: { pipes: gatedPipes.length, blends: gatedBlends.length, bottles: gatedBottles.length },
+      activeModules,
+    });
+    return [];
+  }
 
   const results = [];
   const seen = new Set();
 
-  // Blend family expansion — only when PipeKeeper is active
-  if (pipeActive) {
-    const blendExpansion = generateBlendExpansion(blends, smokingLogs, preferences);
+  // RULE 5: Generators invoked per active module
+  const generators = [];
+
+  // Blend family expansion — only when Tobacco is active
+  if (tobaccoActive) {
+    const blendExpansion = generateBlendExpansion(gatedBlends, smokingLogs, preferences);
     for (const rec of blendExpansion) {
       if (!seen.has(rec.goal)) {
         results.push(rec);
         seen.add(rec.goal);
       }
     }
+    generators.push('blendExpansion');
   }
 
   // Whiskey type expansion — only when WhiskeyKeeper is active
-  if (whiskeyActive && bottles.length > 0) {
-    const whiskeyExpansion = generateWhiskeyExpansion(bottles, blends, preferences);
+  if (whiskeyActive && gatedBottles.length > 0) {
+    const whiskeyExpansion = generateWhiskeyExpansion(gatedBottles, gatedBlends, preferences);
     for (const rec of whiskeyExpansion) {
       if (!seen.has(rec.goal)) {
         results.push(rec);
         seen.add(rec.goal);
       }
     }
+    generators.push('whiskeyExpansion');
   }
 
   // Pipe shape expansion — only when PipeKeeper is active
-  if (pipeActive && pipes.length >= 2) {
-    const pipeExpansion = generatePipeShapeExpansion(pipes, blends);
+  if (pipeActive && gatedPipes.length >= 2) {
+    const pipeExpansion = generatePipeShapeExpansion(gatedPipes, gatedBlends);
     for (const rec of pipeExpansion) {
       if (!seen.has(rec.goal)) {
         results.push(rec);
         seen.add(rec.goal);
       }
     }
+    generators.push('pipeExpansion');
   }
 
   // ─── Fallbacks: produce at least one suggestion when the collection has items
@@ -557,7 +578,6 @@ export function generateGrowExpandRecommendations(context = {}) {
 
   if (results.length === 0 && totalItems >= 3) {
     // Fallback tobacco family — suggest exploring a first blend family (tobacco or pipekeeper active)
-    const tobaccoActive = activeModules.tobacco !== false; // standalone tobacco fallback
     if (pipeActive || tobaccoActive) {
       const ownedTypes = new Set(blends.map((b) => b.blend_type || b.blend_family).filter(Boolean));
       const fallbackBlendType = ['Virginia', 'English', 'Virginia/Perique', 'Aromatic', 'Burley'].find(

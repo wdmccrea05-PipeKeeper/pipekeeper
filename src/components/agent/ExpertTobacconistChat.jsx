@@ -305,19 +305,35 @@ function pairingExplanationEngine(message, context = {}, entityContext = {}) {
 
 // --- Answer generation
 
+/**
+ * RULE 6: Module gating enforced globally
+ * RULE 7: Intent-based routing with switch statement
+ * RULE 9: Debug logging on every response
+ */
 function answerQuestion(message, context = {}, entityContext = emptyEntityContext(), isSingleModuleMode = false, activeModules = {}) {
   const text = norm(message);
   const intent = classifyIntent(message);
 
-  const pipeActive    = activeModules.pipekeeper    === true;
-  const whiskeyActive = activeModules.whiskeykeeper === true;
-  const whiskeyOnly   = whiskeyActive && !pipeActive;
+  // RULE 6: Hard module gating — prevent cross-module leakage
+  const pipeActive    = activeModules.pipekeeper    !== false;
+  const tobaccoActive = activeModules.tobacco       !== false;
+  const whiskeyActive = activeModules.whiskeykeeper !== false;
+  const whiskeyOnly   = whiskeyActive && !pipeActive && !tobaccoActive;
 
   const pipes       = pipeActive    ? (context?.pipes        || []) : [];
-  const blends      = pipeActive    ? (context?.blends       || []) : [];
+  const blends      = tobaccoActive ? (context?.blends       || []) : [];
   const smokingLogs = pipeActive    ? (context?.smokingLogs  || []) : [];
   const bottles     = whiskeyActive ? (context?.bottles      || []) : [];
   const tastingLogs = whiskeyActive ? (context?.tastingLogs  || []) : [];
+
+  // RULE 6: Enforce whiskey-only mode data integrity
+  if (whiskeyOnly && (pipes.length > 0 || blends.length > 0)) {
+    console.error('INVALID_CONTEXT', { reason: 'non_whiskey_data_in_whiskey_only_mode', modules: activeModules });
+    return {
+      reply: 'Error: Invalid collection context for WhiskeyKeeper. Please contact support.',
+      updatedEntityContext: entityContext,
+    };
+  }
   const acquisitionItems = context?.acquisitionItems || context?.wantListItems || [];
 
   // CRITICAL: Enforce intent matching
@@ -541,9 +557,74 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
     };
   }
 
-  // Fallback: respond to unmatched queries with clarification request
+  // RULE 9: Log curator decision
+  console.log('CURATOR_DECISION', {
+    intent,
+    modules: activeModules,
+    dataCounts: { pipes: pipes.length, blends: blends.length, bottles: bottles.length },
+    engineUsed: 'answerQuestion',
+  });
+
   return {
-    reply: 'I did not quite understand the question. Could you ask me more specifically about:\n• **Your collection**: Which pipe is redundant? What should I reassign?\n• **Pairings**: Why do these work together? Explain a pairing.\n• **Sessions**: What should I smoke/drink tonight? What to buy or restock?\n• **Gaps**: What is the biggest gap in my collection?\n\nOr name a specific item and I can tell you more about it.',
+    reply: 'I did not quite understand. Could you ask more specifically about your collection, pairings, sessions, or gaps?',
+    updatedEntityContext: entityContext,
+  };
+}
+
+function handleGapIntent(pipes, blends, bottles, whiskeyOnlyMode, entityContext, activeModules) {
+  if (whiskeyOnlyMode && bottles.length === 0) {
+    return {
+      reply: 'Your whiskey collection is empty. Start by adding bottles to your collection, then I can help identify gaps.',
+      updatedEntityContext: entityContext,
+    };
+  }
+
+  // Identify collection gaps based on what's missing
+  const ownedBlendTypes = new Set(blends.map(b => b.blend_type || b.blend_family).filter(Boolean));
+  const ownedWhiskeyTypes = new Set(bottles.map(b => b.type || b.whiskey_type).filter(Boolean));
+  const ownedPipeShapes = new Set(pipes.map(p => p.shape).filter(Boolean));
+
+  const gaps = [];
+  if (!whiskeyOnlyMode && ownedBlendTypes.size < 3) gaps.push('Your tobacco collection would benefit from exploring more blend families (Virginia, English, Aromatic, etc.).');
+  if (!whiskeyOnlyMode && ownedWhiskeyTypes.size < 2) gaps.push('Your whiskey collection is narrow — consider adding different types (Bourbon, Rye, Scotch) for better pairing options.');
+  if (!whiskeyOnlyMode && ownedPipeShapes.size < 2) gaps.push('Your pipe collection lacks shape diversity — different shapes smoke differently.');
+
+  if (gaps.length === 0) {
+    return { reply: 'Your collection appears well-balanced across categories.', updatedEntityContext: entityContext };
+  }
+
+  // RULE 9: Log gap analysis
+  console.log('CURATOR_DECISION', {
+    intent: 'gap_analysis',
+    modules: activeModules,
+    dataCounts: { pipes: pipes.length, blends: blends.length, bottles: bottles.length },
+    engineUsed: 'gap_analyzer',
+    gapsIdentified: gaps.length,
+  });
+
+  return { reply: gaps.join(' '), updatedEntityContext: entityContext };
+}
+
+function handleSessionIntent(bottles, blends, tastingLogs, whiskeyOnlyMode, entityContext) {
+  if (bottles.length === 0 && !whiskeyOnlyMode) {
+    return {
+      reply: 'You don't have any bottles in your collection yet. Start by adding whiskey, and I can recommend pairings with your pipes and tobacco.',
+      updatedEntityContext: entityContext,
+    };
+  }
+
+  if (bottles.length > 0) {
+    const bottle = bestOpenBottle(bottles, tastingLogs);
+    if (bottle) {
+      return {
+        reply: `${bottle.name} is a strong candidate for tonight. Ask me to explain why it pairs with specific pipes or blends, or what to stock up on.`,
+        updatedEntityContext: { ...entityContext, bottle },
+      };
+    }
+  }
+
+  return {
+    reply: 'Ask me which bottle to open next, what to buy, or to explain a specific pairing.',
     updatedEntityContext: entityContext,
   };
 }

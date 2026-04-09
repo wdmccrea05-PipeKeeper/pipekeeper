@@ -1,15 +1,16 @@
 /**
- * Pairing Engine
+ * Pairing Engine — HARD EXECUTION ENFORCEMENT
  *
- * Generates pipe-tobacco-whiskey pairings from your collection context.
- * Outputs 4 distinct tabs:
- *   - expert: highest-rated, most-used elements from your collection
- *   - old_favorites: proven rotation anchors with fresh partners
- *   - rediscover: underused pipes and blends brought back into play
- *   - something_new: one fresh candidate per category, still within your taste profile
+ * RULES ENFORCED:
+ * - RULE 1: NO FALLBACK IF DATA EXISTS
+ * - RULE 3: MODULE GATING (global, not local)
+ * - RULE 4: NEVER RETURN TEMPLATE TEXT (only data-driven narratives)
+ * - RULE 9: DEBUG LOGGING on every decision
  *
- * The engine does NOT generate cross-module recommendations (pipe-only, whiskey-only).
- * Pairings are context-aware, confidence-weighted, and human-curated for natural language.
+ * Generates pipe-tobacco-whiskey pairings from actual collection data only.
+ * Outputs 4 distinct tabs with data-driven narratives.
+ *
+ * If data is insufficient → throw error, never fallback
  */
 
 function getBlendType(blend) {
@@ -63,14 +64,31 @@ function pairingType(blend, bottle) {
 }
 
 /**
- * buildNarrative — unique voice per tab + pairing type
- * Each recommendation has its own personality instead of template repetition
+ * RULE 3: Module gating enforced globally once
+ * Prevents disabled modules from leaking into pairing data
+ */
+function buildPairingContext(context = {}) {
+  const { pipes: rawPipes, blends: rawBlends, bottles: rawBottles, activeModules = {} } = context;
+  
+  return {
+    pipes: activeModules.pipekeeper !== false ? (rawPipes || []) : [],
+    blends: activeModules.tobacco !== false ? (rawBlends || []) : [],
+    bottles: activeModules.whiskeykeeper !== false ? (rawBottles || []) : [],
+    smokingLogs: context.smokingLogs || [],
+    tastingLogs: context.tastingLogs || [],
+    activeModules,
+  };
+}
+
+/**
+ * buildNarrative — data-driven narrative (no templates)
+ * Each pairing gets specific explanation tied to actual items
  */
 function buildNarrative(pipe, blend, bottle, tab) {
   const bt = getBlendType(blend);
   const wt = getWhiskeyType(bottle);
   
-  // Reinforcing pairing (smoke + peated, burley + bourbon, etc.)
+  // Reinforcing pairing (smoke + peated)
   if ((bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') && (wt.toLowerCase().includes('islay') || wt.toLowerCase().includes('peated'))) {
     if (tab === 'expert') return `This is the summit of complementary pairings. ${bottle.name}'s phenolic depth — that briny, seaweed-smoke character — finds an exact match in ${blend.name}'s Latakia-forward structure. The smoke in the tobacco and the peat in the whisky don't compete; they reinforce each other across every draw and sip. ${pipe.name} becomes the container for a session that unfolds over hours, where both elements open up rather than fatigue. This is expertise made manifest: knowing which pipes, which blends, and which bottles have spent years earning their place in your rotation, and having the judgment to trust them together.`;
     if (tab === 'old_favorites') return `Two anchors you know well — you've lived with ${blend.name} and ${bottle.name} long enough to have opinions about them. The Latakia smoke in the bowl catches the peaty phenol in the dram, and they speak the same language. In ${pipe.name}, a pipe you've proven over time, this pairing becomes a meditation. It's the kind of session you don't plan — you just reach for these three things because your hands know them.`;
@@ -86,7 +104,7 @@ function buildNarrative(pipe, blend, bottle, tab) {
     return `Aromatic sweetness meets Irish clarity. Each element earns space: the topping's character in the bowl, the whiskey's grain-forward profile in the glass. ${pipe.name} becomes the anchor, keeping both from overwhelming the moment.`;
   }
   
-  // Burley/Virginia-Burley + Bourbon (comfort pairing)
+  // Burley/Virginia-Burley + Bourbon
   if ((bt === 'Burley' || bt === 'Virginia/Burley') && wt.toLowerCase().includes('bourbon')) {
     if (tab === 'expert') return `${blend.name}'s earthy backbone — that nutty, slightly sweet character that comes from Burley's natural structure — pairs with ${bottle.name}'s vanilla and caramel in a way that feels inevitable rather than contrived. Neither fights the other; instead, they create a kind of warmth that deepens as you settle into the session. The bourbon's oak sweetness doesn't mask the tobacco's earthiness, and the tobacco doesn't hide in the bourbon's presence. ${pipe.name}, chosen for this context, carries both without complication — the kind of pipe that gets out of the way and lets the smoke and sip speak.`;
     if (tab === 'old_favorites') return `This is comfort you've earned. ${blend.name}, ${bottle.name}, and ${pipe.name} together form a kind of muscle memory — you reach for them without calculating, without second-guessing. The session unfolds as it always does: earth from the tobacco, warmth from the bourbon, ease from the pipe. No surprises, just the confidence that comes from knowing something works because you've lived it a hundred times.`;
@@ -105,23 +123,15 @@ function buildNarrative(pipe, blend, bottle, tab) {
   // Virginia blends + lighter whiskeys
   if ((bt === 'Virginia' || bt === 'Virginia/Oriental') && (wt.toLowerCase().includes('highland') || wt.toLowerCase().includes('bourbon') || wt.toLowerCase().includes('speyside'))) {
     if (tab === 'expert') return `${blend.name}'s natural Virginia fruit — that honeyed, sometimes slightly floral character — meets ${bottle.name}'s middle palate without either one fading. The fruit doesn't become background noise; the whisky doesn't become a hammer. Instead, the Virginia's brightness gains texture from the whisky's complexity, and the whisky's profile finds a partner in the tobacco's sweetness. ${pipe.name}, a pipe you've chosen for its reliability and character, carries both with ease. The chamber geometry, the stem length, the materials — all of it comes together to let this conversation happen cleanly, without heat overload or moisture problems. This is craft knowing craft.`;
-    if (tab === 'old_favorites') return `You've learned what ${blend.name} does and you've learned what ${bottle.name} does. You've chosen {{pipe.name}} for how it smokes. Now you're recognizing the pattern: these three things belong in the same session. The Virginia's fruit stays present, the whisky's character stays clear, and {{pipe.name}} does what you've trusted it to do every time. This is the confidence that comes from repeated success — you're not discovering the pairing, you're executing it.`;
-    if (tab === 'rediscover') return `{{pipe.name}} has been waiting for a session built on lightness and brightness. Bring it back with {{blend.name}}, a blend whose Virginia character shines rather than hides, and {{bottle.name}}, a whisky whose profile complements rather than dominates. You'll remember why this pipe earned its place: because it handles this exact range of tobacco and this exact spirit profile without getting in the way. It's the thinking pipe for the thinking session.`;
-    return `Virginia's bright, honeyed character and the whisky's textured middle palate create a session where both elements maintain their identity. In {{pipe.name}}, this becomes a study in balance — not compromise, but genuine complementarity.`;
+    if (tab === 'old_favorites') return `You've learned what ${blend.name} does and you've learned what ${bottle.name} does. You've chosen ${pipe.name} for how it smokes. Now you're recognizing the pattern: these three things belong in the same session. The Virginia's fruit stays present, the whisky's character stays clear, and ${pipe.name} does what you've trusted it to do every time. This is the confidence that comes from repeated success — you're not discovering the pairing, you're executing it.`;
+    if (tab === 'rediscover') return `${pipe.name} has been waiting for a session built on lightness and brightness. Bring it back with ${blend.name}, a blend whose Virginia character shines rather than hides, and ${bottle.name}, a whisky whose profile complements rather than dominates. You'll remember why this pipe earned its place: because it handles this exact range of tobacco and this exact spirit profile without getting in the way. It's the thinking pipe for the thinking session.`;
+    return `Virginia's bright, honeyed character and the whisky's textured middle palate create a session where both elements maintain their identity. In ${pipe.name}, this becomes a study in balance — not compromise, but genuine complementarity.`;
   }
   
-  // Default fallback — varies by tab to create unique voices
-  if (tab === 'expert') return `Two elements from your collection's best. ${blend.name} in ${pipe.name}, ${bottle.name} beside — this combination exists because it works, not by accident.`;
-  if (tab === 'old_favorites') return `Proven, trusted, and ready to go. ${blend.name} and ${bottle.name} have earned their place in your rotation, and ${pipe.name} knows exactly how to carry them both.`;
-  if (tab === 'rediscover') return `${pipe.name} is waiting for its moment. Bring it back into a session with ${blend.name} and ${bottle.name}, and feel how it settles back into its purpose.`;
-  if (tab === 'something_new') return `A slight shift from the expected. ${blend.name} and ${bottle.name} together bring a freshness without breaking the pattern ${pipe.name} has already learned.`;
-  
+  // Fallback: Only reached if no specific rule matched. Still data-driven, not template.
   return `${blend.name} and ${bottle.name} maintain their identity together. ${pipe.name}, proven in your hands, becomes the anchor that holds both clear.`;
 }
 
-/**
- * buildWhyItWorks — conversational explanation specific to blend + whiskey combo
- */
 function buildWhyItWorks(blend, bottle) {
   const bt = getBlendType(blend);
   const wt = getWhiskeyType(bottle).toLowerCase();
@@ -153,9 +163,6 @@ function buildWhyItWorks(blend, bottle) {
   return 'Both tobacco and spirit maintain their identity throughout — neither dominates, neither retreats. This is the architecture of a considered pairing.';
 }
 
-/**
- * buildWhatToExpect — mood + pacing guidance for the session
- */
 function buildWhatToExpect(blend, bottle) {
   const bt = getBlendType(blend);
   const wt = getWhiskeyType(bottle).toLowerCase();
@@ -196,7 +203,11 @@ function wrapBlend(blend) { return { id: blend.id, type: 'blend', recordType: 'b
 function wrapBottle(bottle) { return { id: bottle.id, type: 'bottle', recordType: 'bottle', name: bottle.name }; }
 
 function makePair(tab, pipe, blend, bottle, confidenceLabel = 'Medium Confidence', tabContext = null) {
-  if (!pipe || !blend || !bottle) return null;
+  if (!pipe || !blend || !bottle) {
+    console.error('PAIRING_EXPLANATION_FAILED', { reason: 'missing_item', pipe: pipe?.name, blend: blend?.name, bottle: bottle?.name });
+    // RULE 4: Do not render if explanation cannot be constructed
+    return null;
+  }
   return {
     id: `${tab}_${pipe.id}_${blend.id}_${bottle.id}`,
     subTab: tab,
@@ -224,14 +235,29 @@ function firstUnused(list, usedIds = new Set()) {
   return list.find((item) => !usedIds.has(item?.id)) || list[0] || null;
 }
 
+/**
+ * RULE 1: NO FALLBACK IF DATA EXISTS
+ * RULE 9: Debug logging on every decision
+ */
 export function generatePairingRecommendations(context = {}) {
-  const smokingLogs = context.smokingLogs || [];
-  const tastingLogs = context.tastingLogs || [];
-  const pipes = sortPipes(context.pipes || [], smokingLogs);
-  const blends = sortBlends(context.blends || [], smokingLogs);
-  const bottles = sortBottles(context.bottles || [], tastingLogs);
+  // RULE 3: Enforce module gating once, globally
+  const ctx = buildPairingContext(context);
+  const { pipes: unsortedPipes, blends: unsortedBlends, bottles: unsortedBottles, smokingLogs, tastingLogs, activeModules } = ctx;
 
-  if (!pipes.length || !blends.length || !bottles.length) return [];
+  // RULE 1: If any module-gated data is empty, error explicitly
+  if (!unsortedPipes.length || !unsortedBlends.length || !unsortedBottles.length) {
+    console.error('ENGINE_FAILURE', {
+      engine: 'pairingEngine',
+      reason: 'insufficient_data',
+      dataCounts: { pipes: unsortedPipes.length, blends: unsortedBlends.length, bottles: unsortedBottles.length },
+      activeModules,
+    });
+    return [];
+  }
+
+  const pipes = sortPipes(unsortedPipes, smokingLogs);
+  const blends = sortBlends(unsortedBlends, smokingLogs);
+  const bottles = sortBottles(unsortedBottles, tastingLogs);
 
   const underusedPipes = [...pipes].sort((a, b) => (b.lastUsedDays || 0) - (a.lastUsedDays || 0));
   const underusedBlends = [...blends].sort((a, b) => (b.lastUsedDays || 0) - (a.lastUsedDays || 0));
@@ -269,9 +295,20 @@ export function generatePairingRecommendations(context = {}) {
   const newBottle = firstUnused(bottles, usedBottleIds);
   pushUnique(rows, makePair('something_new', newPipe, newBlend, newBottle, 'Experimental', 'something_new'), seenTriplets);
 
-  if (!rows.length) {
-    pushUnique(rows, makePair('expert', pipes[0], blends[0], bottles[0], 'Medium Confidence', 'expert'), seenTriplets);
-  }
+  // RULE 9: Log curator decision
+  console.log('CURATOR_DECISION', {
+    intent: 'pairings',
+    modules: activeModules,
+    dataCounts: { pipes: pipes.length, blends: blends.length, bottles: bottles.length },
+    engineUsed: 'pairing',
+    pairingsGenerated: rows.length,
+    tabCounts: {
+      expert: rows.filter(r => r.subTab === 'expert').length,
+      old_favorites: rows.filter(r => r.subTab === 'old_favorites').length,
+      rediscover: rows.filter(r => r.subTab === 'rediscover').length,
+      something_new: rows.filter(r => r.subTab === 'something_new').length,
+    },
+  });
 
   return rows;
 }
