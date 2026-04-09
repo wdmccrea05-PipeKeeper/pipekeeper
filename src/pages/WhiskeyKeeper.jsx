@@ -11,7 +11,7 @@ import { formatCurrency } from '@/components/utils/localeFormatters';
 import { selectWhiskeyMetrics } from '@/lib/collection/whiskeySelectors';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
-import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
+
 import { getWhiskeyHighlights } from '@/components/whiskey/getWhiskeyHighlights';
 import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
 

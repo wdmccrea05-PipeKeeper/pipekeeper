@@ -14,7 +14,6 @@ import {
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import WhiskeyKeeperModuleNav from "@/components/modules/WhiskeyKeeperModuleNav";
-import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { formatCurrency, resolveBottleUnitValue } from "@/components/whiskey/utils/bottleValue";
 import {
@@ -188,9 +187,9 @@ function WhiskeyInner() {
   });
 
   // Redirect to add form if action=add
-  React.useEffect(() => {
+  useEffect(() => {
     if (shouldOpenAdd) navigate('/BottleForm', { replace: false });
-  }, [shouldOpenAdd]);
+  }, [shouldOpenAdd, navigate]);
 
   const filteredBottles = useMemo(() => {
     let results = bottles;
