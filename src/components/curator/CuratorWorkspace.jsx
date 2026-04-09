@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 
+import LogTastingModal from '@/components/whiskey/LogTastingModal';
+import LogSessionModal from '@/components/home/LogSessionModal';
 import CuratorResultsBoard from '@/components/curator/CuratorResultsBoard';
 import CuratorPairingsTab from '@/components/curator/CuratorPairingsTab';
 import CuratorPlanSession from '@/components/curator/CuratorPlanSession';
@@ -10,9 +12,6 @@ import CuratorPurchaseQueue from '@/components/curator/CuratorPurchaseQueue';
 import CuratorGrowAndExpand from '@/components/curator/CuratorGrowAndExpand';
 import CuratorSpecializationReview from '@/components/curator/CuratorSpecializationReview';
 import ExpertTobacconistChat from '@/components/agent/ExpertTobacconistChat';
-import LogTastingModal from '@/components/whiskey/LogTastingModal';
-import LogSessionModal from '@/components/home/LogSessionModal';
-import CombinedSessionModal from '@/components/session/CombinedSessionModal';
 
 import { generateRecommendations } from '@/lib/curator/recommendationEngine';
 import { generatePairingRecommendations } from '@/lib/curator/pairingEngine';
@@ -112,7 +111,7 @@ export default function CuratorWorkspace({
   const { user } = useCurrentUser();
   const { enabled: moduleEnabled, enabledModuleKeys } = useEnabledModules();
 
-  // Single-module mode: exactly 1 module enabled → no pairings, show Plan Session only
+  // Single-module mode: exactly 1 module enabled → no pairings
   const isSingleModuleMode = enabledModuleKeys.length <= 1;
 
   const mountedRef = useRef(true);
@@ -129,8 +128,10 @@ export default function CuratorWorkspace({
   const [preFillMessage, setPreFillMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showSpecializationReview, setShowSpecializationReview] = useState(false);
-  const [buildSessionOpen, setBuildSessionOpen] = useState(false);
-  const [buildSessionTarget, setBuildSessionTarget] = useState(null);
+
+  // Build Session modals — opened by plan_session "Build Session" button
+  const [tastingModal, setTastingModal] = useState(null);   // { bottle }
+  const [sessionModal, setSessionModal] = useState(null);   // { pipeId, blendId }
 
   // Stabilize moduleEnabled so object-identity changes don't trigger effect loops
   const moduleEnabledStr = JSON.stringify(moduleEnabled);
@@ -166,7 +167,7 @@ export default function CuratorWorkspace({
     const pipeActive    = stableModuleEnabled.pipekeeper    !== false;
     const whiskeyActive = stableModuleEnabled.whiskeykeeper !== false;
 
-    // Batch 1: core collection data (reduced limits to stay within rate limits)
+    // Batch 1: core collection data
     const [pipes, blends, bottles] = await Promise.all([
       pipeActive    ? safeFilter(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 200, 'pipes')          : Promise.resolve([]),
       pipeActive    ? safeFilter(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 200, 'blends') : Promise.resolve([]),
@@ -177,8 +178,8 @@ export default function CuratorWorkspace({
 
     // Batch 2: logs
     const [smokingLogs, tastingLogs] = await Promise.all([
-      pipeActive    ? safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 300, 'smokingLogs')            : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 200, 'tastingLogs')     : Promise.resolve([]),
+      pipeActive    ? safeFilter(base44.entities.SmokingLog, { created_by: user.email }, '-date', 300, 'smokingLogs')           : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 200, 'tastingLogs')    : Promise.resolve([]),
     ]);
 
     await sleep(250);
@@ -246,7 +247,6 @@ export default function CuratorWorkspace({
   );
 
   const loadPairings = useCallback(async () => {
-    // Pairings require multi-module context — skip entirely in single-module mode
     if (isSingleModuleMode || !user?.email) {
       setPairings([]);
       return;
@@ -263,7 +263,6 @@ export default function CuratorWorkspace({
 
       pairingsRef.current = nextPairings;
       setPairings(nextPairings);
-      // Use rawSectionsRef to avoid stale closure & dependency loop
       publishCounts(rawSectionsRef.current, nextPairings);
     } catch (err) {
       console.error('[Curator] pairing load failed:', err);
@@ -298,24 +297,20 @@ export default function CuratorWorkspace({
       }
 
       if (actionKey === 'build_session') {
-        // Determine which modal to open based on session candidate type and active modules
+        // Spec: Build Session must open the correct modal, NOT chat.
         const candidate = payload?._sessionCandidate;
-        // Use explicit module/item-type signals only — avoid inferring from type field values
-        // which may be pipe/blend types rather than whiskey types.
-        const isWhiskey = candidate?.moduleKey === 'whiskey' || candidate?.itemType === 'bottle' || !!payload?.leftItem?.whiskey_type;
-        const isPipe    = candidate?.moduleKey === 'pipe' || candidate?.itemType === 'pipe' || candidate?.itemType === 'blend';
-
-        if (isWhiskey) {
-          // Open LogTastingModal pre-filled with the selected bottle
-          setBuildSessionTarget({ type: 'whiskey', bottle: payload?.leftItem || candidate?.item || null });
-        } else if (isPipe) {
-          // Open LogSessionModal pre-filled with selected pipe/blend
-          setBuildSessionTarget({ type: 'pipe', pipeId: payload?.leftItem?.id || '', blendId: payload?.blendBridge?.id || candidate?.item?.id || '' });
+        const moduleKey = candidate?.moduleKey || '';
+        if (moduleKey === 'whiskey' || candidate?.itemType === 'bottle') {
+          setTastingModal({ bottle: payload?.leftItem || candidate?.item || null });
+        } else if (moduleKey === 'pipe' || moduleKey === 'tobacco' || candidate?.itemType === 'pipe' || candidate?.itemType === 'blend') {
+          const pipeId  = (moduleKey === 'pipe'    ? candidate?.item?.id : '') || payload?.leftItem?.id || '';
+          const blendId = (moduleKey === 'tobacco' ? candidate?.item?.id : '') || payload?.blendBridge?.id || '';
+          setSessionModal({ pipeId, blendId });
         } else {
-          // Multi-module or unknown: open CombinedSessionModal
-          setBuildSessionTarget({ type: 'combined', bottle: payload?.leftItem || null, blend: payload?.blendBridge || null });
+          // Indeterminate — fall back to chat prefill
+          setPreFillMessage(buildSessionPrompt(payload));
+          onSurfaceChange?.('chat');
         }
-        setBuildSessionOpen(true);
         return;
       }
 
@@ -424,53 +419,33 @@ export default function CuratorWorkspace({
 
   const ctx = contextRef.current || {};
 
-  const sessionModals = buildSessionOpen && buildSessionTarget ? (
+  const modals = (
     <>
-      {buildSessionTarget.type === 'whiskey' && (
+      {tastingModal && (
         <LogTastingModal
-          isOpen
-          bottle={buildSessionTarget.bottle || undefined}
+          bottle={tastingModal.bottle}
           bottles={ctx.bottles || []}
-          onClose={() => { setBuildSessionOpen(false); setBuildSessionTarget(null); }}
-          onSaved={() => { setBuildSessionOpen(false); setBuildSessionTarget(null); }}
+          onClose={() => setTastingModal(null)}
+          onSaved={() => setTastingModal(null)}
         />
       )}
-      {buildSessionTarget.type === 'pipe' && (
+      {sessionModal && (
         <LogSessionModal
-          isOpen
+          isOpen={true}
           pipes={ctx.pipes || []}
           blends={ctx.blends || []}
-          initialPipeId={buildSessionTarget.pipeId || ''}
-          initialBlendId={buildSessionTarget.blendId || ''}
-          onClose={() => { setBuildSessionOpen(false); setBuildSessionTarget(null); }}
-        />
-      )}
-      {buildSessionTarget.type === 'combined' && (
-        <CombinedSessionModal
-          isOpen
-          pipes={ctx.pipes || []}
-          blends={ctx.blends || []}
-          bottles={ctx.bottles || []}
-          initialSelection={buildSessionTarget.bottle || buildSessionTarget.blend || null}
-          onClose={() => { setBuildSessionOpen(false); setBuildSessionTarget(null); }}
-          onSaved={() => { setBuildSessionOpen(false); setBuildSessionTarget(null); }}
+          initialPipeId={sessionModal.pipeId || ''}
+          initialBlendId={sessionModal.blendId || ''}
+          onClose={() => setSessionModal(null)}
         />
       )}
     </>
-  ) : null;
+  );
 
   switch (activeSurface) {
     case 'record_optimization':
       return (
-        <>
-          <CuratorResultsBoard
-            sections={buckets.record_optimization}
-            onAction={handleAction}
-            onRefresh={handleRefresh}
-            isRefreshing={isRefreshing}
-          />
-          {sessionModals}
-        </>
+        <>{modals}<CuratorResultsBoard sections={buckets.record_optimization} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={isRefreshing} /></>
       );
 
     case 'collection_optimization': {
@@ -482,96 +457,39 @@ export default function CuratorWorkspace({
         }))
         .filter((section) => (section.recommendations || []).length > 0);
 
-      const inner = showSpecializationReview || specRecs.length > 0 ? (
-        <CuratorSpecializationReview
-          specRecs={specRecs}
-          collectionSections={nonSpecSections}
-          onAction={handleAction}
-          onAskCurator={(pipe) => handleAction('ask_curator', pipe)}
-          onOpenGrowExpand={() => onSurfaceChange?.('grow_expand')}
-          onDone={() => setShowSpecializationReview(false)}
-        />
+      return showSpecializationReview || specRecs.length > 0 ? (
+        <>{modals}<CuratorSpecializationReview specRecs={specRecs} collectionSections={nonSpecSections} onAction={handleAction} onAskCurator={(pipe) => handleAction('ask_curator', pipe)} onOpenGrowExpand={() => onSurfaceChange?.('grow_expand')} onDone={() => setShowSpecializationReview(false)} /></>
       ) : (
-        <CuratorResultsBoard
-          sections={buckets.collection_optimization}
-          onAction={handleAction}
-          onRefresh={handleRefresh}
-          isRefreshing={isRefreshing}
-        />
+        <>{modals}<CuratorResultsBoard sections={buckets.collection_optimization} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={isRefreshing} /></>
       );
-      return <>{inner}{sessionModals}</>;
     }
 
     case 'purchase_restock':
       return (
-        <>
-          <CuratorPurchaseQueue
-            sections={buckets.purchase_restock}
-            onAction={handleAction}
-            onRefresh={handleRefresh}
-            isRefreshing={isRefreshing}
-          />
-          {sessionModals}
-        </>
+        <>{modals}<CuratorPurchaseQueue sections={buckets.purchase_restock} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={isRefreshing} /></>
       );
 
     case 'pairings':
       return (
-        <>
-          <CuratorPairingsTab
-            pairings={pairings}
-            onAction={handleAction}
-            onRefresh={handleRefresh}
-            isRefreshing={pairingsLoading || isRefreshing}
-          />
-          {sessionModals}
-        </>
+        <>{modals}<CuratorPairingsTab pairings={pairings} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={pairingsLoading || isRefreshing} /></>
       );
 
     case 'plan_session':
       return (
-        <>
-          <CuratorPlanSession
-            collectionContext={contextRef.current || {}}
-            activeModules={moduleEnabled}
-            onAction={handleAction}
-            onRefresh={handleRefresh}
-            isRefreshing={isRefreshing}
-          />
-          {sessionModals}
-        </>
+        <>{modals}<CuratorPlanSession collectionContext={ctx} activeModules={moduleEnabled} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={isRefreshing} /></>
       );
 
     case 'grow_expand':
       return (
-        <>
-          <CuratorGrowAndExpand
-            sections={buckets.grow_expand}
-            collectionContext={contextRef.current || {}}
-            userEmail={user?.email}
-            onAskCurator={(item) => handleAction('ask_curator', item)}
-          />
-          {sessionModals}
-        </>
+        <>{modals}<CuratorGrowAndExpand sections={buckets.grow_expand} collectionContext={ctx} userEmail={user?.email} onAskCurator={(item) => handleAction('ask_curator', item)} /></>
       );
 
     case 'chat':
       return (
-        <>
-          <ExpertTobacconistChat
-            threadId={threadId}
-            setThreadId={setThreadId}
-            preFillMessage={preFillMessage}
-            onPreFillConsumed={() => setPreFillMessage('')}
-            collectionContext={contextRef.current || {}}
-            isSingleModuleMode={isSingleModuleMode}
-            activeModules={moduleEnabled}
-          />
-          {sessionModals}
-        </>
+        <>{modals}<ExpertTobacconistChat threadId={threadId} setThreadId={setThreadId} preFillMessage={preFillMessage} onPreFillConsumed={() => setPreFillMessage('')} collectionContext={ctx} isSingleModuleMode={isSingleModuleMode} activeModules={moduleEnabled} /></>
       );
 
     default:
-      return sessionModals || null;
+      return modals;
   }
 }
