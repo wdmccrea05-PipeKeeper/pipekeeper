@@ -277,11 +277,17 @@ function pairingExplanation(context = {}) {
  */
 function answerQuestion(message, context = {}, entityContext = emptyEntityContext(), isSingleModuleMode = false, activeModules = {}) {
   const text = norm(message);
-  const pipes = context?.pipes || [];
-  const blends = context?.blends || [];
-  const bottles = context?.bottles || [];
-  const smokingLogs = context?.smokingLogs || [];
-  const tastingLogs = context?.tastingLogs || [];
+
+  // §7.2 Rule A — MODULE GATE: never reference disabled-module data
+  const pipeActive    = activeModules.pipekeeper    === true;
+  const whiskeyActive = activeModules.whiskeykeeper === true;
+  const whiskeyOnly   = whiskeyActive && !pipeActive;
+
+  const pipes       = pipeActive    ? (context?.pipes        || []) : [];
+  const blends      = pipeActive    ? (context?.blends       || []) : [];
+  const smokingLogs = pipeActive    ? (context?.smokingLogs  || []) : [];
+  const bottles     = whiskeyActive ? (context?.bottles      || []) : [];
+  const tastingLogs = whiskeyActive ? (context?.tastingLogs  || []) : [];
   const acquisitionItems = context?.acquisitionItems || context?.wantListItems || [];
 
   // ── Detect intent first — pairing vs session ──────────────────────────────
@@ -494,10 +500,19 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
     };
   }
 
-  const whiskeyOnlyMode = activeModules.whiskeykeeper !== false && activeModules.pipekeeper === false;
+  // §7.2 Rule B — NO GENERIC FALLBACK when data exists: produce actionable response from bottles
+  if (bottles.length > 0) {
+    const bottle = bestOpenBottle(bottles, tastingLogs);
+    if (bottle) {
+      return {
+        reply: `Based on your collection, ${bottle.name} is the strongest candidate for your next session — it hasn't been tasted recently or at all. Ask me specifically about any bottle, your biggest gap, what to restock, or how to build a session.`,
+        updatedEntityContext: { ...entityContext, bottle },
+      };
+    }
+  }
 
   return {
-    reply: whiskeyOnlyMode
+    reply: whiskeyOnly
       ? 'Ask me which bottle to open next, what to buy or restock, what the biggest gap in your collection is, or what to drink tonight. I will answer from your actual collection rather than generic advice.'
       : 'Ask me which pipe is most redundant, which one should be reassigned, what to smoke tonight, what to buy or restock next, or what the biggest gap is. I will answer from the current collection rather than generic hobby advice.',
     updatedEntityContext: entityContext,

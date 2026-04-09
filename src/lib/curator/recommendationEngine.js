@@ -1327,6 +1327,28 @@ function analyzeWhiskeyCollection(context) {
     }
   }
 
+  // §8 FAIL-FAST GUARD: if bottles exist but zero collection recommendations generated,
+  // produce a guaranteed fallback so Collection Optimization is never empty with valid data.
+  if (bottles.length > 0 && recommendations.length === 0) {
+    const items = bottles.slice(0, MAX_ITEMS_PER_REC).map((b) => ({
+      id: b.id, recordId: b.id, recordType: 'bottle', recordName: b.name, itemName: b.name, ownershipStatus: 'owned',
+    }));
+    recommendations.push(createRecommendation({
+      category:           CATEGORY.COLLECTION_OPTIMIZATION,
+      goal:               'whiskey_collection_review',
+      actionType:         ACTION_TYPE.ADVISORY,
+      title:              'Review Your Whiskey Collection',
+      summary:            `Your collection has ${bottles.length} bottle${bottles.length > 1 ? 's' : ''}. Log tastings and fill in metadata to unlock session planning, pairings, and gap analysis.`,
+      whyItMatters:       'Tasting logs and complete metadata are what turn a bottle list into an actionable collection.',
+      recommendationText: 'Log at least one tasting per bottle and confirm spirit type, region, and ABV are filled in.',
+      moduleKey:          MODULE_KEY.WHISKEY,
+      ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+      priority:           PRIORITY.MEDIUM,
+      confidence:         'high',
+      items,
+    }));
+  }
+
   return recommendations;
 }
 
