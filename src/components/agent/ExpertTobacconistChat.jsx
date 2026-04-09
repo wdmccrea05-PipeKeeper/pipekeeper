@@ -7,6 +7,7 @@ const STARTER_PROMPTS = [
   'What should I open next?',
   'What gap matters most in my collection?',
   'Why does this pairing work?',
+  'What should I buy or restock next?',
 ];
 
 function norm(value) {
@@ -287,6 +288,18 @@ function answerQuestion(message, context = {}) {
     }
 
     return `${bottle.name} is the safest “open next” candidate from a collection-management standpoint. It appears to be one of the lower-risk bottles to learn from first, which means you gain tasting data and real usage history without using up one of the more sensitive or harder-to-replace pours.`;
+  }
+
+  if ((text.includes('buy') || text.includes('restock')) && (text.includes('next') || text.includes('should'))) {
+    const lowBlend = buildBlendUsage(blends, smokingLogs).find((b) => Number(b.quantity_oz || b.stock_oz || 0) <= 1);
+    const unopened = bestOpenBottle(bottles, tastingLogs);
+    if (lowBlend) {
+      return `${lowBlend.name} is the clearest next purchase candidate because stock looks thin and it already has enough history to matter inside your rotation. Restocking proven favorites improves the collection faster than adding random new items.`;
+    }
+    if (unopened) {
+      return `${unopened.name} is a reasonable next acquisition reference point because it would strengthen your bottle lane without adding noise. I would still prioritize obvious tobacco restocks before speculative bottle buying.`;
+    }
+    return `The best next purchase is the item that closes the largest active gap or restores a proven favorite. Right now I need either low-stock data or want-list data to rank that confidently.`;
   }
 
   if (text.includes('gap') && text.includes('collection')) {
