@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useNavigate, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   PlusCircle,
   Search,
@@ -169,8 +170,6 @@ function WhiskeyInner() {
   const { user, isLoading: userLoading } = useCurrentUser();
   const { t } = useTranslation();
 
-  const [bottles, setBottles] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState('date');
@@ -178,46 +177,20 @@ function WhiskeyInner() {
   const userEmail = user?.email || null;
   const shouldOpenAdd = new URLSearchParams(location.search).get("action") === "add";
 
-  async function loadBottles() {
-    if (!userEmail) {
-      setBottles([]);
-      return;
-    }
+  const { data: bottles = [], isLoading: loading } = useQuery({
+    queryKey: ['whiskey-collection', userEmail],
+    queryFn: async () => {
+      const rows = await base44.entities.Bottle.filter({ created_by: userEmail }, '-updated_date', 500).catch(() => []);
+      return Array.isArray(rows) ? rows : [];
+    },
+    enabled: !!userEmail && !userLoading,
+    staleTime: 30 * 1000,
+  });
 
-    try {
-      const rows = await base44.entities.Bottle.filter(
-        { created_by: userEmail },
-        "-updated_date",
-        500
-      );
-      setBottles(Array.isArray(rows) ? rows : []);
-    } catch (e) {
-      console.error("[Whiskey] failed to load bottles", e);
-      setBottles([]);
-    }
-  }
-
-  useEffect(() => {
-    if (userLoading) return;
-
-    let mounted = true;
-
-    (async () => {
-      setLoading(true);
-      await loadBottles();
-      if (mounted) setLoading(false);
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, [userEmail, userLoading]);
-
-  useEffect(() => {
-    if (shouldOpenAdd) {
-      navigate("/BottleForm", { replace: false });
-    }
-  }, [shouldOpenAdd, navigate]);
+  // Redirect to add form if action=add
+  React.useEffect(() => {
+    if (shouldOpenAdd) navigate('/BottleForm', { replace: false });
+  }, [shouldOpenAdd]);
 
   const filteredBottles = useMemo(() => {
     let results = bottles;
@@ -406,10 +379,7 @@ function WhiskeyInner() {
   );
 }
 
+// LockedModuleGuard is already applied by App.jsx's WhiskeyReleaseRoute wrapper
 export default function Whiskey() {
-  return (
-    <LockedModuleGuard moduleKey="whiskeykeeper">
-      <WhiskeyInner />
-    </LockedModuleGuard>
-  );
+  return <WhiskeyInner />;
 }

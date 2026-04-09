@@ -139,10 +139,7 @@ function WhiskeyAnalyticsInner() {
   );
 }
 
+// LockedModuleGuard is already applied by App.jsx's WhiskeyReleaseRoute wrapper
 export default function WhiskeyAnalyticsPage() {
-  return (
-    <LockedModuleGuard moduleKey="whiskeykeeper">
-      <WhiskeyAnalyticsInner />
-    </LockedModuleGuard>
-  );
+  return <WhiskeyAnalyticsInner />;
 }

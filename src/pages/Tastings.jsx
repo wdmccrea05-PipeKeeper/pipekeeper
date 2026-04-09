@@ -172,10 +172,7 @@ function TastingsInner() {
   );
 }
 
+// LockedModuleGuard is already applied by App.jsx's WhiskeyReleaseRoute wrapper
 export default function Tastings() {
-  return (
-    <LockedModuleGuard moduleKey="whiskeykeeper">
-      <TastingsInner />
-    </LockedModuleGuard>
-  );
+  return <TastingsInner />;
 }
