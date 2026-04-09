@@ -42,7 +42,12 @@ function SurfaceTab({ active, label, badge, onClick }) {
 }
 
 export default function CuratorPage() {
-  const [surface, setSurface] = useState('record_optimization');
+  const initialSurface = (() => {
+    const params = new URLSearchParams(window.location.search);
+    const s = params.get('surface');
+    return SURFACES.find((t) => t.key === s) ? s : 'record_optimization';
+  })();
+  const [surface, setSurface] = useState(initialSurface);
   const [counts, setCounts] = useState({
     record_optimization: 0,
     collection_optimization: 0,

@@ -612,7 +612,7 @@ export default function CollectionHub() {
             } catch {}
             navigate(createPageUrl('Curator'));
           }}
-          onAskCurator={() => navigate(createPageUrl('Curator'))}
+          onAskCurator={() => navigate(createPageUrl('Curator?surface=chat'))}
           onWantList={() => navigate(createPageUrl('WantList'))}
         />
       </section>
