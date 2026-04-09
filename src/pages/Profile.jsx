@@ -132,7 +132,7 @@ export default function ProfilePage() {
   const userId = user?.id || null;
 
   const { data: profileBundle, isLoading: profileLoading } = useQuery({
-    queryKey: ["user-profile", email],
+    queryKey: ["user-profile-page", email],
     queryFn: async () => {
       if (!email) return { masterId: null, merged: null };
 
@@ -336,8 +336,9 @@ export default function ProfilePage() {
     onSuccess: async (savedData) => {
       console.log("[Profile] Save successful, returned data:", savedData);
       toast.success(t("notifications.saved"));
+      await queryClient.invalidateQueries({ queryKey: ["user-profile-page", email] });
+      await queryClient.refetchQueries({ queryKey: ["user-profile-page", email] });
       await queryClient.invalidateQueries({ queryKey: ["user-profile", email] });
-      await queryClient.refetchQueries({ queryKey: ["user-profile", email] });
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
       await queryClient.invalidateQueries({ queryKey: ["public-profile", email] });
     },
@@ -371,8 +372,9 @@ export default function ProfilePage() {
           avatar_url: file_url,
         });
       }
+      await queryClient.invalidateQueries({ queryKey: ["user-profile-page", email] });
+      await queryClient.refetchQueries({ queryKey: ["user-profile-page", email] });
       await queryClient.invalidateQueries({ queryKey: ["user-profile", email] });
-      await queryClient.refetchQueries({ queryKey: ["user-profile", email] });
       await queryClient.invalidateQueries({ queryKey: ["public-profile", email] });
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
       toast.success(t("profile.avatarUploadedSuccessfully"));
