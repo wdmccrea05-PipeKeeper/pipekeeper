@@ -115,11 +115,19 @@ export default function CuratorWorkspace({ activeSurface, onSurfaceChange, onCou
   const mountedRef = useRef(true);
   const contextRef = useRef(null);
 
+  const pairingsRef = useRef([]);
   const [loading, setLoading] = useState(true);
   const [pairingsLoading, setPairingsLoading] = useState(false);
   const [error, setError] = useState('');
   const [recommendations, setRecommendations] = useState([]);
-  const [pairings, setPairings] = useState([]);
+  const [pairings, _setPairings] = useState([]);
+  const setPairings = useCallback((valOrFn) => {
+    _setPairings((prev) => {
+      const next = typeof valOrFn === 'function' ? valOrFn(prev) : valOrFn;
+      pairingsRef.current = next;
+      return next;
+    });
+  }, []);
   const [threadId, setThreadId] = useState(null);
   const [preFillMessage, setPreFillMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -242,7 +250,7 @@ export default function CuratorWorkspace({ activeSurface, onSurfaceChange, onCou
         if (!mountedRef.current) return;
 
         setRecommendations(nextRecommendations);
-        publishCounts(nextRecommendations, pairings);
+        publishCounts(nextRecommendations, pairingsRef.current);
       } catch (err) {
         console.error('[Curator] primary load failed:', err);
         if (!mountedRef.current) return;
@@ -256,7 +264,7 @@ export default function CuratorWorkspace({ activeSurface, onSurfaceChange, onCou
         setIsRefreshing(false);
       }
     },
-    [buildContext, pairings, publishCounts, user?.email]
+    [buildContext, publishCounts, user?.email]
   );
 
   const loadPairings = useCallback(async () => {
@@ -282,7 +290,8 @@ export default function CuratorWorkspace({ activeSurface, onSurfaceChange, onCou
     } finally {
       if (mountedRef.current) setPairingsLoading(false);
     }
-  }, [buildContext, publishCounts, recommendations, user?.email]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [buildContext, publishCounts, user?.email]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -510,6 +519,7 @@ export default function CuratorWorkspace({ activeSurface, onSurfaceChange, onCou
           setThreadId={setThreadId}
           preFillMessage={preFillMessage}
           onPreFillConsumed={() => setPreFillMessage('')}
+          collectionContext={contextRef.current}
         />
       );
     default:
