@@ -312,6 +312,59 @@ function runCuratorIntentSafely(handlerFn, { intent, message, context, entityCon
   }
 }
 
+// POLISH 1: Phrase variation helpers (expert tone rotation)
+const confidentPhrases = [
+  'is the clear standout',
+  'emerges as the strongest signal',
+  'stands out as the prime candidate',
+  'is what the data points to most clearly',
+  'is the obvious choice given the pattern',
+];
+
+const tentativePhrases = [
+  'is worth considering',
+  'warrants attention',
+  'shows real promise',
+  'is pointing in an interesting direction',
+  'bears watching',
+];
+
+const nextStepPhrases = [
+  'The next move is',
+  'From here, I would',
+  'The logical follow-up is',
+  'What makes sense next is',
+  'The productive step is',
+];
+
+const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+// POLISH 2: Gap analysis with directional insight
+function biggestGapWithDirectionality(blends = [], bottles = [], activeModules = {}) {
+  const hasBlends = blends && blends.length > 0;
+  const hasBottles = bottles && bottles.length > 0;
+  if (!hasBlends && !hasBottles) return { gap: 'Start logging items and sessions — the gaps will reveal themselves as the collection takes shape.', direction: 'establish_collection' };
+  
+  if (hasBlends && hasBottles) {
+    const blendFamilies = new Set(blends.map((b) => b.blend_type || b.blend_family).filter(Boolean));
+    const bottleTypes = new Set(bottles.map((b) => b.type || b.whiskey_type).filter(Boolean));
+    const pairedCount = Math.min(blendFamilies.size, bottleTypes.size);
+    const maxPossible = Math.max(blendFamilies.size, bottleTypes.size);
+    if (pairedCount < maxPossible * 0.6) {
+      return { gap: `Your blend families are diverse, but bottle types haven't caught up yet. Focusing next bottles on families that are under-represented in the whiskey selection would round out pairing options significantly.`, direction: 'expand_bottle_coverage' };
+    }
+  }
+  
+  if (hasBottles) {
+    const bottleTypes = Object.entries((bottles || []).reduce((acc, b) => { const t = b.type || b.whiskey_type || 'Unknown'; acc[t] = (acc[t] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1]);
+    const dominant = bottleTypes[0]?.[0] || 'existing focus';
+    const underrep = bottleTypes.slice(-2).map((t) => t[0]).filter(Boolean);
+    return { gap: `The shelf is anchored in ${dominant}. The gap is in the contrasting categories — ${underrep.join(' and ')} would add needed variety.`, direction: 'add_contrast' };
+  }
+  
+  return { gap: 'Blend diversity is established, but without tasting notes or direct feedback, the gap emerges in understanding which styles complement your preferences best.', direction: 'log_tastings' };
+}
+
 function pairingExplanationEngine(message, context = {}, entityContext = {}) {
   const pipes = context?.pipes || [];
   const blends = context?.blends || [];
@@ -728,11 +781,11 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       const targetModule   = whiskeyFocused ? 'whiskey' : pipeFocused ? 'pipe' : 'any';
       const candidates = buildSessionPlan(context, activeModules, targetModule);
       if (!candidates.length) {
-        return { reply: 'Not enough data in the collection yet to make a confident session suggestion. Log a few sessions and the picture will fill in quickly.', updatedEntityContext: entityContext };
+        return { reply: 'Start with something that has been sitting idle for a while — logging that session will sharpen what comes next.', updatedEntityContext: entityContext };
       }
       const top = candidates[0];
-      const others = candidates.slice(1, 3).map((c) => c.title).filter(Boolean);
-      const othersText = others.length ? ` Other strong options right now: ${others.join(', ')}.` : '';
+      const second = candidates[1];
+      const secondLine = second ? ` If you want a different angle, ${second.title} ${pickRandom(tentativePhrases)}.` : '';
       const entityKey = { bottle: 'bottle', pipe: 'pipe', blend: 'blend' }[top.itemType];
       const newCtx = entityKey
         ? {
@@ -746,7 +799,7 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
             rankedCursor: 0,
           }
         : entityContext;
-      return { reply: `${top.reason}${othersText}`, updatedEntityContext: newCtx };
+      return { reply: `${top.reason}${secondLine}`, updatedEntityContext: newCtx };
     } catch (err) {
       console.error('[Curator][SESSION_RECOMMENDATION]', { error: String(err), dataCounts });
       return { reply: 'I can see strong directions for tonight, even if the session history is still thin. The best move is to open something that has not been logged yet to build clearer signals.', updatedEntityContext: entityContext };
@@ -760,13 +813,18 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
         const s = norm(i.status || i.category || '');
         return s === 'restock' || s === 'shopping_list' || s === 'wishlist';
       });
-      if (tracked) return { reply: `${tracked.name} is already in the purchase workflow — that is the most logical starting point before adding anything new.`, updatedEntityContext: { ...entityContext, lastEvidenceClass: 'STRONG', lastConclusion: 'already tracked' } };
-      const lowBlend = blends.find((b) => {
+      if (tracked) return { reply: `${tracked.name} ${pickRandom(confidentPhrases)} — it is already flagged for action.`, updatedEntityContext: { ...entityContext, lastEvidenceClass: 'STRONG', lastConclusion: 'already tracked' } };
+      const allLow = blends.filter((b) => {
         const oz = typeof b.quantity_oz === 'number' ? b.quantity_oz : typeof b.total_oz === 'number' ? b.total_oz : null;
         return oz !== null && oz <= 2.0;
-      });
-      if (lowBlend) return { reply: `${lowBlend.name} is the clearest restock target right now — stock is thin and it is already part of the active rotation. It is the one most likely to be missed first.`, updatedEntityContext: { ...entityContext, subject: { id: lowBlend.id, name: lowBlend.name, type: 'blend' }, topicIntent: 'restock_advice', lastEvidenceClass: 'STRONG', lastClaimType: 'restock_recommendation', lastConclusion: 'restock' } };
-      return { reply: 'No critical restock signals at the moment. The Want List is the better place to check for items that have already been flagged.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
+      }).sort((a, b) => (a.quantity_oz || a.total_oz || 0) - (b.quantity_oz || b.total_oz || 0));
+      const lowBlend = allLow[0];
+      const secondLow = allLow[1];
+      if (lowBlend) {
+        const nextLine = secondLow ? ` After that, ${secondLow.name} is running thin as well.` : '';
+        return { reply: `${lowBlend.name} needs restocking — active rotation and depleting stock make it the priority.${nextLine}`, updatedEntityContext: { ...entityContext, subject: { id: lowBlend.id, name: lowBlend.name, type: 'blend' }, topicIntent: 'restock_advice', lastEvidenceClass: 'STRONG', lastClaimType: 'restock_recommendation', lastConclusion: 'restock' } };
+      }
+      return { reply: 'Inventory is healthy across active rotation items. When levels do drop, this will be the first signal.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
     } catch (err) {
       console.error('[Curator][RESTOCK_ADVICE]', { error: String(err), dataCounts });
       return { reply: 'I was not able to analyze restock signals cleanly. The Want List is the best place to prioritize purchases in the meantime.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
@@ -776,18 +834,16 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
   // ── GAP_ANALYSIS ───────────────────────────────────────────────────────────
   if (intent === 'GAP_ANALYSIS') {
     try {
-      const { gap, evidenceClass } = biggestGap(blends, bottles, activeModules);
-      const qualifier = evidenceQualifier(evidenceClass);
+      const { gap, direction } = biggestGapWithDirectionality(blends, bottles, activeModules);
       return {
-        reply: `${qualifier}${gap}`,
-        updatedEntityContext: { ...entityContext, topicIntent: 'gap_analysis', lastClaimType: 'gap_analysis', lastEvidenceClass: evidenceClass, lastConclusion: gap },
+        reply: gap,
+        updatedEntityContext: { ...entityContext, topicIntent: 'gap_analysis', lastClaimType: 'gap_analysis', lastEvidenceClass: 'MODERATE', lastConclusion: gap },
       };
     } catch (err) {
       console.error('[Curator][GAP_ANALYSIS]', err);
       const { gap, evidenceClass } = fallbackGapAnalysis(context);
-      const qualifier = evidenceQualifier(evidenceClass);
       return {
-        reply: `${qualifier}${gap}`,
+        reply: gap,
         updatedEntityContext: { ...entityContext, topicIntent: 'gap_analysis', lastClaimType: 'gap_analysis', lastEvidenceClass: evidenceClass, lastConclusion: gap },
       };
     }
@@ -826,12 +882,12 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       const qualifier = evidenceQualifier(evidence.evidenceClass);
 
       const whyLine = candidate.mismatch
-        ? `The sessions are pulling toward ${targetFamily}, away from its current lane as ${currentFocusLabel}. That kind of drift is worth watching.`
-        : `Nearly all its sessions cluster in ${targetFamily} — the strongest pattern in the data right now.`;
+        ? `Sessions are pulling toward ${targetFamily}, drifting away from its designated ${currentFocusLabel} lane.`
+        : `The session history clusters heavily in ${targetFamily} — a clear pattern worth acting on.`;
 
       const nextStep = candidate.mismatch
-        ? `The first move is checking the underlying sessions directly. If the mismatch holds up on review, updating the specialization from ${currentFocusLabel} to ${targetFamily} makes sense.`
-        : `A few more intentional sessions would help confirm the pattern before making a formal specialization change.`;
+        ? `${pickRandom(nextStepPhrases)} a direct review of those sessions. If the shift holds, updating the specialization makes sense.`
+        : `${pickRandom(nextStepPhrases)} a few more deliberate sessions in ${targetFamily} to cement the specialization.`;
 
       const rankedNarratives = scored.slice(0, 5).map((p) => {
         const pEvidence = p.evidence || evaluateEvidenceStrength({ sessionCount: p.sessionCount, dominantCount: p.dominantCount });
@@ -876,10 +932,10 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
   if (intent === 'COLLECTION_ANALYSIS') {
     try {
       const candidate = mostRedundantPipe(pipes, smokingLogs, blends);
-      if (!candidate) return { reply: 'Not enough pipe and session data yet to identify redundancy with any confidence. Log more sessions across the collection first.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
-      const qualifier = evidenceQualifier(candidate.evidence?.evidenceClass || 'WEAK');
+      if (!candidate) return { reply: 'More session history is needed to identify which pipes in crowded shape lanes are truly earning their place.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
+      const nextLine = candidate.evidence?.evidenceClass === 'WEAK' ? `${pickRandom(nextStepPhrases)} intentional rotation through your ${candidate.shape || 'same shape'} pipes to see whether this one pulls its weight.` : `${pickRandom(nextStepPhrases)} deciding whether it has a distinct specialization or is redundant.`;
       return {
-        reply: `${candidate.name} is the most likely candidate. It shares the ${candidate.shape || 'same shape'} lane with other pipes in the collection and has only ${candidate.sessionCount || 0} logged sessions — a low contribution for a crowded lane. ${qualifier}If the pattern holds after a few more sessions, it is worth deciding whether it earns a distinct specialization or whether the lane needs consolidating.`,
+        reply: `${candidate.name} stands out as the least active in its shape lane. With only ${candidate.sessionCount || 0} logged sessions among other ${candidate.shape || 'same shape'} pipes, it is not earning heavy use. ${nextLine}`,
         updatedEntityContext: { ...entityContext, subject: { id: candidate.id, name: candidate.name, type: 'pipe' }, topicIntent: 'collection_analysis', lastClaimType: 'redundancy_recommendation', lastEvidenceClass: candidate.evidence?.evidenceClass || 'WEAK', lastConclusion: `${candidate.name} is most redundant` },
       };
     } catch (err) {
