@@ -51,6 +51,27 @@ function classifyIntent(message, collectionContext = {}) {
   const comparisonPattern = /\b(compare|redundant|overlap|where does it sit|how does it fit)\b/i;
   if (followUpPattern.test(t) || comparisonPattern.test(t)) return 'FOLLOW_UP';
 
+  if (/\b(pairing|pair with|pair together|combine|combination|explain why .+ work together)\b/i.test(t)) return 'EXPLAIN_PAIRING';
+  if (/\b(tonight|enjoy|smoke|drink|open next|session|use|revisit|rediscover|haven.?t used|haven.?t had)\b/i.test(t)) return 'SESSION_RECOMMENDATION';
+  if (/\b(restock|running low|running out|buy next|replenish)\b/i.test(t)) return 'RESTOCK_ADVICE';
+  if (/\b(gap|missing|need|biggest gap|collection gap)\b/i.test(t)) return 'GAP_ANALYSIS';
+  if (/\b(redundant|most redundant|overlap|specializ|reassign)\b/i.test(t)) return 'COLLECTION_ANALYSIS';
+
+  if (/\b(evaluate|assess|how does .+ fit|where does .+ sit|role of)\b/i.test(t)) {
+    const evalMatch = message.match(/evaluate\s+(.+?)(?:\s+(?:in|for)\s+my\s+collection|$)/i);
+    const itemName = evalMatch ? evalMatch[1].trim().toLowerCase() : null;
+    if (itemName) {
+      const { bottles = [], blends = [], pipes = [] } = collectionContext;
+      const allItems = [...bottles, ...blends, ...pipes];
+      const owned = allItems.find((i) => (i.name || '').toLowerCase().includes(itemName) || itemName.includes((i.name || '').toLowerCase()));
+      return owned ? 'EVALUATE_OWNED_ITEM' : 'EVALUATE_OUTSIDE_RECOMMENDATION';
+    }
+    return 'EVALUATE_OWNED_ITEM';
+  }
+
+  return 'UNKNOWN';
+}
+
 // ─── String helpers ────────────────────────────────────────────────────────────
 function norm(v) { return String(v || '').trim().toLowerCase(); }
 function daysSince(d) {
