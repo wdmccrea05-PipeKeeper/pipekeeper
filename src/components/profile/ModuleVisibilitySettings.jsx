@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -11,6 +10,7 @@ import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 import { isModuleLaunched, isModuleInternal, isInternalModuleTester } from "@/components/utils/moduleReleaseState";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { Switch } from "@/components/ui/switch";
 
 function ModuleIcon({ src, alt, className }) {
   return (
@@ -192,38 +192,35 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-3 flex-shrink-0">
                 {mod.launched && (mod.id === "pipekeeper" || mod.id === "whiskeykeeper") ? (
-                  <div className="flex gap-2 flex-shrink-0">
-                    <Button
-                      size="sm"
-                      variant={enabled ? "default" : "ghost"}
-                      onClick={() => handleModuleVisibility(mod.id, !enabled)}
+                  <>
+                    <Switch
+                      checked={enabled}
+                      onCheckedChange={(value) => handleModuleVisibility(mod.id, value)}
                       disabled={isSaving}
-                      className="text-xs"
-                      title={enabled ? "Hide module" : "Show module"}
-                    >
-                      {enabled ? "On" : "Off"}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={mod.id === "pipekeeper" ? pipekeeperPaid ? "default" : "outline" : whiskeykeeperPaid ? "default" : "outline"}
-                      onClick={() => handleSetTierAndEnable(mod.id, true)}
-                      disabled={isSaving}
-                      className="text-xs"
-                    >
-                      Pro
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={mod.id === "pipekeeper" ? !pipekeeperPaid && enabled ? "default" : "outline" : !whiskeykeeperPaid && enabled ? "default" : "outline"}
-                      onClick={() => handleSetTierAndEnable(mod.id, false)}
-                      disabled={isSaving}
-                      className="text-xs"
-                    >
-                      Free
-                    </Button>
-                  </div>
+                    />
+                    <div className="flex gap-2 flex-shrink-0">
+                      <Button
+                        size="sm"
+                        variant={mod.id === "pipekeeper" ? pipekeeperPaid ? "default" : "outline" : whiskeykeeperPaid ? "default" : "outline"}
+                        onClick={() => handleSetTierAndEnable(mod.id, true)}
+                        disabled={isSaving}
+                        className="text-xs"
+                      >
+                        Pro
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={mod.id === "pipekeeper" ? !pipekeeperPaid && enabled ? "default" : "outline" : !whiskeykeeperPaid && enabled ? "default" : "outline"}
+                        onClick={() => handleSetTierAndEnable(mod.id, false)}
+                        disabled={isSaving}
+                        className="text-xs"
+                      >
+                        Free
+                      </Button>
+                    </div>
+                  </>
                 ) : !canToggle && !mod.launched ? (
                   <Lock className="w-3.5 h-3.5 text-stone-500" title="Coming Soon" />
                 ) : null}
