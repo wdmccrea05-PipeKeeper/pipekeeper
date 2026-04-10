@@ -237,14 +237,17 @@ function inferTasteProfile(blends, bottles, smokingLogs, preferences = {}) {
  * Check if an item name or type is already in the collection.
  */
 function isAlreadyOwned(targetType, blends, bottles) {
-  const normalizedTarget = targetType.toLowerCase();
+  const normalizedTarget = targetType.toLowerCase().trim();
+  if (!normalizedTarget) return false;
   for (const blend of blends) {
-    const t = (blend.blend_type || blend.blend_family || '').toLowerCase();
-    if (t.includes(normalizedTarget) || normalizedTarget.includes(t)) return true;
+    const t = (blend.blend_type || blend.blend_family || '').toLowerCase().trim();
+    if (!t) continue;
+    if (t === normalizedTarget) return true;
   }
   for (const bottle of bottles) {
-    const t = (bottle.type || bottle.whiskey_type || '').toLowerCase();
-    if (t.includes(normalizedTarget) || normalizedTarget.includes(t)) return true;
+    const t = (bottle.type || bottle.whiskey_type || '').toLowerCase().trim();
+    if (!t) continue;
+    if (t === normalizedTarget || t.includes(normalizedTarget) || normalizedTarget.includes(t)) return true;
   }
   return false;
 }
@@ -339,10 +342,18 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
 
   // 2. Fill remaining slots from entirely unrepresented families
   if (results.length < 3) {
-    const ownedFamilies = new Set(blends.map((b) => b.blend_type || b.blend_family).filter(Boolean));
+    const ownedFamilies = new Set(
+      blends.map((b) => (b.blend_type || b.blend_family || '').trim()).filter(Boolean)
+    );
+    const ownedNames = new Set(
+      blends.map((b) => (b.name || '').toLowerCase().trim()).filter(Boolean)
+    );
     for (const family of ALL_BLEND_FAMILIES) {
       if (results.length >= 3) break;
       if (ownedFamilies.has(family) || seenNextTypes.has(family)) continue;
+      // Also skip if the suggested product name is already in the collection
+      const candidateProduct = (BLEND_PROGRESSION_PRODUCTS[family] || '').toLowerCase();
+      if (candidateProduct && ownedNames.has(candidateProduct)) continue;
       if (dislikes.some((d) => family.toLowerCase().includes(d.toLowerCase()))) continue;
 
       seenNextTypes.add(family);
