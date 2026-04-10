@@ -9,6 +9,7 @@ import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 import { isModuleLaunched, isModuleInternal, isInternalModuleTester } from "@/components/utils/moduleReleaseState";
+import { base44 } from "@/api/base44Client";
 
 function ModuleIcon({ src, alt, className }) {
   return (
@@ -95,6 +96,24 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
     }
   }
 
+  async function handleAccessToggle(moduleId, isPaid) {
+    setSaving(moduleId);
+    try {
+      const key = moduleId === 'pipekeeper' ? 'pipekeeper_paid' : 'whiskeykeeper_paid';
+      await base44.auth.updateMe({ [key]: isPaid });
+      if (isPaid) {
+        navigate('/Subscription');
+      } else {
+        toast.success('Switched to free version');
+      }
+    } catch (e) {
+      console.error("[ModuleVisibility] access toggle error:", e);
+      toast.error('Could not update module access');
+    } finally {
+      setSaving(null);
+    }
+  }
+
   if (isLoading) return null;
 
   return (
@@ -172,26 +191,27 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                     disabled={isSaving}
                   />
                 ) : null}
-                {mod.id === "pipekeeper" && !pipekeeperPaid && mod.launched ? (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => navigate("/Subscription")}
-                    className="text-xs gap-1 flex-shrink-0"
-                  >
-                    <Unlock className="w-3 h-3" />
-                    {t("profile.unlock", "Unlock")}
-                  </Button>
-                ) : mod.id === "whiskeykeeper" && !whiskeykeeperPaid && mod.launched ? (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => navigate("/Subscription")}
-                    className="text-xs gap-1 flex-shrink-0"
-                  >
-                    <Unlock className="w-3 h-3" />
-                    {t("profile.unlock", "Unlock")}
-                  </Button>
+                {mod.launched && (mod.id === "pipekeeper" || mod.id === "whiskeykeeper") ? (
+                  <div className="flex gap-1 flex-shrink-0">
+                    <Button
+                      size="sm"
+                      variant={mod.id === "pipekeeper" ? pipekeeperPaid ? "default" : "ghost" : whiskeykeeperPaid ? "default" : "ghost"}
+                      onClick={() => handleAccessToggle(mod.id, true)}
+                      disabled={isSaving}
+                      className="text-xs"
+                    >
+                      Pro
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={mod.id === "pipekeeper" ? !pipekeeperPaid ? "default" : "ghost" : !whiskeykeeperPaid ? "default" : "ghost"}
+                      onClick={() => handleAccessToggle(mod.id, false)}
+                      disabled={isSaving}
+                      className="text-xs"
+                    >
+                      Free
+                    </Button>
+                  </div>
                 ) : !canToggle && !mod.launched ? (
                   <Lock className="w-3.5 h-3.5 text-stone-500" title="Coming Soon" />
                 ) : null}

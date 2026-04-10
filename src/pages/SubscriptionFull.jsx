@@ -132,6 +132,8 @@ export default function SubscriptionFull() {
 
   const tierPrices = {
     pro: { monthly: 2.99, annual: 29.99 },
+    pipekeeper: { monthly: 2.99, annual: 29.99 },
+    whiskeykeeper: { monthly: 2.99, annual: 29.99 },
   };
 
   const getDiscountPct = (tier, prices) => {
@@ -141,6 +143,8 @@ export default function SubscriptionFull() {
   };
 
   const freeFeatures = [
+    "PipeKeeper: 5 pipes, 10 blends",
+    "WhiskeyKeeper: 10 bottles",
     t("subscriptionFull.basicItemRecords"),
     t("subscriptionFull.notesAndPhotos"),
     t("subscriptionFull.manualOrganization"),
@@ -157,6 +161,9 @@ export default function SubscriptionFull() {
 
   const tierFeatures = {
     pro: [
+      "PipeKeeper Pro: Unlimited pipes & blends, AI pairings",
+      "WhiskeyKeeper Pro: Unlimited bottles, AI valuations",
+      "AI identification & matching",
       t("subscriptionFull.collectionInsights"),
       t("subscriptionFull.reportsAndExports"),
       t("subscriptionFull.advancedOrgTools"),
@@ -284,8 +291,8 @@ export default function SubscriptionFull() {
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">{t("subscriptionFull.unlockProFeatures")}</h1>
-        <p className="text-[#e8d5b7]/70">{t("subscriptionFull.fullAccessPrompt")}</p>
+        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">Unlock Pro Features</h1>
+        <p className="text-[#e8d5b7]/70">Choose which modules to unlock. Free tiers provide essential features with item limits.</p>
       </div>
 
       {/* Billing Interval Toggle */}

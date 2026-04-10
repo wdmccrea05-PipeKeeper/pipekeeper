@@ -38,6 +38,8 @@ import CigarFormPage from "@/pages/CigarFormPage";
 import CigarInsights from "@/pages/CigarInsights";
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
+import ModuleSelectionModal from "@/components/onboarding/ModuleSelectionModal";
+import { useModuleOnboarding } from "@/components/hooks/useModuleOnboarding";
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -65,6 +67,7 @@ const CigarReleaseRoute = ({ currentPageName, children }) => (
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const loginRedirectedRef = useRef(false);
+  const { showModal, setShowModal } = useModuleOnboarding();
 
   if (isLoadingAuth || isLoadingPublicSettings) {
     return (
@@ -95,7 +98,12 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <Routes>
+    <>
+      <ModuleSelectionModal
+        isOpen={showModal}
+        onComplete={() => setShowModal(false)}
+      />
+      <Routes>
       <Route path="/support-public" element={<SupportPublic />} />
       <Route path="/share/:moduleType/:shareToken" element={<PublicSharedRecord />} />
 
@@ -349,6 +357,7 @@ const AuthenticatedApp = () => {
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </>
   );
 };
 
