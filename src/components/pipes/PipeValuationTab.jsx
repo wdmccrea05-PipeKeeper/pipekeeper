@@ -176,7 +176,14 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
   const rarestTobaccos = useMemo(() => getRarestTobaccos(blends, 5), [blends]);
   const discontinuedBlends = useMemo(() => getDiscontinuedTobaccos(blends), [blends]);
   const cellarCandidates = useMemo(() => getCellarCandidates(blends, 5), [blends]);
-  const smokeNowCandidates = useMemo(() => getSmokeNowCandidates(blends, 5), [blends]);
+  const smokeNowCandidates = useMemo(() => {
+    const excludeIds = new Set([
+      ...rarestTobaccos.map(b => b.id),
+      ...discontinuedBlends.map(b => b.id),
+      ...cellarCandidates.map(b => b.id),
+    ]);
+    return getSmokeNowCandidates(blends, 10).filter(b => !excludeIds.has(b.id)).slice(0, 5);
+  }, [blends, rarestTobaccos, discontinuedBlends, cellarCandidates]);
 
   return (
     <div className="space-y-5 pt-4">
