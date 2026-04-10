@@ -165,6 +165,9 @@ const WHISKEY_PROGRESSION_MAP = {
   },
 };
 
+// Peated whiskey type identifiers — used to apply dislikes filter
+const peatedTypes = ['Islay', 'Peated'];
+
 // Pipe shape suggestions based on collection composition
 const PIPE_SHAPE_SUGGESTIONS = {
   billiard: {
