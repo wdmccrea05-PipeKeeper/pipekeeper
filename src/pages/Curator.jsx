@@ -35,7 +35,7 @@ function SurfaceTab({ active, label, badge, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="h-[58px] px-7 rounded-[18px] inline-flex items-center gap-3 text-[16px] font-medium transition"
+      className="h-[50px] sm:h-[58px] px-4 sm:px-7 rounded-[14px] sm:rounded-[18px] inline-flex items-center gap-2 sm:gap-3 text-[13px] sm:text-[16px] font-medium transition whitespace-nowrap"
       style={{
         background: active ? 'rgba(198,161,91,0.18)' : 'transparent',
         color: active ? '#F5F5F7' : '#C8B898',
@@ -109,7 +109,7 @@ export default function CuratorPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#0B0B0C' }}>
-      <div className="max-w-[1440px] mx-auto px-10 py-10">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 py-6 sm:py-8 md:py-10">
         <header className="mb-8">
           <div className="flex items-center gap-3 mb-3">
             <img src={CURATOR_ICON} alt="" className="w-9 h-9 object-cover rounded" style={{ filter: 'hue-rotate(35deg) saturate(0.8) brightness(1.1)' }} aria-hidden="true" />
