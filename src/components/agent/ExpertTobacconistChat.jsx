@@ -426,55 +426,28 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
 
     const nextCandidate = rankedCandidates[nextCursor];
     const priorCandidate = rankedCandidates[currentCursor];
-    const reason = nextCandidate.reason || `${nextCandidate.name} ranks next in the analysis`;
+    const confidenceLevel = nextCandidate.evidenceClass === 'STRONG' ? 'high' : nextCandidate.evidenceClass === 'MODERATE' ? 'moderate' : 'low';
+    const nextAction = nextCandidate.evidenceClass === 'STRONG' 
+      ? 'I would evaluate this one carefully.'
+      : nextCandidate.evidenceClass === 'MODERATE'
+      ? 'I would monitor it and confirm with a few more sessions before deciding.'
+      : 'This is exploratory — more data is needed before drawing conclusions.';
+
     const comparison = priorCandidate
-      ? `It is not as strong a signal as ${priorCandidate.name}, but it is the next place where the pattern shifts.`
+      ? `It is not as strong a signal as ${priorCandidate.name}, but it is the next place where the usage pattern begins to diverge from its current role.`
       : 'This is the next candidate in the ranked set.';
 
+    const reason = nextCandidate.reason || `Signal confidence: ${confidenceLevel}.`;
+    const fullReply = `${nextCandidate.name} would be the next one I'd look at. ${comparison} ${reason} ${nextAction}`;
+
     return {
-      reply: `${nextCandidate.name} would be the next one I'd look at. ${comparison} ${reason}`,
+      reply: fullReply,
       updatedEntityContext: {
         ...entityContext,
         subject: { id: nextCandidate.id, name: nextCandidate.name, type: nextCandidate.type },
         rankedCursor: nextCursor,
         lastConclusion: `next candidate: ${nextCandidate.name}`,
       },
-    };
-  }
-
-  // ── FOLLOW_UP ──────────────────────────────────────────────────────────────
-  if (intent === 'FOLLOW_UP') {
-    const subjectEntity = entityContext.subject;
-    if (!subjectEntity) {
-      return { reply: 'Could you name the specific item you are asking about? I do not have a clear subject from the last exchange.', updatedEntityContext: entityContext };
-    }
-    const subject = subjectEntity;
-    const topicIntent = entityContext.topicIntent;
-
-    if (topicIntent === 'evaluate_owned_item') {
-      const ownedBottle = bottles.find((b) => b.id === subject.id || norm(b.name) === norm(subject.name));
-      const ownedBlend  = blends.find((b) => b.id === subject.id || norm(b.name) === norm(subject.name));
-      const ownedPipe   = pipes.find((p) => p.id === subject.id || norm(p.name) === norm(subject.name));
-      let evalData;
-      if (ownedBottle) evalData = evaluateOwnedBottle(ownedBottle, bottles, tastingLogs);
-      else if (ownedBlend) evalData = evaluateOwnedBlend(ownedBlend, blends, smokingLogs);
-      else if (ownedPipe) evalData = evaluateOwnedPipe(ownedPipe, pipes, smokingLogs);
-
-      if (evalData) {
-        const nearby = evalData.adjacentComparables;
-        const qualifier = evidenceQualifier(evalData.evidence.evidenceClass);
-        const nearbyText = nearby.length > 0
-          ? `The closest items in the collection are ${nearby.map((x) => x.name).join(' and ')}, and it sits as ${evalData.role}.`
-          : `It has no close neighbors in its lane — it stands alone.`;
-        return {
-          reply: `${nearbyText} Right now it is ${evalData.usageState}. ${qualifier}I would ${evalData.recommendation}.`,
-          updatedEntityContext: entityContext,
-        };
-      }
-    }
-    return {
-      reply: `Still focused on ${subject.name}. What specifically would be most useful — redundancy, specialization, how it fits tonight's session, or a comparison against something else?`,
-      updatedEntityContext: entityContext,
     };
   }
 
@@ -671,6 +644,23 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       ? `The first move is checking the underlying sessions directly. If the mismatch holds up on review, updating the specialization from ${currentFocusLabel} to ${targetFamily} makes sense.`
       : `A few more intentional sessions would help confirm the pattern before making a formal specialization change.`;
 
+    // Build complete reason narratives for ranked candidates
+    const rankedNarratives = scored.slice(0, 5).map((p, idx) => {
+      const pEvidence = p.evidence || evaluateEvidenceStrength({ sessionCount: p.sessionCount, dominantCount: p.dominantCount });
+      const pConfidence = Math.round((p.dominantCount / (p.sessionCount || 1)) * 100);
+      const pRatio = p.dominantCount / (p.sessionCount || 1);
+      const pTargetFamily = p.dominantFamily || 'a different family';
+      return {
+        id: p.id,
+        name: p.name,
+        type: 'pipe',
+        dominantFamily: pTargetFamily,
+        evidenceClass: pEvidence.evidenceClass,
+        sessionCount: p.sessionCount,
+        reason: `${pConfidence}% of sessions point toward ${pTargetFamily}. Evidence strength: ${pEvidence.evidenceClass.toLowerCase()}.`,
+      };
+    });
+
     return {
       reply: `${candidate.name} is the strongest candidate right now. ${whyLine} ${qualifier}${nextStep}`,
       updatedEntityContext: {
@@ -680,20 +670,9 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
         lastClaimType: 'reassignment_recommendation',
         lastEvidenceClass: evidence.evidenceClass,
         lastConclusion: `reassign ${candidate.name} to ${targetFamily}`,
-        rankedCandidates: scored.map((p) => ({ id: p.id, name: p.name, type: 'pipe', reason: `${p.dominantFamily} signals` })),
+        rankedCandidates: rankedNarratives,
         rankedCursor: 0,
       },
-    };
-  }
-
-  // ── COLLECTION_ANALYSIS ────────────────────────────────────────────────────
-  if (intent === 'COLLECTION_ANALYSIS') {
-    const candidate = mostRedundantPipe(pipes, smokingLogs, blends);
-    if (!candidate) return { reply: 'Not enough pipe and session data yet to identify redundancy with any confidence. Log more sessions across the collection first.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
-    const qualifier = evidenceQualifier(candidate.evidence?.evidenceClass || 'WEAK');
-    return {
-      reply: `${candidate.name} is the most likely candidate. It shares the ${candidate.shape || 'same shape'} lane with other pipes in the collection and has only ${candidate.sessionCount || 0} logged sessions — a low contribution for a crowded lane. ${qualifier}If the pattern holds after a few more sessions, it is worth deciding whether it earns a distinct specialization or whether the lane needs consolidating.`,
-      updatedEntityContext: { ...entityContext, subject: { id: candidate.id, name: candidate.name, type: 'pipe' }, topicIntent: 'collection_analysis', lastClaimType: 'redundancy_recommendation', lastEvidenceClass: candidate.evidence?.evidenceClass || 'WEAK', lastConclusion: `${candidate.name} is most redundant` },
     };
   }
 
