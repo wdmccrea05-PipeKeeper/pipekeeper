@@ -94,19 +94,36 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
   ].filter((mod) => !mod.hidden);
 
   async function handleSetTierAndEnable(moduleId, isPaid) {
+    // Block Pro tier for unpaid users — send to subscription instead
+    if (isPaid && !userHasPaidSub) {
+      navigate("/Subscription");
+      return;
+    }
+
+    // Only allow Free tier toggle without subscription
+    if (!isPaid) {
+      setSaving(moduleId);
+      try {
+        const key = moduleId === "pipekeeper" ? "pipekeeper_paid" : "whiskeykeeper_paid";
+        await base44.auth.updateMe({ [key]: false });
+        await setModuleEnabled(moduleId, true);
+        toast.success(`Switched to Free version`);
+      } catch (e) {
+        console.error("[ModuleVisibility] tier toggle error:", e);
+        toast.error("Could not update module settings");
+      } finally {
+        setSaving(null);
+      }
+      return;
+    }
+
+    // Pro tier — user has subscription
     setSaving(moduleId);
     try {
-      if (isPaid && !userHasPaidSub) {
-        navigate("/Subscription");
-        return;
-      }
-
       const key = moduleId === "pipekeeper" ? "pipekeeper_paid" : "whiskeykeeper_paid";
-      await base44.auth.updateMe({ [key]: isPaid });
+      await base44.auth.updateMe({ [key]: true });
       await setModuleEnabled(moduleId, true);
-
-      const tier = isPaid ? "Pro" : "Free";
-      toast.success(`Switched to ${tier} version`);
+      toast.success(`Switched to Pro version`);
     } catch (e) {
       console.error("[ModuleVisibility] tier toggle error:", e);
       toast.error("Could not update module settings");
