@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Eye, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { MODULE_ICONS } from "@/components/branding/moduleAssets";
@@ -35,8 +36,9 @@ function ModuleIcon({ src, alt, className }) {
 export default function ModuleVisibilitySettings({ profile = null, user: passedUser = null, compact = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { moduleStates, setModuleEnabled, isLoading, user } = useModuleVisibility(profile, passedUser);
-  const { hasPaid: userHasPaidSub } = useCurrentUser();
+  const { hasPaid } = useCurrentUser();
   const [saving, setSaving] = useState(null);
 
   const effectiveUser = passedUser || user;
@@ -94,36 +96,27 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
   ].filter((mod) => !mod.hidden);
 
   async function handleSetTierAndEnable(moduleId, isPaid) {
-    // Block Pro tier for unpaid users — send to subscription instead
-    if (isPaid && !userHasPaidSub) {
+    if (isPaid && !hasPaid) {
       navigate("/Subscription");
       return;
     }
 
-    // Only allow Free tier toggle without subscription
-    if (!isPaid) {
-      setSaving(moduleId);
-      try {
-        const key = moduleId === "pipekeeper" ? "pipekeeper_paid" : "whiskeykeeper_paid";
-        await base44.auth.updateMe({ [key]: false });
-        await setModuleEnabled(moduleId, true);
-        toast.success(`Switched to Free version`);
-      } catch (e) {
-        console.error("[ModuleVisibility] tier toggle error:", e);
-        toast.error("Could not update module settings");
-      } finally {
-        setSaving(null);
-      }
-      return;
-    }
-
-    // Pro tier — user has subscription
     setSaving(moduleId);
     try {
       const key = moduleId === "pipekeeper" ? "pipekeeper_paid" : "whiskeykeeper_paid";
-      await base44.auth.updateMe({ [key]: true });
+
+      // Important: this only changes local module mode.
+      // It must NOT mutate or cancel the actual subscription.
+      await base44.auth.updateMe({ [key]: !!isPaid });
       await setModuleEnabled(moduleId, true);
-      toast.success(`Switched to Pro version`);
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["current-user"] }),
+        queryClient.invalidateQueries({ queryKey: ["canonical-profile"] }),
+        queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
+      ]);
+
+      toast.success(isPaid ? t("profile.switchedToPro", "Switched to Pro mode") : t("profile.switchedToFree", "Switched to Free mode"));
     } catch (e) {
       console.error("[ModuleVisibility] tier toggle error:", e);
       toast.error("Could not update module settings");
@@ -136,6 +129,12 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
     setSaving(moduleId);
     try {
       await setModuleEnabled(moduleId, enabled);
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["canonical-profile"] }),
+        queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
+      ]);
+
       const moduleLabel = MODULE_CONFIG.find((m) => m.id === moduleId)?.label || moduleId;
       toast.success(
         enabled
