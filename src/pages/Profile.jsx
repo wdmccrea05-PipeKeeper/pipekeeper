@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 
-import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, Layers, Trash2, AlertTriangle } from "lucide-react";
+import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, Layers, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 import WhiskeyPreferencesSection from "@/components/profile/WhiskeyPreferencesSection";
 import CigarPreferencesSection from "@/components/profile/CigarPreferencesSection";
@@ -23,6 +23,7 @@ import FormSection from "@/components/forms/FormSection";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
+import { handleManageSubscription } from "@/components/utils/manageSubscription";
 
 import { PK_THEME } from "@/components/utils/pkTheme";
 
@@ -193,6 +194,7 @@ export default function ProfilePage() {
   const [deletingProfile, setDeletingProfile] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [cropperImage, setCropperImage] = useState(null);
+  const [manageSubLoading, setManageSubLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     display_name: "",
@@ -490,23 +492,19 @@ export default function ProfilePage() {
               <div className="w-full md:w-auto flex flex-col gap-2">
                 <Button
                   className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
+                  disabled={manageSubLoading}
                   onClick={async () => {
-                    // Single-module users go to Stripe portal to upgrade bundles
-                    const paidCount = (user?.pipekeeper_paid ? 1 : 0) + (user?.whiskeykeeper_paid ? 1 : 0);
-                    if (paidCount === 1 && provider === 'stripe') {
-                      try {
-                        await base44.functions.invoke('createCustomerPortalSessionForMe', { return_url: window.location.href });
-                      } catch (err) {
-                        console.error('Portal error:', err);
-                        navigate(createPageUrl('Subscription'));
-                      }
-                    } else {
-                      navigate(createPageUrl('Subscription'));
+                    setManageSubLoading(true);
+                    try {
+                      await handleManageSubscription(user, subscription, navigate, createPageUrl);
+                    } finally {
+                      setManageSubLoading(false);
                     }
                   }}
                 >
+                  {manageSubLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   {t("profile.manageSubscription")}
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  {!manageSubLoading && <ArrowRight className="w-4 h-4 ml-2" />}
                 </Button>
                 <Button
                   variant="outline"
