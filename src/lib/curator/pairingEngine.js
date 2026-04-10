@@ -110,10 +110,16 @@ function wrapPipe(pipe) { return { id: pipe.id, type: 'pipe', recordType: 'pipe'
 function wrapBlend(blend) { return { id: blend.id, type: 'blend', recordType: 'blend', name: blend.name }; }
 function wrapBottle(bottle) { return { id: bottle.id, type: 'bottle', recordType: 'bottle', name: bottle.name }; }
 
+function assignPrimaryModule(blend, bottle) {
+  const pt = pairingType(blend, bottle);
+  if (pt === 'Reinforcing') return 'tobacco';
+  if (pt === 'Contrast') return 'whiskey';
+  return 'pipe';
+}
+
 function makePair(tab, pipe, blend, bottle, confidenceLabel = 'Medium Confidence', tabContext = null) {
   if (!pipe || !blend || !bottle) {
     console.error('PAIRING_EXPLANATION_FAILED', { reason: 'missing_item', pipe: pipe?.name, blend: blend?.name, bottle: bottle?.name });
-    // RULE 4: Do not render if explanation cannot be constructed
     return null;
   }
   return {
@@ -121,6 +127,7 @@ function makePair(tab, pipe, blend, bottle, confidenceLabel = 'Medium Confidence
     subTab: tab,
     confidenceLabel,
     pairingType: pairingType(blend, bottle),
+    primaryModule: assignPrimaryModule(blend, bottle),
     pipe: wrapPipe(pipe),
     blend: wrapBlend(blend),
     bottle: wrapBottle(bottle),

@@ -62,10 +62,7 @@ function Badge({ text, tone = 'neutral' }) {
 export default function CuratorPairingResults({ pairings = [], onAction, moduleFilter = 'all' }) {
   const filtered = pairings.filter((p) => {
     if (moduleFilter === 'all') return true;
-    if (moduleFilter === 'pipe') return p.pipe || p.leftItem;
-    if (moduleFilter === 'tobacco') return p.blend || p.blendBridge;
-    if (moduleFilter === 'whiskey') return p.bottle || p.rightItem;
-    return true;
+    return p.primaryModule === moduleFilter;
   });
 
   if (!filtered.length) return null;
