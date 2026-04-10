@@ -24,38 +24,32 @@ const STARTER_PROMPTS_MULTI = [
  * Returns one of:
  *   EVALUATE_OWNED_ITEM | EVALUATE_OUTSIDE_RECOMMENDATION
  *   EXPLAIN_PAIRING | SESSION_RECOMMENDATION | RESTOCK_ADVICE
- *   GAP_ANALYSIS | COLLECTION_ANALYSIS | FOLLOW_UP | UNKNOWN
+ *   GAP_ANALYSIS | COLLECTION_ANALYSIS | USER_CORRECTION | FOLLOW_UP | UNKNOWN
  */
 function classifyIntent(message, collectionContext = {}) {
   const t = message.toLowerCase().trim();
 
-  // Follow-up pronouns — must check before anything else
+  // USER_CORRECTION — must check BEFORE follow-up pronouns to avoid mis-routing
+  // Triggers on: explicit contradiction phrases, negation with "never/only/already/not",
+  // correction openers like "but", "actually", "that's not"
+  const correctionPatterns = [
+    /\bbut (i have it|i use it|i don't|it never|it isn't|it is not|i already)\b/i,
+    /\b(that'?s? not right|that'?s? wrong|that'?s? incorrect|that'?s? not accurate)\b/i,
+    /\bit never (smoked|seen|had|been used for|been assigned)\b/i,
+    /\bi (use|have|keep) it (for|as) (only|exclusively|just|aromatic|english|virginia|burley)/i,
+    /\b(never smoked|never used|never had)\b/i,
+    /\b(already on my (list|shopping list|want list|wishlist)|already (tracked|listed|owned|in my|classified|specialized|assigned))\b/i,
+    /\bi already (have|own|have it|own it|tracked|added|listed)\b/i,
+    /\b(that bottle is already|that blend is already|that pipe is already)\b/i,
+    /\bactually[,.]? (it|that|i|no)\b/i,
+    /^(no[,.]|nope[,.]|not quite[,.]|that'?s? not|but it|but i|but that)\b/i,
+  ];
+  if (correctionPatterns.some((p) => p.test(t))) return 'USER_CORRECTION';
+
+  // Follow-up pronouns — check after correction
   const followUpPattern = /\b(it|that|this one|this pipe|that pipe|this blend|that blend|this bottle|that bottle|the one|how does it|how does that|how does this|where does it|is it redundant|what would you do with it|how does it compare|why that one|what about the other)\b/i;
   const comparisonPattern = /\b(compare|redundant|overlap|where does it sit|how does it fit)\b/i;
   if (followUpPattern.test(t) || comparisonPattern.test(t)) return 'FOLLOW_UP';
-
-  if (/\b(pairing|pair with|pair together|combine|combination|explain why .+ work together)\b/i.test(t)) return 'EXPLAIN_PAIRING';
-  if (/\b(tonight|enjoy|smoke|drink|open next|session|use|revisit|rediscover|haven.?t used|haven.?t had)\b/i.test(t)) return 'SESSION_RECOMMENDATION';
-  if (/\b(restock|running low|running out|buy next|replenish)\b/i.test(t)) return 'RESTOCK_ADVICE';
-  if (/\b(gap|missing|need|biggest gap|collection gap)\b/i.test(t)) return 'GAP_ANALYSIS';
-  if (/\b(redundant|most redundant|overlap|specializ|reassign)\b/i.test(t)) return 'COLLECTION_ANALYSIS';
-
-  // Evaluate — check ownership to decide which sub-type
-  if (/\b(evaluate|assess|how does .+ fit|where does .+ sit|role of)\b/i.test(t)) {
-    // Try to extract item name and see if it's owned
-    const evalMatch = message.match(/evaluate\s+(.+?)(?:\s+(?:in|for)\s+my\s+collection|$)/i);
-    const itemName = evalMatch ? evalMatch[1].trim().toLowerCase() : null;
-    if (itemName) {
-      const { bottles = [], blends = [], pipes = [] } = collectionContext;
-      const allItems = [...bottles, ...blends, ...pipes];
-      const owned = allItems.find((i) => (i.name || '').toLowerCase().includes(itemName) || itemName.includes((i.name || '').toLowerCase()));
-      return owned ? 'EVALUATE_OWNED_ITEM' : 'EVALUATE_OUTSIDE_RECOMMENDATION';
-    }
-    return 'EVALUATE_OWNED_ITEM'; // default — context resolution happens in handler
-  }
-
-  return 'UNKNOWN';
-}
 
 // ─── String helpers ────────────────────────────────────────────────────────────
 function norm(v) { return String(v || '').trim().toLowerCase(); }
@@ -73,7 +67,7 @@ function extractNamedEntity(text, records = []) {
 }
 
 // ─── Owned-item evaluation helpers ────────────────────────────────────────────
-export function evaluateOwnedBottle(bottle, bottles = [], tastingLogs = []) {
+function evaluateOwnedBottle(bottle, bottles = [], tastingLogs = []) {
   const type = norm(bottle.type || bottle.whiskey_type || 'unknown');
   const sameType = bottles.filter((b) => b.id !== bottle.id && norm(b.type || b.whiskey_type || '').split(' ').some((w) => type.includes(w) || type.split(' ').some((tw) => tw === w)));
   const adjacent = sameType.slice(0, 3);
@@ -101,7 +95,7 @@ export function evaluateOwnedBottle(bottle, bottles = [], tastingLogs = []) {
   return { role, adjacentComparables: adjacent, overlapLevel, uniquenessLevel, usageState, recommendation };
 }
 
-export function evaluateOwnedBlend(blend, blends = [], smokingLogs = []) {
+function evaluateOwnedBlend(blend, blends = [], smokingLogs = []) {
   const type = blend.blend_type || blend.blend_family || 'unknown';
   const sameType = blends.filter((b) => b.id !== blend.id && (b.blend_type || b.blend_family) === type);
   const adjacent = sameType.slice(0, 3);
@@ -130,7 +124,7 @@ export function evaluateOwnedBlend(blend, blends = [], smokingLogs = []) {
   return { role, adjacentComparables: adjacent, overlapLevel, uniquenessLevel, usageState, recommendation };
 }
 
-export function evaluateOwnedPipe(pipe, pipes = [], smokingLogs = []) {
+function evaluateOwnedPipe(pipe, pipes = [], smokingLogs = []) {
   const shape = norm(pipe.shape || 'unknown');
   const sameShape = pipes.filter((p) => p.id !== pipe.id && norm(p.shape || '') === shape);
   const adjacent = sameShape.slice(0, 3);
@@ -294,6 +288,88 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
   const bottles     = whiskeyActive ? (context?.bottles     || []) : [];
   const tastingLogs = whiskeyActive ? (context?.tastingLogs || []) : [];
   const acquisitionItems = context?.acquisitionItems || context?.wantListItems || [];
+
+  // ── USER_CORRECTION: revise prior claim ─────────────────────────────────────
+  if (intent === 'USER_CORRECTION') {
+    const subject = entityContext.subject;
+    const topicIntent = entityContext.topicIntent;
+    const priorClaim = entityContext.priorClaim; // what Curator last asserted
+    const msg = message;
+
+    // Identify which domain the correction targets
+    const isSpecialization  = /specializ|reassign|assign|lane|vaper|virginia|aromatic|english|burley/i.test(msg) || topicIntent === 'collection_analysis';
+    const isOwnership       = /already (have|own|in my)|already (owns?|have it)/i.test(msg) || topicIntent === 'evaluate_recommendation';
+    const isRestock         = /already (on my (list|shopping|want)|tracked|listed)/i.test(msg) || topicIntent === 'restock_advice';
+    const isUsage           = /never (smoked|used|had|seen)|only (used|smoked) for|i use it for/i.test(msg);
+    const isPairing         = topicIntent === 'explain_pairing';
+
+    const subjectName = subject?.name || 'that item';
+
+    // Detect what the user says the item actually is/does
+    const aromaticOnly   = /aromatic/i.test(msg);
+    const englishOnly    = /english/i.test(msg);
+    const virginiaOnly   = /virginia/i.test(msg);
+    const alreadyUsed    = /already (one of my most used|heavily used|actively used)/i.test(msg);
+    const alreadyTracked = /already (on my|tracked|on the list)/i.test(msg);
+    const alreadyOwned   = /already (have|own)/i.test(msg);
+
+    let reply;
+    let updatedCtx = { ...entityContext };
+
+    if (isSpecialization || isUsage) {
+      const inferredFamily = aromaticOnly ? 'aromatic' : englishOnly ? 'English/Latakia' : virginiaOnly ? 'Virginia' : null;
+      const correctionLine = inferredFamily
+        ? `If ${subjectName} has only been used for ${inferredFamily}, then it is not a real reassignment candidate for a different family.`
+        : `If that pipe has not been used in the inferred pattern, then my earlier recommendation is not supported by the evidence.`;
+
+      reply = `Then I would revise that.
+
+${correctionLine} My earlier read was too aggressive.
+
+**Why I got it wrong:** The inference came from session logs — if those sessions are sparse, stale, or tagged to the wrong blend type, the signal will point in the wrong direction. That is a data-quality problem, not a confirmation that the pipe should change lanes.
+
+**Revised conclusion:** I would treat ${subjectName} as low-confidence for reassignment. If it is genuinely aromatic-designated, keep it there. The next strongest reassignment candidate is the one with the clearest cross-family signal from a higher session count.
+
+**Next step:** Want me to re-run on the next candidate — skipping ${subjectName}?`;
+      updatedCtx = { ...entityContext, correctionApplied: true, excludedFromAnalysis: subject, priorClaim: null };
+    } else if (isOwnership || alreadyOwned) {
+      reply = `Understood — if you already own that, then evaluating it as a gap-fill or outside recommendation was incorrect.
+
+**Revised:** That item should be evaluated as an owned piece, not as an acquisition target. If it is already active in your collection, the relevant question is whether it has a clear role or is overlapping with something else you own.
+
+Want me to evaluate it in the context of your owned collection instead?`;
+      updatedCtx = { ...entityContext, topicIntent: 'evaluate_owned_item', correctionApplied: true, priorClaim: null };
+    } else if (isRestock || alreadyTracked) {
+      reply = `Got it — if it is already tracked, then the recommendation was redundant.
+
+**Revised:** Rather than adding it, the question is whether it should move up in priority on your existing list. If inventory is low and it is already on your shopping list, the next step is acting on that item, not re-adding it.
+
+Want me to look at what else might need attention ahead of it?`;
+      updatedCtx = { ...entityContext, correctionApplied: true, priorClaim: null };
+    } else if (alreadyUsed) {
+      reply = `Noted — if ${subjectName} is already one of your most active items, then any framing around it being idle or underused was wrong.
+
+**Revised:** ${subjectName} has earned its place. The relevant question now is whether it has enough focus for its current usage level, or whether logging more structured notes would sharpen its role going forward.
+
+If you want I can look at the rest of the collection for items that are genuinely underused instead.`;
+      updatedCtx = { ...entityContext, correctionApplied: true, priorClaim: null };
+    } else if (isPairing) {
+      reply = `If my pairing logic assumed the wrong profile for that item, then the explanation was built on bad premises.
+
+**Revised:** Give me the actual flavor profile or usage pattern you experience with it, and I will re-run the pairing reasoning from there.`;
+      updatedCtx = { ...entityContext, correctionApplied: true, priorClaim: null };
+    } else {
+      // Generic correction acknowledgement
+      reply = `Then I would revise that.
+
+If my earlier conclusion does not match what you know about ${subjectName} from direct experience, then the inference was working from weak or incorrect data. First-hand knowledge overrides sparse session signals.
+
+**What I would do:** Treat that recommendation as low-confidence and move on. What would you like to look at instead?`;
+      updatedCtx = { ...entityContext, correctionApplied: true, priorClaim: null };
+    }
+
+    return { reply, updatedEntityContext: updatedCtx };
+  }
 
   // ── FOLLOW_UP: keep prior subject ─────────────────────────────────────────
   if (intent === 'FOLLOW_UP') {
