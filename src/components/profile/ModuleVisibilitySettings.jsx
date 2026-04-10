@@ -7,7 +7,12 @@ import { useNavigate } from "react-router-dom";
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { MODULE_ICONS } from "@/components/branding/moduleAssets";
-import { isModuleLaunched, isModuleInternal, isInternalModuleTester } from "@/components/utils/moduleReleaseState";
+import {
+  isModuleLaunched,
+  isModuleInternal,
+  isInternalModuleTester,
+  isModuleBlocked,
+} from "@/components/utils/moduleReleaseState";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { Switch } from "@/components/ui/switch";
@@ -45,61 +50,66 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
       label: t("hub.pipekeeper", "PipeKeeper"),
       description: t("pipekeeper.description", "Pipe collection, tobacco, smoking logs, and pairings."),
       icon: MODULE_ICONS.pipekeeper,
-      launched: isModuleLaunched("pipekeeper"),
+      launched: isModuleLaunched("pipekeeper", effectiveUser),
+      internalModule: isModuleInternal("pipekeeper", effectiveUser),
+      blocked: isModuleBlocked("pipekeeper", effectiveUser),
       allowToggle: true,
+      hidden: false,
     },
     {
       id: "whiskeykeeper",
       label: t("hub.whiskeykeeper", "WhiskeyKeeper"),
       description: t("whiskeykeeper.description", "Whiskey collection, tasting notes, and inventory."),
       icon: MODULE_ICONS.whiskeykeeper,
-      launched: isModuleLaunched("whiskeykeeper"),
-      internalModule: isModuleInternal("whiskeykeeper"),
+      launched: isModuleLaunched("whiskeykeeper", effectiveUser),
+      internalModule: isModuleInternal("whiskeykeeper", effectiveUser),
+      blocked: isModuleBlocked("whiskeykeeper", effectiveUser),
       allowToggle: true,
       alcoholRelated: true,
-      hidden: !isTester,
+      hidden: false,
     },
     {
       id: "winekeeper",
       label: t("hub.winekeeper", "WineKeeper"),
       description: t("profile.winekeeperDescription", "Wine cellar management and bottle tracking."),
       icon: MODULE_ICONS.winekeeper,
-      launched: isModuleLaunched("winekeeper"),
+      launched: isModuleLaunched("winekeeper", effectiveUser),
+      internalModule: isModuleInternal("winekeeper", effectiveUser),
+      blocked: isModuleBlocked("winekeeper", effectiveUser),
       allowToggle: false,
       alcoholRelated: true,
+      hidden: !isTester && isModuleBlocked("winekeeper", effectiveUser),
     },
     {
       id: "cigarkeeper",
       label: t("hub.cigarkeeper", "CigarKeeper"),
       description: t("profile.cigarkeeperDescription", "Cigar collection curation and tasting."),
       icon: MODULE_ICONS.cigarkeeper,
-      launched: isModuleLaunched("cigarkeeper"),
-      internalModule: isModuleInternal("cigarkeeper"),
+      launched: isModuleLaunched("cigarkeeper", effectiveUser),
+      internalModule: isModuleInternal("cigarkeeper", effectiveUser),
+      blocked: isModuleBlocked("cigarkeeper", effectiveUser),
       allowToggle: isTester,
       hidden: !isTester,
     },
   ].filter((mod) => !mod.hidden);
 
-
-
   async function handleSetTierAndEnable(moduleId, isPaid) {
     setSaving(moduleId);
     try {
-      // If Pro selected and no paid subscription, redirect to checkout
       if (isPaid && !userHasPaidSub) {
-        navigate('/Subscription');
+        navigate("/Subscription");
         return;
       }
 
-      // Otherwise update tier and enable module
-      const key = moduleId === 'pipekeeper' ? 'pipekeeper_paid' : 'whiskeykeeper_paid';
+      const key = moduleId === "pipekeeper" ? "pipekeeper_paid" : "whiskeykeeper_paid";
       await base44.auth.updateMe({ [key]: isPaid });
       await setModuleEnabled(moduleId, true);
-      const tier = isPaid ? 'Pro' : 'Free';
+
+      const tier = isPaid ? "Pro" : "Free";
       toast.success(`Switched to ${tier} version`);
     } catch (e) {
       console.error("[ModuleVisibility] tier toggle error:", e);
-      toast.error('Could not update module settings');
+      toast.error("Could not update module settings");
     } finally {
       setSaving(null);
     }
@@ -149,7 +159,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
           const state = moduleStates[mod.id];
           const enabled = state?.enabled === true;
           const canToggle = mod.allowToggle && state?.canToggle;
-          const isSaving = saving === mod.id;
+          const isSavingThis = saving === mod.id;
 
           return (
             <div
@@ -169,25 +179,28 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-stone-100 text-sm">{mod.label}</span>
+
                     {mod.internalModule && isTester ? (
                       <Badge className="text-[10px] bg-purple-100 text-purple-700 border-0 px-1.5 py-0">
                         {t("profile.internalPreview", "Internal Preview")}
                       </Badge>
-                    ) : !mod.launched ? (
+                    ) : mod.blocked ? (
                       <Badge className="text-[10px] bg-stone-200 text-stone-600 border-0 px-1.5 py-0">
                         {t("hub.comingSoon", "Coming Soon")}
                       </Badge>
                     ) : null}
+
                     {mod.alcoholRelated ? (
                       <Badge className="text-[10px] bg-amber-100 text-amber-700 border-0 px-1.5 py-0">
                         {t("profile.alcoholBadge", "Alcohol")}
                       </Badge>
                     ) : null}
                   </div>
+
                   <p className="text-xs text-stone-400 mt-0.5 line-clamp-1">
-                    {mod.launched || (mod.internalModule && isTester)
-                      ? mod.description
-                      : `${mod.description} (${t("hub.comingSoon", "Coming Soon")})`}
+                    {mod.blocked
+                      ? `${mod.description} (${t("hub.comingSoon", "Coming Soon")})`
+                      : mod.description}
                   </p>
                 </div>
               </div>
@@ -198,31 +211,39 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                     <Switch
                       checked={enabled}
                       onCheckedChange={(value) => handleModuleVisibility(mod.id, value)}
-                      disabled={isSaving}
+                      disabled={isSavingThis}
                     />
                     <div className="flex gap-2 flex-shrink-0">
                       <Button
                         size="sm"
-                        variant={mod.id === "pipekeeper" ? pipekeeperPaid ? "default" : "outline" : whiskeykeeperPaid ? "default" : "outline"}
+                        variant={
+                          mod.id === "pipekeeper"
+                            ? pipekeeperPaid ? "default" : "outline"
+                            : whiskeykeeperPaid ? "default" : "outline"
+                        }
                         onClick={() => handleSetTierAndEnable(mod.id, true)}
-                        disabled={isSaving}
+                        disabled={isSavingThis}
                         className="text-xs"
                       >
                         Pro
                       </Button>
                       <Button
                         size="sm"
-                        variant={mod.id === "pipekeeper" ? !pipekeeperPaid && enabled ? "default" : "outline" : !whiskeykeeperPaid && enabled ? "default" : "outline"}
+                        variant={
+                          mod.id === "pipekeeper"
+                            ? !pipekeeperPaid && enabled ? "default" : "outline"
+                            : !whiskeykeeperPaid && enabled ? "default" : "outline"
+                        }
                         onClick={() => handleSetTierAndEnable(mod.id, false)}
-                        disabled={isSaving}
+                        disabled={isSavingThis}
                         className="text-xs"
                       >
                         Free
                       </Button>
                     </div>
                   </>
-                ) : !canToggle && !mod.launched ? (
-                  <Lock className="w-3.5 h-3.5 text-stone-500" title="Coming Soon" />
+                ) : !canToggle ? (
+                  <Lock className="w-3.5 h-3.5 text-stone-500" title="Unavailable" />
                 ) : null}
               </div>
             </div>
