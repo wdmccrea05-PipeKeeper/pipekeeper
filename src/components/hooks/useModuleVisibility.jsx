@@ -23,14 +23,11 @@ function buildAccessibleModules(profile, activeModules, user) {
     accessible.add("cigarkeeper");
   }
 
-  // Free-tier onboarding fallback: if user explicitly selected a launched module
-  // during first-run setup, make it accessible even without paid subscription
+  // If user has set module preferences, make all launched modules toggleable
+  // This allows users to enable/disable any launched module in Profile settings
   if (profile?.module_preferences_set === true) {
     for (const key of ["pipekeeper", "whiskeykeeper", "winekeeper", "cigarkeeper"]) {
-      // User can always access launched modules they explicitly enabled during onboarding,
-      // even if they don't have a paid entitlement. This ensures free users who selected
-      // a module on signup retain access to it.
-      if (isModuleLaunched(key) && profile?.[`${key}_enabled`] === true) {
+      if (isModuleLaunched(key, user)) {
         accessible.add(key);
       }
     }
