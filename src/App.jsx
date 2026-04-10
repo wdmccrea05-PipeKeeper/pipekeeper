@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClientInstance } from "@/lib/query-client";
 import NavigationTracker from "@/lib/NavigationTracker";
@@ -69,7 +69,9 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const loginRedirectedRef = useRef(false);
   const { showModal, setShowModal } = useModuleOnboarding();
-  const [moduleSelectionComplete, setModuleSelectionComplete] = useState(false);
+  const [moduleSelection, setModuleSelection] = useState(null);
+
+  const shouldRenderOnboarding = useMemo(() => !showModal, [showModal]);
 
   if (isLoadingAuth || isLoadingPublicSettings) {
     return (
@@ -103,12 +105,12 @@ const AuthenticatedApp = () => {
     <>
       <ModuleSelectionModal
         isOpen={showModal}
-        onComplete={() => {
+        onComplete={(selected) => {
+          setModuleSelection(selected || null);
           setShowModal(false);
-          setModuleSelectionComplete(true);
         }}
       />
-      {moduleSelectionComplete && <OnboardingRouter />}
+      {shouldRenderOnboarding ? <OnboardingRouter initialSelection={moduleSelection} /> : null}
       <Routes>
       <Route path="/support-public" element={<SupportPublic />} />
       <Route path="/share/:moduleType/:shareToken" element={<PublicSharedRecord />} />
