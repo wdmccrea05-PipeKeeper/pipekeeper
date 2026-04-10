@@ -83,7 +83,7 @@ function AppleSubscription() {
       if (openedManage) return;
 
       // Fallback so user never gets a dead click
-      window.open("https://apps.apple.com/account/subscriptions", "_blank");
+      window.location.assign("https://apps.apple.com/account/subscriptions");
       toast.info(t("subscription.openedAppleSubsInBrowser"));
     } catch (error) {
       console.error("[Subscription] upgrade error:", error);
@@ -99,7 +99,7 @@ function AppleSubscription() {
     const openedManage = openAppleSubscriptions();
     if (openedManage) return;
 
-    window.open("https://apps.apple.com/account/subscriptions", "_blank");
+    window.location.assign("https://apps.apple.com/account/subscriptions");
     toast.info(t("subscription.openedAppleSubsMgmtInBrowser"));
   };
 
