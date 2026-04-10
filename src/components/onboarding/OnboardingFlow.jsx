@@ -38,6 +38,12 @@ function safeSetOnboarding(key, value) {
   }
 }
 
+function clearAutoLaunchOnboarding() {
+  try {
+    sessionStorage.removeItem('pk_auto_launch_onboarding');
+  } catch {}
+}
+
 export default function OnboardingFlow({ onComplete, onSkip }) {
   const { user } = useCurrentUser();
   const { profile } = useModuleVisibility();
@@ -422,6 +428,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
     const nextStep = modulesAlreadySelected ? currentStep + 2 : currentStep + 1;
     if (nextStep >= steps.length) {
       markPipeOnboardingComplete();
+      clearAutoLaunchOnboarding();
       onComplete();
     } else {
       setCurrentStep(nextStep);
@@ -431,6 +438,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
   const handleNext = async () => {
     if (currentStep === steps.length - 1) {
       markPipeOnboardingComplete();
+      clearAutoLaunchOnboarding();
       onComplete();
     } else {
       setCurrentStep(currentStep + 1);
@@ -510,13 +518,16 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                   ))}
                 </div>
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onSkip}
-                  className="text-[#E0D8C8]/60 hover:text-[#E0D8C8]"
-                >
-                  {t("onboarding.skip")} <X className="w-4 h-4 ml-1" />
-                </Button>
+                   variant="ghost"
+                   size="sm"
+                   onClick={() => {
+                     clearAutoLaunchOnboarding();
+                     onSkip?.();
+                   }}
+                   className="text-[#E0D8C8]/60 hover:text-[#E0D8C8]"
+                 >
+                   {t("onboarding.skip")} <X className="w-4 h-4 ml-1" />
+                 </Button>
               </div>
               <CardTitle className="text-xl sm:text-2xl">{currentStepData.title}</CardTitle>
               <CardDescription className="text-sm sm:text-base">

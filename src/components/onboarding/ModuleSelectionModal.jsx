@@ -26,6 +26,12 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
       // Save module selections through canonical UserProfile path
       await saveModulePreferences(selected);
       toast.success('Modules configured successfully');
+      
+      // Set session flag to auto-launch onboarding after module selection
+      try {
+        sessionStorage.setItem('pk_auto_launch_onboarding', 'true');
+      } catch {}
+      
       // Pass selected modules to onComplete so OnboardingRouter can act on them
       onComplete?.(selected);
     } catch (error) {

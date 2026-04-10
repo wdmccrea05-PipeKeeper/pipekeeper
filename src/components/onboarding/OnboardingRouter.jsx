@@ -17,6 +17,21 @@
 import React, { useState, useEffect } from 'react';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
+
+// Session-based gate to prevent refresh from relaunching onboarding
+function shouldAutoLaunchOnboarding() {
+  try {
+    return sessionStorage.getItem('pk_auto_launch_onboarding') === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function clearAutoLaunchOnboarding() {
+  try {
+    sessionStorage.removeItem('pk_auto_launch_onboarding');
+  } catch {}
+}
 import {
   isPipeOnboardingComplete,
   isWhiskeyOnboardingComplete,
@@ -119,6 +134,9 @@ export default function OnboardingRouter({ initialSelection = null }) {
     if (userLoading || modulesLoading || !user) return;
     if (activeFlow !== null) return; // already showing something — leave it
 
+    // Gate: only auto-launch if session flag is set (after module selection)
+    if (!shouldAutoLaunchOnboarding()) return;
+
     const pipeComplete    = isPipeOnboardingComplete();
     const whiskeyComplete = isWhiskeyOnboardingComplete();
 
@@ -157,17 +175,25 @@ export default function OnboardingRouter({ initialSelection = null }) {
 
   function finishPipe() {
     markPipeOnboardingComplete();
+    clearAutoLaunchOnboarding();
     setActiveFlow(null);
   }
 
   function finishWhiskey() {
     markWhiskeyOnboardingComplete();
+    clearAutoLaunchOnboarding();
     setActiveFlow(null);
   }
 
-  function skipAll() {
-    if (hasPipe) markPipeOnboardingComplete();
-    if (hasWhiskey) markWhiskeyOnboardingComplete();
+  function skipPipe() {
+    markPipeOnboardingComplete();
+    clearAutoLaunchOnboarding();
+    setActiveFlow(null);
+  }
+
+  function skipWhiskey() {
+    markWhiskeyOnboardingComplete();
+    clearAutoLaunchOnboarding();
     setActiveFlow(null);
   }
 
@@ -179,7 +205,7 @@ export default function OnboardingRouter({ initialSelection = null }) {
     return (
       <OnboardingFlow
         onComplete={finishPipe}
-        onSkip={skipAll}
+        onSkip={skipPipe}
       />
     );
   }
@@ -188,7 +214,7 @@ export default function OnboardingRouter({ initialSelection = null }) {
     return (
       <WhiskeyKeeperOnboarding
         onComplete={finishWhiskey}
-        onSkip={skipAll}
+        onSkip={skipWhiskey}
       />
     );
   }
@@ -198,7 +224,7 @@ export default function OnboardingRouter({ initialSelection = null }) {
       <MultiModuleStarter
         onSelectPipe={() => setActiveFlow('pipe')}
         onSelectWhiskey={() => setActiveFlow('whiskey')}
-        onSkip={skipAll}
+        onSkip={skipPipe}
       />
     );
   }
