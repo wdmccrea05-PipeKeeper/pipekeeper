@@ -1,22 +1,65 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useCurrentUser } from './useCurrentUser';
+import { useCanonicalProfile } from '@/utils/getCanonicalUserProfile';
+
+const SESSION_GATE_KEY = 'pk_onboarding_session_shown';
+
+function safeSessionGet(key) {
+  try {
+    return sessionStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeSessionSet(key, value) {
+  try {
+    sessionStorage.setItem(key, value);
+  } catch {}
+}
 
 /**
- * Hook to determine if module selection onboarding should be shown
- * Shows only on first login/signup when module_preferences_set is false
+ * Hook to determine if module selection onboarding should be shown.
+ *
+ * - module_preferences_set is read from UserProfile (canonical source), not from the auth user object.
+ * - A session gate (sessionStorage) prevents onboarding from re-launching on normal page refresh
+ *   after it has already been shown once in the current browser session.
  */
 export function useModuleOnboarding() {
-  const { user, isLoading } = useCurrentUser();
+  const { user, isLoading: userLoading } = useCurrentUser();
+  const { data: canonicalProfileData, isLoading: profileLoading } = useCanonicalProfile();
   const [showModal, setShowModal] = useState(false);
+  const resolvedRef = useRef(false);
+
+  const isLoading = userLoading || profileLoading;
 
   useEffect(() => {
     if (isLoading || !user?.email) return;
+    if (resolvedRef.current) return;
 
-    // Show modal if user hasn't set module preferences yet (including undefined for new users)
-    // Only close if explicitly set to true
-    const shouldShow = user?.module_preferences_set !== true;
-    setShowModal(shouldShow);
-  }, [user?.email, user?.module_preferences_set, isLoading]);
+    const prefsSet = canonicalProfileData?.profile?.module_preferences_set === true;
+
+    if (prefsSet) {
+      // Prefs already saved — clear any stale session gate and never show.
+      safeSessionSet(SESSION_GATE_KEY, 'done');
+      setShowModal(false);
+      resolvedRef.current = true;
+      return;
+    }
+
+    // Prefs not set. Only auto-launch once per browser session to prevent
+    // repeated pop-ups on refresh when the user has not yet completed selection.
+    if (safeSessionGet(SESSION_GATE_KEY) === 'shown') {
+      setShowModal(false);
+      resolvedRef.current = true;
+      return;
+    }
+
+    // First time this session — show the modal and mark the gate.
+    safeSessionSet(SESSION_GATE_KEY, 'shown');
+    setShowModal(true);
+    resolvedRef.current = true;
+  }, [isLoading, user?.email, canonicalProfileData?.profile?.module_preferences_set]);
 
   return { showModal, setShowModal };
 }
