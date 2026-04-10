@@ -5,12 +5,12 @@
 
 const FREE_TIER_LIMITS = {
   pipekeeper: {
-    pipes: 25,
-    blends: 50,
+    pipes: 5,
+    blends: 10,
     smokingLogs: 100,
   },
   whiskeykeeper: {
-    bottles: 25,
+    bottles: 5,
     tastingLogs: 50,
   },
 };
