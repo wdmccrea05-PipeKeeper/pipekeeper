@@ -92,8 +92,17 @@ function buildAskCuratorPrompt(payload = {}) {
     return `Explain why ${payload.leftItem.name}, ${payload.blendBridge.name}, and ${payload.rightItem.name} work together in my collection.`;
   }
   const title = payload?.title || payload?.recordName || payload?.itemName || payload?.name || 'this recommendation';
-  const why = payload?.whyItMatters || payload?.narrative || payload?.summary || payload?.reason || '';
-  return `Help me evaluate ${title}.${why ? ` ${why}` : ''}`;
+  return `Evaluate ${title} in my collection`;
+}
+
+function buildEntityContextFromPayload(payload = {}) {
+  if (!payload) return null;
+  if (payload?.pairingType) return null; // pairings don't set a single entity
+  const name = payload?.title || payload?.recordName || payload?.itemName || payload?.name;
+  const id   = payload?.id || payload?.recordId || null;
+  const type = payload?.recordType || payload?.itemType || payload?.linked_entity_type || 'item';
+  if (!name) return null;
+  return { id, name, type };
 }
 
 function buildSessionPrompt(pairing = {}) {
@@ -128,6 +137,7 @@ export default function CuratorWorkspace({
   const [preFillMessage, setPreFillMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showSpecializationReview, setShowSpecializationReview] = useState(false);
+  const [chatEntityContext, setChatEntityContext] = useState(null);
 
   // Build Session modals — opened by plan_session "Build Session" button
   const [tastingModal, setTastingModal] = useState(null);   // { bottle }
@@ -313,6 +323,7 @@ export default function CuratorWorkspace({
     async (actionKey, payload, opts = {}) => {
       if (actionKey === 'ask_curator') {
         setPreFillMessage(buildAskCuratorPrompt(payload));
+        setChatEntityContext(buildEntityContextFromPayload(payload));
         onSurfaceChange?.('chat');
         return;
       }
@@ -508,7 +519,7 @@ export default function CuratorWorkspace({
 
     case 'chat':
       return (
-        <>{modals}<ExpertTobacconistChat threadId={threadId} setThreadId={setThreadId} preFillMessage={preFillMessage} onPreFillConsumed={() => setPreFillMessage('')} collectionContext={ctx} isSingleModuleMode={isSingleModuleMode} activeModules={moduleEnabled} /></>
+        <>{modals}<ExpertTobacconistChat threadId={threadId} setThreadId={setThreadId} preFillMessage={preFillMessage} onPreFillConsumed={() => setPreFillMessage('')} collectionContext={ctx} isSingleModuleMode={isSingleModuleMode} activeModules={moduleEnabled} initialEntityContext={chatEntityContext} /></>
       );
 
     default:

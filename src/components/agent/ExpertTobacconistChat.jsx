@@ -343,38 +343,42 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
 
   // CRITICAL: Enforce intent matching
   if (intent === 'EVALUATE_RECOMMENDATION') {
-    // Extract what's being evaluated from the message
-    // The pre-fill format is: "Help me evaluate [title]. [rationale text]"
-    const evalMatch = message.match(/evaluate\s+(.+?)(?:\.|$)/i);
+    // Pre-fill format: "Evaluate [item name] in my collection"
+    const evalMatch = message.match(/evaluate\s+(.+?)(?:\s+in my collection|$)/i);
     const itemTitle = evalMatch ? evalMatch[1].trim() : null;
 
-    // Try to find it as a named blend or bottle
-    const namedBlend  = extractNamedEntity(text, blends);
-    const namedBottle = extractNamedEntity(text, bottles);
-    const subject = namedBlend || namedBottle;
+    // Use already-seeded entity context first, then try name extraction
+    const seededBottle = entityContext.bottle;
+    const seededBlend  = entityContext.blend;
+    const seededPipe   = entityContext.pipe;
+    const namedBlend   = extractNamedEntity(text, blends)  || seededBlend;
+    const namedBottle  = extractNamedEntity(text, bottles) || seededBottle;
+    const namedPipe    = extractNamedEntity(text, pipes)   || seededPipe;
+    const subject = namedBottle || namedBlend || namedPipe;
+    const subjectName = subject?.name || itemTitle;
 
-    // Extract the gap reason from the message (text after the first sentence)
-    const sentences = message.split(/\.\s+/);
-    const gapContext = sentences.slice(1).join('. ').trim();
-
-    if (itemTitle) {
-      const moduleGuess = namedBottle ? 'whiskey' : 'tobacco';
-      const collectionRef = moduleGuess === 'whiskey'
+    if (subjectName) {
+      const isBottle = !!namedBottle;
+      const isBlend  = !isBottle && !!namedBlend;
+      const collectionRef = isBottle
         ? `You currently have ${bottles.length} bottle${bottles.length !== 1 ? 's' : ''} in your collection.`
         : `You currently have ${blends.length} blend${blends.length !== 1 ? 's' : ''} in your cellar.`;
 
-      const verdict = gapContext
-        ? `The recommendation is grounded in a real gap: ${gapContext}`
-        : `This addresses a gap that your current collection does not cover.`;
+      const updatedCtx = {
+        ...entityContext,
+        ...(namedBottle ? { bottle: namedBottle } : {}),
+        ...(namedBlend  ? { blend:  namedBlend  } : {}),
+        ...(namedPipe   ? { pipe:   namedPipe   } : {}),
+      };
 
       return {
-        reply: `**${itemTitle}** — Evaluation\n\n${verdict}\n\n${collectionRef} If this family is absent, adding it opens new session and pairing options that your existing stock cannot support. The suggestion is specific rather than generic for that reason — a concrete product to research rather than a vague category.\n\nIf you want to act on it: add it to your Want List from the Grow & Expand card, or ask me to compare it to something else in your collection.`,
-        updatedEntityContext: subject ? { ...entityContext, [namedBlend ? 'blend' : 'bottle']: subject } : entityContext,
+        reply: `**${subjectName}** — Evaluation\n\nThis addresses a gap or addition to your collection that your existing stock does not cover. ${collectionRef}\n\nThe suggestion is specific rather than generic — a concrete product grounded in what you already own. If the family it represents is absent from your collection, adding it opens new session and pairing options your current rotation can't support.\n\nTo act on it: add it to your Want List from the Grow & Expand card. Or ask me how it compares to something else in your collection.`,
+        updatedEntityContext: updatedCtx,
       };
     }
 
     return {
-      reply: 'I can evaluate a specific recommendation if you name the item or paste the suggestion text. What are you considering adding?',
+      reply: 'I can evaluate a specific recommendation if you name the item. What are you considering adding?',
       updatedEntityContext: entityContext,
     };
   }
@@ -679,11 +683,22 @@ function isSessionIntent(text) {
   return /\b(tonight|enjoy|smoke|drink|use|open|revisit|rediscover|haven.?t used|haven.?t had)\b/i.test(text);
 }
 
-export default function ExpertTobacconistChat({ preFillMessage, onPreFillConsumed, collectionContext, isSingleModuleMode = false, activeModules = {} }) {
+export default function ExpertTobacconistChat({ preFillMessage, onPreFillConsumed, collectionContext, isSingleModuleMode = false, activeModules = {}, initialEntityContext = null }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [entityContext, setEntityContext] = useState(emptyEntityContext);
+
+  // Seed entity context when opened from a curator card
+  useEffect(() => {
+    if (initialEntityContext) {
+      const type = initialEntityContext.type || 'item';
+      const key = type === 'bottle' ? 'bottle' : type === 'pipe' ? 'pipe' : type === 'blend' ? 'blend' : null;
+      if (key) {
+        setEntityContext((prev) => ({ ...prev, [key]: initialEntityContext }));
+      }
+    }
+  }, [initialEntityContext]);
 
   const starterPrompts = isSingleModuleMode ? STARTER_PROMPTS_SINGLE : STARTER_PROMPTS_MULTI;
   const canSend = useMemo(() => !!input.trim() && !isSending, [input, isSending]);
