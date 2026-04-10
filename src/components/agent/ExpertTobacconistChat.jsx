@@ -169,6 +169,18 @@ function evaluateOwnedPipe(pipe, pipes, smokingLogs = []) {
 
 // --- INTENT CLASSIFICATION (MANDATORY)
 
+function classifyIntent(message) {
+  const text = norm(message);
+  if (/\bevaluate\b/i.test(text)) return 'EVALUATE_RECOMMENDATION';
+  if (isPairingIntent(text)) return 'PAIRING_EXPLANATION';
+  if (isSessionIntent(text)) return 'SESSION_PLANNING';
+  if (/\b(redundant|overlap)\b/i.test(text)) return 'REDUNDANCY_CHECK';
+  if (/\b(reassign|specializ)\b/i.test(text)) return 'REASSIGNMENT';
+  if (/\b(gap|missing|need|next buy|next purchase)\b/i.test(text)) return 'GAP_ANALYSIS';
+  if (/\b(buy|restock)\b/i.test(text)) return 'PURCHASE_ADVICE';
+  return 'GENERAL';
+}
+
 // --- Collection analysis helpers
 
 function buildPipeUsage(pipes = [], smokingLogs = [], blends = []) {
