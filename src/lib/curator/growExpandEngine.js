@@ -26,6 +26,7 @@ import {
   OWNERSHIP_CONTEXT,
   PRIORITY,
 } from './recommendationSchema.js';
+import { buildGrowRationale } from './curatorVoice.js';
 
 // ─── Specific product catalog — maps progression targets to concrete products ──
 
@@ -252,7 +253,7 @@ function isAlreadyOwned(targetType, blends, bottles) {
 
 function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
   const results = [];
-  if (blends.length < 2) return results; // too few to infer from
+  if (blends.length < 2) return results;
 
   const typeCounts = {};
   for (const blend of blends) {
@@ -266,11 +267,9 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
   const progression = BLEND_PROGRESSION_MAP[dominantType];
   if (!progression) return results;
 
-  // Find the first suggested type that's not already in the collection
   const nextType = progression.next.find((t) => !isAlreadyOwned(t, blends, []));
   if (!nextType) return results;
 
-  // Don't suggest if the user has explicitly said they dislike this direction
   const dislikes = preferences.disliked_flavors || preferences.dislikes || [];
   if (dislikes.some((d) => nextType.toLowerCase().includes(d.toLowerCase()))) return results;
 
@@ -283,14 +282,22 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
   });
 
   const specificProduct = BLEND_PROGRESSION_PRODUCTS[nextType] || `${nextType} Blend`;
+  const dominantBlends  = blends.filter((b) => (b.blend_type || b.blend_family) === dominantType);
+  const dynamicRationale = buildGrowRationale({
+    existingType:    dominantType,
+    suggestedType:   nextType,
+    existingItems:   dominantBlends,
+    suggestedProduct: specificProduct,
+    moduleKey:       'tobacco',
+  });
 
   results.push(createRecommendation({
     category:           CATEGORY.GROW_EXPAND,
     goal:               'blend_family_expansion',
     actionType:         ACTION_TYPE.SHOPPING_LIST_ACTION,
     title:              `Explore ${specificProduct}`,
-    summary:            progression.recommendation,
-    whyItMatters:       progression.rationale(blends.filter((b) => (b.blend_type || b.blend_family) === dominantType)),
+    summary:            dynamicRationale,
+    whyItMatters:       dynamicRationale,
     recommendationText: progression.action,
     gapReason:          `You lack ${nextType} blends in your collection`,
     whatItAdds:         progression.action ? progression.action.split('.')[0] : 'Expands collection variety',
@@ -334,7 +341,6 @@ function generateWhiskeyExpansion(bottles, blends, preferences = {}) {
   }
   const sortedTypes = Object.entries(whiskeyTypeCounts).sort((a, b) => b[1] - a[1]);
 
-  // Find the dominant whiskey type and its progression
   let progression = null;
   let dominantType = null;
   for (const [type] of sortedTypes) {
@@ -350,17 +356,14 @@ function generateWhiskeyExpansion(bottles, blends, preferences = {}) {
 
   if (!progression || !dominantType) return results;
 
-  // Find a next type not already owned
   const nextType = progression.next.find((t) => !isAlreadyOwned(t, [], bottles));
   if (!nextType) return results;
 
-  // Respect dislikes (e.g., user hates peat → skip Islay)
   const dislikes = preferences.disliked_flavors || preferences.dislikes || [];
   const peatedTypes = ['Islay', 'Peated'];
   let finalNextType = nextType;
   if (peatedTypes.some((p) => nextType.includes(p)) &&
       dislikes.some((d) => d.toLowerCase().includes('peat') || d.toLowerCase().includes('smoke'))) {
-    // Try the alternative next type
     const altNextType = progression.next.find((t) =>
       !isAlreadyOwned(t, [], bottles) &&
       !peatedTypes.some((p) => t.includes(p))
@@ -377,14 +380,21 @@ function generateWhiskeyExpansion(bottles, blends, preferences = {}) {
   });
 
   const specificProduct = WHISKEY_PROGRESSION_PRODUCTS[finalNextType] || finalNextType;
+  const whiskeyDynamicRationale = buildGrowRationale({
+    existingType:     dominantType,
+    suggestedType:    finalNextType,
+    existingItems:    bottles.filter((b) => (b.type || b.whiskey_type) === dominantType),
+    suggestedProduct: specificProduct,
+    moduleKey:        'whiskey',
+  });
 
   results.push(createRecommendation({
     category:           CATEGORY.GROW_EXPAND,
     goal:               'whiskey_type_expansion',
     actionType:         ACTION_TYPE.SHOPPING_LIST_ACTION,
     title:              `Explore ${specificProduct}`,
-    summary:            progression.recommendation,
-    whyItMatters:       progression.rationale(bottles),
+    summary:            whiskeyDynamicRationale,
+    whyItMatters:       whiskeyDynamicRationale,
     recommendationText: progression.action,
     gapReason:          `You lack ${finalNextType} in your whiskey collection`,
     whatItAdds:         progression.action ? progression.action.split('.')[0] : 'Expands collection variety',
