@@ -49,29 +49,32 @@ export default function InviteFull() {
       }
 
       for (const email of validEmails) {
-        const emailBody = `
-Hello!
+        const inviterName = user?.full_name || 'A CollectionKeeper member';
+        const emailBody = `Hello,
 
-${user?.full_name || 'A friend'} has invited you to join CollectionKeeper — the ultimate app for managing your pipe, tobacco, and whiskey collections.
+${inviterName} has invited you to join CollectionKeeper — a purpose-built app for managing and understanding your pipe, tobacco, and whiskey collection.
 
-${personalMessage ? `Personal message:\n${personalMessage}\n\n` : ''}
+This isn't just a catalog.
 
 CollectionKeeper helps you:
-• Catalog your pipes, tobacco blends, and whiskey bottles
-• Track smoking sessions, tasting notes, and preferences
-• Get AI-powered pairing and session recommendations
-• Identify pipes and estimate collection values
-• Optimize your collection with the Curator
+- Track your pipes, blends, and bottles with precision
+- Log sessions and tasting notes that inform future choices
+- Understand what you own — what's redundant, what's missing, and what's worth revisiting
+- Get intelligent pairing and session recommendations based on your actual collection
 
-Get started at: https://collectionkeeper.app
+Get started here:
+https://collectionkeeper.base44.app
 
-Happy collecting!
+If you enjoy the hobby, this gives you a clearer view of your rotation — and helps you get more out of what you already have.
+
+Welcome aboard,
 The CollectionKeeper Team
-        `;
+
+If you didn't expect this invitation, you can safely ignore this email.`;
 
         await base44.integrations.Core.SendEmail({
           to: email,
-          subject: `${user?.full_name || 'Your friend'} invited you to CollectionKeeper`,
+          subject: `You've been invited to CollectionKeeper`,
           body: emailBody,
           from_name: 'CollectionKeeper'
         });
