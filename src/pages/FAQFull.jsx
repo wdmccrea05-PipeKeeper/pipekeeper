@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import TutorialSystemPreview from "@/components/onboarding/TutorialSystem";
 import { ChevronDown, Wrench, BookOpen, Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
