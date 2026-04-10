@@ -328,5 +328,6 @@ export default function FAQFull() {
           <TutorialSystemPreview onClose={() => setShowTutorial(false)} />
         )}
       </div>
+    </div>
     );
   }
