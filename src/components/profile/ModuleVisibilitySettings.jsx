@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Eye, Lock } from "lucide-react";
+import { Eye, Lock, Unlock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { MODULE_ICONS } from "@/components/branding/moduleAssets";
@@ -25,11 +27,14 @@ function ModuleIcon({ src, alt, className }) {
 
 export default function ModuleVisibilitySettings({ profile = null, user: passedUser = null, compact = false }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { moduleStates, setModuleEnabled, isLoading, user } = useModuleVisibility(profile, passedUser);
   const [saving, setSaving] = useState(null);
 
   const effectiveUser = passedUser || user;
   const isTester = isInternalModuleTester(effectiveUser);
+  const pipekeeperPaid = !!effectiveUser?.pipekeeper_paid;
+  const whiskeykeeperPaid = !!effectiveUser?.whiskeykeeper_paid;
 
   const MODULE_CONFIG = [
     {
@@ -159,16 +164,37 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {canToggle ? (
                   <Switch
                     checked={enabled}
                     onCheckedChange={(value) => handleToggle(mod.id, value)}
                     disabled={isSaving}
                   />
-                ) : (
-                  <Lock className="w-3.5 h-3.5 text-stone-500" title={mod.internalModule ? "Internal Module" : "Coming Soon"} />
-                )}
+                ) : null}
+                {mod.id === "pipekeeper" && !pipekeeperPaid && mod.launched ? (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => navigate("/Subscription")}
+                    className="text-xs gap-1 flex-shrink-0"
+                  >
+                    <Unlock className="w-3 h-3" />
+                    {t("profile.unlock", "Unlock")}
+                  </Button>
+                ) : mod.id === "whiskeykeeper" && !whiskeykeeperPaid && mod.launched ? (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => navigate("/Subscription")}
+                    className="text-xs gap-1 flex-shrink-0"
+                  >
+                    <Unlock className="w-3 h-3" />
+                    {t("profile.unlock", "Unlock")}
+                  </Button>
+                ) : !canToggle && !mod.launched ? (
+                  <Lock className="w-3.5 h-3.5 text-stone-500" title="Coming Soon" />
+                ) : null}
               </div>
             </div>
           );
