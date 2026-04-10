@@ -98,7 +98,7 @@ function MultiModuleStarter({ onSelectPipe, onSelectWhiskey, onSkip }) {
 
 // ── Main router ───────────────────────────────────────────────────────────────
 
-export default function OnboardingRouter() {
+export default function OnboardingRouter({ initialSelection = null }) {
   const { user, isLoading: userLoading } = useCurrentUser();
   const { enabled, isLoading: modulesLoading } = useEnabledModules();
 
@@ -106,8 +106,11 @@ export default function OnboardingRouter() {
   // 'pipe' | 'whiskey' | 'multi_picker' | null
   const [activeFlow, setActiveFlow] = useState(null);
 
-  const hasPipe    = enabled.pipekeeper;
-  const hasWhiskey = enabled.whiskeykeeper;
+  const seededPipe = typeof initialSelection?.pipekeeper === 'boolean' ? initialSelection.pipekeeper : null;
+  const seededWhiskey = typeof initialSelection?.whiskeykeeper === 'boolean' ? initialSelection.whiskeykeeper : null;
+
+  const hasPipe = seededPipe ?? enabled.pipekeeper;
+  const hasWhiskey = seededWhiskey ?? enabled.whiskeykeeper;
 
   // Re-evaluate whenever module enablement changes (e.g. pipe user adds WhiskeyKeeper).
   // Only set an active flow when none is currently showing — don't interrupt a
@@ -163,8 +166,8 @@ export default function OnboardingRouter() {
   }
 
   function skipAll() {
-    markPipeOnboardingComplete();
-    markWhiskeyOnboardingComplete();
+    if (hasPipe) markPipeOnboardingComplete();
+    if (hasWhiskey) markWhiskeyOnboardingComplete();
     setActiveFlow(null);
   }
 
