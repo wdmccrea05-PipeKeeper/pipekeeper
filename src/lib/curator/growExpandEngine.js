@@ -251,9 +251,17 @@ function isAlreadyOwned(targetType, blends, bottles) {
 
 // ─── Suggestion Generators ───────────────────────────────────────────────────
 
+// All major blend families — used to find unrepresented gaps
+const ALL_BLEND_FAMILIES = [
+  'Virginia', 'Virginia/Perique', 'Virginia/Burley', 'Virginia/Oriental',
+  'English', 'English/Balkan', 'Balkan', 'Burley', 'Aromatic',
+  'Oriental', 'Dark Fired Kentucky',
+];
+
 function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
   const results = [];
-  if (blends.length < 2) return results;
+  const dislikes = preferences.disliked_flavors || preferences.dislikes || [];
+  const seenNextTypes = new Set();
 
   const typeCounts = {};
   for (const blend of blends) {
@@ -261,71 +269,127 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
     if (t && t !== 'Unknown') typeCounts[t] = (typeCounts[t] || 0) + 1;
   }
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
-  const dominantType = sortedTypes[0]?.[0];
-  if (!dominantType) return results;
 
-  const progression = BLEND_PROGRESSION_MAP[dominantType];
-  if (!progression) return results;
+  // 1. Generate progression-based suggestions from owned families
+  for (const [dominantType, count] of sortedTypes) {
+    if (results.length >= 3) break;
+    const progression = BLEND_PROGRESSION_MAP[dominantType];
+    if (!progression) continue;
 
-  const nextType = progression.next.find((t) => !isAlreadyOwned(t, blends, []));
-  if (!nextType) return results;
+    const nextType = progression.next.find(
+      (t) => !isAlreadyOwned(t, blends, []) && !seenNextTypes.has(t)
+    );
+    if (!nextType) continue;
+    if (dislikes.some((d) => nextType.toLowerCase().includes(d.toLowerCase()))) continue;
 
-  const dislikes = preferences.disliked_flavors || preferences.dislikes || [];
-  if (dislikes.some((d) => nextType.toLowerCase().includes(d.toLowerCase()))) return results;
+    seenNextTypes.add(nextType);
+    const isWellEstablished = count >= 3;
+    const confidence = computeConfidence({
+      preferenceAlignment:   isWellEstablished ? 0.8 : 0.5,
+      usageHistoryRelevance: smokingLogs.length > 5 ? 0.8 : 0.4,
+      dataCompleteness:      sortedTypes.length >= 2 ? 0.8 : 0.5,
+      diversityContribution: 0.9,
+    });
+    const specificProduct = BLEND_PROGRESSION_PRODUCTS[nextType] || `${nextType} Blend`;
+    const dominantBlends = blends.filter((b) => (b.blend_type || b.blend_family) === dominantType);
+    const dynamicRationale = buildGrowRationale({
+      existingType:     dominantType,
+      suggestedType:    nextType,
+      existingItems:    dominantBlends,
+      suggestedProduct: specificProduct,
+      moduleKey:        'tobacco',
+    });
 
-  const isWellEstablished = sortedTypes[0][1] >= 3;
-  const confidence = computeConfidence({
-    preferenceAlignment:   isWellEstablished ? 0.8 : 0.5,
-    usageHistoryRelevance: smokingLogs.length > 5 ? 0.8 : 0.4,
-    dataCompleteness:      sortedTypes.length >= 2 ? 0.8 : 0.5,
-    diversityContribution: 0.9, // always high — we're expanding the collection
-  });
+    results.push(createRecommendation({
+      category:             CATEGORY.GROW_EXPAND,
+      goal:                 `blend_family_expansion_${nextType.replace(/[\s/]/g, '_').toLowerCase()}`,
+      actionType:           ACTION_TYPE.SHOPPING_LIST_ACTION,
+      title:                `Explore ${specificProduct}`,
+      summary:              dynamicRationale,
+      whyItMatters:         dynamicRationale,
+      recommendationText:   progression.action,
+      gapReason:            `You lack ${nextType} blends in your collection`,
+      whatItAdds:           progression.action ? progression.action.split('.')[0] : 'Expands collection variety',
+      collectionConnection: progression.recommendation || 'Complements your existing collection',
+      contextTag:           nextType || 'blend_gap',
+      moduleKey:            MODULE_KEY.TOBACCO,
+      ownershipContext:     OWNERSHIP_CONTEXT.EXTERNAL,
+      priority:             isWellEstablished ? PRIORITY.MEDIUM : PRIORITY.LOW,
+      confidence,
+      items: [{
+        id:              `grow_blend_${nextType.replace(/[\s/]/g, '_').toLowerCase()}`,
+        recordId:        null,
+        recordType:      'blend_suggestion',
+        recordName:      specificProduct,
+        itemName:        specificProduct,
+        ownershipStatus: 'wishlist',
+        shoppingType:    'buy_new_item',
+        itemType:        'blend',
+        suggestedFamily: nextType,
+        rationale:       progression.rationale(dominantBlends),
+      }],
+      actionPayload: {
+        shoppingType:    'buy_new_item',
+        itemType:        'blend',
+        suggestedFamily: nextType,
+        specificProduct,
+      },
+    }));
+  }
 
-  const specificProduct = BLEND_PROGRESSION_PRODUCTS[nextType] || `${nextType} Blend`;
-  const dominantBlends  = blends.filter((b) => (b.blend_type || b.blend_family) === dominantType);
-  const dynamicRationale = buildGrowRationale({
-    existingType:    dominantType,
-    suggestedType:   nextType,
-    existingItems:   dominantBlends,
-    suggestedProduct: specificProduct,
-    moduleKey:       'tobacco',
-  });
+  // 2. Fill remaining slots from entirely unrepresented families
+  if (results.length < 3) {
+    const ownedFamilies = new Set(blends.map((b) => b.blend_type || b.blend_family).filter(Boolean));
+    for (const family of ALL_BLEND_FAMILIES) {
+      if (results.length >= 3) break;
+      if (ownedFamilies.has(family) || seenNextTypes.has(family)) continue;
+      if (dislikes.some((d) => family.toLowerCase().includes(d.toLowerCase()))) continue;
 
-  results.push(createRecommendation({
-    category:           CATEGORY.GROW_EXPAND,
-    goal:               'blend_family_expansion',
-    actionType:         ACTION_TYPE.SHOPPING_LIST_ACTION,
-    title:              `Explore ${specificProduct}`,
-    summary:            dynamicRationale,
-    whyItMatters:       dynamicRationale,
-    recommendationText: progression.action,
-    gapReason:          `You lack ${nextType} blends in your collection`,
-    whatItAdds:         progression.action ? progression.action.split('.')[0] : 'Expands collection variety',
-    collectionConnection: progression.recommendation || 'Complements your existing collection',
-    contextTag:         nextType || 'blend_gap',
-    moduleKey:          MODULE_KEY.TOBACCO,
-    ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
-    priority:           isWellEstablished ? PRIORITY.MEDIUM : PRIORITY.LOW,
-    confidence,
-    items: [{
-      id:             `grow_blend_${nextType.replace(/[\s/]/g, '_').toLowerCase()}`,
-      recordId:       null,
-      recordType:     'blend_suggestion',
-      recordName:     specificProduct,
-      itemName:       specificProduct,
-      ownershipStatus: 'wishlist',
-      shoppingType:   'buy_new_item',
-      itemType:       'blend',
-      suggestedFamily: nextType,
-      rationale:       progression.rationale(blends.filter((b) => (b.blend_type || b.blend_family) === dominantType)),
-    }],
-    actionPayload: {
-      shoppingType:   'buy_new_item',
-      itemType:       'blend',
-      suggestedFamily: nextType,
-      specificProduct,
-    },
-  }));
+      seenNextTypes.add(family);
+      const specificProduct = BLEND_PROGRESSION_PRODUCTS[family] || `${family} Blend`;
+      const rationale = buildGrowRationale({
+        existingType:     sortedTypes[0]?.[0] || 'your current blends',
+        suggestedType:    family,
+        existingItems:    blends,
+        suggestedProduct: specificProduct,
+        moduleKey:        'tobacco',
+      });
+
+      results.push(createRecommendation({
+        category:             CATEGORY.GROW_EXPAND,
+        goal:                 `blend_family_expansion_${family.replace(/[\s/]/g, '_').toLowerCase()}`,
+        actionType:           ACTION_TYPE.SHOPPING_LIST_ACTION,
+        title:                `Explore ${specificProduct}`,
+        summary:              rationale,
+        whyItMatters:         rationale,
+        recommendationText:   `Add a ${family} blend to your Want List`,
+        gapReason:            `${family} blends are absent from your collection`,
+        contextTag:           family,
+        moduleKey:            MODULE_KEY.TOBACCO,
+        ownershipContext:     OWNERSHIP_CONTEXT.EXTERNAL,
+        priority:             PRIORITY.LOW,
+        confidence:           'medium',
+        items: [{
+          id:              `grow_blend_gap_${family.replace(/[\s/]/g, '_').toLowerCase()}`,
+          recordId:        null,
+          recordType:      'blend_suggestion',
+          recordName:      specificProduct,
+          itemName:        specificProduct,
+          ownershipStatus: 'wishlist',
+          shoppingType:    'buy_new_item',
+          itemType:        'blend',
+          suggestedFamily: family,
+          rationale,
+        }],
+        actionPayload: {
+          shoppingType:    'buy_new_item',
+          itemType:        'blend',
+          suggestedFamily: family,
+          specificProduct,
+        },
+      }));
+    }
+  }
 
   return results;
 }
@@ -551,9 +615,10 @@ export function generateGrowExpandRecommendations(context = {}) {
   if (tobaccoActive) {
     const blendExpansion = generateBlendExpansion(gatedBlends, smokingLogs, preferences);
     for (const rec of blendExpansion) {
-      if (!seen.has(rec.goal)) {
+      const key = rec.goal + (rec.items?.[0]?.suggestedFamily || '');
+      if (!seen.has(key)) {
         results.push(rec);
-        seen.add(rec.goal);
+        seen.add(key);
       }
     }
     generators.push('blendExpansion');
