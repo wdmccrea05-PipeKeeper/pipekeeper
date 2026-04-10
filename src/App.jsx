@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClientInstance } from "@/lib/query-client";
 import NavigationTracker from "@/lib/NavigationTracker";
@@ -8,6 +8,7 @@ import PageNotFound from "./lib/PageNotFound";
 import { AuthProvider, useAuth } from "@/lib/AuthContext";
 import UserNotRegisteredError from "@/components/UserNotRegisteredError";
 import GlobalErrorBoundary from "@/components/system/GlobalErrorBoundary";
+import OnboardingRouter from "@/components/onboarding/OnboardingRouter";
 import PublicSharedRecord from "@/pages/PublicSharedRecord";
 import CuratorAnalyticsDashboard from "@/pages/CuratorAnalyticsDashboard";
 import CollectionInsightsShare from "@/pages/CollectionInsightsShare";
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const loginRedirectedRef = useRef(false);
   const { showModal, setShowModal } = useModuleOnboarding();
+  const [moduleSelectionComplete, setModuleSelectionComplete] = useState(false);
 
   if (isLoadingAuth || isLoadingPublicSettings) {
     return (
@@ -101,8 +103,12 @@ const AuthenticatedApp = () => {
     <>
       <ModuleSelectionModal
         isOpen={showModal}
-        onComplete={() => setShowModal(false)}
+        onComplete={() => {
+          setShowModal(false);
+          setModuleSelectionComplete(true);
+        }}
       />
+      {moduleSelectionComplete && <OnboardingRouter />}
       <Routes>
       <Route path="/support-public" element={<SupportPublic />} />
       <Route path="/share/:moduleType/:shareToken" element={<PublicSharedRecord />} />

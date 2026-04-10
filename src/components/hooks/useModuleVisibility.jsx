@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { isInternalModuleTester } from "@/components/utils/moduleReleaseState";
+import { isInternalModuleTester, isModuleLaunched } from "@/components/utils/moduleReleaseState";
 import { useCanonicalProfile } from "@/utils/getCanonicalUserProfile";
 
 const MODULE_KEYS = ["pipekeeper", "whiskeykeeper", "winekeeper", "cigarkeeper"];
@@ -12,9 +12,10 @@ function normalizeBoolean(value) {
   return typeof value === "boolean" ? value : undefined;
 }
 
-function buildAccessibleModules(activeModules, user) {
+function buildAccessibleModules(profile, activeModules, user) {
   const accessible = new Set(activeModules || []);
 
+  // Tester override
   if (isInternalModuleTester(user)) {
     accessible.add("pipekeeper");
     accessible.add("whiskeykeeper");
@@ -22,12 +23,22 @@ function buildAccessibleModules(activeModules, user) {
     accessible.add("cigarkeeper");
   }
 
+  // Free-tier onboarding fallback: if user explicitly selected a launched module
+  // during first-run setup, make it accessible even without paid subscription
+  if (profile?.module_preferences_set === true) {
+    for (const key of ["pipekeeper", "whiskeykeeper", "winekeeper", "cigarkeeper"]) {
+      if (isModuleLaunched(key) && profile?.[`${key}_enabled`] === true) {
+        accessible.add(key);
+      }
+    }
+  }
+
   return accessible;
 }
 
 function buildVisibility({ profile, user, activeModules }) {
   const prefsSet = profile?.module_preferences_set === true;
-  const accessible = buildAccessibleModules(activeModules, user);
+  const accessible = buildAccessibleModules(profile, activeModules, user);
 
   const prefMap = {
     pipekeeper: normalizeBoolean(profile?.pipekeeper_enabled),
@@ -50,7 +61,7 @@ function buildVisibility({ profile, user, activeModules }) {
 }
 
 function buildModuleStates({ profile, user, activeModules, visibility }) {
-  const accessible = buildAccessibleModules(activeModules, user);
+  const accessible = buildAccessibleModules(profile, activeModules, user);
   const tester = isInternalModuleTester(user);
 
   return {

@@ -1,17 +1,12 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
-import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 
 export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { refetch } = useCurrentUser();
-  const [selected, setSelected] = useState({ pipekeeper: true, whiskeykeeper: true });
+  const { saveModulePreferences, isLoading } = useModuleVisibility();
+  const [selected, setSelected] = useState({ pipekeeper: false, whiskeykeeper: false });
   const [saving, setSaving] = useState(false);
 
   const handleToggle = (moduleId) => {
@@ -26,18 +21,11 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
 
     setSaving(true);
     try {
-      // Update user profile to enable selected modules as free
-      await base44.auth.updateMe({
-        pipekeeper_enabled: selected.pipekeeper,
-        whiskeykeeper_enabled: selected.whiskeykeeper,
-        pipekeeper_paid: false,
-        whiskeykeeper_paid: false,
-        module_preferences_set: true,
-      });
-      // Refetch user data to ensure module visibility updates immediately
-      await refetch();
+      // Save module selections through canonical UserProfile path
+      await saveModulePreferences(selected);
       toast.success('Modules configured successfully');
-      onComplete?.();
+      // Pass selected modules to onComplete so OnboardingRouter can act on them
+      onComplete?.(selected);
     } catch (error) {
       console.error('[ModuleSelection] Error:', error);
       toast.error('Failed to save module preferences');
