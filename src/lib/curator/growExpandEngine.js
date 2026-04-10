@@ -28,6 +28,21 @@ import {
 } from './recommendationSchema.js';
 import { buildGrowRationale } from './curatorVoice.js';
 
+// ─── Badge helpers ─────────────────────────────────────────────────────────────
+// Map engine-level confidence/priority values to display badge labels.
+
+function confidenceToFitBadge(confidence) {
+  if (confidence === 'high')   return 'High Fit';
+  if (confidence === 'medium') return 'Medium Fit';
+  return 'Low Fit';
+}
+
+function priorityToBadge(priority) {
+  if (priority === PRIORITY.HIGH)   return 'High Priority';
+  if (priority === PRIORITY.MEDIUM) return 'Medium Priority';
+  return 'Low Priority';
+}
+
 // ─── Specific product catalog — maps progression targets to concrete products ──
 
 const BLEND_PROGRESSION_PRODUCTS = {
@@ -334,6 +349,7 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
       moduleKey:        'tobacco',
     });
 
+    const blendPriority = isWellEstablished ? PRIORITY.MEDIUM : PRIORITY.LOW;
     results.push(createRecommendation({
       category:             CATEGORY.GROW_EXPAND,
       goal:                 `blend_family_expansion_${nextType.replace(/[\s/]/g, '_').toLowerCase()}`,
@@ -348,7 +364,9 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
       contextTag:           nextType || 'blend_gap',
       moduleKey:            MODULE_KEY.TOBACCO,
       ownershipContext:     OWNERSHIP_CONTEXT.EXTERNAL,
-      priority:             isWellEstablished ? PRIORITY.MEDIUM : PRIORITY.LOW,
+      priority:             blendPriority,
+      fitBadge:             confidenceToFitBadge(confidence),
+      priorityBadge:        priorityToBadge(blendPriority),
       confidence,
       items: [{
         id:              `grow_blend_${nextType.replace(/[\s/]/g, '_').toLowerCase()}`,
@@ -407,6 +425,8 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
         moduleKey:            MODULE_KEY.TOBACCO,
         ownershipContext:     OWNERSHIP_CONTEXT.EXTERNAL,
         priority:             PRIORITY.LOW,
+        fitBadge:             'Medium Fit',
+        priorityBadge:        'Low Priority',
         confidence:           'medium',
         items: [{
           id:              `grow_blend_gap_${family.replace(/[\s/]/g, '_').toLowerCase()}`,
@@ -510,6 +530,8 @@ function generateWhiskeyExpansion(bottles, blends, preferences = {}) {
     moduleKey:          MODULE_KEY.WHISKEY,
     ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
     priority:           PRIORITY.LOW,
+    fitBadge:           confidenceToFitBadge(confidence),
+    priorityBadge:      'Low Priority',
     confidence,
     items: [{
       id:             `grow_whiskey_${finalNextType.replace(/[\s/]/g, '_').toLowerCase()}`,
@@ -580,6 +602,8 @@ function generatePipeShapeExpansion(pipes, blends) {
     moduleKey:          MODULE_KEY.PIPE,
     ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
     priority:           PRIORITY.LOW,
+    fitBadge:           confidenceToFitBadge(confidence),
+    priorityBadge:      'Low Priority',
     confidence,
     items: [{
       id:             `grow_pipe_${suggestedShape}`,
@@ -714,6 +738,8 @@ export function generateGrowExpandRecommendations(context = {}) {
           moduleKey:          MODULE_KEY.TOBACCO,
           ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
           priority:           PRIORITY.LOW,
+          fitBadge:           'Medium Fit',
+          priorityBadge:      'Low Priority',
           confidence:         'medium',
           items: [{
             id:              `grow_blend_fallback_${fallbackBlendType.replace(/[\s/]/g, '_').toLowerCase()}`,
@@ -753,6 +779,8 @@ export function generateGrowExpandRecommendations(context = {}) {
         moduleKey:          MODULE_KEY.WHISKEY,
         ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
         priority:           PRIORITY.LOW,
+        fitBadge:           'Medium Fit',
+        priorityBadge:      'Low Priority',
         confidence:         'medium',
         items: [{
           id:              'grow_whiskey_fallback_bourbon',
@@ -791,6 +819,8 @@ export function generateGrowExpandRecommendations(context = {}) {
           moduleKey:          MODULE_KEY.PIPE,
           ownershipContext:   OWNERSHIP_CONTEXT.EXTERNAL,
           priority:           PRIORITY.LOW,
+          fitBadge:           'Medium Fit',
+          priorityBadge:      'Low Priority',
           confidence:         'medium',
           items: [{
             id:              'grow_pipe_fallback_billiard',

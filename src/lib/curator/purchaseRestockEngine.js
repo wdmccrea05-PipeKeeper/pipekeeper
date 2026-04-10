@@ -6,6 +6,10 @@ import {
   OWNERSHIP_CONTEXT,
   PRIORITY,
 } from './recommendationSchema.js';
+import {
+  normalizeAcquisitionState as normalizeAcquisitionCategory,
+  isActiveAcquisitionItem,
+} from './acquisitionNormalizer.js';
 
 const LOW_STOCK_OZ = 2.0;
 const CRITICAL_STOCK_OZ = 0.5;
@@ -44,39 +48,6 @@ function isBottleDepleted(bottle) {
   return false;
 }
 
-function normalizeAcquisitionCategory(item = {}) {
-  // Live data uses status:'active'|'archived' as an active/deleted discriminator,
-  // and category:'wishlist'|'shopping_list'|'restock'|'tried_not_owned'|... as the semantic field.
-  // New-schema records (created by Curator) may use status as the semantic field directly.
-  const status   = String(item.status   || '').trim().toLowerCase();
-  const category = String(item.category || item.list_type || '').trim().toLowerCase();
-
-  // Hard archived — always respect regardless of category
-  if (status === 'archived') return 'archived';
-
-  // Legacy 'active' status: semantic meaning lives in category
-  if (status === 'active') {
-    if (!category) return 'wishlist';
-    if (category === 'want_list') return 'wishlist';
-    return category;
-  }
-
-  // New-schema: status IS the semantic field (wishlist, shopping_list, restock, …)
-  if (status === 'want_list') return 'wishlist';
-  if (status && status !== '') return status;
-
-  // Fall back to category
-  if (category === 'want_list') return 'wishlist';
-  if (category) return category;
-
-  return 'wishlist';
-}
-
-function isActiveAcquisitionItem(item = {}) {
-  // An item is active unless it has been explicitly archived.
-  // Items with no status at all are treated as active (default = wishlist).
-  return normalizeAcquisitionCategory(item) !== 'archived';
-}
 
 function buildItem(source = {}, overrides = {}) {
   return {

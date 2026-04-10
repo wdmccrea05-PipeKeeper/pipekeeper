@@ -48,6 +48,23 @@ function getChamberLabel(pipe) {
   return CHAMBER_SIZE_LABELS[raw] || null;
 }
 
+/**
+ * Extract the canonical specialization value for a pipe.
+ * Reads focus[0] first (canonical), then falls back to specialization (legacy).
+ * Returns null if no non-empty specialization exists.
+ *
+ * @param {object} pipe - Pipe record
+ * @returns {string|null}
+ */
+function extractPipeSpecValue(pipe) {
+  const focusVal = (pipe.focus?.[0] || '').trim();
+  if (focusVal) return focusVal;
+  const specVal = Array.isArray(pipe.specialization)
+    ? (pipe.specialization[0] || '').trim()
+    : String(pipe.specialization || '').trim();
+  return specVal || null;
+}
+
 // ─── Explanation builders ─────────────────────────────────────────────────────
 
 /**
@@ -216,11 +233,7 @@ export function generateSpecializationRecommendations(pipes = [], blends = [], s
   const specCandidates = computePipeSpecializationCandidates(smokingLogs, blends);
 
   // Pipes that have no specialization set (check both canonical 'focus' and legacy 'specialization')
-  const pipesWithoutSpec = pipes.filter((p) => {
-    const hasFocus = Array.isArray(p.focus) && p.focus.length > 0 && p.focus[0];
-    const hasSpecialization = p.specialization && (Array.isArray(p.specialization) ? p.specialization.length > 0 : true) && p.specialization !== '';
-    return !hasFocus && !hasSpecialization;
-  });
+  const pipesWithoutSpec = pipes.filter((p) => !extractPipeSpecValue(p));
 
   // Build candidate items for the recommendation
   const candidateItems = pipesWithoutSpec.slice(0, 20).map((pipe) => {
@@ -242,7 +255,7 @@ export function generateSpecializationRecommendations(pipes = [], blends = [], s
       recordName:           pipe.name,
       itemName:             pipe.name,
       maker:                pipe.maker || null,
-      currentSpec:          (Array.isArray(pipe.focus) && pipe.focus[0]) || pipe.specialization || null,
+      currentSpec:          extractPipeSpecValue(pipe),
       suggestedSpec:        hasLogData ? logData.suggestedSpec : null,
       totalSessions:        logData?.totalSessions ?? 0,
       dominanceRatio:       logData?.dominanceRatio ?? 0,

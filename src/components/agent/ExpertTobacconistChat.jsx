@@ -21,6 +21,7 @@ const STARTER_PROMPTS_MULTI = [
 
 // ─── String helpers ────────────────────────────────────────────────────────────
 function norm(v) { return String(v || '').trim().toLowerCase(); }
+function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 function daysSince(d) {
   if (!d) return null;
   const ts = new Date(d).getTime();
@@ -102,20 +103,28 @@ function classifyIntent(message) {
   if (/\b(pairing|pair with|pair together|combine|combination|explain why .+ work together)\b/i.test(t)) return 'EXPLAIN_PAIRING';
   if (/\b(tonight|enjoy|smoke|drink|open next|session|use|revisit|rediscover|haven.?t used|haven.?t had)\b/i.test(t)) return 'SESSION_RECOMMENDATION';
   if (/\b(restock|running low|running out|buy next|replenish)\b/i.test(t)) return 'RESTOCK_ADVICE';
-  if (/\b(gap|missing|need|biggest gap|collection gap)\b/i.test(t)) return 'GAP_ANALYSIS';
-  if (/\b(redundant|most redundant|overlap)\b/i.test(t)) return 'COLLECTION_ANALYSIS';
+  if (/\b(gap|missing|biggest gap|collection gap|what.?s? (missing|absent|lacking))\b/i.test(t)) return 'GAP_ANALYSIS';
 
-  // PIPE_REASSIGNMENT_ANALYSIS — explicit ranking/query intent, must fire before COLLECTION_ANALYSIS
+  // PIPE_REASSIGNMENT_ANALYSIS — explicit ranking/query intent
   const reassignPatterns = [
-    /\b(reassign|reassignment|respecializ|re-specializ)\b/i,
+    /\b(reassign(ed|ment)?|respecializ|re-specializ)\b/i,
     /\b(change (specialization|focus|role)|new role|different role|better suited elsewhere|better specialization)\b/i,
     /\b(no longer fits|doesn.?t fit).*(specializ|focus|role|lane)/i,
     /\b(benefit.*(reassign|respecializ|new role|different role))/i,
     /\b(strongest|best).*(reassignment|respecializ|candidate)/i,
-    /\b(which|what) pipe.*(reassign|respecializ|should change|new specializ|no longer fits)/i,
+    /\b(which|what) pipe.*(reassign|respecializ|should change|new specializ|no longer fits|would benefit|is a candidate)/i,
+    /\bpipe.*(needs? (a |new )?specializ|should (be )?reassign|should (be )?respecializ)/i,
+    /\b(switch|move|migrate).*(pipe|specializ|focus|lane)/i,
   ];
   if (reassignPatterns.some((p) => p.test(t))) return 'PIPE_REASSIGNMENT_ANALYSIS';
-  if (/\b(evaluate|assess|how does .+ fit|where does .+ sit|role of)\b/i.test(t)) return 'EVALUATE_OWNED_ITEM';
+
+  // COLLECTION_ANALYSIS — redundancy and general collection questions
+  if (/\b(redundant|most redundant)\b/i.test(t)) return 'COLLECTION_ANALYSIS';
+
+  // EVALUATE_OWNED_ITEM — named-item evaluation
+  if (/\b(evaluate|assess|review|analyze)\b/i.test(t)) return 'EVALUATE_OWNED_ITEM';
+  if (/\b(how does .+ (fit|work|sit|compare)|where does .+ sit|role of .+ in)\b/i.test(t)) return 'EVALUATE_OWNED_ITEM';
+  if (/\b(tell me about|what (is|do you think of|about)) .+\b/i.test(t)) return 'EVALUATE_OWNED_ITEM';
 
   return 'UNKNOWN';
 }
@@ -652,7 +661,58 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
   }
 
   // ── UNKNOWN ────────────────────────────────────────────────────────────────
-  return { reply: "Could you be more specific? Ask about a particular item, a pairing, tonight's session, or a gap in your collection.", updatedEntityContext: entityContext };
+  // Attempt to extract a named entity before falling back to clarification.
+  const allEntities = [...bottles, ...blends, ...pipes];
+  const mentionedEntity = allEntities.find((e) => {
+    const n = (e.name || '').toLowerCase().trim();
+    if (n.length < 3) return false;
+    // Use word-boundary-aware match: entity name must appear as whole words
+    return new RegExp(`\\b${escapeRegex(n)}\\b`).test(message.toLowerCase());
+  });
+  if (mentionedEntity) {
+    // Re-route as owned-item evaluation
+    const isBottle = bottles.some((b) => b.id === mentionedEntity.id);
+    const isBlend  = blends.some((b) => b.id === mentionedEntity.id);
+    const isPipe   = pipes.some((p) => p.id === mentionedEntity.id);
+    let evalData = null;
+    let itemLabel = '';
+    if (isBottle) {
+      evalData = evaluateOwnedBottle(mentionedEntity, bottles, tastingLogs);
+      itemLabel = mentionedEntity.type || mentionedEntity.whiskey_type || 'whiskey bottle';
+    } else if (isBlend) {
+      evalData = evaluateOwnedBlend(mentionedEntity, blends, smokingLogs);
+      itemLabel = mentionedEntity.blend_type || 'tobacco blend';
+    } else if (isPipe) {
+      evalData = evaluateOwnedPipe(mentionedEntity, pipes, smokingLogs);
+      itemLabel = mentionedEntity.shape || 'pipe';
+    }
+    if (evalData) {
+      const nearby = evalData.adjacentComparables.map((x) => x.name);
+      const nearbyText = nearby.length > 0
+        ? `It sits alongside ${nearby.join(' and ')} in your collection — ${evalData.role}.`
+        : `It is the only ${itemLabel} of its kind — ${evalData.role}.`;
+      return {
+        reply: `**${mentionedEntity.name}** is already in your collection.\n\n**Role:** ${evalData.role}.\n\n${nearbyText}\n\n**Usage:** ${evalData.usageState}\n\n**Next step:** ${evalData.recommendation}${confidenceSuffix(evalData.evidence.evidenceClass, evalData.evidence.evidenceReason)}`,
+        updatedEntityContext: {
+          ...entityContext,
+          subject: { id: mentionedEntity.id, name: mentionedEntity.name, type: isBottle ? 'bottle' : isBlend ? 'blend' : 'pipe' },
+          topicIntent: 'evaluate_owned_item',
+          lastClaimType: 'owned_item_evaluation',
+          lastEvidenceClass: evalData.evidence.evidenceClass,
+          lastConclusion: evalData.recommendation,
+          relatedEntities: evalData.adjacentComparables,
+        },
+      };
+    }
+  }
+
+  const examples = [
+    pipes.length   ? `"What pipe should be reassigned?"` : null,
+    blends.length  ? `"What is my biggest tobacco gap?"` : null,
+    bottles.length ? `"What whiskey should I open tonight?"` : null,
+  ].filter(Boolean);
+  const exampleText = examples.length ? ` For example: ${examples.join(', ')}.` : '';
+  return { reply: `I can answer specific questions about your collection — pairings, gaps, redundancy, reassignment candidates, or what to enjoy tonight.${exampleText}`, updatedEntityContext: entityContext };
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────────
