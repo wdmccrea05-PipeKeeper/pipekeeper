@@ -27,6 +27,9 @@ function buildAccessibleModules(profile, activeModules, user) {
   // during first-run setup, make it accessible even without paid subscription
   if (profile?.module_preferences_set === true) {
     for (const key of ["pipekeeper", "whiskeykeeper", "winekeeper", "cigarkeeper"]) {
+      // User can always access launched modules they explicitly enabled during onboarding,
+      // even if they don't have a paid entitlement. This ensures free users who selected
+      // a module on signup retain access to it.
       if (isModuleLaunched(key) && profile?.[`${key}_enabled`] === true) {
         accessible.add(key);
       }
@@ -64,13 +67,17 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
   const accessible = buildAccessibleModules(profile, activeModules, user);
   const tester = isInternalModuleTester(user);
 
+  // For free users with preferences set: a launched module they explicitly enabled
+  // becomes toggleable even without paid entitlement
+  const isFreeTierWithPrefs = profile?.module_preferences_set === true;
+
   return {
     pipekeeper: {
       key: "pipekeeper",
       enabled: !!visibility.pipekeeper,
       accessible: accessible.has("pipekeeper"),
       visible: accessible.has("pipekeeper"),
-      canToggle: accessible.has("pipekeeper"),
+      canToggle: accessible.has("pipekeeper") || (isFreeTierWithPrefs && isModuleLaunched("pipekeeper") && profile?.pipekeeper_enabled),
       testerOnly: false,
     },
     whiskeykeeper: {
@@ -78,7 +85,7 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.whiskeykeeper,
       accessible: accessible.has("whiskeykeeper"),
       visible: accessible.has("whiskeykeeper"),
-      canToggle: accessible.has("whiskeykeeper"),
+      canToggle: accessible.has("whiskeykeeper") || (isFreeTierWithPrefs && isModuleLaunched("whiskeykeeper") && profile?.whiskeykeeper_enabled),
       testerOnly: false, // WhiskeyKeeper is publicly launched
     },
     winekeeper: {
@@ -86,7 +93,7 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.winekeeper,
       accessible: accessible.has("winekeeper"),
       visible: accessible.has("winekeeper"),
-      canToggle: accessible.has("winekeeper"),
+      canToggle: accessible.has("winekeeper") || (isFreeTierWithPrefs && isModuleLaunched("winekeeper") && profile?.winekeeper_enabled),
       testerOnly: tester,
     },
     cigarkeeper: {
@@ -94,7 +101,7 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.cigarkeeper,
       accessible: accessible.has("cigarkeeper"),
       visible: accessible.has("cigarkeeper"),
-      canToggle: accessible.has("cigarkeeper"),
+      canToggle: accessible.has("cigarkeeper") || (isFreeTierWithPrefs && isModuleLaunched("cigarkeeper") && profile?.cigarkeeper_enabled),
       testerOnly: tester,
     },
   };
